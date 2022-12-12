@@ -848,53 +848,66 @@ class SystemController extends AbstractController
         $headings[] = '成员名称';
         $headings[] = '成员邮箱';
         $headings[] = '签到日期';
-        $headings[] = '签到时间1';
-        $headings[] = '签到时间2';
+        $headings[] = '签到班次';
+        $headings[] = '首次签到时间';
+        $headings[] = '首次签到结果';
+        $headings[] = '最后签到时间';
+        $headings[] = '最后签到结果';
         //
         $sheets = [];
-        $start = Carbon::parse($date[0])->startOfDay();
-        $end = Carbon::parse($date[1])->endOfDay();
+        $startD = Carbon::parse($date[0])->startOfDay();
+        $endD = Carbon::parse($date[1])->endOfDay();
         $users = User::whereIn('userid', $userid)->take(20)->get();
         /** @var User $user */
         foreach ($users as $user) {
-            $records = UserCheckinRecord::whereUserid($user->userid)->whereBetween("created_at", [$start, $end])->orderBy('id')->get();
+            $records = UserCheckinRecord::whereUserid($user->userid)->whereBetween("created_at", [$startD, $endD])->orderBy('id')->get();
             //
+            $styles = ["A1:I1" => ["font" => ["bold" => true]]];
             $datas = [];
-            $styles = [];
-            $startT = $start->timestamp;
-            $endT = $end->timestamp;
+            $startT = $startD->timestamp;
+            $endT = $endD->timestamp;
             $index = 1;
             while ($startT < $endT) {
                 $index++;
-                $first = $records->whereBetween("created_at", [Carbon::parse($startT), Carbon::parse($startT + $secondStart)])->first();
-                $last = $records->whereBetween("created_at", [Carbon::parse($startT + $secondEnd), Carbon::parse($startT + 86400)])->last();
-                $first = $first ? Carbon::parse($first->created_at)->timestamp : 0;
-                $last = $last ? Carbon::parse($last->created_at)->timestamp : 0;
-                if (empty($first) || $first > $startT + $secondStart) {
-                    $styles["E{$index}"] = [
-                        'font' => [
-                            'color' => [
-                                'rgb' => 'ff0000'
-                            ]
-                        ],
-                    ];
+                $firstBetween = [Carbon::createFromTimestamp($startT), Carbon::createFromTimestamp($startT + $secondEnd - 1)];
+                $lastBetween = [Carbon::createFromTimestamp($startT + $secondStart + 1), Carbon::createFromTimestamp($startT + 86400)];
+                $firstRecord = $records->whereBetween("created_at", $firstBetween)->first();
+                $lastRecord = $records->whereBetween("created_at", $lastBetween)->last();
+                $firstTimestamp = $firstRecord ? Carbon::parse($firstRecord->created_at)->timestamp : 0;
+                $lastTimestamp = $lastRecord ? Carbon::parse($lastRecord->created_at)->timestamp : 0;
+                if (Base::time() < $startT) {
+                    $firstResult = "-";
+                    $lastResult = "-";
+                } else {
+                    $firstResult = "正常";
+                    $lastResult = "正常";
+                    if (empty($firstTimestamp)) {
+                        $firstResult = "缺卡";
+                        $styles["G{$index}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];
+                    } elseif ($firstTimestamp > $startT + $secondStart) {
+                        $firstResult = "迟到";
+                        $styles["G{$index}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];
+                    }
+                    if (empty($lastTimestamp)) {
+                        $lastResult = "缺卡";
+                        $styles["I{$index}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];
+                    } elseif ($lastTimestamp < $startT + $secondEnd) {
+                        $lastResult = "早退";
+                        $styles["I{$index}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];
+                    }
                 }
-                if (empty($last) || $last < $startT + $secondEnd) {
-                    $styles["F{$index}"] = [
-                        'font' => [
-                            'color' => [
-                                'rgb' => 'ff0000'
-                            ]
-                        ],
-                    ];
-                }
+                $firstTimestamp = $firstTimestamp ? date("H:i", $firstTimestamp) : "-";
+                $lastTimestamp = $lastTimestamp ? date("H:i", $lastTimestamp) : "-";
                 $datas[] = [
                     $user->userid,
                     $user->nickname,
                     $user->email,
                     date("Y-m-d", $startT),
-                    $first ? date("H:i", $first) : '-',
-                    $last ? date("H:i", $last) : '-',
+                    implode("-", $time),
+                    $firstTimestamp,
+                    $firstResult,
+                    $lastTimestamp,
+                    $lastResult,
                 ];
                 $startT += 86400;
             }

@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Exceptions\ApiException;
-use App\Models\User;
-use App\Models\UserCheckin;
+use App\Models\UserCheckinMac;
 use App\Models\UserCheckinRecord;
 use App\Module\Base;
-use Carbon\Carbon;
 use Request;
 
 /**
@@ -94,10 +91,10 @@ class PublicController extends AbstractController
         $macs = explode(",", $mac);
         foreach ($macs as $item) {
             $item = strtoupper($item);
-            if (Base::isMac($item) &&  $userCheckin = UserCheckin::whereMac($item)->first()) {
+            if (Base::isMac($item) &&  $UserCheckinMac = UserCheckinMac::whereMac($item)->first()) {
                 UserCheckinRecord::createInstance([
-                    'userid' => $userCheckin->userid,
-                    'mac' => $userCheckin->mac,
+                    'userid' => $UserCheckinMac->userid,
+                    'mac' => $UserCheckinMac->mac,
                     'time' => $time,
                 ])->save();
             }

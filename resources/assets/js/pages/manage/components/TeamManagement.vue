@@ -91,7 +91,7 @@
                                 </Select>
                             </div>
                         </li>
-                        <li v-if="mode==='checkin_mac'">
+                        <li v-if="checkinMac">
                             <div class="search-label">
                                 {{$L("MAC地址")}}
                             </div>
@@ -284,9 +284,9 @@ export default {
     name: "TeamManagement",
     components: {UserInput},
     props: {
-        mode: {
-            type: String,
-            default: 'user'
+        checkinMac: {
+            type: Boolean,
+            default: false
         },
     },
     data() {
@@ -496,7 +496,7 @@ export default {
                             },
                         }, [h('div', this.$L('修改密码'))]))
 
-                        if (this.mode === 'checkin_mac') {
+                        if (this.checkinMac) {
                             dropdownItems.push(h('EDropdownItem', {
                                 props: {
                                     command: 'checkin_mac',
@@ -657,7 +657,7 @@ export default {
         }
     },
     created() {
-        if (this.mode === 'checkin_mac') {
+        if (this.checkinMac) {
             this.columns.splice(5, 0, {
                 title: this.$L('MAC地址'),
                 key: 'checkin_mac',
@@ -734,7 +734,7 @@ export default {
                 url: 'users/lists',
                 data: {
                     keys,
-                    checkin_mac: this.mode === 'checkin_mac' ? 1 : 0,
+                    get_checkin_mac: this.checkinMac ? 1 : 0,
                     page: Math.max(this.page, 1),
                     pagesize: Math.max($A.runNum(this.pageSize), 10),
                 },

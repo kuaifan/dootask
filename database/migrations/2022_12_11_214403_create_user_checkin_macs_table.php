@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateUserCheckinsTable extends Migration
+class CreateUserCheckinMacsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateUserCheckinsTable extends Migration
      */
     public function up()
     {
-        Schema::create('user_checkins', function (Blueprint $table) {
+        Schema::create('user_checkin_macs', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('userid')->nullable()->default(0)->comment('会员id');
             $table->string('mac', 100)->nullable()->default('')->comment('MAC地址');
@@ -29,6 +29,6 @@ class CreateUserCheckinsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('user_checkins');
+        Schema::dropIfExists('user_checkin_macs');
     }
 }

@@ -2,7 +2,7 @@
     <div class="setting-component-item">
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
             <div class="block-setting-box">
-                <h3>{{ $L('WIFI自动签到') }}</h3>
+                <h3>{{ $L('自动签到') }}</h3>
                 <FormItem :label="$L('功能开启')" prop="open">
                     <RadioGroup v-model="formData.open">
                         <Radio label="open">{{ $L('开启') }}</Radio>
@@ -21,15 +21,12 @@
                         </RadioGroup>
                         <div class="form-tip">{{$L('允许成员自己修改MAC地址')}}</div>
                     </FormItem>
-                    <FormItem :label="$L('功能说明')" prop="explain">
-                        <p>1. {{$L('此功能仅支持手机客户端使用。')}}</p>
-                        <p>2. {{$L('手机连接上指定路由器WIFI后自动签到。')}}{{$L('（注：不限制连接方式）')}}</p>
-                        <p>3. {{$L('签到延迟时长为±1分钟。')}}</p>
-                    </FormItem>
-                    <FormItem :label="$L('安装说明')" prop="install">
-                        <p>1. {{$L('此功能仅支持Openwrt系统的路由器。')}}</p>
-                        <p>2. {{$L('关闭签到功能再开启需要重新安装。')}}</p>
-                        <p>3. {{$L('进入路由器终端执行以下命令即可完成安装：')}}</p>
+                    <FormItem :label="$L('安装说明')" prop="explain">
+                        <p>1. {{$L('签到延迟时长为±1分钟。')}}</p>
+                        <p>2. {{$L('设备连接上指定路由器（WiFi）后自动签到。')}}</p>
+                        <p>3. {{$L('仅支持Openwrt系统的路由器。')}}</p>
+                        <p>4. {{$L('关闭签到功能再开启需要重新安装。')}}</p>
+                        <p>5. {{$L('进入路由器终端执行以下命令即可完成安装：')}}</p>
                         <Input ref="cmd" @on-focus="clickCmd" style="margin-top:6px" type="textarea" readonly :value="formData.cmd"/>
                     </FormItem>
                 </template>
@@ -59,17 +56,17 @@
                         :placeholder="$L('请选择签到日期')"/>
                     <div class="form-tip page-setting-checkin-export-common">
                         {{$L('快捷选择')}}:
-                        <em @click="exportData.date=dateShortcuts('prev')">上个月</em>
-                        <em @click="exportData.date=dateShortcuts('this')">这个月</em>
+                        <em @click="exportData.date=dateShortcuts('prev')">{{$L('上个月')}}</em>
+                        <em @click="exportData.date=dateShortcuts('this')">{{$L('这个月')}}</em>
                     </div>
                 </FormItem>
-                <FormItem :label="$L('签到时间')">
+                <FormItem :label="$L('签到班次')">
                     <TimePicker
                         v-model="exportData.time"
                         type="timerange"
                         format="HH:mm"
                         style="width:100%"
-                        :placeholder="$L('请选择签到时间')"/>
+                        :placeholder="$L('请选择签到班次')"/>
                     <div class="form-tip page-setting-checkin-export-common">
                         {{$L('快捷选择')}}:
                         <em @click="exportData.time=['8:30', '18:00']">8:30-18:00</em>
@@ -89,7 +86,7 @@
             v-model="allUserShow"
             placement="right"
             :size="1380">
-            <TeamManagement v-if="allUserShow" mode="checkin_mac"/>
+            <TeamManagement v-if="allUserShow" checkin-mac/>
         </DrawerOverlay>
     </div>
 </template>

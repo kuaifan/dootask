@@ -7,12 +7,11 @@ use App\Models\Meeting;
 use App\Models\Project;
 use App\Models\UmengAlias;
 use App\Models\User;
-use App\Models\UserCheckin;
+use App\Models\UserCheckinMac;
 use App\Models\UserDelete;
 use App\Models\UserDepartment;
 use App\Models\UserEmailVerification;
 use App\Models\UserTransfer;
-use App\Models\WebSocket;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Module\AgoraIO\AgoraTokenGenerator;
@@ -506,13 +505,13 @@ class UsersController extends AbstractController
      *   - no:      未认证
      *   - 其他值:   全部（默认）
      * - keys.department        部门ID（0表示默认部门，不赋值获取所有部门）
-     * - keys.checkin_mac       签到mac地址
+     * - keys.checkin_mac       签到mac地址（get_checkin_mac=1时有效）
      *
-     * @apiParam {Number} [checkin_mac]     获取签到mac地址
+     * @apiParam {Number} [get_checkin_mac]     获取签到mac地址
      * - 0: 不获取（默认）
      * - 1: 获取
-     * @apiParam {Number} [page]            当前页，默认:1
-     * @apiParam {Number} [pagesize]        每页显示数量，默认:20，最大:50
+     * @apiParam {Number} [page]                当前页，默认:1
+     * @apiParam {Number} [pagesize]            每页显示数量，默认:20，最大:50
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -525,6 +524,7 @@ class UsersController extends AbstractController
         $builder = User::select(['*', 'nickname as nickname_original']);
         //
         $keys = Request::input('keys');
+        $getCheckinMac = intval(Request::input('get_checkin_mac')) === 1;
         if (is_array($keys)) {
             if ($keys['key']) {
                 if (str_contains($keys['key'], "@")) {
@@ -577,9 +577,9 @@ class UsersController extends AbstractController
                     $builder->where("department", "like", "%,{$keys['department']},%");
                 }
             }
-            if (isset($keys['checkin_mac'])) {
+            if ($getCheckinMac && isset($keys['checkin_mac'])) {
                 $builder->whereIn('userid', function ($query) use ($keys) {
-                    $query->select('userid')->from('user_checkins')->where("mac", "like", "%{$keys['checkin_mac']}%");
+                    $query->select('userid')->from('user_checkin_macs')->where("mac", "like", "%{$keys['checkin_mac']}%");
                 });
             }
         } else {
@@ -587,9 +587,9 @@ class UsersController extends AbstractController
         }
         $list = $builder->orderByDesc('userid')->paginate(Base::getPaginate(50, 20));
         //
-        if (intval(Request::input('checkin_mac')) === 1) {
+        if ($getCheckinMac) {
             $list->transform(function (User $user) {
-                $user->checkin_macs = UserCheckin::whereUserid($user->userid)->orderBy('id')->pluck('mac');
+                $user->checkin_macs = UserCheckinMac::whereUserid($user->userid)->orderBy('id')->pluck('mac');
                 return $user;
             });
         }
@@ -666,7 +666,7 @@ class UsersController extends AbstractController
                         ];
                     }
                 }
-                return UserCheckin::saveMac($userInfo->userid, $array);
+                return UserCheckinMac::saveMac($userInfo->userid, $array);
 
             case 'department':
                 if (!is_array($data['department'])) {
@@ -1336,7 +1336,7 @@ class UsersController extends AbstractController
     {
         $user = User::auth();
         //
-        $list = UserCheckin::whereUserid($user->userid)->orderBy('id')->get();
+        $list = UserCheckinMac::whereUserid($user->userid)->orderBy('id')->get();
         //
         return Base::retSuccess('success', $list);
     }
@@ -1386,6 +1386,6 @@ class UsersController extends AbstractController
             return Base::retError('最多只能添加3个MAC地址');
         }
         //
-        return UserCheckin::saveMac($user->userid, $array);
+        return UserCheckinMac::saveMac($user->userid, $array);
     }
 }

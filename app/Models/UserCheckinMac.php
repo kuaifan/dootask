@@ -6,7 +6,7 @@ namespace App\Models;
 use App\Module\Base;
 
 /**
- * App\Models\UserCheckin
+ * App\Models\UserCheckinMac
  *
  * @property int $id
  * @property int|null $userid 会员id
@@ -14,18 +14,18 @@ use App\Module\Base;
  * @property string|null $remark 备注
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @method static \Illuminate\Database\Eloquent\Builder|UserCheckin newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|UserCheckin newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|UserCheckin query()
- * @method static \Illuminate\Database\Eloquent\Builder|UserCheckin whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|UserCheckin whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|UserCheckin whereMac($value)
- * @method static \Illuminate\Database\Eloquent\Builder|UserCheckin whereRemark($value)
- * @method static \Illuminate\Database\Eloquent\Builder|UserCheckin whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|UserCheckin whereUserid($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UserCheckinMac newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|UserCheckinMac newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|UserCheckinMac query()
+ * @method static \Illuminate\Database\Eloquent\Builder|UserCheckinMac whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UserCheckinMac whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UserCheckinMac whereMac($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UserCheckinMac whereRemark($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UserCheckinMac whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UserCheckinMac whereUserid($value)
  * @mixin \Eloquent
  */
-class UserCheckin extends AbstractModel
+class UserCheckinMac extends AbstractModel
 {
     /**
      * 保存mac地址
@@ -45,7 +45,7 @@ class UserCheckin extends AbstractModel
                         'remark' => $item['remark']
                     ];
                 }
-                $row = UserCheckin::updateInsert([
+                $row = self::updateInsert([
                     'userid' => $userid,
                     'mac' => $item['mac']
                 ], $update);
@@ -54,7 +54,7 @@ class UserCheckin extends AbstractModel
                     $list[] = $row;
                 }
             }
-            UserCheckin::whereUserid($userid)->whereNotIn('id', $ids)->delete();
+            self::whereUserid($userid)->whereNotIn('id', $ids)->delete();
             //
             return Base::retSuccess('修改成功', $list);
         });
