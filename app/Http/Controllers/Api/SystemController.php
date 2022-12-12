@@ -879,12 +879,10 @@ class SystemController extends AbstractController
                 $lastRecord = $records->whereBetween("created_at", $lastBetween)->last();
                 $firstTimestamp = $firstRecord ? Carbon::parse($firstRecord->created_at)->timestamp : 0;
                 $lastTimestamp = $lastRecord ? Carbon::parse($lastRecord->created_at)->timestamp : 0;
-                if (Base::time() < $startT) {
+                if (Base::time() < $startT + $secondStart) {
                     $firstResult = "-";
-                    $lastResult = "-";
                 } else {
                     $firstResult = "正常";
-                    $lastResult = "正常";
                     if (empty($firstTimestamp)) {
                         $firstResult = "缺卡";
                         $styles["E{$index}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];
@@ -892,11 +890,14 @@ class SystemController extends AbstractController
                         $firstResult = "迟到";
                         $styles["E{$index}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];
                     }
-                    if (empty($lastTimestamp)) {
+                }
+                if (Base::time() < $startT + $secondEnd) {
+                    $lastResult = "-";
+                } else {
+                    $lastResult = "正常";
+                    if (empty($lastTimestamp) || $lastTimestamp === $firstTimestamp) {
                         $lastResult = "缺卡";
                         $styles["G{$index}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];
-                    } elseif ($lastTimestamp === $firstTimestamp) {
-                        $lastResult = "-";
                     } elseif ($lastTimestamp < $startT + $secondEnd) {
                         $lastResult = "早退";
                         $styles["G{$index}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];
