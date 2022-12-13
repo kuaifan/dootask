@@ -864,7 +864,7 @@ class SystemController extends AbstractController
         $users = User::whereIn('userid', $userid)->take(20)->get();
         /** @var User $user */
         foreach ($users as $user) {
-            $records = UserCheckinRecord::whereUserid($user->userid)->whereBetween("created_at", [$startD, $endD])->orderBy('id')->get()->keyBy('date');
+            $recordTimes = UserCheckinRecord::getTimes($user->userid, [$startD, $endD]);
             //
             $nickname = Base::filterEmoji($user->nickname);
             $styles = ["A1:H1" => ["font" => ["bold" => true]]];
@@ -875,8 +875,8 @@ class SystemController extends AbstractController
             while ($startT < $endT) {
                 $index++;
                 $sameDate = date("Y-m-d", $startT);
-                $sameRecord = isset($records[$sameDate]) ? $records[$sameDate] : null;
-                $sameCollect = $sameRecord?->atCollect();
+                $sameTimes = $recordTimes[$sameDate] ?? [];
+                $sameCollect = UserCheckinRecord::atCollect($sameDate, $sameTimes);
                 $firstBetween = [Carbon::createFromTimestamp($startT), Carbon::createFromTimestamp($startT + $secondEnd - 1)];
                 $lastBetween = [Carbon::createFromTimestamp($startT + $secondStart + 1), Carbon::createFromTimestamp($startT + 86400)];
                 $firstRecord = $sameCollect?->whereBetween("datetime", $firstBetween)->first();
@@ -912,7 +912,7 @@ class SystemController extends AbstractController
                 $lastTimestamp = $lastTimestamp ? date("H:i", $lastTimestamp) : "-";
                 $section = array_map(function($item) {
                     return $item[0] . "-" . ($item[1] ?: "None");
-                }, $sameRecord?->atSection() ?: []);
+                }, UserCheckinRecord::atSection($sameTimes));
                 $datas[] = [
                     "{$nickname} (ID: {$user->userid})",
                     $sameDate,

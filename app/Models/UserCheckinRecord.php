@@ -46,31 +46,69 @@ class UserCheckinRecord extends AbstractModel
     }
 
     /**
+     * 获取签到时间
+     * @param int $userid
+     * @param array $betweenTimes
+     * @return array
+     */
+    public static function getTimes(int $userid, array $betweenTimes)
+    {
+        $array = [];
+        $records = self::whereUserid($userid)->whereBetween('created_at', $betweenTimes)->orderBy('id')->get();
+        /** @var self $record */
+        foreach ($records as $record) {
+            $times = array_map(function ($time) {
+                return preg_replace("/(\d+):(\d+):\d+$/", "$1:$2", $time);
+            }, $record->times);
+            if (isset($array[$record->date])) {
+                $array[$record->date] = array_merge($array[$record->date], $times);
+            } else {
+                $array[$record->date] = $times;
+            }
+        }
+        //
+        foreach ($array as $date => $times) {
+            $times = array_values(array_filter(array_unique($times)));
+            $inOrder = [];
+            foreach ($times as $key => $time) {
+                $inOrder[$key] = strtotime("2022-01-01 {$time}");
+            }
+            array_multisort($inOrder, SORT_ASC, $times);
+            $array[$date] = $times;
+        }
+        //
+        return $array;
+    }
+
+    /**
      * 时间收集
+     * @param string $data
+     * @param array $times
      * @return \Illuminate\Support\Collection
      */
-    public function atCollect()
+    public static function atCollect($data, $times)
     {
-        $sameTimes = array_map(function($time) {
+        $sameTimes = array_map(function($time) use ($data) {
             return [
-                "datetime" => "{$this->date} {$time}",
-                "timestamp" => strtotime("{$this->date} {$time}")
+                "datetime" => "{$data} {$time}",
+                "timestamp" => strtotime("{$data} {$time}")
             ];
-        }, $this->times);
+        }, $times);
         return collect($sameTimes);
     }
 
     /**
      * 签到时段
+     * @param array $times
      * @param int $diff 多长未签到算失效（秒）
      * @return array
      */
-    public function atSection($diff = 3600)
+    public static function atSection($times, $diff = 3600)
     {
         $start = "";
         $end = "";
         $array = [];
-        foreach ($this->times as $time) {
+        foreach ($times as $time) {
             $time = preg_replace("/(\d+):(\d+):\d+$/", "$1:$2", $time);
             if (empty($start)) {
                 $start = $time;

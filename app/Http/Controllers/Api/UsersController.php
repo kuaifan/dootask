@@ -1412,17 +1412,17 @@ class UsersController extends AbstractController
         $start = Carbon::parse(date("Y-m-01 00:00:00", strtotime($ym)));
         $end = (clone $start)->addMonth()->subSecond();
         //
-        $records = UserCheckinRecord::whereUserid($user->userid)->whereBetween('created_at', [$start, $end])->orderBy('id')->get()->keyBy('date');
+        $recordTimes = UserCheckinRecord::getTimes($user->userid, [$start, $end]);
         $array = [];
         $startT = $start->timestamp;
         $endT = $end->timestamp;
         while ($startT < $endT) {
             $sameDate = date("Y-m-d", $startT);
-            $sameRecord = isset($records[$sameDate]) ? $records[$sameDate] : null;
-            if ($sameRecord) {
+            $sameTimes = $recordTimes[$sameDate] ?? [];
+            if ($sameTimes) {
                 $array[] = [
                     'date' => $sameDate,
-                    'section' => $sameRecord->atSection(),
+                    'section' => UserCheckinRecord::atSection($sameTimes),
                 ];
             }
             $startT += 86400;
