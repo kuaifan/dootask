@@ -108,6 +108,9 @@ export default {
                 //
                 if (this.userId > 0) {
                     if (this.$isEEUiApp) {
+                        $A.eeuiAppSendMessage({
+                            action: 'intiUmeng',
+                        });
                         setTimeout(_ => {
                             $A.eeuiAppSendMessage({
                                 action: 'setUmengAlias',
