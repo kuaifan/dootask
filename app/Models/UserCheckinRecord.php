@@ -71,7 +71,7 @@ class UserCheckinRecord extends AbstractModel
         $end = "";
         $array = [];
         foreach ($this->times as $time) {
-            $time = preg_replace("/:00$/", "", $time);
+            $time = preg_replace("/(\d+):(\d+):\d+$/", "$1:$2", $time);
             if (empty($start)) {
                 $start = $time;
                 continue;
