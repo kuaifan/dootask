@@ -13,6 +13,9 @@ class CreateUserCheckinMacsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('user_checkin_macs'))
+            return;
+
         Schema::create('user_checkin_macs', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('userid')->nullable()->default(0)->comment('会员id');

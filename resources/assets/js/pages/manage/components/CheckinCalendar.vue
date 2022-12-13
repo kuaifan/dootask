@@ -29,7 +29,7 @@
                             <div slot="content" v-html="getTimes(data.date)"></div>
                             <template v-if="doCheck(data.date)">{{$L('今天')}}</template>
                             <template v-else>{{data.date | getCD}}</template>
-                            <span :class="{'ui-state-down': true }">{{$L('已签到(*)次', getGold(data.date))}}</span>
+                            <span :class="{'ui-state-down': true }">{{$L('已签到')}}</span>
                         </Tooltip>
                     </td>
                     <template v-if="(!isCheck(data.date) && (doCheck(data.date) && !hasCheckin))">
@@ -122,26 +122,13 @@ export default {
         monthClass(type) {
             return type != 'cur';
         },
-        getGold(thisDay) {
-            for (let i in this.checkin) {
-                if (this.checkin.hasOwnProperty(i)) {
-                    var d = new Date(this.checkin[i].time.replace(/-/g, '/'));
-                    var _ymd = d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate();
-
-                    if (new Date(thisDay).getTime() == new Date(_ymd).getTime()) {
-                        return this.checkin[i].all.length;
-                    }
-                }
-            }
-        },
         getTimes(thisDay) {
             for (let i in this.checkin) {
                 if (this.checkin.hasOwnProperty(i)) {
-                    var d = new Date(this.checkin[i].time.replace(/-/g, '/'));
-                    var _ymd = d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate();
-
-                    if (new Date(thisDay).getTime() == new Date(_ymd).getTime()) {
-                        return this.checkin[i].all.join('<br/>');
+                    if (new Date(thisDay).getTime() == $A.Date(this.checkin[i].date).getTime()) {
+                        return this.checkin[i].section.map(item => {
+                            return `${item[0]} - ${item[1] || 'None'}`
+                        }).join('<br/>');
                     }
                 }
             }
@@ -244,17 +231,14 @@ export default {
             return !((arr[0] == '') && (arr[1] == '') && (arr[2] == '') && (arr[3] == '') && (arr[4] == '') && (arr[5] == '') && (arr[6] == ''));
         },
         isCheck(index) {
+            const todayDate = new Date();
             for (let i in this.checkin) {
-                let todayDate = new Date();
-                let today = todayDate.getFullYear() + '/' + (todayDate.getMonth() + 1) + '/' + todayDate.getDate();
-                let d = new Date(this.checkin[i].time.replace(/-/g, '/'));
-                let _ymd = d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate();
-                if (new Date(today).getTime() == new Date(_ymd).getTime()) {
+                if ($A.Date(todayDate.getFullYear() + '/' + todayDate.getMonth() + '/' + todayDate.getDate()).getTime() == $A.Date(this.checkin[i].date).getTime()) {
                     //今日已经签到
                     this.hasCheckin = true;
                 }
 
-                if (new Date(index).getTime() == new Date(_ymd).getTime()) {
+                if (new Date(index).getTime() == $A.Date(this.checkin[i].date).getTime()) {
                     //console.log('已经签到')
                     return true;
                 }

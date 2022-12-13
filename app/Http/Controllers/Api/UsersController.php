@@ -1412,25 +1412,18 @@ class UsersController extends AbstractController
         $start = Carbon::parse(date("Y-m-01 00:00:00", strtotime($ym)));
         $end = (clone $start)->addMonth()->subSecond();
         //
-        $records = UserCheckinRecord::whereUserid($user->userid)->whereBetween('created_at', [$start, $end])->orderBy('id')->get();
+        $records = UserCheckinRecord::whereUserid($user->userid)->whereBetween('created_at', [$start, $end])->orderBy('id')->get()->keyBy('date');
         $array = [];
         $startT = $start->timestamp;
         $endT = $end->timestamp;
         while ($startT < $endT) {
-            $between = [Carbon::createFromTimestamp($startT), Carbon::createFromTimestamp($startT + 86400)];
-            $firstRecord = $records->whereBetween("created_at", $between)->first();
-            $lastRecord = $records->whereBetween("created_at", $between)->last();
-            $firstTimestamp = $firstRecord ? Carbon::parse($firstRecord->created_at)->toDateTimeString() : '';
-            $lastTimestamp = $lastRecord ? Carbon::parse($lastRecord->created_at)->toDateTimeString() : '';
-            if ($firstTimestamp) {
-                $data = [
-                    'time' => $firstTimestamp,
-                    'all' => [$firstTimestamp],
+            $sameDate = date("Y-m-d", $startT);
+            $sameRecord = isset($records[$sameDate]) ? $records[$sameDate] : null;
+            if ($sameRecord) {
+                $array[] = [
+                    'date' => $sameDate,
+                    'section' => $sameRecord->atSection(),
                 ];
-                if ($lastTimestamp) {
-                    $data['all'][] = $lastTimestamp;
-                }
-                $array[] = $data;
             }
             $startT += 86400;
         }

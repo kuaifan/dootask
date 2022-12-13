@@ -856,6 +856,7 @@ class SystemController extends AbstractController
         $headings[] = '首次签到结果';
         $headings[] = '最后签到时间';
         $headings[] = '最后签到结果';
+        $headings[] = '参数数据';
         //
         $sheets = [];
         $startD = Carbon::parse($date[0])->startOfDay();
@@ -863,22 +864,25 @@ class SystemController extends AbstractController
         $users = User::whereIn('userid', $userid)->take(20)->get();
         /** @var User $user */
         foreach ($users as $user) {
-            $records = UserCheckinRecord::whereUserid($user->userid)->whereBetween("created_at", [$startD, $endD])->orderBy('id')->get();
+            $records = UserCheckinRecord::whereUserid($user->userid)->whereBetween("created_at", [$startD, $endD])->orderBy('id')->get()->keyBy('date');
             //
             $nickname = Base::filterEmoji($user->nickname);
-            $styles = ["A1:G1" => ["font" => ["bold" => true]]];
+            $styles = ["A1:H1" => ["font" => ["bold" => true]]];
             $datas = [];
             $startT = $startD->timestamp;
             $endT = $endD->timestamp;
             $index = 1;
             while ($startT < $endT) {
                 $index++;
+                $sameDate = date("Y-m-d", $startT);
+                $sameRecord = isset($records[$sameDate]) ? $records[$sameDate] : null;
+                $sameCollect = $sameRecord?->atCollect();
                 $firstBetween = [Carbon::createFromTimestamp($startT), Carbon::createFromTimestamp($startT + $secondEnd - 1)];
                 $lastBetween = [Carbon::createFromTimestamp($startT + $secondStart + 1), Carbon::createFromTimestamp($startT + 86400)];
-                $firstRecord = $records->whereBetween("created_at", $firstBetween)->first();
-                $lastRecord = $records->whereBetween("created_at", $lastBetween)->last();
-                $firstTimestamp = $firstRecord ? Carbon::parse($firstRecord->created_at)->timestamp : 0;
-                $lastTimestamp = $lastRecord ? Carbon::parse($lastRecord->created_at)->timestamp : 0;
+                $firstRecord = $sameCollect?->whereBetween("datetime", $firstBetween)->first();
+                $lastRecord = $sameCollect?->whereBetween("datetime", $lastBetween)->last();
+                $firstTimestamp = $firstRecord['timestamp'] ?: 0;
+                $lastTimestamp = $lastRecord['timestamp'] ?: 0;
                 if (Base::time() < $startT + $secondStart) {
                     $firstResult = "-";
                 } else {
@@ -906,14 +910,18 @@ class SystemController extends AbstractController
                 }
                 $firstTimestamp = $firstTimestamp ? date("H:i", $firstTimestamp) : "-";
                 $lastTimestamp = $lastTimestamp ? date("H:i", $lastTimestamp) : "-";
+                $section = array_map(function($item) {
+                    return $item[0] . "-" . ($item[1] ?: "None");
+                }, $sameRecord?->atSection() ?: []);
                 $datas[] = [
                     "{$nickname} (ID: {$user->userid})",
-                    date("Y-m-d", $startT),
+                    $sameDate,
                     implode("-", $time),
                     $firstTimestamp,
                     $firstResult,
                     $lastTimestamp,
                     $lastResult,
+                    implode(", ", $section),
                 ];
                 $startT += 86400;
             }

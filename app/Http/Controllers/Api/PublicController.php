@@ -88,15 +88,25 @@ class PublicController extends AbstractController
             return 'key error';
         }
         //
+        $nowDate = date("Y-m-d");
+        $nowTime = date("H:i:s");
         $macs = explode(",", $mac);
-        foreach ($macs as $item) {
-            $item = strtoupper($item);
-            if (Base::isMac($item) &&  $UserCheckinMac = UserCheckinMac::whereMac($item)->first()) {
-                UserCheckinRecord::createInstance([
+        foreach ($macs as $mac) {
+            $mac = strtoupper($mac);
+            if (Base::isMac($mac) &&  $UserCheckinMac = UserCheckinMac::whereMac($mac)->first()) {
+                $array = [
                     'userid' => $UserCheckinMac->userid,
                     'mac' => $UserCheckinMac->mac,
-                    'time' => $time,
-                ])->save();
+                    'date' => $nowDate,
+                ];
+                $record = UserCheckinRecord::where($array)->first();
+                if (empty($record)) {
+                    $record = UserCheckinRecord::createInstance($array);
+                    $record->save();
+                }
+                $record->times = Base::array2json(array_merge($record->times, [$nowTime]));
+                $record->report_time = $time;
+                $record->save();
             }
         }
         return 'success';
