@@ -45,14 +45,7 @@ class UserDelete extends AbstractModel
                 $value['nickname'] = Base::cardFormat($value['email']);
             }
             // 头像
-            if ($value['userimg'] && !str_contains($value['userimg'], 'avatar/')) {
-                $value['userimg'] = Base::fillUrl($value['userimg']);
-            } else if (User::$defaultAvatarMode === 'auto') {
-                $value['userimg'] = url("avatar/" . urlencode($value['nickname']) . ".png");
-            } else {
-                $name = ($value['userid'] - 1) % 21 + 1;
-                $value['userimg'] = url("images/avatar/default_{$name}.png");
-            }
+            $value['userimg'] = User::getAvatar($value['userid'], $value['userimg'], $value['email'], $value['nickname']);
             // 部门
             $value['department'] = array_filter(is_array($value['department']) ? $value['department'] : Base::explodeInt($value['department']));
         }

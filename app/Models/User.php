@@ -33,6 +33,7 @@ use Carbon\Carbon;
  * @property string|null $created_ip 注册IP
  * @property string|null $disable_at 禁用时间（离职时间）
  * @property int|null $email_verity 邮箱是否已验证
+ * @property int|null $bot 是否机器人
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Database\Factories\UserFactory factory(...$parameters)
@@ -40,6 +41,7 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|User newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|User query()
  * @method static \Illuminate\Database\Eloquent\Builder|User whereAz($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereBot($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereChangepass($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedIp($value)
@@ -77,7 +79,7 @@ class User extends AbstractModel
     public static $defaultAvatarMode = 'auto';
 
     // 基本信息的字段
-    public static $basicField = ['userid', 'email', 'nickname', 'profession', 'department', 'userimg', 'az', 'pinyin', 'line_at', 'disable_at'];
+    public static $basicField = ['userid', 'email', 'nickname', 'profession', 'department', 'userimg', 'bot', 'az', 'pinyin', 'line_at', 'disable_at'];
 
     /**
      * 更新数据校验
@@ -109,17 +111,7 @@ class User extends AbstractModel
      */
     public function getUserimgAttribute($value)
     {
-        if ($value && !str_contains($value, 'avatar/')) {
-            // 自定义头像
-            return Base::fillUrl($value);
-        } else if (self::$defaultAvatarMode === 'auto') {
-            // 自动生成头像
-            return url("avatar/" . urlencode($this->nickname) . ".png");
-        } else {
-            // 系统默认头像
-            $name = ($this->userid - 1) % 21 + 1;
-            return url("images/avatar/default_{$name}.png");
-        }
+        return self::getAvatar($this->userid, $value, $this->email, $this->nickname);
     }
 
     /**
@@ -171,7 +163,7 @@ class User extends AbstractModel
      */
     public function getOnlineStatus()
     {
-        $online = intval(Cache::get("User::online:" . $this->userid, 0));
+        $online = $this->bot || intval(Cache::get("User::online:" . $this->userid, 0)) > 0;
         if ($online) {
             return true;
         }
@@ -432,9 +424,12 @@ class User extends AbstractModel
             if ($authInfo['userid'] > 0) {
                 $loginValid = floatval(Base::settingFind('system', 'loginValid')) ?: 720;
                 $loginValid *= 3600;
-                if ($authInfo['timestamp'] + $loginValid > time()) {
+                if ($authInfo['timestamp'] + $loginValid > time() || $authInfo['timestamp'] === -1) {
                     $row = self::whereUserid($authInfo['userid'])->whereEmail($authInfo['email'])->whereEncrypt($authInfo['encrypt'])->first();
                     if ($row) {
+                        if (!$row->bot && $authInfo['timestamp'] === -1) {
+                            return $_A["__static_auth"] = false;    // 非机器人token时间不允许-1
+                        }
                         $upArray = [];
                         if (Base::getIp() && $row->line_ip != Base::getIp()) {
                             $upArray['line_ip'] = Base::getIp();
@@ -461,7 +456,8 @@ class User extends AbstractModel
      */
     public static function token($userinfo)
     {
-        $userinfo->token = base64_encode($userinfo->userid . '#$' . $userinfo->email . '#$' . $userinfo->encrypt . '#$' . time() . '#$' . Base::generatePassword(6));
+        $time = $userinfo->bot ? -1 : time();
+        $userinfo->token = base64_encode($userinfo->userid . '#$' . $userinfo->email . '#$' . $userinfo->encrypt . '#$' . $time . '#$' . Base::generatePassword(6));
         unset($userinfo->encrypt);
         unset($userinfo->password);
         return $userinfo->token;
@@ -539,6 +535,37 @@ class User extends AbstractModel
     }
 
     /**
+     * 获取头像
+     * @param $userid
+     * @param $userimg
+     * @param $email
+     * @param $nickname
+     * @return string
+     */
+    public static function getAvatar($userid, $userimg, $email, $nickname)
+    {
+        // 自定义头像
+        if ($userimg && !str_contains($userimg, 'avatar/')) {
+            return Base::fillUrl($userimg);
+        }
+        // 机器人头像
+        if ($email == 'system-msg@bot.system') {
+            return url("images/avatar/default_system.png");
+        } elseif ($email == 'task-alert@bot.system') {
+            return url("images/avatar/default_task.png");
+        } elseif ($email == 'bot-manager@bot.system') {
+            return url("images/avatar/default_bot.png");
+        }
+        // 生成文字头像
+        if (self::$defaultAvatarMode === 'auto') {
+            return url("avatar/" . urlencode($nickname) . ".png");
+        }
+        // 系统默认头像
+        $name = ($userid - 1) % 21 + 1;
+        return url("images/avatar/default_{$name}.png");
+    }
+
+    /**
      * 检测密码策略是否符合
      * @param $password
      * @return void
@@ -567,5 +594,52 @@ class User extends AbstractModel
                 throw new ApiException('密码不能全是数字+小写字母，密码包含数字，字母大小写或者特殊字符');
             }
         }
+    }
+
+    /**
+     * 获取机器人或创建
+     * @param $key
+     * @param $update
+     * @param $userid
+     * @return self
+     */
+    public static function botGetOrCreate($key, $update = [], $userid = 0)
+    {
+        $email = "{$key}@bot.system";
+        $botUser = self::whereEmail($email)->first();
+        if (empty($botUser)) {
+            $encrypt = Base::generatePassword(6);
+            $botUser = self::createInstance([
+                'bot' => 1,
+                'encrypt' => $encrypt,
+                'email' => $email,
+                'password' => Base::md52(Base::generatePassword(32), $encrypt),
+                'created_ip' => Base::getIp(),
+            ]);
+            $botUser->save();
+            if ($userid > 0) {
+                UserBot::createInstance([
+                    'userid' => $userid,
+                    'bot_id' => $botUser->userid,
+                ])->save();
+            }
+            //
+            if ($key === 'system-msg') {
+                $update['nickname'] = '系统消息';
+            } elseif ($key === 'task-alert') {
+                $update['nickname'] = '任务提醒';
+            } elseif ($key === 'bot-manager') {
+                $update['nickname'] = '机器人管理';
+            }
+        }
+        if ($update) {
+            $botUser->updateInstance($update);
+            if (isset($update['nickname'])) {
+                $botUser->az = Base::getFirstCharter($botUser->nickname);
+                $botUser->pinyin = Base::cn2pinyin($botUser->nickname);
+            }
+            $botUser->save();
+        }
+        return $botUser;
     }
 }

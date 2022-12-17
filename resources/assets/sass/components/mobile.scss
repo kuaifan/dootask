@@ -192,8 +192,10 @@
         &.avatar-wrapper {
             align-items: flex-start;
             .avatar-name {
-                font-weight: bold;
-                padding-left: 12px;
+                margin-left: 12px;
+                > span {
+                    font-weight: bold;
+                }
             }
         }
     }

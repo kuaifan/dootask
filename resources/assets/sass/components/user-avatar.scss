@@ -67,11 +67,29 @@
                 }
             }
         }
-        .avatar-name {
+        .avatar-bot {
+            margin-right: -4px;
             padding-left: 6px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            font-size: 16px;
+            color: $primary-color;
+        }
+        .avatar-name {
+            display: flex;
+            align-items: center;
+            margin-left: 6px;
+            .bot {
+                flex-shrink: 0;
+                margin-right: 3px;
+                font-size: 16px;
+                color: $primary-color;
+            }
+            > span {
+                flex: 1;
+                font-style: normal;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
         }
     }
     &.avatar-pointer {

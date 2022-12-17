@@ -570,7 +570,8 @@ export default {
                                 return `<div class="mention-item-at">@</div><div class="mention-item-name">${data.value}</div><div class="mention-item-tip">${data.tip}</div>`;
                             }
                             if (data.avatar) {
-                                return `<div class="mention-item-img${data.online ? ' online' : ''}"><img src="${data.avatar}"/><em></em></div><div class="mention-item-name">${data.value}</div>`;
+                                const botHtml = data.bot ? `<div class="taskfont mention-item-bot">&#xe68c;</div>` : ''
+                                return `<div class="mention-item-img${data.online ? ' online' : ''}"><img src="${data.avatar}"/><em></em></div>${botHtml}<div class="mention-item-name">${data.value}</div>`;
                             }
                             return `<div class="mention-item-name" title="${data.value}">${data.value}</div>`;
                         },
@@ -1115,6 +1116,7 @@ export default {
                                         value: item.nickname,
                                         avatar: item.userimg,
                                         online: item.online,
+                                        bot: item.bot,
                                     }
                                 }))
                             }
@@ -1134,6 +1136,7 @@ export default {
                                         value: item.nickname,
                                         avatar: item.userimg,
                                         online: item.online,
+                                        bot: item.bot,
                                     })
                                 }
                             })

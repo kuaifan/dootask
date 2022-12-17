@@ -30,6 +30,7 @@
                 :disabled="isDisabled(item.userid)">
                 <div class="user-input-option">
                     <div class="user-input-avatar"><EAvatar class="avatar" :src="item.userimg"/></div>
+                    <div v-if="item.bot" class="taskfont user-input-bot">&#xe68c;</div>
                     <div class="user-input-nickname">{{ item.nickname }}</div>
                     <div class="user-input-userid">ID: {{ item.userid }}</div>
                 </div>
@@ -93,6 +94,10 @@
             dialogId: {
                 type: Number,
                 default: 0
+            },
+            showBot: {
+                type: Boolean,
+                default: false
             },
         },
         data() {
@@ -175,6 +180,7 @@
                                 project_id: this.projectId,
                                 no_project_id: this.noProjectId,
                                 dialog_id: this.dialogId,
+                                bot: this.showBot ? 2 : 0,
                             },
                             take: 50
                         },

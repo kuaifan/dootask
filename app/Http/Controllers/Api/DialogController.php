@@ -592,13 +592,15 @@ class DialogController extends AbstractController
         Base::checkClientVersion('0.19.0');
         $user = User::auth();
         //
-        $chat_information = Base::settingFind('system', 'chat_information');
-        if ($chat_information == 'required') {
-            if (empty($user->getRawOriginal('nickname'))) {
-                return Base::retError('请设置昵称', [], -2);
-            }
-            if (empty($user->getRawOriginal('tel'))) {
-                return Base::retError('请设置联系电话', [], -3);
+        if (!$user->bot) {
+            $chatInformation = Base::settingFind('system', 'chat_information');
+            if ($chatInformation == 'required') {
+                if (empty($user->getRawOriginal('nickname'))) {
+                    return Base::retError('请设置昵称', [], -2);
+                }
+                if (empty($user->getRawOriginal('tel'))) {
+                    return Base::retError('请设置联系电话', [], -3);
+                }
             }
         }
         //

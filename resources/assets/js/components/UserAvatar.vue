@@ -3,7 +3,7 @@
         v-if="user"
         class="common-avatar"
         :open-delay="openDelay"
-        :disabled="windowSmall || tooltipDisabled"
+        :disabled="windowSmall || tooltipDisabled || isBot"
         :placement="tooltipPlacement">
         <div slot="content" class="common-avatar-transfer">
             <slot/>
@@ -27,9 +27,10 @@
                     <span class="avatar-char" :style="spotStyle">{{nickname}}</span>
                 </EAvatar>
             </div>
-            <template v-if="showName">
-                <div class="avatar-name" :style="nameStyle">{{nameText || user.nickname}}</div>
-            </template>
+            <div v-if="showName" class="avatar-name" :style="nameStyle">
+                <div v-if="user.bot" class="taskfont bot">&#xe68c;</div>
+                <span>{{nameText || user.nickname}}</span>
+            </div>
         </div>
     </ETooltip>
 </template>
@@ -126,7 +127,7 @@
             boxClass() {
                 return {
                     'avatar-box': true,
-                    'online': this.userId === this.userid || this.user.online,
+                    'online': this.userId === this.userid || this.user.online || this.isBot,
                     'disabled': this.user.disable_at,
                     'deleted': this.user.delete_at
                 }
@@ -158,7 +159,7 @@
                 const {delete_at, disable_at} = this.user
                 const styles = {}
                 if (!showIcon) {
-                    styles.paddingLeft = 0
+                    styles.marginLeft = 0
                 }
                 if (delete_at || disable_at) {
                     styles.opacity = 0.8
@@ -198,6 +199,10 @@
             isDefault() {
                 const {userimg} = this.user
                 return $A.strExists(userimg, '/avatar');
+            },
+
+            isBot() {
+                return !!(this.user && this.user.bot);
             },
 
             nickname() {

@@ -43,7 +43,7 @@
             :mask-closable="false">
             <Form :model="addData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="userids" :label="$L('新增成员')">
-                    <UserInput v-model="addData.userids" :disabledChoice="addData.disabledChoice" :multiple-max="100" :placeholder="$L('选择成员')"/>
+                    <UserInput v-model="addData.userids" :disabledChoice="addData.disabledChoice" :multiple-max="100" show-bot :placeholder="$L('选择成员')"/>
                     <div v-if="dialogData.group_type === 'department'" class="form-tip">{{$L('此操作仅加入群成员并不会加入部门')}}</div>
                     <div v-else-if="dialogData.group_type === 'project'" class="form-tip">{{$L('此操作仅加入群成员并不会加入项目')}}</div>
                     <div v-else-if="dialogData.group_type === 'task'" class="form-tip">{{$L('此操作仅加入群成员并不会加入任务负责人')}}</div>

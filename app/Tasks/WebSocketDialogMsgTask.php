@@ -5,6 +5,7 @@ namespace App\Tasks;
 @error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
 use App\Models\User;
+use App\Models\UserBot;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogMsgRead;
@@ -120,6 +121,11 @@ class WebSocketDialogMsgTask extends AbstractTask
                     'mention' => $mention,
                 ])->saveOrIgnore();
                 $array[$userid] = $mention;
+                // 机器人收到消处理
+                $botUser = User::whereUserid($userid)->whereBot(1)->first();
+                if ($botUser) {
+                    $this->endArray[] = new BotReceiveMsgTask($botUser->userid, $msg->id);
+                }
             }
         }
         // 更新已发送数量

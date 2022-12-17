@@ -5,16 +5,15 @@ namespace App\Tasks;
 use App\Models\ProjectTask;
 use App\Models\ProjectTaskPushLog;
 use App\Models\User;
+use App\Models\WebSocketDialog;
+use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
 use Carbon\Carbon;
-use Hhxsv5\LaravelS\Swoole\Task\Task;
 
 @error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
 class AppPushTask extends AbstractTask
 {
-    protected $endArray = [];
-
     public function __construct()
     {
         parent::__construct();
@@ -73,9 +72,7 @@ class AppPushTask extends AbstractTask
 
     public function end()
     {
-        foreach ($this->endArray as $task) {
-            Task::deliver($task);
-        }
+
     }
 
     /**
@@ -95,7 +92,17 @@ class AppPushTask extends AbstractTask
             return;
         }
 
+        $botUser = User::botGetOrCreate('task-alert');
+        if (empty($botUser)) {
+            return;
+        }
+
         $setting = Base::setting('appPushSetting');
+        $text = view('push.task', [
+            'type' => str_replace([0, 1, 2], ['start', 'before', 'after'], $type),
+            'task' => $task,
+            'setting' => $setting,
+        ])->render();
 
         /** @var User $user */
         foreach ($users as $user) {
@@ -108,25 +115,12 @@ class AppPushTask extends AbstractTask
             if ($pushLog) {
                 continue;
             }
-            $title = match ($type) {
-                1 => "任务提醒",
-                2 => "任务过期提醒",
-                default => "任务开始提醒",
-            };
-            $body = view('push.task', [
-                'type' => str_replace([0, 1, 2], ['start', 'before', 'after'], $type),
-                'user' => $user,
-                'task' => $task,
-                'setting' => $setting,
-            ])->render();
-            $this->endArray[] = new PushUmengMsg($data['userid'], [
-                'title' => $title,
-                'body' => $body,
-                'description' => "TID:{$data['task_id']}",
-                'seconds' => 3600,
-                'badge' => 1,
-            ]);
-            ProjectTaskPushLog::createInstance($data)->save();
+            //
+            $dialog = WebSocketDialog::checkUserDialog($botUser->userid, $data['userid']);
+            if ($dialog) {
+                ProjectTaskPushLog::createInstance($data)->save();
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid);    // todo 未能在任务end事件来发送任务
+            }
         }
     }
 }

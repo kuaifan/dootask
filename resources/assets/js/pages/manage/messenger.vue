@@ -66,6 +66,7 @@
                                 <div class="dialog-title">
                                     <div v-if="dialog.todo_num" class="todo">[{{$L('待办')}}{{formatTodoNum(dialog.todo_num)}}]</div>
                                     <div v-if="$A.getDialogMention(dialog) > 0" class="mention">[@{{$A.getDialogMention(dialog)}}]</div>
+                                    <div v-if="dialog.bot" class="taskfont bot">&#xe68c;</div>
                                     <template v-for="tag in $A.dialogTags(dialog)" v-if="tag.color != 'success'">
                                         <Tag :color="tag.color" :fade="false" @on-click="openDialog(dialog.id)">{{$L(tag.text)}}</Tag>
                                     </template>
@@ -263,7 +264,7 @@ export default {
                             }
                             break;
                         case 'user':
-                            if (dialog.type != 'user') {
+                            if (dialog.type != 'user' || dialog.bot) {
                                 return false;
                             }
                             break;

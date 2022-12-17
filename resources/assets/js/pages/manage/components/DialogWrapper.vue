@@ -41,6 +41,7 @@
                                 </template>
                                 <h2>{{dialogData.name}}</h2>
                                 <em v-if="peopleNum > 0">({{peopleNum}})</em>
+                                <Tag v-if="dialogData.bot" class="after" :fade="false">{{$L('机器人')}}</Tag>
                                 <Tag v-if="dialogData.group_type=='all'" class="after" :fade="false">{{$L('全员')}}</Tag>
                                 <Tag v-else-if="dialogData.group_type=='department'" class="after" :fade="false">{{$L('部门')}}</Tag>
                             </div>
@@ -276,7 +277,7 @@
             :mask-closable="false">
             <Form :model="createGroupData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="userids" :label="$L('群成员')">
-                    <UserInput v-model="createGroupData.userids" :uncancelable="createGroupData.uncancelable" :multiple-max="100" :placeholder="$L('选择项目成员')"/>
+                    <UserInput v-model="createGroupData.userids" :uncancelable="createGroupData.uncancelable" :multiple-max="100" show-bot :placeholder="$L('选择项目成员')"/>
                 </FormItem>
                 <FormItem prop="chat_name" :label="$L('群名称')">
                     <Input v-model="createGroupData.chat_name" :placeholder="$L('输入群名称（选填）')"/>
@@ -2222,7 +2223,7 @@ export default {
                 };
                 img.src = url;
             })
-        }
+        },
     }
 }
 </script>

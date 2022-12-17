@@ -665,6 +665,13 @@
             }
         }
 
+        .mention-item-bot {
+            font-size: 16px;
+            margin-left: 8px;
+            margin-right: -5px;
+            color: $primary-color;
+        }
+
         .mention-item-name {
             padding: 0 8px;
             font-size: 14px;

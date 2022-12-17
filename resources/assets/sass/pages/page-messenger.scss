@@ -150,7 +150,8 @@
                                     justify-content: space-between;
                                     line-height: 24px;
                                     .todo,
-                                    .mention {
+                                    .mention,
+                                    .bot {
                                         color: #ff0000;
                                         background-color: transparent;
                                         font-weight: 600;
@@ -160,6 +161,11 @@
                                         height: auto;
                                         width: auto;
                                         user-select: none;
+                                    }
+                                    .bot {
+                                        color: $primary-color;
+                                        font-size: 16px;
+                                        font-weight: normal;
                                     }
                                     .ivu-tag {
                                         margin: 0 4px 0 0;

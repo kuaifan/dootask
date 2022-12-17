@@ -1838,7 +1838,7 @@ class Base
                 $onlineip = '0,0,0,0';
             }
             preg_match("/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/", $onlineip, $match);
-            $_A["__static_ip"] = $match[0] ?: 'unknown';
+            $_A["__static_ip"] = $match ? ($match[0] ?: 'unknown') : '';
         }
         return $_A["__static_ip"];
     }

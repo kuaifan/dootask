@@ -365,7 +365,8 @@ class UsersController extends AbstractController
      *
      * @apiParam {Object} keys          搜索条件
      * - keys.key                           昵称、邮箱关键字
-     * - keys.disable                       0-排除禁止（默认），1-含禁止，2-仅禁止
+     * - keys.disable                       0-排除禁止（默认），1-仅禁止，2-含禁止
+     * - keys.bot                           0-排除机器人（默认），1-仅机器人，2-含机器人
      * - keys.project_id                    在指定项目ID
      * - keys.no_project_id                 不在指定项目ID
      * - keys.dialog_id                     在指定对话ID
@@ -403,8 +404,13 @@ class UsersController extends AbstractController
         }
         if (intval($keys['disable']) == 0) {
             $builder->whereNull("disable_at");
-        } elseif (intval($keys['disable']) == 2) {
+        } elseif (intval($keys['disable']) == 1) {
             $builder->whereNotNull("disable_at");
+        }
+        if (intval($keys['bot']) == 0) {
+            $builder->where("bot", 0);
+        } elseif (intval($keys['bot']) == 1) {
+            $builder->where("bot", 1);
         }
         if ($updatedTime > 0) {
             $builder->where("updated_at", ">=", Carbon::createFromTimestamp($updatedTime));
@@ -505,6 +511,10 @@ class UsersController extends AbstractController
      *   - yes:     已认证
      *   - no:      未认证
      *   - 其他值:   全部（默认）
+     * - keys.bot               是否包含机器人
+     *   - yes:     仅机器人
+     *   - all:     全部
+     *   - 其他值:   非机器人（默认）
      * - keys.department        部门ID（0表示默认部门，不赋值获取所有部门）
      * - keys.checkin_mac       签到mac地址（get_checkin_mac=1时有效）
      *
@@ -569,6 +579,11 @@ class UsersController extends AbstractController
             } elseif ($keys['email_verity'] === 'no') {
                 $builder->whereEmailVerity(0);
             }
+            if ($keys['bot'] === 'yes') {
+                $builder->where('bot', 1);
+            } elseif ($keys['bot'] !== 'all') {
+                $builder->where('bot', 0);
+            }
             if (isset($keys['department'])) {
                 if ($keys['department'] == '0') {
                     $builder->where(function($query) {
@@ -585,6 +600,7 @@ class UsersController extends AbstractController
             }
         } else {
             $builder->whereNull('disable_at');
+            $builder->where('bot', 0);
         }
         $list = $builder->orderByDesc('userid')->paginate(Base::getPaginate(50, 20));
         //

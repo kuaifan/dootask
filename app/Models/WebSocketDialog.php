@@ -87,6 +87,7 @@ class WebSocketDialog extends AbstractModel
         $this->dialog_user = null;
         $this->group_info = null;
         $this->top_at = $this->top_at ?? WebSocketDialogUser::whereDialogId($this->id)->whereUserid($userid)->value('top_at');
+        $this->bot = 0;
         switch ($this->type) {
             case "user":
                 $dialog_user = WebSocketDialogUser::whereDialogId($this->id)->where('userid', '!=', $userid)->first();
@@ -96,6 +97,7 @@ class WebSocketDialog extends AbstractModel
                 $basic = User::userid2basic($dialog_user->userid);
                 if ($basic) {
                     $this->name = $basic->nickname;
+                    $this->bot = $basic->bot;
                 } else {
                     $this->name = 'non-existent';
                     $this->dialog_delete = 1;
