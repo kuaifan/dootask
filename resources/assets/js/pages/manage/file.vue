@@ -1716,6 +1716,8 @@ export default {
 
         uploadClear() {
             this.uploadList = this.uploadList.filter(({status}) => status !== 'finished')
+            this.$refs.fileUpload.clearFiles();
+            this.$refs.dirUpload.clearFiles();
         },
 
         uploadPercentageParse(val) {
