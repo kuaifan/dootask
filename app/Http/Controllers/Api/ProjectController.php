@@ -1175,7 +1175,7 @@ class ProjectController extends AbstractController
         if (empty($file) || !file_exists(storage_path($file))) {
             return Base::ajaxError("文件不存在！", [], 0, 502);
         }
-        return response()->download(storage_path($file));
+        return Response::download(storage_path($file));
     }
 
     /**
@@ -1385,7 +1385,10 @@ class ProjectController extends AbstractController
             ]));
         }
         //
-        return Response::download(public_path($file->getRawOriginal('path')), $file->name);
+        $filePath = public_path($file->getRawOriginal('path'));
+        return Response::streamDownload(function() use ($filePath) {
+            echo file_get_contents($filePath);
+        }, $file->name);
     }
 
     /**

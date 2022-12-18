@@ -17,6 +17,7 @@ use Hhxsv5\LaravelS\Swoole\Task\Task;
 use LasseRafn\InitialAvatarGenerator\InitialAvatar;
 use Redirect;
 use Request;
+use Response;
 
 
 /**
@@ -269,7 +270,7 @@ class IndexController extends InvokeController
             if (preg_match("/^\d+\.\d+\.\d+$/", $genericVersion)) {
                 $filePath = public_path("uploads/desktop/{$genericVersion}/{$name}");
                 if (file_exists($filePath)) {
-                    return response()->download($filePath);
+                    return Response::download($filePath);
                 }
             }
         }
@@ -317,7 +318,7 @@ class IndexController extends InvokeController
             $userAgent = strtolower(Request::server('HTTP_USER_AGENT'));
             if ($ext === 'pdf'
                 && (str_contains($userAgent, 'electron') || str_contains($userAgent, 'chrome'))) {
-                return response()->download($file, $name, [
+                return Response::download($file, $name, [
                     'Content-Type' => 'application/pdf'
                 ], 'inline');
             }

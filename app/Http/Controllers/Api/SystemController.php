@@ -14,6 +14,7 @@ use Guanguans\Notify\Factory;
 use Guanguans\Notify\Messages\EmailMessage;
 use Madzipper;
 use Request;
+use Response;
 use Session;
 
 /**
@@ -990,7 +991,7 @@ class SystemController extends AbstractController
         if (empty($file) || !file_exists(storage_path($file))) {
             return Base::ajaxError("文件不存在！", [], 0, 502);
         }
-        return response()->download(storage_path($file));
+        return Response::download(storage_path($file));
     }
 
     /**

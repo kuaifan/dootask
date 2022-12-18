@@ -85,7 +85,7 @@ class FileContent extends AbstractModel
      * @param File $file
      * @param $content
      * @param $download
-     * @return array|\Symfony\Component\HttpFoundation\BinaryFileResponse
+     * @return array|\Symfony\Component\HttpFoundation\StreamedResponse
      */
     public static function formatContent($file, $content, $download = false)
     {
@@ -93,9 +93,13 @@ class FileContent extends AbstractModel
         $content = Base::json2array($content ?: []);
         if (in_array($file->type, ['word', 'excel', 'ppt'])) {
             if (empty($content)) {
-                return Response::download(public_path('assets/office/empty.' . str_replace(['word', 'excel', 'ppt'], ['docx', 'xlsx', 'pptx'], $file->type)), $name);
+                $filePath = public_path('assets/office/empty.' . str_replace(['word', 'excel', 'ppt'], ['docx', 'xlsx', 'pptx'], $file->type));
+            } else {
+                $filePath = public_path($content['url']);
             }
-            return Response::download(public_path($content['url']), $name);
+            return Response::streamDownload(function() use ($filePath) {
+                echo file_get_contents($filePath);
+            }, $name);
         }
         if (empty($content)) {
             $content = match ($file->type) {
@@ -124,7 +128,9 @@ class FileContent extends AbstractModel
             if ($download) {
                 $filePath = public_path($path);
                 if (isset($filePath)) {
-                    return Response::download($filePath, $name);
+                    return Response::streamDownload(function() use ($filePath) {
+                        echo file_get_contents($filePath);
+                    }, $name);
                 } else {
                     abort(403, "This file not support download.");
                 }

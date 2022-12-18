@@ -970,7 +970,10 @@ class DialogController extends AbstractController
             return Redirect::to(FileContent::toPreviewUrl($array));
         }
         //
-        return Response::download(public_path($array['path']), $array['name']);
+        $filePath = public_path($array['path']);
+        return Response::streamDownload(function() use ($filePath) {
+            echo file_get_contents($filePath);
+        }, $array['name']);
     }
 
     /**
