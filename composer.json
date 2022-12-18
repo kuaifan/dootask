@@ -19,7 +19,7 @@
         "guanguans/notify": "^1.21.1",
         "guzzlehttp/guzzle": "^7.3.0",
         "hedeqiang/umeng": "^2.1",
-        "laravel/framework": "^v8.48.1",
+        "laravel/framework": "^v8.83.27",
         "laravel/tinker": "^v2.6.1",
         "lasserafn/php-initial-avatar-generator": "^4.2",
         "maatwebsite/excel": "^3.1.31",
