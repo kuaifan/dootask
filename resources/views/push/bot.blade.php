@@ -66,6 +66,7 @@
     --header 'token: <span style="color:#84c56a">{机器人Token}</span>' \
     --form 'dialog_id="<span style="color:#84c56a">{对话ID}</span>"' \
     --form 'text="<span style="color:#84c56a">{消息内容}</span>"'
+    --form 'silence="<span style="color:#84c56a">[yes|no]</span>"'
 @elseif ($type === 'notice')
     {{$notice}}
 @else

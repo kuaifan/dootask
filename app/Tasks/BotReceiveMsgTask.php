@@ -224,7 +224,7 @@ class BotReceiveMsgTask extends AbstractTask
             ])->render();
             $text = preg_replace("/^\x20+/", "", $text);
             $text = preg_replace("/\n\x20+/", "\n", $text);
-            WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $text], $this->userid);    // todo 未能在任务end事件来发送任务
+            WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $text], $this->userid, false, false, true);    // todo 未能在任务end事件来发送任务
         }
     }
 

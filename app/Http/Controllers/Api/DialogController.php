@@ -579,9 +579,12 @@ class DialogController extends AbstractController
      * @apiName msg__sendtext
      *
      * @apiParam {Number} dialog_id         对话ID
+     * @apiParam {String} text              消息内容
      * @apiParam {Number} [update_id]       更新消息ID（优先大于reply_id）
      * @apiParam {Number} [reply_id]        回复ID
-     * @apiParam {String} text              消息内容
+     * @apiParam {String} [silence]         是否静默发送
+     * - no: 正常发送（默认）
+     * - yes: 静默发送
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -608,6 +611,7 @@ class DialogController extends AbstractController
         $update_id = Base::getPostInt('update_id');
         $reply_id = Base::getPostInt('reply_id');
         $text = trim(Base::getPostValue('text'));
+        $silence = trim(Base::getPostValue('silence')) === 'yes';
         //
         WebSocketDialog::checkDialog($dialog_id);
         //
@@ -648,10 +652,10 @@ class DialogController extends AbstractController
                 'height' => -1,
                 'ext' => 'htm',
             ];
-            return WebSocketDialogMsg::sendMsg($action, $dialog_id, 'file', $fileData, $user->userid);
+            return WebSocketDialogMsg::sendMsg($action, $dialog_id, 'file', $fileData, $user->userid, false, false, $silence);
         }
         //
-        return WebSocketDialogMsg::sendMsg($action, $dialog_id, 'text', ['text' => $text], $user->userid);
+        return WebSocketDialogMsg::sendMsg($action, $dialog_id, 'text', ['text' => $text], $user->userid, false, false, $silence);
     }
 
     /**
