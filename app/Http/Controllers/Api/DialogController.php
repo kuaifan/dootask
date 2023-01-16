@@ -1032,8 +1032,12 @@ class DialogController extends AbstractController
         if (!$dialogUser) {
             return Base::retError("会话不存在");
         }
+        $data = [
+            'id' => $dialogId,
+        ];
         switch ($type) {
             case 'read':
+                $data['unread'] = 0;
                 WebSocketDialogMsgRead::whereUserid($user->userid)
                     ->whereReadAt(null)
                     ->whereDialogId($dialogId)
@@ -1052,10 +1056,8 @@ class DialogController extends AbstractController
             default:
                 return Base::retError("参数错误");
         }
-        return Base::retSuccess("success", [
-            'id' => $dialogId,
-            'mark_unread' => $dialogUser->mark_unread,
-        ]);
+        $data['mark_unread'] = $dialogUser->mark_unread;
+        return Base::retSuccess("success", $data);
     }
 
     /**
