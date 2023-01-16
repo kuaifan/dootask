@@ -21,7 +21,7 @@ class AddUsersBot extends Migration
                 $table->tinyInteger('bot')->nullable()->default(0)->after('email_verity')->comment('是否机器人');
             }
         });
-        if ($isAdd) {
+        if ($isAdd && User::count() > 0) {
             User::botGetOrCreate('bot-manager');
         }
     }

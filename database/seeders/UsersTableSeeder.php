@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class UsersTableSeeder extends Seeder
@@ -71,6 +72,7 @@ class UsersTableSeeder extends Seeder
             ),
         ));
 
+        User::botGetOrCreate('bot-manager');
 
     }
 }
