@@ -703,7 +703,7 @@ export default {
         msgUnreadOnly() {
             let num = 0;
             this.cacheDialogs.some(dialog => {
-                num += $A.getDialogUnread(dialog);
+                num += $A.getDialogUnread(dialog, false);
             })
             if (num <= 0) {
                 return '';

@@ -541,8 +541,7 @@ class WebSocketDialogMsg extends AbstractModel
         $text = preg_replace("/<img\s+class=\"browse\"[^>]*?>/", "[图片]", $text);
         if (!$preserveHtml) {
             $text = strip_tags($text);
-            $text = str_replace("&nbsp;", " ", $text);
-            $text = str_replace("&amp;", "&", $text);
+            $text = str_replace(["&nbsp;", "&amp;", "&lt;", "&gt;"], [" ", "&", "<", ">"], $text);
         }
         return $text;
     }

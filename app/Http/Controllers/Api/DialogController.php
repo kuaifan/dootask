@@ -48,7 +48,7 @@ class DialogController extends AbstractController
     {
         $user = User::auth();
         //
-        $builder = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread'])
+        $builder = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('u.userid', $user->userid);
         if (Request::exists('at_after')) {
@@ -88,7 +88,7 @@ class DialogController extends AbstractController
             return Base::retError('请输入搜索关键词');
         }
         // 搜索会话
-        $dialogs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread'])
+        $dialogs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('web_socket_dialogs.name', 'LIKE', "%{$key}%")
             ->where('u.userid', $user->userid)
@@ -121,7 +121,7 @@ class DialogController extends AbstractController
         }
         // 搜索消息会话
         if (count($list) < 20) {
-            $msgs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'm.id as search_msg_id'])
+            $msgs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'm.id as search_msg_id'])
                 ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
                 ->join('web_socket_dialog_msgs as m', 'web_socket_dialogs.id', '=', 'm.dialog_id')
                 ->where('u.userid', $user->userid)
@@ -158,7 +158,7 @@ class DialogController extends AbstractController
         //
         $dialog_id = intval(Request::input('dialog_id'));
         //
-        $item = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread'])
+        $item = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('web_socket_dialogs.id', $dialog_id)
             ->where('u.userid', $user->userid)
@@ -1057,6 +1057,69 @@ class DialogController extends AbstractController
                 return Base::retError("参数错误");
         }
         $data['mark_unread'] = $dialogUser->mark_unread;
+        return Base::retSuccess("success", $data);
+    }
+
+    /**
+     * @api {get} api/dialog/msg/silence          20. 消息免打扰
+     *
+     * @apiDescription  需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__silence
+     *
+     * @apiParam {Number} dialog_id             会话ID
+     * @apiParam {String} type                  类型
+     * - set
+     * - cancel
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__silence()
+    {
+        $user = User::auth();
+        $dialogId = intval(Request::input('dialog_id'));
+        $type = Request::input('type');
+        $dialogUser = WebSocketDialogUser::whereUserid($user->userid)->whereDialogId($dialogId)->first();
+        if (!$dialogUser) {
+            return Base::retError("会话不存在");
+        }
+        //
+        $dialogData = WebSocketDialog::find($dialogId);
+        if (empty($dialogData)) {
+            return Base::retError("会话不存在");
+        }
+        if ($dialogData->type === 'group' && $dialogData->group_type !== 'user') {
+            return Base::retError("此会话不允许设置免打扰");
+        }
+        //
+        switch ($type) {
+            case 'set':
+                $data['silence'] = 0;
+                WebSocketDialogMsgRead::whereUserid($user->userid)
+                    ->whereReadAt(null)
+                    ->whereDialogId($dialogId)
+                    ->chunkById(100, function ($list) {
+                        WebSocketDialogMsgRead::onlyMarkRead($list);
+                    });
+                $dialogUser->silence = 1;
+                $dialogUser->save();
+                break;
+
+            case 'cancel':
+                $dialogUser->silence = 0;
+                $dialogUser->save();
+                break;
+
+            default:
+                return Base::retError("参数错误");
+        }
+        $data = [
+            'id' => $dialogId,
+            'silence' => $dialogUser->silence,
+        ];
         return Base::retSuccess("success", $data);
     }
 

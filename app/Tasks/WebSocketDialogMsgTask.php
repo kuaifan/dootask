@@ -24,7 +24,7 @@ class WebSocketDialogMsgTask extends AbstractTask
     protected $id;
     protected $ignoreFd;
     protected $msgNotExistRetry = false;    // 推送失败后重试
-    protected $silence = false;             // 静默推送（1:前端不通知、2:App不推送）
+    protected $silence = false;             // 静默推送（前端不通知、App不推送，如果会话设置了免打扰则强制静默）
     protected $endPush = [];
     protected $endArray = [];
 
@@ -85,6 +85,8 @@ class WebSocketDialogMsgTask extends AbstractTask
         if (empty($dialog)) {
             return;
         }
+        $silences = $dialog->dialogUser->pluck('silence', 'userid')->toArray();
+        $userids = array_keys($silences);
 
         // 提及会员
         $mentions = [];
@@ -96,7 +98,6 @@ class WebSocketDialogMsgTask extends AbstractTask
         }
 
         // 将会话以外的成员加入会话内
-        $userids = $dialog->dialogUser->pluck('userid')->toArray();
         $diffids = array_values(array_diff($mentions, $userids));
         if ($diffids) {
             // 仅(群聊)且(是群主或没有群主)才可以@成员以外的人
@@ -111,7 +112,11 @@ class WebSocketDialogMsgTask extends AbstractTask
         $array = [];
         foreach ($userids AS $userid) {
             if ($userid == $msg->userid) {
-                $array[$userid] = false;
+                $array[$userid] = [
+                    'userid' => $userid,
+                    'silence' => $this->silence || $silences[$userid],
+                    'mention' => false,
+                ];
             } else {
                 $mention = array_intersect([0, $userid], $mentions) ? 1 : 0;
                 WebSocketDialogMsgRead::createInstance([
@@ -120,7 +125,11 @@ class WebSocketDialogMsgTask extends AbstractTask
                     'userid' => $userid,
                     'mention' => $mention,
                 ])->saveOrIgnore();
-                $array[$userid] = $mention;
+                $array[$userid] = [
+                    'userid' => $userid,
+                    'silence' => $this->silence || $silences[$userid],
+                    'mention' => $mention,
+                ];
                 // 机器人收到消处理
                 $botUser = User::whereUserid($userid)->whereBot(1)->first();
                 if ($botUser) {
@@ -132,40 +141,41 @@ class WebSocketDialogMsgTask extends AbstractTask
         $msg->send = WebSocketDialogMsgRead::whereMsgId($msg->id)->count();
         $msg->save();
         // 开始推送消息
-        foreach ($array as $userid => $mention) {
+        $umengUserid = [];
+        foreach ($array as $item) {
             $this->endPush[] = [
-                'userid' => $userid,
+                'userid' => $item['userid'],
                 'ignoreFd' => $this->ignoreFd,
                 'msg' => [
                     'type' => 'dialog',
                     'mode' => 'add',
-                    'silence' => $this->silence ? 1 : 0,
+                    'silence' => $item['silence'] ? 1 : 0,
                     'data' => array_merge($msg->toArray(), [
-                        'mention' => $mention,
+                        'mention' => $item['mention'],
                     ]),
                 ]
             ];
+            if ($item['userid'] != $msg->userid && !$item['silence'] && !$this->silence) {
+                $umengUserid[] = $item['userid'];
+            }
         }
         // umeng推送app
-        $setting = Base::setting('appPushSetting');
-        $pushMsg = $setting['push'] === 'open' && $setting['push_msg'] !== 'close';
-        if (!$this->silence && $pushMsg) {
-            $umengUserid = $array;
-            if (isset($umengUserid[$msg->userid])) {
-                unset($umengUserid[$msg->userid]);
+        if ($umengUserid) {
+            $setting = Base::setting('appPushSetting');
+            $pushMsg = $setting['push'] === 'open' && $setting['push_msg'] !== 'close';
+            if ($pushMsg) {
+                $umengTitle = User::userid2nickname($msg->userid);
+                if ($dialog->type == 'group') {
+                    $umengTitle = "{$dialog->getGroupName()} ($umengTitle)";
+                }
+                $this->endArray[] = new PushUmengMsg($umengUserid, [
+                    'title' => $umengTitle,
+                    'body' => $msg->previewMsg(),
+                    'description' => "MID:{$msg->id}",
+                    'seconds' => 3600,
+                    'badge' => 1,
+                ]);
             }
-            $umengUserid = array_keys($umengUserid);
-            $umengTitle = User::userid2nickname($msg->userid);
-            if ($dialog->type == 'group') {
-                $umengTitle = "{$dialog->getGroupName()} ($umengTitle)";
-            }
-            $this->endArray[] = new PushUmengMsg($umengUserid, [
-                'title' => $umengTitle,
-                'body' => $msg->previewMsg(),
-                'description' => "MID:{$msg->id}",
-                'seconds' => 3600,
-                'badge' => 1,
-            ]);
         }
 
         // 推送目标②：正在打开这个任务会话的会员
@@ -173,9 +183,9 @@ class WebSocketDialogMsgTask extends AbstractTask
             $list = User::whereTaskDialogId($dialog->id)->pluck('userid')->toArray();
             if ($list) {
                 $array = [];
-                foreach ($list as $uid) {
-                    if (!in_array($uid, $userids)) {
-                        $array[] = $uid;
+                foreach ($list as $item) {
+                    if (!in_array($item, $userids)) {
+                        $array[] = $item;
                     }
                 }
                 if ($array) {

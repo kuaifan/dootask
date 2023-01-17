@@ -448,7 +448,7 @@ export default {
             let num = 0;        // 未读
             let mention = 0;    // 提及
             this.cacheDialogs.some(dialog => {
-                num += $A.getDialogUnread(dialog);
+                num += $A.getDialogUnread(dialog, false);
                 mention += $A.getDialogMention(dialog);
             })
             if (num > 99) {
@@ -480,7 +480,7 @@ export default {
         msgAllUnread() {
             let num = 0;
             this.cacheDialogs.some(dialog => {
-                num += $A.getDialogUnread(dialog);
+                num += $A.getDialogUnread(dialog, false);
             })
             return num;
         },

@@ -586,7 +586,7 @@ export default {
         msgUnread() {
             const {cacheDialogs, projectData} = this;
             const dialog = cacheDialogs.find(({id}) => id === projectData.dialog_id);
-            return dialog ? $A.getDialogUnread(dialog) : 0;
+            return dialog ? $A.getDialogUnread(dialog, false) : 0;
         },
 
         panelTask() {

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Exceptions\ApiException;
 use App\Module\Base;
 use App\Tasks\PushTask;
+use Cache;
 use Carbon\Carbon;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -60,6 +61,13 @@ class WebSocketDialog extends AbstractModel
      */
     public function formatData($userid, $hasData = false)
     {
+        $dialogUserFun = function ($key, $default = null) use ($userid) {
+            $data = Cache::remember("Dialog::formatData", now()->addSeconds(10), function () use ($userid) {
+                return WebSocketDialogUser::whereDialogId($this->id)->whereUserid($userid)->first()?->toArray();
+            });
+            return $data[$key] ?? $default;
+        };
+        //
         if (isset($this->search_msg_id)) {
             // 最后消息 (搜索预览消息)
             $this->last_msg = WebSocketDialogMsg::whereDialogId($this->id)->find($this->search_msg_id);
@@ -76,7 +84,9 @@ class WebSocketDialog extends AbstractModel
                 $this->mention = $unreadBuilder->clone()->whereMention(1)->count();
                 $this->last_umid = intval($unreadBuilder->clone()->orderByDesc('msg_id')->value('msg_id'));
             }
-            $this->mark_unread = $this->mark_unread ?? WebSocketDialogUser::whereDialogId($this->id)->whereUserid($userid)->value('mark_unread');
+            $this->mark_unread = $this->mark_unread ?? $dialogUserFun('mark_unread');
+            // 是否免打扰
+            $this->silence = $this->silence ?? $dialogUserFun('silence');
             // 对话人数
             $builder = WebSocketDialogUser::whereDialogId($this->id);
             $this->people = $builder->count();
@@ -86,7 +96,7 @@ class WebSocketDialog extends AbstractModel
         // 对方信息
         $this->dialog_user = null;
         $this->group_info = null;
-        $this->top_at = $this->top_at ?? WebSocketDialogUser::whereDialogId($this->id)->whereUserid($userid)->value('top_at');
+        $this->top_at = $this->top_at ?? $dialogUserFun('top_at');
         $this->bot = 0;
         switch ($this->type) {
             case "user":

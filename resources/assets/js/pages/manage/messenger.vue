@@ -83,9 +83,10 @@
                                         <em v-if="formatMsgEmojiDesc(dialog.last_msg)">{{formatMsgEmojiDesc(dialog.last_msg)}}</em>
                                         <span>{{$A.getMsgSimpleDesc(dialog.last_msg)}}</span>
                                     </div>
+                                    <div v-if="dialog.silence" class="taskfont last-silence">&#xe7d7;</div>
                                 </div>
                             </div>
-                            <Badge class="dialog-num" :count="$A.getDialogUnread(dialog)"/>
+                            <Badge class="dialog-num" :type="dialog.silence ? 'normal' : 'error'" :count="$A.getDialogUnread(dialog, true)"/>
                             <div class="dialog-line"></div>
                         </li>
                     </ul>
@@ -120,13 +121,13 @@
                             <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
                             <DropdownMenu slot="list">
                                 <DropdownItem @click.native="handleTopClick">
-                                    {{ $L(operateItem.top_at ? '取消置顶' : '置顶该聊天') }}
+                                    {{ $L(operateItem.top_at ? '取消置顶' : '置顶') }}
                                 </DropdownItem>
-                                <DropdownItem @click.native="handleReadClick('read')" v-if="$A.getDialogUnread(operateItem) > 0">
-                                    {{ $L('标记已读') }}
+                                <DropdownItem @click.native="handleReadClick">
+                                    {{ $L($A.getDialogUnread(operateItem, true) > 0 ? '标记已读' : '标记未读') }}
                                 </DropdownItem>
-                                <DropdownItem @click.native="handleReadClick('unread')" v-else>
-                                    {{ $L('标记未读') }}
+                                <DropdownItem @click.native="handleSilenceClick" :disabled="silenceDisabled(operateItem)">
+                                    {{ $L(operateItem.silence ? '允许消息通知' : '消息免打扰') }}
                                 </DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
@@ -351,7 +352,7 @@ export default {
             return function (type) {
                 let num = 0;
                 this.cacheDialogs.some((dialog) => {
-                    let unread = $A.getDialogUnread(dialog);
+                    let unread = $A.getDialogUnread(dialog, false);
                     if (unread) {
                         switch (type) {
                             case 'project':
@@ -480,7 +481,7 @@ export default {
         onActive(type) {
             if (this.dialogActive == type) {
                 // 再次点击滚动到未读条目
-                const dialog = this.dialogList.find(dialog => $A.getDialogUnread(dialog) > 0)
+                const dialog = this.dialogList.find(dialog => $A.getDialogUnread(dialog, false) > 0)
                 if (dialog) {
                     $A.scrollIntoViewIfNeeded(this.$refs[`dialog_${dialog.id}`][0])
                 }
@@ -531,7 +532,7 @@ export default {
         },
 
         filterDialog(dialog) {
-            if ($A.getDialogUnread(dialog) > 0 || dialog.id == this.dialogId || dialog.top_at || dialog.todo_num > 0) {
+            if ($A.getDialogUnread(dialog, false) > 0 || dialog.id == this.dialogId || dialog.top_at || dialog.todo_num > 0) {
                 return true
             }
             if (dialog.name === undefined || dialog.dialog_delete === 1) {
@@ -718,12 +719,29 @@ export default {
             });
         },
 
-        handleReadClick(type) {
+        handleReadClick() {
             this.$store.dispatch("call", {
                 url: 'dialog/msg/mark',
                 data: {
                     dialog_id: this.operateItem.id,
-                    type: type
+                    type: $A.getDialogUnread(this.operateItem, true) > 0 ? 'read' : 'unread'
+                },
+            }).then(({data}) => {
+                this.$store.dispatch("saveDialog", data);
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            });
+        },
+
+        handleSilenceClick() {
+            if (this.silenceDisabled(this.operateItem)) {
+                return
+            }
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/silence',
+                data: {
+                    dialog_id: this.operateItem.id,
+                    type: this.operateItem.silence ? 'cancel' : 'set'
                 },
             }).then(({data}) => {
                 this.$store.dispatch("saveDialog", data);
@@ -747,7 +765,12 @@ export default {
             $A.eeuiAppSendMessage({
                 action: 'gotoSetting',
             });
-        }
+        },
+
+        silenceDisabled(data) {
+            const {type, group_type} = data
+            return type === 'group' && group_type !== 'user'
+        },
     }
 }
 </script>

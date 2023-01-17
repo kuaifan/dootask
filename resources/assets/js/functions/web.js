@@ -350,10 +350,12 @@
         /**
          * 返回对话未读数量
          * @param dialog
+         * @param containSilence
          * @returns {*|number}
          */
-        getDialogUnread(dialog) {
-            return dialog ? (dialog.unread || dialog.mark_unread || 0) : 0
+        getDialogUnread(dialog, containSilence) {
+            const unread = containSilence || !dialog.silence ? dialog.unread : 0
+            return dialog ? (unread || dialog.mark_unread || 0) : 0
         },
 
         /**
@@ -375,9 +377,12 @@
             text = text.replace(/<img\s+class="emoticon"[^>]*?alt="(\S+)"[^>]*?>/g, "[$1]")
             text = text.replace(/<img\s+class="emoticon"[^>]*?>/g, `[${$A.L('动画表情')}]`)
             text = text.replace(/<img\s+class="browse"[^>]*?>/g, `[${$A.L('图片')}]`)
+            text = text.replace(/<[^>]+>/g,"")
             text = text.replace(/&nbsp;/g," ")
             text = text.replace(/&amp;/g,"&")
-            return text.replace(/<[^>]+>/g,"")
+            text = text.replace(/&lt;/g,"<")
+            text = text.replace(/&gt;/g,">")
+            return text
         },
 
         /**

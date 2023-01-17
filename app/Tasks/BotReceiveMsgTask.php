@@ -192,7 +192,7 @@ class BotReceiveMsgTask extends AbstractTask
                 case '/dialog':
                     $data = $this->botManagerOne($array[1], $msg->userid);
                     if ($data) {
-                        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread'])
+                        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence'])
                             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
                             ->where('web_socket_dialogs.name', 'LIKE', "%{$array[2]}%")
                             ->where('u.userid', $data->userid)
