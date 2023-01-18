@@ -159,7 +159,7 @@ class UmengAlias extends AbstractModel
             ->chunkById(100, function ($datas) use ($array) {
                 $uids = $datas->groupBy('userid');
                 foreach ($uids as $uid => $rows) {
-                    $array['badge'] = WebSocketDialogMsgRead::whereUserid($uid)->whereReadAt(null)->count();
+                    $array['badge'] = WebSocketDialogMsgRead::whereUserid($uid)->whereSilence(0)->whereReadAt(null)->count();
                     $lists = $rows->groupBy('platform');
                     foreach ($lists as $platform => $list) {
                         $alias = $list->pluck('alias')->implode(',');

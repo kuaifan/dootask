@@ -111,10 +111,11 @@ class WebSocketDialogMsgTask extends AbstractTask
         // 推送目标①：会话成员/群成员
         $array = [];
         foreach ($userids AS $userid) {
+            $silence = $this->silence || $silences[$userid];
             if ($userid == $msg->userid) {
                 $array[$userid] = [
                     'userid' => $userid,
-                    'silence' => $this->silence || $silences[$userid],
+                    'silence' => $silence,
                     'mention' => false,
                 ];
             } else {
@@ -124,10 +125,11 @@ class WebSocketDialogMsgTask extends AbstractTask
                     'msg_id' => $msg->id,
                     'userid' => $userid,
                     'mention' => $mention,
+                    'silence' => $silence,
                 ])->saveOrIgnore();
                 $array[$userid] = [
                     'userid' => $userid,
-                    'silence' => $this->silence || $silences[$userid],
+                    'silence' => $silence,
                     'mention' => $mention,
                 ];
                 // 机器人收到消处理
