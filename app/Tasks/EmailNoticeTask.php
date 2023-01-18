@@ -78,6 +78,7 @@ class EmailNoticeTask extends AbstractTask
             $builder = WebSocketDialogMsg::select(['web_socket_dialog_msgs.*', 'r.id as r_id', 'r.userid as r_userid'])
                 ->join('web_socket_dialog_msg_reads as r', 'web_socket_dialog_msgs.id', '=', 'r.msg_id')
                 ->whereNull("r.read_at")
+                ->where("r.silence", 0)
                 ->where("r.email", 0);
             if ($userMinute > -1) {
                 $builder->clone()
@@ -190,6 +191,7 @@ class EmailNoticeTask extends AbstractTask
             $data = WebSocketDialogMsg::select(['web_socket_dialog_msgs.*', 'r.id as r_id', 'r.userid as r_userid'])
                 ->join('web_socket_dialog_msg_reads as r', 'web_socket_dialog_msgs.id', '=', 'r.msg_id')
                 ->whereNull("r.read_at")
+                ->where("r.silence", 0)
                 ->where("r.email", 0)
                 ->where("r.userid", $userid)
                 ->where("web_socket_dialog_msgs.dialog_type", $dialogType)
