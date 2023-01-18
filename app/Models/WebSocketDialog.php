@@ -62,7 +62,7 @@ class WebSocketDialog extends AbstractModel
     public function formatData($userid, $hasData = false)
     {
         $dialogUserFun = function ($key, $default = null) use ($userid) {
-            $data = Cache::remember("Dialog::formatData", now()->addSeconds(10), function () use ($userid) {
+            $data = Cache::remember("Dialog::formatData-{$this->id}-{$userid}", now()->addSeconds(10), function () use ($userid) {
                 return WebSocketDialogUser::whereDialogId($this->id)->whereUserid($userid)->first()?->toArray();
             });
             return $data[$key] ?? $default;
