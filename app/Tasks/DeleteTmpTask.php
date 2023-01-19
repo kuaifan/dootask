@@ -60,7 +60,7 @@ class DeleteTmpTask extends AbstractTask
             /**
              * 表pre_task_worker
              */
-            case 'tw':
+            case 'task_worker':
                 {
                     TaskWorker::onlyTrashed()
                         ->where('deleted_at', '<', Carbon::now()->subHours($this->hours)->toDateTimeString())
