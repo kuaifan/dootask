@@ -4,6 +4,7 @@
         flex: 1;
         display: flex;
         align-items: flex-start;
+        overflow: hidden;
         .messenger-select {
             position: relative;
             height: 100%;
@@ -507,7 +508,6 @@
 @media (max-width: 768px) {
     .page-messenger {
         .messenger-wrapper {
-            overflow-x: hidden;
             .messenger-select {
                 position: fixed;
                 top: 0;
