@@ -929,7 +929,7 @@ export default {
             } else {
                 // 发送
                 const tempId = $A.randNum(1000000000, 9999999999)
-                const typeLoad = $A.stringLength(msgText.replace(/<img[^>]*?>/g, '')) > 2000
+                const typeLoad = $A.stringLength(msgText.replace(/<img[^>]*?>/g, '')) > 5000
                 const tempMsg = {
                     id: tempId,
                     dialog_id: this.dialogData.id,

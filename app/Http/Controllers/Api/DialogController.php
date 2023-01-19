@@ -625,12 +625,14 @@ class DialogController extends AbstractController
         //
         $text = WebSocketDialogMsg::formatMsg($text, $dialog_id);
         $strlen = mb_strlen($text);
+        $noimglen = mb_strlen(preg_replace("/<img[^>]*?>/i", "", $text));
         if ($strlen < 1) {
             return Base::retError('消息内容不能为空');
-        } elseif ($strlen > 200000) {
+        }
+        if ($noimglen > 200000) {
             return Base::retError('消息内容最大不能超过200000字');
         }
-        if ($strlen > 2000) {
+        if ($noimglen > 5000) {
             // 内容过长转成文件发送
             $path = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
             Base::makeDir(public_path($path));
