@@ -163,8 +163,20 @@
             line-height: 32px;
             margin-bottom: -10px;
         }
+        .setting-checkin-lately {
+            > li {
+                padding-bottom: 8px;
+                .time {
+                    font-weight: bold;
+                }
+                .content {
+                    font-size: 13px;
+                    opacity: 0.7;
+                }
+            }
+        }
         .setting-checkin-button {
-            margin-bottom: 18px;
+            padding-bottom: 4px;
             cursor: pointer;
             color: #2b85e4;
             &:hover {

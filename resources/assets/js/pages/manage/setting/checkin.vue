@@ -1,10 +1,23 @@
 <template>
     <div class="setting-item submit">
         <Form ref="formData" label-width="auto" @submit.native.prevent>
+            <Divider orientation="left" style="margin-top:0">{{$L('签到记录')}}</Divider>
+            <Timeline class="setting-checkin-lately">
+                <TimelineItem
+                    v-for="(item, key) in latelyData"
+                    :key="key"
+                    :color="item.section.length > 0 ? 'blue' :'#F29D38'">
+                    <Icon :type="item.section.length > 0 ? 'md-checkmark-circle' : 'md-close-circle'" slot="dot"></Icon>
+                    <p class="time">{{item.date}}</p>
+                    <p class="content" v-html="item.section.length > 0 ? latelySection(item.section) : $L('未签到')"></p>
+                </TimelineItem>
+            </Timeline>
+            <div class="setting-checkin-button" @click="calendarShow=true">{{$L('查看更多签到数据')}}</div>
+
+            <Divider orientation="left">{{$L('签到设置')}}</Divider>
             <Alert>
                 {{$L('设备连接上指定路由器（WiFi）后自动签到。')}}
             </Alert>
-            <div class="setting-checkin-button" @click="calendarShow=true">{{$L('查看我的签到数据')}}</div>
             <Row class="setting-template">
                 <Col span="12">{{$L('设备MAC地址')}}</Col>
                 <Col span="12">{{$L('备注')}}</Col>
@@ -55,6 +68,8 @@ export default {
                 'remark': '',
             },
 
+            latelyData: [],
+
             calendarShow: false,
             calendarLoading: 0,
             calendarData: [],
@@ -63,6 +78,7 @@ export default {
 
     mounted() {
         this.initData();
+        this.getLately();
     },
 
     watch: {
@@ -135,6 +151,33 @@ export default {
             }
         },
 
+        getLately() {
+            this.$store.dispatch("call", {
+                url: 'users/checkin/list',
+                data: {
+                    ym: $A.formatDate("Y-m")
+                }
+            }).then(({data}) => {
+                this.latelyFormat(data)
+            })
+        },
+
+        latelyFormat(data) {
+            const time = $A.Time();
+            this.latelyData = [];
+            for (let i = 0; i < 5; i++) {
+                const ymd = $A.formatDate("Y-m-d", time - i * 86400)
+                const item = data.find(({date}) => date == ymd) || {date: ymd, section: []}
+                this.latelyData.push(item)
+            }
+        },
+
+        latelySection(section) {
+            return section.map(item => {
+                return `${item[0]} - ${item[1] || 'None'}`
+            }).join('<br/>')
+        },
+
         changeMonth(ym) {
             setTimeout(_ => {
                 this.calendarLoading++;
@@ -147,6 +190,10 @@ export default {
                     return;
                 }
                 this.calendarData = data;
+                //
+                if (ym == $A.formatDate("Y-m")) {
+                    this.latelyFormat(data)
+                }
             }).catch(({msg}) => {
                 this.calendarData = [];
                 $A.modalError(msg);
