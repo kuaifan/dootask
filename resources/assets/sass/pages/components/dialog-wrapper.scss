@@ -972,7 +972,8 @@
 
                         .dialog-reply {
                             color: #ffffff;
-                            .common-avatar {
+                            .common-avatar,
+                            .bot {
                                 color: #ffffff;
                             }
                             &:after {
