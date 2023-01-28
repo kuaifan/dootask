@@ -123,7 +123,7 @@ class PublicController extends AbstractController
             }
         }
         //
-        if ($creates) {
+        if ($creates && $setting['notice'] === 'open') {
             $botUser = User::botGetOrCreate('check-in');
             if ($botUser) {
                 foreach ($creates as $create) {
