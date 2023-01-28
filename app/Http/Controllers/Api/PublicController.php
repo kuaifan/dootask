@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\User;
 use App\Models\UserCheckinMac;
 use App\Models\UserCheckinRecord;
+use App\Models\WebSocketDialog;
+use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
 use Request;
 
@@ -87,10 +90,19 @@ class PublicController extends AbstractController
         if ($key != $setting['key']) {
             return 'key error';
         }
+        $setting['time'] = $setting['time'] ? Base::json2array($setting['time']) : ['00:00', '23:59'];
         //
         $nowDate = date("Y-m-d");
         $nowTime = date("H:i:s");
+        //
+        $timeStart = strtotime(date("{$nowDate} {$setting['time'][0]}"));
+        $timeEnd = strtotime(date("{$nowDate} {$setting['time'][1]}"));
+        if (Base::time() < $timeStart || Base::time() > $timeEnd) {
+            return "not in valid time, valid time is {$setting['time'][0]}-{$setting['time'][1]}";
+        }
+        //
         $macs = explode(",", $mac);
+        $creates = [];
         foreach ($macs as $mac) {
             $mac = strtoupper($mac);
             if (Base::isMac($mac) &&  $UserCheckinMac = UserCheckinMac::whereMac($mac)->first()) {
@@ -102,11 +114,25 @@ class PublicController extends AbstractController
                 $record = UserCheckinRecord::where($array)->first();
                 if (empty($record)) {
                     $record = UserCheckinRecord::createInstance($array);
-                    $record->save();
+                    $creates[] = $UserCheckinMac->userid;
                 }
                 $record->times = Base::array2json(array_merge($record->times, [$nowTime]));
                 $record->report_time = $time;
                 $record->save();
+
+            }
+        }
+        //
+        if ($creates) {
+            $botUser = User::botGetOrCreate('check-in');
+            if ($botUser) {
+                foreach ($creates as $create) {
+                    $dialog = WebSocketDialog::checkUserDialog($botUser->userid, $create);
+                    if ($dialog) {
+                        $text = "签到成功，签到时间：" . date("H:i");
+                        WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid);    // todo 未能在任务end事件来发送任务
+                    }
+                }
             }
         }
         return 'success';

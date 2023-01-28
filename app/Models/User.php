@@ -553,6 +553,8 @@ class User extends AbstractModel
             return url("images/avatar/default_system.png");
         } elseif ($email == 'task-alert@bot.system') {
             return url("images/avatar/default_task.png");
+        } elseif ($email == 'check-in@bot.system') {
+            return url("images/avatar/default_checkin.png");
         } elseif ($email == 'bot-manager@bot.system') {
             return url("images/avatar/default_bot.png");
         }
@@ -628,6 +630,8 @@ class User extends AbstractModel
                 $update['nickname'] = '系统消息';
             } elseif ($key === 'task-alert') {
                 $update['nickname'] = '任务提醒';
+            } elseif ($key === 'check-in') {
+                $update['nickname'] = '签到打卡';
             } elseif ($key === 'bot-manager') {
                 $update['nickname'] = '机器人管理';
             }

@@ -224,7 +224,7 @@ class SystemController extends AbstractController
      *
      * @apiParam {String} type
      * - get: 获取（默认）
-     * - save: 保存设置（参数：['open', 'edit', 'key']）
+     * - save: 保存设置（参数：['open', 'time', 'notice', 'edit', 'key']）
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
@@ -242,6 +242,8 @@ class SystemController extends AbstractController
             foreach ($all as $key => $value) {
                 if (!in_array($key, [
                     'open',
+                    'time',
+                    'notice',
                     'edit',
                     'key',
                 ])) {
@@ -262,6 +264,8 @@ class SystemController extends AbstractController
         }
         //
         $setting['open'] = $setting['open'] ?: 'close';
+        $setting['time'] = $setting['time'] ? Base::json2array($setting['time']) : ['00:00', '23:59'];
+        $setting['notice'] = $setting['notice'] ?: 'close';
         $setting['edit'] = $setting['edit'] ?: 'close';
         $setting['cmd'] = "curl -sSL '" . Base::fillUrl("api/public/checkin/install?key={$setting['key']}") . "' | sh";
         //

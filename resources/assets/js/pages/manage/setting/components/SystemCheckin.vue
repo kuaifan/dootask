@@ -2,7 +2,7 @@
     <div class="setting-component-item">
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
             <div class="block-setting-box">
-                <h3>{{ $L('自动签到') }}</h3>
+                <h3>{{ $L('签到设置') }}</h3>
                 <FormItem :label="$L('功能开启')" prop="open">
                     <RadioGroup v-model="formData.open">
                         <Radio label="open">{{ $L('开启') }}</Radio>
@@ -14,6 +14,21 @@
                     </div>
                 </FormItem>
                 <template v-if="formData.open === 'open'">
+                    <FormItem :label="$L('签到时间')" prop="time">
+                        <TimePicker
+                            v-model="formData.time"
+                            type="timerange"
+                            format="HH:mm"
+                            :placeholder="$L('请选择签到时间')"/>
+                        <div class="form-tip">{{$L('每日首次签到成功消息通知')}}</div>
+                    </FormItem>
+                    <FormItem :label="$L('签到通知')" prop="notice">
+                        <RadioGroup v-model="formData.notice">
+                            <Radio label="open">{{ $L('开启') }}</Radio>
+                            <Radio label="close">{{ $L('关闭') }}</Radio>
+                        </RadioGroup>
+                        <div class="form-tip">{{$L('每日首次签到成功消息通知')}}</div>
+                    </FormItem>
                     <FormItem :label="$L('允许修改')" prop="edit">
                         <RadioGroup v-model="formData.edit">
                             <Radio label="open">{{ $L('允许') }}</Radio>
@@ -21,16 +36,23 @@
                         </RadioGroup>
                         <div class="form-tip">{{$L('允许成员自己修改MAC地址')}}</div>
                     </FormItem>
-                    <FormItem :label="$L('安装说明')" prop="explain">
-                        <p>1. {{$L('签到延迟时长为±1分钟。')}}</p>
-                        <p>2. {{$L('设备连接上指定路由器（WiFi）后自动签到。')}}</p>
-                        <p>3. {{$L('仅支持Openwrt系统的路由器。')}}</p>
-                        <p>4. {{$L('关闭签到功能再开启需要重新安装。')}}</p>
-                        <p>5. {{$L('进入路由器终端执行以下命令即可完成安装：')}}</p>
-                        <Input ref="cmd" @on-focus="clickCmd" style="margin-top:6px" type="textarea" readonly :value="formData.cmd"/>
-                    </FormItem>
                 </template>
             </div>
+
+            <template v-if="formData.open === 'open'">
+                <div class="block-setting-placeholder"></div>
+                <div class="block-setting-box">
+                    <h3>{{ $L('自动签到') }}</h3>
+                    <FormItem :label="$L('安装说明')" prop="explain">
+                        <p>1. {{ $L('自动签到延迟时长为±1分钟。') }}</p>
+                        <p>2. {{ $L('设备连接上指定路由器（WiFi）后自动签到。') }}</p>
+                        <p>3. {{ $L('仅支持Openwrt系统的路由器。') }}</p>
+                        <p>4. {{ $L('关闭签到功能再开启需要重新安装。') }}</p>
+                        <p>5. {{ $L('进入路由器终端执行以下命令即可完成安装：') }}</p>
+                        <Input ref="cmd" @on-focus="clickCmd" style="margin-top:6px" type="textarea" readonly :value="formData.cmd"/>
+                    </FormItem>
+                </div>
+            </template>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{ $L('提交') }}</Button>
