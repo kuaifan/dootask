@@ -163,6 +163,13 @@
             line-height: 32px;
             margin-bottom: -10px;
         }
+        .setting-checkin-load {
+            margin-bottom: 12px;
+            .common-loading {
+                width: 20px;
+                height: 20px;
+            }
+        }
         .setting-checkin-lately {
             > li {
                 padding-bottom: 8px;
@@ -174,6 +181,9 @@
                     opacity: 0.7;
                 }
             }
+        }
+        .setting-checkin-row {
+            overflow: auto;
         }
         .setting-checkin-button {
             padding-bottom: 4px;

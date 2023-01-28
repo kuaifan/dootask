@@ -2,7 +2,10 @@
     <div class="setting-item submit">
         <Form ref="formData" label-width="auto" @submit.native.prevent>
             <Divider orientation="left" style="margin-top:0">{{$L('签到记录')}}</Divider>
-            <Timeline class="setting-checkin-lately">
+            <div v-if="latelyLoad > 0" class="setting-checkin-load">
+                <Loading/>
+            </div>
+            <Timeline v-else class="setting-checkin-lately">
                 <TimelineItem
                     v-for="(item, key) in latelyData"
                     :key="key"
@@ -18,23 +21,25 @@
             <Alert>
                 {{$L('设备连接上指定路由器（WiFi）后自动签到。')}}
             </Alert>
-            <Row class="setting-template">
-                <Col span="12">{{$L('设备MAC地址')}}</Col>
-                <Col span="12">{{$L('备注')}}</Col>
-            </Row>
-            <Row v-for="(item, key) in formData" :key="key" class="setting-template">
-                <Col span="12">
-                    <Input
-                        v-model="item.mac"
-                        :maxlength="20"
-                        :placeholder="$L('请输入设备MAC地址')"
-                        clearable
-                        @on-clear="delDatum(key)"/>
-                </Col>
-                <Col span="12">
-                    <Input v-model="item.remark" :maxlength="100" :placeholder="$L('备注')"/>
-                </Col>
-            </Row>
+            <div class="setting-checkin-row">
+                <Row class="setting-template">
+                    <Col span="12">{{$L('设备MAC地址')}}</Col>
+                    <Col span="12">{{$L('备注')}}</Col>
+                </Row>
+                <Row v-for="(item, key) in formData" :key="key" class="setting-template">
+                    <Col span="12">
+                        <Input
+                            v-model="item.mac"
+                            :maxlength="20"
+                            :placeholder="$L('请输入设备MAC地址')"
+                            clearable
+                            @on-clear="delDatum(key)"/>
+                    </Col>
+                    <Col span="12">
+                        <Input v-model="item.remark" :maxlength="100" :placeholder="$L('备注')"/>
+                    </Col>
+                </Row>
+            </div>
             <Button type="default" icon="md-add" @click="addDatum">{{$L('添加设备')}}</Button>
         </Form>
         <div class="setting-footer">
@@ -68,6 +73,7 @@ export default {
                 'remark': '',
             },
 
+            latelyLoad: 0,
             latelyData: [],
 
             calendarShow: false,
@@ -152,6 +158,7 @@ export default {
         },
 
         getLately() {
+            this.latelyLoad++
             this.$store.dispatch("call", {
                 url: 'users/checkin/list',
                 data: {
@@ -159,6 +166,8 @@ export default {
                 }
             }).then(({data}) => {
                 this.latelyFormat(data)
+            }).finally(_ => {
+                this.latelyLoad--
             })
         },
 
