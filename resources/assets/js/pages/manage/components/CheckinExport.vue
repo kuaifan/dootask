@@ -5,8 +5,8 @@
         :mask-closable="false">
         <Form ref="export" :model="formData" label-width="auto" @submit.native.prevent>
             <FormItem :label="$L('导出成员')">
-                <UserInput v-model="formData.userid" :multiple-max="20" :placeholder="$L('请选择成员')"/>
-                <div class="form-tip">{{$L('每次最多选择导出20个成员')}}</div>
+                <UserInput v-model="formData.userid" :multiple-max="100" :placeholder="$L('请选择成员')"/>
+                <div class="form-tip">{{$L('每次最多选择导出100个成员')}}</div>
             </FormItem>
             <FormItem :label="$L('签到日期')">
                 <DatePicker
