@@ -38,7 +38,7 @@ class DialogController extends AbstractController
      *
      * @apiParam {String} [at_after]        只读取在这个时间之后更新的对话
      * @apiParam {Number} [page]            当前页，默认:1
-     * @apiParam {Number} [pagesize]        每页显示数量，默认:100，最大:200
+     * @apiParam {Number} [pagesize]        每页显示数量，默认:50，最大:100
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -57,7 +57,7 @@ class DialogController extends AbstractController
         $list = $builder
             ->orderByDesc('u.top_at')
             ->orderByDesc('web_socket_dialogs.last_at')
-            ->paginate(Base::getPaginate(200, 100));
+            ->paginate(Base::getPaginate(100, 50));
         $list->transform(function (WebSocketDialog $item) use ($user) {
             return $item->formatData($user->userid);
         });

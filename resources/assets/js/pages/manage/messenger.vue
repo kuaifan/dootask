@@ -755,7 +755,7 @@ export default {
             if (timeout > -1) {
                 this.__updateDialogs = setTimeout(_ => {
                     if (this.tabActive === 'dialog') {
-                        this.$store.dispatch("getDialogs", true).catch(() => {});
+                        this.$store.dispatch("getDialogs", {hideLoad: true}).catch(() => {});
                     }
                 }, timeout)
             }

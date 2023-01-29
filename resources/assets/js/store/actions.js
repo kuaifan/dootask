@@ -1278,7 +1278,7 @@ export default {
             //
             dispatch("call", {
                 url: 'project/task/lists',
-                data: data
+                data
             }).then(result => {
                 if (data.project_id) {
                     state.projectLoad--;
@@ -2071,40 +2071,53 @@ export default {
      * 获取会话列表
      * @param state
      * @param dispatch
-     * @param hideLoad
+     * @param data
      * @returns {Promise<unknown>}
      */
-    getDialogs({state, dispatch}, hideLoad) {
+    getDialogs({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
             if (state.userId === 0) {
                 state.cacheDialogs = [];
                 reject({msg: 'Parameter error'});
                 return;
             }
-            let data = {};
-            if (hideLoad !== true) {
+            data = $A.isJson(data) ? data : {}
+            if (data.hideLoad !== true) {
                 state.loadDialogs++;
             }
-            if (state.cacheDialogs.length > 0) {
-                const tmpList = state.cacheDialogs.sort((a, b) => {
-                    if (a.top_at || b.top_at) {
-                        return $A.Date(b.top_at) - $A.Date(a.top_at);
-                    }
-                    return $A.Date(b.last_at) - $A.Date(a.last_at);
-                })
-                data.at_after = tmpList[0].last_at;
+            if (typeof data.pagesize === "undefined") {
+                data.pagesize = 20
+            }
+            if (typeof data.page === "undefined") {
+                data.page = 1
+                if (state.cacheDialogs.length > 0) {
+                    const tmpList = state.cacheDialogs.sort((a, b) => {
+                        if (a.top_at || b.top_at) {
+                            return $A.Date(b.top_at) - $A.Date(a.top_at);
+                        }
+                        return $A.Date(b.last_at) - $A.Date(a.last_at);
+                    })
+                    data.at_after = tmpList[0].last_at;
+                }
             }
             dispatch("call", {
                 url: 'dialog/lists',
                 data,
             }).then(result => {
-                dispatch("saveDialog", result.data.data);
-                resolve(result)
+                const resData = result.data;
+                dispatch("saveDialog", resData.data);
+                //
+                if (resData.next_page_url && resData.current_page < 5) {
+                    data.page++
+                    dispatch("getDialogs", data).then(resolve).catch(reject)
+                } else {
+                    resolve()
+                }
             }).catch(e => {
                 console.warn(e);
                 reject(e)
             }).finally(_ => {
-                if (hideLoad !== true) {
+                if (data.hideLoad !== true) {
                     state.loadDialogs--;
                 }
             });
