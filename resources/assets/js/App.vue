@@ -154,6 +154,9 @@ export default {
                     }).catch(_ => {
                         this.$store.dispatch("websocketConnection");
                     })
+                    if (this.themeMode === "auto") {
+                        $A.dark.autoDarkMode()
+                    }
                 }, 600)
             }
         },
