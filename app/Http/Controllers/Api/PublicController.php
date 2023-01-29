@@ -102,7 +102,7 @@ class PublicController extends AbstractController
         }
         //
         $macs = explode(",", $mac);
-        $creates = [];
+        $checkins = [];
         foreach ($macs as $mac) {
             $mac = strtoupper($mac);
             if (Base::isMac($mac) &&  $UserCheckinMac = UserCheckinMac::whereMac($mac)->first()) {
@@ -114,7 +114,7 @@ class PublicController extends AbstractController
                 $record = UserCheckinRecord::where($array)->first();
                 if (empty($record)) {
                     $record = UserCheckinRecord::createInstance($array);
-                    $creates[] = $UserCheckinMac->userid;
+                    $checkins[] = $UserCheckinMac;
                 }
                 $record->times = Base::array2json(array_merge($record->times, [$nowTime]));
                 $record->report_time = $time;
@@ -123,13 +123,15 @@ class PublicController extends AbstractController
             }
         }
         //
-        if ($creates && $setting['notice'] === 'open') {
+        if ($checkins && $setting['notice'] === 'open') {
             $botUser = User::botGetOrCreate('check-in');
             if ($botUser) {
-                foreach ($creates as $create) {
-                    $dialog = WebSocketDialog::checkUserDialog($botUser->userid, $create);
+                foreach ($checkins as $checkin) {
+                    $dialog = WebSocketDialog::checkUserDialog($botUser->userid, $checkin->userid);
                     if ($dialog) {
-                        $text = "签到成功，签到时间：" . date("H:i");
+                        $hi = date("H:i");
+                        $remark = $checkin->remark ?: $checkin->mac;
+                        $text = "签到成功，签到时间: {$hi} ({$remark})";
                         WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid);    // todo 未能在任务end事件来发送任务
                     }
                 }
