@@ -92,13 +92,10 @@ export default {
 
     methods: {
         dateShortcuts(act) {
-            const lastSecond = (e) => {
-                return $A.Date($A.formatDate("Y-m-d 23:59:29", Math.round(e / 1000)))
-            };
             if (act === 'prev') {
-                return [$A.getData('上个月', true), lastSecond($A.getData('上个月结束', true))];
+                return [$A.getSpecifyDate('上个月'), $A.getSpecifyDate('上个月结束')];
             } else if (act === 'this') {
-                return [$A.getData('本月', true), lastSecond($A.getData('本月结束', true))]
+                return [$A.getSpecifyDate('本月'), $A.getSpecifyDate('本月结束')]
             }
         },
 

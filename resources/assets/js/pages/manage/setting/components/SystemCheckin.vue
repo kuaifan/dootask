@@ -90,23 +90,6 @@ export default {
             },
             ruleData: {},
 
-            dateOptions: {
-                shortcuts: [
-                    {
-                        text: this.$L('上个月'),
-                        value() {
-                            return [$A.getData('上个月', true), this.lastSecond($A.getData('上个月结束', true))];
-                        }
-                    },
-                    {
-                        text: this.$L('这个月'),
-                        value() {
-                            return [$A.getData('本周', true), this.lastSecond($A.getData('本月结束', true))];
-                        }
-                    }
-                ]
-            },
-
             allUserShow: false,
             exportShow: false,
         }
