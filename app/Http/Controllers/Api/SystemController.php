@@ -837,8 +837,8 @@ class SystemController extends AbstractController
         if (empty($userid) || empty($date) || empty($time)) {
             return Base::retError('参数错误');
         }
-        if (count($userid) > 20) {
-            return Base::retError('导出成员限制最多20个');
+        if (count($userid) > 100) {
+            return Base::retError('导出成员限制最多100个');
         }
         if (!(is_array($date) && Base::isDate($date[0]) && Base::isDate($date[1]))) {
             return Base::retError('日期选择错误');

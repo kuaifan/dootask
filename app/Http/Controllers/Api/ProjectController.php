@@ -978,8 +978,8 @@ class ProjectController extends AbstractController
         if (empty($userid) || empty($time)) {
             return Base::retError('参数错误');
         }
-        if (count($userid) > 20) {
-            return Base::retError('导出成员限制最多20个');
+        if (count($userid) > 100) {
+            return Base::retError('导出成员限制最多100个');
         }
         if (!(is_array($time) && Base::isDateOrTime($time[0]) && Base::isDateOrTime($time[1]))) {
             return Base::retError('时间选择错误');
