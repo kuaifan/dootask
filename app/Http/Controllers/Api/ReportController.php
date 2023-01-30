@@ -306,7 +306,7 @@ class ReportController extends AbstractController
             foreach ($complete_task as $task) {
                 $complete_at = Carbon::parse($task->complete_at);
                 $pre = $type == Report::WEEKLY ? ('<span>[' . Base::Lang('周' . ['日', '一', '二', '三', '四', '五', '六'][$complete_at->dayOfWeek]) . ']</span>&nbsp;') : '';
-                $completeContent .= '<li>' . $pre . $task->name . '</li>';
+                $completeContent .= "<li>{$pre}[{$task->project->name}] {$task->name}</li>";
             }
         } else {
             $completeContent = '<li>&nbsp;</li>';
@@ -327,7 +327,7 @@ class ReportController extends AbstractController
             foreach ($unfinished_task as $task) {
                 empty($task->end_at) || $end_at = Carbon::parse($task->end_at);
                 $pre = (!empty($end_at) && $end_at->lt($now_dt)) ? '<span style="color:#ff0000;">[' . Base::Lang('超期') . ']</span>&nbsp;' : '';
-                $unfinishedContent .= '<li>' . $pre . $task->name . '</li>';
+                $unfinishedContent .= "<li>{$pre}[{$task->project->name}] {$task->name}</li>";
             }
         } else {
             $unfinishedContent = '<li>&nbsp;</li>';
