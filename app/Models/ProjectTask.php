@@ -767,9 +767,7 @@ class ProjectTask extends AbstractModel
                 $this->addLog("修改{任务}时间" . ($desc ? "（备注：{$desc}）" : ""), [
                     'change' => [$oldStringAt, $newStringAt]
                 ]);
-
-                // 修改计划时间需要重置任务邮件提醒日志
-                ProjectTaskMailLog::whereTaskId($this->id)->delete();
+                $this->taskPush(null, 3);
             }
             // 以下紧顶级任务可修改
             if ($this->parent_id === 0) {
@@ -1435,7 +1433,7 @@ class ProjectTask extends AbstractModel
     /**
      * 任务提醒
      * @param $userids
-     * @param int $type 0-新任务、1-即将超时、2-已超时
+     * @param int $type 0-新任务、1-即将超时、2-已超时、3-修改时间
      * @return void
      */
     public function taskPush($userids, int $type)
@@ -1457,7 +1455,7 @@ class ProjectTask extends AbstractModel
         }
 
         $text = view('push.task', [
-            'type' => str_replace([0, 1, 2], ['start', 'before', 'after'], $type),
+            'type' => str_replace([0, 1, 2, 3], ['start', 'before', 'after', 'times'], $type),
             'task' => $this,
         ])->render();
 

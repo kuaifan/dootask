@@ -2,8 +2,6 @@
 
 namespace App\Tasks;
 
-use App\Models\ProjectTask;
-use App\Models\ProjectTaskMailLog;
 use App\Models\Setting;
 use App\Models\User;
 use App\Models\WebSocketDialogMsg;
