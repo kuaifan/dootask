@@ -1459,6 +1459,7 @@ class ProjectController extends AbstractController
             $data['new_column'] = $newColumn;
         }
         $task->pushMsg('add', $data);
+        $task->taskPush(null, 0);
         return Base::retSuccess('添加成功', $data);
     }
 

@@ -35,33 +35,6 @@
                         ② {{$L('修改邮箱和删除帐号需要邮箱验证码')}}
                     </div>
                 </FormItem>
-                <FormItem :label="$L('任务提醒')" prop="notice">
-                    <RadioGroup v-model="formData.notice">
-                        <Radio label="open">{{ $L('开启') }}</Radio>
-                        <Radio label="close">{{ $L('关闭') }}</Radio>
-                    </RadioGroup>
-                    <Form v-if="formData.notice == 'open'" @submit.native.prevent>
-                        <FormItem :label="$L('任务开始')" prop="task_start_minute">
-                            <div class="input-number-box">
-                                <InputNumber v-model="formData.task_start_minute" :min="0" :step="1"/>
-                                <label>{{ $L('分钟') }}(m)</label>
-                            </div>
-                        </FormItem>
-                        <FormItem :label="$L('距离到期')" prop="task_remind_hours">
-                            <div class="input-number-box">
-                                <InputNumber v-model="formData.task_remind_hours" :min="0" :step="0.5" @on-change="hoursChange($event, 'task_remind_hours')"/>
-                                <label>{{ $L('小时') }}(h)</label>
-                            </div>
-                        </FormItem>
-                        <FormItem :label="$L('到期超时')" prop="task_remind_hours2">
-                            <div class="input-number-box">
-                                <InputNumber v-model="formData.task_remind_hours2" :min="0" :step="0.5" @on-change="hoursChange($event, 'task_remind_hours2')"/>
-                                <label>{{ $L('小时') }}(h)</label>
-                            </div>
-                        </FormItem>
-                        <div class="form-tip">{{$L('填写-1则不通知，误差±10分钟')}}</div>
-                    </Form>
-                </FormItem>
                 <FormItem :label="$L('消息提醒')" prop="notice_msg">
                     <RadioGroup v-model="formData.notice_msg">
                         <Radio label="open">{{ $L('开启') }}</Radio>
@@ -114,10 +87,6 @@ export default {
                 account: '',
                 password: '',
                 reg_verify: 'colse',
-                notice: 'open',
-                task_start_minute: -1,
-                task_remind_hours: -1,
-                task_remind_hours2: -1,
                 notice_msg: 'open',
                 msg_unread_user_minute: -1,
                 msg_unread_group_minute: -1,

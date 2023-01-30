@@ -111,7 +111,7 @@ class SystemController extends AbstractController
      *
      * @apiParam {String} type
      * - get: 获取（默认）
-     * - save: 保存设置（参数：['smtp_server', 'port', 'account', 'password', 'reg_verify', 'notice', 'task_start_minute', 'task_remind_hours', 'task_remind_hours2', 'notice_msg', 'msg_unread_user_minute', 'msg_unread_group_minute', 'ignore_addr']）
+     * - save: 保存设置（参数：['smtp_server', 'port', 'account', 'password', 'reg_verify', 'notice_msg', 'msg_unread_user_minute', 'msg_unread_group_minute', 'ignore_addr']）
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
@@ -134,10 +134,6 @@ class SystemController extends AbstractController
                     'account',
                     'password',
                     'reg_verify',
-                    'notice',
-                    'task_start_minute',
-                    'task_remind_hours',
-                    'task_remind_hours2',
                     'notice_msg',
                     'msg_unread_user_minute',
                     'msg_unread_group_minute',
@@ -156,10 +152,6 @@ class SystemController extends AbstractController
         $setting['account'] = $setting['account'] ?: '';
         $setting['password'] = $setting['password'] ?: '';
         $setting['reg_verify'] = $setting['reg_verify'] ?: 'close';
-        $setting['notice'] = $setting['notice'] ?: 'close';
-        $setting['task_start_minute'] = intval($setting['task_start_minute'] ?? -1);
-        $setting['task_remind_hours'] = floatval($setting['task_remind_hours'] ?? -1);
-        $setting['task_remind_hours2'] = floatval($setting['task_remind_hours2'] ?? -1);
         $setting['notice_msg'] = $setting['notice_msg'] ?: 'close';
         $setting['msg_unread_user_minute'] = intval($setting['msg_unread_user_minute'] ?? -1);
         $setting['msg_unread_group_minute'] = intval($setting['msg_unread_group_minute'] ?? -1);
@@ -281,7 +273,7 @@ class SystemController extends AbstractController
      *
      * @apiParam {String} type
      * - get: 获取（默认）
-     * - save: 保存设置（参数：['push', 'ios_key', 'ios_secret', 'android_key', 'android_secret', 'push_msg', 'push_task', 'task_start_minute', 'task_remind_hours', 'task_remind_hours2']）
+     * - save: 保存设置（参数：['push', 'ios_key', 'ios_secret', 'android_key', 'android_secret']）
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
@@ -303,11 +295,6 @@ class SystemController extends AbstractController
                     'ios_secret',
                     'android_key',
                     'android_secret',
-                    'push_msg',
-                    'push_task',
-                    'task_start_minute',
-                    'task_remind_hours',
-                    'task_remind_hours2'
                 ])) {
                     unset($all[$key]);
                 }
@@ -318,11 +305,6 @@ class SystemController extends AbstractController
         }
         //
         $setting['push'] = $setting['push'] ?: 'close';
-        $setting['push_msg'] = $setting['push_msg'] ?: 'open';
-        $setting['push_task'] = $setting['push_task'] ?: 'open';
-        $setting['task_start_minute'] = intval($setting['task_start_minute']);
-        $setting['task_remind_hours'] = floatval($setting['task_remind_hours']);
-        $setting['task_remind_hours2'] = floatval($setting['task_remind_hours2']);
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
     }

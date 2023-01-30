@@ -655,7 +655,7 @@ class ProjectTask extends AbstractModel
             }
             // 负责人
             if (Arr::exists($data, 'owner')) {
-                $count = $this->taskUser->where('owner', 1)->count();
+                $older = $this->taskUser->where('owner', 1)->pluck('userid')->toArray();
                 $array = [];
                 $owner = is_array($data['owner']) ? $data['owner'] : [$data['owner']];
                 if (count($owner) > 10) {
@@ -679,11 +679,12 @@ class ProjectTask extends AbstractModel
                     }
                 }
                 if ($array) {
-                    if ($count == 0 && count($array) == 1 && $array[0] == User::userid()) {
+                    if (count($older) == 0 && count($array) == 1 && $array[0] == User::userid()) {
                         $this->addLog("认领{任务}");
                     } else {
                         $this->addLog("修改{任务}负责人", ['userid' => $array]);
                     }
+                    $this->taskPush(array_values(array_diff($array, $older)), 0);
                 }
                 $rows = ProjectTaskUser::whereTaskId($this->id)->whereOwner(1)->whereNotIn('userid', $array)->get();
                 if ($rows->isNotEmpty()) {
@@ -1428,6 +1429,55 @@ class ProjectTask extends AbstractModel
             ];
             $task = new PushTask($params, false);
             Task::deliver($task);
+        }
+    }
+
+    /**
+     * 任务提醒
+     * @param $userids
+     * @param int $type 0-新任务、1-即将超时、2-已超时
+     * @return void
+     */
+    public function taskPush($userids, int $type)
+    {
+        if ($userids === null) {
+            $userids = $this->taskUser->where('owner', 1)->pluck('userid')->toArray();
+        }
+        if (empty($userids)) {
+            return;
+        }
+        $users = User::whereIn('userid', $userids)->whereNull('disable_at')->get();
+        if (empty($users)) {
+            return;
+        }
+
+        $botUser = User::botGetOrCreate('task-alert');
+        if (empty($botUser)) {
+            return;
+        }
+
+        $text = view('push.task', [
+            'type' => str_replace([0, 1, 2], ['start', 'before', 'after'], $type),
+            'task' => $this,
+        ])->render();
+
+        /** @var User $user */
+        foreach ($users as $user) {
+            $data = [
+                'type' => $type,
+                'userid' => $user->userid,
+                'task_id' => $this->id,
+            ];
+            $pushLog = ProjectTaskPushLog::where($data)->exists();
+            if ($pushLog) {
+                continue;
+            }
+            //
+            $dialog = WebSocketDialog::checkUserDialog($botUser->userid, $data['userid']);
+            if ($dialog) {
+                ProjectTaskPushLog::createInstance($data)->save();
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid);
+            }
         }
     }
 

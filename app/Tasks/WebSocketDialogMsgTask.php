@@ -5,7 +5,6 @@ namespace App\Tasks;
 @error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
 use App\Models\User;
-use App\Models\UserBot;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogMsgRead;
@@ -164,8 +163,7 @@ class WebSocketDialogMsgTask extends AbstractTask
         // umeng推送app
         if ($umengUserid) {
             $setting = Base::setting('appPushSetting');
-            $pushMsg = $setting['push'] === 'open' && $setting['push_msg'] !== 'close';
-            if ($pushMsg) {
+            if ($setting['push'] === 'open') {
                 $umengTitle = User::userid2nickname($msg->userid);
                 if ($dialog->type == 'group') {
                     $umengTitle = "{$dialog->getGroupName()} ($umengTitle)";

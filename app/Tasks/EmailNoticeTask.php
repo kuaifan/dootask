@@ -25,51 +25,6 @@ class EmailNoticeTask extends AbstractTask
     public function start()
     {
         $setting = Base::setting('emailSetting');
-        // 任务通知
-        if ($setting['notice'] === 'open') {
-            $start = intval($setting['task_start_minute']);
-            $hours = floatval($setting['task_remind_hours']);
-            $hours2 = floatval($setting['task_remind_hours2']);
-            if ($start > -1) {
-                ProjectTask::whereNull("complete_at")
-                    ->whereNull("archived_at")
-                    ->whereBetween("start_at", [
-                        Carbon::now()->subMinutes($start + 10),
-                        Carbon::now()->subMinutes($start)
-                    ])->chunkById(100, function ($tasks) {
-                        /** @var ProjectTask $task */
-                        foreach ($tasks as $task) {
-                            $this->taskEmail($task, 0);
-                        }
-                    });
-            }
-            if ($hours > -1) {
-                ProjectTask::whereNull("complete_at")
-                    ->whereNull("archived_at")
-                    ->whereBetween("end_at", [
-                        Carbon::now()->addMinutes($hours * 60),
-                        Carbon::now()->addMinutes($hours * 60 + 10)
-                    ])->chunkById(100, function ($tasks) {
-                        /** @var ProjectTask $task */
-                        foreach ($tasks as $task) {
-                            $this->taskEmail($task, 1);
-                        }
-                    });
-            }
-            if ($hours2 > -1) {
-                ProjectTask::whereNull("complete_at")
-                    ->whereNull("archived_at")
-                    ->whereBetween("end_at", [
-                        Carbon::now()->subMinutes($hours2 * 60 + 10),
-                        Carbon::now()->subMinutes($hours2 * 60)
-                    ])->chunkById(100, function ($tasks) {
-                        /** @var ProjectTask $task */
-                        foreach ($tasks as $task) {
-                            $this->taskEmail($task, 2);
-                        }
-                    });
-            }
-        }
         // 消息通知
         if ($setting['notice_msg'] === 'open') {
             $userMinute = intval($setting['msg_unread_user_minute']);
@@ -112,70 +67,6 @@ class EmailNoticeTask extends AbstractTask
     public function end()
     {
 
-    }
-
-    /**
-     * 任务过期前、超期后提醒
-     * @param ProjectTask $task
-     * @param int $type
-     * @return void
-     */
-    private function taskEmail(ProjectTask $task, int $type)
-    {
-        $userids = $task->taskUser->where('owner', 1)->pluck('userid')->toArray();
-        if (empty($userids)) {
-            return;
-        }
-        $users = User::whereIn('userid', $userids)->whereNull('disable_at')->get();
-        if (empty($users)) {
-            return;
-        }
-
-        $setting = Base::setting('emailSetting');
-
-        /** @var User $user */
-        foreach ($users as $user) {
-            $data = [
-                'type' => $type,
-                'userid' => $user->userid,
-                'task_id' => $task->id,
-            ];
-            $emailLog = ProjectTaskMailLog::where($data)->exists();
-            if ($emailLog) {
-                continue;
-            }
-            try {
-                if (!Base::isEmail($user->email)) {
-                    throw new \Exception("User email '{$user->email}' address error");
-                }
-                $subject = match ($type) {
-                    1 => "任务提醒",
-                    2 => "任务过期提醒",
-                    default => "任务开始提醒",
-                };
-                $content = view('email.task', [
-                    'type' => str_replace([0, 1, 2], ['start', 'before', 'after'], $type),
-                    'user' => $user,
-                    'task' => $task,
-                    'setting' => $setting,
-                ])->render();
-                Setting::validateAddr($user->email, function($to) use ($content, $subject, $setting) {
-                    Factory::mailer()
-                        ->setDsn("smtp://{$setting['account']}:{$setting['password']}@{$setting['smtp_server']}:{$setting['port']}?verify_peer=0")
-                        ->setMessage(EmailMessage::create()
-                            ->from(env('APP_NAME', 'Task') . " <{$setting['account']}>")
-                            ->to($to)
-                            ->subject($subject)
-                            ->html($content))
-                        ->send();
-                });
-                $data['is_send'] = 1;
-            } catch (\Throwable $e) {
-                $data['send_error'] = $e->getMessage();
-            }
-            $data['email'] = $user->email;
-            ProjectTaskMailLog::createInstance($data)->save();
-        }
     }
 
     /**
