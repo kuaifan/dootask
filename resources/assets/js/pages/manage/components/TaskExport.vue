@@ -16,7 +16,7 @@
                     style="width:100%"
                     :placeholder="$L('请选择时间')"/>
                 <div class="form-tip checkin-export-quick-select">
-                    {{$L('快捷选择')}}:
+                    <span>{{$L('快捷选择')}}:</span>
                     <em @click="formData.time=dateShortcuts('prev')">{{$L('上个月')}}</em>
                     <em @click="formData.time=dateShortcuts('this')">{{$L('这个月')}}</em>
                 </div>
@@ -37,12 +37,13 @@
 
 <style lang="scss">
 .checkin-export-quick-select {
-    display: flex;
-    align-items: center;
+    > span {
+        margin-right: 4px;
+    }
     > em {
+        margin-right: 4px;
         cursor: pointer;
         color: #2b85e4;
-        margin-left: 8px;
         font-style: normal;
         &:hover {
             text-decoration: underline;
