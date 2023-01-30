@@ -3,7 +3,7 @@
  *
  * http://www.onlyoffice.com
  *
- * Version: 7.2.1 (build:34)
+ * Version: 7.2.2 (build:56)
  */
 
 ;(function(window) {
@@ -840,7 +840,7 @@ b.prototype.lockWithTimeout=function(a){this.lockCounter++;var c=this;setTimeout
     };
 
     DocsAPI.DocEditor.version = function() {
-        return '7.2.1';
+        return '7.2.2';
     };
 
     MessageDispatcher = function(fn, scope) {
@@ -978,7 +978,7 @@ b.prototype.lockWithTimeout=function(a){this.lockCounter++;var c=this;setTimeout
     }
 
     function getAppParameters(config) {
-        var params = "?_dc=7.2.1-34";
+        var params = "?_dc=7.2.2-56";
 
         if (config.editorConfig && config.editorConfig.lang)
             params += "&lang=" + config.editorConfig.lang;
