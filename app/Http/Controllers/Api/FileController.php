@@ -242,6 +242,7 @@ class FileController extends AbstractController
             $file = File::permissionFind($id, 1);
             //
             $file->name = $name;
+            $file->handleDuplicateName();
             $file->save();
             $file->pushMsg('update', $file);
             return Base::retSuccess('修改成功', $file);
