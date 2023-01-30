@@ -20,14 +20,21 @@
                             type="timerange"
                             format="HH:mm"
                             :placeholder="$L('请选择签到时间')"/>
-                        <div class="form-tip">{{$L('每日首次签到成功消息通知')}}</div>
-                    </FormItem>
-                    <FormItem :label="$L('签到通知')" prop="notice">
-                        <RadioGroup v-model="formData.notice">
-                            <Radio label="open">{{ $L('开启') }}</Radio>
-                            <Radio label="close">{{ $L('关闭') }}</Radio>
-                        </RadioGroup>
-                        <div class="form-tip">{{$L('每日首次签到成功消息通知')}}</div>
+                        <Form @submit.native.prevent>
+                            <FormItem :label="$L('最早可提前')" prop="advance">
+                                <div class="input-number-box">
+                                    <InputNumber v-model="formData.advance" :min="0" :step="1"/>
+                                    <label>{{ $L('分钟') }}</label>
+                                </div>
+                            </FormItem>
+                            <FormItem :label="$L('最晚可延后')" prop="delay">
+                                <div class="input-number-box">
+                                    <InputNumber v-model="formData.delay" :min="0" :step="1"/>
+                                    <label>{{ $L('分钟') }}</label>
+                                </div>
+                            </FormItem>
+                        </Form>
+                        <div class="form-tip">{{$L('签到前后时间收到消息通知')}}</div>
                     </FormItem>
                     <FormItem :label="$L('允许修改')" prop="edit">
                         <RadioGroup v-model="formData.edit">

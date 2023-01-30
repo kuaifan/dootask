@@ -8,6 +8,8 @@ use App\Models\UserCheckinRecord;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
+use Cache;
+use Carbon\Carbon;
 use Request;
 
 /**
@@ -90,15 +92,19 @@ class PublicController extends AbstractController
         if ($key != $setting['key']) {
             return 'key error';
         }
-        $setting['time'] = $setting['time'] ? Base::json2array($setting['time']) : ['00:00', '23:59'];
+        $times = $setting['time'] ? Base::json2array($setting['time']) : ['00:00', '23:59'];
+        $advance = (intval($setting['advance']) ?: 120) * 60;
+        $delay = (intval($setting['delay']) ?: 120) * 60;
         //
         $nowDate = date("Y-m-d");
         $nowTime = date("H:i:s");
         //
-        $timeStart = strtotime(date("{$nowDate} {$setting['time'][0]}"));
-        $timeEnd = strtotime(date("{$nowDate} {$setting['time'][1]}"));
-        if (Base::time() < $timeStart || Base::time() > $timeEnd) {
-            return "not in valid time, valid time is {$setting['time'][0]}-{$setting['time'][1]}";
+        $timeStart = strtotime("{$nowDate} {$times[0]}");
+        $timeEnd = strtotime("{$nowDate} {$times[1]}");
+        $timeAdvance = max($timeStart - $advance, strtotime($nowDate));
+        $timeDelay = min($timeEnd + $delay, strtotime("{$nowDate} 23:59:59"));
+        if (Base::time() < $timeAdvance || $timeDelay < Base::time()) {
+            return "not in valid time, valid time is " . date("H:i", $timeAdvance) . "-" . date("H:i", $timeDelay);
         }
         //
         $macs = explode(",", $mac);
@@ -106,6 +112,7 @@ class PublicController extends AbstractController
         foreach ($macs as $mac) {
             $mac = strtoupper($mac);
             if (Base::isMac($mac) &&  $UserCheckinMac = UserCheckinMac::whereMac($mac)->first()) {
+                $checkins[] = $UserCheckinMac;
                 $array = [
                     'userid' => $UserCheckinMac->userid,
                     'mac' => $UserCheckinMac->mac,
@@ -114,26 +121,40 @@ class PublicController extends AbstractController
                 $record = UserCheckinRecord::where($array)->first();
                 if (empty($record)) {
                     $record = UserCheckinRecord::createInstance($array);
-                    $checkins[] = $UserCheckinMac;
                 }
                 $record->times = Base::array2json(array_merge($record->times, [$nowTime]));
                 $record->report_time = $time;
                 $record->save();
-
             }
         }
         //
-        if ($checkins && $setting['notice'] === 'open') {
-            $botUser = User::botGetOrCreate('check-in');
-            if ($botUser) {
+        if ($checkins && $botUser = User::botGetOrCreate('check-in')) {
+            $sendMsg = function($type, UserCheckinMac $checkin) use ($botUser, $nowDate) {
+                $cacheKey = "Checkin::sendMsg-{$nowDate}-{$type}:" . $checkin->userid;
+                if (Cache::get($cacheKey) === "yes") {
+                    return;
+                }
+                Cache::put($cacheKey, "yes", Carbon::now()->addDay());
+                //
+                $dialog = WebSocketDialog::checkUserDialog($botUser->userid, $checkin->userid);
+                if ($dialog) {
+                    $hi = date("H:i");
+                    $pre = $type == "up" ? "上班" : "下班";
+                    $remark = $checkin->remark ?: $checkin->mac;
+                    $text = "{$pre}签到成功，签到时间: {$hi} ({$remark})";
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid);
+                }
+            };
+            if ($timeAdvance <= Base::time() && Base::time() <= $timeStart + 3600) {
+                // 上班签到（迟到1小时内仍提醒）
                 foreach ($checkins as $checkin) {
-                    $dialog = WebSocketDialog::checkUserDialog($botUser->userid, $checkin->userid);
-                    if ($dialog) {
-                        $hi = date("H:i");
-                        $remark = $checkin->remark ?: $checkin->mac;
-                        $text = "签到成功，签到时间: {$hi} ({$remark})";
-                        WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid);    // todo 未能在任务end事件来发送任务
-                    }
+                    $sendMsg('up', $checkin);
+                }
+            }
+            if ($timeEnd <= Base::time() && Base::time() <= $timeDelay) {
+                // 下班签到
+                foreach ($checkins as $checkin) {
+                    $sendMsg('down', $checkin);
                 }
             }
         }
