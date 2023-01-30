@@ -206,9 +206,24 @@
             :title="$L('修改签到MAC地址')">
             <Form :model="checkinMacEditData" label-width="auto" @submit.native.prevent>
                 <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${checkinMacEditData.userid}，${checkinMacEditData.nickname}】MAC地址修改。`)}}</Alert>
-                <FormItem :label="$L('MAC地址')">
-                    <TagInput v-model="checkinMacEditData.checkin_macs"/>
-                </FormItem>
+                <Row class="team-department-checkin-item">
+                    <Col span="12">{{$L('设备MAC地址')}}</Col>
+                    <Col span="12">{{$L('备注')}}</Col>
+                </Row>
+                <Row v-for="(item, key) in checkinMacEditData.checkin_macs" :key="key" class="team-department-checkin-item">
+                    <Col span="12">
+                        <Input
+                            v-model="item.mac"
+                            :maxlength="20"
+                            :placeholder="$L('请输入设备MAC地址')"
+                            clearable
+                            @on-clear="delCheckinDatum(key)"/>
+                    </Col>
+                    <Col span="12">
+                        <Input v-model="item.remark" :maxlength="100" :placeholder="$L('备注')"/>
+                    </Col>
+                </Row>
+                <Button type="default" icon="md-add" @click="addCheckinDatum">{{$L('添加设备')}}</Button>
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="checkinMacEditShow=false">{{$L('取消')}}</Button>
@@ -222,9 +237,6 @@
             :title="$L('修改部门')">
             <Form :model="departmentEditData" label-width="auto" @submit.native.prevent>
                 <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${departmentEditData.userid}，${departmentEditData.nickname}】部门修改。`)}}</Alert>
-                <FormItem :label="$L('原部门')">
-                    <div style="line-height:24px;padding:4px 0" v-html="departmentEditData.old || '-'"></div>
-                </FormItem>
                 <FormItem :label="$L('修改部门')">
                     <Select v-model="departmentEditData.department" multiple :multiple-max="10" :placeholder="$L('留空为默认部门')">
                         <Option v-for="(item, index) in departmentList" :value="item.id" :key="index">{{ item.name }}</Option>
@@ -654,6 +666,11 @@ export default {
 
             dialogLoad: false,
             dialogList: [],
+
+            nullCheckinDatum: {
+                'mac': '',
+                'remark': '',
+            },
         }
     },
     created() {
@@ -667,19 +684,23 @@ export default {
                     if (checkin_macs.length === 0) {
                         return h('div', '-');
                     } else {
-                        const tmp = []
-                        tmp.push(h('span', {
-                            domProps: {
-                                title: checkin_macs[0]
+                        const desc = (item) => {
+                            if (item.remark) {
+                                return `${item.mac} (${item.remark})`
                             }
-                        }, checkin_macs[0]))
+                            return item.mac
+                        }
+                        const tmp = []
+                        tmp.push(h('AutoTip', desc(checkin_macs[0])))
                         if (checkin_macs.length > 1) {
                             checkin_macs = checkin_macs.splice(1)
                             tmp.push(h('ETooltip', [
                                 h('div', {
                                     slot: 'content',
                                     domProps: {
-                                        innerHTML: checkin_macs.join("<br/>")
+                                        innerHTML: checkin_macs.map(item => {
+                                            return desc(item)
+                                        }).join("<br/>")
                                     }
                                 }),
                                 h('div', {
@@ -800,8 +821,11 @@ export default {
                         type: 'checkin_macs',
                         userid: row.userid,
                         nickname: row.nickname,
-                        checkin_macs: (row.checkin_macs || []).join(','),
+                        checkin_macs: row.checkin_macs,
                     };
+                    if (this.checkinMacEditData.checkin_macs.length === 0) {
+                        this.addCheckinDatum();
+                    }
                     this.checkinMacEditShow = true;
                     break;
 
@@ -818,7 +842,6 @@ export default {
                         userid: row.userid,
                         nickname: row.nickname,
                         department: row.department.map(id => parseInt(id)),
-                        old: departments.join("<br/>")
                     };
                     this.departmentEditShow = true;
                     break;
@@ -1034,6 +1057,17 @@ export default {
                 })
             } else {
                 this.dialogList = [];
+            }
+        },
+
+        addCheckinDatum() {
+            this.checkinMacEditData.checkin_macs.push($A.cloneJSON(this.nullCheckinDatum));
+        },
+
+        delCheckinDatum(key) {
+            this.checkinMacEditData.checkin_macs.splice(key, 1);
+            if (this.checkinMacEditData.checkin_macs.length === 0) {
+                this.addCheckinDatum();
             }
         },
     }

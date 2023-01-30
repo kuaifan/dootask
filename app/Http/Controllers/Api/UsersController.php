@@ -606,7 +606,7 @@ class UsersController extends AbstractController
         //
         if ($getCheckinMac) {
             $list->transform(function (User $user) {
-                $user->checkin_macs = UserCheckinMac::whereUserid($user->userid)->orderBy('id')->pluck('mac');
+                $user->checkin_macs = UserCheckinMac::select(['id', 'mac', 'remark'])->whereUserid($user->userid)->orderBy('id')->get();
                 return $user;
             });
         }
@@ -673,13 +673,14 @@ class UsersController extends AbstractController
                 break;
 
             case 'checkin_macs':
-                $list = explode(",", $data['checkin_macs']);
+                $list = is_array($data['checkin_macs']) ? $data['checkin_macs'] : [];
                 $array = [];
                 foreach ($list as $item) {
-                    $item = strtoupper($item);
-                    if (Base::isMac($item)) {
-                        $array[$item] = [
-                            'mac' => $item,
+                    $item['mac'] = strtoupper($item['mac']);
+                    if (Base::isMac($item['mac'])) {
+                        $array[$item['mac']] = [
+                            'mac' => $item['mac'],
+                            'remark' => $item['remark'],
                         ];
                     }
                 }
