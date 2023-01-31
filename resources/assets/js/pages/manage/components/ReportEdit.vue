@@ -67,6 +67,7 @@ export default {
     data() {
         return {
             reportData: {
+                sign: "",
                 title: "",
                 content: "",
                 type: "weekly",
@@ -150,11 +151,13 @@ export default {
                     if (this.id > 0) {
                         this.getDetail(data.id);
                     } else {
+                        this.reportData.sign = data.sign;
                         this.reportData.title = data.title;
                         this.reportData.content = data.content;
                     }
                 } else {
                     this.reportData.id = 0;
+                    this.reportData.sign = data.sign;
                     this.reportData.title = data.title;
                     this.reportData.content = data.content;
                 }

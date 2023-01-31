@@ -120,6 +120,7 @@ class ReportController extends AbstractController
      * @apiName store
      *
      * @apiParam {Number} [id]           汇报ID
+     * @apiParam {String} [sign]         唯一签名，通过[api/report/template]接口返回
      * @apiParam {String} [title]        汇报标题
      * @apiParam {Array}  [type]         汇报类型，weekly:周报，daily:日报
      * @apiParam {Number} [content]      内容
@@ -193,18 +194,17 @@ class ReportController extends AbstractController
                 ]);
             } else {
                 // 生成唯一标识
-                $sign = Report::generateSign($input["type"], $input["offset"]);
+                $sign = Base::isNumber($input["sign"]) ? $input["sign"] : Report::generateSign($input["type"], $input["offset"]);
                 // 检查唯一标识是否存在
-                if (empty($input["id"])) {
-                    if (Report::query()->whereSign($sign)->whereType($input["type"])->count() > 0)
-                        throw new ApiException("请勿重复提交工作汇报");
+                if (empty($input["id"]) && Report::query()->whereSign($sign)->whereType($input["type"])->count() > 0) {
+                    throw new ApiException("请勿重复提交工作汇报");
                 }
                 $report = Report::createInstance([
+                    "sign" => $sign,
                     "title" => $input["title"],
                     "type" => $input["type"],
-                    "content" => htmlspecialchars($input["content"]),
                     "userid" => $user->userid,
-                    "sign" => $sign,
+                    "content" => htmlspecialchars($input["content"]),
                 ]);
             }
 
@@ -286,9 +286,10 @@ class ReportController extends AbstractController
         // 如果已经提交了相关汇报
         if ($one && $id > 0) {
             return Base::retSuccess('success', [
-                "content" => $one->content,
-                "title" => $one->title,
                 "id" => $one->id,
+                "sign" => $one->sign,
+                "title" => $one->title,
+                "content" => $one->content,
             ]);
         }
 
@@ -341,13 +342,14 @@ class ReportController extends AbstractController
         }
         $data = [
             "time" => $start_time->toDateTimeString(),
-            "complete_task" => $complete_task,
-            "unfinished_task" => $unfinished_task,
+            "sign" => $sign,
+            "title" => $title,
             "content" => '<h2>' . Base::Lang('已完成工作') . '</h2><ol>' .
                 $completeContent . '</ol><h2>' .
                 Base::Lang('未完成的工作') . '</h2><ol>' .
                 $unfinishedContent . '</ol>',
-            "title" => $title,
+            "complete_task" => $complete_task,
+            "unfinished_task" => $unfinished_task,
         ];
         if ($one) {
             $data['id'] = $one->id;
