@@ -119,13 +119,13 @@ class ReportController extends AbstractController
      * @apiGroup report
      * @apiName store
      *
-     * @apiParam {Number} [id]           汇报ID
-     * @apiParam {String} [sign]         唯一签名，通过[api/report/template]接口返回
-     * @apiParam {String} [title]        汇报标题
-     * @apiParam {Array}  [type]         汇报类型，weekly:周报，daily:日报
-     * @apiParam {Number} [content]      内容
-     * @apiParam {Number} [receive]      汇报对象
-     * @apiParam {Number} [offset]       偏移量
+     * @apiParam {Number} id            汇报ID，0为新建
+     * @apiParam {String} [sign]        唯一签名，通过[api/report/template]接口返回
+     * @apiParam {String} title         汇报标题
+     * @apiParam {Array}  type          汇报类型，weekly:周报，daily:日报
+     * @apiParam {Number} content       内容
+     * @apiParam {Number} [receive]     汇报对象
+     * @apiParam {Number} offset        时间偏移量
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -133,8 +133,11 @@ class ReportController extends AbstractController
      */
     public function store(): array
     {
+        $user = User::auth();
+        //
         $input = [
             "id" => Base::getPostValue("id", 0),
+            "sign" => Base::getPostValue("sign"),
             "title" => Base::getPostValue("title"),
             "type" => Base::getPostValue("type"),
             "content" => Base::getPostValue("content"),
@@ -147,7 +150,6 @@ class ReportController extends AbstractController
             'title' => 'required',
             'type' => ['required', Rule::in([Report::WEEKLY, Report::DAILY])],
             'content' => 'required',
-            'receive' => 'required',
             'offset' => ['numeric', 'max:0'],
         ], [
             'id.numeric' => 'ID只能是数字',
@@ -155,14 +157,12 @@ class ReportController extends AbstractController
             'type.required' => '请选择汇报类型',
             'type.in' => '汇报类型错误',
             'content.required' => '请填写汇报内容',
-            'receive.required' => '请选择接收人',
             'offset.numeric' => '工作汇报周期格式错误，只能是数字',
             'offset.max' => '只能提交当天/本周或者之前的的工作汇报',
         ]);
         if ($validator->fails())
             return Base::retError($validator->errors()->first());
 
-        $user = User::auth();
         // 接收人
         if (is_array($input["receive"])) {
             // 删除当前登录人
@@ -207,11 +207,11 @@ class ReportController extends AbstractController
                     "content" => htmlspecialchars($input["content"]),
                 ]);
             }
-
             $report->save();
-            if (!empty($input["receive_content"])) {
-                // 删除关联
-                $report->Receives()->delete();
+
+            // 删除关联
+            $report->Receives()->delete();
+            if ($input["receive_content"]) {
                 // 保存接收人
                 $report->Receives()->createMany($input["receive_content"]);
             }

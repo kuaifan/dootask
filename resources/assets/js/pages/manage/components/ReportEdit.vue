@@ -36,7 +36,9 @@
                     :placeholder="$L('选择接收人')"
                     :transfer="false"/>
                 <a class="report-user-link" href="javascript:void(0);" @click="getLastSubmitter">
-                    <Icon type="ios-share-outline" />{{ $L("使用我上次的汇报对象") }}
+                    <Icon v-if="receiveLoad > 0" type="ios-loading" class="icon-loading"/>
+                    <Icon v-else type="ios-share-outline" />
+                    {{ $L("使用我上次的汇报对象") }}
                 </a>
             </div>
         </FormItem>
@@ -44,7 +46,7 @@
             <TEditor v-model="reportData.content" height="100%"/>
         </FormItem>
         <FormItem class="report-foot">
-            <Button type="primary" @click="handleSubmit" class="report-bottom">{{$L(id > 0 ? '修改' : '提交')}}</Button>
+            <Button type="primary" @click="handleSubmit" :loading="loadIng > 0" class="report-bottom">{{$L(id > 0 ? '修改' : '提交')}}</Button>
         </FormItem>
     </Form>
 </template>
@@ -66,6 +68,9 @@ export default {
     },
     data() {
         return {
+            loadIng: 0,
+            receiveLoad: 0,
+
             reportData: {
                 sign: "",
                 title: "",
@@ -99,10 +104,6 @@ export default {
     },
     methods: {
         handleSubmit() {
-            if (this.reportData.receive.length === 0) {
-                $A.messageError(this.$L("请选择接收人"));
-                return false;
-            }
             if (this.id === 0 && this.reportData.id > 0) {
                 $A.modalConfirm({
                     title: '覆盖提交',
@@ -117,6 +118,7 @@ export default {
         },
 
         doSubmit() {
+            this.loadIng++;
             this.$store.dispatch("call", {
                 url: 'report/store',
                 data: this.reportData,
@@ -133,10 +135,13 @@ export default {
             }).catch(({msg}) => {
                 // msg 错误原因
                 $A.messageError(msg);
+            }).finally(_ => {
+                this.loadIng--;
             });
         },
 
         getTemplate() {
+            this.loadIng++;
             this.$store.dispatch("call", {
                 url: 'report/template',
                 data: {
@@ -164,6 +169,8 @@ export default {
             }).catch(({msg}) => {
                 // msg 错误原因
                 $A.messageError(msg);
+            }).finally(_ => {
+                this.loadIng--;
             });
         },
 
@@ -216,12 +223,17 @@ export default {
 
         // 获取上一次接收人
         getLastSubmitter() {
+            setTimeout(_ => {
+                this.receiveLoad++;
+            }, 300)
             this.$store.dispatch("call", {
                 url: 'report/last_submitter',
             }).then(({data}) => {
                 this.reportData.receive = data;
             }).catch(({msg}) => {
                 $A.messageError(msg);
+            }).finally(_ => {
+                this.receiveLoad--;
             });
         },
 
