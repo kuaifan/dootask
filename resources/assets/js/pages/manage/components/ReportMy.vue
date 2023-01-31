@@ -79,20 +79,51 @@ export default {
             columns: [{
                 title: this.$L("名称"),
                 key: 'title',
-                sortable: true,
                 minWidth: 120,
             }, {
                 title: this.$L("类型"),
                 key: 'type',
                 align: 'center',
-                sortable: true,
                 width: 90,
             }, {
                 title: this.$L("汇报时间"),
                 key: 'created_at',
                 align: 'center',
-                sortable: true,
                 width: 180,
+            }, {
+                title: this.$L("汇报对象"),
+                key: 'receives',
+                align: 'center',
+                width: 90,
+                render: (h, {row}) => {
+                    if (row.receives.length === 0) {
+                        return h('div', '-')
+                    }
+                    const array = [];
+                    if (row.receives.length <= 2) {
+                        row.receives.some(userid => {
+                            array.push(h('UserAvatar', {
+                                props: {
+                                    size: 22,
+                                    userid: userid,
+                                }
+                            }))
+                        })
+                    } else {
+                        array.push(h('UserAvatar', {
+                            props: {
+                                size: 22,
+                                userid: row.receives[0],
+                            }
+                        }))
+                        array.push(h('div', {
+                            class: "more-avatar"
+                        }, `+${row.receives.length - 1}`))
+                    }
+                    return h('div', {
+                        class: "report-table-avatar"
+                    }, array)
+                }
             }, {
                 title: this.$L("操作"),
                 align: 'center',
