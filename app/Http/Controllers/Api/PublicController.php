@@ -140,19 +140,19 @@ class PublicController extends AbstractController
                 if ($dialog) {
                     $hi = date("H:i");
                     $pre = $type == "up" ? "上班" : "下班";
-                    $remark = $checkin->remark ?: $checkin->mac;
-                    $text = "{$pre}签到成功，签到时间: {$hi} ({$remark})";
+                    $remark = $checkin->remark ? " ({$checkin->remark})": "";
+                    $text = "{$pre}打卡成功，打卡时间: {$hi} {$remark}";
                     WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid);
                 }
             };
-            if ($timeAdvance <= Base::time() && Base::time() <= $timeStart + 3600) {
-                // 上班签到（迟到1小时内仍提醒）
+            if ($timeAdvance <= Base::time() && Base::time() < $timeEnd) {
+                // 上班打卡通知（从最早打卡时间 到 下班打卡时间）
                 foreach ($checkins as $checkin) {
                     $sendMsg('up', $checkin);
                 }
             }
             if ($timeEnd <= Base::time() && Base::time() <= $timeDelay) {
-                // 下班签到
+                // 下班打卡通知（下班打卡时间 到 最晚打卡时间）
                 foreach ($checkins as $checkin) {
                     $sendMsg('down', $checkin);
                 }
