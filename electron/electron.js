@@ -173,6 +173,8 @@ if (!getTheLock) {
     })
     app.on('ready', () => {
         isReady = true
+        // SameSite
+        utils.useCookie()
         // 创建主窗口
         createMainWindow()
         // 创建托盘

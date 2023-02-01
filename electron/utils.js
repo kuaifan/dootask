@@ -1,5 +1,5 @@
 const fs = require("fs");
-const {shell, dialog} = require("electron");
+const {shell, dialog, session} = require("electron");
 
 module.exports = {
     /**
@@ -369,5 +369,20 @@ module.exports = {
 
         // 版本号完全相同
         return 0;
+    },
+
+    /**
+     * electron15 后，解决跨域cookie无法携带，
+     */
+    useCookie() {
+        const filter = {urls: ['https://*/*']};
+        session.defaultSession.webRequest.onHeadersReceived(filter, (details, callback) => {
+            if (details.responseHeaders && details.responseHeaders['Set-Cookie']) {
+                for (let i = 0; i < details.responseHeaders['Set-Cookie'].length; i++) {
+                    details.responseHeaders['Set-Cookie'][i] += ';SameSite=None;Secure';
+                }
+            }
+            callback({responseHeaders: details.responseHeaders});
+        });
     }
 }
