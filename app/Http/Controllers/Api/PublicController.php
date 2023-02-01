@@ -129,7 +129,17 @@ class PublicController extends AbstractController
         }
         //
         if ($checkins && $botUser = User::botGetOrCreate('check-in')) {
-            $sendMsg = function($type, UserCheckinMac $checkin) use ($botUser, $nowDate) {
+            $getJoke = function() {
+                $jokes = Base::json2array(Cache::get("JokeTask:rands"));
+                if ($jokes) {
+                    $jokev = $jokes[array_rand($jokes)];
+                    if ($jokev) {
+                        return $jokev;
+                    }
+                }
+                return null;
+            };
+            $sendMsg = function($type, UserCheckinMac $checkin) use ($getJoke, $botUser, $nowDate) {
                 $cacheKey = "Checkin::sendMsg-{$nowDate}-{$type}:" . $checkin->userid;
                 if (Cache::get($cacheKey) === "yes") {
                     return;
@@ -141,7 +151,11 @@ class PublicController extends AbstractController
                     $hi = date("H:i");
                     $pre = $type == "up" ? "上班" : "下班";
                     $remark = $checkin->remark ? " ({$checkin->remark})": "";
-                    $text = "{$pre}打卡成功，打卡时间: {$hi} {$remark}";
+                    $text = "<p>{$pre}打卡成功，打卡时间: {$hi} {$remark}</p>";
+                    $joke = $getJoke();
+                    if ($joke) {
+                        $text = "<pre>{$text}<p>----------</p><p>每日开心：{$joke}。</p></pre>";
+                    }
                     WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid);
                 }
             };

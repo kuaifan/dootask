@@ -10,6 +10,7 @@ use App\Tasks\AppPushTask;
 use App\Tasks\AutoArchivedTask;
 use App\Tasks\DeleteTmpTask;
 use App\Tasks\EmailNoticeTask;
+use App\Tasks\JokeTask;
 use App\Tasks\LoopTask;
 use Arr;
 use Cache;
@@ -190,6 +191,8 @@ class IndexController extends InvokeController
         Task::deliver(new DeleteTmpTask('tmp', 24));
         // 周期任务
         Task::deliver(new LoopTask());
+        // 获取笑话
+        Task::deliver(new JokeTask());
 
         return "success";
     }
