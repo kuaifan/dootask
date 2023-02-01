@@ -850,7 +850,7 @@ class SystemController extends AbstractController
         $sheets = [];
         $startD = Carbon::parse($date[0])->startOfDay();
         $endD = Carbon::parse($date[1])->endOfDay();
-        $users = User::whereIn('userid', $userid)->take(20)->get();
+        $users = User::whereIn('userid', $userid)->take(100)->get();
         /** @var User $user */
         foreach ($users as $user) {
             $recordTimes = UserCheckinRecord::getTimes($user->userid, [$startD, $endD]);
