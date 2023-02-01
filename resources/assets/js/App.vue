@@ -246,7 +246,7 @@ export default {
                 key: 'manifest',
                 url: $A.apiUrl("../manifest")
             })
-            $A.bindScreenshotKey($A.jsonParse(window.localStorage.getItem("__keyboard:data__") || {}));
+            $A.bindScreenshotKey($A.jsonParse(window.localStorage.getItem("__keyboard:data__")) || {});
         },
 
         eeuiEvents() {

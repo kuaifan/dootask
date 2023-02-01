@@ -67,7 +67,7 @@ export default {
                 screenshot_mate: true,
                 screenshot_shift: true,
                 screenshot_key: '',
-            }, $A.jsonParse(window.localStorage.getItem("__keyboard:data__") || {}));
+            }, $A.jsonParse(window.localStorage.getItem("__keyboard:data__")) || {});
             //
             this.formData_bak = $A.cloneJSON(this.formData);
         },
