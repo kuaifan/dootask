@@ -1113,7 +1113,8 @@ class ProjectController extends AbstractController
                     'styles' => ["A1:P1" => ["font" => ["bold" => true]]],
                     'data' => [],
                 ];
-            $sheets[] = BillExport::create()->setTitle($data['nickname'] ?: $ownerid)->setHeadings($headings)->setData($data['data'])->setStyles($data['styles']);
+            $title = (count($sheets) + 1) . "." . ($data['nickname'] ?: $ownerid);
+            $sheets[] = BillExport::create()->setTitle($title)->setHeadings($headings)->setData($data['data'])->setStyles($data['styles']);
         }
         //
         $fileName = User::userid2nickname($userid[0]) ?: $userid[0];

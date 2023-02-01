@@ -914,7 +914,8 @@ class SystemController extends AbstractController
                 ];
                 $startT += 86400;
             }
-            $sheets[] = BillExport::create()->setTitle($nickname ?: $user->userid)->setHeadings($headings)->setData($datas)->setStyles($styles);
+            $title = (count($sheets) + 1) . "." . ($nickname ?: $user->userid);
+            $sheets[] = BillExport::create()->setTitle($title)->setHeadings($headings)->setData($datas)->setStyles($styles);
         }
         if (empty($sheets)) {
             return Base::retError('没有任何数据');
