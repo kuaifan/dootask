@@ -60,7 +60,7 @@ class JokeSoupTask extends AbstractTask
                     $array[] = $text;
                 }
             }
-            Cache::forever("JokeSoupTask:soups", Base::array2json(array_slice($array, -100)));
+            Cache::forever("JokeSoupTask:soups", Base::array2json(array_slice($array, -24)));
         }
     }
 
