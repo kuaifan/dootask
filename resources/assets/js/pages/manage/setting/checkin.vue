@@ -173,11 +173,14 @@ export default {
 
         latelyFormat(data) {
             const time = $A.Time();
+            const Ym = $A.formatDate("Ym", time)
             this.latelyData = [];
             for (let i = 0; i < 5; i++) {
-                const ymd = $A.formatDate("Y-m-d", time - i * 86400)
-                const item = data.find(({date}) => date == ymd) || {date: ymd, section: []}
-                this.latelyData.push(item)
+                if (Ym == $A.formatDate("Ym", time - i * 86400)) {
+                    const ymd = $A.formatDate("Y-m-d", time - i * 86400)
+                    const item = data.find(({date}) => date == ymd) || {date: ymd, section: []}
+                    this.latelyData.push(item)
+                }
             }
         },
 
