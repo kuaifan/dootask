@@ -2193,8 +2193,10 @@ export default {
             search_msg_id = dialog_id.search_msg_id;
             dialog_id = dialog_id.dialog_id;
         }
-        state.dialogSearchMsgId = /^\d+$/.test(search_msg_id) ? search_msg_id : 0;
-        state.dialogId = /^\d+$/.test(dialog_id) ? dialog_id : 0;
+        requestAnimationFrame(_ => {
+            state.dialogSearchMsgId = /^\d+$/.test(search_msg_id) ? search_msg_id : 0;
+            state.dialogId = /^\d+$/.test(dialog_id) ? dialog_id : 0;
+        })
     },
 
     /**
