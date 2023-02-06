@@ -459,6 +459,7 @@ class DialogController extends AbstractController
                 ->value('id'));
         }
         $data['list'] = $list;
+        $data['time'] = Base::time();
         // 记录当前打开的任务对话
         if ($dialog->type == 'group' && $dialog->group_type == 'task') {
             $user->task_dialog_id = $dialog->id;

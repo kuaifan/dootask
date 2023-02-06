@@ -2483,7 +2483,6 @@ export default {
                 $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
             }
             //
-            const callTime = $A.Time();
             dispatch("call", {
                 url: 'dialog/msg/list',
                 data,
@@ -2496,7 +2495,9 @@ export default {
                     dispatch("saveDialog", resData.dialog);
                     //
                     const ids = resData.list.map(({id}) => id)
-                    state.dialogMsgs = state.dialogMsgs.filter(item => item.dialog_id != data.dialog_id || ids.includes(item.id) || $A.Time(item.created_at) >= callTime);
+                    state.dialogMsgs = state.dialogMsgs.filter(item => {
+                        return item.dialog_id != data.dialog_id || ids.includes(item.id) || $A.Time(item.created_at) >= resData.time
+                    });
                     $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
                 }
                 if ($A.isArray(resData.todo)) {
