@@ -1074,6 +1074,30 @@
         }
     }
 
+    .dialog-top {
+        position: absolute;
+        top: 78px;
+        left: 0;
+        right: 0;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        .top-unread {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 12px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px 0 rgba($primary-text-color, 0.33);
+            background: #fff;
+            cursor: pointer;
+            > i {
+                margin-right: 4px;
+            }
+        }
+    }
+
     .dialog-footer {
         position: relative;
         padding: 0 24px;
@@ -1587,6 +1611,12 @@
                         }
                     }
                 }
+            }
+        }
+        .dialog-top {
+            top: 68px;
+            &.down {
+                top: 98px;
             }
         }
         .dialog-footer {

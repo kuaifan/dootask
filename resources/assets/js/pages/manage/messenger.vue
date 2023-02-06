@@ -720,17 +720,12 @@ export default {
         },
 
         handleReadClick() {
-            this.$store.dispatch("call", {
-                url: 'dialog/msg/mark',
-                data: {
-                    dialog_id: this.operateItem.id,
-                    type: $A.getDialogUnread(this.operateItem, true) > 0 ? 'read' : 'unread'
-                },
-            }).then(({data}) => {
-                this.$store.dispatch("saveDialog", data);
+            this.$store.dispatch("dialogMsgMark", {
+                dialog_id: this.operateItem.id,
+                type: $A.getDialogUnread(this.operateItem, true) > 0 ? 'read' : 'unread'
             }).catch(({msg}) => {
-                $A.modalError(msg);
-            });
+                $A.modalError(msg)
+            })
         },
 
         handleSilenceClick() {

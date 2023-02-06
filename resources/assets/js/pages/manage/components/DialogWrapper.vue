@@ -97,6 +97,14 @@
             </slot>
         </div>
 
+        <!--顶部提示-->
+        <div v-if="beforeUnread" class="dialog-top" :class="{'down': tagShow}">
+            <div class="top-unread" @click="goBeforeUnread">
+                <Icon v-if="beforeLoad" type="ios-loading" class="icon-loading"></Icon>
+                <span>{{$L(`未读消息${beforeUnread.unread}条`)}}</span>
+            </div>
+        </div>
+
         <!--消息列表-->
         <VirtualList
             ref="scroller"
@@ -522,6 +530,8 @@ export default {
             scrollDirection: null,
             scrollAction: 0,
             scrollTmp: 0,
+
+            beforeLoad: false,
         }
     },
 
@@ -538,6 +548,7 @@ export default {
             'dialogMsgs',
             'dialogTodos',
             'dialogMsgTransfer',
+            'dialogBeforeUnreads',
             'cacheDialogs',
             'wsOpenNum',
             'touchBackInProgress',
@@ -751,6 +762,11 @@ export default {
                 }
             }
             return null
+        },
+
+        beforeUnread() {
+            const before = this.dialogBeforeUnreads.find(({id}) => id === this.dialogId)
+            return before || null
         }
     },
 
@@ -2200,6 +2216,25 @@ export default {
                 this.$store.dispatch("saveDialogMsg", data.add);
                 this.$store.dispatch("updateDialogLastMsg", data.add);
             }
+        },
+
+        goBeforeUnread() {
+            if (!this.beforeUnread || this.beforeLoad) {
+                return;
+            }
+            //
+            this.beforeLoad = true
+            const {first_id} = this.beforeUnread
+            this.$store.dispatch("dialogMsgMark", {
+                dialog_id: this.dialogId,
+                type: 'read'
+            }).then(_ => {
+                this.onPositionId(first_id)
+            }).catch(({msg}) => {
+                $A.modalError(msg)
+            }).finally(_ => {
+                this.beforeLoad = false
+            })
         },
 
         getBase64Image(url) {
