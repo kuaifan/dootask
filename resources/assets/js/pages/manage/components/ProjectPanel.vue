@@ -543,6 +543,8 @@ export default {
             'cacheColumns',
 
             'taskCompleteTemps',
+
+            'cacheUserBasic',
         ]),
 
         ...mapGetters(['projectData', 'transforTasks']),
@@ -597,7 +599,9 @@ export default {
                         return !complete_at;
                     });
                 }
-                if (flowInfo.value > 0) {
+                if ($A.leftExists(flowInfo.value, "user:")) {
+                    list = list.filter(({task_user}) => task_user.find(({userid, owner}) => userid === flowInfo.userid && owner));
+                } else if (flowInfo.value > 0) {
                     list = list.filter(({flow_item_id}) => flow_item_id === flowInfo.value);
                 }
                 if (searchText) {
@@ -710,12 +714,12 @@ export default {
         },
 
         unList() {
-            const {allTask, searchText, sortField, sortType, flowInfo} = this;
+            const {allTask, searchText, sortField, sortType} = this;
             const array = allTask.filter(task => {
                 if (task.parent_id > 0) {
                     return false;
                 }
-                if (flowInfo.value > 0 && task.flow_item_id !== flowInfo.value) {
+                if (this.flowTask(task)) {
                     return false;
                 }
                 if (searchText) {
@@ -741,12 +745,12 @@ export default {
         },
 
         completedList() {
-            const {allTask, searchText, flowInfo} = this;
+            const {allTask, searchText} = this;
             const array = allTask.filter(task => {
                 if (task.parent_id > 0) {
                     return false;
                 }
-                if (flowInfo.value > 0 && task.flow_item_id !== flowInfo.value) {
+                if (this.flowTask(task)) {
                     return false;
                 }
                 if (searchText) {
@@ -783,20 +787,20 @@ export default {
         },
 
         flowData() {
-            const {flowList, allTask} = this;
-            let list = [{
+            const {flowList, allTask, cacheUserBasic} = this;
+            const list = [{
                 value: 0,
                 label: `${this.$L('全部')} (${allTask.length})`,
                 children: []
             }];
-            let flows = flowList.map(item1 => {
+            const flows = flowList.map(item1 => {
                 return {
                     value: item1.id,
                     label: item1.name,
                     status: item1.status,
                     children: item1.project_flow_item.map(item2 => {
-                        let length = allTask.filter(task => {
-                            return task.flow_item_id == item2.id;
+                        const length = allTask.filter(({flow_item_id}) => {
+                            return flow_item_id == item2.id;
                         }).length
                         return {
                             value: item2.id,
@@ -812,6 +816,25 @@ export default {
             } else if (flows.length > 0) {
                 list.push(...flows)
             }
+            //
+            const {project_user} = this.projectData;
+            const userItems = project_user.map((item, index) => {
+                const userInfo = cacheUserBasic.find(({userid}) => userid === item.userid) || {}
+                const length = allTask.filter(({task_user}) => {
+                    return task_user.find(({userid, owner}) => userid === item.userid && owner);
+                }).length
+                return {
+                    value: `user:${userInfo.userid}`,
+                    label: `${userInfo.nickname} (${length})`,
+                    class: `user-${index}`,
+                    userid: userInfo.userid || 0,
+                    length,
+                }
+            }).filter(({userid, length}) => userid > 0 && length > 0)
+            if (userItems.length > 0) {
+                list.push(...userItems)
+            }
+            //
             return list
         },
     },
@@ -1256,13 +1279,13 @@ export default {
 
         taskIsHidden(task) {
             const {name, desc, complete_at} = task;
-            const {searchText, flowInfo} = this;
+            const {searchText} = this;
             if (!this.projectData.cacheParameter.completedTask) {
                 if (complete_at) {
                     return true;
                 }
             }
-            if (flowInfo.value > 0 && task.flow_item_id !== flowInfo.value) {
+            if (this.flowTask(task)) {
                 return true;
             }
             if (searchText) {
@@ -1358,7 +1381,7 @@ export default {
                     return false;
                 }
             }
-            if (this.flowInfo.value > 0 && task.flow_item_id !== this.flowInfo.value) {
+            if (this.flowTask(task)) {
                 return false;
             }
             if (this.searchText) {
@@ -1378,7 +1401,7 @@ export default {
                     return false;
                 }
             }
-            if (this.flowInfo.value > 0 && task.flow_item_id !== this.flowInfo.value) {
+            if (this.flowTask(task)) {
                 return false;
             }
             if (this.searchText) {
@@ -1387,6 +1410,15 @@ export default {
                 }
             }
             return task.task_user && task.task_user.find(({userid, owner}) => userid == this.userId && owner == 0);
+        },
+
+        flowTask(task) {
+            if ($A.leftExists(this.flowInfo.value, "user:") && !task.task_user.find(({userid, owner}) => userid === this.flowInfo.userid && owner)) {
+                return true;
+            } else if (this.flowInfo.value > 0 && task.flow_item_id !== this.flowInfo.value) {
+                return true;
+            }
+            return false;
         },
 
         expiresFormat(date) {

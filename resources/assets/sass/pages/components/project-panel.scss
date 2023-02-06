@@ -970,6 +970,12 @@
 }
 
 .project-panel-flow-cascader {
+    max-height: none !important;
+    .ivu-cascader-menu {
+        height: auto;
+        max-height: 360px;
+        overflow: auto;
+    }
     .ivu-cascader-menu-item {
         color: $primary-text-color !important;
 
@@ -984,6 +990,19 @@
         }
         &.end {
             color: $flow-status-end-color !important;
+        }
+
+        &.user-0 {
+            margin-top: 12px;
+            position: relative;
+            &:before {
+                content: "";
+                position: absolute;
+                top: -6px;
+                left: 0;
+                right: 0;
+                border-top: 1px solid #EBEEF5;
+            }
         }
 
         &:hover,
