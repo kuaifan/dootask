@@ -260,8 +260,8 @@
                             .dialog-num {
                                 position: absolute;
                                 top: 10px;
-                                left: 42px;
-                                transform: scale(0.8);
+                                left: 58px;
+                                transform: scale(0.8) translateX(-100%);
                             }
                             .dialog-line {
                                 display: none;

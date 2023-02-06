@@ -20,7 +20,7 @@
                         :key="key"
                         :class="{active:dialogActive==item.type}"
                         @click="onActive(item.type)">
-                        <Badge class="nav-num" :count="msgUnread(item.type)"/>
+                        <Badge class="nav-num" :overflow-count="999" :count="msgUnread(item.type)"/>
                         {{$L(item.name)}}
                     </p>
                 </div>
@@ -86,7 +86,7 @@
                                     <div v-if="dialog.silence" class="taskfont last-silence">&#xe7d7;</div>
                                 </div>
                             </div>
-                            <Badge class="dialog-num" :type="dialog.silence ? 'normal' : 'error'" :count="$A.getDialogUnread(dialog, true)"/>
+                            <Badge class="dialog-num" :type="dialog.silence ? 'normal' : 'error'" :overflow-count="999" :count="$A.getDialogUnread(dialog, true)"/>
                             <div class="dialog-line"></div>
                         </li>
                     </ul>
@@ -136,7 +136,7 @@
                 <div class="messenger-menu">
                     <div class="menu-icon">
                         <Icon @click="tabActive='dialog'" :class="{active:tabActive==='dialog'}" type="ios-chatbubbles" />
-                        <Badge class="menu-num" :count="msgUnread('all')"/>
+                        <Badge class="menu-num" :overflow-count="999" :count="msgUnread('all')"/>
                     </div>
                     <div class="menu-icon">
                         <Icon @click="tabActive='contacts'" :class="{active:tabActive==='contacts'}" type="md-person" />

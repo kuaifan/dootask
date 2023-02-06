@@ -16,7 +16,7 @@
                             <UserAvatar :userid="projectData.owner_userid" :size="36" :borderWitdh="2" :openDelay="0">
                                 <p>{{$L('项目负责人')}}</p>
                             </UserAvatar>
-                            <Badge v-if="(windowWidth <= 980 || projectData.cacheParameter.chat) && projectUser.length > 0" type="normal" :count="projectData.project_user.length"/>
+                            <Badge v-if="(windowWidth <= 980 || projectData.cacheParameter.chat) && projectUser.length > 0" type="normal" :overflow-count="999" :count="projectData.project_user.length"/>
                         </li>
                         <template v-if="!(windowWidth <= 980 || projectData.cacheParameter.chat) && projectUser.length > 0" v-for="item in projectUser">
                             <li v-if="item.userid === -1" class="more">
@@ -45,7 +45,7 @@
                 </li>
                 <li :class="['project-icon', windowLarge && projectData.cacheParameter.chat ? 'active' : '']" @click="toggleParameter('chat')">
                     <Icon class="menu-icon" type="ios-chatbubbles" />
-                    <Badge class="menu-badge" :count="msgUnread"></Badge>
+                    <Badge class="menu-badge" :overflow-count="999" :count="msgUnread"></Badge>
                 </li>
                 <li class="project-icon">
                     <EDropdown @command="projectDropdown" trigger="click" transfer>

@@ -11,7 +11,7 @@
                         <UserAvatar :userid="userId" :size="36" tooltipDisabled/>
                     </div>
                     <span>{{userInfo.nickname}}</span>
-                    <Badge v-if="reportUnreadNumber > 0" class="manage-box-top-report" :count="reportUnreadNumber"/>
+                    <Badge v-if="reportUnreadNumber > 0" class="manage-box-top-report" :overflow-count="999" :count="reportUnreadNumber"/>
                     <Badge v-else-if="!!clientNewVersion" class="manage-box-top-report" dot/>
                     <div class="manage-box-arrow">
                         <Icon type="ios-arrow-up" />
@@ -57,7 +57,7 @@
                             <DropdownItem :divided="!!item.divided">
                                 <div class="manage-menu-flex">
                                     {{$L(item.name)}}
-                                    <Badge v-if="reportUnreadNumber > 0" class="manage-menu-report-badge" :count="reportUnreadNumber"/>
+                                    <Badge v-if="reportUnreadNumber > 0" class="manage-menu-report-badge" :overflow-count="999" :count="reportUnreadNumber"/>
                                     <Icon v-else type="ios-arrow-forward"></Icon>
                                 </div>
                             </DropdownItem>
@@ -66,7 +66,7 @@
                                 <DropdownItem name="workReport">
                                     <div class="manage-menu-flex">
                                         {{$L('工作报告')}}
-                                        <Badge v-if="reportUnreadNumber > 0" class="manage-menu-report-badge" :count="reportUnreadNumber"/>
+                                        <Badge v-if="reportUnreadNumber > 0" class="manage-menu-report-badge" :overflow-count="999" :count="reportUnreadNumber"/>
                                     </div>
                                 </DropdownItem>
                                 <DropdownItem name="exportTask">{{$L('导出任务统计')}}</DropdownItem>
@@ -98,9 +98,9 @@
                 <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
                     <i class="taskfont">&#xe6fb;</i>
                     <div class="menu-title">{{$L('仪表盘')}}</div>
-                    <Badge v-if="dashboardTask.overdue_count > 0" class="menu-badge" type="error" :count="dashboardTask.overdue_count"/>
-                    <Badge v-else-if="dashboardTask.today_count > 0" class="menu-badge" type="info" :count="dashboardTask.today_count"/>
-                    <Badge v-else-if="dashboardTask.all_count > 0" class="menu-badge" type="primary" :count="dashboardTask.all_count"/>
+                    <Badge v-if="dashboardTask.overdue_count > 0" class="menu-badge" type="error" :overflow-count="999" :count="dashboardTask.overdue_count"/>
+                    <Badge v-else-if="dashboardTask.today_count > 0" class="menu-badge" type="info" :overflow-count="999" :count="dashboardTask.today_count"/>
+                    <Badge v-else-if="dashboardTask.all_count > 0" class="menu-badge" type="primary" :overflow-count="999" :count="dashboardTask.all_count"/>
                 </li>
                 <li @click="toggleRoute('calendar')" :class="classNameRoute('calendar')">
                     <i class="taskfont">&#xe6f5;</i>
@@ -109,7 +109,7 @@
                 <li @click="toggleRoute('messenger')" :class="classNameRoute('messenger')">
                     <i class="taskfont">&#xe6eb;</i>
                     <div class="menu-title">{{$L('消息')}}</div>
-                    <Badge class="menu-badge" :text="msgUnreadMention"/>
+                    <Badge class="menu-badge" :overflow-count="999" :text="msgUnreadMention"/>
                 </li>
                 <li @click="toggleRoute('file')" :class="classNameRoute('file')">
                     <i class="taskfont">&#xe6f3;</i>
@@ -451,11 +451,11 @@ export default {
                 num += $A.getDialogUnread(dialog, false);
                 mention += $A.getDialogMention(dialog);
             })
-            if (num > 99) {
-                num = "99+"
+            if (num > 999) {
+                num = "999+"
             }
-            if (mention > 99) {
-                mention = "99+"
+            if (mention > 999) {
+                mention = "999+"
             }
             const todoNum = this.msgTodoTotal   // 待办
             if (todoNum) {
