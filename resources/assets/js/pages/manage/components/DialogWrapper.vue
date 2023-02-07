@@ -44,6 +44,7 @@
                                 <Tag v-if="dialogData.bot" class="after" :fade="false">{{$L('机器人')}}</Tag>
                                 <Tag v-if="dialogData.group_type=='all'" class="after" :fade="false">{{$L('全员')}}</Tag>
                                 <Tag v-else-if="dialogData.group_type=='department'" class="after" :fade="false">{{$L('部门')}}</Tag>
+                                <div v-if="msgLoadIng > 0" class="load"><Loading/></div>
                             </div>
                             <ul class="title-desc">
                                 <li v-if="dialogData.type === 'user'" :class="[dialogData.online_state === true ? 'online' : 'offline']">
@@ -460,6 +461,7 @@ export default {
 
             allMsgs: [],
             tempMsgs: [],
+            msgLoadIng: 0,
 
             pasteShow: false,
             pasteFile: [],
@@ -787,7 +789,7 @@ export default {
                         this.allMsgs = this.allMsgList
                         requestAnimationFrame(this.onToBottom)
                     }
-                    this.$store.dispatch("getDialogMsgs", {
+                    this.getMsgs({
                         dialog_id,
                         msg_id: this.msgId,
                         msg_type: this.msgType,
@@ -811,7 +813,7 @@ export default {
         },
 
         msgType() {
-            this.$store.dispatch("getDialogMsgs", {
+            this.getMsgs({
                 dialog_id: this.dialogId,
                 msg_id: this.msgId,
                 msg_type: this.msgType,
@@ -845,7 +847,7 @@ export default {
             if (num <= 1) {
                 return
             }
-            this.$store.dispatch("getDialogMsgs", {
+            this.getMsgs({
                 dialog_id: this.dialogId,
                 msg_id: this.msgId,
                 msg_type: this.msgType,
@@ -1060,6 +1062,18 @@ export default {
             }
         },
 
+        getMsgs(data) {
+            return new Promise((resolve, reject) => {
+                setTimeout(_ => this.msgLoadIng++, 600)
+                this.$store.dispatch("getDialogMsgs", data)
+                    .then(resolve)
+                    .catch(reject)
+                    .finally(_ => {
+                        this.msgLoadIng--
+                    })
+            })
+        },
+
         msgFilter(item) {
             if (this.msgType) {
                 if (this.msgType === 'tag') {
@@ -1132,7 +1146,7 @@ export default {
                         })
                     }
                     this.preventToBottom = true;
-                    this.$store.dispatch("getDialogMsgs", {
+                    this.getMsgs({
                         dialog_id: this.dialogId,
                         msg_id: this.msgId,
                         msg_type: this.msgType,
@@ -1474,7 +1488,7 @@ export default {
             if (this.prevId === 0) {
                 return
             }
-            this.$store.dispatch('getDialogMsgs', {
+            this.getMsgs({
                 dialog_id: this.dialogId,
                 msg_id: this.msgId,
                 msg_type: this.msgType,
@@ -1679,7 +1693,7 @@ export default {
                     const nearMsg = this.allMsgs[i + (key === 'next_id' ? 1 : -1)]
                     if (nearMsg && nearMsg.id != rangeValue) {
                         this.preventMoreLoad = true
-                        this.$store.dispatch("getDialogMsgs", {
+                        this.getMsgs({
                             dialog_id: this.dialogId,
                             msg_id: this.msgId,
                             msg_type: this.msgType,

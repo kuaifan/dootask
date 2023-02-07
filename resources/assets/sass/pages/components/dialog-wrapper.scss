@@ -194,6 +194,18 @@
                             font-weight: 500;
                             padding-left: 6px;
                         }
+
+                        .load {
+                            flex-shrink: 0;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            margin-left: 6px;
+                            .common-loading {
+                                width: 16px;
+                                height: 16px;
+                            }
+                        }
                     }
 
                     .title-desc {
