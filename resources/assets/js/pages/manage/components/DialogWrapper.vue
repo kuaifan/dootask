@@ -1064,7 +1064,7 @@ export default {
 
         getMsgs(data) {
             return new Promise((resolve, reject) => {
-                setTimeout(_ => this.msgLoadIng++, 600)
+                setTimeout(_ => this.msgLoadIng++, 2000)
                 this.$store.dispatch("getDialogMsgs", data)
                     .then(resolve)
                     .catch(reject)
