@@ -44,24 +44,24 @@
                         :visibleArrow="false"
                         placement="top"
                         popperClass="chat-input-emoji-popover">
-                        <ETooltip slot="reference" ref="emojiTip" :disabled="windowSmall || showEmoji" placement="top" :content="$L('表情')">
+                        <ETooltip slot="reference" ref="emojiTip" :disabled="windowSmall || $isEEUiApp || showEmoji" placement="top" :content="$L('表情')">
                             <i class="taskfont">&#xe7ad;</i>
                         </ETooltip>
                         <ChatEmoji v-if="showEmoji" @on-select="onSelectEmoji" :searchKey="emojiQuickKey"/>
                     </EPopover>
-                    <ETooltip v-else ref="emojiTip" :disabled="windowSmall || showEmoji" placement="top" :content="$L('表情')">
+                    <ETooltip v-else ref="emojiTip" :disabled="windowSmall || $isEEUiApp || showEmoji" placement="top" :content="$L('表情')">
                         <i class="taskfont" @click="showEmoji=!showEmoji">&#xe7ad;</i>
                     </ETooltip>
                 </li>
 
                 <!-- @ # -->
                 <li>
-                    <ETooltip placement="top" :disabled="windowSmall" :content="$L('选择成员')">
+                    <ETooltip placement="top" :disabled="windowSmall || $isEEUiApp" :content="$L('选择成员')">
                         <i class="taskfont" @click="onToolbar('user')">&#xe78f;</i>
                     </ETooltip>
                 </li>
                 <li>
-                    <ETooltip placement="top" :disabled="windowSmall" :content="$L('选择任务')">
+                    <ETooltip placement="top" :disabled="windowSmall || $isEEUiApp" :content="$L('选择任务')">
                         <i class="taskfont" @click="onToolbar('task')">&#xe7d6;</i>
                     </ETooltip>
                 </li>
@@ -73,7 +73,7 @@
                         :visibleArrow="false"
                         placement="top"
                         popperClass="chat-input-more-popover">
-                        <ETooltip slot="reference" ref="moreTip" :disabled="windowSmall || showMore" placement="top" :content="$L('展开')">
+                        <ETooltip slot="reference" ref="moreTip" :disabled="windowSmall || $isEEUiApp || showMore" placement="top" :content="$L('展开')">
                             <i class="taskfont">&#xe790;</i>
                         </ETooltip>
                         <div v-if="recordReady" class="chat-input-popover-item" @click="onToolbar('meeting')">
@@ -97,7 +97,7 @@
 
                 <!-- 发送按钮 -->
                 <li class="chat-send" :class="sendClass" v-touchmouse="clickSend">
-                    <ETooltip placement="top" :disabled="windowSmall" :content="$L(sendClass === 'recorder' ? '长按录音' : '发送')">
+                    <ETooltip placement="top" :disabled="windowSmall || $isEEUiApp" :content="$L(sendClass === 'recorder' ? '长按录音' : '发送')">
                         <div v-if="loading">
                             <div class="chat-load">
                                 <Loading/>
