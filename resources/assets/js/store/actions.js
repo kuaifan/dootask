@@ -2507,18 +2507,6 @@ export default {
                     dispatch("saveDialogTodo", resData.todo)
                 }
                 //
-                const before = Object.assign({id: data.dialog_id}, resData.before || {});
-                const index = state.dialogBeforeUnreads.findIndex(({id}) => id == data.dialog_id);
-                if (before.unread) {
-                    if (index > -1) {
-                        state.dialogBeforeUnreads.splice(index, 1, before);
-                    } else {
-                        state.dialogBeforeUnreads.push(before);
-                    }
-                } else if (index > -1) {
-                    state.dialogBeforeUnreads.splice(index, 1);
-                }
-                //
                 dispatch("saveDialogMsg", resData.list)
                 resolve(result)
             }).catch(e => {
@@ -2596,12 +2584,6 @@ export default {
                 url: 'dialog/msg/mark',
                 data,
             }).then(result => {
-                if (data.type === 'read') {
-                    const index = state.dialogBeforeUnreads.findIndex(({id}) => id == data.dialog_id)
-                    if (index > -1) {
-                        state.dialogBeforeUnreads.splice(index, 1)
-                    }
-                }
                 dispatch("saveDialog", result.data)
                 resolve(result)
             }).catch(e => {

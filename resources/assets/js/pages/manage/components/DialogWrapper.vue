@@ -98,10 +98,10 @@
         </div>
 
         <!--顶部提示-->
-        <div v-if="beforeUnread" class="dialog-top" :class="{'down': tagShow}">
+        <div v-if="beforeUnread > 0" class="dialog-top" :class="{'down': tagShow}">
             <div class="top-unread" @click="goBeforeUnread">
                 <Icon v-if="beforeLoad" type="ios-loading" class="icon-loading"></Icon>
-                <span>{{$L(`未读消息${beforeUnread.unread}条`)}}</span>
+                <span>{{$L(`未读消息${beforeUnread}条`)}}</span>
             </div>
         </div>
 
@@ -548,7 +548,6 @@ export default {
             'dialogMsgs',
             'dialogTodos',
             'dialogMsgTransfer',
-            'dialogBeforeUnreads',
             'cacheDialogs',
             'wsOpenNum',
             'touchBackInProgress',
@@ -765,8 +764,14 @@ export default {
         },
 
         beforeUnread() {
-            const before = this.dialogBeforeUnreads.find(({id}) => id === this.dialogId)
-            return before || null
+            const {unread, first_umid} = this.dialogData
+            if (unread > 0
+                && first_umid > 0
+                && this.allMsgs.length > 0
+                && this.allMsgs.findIndex(({id}) => id == first_umid) === -1) {
+                return unread
+            }
+            return 0
         }
     },
 
@@ -2219,17 +2224,17 @@ export default {
         },
 
         goBeforeUnread() {
-            if (!this.beforeUnread || this.beforeLoad) {
+            if (this.beforeUnread === 0 || this.beforeLoad) {
                 return;
             }
             //
             this.beforeLoad = true
-            const {first_id} = this.beforeUnread
+            const {first_umid} = this.dialogData
             this.$store.dispatch("dialogMsgMark", {
                 dialog_id: this.dialogId,
                 type: 'read'
             }).then(_ => {
-                this.onPositionId(first_id)
+                this.onPositionId(first_umid)
             }).catch(({msg}) => {
                 $A.modalError(msg)
             }).finally(_ => {

@@ -457,15 +457,6 @@ class DialogController extends AbstractController
                 ->where('web_socket_dialog_msgs.id', '<', $last->id)
                 ->orderByDesc('web_socket_dialog_msgs.id')
                 ->value('id'));
-            //
-            if (empty($position_id)) {
-                $unreadBuilder = WebSocketDialogMsgRead::whereDialogId($dialog_id)->whereUserid($user->userid)->whereReadAt(null)->where('msg_id', '<', $last->id);
-                $unread = $unreadBuilder->count();
-                $data['before'] = [
-                    'unread' => $unread,
-                    'first_id' => $unread > 0 ? intval($unreadBuilder->orderBy('msg_id')->value('msg_id')) : 0,
-                ];
-            }
         }
         $data['list'] = $list;
         $data['time'] = Base::time();
@@ -1050,6 +1041,7 @@ class DialogController extends AbstractController
         switch ($type) {
             case 'read':
                 $data['unread'] = 0;
+                $data['first_umid'] = 0;
                 WebSocketDialogMsgRead::whereUserid($user->userid)
                     ->whereReadAt(null)
                     ->whereDialogId($dialogId)
