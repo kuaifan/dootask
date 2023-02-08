@@ -11,6 +11,7 @@
     <b>机器人设置</b>
     <span style="color:#84c56a">/token {机器人ID}</span> - 生成Token令牌
     <span style="color:#84c56a">/revoke {机器人ID}</span> - 撤销机器人Token令牌
+    <span style="color:#84c56a">/clearday {机器人ID} {天数}</span> - 设置自动清理消息时间（默认30天）
 
     <b>会话管理</b>
     <span style="color:#84c56a">/dialog {机器人ID} [搜索关键词]</span> - 查看会话ID
@@ -50,6 +51,13 @@
 
     机器人ID：<span style="color:#84c56a">{{$data->userid}}</span>
     机器人名称：<span style="color:#84c56a">{{$data->nickname}}</span>
+@elseif ($type === '/clearday')
+    <b>设置自动清理消息时间。</b>
+
+    机器人ID：<span style="color:#84c56a">{{$data->userid}}</span>
+    机器人名称：<span style="color:#84c56a">{{$data->nickname}}</span>
+    清理周期：<span style="color:#84c56a">{{$data->clear_day}}天</span>
+    下次清理：<span style="color:#84c56a">{{$data->clear_at}}</span>
 @elseif ($type === '/dialog')
     <b>机器人 <span style="color:#84c56a">{{$data->nickname}} (ID:{{$data->userid}})</span> 已加入的会话：</b>
 

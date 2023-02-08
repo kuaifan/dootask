@@ -1005,7 +1005,7 @@ class DialogController extends AbstractController
         if (empty($msg)) {
             return Base::retError("消息不存在或已被删除");
         }
-        $msg->deleteMsg();
+        $msg->withdrawMsg();
         return Base::retSuccess("success");
     }
 

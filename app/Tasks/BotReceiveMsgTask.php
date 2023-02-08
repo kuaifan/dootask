@@ -3,9 +3,11 @@
 namespace App\Tasks;
 
 use App\Models\User;
+use App\Models\UserBot;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
+use Carbon\Carbon;
 
 @error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
@@ -180,6 +182,26 @@ class BotReceiveMsgTask extends AbstractTask
                         $data->encrypt = Base::generatePassword(6);
                         $data->password = Base::md52(Base::generatePassword(32), $data->encrypt);
                         $data->save();
+                    } else {
+                        $type = "notice";
+                        $notice = "机器人不存在。";
+                    }
+                    break;
+
+                /**
+                 * 设置自动清理消息时间
+                 */
+                case '/clearday':
+                    $data = $this->botManagerOne($array[1], $msg->userid);
+                    if ($data) {
+                        $userBot = UserBot::whereBotId($array[1])->whereUserid($msg->userid)->first();
+                        if ($userBot) {
+                            $userBot->clear_day = min(intval($array[2]) ?: 30, 999);
+                            $userBot->clear_at = Carbon::now()->addDays($userBot->clear_day);
+                            $userBot->save();
+                        }
+                        $data->clear_day = $userBot->clear_day;
+                        $data->clear_at = $userBot->clear_at;   // 这两个参数只是作为输出，所以不保存
                     } else {
                         $type = "notice";
                         $notice = "机器人不存在。";

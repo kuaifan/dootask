@@ -413,9 +413,33 @@ class WebSocketDialogMsg extends AbstractModel
 
     /**
      * 删除消息
+     * @param array|int $ids
      * @return void
      */
-    public function deleteMsg()
+    public static function deleteMsgs($ids) {
+        $ids = Base::arrayRetainInt(is_array($ids) ? $ids : [$ids], true);
+        AbstractModel::transaction(function() use ($ids) {
+            $dialogIds = WebSocketDialogMsg::select('dialog_id')->whereIn("id", $ids)->distinct()->get()->pluck('dialog_id');
+            $replyIds = WebSocketDialogMsg::select('reply_id')->whereIn("id", $ids)->distinct()->get()->pluck('reply_id');
+            //
+            WebSocketDialogMsgRead::whereIn('msg_id', $ids)->whereNull('read_at')->delete();    // 未阅读记录不需要软删除，直接删除即可
+            WebSocketDialogMsgTodo::whereIn('msg_id', $ids)->delete();
+            self::whereIn('id', $ids)->delete();
+            //
+            foreach ($dialogIds as $id) {
+                WebSocketDialog::find($id)?->updateMsgLastAt();
+            }
+            foreach ($replyIds as $id) {
+                self::whereId($id)->update(['reply_num' => self::whereReplyId($id)->count()]);
+            }
+        });
+    }
+
+    /**
+     * 撤回消息
+     * @return void
+     */
+    public function withdrawMsg()
     {
         $send_dt = Carbon::parse($this->created_at)->addDay();
         if ($send_dt->lt(Carbon::now())) {
@@ -429,14 +453,7 @@ class WebSocketDialogMsg extends AbstractModel
                 self::whereId($this->reply_id)->decrement('reply_num');
             }
             //
-            $last_msg = null;
-            if ($this->webSocketDialog) {
-                $last_msg = WebSocketDialogMsg::whereDialogId($this->dialog_id)->orderByDesc('id')->first();
-                $this->webSocketDialog->last_at = $last_msg->created_at;
-                $this->webSocketDialog->save();
-            }
-            //
-            $dialog = WebSocketDialog::find($this->dialog_id);
+            $dialog = $this->webSocketDialog;
             if ($dialog) {
                 $userids = $dialog->dialogUser->pluck('userid')->toArray();
                 PushTask::push([
@@ -447,7 +464,7 @@ class WebSocketDialogMsg extends AbstractModel
                         'data' => [
                             'id' => $this->id,
                             'dialog_id' => $this->dialog_id,
-                            'last_msg' => $last_msg,
+                            'last_msg' => $dialog->updateMsgLastAt(),
                             'update_read' => $deleteRead ? 1 : 0
                         ],
                     ]

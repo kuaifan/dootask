@@ -8,6 +8,7 @@ use App\Module\Ihttp;
 use App\Module\RandomColor;
 use App\Tasks\AppPushTask;
 use App\Tasks\AutoArchivedTask;
+use App\Tasks\DeleteBotMsgTask;
 use App\Tasks\DeleteTmpTask;
 use App\Tasks\EmailNoticeTask;
 use App\Tasks\JokeSoupTask;
@@ -189,6 +190,8 @@ class IndexController extends InvokeController
         Task::deliver(new DeleteTmpTask('wg_tmp_msgs', 1));
         Task::deliver(new DeleteTmpTask('task_worker', 12));
         Task::deliver(new DeleteTmpTask('tmp', 24));
+        // 删除机器人消息
+        Task::deliver(new DeleteBotMsgTask());
         // 周期任务
         Task::deliver(new LoopTask());
         // 获取笑话/心灵鸡汤

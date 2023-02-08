@@ -369,6 +369,20 @@ class WebSocketDialog extends AbstractModel
     }
 
     /**
+     * 更新对话最后消息时间
+     * @return WebSocketDialogMsg|\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model|\Illuminate\Database\Query\Builder|object|null
+     */
+    public function updateMsgLastAt()
+    {
+        $lastMsg = WebSocketDialogMsg::whereDialogId($this->id)->orderByDesc('id')->first();
+        if ($lastMsg) {
+            $this->last_at = $lastMsg->created_at;
+            $this->save();
+        }
+        return $lastMsg;
+    }
+
+    /**
      * 获取对话（同时检验对话身份）
      * @param $dialog_id
      * @param bool|string $checkOwner 是否校验群组身份，'auto'时有群主为true无群主为false
