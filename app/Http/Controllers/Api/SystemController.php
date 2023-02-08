@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Ldap\LdapUser;
 use App\Models\Setting;
 use App\Models\User;
 use App\Models\UserCheckinRecord;
@@ -10,8 +11,13 @@ use App\Module\BillExport;
 use App\Module\BillMultipleExport;
 use Arr;
 use Carbon\Carbon;
+use Config;
 use Guanguans\Notify\Factory;
 use Guanguans\Notify\Messages\EmailMessage;
+use LdapRecord\Auth\PasswordRequiredException;
+use LdapRecord\Auth\UsernameRequiredException;
+use LdapRecord\Container;
+use LdapRecord\LdapRecordException;
 use Madzipper;
 use Request;
 use Response;
@@ -307,6 +313,74 @@ class SystemController extends AbstractController
         }
         //
         $setting['push'] = $setting['push'] ?: 'close';
+        //
+        return Base::retSuccess('success', $setting ?: json_decode('{}'));
+    }
+
+    /**
+     * @api {get} api/system/setting/thirdaccess          04. 第三方帐号（限管理员）
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName setting__thirdaccess
+     *
+     * @apiParam {String} type
+     * - get: 获取（默认）
+     * - save: 保存设置（参数：['ldap_open', 'ldap_host', 'ldap_port', 'ldap_password', 'ldap_cn', 'ldap_dn']）
+     * - testldap: 测试ldap连接
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function setting__thirdaccess()
+    {
+        User::auth('admin');
+        //
+        $type = trim(Request::input('type'));
+        if ($type == 'testldap') {
+            $all = Base::newTrim(Request::input());
+            $connection = Container::getDefaultConnection();
+            try {
+                $connection->setConfiguration([
+                    "hosts" => [$all['ldap_host']],
+                    "port" => intval($all['ldap_port']),
+                    "password" => $all['ldap_password'],
+                    "username" => $all['ldap_cn'],
+                    "base_dn" => $all['ldap_dn'],
+                ]);
+                if ($connection->auth()->attempt($all['ldap_cn'], $all['ldap_password'])) {
+                    return Base::retSuccess('验证通过');
+                } else {
+                    return Base::retError('验证失败');
+                }
+            } catch (LdapRecordException $e) {
+                return Base::retError($e->getMessage() ?: "验证失败：未知错误", config("ldap.connections.default"));
+            }
+        } elseif ($type == 'save') {
+            if (env("SYSTEM_SETTING") == 'disabled') {
+                return Base::retError('当前环境禁止修改');
+            }
+            $all = Base::newTrim(Request::input());
+            foreach ($all as $key => $value) {
+                if (!in_array($key, [
+                    'ldap_open',
+                    'ldap_host',
+                    'ldap_port',
+                    'ldap_password',
+                    'ldap_cn',
+                    'ldap_dn'
+                ])) {
+                    unset($all[$key]);
+                }
+            }
+            $all['ldap_port'] = intval($all['ldap_port']) ?: 389;
+            $setting = Base::setting('thirdAccessSetting', Base::newTrim($all));
+        } else {
+            $setting = Base::setting('thirdAccessSetting');
+        }
+        //
+        $setting['ldap_open'] = $setting['ldap_open'] ?: 'close';
+        $setting['ldap_port'] = intval($setting['ldap_port']) ?: 389;
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
     }

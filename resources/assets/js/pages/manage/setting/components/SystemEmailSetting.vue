@@ -133,16 +133,6 @@ export default {
             });
         },
 
-        hoursChange(e, key) {
-            let newNum = e * 10;
-            if (newNum % 5 !== 0) {
-                setTimeout(() => {
-                    this.$set(this.formData, key, Math.round(e))
-                })
-                $A.messageError('任务提醒只能是0.5的倍数');
-            }
-        },
-
         checkEmailSend() {
             $A.modalInput({
                 title: "测试邮件",

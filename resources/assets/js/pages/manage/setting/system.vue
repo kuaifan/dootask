@@ -19,6 +19,9 @@
             <TabPane :label="$L('邮件设置')" name="emailSetting">
                 <SystemEmailSetting/>
             </TabPane>
+            <TabPane :label="$L('认证设置')" name="thirdAccess">
+                <SystemThirdAccess/>
+            </TabPane>
             <TabPane v-if="appPush" :label="$L('APP推送')" name="appPush">
                 <SystemAppPush/>
             </TabPane>
@@ -34,9 +37,11 @@ import SystemEmailSetting from "./components/SystemEmailSetting";
 import SystemAppPush from "./components/SystemAppPush";
 import SystemMeeting from "./components/SystemMeeting";
 import SystemCheckin from "./components/SystemCheckin";
+import SystemThirdAccess from "./components/SystemThirdAccess";
 
 export default {
     components: {
+        SystemThirdAccess,
         SystemCheckin,
         SystemMeeting,
         SystemAppPush, SystemColumnTemplate, SystemTaskPriority, SystemSetting, SystemEmailSetting},

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Ldap\LdapUser;
 use App\Models\AbstractModel;
 use App\Models\Meeting;
 use App\Models\Project;
@@ -49,6 +50,8 @@ class UsersController extends AbstractController
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据（同"获取我的信息"接口）
+     *
+     * @throws \LdapRecord\Configuration\ConfigurationException
      */
     public function login()
     {
@@ -89,11 +92,22 @@ class UsersController extends AbstractController
                 $needData = ['code' => $needCode ? 'need' : 'no'];
                 return Base::retError($msg, $needData);
             };
+            //
             $user = User::whereEmail($email)->first();
+            $checkPassword = true;
+            if (LdapUser::isOpen() && (empty($user) || in_array('ldap', $user->identity))) {
+                $user = LdapUser::userLogin($email, $password, $user);
+                if ($user) {
+                    $identity = array_merge(array_diff($user->identity, ['ldap']), ['ldap']);
+                    $user->identity = "," . implode(",", $identity) . ",";
+                    $user->save();
+                }
+                $checkPassword = false;
+            }
             if (empty($user)) {
                 return $retError('帐号或密码错误');
             }
-            if ($user->password != Base::md52($password, $user->encrypt)) {
+            if ($checkPassword && $user->password != Base::md52($password, $user->encrypt)) {
                 return $retError('帐号或密码错误');
             }
             //

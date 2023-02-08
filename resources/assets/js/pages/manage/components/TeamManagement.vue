@@ -338,6 +338,13 @@ export default {
                                 }
                             }))
                         }
+                        if (identity.includes("ldap")) {
+                            arr.push(h('Tag', {
+                                props: {
+                                    color: 'orange'
+                                }
+                            }, this.$L('LDAP')))
+                        }
                         if (identity.includes("admin")) {
                             arr.push(h('Tag', {
                                 props: {
