@@ -171,9 +171,18 @@ class User extends AbstractModel
     }
 
     /**
+     * 返回是否LDAP用户
+     * @return bool
+     */
+    public function isLdap()
+    {
+        return in_array('ldap', $this->identity);
+    }
+
+    /**
      * 判断是否管理员
      */
-    public function isAdmin()
+    public function checkAdmin()
     {
         $this->identity('admin');
     }

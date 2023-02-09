@@ -326,7 +326,7 @@ class SystemController extends AbstractController
      *
      * @apiParam {String} type
      * - get: 获取（默认）
-     * - save: 保存设置（参数：['ldap_open', 'ldap_host', 'ldap_port', 'ldap_password', 'ldap_cn', 'ldap_dn']）
+     * - save: 保存设置（参数：['ldap_open', 'ldap_host', 'ldap_port', 'ldap_password', 'ldap_user_dn', 'ldap_base_dn', 'ldap_sync_local']）
      * - testldap: 测试ldap连接
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -345,10 +345,10 @@ class SystemController extends AbstractController
                     "hosts" => [$all['ldap_host']],
                     "port" => intval($all['ldap_port']),
                     "password" => $all['ldap_password'],
-                    "username" => $all['ldap_cn'],
-                    "base_dn" => $all['ldap_dn'],
+                    "username" => $all['ldap_user_dn'],
+                    "base_dn" => $all['ldap_base_dn'],
                 ]);
-                if ($connection->auth()->attempt($all['ldap_cn'], $all['ldap_password'])) {
+                if ($connection->auth()->attempt($all['ldap_user_dn'], $all['ldap_password'])) {
                     return Base::retSuccess('验证通过');
                 } else {
                     return Base::retError('验证失败');
@@ -367,8 +367,9 @@ class SystemController extends AbstractController
                     'ldap_host',
                     'ldap_port',
                     'ldap_password',
-                    'ldap_cn',
-                    'ldap_dn'
+                    'ldap_user_dn',
+                    'ldap_base_dn',
+                    'ldap_sync_local'
                 ])) {
                     unset($all[$key]);
                 }
@@ -381,6 +382,7 @@ class SystemController extends AbstractController
         //
         $setting['ldap_open'] = $setting['ldap_open'] ?: 'close';
         $setting['ldap_port'] = intval($setting['ldap_port']) ?: 389;
+        $setting['ldap_sync_local'] = $setting['ldap_sync_local'] ?: 'close';
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
     }

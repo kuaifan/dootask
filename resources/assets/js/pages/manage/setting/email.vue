@@ -2,18 +2,23 @@
     <div class="setting-item submit">
         <Loading v-if="configLoad > 0"/>
         <Form v-else ref="formDatum" :model="formDatum" :rules="ruleDatum" label-width="auto" @submit.native.prevent>
+            <Alert v-if="isLdap" type="warning">{{$L('LDAP 用户禁止修改邮箱地址')}}</Alert>
             <FormItem :label="$L('新邮箱地址')" prop="newEmail">
                 <Input v-if="isRegVerify == 1" v-model="formDatum.newEmail"
                        :class="count > 0 ? 'setting-send-input':'setting-input'" search @on-search="sendEmailCode"
-                       :enter-button="$L(sendBtnText)" :placeholder="$L('输入新邮箱地址')"/>
-                <Input v-else class="setting-input" v-model="formDatum.newEmail" :placeholder="$L('输入新邮箱地址')"/>
+                       :enter-button="$L(sendBtnText)"
+                       :disabled="isLdap"
+                       :placeholder="$L('输入新邮箱地址')"/>
+                <Input v-else class="setting-input" v-model="formDatum.newEmail"
+                       :disabled="isLdap"
+                       :placeholder="$L('输入新邮箱地址')"/>
             </FormItem>
             <FormItem :label="$L('验证码')" prop="code" v-if="isRegVerify == 1">
                 <Input v-model="formDatum.code" :placeholder="$L('输入邮箱验证码')"/>
             </FormItem>
         </Form>
         <div class="setting-footer">
-            <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{ $L('提交') }}</Button>
+            <Button :loading="loadIng > 0" type="primary" :disabled="isLdap" @click="submitForm">{{ $L('提交') }}</Button>
             <Button :loading="loadIng > 0" @click="resetForm" style="margin-left: 8px">{{ $L('重置') }}</Button>
         </div>
     </div>
@@ -56,6 +61,12 @@ export default {
 
     mounted() {
         this.getRegVerify();
+    },
+
+    computed: {
+        isLdap() {
+            return this.$store.state.userInfo.identity.includes("ldap")
+        }
     },
 
     methods: {

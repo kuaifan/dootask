@@ -50,8 +50,6 @@ class UsersController extends AbstractController
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据（同"获取我的信息"接口）
-     *
-     * @throws \LdapRecord\Configuration\ConfigurationException
      */
     public function login()
     {
@@ -94,20 +92,23 @@ class UsersController extends AbstractController
             };
             //
             $user = User::whereEmail($email)->first();
-            $checkPassword = true;
-            if (LdapUser::isOpen() && (empty($user) || in_array('ldap', $user->identity))) {
-                $user = LdapUser::userLogin($email, $password, $user);
-                if ($user) {
-                    $identity = array_merge(array_diff($user->identity, ['ldap']), ['ldap']);
-                    $user->identity = "," . implode(",", $identity) . ",";
-                    $user->save();
+            $isLdap = true;
+            if (LdapUser::isOpen()) {
+                if (empty($user) || $user->isLdap()) {
+                    $user = LdapUser::userLogin($email, $password, $user);
+                    if ($user) {
+                        $user->identity = Base::arrayImplode(array_merge(array_diff($user->identity, ['ldap']), ['ldap']));
+                        $user->save();
+                    }
+                    $isLdap = false;
                 }
-                $checkPassword = false;
             }
             if (empty($user)) {
                 return $retError('帐号或密码错误');
             }
-            if ($checkPassword && $user->password != Base::md52($password, $user->encrypt)) {
+            if ($isLdap) {
+                LdapUser::userSync($user, $password);
+            } elseif ($user->password != Base::md52($password, $user->encrypt)) {
                 return $retError('帐号或密码错误');
             }
             //
@@ -276,12 +277,17 @@ class UsersController extends AbstractController
         $user = User::auth();
         $data = Request::all();
         $user->checkSystem(1);
+        $upLdap = [];
         // 头像
         if (Arr::exists($data, 'userimg')) {
             $userimg = Request::input('userimg');
-            $user->userimg = $userimg ? Base::unFillUrl(is_array($userimg) ? $userimg[0]['path'] : $userimg) : '';
-            if (str_contains($user->userimg, 'avatar/')) {
-                $user->userimg = '';
+            $userimg = $userimg ? Base::unFillUrl(is_array($userimg) ? $userimg[0]['path'] : $userimg) : '';
+            if (str_contains($userimg, 'avatar/')) {
+                $userimg = '';
+            }
+            $user->userimg = $userimg;
+            if (file_exists(public_path($userimg))) {
+                $upLdap['jpegPhoto'] = file_get_contents(public_path($userimg));
             }
         }
         // 电话
@@ -294,6 +300,7 @@ class UsersController extends AbstractController
                 return Base::retError('联系电话已存在');
             }
             $user->tel = $tel;
+            $upLdap['mobile'] = $tel;
         }
         // 昵称
         if (Arr::exists($data, 'nickname')) {
@@ -306,6 +313,7 @@ class UsersController extends AbstractController
                 $user->nickname = $nickname;
                 $user->az = Base::getFirstCharter($nickname);
                 $user->pinyin = Base::cn2pinyin($nickname);
+                $upLdap['displayName'] = $nickname;
             }
         }
         // 职位/职称
@@ -317,15 +325,14 @@ class UsersController extends AbstractController
                 return Base::retError('职位/职称最多只能设置20个字');
             } else {
                 $user->profession = $profession;
+                $upLdap['employeeType'] = $profession;
             }
         }
         //
         $user->save();
         User::token($user);
+        LdapUser::userUpdate($user->email, $upLdap);
         //
-        if (empty($user->userimg)) {
-            $user->userimg = $user->getUserimgAttribute(null);
-        }
         return Base::retSuccess('修改成功', $user);
     }
 
@@ -366,6 +373,7 @@ class UsersController extends AbstractController
         $user->changepass = 0;
         $user->save();
         User::token($user);
+        LdapUser::userUpdate($user->email, ['userPassword' => $newpass]);
         return Base::retSuccess('修改成功', $user);
     }
 
@@ -675,6 +683,7 @@ class UsersController extends AbstractController
         $userInfo->checkSystem(1);
         //
         $upArray = [];
+        $upLdap = [];
         $transferUser = null;
         switch ($type) {
             case 'setadmin':
@@ -751,16 +760,19 @@ class UsersController extends AbstractController
                 break;
         }
         if (isset($upArray['identity'])) {
-            $upArray['identity'] = "," . implode(",", $upArray['identity']) . ",";
+            $upArray['identity'] = Base::arrayImplode($upArray['identity']);
         }
         if (isset($upArray['department'])) {
-            $upArray['department'] = "," . implode(",", $upArray['department']) . ",";
+            $upArray['department'] = Base::arrayImplode($upArray['department']);
         }
         // 邮箱
         if (Arr::exists($data, 'email')) {
             $email = trim($data['email']);
             if (User::whereEmail($email)->where('userid', '!=', $userInfo->userid)->exists()) {
                 return Base::retError('邮箱地址已存在');
+            }
+            if ($userInfo->isLdap()) {
+                return Base::retError('LDAP 用户禁止修改邮箱');
             }
             $upArray['email'] = $email;
         }
@@ -771,6 +783,7 @@ class UsersController extends AbstractController
                 return Base::retError('联系电话已存在');
             }
             $upArray['tel'] = $tel;
+            $upLdap['mobile'] = $tel;
         }
         // 密码
         if (Arr::exists($data, 'password')) {
@@ -779,6 +792,7 @@ class UsersController extends AbstractController
             $upArray['encrypt'] = Base::generatePassword(6);
             $upArray['password'] = Base::md52($password, $upArray['encrypt']);
             $upArray['changepass'] = 1;
+            $upLdap['userPassword'] = $password;
         }
         // 昵称
         if (Arr::exists($data, 'nickname')) {
@@ -791,6 +805,7 @@ class UsersController extends AbstractController
                 $upArray['nickname'] = $nickname;
                 $upArray['az'] = Base::getFirstCharter($nickname);
                 $upArray['pinyin'] = Base::cn2pinyin($nickname);
+                $upLdap['displayName'] = $nickname;
             }
         }
         // 职位/职称
@@ -802,14 +817,16 @@ class UsersController extends AbstractController
                 return Base::retError('职位/职称最多只能设置20个字');
             } else {
                 $upArray['profession'] = $profession;
+                $upLdap['employeeType'] = $profession;
             }
         }
         if ($upArray) {
-            AbstractModel::transaction(function() use ($user, $type, $upArray, $userInfo, $transferUser) {
+            AbstractModel::transaction(function() use ($upLdap, $user, $type, $upArray, $userInfo, $transferUser) {
                 $exitIds = array_diff($userInfo->department, Base::explodeInt($upArray['department']));
                 $joinIds = array_diff(Base::explodeInt($upArray['department']), $userInfo->department);
                 $userInfo->updateInstance($upArray);
                 $userInfo->save();
+                LdapUser::userUpdate($userInfo->email, $upLdap);
                 if ($type === 'department') {
                     $userids = [$userInfo->userid];
                     // 退出群组
@@ -1145,6 +1162,10 @@ class UsersController extends AbstractController
         $user = User::auth();
         //
         $user->checkSystem();
+        //
+        if ($user->isLdap()) {
+            return Base::retError('LDAP 用户禁止修改邮箱');
+        }
         //
         $newEmail = trim(Request::input('newEmail'));
         $code = trim(Request::input('code'));

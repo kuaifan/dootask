@@ -52,7 +52,7 @@ return [
     |
     */
 
-    'logging' => env('LDAP_LOGGING', true),
+    'logging' => (bool) env('APP_DEBUG', false),
 
     /*
     |--------------------------------------------------------------------------

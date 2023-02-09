@@ -918,6 +918,27 @@ class Base
     }
 
     /**
+     * 数组拼接字符串（前后也加上）
+     * @param $glue
+     * @param $pieces
+     * @param $around
+     * @return string
+     */
+    public static function arrayImplode($glue = "", $pieces = null, $around = true)
+    {
+        if ($pieces == null) {
+            $pieces = $glue;
+            $glue = ',';
+        }
+        $pieces = array_values(array_filter(array_unique($pieces)));
+        $string = implode($glue, $pieces);
+        if ($around && $string) {
+            $string = ",{$string},";
+        }
+        return $string;
+    }
+
+    /**
      * 判断是否二维数组
      * @param $array
      * @return bool
