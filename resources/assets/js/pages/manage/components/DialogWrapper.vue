@@ -319,6 +319,16 @@
                 <FormItem prop="type" :label="$L('当前会话')">
                     <RadioGroup v-model="todoSettingData.type">
                         <Radio label="all">{{$L('所有成员')}}</Radio>
+                        <Radio v-if="todoSettingData.my_id" label="my">
+                            <div style="display:inline-block">
+                                <UserAvatar :userid="todoSettingData.my_id" :show-icon="false" :show-name="true"/>
+                            </div>
+                        </Radio>
+                        <Radio v-if="todoSettingData.you_id" label="you">
+                            <div style="display:inline-block">
+                                <UserAvatar :userid="todoSettingData.you_id" :show-icon="false" :show-name="true"/>
+                            </div>
+                        </Radio>
                         <Radio label="user">{{$L('指定成员')}}</Radio>
                     </RadioGroup>
                 </FormItem>
@@ -2177,12 +2187,19 @@ export default {
                 return
             }
             if (type === 'submit') {
-                if (this.todoSettingData.type === 'user' && $A.arrayLength(this.todoSettingData.userids) === 0) {
+                const todoData = $A.cloneJSON(this.todoSettingData)
+                if (todoData.type === 'my') {
+                    todoData.type = 'user'
+                    todoData.userids = [todoData.my_id]
+                } else if (todoData.type === 'you') {
+                    todoData.type = 'user'
+                    todoData.userids = [todoData.you_id]
+                } else if (todoData.type === 'user' && $A.arrayLength(todoData.userids) === 0) {
                     $A.messageWarning("选择指定成员");
                     return
                 }
                 this.todoSettingLoad++
-                this.onTodoSubmit(this.todoSettingData).then(msg => {
+                this.onTodoSubmit(todoData).then(msg => {
                     $A.messageSuccess(msg)
                     this.todoSettingShow = false
                 }).catch($A.messageError).finally(_ => {
@@ -2193,6 +2210,8 @@ export default {
                     type: 'all',
                     userids: [],
                     msg_id: this.operateItem.id,
+                    my_id: this.userId,
+                    you_id: this.dialogData.dialog_user?.userid,
                 }
                 if (this.operateItem.todo) {
                     $A.modalConfirm({
