@@ -224,6 +224,7 @@ export default {
             timeOptions: {shortcuts:$A.timeOptionShortcuts()},
 
             loadIng: 0,
+            isMounted: false,
 
             beforeClose: [],
         }
@@ -233,6 +234,7 @@ export default {
         this.initCascaderData();
         await this.initProjectData();
         this.$nextTick(() => this.$refs.input.focus())
+        this.isMounted = true
     },
 
     beforeDestroy() {
@@ -452,6 +454,11 @@ export default {
         },
 
         setData(data) {
+            if (!this.isMounted) {
+                this.__setData && clearTimeout(this.__setData)
+                this.__setData = setTimeout(_ => this.setData(data) , 10)
+                return
+            }
             if (typeof data.beforeClose !== "undefined") {
                 this.beforeClose.push(data.beforeClose)
                 delete data.beforeClose;
