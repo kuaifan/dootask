@@ -84,6 +84,15 @@ docker_name() {
     echo `$COMPOSE ps | awk '{print $1}' | grep "\-$1\-"`
 }
 
+mix_manifest() {
+    local file=$1
+    if [[ `uname` == 'Linux' ]]; then
+        sed -i '/\"\/uploads/d' ${cur_path}/$file/mix-manifest.json
+    else
+        docker run -it --rm -v ${cur_path}/$file:/public alpine sh -c "sed -i '/\"\/uploads/d' /public/mix-manifest.json"
+    fi
+}
+
 run_compile() {
     local type=$1
     check_node
@@ -96,6 +105,7 @@ run_compile() {
     if [ "$type" = "prod" ]; then
         rm -rf "./public/js/build"
         npx mix --production
+        mix_manifest "public"
         echo "$(rand_string 16)" > ./public/js/hash
     else
         npx mix watch --hot
@@ -125,6 +135,7 @@ run_electron() {
     #
     if [ "$argv" != "dev" ] && [ "$argv" != "--nobuild" ]; then
         npx mix --production -- --env --electron
+        mix_manifest "electron/public"
     fi
     if [ "$argv" == "dev" ]; then
         run_exec php "php bin/run --mode=$argv"
@@ -243,15 +254,6 @@ arg_get() {
     echo $value
 }
 
-is_arm() {
-    local get_arch=`arch`
-    if [[ $get_arch =~ "aarch" ]] || [[ $get_arch =~ "arm" ]]; then
-        echo "yes"
-    else
-        echo "no"
-    fi
-}
-
 ####################################################################################
 ####################################################################################
 ####################################################################################
@@ -264,11 +266,6 @@ fi
 if [ $# -gt 0 ]; then
     if [[ "$1" == "init" ]] || [[ "$1" == "install" ]]; then
         shift 1
-        # 判断架构
-        if [[ "$(is_arm)" == "yes" ]] && [[ -z "$(arg_get force)" ]]; then
-            echo -e "${Error} ${RedBG}暂不支持arm架构，强制安装请使用：./cmd install --force${Font}"
-            exit 1
-        fi
         # 初始化文件
         if [[ -n "$(arg_get relock)" ]]; then
             rm -rf node_modules

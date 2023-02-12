@@ -3,7 +3,7 @@ version: '3'
 services:
   php:
     container_name: "dootask-php-${APP_ID}"
-    image: "kuaifan/php:swoole-8.0"
+    image: "kuaifan/php:swoole-8.0.rc1"
     shm_size: "1024m"
     volumes:
       - ./docker/crontab/crontab.conf:/etc/supervisor/conf.d/crontab.conf
@@ -82,7 +82,7 @@ services:
 
   office:
     container_name: "dootask-office-${APP_ID}"
-    image: "onlyoffice/documentserver:7.2.2.56"
+    image: "onlyoffice/documentserver:7.3.0.184"
     volumes:
       - ./docker/office/logs:/var/log/onlyoffice
       - ./docker/office/data:/var/www/onlyoffice/Data
@@ -103,7 +103,8 @@ services:
 
   fileview:
     container_name: "dootask-fileview-${APP_ID}"
-    image: "kuaifan/fileview:4.1.0-SNAPSHOT-RC18"
+    image: "kuaifan/fileview:4.1.0-SNAPSHOT-RC19"
+    platform: linux/amd64
     environment:
       TZ: "Asia/Shanghai"
       KK_CONTEXT_PATH: "/fileview"
@@ -117,7 +118,7 @@ services:
 
   drawio-webapp:
     container_name: "dootask-drawio-webapp-${APP_ID}"
-    image: "jgraph/drawio:16.6.1"
+    image: "jgraph/drawio:20.8.20"
     volumes:
       - ./docker/drawio/webapp/index.html:/usr/local/tomcat/webapps/draw/index.html
       - ./docker/drawio/webapp/stencils:/usr/local/tomcat/webapps/draw/stencils
@@ -136,6 +137,7 @@ services:
   drawio-export:
     container_name: "dootask-drawio-export-${APP_ID}"
     image: "jgraph/export-server"
+    platform: linux/amd64
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.9"
