@@ -253,7 +253,7 @@
             v-model="workReportShow"
             placement="right"
             :size="1200">
-            <Report v-if="workReportShow" :reportType="reportTabs" :reportUnreadNumber="reportUnreadNumber" @on-read="getReportUnread" />
+            <Report v-if="workReportShow" :reportType="reportTabs" @on-read="$store.dispatch('getReportUnread', 1000)" />
         </DrawerOverlay>
 
         <!--查看所有团队-->
@@ -373,7 +373,6 @@ export default {
             notificationManage: null,
 
             reportTabs: "my",
-            reportUnreadNumber: 0,
 
             operateStyles: {},
             operateVisible: false,
@@ -394,7 +393,7 @@ export default {
     activated() {
         this.$store.dispatch("getUserInfo").catch(_ => {})
         this.$store.dispatch("getTaskPriority").catch(_ => {})
-        this.getReportUnread(0);
+        this.$store.dispatch("getReportUnread", 0)
     },
 
     beforeDestroy() {
@@ -432,6 +431,8 @@ export default {
             'cacheTaskBrowse',
 
             'dialogIns',
+
+            'reportUnreadNumber',
         ]),
 
         ...mapGetters(['dashboardTask']),
@@ -617,12 +618,12 @@ export default {
 
         wsOpenNum(num) {
             if (num <= 1) return
-            this.$store.dispatch("getBasicData", 600).then(this.getReportUnread)
+            this.$store.dispatch("getBasicData", 600)
         },
 
         workReportShow(show) {
             if (show) {
-                this.getReportUnread(0);
+                this.$store.dispatch("getReportUnread", 0)
             }
         },
 
@@ -660,7 +661,7 @@ export default {
                 switch (type) {
                     case 'report':
                         if (action == 'unreadUpdate') {
-                            this.getReportUnread()
+                            this.$store.dispatch("getReportUnread", 1000)
                         }
                         break;
                 }
@@ -958,21 +959,6 @@ export default {
             } else {
                 this.$store.dispatch("getDialogOne", dialog_id).then(({data}) => notificationFuncA(data.name)).catch(() => {})
             }
-        },
-
-        getReportUnread(timeout) {
-            this.reportUnreadTimeout && clearTimeout(this.reportUnreadTimeout)
-            this.reportUnreadTimeout = setTimeout(() => {
-                if (this.userId === 0) {
-                    this.reportUnreadNumber = 0;
-                } else {
-                    this.$store.dispatch("call", {
-                        url: 'report/unread',
-                    }).then(({data}) => {
-                        this.reportUnreadNumber = data.total || 0;
-                    }).catch(() => {});
-                }
-            }, typeof timeout === "number" ? timeout : 1000)
         },
 
         handleLongpress(event, el) {

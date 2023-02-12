@@ -31,6 +31,7 @@ import ReportMy from "./ReportMy"
 import ReportReceive from "./ReportReceive"
 import ReportDetail from "./ReportDetail"
 import DrawerOverlay from "../../../components/DrawerOverlay";
+import {mapState} from "vuex";
 
 export default {
     name: "Report",
@@ -40,10 +41,6 @@ export default {
     },
 
     props: {
-        reportUnreadNumber: {
-            type: Number,
-            default: 0
-        },
         reportType: {
             default: "my"
         }
@@ -69,6 +66,12 @@ export default {
                 this.saveSuccess(data)
             })
         }
+    },
+
+    computed: {
+        ...mapState([
+            'reportUnreadNumber'
+        ])
     },
 
     methods: {

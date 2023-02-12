@@ -150,4 +150,7 @@ export default {
     // 预览图片
     previewImageIndex: 0,
     previewImageList: [],
+
+    // 工作报告未读数量
+    reportUnreadNumber: 0,
 };

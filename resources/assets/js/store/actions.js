@@ -342,28 +342,45 @@ export default {
      * @param state
      * @param dispatch
      * @param timeout
-     * @returns {Promise<unknown>}
      */
     getBasicData({state, dispatch}, timeout) {
         if (typeof timeout === "number") {
-            return new Promise(resolve => {
-                window.__getBasicData && clearTimeout(window.__getBasicData)
-                if (timeout > -1) {
-                    window.__getBasicData = setTimeout(() => {
-                        dispatch("getBasicData", null)
-                        resolve()
-                    }, timeout)
-                }
-            });
+            window.__getBasicData && clearTimeout(window.__getBasicData)
+            if (timeout > -1) {
+                window.__getBasicData = setTimeout(dispatch("getBasicData", null), timeout)
+            }
+            return
         }
         dispatch("getProjects").catch(() => {});
         dispatch("getDialogs").catch(() => {});
+        dispatch("getReportUnread", 1000);
         dispatch("getTaskForDashboard");
         //
         const allIds = Object.values(state.userAvatar).map(({userid}) => userid);
         [...new Set(allIds)].some(userid => {
             dispatch("getUserBasic", {userid});
         })
+    },
+
+    /**
+     * 获取未读工作报告数量
+     * @param state
+     * @param dispatch
+     * @param timeout
+     */
+    getReportUnread({state, dispatch}, timeout) {
+        window.__getReportUnread && clearTimeout(window.__getReportUnread)
+        window.__getReportUnread = setTimeout(() => {
+            if (state.userId === 0) {
+                state.reportUnreadNumber = 0;
+            } else {
+                dispatch("call", {
+                    url: 'report/unread',
+                }).then(({data}) => {
+                    state.reportUnreadNumber = data.total || 0;
+                }).catch(_ => {});
+            }
+        }, typeof timeout === "number" ? timeout : 1000)
     },
 
     /**
