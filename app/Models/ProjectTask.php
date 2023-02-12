@@ -769,7 +769,7 @@ class ProjectTask extends AbstractModel
                 ]);
                 $this->taskPush(null, 3);
             }
-            // 以下紧顶级任务可修改
+            // 以下仅顶级任务可修改
             if ($this->parent_id === 0) {
                 // 重复周期
                 $loopAt = $this->loop_at;
@@ -1444,6 +1444,7 @@ class ProjectTask extends AbstractModel
         if (empty($userids)) {
             return;
         }
+        $owners = $this->taskUser->pluck('owner', 'userid')->toArray();
         $users = User::whereIn('userid', $userids)->whereNull('disable_at')->get();
         if (empty($users)) {
             return;
@@ -1454,10 +1455,13 @@ class ProjectTask extends AbstractModel
             return;
         }
 
-        $text = view('push.task', [
-            'type' => str_replace([0, 1, 2, 3], ['start', 'before', 'after', 'times'], $type),
-            'task' => $this,
-        ])->render();
+        $taskHtml = "<span class=\"mention task\" data-id=\"{$this->id}\">#{$this->name}</span>";
+        $text = match ($type) {
+            1 => "您的任务 {$taskHtml} 即将超时。",
+            2 => "您的任务 {$taskHtml} 已经超时。",
+            3 => "您的任务 {$taskHtml} 时间已修改。",
+            default => "您有一个新任务 {$taskHtml}。",
+        };
 
         /** @var User $user */
         foreach ($users as $user) {
@@ -1471,10 +1475,13 @@ class ProjectTask extends AbstractModel
                 continue;
             }
             //
+            $replace = $owners[$user->userid] ? "您负责的任务" : "您协助的任务";
             $dialog = WebSocketDialog::checkUserDialog($botUser->userid, $data['userid']);
             if ($dialog) {
                 ProjectTaskPushLog::createInstance($data)->save();
-                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid);
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', [
+                    'text' => str_replace("您的任务", $replace, $text)
+                ], $botUser->userid);
             }
         }
     }
