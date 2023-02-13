@@ -37,6 +37,7 @@ class DialogController extends AbstractController
      * @apiName lists
      *
      * @apiParam {String} [at_after]        只读取在这个时间之后更新的对话
+     * @apiParam {String} [deleted_at]      读取在这个时间之后删除的对话ID，返回数据: deleted_data
      * @apiParam {Number} [page]            当前页，默认:1
      * @apiParam {Number} [pagesize]        每页显示数量，默认:50，最大:100
      *
@@ -62,7 +63,19 @@ class DialogController extends AbstractController
             return $item->formatData($user->userid);
         });
         //
-        return Base::retSuccess('success', $list);
+        $data = $list->toArray();
+        if (Request::exists('deleted_at')) {
+            $data['deleted_at'] = date("Y-m-d H:i:s");
+            $data['deleted_data'] = WebSocketDialog::select(['web_socket_dialogs.id'])
+                ->withTrashed()
+                ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
+                ->where('u.userid', $user->userid)
+                ->where('web_socket_dialogs.deleted_at', '>=', Carbon::parse(Request::input('deleted_at')))
+                ->take(100)
+                ->pluck('id');
+        }
+        //
+        return Base::retSuccess('success', $data);
     }
 
     /**

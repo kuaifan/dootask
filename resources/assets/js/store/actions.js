@@ -2117,12 +2117,20 @@ export default {
                     data.at_after = tmpList[0].last_at;
                 }
             }
+            if (state.dialogDeletedAt || data.at_after) {
+                data.deleted_at = state.dialogDeletedAt = state.dialogDeletedAt || data.at_after
+            }
             dispatch("call", {
                 url: 'dialog/lists',
                 data,
             }).then(result => {
                 const resData = result.data;
                 dispatch("saveDialog", resData.data);
+                //
+                if (resData.deleted_at) {
+                    state.dialogDeletedAt = resData.deleted_at
+                    resData.deleted_data.some(id => dispatch("forgetDialog", id))
+                }
                 //
                 if (resData.next_page_url && resData.current_page < 5) {
                     data.page++

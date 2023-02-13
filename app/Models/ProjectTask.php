@@ -1281,6 +1281,7 @@ class ProjectTask extends AbstractModel
             if ($this->dialog_id) {
                 $dialog = WebSocketDialog::find($this->dialog_id);
                 $dialog?->deleteDialog();
+                $dialog?->pushMsg("groupDelete");
             }
             self::whereParentId($this->id)->delete();
             $this->deleted_userid = User::userid();

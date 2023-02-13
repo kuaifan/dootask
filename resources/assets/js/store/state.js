@@ -82,6 +82,7 @@ export default {
     dialogHistory: [],
     dialogInputCache: [],
     dialogMsgTransfer: {time: 0},
+    dialogDeletedAt: null,
 
     // 文件
     fileLists: [],
