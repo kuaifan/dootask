@@ -11,6 +11,14 @@ const crc = require('crc');
 const zlib = require('zlib');
 const utils = require('./utils');
 const config = require('./package.json');
+const spawn = require("child_process").spawn;
+
+const isMac = process.platform === 'darwin'
+const isWin = process.platform === 'win32'
+const allowedUrls = /^(?:https?|mailto|tel|callto):/i;
+let enableStoreBkp = true;
+let dialogOpen = false;
+let enablePlugins = false;
 
 let mainWindow = null,
     mainTray = null,
@@ -605,6 +613,7 @@ ipcMain.on('updateQuitAndInstall', (event) => {
 //================================================================
 
 const MICRON_TO_PIXEL = 264.58 		//264.58 micron = 1 pixel
+const PIXELS_PER_INCH = 100.117		// Usually it is 100 pixels per inch but this give better results
 const PNG_CHUNK_IDAT = 1229209940;
 const LARGE_IMAGE_AREA = 30000000;
 
@@ -727,7 +736,6 @@ function writePngWithText(origBuff, key, text, compressed, base64encoded) {
 
 //TODO Create a lightweight html file similar to export3.html for exporting to vsdx
 function exportVsdx(event, args, directFinalize) {
-
     let win = new BrowserWindow({
         width: 1280,
         height: 800,
@@ -829,7 +837,7 @@ function exportDiagram(event, args, directFinalize) {
                 preload: path.join(__dirname, 'electron-preload.js'),
                 backgroundThrottling: false,
                 contextIsolation: true,
-                nativeWindowOpen: true
+                disableBlinkFeatures: 'Auxclick' // Is this needed?
             },
             show: false,
             frame: false,
@@ -837,7 +845,15 @@ function exportDiagram(event, args, directFinalize) {
             transparent: args.format == 'png' && (args.bg == null || args.bg == 'none'),
         });
 
-        browser.loadURL(`file://${__dirname}/export3.html`);
+        if (devloadUrl) {
+            browser.loadURL(devloadUrl + 'drawio/webapp/export3.html').then(_ => {
+
+            })
+        } else {
+            browser.loadFile('./public/drawio/webapp/export3.html').then(_ => {
+
+            })
+        }
 
         const contents = browser.webContents;
         let pageByPage = (args.format == 'pdf' && !args.print), from, to, pdfs;
@@ -887,22 +903,18 @@ function exportDiagram(event, args, directFinalize) {
                     //A workaround to detect errors in the input file or being empty file
                     hasError = true;
                 } else {
-                    //Chrome generates Pdf files larger than requested pixels size and requires scaling
-                    let fixingScale = 0.959;
-
-                    let w = Math.ceil(bounds.width * fixingScale);
-
-                    // +0.1 fixes cases where adding 1px below is not enough
-                    // Increase this if more cropped PDFs have extra empty pages
-                    let h = Math.ceil(bounds.height * fixingScale + 0.1);
-
                     pdfOptions = {
                         printBackground: true,
                         pageSize: {
-                            width: w * MICRON_TO_PIXEL,
-                            height: (h + 2) * MICRON_TO_PIXEL //the extra 2 pixels to prevent adding an extra empty page
+                            width: bounds.width / PIXELS_PER_INCH,
+                            height: (bounds.height + 2) / PIXELS_PER_INCH //the extra 2 pixels to prevent adding an extra empty page
                         },
-                        marginsType: 1 // no margin
+                        margins: {
+                            top: 0,
+                            bottom: 0,
+                            left: 0,
+                            right: 0
+                        } // no margin
                     }
                 }
 
@@ -1035,11 +1047,187 @@ ipcMain.on('export', exportDiagram);
 // Renderer Helper functions
 //================================================================
 
-const {COPYFILE_EXCL} = fs.constants;
-const DRAFT_PREFEX = '~$';
+const {O_SYNC, O_CREAT, O_WRONLY, O_TRUNC, O_RDONLY} = fs.constants;
+const DRAFT_PREFEX = '.$';
+const OLD_DRAFT_PREFEX = '~$';
 const DRAFT_EXT = '.dtmp';
-const BKP_PREFEX = '~$';
+const BKP_PREFEX = '.$';
+const OLD_BKP_PREFEX = '~$';
 const BKP_EXT = '.bkp';
+
+/**
+ * Checks the file content type
+ * Confirm content is xml, pdf, png, jpg, svg, vsdx ...
+ */
+function checkFileContent(body, enc) {
+    if (body != null) {
+        let head, headBinay;
+
+        if (typeof body === 'string') {
+            if (enc == 'base64') {
+                headBinay = Buffer.from(body.substring(0, 22), 'base64');
+                head = headBinay.toString();
+            } else {
+                head = body.substring(0, 16);
+                headBinay = Buffer.from(head);
+            }
+        } else {
+            head = new TextDecoder("utf-8").decode(body.subarray(0, 16));
+            headBinay = body;
+        }
+
+        let c1 = head[0],
+            c2 = head[1],
+            c3 = head[2],
+            c4 = head[3],
+            c5 = head[4],
+            c6 = head[5],
+            c7 = head[6],
+            c8 = head[7],
+            c9 = head[8],
+            c10 = head[9],
+            c11 = head[10],
+            c12 = head[11],
+            c13 = head[12],
+            c14 = head[13],
+            c15 = head[14],
+            c16 = head[15];
+
+        let cc1 = headBinay[0],
+            cc2 = headBinay[1],
+            cc3 = headBinay[2],
+            cc4 = headBinay[3],
+            cc5 = headBinay[4],
+            cc6 = headBinay[5],
+            cc7 = headBinay[6],
+            cc8 = headBinay[7],
+            cc9 = headBinay[8],
+            cc10 = headBinay[9],
+            cc11 = headBinay[10],
+            cc12 = headBinay[11],
+            cc13 = headBinay[12],
+            cc14 = headBinay[13],
+            cc15 = headBinay[14],
+            cc16 = headBinay[15];
+
+        if (c1 == '<') {
+            // text/html
+            if (c2 == '!'
+                || ((c2 == 'h'
+                    && (c3 == 't' && c4 == 'm' && c5 == 'l'
+                        || c3 == 'e' && c4 == 'a' && c5 == 'd')
+                    || (c2 == 'b' && c3 == 'o' && c4 == 'd'
+                        && c5 == 'y')))
+                || ((c2 == 'H'
+                    && (c3 == 'T' && c4 == 'M' && c5 == 'L'
+                        || c3 == 'E' && c4 == 'A' && c5 == 'D')
+                    || (c2 == 'B' && c3 == 'O' && c4 == 'D'
+                        && c5 == 'Y')))) {
+                return true;
+            }
+
+            // application/xml
+            if (c2 == '?' && c3 == 'x' && c4 == 'm' && c5 == 'l'
+                && c6 == ' ') {
+                return true;
+            }
+
+            // application/svg+xml
+            if (c2 == 's' && c3 == 'v' && c4 == 'g' && c5 == ' ') {
+                return true;
+            }
+        }
+
+        // big and little (identical) endian UTF-8 encodings, with BOM
+        // application/xml
+        if (cc1 == 0xef && cc2 == 0xbb && cc3 == 0xbf) {
+            if (c4 == '<' && c5 == '?' && c6 == 'x') {
+                return true;
+            }
+        }
+
+        // big and little endian UTF-16 encodings, with byte order mark
+        // application/xml
+        if (cc1 == 0xfe && cc2 == 0xff) {
+            if (cc3 == 0 && c4 == '<' && cc5 == 0 && c6 == '?' && cc7 == 0
+                && c8 == 'x') {
+                return true;
+            }
+        }
+
+        // application/xml
+        if (cc1 == 0xff && cc2 == 0xfe) {
+            if (c3 == '<' && cc4 == 0 && c5 == '?' && cc6 == 0 && c7 == 'x'
+                && cc8 == 0) {
+                return true;
+            }
+        }
+
+        // big and little endian UTF-32 encodings, with BOM
+        // application/xml
+        if (cc1 == 0x00 && cc2 == 0x00 && cc3 == 0xfe && cc4 == 0xff) {
+            if (cc5 == 0 && cc6 == 0 && cc7 == 0 && c8 == '<' && cc9 == 0
+                && cc10 == 0 && cc11 == 0 && c12 == '?' && cc13 == 0
+                && cc14 == 0 && cc15 == 0 && c16 == 'x') {
+                return true;
+            }
+        }
+
+        // application/xml
+        if (cc1 == 0xff && cc2 == 0xfe && cc3 == 0x00 && cc4 == 0x00) {
+            if (c5 == '<' && cc6 == 0 && cc7 == 0 && cc8 == 0 && c9 == '?'
+                && cc10 == 0 && cc11 == 0 && cc12 == 0 && c13 == 'x'
+                && cc14 == 0 && cc15 == 0 && cc16 == 0) {
+                return true;
+            }
+        }
+
+        // application/pdf (%PDF-)
+        if (cc1 == 37 && cc2 == 80 && cc3 == 68 && cc4 == 70 && cc5 == 45) {
+            return true;
+        }
+
+        // image/png
+        if ((cc1 == 137 && cc2 == 80 && cc3 == 78 && cc4 == 71 && cc5 == 13
+                && cc6 == 10 && cc7 == 26 && cc8 == 10) ||
+            (cc1 == 194 && cc2 == 137 && cc3 == 80 && cc4 == 78 && cc5 == 71 && cc6 == 13 //Our embedded PNG+XML
+                && cc7 == 10 && cc8 == 26 && cc9 == 10)) {
+            return true;
+        }
+
+        // image/jpeg
+        if (cc1 == 0xFF && cc2 == 0xD8 && cc3 == 0xFF) {
+            if (cc4 == 0xE0 || cc4 == 0xEE) {
+                return true;
+            }
+
+            /**
+             * File format used by digital cameras to store images.
+             * Exif Format can be read by any application supporting
+             * JPEG. Exif Spec can be found at:
+             * http://www.pima.net/standards/it10/PIMA15740/Exif_2-1.PDF
+             */
+            if ((cc4 == 0xE1) && (c7 == 'E' && c8 == 'x' && c9 == 'i'
+                && c10 == 'f' && cc11 == 0)) {
+                return true;
+            }
+        }
+
+        // vsdx, vssx (also zip, jar, odt, ods, odp, docx, xlsx, pptx, apk, aar)
+        if (cc1 == 0x50 && cc2 == 0x4B && cc3 == 0x03 && cc4 == 0x04) {
+            return true;
+        } else if (cc1 == 0x50 && cc2 == 0x4B && cc3 == 0x03 && cc4 == 0x06) {
+            return true;
+        }
+
+        // mxfile, mxlibrary, mxGraphModel
+        if (c1 == '<' && c2 == 'm' && c3 == 'x') {
+            return true;
+        }
+    }
+
+    return false;
+}
 
 function isConflict(origStat, stat) {
     return stat != null && origStat != null && stat.mtimeMs != origStat.mtimeMs;
@@ -1067,6 +1255,25 @@ async function getFileDrafts(fileObject) {
         uniquePart = '_' + counter++;
     } while (fs.existsSync(draftFileName)); //TODO this assume continuous drafts names
 
+    //Port old draft files to new prefex
+    counter = 1;
+    uniquePart = '';
+    let draftExists = false;
+
+    do {
+        draftFileName = path.join(path.dirname(filePath), OLD_DRAFT_PREFEX + path.basename(filePath) + uniquePart + DRAFT_EXT);
+        draftExists = fs.existsSync(draftFileName);
+
+        if (draftExists) {
+            const newDraftFileName = path.join(path.dirname(filePath), DRAFT_PREFEX + path.basename(filePath) + uniquePart + DRAFT_EXT);
+            await fsProm.rename(draftFileName, newDraftFileName);
+            draftsPaths.push(newDraftFileName);
+        }
+
+        uniquePart = '_' + counter++;
+    } while (draftExists); //TODO this assume continuous drafts names
+
+    //Skip the first null element
     for (let i = 1; i < draftsPaths.length; i++) {
         try {
             let stat = await fsProm.lstat(draftsPaths[i]);
@@ -1084,75 +1291,126 @@ async function getFileDrafts(fileObject) {
 }
 
 async function saveDraft(fileObject, data) {
-    if (data == null || data.length == 0) {
-        throw new Error('empty data');
+    if (!checkFileContent(data)) {
+        throw new Error('Invalid file data');
     } else {
         let draftFileName = fileObject.draftFileName || getDraftFileName(fileObject);
         await fsProm.writeFile(draftFileName, data, 'utf8');
+
+        if (isWin) {
+            try {
+                // Add Hidden attribute:
+                spawn('attrib', ['+h', draftFileName], {shell: true});
+            } catch (e) {
+            }
+        }
+
         return draftFileName;
     }
 }
 
 async function saveFile(fileObject, data, origStat, overwrite, defEnc) {
+    if (!checkFileContent(data)) {
+        throw new Error('Invalid file data');
+    }
+
     let retryCount = 0;
     let backupCreated = false;
     let bkpPath = path.join(path.dirname(fileObject.path), BKP_PREFEX + path.basename(fileObject.path) + BKP_EXT);
+    const oldBkpPath = path.join(path.dirname(fileObject.path), OLD_BKP_PREFEX + path.basename(fileObject.path) + BKP_EXT);
+    let writeEnc = defEnc || fileObject.encoding;
 
     let writeFile = async function () {
-        if (data == null || data.length == 0) {
-            throw new Error('empty data');
-        } else {
-            let writeEnc = defEnc || fileObject.encoding;
+        let fh;
 
-            await fsProm.writeFile(fileObject.path, data, writeEnc);
-            let stat2 = await fsProm.stat(fileObject.path);
-            let writtenData = await fsProm.readFile(fileObject.path, writeEnc);
+        try {
+            // O_SYNC is for sync I/O and reduce risk of file corruption
+            fh = await fsProm.open(fileObject.path, O_SYNC | O_CREAT | O_WRONLY | O_TRUNC);
+            await fsProm.writeFile(fh, data, writeEnc);
+        } finally {
+            await fh?.close();
+        }
 
-            if (data != writtenData) {
-                retryCount++;
+        let stat2 = await fsProm.stat(fileObject.path);
+        // Workaround for possible writing errors is to check the written
+        // contents of the file and retry 3 times before showing an error
+        let writtenData = await fsProm.readFile(fileObject.path, writeEnc);
 
-                if (retryCount < 3) {
-                    return await writeFile();
-                } else {
-                    throw new Error('all saving trials failed');
-                }
+        if (data != writtenData) {
+            retryCount++;
+
+            if (retryCount < 3) {
+                return await writeFile();
             } else {
-                if (backupCreated) {
-                    fs.unlink(bkpPath, (err) => {
-                    }); //Ignore errors!
-                }
-
-                return stat2;
+                throw new Error('all saving trials failed');
             }
+        } else {
+            //We'll keep the backup file in case the original file is corrupted. TODO When should we delete the backup file?
+            if (backupCreated) {
+                //fs.unlink(bkpPath, (err) => {}); //Ignore errors!
+
+                //Delete old backup file with old prefix
+                if (fs.existsSync(oldBkpPath)) {
+                    fs.unlink(oldBkpPath, (err) => {
+                    }); //Ignore errors
+                }
+            }
+
+            return stat2;
         }
     };
 
-    async function doSaveFile() {
-        try {
-            await fsProm.copyFile(fileObject.path, bkpPath, COPYFILE_EXCL);
-            backupCreated = true;
-        } catch (e) {
-        } //Ignore
+    async function doSaveFile(isNew) {
+        if (enableStoreBkp && !isNew) {
+            //Copy file to backup file (after conflict and stat is checked)
+            let bkpFh;
+
+            try {
+                //Use file read then write to open the backup file direct sync write to reduce the chance of file corruption
+                let fileContent = await fsProm.readFile(fileObject.path, writeEnc);
+                bkpFh = await fsProm.open(bkpPath, O_SYNC | O_CREAT | O_WRONLY | O_TRUNC);
+                await fsProm.writeFile(bkpFh, fileContent, writeEnc);
+                backupCreated = true;
+            } catch (e) {
+                if (__DEV__) {
+                    console.log('Backup file writing failed', e); //Ignore
+                }
+            } finally {
+                await bkpFh?.close();
+
+                if (isWin) {
+                    try {
+                        // Add Hidden attribute:
+                        spawn('attrib', ['+h', bkpPath], {shell: true});
+                    } catch (e) {
+                    }
+                }
+            }
+        }
 
         return await writeFile();
     }
 
     if (overwrite) {
-        return await doSaveFile();
+        return await doSaveFile(true);
     } else {
         let stat = fs.existsSync(fileObject.path) ?
             await fsProm.stat(fileObject.path) : null;
 
         if (stat && isConflict(origStat, stat)) {
-            new Error('conflict');
+            throw new Error('conflict');
         } else {
-            return await doSaveFile();
+            return await doSaveFile(stat == null);
         }
     }
 }
 
 async function writeFile(path, data, enc) {
-    return await fsProm.writeFile(path, data, enc);
+    if (!checkFileContent(data, enc)) {
+        throw new Error('Invalid file data');
+    } else {
+        return await fsProm.writeFile(path, data, enc);
+    }
 }
 
 function getAppDataFolder() {
@@ -1173,6 +1431,7 @@ function getAppDataFolder() {
 }
 
 function getDocumentsFolder() {
+    //On windows, misconfigured Documents folder cause an exception
     try {
         return app.getPath('documents');
     } catch (e) {
@@ -1187,7 +1446,9 @@ function checkFileExists(pathParts) {
 }
 
 async function showOpenDialog(defaultPath, filters, properties) {
-    return dialog.showOpenDialogSync({
+    let win = BrowserWindow.getFocusedWindow();
+
+    return dialog.showOpenDialog(win, {
         defaultPath: defaultPath,
         filters: filters,
         properties: properties
@@ -1195,13 +1456,17 @@ async function showOpenDialog(defaultPath, filters, properties) {
 }
 
 async function showSaveDialog(defaultPath, filters) {
-    return dialog.showSaveDialogSync({
+    let win = BrowserWindow.getFocusedWindow();
+
+    return dialog.showSaveDialog(win, {
         defaultPath: defaultPath,
         filters: filters
     });
 }
 
 async function installPlugin(filePath) {
+    if (!enablePlugins) return {};
+
     let pluginsDir = path.join(getAppDataFolder(), '/plugins');
 
     if (!fs.existsSync(pluginsDir)) {
@@ -1220,13 +1485,25 @@ async function installPlugin(filePath) {
     return {pluginName: pluginName, selDir: path.dirname(filePath)};
 }
 
-function uninstallPlugin(plugin) {
-    let pluginsFile = path.join(getAppDataFolder(), '/plugins', plugin);
+function getPluginFile(plugin) {
+    if (!enablePlugins) return null;
 
-    if (fs.existsSync(pluginsFile)) {
-        fs.unlinkSync(pluginsFile);
+    const prefix = path.join(getAppDataFolder(), '/plugins/');
+    const pluginFile = path.join(prefix, plugin);
+
+    if (pluginFile.startsWith(prefix) && fs.existsSync(pluginFile)) {
+        return pluginFile;
     }
-    return null
+
+    return null;
+}
+
+function uninstallPlugin(plugin) {
+    const pluginFile = getPluginFile(plugin);
+
+    if (pluginFile != null) {
+        fs.unlinkSync(pluginFile);
+    }
 }
 
 function dirname(path_p) {
@@ -1234,7 +1511,13 @@ function dirname(path_p) {
 }
 
 async function readFile(filename, encoding) {
-    return await fsProm.readFile(filename, encoding);
+    let data = await fsProm.readFile(filename, encoding);
+
+    if (checkFileContent(data, encoding)) {
+        return data;
+    }
+
+    throw new Error('Invalid file data');
 }
 
 async function fileStat(file) {
@@ -1265,7 +1548,15 @@ function clipboardAction(method, data) {
 }
 
 async function deleteFile(file) {
-    await fsProm.unlink(file);
+    // Reading the header of the file to confirm it is a file we can delete
+    let fh = await fsProm.open(file, O_RDONLY);
+    let buffer = Buffer.allocUnsafe(16);
+    await fh.read(buffer, 0, 16);
+    await fh.close();
+
+    if (checkFileContent(buffer)) {
+        await fsProm.unlink(file);
+    }
 }
 
 function windowAction(method) {
@@ -1289,8 +1580,13 @@ function windowAction(method) {
 }
 
 function openExternal(url) {
-    shell.openExternal(url).then(() => {}).catch(() => {});
-    return null
+    //Only open http(s), mailto, tel, and callto links
+    if (allowedUrls.test(url)) {
+        shell.openExternal(url);
+        return true;
+    }
+
+    return false;
 }
 
 function watchFile(path) {
@@ -1308,12 +1604,14 @@ function watchFile(path) {
             } // Ignore
         });
     }
-    return null
 }
 
 function unwatchFile(path) {
     fs.unwatchFile(path);
-    return null
+}
+
+function getCurDir() {
+    return __dirname;
 }
 
 ipcMain.on("rendererReq", async (event, args) => {
@@ -1333,20 +1631,23 @@ ipcMain.on("rendererReq", async (event, args) => {
             case 'getFileDrafts':
                 ret = await getFileDrafts(args.fileObject);
                 break;
-            case 'getAppDataFolder':
-                ret = getAppDataFolder();
-                break;
             case 'getDocumentsFolder':
                 ret = await getDocumentsFolder();
                 break;
             case 'checkFileExists':
-                ret = checkFileExists(args.pathParts);
+                ret = await checkFileExists(args.pathParts);
                 break;
             case 'showOpenDialog':
+                dialogOpen = true;
                 ret = await showOpenDialog(args.defaultPath, args.filters, args.properties);
+                ret = ret.filePaths;
+                dialogOpen = false;
                 break;
             case 'showSaveDialog':
+                dialogOpen = true;
                 ret = await showSaveDialog(args.defaultPath, args.filters);
+                ret = ret.canceled ? null : ret.filePath;
+                dialogOpen = false;
                 break;
             case 'installPlugin':
                 ret = await installPlugin(args.filePath);
@@ -1354,14 +1655,20 @@ ipcMain.on("rendererReq", async (event, args) => {
             case 'uninstallPlugin':
                 ret = await uninstallPlugin(args.plugin);
                 break;
+            case 'getPluginFile':
+                ret = await getPluginFile(args.plugin);
+                break;
+            case 'isPluginsEnabled':
+                ret = enablePlugins;
+                break;
             case 'dirname':
-                ret = dirname(args.path);
+                ret = await dirname(args.path);
                 break;
             case 'readFile':
                 ret = await readFile(args.filename, args.encoding);
                 break;
             case 'clipboardAction':
-                ret = clipboardAction(args.method, args.data);
+                ret = await clipboardAction(args.method, args.data);
                 break;
             case 'deleteFile':
                 ret = await deleteFile(args.file);
@@ -1373,7 +1680,7 @@ ipcMain.on("rendererReq", async (event, args) => {
                 ret = await isFileWritable(args.file);
                 break;
             case 'windowAction':
-                ret = windowAction(args.method);
+                ret = await windowAction(args.method);
                 break;
             case 'openExternal':
                 ret = await openExternal(args.url);
@@ -1383,6 +1690,9 @@ ipcMain.on("rendererReq", async (event, args) => {
                 break;
             case 'unwatchFile':
                 ret = await unwatchFile(args.path);
+                break;
+            case 'getCurDir':
+                ret = await getCurDir();
                 break;
         }
 
