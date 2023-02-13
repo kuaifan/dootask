@@ -91,6 +91,7 @@ export default {
     projectId: 0,
     projectTotal: 0,
     projectLoad: 0,
+    projectDeletedAt: null,
     taskId: 0,
     taskCompleteTemps: [],
     taskContents: [],

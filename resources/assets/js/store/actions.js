@@ -35,6 +35,8 @@ export default {
             state.dialogInputCache = await $A.IDBArray("dialogInputCache")
             state.fileLists = await $A.IDBArray("fileLists")
             state.userInfo = await $A.IDBJson("userInfo")
+            state.dialogDeletedAt = await $A.IDBString("dialogDeletedAt")
+            state.projectDeletedAt = await $A.IDBString("projectDeletedAt")
 
             // 会员信息
             if (state.userInfo.userid) {
@@ -831,12 +833,15 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
-            let request = data || {};
+            const request = $A.isJson(data) ? data : {
+                deleted_at: state.projectDeletedAt || $A.formatDate("Y-m-d H:i:s", $A.Time() - 86400 * 30)
+            };
             let showLoad = true;
             if (typeof request.hideLoad !== "undefined") {
                 showLoad = !request.hideLoad;
                 delete request.hideLoad;
             }
+            //
             showLoad && state.loadProjects++;
             dispatch("call", {
                 url: 'project/lists',
@@ -844,6 +849,12 @@ export default {
             }).then(({data}) => {
                 state.projectTotal = data.total_all;
                 dispatch("saveProject", data.data);
+                //
+                data.deleted_at && $A.IDBSet("projectDeletedAt", data.deleted_at).then(_ => {
+                    state.projectDeletedAt = data.deleted_at
+                    data.deleted_data.some(id => dispatch("forgetProject", id))
+                });
+                //
                 resolve(data)
             }).catch(e => {
                 console.warn(e);
@@ -2098,7 +2109,9 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
-            data = $A.isJson(data) ? data : {}
+            data = $A.isJson(data) ? data : {
+                deleted_at: state.dialogDeletedAt || $A.formatDate("Y-m-d H:i:s", $A.Time() - 86400 * 30)
+            }
             if (data.hideLoad !== true) {
                 state.loadDialogs++;
             }
@@ -2117,9 +2130,7 @@ export default {
                     data.at_after = tmpList[0].last_at;
                 }
             }
-            if (state.dialogDeletedAt || data.at_after) {
-                data.deleted_at = state.dialogDeletedAt = state.dialogDeletedAt || data.at_after
-            }
+            //
             dispatch("call", {
                 url: 'dialog/lists',
                 data,
@@ -2127,10 +2138,10 @@ export default {
                 const resData = result.data;
                 dispatch("saveDialog", resData.data);
                 //
-                if (resData.deleted_at) {
+                resData.deleted_at && $A.IDBSet("dialogDeletedAt", resData.deleted_at).then(_ => {
                     state.dialogDeletedAt = resData.deleted_at
                     resData.deleted_data.some(id => dispatch("forgetDialog", id))
-                }
+                });
                 //
                 if (resData.next_page_url && resData.current_page < 5) {
                     data.page++

@@ -71,6 +71,7 @@ class DialogController extends AbstractController
                 ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
                 ->where('u.userid', $user->userid)
                 ->where('web_socket_dialogs.deleted_at', '>=', Carbon::parse(Request::input('deleted_at')))
+                ->orderByDesc('web_socket_dialogs.deleted_at')
                 ->take(100)
                 ->pluck('id');
         }
