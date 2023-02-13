@@ -9,7 +9,7 @@
     <meta name="Keywords" content="drawio, diagram, online, flow chart, flowchart maker, uml, erd">
     <meta itemprop="name" content="draw.io - free flowchart maker and diagrams online">
 	<meta itemprop="description" content="draw.io is a free online diagramming application  and flowchart maker . You can use it to create UML, entity relationship,
-		org charts, BPMN and BPM, database schema and networks. Also possible are telecommunication network, workflow, flowcharts, maps overlays and GIS, electronic 
+		org charts, BPMN and BPM, database schema and networks. Also possible are telecommunication network, workflow, flowcharts, maps overlays and GIS, electronic
 		circuit and social network diagrams.">
 	<meta itemprop="image" content="https://lh4.googleusercontent.com/-cLKEldMbT_E/Tx8qXDuw6eI/AAAAAAAAAAs/Ke0pnlk8Gpg/w500-h344-k/BPMN%2Bdiagram%2Brc2f.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -17,6 +17,10 @@
     <meta name="mobile-web-app-capable" content="yes">
 	<meta name="theme-color" content="#d89000">
 	<script type="text/javascript">
+        window.EXPORT_URL = window.location.origin + "/drawio/export/";
+        window.DRAWIO_LIGHTBOX_URL = window.location.origin + "/drawio/webapp";
+        setInterval(function() {window.ICONSEARCH_PATH = window.location.origin + "/drawio/iconsearch";}, 1000)
+
 		/**
 		 * URL Parameters and protocol description are here:
 		 *
@@ -40,27 +44,27 @@
 		{
 			var result = new Object();
 			var params = window.location.search.slice(1).split('&');
-			
+
 			for (var i = 0; i < params.length; i++)
 			{
 				var idx = params[i].indexOf('=');
-				
+
 				if (idx > 0)
 				{
 					result[params[i].substring(0, idx)] = params[i].substring(idx + 1);
 				}
 			}
-			
+
 			return result;
 		})();
-		
+
 		// Forces CDN caches by passing URL parameters via URL hash
 		if (window.location.hash != null && window.location.hash.substring(0, 2) == '#P')
 		{
 			try
 			{
 				urlParams = JSON.parse(decodeURIComponent(window.location.hash.substring(2)));
-				
+
 				if (urlParams.hash != null)
 				{
 					window.location.hash = urlParams.hash;
@@ -71,7 +75,7 @@
 				// ignore
 			}
 		}
-		
+
 		// Global variable for desktop
 		var mxIsElectron = window && window.process && window.process.type;
 
@@ -81,21 +85,21 @@
 			(function()
 			{
 				var proto = window.location.protocol;
-				
+
 				if (!mxIsElectron)
 				{
 					var host = window.location.host;
-		
+
 					// Redirects apex, drive and rt to www
 					if (host === 'draw.io' || host === 'rt.draw.io' || host === 'drive.draw.io')
 					{
 						host = 'www.draw.io';
 					}
-					
+
 					var href = proto + '//' + host + window.location.href.substring(
 							window.location.protocol.length +
 							window.location.host.length + 2);
-		
+
 					// Redirects if href changes
 					if (href != window.location.href)
 					{
@@ -104,7 +108,7 @@
 				}
 			})();
 		}
-		
+
 		/**
 		 * Adds meta tag to the page.
 		 */
@@ -113,15 +117,15 @@
 			try
 			{
 				var s = document.createElement('meta');
-				
-				if (name != null) 
+
+				if (name != null)
 				{
 					s.setAttribute('name', name);
 				}
 
 				s.setAttribute('content', content);
-				
-				if (httpEquiv != null) 
+
+				if (httpEquiv != null)
 				{
 					s.setAttribute('http-equiv', httpEquiv);
 				}
@@ -134,14 +138,14 @@
 				// ignore
 			}
 		};
-		
+
 		/**
 		 * Synchronously adds scripts to the page.
 		 */
 		function mxscript(src, onLoad, id, dataAppKey, noWrite, onError)
 		{
 			var defer = onLoad == null && !noWrite;
-			
+
 			if ((urlParams['dev'] != '1' && typeof document.createElement('canvas').getContext === "function") ||
 				onLoad != null || noWrite)
 			{
@@ -154,16 +158,16 @@
 				{
 					s.setAttribute('id', id);
 				}
-				
+
 				if (dataAppKey != null)
 				{
 					s.setAttribute('data-app-key', dataAppKey);
 				}
-				
+
 				if (onLoad != null)
 				{
 					var r = false;
-				
+
 					s.onload = s.onreadystatechange = function()
 					{
 						if (!r && (!this.readyState || this.readyState == 'complete'))
@@ -181,9 +185,9 @@
 						onError('Failed to load ' + src, e);
 					};
 				}
-			  	
+
 			  	var t = document.getElementsByTagName('script')[0];
-			  	
+
 			  	if (t != null)
 			  	{
 			  		t.parentNode.insertBefore(s, t);
@@ -205,11 +209,11 @@
 			g.type = 'text/javascript';
 			g.async = true;
 			g.src = src;
-			
+
 		    var s = document.getElementsByTagName('script')[0];
 		    s.parentNode.insertBefore(g, s);
 		};
-		
+
 		/**
 		 * Adds meta tags with application name (depends on offline URL parameter)
 		 */
@@ -224,10 +228,10 @@
 				mxmeta(null, 'default-src \'self\' \'unsafe-inline\'; connect-src \'self\' https://*.draw.io https://fonts.googleapis.com https://fonts.gstatic.com; img-src * data:; media-src *; font-src *; style-src-elem \'self\' \'unsafe-inline\' https://fonts.googleapis.com', 'Content-Security-Policy');
 			}
 		})();
-		
+
 		// Checks for local storage
 		var isLocalStorage = false;
-		
+
 		try
 		{
 			isLocalStorage = urlParams['local'] != '1' && typeof(localStorage) != 'undefined';
@@ -238,15 +242,15 @@
 		}
 
 		var mxScriptsLoaded = false, mxWinLoaded = false;
-		
+
 		function checkAllLoaded()
 		{
 			if (mxScriptsLoaded && mxWinLoaded)
 			{
-				App.main();				
+				App.main();
 			}
 		};
-		
+
 		var t0 = new Date();
 
 		// Changes paths for local development environment
@@ -254,18 +258,18 @@
 		{
 			// Used to request grapheditor/mxgraph sources in dev mode
 			var mxDevUrl = document.location.protocol + '//devhost.jgraph.com/drawio/src/main';
-			
+
 			// Used to request draw.io sources in dev mode
 			var drawDevUrl = document.location.protocol + '//devhost.jgraph.com/drawio/src/main/webapp/';
 			var geBasePath = drawDevUrl + '/js/grapheditor';
 			var mxBasePath = mxDevUrl + '/mxgraph';
-			
+
 			if (document.location.protocol == 'file:')
 			{
 				geBasePath = './js/grapheditor';
 				mxBasePath = './mxgraph';
 				drawDevUrl = './';
-				
+
 				// Forces includes for dev environment in node.js
 				mxForceIncludes = true;
 			}
@@ -276,19 +280,19 @@
 			mxscript(drawDevUrl + 'js/diagramly/Init.js');
 			mxscript(geBasePath + '/Init.js');
 			mxscript(mxBasePath + '/mxClient.js');
-			
+
 			// Adds all JS code that depends on mxClient. This indirection via Devel.js is
 			// required in some browsers to make sure mxClient.js (and the files that it
 			// loads asynchronously) are available when the code loaded in Devel.js runs.
 			mxscript(drawDevUrl + 'js/diagramly/Devel.js');
-			
+
 			// Electron
 			if (mxIsElectron)
 			{
 				mxscript('js/diagramly/DesktopLibrary.js');
 				mxscript('js/diagramly/ElectronApp.js');
 			}
-			
+
 			mxscript(drawDevUrl + 'js/PostConfig.js');
 		}
 		else
@@ -296,18 +300,18 @@
 			(function()
 			{
 				var hostName = window.location.hostname;
-				
+
 				// Supported domains are *.draw.io and the packaged version in Quip
 				var supportedDomain = (hostName.substring(hostName.length - 8, hostName.length) === '.draw.io') ||
 					(hostName.substring(hostName.length - 13, hostName.length) === '.diagrams.net');
-				
+
 				function loadAppJS()
 				{
 					mxscript('js/app.min.js', function()
 					{
 						mxScriptsLoaded = true;
 						checkAllLoaded();
-						
+
 						// Electron
 						if (mxIsElectron)
 						{
@@ -334,7 +338,7 @@
 						}
 					});
 				};
-				
+
 				if (!supportedDomain || mxIsElectron)
 				{
 					mxscript('js/PreConfig.js', loadAppJS);
@@ -350,7 +354,7 @@
 		window.onerror = function()
 		{
 			var status = document.getElementById('geStatus');
-			
+
 			if (status != null)
 			{
 				status.innerHTML = 'Page could not be loaded. Please try refreshing.';
@@ -374,6 +378,7 @@
 			color:#606060;
 		}
 		.geBlock {
+            display: none;
 			z-index:-3;
 			margin:100px;
 			margin-top:40px;
@@ -438,7 +443,7 @@
 	<div class="geBlock">
 		<h1>Flowchart Maker and Online Diagram Software</h1>
 		<p>
-			draw.io is free online diagram software. You can use it as a flowchart maker, network diagram software, to create UML online, as an ER diagram tool, 
+			draw.io is free online diagram software. You can use it as a flowchart maker, network diagram software, to create UML online, as an ER diagram tool,
 			to design database schema, to build BPMN online, as a circuit diagram maker, and more. draw.io can import .vsdx, Gliffy&trade; and Lucidchart&trade; files .
 		</p>
 		<h2 id="geStatus">Loading...</h2>
