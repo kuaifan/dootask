@@ -2,7 +2,6 @@
 
 namespace App\Ldap;
 
-use App\Exceptions\ApiException;
 use App\Models\User;
 use App\Module\Base;
 use LdapRecord\Configuration\ConfigurationException;
@@ -12,7 +11,7 @@ use LdapRecord\Models\Model;
 
 class LdapUser extends Model
 {
-    protected static bool $init = false;
+    protected static $init = null;
     /**
      * The object classes of the LDAP model.
      *
@@ -71,14 +70,13 @@ class LdapUser extends Model
 
     /**
      * 初始化配置
-     * @return void
+     * @return bool
      */
     public static function initConfig()
     {
-        if (self::$init) {
-            return;
+        if (is_bool(self::$init)) {
+            return self::$init;
         }
-        self::$init = true;
         //
         $setting = Base::setting('thirdAccessSetting');
         $connection = Container::getDefaultConnection();
@@ -90,8 +88,10 @@ class LdapUser extends Model
                 "username" => $setting['ldap_user_dn'],
                 "password" => $setting['ldap_password'],
             ]);
+            return self::$init = true;
         } catch (ConfigurationException $e) {
-            throw new ApiException($e->getMessage());
+            info($e->getMessage());
+            return self::$init = false;
         }
     }
 
@@ -103,7 +103,9 @@ class LdapUser extends Model
      */
     public static function userFirst($username, $password): ?Model
     {
-        self::initConfig();
+        if (!self::initConfig()) {
+            return null;
+        }
         try {
             return self::static()
                 ->where([
@@ -124,7 +126,9 @@ class LdapUser extends Model
      */
     public static function userLogin($username, $password, $user = null)
     {
-        self::initConfig();
+        if (!self::initConfig()) {
+            return null;
+        }
         $row = self::userFirst($username, $password);
         if (!$row) {
             return null;
@@ -158,7 +162,9 @@ class LdapUser extends Model
             return;
         }
         //
-        self::initConfig();
+        if (!self::initConfig()) {
+            return;
+        }
         //
         if (self::isSyncLocal()) {
             $row = self::userFirst($user->email, $password);
@@ -202,15 +208,17 @@ class LdapUser extends Model
         if (empty($array)) {
             return;
         }
-        self::initConfig();
-        $row = self::static()
-            ->where([
-                'cn' => $username,
-            ])->first();
+        if (!self::initConfig()) {
+            return;
+        }
         try {
+            $row = self::static()
+                ->where([
+                    'cn' => $username,
+                ])->first();
             $row?->update($array);
-        } catch (LdapRecordException $e) {
-            throw new ApiException("[LDAP] update fail: " . $e->getMessage());
+        } catch (\Exception $e) {
+            info("[LDAP] update fail: " . $e->getMessage());
         }
     }
 
@@ -221,15 +229,17 @@ class LdapUser extends Model
      */
     public static function userDelete($username)
     {
-        self::initConfig();
-        $row = self::static()
-            ->where([
-                'cn' => $username,
-            ])->first();
+        if (!self::initConfig()) {
+            return;
+        }
         try {
+            $row = self::static()
+                ->where([
+                    'cn' => $username,
+                ])->first();
             $row?->delete();
-        } catch (LdapRecordException $e) {
-            throw new ApiException("[LDAP] delete fail: " . $e->getMessage());
+        } catch (\Exception $e) {
+            info("[LDAP] delete fail: " . $e->getMessage());
         }
     }
 }
