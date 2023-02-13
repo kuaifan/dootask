@@ -145,6 +145,40 @@ class UsersController extends AbstractController
     }
 
     /**
+     * @api {get} api/users/login/qrcode          02. 二维码登录
+     *
+     * @apiDescription 通过二维码code登录(或：是否登录成功)
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName login__qrcode
+     *
+     * @apiParam {String} type          类型
+     * - login: 登录（用于：app登录）
+     * - status: 状态 (默认，用于：网页、客户端获取)
+     * @apiParam {String} code          二维码 code
+     *
+     * @apiSuccess {Number} ret     返回状态码（1需要、0不需要）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function login__qrcode()
+    {
+        $type = trim(Request::input('type'));
+        $code = trim(Request::input('code'));
+        //
+        if (strlen($code) < 32) {
+            return Base::retError("参数错误");
+        }
+        if ($type === 'login') {
+            $user = User::auth();
+            Cache::put("User::qrcode:" . $code, $user->userid, Carbon::now()->addMinute());
+            return Base::retSuccess("扫码成功");
+        }
+        // todo 登录成功
+        return Base::retError("No identity");
+    }
+
+    /**
      * @api {get} api/users/login/needcode          02. 是否需要验证码
      *
      * @apiDescription 用于判断是否需要登录验证码

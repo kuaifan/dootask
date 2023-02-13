@@ -4,82 +4,99 @@
         <div class="login-body">
             <div class="login-logo no-dark-content" :class="{'can-click':needStartHome}" @click="goHome"></div>
             <div class="login-box">
+                <div class="login-mode-switch">
+                    <div class="login-mode-switch-box">
+                        <ETooltip :disabled="windowSmall || $isEEUiApp" :content="$L(loginMode=='qrcode' ? '帐号登录' : '扫码登录')" placement="left">
+                            <span class="login-mode-switch-icon" @click="switchLoginMode">
+                                <svg v-if="loginMode=='qrcode'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" data-icon="PcOutlined"><path d="M23 16a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h18a2 2 0 0 1 2 2v12ZM21 4H3v9h18V4ZM3 15v1h18v-1H3Zm3 6a1 1 0 0 1 1-1h10a1 1 0 1 1 0 2H7a1 1 0 0 1-1-1Z" fill="currentColor"></path></svg>
+                                <svg v-else viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" data-icon="QrOutlined"><path d="M6.5 7.5a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1Z" fill="currentColor"></path><path d="M4.5 2.5c-1.1 0-2 .9-2 2v7c0 1.1.9 2 2 2h7c1.1 0 2-.9 2-2v-7c0-1.1-.9-2-2-2h-7Zm0 2h7v7h-7v-7ZM11 16a1 1 0 1 1 2 0 1 1 0 0 1-2 0Zm0 3.5a1 1 0 1 1 2 0v1a1 1 0 1 1-2 0v-1Zm4-7.5a1 1 0 1 1 2 0 1 1 0 0 1-2 0Zm3.5 0a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2h-1a1 1 0 0 1-1-1ZM15 17c0-1.1.9-2 2-2h2.5c1.1 0 2 .9 2 2v2.5c0 1.1-.9 2-2 2H17c-1.1 0-2-.9-2-2V17Zm4.5 0H17v2.5h2.5V17Zm-15-2c-1.1 0-2 .9-2 2v2.5c0 1.1.9 2 2 2H7c1.1 0 2-.9 2-2V17c0-1.1-.9-2-2-2H4.5Zm0 2H7v2.5H4.5V17ZM15 4.5c0-1.1.9-2 2-2h2.5c1.1 0 2 .9 2 2V7c0 1.1-.9 2-2 2H17c-1.1 0-2-.9-2-2V4.5Zm4.5 0H17V7h2.5V4.5Z" fill="currentColor"></path></svg>
+                            </span>
+                        </ETooltip>
+                    </div>
+                </div>
+
                 <div class="login-title">{{welcomeTitle}}</div>
 
-                <div v-if="loginType=='reg'" class="login-subtitle">{{$L('输入您的信息以创建帐户。')}}</div>
-                <div v-else class="login-subtitle">{{$L('输入您的凭证以访问您的帐户。')}}</div>
+                <div class="login-subtitle">{{$L(subTitle)}}</div>
 
-                <div class="login-input">
-                    <Input
-                        v-if="isSoftware && cacheServerUrl"
-                        :value="$A.getDomain(cacheServerUrl)"
-                        prefix="ios-globe-outline"
-                        size="large"
-                        readonly
-                        clearable
-                        @on-clear="setServerUrl('')"/>
+                <transition name="login-mode">
+                    <div v-if="loginMode=='qrcode'" class="login-qrcode" @click="qrcodeRefresh">
+                        <VueQrcode :value="qrcodeUrl" :options="{width:200,margin:0}"></VueQrcode>
+                    </div>
+                </transition>
+                <transition name="login-mode">
+                    <div v-if="loginMode=='access'" class="login-access">
+                        <Input
+                            v-if="isSoftware && cacheServerUrl"
+                            :value="$A.getDomain(cacheServerUrl)"
+                            prefix="ios-globe-outline"
+                            size="large"
+                            readonly
+                            clearable
+                            @on-clear="setServerUrl('')"/>
 
-                    <Input
-                        v-model="email"
-                        ref="email"
-                        prefix="ios-mail-outline"
-                        :placeholder="$L('输入您的电子邮件')"
-                        type="email"
-                        size="large"
-                        @on-enter="onLogin"
-                        @on-blur="onBlur"
-                        clearable/>
+                        <Input
+                            v-model="email"
+                            ref="email"
+                            prefix="ios-mail-outline"
+                            :placeholder="$L('输入您的电子邮件')"
+                            type="email"
+                            size="large"
+                            @on-enter="onLogin"
+                            @on-blur="onBlur"
+                            clearable/>
 
-                    <Input
-                        v-model="password"
-                        ref="password"
-                        prefix="ios-lock-outline"
-                        :placeholder="$L('输入您的密码')"
-                        type="password"
-                        size="large"
-                        @on-enter="onLogin"
-                        clearable/>
+                        <Input
+                            v-model="password"
+                            ref="password"
+                            prefix="ios-lock-outline"
+                            :placeholder="$L('输入您的密码')"
+                            type="password"
+                            size="large"
+                            @on-enter="onLogin"
+                            clearable/>
 
-                    <Input
-                        v-if="loginType=='reg'"
-                        v-model="password2"
-                        ref="password2"
-                        prefix="ios-lock-outline"
-                        :placeholder="$L('输入确认密码')"
-                        type="password"
-                        size="large"
-                        @on-enter="onLogin"
-                        clearable/>
-                    <Input
-                        v-if="loginType=='reg' && needInvite"
-                        v-model="invite"
-                        ref="invite"
-                        class="login-code"
-                        :placeholder="$L('请输入注册邀请码')"
-                        type="text"
-                        size="large"
-                        @on-enter="onLogin"
-                        clearable><span slot="prepend">&nbsp;{{$L('邀请码')}}&nbsp;</span></Input>
+                        <Input
+                            v-if="loginType=='reg'"
+                            v-model="password2"
+                            ref="password2"
+                            prefix="ios-lock-outline"
+                            :placeholder="$L('输入确认密码')"
+                            type="password"
+                            size="large"
+                            @on-enter="onLogin"
+                            clearable/>
+                        <Input
+                            v-if="loginType=='reg' && needInvite"
+                            v-model="invite"
+                            ref="invite"
+                            class="login-code"
+                            :placeholder="$L('请输入注册邀请码')"
+                            type="text"
+                            size="large"
+                            @on-enter="onLogin"
+                            clearable><span slot="prepend">&nbsp;{{$L('邀请码')}}&nbsp;</span></Input>
 
-                    <Input
-                        v-if="loginType=='login' && codeNeed"
-                        v-model="code"
-                        ref="code"
-                        class="login-code"
-                        :placeholder="$L('输入图形验证码')"
-                        type="text"
-                        size="large"
-                        @on-enter="onLogin"
-                        clearable>
-                        <Icon type="ios-checkmark-circle-outline" class="login-icon" slot="prepend"></Icon>
-                        <div slot="append" class="login-code-end" @click="reCode"><img :src="codeUrl"/></div>
-                    </Input>
+                        <Input
+                            v-if="loginType=='login' && codeNeed"
+                            v-model="code"
+                            ref="code"
+                            class="login-code"
+                            :placeholder="$L('输入图形验证码')"
+                            type="text"
+                            size="large"
+                            @on-enter="onLogin"
+                            clearable>
+                            <Icon type="ios-checkmark-circle-outline" class="login-icon" slot="prepend"></Icon>
+                            <div slot="append" class="login-code-end" @click="reCode"><img :src="codeUrl"/></div>
+                        </Input>
 
-                    <Button type="primary" :loading="loadIng > 0 || loginJump" size="large" long @click="onLogin">{{$L(loginText)}}</Button>
+                        <Button type="primary" :loading="loadIng > 0 || loginJump" size="large" long @click="onLogin">{{$L(loginText)}}</Button>
 
-                    <div v-if="loginType=='reg'" class="login-switch">{{$L('已经有帐号？')}}<a href="javascript:void(0)" @click="loginType='login'">{{$L('登录帐号')}}</a></div>
-                    <div v-else class="login-switch">{{$L('还没有帐号？')}}<a href="javascript:void(0)" @click="loginType='reg'">{{$L('注册帐号')}}</a></div>
-                </div>
+                        <div v-if="loginType=='reg'" class="login-switch">{{$L('已经有帐号？')}}<a href="javascript:void(0)" @click="loginType='login'">{{$L('登录帐号')}}</a></div>
+                        <div v-else class="login-switch">{{$L('还没有帐号？')}}<a href="javascript:void(0)" @click="loginType='reg'">{{$L('注册帐号')}}</a></div>
+                    </div>
+                </transition>
             </div>
             <div class="login-bottom">
                 <Dropdown trigger="click" placement="bottom-start">
@@ -145,8 +162,10 @@
 import {mapState} from "vuex";
 import {Store} from "le5le-store";
 import {languageList, languageType, setLanguage} from "../language";
+import VueQrcode from "@chenfengyuan/vue-qrcode";
 
 export default {
+    components: {VueQrcode},
     data() {
         return {
             loadIng: 0,
@@ -154,9 +173,14 @@ export default {
             languageList,
             languageType,
 
+            qrcodeVal: '',
+            qrcodeTimer: null,
+            qrcodeLoad: false,
+
             codeNeed: false,
             codeUrl: $A.apiUrl('users/login/codeimg?_=' + Math.random()),
 
+            loginMode: 'access',
             loginType: 'login',
             loginJump: false,
 
@@ -189,12 +213,15 @@ export default {
             this.setServerUrl('').catch(_ => {});
         }
         //
+        this.qrcodeTimer = setInterval(this.qrcodeStatus, 2000);
+        //
         this.subscribe = Store.subscribe('useSSOLogin', () => {
             this.inputServerUrl();
         });
     },
 
     beforeDestroy() {
+        clearInterval(this.qrcodeTimer);
         if (this.subscribe) {
             this.subscribe.unsubscribe();
             this.subscribe = null;
@@ -234,8 +261,22 @@ export default {
         },
 
         welcomeTitle() {
-            let title = window.systemInfo.title || "DooTask";
+            if (this.loginMode == 'qrcode') {
+                return this.$L("扫码登录")
+            }
+            const title = window.systemInfo.title || "DooTask";
             return "Welcome " + title
+        },
+
+        subTitle() {
+            const title = window.systemInfo.title || "DooTask";
+            if (this.loginMode == 'qrcode') {
+                return this.$L(`请使用${title}移动端扫描二维码。`)
+            }
+            if (this.loginType=='reg') {
+                return this.$L(`输入您的信息以创建帐户。`)
+            }
+            return this.$L(`输入您的凭证以访问您的帐户。`)
         },
 
         loginText() {
@@ -244,7 +285,11 @@ export default {
                 text += "成功..."
             }
             return text
-        }
+        },
+
+        qrcodeUrl() {
+            return $A.apiUrl('../login?qrcode=' + this.qrcodeVal)
+        },
     },
 
     watch: {
@@ -255,11 +300,14 @@ export default {
                 })
             }
         },
+        loginMode() {
+            this.qrcodeRefresh()
+        },
         loginType(val) {
             if (val == 'reg') {
                 this.getNeedInvite();
             }
-        }
+        },
     },
 
     methods: {
@@ -309,6 +357,36 @@ export default {
                 this.needInvite = !!data.need;
             }).catch(_ => {
                 this.needInvite = false;
+            });
+        },
+
+        switchLoginMode() {
+            this.chackServerUrl(true).then(() => {
+                if (this.loginMode === 'qrcode') {
+                    this.loginMode = 'access'
+                } else {
+                    this.loginMode = 'qrcode'
+                }
+            })
+        },
+
+        qrcodeRefresh() {
+            if (this.loginMode == 'qrcode') {
+                this.qrcodeVal = $A.randomString(32)
+            }
+        },
+
+        qrcodeStatus() {
+            if (this.qrcodeLoad || this.loginMode != 'qrcode') {
+                return;
+            }
+            this.qrcodeLoad = true
+            this.$store.dispatch("call", {
+                url: 'users/login/qrcode?code=' + this.qrcodeVal,
+            }).then(({data}) => {
+                this.$store.dispatch("handleClearCache", data).then(this.goNext);
+            }).finally(_ => {
+                this.qrcodeLoad = false
             });
         },
 
@@ -461,11 +539,7 @@ export default {
                 }).then(({data}) => {
                     $A.IDBSave("cacheLoginEmail", this.email)
                     this.codeNeed = false;
-                    this.$store.dispatch("handleClearCache", data).then(() => {
-                        this.goNext();
-                    }).catch(_ => {
-                        this.goNext();
-                    });
+                    this.$store.dispatch("handleClearCache", data).then(this.goNext);
                 }).catch(({data, msg}) => {
                     if (data.code === 'email') {
                         $A.modalWarning(msg);

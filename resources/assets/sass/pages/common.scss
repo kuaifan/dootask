@@ -698,3 +698,19 @@ body {
     50% { transform: translate3d(-4px, 0, 0); }
 }
 
+/*登录右侧滑入*/
+.login-mode-enter-active {
+    transition: all 0.3s ease;
+}
+
+.login-mode-leave-active {
+    position: absolute;
+    z-index: -1;
+    display: none;
+}
+
+.login-mode-enter,
+.login-mode-leave-to {
+    transform: translate(100%, 0);
+    opacity: 0;
+}

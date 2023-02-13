@@ -27,17 +27,58 @@
             }
         }
         .login-box {
+            position: relative;
             margin-top: 36px;
             width: 400px;
             max-width: 90%;
             border-radius: 12px;
             background-color: #ffffff;
             box-shadow: 0 0 10px #e6ecfa;
+            overflow: hidden;
+            .login-mode-switch {
+                position: absolute;
+                top: 4px;
+                right: 4px;
+                z-index: 1;
+                border-radius: 8px;
+                overflow: hidden;
+                .login-mode-switch-box {
+                    width: 80px;
+                    height: 80px;
+                    transform: translate(40px,-40px) rotate(45deg);
+                    cursor: pointer;
+                    background-color: rgba($primary-color, 0.8);
+                    transition: background-color .3s;
+                    overflow: hidden;
+                    &:hover {
+                        background-color: $primary-color;
+                    }
+                    .login-mode-switch-icon {
+                        position: absolute;
+                        font-size: 32px;
+                        width: 50px;
+                        height: 50px;
+                        color: #ffffff;
+                        bottom: -20px;
+                        left: 16px;
+                        transform: rotate(-45deg);
+                        display: flex;
+                        align-items: flex-start;
+                        justify-content: flex-start;
+                        > svg {
+                            width: 32px;
+                            height: 32px;
+                            margin-left: 13px;
+                            margin-top: 3px;
+                        }
+                    }
+                }
+            }
             .login-title {
                 font-size: 24px;
                 font-weight: 600;
                 text-align: center;
-                margin-top: 36px;
+                margin-top: 46px;
             }
             .login-subtitle {
                 font-size: 14px;
@@ -46,8 +87,14 @@
                 padding: 0 12px;
                 color: #AAAAAA;
             }
-            .login-input {
-                margin: 32px 40px;
+            .login-qrcode {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 52px auto 49px;
+            }
+            .login-access {
+                margin: 26px 40px 30px;
                 > * {
                     margin-top: 26px;
                 }
@@ -89,16 +136,6 @@
                 }
                 .login-switch {
                     color: #aaaaaa;
-                }
-                .login-input-tips-box{
-                    position: relative;
-                    .login-input-tips{
-                        font-size: 12px;
-                        position: absolute;
-                        left: 0;
-                        bottom: -20px;
-                        color: #c7c7c7;
-                    }
                 }
                 > .ivu-poptip {
                     width: 100%;
@@ -179,6 +216,10 @@
                 background-color: transparent;
                 box-shadow: none;
 
+                .login-mode-switch {
+                    display: none;
+                }
+
                 .login-title {
                     font-size: 26px;
                 }
@@ -187,7 +228,7 @@
                     margin-top: 4px;
                 }
 
-                .login-input {
+                .login-access {
                     margin: 20px 36px;
 
                     .ivu-input-large {
