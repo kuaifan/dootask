@@ -31,6 +31,19 @@
                 </template>
             </li>
         </ul>
+        <Modal
+            v-model="scanLoginShow"
+            :title="$L('扫码登录')"
+            :mask-closable="false">
+            <div class="mobile-scan-login-box">
+                <div class="mobile-scan-login-title">{{$L(`你好，扫码确认登录`)}}</div>
+                <div class="mobile-scan-login-subtitle">「{{$L('为确保帐号安全，请确认是本人操作')}}」</div>
+            </div>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="scanLoginShow=false">{{$L('取消登录')}}</Button>
+                <Button type="primary" :loading="scanLoginLoad" @click="scanLoginSubmit">{{$L('确认登录')}}</Button>
+            </div>
+        </Modal>
     </div>
 </template>
 
@@ -66,11 +79,17 @@ export default {
                     {icon: '&#xe794;', name: 'joinMeeting', label: '加入会议'},
                 ]
             ],
+
+            scanLoginShow: false,
+            scanLoginLoad: false,
+            scanLoginCode: '',
         };
     },
 
     created() {
-
+        if ($A.isEEUiApp) {
+            this.navMore[0].splice(2, 0, {icon: '&#xe602;', name: 'scan', label: '扫一扫'})
+        }
     },
 
     mounted() {
@@ -210,6 +229,10 @@ export default {
                     this.isMore = !this.isMore;
                     return;
 
+                case 'scan':
+                    $A.eeuiAppScan(this.scanResult);
+                    return;
+
                 case 'addTask':
                 case 'addProject':
                     return;
@@ -245,6 +268,51 @@ export default {
             }
             this.goForward(location);
         },
+
+        scanResult(text) {
+            const arr = (text + "").match(/^https*:\/\/(.*?)\/login\?qrcode=(.*?)$/)
+            if (arr) {
+                // 扫码登录
+                this.scanLoginCode = arr[2];
+                this.scanLoginShow = true;
+                return
+            }
+            if (/^https*:\/\//i.test(text)) {
+                // 打开链接
+                $A.eeuiAppOpenPage({
+                    pageType: 'app',
+                    pageTitle: ' ',
+                    url: 'web.js',
+                    params: {
+                        url: text,
+                        browser: true,
+                        showProgress: true,
+                    },
+                });
+            }
+        },
+
+        scanLoginSubmit() {
+            if (this.scanLoginLoad === true) {
+                return
+            }
+            this.scanLoginLoad = true
+            //
+            this.$store.dispatch("call", {
+                url: "users/login/qrcode",
+                data: {
+                    type: "login",
+                    code: this.scanLoginCode,
+                }
+            }).then(({msg}) => {
+                this.scanLoginShow = false
+                $A.messageSuccess(msg)
+            }).catch(({msg}) => {
+                $A.messageError(msg)
+            }).finally(_ => {
+                this.scanLoginLoad = false
+            });
+        }
     },
 };
 </script>

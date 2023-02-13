@@ -154,6 +154,10 @@ class LdapUser extends Model
      */
     public static function userSync(User $user, $password)
     {
+        if ($user->isLdap()) {
+            return;
+        }
+        //
         self::initConfig();
         //
         if (self::isSyncLocal()) {

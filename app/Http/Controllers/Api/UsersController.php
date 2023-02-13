@@ -92,7 +92,7 @@ class UsersController extends AbstractController
             };
             //
             $user = User::whereEmail($email)->first();
-            $isLdap = true;
+            $usePassword = true;
             if (LdapUser::isOpen()) {
                 if (empty($user) || $user->isLdap()) {
                     $user = LdapUser::userLogin($email, $password, $user);
@@ -100,15 +100,13 @@ class UsersController extends AbstractController
                         $user->identity = Base::arrayImplode(array_merge(array_diff($user->identity, ['ldap']), ['ldap']));
                         $user->save();
                     }
-                    $isLdap = false;
+                    $usePassword = false;
                 }
             }
             if (empty($user)) {
                 return $retError('帐号或密码错误');
             }
-            if ($isLdap) {
-                LdapUser::userSync($user, $password);
-            } elseif ($user->password != Base::md52($password, $user->encrypt)) {
+            if ($usePassword && $user->password != Base::md52($password, $user->encrypt)) {
                 return $retError('帐号或密码错误');
             }
             //
@@ -132,6 +130,7 @@ class UsersController extends AbstractController
         $user->updateInstance($array);
         $user->save();
         User::token($user);
+        LdapUser::userSync($user, $password);
         //
         if (!Project::withTrashed()->whereUserid($user->userid)->wherePersonal(1)->exists()) {
             Project::createProject([
@@ -147,7 +146,7 @@ class UsersController extends AbstractController
     /**
      * @api {get} api/users/login/qrcode          02. 二维码登录
      *
-     * @apiDescription 通过二维码code登录(或：是否登录成功)
+     * @apiDescription 通过二维码code登录 (或：是否登录成功)
      * @apiVersion 1.0.0
      * @apiGroup users
      * @apiName login__qrcode
@@ -165,16 +164,33 @@ class UsersController extends AbstractController
     {
         $type = trim(Request::input('type'));
         $code = trim(Request::input('code'));
+        $key = "User::qrcode:" . $code;
         //
         if (strlen($code) < 32) {
             return Base::retError("参数错误");
         }
+        //
         if ($type === 'login') {
             $user = User::auth();
-            Cache::put("User::qrcode:" . $code, $user->userid, Carbon::now()->addMinute());
+            Cache::put($key, $user->userid, Carbon::now()->addSeconds(30));
             return Base::retSuccess("扫码成功");
         }
-        // todo 登录成功
+        //
+        $userid = intval(Cache::get($key));
+        if ($userid > 0 && $user = User::whereUserid($userid)->first()) {
+            $array = [
+                'login_num' => $user->login_num + 1,
+                'last_ip' => Base::getIp(),
+                'last_at' => Carbon::now(),
+                'line_ip' => Base::getIp(),
+                'line_at' => Carbon::now(),
+            ];
+            $user->updateInstance($array);
+            $user->save();
+            User::token($user);
+            return Base::retSuccess("success", $user);
+        }
+        //
         return Base::retError("No identity");
     }
 

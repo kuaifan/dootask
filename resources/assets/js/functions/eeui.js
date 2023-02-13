@@ -72,6 +72,17 @@
             if (!$A.isEEUiApp) return;
             requireModuleJs("webview").setUrl(url);
         },
+
+        eeuiAppScan(callback) {
+            if (!$A.isEEUiApp) return;
+            requireModuleJs("eeui").openScaner({}, (res)=>{
+                switch (res.status) {
+                    case "success":
+                        callback(res.text);
+                        break;
+                }
+            });
+        },
     });
 
     window.$A = $;

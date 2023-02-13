@@ -377,14 +377,20 @@ export default {
         },
 
         qrcodeStatus() {
-            if (this.qrcodeLoad || this.loginMode != 'qrcode') {
+            if (this.$route.name !== 'login' || this.loginMode != 'qrcode') {
+                return;
+            }
+            if (this.qrcodeLoad) {
                 return;
             }
             this.qrcodeLoad = true
+            //
             this.$store.dispatch("call", {
                 url: 'users/login/qrcode?code=' + this.qrcodeVal,
             }).then(({data}) => {
                 this.$store.dispatch("handleClearCache", data).then(this.goNext);
+            }).catch(_ => {
+                //
             }).finally(_ => {
                 this.qrcodeLoad = false
             });

@@ -214,6 +214,16 @@
     }
 }
 
+.mobile-scan-login-box {
+    margin: 2px 0 12px;
+    .mobile-scan-login-title {
+        font-size: 20px;
+    }
+    .mobile-scan-login-subtitle {
+        padding-top: 8px;
+    }
+}
+
 // 渐见
 .mobile-fade-enter-active {
     transition: all 0.2s ease;
