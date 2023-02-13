@@ -7,7 +7,7 @@
                 </Input>
             </div>
             <ul class="scrollbar-overlay" :class="[type, 'no-dark-content']">
-                <li v-for="item in list" @click="onSelect(item)">
+                <li v-for="item in list" @click="onSelect($event, item)">
                     <img v-if="item.type === 'emoticon'" :src="item.src" :title="item.name" :alt="item.name"/>
                     <span v-else v-html="item.html" :title="item.name"></span>
                 </li>
@@ -158,8 +158,15 @@ export default {
             this.emoticonPath = path;
         },
 
-        onSelect(item) {
-            this.$emit('on-select', item)
+        onSelect(event, item) {
+            if (item.type === 'emoji') {
+                this.$emit('on-select', {
+                    type: 'emoji',
+                    text: event.target.innerText
+                })
+            } else {
+                this.$emit('on-select', item)
+            }
         }
     }
 }

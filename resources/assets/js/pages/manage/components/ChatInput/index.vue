@@ -452,6 +452,8 @@ export default {
                     const range = this.quill.selection.savedRange;
                     this.rangeIndex = range ? range.index : 0
                 }
+            } else if (this.rangeIndex > 0) {
+                this.quill.setSelection(this.rangeIndex)
             }
             if (!val && this.$refs.emojiTip) {
                 this.$refs.emojiTip.updatePopper()
@@ -948,14 +950,10 @@ export default {
                 return;
             }
             if (item.type === 'emoji') {
-                let element = document.createElement('span');
-                element.innerHTML = item.html;
-                this.quill.insertText(this.rangeIndex, element.innerHTML);
-                this.rangeIndex += element.innerHTML.length
-                element = null;
+                this.quill.insertText(this.rangeIndex, item.text);
+                this.rangeIndex += item.text.length
                 if (this.windowLarge) {
                     this.showEmoji = false;
-                    this.quill.setSelection(this.rangeIndex)
                 }
             } else if (item.type === 'emoticon') {
                 this.$emit('on-send', `<img class="emoticon" data-asset="${item.asset}" data-name="${item.name}" src="${item.src}"/>`)
