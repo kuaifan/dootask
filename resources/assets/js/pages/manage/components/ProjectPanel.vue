@@ -820,7 +820,12 @@ export default {
             const {project_user} = this.projectData;
             const userItems = project_user.map((item, index) => {
                 const userInfo = cacheUserBasic.find(({userid}) => userid === item.userid) || {}
-                const length = allTask.filter(({task_user}) => {
+                const length = allTask.filter(({task_user, complete_at}) => {
+                    if (!this.projectData.cacheParameter.completedTask) {
+                        if (complete_at) {
+                            return false;
+                        }
+                    }
                     return task_user.find(({userid, owner}) => userid === item.userid && owner);
                 }).length
                 return {
