@@ -214,7 +214,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/setting/checkin          03. 获取签到设置、保存签到设置（限管理员）
+     * @api {get} api/system/setting/checkin          04. 获取签到设置、保存签到设置（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -273,7 +273,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/setting/apppush          04. 获取APP推送设置、保存APP推送设置（限管理员）
+     * @api {get} api/system/setting/apppush          05. 获取APP推送设置、保存APP推送设置（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -318,7 +318,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/setting/thirdaccess          04. 第三方帐号（限管理员）
+     * @api {get} api/system/setting/thirdaccess          06. 第三方帐号（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -388,7 +388,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/demo          05. 获取演示帐号
+     * @api {get} api/system/demo          07. 获取演示帐号
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -412,7 +412,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/priority          06. 任务优先级
+     * @api {post} api/system/priority          08. 任务优先级
      *
      * @apiDescription 获取任务优先级、保存任务优先级
      * @apiVersion 1.0.0
@@ -461,7 +461,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/column/template          07. 创建项目模板
+     * @api {post} api/system/column/template          09. 创建项目模板
      *
      * @apiDescription 获取创建项目模板、保存创建项目模板
      * @apiVersion 1.0.0
@@ -508,7 +508,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/info          08. 获取终端详细信息
+     * @api {get} api/system/get/info          10. 获取终端详细信息
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -537,7 +537,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/ip          09. 获取IP地址
+     * @api {get} api/system/get/ip          11. 获取IP地址
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -552,7 +552,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/cnip          10. 是否中国IP地址
+     * @api {get} api/system/get/cnip          12. 是否中国IP地址
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -569,7 +569,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/ipgcj02          11. 获取IP地址经纬度
+     * @api {get} api/system/get/ipgcj02          13. 获取IP地址经纬度
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -586,7 +586,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/ipinfo          12. 获取IP地址详细信息
+     * @api {get} api/system/get/ipinfo          14. 获取IP地址详细信息
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -603,7 +603,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/imgupload          13. 上传图片
+     * @api {post} api/system/imgupload          15. 上传图片
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -663,7 +663,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/imgview          14. 浏览图片空间
+     * @api {get} api/system/get/imgview          16. 浏览图片空间
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -759,7 +759,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/fileupload          15. 上传文件
+     * @api {post} api/system/fileupload          17. 上传文件
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -801,7 +801,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/starthome          16. 启动首页设置信息
+     * @api {get} api/system/get/starthome          18. 启动首页设置信息
      *
      * @apiDescription 用于判断注册是否需要启动首页
      * @apiVersion 1.0.0
@@ -821,7 +821,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/email/check          17. 邮件发送测试（限管理员）
+     * @api {get} api/system/email/check          19. 邮件发送测试（限管理员）
      *
      * @apiDescription 测试配置邮箱是否能发送邮件
      * @apiVersion 1.0.0
@@ -867,7 +867,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/checkin/export          17. 导出签到数据（限管理员）
+     * @api {get} api/system/checkin/export          20. 导出签到数据（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -1034,7 +1034,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/checkin/down          17. 下载导出的签到数据
+     * @api {get} api/system/checkin/down          21. 下载导出的签到数据
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -1060,7 +1060,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/version          18. 获取版本号
+     * @api {get} api/system/version          22. 获取版本号
      *
      * @apiVersion 1.0.0
      * @apiGroup system

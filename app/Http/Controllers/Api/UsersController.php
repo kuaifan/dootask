@@ -195,7 +195,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/login/needcode          02. 是否需要验证码
+     * @api {get} api/users/login/needcode          03. 是否需要验证码
      *
      * @apiDescription 用于判断是否需要登录验证码
      * @apiVersion 1.0.0
@@ -214,7 +214,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/login/codeimg          03. 验证码图片
+     * @api {get} api/users/login/codeimg          04. 验证码图片
      *
      * @apiDescription 用于判断是否需要登录验证码
      * @apiVersion 1.0.0
@@ -229,7 +229,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/login/codejson          04. 验证码json
+     * @api {get} api/users/login/codejson          05. 验证码json
      *
      * @apiDescription 用于判断是否需要登录验证码
      * @apiVersion 1.0.0
@@ -247,7 +247,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/reg/needinvite          05. 是否需要邀请码
+     * @api {get} api/users/reg/needinvite          06. 是否需要邀请码
      *
      * @apiDescription 用于判断注册是否需要邀请码
      * @apiVersion 1.0.0
@@ -266,7 +266,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/info          06. 获取我的信息
+     * @api {get} api/users/info          07. 获取我的信息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -306,7 +306,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/editdata          07. 修改自己的资料
+     * @api {get} api/users/editdata          08. 修改自己的资料
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -387,7 +387,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/editpass          08. 修改自己的密码
+     * @api {get} api/users/editpass          09. 修改自己的密码
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -428,7 +428,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/search          09. 搜索会员列表
+     * @api {get} api/users/search          10. 搜索会员列表
      *
      * @apiDescription 搜索会员列表
      * @apiVersion 1.0.0
@@ -522,7 +522,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/basic          10. 获取指定会员基础信息
+     * @api {get} api/users/basic          11. 获取指定会员基础信息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -561,7 +561,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/lists          11. 会员列表（限管理员）
+     * @api {get} api/users/lists          12. 会员列表（限管理员）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -687,7 +687,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/operation          12. 操作会员（限管理员）
+     * @api {get} api/users/operation          13. 操作会员（限管理员）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -916,7 +916,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/email/verification          13. 邮箱验证
+     * @api {get} api/users/email/verification          14. 邮箱验证
      *
      * @apiDescription 不需要token身份
      * @apiVersion 1.0.0
@@ -964,7 +964,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/umeng/alias          14. 设置友盟别名
+     * @api {get} api/users/umeng/alias          15. 设置友盟别名
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1015,7 +1015,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/meeting/open          15. 【会议】创建会议、加入会议
+     * @api {get} api/users/meeting/open          16. 【会议】创建会议、加入会议
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -1107,7 +1107,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/meeting/invitation          16. 【会议】发送邀请
+     * @api {get} api/users/meeting/invitation          17. 【会议】发送邀请
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -1153,7 +1153,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/email/send          17. 发送邮箱验证码
+     * @api {get} api/users/email/send          18. 发送邮箱验证码
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -1193,7 +1193,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/email/edit          18. 修改邮箱
+     * @api {get} api/users/email/edit          19. 修改邮箱
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -1238,7 +1238,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/delete/account          19. 删除帐号
+     * @api {get} api/users/delete/account          20. 删除帐号
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -1300,7 +1300,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/department/list          20. 部门列表（限管理员）
+     * @api {get} api/users/department/list          21. 部门列表（限管理员）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1319,7 +1319,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/department/add          21. 新建、修改部门（限管理员）
+     * @api {get} api/users/department/add          22. 新建、修改部门（限管理员）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1395,7 +1395,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/department/del          22. 删除部门（限管理员）
+     * @api {get} api/users/department/del          23. 删除部门（限管理员）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1424,7 +1424,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/checkin/get          22. 获取签到设置
+     * @api {get} api/users/checkin/get          24. 获取签到设置
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1445,7 +1445,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {post} api/users/checkin/save          22. 保存签到设置
+     * @api {post} api/users/checkin/save          25. 保存签到设置
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1493,7 +1493,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/checkin/list          22. 获取签到数据
+     * @api {get} api/users/checkin/list          26. 获取签到数据
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
