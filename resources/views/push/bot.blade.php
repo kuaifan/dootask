@@ -102,6 +102,7 @@
     <span style="color:#84c56a">token</span>: 机器人Token
     <span style="color:#84c56a">msg_id</span>: 消息ID
     <span style="color:#84c56a">dialog_id</span>: 对话ID
+    <span style="color:#84c56a">version</span>: 系统版本
 @elseif ($type === 'notice')
     {{$notice}}
 @else

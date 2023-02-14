@@ -326,6 +326,7 @@ class BotReceiveMsgTask extends AbstractTask
                     'token' => User::token($botUser),
                     'msg_id' => $msg->id,
                     'dialog_id' => $msg->dialog_id,
+                    'version' => Base::getVersion(),
                 ], 10);
             }
         }
