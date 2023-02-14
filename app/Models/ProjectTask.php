@@ -764,10 +764,11 @@ class ProjectTask extends AbstractModel
                     });
                 }
                 $newStringAt = $this->start_at ? ($this->start_at->toDateTimeString() . '~' . $this->end_at->toDateTimeString()) : '';
-                $this->addLog("修改{任务}时间" . ($desc ? "（备注：{$desc}）" : ""), [
+                $newDesc = $desc ? "（备注：{$desc}）" : "";
+                $this->addLog("修改{任务}时间" . $newDesc, [
                     'change' => [$oldStringAt, $newStringAt]
                 ]);
-                $this->taskPush(null, 3);
+                $this->taskPush(null, 3, $newDesc);
             }
             // 以下仅顶级任务可修改
             if ($this->parent_id === 0) {
@@ -1435,12 +1436,13 @@ class ProjectTask extends AbstractModel
      * 任务提醒
      * @param $userids
      * @param int $type 0-新任务、1-即将超时、2-已超时、3-修改时间
+     * @param string $suffix 描述后缀
      * @return void
      */
-    public function taskPush($userids, int $type)
+    public function taskPush($userids, int $type, string $suffix = "")
     {
         if ($userids === null) {
-            $userids = $this->taskUser->where('owner', 1)->pluck('userid')->toArray();
+            $userids = $this->taskUser->pluck('userid')->toArray();
         }
         if (empty($userids)) {
             return;
@@ -1471,8 +1473,7 @@ class ProjectTask extends AbstractModel
                 'userid' => $user->userid,
                 'task_id' => $this->id,
             ];
-            $pushLog = ProjectTaskPushLog::where($data)->exists();
-            if ($pushLog) {
+            if (in_array($type, [1, 2]) && ProjectTaskPushLog::where($data)->exists()) {
                 continue;
             }
             //
@@ -1481,7 +1482,7 @@ class ProjectTask extends AbstractModel
             if ($dialog) {
                 ProjectTaskPushLog::createInstance($data)->save();
                 WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', [
-                    'text' => str_replace("您的任务", $replace, $text)
+                    'text' => str_replace("您的任务", $replace, $text) . $suffix
                 ], $botUser->userid);
             }
         }
