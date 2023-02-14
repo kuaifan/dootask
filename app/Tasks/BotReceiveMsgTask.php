@@ -324,8 +324,10 @@ class BotReceiveMsgTask extends AbstractTask
                 Ihttp::ihttp_post($userBot->webhook_url, [
                     'text' => $pureText,
                     'token' => User::token($botUser),
-                    'msg_id' => $msg->id,
                     'dialog_id' => $msg->dialog_id,
+                    'msg_id' => $msg->id,
+                    'msg_uid' => $msg->userid,
+                    'bot_uid' => $botUser->userid,
                     'version' => Base::getVersion(),
                 ], 10);
             }

@@ -100,8 +100,10 @@
     机器人收到个人对话消息后会将消息POST推送到Webhook地址，请求超时为10秒，请求参数如下：
     <span style="color:#84c56a">text</span>: 消息文本
     <span style="color:#84c56a">token</span>: 机器人Token
-    <span style="color:#84c56a">msg_id</span>: 消息ID
     <span style="color:#84c56a">dialog_id</span>: 对话ID
+    <span style="color:#84c56a">msg_id</span>: 消息ID
+    <span style="color:#84c56a">msg_uid</span>: 消息发送人ID
+    <span style="color:#84c56a">bot_uid</span>: 机器人ID
     <span style="color:#84c56a">version</span>: 系统版本
 @elseif ($type === 'notice')
     {{$notice}}
