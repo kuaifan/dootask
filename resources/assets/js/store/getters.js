@@ -185,5 +185,35 @@ export default {
             }
         }
         return array
-    }
+    },
+
+    /**
+     * 获取项目最后更新时间
+     * @param state
+     * @returns {*}
+     */
+    getProjectLastAt(state) {
+        if (state.cacheProjects.length > 0) {
+            const tmpList = state.cacheProjects.sort((a, b) => {
+                return $A.Date(b.updated_at) - $A.Date(a.updated_at);
+            })
+            return tmpList[0].updated_at;
+        }
+        return $A.formatDate("Y-m-d H:i:s", $A.Time() - 86400 * 30)
+    },
+
+    /**
+     * 获取会话最后更新时间
+     * @param state
+     * @returns {*}
+     */
+    getDialogLastAt(state) {
+        if (state.cacheDialogs.length > 0) {
+            const tmpList = state.cacheDialogs.sort((a, b) => {
+                return $A.Date(b.last_at) - $A.Date(a.last_at);
+            })
+            return tmpList[0].last_at;
+        }
+        return $A.formatDate("Y-m-d H:i:s", $A.Time() - 86400 * 30)
+    },
 }

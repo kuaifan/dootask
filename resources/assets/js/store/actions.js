@@ -823,18 +823,19 @@ export default {
      * 获取项目
      * @param state
      * @param dispatch
-     * @param data
+     * @param getters
+     * @param callData
      * @returns {Promise<unknown>}
      */
-    getProjects({state, dispatch}, data) {
+    getProjects({state, dispatch, getters}, callData) {
         return new Promise(function (resolve, reject) {
             if (state.userId === 0) {
                 state.cacheProjects = [];
                 reject({msg: 'Parameter error'});
                 return;
             }
-            const request = $A.isJson(data) ? data : {
-                deleted_at: state.projectDeletedAt || $A.formatDate("Y-m-d H:i:s", $A.Time() - 86400 * 30)
+            const request = $A.isJson(callData) ? callData : {
+                deleted_at: state.projectDeletedAt || getters.getProjectLastAt
             };
             let showLoad = true;
             if (typeof request.hideLoad !== "undefined") {
@@ -2099,10 +2100,11 @@ export default {
      * 获取会话列表
      * @param state
      * @param dispatch
+     * @param getters
      * @param data
      * @returns {Promise<unknown>}
      */
-    getDialogs({state, dispatch}, data) {
+    getDialogs({state, dispatch, getters}, data) {
         return new Promise(function (resolve, reject) {
             if (state.userId === 0) {
                 state.cacheDialogs = [];
@@ -2110,7 +2112,7 @@ export default {
                 return;
             }
             data = $A.isJson(data) ? data : {
-                deleted_at: state.dialogDeletedAt || $A.formatDate("Y-m-d H:i:s", $A.Time() - 86400 * 30)
+                deleted_at: state.dialogDeletedAt || getters.getDialogLastAt
             }
             if (data.hideLoad !== true) {
                 state.loadDialogs++;
@@ -2122,9 +2124,6 @@ export default {
                 data.page = 1
                 if (state.cacheDialogs.length > 0) {
                     const tmpList = state.cacheDialogs.sort((a, b) => {
-                        if (a.top_at || b.top_at) {
-                            return $A.Date(b.top_at) - $A.Date(a.top_at);
-                        }
                         return $A.Date(b.last_at) - $A.Date(a.last_at);
                     })
                     data.at_after = tmpList[0].last_at;
