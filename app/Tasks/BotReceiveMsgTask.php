@@ -7,6 +7,7 @@ use App\Models\UserBot;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
+use App\Module\Ihttp;
 use Carbon\Carbon;
 
 @error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
@@ -48,9 +49,7 @@ class BotReceiveMsgTask extends AbstractTask
         if ($dialog->type !== 'user') {
             return;
         }
-        if ($botUser->email === 'bot-manager@bot.system') {
-            $this->botManagerReceive($msg);
-        }
+        $this->botManagerReceive($msg, $botUser);
     }
 
     public function end()
@@ -61,25 +60,46 @@ class BotReceiveMsgTask extends AbstractTask
     /**
      * 机器人管理处理消息
      * @param WebSocketDialogMsg $msg
+     * @param User $botUser
      * @return void
      */
-    private function botManagerReceive(WebSocketDialogMsg $msg)
+    private function botManagerReceive(WebSocketDialogMsg $msg, User $botUser)
     {
-        if ($msg->type === 'text') {
-            $text = trim(strip_tags($msg->msg['text']));
-            if (empty($text)) {
+        if ($msg->type !== 'text') {
+            return;
+        }
+        $pureText = trim(strip_tags($msg->msg['text']));
+        if (str_starts_with($pureText, '/')) {
+            // 管理机器人
+            if ($botUser->email === 'bot-manager@bot.system') {
+                $isManager = true;
+            } elseif (UserBot::whereBotId($botUser->userid)->whereUserid($msg->userid)->exists()) {
+                $isManager = false;
+            } else {
+                $text = "非常抱歉，我不是你的机器人，无法完成你的指令。";
+                WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $text], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
                 return;
             }
-            $array = Base::newTrim(explode(" ", "{$text}    "));
+            //
+            $array = Base::newTrim(explode(" ", "{$pureText}    "));
             $type = $array[0];
             $data = [];
             $notice = "";
+            if (!$isManager && in_array($type, ['/list', '/newbot'])) {
+                return; // 这些操作仅支持【机器人管理】机器人
+            }
             switch ($type) {
                 /**
                  * 列表
                  */
                 case '/list':
-                    $data = User::select(['users.*'])
+                    $data = User::select([
+                        'users.*',
+                        'user_bots.clear_day',
+                        'user_bots.clear_at',
+                        'user_bots.webhook_url',
+                        'user_bots.webhook_num'
+                    ])
                         ->join('user_bots', 'users.userid', '=', 'user_bots.bot_id')
                         ->where('users.bot', 1)
                         ->where('user_bots.userid', $msg->userid)
@@ -89,6 +109,18 @@ class BotReceiveMsgTask extends AbstractTask
                     if ($data->isEmpty()) {
                         $type = "notice";
                         $notice = "您没有创建机器人。";
+                    }
+                    break;
+
+                /**
+                 * 详情
+                 */
+                case '/info':
+                    $botId = $isManager ? $array[1] : $botUser->userid;
+                    $data = $this->botManagerOne($botId, $msg->userid);
+                    if (!$data) {
+                        $type = "notice";
+                        $notice = "机器人不存在。";
                     }
                     break;
 
@@ -120,7 +152,7 @@ class BotReceiveMsgTask extends AbstractTask
                     }
                     $dialog = WebSocketDialog::checkUserDialog($data->userid, $msg->userid);
                     if ($dialog) {
-                        $text = "你好，我是你的机器人：{$data->nickname}, 我的机器人ID是：{$data->userid}";
+                        $text = "<p>您好，我是机器人：{$data->nickname}，我的机器人ID是：{$data->userid}，</p><p>你可以发送 <u><b>/help</b></u> 查看我支持什么命令。</p>";
                         WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $data->userid);   // todo 未能在任务end事件来发送任务
                     }
                     break;
@@ -129,16 +161,18 @@ class BotReceiveMsgTask extends AbstractTask
                  * 修改名字
                  */
                 case '/setname':
-                    if (strlen($array[2]) < 2 || strlen($array[2]) > 20) {
+                    $botId = $isManager ? $array[1] : $botUser->userid;
+                    $nameString = $isManager ? $array[2] : $array[1];
+                    if (strlen($nameString) < 2 || strlen($nameString) > 20) {
                         $type = "notice";
                         $notice = "机器人名称由2-20个字符组成。";
                         break;
                     }
-                    $data = $this->botManagerOne($array[1], $msg->userid);
+                    $data = $this->botManagerOne($botId, $msg->userid);
                     if ($data) {
-                        $data->nickname = $array[2];
-                        $data->az = Base::getFirstCharter($array[2]);
-                        $data->pinyin = Base::cn2pinyin($array[2]);
+                        $data->nickname = $nameString;
+                        $data->az = Base::getFirstCharter($nameString);
+                        $data->pinyin = Base::cn2pinyin($nameString);
                         $data->save();
                     } else {
                         $type = "notice";
@@ -151,7 +185,8 @@ class BotReceiveMsgTask extends AbstractTask
                  * 删除
                  */
                 case '/deletebot':
-                    $data = $this->botManagerOne($array[1], $msg->userid);
+                    $botId = $isManager ? $array[1] : $botUser->userid;
+                    $data = $this->botManagerOne($botId, $msg->userid);
                     if ($data) {
                         $data->deleteUser('delete bot');
                     } else {
@@ -164,7 +199,8 @@ class BotReceiveMsgTask extends AbstractTask
                  * 获取Token
                  */
                 case '/token':
-                    $data = $this->botManagerOne($array[1], $msg->userid);
+                    $botId = $isManager ? $array[1] : $botUser->userid;
+                    $data = $this->botManagerOne($botId, $msg->userid);
                     if ($data) {
                         User::token($data);
                     } else {
@@ -177,7 +213,8 @@ class BotReceiveMsgTask extends AbstractTask
                  * 更新Token
                  */
                 case '/revoke':
-                    $data = $this->botManagerOne($array[1], $msg->userid);
+                    $botId = $isManager ? $array[1] : $botUser->userid;
+                    $data = $this->botManagerOne($botId, $msg->userid);
                     if ($data) {
                         $data->encrypt = Base::generatePassword(6);
                         $data->password = Base::md52(Base::generatePassword(32), $data->encrypt);
@@ -192,11 +229,13 @@ class BotReceiveMsgTask extends AbstractTask
                  * 设置自动清理消息时间
                  */
                 case '/clearday':
-                    $data = $this->botManagerOne($array[1], $msg->userid);
+                    $botId = $isManager ? $array[1] : $botUser->userid;
+                    $clearDay = $isManager ? $array[2] : $array[1];
+                    $data = $this->botManagerOne($botId, $msg->userid);
                     if ($data) {
-                        $userBot = UserBot::whereBotId($array[1])->whereUserid($msg->userid)->first();
+                        $userBot = UserBot::whereBotId($botId)->whereUserid($msg->userid)->first();
                         if ($userBot) {
-                            $userBot->clear_day = min(intval($array[2]) ?: 30, 999);
+                            $userBot->clear_day = min(intval($clearDay) ?: 30, 999);
                             $userBot->clear_at = Carbon::now()->addDays($userBot->clear_day);
                             $userBot->save();
                         }
@@ -209,14 +248,41 @@ class BotReceiveMsgTask extends AbstractTask
                     break;
 
                 /**
+                 * 设置webhook
+                 */
+                case '/webhook':
+                    $botId = $isManager ? $array[1] : $botUser->userid;
+                    $webhookUrl = $isManager ? $array[2] : $array[1];
+                    $data = $this->botManagerOne($botId, $msg->userid);
+                    if (strlen($webhookUrl) > 255) {
+                        $type = "notice";
+                        $notice = "webhook地址最长仅支持255个字符。";
+                    } elseif ($data) {
+                        $userBot = UserBot::whereBotId($botId)->whereUserid($msg->userid)->first();
+                        if ($userBot) {
+                            $userBot->webhook_url = $webhookUrl ?: "";
+                            $userBot->webhook_num = 0;
+                            $userBot->save();
+                        }
+                        $data->webhook_url = $userBot->webhook_url ?: '-';
+                        $data->webhook_num = $userBot->webhook_num;   // 这两个参数只是作为输出，所以不保存
+                    } else {
+                        $type = "notice";
+                        $notice = "机器人不存在。";
+                    }
+                    break;
+
+                /**
                  * 会话搜索
                  */
                 case '/dialog':
-                    $data = $this->botManagerOne($array[1], $msg->userid);
+                    $botId = $isManager ? $array[1] : $botUser->userid;
+                    $nameKey = $isManager ? $array[2] : $array[1];
+                    $data = $this->botManagerOne($botId, $msg->userid);
                     if ($data) {
                         $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence'])
                             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
-                            ->where('web_socket_dialogs.name', 'LIKE', "%{$array[2]}%")
+                            ->where('web_socket_dialogs.name', 'LIKE', "%{$nameKey}%")
                             ->where('u.userid', $data->userid)
                             ->orderByDesc('u.top_at')
                             ->orderByDesc('web_socket_dialogs.last_at')
@@ -229,7 +295,7 @@ class BotReceiveMsgTask extends AbstractTask
                             $list->transform(function (WebSocketDialog $item) use ($data) {
                                 return $item->formatData($data->userid);
                             });
-                            $data->list = $list;
+                            $data->list = $list;   // 这个参数只是作为输出，所以不保存
                         }
                     } else {
                         $type = "notice";
@@ -242,11 +308,26 @@ class BotReceiveMsgTask extends AbstractTask
                 'type' => $type,
                 'data' => $data,
                 'notice' => $notice,
+                'manager' => $isManager,
                 'version' => Base::getVersion()
             ])->render();
+            if (!$isManager) {
+                $text = preg_replace("/\s*\{机器人ID\}/", "", $text);
+            }
             $text = preg_replace("/^\x20+/", "", $text);
             $text = preg_replace("/\n\x20+/", "\n", $text);
-            WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $text], $this->userid, false, false, true);    // todo 未能在任务end事件来发送任务
+            WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $text], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
+        } elseif ($pureText) {
+            // 推送Webhook
+            $userBot = UserBot::whereBotId($botUser->userid)->first();
+            if ($userBot && preg_match("/^https*:\/\//", $userBot->webhook_url)) {
+                Ihttp::ihttp_post($userBot->webhook_url, [
+                    'text' => $pureText,
+                    'token' => User::token($botUser),
+                    'msg_id' => $msg->id,
+                    'dialog_id' => $msg->dialog_id,
+                ], 10);
+            }
         }
     }
 
@@ -260,7 +341,13 @@ class BotReceiveMsgTask extends AbstractTask
         $botId = intval($botId);
         $userid = intval($userid);
         if ($botId > 0) {
-            return User::select(['users.*'])
+            return User::select([
+                'users.*',
+                'user_bots.clear_day',
+                'user_bots.clear_at',
+                'user_bots.webhook_url',
+                'user_bots.webhook_num'
+            ])
                 ->join('user_bots', 'users.userid', '=', 'user_bots.bot_id')
                 ->where('users.bot', 1)
                 ->where('user_bots.bot_id', $botId)
