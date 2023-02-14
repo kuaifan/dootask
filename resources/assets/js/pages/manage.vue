@@ -70,6 +70,7 @@
                                     </div>
                                 </DropdownItem>
                                 <DropdownItem name="exportTask">{{$L('导出任务统计')}}</DropdownItem>
+                                <DropdownItem name="exportOverdueTask">{{$L('导出超期任务')}}</DropdownItem>
                                 <DropdownItem name="exportCheckin">{{$L('导出签到数据')}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
@@ -713,6 +714,9 @@ export default {
                 case 'exportTask':
                     this.exportTaskShow = true;
                     return;
+                case 'exportOverdueTask':
+                    this.exportOverdueTask();
+                    return;
                 case 'exportCheckin':
                     this.exportCheckinShow = true;
                     return;
@@ -744,6 +748,28 @@ export default {
             if (this.menu.findIndex((m) => m.path == path) > -1) {
                 this.toggleRoute('setting-' + path);
             }
+        },
+
+        exportOverdueTask() {
+            $A.modalConfirm({
+                title: '导出任务',
+                content: '你确定要导出所有超期任务吗？',
+                loading: true,
+                onOk: () => {
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("call", {
+                            url: 'project/task/exportoverdue',
+                        }).then(({data}) => {
+                            resolve();
+                            this.$store.dispatch('downUrl', {
+                                url: data.url
+                            });
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        });
+                    })
+                },
+            });
         },
 
         menuVisibleChange(visible) {

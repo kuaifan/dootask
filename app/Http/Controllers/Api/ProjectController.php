@@ -1165,6 +1165,115 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * @api {get} api/project/task/exportoverdue          19. 导出超期任务（限管理员）
+     *
+     * @apiDescription 导出指定范围任务（已完成、未完成、已归档），返回下载地址，需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__exportoverdue
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__exportoverdue()
+    {
+        $user = User::auth('admin');
+        //
+        $headings = [];
+        $headings[] = '任务ID';
+        $headings[] = '父级任务ID';
+        $headings[] = '所属项目';
+        $headings[] = '任务标题';
+        $headings[] = '任务开始时间';
+        $headings[] = '任务结束时间';
+        $headings[] = '任务计划用时';
+        $headings[] = '超时时间';
+        $headings[] = '负责人';
+        $headings[] = '创建人';
+        $data = [];
+        //
+        ProjectTask::whereNotNull('end_at')
+            ->where('end_at', '<=', Carbon::now())
+            ->orderBy('end_at')
+            ->chunk(100, function ($tasks) use (&$data) {
+                /** @var ProjectTask $task */
+                foreach ($tasks as $task) {
+                    $taskStartTime = $task->start_at ? Carbon::parse($task->start_at)->timestamp : Carbon::parse($task->created_at)->timestamp;
+                    $taskCompleteTime = $task->complete_at ? Carbon::parse($task->complete_at)->timestamp : time();
+                    $totalTime = $taskCompleteTime - $taskStartTime; //开发测试总用时
+                    $planTime = '-';//任务计划用时
+                    $overTime = '-';//超时时间
+                    if ($task->end_at) {
+                        $startTime = Carbon::parse($task->start_at)->timestamp;
+                        $endTime = Carbon::parse($task->end_at)->timestamp;
+                        $planTotalTime = $endTime - $startTime;
+                        $residueTime = $planTotalTime - $totalTime;
+                        if ($residueTime < 0) {
+                            $overTime = Base::timeFormat(abs($residueTime));
+                        }
+                        $planTime = Base::timeDiff($startTime, $endTime);
+                    }
+                    $ownerIds = $task->taskUser->where('owner', 1)->pluck('userid')->toArray();
+                    $ownerNames = [];
+                    foreach ($ownerIds as $ownerId) {
+                        $ownerNames[] = Base::filterEmoji(User::userid2nickname($ownerId)) . " (ID: {$ownerId})";
+                    }
+                    $data[] = [
+                        $task->id,
+                        $task->parent_id ?: '-',
+                        Base::filterEmoji($task->project?->name) ?: '-',
+                        Base::filterEmoji($task->name),
+                        $task->start_at ?: '-',
+                        $task->end_at ?: '-',
+                        $planTime ?: '-',
+                        $overTime,
+                        implode("、", $ownerNames),
+                        Base::filterEmoji(User::userid2nickname($task->userid)) . " (ID: {$task->userid})",
+                    ];
+                }
+            });
+        if (empty($data)) {
+            return Base::retError('没有任何数据');
+        }
+        //
+        $sheets = [
+            BillExport::create()->setTitle("超期任务")->setHeadings($headings)->setData($data)->setStyles(["A1:J1" => ["font" => ["bold" => true]]])
+        ];
+        //
+        $fileName = '超期任务_' . Base::time() . '.xls';
+        $filePath = "temp/task/export/" . date("Ym", Base::time());
+        $export = new BillMultipleExport($sheets);
+        $res = $export->store($filePath . "/" . $fileName);
+        if ($res != 1) {
+            return Base::retError('导出失败，' . $fileName . '！');
+        }
+        $xlsPath = storage_path("app/" . $filePath . "/" . $fileName);
+        $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xls') . ".zip";
+        $zipPath = storage_path($zipFile);
+        if (file_exists($zipPath)) {
+            Base::deleteDirAndFile($zipPath, true);
+        }
+        try {
+            Madzipper::make($zipPath)->add($xlsPath)->close();
+        } catch (\Throwable) {
+        }
+        //
+        if (file_exists($zipPath)) {
+            $base64 = base64_encode(Base::array2string([
+                'file' => $zipFile,
+            ]));
+            Session::put('task::export:userid', $user->userid);
+            return Base::retSuccess('success', [
+                'size' => Base::twoFloat(filesize($zipPath) / 1024, true),
+                'url' => Base::fillUrl('api/project/task/down?key=' . urlencode($base64)),
+            ]);
+        } else {
+            return Base::retError('打包失败，请稍后再试...');
+        }
+    }
+
+    /**
      * @api {get} api/project/task/down          20. 下载导出的任务
      *
      * @apiVersion 1.0.0
