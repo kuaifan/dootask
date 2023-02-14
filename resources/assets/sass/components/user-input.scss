@@ -86,7 +86,8 @@
             align-items: center;
             > em {
                 font-style: normal;
-                padding-left: 4px;
+                padding: 0 4px;
+                white-space: nowrap;
             }
         }
         .user-drop-check {

@@ -455,18 +455,12 @@ export default {
             } else if (this.rangeIndex > 0) {
                 this.quill.setSelection(this.rangeIndex)
             }
-            if (!val && this.$refs.emojiTip) {
-                this.$refs.emojiTip.updatePopper()
-            }
             this.$emit('on-emoji-visible-change', val)
         },
 
         showMore(val) {
             if (val) {
                 this.showEmoji = false;
-            }
-            if (!val && this.$refs.moreTip) {
-                this.$refs.moreTip.updatePopper()
             }
             this.$emit('on-more-visible-change', val)
         },
