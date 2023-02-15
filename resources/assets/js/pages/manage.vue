@@ -378,6 +378,8 @@ export default {
             operateStyles: {},
             operateVisible: false,
             operateItem: {},
+
+            needStartHome: false,
         }
     },
 
@@ -395,6 +397,12 @@ export default {
         this.$store.dispatch("getUserInfo").catch(_ => {})
         this.$store.dispatch("getTaskPriority").catch(_ => {})
         this.$store.dispatch("getReportUnread", 0)
+        //
+        this.$store.dispatch("needHome").then(_ => {
+            this.needStartHome = true
+        }).catch(_ => {
+            this.needStartHome = false
+        })
     },
 
     beforeDestroy() {
@@ -517,11 +525,12 @@ export default {
         },
 
         menu() {
-            const {userIsAdmin} = this;
+            const {userIsAdmin, needStartHome} = this;
+            const array = [
+                {path: 'taskBrowse', name: '最近打开的任务'}
+            ];
             if (userIsAdmin) {
-                return [
-                    {path: 'taskBrowse', name: '最近打开的任务'},
-
+                array.push(...[
                     {path: 'personal', name: '偏好设置', divided: true},
                     {path: 'system', name: '系统设置'},
                     {path: 'clearCache', name: '清除缓存'},
@@ -532,13 +541,9 @@ export default {
                     {path: 'archivedProject', name: '已归档的项目'},
 
                     {path: 'team', name: '团队管理', divided: true},
-
-                    {path: 'logout', name: '退出登录', style: {color: '#f40'}, divided: true},
-                ]
+                ])
             } else {
-                return [
-                    {path: 'taskBrowse', name: '最近打开的任务'},
-
+                array.push(...[
                     {path: 'personal', name: '偏好设置', divided: true},
                     {path: 'clearCache', name: '清除缓存'},
 
@@ -546,10 +551,19 @@ export default {
 
                     {path: 'workReport', name: '工作报告', divided: true},
                     {path: 'archivedProject', name: '已归档的项目'},
-
-                    {path: 'logout', name: '退出登录', style: {color: '#f40'}, divided: true},
-                ]
+                ])
             }
+            if (needStartHome) {
+                array.push(...[
+                    {path: 'goHome', name: '打开首页', divided: true},
+                    {path: 'logout', name: '退出登录', style: {color: '#f40'}}
+                ])
+            } else {
+                array.push(...[
+                    {path: 'logout', name: '退出登录', style: {color: '#f40'}, divided: true}
+                ])
+            }
+            return array
         },
 
         columns() {
@@ -734,6 +748,11 @@ export default {
                         await $A.IDBSet("clearCache", $A.randomString(6))
                         $A.reloadUrl()
                     });
+                    return;
+                case 'goHome':
+                    if (this.needStartHome) {
+                        this.goForward({name: 'index', query: {action: 'index'}});
+                    }
                     return;
                 case 'logout':
                     $A.modalConfirm({

@@ -39,6 +39,7 @@
                     }
 
                     .header-right-pro {
+                        margin-left: 28px;
                         padding: 0 10px;
                         font-size: 12px;
                         color: #f6ca9d;
@@ -47,8 +48,23 @@
                         border: 0;
                     }
 
+                    .header-right-github {
+                        margin-left: 28px;
+                        font-size: 24px;
+                        display: flex;
+                        align-items: center;
+                        cursor: pointer;
+                        color: #ffffff;
+                    }
+
+                    .header-right-uplog {
+                        margin-left: 28px;
+                        font-size: 16px;
+                        cursor: pointer;
+                    }
+
                     .header-right-1 {
-                        margin-left: 30px;
+                        margin-left: 28px;
                         display: flex;
 
                         .header-right-1-dropdown {
@@ -59,7 +75,7 @@
 
                     .header-right-2 {
                         font-size: 16px;
-                        margin-left: 30px;
+                        margin-left: 28px;
                         cursor: pointer;
 
                         .header-right-2-dropdown {
@@ -70,7 +86,7 @@
 
                     .header-right-3 {
                         font-size: 16px;
-                        margin: 0 30px 0 30px;
+                        margin: 0 28px;
                         cursor: pointer;
                     }
 
@@ -84,6 +100,10 @@
                         line-height: 36px;
                         cursor: pointer;
                         padding: 0 10px 0 10px;
+                    }
+
+                    .header-right-5 {
+                        margin-left: 28px;
                     }
                 }
 
@@ -301,6 +321,65 @@
                 line-height: 20px;
                 text-align: center;
                 width: 100%;
+            }
+        }
+    }
+}
+
+.page-index-uplog {
+    .uplog-head {
+        display: flex;
+        align-items: center;
+        .uplog-title {
+            display: inline-block;
+            vertical-align: middle;
+            font-size: 18px;
+            color: $primary-title-color;
+            font-weight: 500;
+            margin-right: 6px;
+        }
+    }
+    .ivu-modal-body {
+        padding: 0 32px !important;
+        .uplog-body {
+            max-height: 240px;
+            overflow-x: hidden;
+            .markdown-preview {
+                margin: -20px -12px;
+                h1 {
+                    font-size: 24px;
+                    margin-bottom: 12px;
+                    &:first-child {
+                        padding-top: 0;
+                    }
+                }
+                h2 {
+                    font-size: 18px !important;
+                    padding-top: 2px !important;
+                }
+                ul {
+                    li {
+                        padding: 2px 0 2px 2px !important;
+                        &:after {
+                            top: 10px !important;
+                            width: 6px !important;
+                            height: 6px !important;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    .ivu-modal-fullscreen {
+        .ivu-modal-body {
+            padding: 0 16px !important;
+            margin: 16px 0 !important;
+            .uplog-body {
+                max-height: none;
+                overflow-x: auto;
+                .markdown-preview {
+                    margin: 0;
+                }
             }
         }
     }

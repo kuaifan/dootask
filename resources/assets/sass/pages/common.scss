@@ -239,6 +239,9 @@ body {
 
             &.ivu-modal-fullscreen {
                 top: 0;
+                .ivu-modal-content {
+                    border-radius: 0;
+                }
             }
 
             .ivu-modal-header,

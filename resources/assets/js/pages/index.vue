@@ -8,7 +8,11 @@
                         <div class="logo no-dark-content"></div>
                     </div>
                     <div class="header-nav-box header-nav-boxs" v-if="windowWidth > 780">
-                        <Button v-if="proShow" class="header-right-pro no-dark-content" size="small" @click="onPro">{{$L('Pro版')}}</Button>
+                        <template v-if="windowWidth >= 820">
+                            <Button v-if="showItem.pro" class="header-right-pro no-dark-content" size="small" @click="onPro">{{$L('Pro版')}}</Button>
+                            <a v-if="showItem.github" class="header-right-github" :href="showItem.github" target="_blank"><Icon type="logo-github"/></a>
+                            <div v-if="showItem.updateLog" class="header-right-uplog" @click="onUplog">{{$L('更新日志')}}</div>
+                        </template>
 
                         <div class="header-right-1">
                             <Dropdown trigger="click" @on-click="onLanguage">
@@ -25,7 +29,7 @@
                                 </DropdownMenu>
                             </Dropdown>
                         </div>
-                        <div class="header-right-2">
+                        <div v-if="windowWidth >= 980" class="header-right-2">
                             <Dropdown trigger="click" @on-click="setTheme">
                                 <a href="javascript:void(0)" class="header-right-2-dropdown">
                                     {{$L('主题皮肤')}}
@@ -40,8 +44,13 @@
                                 </DropdownMenu>
                             </Dropdown>
                         </div>
-                        <div class="header-right-3" @click="register">{{ $L("注册帐号") }}</div>
-                        <div class="header-right-4 no-dark-content" @click="login">{{ $L("登录") }}</div>
+                        <div v-if="userId > 0" class="header-right-5" @click="login">
+                            <UserAvatar :userid="userId" :size="38"/>
+                        </div>
+                        <template v-else>
+                            <div class="header-right-3" @click="register">{{ $L("注册帐号") }}</div>
+                            <div class="header-right-4 no-dark-content" @click="login">{{ $L("登录") }}</div>
+                        </template>
                     </div>
                     <div class="header-nav-box header-nav-boxs" v-else>
                         <Dropdown trigger="click">
@@ -49,8 +58,13 @@
                                 <Icon type="md-menu" class="header-nav-more no-dark-content"/>
                             </a>
                             <DropdownMenu slot="list">
-                                <DropdownItem @click.native="login">{{ $L("登录") }}</DropdownItem>
-                                <DropdownItem @click.native="register">{{ $L("注册帐号") }}</DropdownItem>
+                                <DropdownItem v-if="userId > 0" @click.native="login">
+                                    <UserAvatar :userid="userId" show-name :show-icon="false"/>
+                                </DropdownItem>
+                                <template v-else>
+                                    <DropdownItem @click.native="login">{{ $L("登录") }}</DropdownItem>
+                                    <DropdownItem @click.native="register">{{ $L("注册帐号") }}</DropdownItem>
+                                </template>
                                 <Dropdown placement="right-start" @on-click="onLanguage" transfer>
                                     <DropdownItem>
                                         <div class="header-nav-dropdown-item">
@@ -194,22 +208,49 @@
                 <div class="footer-copyright" v-if="homeFooter" v-html="homeFooter"></div>
             </div>
         </div>
+
+        <!--更新日志-->
+        <Modal
+            v-model="uplogShow"
+            :fullscreen="uplogFull"
+            class-name="page-index-uplog">
+            <div slot="header">
+                <div class="uplog-head">
+                    <div class="uplog-title">{{$L('更新日志')}}</div>
+                    <Tag v-if="showItem.updateVer" color="volcano">{{showItem.updateVer}}</Tag>
+                </div>
+            </div>
+            <MarkdownPreview class="uplog-body scrollbar-overlay" :initialValue="showItem.updateLog"/>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="uplogFull=!uplogFull">{{$L(uplogFull ? '缩小查看' : '全屏查看')}}</Button>
+            </div>
+        </Modal>
     </div>
 </template>
 
 <script>
 import {mapState} from "vuex";
 import {languageList, languageType, setLanguage} from "../language";
+import MarkdownPreview from "../components/MDEditor/components/preview";
 
 export default {
+    components: {MarkdownPreview},
     data() {
         return {
             languageList,
             languageType,
 
-            proShow: false,
+            showItem: {
+                pro: false,
+                github: '',
+                updateLog: '',
+                updateVer: ''
+            },
             needStartHome: false,
             homeFooter: '',
+
+            uplogShow: false,
+            uplogFull: false,
         };
     },
     computed: {
@@ -242,7 +283,7 @@ export default {
                 }
             }
         }
-        this.proShow = $A.strExists(window.location.host, "dootask.com") || $A.strExists(window.location.host, "127.0.0.1")
+        this.getShowItem();
         this.getNeedStartHome();
     },
 
@@ -251,16 +292,34 @@ export default {
             this.goForward({name: 'pro'});
         },
 
+        onUplog() {
+            this.uplogShow = true
+        },
+
         setTheme(mode) {
             this.$store.dispatch("setTheme", mode)
         },
 
         login() {
-            this.goForward({name: 'login'});
+            if (this.userId > 0) {
+                this.goForward({name: 'manage-dashboard'}, true);
+            } else {
+                this.goForward({name: 'login'}, true);
+            }
         },
 
         register() {
             this.goForward({name: 'login', query: {type: "reg"}});
+        },
+
+        getShowItem() {
+            this.$store.dispatch("call", {
+                url: "system/get/showitem",
+            }).then(({data}) => {
+                this.showItem = data
+            }).catch(_ => {
+                this.showItem = {}
+            });
         },
 
         getNeedStartHome() {
