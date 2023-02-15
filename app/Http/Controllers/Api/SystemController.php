@@ -833,7 +833,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/starthome          18. 启动首页设置信息
+     * @api {get} api/system/get/starthome          19. 启动首页设置信息
      *
      * @apiDescription 用于判断注册是否需要启动首页
      * @apiVersion 1.0.0
@@ -853,7 +853,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/email/check          19. 邮件发送测试（限管理员）
+     * @api {get} api/system/email/check          20. 邮件发送测试（限管理员）
      *
      * @apiDescription 测试配置邮箱是否能发送邮件
      * @apiVersion 1.0.0
@@ -899,7 +899,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/checkin/export          20. 导出签到数据（限管理员）
+     * @api {get} api/system/checkin/export          21. 导出签到数据（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -1066,7 +1066,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/checkin/down          21. 下载导出的签到数据
+     * @api {get} api/system/checkin/down          22. 下载导出的签到数据
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -1092,7 +1092,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/version          22. 获取版本号
+     * @api {get} api/system/version          23. 获取版本号
      *
      * @apiVersion 1.0.0
      * @apiGroup system
