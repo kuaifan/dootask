@@ -273,17 +273,13 @@ export default {
                 }
                 return;
             }
-            this.$store.dispatch("call", {
-                url: "system/get/starthome",
-            }).then(({data}) => {
-                const homeFooter = data.home_footer
-                const needStart = !!data.need_start
-                if (needStart && (this.userId === 0 || this.$route.query.action === 'index')) {
-                    this.homeFooter = homeFooter;
-                    this.needStartHome = needStart;
-                    return
+            this.$store.dispatch("needHome").then(data => {
+                if (this.userId === 0 || this.$route.query.action === 'index') {
+                    this.needStartHome = true;
+                    this.homeFooter = data.home_footer;
+                } else {
+                    this.goNext();
                 }
-                this.goNext();
             }).catch(_ => {
                 this.needStartHome = false;
                 this.goNext();

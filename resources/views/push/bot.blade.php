@@ -28,7 +28,7 @@
 
     <b>ID | 名称 | 清理时间 | Webhook</b>
     @foreach($data as $item)
-        {{$item->userid}} | {{$item->nickname}} | {{$item->clear_day}} | {{$item->webhook_url ?: '-'}}
+        {{$item->userid}} | {{$item->nickname}} | {{$item->clear_day}} | {{$item->webhook_url ? '✅' : '-'}}
     @endforeach
 @elseif ($type === '/info')
     <b>机器人详情。</b>

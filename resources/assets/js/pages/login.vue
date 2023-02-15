@@ -204,9 +204,6 @@ export default {
         this.privacyShow = !!this.$isEEUiApp && (await $A.IDBString("cachePrivacyShow")) !== "no";
         this.email = await $A.IDBString("cacheLoginEmail") || ''
         //
-        this.getDemoAccount();
-        this.getNeedStartHome();
-        //
         if (this.isSoftware) {
             this.chackServerUrl().catch(_ => {});
         } else {
@@ -230,6 +227,9 @@ export default {
 
     activated() {
         this.loginType = 'login'
+        //
+        this.getDemoAccount();
+        this.getNeedStartHome();
         //
         if (this.$Electron) {
             this.$Electron.sendMessage('subWindowDestroyAll')
@@ -339,15 +339,13 @@ export default {
 
         getNeedStartHome() {
             if (this.isNotServer()) {
-                return;
+                return
             }
-            this.$store.dispatch("call", {
-                url: "system/get/starthome",
-            }).then(({data}) => {
-                this.needStartHome = !!data.need_start;
+            this.$store.dispatch("needHome").then(_ => {
+                this.needStartHome = true
             }).catch(_ => {
-                this.needStartHome = false;
-            });
+                this.needStartHome = false
+            })
         },
 
         getNeedInvite() {

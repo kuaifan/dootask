@@ -231,6 +231,26 @@ export default {
     },
 
     /**
+     * 是否启用首页
+     * @param dispatch
+     * @param state
+     * @returns {Promise<unknown>}
+     */
+    needHome({dispatch, state}) {
+        return new Promise((resolve, reject) => {
+            dispatch("call", {
+                url: "system/get/starthome",
+            }).then(({data}) => {
+                if (!!data.need_start) {
+                    resolve(data)
+                } else {
+                    reject()
+                }
+            }).catch(reject);
+        })
+    },
+
+    /**
      * 下载文件
      * @param state
      * @param data
@@ -347,12 +367,19 @@ export default {
      */
     getBasicData({state, dispatch}, timeout) {
         if (typeof timeout === "number") {
-            window.__getBasicData && clearTimeout(window.__getBasicData)
+            window.__getBasicDataTimer && clearTimeout(window.__getBasicDataTimer)
             if (timeout > -1) {
-                window.__getBasicData = setTimeout(dispatch("getBasicData", null), timeout)
+                window.__getBasicDataTimer = setTimeout(dispatch("getBasicData", null), timeout)
             }
             return
         }
+        //
+        const tmpKey = state.userId + $A.Time()
+        if (window.__getBasicDataKey === tmpKey) {
+            return
+        }
+        window.__getBasicDataKey = tmpKey
+        //
         dispatch("getProjects").catch(() => {});
         dispatch("getDialogs").catch(() => {});
         dispatch("getReportUnread", 1000);
@@ -834,19 +861,16 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
-            const request = $A.isJson(callData) ? callData : {
-                deleted_at: state.projectDeletedAt || getters.getProjectLastAt
-            };
-            let showLoad = true;
-            if (typeof request.hideLoad !== "undefined") {
-                showLoad = !request.hideLoad;
-                delete request.hideLoad;
+            if ($A.isJson(callData)) {
+                typeof callData.deleted_at !== "undefined" && delete callData.deleted_at
+            } else {
+                callData = {deleted_at: state.projectDeletedAt || getters.getProjectLastAt}
             }
             //
-            showLoad && state.loadProjects++;
+            !callData.hideLoad && state.loadProjects++;
             dispatch("call", {
                 url: 'project/lists',
-                data: request
+                data: callData
             }).then(({data}) => {
                 state.projectTotal = data.total_all;
                 dispatch("saveProject", data.data);
@@ -861,7 +885,7 @@ export default {
                 console.warn(e);
                 reject(e)
             }).finally(_ => {
-                showLoad && state.loadProjects--;
+                !callData.hideLoad && state.loadProjects--;
             });
         });
     },
@@ -2104,47 +2128,46 @@ export default {
      * @param data
      * @returns {Promise<unknown>}
      */
-    getDialogs({state, dispatch, getters}, data) {
+    getDialogs({state, dispatch, getters}, callData) {
         return new Promise(function (resolve, reject) {
             if (state.userId === 0) {
                 state.cacheDialogs = [];
                 reject({msg: 'Parameter error'});
                 return;
             }
-            data = $A.isJson(data) ? data : {
-                deleted_at: state.dialogDeletedAt || getters.getDialogLastAt
+            if ($A.isJson(callData)) {
+                typeof callData.deleted_at !== "undefined" && delete callData.deleted_at
+            } else {
+                callData = {deleted_at: state.dialogDeletedAt || getters.getDialogLastAt}
             }
-            if (data.hideLoad !== true) {
-                state.loadDialogs++;
+            if (typeof callData.pagesize === "undefined") {
+                callData.pagesize = 20
             }
-            if (typeof data.pagesize === "undefined") {
-                data.pagesize = 20
-            }
-            if (typeof data.page === "undefined") {
-                data.page = 1
+            if (typeof callData.page === "undefined") {
+                callData.page = 1
                 if (state.cacheDialogs.length > 0) {
                     const tmpList = state.cacheDialogs.sort((a, b) => {
                         return $A.Date(b.last_at) - $A.Date(a.last_at);
                     })
-                    data.at_after = tmpList[0].last_at;
+                    callData.at_after = tmpList[0].last_at;
                 }
             }
             //
+            !callData.hideLoad && state.loadDialogs++;
             dispatch("call", {
                 url: 'dialog/lists',
-                data,
-            }).then(result => {
-                const resData = result.data;
-                dispatch("saveDialog", resData.data);
+                data: callData,
+            }).then(({data}) => {
+                dispatch("saveDialog", data.data);
                 //
-                resData.deleted_at && $A.IDBSet("dialogDeletedAt", resData.deleted_at).then(_ => {
-                    state.dialogDeletedAt = resData.deleted_at
-                    resData.deleted_data.some(id => dispatch("forgetDialog", id))
+                data.deleted_at && $A.IDBSet("dialogDeletedAt", data.deleted_at).then(_ => {
+                    state.dialogDeletedAt = data.deleted_at
+                    data.deleted_data.some(id => dispatch("forgetDialog", id))
                 });
                 //
-                if (resData.next_page_url && resData.current_page < 5) {
-                    data.page++
-                    dispatch("getDialogs", data).then(resolve).catch(reject)
+                if (data.next_page_url && data.current_page < 5) {
+                    callData.page++
+                    dispatch("getDialogs", callData).then(resolve).catch(reject)
                 } else {
                     resolve()
                 }
@@ -2152,9 +2175,7 @@ export default {
                 console.warn(e);
                 reject(e)
             }).finally(_ => {
-                if (data.hideLoad !== true) {
-                    state.loadDialogs--;
-                }
+                !callData.hideLoad && state.loadDialogs--;
             });
         });
     },
