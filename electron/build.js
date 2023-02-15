@@ -30,7 +30,7 @@ function cloneDrawio(systemInfo) {
     fse.copySync(drawioCoverDir, drawioDestDir)
     //
     const preConfigFile = path.resolve(drawioDestDir, "js/PreConfig.js");
-    if (!fse.existsSync(preConfigFile)) {
+    if (!fs.existsSync(preConfigFile)) {
         console.log("clone drawio error!");
         process.exit()
     }
@@ -41,9 +41,8 @@ function cloneDrawio(systemInfo) {
 }
 
 function changeLog() {
-    child_process.execSync("docker run -t --rm -v \"$(pwd)\":/app/ orhunp/git-cliff:latest > CHANGELOG.md", {stdio: "inherit"});
     let filePath = path.resolve(__dirname, "../CHANGELOG.md");
-    if (!fse.existsSync(filePath)) {
+    if (!fs.existsSync(filePath)) {
         return "";
     }
     let content = fs.readFileSync(filePath, 'utf8')
@@ -70,7 +69,7 @@ function genericPublish({url, version, output}) {
         } else {
             for (const filename of files) {
                 const localFile = path.join(filePath, filename)
-                if (fse.existsSync(localFile)) {
+                if (fs.existsSync(localFile)) {
                     const fileStat = fs.statSync(localFile)
                     if (fileStat.isFile()) {
                         const uploadOra = ora(`${filename} uploading...`).start()
@@ -191,7 +190,7 @@ if (["dev"].includes(argv[2])) {
 } else if (["app"].includes(argv[2])) {
     // 编译给app
     let mobileSrcDir = path.resolve(__dirname, "../resources/mobile");
-    if (!fse.existsSync(mobileSrcDir)) {
+    if (!fs.existsSync(mobileSrcDir)) {
         console.log("mobile directory does not exist!");
         process.exit()
     }
