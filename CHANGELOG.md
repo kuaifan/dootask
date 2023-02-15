@@ -2,11 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.23.2]
+## [0.23.3]
 
 ### Performance
 
 - 优化首页
+- 优化更新日志生成
 
 ## [0.22.99]
 
