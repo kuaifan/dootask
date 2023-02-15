@@ -8,10 +8,10 @@
                         <div class="logo no-dark-content"></div>
                     </div>
                     <div class="header-nav-box header-nav-boxs" v-if="windowWidth > 780">
+                        <Button v-if="showItem.pro" class="header-right-pro no-dark-content" size="small" @click="onPro">{{$L('Pro版')}}</Button>
                         <template v-if="windowWidth >= 820">
-                            <Button v-if="showItem.pro" class="header-right-pro no-dark-content" size="small" @click="onPro">{{$L('Pro版')}}</Button>
                             <a v-if="showItem.github" class="header-right-github" :href="showItem.github" target="_blank"><Icon type="logo-github"/></a>
-                            <div v-if="showItem.updateLog" class="header-right-uplog" @click="onUplog">{{$L('更新日志')}}</div>
+                            <div v-if="showItem.updateLog" class="header-right-uplog" @click="uplogShow=true">{{$L('更新日志')}}</div>
                         </template>
 
                         <div class="header-right-1">
@@ -44,7 +44,7 @@
                                 </DropdownMenu>
                             </Dropdown>
                         </div>
-                        <div v-if="userId > 0" class="header-right-5" @click="login">
+                        <div v-if="userId > 0" class="header-right-5 no-dark-content" @click="login">
                             <UserAvatar :userid="userId" :size="38"/>
                         </div>
                         <template v-else>
@@ -210,31 +210,17 @@
         </div>
 
         <!--更新日志-->
-        <Modal
-            v-model="uplogShow"
-            :fullscreen="uplogFull"
-            class-name="page-index-uplog">
-            <div slot="header">
-                <div class="uplog-head">
-                    <div class="uplog-title">{{$L('更新日志')}}</div>
-                    <Tag v-if="showItem.updateVer" color="volcano">{{showItem.updateVer}}</Tag>
-                </div>
-            </div>
-            <MarkdownPreview class="uplog-body scrollbar-overlay" :initialValue="showItem.updateLog"/>
-            <div slot="footer" class="adaption">
-                <Button type="default" @click="uplogFull=!uplogFull">{{$L(uplogFull ? '缩小查看' : '全屏查看')}}</Button>
-            </div>
-        </Modal>
+        <UpdateLog v-model="uplogShow" :update-log="showItem.updateLog" :update-ver="showItem.updateVer"/>
     </div>
 </template>
 
 <script>
 import {mapState} from "vuex";
 import {languageList, languageType, setLanguage} from "../language";
-import MarkdownPreview from "../components/MDEditor/components/preview";
+import UpdateLog from "./manage/components/UpdateLog";
 
 export default {
-    components: {MarkdownPreview},
+    components: {UpdateLog},
     data() {
         return {
             languageList,
@@ -250,7 +236,6 @@ export default {
             homeFooter: '',
 
             uplogShow: false,
-            uplogFull: false,
         };
     },
     computed: {
@@ -290,10 +275,6 @@ export default {
     methods: {
         onPro() {
             this.goForward({name: 'pro'});
-        },
-
-        onUplog() {
-            this.uplogShow = true
         },
 
         setTheme(mode) {

@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.23.3]
+## [0.23.4]
 
 ### Performance
 

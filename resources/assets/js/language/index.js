@@ -101,12 +101,11 @@ let languageData = [];
 let languageType = languageUtils.getLanguage();
 let languageList = {
     "EN": "English",
-    "KM": "ភាសាខ្មែរ",
-    "TH": "ภาษาไทย",
     "KO": "한국어",
     "JA": "日本語",
     "CN": "简体中文",
     "TC": "繁體中文",
+    "FR": "Français",
 };
 let languageAsciis = {};
 
