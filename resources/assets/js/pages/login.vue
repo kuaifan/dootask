@@ -226,7 +226,7 @@ export default {
     },
 
     activated() {
-        this.loginType = 'login'
+        this.loginType = this.$route.query.type === 'reg' ? 'reg' : 'login'
         //
         this.getDemoAccount();
         this.getNeedStartHome();

@@ -65,6 +65,8 @@
                                     <DropdownItem @click.native="login">{{ $L("登录") }}</DropdownItem>
                                     <DropdownItem @click.native="register">{{ $L("注册帐号") }}</DropdownItem>
                                 </template>
+                                <DropdownItem v-if="showItem.github" @click.native="windowOpen(showItem.github)">Github</DropdownItem>
+                                <DropdownItem v-if="showItem.updateLog" @click.native="uplogShow=true">{{ $L("更新日志") }}</DropdownItem>
                                 <Dropdown placement="right-start" @on-click="onLanguage" transfer>
                                     <DropdownItem>
                                         <div class="header-nav-dropdown-item">
@@ -259,15 +261,16 @@ export default {
             if (this.$router.mode === "hash") {
                 if ($A.stringLength(window.location.pathname) > 2) {
                     window.location.href = `${window.location.origin}/#${window.location.pathname}${window.location.search}`
-                    return
                 }
             } else if (this.$router.mode === "history") {
                 if ($A.strExists(window.location.href, "/#/")) {
                     window.location.href = window.location.href.replace("/#/", "/")
-                    return
                 }
             }
         }
+    },
+
+    activated() {
         this.getShowItem();
         this.getNeedStartHome();
     },
@@ -293,9 +296,14 @@ export default {
             this.goForward({name: 'login', query: {type: "reg"}});
         },
 
+        windowOpen(url) {
+            window.open(url)
+        },
+
         getShowItem() {
             this.$store.dispatch("call", {
                 url: "system/get/showitem",
+                spinner: 1000
             }).then(({data}) => {
                 this.showItem = data
             }).catch(_ => {
@@ -313,6 +321,8 @@ export default {
                 }
                 return;
             }
+            //
+            this.$store.dispatch("showSpinner", 1000)
             this.$store.dispatch("needHome").then(data => {
                 if (this.userId === 0 || this.$route.query.action === 'index') {
                     this.needStartHome = true;
@@ -323,6 +333,8 @@ export default {
             }).catch(_ => {
                 this.needStartHome = false;
                 this.goNext();
+            }).finally(_ => {
+                this.$store.dispatch("hiddenSpinner")
             });
         },
 

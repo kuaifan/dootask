@@ -652,6 +652,7 @@
         {"CN":"导出XLSX","EN":"Export XLSX","TC":"導出XLSX","KO":"Xlsx로 내보낸다","JA":"XLSXを導出します","FR":"Exportez votre XLSX"},
         {"CN":"APP推送","EN":"APP push","TC":"APP推送","KO":"App 푸시","JA":"アプリでプッシュします","FR":"Push par APP"},
         {"CN":"MAC地址","EN":"MAC address","TC":"MAC地址","KO":"Mac 주소","JA":"MACアドレスです","FR":"Une adresse MAC"},
+        {"CN":"扫一扫","EN":"Scan","TC":"掃一掃","KO":"쓸어버리다","JA":"掃きます","FR":"Balayage et balayage"},
         {"CN":"上个月","EN":"Last month","TC":"上個月","KO":"지난 달","JA":"先月です","FR":"Mois dernier"},
         {"CN":"下划线","EN":"Underline","TC":"下劃線","KO":"밑줄","JA":"アンダーライン","FR":"Souligner"},
         {"CN":"不同意","EN":"Disagree","TC":"不同意","KO":"동의하지 않다","JA":"同意しません","FR":"Ne pas accepter"},
