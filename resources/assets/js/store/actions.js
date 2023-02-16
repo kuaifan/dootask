@@ -386,9 +386,7 @@ export default {
         dispatch("getTaskForDashboard");
         //
         const allIds = Object.values(state.userAvatar).map(({userid}) => userid);
-        [...new Set(allIds)].some(userid => {
-            dispatch("getUserBasic", {userid});
-        })
+        [...new Set(allIds)].some(userid => dispatch("getUserBasic", {userid}))
     },
 
     /**
@@ -1783,7 +1781,7 @@ export default {
      */
     taskUpdate({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
-            dispatch("taskBeforeUpdate", data).then(({confirm, post}) => {
+            dispatch("taskBeforeUpdate", data).then(({post}) => {
                 dispatch("setLoad", {
                     key: `task-${post.task_id}`,
                     delay: 300
@@ -2125,7 +2123,7 @@ export default {
      * @param state
      * @param dispatch
      * @param getters
-     * @param data
+     * @param callData
      * @returns {Promise<unknown>}
      */
     getDialogs({state, dispatch, getters}, callData) {
