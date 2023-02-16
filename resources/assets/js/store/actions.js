@@ -369,7 +369,7 @@ export default {
         if (typeof timeout === "number") {
             window.__getBasicDataTimer && clearTimeout(window.__getBasicDataTimer)
             if (timeout > -1) {
-                window.__getBasicDataTimer = setTimeout(dispatch("getBasicData", null), timeout)
+                window.__getBasicDataTimer = setTimeout(_ => dispatch("getBasicData", null), timeout)
             }
             return
         }

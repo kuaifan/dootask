@@ -208,4 +208,5 @@ store.dispatch("init").then(_ => {
     $A.Message = app.$Message;
     $A.Notice = app.$Notice;
     $A.Modal = app.$Modal;
+    $A.Store = app.$store;
 })
