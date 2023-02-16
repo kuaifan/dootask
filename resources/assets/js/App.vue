@@ -149,10 +149,16 @@ export default {
             if (active) {
                 this.__windowTimer && clearTimeout(this.__windowTimer)
                 this.__windowTimer = setTimeout(_ => {
-                    this.$store.dispatch("websocketSend", {
-                        type: 'handshake',
+                    this.$store.dispatch("call", {
+                        url: "users/socket/status",
+                    }).then(_ => {
+                        this.$store.dispatch("websocketSend", {
+                            type: 'handshake',
+                        }).catch(_ => {
+                            this.$store.dispatch("websocketConnection")
+                        })
                     }).catch(_ => {
-                        this.$store.dispatch("websocketConnection");
+                        this.$store.dispatch("websocketConnection")
                     })
                     if (this.themeMode === "auto") {
                         $A.dark.autoDarkMode()

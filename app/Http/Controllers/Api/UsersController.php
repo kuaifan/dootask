@@ -14,6 +14,7 @@ use App\Models\UserDelete;
 use App\Models\UserDepartment;
 use App\Models\UserEmailVerification;
 use App\Models\UserTransfer;
+use App\Models\WebSocket;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Module\AgoraIO\AgoraTokenGenerator;
@@ -1531,5 +1532,29 @@ class UsersController extends AbstractController
         }
         //
         return Base::retSuccess('success', $array);
+    }
+
+    /**
+     * @api {get} api/users/socket/status          27. 获取socket状态
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName socket__status
+     *
+     * @apiParam {String} [fd]
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function socket__status()
+    {
+        $fd = Request::exists('fd') ? Request::input('fd') : Request::header('fd');
+        $row = WebSocket::select(['id', 'fd', 'userid', 'updated_at'])->whereFd($fd)->first();
+        if (empty($row)) {
+            return Base::retError('error');
+        }
+        return Base::retSuccess('suceess', $row);
     }
 }
