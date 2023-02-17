@@ -1,7 +1,7 @@
 [
     {
         "key": "模版满足多种团队协作场景，同时支持自定义模版，满足团队个性化场景管理需求，可直观的查看项目的进展情况，团队协作更方便。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "模版滿足多種團隊協作場景，同時支持自定義模版，滿足團隊個性化場景管理需求，可直觀的查看項目的進展情況，團隊協作更方便。",
         "en": "Templates meet a variety of team collaboration scenarios, and support custom templates to meet the needs of team personalized scenario management, can intuitively view the progress of the project, more convenient team collaboration.",
         "ko": "템플릿 다양한 팀 협업 장면을 만족하고, 동시에 사용자 정의 템플릿 지원, 팀의 개성화 장면 관리 요구를 만족시키고, 프로젝트의 진행 상황을 직관적으로 볼 수 있어 팀 협력이 더욱 편리합니다.",
@@ -12,7 +12,7 @@
     },
     {
         "key": "2、若你是团队的所有者，请在删除您的帐号前转移所有权。例如该帐号所创建的项目（可将项目移交他人或删除项目）以及文件夹。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "2、若你是團隊的所有者，請在刪除您的帳號前轉移所有權。例如該帳號所創建的項目（可將項目移交他人或刪除項目）以及文件夾。",
         "en": "2. If you are the owner of the team, please transfer ownership before deleting your account. Such as projects created by the account (which can be handed over to others or deleted) and folders.",
         "ko": "2. 팀 소유자인 경우, 계정을 삭제하기 전에 소유권을 이전하십시오.예를 들어,이 계정에서 만든 항목 (넘겨주거나 삭제할 수 있음), 폴더.",
@@ -23,7 +23,7 @@
     },
     {
         "key": "汇集文档、电子表格、思维笔记等多种在线工具，汇聚企业知识资源于一处，支持多人实时协同编辑，让团队协作更便捷。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "彙集文檔、電子表格、思維筆記等多種在線工具，匯聚企業知識資源於一處，支持多人實時協同編輯，讓團隊協作更便捷。",
         "en": "Collect documents, spreadsheets, thought notes and other online tools, gather enterprise knowledge resources in one place, support real-time collaborative editing of multiple people, make team collaboration more convenient.",
         "ko": "문서, 스프레드시트, 생각 노트 등 다양한 온라인 도구를 모아 기업의 지식 자원을 한 곳에 모으고 여러 사람이 실시간으로 함께 편집할 수 있도록 지원하여 팀워크를 더욱 편리하게 합니다.",
@@ -34,7 +34,7 @@
     },
     {
         "key": "多平台应用支持，打开客户端即可跟进项目任务进度， 同时让你在工作中每一个步骤都能拥有更高效愉悦的体验。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "多平臺應用支持，打開客戶端即可跟進項目任務進度， 同時讓你在工作中每一個步驟都能擁有更高效愉悅的體驗。",
         "en": "Multi-platform application support, open the client can follow the progress of the project task, at the same time, let you have a more efficient and pleasant experience in every step of the work.",
         "ko": "다중 플랫폼 응용 프로그램 지원으로 클라이언트를 열면 프로젝트의 진행 상황을 따라갈 수 있으며 작업 중 매 단계마다 더욱 고효율적이고 즐거운 경험을 할 수 있습니다.",
@@ -45,7 +45,7 @@
     },
     {
         "key": "1、您将无法查看该帐号内的任何信息，包括帐号信息、文件记录、聊天记录、项目信息、团队成员信息等。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "1、您將無法查看該帳號內的任何信息，包括帳號信息、文件記錄、聊天記錄、項目信息、團隊成員信息等。",
         "en": "1. You will not be able to view any information in this account, including account information, file records, chat records, project information, team member information, etc.",
         "ko": "1. 계정, 문서기록, 채팅기록, 프로젝트정보, 팀구성정보등을 포함한이 계정의 모든 정보를 볼 수 없습니다.",
@@ -56,7 +56,7 @@
     },
     {
         "key": "通过灵活的任务日历，轻松安排每一天的日程，把任务拆解到每天，让工作目标更清晰，时间分配更合理。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "通過靈活的任務日曆，輕鬆安排每一天的日程，把任務拆解到每天，讓工作目標更清晰，時間分配更合理。",
         "en": "With a flexible task calendar, you can easily arrange each day's schedule and break down tasks to each day, so that the work objectives are clearer and time allocation is more reasonable.",
         "ko": "유연한업무달력을통해하루의일정을쉽게짜고하루의업무를분해하십시요. 작업목표를더욱명확하게할수있게할수있게할수있습니다.",
@@ -67,7 +67,7 @@
     },
     {
         "key": "针对项目和任务建立群组，工作问题可及时沟通，促进团队快速协作，提高团队工作效率。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "針對項目和任務建立羣組，工作問題可及時溝通，促進團隊快速協作，提高團隊工作效率。",
         "en": "To establish groups for projects and tasks, timely communication on work issues can promote rapid team collaboration and improve team work efficiency.",
         "ko": "프로젝트와임무에대한그룹을설립하며, 작업문제는적시적으로소통하고팀의신속한협업을촉진하며, 팀작업의효율을제고합니다.",
@@ -78,7 +78,7 @@
     },
     {
         "key": "帐号删除后，该帐号将无法正常登录且无法恢复，帐号下的所有数据也将被删除。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "帳號刪除後，該帳號將無法正常登錄且無法恢復，帳號下的所有數據也將被刪除。",
         "en": "After an account is deleted, the user cannot log in to the account and cannot be restored. All data under the account is also deleted.",
         "ko": "계정을 삭제하면,이 계정은 정상적으로 로그인할 수 없고 복구할 수 없으며, 계정의 모든 데이터도 삭제됩니다.",
@@ -89,7 +89,7 @@
     },
     {
         "key": "复杂：大于或等于6个字符，包含数字、字母大小写或者特殊字符。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "複雜：大於或等於6個字符，包含數字、字母大小寫或者特殊字符。",
         "en": "Complex: contains at least six characters, including digits, uppercase letters, and special characters.",
         "ko": "복잡성:숫자, 대소문자 또는 특수 문자를 포함한 6문자보다 크거나 같은 문자.",
@@ -100,7 +100,7 @@
     },
     {
         "key": "不会向忽略的邮箱地址发送邮件，可使用换行分割多个地址。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "不會向忽略的郵箱地址發送郵件，可使用換行分割多個地址。",
         "en": "Messages are not sent to ignored mailbox addresses. You can use newlines to split multiple addresses.",
         "ko": "무시된 전자 우편 주소로 메시지를 보내지 않습니다. 줄 바꿀을 사용하여 여러 주소로 나눌 수 있습니다.",
@@ -111,7 +111,7 @@
     },
     {
         "key": "选中节点，按enter键添加同级节点，tab键添加子节点",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選中節點，按enter鍵添加同級節點，tab鍵添加子節點",
         "en": "Select the node, press enter to add the sibling node, and tab to add the child node",
         "ko": "노드를 선택하고 enter 키를 눌러 동급 노드를 추가하고 tab 키를 눌러 자식 노드를 추가한다",
@@ -122,7 +122,7 @@
     },
     {
         "key": "3、您将退出所有群聊，无法查到过往消息和人员。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "3、您將退出所有羣聊，無法查到過往消息和人員。",
         "en": "3. You will exit all group chats and cannot find past messages and personnel.",
         "ko": "3. 모든 그룹채팅에서 종료됩니다. 과거의 메시지나 사람을 찾을 수 없습니다.",
@@ -133,7 +133,7 @@
     },
     {
         "key": "开启：项目管理员可生成链接邀请成员加入项目。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "開啓：項目管理員可生成鏈接邀請成員加入項目。",
         "en": "On: The project administrator can generate links to invite members to join the project.",
         "ko": "열기:프로젝트 관리자는 구성원을 프로젝트에 초대하기 위한 링크를 만들 수 있습니다.",
@@ -144,7 +144,7 @@
     },
     {
         "key": "如果必填，发送聊天前必须设置昵称、电话。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "如果必填，發送聊天前必須設置暱稱、電話。",
         "en": "If required, you must set the nickname and phone number before sending the chat.",
         "ko": "필요하다면, 대화를 보내기 전에 닉네임, 전화번호 등을 설정해야 합니다.",
@@ -155,7 +155,7 @@
     },
     {
         "key": "开启同步本地帐号登录后将同步到 LDAP 服务器",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "開啓同步本地帳號登錄後將同步到 LDAP 服務器",
         "en": "Enable synchronization After logging in to the LDAP server using a local account, the device will be synchronized to the LDAP server",
         "ko": "로컬 계정 동기화 시작 로그인하면 ldap 서버에 동기화됩니다",
@@ -166,7 +166,7 @@
     },
     {
         "key": "必填：发送聊天内容前必须设置昵称、电话。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "必填：發送聊天內容前必須設置暱稱、電話。",
         "en": "Mandatory: Nickname and phone number must be set before sending chat content.",
         "ko": "필수 입력:대화 내용을 보내기 전에 닉네임, 전화번호를 설정하십시오.",
@@ -177,7 +177,7 @@
     },
     {
         "key": "进入路由器终端执行以下命令即可完成安装：",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "進入路由器終端執行以下命令即可完成安裝：",
         "en": "Log in to the router terminal and run the following command to complete the installation:",
         "ko": "라우터 터미널에 들어가서 다음 명령을 실행하면 설치가 완료됩니다:",
@@ -188,7 +188,7 @@
     },
     {
         "key": "设备连接上指定路由器（WiFi）后自动签到。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "設備連接上指定路由器（WiFi）後自動簽到。",
         "en": "The device automatically checks in after connecting to the designated router (WiFi).",
         "ko": "장치가 지정된 와이파이 공유기에 연결되면 자동으로 체크인됩니다.",
@@ -199,7 +199,7 @@
     },
     {
         "key": "切换语言需要刷新后生效，是否确定刷新？",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "切換語言需要刷新後生效，是否確定刷新？",
         "en": "Are you sure that the language change takes effect after refreshing?",
         "ko": "언어를 새로 고쳐야 합니다. 새로 고칠까요?",
@@ -210,7 +210,7 @@
     },
     {
         "key": "详细描述，选填...（点击右键使用工具栏）",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "詳細描述，選填...（點擊右鍵使用工具欄）",
         "en": "For details, please fill in... (Right click to use the toolbar)",
         "ko": "자세한 설명, 선택...(도구막대를 사용하려면 오른쪽 단추를 누르십시오.)",
@@ -221,7 +221,7 @@
     },
     {
         "key": "注意：刷新将导致原来的邀请链接失效！",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "注意：刷新將導致原來的邀請鏈接失效！",
         "en": "Note: Refreshing will invalidate the original invitation link!",
         "ko": "주의:새로 고침시 원래의 초대장 링크가 유효하지 않게 됩니다!",
@@ -232,7 +232,7 @@
     },
     {
         "key": "自动：密码输入错误后必须添加验证码。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "自動：密碼輸入錯誤後必須添加驗證碼。",
         "en": "Automatic: You must add a verification code if you enter an incorrect password.",
         "ko": "자동:비밀번호 입력 오류시 인증번호를 추가해야 합니다.",
@@ -243,7 +243,7 @@
     },
     {
         "key": "帐号不存在，请确认帐号是否输入正确",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "帳號不存在，請確認帳號是否輸入正確",
         "en": "The account does not exist. Check whether the account is entered correctly",
         "ko": "계정이 존재하지 않습니다. 계정이 올바르게 입력되었는지 확인하십시오",
@@ -254,7 +254,7 @@
     },
     {
         "key": "开启后可以直接使用 LDAP 帐号密码登录",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "開啓後可以直接使用 LDAP 帳號密碼登錄",
         "en": "After this function is enabled, you can directly log in to the LDAP server using the LDAP account password",
         "ko": "켜시면 바로 ldap 계정 비밀번호를 사용하여 로그인하실 수 있습니다",
@@ -265,7 +265,7 @@
     },
     {
         "key": "必填：发送聊天内容前必须设置昵称。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "必填：發送聊天內容前必須設置暱稱。",
         "en": "Required: A nickname must be set before sending chat content.",
         "ko": "필수 입력:대화 내용을 보내기 전에 닉네임을 지정하십시오.",
@@ -276,7 +276,7 @@
     },
     {
         "key": "移除成员负责的任务将变成无负责人，",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "移除成員負責的任務將變成無負責人，",
         "en": "Removing a member from a task will make it a responsible-free task,",
         "ko": "구성원이 책임을 질 수 있는 업무를 제거하면 책임자없는 업무가 된다.",
@@ -287,7 +287,7 @@
     },
     {
         "key": "首页底部：首页底部网站备案号等信息",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "首頁底部：首頁底部網站備案號等信息",
         "en": "The bottom of the home page: the website record number and other information at the bottom of the home page",
         "ko": "홈페이지 맨 아래:홈페이지 맨 아래 사이트 등록번호 등",
@@ -298,7 +298,7 @@
     },
     {
         "key": "为确保帐号安全，请确认是本人操作",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "爲確保帳號安全，請確認是本人操作",
         "en": "To ensure account security, please confirm that you are the user",
         "ko": "계정 보안을 위해, 본인 작업임을 확인해주세요",
@@ -309,7 +309,7 @@
     },
     {
         "key": "修改邮箱和删除帐号需要邮箱验证码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "修改郵箱和刪除帳號需要郵箱驗證碼",
         "en": "An email verification code is required to modify an email address and delete an account",
         "ko": "편지함을 수정하고 계정을 삭제하려면 편지함 인증 번호가 필요합니다",
@@ -320,7 +320,7 @@
     },
     {
         "key": "关闭签到功能再开启需要重新安装。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "關閉簽到功能再開啓需要重新安裝。",
         "en": "To disable the sign-in function and then enable it, reinstall it.",
         "ko": "체크인을 껐다가 다시 켜려면 다시 설치해야 합니다.",
@@ -331,7 +331,7 @@
     },
     {
         "key": "此操作仅加入群成员并不会加入部门",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "此操作僅加入羣成員並不會加入部門",
         "en": "This operation only adds group members but not departments",
         "ko": "이 작업은 그룹 멤버에만 가입하고 파트에는 가입하지 않습니다",
@@ -342,7 +342,7 @@
     },
     {
         "key": "注意：刷新将导致原来的链接失效！",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "注意：刷新將導致原來的鏈接失效！",
         "en": "Note: Refreshing will cause the original link to break!",
         "ko": "주의:새로 고침시 원래의 링크가 유효하지 않게 됩니다!",
@@ -353,7 +353,7 @@
     },
     {
         "key": "自动：注册成功后自动进入全员群。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "自動：註冊成功後自動進入全員羣。",
         "en": "Automatic: After successful registration, the user is automatically added to the full group.",
         "ko": "자동:등록에 성공하면 자동으로 전원에 들어간다.",
@@ -364,7 +364,7 @@
     },
     {
         "key": "邀请码：注册时需填写下方邀请码。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "邀請碼：註冊時需填寫下方邀請碼。",
         "en": "Invitation code: Please fill in the following invitation code when registering.",
         "ko": "초대번호:등록시 아래에 초대번호를 기입해야 한다.",
@@ -375,7 +375,7 @@
     },
     {
         "key": "网络连接失败，请检查网络设置。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "網絡連接失敗，請檢查網絡設置。",
         "en": "The network connection failed. Please check the network Settings.",
         "ko": "네트워크 연결이 실패했습니다. 네트워크 설정을 확인하십시오.",
@@ -386,7 +386,7 @@
     },
     {
         "key": "关闭：其他成员通过@邀请进入。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "關閉：其他成員通過@邀請進入。",
         "en": "Closed: Other members enter via @invitation.",
         "ko": "닫기:@초대장을 통해 다른 회원이 옵니다.",
@@ -397,7 +397,7 @@
     },
     {
         "key": "你确定要导出所有超期任务吗？",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "你確定要導出所有超期任務嗎？",
         "en": "Are you sure you want to export all overdue tasks?",
         "ko": "만료된 모든 작업을 내보내시겠습니까?",
@@ -408,7 +408,7 @@
     },
     {
         "key": "全部禁言：所有人都禁止发言。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "全部禁言：所有人都禁止發言。",
         "en": "Total silence: No one is allowed to speak.",
         "ko": "일체 금언:모든 사람의 발언을 금지한다.",
@@ -419,7 +419,7 @@
     },
     {
         "key": "开启后帐号需验证通过才可登录",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "開啓後帳號需驗證通過纔可登錄",
         "en": "After this function is enabled, the account must be verified before you can log in",
         "ko": "계정을 연 후 인증이 필요합니다",
@@ -430,7 +430,7 @@
     },
     {
         "key": "成员禁言：仅管理员可以发言。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "成員禁言：僅管理員可以發言。",
         "en": "Member gag: Only administrators can speak.",
         "ko": "회원 발언 금지:운영자만 발언할 수 있다.",
@@ -441,7 +441,7 @@
     },
     {
         "key": "输入您的凭证以访问您的帐户。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "輸入您的憑證以訪問您的帳戶。",
         "en": "Enter your credentials to access your account.",
         "ko": "계정에 접근하기 위한 인증서를 입력하십시오.",
@@ -452,7 +452,7 @@
     },
     {
         "key": "+ 输入子任务，回车添加子任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "+ 輸入子任務，回車添加子任務",
         "en": "+ Type subtask and press Enter to add subtask",
         "ko": "하위 작업을 입력하고 하위 작업을 추가합니다",
@@ -463,7 +463,7 @@
     },
     {
         "key": "4、请保证帐号未被暂停使用。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "4、請保證帳號未被暫停使用。",
         "en": "4. Please ensure that the account is not suspended.",
         "ko": "4. 계정이 정지시켜지지 않았는지 확인해주세요.",
@@ -474,7 +474,7 @@
     },
     {
         "key": "只能设置单个状态为验收\/测试",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "只能設置單個狀態爲驗收\/測試",
         "en": "Only one state can be set to Acceptance\/Test",
         "ko": "승인\/테스트의 단일 상태만 설정할 수 있습니다",
@@ -485,7 +485,7 @@
     },
     {
         "key": "以下是你当前的任务统计数据",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "以下是你當前的任務統計數據",
         "en": "Here are your current task statistics",
         "ko": "다음은 현재 업무에 대한 통계 데이터입니다",
@@ -496,7 +496,7 @@
     },
     {
         "key": "可通过此链接直接加入项目。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "可通過此鏈接直接加入項目。",
         "en": "You can follow this link to join the project directly.",
         "ko": "이 링크를 통해서 바로 아이템 가입이 가능합니다.",
@@ -507,7 +507,7 @@
     },
     {
         "key": "填写-1则不通知，误差±10分钟",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "填寫-1則不通知，誤差±10分鐘",
         "en": "If you fill in -1, you will not be notified. The error is ±10 minutes",
         "ko": "-1을 기입할 경우 통보하지 않으며, 오차는 ±10분이다",
@@ -518,7 +518,7 @@
     },
     {
         "key": "自动签到延迟时长为±1分钟。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "自動簽到延遲時長爲±1分鐘。",
         "en": "The automatic check-in delay is ±1 minute.",
         "ko": "자동 체크아웃 지연 시간은 ±1분입니다.",
@@ -529,7 +529,7 @@
     },
     {
         "key": "项目不存在或不在成员列表内",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目不存在或不在成員列表內",
         "en": "The item does not exist or is not in the member list",
         "ko": "항목이 존재하지 않거나 멤버 목록에 없습니다",
@@ -540,7 +540,7 @@
     },
     {
         "key": "简单：大于或等于6个字符。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "簡單：大於或等於6個字符。",
         "en": "Simple: contains at least 6 characters.",
         "ko": "단순함:6 글자보다 크거나 같다.",
@@ -551,7 +551,7 @@
     },
     {
         "key": "仅限项目或任务负责人上传",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "僅限項目或任務負責人上傳",
         "en": "Upload by project or task leader only",
         "ko": "프로젝트나 작업 책임자만 업로드할 수 있습니다",
@@ -562,7 +562,7 @@
     },
     {
         "key": "仅限项目或任务负责人修改",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "僅限項目或任務負責人修改",
         "en": "Modification by project or task leader only",
         "ko": "프로젝트 책임자나 업무 책임자에 한해서만 수정한다",
@@ -573,7 +573,7 @@
     },
     {
         "key": "仅限项目或任务负责人删除",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "僅限項目或任務負責人刪除",
         "en": "Delete only by project or task leader",
         "ko": "항목이나 작업 책임자만 삭제할 수 있습니다",
@@ -584,7 +584,7 @@
     },
     {
         "key": "仅限项目或任务负责人操作",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "僅限項目或任務負責人操作",
         "en": "Project or task leader only",
         "ko": "프로젝트나 임무 책임자만 조작할 수 있다",
@@ -595,7 +595,7 @@
     },
     {
         "key": "仅限项目或任务负责人添加",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "僅限項目或任務負責人添加",
         "en": "Add by project or task leader only",
         "ko": "프로젝트나 작업 책임자만 추가할 수 있습니다",
@@ -606,7 +606,7 @@
     },
     {
         "key": "任务列表不存在或已被删除",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務列表不存在或已被刪除",
         "en": "The task list does not exist or has been deleted",
         "ko": "작업 목록이 존재하지 않거나 삭제되었습니다",
@@ -617,7 +617,7 @@
     },
     {
         "key": "你确定要删除这个文件吗？",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "你確定要刪除這個文件嗎？",
         "en": "Are you sure you want to delete this file?",
         "ko": "이 파일을 삭제하시겠습니까?",
@@ -628,7 +628,7 @@
     },
     {
         "key": "密码错误，请输入正确密码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "密碼錯誤，請輸入正確密碼",
         "en": "Incorrect password, please enter the correct password",
         "ko": "비밀번호가 틀립니다. 정확한 비밀번호를 입력하십시오",
@@ -639,7 +639,7 @@
     },
     {
         "key": "开放：所有人都可以发言。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "開放：所有人都可以發言。",
         "en": "Open: Everyone can speak.",
         "ko": "개방됨:모든 사람이 발언할 수 있음.",
@@ -650,7 +650,7 @@
     },
     {
         "key": "强大易用的协同创作云文档",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "強大易用的協同創作雲文檔",
         "en": "Powerful and easy to use collaborative authoring cloud documents",
         "ko": "강력하고 사용하기 쉬운 공동 제작 클라우드 문서",
@@ -661,7 +661,7 @@
     },
     {
         "key": "注销前，请确认一下事项：",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "註銷前，請確認一下事項：",
         "en": "Before cancellation, please confirm the following:",
         "ko": "로그아웃하기 전에 다음 사항을 확인하시기 바랍니다.",
@@ -672,7 +672,7 @@
     },
     {
         "key": "签到前后时间收到消息通知",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "簽到前後時間收到消息通知",
         "en": "Receive message notification before and after check-in",
         "ko": "서명 전후에 통지를 받다",
@@ -683,7 +683,7 @@
     },
     {
         "key": "该状态下任务自动标记完成",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "該狀態下任務自動標記完成",
         "en": "In this state, the task is automatically marked complete",
         "ko": "이 상태에서 작업은 자동으로 완료로 표시됩니다",
@@ -694,7 +694,7 @@
     },
     {
         "key": "输入您的信息以创建帐户。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "輸入您的信息以創建帳戶。",
         "en": "Enter your information to create an account.",
         "ko": "계정을 만들려면 정보를 입력하십시오.",
@@ -705,7 +705,7 @@
     },
     {
         "key": "仅支持Openwrt系统的路由器",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "僅支持Openwrt系統的路由器",
         "en": "Only Openwrt routers are supported",
         "ko": "Openwrt 시스템의 라우터만 지원한다",
@@ -716,7 +716,7 @@
     },
     {
         "key": "便捷易用的项目管理模板",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "便捷易用的項目管理模板",
         "en": "Easy to use project management template",
         "ko": "사용하기 편리한 프로젝트 관리 템플릿",
@@ -727,7 +727,7 @@
     },
     {
         "key": "允许成员自己修改MAC地址",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "允許成員自己修改MAC地址",
         "en": "Allows members to change MAC addresses themselves",
         "ko": "멤버들이 스스로 mac 주소를 수정할 수 있도록 한다",
@@ -738,7 +738,7 @@
     },
     {
         "key": "可设置多个状态为进行中",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "可設置多個狀態爲進行中",
         "en": "Multiple states can be set to in progress",
         "ko": "여러 상태를 진행 중으로 설정할 수 있다",
@@ -749,7 +749,7 @@
     },
     {
         "key": "可通过此链接浏览文件。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "可通過此鏈接瀏覽文件。",
         "en": "You can view the file at this link.",
         "ko": "이 링크를 통해 파일을 볼 수 있습니다.",
@@ -760,7 +760,7 @@
     },
     {
         "key": "帐号需验证通过才可登录",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "帳號需驗證通過纔可登錄",
         "en": "The account must be verified before you can log in",
         "ko": "계정 인증을 거쳐야 로그인할 수 있습니다",
@@ -771,7 +771,7 @@
     },
     {
         "key": "您没有选择要上传的文件",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "您沒有選擇要上傳的文件",
         "en": "You did not select a file to upload",
         "ko": "업로드할 파일을 선택하지 않았습니다",
@@ -782,7 +782,7 @@
     },
     {
         "key": "注意：离职操作不可逆！",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "注意：離職操作不可逆！",
         "en": "Note: turnover operation is not reversible!",
         "ko": "주의:리직조작은 가역성이 없다!",
@@ -793,7 +793,7 @@
     },
     {
         "key": "请输入正确的邮箱地址！",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入正確的郵箱地址！",
         "en": "Please enter the correct email address!",
         "ko": "정확한 이메일 주소를 입력하세요!",
@@ -804,7 +804,7 @@
     },
     {
         "key": "项目负责人无法退出项目",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目負責人無法退出項目",
         "en": "The project leader cannot exit the project",
         "ko": "프로젝트 책임자는 프로젝트를 물러날 수 없다",
@@ -815,7 +815,7 @@
     },
     {
         "key": "高效便捷的团队沟通工具",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "高效便捷的團隊溝通工具",
         "en": "Efficient and convenient team communication tool",
         "ko": "효율적인 팀 커뮤니케이션 도구입니다",
@@ -826,7 +826,7 @@
     },
     {
         "key": "以 http:\/\/ 或 https:\/\/ 开头",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "以 http:\/\/ 或 https:\/\/ 開頭",
         "en": "Start with http:\/\/ or https:\/\/",
         "ko": "이것은 https:\/\/또는 https:\/\/로 시작한다",
@@ -837,7 +837,7 @@
     },
     {
         "key": "请开启您PHP环境的openssl",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請開啓您PHP環境的openssl",
         "en": "Please enable openssl for your PHP environment",
         "ko": "Php 환경에서 openssl을 시작하십시오",
@@ -848,7 +848,7 @@
     },
     {
         "key": "两次密码输入不一致！",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "兩次密碼輸入不一致！",
         "en": "Two password input is inconsistent!",
         "ko": "비밀번호 두 번 입력이 일치하지 않습니다!",
@@ -859,7 +859,7 @@
     },
     {
         "key": "任务完成后自动归档。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務完成後自動歸檔。",
         "en": "The task is automatically archived after completion.",
         "ko": "작업 완료 후 자동으로 압축.",
@@ -870,7 +870,7 @@
     },
     {
         "key": "会员不存在或已被删除",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "會員不存在或已被刪除",
         "en": "The member does not exist or has been deleted",
         "ko": "회원은 존재하지 않거나 삭제되었습니다",
@@ -881,7 +881,7 @@
     },
     {
         "key": "你确定要删除任务吗？",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "你確定要刪除任務嗎？",
         "en": "Are you sure you want to delete the mission?",
         "ko": "작업을 삭제하시겠습니까?",
@@ -892,7 +892,7 @@
     },
     {
         "key": "你确定要还原归档吗？",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "你確定要還原歸檔嗎？",
         "en": "Are you sure you want to restore the file?",
         "ko": "압축 파일을 복원하시겠습니까?",
@@ -903,7 +903,7 @@
     },
     {
         "key": "允许：开放注册功能。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "允許：開放註冊功能。",
         "en": "Allow: Open registration function.",
         "ko": "사용:오픈 등록 기능.",
@@ -914,7 +914,7 @@
     },
     {
         "key": "对话不存在或已被删除",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "對話不存在或已被刪除",
         "en": "The dialog does not exist or has been deleted",
         "ko": "이 대화는 존재하지 않거나 삭제되었습니다",
@@ -925,7 +925,7 @@
     },
     {
         "key": "已清楚风险，确定注销",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "已清楚風險，確定註銷",
         "en": "The risk is clear and the write-off is determined",
         "ko": "위험을 이미 알고, 취소를 확정하다",
@@ -936,7 +936,7 @@
     },
     {
         "key": "当前环境禁止修改密码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "當前環境禁止修改密碼",
         "en": "Changing passwords is prohibited in the current environment",
         "ko": "현재 환경에서는 비밀번호를 변경할 수 없습니다",
@@ -947,7 +947,7 @@
     },
     {
         "key": "文件不存在或已被删除",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "文件不存在或已被刪除",
         "en": "The file does not exist or has been deleted",
         "ko": "파일이 존재하지 않거나 삭제되었습니다",
@@ -958,7 +958,7 @@
     },
     {
         "key": "未保存当前修改内容？",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "未保存當前修改內容？",
         "en": "Do not save the current change?",
         "ko": "현재 변경 사항을 저장하지 않았습니까?",
@@ -969,7 +969,7 @@
     },
     {
         "key": "请输入正确的邮箱地址",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入正確的郵箱地址",
         "en": "Please enter the correct email address",
         "ko": "정확한 우편함 주소를 입력해 주세요",
@@ -980,7 +980,7 @@
     },
     {
         "key": "身份失效，等重新登录",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "身份失效，等重新登錄",
         "en": "Identity expired, wait to log in again",
         "ko": "효력이 상실되어 재로그인",
@@ -991,7 +991,7 @@
     },
     {
         "key": "选择一个会话开始聊天",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇一個會話開始聊天",
         "en": "Select a session to start the chat",
         "ko": "대화를 시작할 세션을 선택하십시오",
@@ -1002,7 +1002,7 @@
     },
     {
         "key": "仅限项目负责人修改",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "僅限項目負責人修改",
         "en": "Only the project leader can modify",
         "ko": "프로젝트 책임자에 한해서만 수정한다",
@@ -1013,7 +1013,7 @@
     },
     {
         "key": "仅限项目负责人删除",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "僅限項目負責人刪除",
         "en": "Only the project leader can delete",
         "ko": "프로젝트 책임자만 삭제할 수 있습니다",
@@ -1024,7 +1024,7 @@
     },
     {
         "key": "仅限项目负责人操作",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "僅限項目負責人操作",
         "en": "Operation by project leader only",
         "ko": "프로젝트 책임자만 조작한다",
@@ -1035,7 +1035,7 @@
     },
     {
         "key": "任务描述，回车创建",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務描述，回車創建",
         "en": "Task Description, press Enter to create",
         "ko": "작업 설명, 엔터 생성",
@@ -1046,7 +1046,7 @@
     },
     {
         "key": "你好，扫码确认登录",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "你好，掃碼確認登錄",
         "en": "Hello, scan code to confirm login",
         "ko": "안녕하세요, 스캔해서 로그인 확인하세요",
@@ -1057,7 +1057,7 @@
     },
     {
         "key": "你确定要登出系统？",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "你確定要登出系統？",
         "en": "Are you sure you want to log out?",
         "ko": "시스템에서 로그아웃하시겠습니까?",
@@ -1068,7 +1068,7 @@
     },
     {
         "key": "你确认领取任务吗？",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "你確認領取任務嗎？",
         "en": "Are you sure to pick up the assignment?",
         "ko": "임무 수령을 확인하십니까?",
@@ -1079,7 +1079,7 @@
     },
     {
         "key": "列表名称，回车创建",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "列表名稱，回車創建",
         "en": "List name, press Enter to create",
         "ko": "목록 이름, 엔터 생성",
@@ -1090,7 +1090,7 @@
     },
     {
         "key": "同步修改子任务时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "同步修改子任務時間",
         "en": "Change the subtask time synchronously",
         "ko": "하위 작업 시간 동기화",
@@ -1101,7 +1101,7 @@
     },
     {
         "key": "子任务不支持此功能",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "子任務不支持此功能",
         "en": "Subtasks do not support this function",
         "ko": "이 기능은 하위 작업에서 지원되지 않습니다",
@@ -1112,7 +1112,7 @@
     },
     {
         "key": "最后在线于很久以前",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "最後在線於很久以前",
         "en": "Last online a long time ago",
         "ko": "마지막 선은 오래전에 만들어졌다",
@@ -1123,7 +1123,7 @@
     },
     {
         "key": "注意此操作不可逆！",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "注意此操作不可逆！",
         "en": "Note that this operation is not reversible!",
         "ko": "이 작업은 되돌릴 수 없으니 주의하세요!",
@@ -1134,7 +1134,7 @@
     },
     {
         "key": "浏览图片空间的图片",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "瀏覽圖片空間的圖片",
         "en": "Browse the pictures in Picture Space",
         "ko": "이미지 공간을 탐색하는 것입니다",
@@ -1145,7 +1145,7 @@
     },
     {
         "key": "清晰直观的任务日历",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "清晰直觀的任務日曆",
         "en": "A clear and intuitive task calendar",
         "ko": "명확하고 직관적인 작업 달력",
@@ -1156,7 +1156,7 @@
     },
     {
         "key": "确认密码输入不一致",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "確認密碼輸入不一致",
         "en": "Confirm that the passwords entered are inconsistent",
         "ko": "비밀번호 입력이 일치하지 않음 확인",
@@ -1167,7 +1167,7 @@
     },
     {
         "key": "请先修改登录密码！",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請先修改登錄密碼！",
         "en": "Please change the login password first!",
         "ko": "먼저 로그인 비밀번호를 수정하세요!",
@@ -1178,7 +1178,7 @@
     },
     {
         "key": "请填写正确的旧密码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請填寫正確的舊密碼",
         "en": "Please fill in the correct old password",
         "ko": "옛 비밀번호를 정확하게 기입해 주세요",
@@ -1189,7 +1189,7 @@
     },
     {
         "key": "请输入新邮箱地址！",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入新郵箱地址！",
         "en": "Please enter your new email address!",
         "ko": "새 이메일 주소를 입력하십시오!",
@@ -1200,7 +1200,7 @@
     },
     {
         "key": "请输入正确的邀请码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入正確的邀請碼",
         "en": "Please enter the correct invitation code",
         "ko": "올바른 초대번호를 입력해주세요",
@@ -1211,7 +1211,7 @@
     },
     {
         "key": "请输入正确的验证码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入正確的驗證碼",
         "en": "Please enter the correct verification code",
         "ko": "정확한 인증 번호를 입력해주세요",
@@ -1222,7 +1222,7 @@
     },
     {
         "key": "请重新输入新密码！",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請重新輸入新密碼！",
         "en": "Please re-enter the new password!",
         "ko": "새 비밀번호를 다시 입력하십시오!",
@@ -1233,7 +1233,7 @@
     },
     {
         "key": "轻量级任务管理工具",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "輕量級任務管理工具",
         "en": "Lightweight task management tool",
         "ko": "가벼운 작업 관리 도구",
@@ -1244,7 +1244,7 @@
     },
     {
         "key": "输入群名称（选填）",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "輸入羣名稱（選填）",
         "en": "Enter group name (optional)",
         "ko": "그룹 이름을 입력하십시오 (선택)",
@@ -1255,7 +1255,7 @@
     },
     {
         "key": "电话长度至少6位！",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "電話長度至少6位！",
         "en": "Phone length at least 6 digits!",
         "ko": "전화의 길이는 최소 6자리!",
@@ -1266,7 +1266,7 @@
     },
     {
         "key": "不支持复制文件夹",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "不支持複製文件夾",
         "en": "Copying folders is not supported",
         "ko": "폴더 복사는 지원되지 않습니다",
@@ -1277,7 +1277,7 @@
     },
     {
         "key": "不能与旧邮箱一致",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "不能與舊郵箱一致",
         "en": "Not consistent with the old mailbox",
         "ko": "이전 편지함과 일치할 수 없습니다",
@@ -1288,7 +1288,7 @@
     },
     {
         "key": "任务描述不能为空",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務描述不能爲空",
         "en": "The task description cannot be empty",
         "ko": "작업 설명은 비어 있을 수 없습니다",
@@ -1299,7 +1299,7 @@
     },
     {
         "key": "你不是项目负责人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "你不是項目負責人",
         "en": "You're not the project leader",
         "ko": "당신은 프로젝트 책임자가 아닙니다",
@@ -1310,7 +1310,7 @@
     },
     {
         "key": "修改任务详细描述",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "修改任務詳細描述",
         "en": "Modify the detailed description of a task",
         "ko": "작업에 대한 자세한 설명을 수정합니다",
@@ -1321,7 +1321,7 @@
     },
     {
         "key": "修改子任务负责人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "修改子任務負責人",
         "en": "Modify the subtask owner",
         "ko": "하위 업무 책임자 수정",
@@ -1332,7 +1332,7 @@
     },
     {
         "key": "列表名称不能为空",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "列表名稱不能爲空",
         "en": "The list name cannot be empty",
         "ko": "목록 이름은 비어 있을 수 없습니다",
@@ -1343,7 +1343,7 @@
     },
     {
         "key": "删除子任务负责人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "刪除子任務負責人",
         "en": "Remove the subtask leader",
         "ko": "하위 작업 책임자를 삭제합니다",
@@ -1354,7 +1354,7 @@
     },
     {
         "key": "当前环境禁止修改",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "當前環境禁止修改",
         "en": "The current environment cannot be modified",
         "ko": "현재 환경에서는 수정을 금지한다",
@@ -1365,7 +1365,7 @@
     },
     {
         "key": "数值越大级别越高",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "數值越大級別越高",
         "en": "A larger value indicates a higher level",
         "ko": "값이 클수록 레벨이 높다",
@@ -1376,7 +1376,7 @@
     },
     {
         "key": "数值越小级别越高",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "數值越小級別越高",
         "en": "The smaller the value, the higher the level",
         "ko": "숫자가 작을수록 등급이 높다",
@@ -1387,7 +1387,7 @@
     },
     {
         "key": "新建任务默认状态",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "新建任務默認狀態",
         "en": "The default status of the new task",
         "ko": "새 작업의 기본 상태입니다",
@@ -1398,7 +1398,7 @@
     },
     {
         "key": "查看更多签到数据",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "查看更多簽到數據",
         "en": "See more check-in data",
         "ko": "체크인 자료 보기",
@@ -1409,7 +1409,7 @@
     },
     {
         "key": "标记子任务已完成",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "標記子任務已完成",
         "en": "Mark that the subtask is complete",
         "ko": "하위 작업이 완료되었습니다",
@@ -1420,7 +1420,7 @@
     },
     {
         "key": "消息内容不能为空",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "消息內容不能爲空",
         "en": "The message content cannot be empty",
         "ko": "메시지가 비어 있으면 안 됩니다",
@@ -1431,7 +1431,7 @@
     },
     {
         "key": "请填写项目名称！",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請填寫項目名稱！",
         "en": "Please fill in the project name!",
         "ko": "항목명을 기입해 주세요!",
@@ -1442,7 +1442,7 @@
     },
     {
         "key": "请输入收件人地址",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入收件人地址",
         "en": "Please enter the recipient address",
         "ko": "수취인 주소를 입력해 주세요",
@@ -1453,7 +1453,7 @@
     },
     {
         "key": "请输入新邮箱地址",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入新郵箱地址",
         "en": "Please enter your new email address",
         "ko": "새 이메일 주소를 입력하십시오",
@@ -1464,7 +1464,7 @@
     },
     {
         "key": "请输入服务器地址",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入服務器地址",
         "en": "Please enter the server address",
         "ko": "서버 주소를 입력해 주세요",
@@ -1475,7 +1475,7 @@
     },
     {
         "key": "请输入注册邀请码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入註冊邀請碼",
         "en": "Please enter the registration invitation code",
         "ko": "등록 초대 코드를 입력해 주세요",
@@ -1486,7 +1486,7 @@
     },
     {
         "key": "请输入联系电话！",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入聯繫電話！",
         "en": "Please enter the contact number!",
         "ko": "연락처를 입력하십시오!",
@@ -1497,7 +1497,7 @@
     },
     {
         "key": "请输入设备MAC地址",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入設備MAC地址",
         "en": "Enter the MAC address of the device",
         "ko": "장치 mac 주소를 입력하십시오",
@@ -1508,7 +1508,7 @@
     },
     {
         "key": "请输入邮箱地址！",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入郵箱地址！",
         "en": "Please enter your email address!",
         "ko": "이메일 주소를 입력하세요!",
@@ -1519,7 +1519,7 @@
     },
     {
         "key": "请输入邮箱验证码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入郵箱驗證碼",
         "en": "Please enter the email verification code",
         "ko": "편지함 인증 코드를 입력하십시오",
@@ -1530,7 +1530,7 @@
     },
     {
         "key": "请选择正确的列表",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請選擇正確的列表",
         "en": "Please select the correct list",
         "ko": "올바른 목록을 선택하세요",
@@ -1541,7 +1541,7 @@
     },
     {
         "key": "请选择部门负责人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請選擇部門負責人",
         "en": "Please select a department head",
         "ko": "부서장을 뽑으세요",
@@ -1552,7 +1552,7 @@
     },
     {
         "key": "超出文件大小限制",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "超出文件大小限制",
         "en": "Out of file size limit",
         "ko": "파일 크기 제한을 초과했습니다",
@@ -1563,7 +1563,7 @@
     },
     {
         "key": "输入您的电子邮件",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "輸入您的電子郵件",
         "en": "Enter your email",
         "ko": "이메일을 입력하십시오",
@@ -1574,7 +1574,7 @@
     },
     {
         "key": "选择任务协助人员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇任務協助人員",
         "en": "Select task assistance personnel",
         "ko": "작업 도우미를 선택하십시오",
@@ -1585,7 +1585,7 @@
     },
     {
         "key": "选择转发指定成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇轉發指定成員",
         "en": "Select forward the specified member",
         "ko": "전송할 멤버를 선택하십시오",
@@ -1596,7 +1596,7 @@
     },
     {
         "key": "选择转发最近聊天",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇轉發最近聊天",
         "en": "Select forward recent chats",
         "ko": "최근 대화 전송을 선택합니다",
@@ -1607,7 +1607,7 @@
     },
     {
         "key": "邮箱、昵称、职位",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "郵箱、暱稱、職位",
         "en": "Email, nickname, job title",
         "ko": "이메일, 닉네임, 직책들",
@@ -1618,7 +1618,7 @@
     },
     {
         "key": "请输入会议频道ID",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入會議頻道ID",
         "en": "Enter the conference channel ID",
         "ko": "회의 채널 id를 입력하십시오",
@@ -1629,7 +1629,7 @@
     },
     {
         "key": "第二次任务提醒:",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "第二次任務提醒:",
         "en": "Second mission reminder:",
         "ko": "두 번째 작업 알람:",
@@ -1640,7 +1640,7 @@
     },
     {
         "key": "请输入职位\/职称",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入職位\/職稱",
         "en": "Please enter position\/title",
         "ko": "직위\/직함을 입력하십시오",
@@ -1651,7 +1651,7 @@
     },
     {
         "key": "不在成员列表内",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "不在成員列表內",
         "en": "Not in the member list",
         "ko": "목록에 없음",
@@ -1662,7 +1662,7 @@
     },
     {
         "key": "仅支持网页版。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "僅支持網頁版。",
         "en": "Web version only.",
         "ko": "웹 페이지만 지원합니다.",
@@ -1673,7 +1673,7 @@
     },
     {
         "key": "修改任务负责人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "修改任務負責人",
         "en": "Modify task leader",
         "ko": "임무 책임자 수정",
@@ -1684,7 +1684,7 @@
     },
     {
         "key": "修改子任务标题",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "修改子任務標題",
         "en": "Modify the subtask title",
         "ko": "하위 작업 제목을 수정합니다",
@@ -1695,7 +1695,7 @@
     },
     {
         "key": "修改子任务状态",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "修改子任務狀態",
         "en": "Change the subtask status",
         "ko": "하위 작업의 상태를 수정합니다",
@@ -1706,7 +1706,7 @@
     },
     {
         "key": "修改签到MAC地址",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "修改簽到MAC地址",
         "en": "Example Change the sign-in MAC address",
         "ko": "Mac 주소를 수정합니다",
@@ -1717,7 +1717,7 @@
     },
     {
         "key": "删除任务负责人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "刪除任務負責人",
         "en": "Remove task leader",
         "ko": "작업 관리자 삭제",
@@ -1728,7 +1728,7 @@
     },
     {
         "key": "展开到一级节点",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "展開到一級節點",
         "en": "Expand to a level 1 node",
         "ko": "노드 1단계까지 확장됩니다",
@@ -1739,7 +1739,7 @@
     },
     {
         "key": "展开到三级节点",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "展開到三級節點",
         "en": "Expand to level 3 nodes",
         "ko": "3단계 노드로 확장됩니다",
@@ -1750,7 +1750,7 @@
     },
     {
         "key": "展开到二级节点",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "展開到二級節點",
         "en": "Expand to the secondary node",
         "ko": "두 번째 노드로 확장됩니다",
@@ -1761,7 +1761,7 @@
     },
     {
         "key": "展开到五级节点",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "展開到五級節點",
         "en": "Expand to a level five node",
         "ko": "5단계로 확장됩니다",
@@ -1772,7 +1772,7 @@
     },
     {
         "key": "展开到四级节点",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "展開到四級節點",
         "en": "Expand to a four-level node",
         "ko": "4단계 노드로 확장됩니다",
@@ -1783,7 +1783,7 @@
     },
     {
         "key": "帐号或密码错误",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "帳號或密碼錯誤",
         "en": "The account or password is incorrect",
         "ko": "계정 또는 비밀번호가 잘못되었습니다",
@@ -1794,7 +1794,7 @@
     },
     {
         "key": "我的待完成任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "我的待完成任務",
         "en": "My to-do list",
         "ko": "나의 미완성 임무",
@@ -1805,7 +1805,7 @@
     },
     {
         "key": "拖动到这里发送",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "拖動到這裏發送",
         "en": "Drag it here and send it",
         "ko": "보내려면 끌어 놓으세요",
@@ -1816,7 +1816,7 @@
     },
     {
         "key": "支持多平台应用",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "支持多平臺應用",
         "en": "Supports multi-platform applications",
         "ko": "다중 플랫폼 응용 프로그램 지원",
@@ -1827,7 +1827,7 @@
     },
     {
         "key": "文件格式不正确",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "文件格式不正確",
         "en": "The file format is incorrect",
         "ko": "파일 형식이 올바르지 않습니다",
@@ -1838,7 +1838,7 @@
     },
     {
         "key": "最后在线于刚刚",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "最後在線於剛剛",
         "en": "Last online just now",
         "ko": "마지막으로 방금 전에 접속하였다",
@@ -1849,7 +1849,7 @@
     },
     {
         "key": "最近打开的任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "最近打開的任務",
         "en": "The recently opened task",
         "ko": "최근에 열린 작업입니다",
@@ -1860,7 +1860,7 @@
     },
     {
         "key": "未保存计划时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "未保存計劃時間",
         "en": "The schedule time is not saved",
         "ko": "예약된 시간이 저장되지 않았습니다",
@@ -1871,7 +1871,7 @@
     },
     {
         "key": "未知的消息类型",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "未知的消息類型",
         "en": "Unknown message type",
         "ko": "알 수 없는 메시지 형식입니다",
@@ -1882,7 +1882,7 @@
     },
     {
         "key": "正在上传文件...",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "正在上傳文件...",
         "en": "Uploading file...",
         "ko": "파일 업로드 중...",
@@ -1893,7 +1893,7 @@
     },
     {
         "key": "没有相关的成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "沒有相關的成員",
         "en": "There are no associated members",
         "ko": "관련된 구성원이 없다",
@@ -1904,7 +1904,7 @@
     },
     {
         "key": "没有相关的数据",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "沒有相關的數據",
         "en": "There's no data on that",
         "ko": "관련 자료가 없다",
@@ -1915,7 +1915,7 @@
     },
     {
         "key": "留空为默认部门",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "留空爲默認部門",
         "en": "Leave blank as the default department",
         "ko": "기본 섹터로 빈 공간을 둡니다",
@@ -1926,7 +1926,7 @@
     },
     {
         "key": "管理成员MAC地址",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "管理成員MAC地址",
         "en": "Manages member MAC addresses",
         "ko": "멤버 mac 주소를 관리합니다",
@@ -1937,7 +1937,7 @@
     },
     {
         "key": "自动进入全员群",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "自動進入全員羣",
         "en": "Automatically enter the full group",
         "ko": "자동적으로 전원의 무리에 들어가다",
@@ -1948,7 +1948,7 @@
     },
     {
         "key": "自定义图片地址",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "自定義圖片地址",
         "en": "Customize the image address",
         "ko": "사용자 정의 그림 주소",
@@ -1959,7 +1959,7 @@
     },
     {
         "key": "请登录后继续...",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請登錄後繼續...",
         "en": "Please login to continue...",
         "ko": "로그인 후 계속하십시오...",
@@ -1970,7 +1970,7 @@
     },
     {
         "key": "请联系管理员！",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請聯繫管理員！",
         "en": "Please contact the administrator!",
         "ko": "관리자에게 연락주세요!",
@@ -1981,7 +1981,7 @@
     },
     {
         "key": "请输入新密码！",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入新密碼！",
         "en": "Please enter your new password!",
         "ko": "새 비밀번호를 입력하십시오!",
@@ -1992,7 +1992,7 @@
     },
     {
         "key": "请输入旧密码！",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入舊密碼！",
         "en": "Please enter your old password!",
         "ko": "옛 비밀번호를 입력하십시오!",
@@ -2003,7 +2003,7 @@
     },
     {
         "key": "请输入注销原因",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入註銷原因",
         "en": "Please enter the reason for logout",
         "ko": "로그아웃 이유를 입력하십시오",
@@ -2014,7 +2014,7 @@
     },
     {
         "key": "请输入登录密码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入登錄密碼",
         "en": "Please enter your login password",
         "ko": "로그인 비밀번호를 입력하십시오",
@@ -2025,7 +2025,7 @@
     },
     {
         "key": "请输入联系电话",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入聯繫電話",
         "en": "Please enter your contact number",
         "ko": "전화번호를 입력해 주세요",
@@ -2036,7 +2036,7 @@
     },
     {
         "key": "请输入邮箱地址",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入郵箱地址",
         "en": "Please enter the email address",
         "ko": "이메일 주소를 입력해 주세요",
@@ -2047,7 +2047,7 @@
     },
     {
         "key": "请输入邮箱帐号",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入郵箱帳號",
         "en": "Please enter your email account",
         "ko": "사서함 계정을 입력하십시오",
@@ -2058,7 +2058,7 @@
     },
     {
         "key": "请输入部门名称",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入部門名稱",
         "en": "Please enter the department name",
         "ko": "부서명을 입력하십시오",
@@ -2069,7 +2069,7 @@
     },
     {
         "key": "请选择上级部门",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請選擇上級部門",
         "en": "Select an upper department",
         "ko": "상위 부서를 선택하세요",
@@ -2080,7 +2080,7 @@
     },
     {
         "key": "请选择班次时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請選擇班次時間",
         "en": "Please select a flight time",
         "ko": "출근 시간을 선택하세요",
@@ -2091,7 +2091,7 @@
     },
     {
         "key": "请选择签到日期",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請選擇簽到日期",
         "en": "Please select a sign-in date",
         "ko": "체크인 날짜를 선택하세요",
@@ -2102,7 +2102,7 @@
     },
     {
         "key": "请选择签到时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請選擇簽到時間",
         "en": "Please select a check-in time",
         "ko": "체크인 시간을 선택하세요",
@@ -2113,7 +2113,7 @@
     },
     {
         "key": "负责人填写错误",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "負責人填寫錯誤",
         "en": "Incorrect filling in by the person in charge",
         "ko": "담당자가 오류를 기입하다",
@@ -2124,7 +2124,7 @@
     },
     {
         "key": "输入图形验证码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "輸入圖形驗證碼",
         "en": "Enter the graphic verification code",
         "ko": "그래픽 인증 코드를 입력하십시오",
@@ -2135,7 +2135,7 @@
     },
     {
         "key": "输入新邮箱地址",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "輸入新郵箱地址",
         "en": "Enter the new email address",
         "ko": "새 편지함 주소를 입력하십시오",
@@ -2146,7 +2146,7 @@
     },
     {
         "key": "输入邮箱验证码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "輸入郵箱驗證碼",
         "en": "Enter the email verification code",
         "ko": "편지함 인증 코드를 입력하십시오",
@@ -2157,7 +2157,7 @@
     },
     {
         "key": "选择任务负责人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇任務負責人",
         "en": "Select a task leader",
         "ko": "임무 책임자를 뽑다",
@@ -2168,7 +2168,7 @@
     },
     {
         "key": "选择状态负责人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇狀態負責人",
         "en": "Select status leader",
         "ko": "상태 담당자 선택",
@@ -2179,7 +2179,7 @@
     },
     {
         "key": "选择项目负责人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇項目負責人",
         "en": "Select a project leader",
         "ko": "프로젝트 책임자를 뽑다",
@@ -2190,7 +2190,7 @@
     },
     {
         "key": "邮箱地址已存在",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "郵箱地址已存在",
         "en": "The email address already exists",
         "ko": "전자 우편 주소가 이미 존재합니다",
@@ -2201,7 +2201,7 @@
     },
     {
         "key": "邮箱服务器设置",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "郵箱服務器設置",
         "en": "Email server Settings",
         "ko": "메일박스 서버 설정",
@@ -2212,7 +2212,7 @@
     },
     {
         "key": "错误的类型参数",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "錯誤的類型參數",
         "en": "Incorrect type parameter",
         "ko": "잘못된 형식 인자입니다",
@@ -2223,7 +2223,7 @@
     },
     {
         "key": "项目未完成任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目未完成任務",
         "en": "Project unfinished task",
         "ko": "프로젝트가 완료되지 않았습니다",
@@ -2234,7 +2234,7 @@
     },
     {
         "key": "上传\/浏览 图片",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "上傳\/瀏覽 圖片",
         "en": "Upload\/browse pictures",
         "ko": "그림을 업로드하거나 탐색합니다",
@@ -2245,7 +2245,7 @@
     },
     {
         "key": "签到设置 (Beta)",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "簽到設置 (Beta)",
         "en": "Check-in Settings (Beta)",
         "ko": "로그인 설정 (베타)",
@@ -2256,7 +2256,7 @@
     },
     {
         "key": "不能对话自己",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "不能對話自己",
         "en": "Unable to talk to oneself",
         "ko": "자기 자신과 대화를 할 수 없습니다.",
@@ -2267,7 +2267,7 @@
     },
     {
         "key": "任务完成时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務完成時間",
         "en": "Task completion time",
         "ko": "임무 완료 시간",
@@ -2278,7 +2278,7 @@
     },
     {
         "key": "会话以外成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "會話以外成員",
         "en": "Extra-session member",
         "ko": "세션 이외의 구성원",
@@ -2289,7 +2289,7 @@
     },
     {
         "key": "修改任务时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "修改任務時間",
         "en": "Modify task time",
         "ko": "작업 시간 수정하기",
@@ -2300,7 +2300,7 @@
     },
     {
         "key": "修改任务标题",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "修改任務標題",
         "en": "Modify task title",
         "ko": "작업 제목 수정",
@@ -2311,7 +2311,7 @@
     },
     {
         "key": "修改任务状态",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "修改任務狀態",
         "en": "Modify task status",
         "ko": "작업 상태 수정",
@@ -2322,7 +2322,7 @@
     },
     {
         "key": "修改协助人员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "修改協助人員",
         "en": "Modification assistance personnel",
         "ko": "보조 인원 수정",
@@ -2333,7 +2333,7 @@
     },
     {
         "key": "全员群组禁言",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "全員羣組禁言",
         "en": "All members of the group are silent",
         "ko": "전체 인원이 무리를 지어 말을 금지하다",
@@ -2344,7 +2344,7 @@
     },
     {
         "key": "创建聊天失败",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "創建聊天失敗",
         "en": "Chat creation failure",
         "ko": "대화 생성 실패",
@@ -2355,7 +2355,7 @@
     },
     {
         "key": "加载历史消息",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "加載歷史消息",
         "en": "Load history message",
         "ko": "과거 기록 메시지 불러오기",
@@ -2366,7 +2366,7 @@
     },
     {
         "key": "加载组件中...",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "加載組件中...",
         "en": "Load component...",
         "ko": "구성 요소 불러오는 중...",
@@ -2377,7 +2377,7 @@
     },
     {
         "key": "同步本地帐号",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "同步本地帳號",
         "en": "Synchronizing local accounts",
         "ko": "로컬 계정을 동기화합니다",
@@ -2388,7 +2388,7 @@
     },
     {
         "key": "名称、描述...",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "名稱、描述...",
         "en": "Name, description...",
         "ko": "이름, 설명...",
@@ -2399,7 +2399,7 @@
     },
     {
         "key": "启用 LDAP 认证",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "啓用 LDAP 認證",
         "en": "Enabling LDAP authentication",
         "ko": "Ldap 인증을 사용합니다",
@@ -2410,7 +2410,7 @@
     },
     {
         "key": "图片保存失败",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "圖片保存失敗",
         "en": "Image saving failure",
         "ko": "그림 저장 실패",
@@ -2421,7 +2421,7 @@
     },
     {
         "key": "图片格式错误",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "圖片格式錯誤",
         "en": "Picture format error",
         "ko": "그림 포맷 오류",
@@ -2432,7 +2432,7 @@
     },
     {
         "key": "子任务未完成",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "子任務未完成",
         "en": "The subtask is not completed",
         "ko": "하위 작업이 완료되지 않았습니다",
@@ -2443,7 +2443,7 @@
     },
     {
         "key": "导出任务统计",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "導出任務統計",
         "en": "Export task statistics",
         "ko": "작업 통계 내보내기",
@@ -2454,7 +2454,7 @@
     },
     {
         "key": "导出时间类型",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "導出時間類型",
         "en": "Derived time type",
         "ko": "시간 형식 내보내기",
@@ -2465,7 +2465,7 @@
     },
     {
         "key": "导出签到数据",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "導出簽到數據",
         "en": "Export the check-in data",
         "ko": "체크 데이터를 내보냅니다",
@@ -2476,7 +2476,7 @@
     },
     {
         "key": "导出超期任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "導出超期任務",
         "en": "Export overdue tasks",
         "ko": "기한이 지난 작업 내보내기",
@@ -2487,7 +2487,7 @@
     },
     {
         "key": "展开全部节点",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "展開全部節點",
         "en": "Expand all nodes",
         "ko": "모든 노드 확장하기",
@@ -2498,7 +2498,7 @@
     },
     {
         "key": "已归档的项目",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "已歸檔的項目",
         "en": "Archived items",
         "ko": "압축된 항목",
@@ -2509,7 +2509,7 @@
     },
     {
         "key": "已经有帐号？",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "已經有帳號？",
         "en": "Already have an account?",
         "ko": "이미 계정이 있으세요?",
@@ -2520,7 +2520,7 @@
     },
     {
         "key": "帐号已停用...",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "帳號已停用...",
         "en": "Account has been deactivated...",
         "ko": "계정이 비활성화됨...",
@@ -2531,7 +2531,7 @@
     },
     {
         "key": "开启注册验证",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "開啓註冊驗證",
         "en": "Enabling registration verification",
         "ko": "등록 인증 열기",
@@ -2542,7 +2542,7 @@
     },
     {
         "key": "忘记密码了？",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "忘記密碼了？",
         "en": "Forgot your password?",
         "ko": "비밀번호를 잊었니?",
@@ -2553,7 +2553,7 @@
     },
     {
         "key": "忽略邮箱地址",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "忽略郵箱地址",
         "en": "Ignore email address",
         "ko": "메일박스 주소 무시하기",
@@ -2564,7 +2564,7 @@
     },
     {
         "key": "我协助的任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "我協助的任務",
         "en": "The mission I assisted on",
         "ko": "내가 협조할 임무",
@@ -2575,7 +2575,7 @@
     },
     {
         "key": "我要领取任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "我要領取任務",
         "en": "I need to pick up the assignment",
         "ko": "나는 임무를 수령하겠다",
@@ -2586,7 +2586,7 @@
     },
     {
         "key": "打开会话失败",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "打開會話失敗",
         "en": "Failed to open session",
         "ko": "세션을 여는 데 실패했습니다",
@@ -2597,7 +2597,7 @@
     },
     {
         "key": "打开会话错误",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "打開會話錯誤",
         "en": "Open session error",
         "ko": "세션 열기 오류",
@@ -2608,7 +2608,7 @@
     },
     {
         "key": "打开通知成功",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "打開通知成功",
         "en": "Open notification successfully",
         "ko": "알림 열기에 성공했습니다",
@@ -2619,7 +2619,7 @@
     },
     {
         "key": "打开项目管理",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "打開項目管理",
         "en": "Open project management",
         "ko": "프로젝트 관리 열기",
@@ -2630,7 +2630,7 @@
     },
     {
         "key": "描述不能为空",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "描述不能爲空",
         "en": "The description cannot be empty",
         "ko": "설명이 비어 있을 수 없습니다",
@@ -2641,7 +2641,7 @@
     },
     {
         "key": "提交继续添加",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "提交繼續添加",
         "en": "Submit to continue add",
         "ko": "추가 계속하기 제출",
@@ -2652,7 +2652,7 @@
     },
     {
         "key": "提示所有成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "提示所有成員",
         "en": "Prompt all members",
         "ko": "모든 구성원 알림",
@@ -2663,7 +2663,7 @@
     },
     {
         "key": "新旧密码一致",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "新舊密碼一致",
         "en": "The old and new passwords are the same.",
         "ko": "신구 암호가 일치하다",
@@ -2674,7 +2674,7 @@
     },
     {
         "key": "是否启动首页",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "是否啓動首頁",
         "en": "Whether to start the home page",
         "ko": "홈페이지를 시작할지 여부입니다",
@@ -2685,7 +2685,7 @@
     },
     {
         "key": "暂无打开记录",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "暫無打開記錄",
         "en": "No records have been opened",
         "ko": "현재 열린 기록이 없습니다",
@@ -2696,7 +2696,7 @@
     },
     {
         "key": "未读个人消息",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "未讀個人消息",
         "en": "Unread personal message",
         "ko": "읽지 않은 개인 메시지",
@@ -2707,7 +2707,7 @@
     },
     {
         "key": "未读群聊消息",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "未讀羣聊消息",
         "en": "Unread group chat message",
         "ko": "읽지 않은 그룹 메시지",
@@ -2718,7 +2718,7 @@
     },
     {
         "key": "查看任务详情",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "查看任務詳情",
         "en": "Viewing Task Details",
         "ko": "작업 자세히 보기",
@@ -2729,7 +2729,7 @@
     },
     {
         "key": "没有任何会话",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "沒有任何會話",
         "en": "Without any conversation",
         "ko": "세션 없음",
@@ -2740,7 +2740,7 @@
     },
     {
         "key": "没有任何动态",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "沒有任何動態",
         "en": "There is no dynamic",
         "ko": "움직임이 없습니다.",
@@ -2751,7 +2751,7 @@
     },
     {
         "key": "没有任何文件",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "沒有任何文件",
         "en": "Without any documents",
         "ko": "파일이 없음",
@@ -2762,7 +2762,7 @@
     },
     {
         "key": "没有任何项目",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "沒有任何項目",
         "en": "No project",
         "ko": "항목 없음",
@@ -2773,7 +2773,7 @@
     },
     {
         "key": "浏览图片空间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "瀏覽圖片空間",
         "en": "Browse picture space",
         "ko": "그림 공간 탐색",
@@ -2784,7 +2784,7 @@
     },
     {
         "key": "添加协助人员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "添加協助人員",
         "en": "Add assistance personnel",
         "ko": "도우미를 추가하다",
@@ -2795,7 +2795,7 @@
     },
     {
         "key": "点击加入会议",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "點擊加入會議",
         "en": "Click to join meeting",
         "ko": "회의에 참가하려면 누르십시오",
@@ -2806,7 +2806,7 @@
     },
     {
         "key": "点击复制链接",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "點擊複製鏈接",
         "en": "Click the copy link",
         "ko": "링크를 복사하려면 누르십시오",
@@ -2817,7 +2817,7 @@
     },
     {
         "key": "自动任务归档",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "自動任務歸檔",
         "en": "Automatic task archiving",
         "ko": "자동 작업 압축",
@@ -2828,7 +2828,7 @@
     },
     {
         "key": "自动归档任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "自動歸檔任務",
         "en": "Automatic archiving task",
         "ko": "자동으로 압축 작업",
@@ -2839,7 +2839,7 @@
     },
     {
         "key": "获取会话失败",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "獲取會話失敗",
         "en": "Session acquisition failure",
         "ko": "세션 가져오기 실패",
@@ -2850,7 +2850,7 @@
     },
     {
         "key": "请输入昵称！",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入暱稱！",
         "en": "Please enter a nickname!",
         "ko": "닉네임을 입력하십시오!",
@@ -2861,7 +2861,7 @@
     },
     {
         "key": "请输入验证码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入驗證碼",
         "en": "Please enter the verification code",
         "ko": "인증번호를 입력해주세요",
@@ -2872,7 +2872,7 @@
     },
     {
         "key": "转让群主身份",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "轉讓羣主身份",
         "en": "Transfer group master status",
         "ko": "그룹 마스터 신분 양도",
@@ -2883,7 +2883,7 @@
     },
     {
         "key": "输入您的密码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "輸入您的密碼",
         "en": "Enter your password",
         "ko": "비밀번호를 입력하십시오",
@@ -2894,7 +2894,7 @@
     },
     {
         "key": "输入确认密码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "輸入確認密碼",
         "en": "Enter confirmation password",
         "ko": "비밀번호 확인 입력",
@@ -2905,7 +2905,7 @@
     },
     {
         "key": "还没有帐号？",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "還沒有帳號？",
         "en": "Don't have an account yet?",
         "ko": "계정이 아직 없으세요?",
@@ -2916,7 +2916,7 @@
     },
     {
         "key": "选择任务列表",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇任務列表",
         "en": "Select task list",
         "ko": "작업 목록 선택",
@@ -2927,7 +2927,7 @@
     },
     {
         "key": "选择共享成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇共享成員",
         "en": "Select shared member",
         "ko": "공유 구성원 선택",
@@ -2938,7 +2938,7 @@
     },
     {
         "key": "选择新的群主",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇新的羣主",
         "en": "Select a new group host",
         "ko": "새로운 군주를 선택하십시오",
@@ -2949,7 +2949,7 @@
     },
     {
         "key": "选择离职时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇離職時間",
         "en": "Choice of exit time",
         "ko": "이직 시기를 선택하다",
@@ -2960,7 +2960,7 @@
     },
     {
         "key": "选择计划范围",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇計劃範圍",
         "en": "Select plan scope",
         "ko": "계획 범위 선택",
@@ -2971,7 +2971,7 @@
     },
     {
         "key": "选择邀请成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇邀請成員",
         "en": "Select invite member",
         "ko": "초대할 구성원 선택",
@@ -2982,7 +2982,7 @@
     },
     {
         "key": "选择项目成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇項目成員",
         "en": "Select project members",
         "ko": "프로젝트 구성원 선택",
@@ -2993,7 +2993,7 @@
     },
     {
         "key": "邮件发送测试",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "郵件發送測試",
         "en": "Mail sending test",
         "ko": "메일 보내기 테스트",
@@ -3004,7 +3004,7 @@
     },
     {
         "key": "邮件通知设置",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "郵件通知設置",
         "en": "Email notification Settings",
         "ko": "메일 알림 설정",
@@ -3015,7 +3015,7 @@
     },
     {
         "key": "邮箱地址错误",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "郵箱地址錯誤",
         "en": "Email address error",
         "ko": "메일 주소 오류",
@@ -3026,7 +3026,7 @@
     },
     {
         "key": "验证码已失效",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "驗證碼已失效",
         "en": "The verification code is invalid. Procedure",
         "ko": "인증 코드가 유효하지 않습니다",
@@ -3037,7 +3037,7 @@
     },
     {
         "key": "使用 SSO 登录",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "使用 SSO 登錄",
         "en": "Using SSO login",
         "ko": "Sso로 로그인하다",
@@ -3048,7 +3048,7 @@
     },
     {
         "key": "PPT 演示文稿",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "PPT 演示文稿",
         "en": "Powerpoint presentation",
         "ko": "Ppt 프레젠테이션",
@@ -3059,7 +3059,7 @@
     },
     {
         "key": "同步滚动:关",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "同步滾動:關",
         "en": "Synchronous scroll: Off",
         "ko": "동기 스크롤:끄기",
@@ -3070,7 +3070,7 @@
     },
     {
         "key": "同步滚动:开",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "同步滾動:開",
         "en": "Synchronous scrolling: On",
         "ko": "동기화 스크롤:켜기",
@@ -3081,7 +3081,7 @@
     },
     {
         "key": "Excel 工作表",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "Excel 工作表",
         "en": "Excel worksheet",
         "ko": "Excel 워크시트",
@@ -3092,7 +3092,7 @@
     },
     {
         "key": "html转markdown",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "Html轉markdown",
         "en": "Html goes to markdown",
         "ko": "Html로 markdown",
@@ -3103,7 +3103,7 @@
     },
     {
         "key": "上传文件夹",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "上傳文件夾",
         "en": "Upload folder",
         "ko": "폴더 업로드",
@@ -3114,7 +3114,7 @@
     },
     {
         "key": "不是发送人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "不是發送人",
         "en": "Not the sender",
         "ko": "보낸 사람 아님",
@@ -3125,7 +3125,7 @@
     },
     {
         "key": "今日待完成",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "今日待完成",
         "en": "To be completed today",
         "ko": "오늘 완성해야 한다.",
@@ -3136,7 +3136,7 @@
     },
     {
         "key": "代码块主题",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "代碼塊主題",
         "en": "Code block topic",
         "ko": "코드 블록 테마",
@@ -3147,7 +3147,7 @@
     },
     {
         "key": "任务不存在",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務不存在",
         "en": "Task does not exist",
         "ko": "작업이 존재하지 않음",
@@ -3158,7 +3158,7 @@
     },
     {
         "key": "任务优先级",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務優先級",
         "en": "Task priority",
         "ko": "작업 우선 순위",
@@ -3169,7 +3169,7 @@
     },
     {
         "key": "任务已完成",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務已完成",
         "en": "Task completed",
         "ko": "작업이 완료되었습니다.",
@@ -3180,7 +3180,7 @@
     },
     {
         "key": "任务聊天室",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務聊天室",
         "en": "Task chat room",
         "ko": "미션 채팅방",
@@ -3191,7 +3191,7 @@
     },
     {
         "key": "任务负责人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務負責人",
         "en": "Task leader",
         "ko": "임무 책임자",
@@ -3202,7 +3202,7 @@
     },
     {
         "key": "会员不存在",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "會員不存在",
         "en": "Membership does not exist",
         "ko": "멤버가 존재하지 않음",
@@ -3213,7 +3213,7 @@
     },
     {
         "key": "会议创建人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "會議創建人",
         "en": "Conference founder",
         "ko": "회의 창설자",
@@ -3224,7 +3224,7 @@
     },
     {
         "key": "会话内成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "會話內成員",
         "en": "In-session member",
         "ko": "세션 내 구성원",
@@ -3235,7 +3235,7 @@
     },
     {
         "key": "使用现有群",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "使用現有羣",
         "en": "Use an existing group",
         "ko": "기존 그룹 사용",
@@ -3246,7 +3246,7 @@
     },
     {
         "key": "保存到本地",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "保存到本地",
         "en": "Save to local",
         "ko": "로컬로 저장",
@@ -3257,7 +3257,7 @@
     },
     {
         "key": "修改负责人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "修改負責人",
         "en": "Responsible person for revision",
         "ko": "책임자를 고치다",
@@ -3268,7 +3268,7 @@
     },
     {
         "key": "列表不存在",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "列表不存在",
         "en": "List does not exist",
         "ko": "목록이 존재하지 않습니다.",
@@ -3279,7 +3279,7 @@
     },
     {
         "key": "创建子任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "創建子任務",
         "en": "Create subtask",
         "ko": "하위 작업 만들기",
@@ -3290,7 +3290,7 @@
     },
     {
         "key": "创建部门群",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "創建部門羣",
         "en": "Create a department group",
         "ko": "부서군을 만들다",
@@ -3301,7 +3301,7 @@
     },
     {
         "key": "删除子任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "刪除子任務",
         "en": "Delete subtask",
         "ko": "하위 작업 삭제",
@@ -3312,7 +3312,7 @@
     },
     {
         "key": "协助的任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "協助的任務",
         "en": "Assisting task",
         "ko": "협조적 임무",
@@ -3323,7 +3323,7 @@
     },
     {
         "key": "原计划时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "原計劃時間",
         "en": "Original scheduled time",
         "ko": "원래 계획 시간",
@@ -3334,7 +3334,7 @@
     },
     {
         "key": "参与的项目",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "參與的項目",
         "en": "Projects participated in",
         "ko": "이 프로젝트에 참여했습니다.",
@@ -3345,7 +3345,7 @@
     },
     {
         "key": "发现新版本",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "發現新版本",
         "en": "Discover a new version",
         "ko": "새 버전 찾기",
@@ -3356,7 +3356,7 @@
     },
     {
         "key": "发送验证码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "發送驗證碼",
         "en": "Send verification code",
         "ko": "인증 코드 보내기",
@@ -3367,7 +3367,7 @@
     },
     {
         "key": "取消管理员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "取消管理員",
         "en": "Cancel administrator",
         "ko": "관리자 취소",
@@ -3378,7 +3378,7 @@
     },
     {
         "key": "客户端版本",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "客戶端版本",
         "en": "Client version",
         "ko": "클라이언트 버전",
@@ -3389,7 +3389,7 @@
     },
     {
         "key": "导出PDF文件",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "導出PDF文件",
         "en": "Export PDF file",
         "ko": "Pdf 파일 내보내기",
@@ -3400,7 +3400,7 @@
     },
     {
         "key": "导出PNG图片",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "導出PNG圖片",
         "en": "Export PNG image",
         "ko": "Png 이미지 내보내기",
@@ -3411,7 +3411,7 @@
     },
     {
         "key": "工作流设置",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "工作流設置",
         "en": "Workflow setting",
         "ko": "워크플로 설정",
@@ -3422,7 +3422,7 @@
     },
     {
         "key": "已删除任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "已刪除任務",
         "en": "Deleted task",
         "ko": "삭제된 작업",
@@ -3433,7 +3433,7 @@
     },
     {
         "key": "已完成任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "已完成任務",
         "en": "Completed task",
         "ko": "작업 완료",
@@ -3444,7 +3444,7 @@
     },
     {
         "key": "已完成列表",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "已完成列表",
         "en": "Completed list",
         "ko": "완료된 목록",
@@ -3455,7 +3455,7 @@
     },
     {
         "key": "已归档任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "已歸檔任務",
         "en": "Archived task",
         "ko": "압축된 작업",
@@ -3466,7 +3466,7 @@
     },
     {
         "key": "开启工作流",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "開啓工作流",
         "en": "Start a workflow",
         "ko": "워크스트림 시작",
@@ -3477,7 +3477,7 @@
     },
     {
         "key": "归档的任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "歸檔的任務",
         "en": "Archiving task",
         "ko": "문서 보존 임무",
@@ -3488,7 +3488,7 @@
     },
     {
         "key": "归档的项目",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "歸檔的項目",
         "en": "Archived items",
         "ko": "압축 파일로 되어 있는 항목",
@@ -3499,7 +3499,7 @@
     },
     {
         "key": "待完成任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "待完成任務",
         "en": "Task to be completed",
         "ko": "완성을 기다리다",
@@ -3510,7 +3510,7 @@
     },
     {
         "key": "搜索联系人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "搜索聯繫人",
         "en": "Search for contacts",
         "ko": "주소록 검색",
@@ -3521,7 +3521,7 @@
     },
     {
         "key": "文本编辑器",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "文本編輯器",
         "en": "Text editor",
         "ko": "텍스트 편집기",
@@ -3532,7 +3532,7 @@
     },
     {
         "key": "新建文件夹",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "新建文件夾",
         "en": "New folder",
         "ko": "새 폴더 만들기",
@@ -3543,7 +3543,7 @@
     },
     {
         "key": "新建流程图",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "新建流程圖",
         "en": "New flowchart",
         "ko": "새 공정도",
@@ -3554,7 +3554,7 @@
     },
     {
         "key": "新计划时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "新計劃時間",
         "en": "New schedule time",
         "ko": "새 계획 시간",
@@ -3565,7 +3565,7 @@
     },
     {
         "key": "新邮箱地址",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "新郵箱地址",
         "en": "New email address",
         "ko": "새 메일 주소",
@@ -3576,7 +3576,7 @@
     },
     {
         "key": "无时间限制",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "無時間限制",
         "en": "No time limit",
         "ko": "시간 제한이 없다.",
@@ -3587,7 +3587,7 @@
     },
     {
         "key": "显示已完成",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "顯示已完成",
         "en": "Show finished",
         "ko": "디스플레이 완료",
@@ -3598,7 +3598,7 @@
     },
     {
         "key": "最早可提前",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "最早可提前",
         "en": "The earliest possible advance",
         "ko": "가장 빠르면 앞당길 수 있다",
@@ -3609,7 +3609,7 @@
     },
     {
         "key": "最晚可延后",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "最晚可延後",
         "en": "It can be postponed at the latest",
         "ko": "늦어도 뒤로 연기할 수 있다",
@@ -3620,7 +3620,7 @@
     },
     {
         "key": "服务器版本",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "服務器版本",
         "en": "Server version",
         "ko": "서버 버전",
@@ -3631,7 +3631,7 @@
     },
     {
         "key": "未完成任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "未完成任務",
         "en": "Unfinished task",
         "ko": "완료하지 않은 작업",
@@ -3642,7 +3642,7 @@
     },
     {
         "key": "未完成列表",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "未完成列表",
         "en": "Incomplete list",
         "ko": "완료하지 않은 목록",
@@ -3653,7 +3653,7 @@
     },
     {
         "key": "未开放注册",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "未開放註冊",
         "en": "Not open registration",
         "ko": "미공개 등록",
@@ -3664,7 +3664,7 @@
     },
     {
         "key": "未知的消息",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "未知的消息",
         "en": "Unknown message",
         "ko": "알 수 없는 메시지",
@@ -3675,7 +3675,7 @@
     },
     {
         "key": "标记未完成",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "標記未完成",
         "en": "Mark incomplete",
         "ko": "태그 완료되지 않음",
@@ -3686,7 +3686,7 @@
     },
     {
         "key": "消息免打扰",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "消息免打擾",
         "en": "Message do not disturb",
         "ko": "방해받지 않는 소식",
@@ -3697,7 +3697,7 @@
     },
     {
         "key": "添加优先级",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "添加優先級",
         "en": "Add priority",
         "ko": "우선 순위 추가",
@@ -3708,7 +3708,7 @@
     },
     {
         "key": "添加子任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "添加子任務",
         "en": "Add subtask",
         "ko": "하위 작업 추가",
@@ -3719,7 +3719,7 @@
     },
     {
         "key": "添加子部门",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "添加子部門",
         "en": "Add a subdepartment",
         "ko": "부부서 추가",
@@ -3730,7 +3730,7 @@
     },
     {
         "key": "添加群成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "添加羣成員",
         "en": "Adding a group member",
         "ko": "그룹 구성원 추가",
@@ -3741,7 +3741,7 @@
     },
     {
         "key": "状态负责人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "狀態負責人",
         "en": "State leader",
         "ko": "상태 담당자",
@@ -3752,7 +3752,7 @@
     },
     {
         "key": "登录成功...",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "登錄成功...",
         "en": "Login successful...",
         "ko": "로그인 성공...",
@@ -3763,7 +3763,7 @@
     },
     {
         "key": "登录验证码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "登錄驗證碼",
         "en": "Login verification code",
         "ko": "로그인 인증 코드",
@@ -3774,7 +3774,7 @@
     },
     {
         "key": "确认新密码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "確認新密碼",
         "en": "Confirm new password",
         "ko": "새 비밀번호 확인",
@@ -3785,7 +3785,7 @@
     },
     {
         "key": "置顶该聊天",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "置頂該聊天",
         "en": "At the top of the chat",
         "ko": "당연히 채팅을 해야 한다",
@@ -3796,7 +3796,7 @@
     },
     {
         "key": "置顶该项目",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "置頂該項目",
         "en": "Top the project",
         "ko": "이 프로젝트를 상쇄하다",
@@ -3807,7 +3807,7 @@
     },
     {
         "key": "自定义地址",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "自定義地址",
         "en": "Custom address",
         "ko": "사용자 정의 주소",
@@ -3818,7 +3818,7 @@
     },
     {
         "key": "设为管理员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "設爲管理員",
         "en": "Set as administrator",
         "ko": "관리자로 설정하다",
@@ -3829,7 +3829,7 @@
     },
     {
         "key": "设备MAC地址",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "設備MAC地址",
         "en": "Device MAC address",
         "ko": "장치 mac 주소",
@@ -3840,7 +3840,7 @@
     },
     {
         "key": "设置状态为",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "設置狀態爲",
         "en": "Set the status to",
         "ko": "상태:",
@@ -3851,7 +3851,7 @@
     },
     {
         "key": "详细描述...",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "詳細描述...",
         "en": "Describe in detail...",
         "ko": "자세한 설명...",
@@ -3862,7 +3862,7 @@
     },
     {
         "key": "请输入名称",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入名稱",
         "en": "Please enter name",
         "ko": "이름을 입력하십시오",
@@ -3873,7 +3873,7 @@
     },
     {
         "key": "请输入密码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入密碼",
         "en": "Please enter password",
         "ko": "비밀번호를 입력하십시오.",
@@ -3884,7 +3884,7 @@
     },
     {
         "key": "请输入昵称",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請輸入暱稱",
         "en": "Please enter a nickname",
         "ko": "닉네임을 입력해 주세요",
@@ -3895,7 +3895,7 @@
     },
     {
         "key": "请选择成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請選擇成員",
         "en": "Please select a member",
         "ko": "멤버를 선택하십시오.",
@@ -3906,7 +3906,7 @@
     },
     {
         "key": "请选择时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請選擇時間",
         "en": "Please select the time",
         "ko": "시간을 선택하세요",
@@ -3917,7 +3917,7 @@
     },
     {
         "key": "请选择模板",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請選擇模板",
         "en": "Please select template",
         "ko": "템플릿을 선택하십시오.",
@@ -3928,7 +3928,7 @@
     },
     {
         "key": "请选择项目",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請選擇項目",
         "en": "Please select item",
         "ko": "항목을 선택하십시오.",
@@ -3939,7 +3939,7 @@
     },
     {
         "key": "超期未完成",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "超期未完成",
         "en": "The deadline has not been completed",
         "ko": "기한을 넘기고도 완성하지 못하다",
@@ -3950,7 +3950,7 @@
     },
     {
         "key": "身份已失效",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "身份已失效",
         "en": "Identity has expired",
         "ko": "신분이 이미 효력을 상실하였다.",
@@ -3961,7 +3961,7 @@
     },
     {
         "key": "输入消息...",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "輸入消息...",
         "en": "Input message...",
         "ko": "메시지 입력...",
@@ -3972,7 +3972,7 @@
     },
     {
         "key": "选择交接人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇交接人",
         "en": "Selection of successors",
         "ko": "인수자를 선택하다",
@@ -3983,7 +3983,7 @@
     },
     {
         "key": "选择负责人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇負責人",
         "en": "Choice of person in charge",
         "ko": "책임자를 뽑다",
@@ -3994,7 +3994,7 @@
     },
     {
         "key": "邮箱验证码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "郵箱驗證碼",
         "en": "Email verification code",
         "ko": "메일박스 인증 코드",
@@ -4005,7 +4005,7 @@
     },
     {
         "key": "部门负责人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "部門負責人",
         "en": "Head of department",
         "ko": "부서 책임자",
@@ -4016,7 +4016,7 @@
     },
     {
         "key": "限制负责人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "限制負責人",
         "en": "Limit person in charge",
         "ko": "책임자를 제한하다",
@@ -4027,7 +4027,7 @@
     },
     {
         "key": "项目聊天室",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目聊天室",
         "en": "Project chat room",
         "ko": "프로젝트 채팅방",
@@ -4038,7 +4038,7 @@
     },
     {
         "key": "项目负责人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目負責人",
         "en": "Project leader",
         "ko": "프로젝트 매니저",
@@ -4049,7 +4049,7 @@
     },
     {
         "key": "验证码错误",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "驗證碼錯誤",
         "en": "Verification code error",
         "ko": "인증 코드 오류",
@@ -4060,7 +4060,7 @@
     },
     {
         "key": "会议频道ID",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "會議頻道ID",
         "en": "Conference channel ID",
         "ko": "회의 피드 id",
@@ -4071,7 +4071,7 @@
     },
     {
         "key": "SMTP服务器",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "SMTP服務器",
         "en": "SMTP server",
         "ko": "Smtp 서버",
@@ -4082,7 +4082,7 @@
     },
     {
         "key": "任务提醒:",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務提醒:",
         "en": "Task reminder:",
         "ko": "작업 알람:",
@@ -4093,7 +4093,7 @@
     },
     {
         "key": "职位\/职称",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "職位\/職稱",
         "en": "Position\/title",
         "ko": "직명",
@@ -4104,7 +4104,7 @@
     },
     {
         "key": "验收\/测试",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "驗收\/測試",
         "en": "Acceptance\/testing",
         "ko": "승인\/테스트",
@@ -4115,7 +4115,7 @@
     },
     {
         "key": "上传图片",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "上傳圖片",
         "en": "Upload pictures",
         "ko": "그림 업로드",
@@ -4126,7 +4126,7 @@
     },
     {
         "key": "上传失败",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "上傳失敗",
         "en": "Upload failure",
         "ko": "업로드 실패",
@@ -4137,7 +4137,7 @@
     },
     {
         "key": "上传成功",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "上傳成功",
         "en": "Upload successfully",
         "ko": "업로드에 성공했습니다",
@@ -4148,7 +4148,7 @@
     },
     {
         "key": "上传文件",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "上傳文件",
         "en": "Upload file",
         "ko": "파일 업로드",
@@ -4159,7 +4159,7 @@
     },
     {
         "key": "上级部门",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "上級部門",
         "en": "Superior department",
         "ko": "상급 부서.",
@@ -4170,7 +4170,7 @@
     },
     {
         "key": "个人群组",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "個人羣組",
         "en": "Individual group",
         "ko": "개인 그룹",
@@ -4181,7 +4181,7 @@
     },
     {
         "key": "个人设置",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "個人設置",
         "en": "Personal setting",
         "ko": "개인 설정",
@@ -4192,7 +4192,7 @@
     },
     {
         "key": "主题皮肤",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "主題皮膚",
         "en": "Theme skin",
         "ko": "테마 스킨",
@@ -4203,7 +4203,7 @@
     },
     {
         "key": "主题设置",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "主題設置",
         "en": "Theme setting",
         "ko": "테마 설정",
@@ -4214,7 +4214,7 @@
     },
     {
         "key": "产品开发",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "產品開發",
         "en": "Product development",
         "ko": "상품 개발",
@@ -4225,7 +4225,7 @@
     },
     {
         "key": "产品规划",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "產品規劃",
         "en": "Product planning",
         "ko": "상품 기획",
@@ -4236,7 +4236,7 @@
     },
     {
         "key": "产品计划",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "產品計劃",
         "en": "Product planning",
         "ko": "제품 계획",
@@ -4247,7 +4247,7 @@
     },
     {
         "key": "今日任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "今日任務",
         "en": "Task of the day",
         "ko": "오늘의 임무",
@@ -4258,7 +4258,7 @@
     },
     {
         "key": "今日到期",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "今日到期",
         "en": "Due today",
         "ko": "오늘이 기한이다",
@@ -4269,7 +4269,7 @@
     },
     {
         "key": "任务列表",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務列表",
         "en": "Task list",
         "ko": "작업 목록",
@@ -4280,7 +4280,7 @@
     },
     {
         "key": "任务名称",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務名稱",
         "en": "Task name",
         "ko": "작업 이름",
@@ -4291,7 +4291,7 @@
     },
     {
         "key": "任务开始",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務開始",
         "en": "Task start",
         "ko": "작업 시작",
@@ -4302,7 +4302,7 @@
     },
     {
         "key": "任务描述",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務描述",
         "en": "Task description",
         "ko": "작업 설명",
@@ -4313,7 +4313,7 @@
     },
     {
         "key": "任务提醒",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務提醒",
         "en": "Task reminder",
         "ko": "작업 알람",
@@ -4324,7 +4324,7 @@
     },
     {
         "key": "任务时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務時間",
         "en": "Task time",
         "ko": "작업 시간",
@@ -4335,7 +4335,7 @@
     },
     {
         "key": "任务等级",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務等級",
         "en": "Task level",
         "ko": "작업 레벨",
@@ -4346,7 +4346,7 @@
     },
     {
         "key": "任务群组",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務羣組",
         "en": "Task group",
         "ko": "작업 그룹",
@@ -4357,7 +4357,7 @@
     },
     {
         "key": "任务详情",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務詳情",
         "en": "Task details",
         "ko": "작업 정보",
@@ -4368,7 +4368,7 @@
     },
     {
         "key": "会议主题",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "會議主題",
         "en": "Conference theme",
         "ko": "회의 주제",
@@ -4379,7 +4379,7 @@
     },
     {
         "key": "会议功能",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "會議功能",
         "en": "Conference function",
         "ko": "회의 기능",
@@ -4390,7 +4390,7 @@
     },
     {
         "key": "位置错误",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "位置錯誤",
         "en": "Wrong position",
         "ko": "위치 오류",
@@ -4401,7 +4401,7 @@
     },
     {
         "key": "保存成功",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "保存成功",
         "en": "Save successfully",
         "ko": "성공적으로 저장했습니다",
@@ -4412,7 +4412,7 @@
     },
     {
         "key": "修改名称",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "修改名稱",
         "en": "Modify the name",
         "ko": "이름 수정",
@@ -4423,7 +4423,7 @@
     },
     {
         "key": "修改密码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "修改密碼",
         "en": "Change password",
         "ko": "비밀번호 변경",
@@ -4434,7 +4434,7 @@
     },
     {
         "key": "修改成功",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "修改成功",
         "en": "Modified successfully",
         "ko": "성공적으로 수정했습니다",
@@ -4445,7 +4445,7 @@
     },
     {
         "key": "修改邮箱",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "修改郵箱",
         "en": "Modify email",
         "ko": "메일박스 수정",
@@ -4456,7 +4456,7 @@
     },
     {
         "key": "修改部门",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "修改部門",
         "en": "Modify the department",
         "ko": "부서를 고치다",
@@ -4467,7 +4467,7 @@
     },
     {
         "key": "偏好设置",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "偏好設置",
         "en": "Preference setting",
         "ko": "환경 설정",
@@ -4478,7 +4478,7 @@
     },
     {
         "key": "允许修改",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "允許修改",
         "en": "Modification allowed",
         "ko": "수정 허용",
@@ -4489,7 +4489,7 @@
     },
     {
         "key": "允许注册",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "允許註冊",
         "en": "Allow registration",
         "ko": "등록 허가",
@@ -4500,7 +4500,7 @@
     },
     {
         "key": "全员群组",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "全員羣組",
         "en": "All-staff group",
         "ko": "전체 직원 단체",
@@ -4511,7 +4511,7 @@
     },
     {
         "key": "全屏查看",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "全屏查看",
         "en": "Full screen view",
         "ko": "전체 화면으로보다",
@@ -4522,7 +4522,7 @@
     },
     {
         "key": "全屏编辑",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "全屏編輯",
         "en": "Full screen editing",
         "ko": "전체 화면 편집",
@@ -4533,7 +4533,7 @@
     },
     {
         "key": "全部文件",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "全部文件",
         "en": "Complete file",
         "ko": "모든 파일",
@@ -4544,7 +4544,7 @@
     },
     {
         "key": "全部禁言",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "全部禁言",
         "en": "Total gag",
         "ko": "일체 금언",
@@ -4555,7 +4555,7 @@
     },
     {
         "key": "共享权限",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "共享權限",
         "en": "Share permission",
         "ko": "공유 권한",
@@ -4566,7 +4566,7 @@
     },
     {
         "key": "共享设置",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "共享設置",
         "en": "Shared Settings",
         "ko": "공유 설정",
@@ -4577,7 +4577,7 @@
     },
     {
         "key": "准备发布",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "準備發佈",
         "en": "Ready for release",
         "ko": "배포 준비 중",
@@ -4588,7 +4588,7 @@
     },
     {
         "key": "分屏显示",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "分屏顯示",
         "en": "Split screen display",
         "ko": "분할 화면",
@@ -4599,7 +4599,7 @@
     },
     {
         "key": "创建任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "創建任務",
         "en": "Create task",
         "ko": "작업 만들기",
@@ -4610,7 +4610,7 @@
     },
     {
         "key": "创建时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "創建時間",
         "en": "Creation time",
         "ko": "만든 시간",
@@ -4621,7 +4621,7 @@
     },
     {
         "key": "创建群组",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "創建羣組",
         "en": "Create a group",
         "ko": "그룹 만들기",
@@ -4632,7 +4632,7 @@
     },
     {
         "key": "创建项目",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "創建項目",
         "en": "Create a project",
         "ko": "프로젝트 만들기",
@@ -4643,7 +4643,7 @@
     },
     {
         "key": "删除原因",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "刪除原因",
         "en": "Deletion reason",
         "ko": "삭제 이유",
@@ -4654,7 +4654,7 @@
     },
     {
         "key": "删除帐号",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "刪除帳號",
         "en": "Delete an account",
         "ko": "계정 삭제",
@@ -4665,7 +4665,7 @@
     },
     {
         "key": "删除成功",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "刪除成功",
         "en": "Deleted successfully",
         "ko": "성공적으로 삭제했습니다.",
@@ -4676,7 +4676,7 @@
     },
     {
         "key": "删除时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "刪除時間",
         "en": "Deletion time",
         "ko": "삭제 시간",
@@ -4687,7 +4687,7 @@
     },
     {
         "key": "删除项目",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "刪除項目",
         "en": "Delete item",
         "ko": "항목 삭제",
@@ -4698,7 +4698,7 @@
     },
     {
         "key": "到期时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "到期時間",
         "en": "Maturity time",
         "ko": "기한",
@@ -4709,7 +4709,7 @@
     },
     {
         "key": "到期超时",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "到期超時",
         "en": "Expiration timeout",
         "ko": "기한이 초과되었습니다.",
@@ -4720,7 +4720,7 @@
     },
     {
         "key": "前端开发",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "前端開發",
         "en": "Front-end development",
         "ko": "프론트엔드 개발",
@@ -4731,7 +4731,7 @@
     },
     {
         "key": "剔除模式",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "剔除模式",
         "en": "Culling mode",
         "ko": "선택 모드",
@@ -4742,7 +4742,7 @@
     },
     {
         "key": "功能开启",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "功能開啓",
         "en": "Function opening",
         "ko": "기능 켜기",
@@ -4753,7 +4753,7 @@
     },
     {
         "key": "加入会议",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "加入會議",
         "en": "Join a meeting",
         "ko": "회의에 참가하다",
@@ -4764,7 +4764,7 @@
     },
     {
         "key": "加载中...",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "加載中...",
         "en": "Loading...",
         "ko": "불러오는 중...",
@@ -4775,7 +4775,7 @@
     },
     {
         "key": "加载更多",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "加載更多",
         "en": "Load more",
         "ko": "더 불러오기",
@@ -4786,7 +4786,7 @@
     },
     {
         "key": "动画表情",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "動畫表情",
         "en": "Animated expression",
         "ko": "애니메이션 이모티콘",
@@ -4797,7 +4797,7 @@
     },
     {
         "key": "协助人员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "協助人員",
         "en": "Assisting personnel",
         "ko": "협조자",
@@ -4808,7 +4808,7 @@
     },
     {
         "key": "历史消息",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "歷史消息",
         "en": "Historical news",
         "ko": "역사적 소식",
@@ -4819,7 +4819,7 @@
     },
     {
         "key": "历史版本",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "歷史版本",
         "en": "Historical edition",
         "ko": "역사적 버전",
@@ -4830,7 +4830,7 @@
     },
     {
         "key": "参数为空",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "參數爲空",
         "en": "Parameter null",
         "ko": "인자가 비어 있음",
@@ -4841,7 +4841,7 @@
     },
     {
         "key": "参数配置",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "參數配置",
         "en": "Parameter configuration",
         "ko": "인자 설정",
@@ -4852,7 +4852,7 @@
     },
     {
         "key": "参数错误",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "參數錯誤",
         "en": "Parameter error",
         "ko": "인자 오류",
@@ -4863,7 +4863,7 @@
     },
     {
         "key": "友盟推送",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "友盟推送",
         "en": "Youmeng push",
         "ko": "동맹에서 추천하여 추천하다",
@@ -4874,7 +4874,7 @@
     },
     {
         "key": "发布成功",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "發佈成功",
         "en": "Successful release",
         "ko": "성공적으로 배포",
@@ -4885,7 +4885,7 @@
     },
     {
         "key": "发送图片",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "發送圖片",
         "en": "Send pictures",
         "ko": "그림 보내기",
@@ -4896,7 +4896,7 @@
     },
     {
         "key": "发送成功",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "發送成功",
         "en": "Sent successfully",
         "ko": "전송이 완료되었습니다.",
@@ -4907,7 +4907,7 @@
     },
     {
         "key": "发送文件",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "發送文件",
         "en": "Send file",
         "ko": "파일 보내기",
@@ -4918,7 +4918,7 @@
     },
     {
         "key": "发送邀请",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "發送邀請",
         "en": "Send invitations",
         "ko": "초대장 보내기",
@@ -4929,7 +4929,7 @@
     },
     {
         "key": "取消标注",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "取消標註",
         "en": "Unlabel",
         "ko": "주석 해제",
@@ -4940,7 +4940,7 @@
     },
     {
         "key": "取消登录",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "取消登錄",
         "en": "Cancel login",
         "ko": "로그인 취소",
@@ -4951,7 +4951,7 @@
     },
     {
         "key": "取消禁用",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "取消禁用",
         "en": "Undisable",
         "ko": "비활성화 해제",
@@ -4962,7 +4962,7 @@
     },
     {
         "key": "取消置顶",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "取消置頂",
         "en": "Untop",
         "ko": "리셋 취소",
@@ -4973,7 +4973,7 @@
     },
     {
         "key": "可流转到",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "可流轉到",
         "en": "Transferable to",
         "ko": "이전이 가능하다",
@@ -4984,7 +4984,7 @@
     },
     {
         "key": "后端开发",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "後端開發",
         "en": "Back-end development",
         "ko": "백엔드 개발",
@@ -4995,7 +4995,7 @@
     },
     {
         "key": "回到原文",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "回到原文",
         "en": "Back to the original text",
         "ko": "원문으로 되돌아가다",
@@ -5006,7 +5006,7 @@
     },
     {
         "key": "团队管理",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "團隊管理",
         "en": "Team management",
         "ko": "팀 관리",
@@ -5017,7 +5017,7 @@
     },
     {
         "key": "图片信息",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "圖片信息",
         "en": "Picture information",
         "ko": "그림 정보",
@@ -5028,7 +5028,7 @@
     },
     {
         "key": "在职状态",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "在職狀態",
         "en": "In-service status",
         "ko": "재직 상태",
@@ -5039,7 +5039,7 @@
     },
     {
         "key": "复制代码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "複製代碼",
         "en": "Copy code",
         "ko": "코드 복사",
@@ -5050,7 +5050,7 @@
     },
     {
         "key": "复制成功",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "複製成功",
         "en": "Successful replication",
         "ko": "복사에 성공했습니다",
@@ -5061,7 +5061,7 @@
     },
     {
         "key": "安装说明",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "安裝說明",
         "en": "Installation instructions",
         "ko": "설치 설명",
@@ -5072,7 +5072,7 @@
     },
     {
         "key": "完成时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "完成時間",
         "en": "Completion time",
         "ko": "완료 시간",
@@ -5083,7 +5083,7 @@
     },
     {
         "key": "密码策略",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "密碼策略",
         "en": "Cryptographic policy",
         "ko": "암호 정책",
@@ -5094,7 +5094,7 @@
     },
     {
         "key": "密码设置",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "密碼設置",
         "en": "Password setting",
         "ko": "비밀번호 설정",
@@ -5105,7 +5105,7 @@
     },
     {
         "key": "导入文件",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "導入文件",
         "en": "Import file",
         "ko": "파일 가져오기",
@@ -5116,7 +5116,7 @@
     },
     {
         "key": "导出任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "導出任務",
         "en": "Export task",
         "ko": "작업 내보내기",
@@ -5127,7 +5127,7 @@
     },
     {
         "key": "导出成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "導出成員",
         "en": "Derived member",
         "ko": "멤버 내보내기",
@@ -5138,7 +5138,7 @@
     },
     {
         "key": "尚未签到",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "尚未簽到",
         "en": "Not yet signed in",
         "ko": "아직 서명하지 않았습니다.",
@@ -5149,7 +5149,7 @@
     },
     {
         "key": "工作报告",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "工作報告",
         "en": "Work report",
         "ko": "업무 보고",
@@ -5160,7 +5160,7 @@
     },
     {
         "key": "开启后：",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "開啓後：",
         "en": "After opening:",
         "ko": "켜진 후:",
@@ -5171,7 +5171,7 @@
     },
     {
         "key": "开启推送",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "開啓推送",
         "en": "Enable push",
         "ko": "푸시 켜기",
@@ -5182,7 +5182,7 @@
     },
     {
         "key": "开启通知",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "開啓通知",
         "en": "Enable notification",
         "ko": "알림 열기",
@@ -5193,7 +5193,7 @@
     },
     {
         "key": "开始会议",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "開始會議",
         "en": "Start the meeting",
         "ko": "회의를 시작하다",
@@ -5204,7 +5204,7 @@
     },
     {
         "key": "开始状态",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "開始狀態",
         "en": "Starting state",
         "ko": "시작 상태",
@@ -5215,7 +5215,7 @@
     },
     {
         "key": "归档人员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "歸檔人員",
         "en": "Filing staff",
         "ko": "문서 정리 인원.",
@@ -5226,7 +5226,7 @@
     },
     {
         "key": "归档会员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "歸檔會員",
         "en": "Filing member",
         "ko": "회원 압축",
@@ -5237,7 +5237,7 @@
     },
     {
         "key": "归档时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "歸檔時間",
         "en": "Filing time",
         "ko": "압축 시간",
@@ -5248,7 +5248,7 @@
     },
     {
         "key": "归档项目",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "歸檔項目",
         "en": "Archived item",
         "ko": "압축 항목",
@@ -5259,7 +5259,7 @@
     },
     {
         "key": "当前会话",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "當前會話",
         "en": "Current session",
         "ko": "현재 세션",
@@ -5270,7 +5270,7 @@
     },
     {
         "key": "待办消息",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "待辦消息",
         "en": "To-do message",
         "ko": "할 일 메시지",
@@ -5281,7 +5281,7 @@
     },
     {
         "key": "快捷选择",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "快捷選擇",
         "en": "Quick selection",
         "ko": "빠른 선택",
@@ -5292,7 +5292,7 @@
     },
     {
         "key": "忽略邮箱",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "忽略郵箱",
         "en": "Ignore email",
         "ko": "메일박스 무시하기",
@@ -5303,7 +5303,7 @@
     },
     {
         "key": "思维导图",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "思維導圖",
         "en": "Mind map",
         "ko": "마인드맵",
@@ -5314,7 +5314,7 @@
     },
     {
         "key": "成员禁言",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "成員禁言",
         "en": "Member gag",
         "ko": "성원 금언",
@@ -5325,7 +5325,7 @@
     },
     {
         "key": "成员管理",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "成員管理",
         "en": "Member management",
         "ko": "멤버 관리",
@@ -5336,7 +5336,7 @@
     },
     {
         "key": "我的任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "我的任務",
         "en": "My task",
         "ko": "나의 임무",
@@ -5347,7 +5347,7 @@
     },
     {
         "key": "截止时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "截止時間",
         "en": "Cut-off time",
         "ko": "마감 시간",
@@ -5358,7 +5358,7 @@
     },
     {
         "key": "所有成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "所有成員",
         "en": "All members",
         "ko": "모든 구성원",
@@ -5369,7 +5369,7 @@
     },
     {
         "key": "所有项目",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "所有項目",
         "en": "All items",
         "ko": "모든 항목",
@@ -5380,7 +5380,7 @@
     },
     {
         "key": "打开任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "打開任務",
         "en": "Open task",
         "ko": "작업 열기",
@@ -5391,7 +5391,7 @@
     },
     {
         "key": "打开项目",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "打開項目",
         "en": "Open project",
         "ko": "항목 열기",
@@ -5402,7 +5402,7 @@
     },
     {
         "key": "打开首页",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "打開首頁",
         "en": "Open the home page",
         "ko": "첫 페이지를 열다",
@@ -5413,7 +5413,7 @@
     },
     {
         "key": "扫码登录",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "掃碼登錄",
         "en": "Scan code login",
         "ko": "스캔 로그인",
@@ -5424,7 +5424,7 @@
     },
     {
         "key": "拨打电话",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "撥打電話",
         "en": "Make a call",
         "ko": "전화를 걸다",
@@ -5435,7 +5435,7 @@
     },
     {
         "key": "指定成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "指定成員",
         "en": "Designated member",
         "ko": "구성원 지정",
@@ -5446,7 +5446,7 @@
     },
     {
         "key": "搜索名称",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "搜索名稱",
         "en": "Search name",
         "ko": "검색 이름",
@@ -5457,7 +5457,7 @@
     },
     {
         "key": "搜索成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "搜索成員",
         "en": "Search member",
         "ko": "회원 검색",
@@ -5468,7 +5468,7 @@
     },
     {
         "key": "搜索消息",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "搜索消息",
         "en": "Search message",
         "ko": "메시지 검색",
@@ -5479,7 +5479,7 @@
     },
     {
         "key": "搜索项目",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "搜索項目",
         "en": "Search item",
         "ko": "항목 검색",
@@ -5490,7 +5490,7 @@
     },
     {
         "key": "操作成功",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "操作成功",
         "en": "Successful operation",
         "ko": "작업 성공",
@@ -5501,7 +5501,7 @@
     },
     {
         "key": "操作离职",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "操作離職",
         "en": "Operational turnover",
         "ko": "오퍼레이터 이직",
@@ -5512,7 +5512,7 @@
     },
     {
         "key": "文件信息",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "文件信息",
         "en": "File information",
         "ko": "파일 정보",
@@ -5523,7 +5523,7 @@
     },
     {
         "key": "文件名称",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "文件名稱",
         "en": "File name",
         "ko": "파일 이름",
@@ -5534,7 +5534,7 @@
     },
     {
         "key": "文件链接",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "文件鏈接",
         "en": "File link",
         "ko": "파일 링크",
@@ -5545,7 +5545,7 @@
     },
     {
         "key": "新增成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "新增成員",
         "en": "New member",
         "ko": "신규 구성원",
@@ -5556,7 +5556,7 @@
     },
     {
         "key": "新建任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "新建任務",
         "en": "New task",
         "ko": "새 작업",
@@ -5567,7 +5567,7 @@
     },
     {
         "key": "新建文本",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "新建文本",
         "en": "New text",
         "ko": "새 텍스트",
@@ -5578,7 +5578,7 @@
     },
     {
         "key": "新建目录",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "新建目錄",
         "en": "New directory",
         "ko": "새 디렉토리",
@@ -5589,7 +5589,7 @@
     },
     {
         "key": "新建脑图",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "新建腦圖",
         "en": "New brain map",
         "ko": "새 브레인 맵",
@@ -5600,7 +5600,7 @@
     },
     {
         "key": "新建表格",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "新建表格",
         "en": "New form",
         "ko": "새 테이블",
@@ -5611,7 +5611,7 @@
     },
     {
         "key": "新建部门",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "新建部門",
         "en": "New department",
         "ko": "신설 부서",
@@ -5622,7 +5622,7 @@
     },
     {
         "key": "新建项目",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "新建項目",
         "en": "New project",
         "ko": "새 항목",
@@ -5633,7 +5633,7 @@
     },
     {
         "key": "新的群主",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "新的羣主",
         "en": "New group owner",
         "ko": "새로운 군주",
@@ -5644,7 +5644,7 @@
     },
     {
         "key": "无序列表",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "無序列表",
         "en": "Unordered list",
         "ko": "순서가 지정되지 않은 목록",
@@ -5655,7 +5655,7 @@
     },
     {
         "key": "时间范围",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "時間範圍",
         "en": "Time range",
         "ko": "시간 범위",
@@ -5666,7 +5666,7 @@
     },
     {
         "key": "暂无消息",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "暫無消息",
         "en": "No news yet",
         "ko": "잠시 소식이 없다.",
@@ -5677,7 +5677,7 @@
     },
     {
         "key": "更新中...",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "更新中...",
         "en": "In the update...",
         "ko": "업데이트 중...",
@@ -5688,7 +5688,7 @@
     },
     {
         "key": "更新日志",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "更新日誌",
         "en": "Update log",
         "ko": "로그 업데이트",
@@ -5699,7 +5699,7 @@
     },
     {
         "key": "最后修改",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "最後修改",
         "en": "Final modification",
         "ko": "최종 수정",
@@ -5710,7 +5710,7 @@
     },
     {
         "key": "最后在线",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "最後在線",
         "en": "Last online",
         "ko": "파이널 온라인",
@@ -5721,7 +5721,7 @@
     },
     {
         "key": "最近聊天",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "最近聊天",
         "en": "Recent chat",
         "ko": "최근 대화",
@@ -5732,7 +5732,7 @@
     },
     {
         "key": "有序列表",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "有序列表",
         "en": "Ordered list",
         "ko": "순서 목록",
@@ -5743,7 +5743,7 @@
     },
     {
         "key": "本地图片",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "本地圖片",
         "en": "Local picture",
         "ko": "로컬 이미지",
@@ -5754,7 +5754,7 @@
     },
     {
         "key": "权限不足",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "權限不足",
         "en": "Lack of authority",
         "ko": "권한이 부족합니다.",
@@ -5765,7 +5765,7 @@
     },
     {
         "key": "查看图片",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "查看圖片",
         "en": "View pictures",
         "ko": "이미지 보기",
@@ -5776,7 +5776,7 @@
     },
     {
         "key": "查看所有",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "查看所有",
         "en": "View all",
         "ko": "모두 보기",
@@ -5787,7 +5787,7 @@
     },
     {
         "key": "标记未读",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "標記未讀",
         "en": "Mark unread",
         "ko": "읽지 않은 태그",
@@ -5798,7 +5798,7 @@
     },
     {
         "key": "正在研发",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "正在研發",
         "en": "Under development",
         "ko": "연구 중에 있습니다.",
@@ -5809,7 +5809,7 @@
     },
     {
         "key": "正在设计",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "正在設計",
         "en": "Under design",
         "ko": "설계 중",
@@ -5820,7 +5820,7 @@
     },
     {
         "key": "注册帐号",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "註冊帳號",
         "en": "Register an account",
         "ko": "등록 계정",
@@ -5831,7 +5831,7 @@
     },
     {
         "key": "注册成功",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "註冊成功",
         "en": "Successful registration",
         "ko": "등록에 성공했습니다",
@@ -5842,7 +5842,7 @@
     },
     {
         "key": "流转模式",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "流轉模式",
         "en": "Flow mode",
         "ko": "유통 모드",
@@ -5853,7 +5853,7 @@
     },
     {
         "key": "测试邮件",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "測試郵件",
         "en": "Test mail",
         "ko": "메시지 테스트",
@@ -5864,7 +5864,7 @@
     },
     {
         "key": "测试链接",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "測試鏈接",
         "en": "Test link",
         "ko": "링크 테스트",
@@ -5875,7 +5875,7 @@
     },
     {
         "key": "浏览图片",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "瀏覽圖片",
         "en": "Browse pictures",
         "ko": "이미지 찾아보기",
@@ -5886,7 +5886,7 @@
     },
     {
         "key": "消息提醒",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "消息提醒",
         "en": "Message reminder",
         "ko": "소식이 깨우치다",
@@ -5897,7 +5897,7 @@
     },
     {
         "key": "添加任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "添加任務",
         "en": "Add task",
         "ko": "작업 추가",
@@ -5908,7 +5908,7 @@
     },
     {
         "key": "添加列表",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "添加列表",
         "en": "Add list",
         "ko": "목록 추가",
@@ -5919,7 +5919,7 @@
     },
     {
         "key": "添加成功",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "添加成功",
         "en": "Add successfully",
         "ko": "추가 성공",
@@ -5930,7 +5930,7 @@
     },
     {
         "key": "添加成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "添加成員",
         "en": "Add a member",
         "ko": "멤버 추가",
@@ -5941,7 +5941,7 @@
     },
     {
         "key": "添加模式",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "添加模式",
         "en": "Add mode",
         "ko": "모드 추가",
@@ -5952,7 +5952,7 @@
     },
     {
         "key": "添加模板",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "添加模板",
         "en": "Add template",
         "ko": "템플릿 추가",
@@ -5963,7 +5963,7 @@
     },
     {
         "key": "添加状态",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "添加狀態",
         "en": "Add state",
         "ko": "상태 추가",
@@ -5974,7 +5974,7 @@
     },
     {
         "key": "添加设备",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "添加設備",
         "en": "Add a device",
         "ko": "설비를 추가하다",
@@ -5985,7 +5985,7 @@
     },
     {
         "key": "添加附件",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "添加附件",
         "en": "Add attachment",
         "ko": "첨부 파일 추가",
@@ -5996,7 +5996,7 @@
     },
     {
         "key": "清除成功",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "清除成功",
         "en": "Clear successfully",
         "ko": "성공적으로 지웠습니다",
@@ -6007,7 +6007,7 @@
     },
     {
         "key": "清除缓存",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "清除緩存",
         "en": "Clear cache",
         "ko": "캐시 지우기",
@@ -6018,7 +6018,7 @@
     },
     {
         "key": "温柔冷光",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "溫柔冷光",
         "en": "Soft cold light",
         "ko": "부드럽고 차가운 빛",
@@ -6029,7 +6029,7 @@
     },
     {
         "key": "温馨提示",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "溫馨提示",
         "en": "Warm reminder",
         "ko": "따뜻한 팁",
@@ -6040,7 +6040,7 @@
     },
     {
         "key": "版本信息",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "版本信息",
         "en": "Version information",
         "ko": "버전 정보",
@@ -6051,7 +6051,7 @@
     },
     {
         "key": "班次时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "班次時間",
         "en": "Shift time",
         "ko": "운행 시간",
@@ -6062,7 +6062,7 @@
     },
     {
         "key": "登录密码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "登錄密碼",
         "en": "Login password",
         "ko": "로그인 비밀번호",
@@ -6073,7 +6073,7 @@
     },
     {
         "key": "登录帐号",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "登錄帳號",
         "en": "Login account",
         "ko": "로그인 계정",
@@ -6084,7 +6084,7 @@
     },
     {
         "key": "登录成功",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "登錄成功",
         "en": "Login success",
         "ko": "로그인 성공",
@@ -6095,7 +6095,7 @@
     },
     {
         "key": "确定修改",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "確定修改",
         "en": "Definite modification",
         "ko": "수정 확인",
@@ -6106,7 +6106,7 @@
     },
     {
         "key": "确定添加",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "確定添加",
         "en": "Definite addition",
         "ko": "추가 확정하기",
@@ -6117,7 +6117,7 @@
     },
     {
         "key": "确定离职",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "確定離職",
         "en": "Confirmed separation",
         "ko": "이직을 확정하다",
@@ -6128,7 +6128,7 @@
     },
     {
         "key": "确定转让",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "確定轉讓",
         "en": "Definitive transfer",
         "ko": "양도 확정",
@@ -6139,7 +6139,7 @@
     },
     {
         "key": "确认登录",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "確認登錄",
         "en": "Confirm login",
         "ko": "로그인 확인",
@@ -6150,7 +6150,7 @@
     },
     {
         "key": "离开会议",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "離開會議",
         "en": "Leave a meeting",
         "ko": "회의를 떠나다",
@@ -6161,7 +6161,7 @@
     },
     {
         "key": "离职时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "離職時間",
         "en": "Departure time",
         "ko": "이직 시간",
@@ -6172,7 +6172,7 @@
     },
     {
         "key": "移交成功",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "移交成功",
         "en": "Successful handover",
         "ko": "전환이 성공적으로 이루어졌습니다",
@@ -6183,7 +6183,7 @@
     },
     {
         "key": "移交项目",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "移交項目",
         "en": "Transfer project",
         "ko": "프로젝트 이양",
@@ -6194,7 +6194,7 @@
     },
     {
         "key": "空白模板",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "空白模板",
         "en": "Blank template",
         "ko": "빈 템플릿",
@@ -6205,7 +6205,7 @@
     },
     {
         "key": "立即上传",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "立即上傳",
         "en": "Upload immediately",
         "ko": "지금 업로드",
@@ -6216,7 +6216,7 @@
     },
     {
         "key": "立即升级",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "立即升級",
         "en": "Immediate upgrade",
         "ko": "지금 업그레이드",
@@ -6227,7 +6227,7 @@
     },
     {
         "key": "立即登录",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "立即登錄",
         "en": "Log in immediately",
         "ko": "지금 로그인",
@@ -6238,7 +6238,7 @@
     },
     {
         "key": "签到功能",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "簽到功能",
         "en": "Check-in function",
         "ko": "체크 기능",
@@ -6249,7 +6249,7 @@
     },
     {
         "key": "签到数据",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "簽到數據",
         "en": "Sign-in data",
         "ko": "체크인 데이터",
@@ -6260,7 +6260,7 @@
     },
     {
         "key": "签到日期",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "簽到日期",
         "en": "Date of arrival",
         "ko": "도착 날짜를 기입하다",
@@ -6271,7 +6271,7 @@
     },
     {
         "key": "签到时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "簽到時間",
         "en": "Check-in time",
         "ko": "출석 체크 시간",
@@ -6282,7 +6282,7 @@
     },
     {
         "key": "签到记录",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "簽到記錄",
         "en": "Sign in record",
         "ko": "출석 기록",
@@ -6293,7 +6293,7 @@
     },
     {
         "key": "签到设置",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "簽到設置",
         "en": "Sign-in setting",
         "ko": "체크 설정",
@@ -6304,7 +6304,7 @@
     },
     {
         "key": "类型错误",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "類型錯誤",
         "en": "Type error",
         "ko": "형식 오류",
@@ -6315,7 +6315,7 @@
     },
     {
         "key": "系统自动",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "系統自動",
         "en": "System automatic",
         "ko": "시스템 자동",
@@ -6326,7 +6326,7 @@
     },
     {
         "key": "系统设置",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "系統設置",
         "en": "System setting",
         "ko": "시스템 설정",
@@ -6337,7 +6337,7 @@
     },
     {
         "key": "紧凑冷光",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "緊湊冷光",
         "en": "Compact cold light",
         "ko": "콤팩트한 냉광",
@@ -6348,7 +6348,7 @@
     },
     {
         "key": "紧凑天盘",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "緊湊天盤",
         "en": "Compact disk",
         "ko": "타이트한 시세",
@@ -6359,7 +6359,7 @@
     },
     {
         "key": "紧凑经典",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "緊湊經典",
         "en": "Compact classic",
         "ko": "클래식하다",
@@ -6370,7 +6370,7 @@
     },
     {
         "key": "经典天盘",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "經典天盤",
         "en": "Classical celestial disk",
         "ko": "클래식 디스크",
@@ -6381,7 +6381,7 @@
     },
     {
         "key": "结束状态",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "結束狀態",
         "en": "End state",
         "ko": "종료 상태",
@@ -6392,7 +6392,7 @@
     },
     {
         "key": "缩小查看",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "縮小查看",
         "en": "Zoom out",
         "ko": "보기 축소",
@@ -6403,7 +6403,7 @@
     },
     {
         "key": "群组设置",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "羣組設置",
         "en": "Group setting",
         "ko": "그룹 설정",
@@ -6414,7 +6414,7 @@
     },
     {
         "key": "聊天昵称",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "聊天暱稱",
         "en": "Chat nickname",
         "ko": "채팅 닉네임",
@@ -6425,7 +6425,7 @@
     },
     {
         "key": "聊天资料",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "聊天資料",
         "en": "Chat information",
         "ko": "채팅 자료",
@@ -6436,7 +6436,7 @@
     },
     {
         "key": "联系我们",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "聯繫我們",
         "en": "Contact us",
         "ko": "연락하기",
@@ -6447,7 +6447,7 @@
     },
     {
         "key": "脑图经典",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "腦圖經典",
         "en": "Encephalogram",
         "ko": "브레인 맵 클래식",
@@ -6458,7 +6458,7 @@
     },
     {
         "key": "自动签到",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "自動簽到",
         "en": "Automatic check-in",
         "ko": "자동 체크",
@@ -6469,7 +6469,7 @@
     },
     {
         "key": "解散群组",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "解散羣組",
         "en": "Disband",
         "ko": "그룹을 해체하다",
@@ -6480,7 +6480,7 @@
     },
     {
         "key": "计划时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "計劃時間",
         "en": "Schedule time",
         "ko": "시간을 계획하다",
@@ -6491,7 +6491,7 @@
     },
     {
         "key": "认证设置",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "認證設置",
         "en": "Authentication setting",
         "ko": "인증 설정",
@@ -6502,7 +6502,7 @@
     },
     {
         "key": "设为禁用",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "設爲禁用",
         "en": "Set to disable",
         "ko": "사용하지 않도록 설정",
@@ -6513,7 +6513,7 @@
     },
     {
         "key": "设置待办",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "設置待辦",
         "en": "Set a to-do list",
         "ko": "업무 설정",
@@ -6524,7 +6524,7 @@
     },
     {
         "key": "设置成功",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "設置成功",
         "en": "Successful setting",
         "ko": "설정 성공",
@@ -6535,7 +6535,7 @@
     },
     {
         "key": "语言设置",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "語言設置",
         "en": "Language setting",
         "ko": "언어 설정",
@@ -6546,7 +6546,7 @@
     },
     {
         "key": "请求成功",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "請求成功",
         "en": "Request successful",
         "ko": "요청이 성공했습니다.",
@@ -6557,7 +6557,7 @@
     },
     {
         "key": "调整成功",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "調整成功",
         "en": "Successful adjustment",
         "ko": "성공적으로 조정됨",
@@ -6568,7 +6568,7 @@
     },
     {
         "key": "超期任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "超期任務",
         "en": "Overdue task",
         "ko": "기한을 넘긴 임무",
@@ -6579,7 +6579,7 @@
     },
     {
         "key": "距离到期",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "距離到期",
         "en": "Distance expiration",
         "ko": "기한이 남다",
@@ -6590,7 +6590,7 @@
     },
     {
         "key": "跟随系统",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "跟隨系統",
         "en": "Follower system",
         "ko": "추적시스템",
@@ -6601,7 +6601,7 @@
     },
     {
         "key": "转让群主",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "轉讓羣主",
         "en": "Transfer owner",
         "ko": "군주를 양도하다",
@@ -6612,7 +6612,7 @@
     },
     {
         "key": "软件开发",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "軟件開發",
         "en": "Software development",
         "ko": "소프트웨어 개발",
@@ -6623,7 +6623,7 @@
     },
     {
         "key": "返回本月",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "返回本月",
         "en": "Return to this month",
         "ko": "이달로 되돌아가다",
@@ -6634,7 +6634,7 @@
     },
     {
         "key": "退出全屏",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "退出全屏",
         "en": "Exit full screen",
         "ko": "전체 화면 끝내기",
@@ -6645,7 +6645,7 @@
     },
     {
         "key": "退出成功",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "退出成功",
         "en": "Exit successfully",
         "ko": "성공적으로 종료했습니다",
@@ -6656,7 +6656,7 @@
     },
     {
         "key": "退出登录",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "退出登錄",
         "en": "Log out",
         "ko": "로그아웃",
@@ -6667,7 +6667,7 @@
     },
     {
         "key": "退出群组",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "退出羣組",
         "en": "Exit the group",
         "ko": "그룹 종료",
@@ -6678,7 +6678,7 @@
     },
     {
         "key": "退出项目",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "退出項目",
         "en": "Exit project",
         "ko": "항목 끝내기",
@@ -6689,7 +6689,7 @@
     },
     {
         "key": "选择主题",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇主題",
         "en": "Select a topic",
         "ko": "테마 선택",
@@ -6700,7 +6700,7 @@
     },
     {
         "key": "选择任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇任務",
         "en": "Select task",
         "ko": "작업 선택",
@@ -6711,7 +6711,7 @@
     },
     {
         "key": "选择成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇成員",
         "en": "Select member",
         "ko": "멤버 선택",
@@ -6722,7 +6722,7 @@
     },
     {
         "key": "选择时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇時間",
         "en": "Selection time",
         "ko": "시간을 선택하다",
@@ -6733,7 +6733,7 @@
     },
     {
         "key": "选择语言",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇語言",
         "en": "Selective language",
         "ko": "언어 선택",
@@ -6744,7 +6744,7 @@
     },
     {
         "key": "选项主题",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選項主題",
         "en": "Option subject",
         "ko": "테마 설정",
@@ -6755,7 +6755,7 @@
     },
     {
         "key": "选项语言",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選項語言",
         "en": "Option language",
         "ko": "언어 선택",
@@ -6766,7 +6766,7 @@
     },
     {
         "key": "邀请加入",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "邀請加入",
         "en": "Invite to join",
         "ko": "가입 초대",
@@ -6777,7 +6777,7 @@
     },
     {
         "key": "邀请成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "邀請成員",
         "en": "Invitational member",
         "ko": "구성원 초대",
@@ -6788,7 +6788,7 @@
     },
     {
         "key": "邀请链接",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "邀請鏈接",
         "en": "Invitation link",
         "ko": "초대장 링크",
@@ -6799,7 +6799,7 @@
     },
     {
         "key": "邀请项目",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "邀請項目",
         "en": "Invitation item",
         "ko": "초청 항목",
@@ -6810,7 +6810,7 @@
     },
     {
         "key": "邮件设置",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "郵件設置",
         "en": "Mail setting",
         "ko": "메일 설정",
@@ -6821,7 +6821,7 @@
     },
     {
         "key": "部门名称",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "部門名稱",
         "en": "Department name",
         "ko": "부서명",
@@ -6832,7 +6832,7 @@
     },
     {
         "key": "部门群组",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "部門羣組",
         "en": "Departmental group",
         "ko": "부서 그룹",
@@ -6843,7 +6843,7 @@
     },
     {
         "key": "部门群聊",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "部門羣聊",
         "en": "Departmental group chat",
         "ko": "부서 그룹 채팅",
@@ -6854,7 +6854,7 @@
     },
     {
         "key": "重复周期",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "重複週期",
         "en": "Repetition period",
         "ko": "주기를 반복하다",
@@ -6865,7 +6865,7 @@
     },
     {
         "key": "重置密码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "重置密碼",
         "en": "Reset password",
         "ko": "비밀번호 초기화",
@@ -6876,7 +6876,7 @@
     },
     {
         "key": "链接地址",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "鏈接地址",
         "en": "Link address",
         "ko": "링크 주소",
@@ -6887,7 +6887,7 @@
     },
     {
         "key": "长按录音",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "長按錄音",
         "en": "Long-press recording",
         "ko": "녹음하다",
@@ -6898,7 +6898,7 @@
     },
     {
         "key": "隐私协议",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "隱私協議",
         "en": "Privacy agreement",
         "ko": "프라이버시 규약",
@@ -6909,7 +6909,7 @@
     },
     {
         "key": "隐私政策",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "隱私政策",
         "en": "Privacy policy",
         "ko": "개인정보 보호정책",
@@ -6920,7 +6920,7 @@
     },
     {
         "key": "非管理员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "非管理員",
         "en": "Non-administrator",
         "ko": "비관리인",
@@ -6931,7 +6931,7 @@
     },
     {
         "key": "项目介绍",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目介紹",
         "en": "Project introduction",
         "ko": "종목 소개",
@@ -6942,7 +6942,7 @@
     },
     {
         "key": "项目动态",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目動態",
         "en": "Project dynamics",
         "ko": "프로젝트 동향",
@@ -6953,7 +6953,7 @@
     },
     {
         "key": "项目名称",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目名稱",
         "en": "Project name",
         "ko": "프로젝트 이름",
@@ -6964,7 +6964,7 @@
     },
     {
         "key": "项目成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目成員",
         "en": "Project member",
         "ko": "프로젝트 멤버",
@@ -6975,7 +6975,7 @@
     },
     {
         "key": "项目模板",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目模板",
         "en": "Project template",
         "ko": "프로젝트 템플릿",
@@ -6986,7 +6986,7 @@
     },
     {
         "key": "项目状态",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目狀態",
         "en": "Project status",
         "ko": "프로젝트 상태",
@@ -6997,7 +6997,7 @@
     },
     {
         "key": "项目群组",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目羣組",
         "en": "Project group",
         "ko": "프로젝트 그룹",
@@ -7008,7 +7008,7 @@
     },
     {
         "key": "项目设置",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目設置",
         "en": "Project setting",
         "ko": "프로젝트 설정",
@@ -7019,7 +7019,7 @@
     },
     {
         "key": "项目进度",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目進度",
         "en": "Project schedule",
         "ko": "프로젝트 진행 상황",
@@ -7030,7 +7030,7 @@
     },
     {
         "key": "预览图片",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "預覽圖片",
         "en": "Preview picture",
         "ko": "미리 보기 그림",
@@ -7041,7 +7041,7 @@
     },
     {
         "key": "领取任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "領取任務",
         "en": "Claim task",
         "ko": "임무를 받다",
@@ -7052,7 +7052,7 @@
     },
     {
         "key": "首页底部",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "首頁底部",
         "en": "Bottom of home page",
         "ko": "홈페이지 맨 아래",
@@ -7063,7 +7063,7 @@
     },
     {
         "key": "高级选项",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "高級選項",
         "en": "Advanced options",
         "ko": "고급 옵션",
@@ -7074,7 +7074,7 @@
     },
     {
         "key": "默认节点",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "默認節點",
         "en": "Default node",
         "ko": "기본 노드",
@@ -7085,7 +7085,7 @@
     },
     {
         "key": "默认部门",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "默認部門",
         "en": "Default department",
         "ko": "디폴트 세그먼트",
@@ -7096,7 +7096,7 @@
     },
     {
         "key": "LDAP 地址",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "LDAP 地址",
         "en": "LDAP address",
         "ko": "Ldap 주소",
@@ -7107,7 +7107,7 @@
     },
     {
         "key": "LDAP 端口",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "LDAP 端口",
         "en": "LDAP port",
         "ko": "Ldap 포트",
@@ -7118,7 +7118,7 @@
     },
     {
         "key": "MD编辑器",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "MD編輯器",
         "en": "MD editor",
         "ko": "Md 편집기",
@@ -7129,7 +7129,7 @@
     },
     {
         "key": "Word 文档",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "Word 文檔",
         "en": "Word document",
         "ko": "Word 문서",
@@ -7140,7 +7140,7 @@
     },
     {
         "key": "导出XLSX",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "導出XLSX",
         "en": "Export XLSX",
         "ko": "Xlsx로 내보낸다",
@@ -7151,7 +7151,7 @@
     },
     {
         "key": "APP推送",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "APP推送",
         "en": "APP push",
         "ko": "App 푸시",
@@ -7162,7 +7162,7 @@
     },
     {
         "key": "MAC地址",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "MAC地址",
         "en": "MAC address",
         "ko": "Mac 주소",
@@ -7173,7 +7173,7 @@
     },
     {
         "key": "上个月",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "上個月",
         "en": "Last month",
         "ko": "지난 달",
@@ -7184,7 +7184,7 @@
     },
     {
         "key": "下划线",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "下劃線",
         "en": "Underline",
         "ko": "밑줄",
@@ -7195,7 +7195,7 @@
     },
     {
         "key": "不同意",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "不同意",
         "en": "Disagree",
         "ko": "동의하지 않다",
@@ -7206,7 +7206,7 @@
     },
     {
         "key": "交接人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "交接人",
         "en": "Handover person",
         "ko": "인수인",
@@ -7217,7 +7217,7 @@
     },
     {
         "key": "代码块",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "代碼塊",
         "en": "Code block",
         "ko": "코드 블록",
@@ -7228,7 +7228,7 @@
     },
     {
         "key": "仪表盘",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "儀表盤",
         "en": "Dashboard",
         "ko": "계기판",
@@ -7239,7 +7239,7 @@
     },
     {
         "key": "任务名",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務名",
         "en": "Task name",
         "ko": "작업 이름",
@@ -7250,7 +7250,7 @@
     },
     {
         "key": "优先级",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "優先級",
         "en": "Priority",
         "ko": "우선 순위",
@@ -7261,7 +7261,7 @@
     },
     {
         "key": "修改MAC",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "修改MAC",
         "en": "Modifying MAC",
         "ko": "Mac 수정",
@@ -7272,7 +7272,7 @@
     },
     {
         "key": "关键词",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "關鍵詞",
         "en": "Key words",
         "ko": "핵심 단어",
@@ -7283,7 +7283,7 @@
     },
     {
         "key": "分割线",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "分割線",
         "en": "Dividing line",
         "ko": "분할선",
@@ -7294,7 +7294,7 @@
     },
     {
         "key": "创建人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "創建人",
         "en": "Founder",
         "ko": "창립자",
@@ -7305,7 +7305,7 @@
     },
     {
         "key": "删除线",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "刪除線",
         "en": "Stripper line",
         "ko": "삭제선",
@@ -7316,7 +7316,7 @@
     },
     {
         "key": "到期前",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "到期前",
         "en": "Before maturity",
         "ko": "만료 전",
@@ -7327,7 +7327,7 @@
     },
     {
         "key": "到期后",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "到期後",
         "en": "After maturity",
         "ko": "기간이 만료되면",
@@ -7338,7 +7338,7 @@
     },
     {
         "key": "天空蓝",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "天空藍",
         "en": "Sky blue",
         "ko": "하늘이 푸르다",
@@ -7349,7 +7349,7 @@
     },
     {
         "key": "子任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "子任務",
         "en": "Subtask",
         "ko": "하위 작업",
@@ -7360,7 +7360,7 @@
     },
     {
         "key": "导出CSV",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "導出CSV",
         "en": "Export CSV",
         "ko": "Csv 내보내기",
@@ -7371,7 +7371,7 @@
     },
     {
         "key": "导出TXT",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "導出TXT",
         "en": "Exported TXT",
         "ko": "Txt를 유도한다",
@@ -7382,7 +7382,7 @@
     },
     {
         "key": "导出XLS",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "導出XLS",
         "en": "Export XLS",
         "ko": "Xls 내보내기",
@@ -7393,7 +7393,7 @@
     },
     {
         "key": "已删除",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "已刪除",
         "en": "Deleted",
         "ko": "삭제됨",
@@ -7404,7 +7404,7 @@
     },
     {
         "key": "已取消",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "已取消",
         "en": "Cancelled",
         "ko": "취소됨",
@@ -7415,7 +7415,7 @@
     },
     {
         "key": "已完成",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "已完成",
         "en": "Have completed",
         "ko": "완료",
@@ -7426,7 +7426,7 @@
     },
     {
         "key": "已归档",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "已歸檔",
         "en": "Filed",
         "ko": "압축 파일",
@@ -7437,7 +7437,7 @@
     },
     {
         "key": "已离职",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "已離職",
         "en": "Have left office",
         "ko": "이미 직무를 그만두다.",
@@ -7448,7 +7448,7 @@
     },
     {
         "key": "已签到",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "已簽到",
         "en": "Signed in",
         "ko": "체크인 완료",
@@ -7459,7 +7459,7 @@
     },
     {
         "key": "待处理",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "待處理",
         "en": "To be processed",
         "ko": "처리를 기다리다",
@@ -7470,7 +7470,7 @@
     },
     {
         "key": "待更新",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "待更新",
         "en": "To be updated",
         "ko": "업데이트 대기",
@@ -7481,7 +7481,7 @@
     },
     {
         "key": "待测试",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "待測試",
         "en": "To be tested",
         "ko": "테스트를 기다리다",
@@ -7492,7 +7492,7 @@
     },
     {
         "key": "总数量",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "總數量",
         "en": "Total quantity",
         "ko": "총 수량",
@@ -7503,7 +7503,7 @@
     },
     {
         "key": "总进度",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "總進度",
         "en": "Overall progress",
         "ko": "전체 진도",
@@ -7514,7 +7514,7 @@
     },
     {
         "key": "所有人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "所有人",
         "en": "All",
         "ko": "소유주",
@@ -7525,7 +7525,7 @@
     },
     {
         "key": "所有者",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "所有者",
         "en": "Owner",
         "ko": "소유자",
@@ -7536,7 +7536,7 @@
     },
     {
         "key": "扫一扫",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "掃一掃",
         "en": "Sweep",
         "ko": "쓸어버리다",
@@ -7547,7 +7547,7 @@
     },
     {
         "key": "搜索...",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "搜索...",
         "en": "Search for...",
         "ko": "검색...",
@@ -7558,7 +7558,7 @@
     },
     {
         "key": "摄像头",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "攝像頭",
         "en": "Camera",
         "ko": "카메라",
@@ -7569,7 +7569,7 @@
     },
     {
         "key": "文件名",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "文件名",
         "en": "File name",
         "ko": "파일 이름",
@@ -7580,7 +7580,7 @@
     },
     {
         "key": "文件夹",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "文件夾",
         "en": "Folder",
         "ko": "폴더",
@@ -7591,7 +7591,7 @@
     },
     {
         "key": "新任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "新任務",
         "en": "New task",
         "ko": "새로운 임무",
@@ -7602,7 +7602,7 @@
     },
     {
         "key": "新会议",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "新會議",
         "en": "New meeting",
         "ko": "새 회의",
@@ -7613,7 +7613,7 @@
     },
     {
         "key": "新密码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "新密碼",
         "en": "New password",
         "ko": "새 비밀번호",
@@ -7624,7 +7624,7 @@
     },
     {
         "key": "无内容",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "無內容",
         "en": "No content",
         "ko": "내용 없음",
@@ -7635,7 +7635,7 @@
     },
     {
         "key": "无标题",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "無標題",
         "en": "Untitled",
         "ko": "제목 없음",
@@ -7646,7 +7646,7 @@
     },
     {
         "key": "旧密码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "舊密碼",
         "en": "Old password",
         "ko": "이전 비밀번호",
@@ -7657,7 +7657,7 @@
     },
     {
         "key": "星期一",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "星期一",
         "en": "Monday",
         "ko": "월요일",
@@ -7668,7 +7668,7 @@
     },
     {
         "key": "星期三",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "星期三",
         "en": "Wednesday",
         "ko": "수요일",
@@ -7679,7 +7679,7 @@
     },
     {
         "key": "星期二",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "星期二",
         "en": "Tuesday",
         "ko": "화요일",
@@ -7690,7 +7690,7 @@
     },
     {
         "key": "星期五",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "星期五",
         "en": "Friday",
         "ko": "금요일",
@@ -7701,7 +7701,7 @@
     },
     {
         "key": "星期六",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "星期六",
         "en": "Saturday",
         "ko": "토요일",
@@ -7712,7 +7712,7 @@
     },
     {
         "key": "星期四",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "星期四",
         "en": "Thursday",
         "ko": "목요일",
@@ -7723,7 +7723,7 @@
     },
     {
         "key": "星期日",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "星期日",
         "en": "Sunday",
         "ko": "일요일",
@@ -7734,7 +7734,7 @@
     },
     {
         "key": "最小化",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "最小化",
         "en": "Minimize",
         "ko": "최소화",
@@ -7745,7 +7745,7 @@
     },
     {
         "key": "服务器",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "服務器",
         "en": "Server",
         "ko": "서버",
@@ -7756,7 +7756,7 @@
     },
     {
         "key": "未保存",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "未保存",
         "en": "Unsaved",
         "ko": "저장하지 않음",
@@ -7767,7 +7767,7 @@
     },
     {
         "key": "未命名",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "未命名",
         "en": "Unnamed",
         "ko": "이름 없음",
@@ -7778,7 +7778,7 @@
     },
     {
         "key": "未归档",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "未歸檔",
         "en": "Unfiled",
         "ko": "압축 파일 없음",
@@ -7789,7 +7789,7 @@
     },
     {
         "key": "未签到",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "未簽到",
         "en": "Fail to sign in",
         "ko": "로그인하지 않음",
@@ -7800,7 +7800,7 @@
     },
     {
         "key": "未设置",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "未設置",
         "en": "Not set",
         "ko": "설정되지 않음",
@@ -7811,7 +7811,7 @@
     },
     {
         "key": "机器人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "機器人",
         "en": "Robot",
         "ko": "로봇",
@@ -7822,7 +7822,7 @@
     },
     {
         "key": "标注了",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "標註了",
         "en": "Marked",
         "ko": "표시되어 있습니다.",
@@ -7833,7 +7833,7 @@
     },
     {
         "key": "管理员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "管理員",
         "en": "Administrator",
         "ko": "관리원",
@@ -7844,7 +7844,7 @@
     },
     {
         "key": "群名称",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "羣名稱",
         "en": "Group name",
         "ko": "그룹 이름",
@@ -7855,7 +7855,7 @@
     },
     {
         "key": "群成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "羣成員",
         "en": "Group member",
         "ko": "그룹 구성원",
@@ -7866,7 +7866,7 @@
     },
     {
         "key": "群类型",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "羣類型",
         "en": "Group type",
         "ko": "그룹 유형",
@@ -7877,7 +7877,7 @@
     },
     {
         "key": "群设置",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "羣設置",
         "en": "Group setting",
         "ko": "그룹 설정",
@@ -7888,7 +7888,7 @@
     },
     {
         "key": "背景色",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "背景色",
         "en": "Background color",
         "ko": "배경색",
@@ -7899,7 +7899,7 @@
     },
     {
         "key": "设待办",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "設待辦",
         "en": "Set up a to-do list",
         "ko": "업무 설정",
@@ -7910,7 +7910,7 @@
     },
     {
         "key": "负责人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "負責人",
         "en": "Responsible person",
         "ko": "책임자",
@@ -7921,7 +7921,7 @@
     },
     {
         "key": "这个月",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "這個月",
         "en": "This month",
         "ko": "이번 달",
@@ -7932,7 +7932,7 @@
     },
     {
         "key": "进行中",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "進行中",
         "en": "In progress",
         "ko": "진행 중",
@@ -7943,7 +7943,7 @@
     },
     {
         "key": "选填...",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選填...",
         "en": "Fill in...",
         "ko": "선택 기입...",
@@ -7954,7 +7954,7 @@
     },
     {
         "key": "通讯录",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "通訊錄",
         "en": "Address book",
         "ko": "주소록",
@@ -7965,7 +7965,7 @@
     },
     {
         "key": "邀请码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "邀請碼",
         "en": "Invitation code",
         "ko": "초대 코드",
@@ -7976,7 +7976,7 @@
     },
     {
         "key": "配置项",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "配置項",
         "en": "Configuration item",
         "ko": "항목 설정",
@@ -7987,7 +7987,7 @@
     },
     {
         "key": "重命名",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "重命名",
         "en": "Rename",
         "ko": "이름 바꾸기",
@@ -7998,7 +7998,7 @@
     },
     {
         "key": "项目名",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目名",
         "en": "Project name",
         "ko": "프로젝트 이름",
@@ -8009,7 +8009,7 @@
     },
     {
         "key": "验证码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "驗證碼",
         "en": "Verification code",
         "ko": "인증 코드",
@@ -8020,7 +8020,7 @@
     },
     {
         "key": "鱼骨图",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "魚骨圖",
         "en": "Fishbone diagram",
         "ko": "어골 사진",
@@ -8031,7 +8031,7 @@
     },
     {
         "key": "麦克风",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "麥克風",
         "en": "Microphone",
         "ko": "마이크",
@@ -8042,7 +8042,7 @@
     },
     {
         "key": "频道ID",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "頻道ID",
         "en": "Channel ID",
         "ko": "채널 id",
@@ -8053,7 +8053,7 @@
     },
     {
         "key": "读\/写",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "讀\/寫",
         "en": "Read\/write",
         "ko": "읽기\/쓰기",
@@ -8064,7 +8064,7 @@
     },
     {
         "key": "Pro版",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "Pro版",
         "en": "Pro version",
         "ko": "Pro 판",
@@ -8075,7 +8075,7 @@
     },
     {
         "key": "上传",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "上傳",
         "en": "Upload",
         "ko": "업로드",
@@ -8086,7 +8086,7 @@
     },
     {
         "key": "下载",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "下載",
         "en": "Download",
         "ko": "다운로드",
@@ -8097,7 +8097,7 @@
     },
     {
         "key": "个人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "個人",
         "en": "Individual",
         "ko": "개인",
@@ -8108,7 +8108,7 @@
     },
     {
         "key": "今天",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "今天",
         "en": "Today",
         "ko": "오늘",
@@ -8119,7 +8119,7 @@
     },
     {
         "key": "任务",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務",
         "en": "Task",
         "ko": "임무",
@@ -8130,7 +8130,7 @@
     },
     {
         "key": "会议",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "會議",
         "en": "Conference",
         "ko": "회의",
@@ -8141,7 +8141,7 @@
     },
     {
         "key": "例如",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "例如",
         "en": "For example",
         "ko": "례 컨 대",
@@ -8152,7 +8152,7 @@
     },
     {
         "key": "保存",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "保存",
         "en": "Save",
         "ko": "저장",
@@ -8163,7 +8163,7 @@
     },
     {
         "key": "修改",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "修改",
         "en": "Modify",
         "ko": "수정",
@@ -8174,7 +8174,7 @@
     },
     {
         "key": "允许",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "允許",
         "en": "Allow",
         "ko": "허용",
@@ -8185,7 +8185,7 @@
     },
     {
         "key": "全员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "全員",
         "en": "Full staff",
         "ko": "전원",
@@ -8196,7 +8196,7 @@
     },
     {
         "key": "全屏",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "全屏",
         "en": "Full screen",
         "ko": "전체 화면",
@@ -8207,7 +8207,7 @@
     },
     {
         "key": "全部",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "全部",
         "en": "All",
         "ko": "전부",
@@ -8218,7 +8218,7 @@
     },
     {
         "key": "共享",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "共享",
         "en": "Share",
         "ko": "공유",
@@ -8229,7 +8229,7 @@
     },
     {
         "key": "关闭",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "關閉",
         "en": "Shut down",
         "ko": "닫기",
@@ -8240,7 +8240,7 @@
     },
     {
         "key": "其它",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "其它",
         "en": "Other",
         "ko": "다른",
@@ -8251,7 +8251,7 @@
     },
     {
         "key": "分钟",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "分鐘",
         "en": "Minutes",
         "ko": "분",
@@ -8262,7 +8262,7 @@
     },
     {
         "key": "列表",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "列表",
         "en": "List",
         "ko": "목록",
@@ -8273,7 +8273,7 @@
     },
     {
         "key": "创建",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "創建",
         "en": "Create",
         "ko": "생성",
@@ -8284,7 +8284,7 @@
     },
     {
         "key": "删除",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "刪除",
         "en": "Delete",
         "ko": "삭제",
@@ -8295,7 +8295,7 @@
     },
     {
         "key": "刷新",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "刷新",
         "en": "Refresh",
         "ko": "새로 고침",
@@ -8306,7 +8306,7 @@
     },
     {
         "key": "剪切",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "剪切",
         "en": "Shear",
         "ko": "잘라 내기",
@@ -8317,7 +8317,7 @@
     },
     {
         "key": "动态",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "動態",
         "en": "Dynamic",
         "ko": "동태",
@@ -8328,7 +8328,7 @@
     },
     {
         "key": "发布",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "發佈",
         "en": "Release",
         "ko": "발표",
@@ -8339,7 +8339,7 @@
     },
     {
         "key": "发送",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "發送",
         "en": "Send",
         "ko": "보내기",
@@ -8350,7 +8350,7 @@
     },
     {
         "key": "取消",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "取消",
         "en": "Cancel",
         "ko": "취소",
@@ -8361,7 +8361,7 @@
     },
     {
         "key": "只读",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "只讀",
         "en": "Read only",
         "ko": "읽기 전용",
@@ -8372,7 +8372,7 @@
     },
     {
         "key": "可选",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "可選",
         "en": "Optional",
         "ko": "선택",
@@ -8383,7 +8383,7 @@
     },
     {
         "key": "同意",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "同意",
         "en": "Agree",
         "ko": "동의",
@@ -8394,7 +8394,7 @@
     },
     {
         "key": "名称",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "名稱",
         "en": "Name",
         "ko": "이름",
@@ -8405,7 +8405,7 @@
     },
     {
         "key": "周一",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "週一",
         "en": "Monday",
         "ko": "월요일",
@@ -8416,7 +8416,7 @@
     },
     {
         "key": "周三",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "週三",
         "en": "Wednesday",
         "ko": "수요일",
@@ -8427,7 +8427,7 @@
     },
     {
         "key": "周二",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "週二",
         "en": "Tuesday",
         "ko": "화요일",
@@ -8438,7 +8438,7 @@
     },
     {
         "key": "周五",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "週五",
         "en": "Friday",
         "ko": "금요일",
@@ -8449,7 +8449,7 @@
     },
     {
         "key": "周六",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "週六",
         "en": "Saturday",
         "ko": "토요일",
@@ -8460,7 +8460,7 @@
     },
     {
         "key": "周四",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "週四",
         "en": "Thursday",
         "ko": "목요일",
@@ -8471,7 +8471,7 @@
     },
     {
         "key": "周日",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "週日",
         "en": "Sunday",
         "ko": "일요일",
@@ -8482,7 +8482,7 @@
     },
     {
         "key": "回复",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "回覆",
         "en": "Reply",
         "ko": "답장",
@@ -8493,7 +8493,7 @@
     },
     {
         "key": "图形",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "圖形",
         "en": "Figure",
         "ko": "도형",
@@ -8504,7 +8504,7 @@
     },
     {
         "key": "图片",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "圖片",
         "en": "Picture",
         "ko": "사진",
@@ -8515,7 +8515,7 @@
     },
     {
         "key": "图表",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "圖表",
         "en": "Chart",
         "ko": "도표",
@@ -8526,7 +8526,7 @@
     },
     {
         "key": "在线",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "在線",
         "en": "Online",
         "ko": "온라인",
@@ -8537,7 +8537,7 @@
     },
     {
         "key": "在职",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "在職",
         "en": "On the job",
         "ko": "재직",
@@ -8548,7 +8548,7 @@
     },
     {
         "key": "备注",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "備註",
         "en": "Remarks",
         "ko": "비고",
@@ -8559,7 +8559,7 @@
     },
     {
         "key": "复制",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "複製",
         "en": "Copy",
         "ko": "복사",
@@ -8570,7 +8570,7 @@
     },
     {
         "key": "复杂",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "複雜",
         "en": "Complex",
         "ko": "복잡 한",
@@ -8581,7 +8581,7 @@
     },
     {
         "key": "大小",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "大小",
         "en": "Size",
         "ko": "크기",
@@ -8592,7 +8592,7 @@
     },
     {
         "key": "天数",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "天數",
         "en": "Number of days",
         "ko": "일수",
@@ -8603,7 +8603,7 @@
     },
     {
         "key": "头像",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "頭像",
         "en": "Head picture",
         "ko": "얼굴을",
@@ -8614,7 +8614,7 @@
     },
     {
         "key": "完成",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "完成",
         "en": "Complete",
         "ko": "완료",
@@ -8625,7 +8625,7 @@
     },
     {
         "key": "密码",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "密碼",
         "en": "Password",
         "ko": "암호",
@@ -8636,7 +8636,7 @@
     },
     {
         "key": "导出",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "導出",
         "en": "Derive",
         "ko": "내보 내기",
@@ -8647,7 +8647,7 @@
     },
     {
         "key": "导图",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "導圖",
         "en": "Map",
         "ko": "감독은 투",
@@ -8658,7 +8658,7 @@
     },
     {
         "key": "小时",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "小時",
         "en": "Hour",
         "ko": "시간",
@@ -8669,7 +8669,7 @@
     },
     {
         "key": "居中",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "居中",
         "en": "Center",
         "ko": "중간에서",
@@ -8680,7 +8680,7 @@
     },
     {
         "key": "展开",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "展開",
         "en": "Expansion",
         "ko": "벌",
@@ -8691,7 +8691,7 @@
     },
     {
         "key": "已读",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "已讀",
         "en": "Read",
         "ko": "읽은",
@@ -8702,7 +8702,7 @@
     },
     {
         "key": "帐号",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "帳號",
         "en": "Account number",
         "ko": "계정",
@@ -8713,7 +8713,7 @@
     },
     {
         "key": "开启",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "開啓",
         "en": "Open",
         "ko": "열",
@@ -8724,7 +8724,7 @@
     },
     {
         "key": "开放",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "開放",
         "en": "Open up",
         "ko": "개방",
@@ -8735,7 +8735,7 @@
     },
     {
         "key": "引用",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "引用",
         "en": "Reference",
         "ko": "인용",
@@ -8746,7 +8746,7 @@
     },
     {
         "key": "归档",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "歸檔",
         "en": "File",
         "ko": "압축 파일",
@@ -8757,7 +8757,7 @@
     },
     {
         "key": "待办",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "待辦",
         "en": "To be done",
         "ko": "할 일",
@@ -8768,7 +8768,7 @@
     },
     {
         "key": "必填",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "必填",
         "en": "Required",
         "ko": "필수",
@@ -8779,7 +8779,7 @@
     },
     {
         "key": "我的",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "我的",
         "en": "Mine",
         "ko": "나의",
@@ -8790,7 +8790,7 @@
     },
     {
         "key": "打开",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "打開",
         "en": "Open",
         "ko": "열어",
@@ -8801,7 +8801,7 @@
     },
     {
         "key": "折叠",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "摺疊",
         "en": "Fold",
         "ko": "접기",
@@ -8812,7 +8812,7 @@
     },
     {
         "key": "提交",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "提交",
         "en": "Submit",
         "ko": "제출",
@@ -8823,7 +8823,7 @@
     },
     {
         "key": "搜索",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "搜索",
         "en": "Search",
         "ko": "검색",
@@ -8834,7 +8834,7 @@
     },
     {
         "key": "撤回",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "撤回",
         "en": "Withdraw",
         "ko": "철수",
@@ -8845,7 +8845,7 @@
     },
     {
         "key": "撤销",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "撤銷",
         "en": "Revocation",
         "ko": "취소",
@@ -8856,7 +8856,7 @@
     },
     {
         "key": "操作",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "操作",
         "en": "Operation",
         "ko": "조작",
@@ -8867,7 +8867,7 @@
     },
     {
         "key": "放弃",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "放棄",
         "en": "Give up",
         "ko": "포기",
@@ -8878,7 +8878,7 @@
     },
     {
         "key": "文件",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "文件",
         "en": "File",
         "ko": "파일",
@@ -8889,7 +8889,7 @@
     },
     {
         "key": "文本",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "文本",
         "en": "Text",
         "ko": "텍스트",
@@ -8900,7 +8900,7 @@
     },
     {
         "key": "斜体",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "斜體",
         "en": "Italic",
         "ko": "기울 임 꼴",
@@ -8911,7 +8911,7 @@
     },
     {
         "key": "新建",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "新建",
         "en": "Newly built",
         "ko": "신축",
@@ -8922,7 +8922,7 @@
     },
     {
         "key": "日历",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "日曆",
         "en": "Calendar",
         "ko": "달력",
@@ -8933,7 +8933,7 @@
     },
     {
         "key": "日期",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "日期",
         "en": "Date",
         "ko": "날짜",
@@ -8944,7 +8944,7 @@
     },
     {
         "key": "时间",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "時間",
         "en": "Time",
         "ko": "시간",
@@ -8955,7 +8955,7 @@
     },
     {
         "key": "明亮",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "明亮",
         "en": "Bright",
         "ko": "밝은",
@@ -8966,7 +8966,7 @@
     },
     {
         "key": "明天",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "明天",
         "en": "Tomorrow",
         "ko": "내일",
@@ -8977,7 +8977,7 @@
     },
     {
         "key": "昵称",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "暱稱",
         "en": "Nickname",
         "ko": "닉네임",
@@ -8988,7 +8988,7 @@
     },
     {
         "key": "暗黑",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "暗黑",
         "en": "Dark",
         "ko": "암흑",
@@ -8999,7 +8999,7 @@
     },
     {
         "key": "更多",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "更多",
         "en": "More",
         "ko": "더 많은",
@@ -9010,7 +9010,7 @@
     },
     {
         "key": "未读",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "未讀",
         "en": "Unread",
         "ko": "읽지 않은",
@@ -9021,7 +9021,7 @@
     },
     {
         "key": "本周",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "本週",
         "en": "This week",
         "ko": "이번 주",
@@ -9032,7 +9032,7 @@
     },
     {
         "key": "本月",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "本月",
         "en": "This month",
         "ko": "지난",
@@ -9043,7 +9043,7 @@
     },
     {
         "key": "权限",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "權限",
         "en": "Authority",
         "ko": "권한",
@@ -9054,7 +9054,7 @@
     },
     {
         "key": "查看",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "查看",
         "en": "View",
         "ko": "보기",
@@ -9065,7 +9065,7 @@
     },
     {
         "key": "标注",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "標註",
         "en": "Mark",
         "ko": "표시",
@@ -9076,7 +9076,7 @@
     },
     {
         "key": "样式",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "樣式",
         "en": "Style",
         "ko": "스타일",
@@ -9087,7 +9087,7 @@
     },
     {
         "key": "棕色",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "棕色",
         "en": "Brown",
         "ko": "갈색",
@@ -9098,7 +9098,7 @@
     },
     {
         "key": "橘色",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "橘色",
         "en": "Orange",
         "ko": "오렌지색",
@@ -9109,7 +9109,7 @@
     },
     {
         "key": "注册",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "註冊",
         "en": "Register",
         "ko": "등록",
@@ -9120,7 +9120,7 @@
     },
     {
         "key": "测试",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "測試",
         "en": "Test",
         "ko": "테스트",
@@ -9131,7 +9131,7 @@
     },
     {
         "key": "浏览",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "瀏覽",
         "en": "Browse",
         "ko": "검색",
@@ -9142,7 +9142,7 @@
     },
     {
         "key": "消息",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "消息",
         "en": "Message",
         "ko": "소식",
@@ -9153,7 +9153,7 @@
     },
     {
         "key": "添加",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "添加",
         "en": "Add",
         "ko": "추가",
@@ -9164,7 +9164,7 @@
     },
     {
         "key": "清空",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "清空",
         "en": "Empty",
         "ko": "비우기",
@@ -9175,7 +9175,7 @@
     },
     {
         "key": "灰色",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "灰色",
         "en": "Grey",
         "ko": "그레이",
@@ -9186,7 +9186,7 @@
     },
     {
         "key": "版本",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "版本",
         "en": "Version",
         "ko": "버전",
@@ -9197,7 +9197,7 @@
     },
     {
         "key": "现在",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "現在",
         "en": "Now",
         "ko": "지금",
@@ -9208,7 +9208,7 @@
     },
     {
         "key": "电话",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "電話",
         "en": "Telephone",
         "ko": "전화",
@@ -9219,7 +9219,7 @@
     },
     {
         "key": "登录",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "登錄",
         "en": "Log in",
         "ko": "로그인",
@@ -9230,7 +9230,7 @@
     },
     {
         "key": "确定",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "確定",
         "en": "Determine",
         "ko": "확정",
@@ -9241,7 +9241,7 @@
     },
     {
         "key": "禁止",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "禁止",
         "en": "Forbid",
         "ko": "금지",
@@ -9252,7 +9252,7 @@
     },
     {
         "key": "禁用",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "禁用",
         "en": "Disable",
         "ko": "사용 안 함",
@@ -9263,7 +9263,7 @@
     },
     {
         "key": "离职",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "離職",
         "en": "Leave one's job",
         "ko": "이직",
@@ -9274,7 +9274,7 @@
     },
     {
         "key": "移交",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "移交",
         "en": "Hand over",
         "ko": "이양",
@@ -9285,7 +9285,7 @@
     },
     {
         "key": "移动",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "移動",
         "en": "Move",
         "ko": "이동",
@@ -9296,7 +9296,7 @@
     },
     {
         "key": "稍后",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "稍後",
         "en": "Later",
         "ko": "나중에",
@@ -9307,7 +9307,7 @@
     },
     {
         "key": "端口",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "端口",
         "en": "Port",
         "ko": "포트",
@@ -9318,7 +9318,7 @@
     },
     {
         "key": "简单",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "簡單",
         "en": "Simple",
         "ko": "간단하게",
@@ -9329,7 +9329,7 @@
     },
     {
         "key": "类型",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "類型",
         "en": "Type",
         "ko": "유형",
@@ -9340,7 +9340,7 @@
     },
     {
         "key": "粉色",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "粉色",
         "en": "Pink",
         "ko": "핑크",
@@ -9351,7 +9351,7 @@
     },
     {
         "key": "粗体",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "粗體",
         "en": "Bold",
         "ko": "진하게",
@@ -9362,7 +9362,7 @@
     },
     {
         "key": "粘贴",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "粘貼",
         "en": "Paste",
         "ko": "붙여 넣기",
@@ -9373,7 +9373,7 @@
     },
     {
         "key": "系统",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "系統",
         "en": "System",
         "ko": "시스템",
@@ -9384,7 +9384,7 @@
     },
     {
         "key": "紫色",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "紫色",
         "en": "Purple",
         "ko": "보라색",
@@ -9395,7 +9395,7 @@
     },
     {
         "key": "红色",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "紅色",
         "en": "Red",
         "ko": "빨간색",
@@ -9406,7 +9406,7 @@
     },
     {
         "key": "级别",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "級別",
         "en": "Level",
         "ko": "등급",
@@ -9417,7 +9417,7 @@
     },
     {
         "key": "线框",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "線框",
         "en": "Wire frame",
         "ko": "선 상자",
@@ -9428,7 +9428,7 @@
     },
     {
         "key": "绿色",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "綠色",
         "en": "Green",
         "ko": "녹색",
@@ -9439,7 +9439,7 @@
     },
     {
         "key": "编辑",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "編輯",
         "en": "Edit",
         "ko": "편집",
@@ -9450,7 +9450,7 @@
     },
     {
         "key": "缩放",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "縮放",
         "en": "Scale",
         "ko": "크기 조정",
@@ -9461,7 +9461,7 @@
     },
     {
         "key": "置顶",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "置頂",
         "en": "Top",
         "ko": "도와주",
@@ -9472,7 +9472,7 @@
     },
     {
         "key": "群主",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "羣主",
         "en": "Group master",
         "ko": "떼 주",
@@ -9483,7 +9483,7 @@
     },
     {
         "key": "群名",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "羣名",
         "en": "Group name",
         "ko": "군 명",
@@ -9494,7 +9494,7 @@
     },
     {
         "key": "群聊",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "羣聊",
         "en": "Group chat",
         "ko": "그룹 채팅",
@@ -9505,7 +9505,7 @@
     },
     {
         "key": "聊天",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "聊天",
         "en": "Chat",
         "ko": "채팅",
@@ -9516,7 +9516,7 @@
     },
     {
         "key": "自动",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "自動",
         "en": "Automatic",
         "ko": "자동",
@@ -9527,7 +9527,7 @@
     },
     {
         "key": "菜单",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "菜單",
         "en": "Menu",
         "ko": "메뉴",
@@ -9538,7 +9538,7 @@
     },
     {
         "key": "蓝色",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "藍色",
         "en": "Blue",
         "ko": "파란색",
@@ -9549,7 +9549,7 @@
     },
     {
         "key": "表情",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "表情",
         "en": "Expression",
         "ko": "표정",
@@ -9560,7 +9560,7 @@
     },
     {
         "key": "表格",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "表格",
         "en": "Table",
         "ko": "도표",
@@ -9571,7 +9571,7 @@
     },
     {
         "key": "设置",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "設置",
         "en": "Set",
         "ko": "설정",
@@ -9582,7 +9582,7 @@
     },
     {
         "key": "详情",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "詳情",
         "en": "Details",
         "ko": "자세 한 정보",
@@ -9593,7 +9593,7 @@
     },
     {
         "key": "超期",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "超期",
         "en": "Overdue",
         "ko": "기한을 넘 겨 서도",
@@ -9604,7 +9604,7 @@
     },
     {
         "key": "身份",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "身份",
         "en": "Identity",
         "ko": "신분",
@@ -9615,7 +9615,7 @@
     },
     {
         "key": "转发",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "轉發",
         "en": "Forward",
         "ko": "전송",
@@ -9626,7 +9626,7 @@
     },
     {
         "key": "还原",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "還原",
         "en": "Reduction",
         "ko": "되돌리기",
@@ -9637,7 +9637,7 @@
     },
     {
         "key": "选填",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選填",
         "en": "Optional filling",
         "ko": "을 선택",
@@ -9648,7 +9648,7 @@
     },
     {
         "key": "选择",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "選擇",
         "en": "Choose",
         "ko": "선택",
@@ -9659,7 +9659,7 @@
     },
     {
         "key": "邀请",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "邀請",
         "en": "Invite",
         "ko": "초대",
@@ -9670,7 +9670,7 @@
     },
     {
         "key": "邮箱",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "郵箱",
         "en": "Mailbox",
         "ko": "메일 박스",
@@ -9681,7 +9681,7 @@
     },
     {
         "key": "部门",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "部門",
         "en": "Department",
         "ko": "부문",
@@ -9692,7 +9692,7 @@
     },
     {
         "key": "重做",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "重做",
         "en": "Redo",
         "ko": "다시 해",
@@ -9703,7 +9703,7 @@
     },
     {
         "key": "重置",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "重置",
         "en": "Reset",
         "ko": "초기화",
@@ -9714,7 +9714,7 @@
     },
     {
         "key": "链接",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "鏈接",
         "en": "Link",
         "ko": "링크",
@@ -9725,7 +9725,7 @@
     },
     {
         "key": "附件",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "附件",
         "en": "Attachment",
         "ko": "부속 서",
@@ -9736,7 +9736,7 @@
     },
     {
         "key": "项目",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目",
         "en": "Project",
         "ko": "프로젝트",
@@ -9747,7 +9747,7 @@
     },
     {
         "key": "预览",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "預覽",
         "en": "Preview",
         "ko": "미리 보기",
@@ -9758,7 +9758,7 @@
     },
     {
         "key": "颜色",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "顏色",
         "en": "Color",
         "ko": "색상",
@@ -9769,7 +9769,7 @@
     },
     {
         "key": "黄色",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "黃色",
         "en": "Yellow",
         "ko": "노란색",
@@ -9780,7 +9780,7 @@
     },
     {
         "key": "默认",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "默認",
         "en": "Default",
         "ko": "묵인",
@@ -9791,7 +9791,7 @@
     },
     {
         "key": "3天",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "3天",
         "en": "3 days",
         "ko": "3일",
@@ -9802,7 +9802,7 @@
     },
     {
         "key": "5天",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "5天",
         "en": "5 days",
         "ko": "5일",
@@ -9813,7 +9813,7 @@
     },
     {
         "key": "7天",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "7天",
         "en": "7 days",
         "ko": "7일",
@@ -9824,7 +9824,7 @@
     },
     {
         "key": "一",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "一",
         "en": "One",
         "ko": "1",
@@ -9835,7 +9835,7 @@
     },
     {
         "key": "三",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "三",
         "en": "Three",
         "ko": "3.",
@@ -9846,7 +9846,7 @@
     },
     {
         "key": "二",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "二",
         "en": "Two",
         "ko": "2.",
@@ -9857,7 +9857,7 @@
     },
     {
         "key": "五",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "五",
         "en": "Five",
         "ko": "5.",
@@ -9868,7 +9868,7 @@
     },
     {
         "key": "你",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "你",
         "en": "You",
         "ko": "네",
@@ -9879,7 +9879,7 @@
     },
     {
         "key": "六",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "六",
         "en": "Six",
         "ko": "6",
@@ -9890,7 +9890,7 @@
     },
     {
         "key": "周",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "周",
         "en": "Weeks",
         "ko": "주",
@@ -9901,7 +9901,7 @@
     },
     {
         "key": "四",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "四",
         "en": "Four",
         "ko": "네",
@@ -9912,7 +9912,7 @@
     },
     {
         "key": "天",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "天",
         "en": "Day",
         "ko": "일",
@@ -9923,7 +9923,7 @@
     },
     {
         "key": "或",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "或",
         "en": "Or",
         "ko": "또는",
@@ -9934,7 +9934,7 @@
     },
     {
         "key": "日",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "日",
         "en": "Day",
         "ko": "일",
@@ -9945,7 +9945,7 @@
     },
     {
         "key": "月",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "月",
         "en": "Month",
         "ko": "월",
@@ -9956,7 +9956,7 @@
     },
     {
         "key": "秒",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "秒",
         "en": "Seconds",
         "ko": "초",
@@ -9967,7 +9967,7 @@
     },
     {
         "key": "给",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "給",
         "en": "To",
         "ko": "주",
@@ -9978,7 +9978,7 @@
     },
     {
         "key": "(*)是一款轻量级的开源在线项目任务管理工具，提供各类文档协作工具、在线思维导图、在线流程图、项目管理、任务分发、即时IM，文件管理等工具。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "(*)是一款輕量級的開源在線項目任務管理工具，提供各類文檔協作工具、在線思維導圖、在線流程圖、項目管理、任務分發、即時IM，文件管理等工具。",
         "en": "(*) is a lightweight open source online project task management tool, providing various document collaboration tools, online mind map, online flow chart, project management, task distribution, instant IM, file management and other tools.",
         "ko": "(*)은 문서 협업 도구, 온라인 마인드 맵, 온라인 프로세스, 프로젝트 관리, 작업 배포, im, 파일 관리 등을 제공하는 경량 오픈 소스 온라인 프로젝트 작업 관리 도구이다.",
@@ -9989,7 +9989,7 @@
     },
     {
         "key": "(*) 负责的部门、项目、任务和文件将移交给交接人；同时退出所有群（如果是群主则转让给交接人）",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "(*) 負責的部門、項目、任務和文件將移交給交接人；同時退出所有羣（如果是羣主則轉讓給交接人）",
         "en": "(*) the responsible departments, projects, tasks and documents will be transferred to the transition person; Exit all groups at the same time (and transfer to the handover if the host)",
         "ko": "(* 담당 부서, 프로젝트, 임무 및 서류는 인수인계 담당자에게 인계된다.모든 군에서 동시에 탈퇴 (군주의 경우 인수자에게 양도)",
@@ -10000,7 +10000,7 @@
     },
     {
         "key": "流转到【(*)】时，[任务负责人] 和 [项目管理员] 可以修改状态。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "流轉到【(*)】時，[任務負責人] 和 [項目管理員] 可以修改狀態。",
         "en": "When the flow goes to [(*)], [Task Leader] and [Project Manager] can change the state.",
         "ko": "[(*)]로 넘어가면 [작업 관리자]와 [프로젝트 관리자] 가 상태를 수정할 수 있습니다.",
@@ -10011,7 +10011,7 @@
     },
     {
         "key": "文件 (*) 格式不正确，请上传 jpg、jpeg、gif、png 格式的图片。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "文件 (*) 格式不正確，請上傳 jpg、jpeg、gif、png 格式的圖片。",
         "en": "The file (*) format is incorrect. Please upload the image in jpg, jpeg, gif or png format.",
         "ko": "파일 (*)의 형식이 정확하지 않습니다. jpg, jpeg, gif, png 형식의 사진을 올려주세요.",
@@ -10022,7 +10022,7 @@
     },
     {
         "key": "流转到【(*)】时添加状态负责人至任务负责人。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "流轉到【(*)】時添加狀態負責人至任務負責人。",
         "en": "Add status leader to task leader when flow to [(*)].",
         "ko": "[(*)]로 넘어갈 때 상태 책임자를 작업 책임자에게 추가합니다.",
@@ -10033,7 +10033,7 @@
     },
     {
         "key": "每个文件夹里最多只能创建(*)个文件或文件夹",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "每個文件夾裏最多隻能創建(*)個文件或文件夾",
         "en": "A maximum of (*) files or folders can be created in each folder",
         "ko": "각 폴더에 최대 (*) 개의 파일이나 폴더를 만들 수 있습니다",
@@ -10044,7 +10044,7 @@
     },
     {
         "key": "文件 (*) 格式不正确，仅支持上传：(*)",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "文件 (*) 格式不正確，僅支持上傳：(*)",
         "en": "File (*) format is incorrect, only upload is supported: (*)",
         "ko": "파일 (*)의 형식이 올바르지 않습니다. 업로드만 지원합니다. (*)",
@@ -10055,7 +10055,7 @@
     },
     {
         "key": "正在进行帐号【ID:(*)】MAC地址修改。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "正在進行帳號【ID:(*)】MAC地址修改。",
         "en": "The MAC address of account [ID:(*)] is being changed.",
         "ko": "계정 [id]:(*) mac 주소 수정 진행 중.",
@@ -10066,7 +10066,7 @@
     },
     {
         "key": "正在进行帐号【ID:(*)】离职操作。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "正在進行帳號【ID:(*)】離職操作。",
         "en": "Account [ID:(*)] is leaving the company.",
         "ko": "계정 [id:(*)] 휴직 작업이 진행 중입니다.",
@@ -10077,7 +10077,7 @@
     },
     {
         "key": "正在进行帐号【ID:(*)】部门修改。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "正在進行帳號【ID:(*)】部門修改。",
         "en": "Account [ID:(*)] department is being modified.",
         "ko": "계정 [id:(*)] 부서 수정 진행 중.",
@@ -10088,7 +10088,7 @@
     },
     {
         "key": "文件大小超限，最大限制：(*)KB",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "文件大小超限，最大限制：(*)KB",
         "en": "The maximum file size is: (*)KB",
         "ko": "최대 파일 크기 제한:*) kb",
@@ -10099,7 +10099,7 @@
     },
     {
         "key": "职位\/职称最多只能设置(*)个字",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "職位\/職稱最多隻能設置(*)個字",
         "en": "The position\/title can be no more than (*) characters",
         "ko": "직위\/직함은 (*) 글자만 설정할 수 있습니다",
@@ -10110,7 +10110,7 @@
     },
     {
         "key": "任务描述最多只能设置(*)个字",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務描述最多隻能設置(*)個字",
         "en": "The task description can contain a maximum of (*) characters",
         "ko": "작업 설명은 (*) 단어만 설정할 수 있습니다",
@@ -10121,7 +10121,7 @@
     },
     {
         "key": "你确定要归档项目【(*)】吗？",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "你確定要歸檔項目【(*)】嗎？",
         "en": "Are you sure you want to file items [(*)]?",
         "ko": "파일 [(*)]을 저장하시겠습니까?",
@@ -10132,7 +10132,7 @@
     },
     {
         "key": "文件 (*) 太大，不能超过：(*)'",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "文件 (*) 太大，不能超過：(*)'",
         "en": "File (*) too large to exceed: (*)'",
         "ko": "파일 (*)이 너무 커서 (*)'를 초과할 수 없습니다.",
@@ -10143,7 +10143,7 @@
     },
     {
         "key": "文件名称最多只能设置(*)个字",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "文件名稱最多隻能設置(*)個字",
         "en": "The file name can be set to a maximum of (*) characters",
         "ko": "파일 이름은 (*) 단어만 설정할 수 있습니다",
@@ -10154,7 +10154,7 @@
     },
     {
         "key": "文件格式错误，限制类型：(*)",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "文件格式錯誤，限制類型：(*)",
         "en": "Incorrect file format, restricted type: (*)",
         "ko": "파일 형식 오류, 제한 형식:*)",
@@ -10165,7 +10165,7 @@
     },
     {
         "key": "项目介绍最多只能设置(*)个字",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目介紹最多隻能設置(*)個字",
         "en": "Item description can be set to a maximum of (*) characters",
         "ko": "항목 소개는 (*) 단어만 설정할 수 있습니다",
@@ -10176,7 +10176,7 @@
     },
     {
         "key": "项目名称最多只能设置(*)个字",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目名稱最多隻能設置(*)個字",
         "en": "The project name can be set to a maximum of (*) characters",
         "ko": "항목 이름은 (*) 단어까지만 설정할 수 있습니다",
@@ -10187,7 +10187,7 @@
     },
     {
         "key": "任务完成 (*) 天后自动归档。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "任務完成 (*) 天后自動歸檔。",
         "en": "Automatic archiving after task completion (*).",
         "ko": "작업 완료 (*) 일 후 자동으로 압축.",
@@ -10198,7 +10198,7 @@
     },
     {
         "key": "文件 (*) 太大，不能超过：(*)",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "文件 (*) 太大，不能超過：(*)",
         "en": "File (*) too large to exceed: (*)",
         "ko": "파일 (*)이 너무 커서 초과할 수 없습니다. (*)",
@@ -10209,7 +10209,7 @@
     },
     {
         "key": "职位\/职称不可以少于(*)个字",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "職位\/職稱不可以少於(*)個字",
         "en": "The position\/title should not be less than (*) words",
         "ko": "직위가 (*) 자보다 적어서는 안 된다",
@@ -10220,7 +10220,7 @@
     },
     {
         "key": "一次最多只能获取(*)条数据",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "一次最多隻能獲取(*)條數據",
         "en": "A maximum of (*) pieces of data can be obtained at a time",
         "ko": "한 번에 (*) 메시지까지만 가져올 수 있습니다",
@@ -10231,7 +10231,7 @@
     },
     {
         "key": "文件名称不可以少于(*)个字",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "文件名稱不可以少於(*)個字",
         "en": "The file name cannot be less than (*) characters",
         "ko": "파일이름은 (*) 자보다 적어서는 안됩니다",
@@ -10242,7 +10242,7 @@
     },
     {
         "key": "每次最多选择导出(*)个成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "每次最多選擇導出(*)個成員",
         "en": "You can export a maximum of (*) members at a time",
         "ko": "한 번에 최대 (*) 멤버를 내보낼 수 있습니다",
@@ -10253,7 +10253,7 @@
     },
     {
         "key": "消息内容最大不能超过(*)字",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "消息內容最大不能超過(*)字",
         "en": "The message contains a maximum of (*) characters",
         "ko": "메시지의 내용은 (*) 단어 이상이어야 합니다",
@@ -10264,7 +10264,7 @@
     },
     {
         "key": "项目列表最多不能超过(*)个",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目列表最多不能超過(*)個",
         "en": "A maximum of (*) items can be listed",
         "ko": "항목 목록은 (*) 개 이상이어야 합니다",
@@ -10275,7 +10275,7 @@
     },
     {
         "key": "项目名称不可以少于(*)个字",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目名稱不可以少於(*)個字",
         "en": "The project name cannot be less than (*) characters",
         "ko": "항목의 이름은 (*) 자보다 적어서는 안됩니다",
@@ -10286,7 +10286,7 @@
     },
     {
         "key": "最多只能上传 (*) 张图片。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "最多隻能上傳 (*) 張圖片。",
         "en": "A maximum of (*) images can be uploaded.",
         "ko": "(*) 이미지만업로드할수있습니다.",
@@ -10297,7 +10297,7 @@
     },
     {
         "key": "最多只能选择 (*) 张图片。",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "最多隻能選擇 (*) 張圖片。",
         "en": "You can select a maximum of (*) images.",
         "ko": "그림 (*) 까지만 선택할 수 있습니다.",
@@ -10308,7 +10308,7 @@
     },
     {
         "key": "密码最多只能设置(*)位数",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "密碼最多隻能設置(*)位數",
         "en": "The password can be a maximum of (*) digits",
         "ko": "비밀번호는 (*) 자리수만 설정할 수 있습니다",
@@ -10319,7 +10319,7 @@
     },
     {
         "key": "密码设置不能小于(*)位数",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "密碼設置不能小於(*)位數",
         "en": "The password cannot be smaller than (*) digits",
         "ko": "비밀번호는 (*) 자리수보다 작으면 안됩니다",
@@ -10330,7 +10330,7 @@
     },
     {
         "key": "描述最多只能设置(*)个字",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "描述最多隻能設置(*)個字",
         "en": "Description can be a maximum of (*) characters",
         "ko": "설명은 (*) 단어만 설정할 수 있습니다",
@@ -10341,7 +10341,7 @@
     },
     {
         "key": "昵称最多只能设置(*)个字",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "暱稱最多隻能設置(*)個字",
         "en": "A nickname can be a maximum of (*) characters",
         "ko": "닉네임은 (*) 문자로만 설정할 수 있습니다",
@@ -10352,7 +10352,7 @@
     },
     {
         "key": "昵称不可以少于(*)个字",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "暱稱不可以少於(*)個字",
         "en": "A nickname cannot be less than (*) words",
         "ko": "닉네임은 (*) 자보다 적어서는 안 된다",
@@ -10363,7 +10363,7 @@
     },
     {
         "key": "项目名称至少(*)个字！",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "項目名稱至少(*)個字！",
         "en": "The project name must be at least (*) words!",
         "ko": "프로젝트 이름에는 최소 (*) 단어가 있습니다!",
@@ -10374,7 +10374,7 @@
     },
     {
         "key": "开启您的 (*) 团队协作",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "開啓您的 (*) 團隊協作",
         "en": "Start your (*) team collaboration",
         "ko": "(*) 팀 작업을 시작합니다",
@@ -10385,7 +10385,7 @@
     },
     {
         "key": "文件 (*) 上传失败，(*)",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "文件 (*) 上傳失敗，(*)",
         "en": "File (*) upload failed, (*)",
         "ko": "파일 (*) 업로드 실패, (*)",
@@ -10396,7 +10396,7 @@
     },
     {
         "key": "最后在线于 (*) 分钟前",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "最後在線於 (*) 分鐘前",
         "en": "Last online (*) minutes ago",
         "ko": "마지막으로 (*) 분 전에 접속하였다",
@@ -10407,7 +10407,7 @@
     },
     {
         "key": "最后在线于 (*) 小时前",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "最後在線於 (*) 小時前",
         "en": "Last online (*) hours ago",
         "ko": "마지막으로 (*) 시간 전에 접속하였다",
@@ -10418,7 +10418,7 @@
     },
     {
         "key": "共(*)个项目，搜索...",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "共(*)個項目，搜索...",
         "en": "Total (*) items, search...",
         "ko": "총 (*) 항목, 검색...",
@@ -10429,7 +10429,7 @@
     },
     {
         "key": "密码长度至少(*)位！",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "密碼長度至少(*)位！",
         "en": "The password must be at least (*) digits long!",
         "ko": "비밀번호는 최소 (*) 자리!",
@@ -10440,7 +10440,7 @@
     },
     {
         "key": "文件 (*) 上传失败 (*)",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "文件 (*) 上傳失敗 (*)",
         "en": "File (*) Upload failure (*)",
         "ko": "파일 (*) 업로드 실패 (*)",
@@ -10451,7 +10451,7 @@
     },
     {
         "key": "昵称长度至少(*)位！",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "暱稱長度至少(*)位！",
         "en": "Nickname length at least (*) bits!",
         "ko": "닉네임은 최소 (*) 자리 길이입니다!",
@@ -10462,7 +10462,7 @@
     },
     {
         "key": "最后在线于今天 (*)",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "最後在線於今天 (*)",
         "en": "Last online Today (*)",
         "ko": "마지막으로 오늘 (*)",
@@ -10473,7 +10473,7 @@
     },
     {
         "key": "最后在线于昨天 (*)",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "最後在線於昨天 (*)",
         "en": "Last online Yesterday (*)",
         "ko": "어제 마지막으로 접속함 (*)",
@@ -10484,7 +10484,7 @@
     },
     {
         "key": "(*)描述，回车创建",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "(*)描述，回車創建",
         "en": "(*) description, press enter to create",
         "ko": "(*) 설명, 엔터 생성",
@@ -10495,7 +10495,7 @@
     },
     {
         "key": "最多只能选择(*)个",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "最多隻能選擇(*)個",
         "en": "You can select a maximum of (*)",
         "ko": "(*) 하나만 선택할 수 있습니다",
@@ -10506,7 +10506,7 @@
     },
     {
         "key": "最多只能选择(*)项",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "最多隻能選擇(*)項",
         "en": "You can select a maximum of (*) items",
         "ko": "(*) 항목만 선택할 수 있습니다",
@@ -10517,7 +10517,7 @@
     },
     {
         "key": "最后在线于 (*)",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "最後在線於 (*)",
         "en": "Last online at (*)",
         "ko": "마지막으로 (*)에 접속함",
@@ -10528,7 +10528,7 @@
     },
     {
         "key": "共(*)位联系人",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "共(*)位聯繫人",
         "en": "Total (*) digits of contact",
         "ko": "총 (*) 자리 연락처",
@@ -10539,7 +10539,7 @@
     },
     {
         "key": "建议尺寸：(*)",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "建議尺寸：(*)",
         "en": "Suggested size: (*)",
         "ko": "권장 크기:*)",
@@ -10550,7 +10550,7 @@
     },
     {
         "key": "有(*)条新消息",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "有(*)條新消息",
         "en": "There is (*) a new message",
         "ko": "새로운 소식이 있습니다",
@@ -10561,7 +10561,7 @@
     },
     {
         "key": "共(*)个成员",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "共(*)個成員",
         "en": "A total of (*) members",
         "ko": "총성원입니다",
@@ -10572,7 +10572,7 @@
     },
     {
         "key": "删除(*)帐号",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "刪除(*)帳號",
         "en": "Delete (*) account",
         "ko": "(*) 계정을 삭제합니다",
@@ -10583,7 +10583,7 @@
     },
     {
         "key": "欢迎您，(*)",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "歡迎您，(*)",
         "en": "Welcome, (*)",
         "ko": "어서오세요, (*)",
@@ -10594,7 +10594,7 @@
     },
     {
         "key": "(*)年(*)月",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "(*)年(*)月",
         "en": "(*) years (*) months",
         "ko": "(*) 년 (*) 월",
@@ -10605,7 +10605,7 @@
     },
     {
         "key": "已选(*)个",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "已選(*)個",
         "en": "(*) has been selected",
         "ko": "(*) 개를 선택함",
@@ -10616,7 +10616,7 @@
     },
     {
         "key": "标题(*)",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "標題(*)",
         "en": "Title (*)",
         "ko": "제목 (*)",
@@ -10627,7 +10627,7 @@
     },
     {
         "key": "(*)天",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "(*)天",
         "en": "(*) days",
         "ko": "(*) 천",
@@ -10638,7 +10638,7 @@
     },
     {
         "key": "(*)日",
-        "zh-CN": "",
+        "zh": "",
         "zh-CHT": "(*)日",
         "en": "(*) day",
         "ko": "(*) 일",

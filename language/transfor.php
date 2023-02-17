@@ -186,114 +186,132 @@ class Youdao
 }
 
 try {
-    // 读取文件
-    if (!file_exists("content.txt")) {
-        throw new Exception("content.txt file does not exist");
-    }
-    $content = file_get_contents("content.txt");
-    $arr = explode("\n", $content);
-    $news = [];
-    $keys = [];
-    if (file_exists("content.json")) {
-        $tmps = json_decode(file_get_contents("content.json"), true);
-        foreach ($tmps as $tmp) {
-            if (!isset($tmp['key'])) {
+    foreach (['api', 'web'] as $type) {
+        // 读取文件
+        $content = file_exists($type . ".original.txt") ? file_get_contents($type . ".original.txt") : "";
+        $arr = explode("\n", $content);
+        $news = [];
+        $keys = [];
+        if (file_exists($type . ".result.json")) {
+            $tmps = json_decode(file_get_contents($type . ".result.json"), true);
+            foreach ($tmps as $tmp) {
+                if (!isset($tmp['key'])) {
+                    continue;
+                }
+                $news[] = $tmp;
+                $keys[] = $tmp['key'];
+            }
+        }
+        // 提取要翻译的
+        $needs = [];
+        foreach ($arr as $item) {
+            $item = trim($item);
+            if ($tmp = json_decode($item, true)) {
+                $key = key($tmp);
+                $val = current($tmp);
+            } else {
+                $key = $val = $item;
+            }
+            if (in_array($key, $keys)) {
                 continue;
             }
-            $news[] = $tmp;
-            $keys[] = $tmp['key'];
+            $needs[$key] = $val;
         }
-    }
-    // 提取要翻译的
-    $needs = [];
-    foreach ($arr as $item) {
-        $item = trim($item);
-        if ($tmp = json_decode($item, true)) {
-            $key = key($tmp);
-            $val = current($tmp);
-        } else {
-            $key = $val = $item;
+        $needs = array_filter($needs);
+        $waits = array_chunk($needs, 200, true);
+        // 分组翻译
+        $YD = new Youdao(YOUDAO_APP_KEY, YOUDAO_SEC_KEY);
+        $func = function($text) {
+            if (!$text) {
+                return null;
+            }
+            return preg_replace_callback("/^\(\*\)\s*[A-Z]/", function ($match) {
+                return strtolower($match[0]);
+            }, ucfirst($text));
+        };
+        foreach ($waits as $items) {
+            $text = implode("\n", $items);
+            $TCS = explode("\n", $YD->translate($text, "zh-CHS", "zh-CHT"));    // 繁体
+            $ENS = explode("\n", $YD->translate($text, "zh-CHS", "en"));        // 英语
+            $KOS = explode("\n", $YD->translate($text, "zh-CHS", "ko"));        // 韩语
+            $JAS = explode("\n", $YD->translate($text, "zh-CHS", "ja"));        // 日语
+            $DES = explode("\n", $YD->translate($text, "zh-CHS", "de"));        // 德语
+            $FRS = explode("\n", $YD->translate($text, "zh-CHS", "fr"));        // 法语
+            $IDS = explode("\n", $YD->translate($text, "zh-CHS", "id"));        // 印度尼西亚
+            $index = 0;
+            foreach ($items as $key => $item) {
+                $tmp = [];
+                $tmp['key'] = $key;
+                $tmp['zh'] = $key != $item ? $item : "";
+                $tmp["zh-CHT"] = $func($TCS[$index]);
+                $tmp["en"] = $func($ENS[$index]);
+                $tmp["ko"] = $func($KOS[$index]);
+                $tmp["ja"] = $func($JAS[$index]);
+                $tmp["de"] = $func($DES[$index]);
+                $tmp["fr"] = $func($FRS[$index]);
+                $tmp["id"] = $func($IDS[$index]);
+                $news[] = $tmp;
+                $index++;
+            }
         }
-        if (in_array($key, $keys)) {
-            continue;
+        // 按长度排序
+        $inOrder = [];
+        foreach ($news as $index => $item) {
+            $key = $item['key'];
+            if (str_contains($key, '(*)')) {
+                $inOrder[$index] = strlen($key);
+            } else {
+                $inOrder[$index] = strlen($key) + 10000000000;
+            }
         }
-        $needs[$key] = $val;
-    }
-    $needs = array_filter($needs);
-    $waits = array_chunk($needs, 200, true);
-    // 分组翻译
-    $YD = new Youdao(YOUDAO_APP_KEY, YOUDAO_SEC_KEY);
-    $func = function($text) {
-        if (!$text) {
-            return null;
-        }
-        return preg_replace_callback("/^\(\*\)\s*[A-Z]/", function ($match) {
-            return strtolower($match[0]);
-        }, ucfirst($text));
-    };
-    foreach ($waits as $items) {
-        $text = implode("\n", $items);
-        $TCS = explode("\n", $YD->translate($text, "zh-CHS", "zh-CHT"));    // 繁体
-        $ENS = explode("\n", $YD->translate($text, "zh-CHS", "en"));        // 英语
-        $KOS = explode("\n", $YD->translate($text, "zh-CHS", "ko"));        // 韩语
-        $JAS = explode("\n", $YD->translate($text, "zh-CHS", "ja"));        // 日语
-        $DES = explode("\n", $YD->translate($text, "zh-CHS", "de"));        // 德语
-        $FRS = explode("\n", $YD->translate($text, "zh-CHS", "fr"));        // 法语
-        $IDS = explode("\n", $YD->translate($text, "zh-CHS", "id"));        // 印度尼西亚
+        array_multisort($inOrder, SORT_DESC, $news);
+        // 合成数组
+        $arr = ['key' => []];
         $index = 0;
-        foreach ($items as $key => $item) {
-            $tmp = [];
-            $tmp['key'] = $key;
-            $tmp['zh-CN'] = $key != $item ? $item : "";
-            $tmp["zh-CHT"] = $func($TCS[$index]);
-            $tmp["en"] = $func($ENS[$index]);
-            $tmp["ko"] = $func($KOS[$index]);
-            $tmp["ja"] = $func($JAS[$index]);
-            $tmp["de"] = $func($DES[$index]);
-            $tmp["fr"] = $func($FRS[$index]);
-            $tmp["id"] = $func($IDS[$index]);
-            $news[] = $tmp;
-            $index++;
-        }
-    }
-    // 按长度排序
-    $inOrder = [];
-    foreach ($news as $index => $item) {
-        $key = $item['key'];
-        if (str_contains($key, '(*)')) {
-            $inOrder[$index] = strlen($key);
-        } else {
-            $inOrder[$index] = strlen($key) + 10000000000;
-        }
-    }
-    array_multisort($inOrder, SORT_DESC, $news);
-    // 合成数组
-    $arr = ['key' => []];
-    $index = 0;
-    foreach ($news as $items) {
-        $arr['key'][$items['key']] = $index++;
-        foreach ($items as $key => $item) {
-            if ($key === 'key') {
-                continue;
+        foreach ($news as $items) {
+            $arr['key'][$items['key']] = $index++;
+            foreach ($items as $key => $item) {
+                if ($key === 'key') {
+                    continue;
+                }
+                if (!isset($arr)) {
+                    $arr[$key] = [];
+                }
+                $arr[$key][] = $item;
             }
-            if (!isset($arr)) {
-                $arr[$key] = [];
-            }
-            $arr[$key][] = $item;
         }
+        // 写入新文件
+        file_put_contents($type . ".result.json", json_encode(array_values($news), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        if ($type === 'api') {
+            if (!is_dir("../resources/lang")) {
+                mkdir("../resources/lang", 0777, true);
+            }
+            foreach ($arr as $key => $item) {
+                if ($key === 'key') {
+                    continue;
+                }
+                $file = "../resources/lang/$key.php";
+                $var = [];
+                $i = 0;
+                foreach ($arr['key'] as $k => $v) {
+                    $var[$k] = $item[$i++];
+                }
+                file_put_contents($file, "<?php \nreturn " . var_export($var, true) . ";");
+                print_r("[$type] $file saved\n");
+            }
+        } elseif ($type === 'web') {
+            if (!is_dir("../public/js/language")) {
+                mkdir("../public/js/language", 0777, true);
+            }
+            foreach ($arr as $key => $item) {
+                $file = "../public/js/language/$key.js";
+                file_put_contents($file, "if(typeof window.LANGUAGE_DATA===\"undefined\")window.LANGUAGE_DATA={};window.LANGUAGE_DATA[\"{$key}\"]=" . json_encode($item, JSON_UNESCAPED_UNICODE));
+                print_r("[$type] $file saved\n");
+            }
+        }
+        print_r("[$type] translate success\ntotal: " . count($news) . "\nadd: " . count($needs) . "\n\n");
     }
-    // 写入新文件
-    if (!is_dir("../public/js/language")) {
-        mkdir("../public/js/language", 0777, true);
-    }
-    foreach ($arr as $key => $item) {
-        $file = "../public/js/language/" . $key . ".js";
-        file_put_contents($file, "if(typeof window.LANGUAGE_DATA===\"undefined\")window.LANGUAGE_DATA={};window.LANGUAGE_DATA[\"{$key}\"]=" . json_encode($item, JSON_UNESCAPED_UNICODE));
-        print_r($file . " saved\n");
-    }
-    file_put_contents("content.json", json_encode(array_values($news), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
-    print_r("Translate success\ntotal: " . count($news) . "\nadd: " . count($needs) . "\n");
 } catch (Exception $e) {
-    print_r("Error, " . $e->getMessage());
+    print_r("[$type] error, " . $e->getMessage());
 }
 

@@ -81,13 +81,13 @@ export default {
 
     created() {
         addLanguage([
-            {"key": "{日}", "zh-CN": "日", "general": "Sun"},
-            {"key": "{一}", "zh-CN": "一", "general": "Mon"},
-            {"key": "{二}", "zh-CN": "二", "general": "Tue"},
-            {"key": "{三}", "zh-CN": "三", "general": "Wed"},
-            {"key": "{四}", "zh-CN": "四", "general": "Thu"},
-            {"key": "{五}", "zh-CN": "五", "general": "Fri"},
-            {"key": "{六}", "zh-CN": "六", "general": "Sat"},
+            {"key": "{日}", "zh": "日", "general": "Sun"},
+            {"key": "{一}", "zh": "一", "general": "Mon"},
+            {"key": "{二}", "zh": "二", "general": "Tue"},
+            {"key": "{三}", "zh": "三", "general": "Wed"},
+            {"key": "{四}", "zh": "四", "general": "Thu"},
+            {"key": "{五}", "zh": "五", "general": "Fri"},
+            {"key": "{六}", "zh": "六", "general": "Sat"},
         ]);
         let daynames = [
             this.$L('{日}'),

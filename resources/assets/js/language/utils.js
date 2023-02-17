@@ -3,8 +3,8 @@ module.exports = {
      * 语言类型
      */
     languageTypes: {
-        "zh-CN": "简体中文",
-        "zh-CNT": "繁體中文",
+        "zh": "简体中文",
+        "zh-CHT": "繁體中文",
         "en": "English",
         "ko": "한국어",
         "ja": "日本語",
@@ -57,13 +57,16 @@ module.exports = {
         let navLang = ((window.navigator.language || navigator.userLanguage) + "").toLowerCase();
         switch (navLang) {
             case "zh":
+            case "cn":
             case "zh-cn":
-                lang = 'zh-CN'
+                lang = 'zh'
                 break;
             case "zh-tw":
+            case "zh-tr":
             case "zh-hk":
             case "zh-cnt":
-                lang = 'zh-CNT'
+            case "zh-cht":
+                lang = 'zh-CHT'
                 break;
             default:
                 if (typeof this.languageTypes[navLang] !== "undefined") {

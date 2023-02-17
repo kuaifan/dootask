@@ -1435,45 +1435,58 @@ class Base
      */
     public static function Lang($val)
     {
-        $repArray = [];
-        if (is_array($val)) {
-            if (self::strExists($val[0], '%') && count($val) > 1) {
-                $repArray = array_slice($val, 1);
-            }
-            $val = $val[0];
-        }
         $data = self::langData();
-        if (isset($data[$val]) && $data[$val] !== null) {
-            $val = $data[$val];
+        if (isset($data[$val])) {
+            return $data[$val] ?: $val;
         }
-        if ($repArray) {
-            foreach ($repArray as $item) {
-                $val = self::strReplaceLimit('%', $item, $val, 1);
-            }
-        }
-        return $val;
-    }
-
-    /**
-     * 加载语言数据
-     * @param bool $refresh
-     * @return array
-     */
-    public static function langData($refresh = false)
-    {
-        global $_A;
-        if (!isset($_A["__static_langdata"]) || $refresh === true) {
-            $_A["__static_langdata"] = [];
-            $language = trim(Request::header('language'));
-            $langpath = resource_path('lang/' . $language . '/general.php');
-            if (file_exists($langpath)) {
-                $data = include $langpath;
-                if (is_array($data)) {
-                    $_A["__static_langdata"] = $data;
+        foreach ($data as $key => $item) {
+            if (str_contains($key, "(*)")) {
+                $regex = str_replace("(*)", "~%~", $key);
+                $regex = preg_quote($regex);
+                $regex = str_replace("~%~", "(.*?)", $regex);
+                $regex = "/^" . $regex . "$/";
+                if (preg_match($regex, $val)) {
+                    return preg_replace_callback($regex, function($m) use ($item) {
+                        $i = 0;
+                        $r = $item;
+                        foreach ($m as $v) {
+                            if ($i > 0) {
+                                $r = preg_replace("/\(\*\)/", $v, $r, 1);
+                            }
+                            $i++;
+                        }
+                        return $r;
+                    }, $val);
                 }
             }
         }
-        return $_A["__static_langdata"];
+        if (!in_array($val, self::$undefinedLang)) {
+            self::$undefinedLang[] = $val;
+            @file_put_contents(base_path('language/api.undefined.txt'), "$val\n", FILE_APPEND);
+        }
+        return $val;
+    }
+    private static array $undefinedLang = [];
+
+    /**
+     * 加载语言数据
+     * @return array
+     */
+    public static function langData()
+    {
+        global $_A;
+        $language = trim(Request::header('language'));
+        if (!isset($_A["__static_langdata_" . $language])) {
+            $_A["__static_langdata_" . $language] = [];
+            $langpath = resource_path('lang/' . $language . '.php');
+            if (file_exists($langpath)) {
+                $data = include $langpath;
+                if (is_array($data)) {
+                    $_A["__static_langdata_" . $language] = $data;
+                }
+            }
+        }
+        return $_A["__static_langdata_" . $language];
     }
 
     /**
