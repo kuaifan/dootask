@@ -64,7 +64,8 @@
                 align-items: center;
                 justify-content: space-evenly;
                 padding: 2px 0 12px;
-                > p {
+                > div {
+                    max-width: 25%;
                     position: relative;
                     line-height: 1;
                     padding: 0 6px;
@@ -75,6 +76,11 @@
                         top: -12px;
                         right: -8px;
                         transform: scale(0.7);
+                    }
+                    .nav-title {
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
                     }
                     &.active {
                         color: #555555;

@@ -44,8 +44,14 @@
                     padding: 0 20px;
                     margin: 5px 0;
                     position: relative;
-                    display: flex;
-                    align-items: center;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    overflow: hidden;
+
+                    &.flex {
+                        display: flex;
+                        align-items: center;
+                    }
 
                     .ivu-badge {
                         transform: scale(0.8);
@@ -154,6 +160,12 @@
                 height: 34px;
                 line-height: 32px;
                 min-width: 94px;
+                > span {
+                    max-width: 100%;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
             }
         }
         .setting-auto-day {

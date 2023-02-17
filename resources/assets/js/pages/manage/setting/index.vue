@@ -21,6 +21,7 @@
                         @click="toggleRoute(item.path)">{{$L(item.name)}}</li>
                     <li
                         v-if="!!clientNewVersion"
+                        class="flex"
                         :class="classNameRoute('version', true)"
                         @click="toggleRoute('version')">
                         <AutoTip disabled>{{$L('版本')}}: {{version}}</AutoTip>

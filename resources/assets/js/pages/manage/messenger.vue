@@ -15,14 +15,14 @@
                     </div>
                 </div>
                 <div v-if="tabActive==='dialog' && !dialogKey" class="messenger-nav">
-                    <p
+                    <div
                         v-for="(item, key) in dialogType"
                         :key="key"
                         :class="{active:dialogActive==item.type}"
                         @click="onActive(item.type)">
                         <Badge class="nav-num" :overflow-count="999" :count="msgUnread(item.type)"/>
-                        {{$L(item.name)}}
-                    </p>
+                        <div class="nav-title">{{$L(item.name)}}</div>
+                    </div>
                 </div>
                 <div v-if="$isEEUiApp && !appNotificationPermission" class="messenger-notify-permission" @click="onOpenAppSetting">
                     {{$L('未开启通知权限')}}<i class="taskfont">&#xe733;</i>

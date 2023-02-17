@@ -41,6 +41,7 @@
 
         > li {
             flex: 1;
+            width: 0;
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -60,6 +61,10 @@
             .tabbar-title {
                 font-size: 12px;
                 line-height: 18px;
+                max-width: 92%;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden;
             }
 
             .tabbar-badge {
@@ -135,6 +140,7 @@
                     .tabbar-title {
                         padding-top: 6px;
                         font-size: 13px;
+                        max-width: 92%;
                         overflow: hidden;
                         text-overflow: ellipsis;
                         white-space: nowrap;
