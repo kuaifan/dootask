@@ -1446,9 +1446,9 @@ class Base
                 $regex = str_replace("~%~", "(.*?)", $regex);
                 $regex = "/^" . $regex . "$/";
                 if (preg_match($regex, $val)) {
-                    return preg_replace_callback($regex, function($m) use ($item) {
+                    $r = $item ?: $key;
+                    return preg_replace_callback($regex, function($m) use ($r) {
                         $i = 0;
-                        $r = $item;
                         foreach ($m as $v) {
                             if ($i > 0) {
                                 $r = preg_replace("/\(\*\)/", $v, $r, 1);

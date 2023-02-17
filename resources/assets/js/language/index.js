@@ -75,8 +75,8 @@ function switchLanguage(text) {
                 const rege = new RegExp("^" + utils.replaceEscape(key) + "$", "g")
                 if (rege.test(text)) {
                     let j = 0
-                    const k = window.LANGUAGE_DATA["key"][key]
-                    const value = window.LANGUAGE_DATA[languageType][k]?.replace(/\(\*\)/g, function () {
+                    const index = window.LANGUAGE_DATA["key"][key]
+                    const value = (window.LANGUAGE_DATA[languageType][index] || key)?.replace(/\(\*\)/g, function () {
                         return "$" + (++j)
                     })
                     languageRege[text] = {rege, value}
