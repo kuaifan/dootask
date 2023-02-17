@@ -2,13 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.23.8]
+## [0.23.12]
 
 ### Performance
 
 - 优化首页
 - 优化更新日志生成
 - 优化翻译
+- 优化ws重连规则
+- 优化国际化
 
 ## [0.22.99]
 

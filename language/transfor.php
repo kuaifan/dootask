@@ -284,7 +284,7 @@ try {
     }
     // 写入新文件
     if (!is_dir("../public/js/language")) {
-        mkdir("../public/js/language");
+        mkdir("../public/js/language", 0777, true);
     }
     foreach ($arr as $key => $item) {
         $file = "../public/js/language/" . $key . ".js";
