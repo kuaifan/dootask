@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.23.12]
+## [0.23.15]
 
 ### Performance
 
@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - 优化翻译
 - 优化ws重连规则
 - 优化国际化
+- 优化api国际化
 
 ## [0.22.99]
 
