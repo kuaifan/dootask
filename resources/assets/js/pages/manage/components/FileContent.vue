@@ -99,6 +99,8 @@
                     confirm
                     placement="bottom"
                     style="margin-left:8px"
+                    :ok-text="$L('确定')"
+                    :cancel-text="$L('取消')"
                     @on-ok="linkGet(true)"
                     transfer>
                     <div slot="title">

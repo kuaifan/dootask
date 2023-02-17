@@ -440,6 +440,17 @@
         "id": "Anggota gag: administrator saja boleh berbicara."
     },
     {
+        "key": "设置尚未保存，是否放弃修改？",
+        "zh": "",
+        "zh-CHT": "設置尚未保存，是否放棄修改？",
+        "en": "The Settings have not been saved. Do you want to stop modifying them?",
+        "ko": "설정이 저장되지 않았습니다. 변경 사항을 무시하시겠습니까?",
+        "ja": "設定が保存されていない場合、修正を放棄しますか?",
+        "de": "Die einstellungen wurden noch nicht gespeichert. Wird auf änderungen verzichtet?",
+        "fr": "Les paramètres n’ont pas été sauvegardés. Est-ce que la modification est abandonnée?",
+        "id": "Pengaturan belum tersimpan apakah anda meninggalkan modifikasi?"
+    },
+    {
         "key": "输入您的凭证以访问您的帐户。",
         "zh": "",
         "zh-CHT": "輸入您的憑證以訪問您的帳戶。",
@@ -713,6 +724,17 @@
         "de": "Ihr vater war ein äußerst tapferer mann. Danke",
         "fr": "Routeurs avec système Openwrt uniquement",
         "id": "Hanya mendukung router sistem Openwrt"
+    },
+    {
+        "key": "你确定要删除工作流吗？",
+        "zh": "",
+        "zh-CHT": "你確定要刪除工作流嗎？",
+        "en": "Are you sure you want to delete the workflow?",
+        "ko": "워크플로를 삭제하시겠습니까?",
+        "ja": "ワークフローを削除すべきですか?",
+        "de": "Willst du den arbeitsbereich wirklich entfernen?",
+        "fr": "Êtes-vous sûr de vouloir supprimer un workflow?",
+        "id": "Apa kau yakin ingin menghapus rangkaian tugas?"
     },
     {
         "key": "便捷易用的项目管理模板",
@@ -1430,6 +1452,17 @@
         "id": "Isi pesan tidak boleh kosong"
     },
     {
+        "key": "详细描述，选填...",
+        "zh": "",
+        "zh-CHT": "詳細描述，選填...",
+        "en": "For details, please fill in...",
+        "ko": "자세한 설명, 선택...",
+        "ja": "詳しく説明します,",
+        "de": "Beschreiben sie das feld aus und wählen sie aus.",
+        "fr": "Description détaillée, option à remplir...",
+        "id": "Memilih untuk mengisi …"
+    },
+    {
         "key": "请填写项目名称！",
         "zh": "",
         "zh-CHT": "請填寫項目名稱！",
@@ -1670,6 +1703,17 @@
         "de": "Halten sie sich an anzeigen im internet.",
         "fr": "Version web uniquement.",
         "id": "Dukunglah halaman web saja."
+    },
+    {
+        "key": "修改任务优先级",
+        "zh": "",
+        "zh-CHT": "修改任務優先級",
+        "en": "Change the task priority",
+        "ko": "작업 우선 순위를 수정합니다",
+        "ja": "優先順位を変えます",
+        "de": "Ändert die priorität der mission",
+        "fr": "Modifier les priorités des tâches",
+        "id": "Memodifikasi prioritas misi"
     },
     {
         "key": "修改任务负责人",
@@ -2332,6 +2376,28 @@
         "id": "Memodifikasi mendukung personil"
     },
     {
+        "key": "修改项目成员",
+        "zh": "",
+        "zh-CHT": "修改項目成員",
+        "en": "Modify project member",
+        "ko": "프로젝트 구성원 수정",
+        "ja": "プロジェクトメンバーを修正します",
+        "de": "Ich ändere das programm.",
+        "fr": "Modifier les membres du projet",
+        "id": "Memodifikasi anggota proyek"
+    },
+    {
+        "key": "允许消息通知",
+        "zh": "",
+        "zh-CHT": "允許消息通知",
+        "en": "Allow message notification",
+        "ko": "메시지 알림 사용",
+        "ja": "メッセージ通知を許可します",
+        "de": "Geben sie bescheid, bis sie bescheid Wissen.",
+        "fr": "Autoriser les notifications par message",
+        "id": "Izinkan pemberitahuan pemberitahuan"
+    },
+    {
         "key": "全员群组禁言",
         "zh": "",
         "zh-CHT": "全員羣組禁言",
@@ -2583,6 +2649,17 @@
         "de": "Ich will die mission abholen",
         "fr": "Je veux recevoir ma mission",
         "id": "Aku akan mengambil misi"
+    },
+    {
+        "key": "所有者创建于",
+        "zh": "",
+        "zh-CHT": "所有者創建於",
+        "en": "Owner created in",
+        "ko": "소유자는 다음에 생성됨",
+        "ja": "所有者は創られます",
+        "de": "Der eigentümer ist in eine",
+        "fr": "Propriétaire créé à",
+        "id": "Pemilik dibuat dari"
     },
     {
         "key": "打开会话失败",
@@ -2880,6 +2957,17 @@
         "de": "Zentrale der gruppe übertragen",
         "fr": "Transfert de l’identité du groupe master",
         "id": "Pindahkan identitas grup utama"
+    },
+    {
+        "key": "输入列表名称",
+        "zh": "",
+        "zh-CHT": "輸入列表名稱",
+        "en": "Enter list name",
+        "ko": "목록 이름 입력",
+        "ja": "リスト名を入力します",
+        "de": "Geben sie den namen der liste ein",
+        "fr": "Entrez le nom de la liste",
+        "id": "Masukkan nama senarai"
     },
     {
         "key": "输入您的密码",
@@ -3259,7 +3347,7 @@
         "key": "修改负责人",
         "zh": "",
         "zh-CHT": "修改負責人",
-        "en": "Responsible person for revision",
+        "en": "Modify responsible",
         "ko": "책임자를 고치다",
         "ja": "修正担当者です",
         "de": "Stellvertretender direktor.",
@@ -3309,6 +3397,17 @@
         "de": "Submission löschen",
         "fr": "Supprimer une sous-tâche",
         "id": "Hapus sub tugas"
+    },
+    {
+        "key": "删除工作流",
+        "zh": "",
+        "zh-CHT": "刪除工作流",
+        "en": "Delete workflow",
+        "ko": "워크스트림 삭제",
+        "ja": "ワークフローを削除します",
+        "de": "Löschen löschen",
+        "fr": "Supprimer un workflow",
+        "id": "Hapus workstream"
     },
     {
         "key": "协助的任务",
@@ -3421,6 +3520,17 @@
         "id": "Pengaturan arus kerja"
     },
     {
+        "key": "已共享成员",
+        "zh": "",
+        "zh-CHT": "已共享成員",
+        "en": "Shared member",
+        "ko": "이미 공유 멤버",
+        "ja": "共有メンバーです",
+        "de": "Geteilte mitglieder.",
+        "fr": "Membre déjà partagé",
+        "id": "Anggota bersama"
+    },
+    {
         "key": "已删除任务",
         "zh": "",
         "zh-CHT": "已刪除任務",
@@ -3507,6 +3617,17 @@
         "de": "Ich muss das beenden.",
         "fr": "Tâches à accomplir",
         "id": "Tugas yang harus diselesaikan"
+    },
+    {
+        "key": "成员创建于",
+        "zh": "",
+        "zh-CHT": "成員創建於",
+        "en": "Member created in",
+        "ko": "다음에 생성된 멤버",
+        "ja": "メンバーが作成されたのです",
+        "de": "Dieses mitglied ist mitglied",
+        "fr": "Membre créé en",
+        "id": "Anggota diciptakan dari"
     },
     {
         "key": "搜索联系人",
@@ -3782,6 +3903,17 @@
         "de": "Neuer code bestätigt.",
         "fr": "Confirmer le nouveau mot de passe",
         "id": "Konfirmasi sandi baru."
+    },
+    {
+        "key": "移交项目给",
+        "zh": "",
+        "zh-CHT": "移交項目給",
+        "en": "Hand over the project to",
+        "ko": "프로젝트 이양",
+        "ja": "プロジェクトを移管します",
+        "de": "Verlegung des projekts an",
+        "fr": "Remettre le projet à",
+        "id": "Menyerahkan barang ke"
     },
     {
         "key": "置顶该聊天",
@@ -4356,6 +4488,17 @@
         "id": "Kelompok tugas"
     },
     {
+        "key": "任务聊天",
+        "zh": "",
+        "zh-CHT": "任務聊天",
+        "en": "Task chat",
+        "ko": "작업 대화",
+        "ja": "ミッションチャットです",
+        "de": "An ihrem job.",
+        "fr": "Chat pour tâches",
+        "id": "Tugas obrolan"
+    },
+    {
         "key": "任务详情",
         "zh": "",
         "zh-CHT": "任務詳情",
@@ -4409,6 +4552,17 @@
         "de": "Erhaltung erfolgreich",
         "fr": "Sauvé avec succès",
         "id": "Simpan sukses"
+    },
+    {
+        "key": "修改列表",
+        "zh": "",
+        "zh-CHT": "修改列表",
+        "en": "Modify list",
+        "ko": "목록 변경",
+        "ja": "リストを修正します",
+        "de": "Liste ändern",
+        "fr": "Modifier la liste",
+        "id": "Ubah senarai"
     },
     {
         "key": "修改名称",
@@ -4576,6 +4730,17 @@
         "id": "Pengaturan bersama"
     },
     {
+        "key": "关联任务",
+        "zh": "",
+        "zh-CHT": "關聯任務",
+        "en": "Associated task",
+        "ko": "연결된 작업",
+        "ja": "関連タスクです",
+        "de": "Inoffizielle mission.",
+        "fr": "Une tâche associée",
+        "id": "Misi yang diasosiasikan"
+    },
+    {
         "key": "准备发布",
         "zh": "",
         "zh-CHT": "準備發佈",
@@ -4634,12 +4799,34 @@
         "key": "创建项目",
         "zh": "",
         "zh-CHT": "創建項目",
-        "en": "Create a project",
+        "en": "Create project",
         "ko": "프로젝트 만들기",
         "ja": "プロジェクトを作成します",
         "de": "Projekte entwickeln.",
         "fr": "Créer un projet",
         "id": "Membuat item"
+    },
+    {
+        "key": "删除任务",
+        "zh": "",
+        "zh-CHT": "刪除任務",
+        "en": "Delete task",
+        "ko": "작업 삭제",
+        "ja": "タスクを削除します。",
+        "de": "Auftrag löschen.",
+        "fr": "Supprimer une tâche",
+        "id": "Hapus tugas"
+    },
+    {
+        "key": "删除列表",
+        "zh": "",
+        "zh-CHT": "刪除列表",
+        "en": "Delete list",
+        "ko": "목록 삭제",
+        "ja": "リストを削除します",
+        "de": "Liste löschen",
+        "fr": "Supprimer une liste",
+        "id": "Hapus senarai"
     },
     {
         "key": "删除原因",
@@ -4656,7 +4843,7 @@
         "key": "删除帐号",
         "zh": "",
         "zh-CHT": "刪除帳號",
-        "en": "Delete an account",
+        "en": "Delete account",
         "ko": "계정 삭제",
         "ja": "アカウントを削除します",
         "de": "Computer löschen",
@@ -4673,6 +4860,17 @@
         "de": "Löschen erfolgreich.",
         "fr": "Supprimé avec succès",
         "id": "Sukses dihapus"
+    },
+    {
+        "key": "删除文件",
+        "zh": "",
+        "zh-CHT": "刪除文件",
+        "en": "Delete file",
+        "ko": "파일 삭제",
+        "ja": "ファイルを削除します",
+        "de": "Dateien löschen",
+        "fr": "Supprimer un fichier",
+        "id": "Hapus berkas"
     },
     {
         "key": "删除时间",
@@ -4755,7 +4953,7 @@
         "key": "加入会议",
         "zh": "",
         "zh-CHT": "加入會議",
-        "en": "Join a meeting",
+        "en": "Join meeting",
         "ko": "회의에 참가하다",
         "ja": "会議に参加します",
         "de": "Teilnahme an der konferenz.",
@@ -4928,6 +5126,17 @@
         "id": "Kirim undangan"
     },
     {
+        "key": "取消剪切",
+        "zh": "",
+        "zh-CHT": "取消剪切",
+        "en": "Unshear",
+        "ko": "잘라내기 취소",
+        "ja": "切り取りをキャンセルします",
+        "de": "Schnitt abbrechen!",
+        "fr": "Annuler le cut",
+        "id": "Batalkan pemotongan"
+    },
+    {
         "key": "取消标注",
         "zh": "",
         "zh-CHT": "取消標註",
@@ -4970,6 +5179,17 @@
         "de": "Abgebrochen.",
         "fr": "Annulation du toit",
         "id": "Batalkan topside"
+    },
+    {
+        "key": "取消选择",
+        "zh": "",
+        "zh-CHT": "取消選擇",
+        "en": "Deselect",
+        "ko": "선택 해제",
+        "ja": "選択をキャンセルします",
+        "de": "Streich die option.",
+        "fr": "Annuler la sélection",
+        "id": "Tak pilih"
     },
     {
         "key": "可流转到",
@@ -5223,6 +5443,17 @@
         "de": "Nur archiv.",
         "fr": "Les archivistes",
         "id": "File personil"
+    },
+    {
+        "key": "归档任务",
+        "zh": "",
+        "zh-CHT": "歸檔任務",
+        "en": "Archiving task",
+        "ko": "압축 작업",
+        "ja": "タスクを保存します",
+        "de": "Es ist nur ein auftrag, sie zu archivieren.",
+        "fr": "Archivage des tâches",
+        "id": "Tugas pengarsipan"
     },
     {
         "key": "归档会员",
@@ -5784,6 +6015,17 @@
         "de": "Macht meldung.",
         "fr": "Voir tout voir",
         "id": "Lihat semua"
+    },
+    {
+        "key": "标记已读",
+        "zh": "",
+        "zh-CHT": "標記已讀",
+        "en": "Mark read",
+        "ko": "읽은 상태 표시",
+        "ja": "既読マークをつける",
+        "de": "Markiert, gelesen.",
+        "fr": "Marquer comme lu",
+        "id": "Ditandai sudah dibaca"
     },
     {
         "key": "标记未读",
@@ -6501,6 +6743,17 @@
         "id": "Pengaturan sertifikasi"
     },
     {
+        "key": "认领任务",
+        "zh": "",
+        "zh-CHT": "認領任務",
+        "en": "Claim task",
+        "ko": "확인 인수 임무",
+        "ja": "任務を引き取る",
+        "de": "Übernehme den auftrag.",
+        "fr": "Revendiquer une mission",
+        "id": "Ambil tugas"
+    },
+    {
         "key": "设为禁用",
         "zh": "",
         "zh-CHT": "設爲禁用",
@@ -6972,6 +7225,17 @@
         "de": "Die projektmitglieder?",
         "fr": "Membres du projet",
         "id": "Anggota proyek"
+    },
+    {
+        "key": "项目描述",
+        "zh": "",
+        "zh-CHT": "項目描述",
+        "en": "Project description",
+        "ko": "프로젝트 설명",
+        "ja": "項目記述です",
+        "de": "Beschreibung des projekts",
+        "fr": "Description du projet",
+        "id": "Deskripsi proyek"
     },
     {
         "key": "项目模板",
@@ -7912,7 +8176,7 @@
         "key": "负责人",
         "zh": "",
         "zh-CHT": "負責人",
-        "en": "Responsible person",
+        "en": "Responsible",
         "ko": "책임자",
         "ja": "責任者です",
         "de": "Verantwortlichen.",
@@ -7956,7 +8220,7 @@
         "key": "通讯录",
         "zh": "",
         "zh-CHT": "通訊錄",
-        "en": "Address book",
+        "en": "Contacts",
         "ko": "주소록",
         "ja": "アドレス帳です",
         "de": "Mein name ist Cornelius.",
@@ -7978,7 +8242,7 @@
         "key": "配置项",
         "zh": "",
         "zh-CHT": "配置項",
-        "en": "Configuration item",
+        "en": "Configuration",
         "ko": "항목 설정",
         "ja": "配置項です",
         "de": "Der konfigurationseintrag",
@@ -8748,7 +9012,7 @@
         "key": "归档",
         "zh": "",
         "zh-CHT": "歸檔",
-        "en": "File",
+        "en": "Archive",
         "ko": "압축 파일",
         "ja": "ファイリング",
         "de": "Archivieren.",
@@ -10032,6 +10296,17 @@
         "id": "Tambahkan status kepala ke misi ketika ((*) @ info: status"
     },
     {
+        "key": "你确定要删除列表【(*)】及列表内的任务吗？",
+        "zh": "",
+        "zh-CHT": "你確定要刪除列表【(*)】及列表內的任務嗎？",
+        "en": "Are you sure you want to delete the list [(*)] and the tasks on it?",
+        "ko": "목록 [(*)]과 목록에 있는 작업을 삭제하시겠습니까?",
+        "ja": "リスト【(*)】やリスト内のタスクを削除することは確実でしょうか?",
+        "de": "Sind sie sicher, dass sie eine liste [*] und die darin enthaltenen aufgaben löschen möchten?",
+        "fr": "Êtes-vous sûr de vouloir supprimer la liste [(*)] et les tâches dans cette liste?",
+        "id": "Anda yakin ingin menghapus senarai ((*) dan tugas yang ada di senarai?"
+    },
+    {
         "key": "每个文件夹里最多只能创建(*)个文件或文件夹",
         "zh": "",
         "zh-CHT": "每個文件夾裏最多隻能創建(*)個文件或文件夾",
@@ -10118,6 +10393,50 @@
         "de": "Eine aufgabenbeschreibung kann höchstens ein wort (*) festlegen",
         "fr": "La description de la tâche ne peut être définie que (*) mots au maximum",
         "id": "Uraian tugas paling banyak hanya memuat (*) kata"
+    },
+    {
+        "key": "你确定要删除【(*)】文件吗？",
+        "zh": "",
+        "zh-CHT": "你確定要刪除【(*)】文件嗎？",
+        "en": "Are you sure you want to delete the [(*)] file?",
+        "ko": "너는 【 (*) 】 파일을 삭제 하시겠습니까?",
+        "ja": "【(*)】ファイルを削除しますか?",
+        "de": "Soll die datei wirklich gelöscht werden?",
+        "fr": "Êtes-vous sûr de vouloir supprimer le fichier [(*)]?",
+        "id": "Apakah anda yakin ingin menghapus berkas [*]?"
+    },
+    {
+        "key": "你确定要删除任务【(*)】吗？",
+        "zh": "",
+        "zh-CHT": "你確定要刪除任務【(*)】嗎？",
+        "en": "Are you sure you want to delete the mission [(*)]?",
+        "ko": "작업 [(*)]을 삭제하시겠습니까?",
+        "ja": "タスク【(*)】を削除することは確実ですか?",
+        "de": "Sollen sie die mission wirklich löschen? (*)?",
+        "fr": "Êtes-vous sûr de vouloir supprimer la tâche [(*)]?",
+        "id": "Apakah anda yakin ingin menghapus tugas ((*)?"
+    },
+    {
+        "key": "你确定要删除项目【(*)】吗？",
+        "zh": "",
+        "zh-CHT": "你確定要刪除項目【(*)】嗎？",
+        "en": "Are you sure you want to delete the item [(*)]?",
+        "ko": "항목 [(*)]을 삭제하시겠습니까?",
+        "ja": "項目【(*)】を削除することは確実ですか?",
+        "de": "Möchten sie das element wirklich löschen? (*)?",
+        "fr": "Êtes-vous sûr de vouloir supprimer cet élément [(*)]?",
+        "id": "Apakah anda yakin ingin menghapus item ((*)?"
+    },
+    {
+        "key": "你确定要归档任务【(*)】吗？",
+        "zh": "",
+        "zh-CHT": "你確定要歸檔任務【(*)】嗎？",
+        "en": "Are you sure you want to file the task [(*)]?",
+        "ko": "작업 [(*)]을 정리하시겠습니까?",
+        "ja": "タスク【(*)】をファイリングしますか?",
+        "de": "Bist du sicher, dass du einen auftrag archivieren möchtest?",
+        "fr": "Êtes-vous sûr de vouloir archiver la tâche [(*)]?",
+        "id": "Apakah anda yakin ingin mengajukan tugas ((*)?"
     },
     {
         "key": "你确定要归档项目【(*)】吗？",
@@ -10299,7 +10618,7 @@
         "key": "最多只能选择 (*) 张图片。",
         "zh": "",
         "zh-CHT": "最多隻能選擇 (*) 張圖片。",
-        "en": "You can select a maximum of (*) images.",
+        "en": "Maximum selection (*) images.",
         "ko": "그림 (*) 까지만 선택할 수 있습니다.",
         "ja": "画像選択は(*)枚までです。",
         "de": "Wählen sie nur ein bild (*)",
@@ -10417,6 +10736,17 @@
         "id": "Akhirnya online (*) satu jam yang lalu"
     },
     {
+        "key": "修改任务负责人：(*)",
+        "zh": "",
+        "zh-CHT": "修改任務負責人：(*)",
+        "en": "Modify task Leader: (*)",
+        "ko": "수정임무책임자:(*)",
+        "ja": "修正タスク担当者:(*)です。",
+        "de": "Änderungen der mandatsträger (*)",
+        "fr": "Modification du chef de tâche :(*)",
+        "id": "Ubah pemimpin misi :(*)"
+    },
+    {
         "key": "共(*)个项目，搜索...",
         "zh": "",
         "zh-CHT": "共(*)個項目，搜索...",
@@ -10426,6 +10756,17 @@
         "de": "Gemeinsames ziel. Suche - ziel eins",
         "fr": "Au total (*) articles, recherche...",
         "id": "Berbagi proyek, mencari …"
+    },
+    {
+        "key": "删除任务负责人：(*)",
+        "zh": "",
+        "zh-CHT": "刪除任務負責人：(*)",
+        "en": "Remove task Leader: (*)",
+        "ko": "작업 관리자 삭제:(*)",
+        "ja": "削除タスク担当者:(*)です。",
+        "de": "Verantwortlicher wird gelöscht (*)",
+        "fr": "Supprimer un responsable de tâche :(*)",
+        "id": "Hapus pemimpin misi :(*)"
     },
     {
         "key": "密码长度至少(*)位！",
@@ -10494,10 +10835,32 @@
         "id": "(*) gambarkan, kembali ke penciptaan"
     },
     {
+        "key": "修改任务标题：(*)",
+        "zh": "",
+        "zh-CHT": "修改任務標題：(*)",
+        "en": "Modify the task title: (*)",
+        "ko": "작업 제목 수정:*",
+        "ja": "タスクタイトルを修正します:(*)",
+        "de": "Die folgenden aufgaben ändern :(*)",
+        "fr": "Modifier le titre de la tâche :(*)",
+        "id": "Ubah judul tugas :(*)"
+    },
+    {
+        "key": "修改项目名称：(*)",
+        "zh": "",
+        "zh-CHT": "修改項目名稱：(*)",
+        "en": "Modify project name: (*)",
+        "ko": "항목명 수정:(*)",
+        "ja": "プロジェクト名を修正します:(*)",
+        "de": "Name des eintrags ändern (*)",
+        "fr": "Modifier le nom du projet :(*)",
+        "id": "Merevisi nama proyek :(*)"
+    },
+    {
         "key": "最多只能选择(*)个",
         "zh": "",
         "zh-CHT": "最多隻能選擇(*)個",
-        "en": "You can select a maximum of (*)",
+        "en": "Maximum selection (*)",
         "ko": "(*) 하나만 선택할 수 있습니다",
         "ja": "(*)個までしか選べません。",
         "de": "Du darfst nur (*) wählen",
@@ -10508,7 +10871,7 @@
         "key": "最多只能选择(*)项",
         "zh": "",
         "zh-CHT": "最多隻能選擇(*)項",
-        "en": "You can select a maximum of (*) items",
+        "en": "Maximum selection (*) items",
         "ko": "(*) 항목만 선택할 수 있습니다",
         "ja": "選択できるのは(*)までです",
         "de": "Wählen sie nur einen eintrag",
@@ -10536,6 +10899,17 @@
         "de": "Insgesamt (*) blinder als partner",
         "fr": "Total de (*) personnes de contact",
         "id": "Total (*) sedikit kontak"
+    },
+    {
+        "key": "创建任务：(*)",
+        "zh": "",
+        "zh-CHT": "創建任務：(*)",
+        "en": "Create Task: (*)",
+        "ko": "만들기 작업:*)",
+        "ja": "作成タスク:(*)です。",
+        "de": "Auftrag erstellen :(*)",
+        "fr": "Créer une tâche :(*)",
+        "id": "Buat tugas :(*)"
     },
     {
         "key": "建议尺寸：(*)",
@@ -10607,7 +10981,7 @@
         "key": "已选(*)个",
         "zh": "",
         "zh-CHT": "已選(*)個",
-        "en": "(*) has been selected",
+        "en": "(*) selected",
         "ko": "(*) 개를 선택함",
         "ja": "(*)箇を選びました",
         "de": "Schon gewählt. - ja",

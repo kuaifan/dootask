@@ -142,7 +142,7 @@
                 <Button type="default" @click="close">{{$L('取消')}}</Button>
                 <ButtonGroup class="page-manage-add-task-button-group">
                     <Button type="primary" :loading="loadIng > 0" @click="onAdd">{{$L('添加任务')}}</Button>
-                    <Dropdown @on-click="onAdd(true)">
+                    <Dropdown @on-click="onAdd(true)" transfer>
                         <Button type="primary">
                             <Icon type="ios-arrow-down"></Icon>
                         </Button>

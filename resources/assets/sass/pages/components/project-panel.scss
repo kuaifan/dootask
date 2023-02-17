@@ -1035,7 +1035,9 @@
             padding: 12px 16px 4px;
             .project-title {
                 float: left;
+                max-width: 100%;
                 .project-back {
+                    flex-shrink: 0;
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -1047,6 +1049,9 @@
                 }
                 > h1 {
                     font-size: 22px;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    overflow: hidden;
                 }
             }
             .project-icons {

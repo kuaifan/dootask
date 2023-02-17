@@ -6,7 +6,7 @@
                 <div class="project-back" @click="onBack">
                     <i class="taskfont">&#xe676;</i>
                 </div>
-                <h1>{{projectData.name}}</h1>
+                <h1 @click="showName">{{projectData.name}}</h1>
                 <div v-if="loading" class="project-load"><Loading/></div>
             </div>
             <ul class="project-icons">
@@ -357,6 +357,8 @@
                     confirm
                     placement="bottom"
                     style="margin-left:8px"
+                    :ok-text="$L('确定')"
+                    :cancel-text="$L('取消')"
                     @on-ok="onUser"
                     transfer>
                     <div slot="title">
@@ -392,6 +394,8 @@
                     confirm
                     placement="bottom"
                     style="margin-left:8px"
+                    :ok-text="$L('确定')"
+                    :cancel-text="$L('取消')"
                     @on-ok="inviteGet(true)"
                     transfer>
                     <div slot="title">
@@ -869,6 +873,17 @@ export default {
     },
 
     methods: {
+        showName() {
+            if (this.windowLarge) {
+                return;
+            }
+            $A.modalInfo({
+                language: false,
+                title: this.$L('项目名称'),
+                content: this.projectData.name
+            })
+        },
+
         showDesc() {
             if (this.windowLarge) {
                 return;
