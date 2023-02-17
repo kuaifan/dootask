@@ -1430,6 +1430,17 @@
         "id": "Waktu memilih kesalahan"
     },
     {
+        "key": "未完成的工作",
+        "zh": "",
+        "zh-CHT": "未完成的工作",
+        "en": "Unfinished business",
+        "ko": "미완의 작업",
+        "ja": "未完成の仕事",
+        "de": "Die arbeit ist noch nicht beendet",
+        "fr": "Le travail inachevé",
+        "id": "Urusan yang belum selesai"
+    },
+    {
         "key": "未开放此功能",
         "zh": "",
         "zh-CHT": "未開放此功能",
@@ -1694,6 +1705,17 @@
         "id": "Nama samaran sudah ada"
     },
     {
+        "key": "已完成工作",
+        "zh": "",
+        "zh-CHT": "已完成工作",
+        "en": "Completed work",
+        "ko": "작업을 마치다",
+        "ja": "仕事は完了しました",
+        "de": "Arbeit erledigt.",
+        "fr": "Travaux déjà réalisés",
+        "id": "Sudah selesai bekerja"
+    },
+    {
         "key": "待办已完成",
         "zh": "",
         "zh-CHT": "待辦已完成",
@@ -1912,6 +1934,17 @@
         "de": "Modifikation erfolgreich.",
         "fr": "Modifié avec succès",
         "id": "Revisi berhasil"
+    },
+    {
+        "key": "全体成员",
+        "zh": "",
+        "zh-CHT": "全體成員",
+        "en": "All members",
+        "ko": "전체 성원",
+        "ja": "メンバー全員です",
+        "de": "Mitglieder des ausschusses:",
+        "fr": "Tous les membres",
+        "id": "Semua anggota"
     },
     {
         "key": "创建成功",
@@ -2308,6 +2341,83 @@
         "de": "Sie haben sich angeschlossen.",
         "fr": "A été ajouté",
         "id": "Telah bergabung"
+    },
+    {
+        "key": "周一",
+        "zh": "",
+        "zh-CHT": "週一",
+        "en": "Monday",
+        "ko": "월요일",
+        "ja": "月曜日",
+        "de": "Am montag.",
+        "fr": "Lundi",
+        "id": "Pada hari senin."
+    },
+    {
+        "key": "周三",
+        "zh": "",
+        "zh-CHT": "週三",
+        "en": "Wednesday",
+        "ko": "수요일",
+        "ja": "水曜",
+        "de": "Mittwoch - 9:15 uhr",
+        "fr": "Mercredi",
+        "id": "Hari rabu."
+    },
+    {
+        "key": "周二",
+        "zh": "",
+        "zh-CHT": "週二",
+        "en": "Tuesday",
+        "ko": "화요일",
+        "ja": "火曜日",
+        "de": "Dienstag",
+        "fr": "Mardi",
+        "id": "Selasa"
+    },
+    {
+        "key": "周五",
+        "zh": "",
+        "zh-CHT": "週五",
+        "en": "Friday",
+        "ko": "금요일",
+        "ja": "金曜日",
+        "de": "Freitag",
+        "fr": "Vendredi",
+        "id": "Hari jumat,"
+    },
+    {
+        "key": "周六",
+        "zh": "",
+        "zh-CHT": "週六",
+        "en": "Saturday",
+        "ko": "토요일",
+        "ja": "土曜日に",
+        "de": "Samstag",
+        "fr": "Samedi",
+        "id": "Sabtu."
+    },
+    {
+        "key": "周四",
+        "zh": "",
+        "zh-CHT": "週四",
+        "en": "Thursday",
+        "ko": "목요일",
+        "ja": "木曜日",
+        "de": "Donnerstag - 12:05 uhr",
+        "fr": "Jeudi",
+        "id": "Hari kamis."
+    },
+    {
+        "key": "周日",
+        "zh": "",
+        "zh-CHT": "週日",
+        "en": "Sunday",
+        "ko": "일요일",
+        "ja": "日曜日",
+        "de": "Sonntag",
+        "fr": "Dimanche",
+        "id": "Pada hari minggu,"
     },
     {
         "key": "状态[(*)]设置错误，设置限制负责人时必须填写状态负责人",

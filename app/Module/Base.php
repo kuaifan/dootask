@@ -1460,13 +1460,22 @@ class Base
                 }
             }
         }
+        //
+        $undefinedPath = base_path('language/api.undefined.txt');
+        if (self::$undefinedLang === null) {
+            self::$undefinedLang = [];
+            if (file_exists($undefinedPath)) {
+                self::$undefinedLang = explode("\n", file_get_contents($undefinedPath));
+                self::$undefinedLang = array_values(array_filter(array_unique(self::$undefinedLang)));
+            }
+        }
         if (!in_array($val, self::$undefinedLang)) {
             self::$undefinedLang[] = $val;
             @file_put_contents(base_path('language/api.undefined.txt'), "$val\n", FILE_APPEND);
         }
         return $val;
     }
-    private static array $undefinedLang = [];
+    private static $undefinedLang = null;
 
     /**
      * 加载语言数据

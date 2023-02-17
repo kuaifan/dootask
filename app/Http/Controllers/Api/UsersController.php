@@ -1555,6 +1555,6 @@ class UsersController extends AbstractController
         if (empty($row)) {
             return Base::retError('error');
         }
-        return Base::retSuccess('suceess', $row);
+        return Base::retSuccess('success', $row);
     }
 }
