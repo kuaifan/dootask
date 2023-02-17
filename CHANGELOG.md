@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.23.18]
+## [0.23.21]
 
 ### Performance
 
@@ -31,25 +31,13 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- 栏目内添加任务应该直接归属此栏目
 - LDAP Exception
 
 ### Features
 
-- 二维码登录
-
-### Performance
-
-- 优化删除数据
-
-## [0.22.84]
-
-### Bug Fixes
-
-- 栏目内添加任务应该直接归属此栏目
-
-### Features
-
 - 新增ldap帐号
+- 二维码登录
 
 ### Performance
 
@@ -63,8 +51,16 @@ All notable changes to this project will be documented in this file.
 - 优化根据会员筛选任务
 - 优化表情输入
 - 优化会话删除
+- 优化删除数据
 
 ## [0.22.66]
+
+### Performance
+
+- 优化未读消息提示
+- 优化消息对话框loading
+
+## [0.22.64]
 
 ### Bug Fixes
 
@@ -80,8 +76,6 @@ All notable changes to this project will be documented in this file.
 - 会话顶部提示剩余未读消息
 - 回复/引用机器人消息图标移位的问题
 - 优化移动端打开会话
-- 优化未读消息提示
-- 优化消息对话框loading
 
 ## [0.22.56]
 
@@ -248,13 +242,6 @@ All notable changes to this project will be documented in this file.
 
 ## [0.21.26]
 
-### Performance
-
-- 截图dev
-- 客户端新增截图快捷键
-
-## [0.21.22]
-
 ### Bug Fixes
 
 - 回复数量增长错误的问题
@@ -262,6 +249,8 @@ All notable changes to this project will be documented in this file.
 ### Performance
 
 - 优化国际化提升访问速度
+- 截图dev
+- 客户端新增截图快捷键
 
 ## [0.21.15]
 
@@ -295,10 +284,15 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
+- @结果相同时避免刷新
+
+## [0.20.95]
+
+### Performance
+
 - 升级onlyoffice
 - 离职后退出所有群
 - 离职移交部门
-- @结果相同时避免刷新
 
 ## [0.20.90]
 
@@ -539,7 +533,6 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
-- 移动文件所有者错误
 - 通知消息一直未读的情况
 - 移动文件夹内文件所有者不变的问题
 
@@ -552,18 +545,30 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- 移动文件所有者错误
+
+### Features
+
+- 新增全员群组
+
+### Performance
+
+- 调整消息标签位置
+- 所有项目列表支持筛选个人项目
+
+## [0.18.54]
+
+### Bug Fixes
+
 - 无法通过项目点击聊天的情况
 
 ### Features
 
 - 支持编辑已发送的消息
-- 新增全员群组
 
 ### Performance
 
 - 添加邮件忽略功能
-- 调整消息标签位置
-- 所有项目列表支持筛选个人项目
 
 ## [0.18.44]
 
@@ -609,8 +614,6 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
-- 无法点击图片预览的问题
-- 部分长按菜单移位的问题
 - 撤回消息导致未读数错误的问题
 - 任务成员应该禁止退出任务群聊
 
@@ -620,11 +623,21 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
-- 项目群、任务群可添加成员
-- 支持@群聊以外成员
 - 优化pdf浏览方式
 - 仅(群聊)且(是群主或没有群主)才可以@成员以外的人
 - 优化@其他成员在线状态
+
+## [0.17.88]
+
+### Bug Fixes
+
+- 无法点击图片预览的问题
+- 部分长按菜单移位的问题
+
+### Performance
+
+- 项目群、任务群可添加成员
+- 支持@群聊以外成员
 
 ## [0.17.75]
 
@@ -648,11 +661,16 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
-- 使用系统浏览器打开新窗口链接
-- 默认使用文字头像
 - 优化消息列表
 - 优化移动客户端滚动穿透
 - 取消置顶标签
+
+## [0.17.30]
+
+### Performance
+
+- 使用系统浏览器打开新窗口链接
+- 默认使用文字头像
 
 ## [0.17.20]
 
@@ -706,6 +724,12 @@ All notable changes to this project will be documented in this file.
 
 ## [0.16.60]
 
+### Performance
+
+- 优化消息已读未读
+
+## [0.16.58]
+
 ### Bug Fixes
 
 - 修复任务窗口无法发送表情的问题
@@ -718,7 +742,6 @@ All notable changes to this project will be documented in this file.
 - 优化首页加载失败的情况
 - 新窗口打开任务时保持日志显示状态
 - 预览图片尺寸的优化
-- 优化消息已读未读
 
 ## [0.16.22]
 
@@ -774,12 +797,6 @@ All notable changes to this project will be documented in this file.
 
 ## [0.14.94]
 
-### Performance
-
-- 优化适配ipad
-
-## [0.14.86]
-
 ### Bug Fixes
 
 - 邮件通知消息未读对象可能会出错的情况
@@ -790,6 +807,7 @@ All notable changes to this project will be documented in this file.
 - 7天内显示时间m-d H:i
 - 优化更新对话列表机制
 - 优化客户端生命周期重连ws机制
+- 优化适配ipad
 
 ## [0.14.72]
 
@@ -906,12 +924,6 @@ All notable changes to this project will be documented in this file.
 
 ## [0.13.48]
 
-### Performance
-
-- 优化暗黑模式
-
-## [0.13.42]
-
 ### Bug Fixes
 
 - 修复文件协作不提醒的问题
@@ -937,6 +949,7 @@ All notable changes to this project will be documented in this file.
 - 优化@提醒
 - 文件浏览保存排序
 - 客户端填写周报后保存关闭窗口
+- 优化暗黑模式
 
 ## [0.12.95]
 
@@ -986,17 +999,15 @@ All notable changes to this project will be documented in this file.
 
 ## [0.12.40]
 
+### Bug Fixes
+
+- 设置分页10条每页无效的问题
+
 ### Performance
 
 - 文件新增pids（上级ID递归）字段
 - 支持上传golang文件
 - 优化提示此文件夹内已有共享文件夹
-
-## [0.12.28]
-
-### Bug Fixes
-
-- 设置分页10条每页无效的问题
 
 ## [0.12.23]
 
@@ -1012,15 +1023,10 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
-- 修复新增项目成员无法通过邮箱搜索的问题
-
-## [0.12.16]
-
-### Bug Fixes
-
 - 查看已发送的工作汇报，汇报对象需横向显示
 - 所有可搜索列表在非第1页搜索时不返回第1页的问题
 - Public客户端打开空白的情况
+- 修复新增项目成员无法通过邮箱搜索的问题
 
 ### Performance
 
@@ -1134,15 +1140,6 @@ All notable changes to this project will be documented in this file.
 
 ## [0.10.5]
 
-### Performance
-
-- 任务详情打开操作菜单时按esc任务窗口隐藏了但是菜单还看见
-- 优化文件重命名，支持按esc取消编辑
-- 优化客户端任务详情按command+s保存
-- 优化仪表盘角标数
-
-## [0.9.99]
-
 ### Bug Fixes
 
 - 【系统设置】邮件设置提前小时数双向绑定无效问题修改
@@ -1176,6 +1173,10 @@ All notable changes to this project will be documented in this file.
 - 报表导出列及剩余天数优化
 - 退出登录返回登录页而不是注册页
 - 上传文件名称过程显示错位的问题
+- 任务详情打开操作菜单时按esc任务窗口隐藏了但是菜单还看见
+- 优化文件重命名，支持按esc取消编辑
+- 优化客户端任务详情按command+s保存
+- 优化仪表盘角标数
 
 ## [0.9.83]
 
