@@ -418,9 +418,6 @@ class IndexController extends InvokeController
         $list = array_merge(Base::readDir(app_path()), Base::readDir(resource_path()));
         $array = [];
         foreach ($list as $item) {
-            if (Base::rightExists($item, "language.all.js")) {
-                continue;
-            }
             if (Base::rightExists($item, ".php") || Base::rightExists($item, ".vue") || Base::rightExists($item, ".js")) {
                 $content = file_get_contents($item);
                 preg_match_all("/(['\"])(.*?)[\u{4e00}-\u{9fa5}\u{FE30}-\u{FFA0}]+([\s\S]((?!\n).)*)\\1/u", $content, $matchs);

@@ -1,4 +1,0 @@
-let languageDefaultData = [
-
-];
-export { languageDefaultData };

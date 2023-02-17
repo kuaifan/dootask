@@ -20,7 +20,7 @@
             <li :class="{active: type === 'emoji'}" @click="type='emoji'">
                 <span class="no-dark-content">&#128512;</span>
             </li>
-            <li v-for="item in emoticonList" :class="{active: type === 'emoticon' && emoticonPath == item.path}" @click="onEmoticon(item.path)">
+            <li v-for="item in emoticonData" :class="{active: type === 'emoticon' && emoticonPath == item.path}" @click="onEmoticon(item.path)">
                 <img :title="item.name" :alt="item.name" :src="item.src"/>
             </li>
         </ul>
@@ -48,10 +48,13 @@ export default {
             emosearchLoad: false,
             emosearchTimer: null,
             emosearchList: [],
+
+            emojiData: [],
+            emoticonData: [],
         };
     },
     mounted() {
-        //
+        this.initData()
     },
     watch: {
         type() {
@@ -70,49 +73,53 @@ export default {
     computed: {
         list() {
             if (this.type === 'emoji') {
-                if (!$A.isArray(window.emojiData)) {
-                    return [];
-                }
-                return window.emojiData.sort(function (a, b) {
-                    return a.emoji_order - b.emoji_order;
-                }).map(item => {
-                    return {
-                        type: 'emoji',
-                        name: item.name,
-                        html: item.code_decimal,
-                    }
-                })
+                return this.emojiData
             } else if (this.type === 'emosearch') {
-                return this.emosearchList;
+                return this.emosearchList
             } else if (this.type === 'emoticon') {
-                const data = this.emoticonList.find(({path}) => path === this.emoticonPath)
+                const data = this.emoticonData.find(({path}) => path === this.emoticonPath)
                 if (data) {
                     return data.list;
                 }
             }
             return [];
-        },
-
-        emoticonList() {
-            if ($A.isArray(window.emoticonData)) {
-                let baseUrl = $A.apiUrl("../images/emoticon")
-                return window.emoticonData.map(data => {
-                    return Object.assign(data, {
-                        src: `${baseUrl}/${data.path}/${data.icon}`,
-                        list: data.list.map(item => {
-                            return Object.assign(item, {
-                                type: `emoticon`,
-                                asset: `images/emoticon/${data.path}/${item.path}`,
-                                src: `${baseUrl}/${data.path}/${item.path}`
-                            })
-                        })
-                    });
-                });
-            }
-            return [];
         }
     },
     methods: {
+        initData() {
+            $A.loadScriptS([
+                'js/emoji.all.js',
+                'js/emoticon.all.js',
+            ], _ => {
+                const baseUrl = $A.apiUrl("../images/emoticon")
+                if ($A.isArray(window.emojiData)) {
+                    this.emojiData = window.emojiData.sort(function (a, b) {
+                        return a.emoji_order - b.emoji_order;
+                    }).map(item => {
+                        return {
+                            type: 'emoji',
+                            name: item.name,
+                            html: item.code_decimal,
+                        }
+                    })
+                }
+                if ($A.isArray(window.emoticonData)) {
+                    this.emoticonData = window.emoticonData.map(data => {
+                        return Object.assign(data, {
+                            src: `${baseUrl}/${data.path}/${data.icon}`,
+                            list: data.list.map(item => {
+                                return Object.assign(item, {
+                                    type: `emoticon`,
+                                    asset: `images/emoticon/${data.path}/${item.path}`,
+                                    src: `${baseUrl}/${data.path}/${item.path}`
+                                })
+                            })
+                        });
+                    })
+                }
+            })
+        },
+
         onEmosearch() {
             if (this.type !== 'emosearch' || this.emosearchCache === this.emosearchKey) {
                 return

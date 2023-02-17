@@ -1,123 +1,30 @@
-import {languageDefaultData} from "./data";
+const utils = require('./utils')
 
-let languageUtils = {
-    /**
-     * 是否数组
-     * @param obj
-     * @returns {boolean}
-     */
-    isArray(obj) {
-        return typeof (obj) == "object" && Object.prototype.toString.call(obj).toLowerCase() == '[object array]' && typeof obj.length == "number";
-    },
-
-    /**
-     * 转换Ascii编码
-     * @param value
-     * @returns {string}
-     */
-    convertAscii(value) {
-        if (typeof value !== "string") {
-            value = String(value)
-        }
-        let nativecode = value.split("");
-        let ascii = "";
-        for (let i = 0; i < nativecode.length; i++) {
-            let code = Number(nativecode[i].charCodeAt(0));
-            if (code > 127) {
-                let charAscii = code.toString(16);
-                charAscii = String("0000").substring(charAscii.length, 4) + charAscii;
-                ascii += "\\u" + charAscii;
-            } else {
-                ascii += nativecode[i];
-            }
-        }
-        return ascii
-    },
-
-    /**
-     * 替换(*)遍历
-     * @param text
-     * @param objects
-     * @returns {*}
-     */
-    replaceArgumentsLanguage(text, objects) {
-        let j = 1;
-        while (text.indexOf("(*)") !== -1) {
-            if (typeof objects[j] === "object") {
-                text = text.replace("(*)", "");
-            } else {
-                text = text.replace("(*)", objects[j]);
-            }
-            j++;
-        }
-        return text;
-    },
-
-    /**
-     * 译文转义
-     * @param val
-     * @returns {string|*}
-     */
-    replaceEscape(val) {
-        if (!val || val == '') {
-            return '';
-        }
-        return val.replace(/\(\*\)/g, "~%~").replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&').replace(/~%~/g, '(.*?)');
-    },
-
-    /**
-     * 获取语言
-     * @returns {string}
-     */
-    getLanguage() {
-        if (typeof window.localStorage.getItem("__language:type__") === "string") {
-            return window.localStorage.getItem("__language:type__");
-        }
-        let lang = 'EN';
-        let navLang = ((window.navigator.language || navigator.userLanguage) + "").toUpperCase();
-        switch (navLang) {
-            case "EN":
-            case "KM":
-            case "TH":
-            case "KO":
-            case "JA":
-                lang = navLang
-                break;
-            case "ZH-CN":
-            case "ZH":
-                lang = 'CN'
-                break;
-            case "ZH-TW":
-            case "ZH-HK":
-                lang = 'TC'
-                break;
-        }
-        window.localStorage.setItem("__language:type__", lang)
-        return lang
-    }
-};
-let languageInit = false;
-let languageData = [];
-let languageType = languageUtils.getLanguage();
-let languageList = {
-    "EN": "English",
-    "KO": "한국어",
-    "JA": "日本語",
-    "CN": "简体中文",
-    "TC": "繁體中文",
-    "FR": "Français",
-};
-let languageAsciis = {};
+const languageList = utils.languageTypes
+const languageType = utils.getLanguage()
+const languageRege = {}
 
 /**
  * 添加语言数据
  * @param data
  */
 function addLanguage(data) {
-    if (!languageUtils.isArray(data)) {
-        return;
+    if (!$A.isArray(data)) {
+        return
     }
-    languageData.unshift(...data);
+    const keys = Object.assign(Object.keys(languageList))
+    data.some(item => {
+        let index = -1;
+        item.key && keys.some(key => {
+            const value = item[key] || item['general'] || null
+            if (value && typeof window.LANGUAGE_DATA[key] !== "undefined") {
+                index = window.LANGUAGE_DATA[key].push(value) - 1
+            }
+        })
+        if (index > -1) {
+            window.LANGUAGE_DATA['key'][item.key] = index
+        }
+    })
 }
 
 /**
@@ -136,15 +43,7 @@ function setLanguage(language) {
             window.localStorage.setItem("__language:type__", language)
             $A.reloadUrl()
         }
-    });
-}
-
-/**
- * 获取当前语言
- * @returns {string}
- */
-function getLanguage() {
-    return languageType;
+    })
 }
 
 /**
@@ -154,71 +53,62 @@ function getLanguage() {
  */
 function switchLanguage(text) {
     if (typeof arguments[1] !== "undefined") {
-        return switchLanguage(languageUtils.replaceArgumentsLanguage(text, arguments));
+        return switchLanguage(utils.replaceArgumentsLanguage(text, arguments))
     }
     if (typeof text !== "string" || !text) {
-        return text;
+        return text
     }
     //
-    if (languageInit === false) {
-        languageInit = true;
-        addLanguage(languageDefaultData);
-        addLanguage(window.languageData);
+    if (typeof window.LANGUAGE_DATA === "undefined"
+        || typeof window.LANGUAGE_DATA["key"] === "undefined"
+        || typeof window.LANGUAGE_DATA[languageType] === "undefined") {
+        return text
     }
-    //
-    const ascii = languageUtils.convertAscii(text)
-    if (typeof languageAsciis[ascii] === "undefined") {
-        let tmpKey = null;
-        let tmpRege = null;
-        let tmpData = languageData.find((obj) => {
-            tmpKey = `${obj._ || obj.CN}`
-            if (tmpKey.indexOf("(*)") === -1) {
-                tmpRege = null;
-                return text == tmpKey
-            } else {
-                tmpRege = new RegExp("^" + languageUtils.replaceEscape(tmpKey) + "$", "g");
-                return !!text.match(tmpRege);
-            }
-        });
-        languageAsciis[ascii] = {rege: tmpRege, data: tmpData};
+    const index = window.LANGUAGE_DATA["key"][text] || -1
+    if (index > -1) {
+        return window.LANGUAGE_DATA[languageType][index] || text
     }
-    const {rege, data} = languageAsciis[ascii];
-    if (data) {
-        let value = data[languageType];
-        if (value) {
-            if (rege === null) {
-                return value
+    if (typeof languageRege[text] === "undefined") {
+        languageRege[text] = false
+        for (let key in window.LANGUAGE_DATA["key"]) {
+            if (key.indexOf("(*)") > -1) {
+                const rege = new RegExp("^" + utils.replaceEscape(key) + "$", "g")
+                if (rege.test(text)) {
+                    let j = 0
+                    const k = window.LANGUAGE_DATA["key"][key]
+                    const value = window.LANGUAGE_DATA[languageType][k]?.replace(/\(\*\)/g, function () {
+                        return "$" + (++j)
+                    })
+                    languageRege[text] = {rege, value}
+                    break
+                }
             }
-            let index = 0;
-            value = value.replace(/\(\*\)/g, function () {
-                return "$" + (++index);
-            });
-            return text.replace(rege, value);
         }
     }
-    //
+    if (languageRege[text]) {
+        return text.replace(languageRege[text].rege, languageRege[text].value)
+    }
     if (window.systemInfo.debug === "yes") {
         setTimeout(_ => {
             try {
-                let key = '__language:Undefined__';
-                let languageTmp = JSON.parse(window.localStorage.getItem(key) || '[]');
-                if (!languageUtils.isArray(languageTmp)) {
-                    languageTmp = [];
+                let key = '__language:Undefined__'
+                let languageTmp = JSON.parse(window.localStorage.getItem(key) || '[]')
+                if (!$A.isArray(languageTmp)) {
+                    languageTmp = []
                 }
-                let tmpRege = null;
+                let tmpRege = null
                 let tmpData = languageTmp.find((val) => {
-                    tmpRege = new RegExp("^" + val.replace(/\(\*\)/g, "(.*?)") + "$", "g");
-                    return !!text.match(tmpRege);
-                });
+                    tmpRege = new RegExp("^" + val.replace(/\(\*\)/g, "(.*?)") + "$", "g")
+                    return !!text.match(tmpRege)
+                })
                 if (!tmpData) {
-                    languageTmp.push(text);
-                    window.localStorage.setItem(key, JSON.stringify(languageTmp));
+                    languageTmp.push(text)
+                    window.localStorage.setItem(key, JSON.stringify(languageTmp))
                 }
             } catch (e) { }
         }, 10)
     }
-    //
-    return text;
+    return text
 }
 
-export { languageType, languageList, addLanguage, setLanguage, getLanguage, switchLanguage };
+export { languageType, languageList, addLanguage, setLanguage, switchLanguage }

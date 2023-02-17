@@ -66,7 +66,10 @@ export default {
             state.themeIsDark = $A.dark.isDarkEnabled()
 
             //
-            resolve()
+            $A.loadScriptS([
+                `js/language/key.js`,
+                `js/language/${languageType}.js`,
+            ], resolve);
         })
     },
 

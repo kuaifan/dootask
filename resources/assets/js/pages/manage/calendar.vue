@@ -81,13 +81,13 @@ export default {
 
     created() {
         addLanguage([
-            {"_": "{日}","CN": "日","EN": "Sun","TC": "日","KM": "Sun","TH": "Sun","KO": "Sun","JA": "Sun"},
-            {"_": "{一}","CN": "一","EN": "Mon","TC": "一","KM": "Mon","TH": "Mon","KO": "Mon","JA": "Mon"},
-            {"_": "{二}","CN": "二","EN": "Tue","TC": "二","KM": "Tue","TH": "Tue","KO": "Tue","JA": "Tue"},
-            {"_": "{三}","CN": "三","EN": "Wed","TC": "三","KM": "Wed","TH": "Wed","KO": "Wed","JA": "Wed"},
-            {"_": "{四}","CN": "四","EN": "Thu","TC": "四","KM": "Thu","TH": "Thu","KO": "Thu","JA": "Thu"},
-            {"_": "{五}","CN": "五","EN": "Fri","TC": "五","KM": "Fri","TH": "Fri","KO": "Fri","JA": "Fri"},
-            {"_": "{六}","CN": "六","EN": "Sat","TC": "六","KM": "Sat","TH": "Sat","KO": "Sat","JA": "Sat"},
+            {"key": "{日}", "zh-CN": "日", "general": "Sun"},
+            {"key": "{一}", "zh-CN": "一", "general": "Mon"},
+            {"key": "{二}", "zh-CN": "二", "general": "Tue"},
+            {"key": "{三}", "zh-CN": "三", "general": "Wed"},
+            {"key": "{四}", "zh-CN": "四", "general": "Thu"},
+            {"key": "{五}", "zh-CN": "五", "general": "Fri"},
+            {"key": "{六}", "zh-CN": "六", "general": "Sat"},
         ]);
         let daynames = [
             this.$L('{日}'),
