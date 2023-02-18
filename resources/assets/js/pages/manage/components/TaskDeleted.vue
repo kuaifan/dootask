@@ -135,6 +135,8 @@ export default {
                                     confirm: true,
                                     transfer: true,
                                     placement: 'left',
+                                    okText: this.$L('确定'),
+                                    cancelText: this.$L('取消'),
                                 },
                                 style: {
                                     fontSize: '13px',

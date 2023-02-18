@@ -209,6 +209,17 @@
         "id": "Perubahan bahasa perlu refresh refresh setelah efek. Apakah anda yakin tentang refresh?"
     },
     {
+        "key": "此操作仅加入群成员并不会加入任务负责人",
+        "zh": "",
+        "zh-CHT": "此操作僅加入羣成員並不會加入任務負責人",
+        "en": "This operation only adds group members and not task owners",
+        "ko": "그룹 멤버만 가입하고 작업 책임자는 가입하지 않습니다",
+        "ja": "この作業は、グループのメンバーに参加するだけでタスクの責任者は参加しません。",
+        "de": "Dieses geschäft schließt sich nicht den teammitgliedern an, die die mandatsträger betreuen",
+        "fr": "Cette action rejoint uniquement les membres du groupe et ne rejoint pas les chefs de mission",
+        "id": "Operasi ini hanya untuk anggota kelompok tidak akan bergabung dengan pemimpin misi"
+    },
+    {
         "key": "详细描述，选填...（点击右键使用工具栏）",
         "zh": "",
         "zh-CHT": "詳細描述，選填...（點擊右鍵使用工具欄）",
@@ -339,6 +350,17 @@
         "de": "Diese operation bezieht sich nur auf gruppenmitglieder, nicht auf abteilungen",
         "fr": "Cette action ne rejoint que les membres du groupe et ne rejoint pas le département",
         "id": "Operasi ini hanya untuk anggota kelompok tidak akan menjadi divisi"
+    },
+    {
+        "key": "此操作仅加入群成员并不会加入项目",
+        "zh": "",
+        "zh-CHT": "此操作僅加入羣成員並不會加入項目",
+        "en": "This action only joins group members and does not join projects",
+        "ko": "그룹 멤버만 가입하고 아이템에는 가입하지 않습니다",
+        "ja": "この作業はグループのメンバーに参加するだけではプロジェクトには参加しません",
+        "de": "Dieses geschäft gehört nur mitgliedern einer gruppe an, die nicht dem programm beitreten",
+        "fr": "Cette action rejoint uniquement le groupe les membres ne rejoignent pas le projet",
+        "id": "Tindakan ini hanya untuk bergabung dengan kelompok tertentu tidak akan menjadi bagian dari proyek"
     },
     {
         "key": "注意：刷新将导致原来的链接失效！",
@@ -922,6 +944,17 @@
         "de": "Bist du sicher, dass du das archiv wiederherstellen willst?",
         "fr": "Êtes-vous sûr de vouloir restaurer l’archive?",
         "id": "Kau yakin ingin mengembalikan berkas itu?"
+    },
+    {
+        "key": "你确定要退出群组吗？",
+        "zh": "",
+        "zh-CHT": "你確定要退出羣組嗎？",
+        "en": "Are you sure you want to quit the group?",
+        "ko": "그룹을 탈퇴하시겠습니까?",
+        "ja": "あなたはグループを脱退しますか?",
+        "de": "Willst du die gruppe verlassen?",
+        "fr": "Êtes-vous sûr de vouloir quitter le groupe?",
+        "id": "Apakah anda yakin ingin keluar dari grup?"
     },
     {
         "key": "允许：开放注册功能。",
@@ -3457,10 +3490,10 @@
         "key": "发送验证码",
         "zh": "",
         "zh-CHT": "發送驗證碼",
-        "en": "Send verification code",
+        "en": "Send code",
         "ko": "인증 코드 보내기",
         "ja": "Captchaを送ります",
-        "de": "Authentifizierungscode Senden",
+        "de": "Senden",
         "fr": "Envoyer le captcha",
         "id": "Kirim kode verifikasi"
     },
@@ -10362,6 +10395,17 @@
         "id": "Sebuah perubahan dalam departemen."
     },
     {
+        "key": "你确定要将【(*)】移出群组吗？",
+        "zh": "",
+        "zh-CHT": "你確定要將【(*)】移出羣組嗎？",
+        "en": "Are you sure you want to remove [(*)] from the group?",
+        "ko": "[(*)]를 그룹 밖으로 옮기시겠습니까?",
+        "ja": "グループから【(*)】を外しますか?",
+        "de": "Sollten sie den folgenden block wirklich verlassen?",
+        "fr": "Êtes-vous sûr de vouloir supprimer [(*)] du groupe?",
+        "id": "Apakah anda yakin ingin memindahkan sebuah grup?"
+    },
+    {
         "key": "文件大小超限，最大限制：(*)KB",
         "zh": "",
         "zh-CHT": "文件大小超限，最大限制：(*)KB",
@@ -11020,5 +11064,16 @@
         "de": "(*) nein",
         "fr": "(*)",
         "id": "(*)"
+    },
+    {
+        "key": "(*)秒",
+        "zh": "",
+        "zh-CHT": "(*)秒",
+        "en": "(*) seconds",
+        "ko": "(*) 초",
+        "ja": "(*)秒",
+        "de": "Sekunden. - was für sekunden",
+        "fr": "(*) s",
+        "id": "(*) detik"
     }
 ]
