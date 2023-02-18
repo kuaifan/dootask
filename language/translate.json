@@ -13792,5 +13792,38 @@
         "de": "Abends",
         "fr": "Le soir",
         "id": "Malam ini."
+    },
+    {
+        "key": "中午",
+        "zh": "",
+        "zh-CHT": "中午",
+        "en": "Noon",
+        "ko": "정오",
+        "ja": "正午",
+        "de": "Zu mittag.",
+        "fr": "Midi",
+        "id": "Siang hari."
+    },
+    {
+        "key": "早晨",
+        "zh": "",
+        "zh-CHT": "早晨",
+        "en": "Morning",
+        "ko": "아침",
+        "ja": "朝",
+        "de": "Morgen.",
+        "fr": "Matin",
+        "id": "Di pagi hari."
+    },
+    {
+        "key": "深夜",
+        "zh": "",
+        "zh-CHT": "深夜",
+        "en": "Late night",
+        "ko": "심야",
+        "ja": "深夜",
+        "de": "Nachtmahr",
+        "fr": "La nuit",
+        "id": "Tengah malam."
     }
 ]
