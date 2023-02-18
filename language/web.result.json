@@ -19,7 +19,7 @@
         "ja": "2、チームの所有者の場合は、アカウントを削除する前に所有権を移転してください。例えば、当該アカウントで作成された項目(項目を他の人に移したり削除したりできる)やフォルダです。",
         "de": "2. Wenn sie der eigentümer einer gruppe sind, überspringen sie bitte den eigentümer, bevor ihre konto-datei gelöscht wird Beispielsweise geht es um einen Von dem account erstellten eintrag (der akten übergeben Oder löschen kann) sowie um einen ordner",
         "fr": "2. Si vous êtes le propriétaire de l’équipe, veuillez transférer la propriété avant de supprimer votre compte. Des exemples sont les projets créés par le compte (qui peuvent être transférés à d’autres personnes ou supprimés) et les dossiers.",
-        "id": "2. Jika anda pemilik tim, transfer kepemilikan sebelum menghapus akun anda. Misalnya proyek yang dibuat oleh akun tersebut (dapat menyerahkan atau menghapus item pada orang lain atau pada folder.)"
+        "id": "2. Jika anda pemilik tim, transfer kepemilikan sebelum menghapus akun anda. Misalnya proyek yang dibuat oleh akun tersebut (dapat menyerahkan atau menghapus project pada orang lain atau pada folder.)"
     },
     {
         "key": "汇集文档、电子表格、思维笔记等多种在线工具，汇聚企业知识资源于一处，支持多人实时协同编辑，让团队协作更便捷。",
@@ -564,7 +564,7 @@
         "key": "项目不存在或不在成员列表内",
         "zh": "",
         "zh-CHT": "項目不存在或不在成員列表內",
-        "en": "The item does not exist or is not in the member list",
+        "en": "The project does not exist or is not in the member list",
         "ko": "항목이 존재하지 않거나 멤버 목록에 없습니다",
         "ja": "プロジェクトはメンバーに含まれていません",
         "de": "Einträge existieren nicht Oder stehen nicht in der mitgliederliste",
@@ -613,7 +613,7 @@
         "ja": "プロジェクト・タスク担当者に限って削除します",
         "de": "Nur wenn der projekt Oder der leiter des projekts entfernt wird",
         "fr": "Chef de projet ou de tâche seulement supprimer",
-        "id": "Hanya item atau tugas yang dihapus"
+        "id": "Hanya project atau tugas yang dihapus"
     },
     {
         "key": "仅限项目或任务负责人操作",
@@ -938,7 +938,7 @@
         "key": "你确定要还原归档吗？",
         "zh": "",
         "zh-CHT": "你確定要還原歸檔嗎？",
-        "en": "Are you sure you want to restore the file?",
+        "en": "Are you sure you want to restore the archive?",
         "ko": "압축 파일을 복원하시겠습니까?",
         "ja": "復元しますか?",
         "de": "Bist du sicher, dass du das archiv wiederherstellen willst?",
@@ -2599,7 +2599,7 @@
         "key": "已归档的项目",
         "zh": "",
         "zh-CHT": "已歸檔的項目",
-        "en": "Archived items",
+        "en": "Archived project",
         "ko": "압축된 항목",
         "ja": "保存済みの項目",
         "de": "Die dokumentierten projekte",
@@ -3633,7 +3633,7 @@
         "key": "归档的项目",
         "zh": "",
         "zh-CHT": "歸檔的項目",
-        "en": "Archived items",
+        "en": "Archived project",
         "ko": "압축 파일로 되어 있는 항목",
         "ja": "保存項目です",
         "de": "Ein archiv für die akten.",
@@ -3666,7 +3666,7 @@
         "key": "搜索联系人",
         "zh": "",
         "zh-CHT": "搜索聯繫人",
-        "en": "Search for contacts",
+        "en": "Search contacts",
         "ko": "주소록 검색",
         "ja": "連絡先を検索します",
         "de": "Kontakt suchen.",
@@ -4095,12 +4095,12 @@
         "key": "请选择项目",
         "zh": "",
         "zh-CHT": "請選擇項目",
-        "en": "Please select item",
+        "en": "Please select project",
         "ko": "항목을 선택하십시오.",
         "ja": "項目をお願いします",
         "de": "Wählen sie das objekt aus.",
         "fr": "Veuillez sélectionner un élément",
-        "id": "Silahkan pilih item"
+        "id": "Silahkan pilih project"
     },
     {
         "key": "超期未完成",
@@ -4837,7 +4837,7 @@
         "ja": "プロジェクトを作成します",
         "de": "Projekte entwickeln.",
         "fr": "Créer un projet",
-        "id": "Membuat item"
+        "id": "Membuat project"
     },
     {
         "key": "删除任务",
@@ -4920,12 +4920,12 @@
         "key": "删除项目",
         "zh": "",
         "zh-CHT": "刪除項目",
-        "en": "Delete item",
+        "en": "Delete project",
         "ko": "항목 삭제",
         "ja": "項目を削除します",
         "de": "Eintrag gelöscht.",
         "fr": "Supprimer un élément",
-        "id": "Hapus item"
+        "id": "Hapus project"
     },
     {
         "key": "到期时间",
@@ -5470,7 +5470,7 @@
         "key": "归档人员",
         "zh": "",
         "zh-CHT": "歸檔人員",
-        "en": "Filing staff",
+        "en": "Archiver",
         "ko": "문서 정리 인원.",
         "ja": "ファイリング係です",
         "de": "Nur archiv.",
@@ -5492,7 +5492,7 @@
         "key": "归档会员",
         "zh": "",
         "zh-CHT": "歸檔會員",
-        "en": "Filing member",
+        "en": "Archive member",
         "ko": "회원 압축",
         "ja": "会員をファイリングします",
         "de": "Nur ein paar mitglieder.",
@@ -5503,7 +5503,7 @@
         "key": "归档时间",
         "zh": "",
         "zh-CHT": "歸檔時間",
-        "en": "Filing time",
+        "en": "Archive time",
         "ko": "압축 시간",
         "ja": "ファイリング時間です",
         "de": "Zeit zu gehen.",
@@ -5514,7 +5514,7 @@
         "key": "归档项目",
         "zh": "",
         "zh-CHT": "歸檔項目",
-        "en": "Archived item",
+        "en": "Archived project",
         "ko": "압축 항목",
         "ja": "ファイリング項目です",
         "de": "Ein archiv-projekt.",
@@ -5635,12 +5635,12 @@
         "key": "所有项目",
         "zh": "",
         "zh-CHT": "所有項目",
-        "en": "All items",
+        "en": "All projects",
         "ko": "모든 항목",
         "ja": "すべての項目",
         "de": "Alle projekte.",
         "fr": "Tous les projets",
-        "id": "Semua item"
+        "id": "Semua project"
     },
     {
         "key": "打开任务",
@@ -5662,7 +5662,7 @@
         "ja": "項目を開きます",
         "de": "Projekt öffnen!",
         "fr": "Ouvrir le projet",
-        "id": "Buka item"
+        "id": "Buka project"
     },
     {
         "key": "打开首页",
@@ -5745,12 +5745,12 @@
         "key": "搜索项目",
         "zh": "",
         "zh-CHT": "搜索項目",
-        "en": "Search item",
+        "en": "Search project",
         "ko": "항목 검색",
         "ja": "検索項目です",
         "de": "Suchprojekte starten.",
         "fr": "Rechercher un projet",
-        "id": "Mencari item"
+        "id": "Mencari project"
     },
     {
         "key": "操作成功",
@@ -7087,7 +7087,7 @@
         "key": "邀请项目",
         "zh": "",
         "zh-CHT": "邀請項目",
-        "en": "Invitation item",
+        "en": "Invitation project",
         "ko": "초청 항목",
         "ja": "招待プロジェクトです",
         "de": "Lade sachen ein.",
@@ -7246,7 +7246,7 @@
         "ja": "プロジェクト名です",
         "de": "Name der projekte?",
         "fr": "Nom du projet",
-        "id": "Nama item"
+        "id": "Nama project"
     },
     {
         "key": "项目成员",
@@ -7290,7 +7290,7 @@
         "ja": "プロジェクトの状態です",
         "de": "Status der projektakte",
         "fr": "Statut du projet",
-        "id": "Status item"
+        "id": "Status project"
     },
     {
         "key": "项目群组",
@@ -7725,7 +7725,7 @@
         "key": "已归档",
         "zh": "",
         "zh-CHT": "已歸檔",
-        "en": "Filed",
+        "en": "Archived",
         "ko": "압축 파일",
         "ja": "ファイリング済みです",
         "de": "Araging up.",
@@ -8077,7 +8077,7 @@
         "key": "未归档",
         "zh": "",
         "zh-CHT": "未歸檔",
-        "en": "Unfiled",
+        "en": "Not archived",
         "ko": "압축 파일 없음",
         "ja": "未ファイリングです",
         "de": "Es wurde nicht abgelegt.",
@@ -10464,18 +10464,18 @@
         "key": "你确定要删除项目【(*)】吗？",
         "zh": "",
         "zh-CHT": "你確定要刪除項目【(*)】嗎？",
-        "en": "Are you sure you want to delete the item [(*)]?",
+        "en": "Are you sure you want to delete the project [(*)]?",
         "ko": "항목 [(*)]을 삭제하시겠습니까?",
         "ja": "項目【(*)】を削除することは確実ですか?",
         "de": "Möchten sie das element wirklich löschen? (*)?",
         "fr": "Êtes-vous sûr de vouloir supprimer cet élément [(*)]?",
-        "id": "Apakah anda yakin ingin menghapus item ((*)?"
+        "id": "Apakah anda yakin ingin menghapus project ((*)?"
     },
     {
         "key": "你确定要归档任务【(*)】吗？",
         "zh": "",
         "zh-CHT": "你確定要歸檔任務【(*)】嗎？",
-        "en": "Are you sure you want to file the task [(*)]?",
+        "en": "Are you sure you want to archive the task [(*)]?",
         "ko": "작업 [(*)]을 정리하시겠습니까?",
         "ja": "タスク【(*)】をファイリングしますか?",
         "de": "Bist du sicher, dass du einen auftrag archivieren möchtest?",
@@ -10486,7 +10486,7 @@
         "key": "你确定要归档项目【(*)】吗？",
         "zh": "",
         "zh-CHT": "你確定要歸檔項目【(*)】嗎？",
-        "en": "Are you sure you want to file items [(*)]?",
+        "en": "Are you sure you want to archive projects [(*)]?",
         "ko": "파일 [(*)]을 저장하시겠습니까?",
         "ja": "項目【(*)】をファイリングすることは確実ですか?",
         "de": "Bist du sicher, dass du einen beitrag abladen möchtest?",
@@ -10629,7 +10629,7 @@
         "key": "项目列表最多不能超过(*)个",
         "zh": "",
         "zh-CHT": "項目列表最多不能超過(*)個",
-        "en": "A maximum of (*) items can be listed",
+        "en": "A maximum of (*) projects can be listed",
         "ko": "항목 목록은 (*) 개 이상이어야 합니다",
         "ja": "項目リストは(*)個までとします。",
         "de": "Die liste der einträge darf nicht höher als # (!) sein",
@@ -10794,7 +10794,7 @@
         "key": "共(*)个项目，搜索...",
         "zh": "",
         "zh-CHT": "共(*)個項目，搜索...",
-        "en": "Total (*) items, search...",
+        "en": "Total (*) projects, search...",
         "ko": "총 (*) 항목, 검색...",
         "ja": "共(*)箇条項,…を検索します",
         "de": "Gemeinsames ziel. Suche - ziel eins",
@@ -10915,7 +10915,7 @@
         "key": "最多只能选择(*)项",
         "zh": "",
         "zh-CHT": "最多隻能選擇(*)項",
-        "en": "Maximum selection (*) items",
+        "en": "Maximum selection (*) projects",
         "ko": "(*) 항목만 선택할 수 있습니다",
         "ja": "選択できるのは(*)までです",
         "de": "Wählen sie nur einen eintrag",
