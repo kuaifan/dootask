@@ -1461,7 +1461,7 @@ class Base
             }
         }
         //
-        $undefinedPath = base_path('language/api.undefined.txt');
+        $undefinedPath = base_path('language/undefined-api.txt');
         if (self::$undefinedLang === null) {
             self::$undefinedLang = [];
             if (file_exists($undefinedPath)) {
@@ -1471,7 +1471,7 @@ class Base
         }
         if (!in_array($val, self::$undefinedLang)) {
             self::$undefinedLang[] = $val;
-            @file_put_contents(base_path('language/api.undefined.txt'), "$val\n", FILE_APPEND);
+            @file_put_contents(base_path('language/undefined-api.txt'), "$val\n", FILE_APPEND);
         }
         return $val;
     }

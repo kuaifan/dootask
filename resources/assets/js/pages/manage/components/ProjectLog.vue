@@ -167,7 +167,7 @@ export default {
          * @returns {*[]}
          */
         logDetail(h, {detail, record}) {
-            let vNode = [h('span', this.$L(detail))];
+            let vNode = [h('span', detail)];
             if ($A.isJson(record)) {
                 if ($A.isArray(record.change)) {
                     let [before, now] = record.change
@@ -227,8 +227,8 @@ export default {
                 if (name) {
                     list.push({
                         id,
-                        button: '重置',
-                        content: `确定重置为【${name}】吗？`,
+                        button: this.$L('重置'),
+                        content: this.$L(`确定重置为【${name}】吗？`),
                     })
                 }
             }

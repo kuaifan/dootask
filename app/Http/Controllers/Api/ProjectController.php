@@ -2069,11 +2069,12 @@ class ProjectController extends AbstractController
             if ($task_id === 0) {
                 $log->projectTask?->cancelAppend();
             }
+            $log->detail = Base::Lang($log->detail);
             $log->time = [
                 'ymd' => date(date("Y", $timestamp) == date("Y", Base::time()) ? "m-d" : "Y-m-d", $timestamp),
                 'hi' => date("h:i", $timestamp) ,
-                'week' => "周" . Base::getTimeWeek($timestamp),
-                'segment' => Base::getTimeDayeSegment($timestamp),
+                'week' => Base::Lang("周" . Base::getTimeWeek($timestamp)),
+                'segment' => Base::Lang(Base::getTimeDayeSegment($timestamp)),
             ];
             return $log;
         });
