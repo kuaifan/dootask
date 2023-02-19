@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
  * @method static \Illuminate\Database\Eloquent\Model|object|static|null cancelHidden()
  * @method static \Illuminate\Database\Eloquent\Builder|static with($relations)
  * @method static \Illuminate\Database\Query\Builder|static select($columns = [])
+ * @method static \Illuminate\Database\Query\Builder|static whereIn($column, $values, $boolean = 'and', $not = false)
  * @method static \Illuminate\Database\Query\Builder|static whereNotIn($column, $values, $boolean = 'and')
  * @mixin \Eloquent
  */
