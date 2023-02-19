@@ -1383,6 +1383,22 @@
     }
 }
 
+.dialog-wrapper-todo {
+    display: inline-block;
+    > div {
+        display: flex;
+        align-items: center;
+        .ivu-tag {
+            display: flex;
+            align-items: center;
+            margin-left: 4px;
+            height: 20px;
+            line-height: 20px;
+            padding: 0 5px;
+        }
+    }
+}
+
 .dialog-wrapper-operate {
     .ivu-dropdown-item {
         padding: 0;

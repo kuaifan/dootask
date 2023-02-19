@@ -320,17 +320,22 @@
                 <FormItem prop="type" :label="$L('当前会话')">
                     <RadioGroup v-model="todoSettingData.type">
                         <Radio label="all">{{$L('所有成员')}}</Radio>
+                        <Radio label="user">{{$L('指定成员')}}</Radio>
                         <Radio v-if="todoSettingData.my_id" label="my">
-                            <div style="display:inline-block">
-                                <UserAvatar :userid="todoSettingData.my_id" :show-icon="false" :show-name="true"/>
+                            <div class="dialog-wrapper-todo">
+                                <div>
+                                    <UserAvatar :userid="todoSettingData.my_id" :show-icon="false" :show-name="true"/>
+                                    <Tag>{{$L('自己')}}</Tag>
+                                </div>
                             </div>
                         </Radio>
                         <Radio v-if="todoSettingData.you_id" label="you">
-                            <div style="display:inline-block">
-                                <UserAvatar :userid="todoSettingData.you_id" :show-icon="false" :show-name="true"/>
+                            <div class="dialog-wrapper-todo">
+                                <div>
+                                    <UserAvatar :userid="todoSettingData.you_id" :show-icon="false" :show-name="true"/>
+                                </div>
                             </div>
                         </Radio>
-                        <Radio label="user">{{$L('指定成员')}}</Radio>
                     </RadioGroup>
                 </FormItem>
                 <FormItem v-if="todoSettingData.type === 'user'" prop="userids">
@@ -2215,12 +2220,13 @@ export default {
                     this.todoSettingLoad--
                 })
             } else {
+                const youId = this.dialogData.dialog_user?.userid
                 this.todoSettingData = {
                     type: 'all',
                     userids: [],
                     msg_id: this.operateItem.id,
                     my_id: this.userId,
-                    you_id: this.dialogData.dialog_user?.userid,
+                    you_id: youId != this.userId ? youId : 0,
                 }
                 if (this.operateItem.todo) {
                     $A.modalConfirm({
