@@ -21,6 +21,45 @@ body {
         }
     }
 
+    .form-list {
+        ol,
+        ul {
+            li {
+                list-style-type: none;
+
+                &::before {
+                    display: inline-block;
+                    white-space: nowrap;
+                    width: 1.2em;
+                    text-align: left;
+                    margin-right: 0.2em;
+                }
+            }
+        }
+
+        ul {
+            li {
+                &::before {
+                    content: '\2022';
+                    font-weight: 900;
+                }
+            }
+        }
+
+        ol {
+            li {
+                counter-reset: list-1 list-2 list-3 list-4 list-5 list-6 list-7 list-8 list-9;
+                counter-increment: list-0;
+
+                &:before {
+                    width: auto;
+                    min-width: 1.2em;
+                    content: counter(list-0, decimal) '. ';
+                }
+            }
+        }
+    }
+
     .ivu-badge-count {
         font-family: "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
     }

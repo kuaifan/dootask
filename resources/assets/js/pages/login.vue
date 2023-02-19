@@ -546,6 +546,7 @@ export default {
                     this.$store.dispatch("handleClearCache", data).then(this.goNext);
                 }).catch(({data, msg}) => {
                     if (data.code === 'email') {
+                        this.loginType = 'login';
                         $A.modalWarning(msg);
                     } else {
                         $A.modalError(msg);

@@ -550,6 +550,8 @@
                                         counter-increment: list-0;
 
                                         &:before {
+                                            width: auto;
+                                            min-width: 1.2em;
                                             content: counter(list-0, decimal) '. ';
                                         }
                                     }

@@ -27,6 +27,7 @@
             }
         }
         .login-box {
+            flex-shrink: 0;
             position: relative;
             margin-top: 36px;
             width: 400px;

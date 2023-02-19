@@ -157,6 +157,15 @@
                     }
                 }
 
+                ol {
+                    li {
+                        &:before {
+                            width: auto;
+                            min-width: 1.2em;
+                        }
+                    }
+                }
+
                 a {
                     &:before,
                     &:after {

@@ -120,8 +120,8 @@
             height: 18px;
             line-height: 18px;
             padding: 0 4px;
-            transform: scale(0.8);
-            transform-origin: right center;
+            margin-left: 4px;
+            zoom: 0.8;
             flex-shrink: 0;
             overflow: hidden;
             text-overflow: ellipsis;
