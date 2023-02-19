@@ -1448,8 +1448,8 @@ class ProjectTask extends AbstractModel
             return;
         }
         $owners = $this->taskUser->pluck('owner', 'userid')->toArray();
-        $users = User::whereIn('userid', $userids)->whereNull('disable_at')->get();
-        if (empty($users)) {
+        $receivers = User::whereIn('userid', $userids)->whereNull('disable_at')->get();
+        if (empty($receivers)) {
             return;
         }
 
@@ -1467,18 +1467,18 @@ class ProjectTask extends AbstractModel
         };
 
         /** @var User $user */
-        foreach ($users as $user) {
+        foreach ($receivers as $receiver) {
             $data = [
                 'type' => $type,
-                'userid' => $user->userid,
+                'userid' => $receiver->userid,
                 'task_id' => $this->id,
             ];
             if (in_array($type, [1, 2]) && ProjectTaskPushLog::where($data)->exists()) {
                 continue;
             }
             //
-            $replace = $owners[$user->userid] ? "您负责的任务" : "您协助的任务";
-            $dialog = WebSocketDialog::checkUserDialog($botUser->userid, $data['userid']);
+            $replace = $owners[$receiver->userid] ? "您负责的任务" : "您协助的任务";
+            $dialog = WebSocketDialog::checkUserDialog($botUser, $receiver->userid);
             if ($dialog) {
                 ProjectTaskPushLog::createInstance($data)->save();
                 WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', [

@@ -315,6 +315,9 @@ class DialogController extends AbstractController
         if (empty($callUser) || empty($callUser->tel)) {
             return Base::retError("对方未设置联系电话");
         }
+        if ($user->isTemp()) {
+            return Base::retError("无法查看联系电话");
+        }
         //
         $add = null;
         $res = WebSocketDialogMsg::sendMsg(null, $dialog->id, 'notice', [
@@ -353,7 +356,7 @@ class DialogController extends AbstractController
             return Base::retError('错误的会话');
         }
         //
-        $dialog = WebSocketDialog::checkUserDialog($user->userid, $userid);
+        $dialog = WebSocketDialog::checkUserDialog($user, $userid);
         if (empty($dialog)) {
             return Base::retError('打开会话失败');
         }
@@ -866,8 +869,7 @@ class DialogController extends AbstractController
         $fileLink = $file->getShareLink($user->userid);
         $fileMsg = "<a class=\"mention file\" href=\"{{RemoteURL}}single/file/{$fileLink['code']}\" target=\"_blank\">~{$file->getNameAndExt()}</a>";
         //
-        $sender = $user->userid;
-        return AbstractModel::transaction(function() use ($sender, $fileMsg, $userids, $dialogids) {
+        return AbstractModel::transaction(function() use ($user, $fileMsg, $userids, $dialogids) {
             $msgs = [];
             $already = [];
             if ($dialogids) {
@@ -875,7 +877,7 @@ class DialogController extends AbstractController
                     $dialogids = [$dialogids];
                 }
                 foreach ($dialogids as $dialogid) {
-                    $res = WebSocketDialogMsg::sendMsg(null, $dialogid, 'text', ['text' => $fileMsg], $sender);
+                    $res = WebSocketDialogMsg::sendMsg(null, $dialogid, 'text', ['text' => $fileMsg], $user->userid);
                     if (Base::isSuccess($res)) {
                         $msgs[] = $res['data'];
                         $already[] = $dialogid;
@@ -890,9 +892,9 @@ class DialogController extends AbstractController
                     if (!User::whereUserid($userid)->exists()) {
                         continue;
                     }
-                    $dialog = WebSocketDialog::checkUserDialog($sender, $userid);
+                    $dialog = WebSocketDialog::checkUserDialog($user, $userid);
                     if ($dialog && !in_array($dialog->id, $already)) {
-                        $res = WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $fileMsg], $sender);
+                        $res = WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $fileMsg], $user->userid);
                         if (Base::isSuccess($res)) {
                             $msgs[] = $res['data'];
                         }
@@ -1216,7 +1218,7 @@ class DialogController extends AbstractController
         }
         WebSocketDialog::checkDialog($msg->dialog_id);
         //
-        return $msg->forwardMsg($dialogids, $userids, $user->userid);
+        return $msg->forwardMsg($dialogids, $userids, $user);
     }
 
     /**
@@ -1444,6 +1446,9 @@ class DialogController extends AbstractController
                 }
             }
             $chatName = implode(", ", $array);
+        }
+        if ($user->isTemp()) {
+            return Base::retError('无法创建群组');
         }
         $dialog = WebSocketDialog::createGroup($chatName, $userids, 'user', $user->userid);
         if (empty($dialog)) {

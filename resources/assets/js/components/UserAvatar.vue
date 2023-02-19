@@ -299,7 +299,12 @@
             },
 
             openDialog() {
-                this.$store.dispatch("openDialogUserid", this.userid);
+                this.$store.dispatch("showSpinner", 600)
+                this.$store.dispatch("openDialogUserid", this.userid).catch(({msg}) => {
+                    $A.modalError(msg)
+                }).finally(_ => {
+                    this.$store.dispatch("hiddenSpinner")
+                });
             },
 
             onError() {

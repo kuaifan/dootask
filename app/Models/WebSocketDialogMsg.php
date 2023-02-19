@@ -367,12 +367,12 @@ class WebSocketDialogMsg extends AbstractModel
      * 转发消息
      * @param array|int $dialogids
      * @param array|int $userids
-     * @param int $sender       发送的会员ID
+     * @param User $user    发送的会员
      * @return mixed
      */
-    public function forwardMsg($dialogids, $userids, $sender)
+    public function forwardMsg($dialogids, $userids, $user)
     {
-        return AbstractModel::transaction(function() use ($dialogids, $sender, $userids) {
+        return AbstractModel::transaction(function() use ($dialogids, $user, $userids) {
             $originalMsg = Base::json2array($this->getRawOriginal('msg'));
             $msgs = [];
             $already = [];
@@ -381,7 +381,7 @@ class WebSocketDialogMsg extends AbstractModel
                     $dialogids = [$dialogids];
                 }
                 foreach ($dialogids as $dialogid) {
-                    $res = self::sendMsg(null, $dialogid, $this->type, $originalMsg, $sender);
+                    $res = self::sendMsg(null, $dialogid, $this->type, $originalMsg, $user->userid);
                     if (Base::isSuccess($res)) {
                         $msgs[] = $res['data'];
                         $already[] = $dialogid;
@@ -396,9 +396,9 @@ class WebSocketDialogMsg extends AbstractModel
                     if (!User::whereUserid($userid)->exists()) {
                         continue;
                     }
-                    $dialog = WebSocketDialog::checkUserDialog($sender, $userid);
+                    $dialog = WebSocketDialog::checkUserDialog($user, $userid);
                     if ($dialog && !in_array($dialog->id, $already)) {
-                        $res = self::sendMsg(null, $dialog->id, $this->type, $originalMsg, $sender);
+                        $res = self::sendMsg(null, $dialog->id, $this->type, $originalMsg, $user->userid);
                         if (Base::isSuccess($res)) {
                             $msgs[] = $res['data'];
                         }

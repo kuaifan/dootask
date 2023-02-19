@@ -504,7 +504,9 @@ export default {
             //
             if ($A.isJson(dialogId) && $A.leftExists(dialogId.dialog_id, "u:")) {
                 this.$store.dispatch("showSpinner", 300)
-                this.$store.dispatch("openDialogUserid", $A.leftDelete(dialogId.dialog_id, "u:")).finally(_ => {
+                this.$store.dispatch("openDialogUserid", $A.leftDelete(dialogId.dialog_id, "u:")).catch(({msg}) => {
+                    $A.modalError(msg)
+                }).finally(_ => {
                     this.$store.dispatch("hiddenSpinner")
                 })
             } else {
@@ -521,6 +523,8 @@ export default {
                 if (this.windowLarge) {
                     this.tabActive = 'dialog';
                 }
+            }).catch(({msg}) => {
+                $A.modalError(msg)
             }).finally(_ => {
                 this.$set(user, 'loading', false);
             });

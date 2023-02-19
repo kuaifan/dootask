@@ -1101,7 +1101,7 @@ class UsersController extends AbstractController
                 if (!User::whereUserid($userid)->exists()) {
                     continue;
                 }
-                $dialog = WebSocketDialog::checkUserDialog($user->userid, $userid);
+                $dialog = WebSocketDialog::checkUserDialog($user, $userid);
                 if ($dialog) {
                     $res = WebSocketDialogMsg::sendMsg(null, $dialog->id, 'meeting', $data, $user->userid);
                     if (Base::isSuccess($res)) {
@@ -1151,7 +1151,7 @@ class UsersController extends AbstractController
             if (!User::whereUserid($userid)->exists()) {
                 continue;
             }
-            $dialog = WebSocketDialog::checkUserDialog($user->userid, $userid);
+            $dialog = WebSocketDialog::checkUserDialog($user, $userid);
             if ($dialog) {
                 $res = WebSocketDialogMsg::sendMsg(null, $dialog->id, 'meeting', $data, $user->userid);
                 if (Base::isSuccess($res)) {

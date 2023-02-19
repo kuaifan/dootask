@@ -148,7 +148,7 @@ class PublicController extends AbstractController
                 }
                 Cache::put($cacheKey, "yes", Carbon::now()->addDay());
                 //
-                $dialog = WebSocketDialog::checkUserDialog($botUser->userid, $checkin->userid);
+                $dialog = WebSocketDialog::checkUserDialog($botUser, $checkin->userid);
                 if ($dialog) {
                     $hi = date("H:i");
                     $pre = $type == "up" ? "上班" : "下班";

@@ -39,6 +39,8 @@ export default {
             this.$store.dispatch("showSpinner", 600)
             this.$store.dispatch("openDialogUserid", userid).then(_ => {
                 this.$emit("on-close")
+            }).catch(({msg}) => {
+                $A.modalError(msg)
             }).finally(_ => {
                 this.openIng = false
                 this.$store.dispatch("hiddenSpinner")

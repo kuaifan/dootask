@@ -481,37 +481,40 @@ class WebSocketDialog extends AbstractModel
 
     /**
      * 获取会员对话（没有自动创建）
-     * @param int $userid   会员ID
-     * @param int $userid2  另一个会员ID
+     * @param User $user    发起会话的会员
+     * @param int $receiver  另一个会员ID
      * @return self|null
      */
-    public static function checkUserDialog($userid, $userid2)
+    public static function checkUserDialog($user, $receiver)
     {
-        if ($userid == $userid2) {
-            $userid2 = 0;
+        if ($user->userid == $receiver) {
+            $receiver = 0;
         }
         $dialogUser = self::select(['web_socket_dialogs.*'])
             ->join('web_socket_dialog_users as u1', 'web_socket_dialogs.id', '=', 'u1.dialog_id')
             ->join('web_socket_dialog_users as u2', 'web_socket_dialogs.id', '=', 'u2.dialog_id')
-            ->where('u1.userid', $userid)
-            ->where('u2.userid', $userid2)
+            ->where('u1.userid', $user->userid)
+            ->where('u2.userid', $receiver)
             ->where('web_socket_dialogs.type', 'user')
             ->first();
         if ($dialogUser) {
             return $dialogUser;
         }
-        return AbstractModel::transaction(function () use ($userid2, $userid) {
+        if ($receiver > 0 && $user->isTemp()) {
+            throw new ApiException('无法发起会话');
+        }
+        return AbstractModel::transaction(function () use ($receiver, $user) {
             $dialog = self::createInstance([
                 'type' => 'user',
             ]);
             $dialog->save();
             WebSocketDialogUser::createInstance([
                 'dialog_id' => $dialog->id,
-                'userid' => $userid,
+                'userid' => $user->userid,
             ])->save();
             WebSocketDialogUser::createInstance([
                 'dialog_id' => $dialog->id,
-                'userid' => $userid2,
+                'userid' => $receiver,
             ])->save();
             return $dialog;
         });

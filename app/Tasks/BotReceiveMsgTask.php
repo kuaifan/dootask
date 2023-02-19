@@ -150,7 +150,7 @@ class BotReceiveMsgTask extends AbstractTask
                         $notice = "创建失败。";
                         break;
                     }
-                    $dialog = WebSocketDialog::checkUserDialog($data->userid, $msg->userid);
+                    $dialog = WebSocketDialog::checkUserDialog($data, $msg->userid);
                     if ($dialog) {
                         $text = "<p>您好，我是机器人：{$data->nickname}，我的机器人ID是：{$data->userid}，</p><p>你可以发送 <u><b>/help</b></u> 查看我支持什么命令。</p>";
                         WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $data->userid);   // todo 未能在任务end事件来发送任务
