@@ -399,13 +399,18 @@
                     -webkit-touch-callout: none;
                     transition: transform 0.3s;
                 }
-                &:active {
-                    background-color: #eeeeee;
-                    border-radius: 8px;
-                }
                 &:hover {
                     > img {
                         transform: scale(1.4);
+                    }
+                }
+            }
+
+            &.emoji {
+                > li {
+                    &:active {
+                        background-color: #eeeeee;
+                        border-radius: 8px;
                     }
                 }
             }

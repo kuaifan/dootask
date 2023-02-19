@@ -155,4 +155,8 @@ export default {
 
     // 工作报告未读数量
     reportUnreadNumber: 0,
+
+    // 表单布局
+    formLabelPosition: $A(window).width() > 768 ? 'right' : 'top',
+    formLabelWidth: $A(window).width() > 768 ? 'auto' : '',
 };

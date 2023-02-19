@@ -1,6 +1,6 @@
 <template>
     <div class="setting-item submit">
-        <Form ref="formDatum" :model="formDatum" :rules="ruleDatum" label-width="auto" @submit.native.prevent>
+        <Form ref="formDatum" :model="formDatum" :rules="ruleDatum" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
             <Alert v-if="userInfo.changepass" type="warning" showIcon style="margin-bottom:32px">{{$L('请先修改登录密码！')}}</Alert>
             <FormItem :label="$L('旧密码')" prop="oldpass">
                 <Input v-model="formDatum.oldpass" type="password"></Input>
@@ -74,7 +74,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['userInfo']),
+        ...mapState(['userInfo', 'formLabelPosition', 'formLabelWidth']),
     },
     methods: {
         submitForm() {

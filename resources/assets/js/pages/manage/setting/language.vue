@@ -1,6 +1,6 @@
 <template>
     <div class="setting-item submit">
-        <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
+        <Form ref="formData" :model="formData" :rules="ruleData" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
             <FormItem :label="$L('选择语言')" prop="language">
                 <Select v-model="formData.language" :placeholder="$L('选项语言')">
                     <Option v-for="(item, index) in languageList" :value="index" :key="index">{{ item }}</Option>
@@ -16,6 +16,7 @@
 
 <script>
 import {languageList, languageType, setLanguage} from "../../../language";
+import {mapState} from "vuex";
 
 export default {
     data() {
@@ -34,6 +35,10 @@ export default {
 
     mounted() {
         this.initData();
+    },
+
+    computed: {
+        ...mapState(['formLabelPosition', 'formLabelWidth']),
     },
 
     methods: {
