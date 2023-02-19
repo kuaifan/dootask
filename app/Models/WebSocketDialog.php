@@ -68,6 +68,10 @@ class WebSocketDialog extends AbstractModel
             return $data[$key] ?? $default;
         };
         //
+        $this->pinyin = Base::cn2pinyin($this->name);
+        $this->top_at = $this->top_at ?? $dialogUserFun('top_at');
+        $this->user_at = $this->user_at ?? $dialogUserFun('updated_at');
+        //
         if (isset($this->search_msg_id)) {
             // 最后消息 (搜索预览消息)
             $this->last_msg = WebSocketDialogMsg::whereDialogId($this->id)->find($this->search_msg_id);
@@ -76,31 +80,19 @@ class WebSocketDialog extends AbstractModel
             // 最后消息
             $this->last_msg = WebSocketDialogMsg::whereDialogId($this->id)->orderByDesc('id')->first();
             // 未读信息
-            $unBuilder = WebSocketDialogMsgRead::whereDialogId($this->id)->whereUserid($userid)->whereReadAt(null);
-            $this->unread = $unBuilder->count();
-            $this->mention = 0;
-            $this->last_umid = 0;
-            $this->position_msgs = [];
-            if ($this->unread > 0) {
-                $this->mention = $unBuilder->clone()->whereMention(1)->count();
-                $this->last_umid = intval($unBuilder->clone()->orderByDesc('msg_id')->value('msg_id'));
-                if ($hasData === true) {
-                    $this->position_msgs = $this->getPositionMsgs($userid);
-                }
-            }
+            $this->generateUnread($userid, $hasData);
+            // 未读标记
             $this->mark_unread = $this->mark_unread ?? $dialogUserFun('mark_unread');
             // 是否免打扰
             $this->silence = $this->silence ?? $dialogUserFun('silence');
             // 对话人数
-            $builder = WebSocketDialogUser::whereDialogId($this->id);
-            $this->people = $builder->count();
+            $this->people = WebSocketDialogUser::whereDialogId($this->id)->count();
             // 有待办
             $this->todo_num = WebSocketDialogMsgTodo::whereDialogId($this->id)->whereUserid($userid)->whereDoneAt(null)->count();
         }
         // 对方信息
         $this->dialog_user = null;
         $this->group_info = null;
-        $this->top_at = $this->top_at ?? $dialogUserFun('top_at');
         $this->bot = 0;
         switch ($this->type) {
             case "user":
@@ -152,36 +144,45 @@ class WebSocketDialog extends AbstractModel
             $this->has_file = $msgBuilder->clone()->whereMtype('file')->exists();
             $this->has_link = $msgBuilder->clone()->whereLink(1)->exists();
         }
-        $this->pinyin = Base::cn2pinyin($this->name);
         return $this;
     }
 
     /**
-     * 获取定位消息
+     * 生成未读数据
      * @param $userid
-     * @return array[]
+     * @param $positionData
+     * @return $this
      */
-    public function getPositionMsgs($userid)
+    public function generateUnread($userid, $positionData = true)
     {
         $builder = WebSocketDialogMsgRead::whereDialogId($this->id)->whereUserid($userid)->whereReadAt(null);
-        $array = [];
-        // @我的消息
-        $mention_id = intval($builder->clone()->whereMention(1)->orderByDesc('msg_id')->value('msg_id'));
-        if ($mention_id > 0) {
-            $array[] = [
-                'msg_id' => $mention_id,
-                'label' => Base::Lang('@我的消息'),
-            ];
+        $this->unread = $builder->count();
+        $this->mention = 0;
+        if ($this->unread > 0) {
+            $this->mention = $builder->clone()->whereMention(1)->count();
         }
-        // 最早一条未读消息
-        $first_id = intval($builder->clone()->orderBy('msg_id')->value('msg_id'));
-        if ($first_id > 0) {
-            $array[] = [
-                'msg_id' => $first_id,
-                'label' => 'unread'
-            ];
+        if ($positionData) {
+            $array = [];
+            // @我的消息
+            if ($this->mention > 0
+                && $mention_id = intval($builder->clone()->whereMention(1)->orderByDesc('msg_id')->value('msg_id'))) {
+                $array[] = [
+                    'msg_id' => $mention_id,
+                    'label' => Base::Lang('@我的消息'),
+                ];
+            }
+            // 最早一条未读消息
+            if ($this->unread > 0
+                && $first_id = intval($builder->clone()->orderBy('msg_id')->value('msg_id'))) {
+                $array[] = [
+                    'msg_id' => $first_id,
+                    'label' => '{UNREAD}'
+                ];
+            }
+            //
+            $this->position_msgs = $array;
         }
-        return $array;
+        return $this;
     }
 
     /**

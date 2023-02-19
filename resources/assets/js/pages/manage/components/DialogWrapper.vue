@@ -778,14 +778,14 @@ export default {
 
         positionMsg() {
             const {unread, position_msgs} = this.dialogData
-            if (unread === 0 || this.allMsgs.length === 0 ||position_msgs.length === 0) {
+            if (!position_msgs || position_msgs.length === 0 || unread === 0 || this.allMsgs.length === 0) {
                 return null
             }
             const item = position_msgs.sort((a, b) => {
                 return b.msg_id - a.msg_id
             })[0]
             if (this.allMsgs.findIndex(({id}) => id == item.msg_id) === -1) {
-                if (item.label === 'unread') {
+                if (item.label === '{UNREAD}') {
                     return Object.assign(item, {
                         'label': this.$L(`未读消息${unread}条`)
                     })

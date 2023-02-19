@@ -426,8 +426,9 @@ class WebSocketDialogMsg extends AbstractModel
             WebSocketDialogMsgTodo::whereIn('msg_id', $ids)->delete();
             self::whereIn('id', $ids)->delete();
             //
-            foreach ($dialogIds as $id) {
-                WebSocketDialog::find($id)?->updateMsgLastAt();
+            $dialogDatas = WebSocketDialog::whereIn('id', $dialogIds)->get();
+            foreach ($dialogDatas as $dialogData) {
+                $dialogData->updateMsgLastAt();
             }
             foreach ($replyIds as $id) {
                 self::whereId($id)->update(['reply_num' => self::whereReplyId($id)->count()]);
@@ -453,9 +454,13 @@ class WebSocketDialogMsg extends AbstractModel
                 self::whereId($this->reply_id)->decrement('reply_num');
             }
             //
-            $dialog = $this->webSocketDialog;
-            if ($dialog) {
-                $userids = $dialog->dialogUser->pluck('userid')->toArray();
+            $dialogData = $this->webSocketDialog;
+            if ($dialogData) {
+                foreach ($dialogData->dialogUser as $dialogUser) {
+                    $dialogUser->updated_at = Carbon::now();
+                    $dialogUser->save();
+                }
+                $userids = $dialogData->dialogUser->pluck('userid')->toArray();
                 PushTask::push([
                     'userid' => $userids,
                     'msg' => [
@@ -464,7 +469,7 @@ class WebSocketDialogMsg extends AbstractModel
                         'data' => [
                             'id' => $this->id,
                             'dialog_id' => $this->dialog_id,
-                            'last_msg' => $dialog->updateMsgLastAt(),
+                            'last_msg' => $dialogData->updateMsgLastAt(),
                             'update_read' => $deleteRead ? 1 : 0
                         ],
                     ]
@@ -830,6 +835,7 @@ class WebSocketDialogMsg extends AbstractModel
                 $dialogMsg->send = 1;
                 $dialogMsg->key = $dialogMsg->generateMsgKey();
                 $dialogMsg->save();
+                WebSocketDialogUser::whereDialogId($dialog->id)->update(['updated_at' => $dialog->updated_at]);
             });
             //
             $task = new WebSocketDialogMsgTask($dialogMsg->id);

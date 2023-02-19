@@ -2066,11 +2066,11 @@ export default {
         } else if ($A.isJson(data)) {
             const index = state.cacheDialogs.findIndex(({id}) => id == data.id);
             if (index > -1) {
-                const original = state.cacheDialogs[index];
-                if (typeof data.unread === "number" && data.unread > original.unread && data.last_umid <= original.last_umid) {
-                    // 增加未读数时：新数据的最后一条未读消息id <= 原数据，则不更新未读数
-                    data.unread = original.unread;
-                    data.mention = original.mention;
+                const original = state.cacheDialogs[index]
+                if ($A.Time(data.user_at) < $A.Time(original.user_at)) {
+                    typeof data.unread !== "undefined" && delete data.unread
+                    typeof data.mention !== "undefined" && delete data.mention
+                    typeof data.position_msgs !== "undefined" && delete data.position_msgs
                 }
                 state.cacheDialogs.splice(index, 1, Object.assign({}, original, data));
             } else {
@@ -2148,9 +2148,9 @@ export default {
                 callData.page = 1
                 if (state.cacheDialogs.length > 0) {
                     const tmpList = state.cacheDialogs.sort((a, b) => {
-                        return $A.Date(b.last_at) - $A.Date(a.last_at);
+                        return $A.Date(b.user_at) - $A.Date(a.user_at);
                     })
-                    callData.at_after = tmpList[0].last_at;
+                    callData.at_after = tmpList[0].user_at;
                 }
             }
             //
@@ -2598,32 +2598,23 @@ export default {
         if (data.read_at) return;
         data.read_at = $A.formatDate();
         //
-        const dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
-        if (dialog && dialog.unread > 0) {
-            const newData = {
-                id: data.dialog_id,
-                mark_unread: 0,
-            }
-            newData.unread = dialog.unread - 1;
-            if (data.mention) {
-                newData.mention = dialog.mention - 1;
-            }
-            dispatch("saveDialog", newData)
-        }
-        //
-        state.wsReadWaitList.push(data.id);
+        state.wsReadWaitData[data.id] = data.id;
         clearTimeout(state.wsReadTimeout);
-        state.wsReadTimeout = setTimeout(() => {
-            const id = $A.cloneJSON(state.wsReadWaitList);
-            state.wsReadWaitList = [];
+        state.wsReadTimeout = setTimeout(_ => {
+            const ids = Object.values(state.wsReadWaitData);
+            state.wsReadWaitData = {};
             //
             dispatch("call", {
                 url: 'dialog/msg/read',
                 data: {
-                    id: id.join(",")
+                    id: ids.join(",")
                 }
+            }).then(({data}) => {
+                dispatch("saveDialog", data)
             }).catch(_ => {
-                state.wsReadWaitList.push(...id)
+                ids.some(id => {
+                    state.wsReadWaitData[id] = id;
+                })
             });
         }, 50);
     },
@@ -2825,10 +2816,8 @@ export default {
                                                 dispatch("call", {
                                                     url: 'dialog/msg/unread',
                                                     data: {dialog_id}
-                                                }).then(result => {
-                                                    newData.unread = result.data.unread
-                                                    newData.last_umid = result.data.last_umid
-                                                    dispatch("saveDialog", newData)
+                                                }).then(({data}) => {
+                                                    dispatch("saveDialog", Object.assign(newData, data))
                                                 }).catch(() => {});
                                             } else {
                                                 dispatch("saveDialog", newData)
@@ -2852,11 +2841,12 @@ export default {
                                                 if (dialog) {
                                                     const newData = {
                                                         id: dialog_id,
-                                                        last_umid: data.id,
+                                                        unread: dialog.unread + 1,
+                                                        mention: dialog.mention,
+                                                        user_at: data.created_at,
                                                     }
-                                                    newData.unread = dialog.unread + 1;
                                                     if (data.mention) {
-                                                        newData.mention = dialog.mention + 1;
+                                                        newData.mention++;
                                                     }
                                                     dispatch("saveDialog", newData)
                                                 }

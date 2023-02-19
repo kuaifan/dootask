@@ -15,6 +15,7 @@ namespace App\Models;
  * @property int|null $important 是否不可移出（项目、任务、部门人员）
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\WebSocketDialog|null $webSocketDialog
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser query()
@@ -32,5 +33,11 @@ namespace App\Models;
  */
 class WebSocketDialogUser extends AbstractModel
 {
-
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function webSocketDialog(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(WebSocketDialog::class, 'id', 'dialog_id');
+    }
 }

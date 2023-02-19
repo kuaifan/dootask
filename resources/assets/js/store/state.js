@@ -63,7 +63,7 @@ export default {
     wsOpenNum: 0,
     wsListener: {},
     wsReadTimeout: null,
-    wsReadWaitList: [],
+    wsReadWaitData: {},
 
     // 会员信息
     userInfo: {},
