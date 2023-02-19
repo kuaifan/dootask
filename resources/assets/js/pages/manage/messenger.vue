@@ -350,27 +350,22 @@ export default {
 
         msgUnread() {
             return function (type) {
-                let num = 0;
+                let num = 0
                 this.cacheDialogs.some((dialog) => {
-                    let unread = $A.getDialogUnread(dialog, false);
-                    if (unread) {
-                        switch (type) {
-                            case 'project':
-                            case 'task':
-                                if (type == dialog.group_type) {
-                                    num += unread;
-                                }
-                                break;
-                            case 'user':
-                                if (type == dialog.type) {
-                                    num += unread;
-                                }
-                                break;
-                            default:
-                                num += unread;
-                                break;
-                        }
+                    switch (type) {
+                        case 'project':
+                        case 'task':
+                            if (type != dialog.group_type) {
+                                return false
+                            }
+                            break;
+                        case 'user':
+                            if (type != dialog.type) {
+                                return false
+                            }
+                            break;
                     }
+                    num += $A.getDialogNum(dialog);
                 });
                 return num;
             }
@@ -481,7 +476,7 @@ export default {
         onActive(type) {
             if (this.dialogActive == type) {
                 // 再次点击滚动到未读条目
-                const dialog = this.dialogList.find(dialog => $A.getDialogUnread(dialog, false) > 0)
+                const dialog = this.dialogList.find(dialog => $A.getDialogNum(dialog) > 0)
                 if (dialog) {
                     $A.scrollIntoViewIfNeeded(this.$refs[`dialog_${dialog.id}`][0])
                 }
@@ -532,7 +527,7 @@ export default {
         },
 
         filterDialog(dialog) {
-            if ($A.getDialogUnread(dialog, false) > 0 || dialog.id == this.dialogId || dialog.top_at || dialog.todo_num > 0) {
+            if ($A.getDialogNum(dialog) > 0 || dialog.id == this.dialogId || dialog.top_at || dialog.todo_num > 0) {
                 return true
             }
             if (dialog.name === undefined || dialog.dialog_delete === 1) {
@@ -643,7 +638,7 @@ export default {
         },
 
         formatTodoNum(num) {
-            return num > 99 ? '99+' : (num > 1 ? num : '')
+            return num > 999 ? '999+' : (num > 1 ? num : '')
         },
 
         formatMsgEmojiDesc(data) {

@@ -477,10 +477,16 @@ export default {
                 }
                 return todoNum;
             }
-            if (!num) {
-                return "";
+            if (num) {
+                if (mention) {
+                    return `${num}·@${mention}`
+                }
+                return String(num)
             }
-            return mention ? `${num}·@${mention}` : String(num);
+            if (mention) {
+                return `@${mention}`
+            }
+            return "";
         },
 
         /**
@@ -490,7 +496,7 @@ export default {
         msgAllUnread() {
             let num = 0;
             this.cacheDialogs.some(dialog => {
-                num += $A.getDialogUnread(dialog, false);
+                num += $A.getDialogNum(dialog);
             })
             return num;
         },

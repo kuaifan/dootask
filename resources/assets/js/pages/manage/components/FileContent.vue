@@ -30,7 +30,7 @@
                         <li v-for="(userid, index) in editUser" :key="index" v-if="index <= 10">
                             <UserAvatar :userid="userid" :size="28" :border-witdh="2"/>
                         </li>
-                        <li v-if="editUser.length > 10" class="more">{{editUser.length > 99 ? '99+' : editUser.length}}</li>
+                        <li v-if="editUser.length > 10" class="more" :title="editUser.length">{{editUser.length > 999 ? '...' : editUser.length}}</li>
                     </ul>
                 </div>
                 <div v-if="file.type=='document' && contentDetail" class="header-hint">

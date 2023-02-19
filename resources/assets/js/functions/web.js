@@ -630,14 +630,30 @@
         },
 
         /**
+         * 返回对话未读数量（不含免打扰，但如果免打扰中有@则返回@数量）
+         * @param dialog
+         * @returns {*|number}
+         */
+        getDialogNum(dialog) {
+            if (!dialog) {
+                return 0
+            }
+            const unread = !dialog.silence ? dialog.unread : 0
+            return unread || dialog.mention || dialog.mark_unread || 0
+        },
+
+        /**
          * 返回对话未读数量
          * @param dialog
-         * @param containSilence
+         * @param containSilence    是否包含免打扰消息（true:包含, false:不包含）
          * @returns {*|number}
          */
         getDialogUnread(dialog, containSilence) {
-            const unread = containSilence || !dialog.silence ? dialog.unread : 0
-            return dialog ? (unread || dialog.mark_unread || 0) : 0
+            if (!dialog) {
+                return 0
+            }
+            const unread = (containSilence || !dialog.silence) ? dialog.unread : 0
+            return unread || dialog.mark_unread || 0
         },
 
         /**
@@ -646,7 +662,7 @@
          * @returns {*|number}
          */
         getDialogMention(dialog) {
-            return dialog ? (dialog.mention || 0) : 0
+            return dialog?.mention || 0
         },
 
         /**

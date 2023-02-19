@@ -726,13 +726,13 @@ export default {
         msgUnreadOnly() {
             let num = 0;
             this.cacheDialogs.some(dialog => {
-                num += $A.getDialogUnread(dialog, false);
+                num += $A.getDialogNum(dialog);
             })
             if (num <= 0) {
                 return '';
             }
-            if (num > 99) {
-                num = "99+"
+            if (num > 999) {
+                num = "999+"
             }
             return String(num);
         },

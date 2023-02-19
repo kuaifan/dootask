@@ -119,11 +119,11 @@ export default {
                 num += $A.getDialogUnread(dialog, false);
                 mention += $A.getDialogMention(dialog);
             })
-            if (num > 99) {
-                num = "99+"
+            if (num > 999) {
+                num = "999+"
             }
-            if (mention > 99) {
-                mention = "99+"
+            if (mention > 999) {
+                mention = "999+"
             }
             const todoNum = this.msgTodoTotal   // 待办
             if (todoNum) {
@@ -135,10 +135,16 @@ export default {
                 }
                 return todoNum;
             }
-            if (!num) {
-                return "";
+            if (num) {
+                if (mention) {
+                    return `${num}·@${mention}`
+                }
+                return String(num)
             }
-            return mention ? `${num}·@${mention}` : String(num);
+            if (mention) {
+                return `@${mention}`
+            }
+            return "";
         },
 
         /**
@@ -148,7 +154,7 @@ export default {
         msgAllUnread() {
             let num = 0;
             this.cacheDialogs.some(dialog => {
-                num += $A.getDialogUnread(dialog, false);
+                num += $A.getDialogNum(dialog);
             })
             return num;
         },
@@ -160,8 +166,8 @@ export default {
         msgTodoTotal() {
             let todoNum = this.cacheDialogs.reduce((total, current) => total + (current.todo_num || 0), 0)
             if (todoNum > 0) {
-                if (todoNum > 99) {
-                    todoNum = "99+"
+                if (todoNum > 999) {
+                    todoNum = "999+"
                 } else if (todoNum === 1) {
                     todoNum = ""
                 }

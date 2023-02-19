@@ -422,7 +422,7 @@
                         <div v-if="navActive=='dialog' && taskDetail.msg_num > 0" class="menu-item" @click.stop="onSend('open')">
                             <div v-if="openLoad > 0" class="menu-load"><Loading/></div>
                             {{$L('任务聊天')}}
-                            <em>({{taskDetail.msg_num > 99 ? '99+' : taskDetail.msg_num}})</em>
+                            <em>({{taskDetail.msg_num > 999 ? '999+' : taskDetail.msg_num}})</em>
                             <i class="taskfont">&#xe703;</i>
                         </div>
                     </div>
