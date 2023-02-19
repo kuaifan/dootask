@@ -1033,8 +1033,9 @@ class DialogController extends AbstractController
      *
      * @apiParam {Number} dialog_id             会话ID
      * @apiParam {String} type                  类型
-     * - read
-     * - unread
+     * - read: 已读
+     * - unread: 未读
+     * @apiParam {Number} [after_msg_id]        仅标记已读指定之后（含）的消息
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1045,6 +1046,7 @@ class DialogController extends AbstractController
         $user = User::auth();
         $dialogId = intval(Request::input('dialog_id'));
         $type = Request::input('type');
+        $afterMsgId = intval(Request::input('after_msg_id'));
         $dialogUser = WebSocketDialogUser::whereUserid($user->userid)->whereDialogId($dialogId)->first();
         if (!$dialogUser) {
             return Base::retError("会话不存在");
@@ -1054,27 +1056,31 @@ class DialogController extends AbstractController
         ];
         switch ($type) {
             case 'read':
+                $data['mark_unread'] = 0;
                 $data['unread'] = 0;
-                $data['first_umid'] = 0;
-                WebSocketDialogMsgRead::whereUserid($user->userid)
-                    ->whereReadAt(null)
-                    ->whereDialogId($dialogId)
-                    ->chunkById(100, function ($list) {
-                        WebSocketDialogMsgRead::onlyMarkRead($list);
-                    });
-                $dialogUser->mark_unread = 0;
-                $dialogUser->save();
+                $data['mention'] = 0;
+                $builder = WebSocketDialogMsgRead::whereUserid($user->userid)->whereReadAt(null)->whereDialogId($dialogId);
+                if ($afterMsgId > 0) {
+                    $unBuilder = $builder->clone()->where('msg_id', '<', $afterMsgId);
+                    $data['unread'] = $unBuilder->count();
+                    $data['mention'] = $data['unread'] > 0 ? $unBuilder->whereMention(1)->count() : 0;
+                    $builder->where('msg_id', '>=', $afterMsgId);
+                }
+                $builder->chunkById(100, function ($list) {
+                    WebSocketDialogMsgRead::onlyMarkRead($list);
+                });
+                $data['position_msgs'] = WebSocketDialog::find($dialogId)?->getPositionMsgs($user->userid) ?: [];
                 break;
 
             case 'unread':
-                $dialogUser->mark_unread = 1;
-                $dialogUser->save();
+                $data['mark_unread'] = 1;
                 break;
 
             default:
                 return Base::retError("参数错误");
         }
-        $data['mark_unread'] = $dialogUser->mark_unread;
+        $dialogUser->mark_unread = $data['mark_unread'];
+        $dialogUser->save();
         return Base::retSuccess("success", $data);
     }
 

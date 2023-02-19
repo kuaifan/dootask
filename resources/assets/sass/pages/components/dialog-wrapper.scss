@@ -1086,26 +1086,29 @@
         }
     }
 
-    .dialog-top {
+    .dialog-position {
         position: absolute;
-        top: 78px;
-        left: 0;
+        top: 100px;
         right: 0;
         z-index: 1;
         display: flex;
         align-items: center;
-        justify-content: center;
-        .top-unread {
+        justify-content: flex-end;
+        .position-label {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 6px 12px;
-            border-radius: 4px;
-            box-shadow: 0 2px 8px 0 rgba($primary-text-color, 0.33);
-            background: #fff;
+            padding: 5px 10px;
+            border-radius: 18px 0 0 18px;
+            color: #ffffff;
+            background-color: $primary-color;
             cursor: pointer;
             > i {
                 margin-right: 4px;
+                width: 14px;
+                height: 14px;
+                font-size: 14px;
+                line-height: 14px;
             }
         }
     }
@@ -1625,10 +1628,9 @@
                 }
             }
         }
-        .dialog-top {
-            top: 68px;
+        .dialog-position {
             &.down {
-                top: 98px;
+                top: 130px;
             }
         }
         .dialog-footer {

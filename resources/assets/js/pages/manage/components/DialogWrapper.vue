@@ -99,10 +99,11 @@
         </div>
 
         <!--顶部提示-->
-        <div v-if="beforeUnread > 0" class="dialog-top" :class="{'down': tagShow}">
-            <div class="top-unread" @click="goBeforeUnread">
-                <Icon v-if="beforeLoad" type="ios-loading" class="icon-loading"></Icon>
-                <span>{{$L(`未读消息${beforeUnread}条`)}}</span>
+        <div v-if="positionMsg" class="dialog-position" :class="{'down': tagShow}">
+            <div class="position-label" @click="onPositionMark">
+                <Icon v-if="positionLoad > 0" type="ios-loading" class="icon-loading"></Icon>
+                <i v-else class="taskfont">&#xe624;</i>
+                {{positionMsg.label}}
             </div>
         </div>
 
@@ -543,7 +544,7 @@ export default {
             scrollAction: 0,
             scrollTmp: 0,
 
-            beforeLoad: false,
+            positionLoad: 0,
         }
     },
 
@@ -775,16 +776,24 @@ export default {
             return null
         },
 
-        beforeUnread() {
-            const {unread, first_umid} = this.dialogData
-            if (unread > 0
-                && first_umid > 0
-                && this.allMsgs.length > 0
-                && this.allMsgs.findIndex(({id}) => id == first_umid) === -1) {
-                return unread
+        positionMsg() {
+            const {unread, position_msgs} = this.dialogData
+            if (unread === 0 || this.allMsgs.length === 0 ||position_msgs.length === 0) {
+                return null
             }
-            return 0
-        }
+            const item = position_msgs.sort((a, b) => {
+                return b.msg_id - a.msg_id
+            })[0]
+            if (this.allMsgs.findIndex(({id}) => id == item.msg_id) === -1) {
+                if (item.label === 'unread') {
+                    return Object.assign(item, {
+                        'label': this.$L(`未读消息${unread}条`)
+                    })
+                }
+                return item
+            }
+            return null
+        },
     },
 
     watch: {
@@ -2256,22 +2265,26 @@ export default {
             }
         },
 
-        goBeforeUnread() {
-            if (this.beforeUnread === 0 || this.beforeLoad) {
+        onPositionMark() {
+            if (this.positionLoad > 0) {
                 return;
             }
             //
-            this.beforeLoad = true
-            const {first_umid} = this.dialogData
+            this.positionLoad++
+            const {msg_id} = this.positionMsg;
             this.$store.dispatch("dialogMsgMark", {
                 dialog_id: this.dialogId,
-                type: 'read'
+                type: 'read',
+                after_msg_id: msg_id,
             }).then(_ => {
-                this.onPositionId(first_umid)
+                this.positionLoad++
+                this.onPositionId(msg_id).finally(_ => {
+                    this.positionLoad--
+                })
             }).catch(({msg}) => {
                 $A.modalError(msg)
             }).finally(_ => {
-                this.beforeLoad = false
+                this.positionLoad--
             })
         },
 
