@@ -180,6 +180,15 @@ class User extends AbstractModel
     }
 
     /**
+     * 返回是否临时帐号
+     * @return bool
+     */
+    public function isTemp()
+    {
+        return in_array('temp', $this->identity);
+    }
+
+    /**
      * 判断是否管理员
      */
     public function checkAdmin()
@@ -260,7 +269,7 @@ class User extends AbstractModel
      */
     public static function reg($email, $password, $other = [])
     {
-        //邮箱
+        // 邮箱
         if (!Base::isEmail($email)) {
             throw new ApiException('请输入正确的邮箱地址');
         }
@@ -273,9 +282,9 @@ class User extends AbstractModel
             }
             throw new ApiException('邮箱地址已存在');
         }
-        //密码
+        // 密码
         self::passwordPolicy($password);
-        //开始注册
+        // 开始注册
         $encrypt = Base::generatePassword(6);
         $inArray = [
             'encrypt' => $encrypt,
@@ -290,8 +299,16 @@ class User extends AbstractModel
         $user->az = Base::getFirstCharter($user->nickname);
         $user->pinyin = Base::cn2pinyin($user->nickname);
         if ($user->save()) {
+            $setting = Base::setting('system');
+            $reg_identity = $setting['reg_identity'] ?: 'normal';
+            $all_group_autoin = $setting['all_group_autoin'] ?: 'yes';
+            // 注册临时身份
+            if ($reg_identity === 'temp') {
+                $user->identity = Base::arrayImplode(array_merge(array_diff($user->identity, ['temp']), ['temp']));
+                $user->save();
+            }
             // 加入全员群组
-            if (Base::settingFind('system', 'all_group_autoin', 'yes') === 'yes') {
+            if ($all_group_autoin === 'yes') {
                 $dialog = WebSocketDialog::whereGroupType('all')->orderByDesc('id')->first();
                 $dialog?->joinGroup($user->userid, 0);
             }

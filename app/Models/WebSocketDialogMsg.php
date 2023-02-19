@@ -677,7 +677,7 @@ class WebSocketDialogMsg extends AbstractModel
             $keyId = $matchId[1];
             if ($matchChar[1] === "~") {
                 if (Base::isNumber($keyId)) {
-                    $file = File::permissionFind($keyId);
+                    $file = File::permissionFind($keyId, User::auth());
                     if ($file->type == 'folder') {
                         throw new ApiException('文件夹不支持分享');
                     }

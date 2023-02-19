@@ -45,9 +45,10 @@ class FileController extends AbstractController
         $pid = intval($data['pid']);
         //
         $permission = 1000;
+        $userids = $user->isTemp() ? [$user->userid] : [0, $user->userid];
         $builder = File::wherePid($pid);
         if ($pid > 0) {
-            File::permissionFind($pid, 0, $permission);
+            File::permissionFind($pid, $userids, 0, $permission);
         } else {
             $builder->whereUserid($user->userid);
         }
@@ -66,7 +67,7 @@ class FileController extends AbstractController
                 }
                 $pid = $file->pid;
                 $temp = $file->toArray();
-                $temp['permission'] = $file->getPermission($user->userid);
+                $temp['permission'] = $file->getPermission($userids);
                 $array[] = $temp;
             }
             // 去除没有权限的文件
@@ -92,9 +93,7 @@ class FileController extends AbstractController
             $list = File::select(["files.*", DB::raw("MAX({$pre}file_users.permission) as permission")])
                 ->join('file_users', 'files.id', '=', 'file_users.file_id')
                 ->where('files.userid', '!=', $user->userid)
-                ->where(function ($query) use ($user) {
-                    $query->whereIn('file_users.userid', [0, $user->userid]);
-                })
+                ->whereIn('file_users.userid', $userids)
                 ->groupBy('files.id')
                 ->take(100)
                 ->get();
@@ -135,8 +134,8 @@ class FileController extends AbstractController
         //
         $permission = 0;
         if (Base::isNumber($id)) {
-            User::auth();
-            $file = File::permissionFind(intval($id), 0, $permission);
+            $user = User::auth();
+            $file = File::permissionFind(intval($id), $user, 0, $permission);
         } elseif ($id) {
             $fileLink = FileLink::whereCode($id)->first();
             $file = $fileLink?->file;
@@ -239,7 +238,7 @@ class FileController extends AbstractController
         //
         if ($id > 0) {
             // 修改
-            $file = File::permissionFind($id, 1);
+            $file = File::permissionFind($id, $user, 1);
             //
             $file->name = $name;
             $file->handleDuplicateName();
@@ -282,7 +281,7 @@ class FileController extends AbstractController
                 if (File::wherePid($pid)->count() >= 300) {
                     return Base::retError('每个文件夹里最多只能创建300个文件或文件夹');
                 }
-                $row = File::permissionFind($pid, 1);
+                $row = File::permissionFind($pid, $user, 1);
                 $userid = $row->userid;
             } else {
                 if (File::whereUserid($user->userid)->wherePid(0)->count() >= 300) {
@@ -327,7 +326,7 @@ class FileController extends AbstractController
         //
         $id = intval(Request::input('id'));
         //
-        $row = File::permissionFind($id);
+        $row = File::permissionFind($id, $user);
         //
         $userid = $user->userid;
         if ($row->pid > 0) {
@@ -397,14 +396,14 @@ class FileController extends AbstractController
         }
         $toShareFile = false;
         if ($pid > 0) {
-            $tmpFile = File::permissionFind($pid, 1);
+            $tmpFile = File::permissionFind($pid, $user, 1);
             $toShareFile = $tmpFile->getShareInfo();
         }
         //
         $files = [];
         AbstractModel::transaction(function() use ($user, $pid, $ids, $toShareFile, &$files) {
             foreach ($ids as $id) {
-                $file = File::permissionFind($id, 1000);
+                $file = File::permissionFind($id, $user, 1000);
                 //
                 if ($pid > 0) {
                     if ($toShareFile) {
@@ -458,7 +457,7 @@ class FileController extends AbstractController
      */
     public function remove()
     {
-        User::auth();
+        $user = User::auth();
         //
         $ids = Request::input('ids');
         //
@@ -470,9 +469,9 @@ class FileController extends AbstractController
         }
         //
         $files = [];
-        AbstractModel::transaction(function() use ($ids, &$files) {
+        AbstractModel::transaction(function() use ($user, $ids, &$files) {
             foreach ($ids as $id) {
-                $file = File::permissionFind($id, 1000);
+                $file = File::permissionFind($id, $user, 1000);
                 $file->deleteFile();
                 $files[] = $file;
             }
@@ -513,8 +512,8 @@ class FileController extends AbstractController
         $history_id = intval(Request::input('history_id'));
         //
         if (Base::isNumber($id)) {
-            User::auth();
-            $file = File::permissionFind(intval($id));
+            $user = User::auth();
+            $file = File::permissionFind(intval($id), $user);
         } elseif ($id) {
             $fileLink = FileLink::whereCode($id)->first();
             $file = $fileLink?->file;
@@ -566,7 +565,7 @@ class FileController extends AbstractController
         $id = Base::getPostInt('id');
         $content = Base::getPostValue('content');
         //
-        $file = File::permissionFind($id, 1);
+        $file = File::permissionFind($id, $user, 1);
         //
         $text = '';
         if ($file->type == 'document') {
@@ -659,7 +658,7 @@ class FileController extends AbstractController
         $key = Request::input('key');
         $url = Request::input('url');
         //
-        $file = File::permissionFind($id, 1);
+        $file = File::permissionFind($id, $user, 1);
         //
         if ($status === 2) {
             $parse = parse_url($url);
@@ -717,7 +716,7 @@ class FileController extends AbstractController
             if (File::wherePid($pid)->count() >= 300) {
                 return Base::retError('每个文件夹里最多只能创建300个文件或文件夹');
             }
-            $row = File::permissionFind($pid, 1);
+            $row = File::permissionFind($pid, $user, 1);
             $userid = $row->userid;
         } else {
             if (File::whereUserid($user->userid)->wherePid(0)->count() >= 300) {
@@ -863,9 +862,11 @@ class FileController extends AbstractController
      */
     public function content__history()
     {
+        $user = User::auth();
+        //
         $id = Request::input('id');
         //
-        $file = File::permissionFind(intval($id));
+        $file = File::permissionFind(intval($id), $user);
         //
         $data = FileContent::select(['id', 'size', 'userid', 'created_at'])
             ->whereFid($file->id)
@@ -896,7 +897,7 @@ class FileController extends AbstractController
         $id = intval(Request::input('id'));
         $history_id = intval(Request::input('history_id'));
         //
-        $file = File::permissionFind($id);
+        $file = File::permissionFind($id, $user);
         //
         $history = FileContent::whereFid($file->id)->whereId($history_id)->first();
         if (empty($history)) {
@@ -1060,7 +1061,7 @@ class FileController extends AbstractController
         //
         $id = intval(Request::input('id'));
         //
-        $file = File::permissionFind($id);
+        $file = File::permissionFind($id, $user);
         //
         if ($file->userid == $user->userid) {
             return Base::retError('不能退出自己共享的文件');
@@ -1098,7 +1099,7 @@ class FileController extends AbstractController
         $id = intval(Request::input('id'));
         $refresh = Request::input('refresh', 'no');
         //
-        $file = File::permissionFind($id);
+        $file = File::permissionFind($id, $user);
         $fileLink = $file->getShareLink($user->userid, $refresh == 'yes');
         //
         return Base::retSuccess('success', $fileLink);

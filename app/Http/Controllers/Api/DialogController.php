@@ -862,7 +862,7 @@ class DialogController extends AbstractController
             return Base::retError("请选择转发对话或成员");
         }
         //
-        $file = File::permissionFind($file_id);
+        $file = File::permissionFind($file_id, $user);
         $fileLink = $file->getShareLink($user->userid);
         $fileMsg = "<a class=\"mention file\" href=\"{{RemoteURL}}single/file/{$fileLink['code']}\" target=\"_blank\">~{$file->getNameAndExt()}</a>";
         //

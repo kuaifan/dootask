@@ -699,6 +699,8 @@ class UsersController extends AbstractController
      * @apiParam {String} [type]                操作
      * - setadmin             设为管理员
      * - clearadmin           取消管理员
+     * - settemp              设为临时帐号
+     * - cleartemp            取消临时身份（取消临时帐号）
      * - checkin_macs         修改自动签到mac地址（需要参数 checkin_macs）
      * - department           修改部门（需要参数 department）
      * - setdisable           设为离职（需要参数 disable_time、transfer_userid）
@@ -744,6 +746,15 @@ class UsersController extends AbstractController
 
             case 'clearadmin':
                 $upArray['identity'] = array_diff($userInfo->identity, ['admin']);
+                break;
+
+            case 'settemp':
+                $upArray['identity'] = array_diff($userInfo->identity, ['temp']);
+                $upArray['identity'][] = 'temp';
+                break;
+
+            case 'cleartemp':
+                $upArray['identity'] = array_diff($userInfo->identity, ['temp']);
                 break;
 
             case 'checkin_macs':

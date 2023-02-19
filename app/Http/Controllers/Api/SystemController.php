@@ -41,7 +41,7 @@ class SystemController extends AbstractController
      * @apiParam {String} type
      * - get: 获取（默认）
      * - all: 获取所有（需要管理员权限）
-     * - save: 保存设置（参数：['reg', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'auto_archived', 'archived_day', 'all_group_mute', 'all_group_autoin', 'start_home', 'home_footer']）
+     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'auto_archived', 'archived_day', 'all_group_mute', 'all_group_autoin', 'start_home', 'home_footer']）
 
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -59,6 +59,7 @@ class SystemController extends AbstractController
             foreach ($all AS $key => $value) {
                 if (!in_array($key, [
                     'reg',
+                    'reg_identity',
                     'reg_invite',
                     'login_code',
                     'password_policy',
@@ -95,6 +96,7 @@ class SystemController extends AbstractController
         }
         //
         $setting['reg'] = $setting['reg'] ?: 'open';
+        $setting['reg_identity'] = $setting['reg_identity'] ?: 'normal';
         $setting['login_code'] = $setting['login_code'] ?: 'auto';
         $setting['password_policy'] = $setting['password_policy'] ?: 'simple';
         $setting['project_invite'] = $setting['project_invite'] ?: 'open';

@@ -96,21 +96,18 @@ class File extends AbstractModel
 
     /**
      * 是否有访问权限
-     * @param $userid
+     * @param array $userids
      * @return int -1:没有权限，0:访问权限，1:读写权限，1000:所有者或创建者
      */
-    public function getPermission($userid)
+    public function getPermission(array $userids)
     {
-        if ($userid == $this->userid || $userid == $this->created_id) {
+        if (in_array($this->userid, $userids) || in_array($this->created_id, $userids)) {
             // ① 自己的文件夹 或 自己创建的文件夹
             return 1000;
         }
         $row = $this->getShareInfo();
         if ($row) {
-            $fileUser = FileUser::whereFileId($row->id)->where(function ($query) use ($userid) {
-                $query->where('userid', 0);
-                $query->orWhere('userid', $userid);
-            })->orderByDesc('permission')->first();
+            $fileUser = FileUser::whereFileId($row->id)->whereIn('userid', $userids)->orderByDesc('permission')->first();
             if ($fileUser) {
                 // ② 在指定共享成员内
                 return $fileUser->permission;
@@ -411,19 +408,25 @@ class File extends AbstractModel
 
     /**
      * 获取文件并检测权限
-     * @param $id
-     * @param int $limit 要求权限: 0-访问权限、1-读写权限、1000-所有者或创建者
-     * @param $permission
+     * @param int $id
+     * @param User|array|int $user      要求权限的用户，如：[0, 1]
+     * @param int $limit                要求权限: 0-访问权限、1-读写权限、1000-所有者或创建者
+     * @param int $permission
      * @return File
      */
-    public static function permissionFind($id, $limit = 0, &$permission = -1)
+    public static function permissionFind(int $id, $user, int $limit = 0, int &$permission = -1)
     {
         $file = File::find($id);
         if (empty($file)) {
             throw new ApiException('文件不存在或已被删除');
         }
         //
-        $permission = $file->getPermission(User::userid());
+        if ($user instanceof User) {
+            $userids = $user->isTemp() ? [$user->userid] : [0, $user->userid];
+        } else {
+            $userids = is_array($user) ? $user : [$user];
+        }
+        $permission = $file->getPermission($userids);
         if ($permission < $limit) {
             $msg = match ($limit) {
                 1000 => '仅限所有者或创建者操作',

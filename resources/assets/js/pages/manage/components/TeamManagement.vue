@@ -76,6 +76,8 @@
                                     <Option value="">{{$L('全部')}}</Option>
                                     <Option value="admin">{{$L('管理员')}}</Option>
                                     <Option value="noadmin">{{$L('非管理员')}}</Option>
+                                    <Option value="temp">{{$L('临时帐号')}}</Option>
+                                    <Option value="notemp">{{$L('非临时帐号')}}</Option>
                                 </Select>
                             </div>
                         </li>
@@ -329,7 +331,7 @@ export default {
                 {
                     title: this.$L('邮箱'),
                     key: 'email',
-                    minWidth: 100,
+                    minWidth: 160,
                     render: (h, {row}) => {
                         const arr = [h('AutoTip', row.email)];
                         const {email_verity, identity, disable_at} = row;
@@ -353,6 +355,13 @@ export default {
                                     color: 'warning'
                                 }
                             }, this.$L('管理员')))
+                        }
+                        if (identity.includes("temp")) {
+                            arr.push(h('Tag', {
+                                props: {
+                                    color: 'success'
+                                }
+                            }, this.$L('临时')))
                         }
                         if (identity.includes("disable")) {
                             arr.push(h('Tooltip', {
@@ -503,6 +512,21 @@ export default {
                                     command: 'setadmin',
                                 },
                             }, [h('div', this.$L('设为管理员'))]));
+                        }
+
+
+                        if (identity.includes('temp')) {
+                            dropdownItems.push(h('EDropdownItem', {
+                                props: {
+                                    command: 'cleartemp',
+                                },
+                            }, [h('div', this.$L('取消临时身份'))]));
+                        } else {
+                            dropdownItems.push(h('EDropdownItem', {
+                                props: {
+                                    command: 'settemp',
+                                },
+                            }, [h('div', this.$L('设为临时帐号'))]));
                         }
 
                         dropdownItems.push(h('EDropdownItem', {
@@ -793,6 +817,32 @@ export default {
 
         dropUser(name, row) {
             switch (name) {
+                case 'settemp':
+                    $A.modalConfirm({
+                        content: `你确定将【ID:${row.userid}，${row.nickname}】设为临时帐号吗？（注：临时帐号限制请查看系统设置）`,
+                        loading: true,
+                        onOk: () => {
+                            return this.operationUser({
+                                userid: row.userid,
+                                type: name
+                            });
+                        }
+                    });
+                    break;
+
+                case 'cleartemp':
+                    $A.modalConfirm({
+                        content: `你确定取消【ID:${row.userid}，${row.nickname}】临时身份吗？`,
+                        loading: true,
+                        onOk: () => {
+                            return this.operationUser({
+                                userid: row.userid,
+                                type: name
+                            });
+                        }
+                    });
+                    break;
+
                 case 'email':
                     $A.modalInput({
                         title: "修改邮箱",

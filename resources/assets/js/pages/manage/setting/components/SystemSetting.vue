@@ -15,6 +15,21 @@
                     </Input>
                 </template>
             </FormItem>
+            <FormItem v-if="['open', 'invite'].includes(formDatum.reg)" :label="$L('注册身份')" prop="reg_identity">
+                <RadioGroup v-model="formDatum.reg_identity">
+                    <Radio label="normal">{{$L('正常帐号')}}</Radio>
+                    <Radio label="temp">{{$L('临时帐号')}}</Radio>
+                </RadioGroup>
+                <div class="form-tip form-list">
+                    <p>{{$L('临时帐号')}}：</p>
+                    <ol>
+                        <li>{{$L('禁止查看共享所有人的文件。')}}</li>
+                        <li>{{$L('禁止发起会话。')}}</li>
+                        <li>{{$L('禁止创建群聊。')}}</li>
+                        <li>{{$L('禁止拨打电话。')}}</li>
+                    </ol>
+                </div>
+            </FormItem>
             <FormItem :label="$L('登录验证码')" prop="loginCode">
                 <RadioGroup v-model="formDatum.login_code">
                     <Radio label="auto">{{$L('自动')}}</Radio>
@@ -22,6 +37,8 @@
                     <Radio label="close">{{$L('关闭')}}</Radio>
                 </RadioGroup>
                 <div v-if="formDatum.login_code == 'auto'" class="form-tip">{{$L('自动：密码输入错误后必须添加验证码。')}}</div>
+                <div v-else-if="formDatum.login_code == 'open'" class="form-tip">{{$L('开启：每次登录都需要图形验证码。')}}</div>
+                <div v-else-if="formDatum.login_code == 'close'" class="form-tip">{{$L('关闭：不需要输入图形验证。')}}</div>
             </FormItem>
             <FormItem :label="$L('密码策略')" prop="passwordPolicy">
                 <RadioGroup v-model="formDatum.password_policy">
