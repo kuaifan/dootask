@@ -633,7 +633,7 @@ export default {
                                     size: 20
                                 },
                             }, [
-                                row.created_id != row.userid ? h('p', [h('strong', this.$L('成员创建于') + ": " + row.created_at)]) : h('p', this.$L('所有者创建') + ": " + row.created_at)
+                                row.created_id != row.userid ? h('p', [h('strong', this.$L('成员创建于') + ": " + row.created_at)]) : h('p', this.$L('所有者创建于') + ": " + row.created_at)
                             ]))
                         }
                         const shearClass = this.shearIds.includes(row.id) ? ' shear' : '';
