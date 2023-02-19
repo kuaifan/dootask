@@ -2,7 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.23.22]
+## [0.23.36]
+
+### Features
+
+- 新增临时帐号功能
 
 ### Performance
 
@@ -13,6 +17,11 @@ All notable changes to this project will be documented in this file.
 - 优化国际化
 - 优化api国际化
 - 样式兼容
+- 对话顶部提示
+- 优化阅读消息
+- 优化消息数量显示
+- 设待办快速选择人员
+- 完善临时帐号权限
 
 ## [0.22.99]
 
