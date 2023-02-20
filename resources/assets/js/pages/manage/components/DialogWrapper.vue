@@ -1898,7 +1898,11 @@ export default {
                     text = text.replace(/<a class="mention file" href="([^'"]*)"([^>]*)>~([^>]*)<\/a>/g, '<span class="mention" data-denotation-char="~" data-id="$1" data-value="$3">&#xFEFF;<span contenteditable="false"><span class="ql-mention-denotation-char">~</span>$3</span>&#xFEFF;</span>')
                     text = text.replace(/<span class="mention ([^'"]*)" data-id="(\d+)">([@#])([^>]*)<\/span>/g, '<span class="mention" data-denotation-char="$3" data-id="$2" data-value="$4">&#xFEFF;<span contenteditable="false"><span class="ql-mention-denotation-char">$3</span>$4</span>&#xFEFF;</span>')
                 }
+                this.$refs.input.setPasteMode(false)
                 this.msgText = $A.formatMsgBasic(text)
+                this.$nextTick(_ => {
+                    this.$refs.input.setPasteMode(true)
+                })
             }
         },
 

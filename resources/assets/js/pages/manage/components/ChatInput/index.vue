@@ -251,6 +251,8 @@ export default {
             touchLimitX: false,
             touchLimitY: false,
 
+            pasteClean: true,
+
             isSpecVersion: this.checkIOSVersion(),
         };
     },
@@ -661,6 +663,9 @@ export default {
 
             // Clipboard Matcher (保留图片跟空格，清除其余所以样式)
             this.quill.clipboard.addMatcher(Node.ELEMENT_NODE, (node, delta) => {
+                if (!this.pasteClean) {
+                    return delta
+                }
                 delta.ops = delta.ops.map(op => {
                     const obj = {
                         attributes: {},
@@ -778,6 +783,10 @@ export default {
             if (this.quill) {
                 this.quill.setContents(this.quill.clipboard.convert(value))
             }
+        },
+
+        setPasteMode(bool) {
+            this.pasteClean = bool
         },
 
         getInputCache() {
