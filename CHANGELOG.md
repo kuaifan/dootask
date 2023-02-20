@@ -2,11 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.23.41]
+## [0.23.46]
 
 ### Bug Fixes
 
 - 修复已知bug
+- 编辑消息@丢失的问题
 
 ### Features
 
@@ -27,6 +28,7 @@ All notable changes to this project will be documented in this file.
 - 设待办快速选择人员
 - 完善临时帐号权限
 - 添加上班签到提醒消息
+- 兼容ipad app样式
 
 ## [0.22.99]
 
