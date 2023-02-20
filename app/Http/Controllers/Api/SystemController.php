@@ -224,7 +224,7 @@ class SystemController extends AbstractController
      *
      * @apiParam {String} type
      * - get: 获取（默认）
-     * - save: 保存设置（参数：['open', 'time', 'advance', 'delay', 'edit', 'key']）
+     * - save: 保存设置（参数：['open', 'time', 'advance', 'delay', 'remindin', 'remindexceed', 'edit', 'key']）
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
@@ -245,6 +245,8 @@ class SystemController extends AbstractController
                     'time',
                     'advance',
                     'delay',
+                    'remindin',
+                    'remindexceed',
                     'edit',
                     'key',
                 ])) {
@@ -268,6 +270,8 @@ class SystemController extends AbstractController
         $setting['time'] = $setting['time'] ? Base::json2array($setting['time']) : ['00:00', '23:59'];
         $setting['advance'] = intval($setting['advance']) ?: 120;
         $setting['delay'] = intval($setting['delay']) ?: 120;
+        $setting['remindin'] = intval($setting['remindin']) ?: 5;
+        $setting['remindexceed'] = intval($setting['remindexceed']) ?: 10;
         $setting['edit'] = $setting['edit'] ?: 'close';
         $setting['cmd'] = "curl -sSL '" . Base::fillUrl("api/public/checkin/install?key={$setting['key']}") . "' | sh";
         //

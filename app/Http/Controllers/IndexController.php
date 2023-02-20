@@ -8,6 +8,7 @@ use App\Module\Ihttp;
 use App\Module\RandomColor;
 use App\Tasks\AppPushTask;
 use App\Tasks\AutoArchivedTask;
+use App\Tasks\CheckinRemindTask;
 use App\Tasks\DeleteBotMsgTask;
 use App\Tasks\DeleteTmpTask;
 use App\Tasks\EmailNoticeTask;
@@ -194,6 +195,8 @@ class IndexController extends InvokeController
         Task::deliver(new DeleteBotMsgTask());
         // 周期任务
         Task::deliver(new LoopTask());
+        // 签到提醒
+        Task::deliver(new CheckinRemindTask());
         // 获取笑话/心灵鸡汤
         Task::deliver(new JokeSoupTask());
 

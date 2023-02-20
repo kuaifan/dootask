@@ -33,8 +33,21 @@
                                     <label>{{ $L('分钟') }}</label>
                                 </div>
                             </FormItem>
+                            <div class="form-tip">{{$L('签到前后时间收到消息通知')}}</div>
+                            <FormItem :label="$L('签到打卡提醒')" prop="remindin">
+                                <div class="input-number-box">
+                                    <InputNumber v-model="formData.remindin" :min="0" :step="1"/>
+                                    <label>{{ $L('分钟') }}</label>
+                                </div>
+                            </FormItem>
+                            <FormItem :label="$L('签到缺卡提醒')" prop="remindexceed">
+                                <div class="input-number-box">
+                                    <InputNumber v-model="formData.remindexceed" :min="0" :step="1"/>
+                                    <label>{{ $L('分钟') }}</label>
+                                </div>
+                            </FormItem>
+                            <div class="form-tip">{{$L('签到提醒对象：在职且3天内有签到过的成员')}}</div>
                         </Form>
-                        <div class="form-tip">{{$L('签到前后时间收到消息通知')}}</div>
                     </FormItem>
                     <FormItem :label="$L('允许修改')" prop="edit">
                         <RadioGroup v-model="formData.edit">
