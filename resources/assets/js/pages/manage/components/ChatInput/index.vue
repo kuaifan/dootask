@@ -668,7 +668,6 @@ export default {
                 }
                 delta.ops = delta.ops.map(op => {
                     const obj = {
-                        attributes: {},
                         insert: op.insert
                     };
                     try {
@@ -680,6 +679,9 @@ export default {
                     if (op.attributes) {
                         ['bold', 'strike', 'italic', 'underline', 'list', 'blockquote', 'link'].some(item => {
                             if (op.attributes[item]) {
+                                if (typeof obj.attributes === "undefined") {
+                                    obj.attributes = {}
+                                }
                                 obj.attributes[item] = op.attributes[item]
                             }
                         })
