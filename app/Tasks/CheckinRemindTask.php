@@ -65,7 +65,7 @@ class CheckinRemindTask extends AbstractTask
         if (!$botUser) {
             return;
         }
-        // 提醒对象：在职、7天内有过签到数据
+        // 提醒对象：在职且3天内有签到过的成员
         User::whereNull('disable_at')->chunk(100, function ($users) use ($type, $botUser) {
             /** @var User $user */
             foreach ($users as $user) {
