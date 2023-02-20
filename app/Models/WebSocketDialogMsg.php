@@ -254,7 +254,7 @@ class WebSocketDialogMsg extends AbstractModel
         $dialog = WebSocketDialog::find($this->dialog_id);
         $dialog?->pushMsg('update', $resData);
         //
-        return Base::retSuccess('sucess', $resData);
+        return Base::retSuccess('success', $resData);
     }
 
     /**

@@ -1561,8 +1561,7 @@ class UsersController extends AbstractController
      */
     public function socket__status()
     {
-        $fd = Request::exists('fd') ? Request::input('fd') : Request::header('fd');
-        $row = WebSocket::select(['id', 'fd', 'userid', 'updated_at'])->whereFd($fd)->first();
+        $row = WebSocket::select(['id', 'fd', 'userid', 'updated_at'])->whereFd(Base::headerOrInput('fd'))->first();
         if (empty($row)) {
             return Base::retError('error');
         }

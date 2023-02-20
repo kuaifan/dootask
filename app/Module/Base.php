@@ -77,6 +77,16 @@ class Base
     }
 
     /**
+     * 如果header没有则通过input读取
+     * @param $key
+     * @return mixed|string
+     */
+    public static function headerOrInput($key)
+    {
+        return Base::nullShow(Request::header($key), Request::input($key));
+    }
+
+    /**
      * 获取版本号
      * @return string
      */
@@ -94,7 +104,7 @@ class Base
     {
         global $_A;
         if (!isset($_A["__static_client_version"])) {
-            $_A["__static_client_version"] = Request::header('version') ?: '0.0.1';
+            $_A["__static_client_version"] = self::headerOrInput('version') ?: '0.0.1';
         }
         return $_A["__static_client_version"];
     }
@@ -1484,7 +1494,7 @@ class Base
     public static function langData()
     {
         global $_A;
-        $language = trim(Request::header('language'));
+        $language = trim(self::headerOrInput('language'));
         if (!isset($_A["__static_langdata_" . $language])) {
             $_A["__static_langdata_" . $language] = [];
             $langpath = resource_path('lang/' . $language . '.php');
@@ -2174,7 +2184,7 @@ class Base
     {
         global $_A;
         if (!isset($_A["__static_token"])) {
-            $_A["__static_token"] = Base::nullShow(Request::header('token'), Request::input('token'));
+            $_A["__static_token"] = self::headerOrInput('token');
         }
         return $_A["__static_token"];
     }

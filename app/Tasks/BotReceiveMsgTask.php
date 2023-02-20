@@ -330,6 +330,8 @@ class BotReceiveMsgTask extends AbstractTask
                     'bot_uid' => $botUser->userid,
                     'version' => Base::getVersion(),
                 ], 10);
+                $userBot->webhook_num++;
+                $userBot->save();
             }
         }
     }
