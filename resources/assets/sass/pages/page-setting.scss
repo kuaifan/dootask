@@ -144,6 +144,15 @@
                 color: $primary-desc-color;
             }
         }
+        .setting-color {
+            &.color-label-box {
+                .el-tooltip {
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    overflow: hidden;
+                }
+            }
+        }
         .setting-template {
             > div {
                 flex-shrink: 0;

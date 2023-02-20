@@ -1,7 +1,7 @@
 <template>
     <div class="setting-component-item">
         <Form ref="formDatum" label-width="auto" @submit.native.prevent>
-            <Row class="setting-color">
+            <Row class="setting-color color-label-box">
                 <Col span="12">{{$L('名称')}}</Col>
                 <Col span="4">
                     <ETooltip :disabled="windowSmall || $isEEUiApp" :content="$L('数值越小级别越高')" max-width="auto" placement="top" transfer>

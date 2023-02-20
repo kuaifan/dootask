@@ -2067,7 +2067,7 @@ export default {
             const index = state.cacheDialogs.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 const original = state.cacheDialogs[index]
-                if ($A.Time(data.user_at) < $A.Time(original.user_at)) {
+                if ($A.Time(data.user_at) < $A.Time(original.user_at || original.updated_at)) {
                     typeof data.unread !== "undefined" && delete data.unread
                     typeof data.mention !== "undefined" && delete data.mention
                     typeof data.position_msgs !== "undefined" && delete data.position_msgs

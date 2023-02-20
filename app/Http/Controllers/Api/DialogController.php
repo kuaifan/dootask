@@ -569,7 +569,7 @@ class DialogController extends AbstractController
                 'unread' => $dialogUser->webSocketDialog->unread,
                 'mention' => $dialogUser->webSocketDialog->mention,
                 'position_msgs' => $dialogUser->webSocketDialog->position_msgs,
-                'user_at' => $dialogUser->updated_at,
+                'user_at' =>  Carbon::parse($dialogUser->updated_at)->toDateTimeString(),
             ];
         }
         return Base::retSuccess('success', $data);
@@ -612,7 +612,7 @@ class DialogController extends AbstractController
             'unread' => $dialogUser->webSocketDialog->unread,
             'mention' => $dialogUser->webSocketDialog->mention,
             'position_msgs' => $dialogUser->webSocketDialog->position_msgs,
-            'user_at' => $dialogUser->updated_at,
+            'user_at' => Carbon::parse($dialogUser->updated_at)->toDateTimeString(),
         ]);
     }
 
