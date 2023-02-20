@@ -365,6 +365,7 @@ return array (
   '(*)描述不能为空' => '(*) uraian tidak boleh kosong',
   '导出失败，(*)！' => 'Ekspor gagal, (*)!',
   '群成员至少(*)人' => 'Anggota kelompok setidaknya (*) orang',
+  '创建任务：(*)' => 'Buat tugas :(*)',
   '创建列表：(*)' => 'Buat senarai :(*)',
   '删除列表：(*)' => 'Hapus senarai :(*)',
   '(*)上传成功' => '(*) pengunggahan berhasil',

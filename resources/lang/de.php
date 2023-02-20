@@ -365,6 +365,7 @@ return array (
   '(*)描述不能为空' => '(*) die beschreibung kann nicht Leer sein',
   '导出失败，(*)！' => 'Exportiert fehlgeschlagen. (*) export-verlust',
   '群成员至少(*)人' => 'Mit mindestens (*) mitgliedern der gruppe zusammen',
+  '创建任务：(*)' => 'Auftrag erstellen :(*)',
   '创建列表：(*)' => 'Eine liste erstellen :(*)',
   '删除列表：(*)' => 'Liste wird gelöscht (*)',
   '(*)上传成功' => '(*) erfolgreicher hochladen',
