@@ -1474,6 +1474,25 @@
     overflow: hidden !important;
 }
 
+body.eeui-app {
+    .dialog-wrapper {
+        .dialog-scroller {
+            user-select: none;
+            .dialog-item {
+                .dialog-view {
+                    &.operate-enter {
+                        .dialog-head {
+                            .dialog-content {
+                                user-select: text;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 @media (max-width: 768px) {
     .dialog-wrapper {
         background-color: #f8f8f8;

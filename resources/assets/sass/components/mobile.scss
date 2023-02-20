@@ -306,6 +306,12 @@
     opacity: 0;
 }
 
+body.eeui-app {
+    .mobile-back {
+        display: block;
+    }
+}
+
 @media (max-width: 768px) {
     .mobile-tabbar {
         display: flex;

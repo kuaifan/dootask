@@ -259,6 +259,8 @@ export default {
             if (!this.$isEEUiApp) {
                 return;
             }
+            // bodyClass
+            $A("body").addClass("eeui-app")
             // 页面失活
             window.__onPagePause = () => {
                 this.$store.state.windowActive = false;
