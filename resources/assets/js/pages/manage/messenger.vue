@@ -134,7 +134,7 @@
                     </div>
                 </ScrollerY>
                 <div class="messenger-menu">
-                    <div class="menu-icon">
+                    <div class="menu-icon" @click="onActive(null)">
                         <Icon @click="tabActive='dialog'" :class="{active:tabActive==='dialog'}" type="ios-chatbubbles" />
                         <Badge class="menu-num" :overflow-count="999" :count="msgUnread('all')"/>
                     </div>
@@ -360,7 +360,7 @@ export default {
                             }
                             break;
                         case 'user':
-                            if (type != dialog.type) {
+                            if (type != dialog.type || dialog.bot) {
                                 return false
                             }
                             break;
@@ -474,11 +474,27 @@ export default {
         },
 
         onActive(type) {
+            let block = "start"
+            if (type === null) {
+                if (this.tabActive !== 'dialog') {
+                    return;
+                }
+                type = this.dialogActive
+                block = "end"
+            }
             if (this.dialogActive == type) {
                 // 再次点击滚动到未读条目
-                const dialog = this.dialogList.find(dialog => $A.getDialogNum(dialog) > 0)
-                if (dialog) {
-                    $A.scrollIntoViewIfNeeded(this.$refs[`dialog_${dialog.id}`][0])
+                let index = this.dialogList.findIndex(dialog => $A.getDialogNum(dialog) > 0)
+                if (index === -1) {
+                    index = this.dialogList.findIndex(dialog => $A.getDialogUnread(dialog, true) > 0)
+                }
+                if (index > -1) {
+                    const el = this.$refs[`dialog_${this.dialogList[index]?.id}`][0]
+                    $A.scrollToView(el, {behavior: "smooth", block, inline: "nearest"})
+                    requestAnimationFrame(_ => {
+                        $A(el).addClass("common-shake")
+                        setTimeout(_ => $A(el).removeClass("common-shake"), 1000)
+                    })
                 }
             }
             this.dialogActive = type
