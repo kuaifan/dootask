@@ -1312,6 +1312,27 @@ class Base
     }
 
     /**
+     * 时间转毫秒时间戳
+     * @param $time
+     * @return float|int
+     */
+    public static function strtotimeM($time)
+    {
+        if (str_contains($time, '.')) {
+            list($t, $m) = explode(".", $time);
+            if (is_string($t)) {
+                $t = strtotime($t);
+            }
+            $time = $t . str_pad($m, 3, "0", STR_PAD_LEFT);
+        }
+        if (is_numeric($time)) {
+            return (int) str_pad($time, 13, "0");
+        } else {
+            return strtotime($time) * 1000;
+        }
+    }
+
+    /**
      * 获取设置值
      * @param $setname
      * @param $keyname

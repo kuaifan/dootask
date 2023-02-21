@@ -2067,7 +2067,9 @@ export default {
             const index = state.cacheDialogs.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 const original = state.cacheDialogs[index]
-                if ($A.Time(data.user_at) < $A.Time(original.user_at || original.updated_at)) {
+                const nowTime = data.user_ms || $A.TimeM(data.user_at);
+                const originalTime = $A.TimeM(original.user_at || original.updated_at);
+                if (nowTime < originalTime) {
                     typeof data.unread !== "undefined" && delete data.unread
                     typeof data.mention !== "undefined" && delete data.mention
                     typeof data.position_msgs !== "undefined" && delete data.position_msgs
@@ -2844,11 +2846,13 @@ export default {
                                                         unread: dialog.unread + 1,
                                                         mention: dialog.mention,
                                                         user_at: data.created_at,
+                                                        user_ms: $A.TimeM(data.created_at),
                                                     }
                                                     if (data.mention) {
                                                         newData.mention++;
                                                     }
-                                                    dispatch("saveDialog", newData)
+                                                    const timeout = state.dialogIns.findIndex(item => item.dialog_id === dialog_id) > -1 ? 3000 : 300
+                                                    setTimeout(_ => dispatch("saveDialog", newData), timeout)
                                                 }
                                             }
                                             if (!silence) {
@@ -2869,6 +2873,19 @@ export default {
                                             if (typeof data.todo !== "undefined") {
                                                 dispatch("getDialogTodo", dialog_id)
                                             }
+                                        } else if (mode === 'readed') {
+                                            // 消息不存在，重试已读标记
+                                            let readedNum = 0
+                                            const readedTimer = setInterval(_ => {
+                                                if (readedNum > 6) {
+                                                    clearInterval(readedTimer)
+                                                }
+                                                if (state.dialogMsgs.find(({id}) => id == data.id)) {
+                                                    clearInterval(readedTimer)
+                                                    dispatch("saveDialogMsg", data)
+                                                }
+                                                readedNum++
+                                            }, 500)
                                         }
                                         break;
                                     case 'groupAdd':

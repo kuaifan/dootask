@@ -254,6 +254,27 @@ const localforage = require("localforage");
         },
 
         /**
+         * 返回毫秒时间戳
+         * @param v
+         * @param cm  使用当前的毫秒
+         * @returns {number}
+         * @constructor
+         */
+        TimeM(v = undefined, cm = true) {
+            let time
+            if (typeof v === "string" && this.strExists(v, "-")) {
+                v = v.replace(/-/g, '/');
+                time = new Date(v).getTime();
+                if (cm && v.indexOf('.') === -1) {
+                    time = parseInt(`${Math.round(time / 1000)}${new Date().getMilliseconds()}`)
+                }
+            } else {
+                time = new Date().getTime();
+            }
+            return time
+        },
+
+        /**
          * 返回 时间对象|时间戳
          * @param v
          * @param stamp 是否返回时间戳
