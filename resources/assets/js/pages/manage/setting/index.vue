@@ -4,7 +4,7 @@
         <div class="setting-head">
             <div class="setting-titbox">
                 <div class="setting-title">
-                    <h1>{{$L('设置')}}</h1>
+                    <h1>{{$L(settingTitleName)}}</h1>
                     <div v-if="!show768Menu" class="setting-more" @click="toggleRoute('index')">
                         <Icon type="md-close" />
                     </div>
@@ -121,7 +121,14 @@ export default {
                 }
             })
             return name || '设置';
-        }
+        },
+
+        settingTitleName() {
+            if (this.windowSmall) {
+                return this.titleNameRoute
+            }
+            return '设置'
+        },
     },
 
     watch: {

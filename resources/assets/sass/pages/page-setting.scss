@@ -14,9 +14,13 @@
                 align-items: center;
                 > h1 {
                     flex: 1;
+                    width: 0;
                     color: $primary-title-color;
                     font-size: 28px;
                     font-weight: 600;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    overflow: hidden;
                 }
                 .setting-more {
                     display: none;
@@ -397,6 +401,11 @@
                             background-color: transparent;
                         }
                     }
+                }
+            }
+            .setting-content {
+                .setting-content-title {
+                    display: none;
                 }
             }
         }
