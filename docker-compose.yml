@@ -136,7 +136,7 @@ services:
 
   drawio-export:
     container_name: "dootask-drawio-export-${APP_ID}"
-    image: "jgraph/export-server"
+    image: "kuaifan/export-server:latest"
     platform: linux/amd64
     networks:
       extnetwork:
