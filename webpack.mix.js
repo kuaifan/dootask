@@ -15,7 +15,7 @@ const mixBuildName = function (str) {
 
 const hmrPublicURL = function (port) {
     try {
-        return execSync('gp url ' + port).toString().trim()
+        return execSync('gp url ' + port + ' &> /dev/null').toString().trim()
     } catch (e) {
         return null
     }

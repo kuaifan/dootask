@@ -1091,7 +1091,7 @@ export default {
 
         getMsgs(data) {
             return new Promise((resolve, reject) => {
-                setTimeout(_ => this.msgLoadIng++, 1200)
+                setTimeout(_ => this.msgLoadIng++, 2000)
                 this.$store.dispatch("getDialogMsgs", data)
                     .then(resolve)
                     .catch(reject)
@@ -1901,11 +1901,12 @@ export default {
                     text = text.replace(/<a class="mention file" href="([^'"]*)"([^>]*)>~([^>]*)<\/a>/g, '<span class="mention" data-denotation-char="~" data-id="$1" data-value="$3">&#xFEFF;<span contenteditable="false"><span class="ql-mention-denotation-char">~</span>$3</span>&#xFEFF;</span>')
                     text = text.replace(/<span class="mention ([^'"]*)" data-id="(\d+)">([@#])([^>]*)<\/span>/g, '<span class="mention" data-denotation-char="$3" data-id="$2" data-value="$4">&#xFEFF;<span contenteditable="false"><span class="ql-mention-denotation-char">$3</span>$4</span>&#xFEFF;</span>')
                 }
+                text = text.replace(/<img[^>]*>/gi, match => {
+                    return match.replace(/(width|height)="\d+"\s*/ig, "");
+                })
                 this.$refs.input.setPasteMode(false)
                 this.msgText = $A.formatMsgBasic(text)
-                this.$nextTick(_ => {
-                    this.$refs.input.setPasteMode(true)
-                })
+                this.$nextTick(_ => this.$refs.input.setPasteMode(true))
             }
         },
 

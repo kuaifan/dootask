@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.23.52]
+
+### Performance
+
+- 支持gitpod
+- 消息接口支持@邮箱
+- 移动端优化
+- 优化已读标记
+
 ## [0.23.46]
 
 ### Bug Fixes
