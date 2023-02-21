@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
-use App\Exceptions\ApiException;
+use Carbon\Carbon;
+use App\Models\User;
 use App\Module\Base;
 use App\Tasks\PushTask;
+use App\Exceptions\ApiException;
 use App\Tasks\WebSocketDialogMsgTask;
-use Carbon\Carbon;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -764,6 +765,13 @@ class WebSocketDialogMsg extends AbstractModel
             }
             if (str_contains($msg['text'], '<img ')) {
                 $mtype = str_contains($msg['text'], '"emoticon"') ? 'emoticon' : 'image';
+            }
+            preg_match_all("/@([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,6})/i", $msg['text'], $matchs);
+            foreach($matchs[0] as $key => $item) {
+                $aiUser = User::whereEmail($matchs[1][$key])->whereDisableAt(null)->first();
+                if ($aiUser) {
+                    $msg['text'] = str_replace($item, "<span class=\"mention user\" data-id=\"{$aiUser->userid}\">@{$aiUser->nickname}</span>", $msg['text']);
+                }
             }
         } elseif ($type === 'file') {
             if (in_array($msg['ext'], ['jpg', 'jpeg', 'png', 'gif'])) {
