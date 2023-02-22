@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.23.58]
+
+### Bug Fixes
+
+- 移动端在任务提醒打开任务无法聊天的问题
+- 打卡提醒失效
+- 没有后缀名无法下载文件的问题
+
+### Performance
+
+- 再次点击消息图标闪动未读对话
+- 优化移动端设置
+
 ## [0.23.52]
 
 ### Performance
