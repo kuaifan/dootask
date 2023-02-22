@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.23.58]
+## [0.23.62]
 
 ### Bug Fixes
 
@@ -14,6 +14,8 @@ All notable changes to this project will be documented in this file.
 
 - 再次点击消息图标闪动未读对话
 - 优化移动端设置
+- Office、图表、文本国际化
+- 优化ws连接机制
 
 ## [0.23.52]
 
