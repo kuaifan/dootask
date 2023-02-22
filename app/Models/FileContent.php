@@ -5,7 +5,6 @@ namespace App\Models;
 
 use App\Module\Base;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Response;
 
 /**
  * App\Models\FileContent
@@ -97,7 +96,7 @@ class FileContent extends AbstractModel
             } else {
                 $filePath = public_path($content['url']);
             }
-            return Response::streamDownload(function() use ($filePath) {
+            return Base::streamDownload(function() use ($filePath) {
                 echo file_get_contents($filePath);
             }, $name);
         }
@@ -128,7 +127,7 @@ class FileContent extends AbstractModel
             if ($download) {
                 $filePath = public_path($path);
                 if (isset($filePath)) {
-                    return Response::streamDownload(function() use ($filePath) {
+                    return Base::streamDownload(function() use ($filePath) {
                         echo file_get_contents($filePath);
                     }, $name);
                 } else {

@@ -18,7 +18,6 @@ use Carbon\Carbon;
 use DB;
 use Redirect;
 use Request;
-use Response;
 
 /**
  * @apiDefine dialog
@@ -1022,7 +1021,7 @@ class DialogController extends AbstractController
         }
         //
         $filePath = public_path($array['path']);
-        return Response::streamDownload(function() use ($filePath) {
+        return Base::streamDownload(function() use ($filePath) {
             echo file_get_contents($filePath);
         }, $array['name']);
     }

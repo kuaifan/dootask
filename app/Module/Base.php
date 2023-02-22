@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Config;
 use Overtrue\Pinyin\Pinyin;
 use Redirect;
 use Request;
+use Response;
 use Storage;
 use Validator;
 
@@ -3181,5 +3182,18 @@ class Base
         if ($validator->fails()) {
             throw new ApiException($validator->errors()->first());
         }
+    }
+
+    /**
+     * 流下载，解决没有后缀无法下载的问题
+     * @param $callback
+     * @param $name
+     * @return mixed
+     */
+    public static function streamDownload($callback, $name = null) {
+        if ($name && !str_contains($name, '.')) {
+            $name .= ".";
+        }
+        return Response::streamDownload($callback, $name);
     }
 }
