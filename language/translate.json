@@ -5954,7 +5954,7 @@
         "key": "导出时间类型",
         "zh": "",
         "zh-CHT": "導出時間類型",
-        "en": "Derived time type",
+        "en": "Export time type",
         "ko": "시간 형식 내보내기",
         "ja": "時間型を導出します",
         "de": "Exportiert die zeittypen",
@@ -8528,7 +8528,7 @@
         "key": "导出成员",
         "zh": "",
         "zh-CHT": "導出成員",
-        "en": "Derived member",
+        "en": "Export members",
         "ko": "멤버 내보내기",
         "ja": "メンバーを導き出します",
         "de": "Exportiert die typen",
@@ -11883,7 +11883,7 @@
         "key": "导出",
         "zh": "",
         "zh-CHT": "導出",
-        "en": "Derive",
+        "en": "Export",
         "ko": "내보 내기",
         "ja": "エクスポート",
         "de": "Export.",
@@ -14210,5 +14210,71 @@
         "de": "Antwort: deadlines.",
         "fr": "Détails des réponses",
         "id": "Menanggapi detail"
+    },
+    {
+        "key": "复制链接",
+        "zh": "",
+        "zh-CHT": "複製鏈接",
+        "en": "Copy link",
+        "ko": "링크 복사",
+        "ja": "リンクをコピーします",
+        "de": "Der kopierte link.",
+        "fr": "Copier le lien",
+        "id": "Salin tautan"
+    },
+    {
+        "key": "复制文本",
+        "zh": "",
+        "zh-CHT": "複製文本",
+        "en": "Copy text",
+        "ko": "텍스트 복사",
+        "ja": "テキストをコピーします",
+        "de": "Text kopieren",
+        "fr": "Copiez le texte",
+        "id": "Salin teks"
+    },
+    {
+        "key": "复制图片",
+        "zh": "",
+        "zh-CHT": "複製圖片",
+        "en": "Copy a picture",
+        "ko": "그림 복사",
+        "ja": "画像をコピーします",
+        "de": "Die kopien.",
+        "fr": "Copier une image",
+        "id": "Salin gambar"
+    },
+    {
+        "key": "下载图片",
+        "zh": "",
+        "zh-CHT": "下載圖片",
+        "en": "Download picture",
+        "ko": "그림 다운로드",
+        "ja": "画像をダウンロードします",
+        "de": "Lade bild herunter.",
+        "fr": "Télécharger les photos",
+        "id": "Download gambar"
+    },
+    {
+        "key": "复制失败",
+        "zh": "",
+        "zh-CHT": "複製失敗",
+        "en": "Replication failure",
+        "ko": "복사 실패",
+        "ja": "コピー失敗です",
+        "de": "Kopie nicht möglich",
+        "fr": "La copie échoue",
+        "id": "Kegagalan replikasi"
+    },
+    {
+        "key": "不可复制的内容",
+        "zh": "",
+        "zh-CHT": "不可複製的內容",
+        "en": "Unreplicable content",
+        "ko": "복사할 수 없는 콘텐트입니다",
+        "ja": "複製できないコンテンツです",
+        "de": "Des nicht replizierten inhalts",
+        "fr": "Contenu non reproductible",
+        "id": "Yang tidak boleh ditiru"
     }
 ]

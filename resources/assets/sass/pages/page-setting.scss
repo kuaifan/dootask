@@ -381,20 +381,12 @@
         }
         .setting-box {
             position: relative;
-            overflow: hidden;
-            padding-bottom: 0;
             &.show768-box {
                 .setting-menu {
                     transform: translateX(0);
-                    opacity: 1;
-                }
-                .setting-content {
-                    transform: translateX(120%);
-                    opacity: 0;
                 }
             }
-            .setting-menu,
-            .setting-content {
+            .setting-menu {
                 position: absolute;
                 top: 0;
                 left: 0;
@@ -402,11 +394,7 @@
                 height: 100%;
                 z-index: 9;
                 background-color: #ffffff;
-                transition: all 0.3s;
-            }
-            .setting-menu {
                 transform: translateX(-120%);
-                opacity: 0;
                 > ul {
                     padding: 12px 32px;
                     > li {
@@ -418,9 +406,6 @@
                 }
             }
             .setting-content {
-                transform: translateX(0);
-                opacity: 1;
-                padding-bottom: 16px;
                 .setting-content-title {
                     display: none;
                 }

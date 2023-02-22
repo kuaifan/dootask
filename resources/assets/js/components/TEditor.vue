@@ -59,6 +59,7 @@
     import tinymce from 'tinymce/tinymce';
     import ImgUpload from "./ImgUpload";
     import {mapState} from "vuex";
+    import {languageType} from "../language";
 
     export default {
         name: 'TEditor',
@@ -225,11 +226,26 @@
             },
 
             option(isFull) {
-                let optionInfo = {
+                let lang = languageType;
+                switch (languageType) {
+                    case 'zh':
+                        lang = "zh_CN";
+                        break;
+                    case 'zh-CHT':
+                        lang = "zh-TW";
+                        break;
+                    case 'fr':
+                        lang = "fr_FR";
+                        break;
+                    case 'ko':
+                        lang = "ko_KR";
+                        break;
+                }
+                const optionInfo = {
                     inline: isFull ? false : this.inline,
                     selector: (isFull ? '#T_' : '#') + this.id,
                     base_url: $A.originUrl('js/tinymce'),
-                    language: "zh_CN",
+                    language: lang,
                     toolbar: this.toolbar,
                     plugins: this.plugin(isFull),
                     placeholder: isFull && this.placeholderFull ? this.placeholderFull : this.placeholder,

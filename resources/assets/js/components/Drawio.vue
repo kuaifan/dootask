@@ -67,18 +67,17 @@ export default {
         }
     },
     created() {
-        let language = 'en';
+        let lang = languageType;
         switch (languageType) {
-            case 'CN':
-            case 'TC':
-                language = 'zh'
+            case 'zh-CHT':
+                lang = 'zh-tw'
                 break;
         }
         let lightbox = this.readOnly ? 1 : 0;
         let chrome = this.readOnly ? 0 : 1;
         let theme = this.themeIsDark ? 'dark' : 'kennedy';
         let title = this.title ? encodeURIComponent(this.title) : '';
-        let query = `?title=${title}&chrome=${chrome}&lightbox=${lightbox}&ui=${theme}&lang=${language}&offline=1&pwa=0&embed=1&noLangIcon=1&noExitBtn=1&noSaveBtn=1&saveAndExit=0&spin=1&proto=json`;
+        let query = `?title=${title}&chrome=${chrome}&lightbox=${lightbox}&ui=${theme}&lang=${lang}&offline=1&pwa=0&embed=1&noLangIcon=1&noExitBtn=1&noSaveBtn=1&saveAndExit=0&spin=1&proto=json`;
         if (this.$Electron) {
             this.url = $A.originUrl(`drawio/webapp/index.html${query}`);
         } else {

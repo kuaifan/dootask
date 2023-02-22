@@ -210,14 +210,10 @@ export default {
                 this.docEditor = null;
             }
             //
-            let lang = "zh";
+            let lang = languageType;
             switch (languageType) {
-                case 'CN':
-                case 'TC':
-                    lang = "zh";
-                    break;
-                default:
-                    lang = 'en';
+                case 'zh-CHT':
+                    lang = "zh-TW";
                     break;
             }
             //
