@@ -262,6 +262,9 @@ export default {
 
                 case 'dialog':
                     location = {name: 'manage-messenger', params: {dialogAction: 'dialog'}};
+                    if (this.routeName === 'manage-messenger') {
+                        Store.set('clickAgainDialog', true);
+                    }
                     break;
 
                 case 'contacts':

@@ -160,6 +160,7 @@ import {mapState} from "vuex";
 import DialogWrapper from "./components/DialogWrapper";
 import ScrollerY from "../../components/ScrollerY";
 import longpress from "../../directives/longpress";
+import {Store} from "le5le-store";
 
 export default {
     components: {ScrollerY, DialogWrapper},
@@ -191,6 +192,8 @@ export default {
             operateItem: {},
             operateStyles: {},
             operateVisible: false,
+
+            clickAgainSubscribe: null,
         }
     },
 
@@ -199,6 +202,16 @@ export default {
         if (id > 0) {
             this.openDialog(id)
         }
+        this.clickAgainSubscribe = Store.subscribe('clickAgainDialog', this.shakeUnread);
+    },
+
+    beforeDestroy() {
+        if (this.clickAgainSubscribe) {
+            this.clickAgainSubscribe.unsubscribe();
+            this.clickAgainSubscribe = null;
+        }
+        //
+        document.removeEventListener('keydown', this.shortcutEvent);
     },
 
     activated() {
@@ -484,20 +497,24 @@ export default {
             }
             if (this.dialogActive == type) {
                 // 再次点击滚动到未读条目
-                let index = this.dialogList.findIndex(dialog => $A.getDialogNum(dialog) > 0)
-                if (index === -1) {
-                    index = this.dialogList.findIndex(dialog => $A.getDialogUnread(dialog, true) > 0)
-                }
-                if (index > -1) {
-                    const el = this.$refs[`dialog_${this.dialogList[index]?.id}`][0]
-                    $A.scrollToView(el, {behavior: "smooth", block, inline: "nearest"})
-                    requestAnimationFrame(_ => {
-                        $A(el).addClass("common-shake")
-                        setTimeout(_ => $A(el).removeClass("common-shake"), 1000)
-                    })
-                }
+                this.shakeUnread()
             }
             this.dialogActive = type
+        },
+
+        shakeUnread() {
+            let index = this.dialogList.findIndex(dialog => $A.getDialogNum(dialog) > 0)
+            if (index === -1) {
+                index = this.dialogList.findIndex(dialog => $A.getDialogUnread(dialog, true) > 0)
+            }
+            if (index > -1) {
+                const el = this.$refs[`dialog_${this.dialogList[index]?.id}`][0]
+                if (el) {
+                    $A.scrollIntoViewIfNeeded(el)
+                    el.classList.remove("common-shake")
+                    requestAnimationFrame(_ => el.classList.add("common-shake"))
+                }
+            }
         },
 
         dialogClass(dialog) {
