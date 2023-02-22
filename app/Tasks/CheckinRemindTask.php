@@ -69,7 +69,7 @@ class CheckinRemindTask extends AbstractTask
         User::whereNull('disable_at')->chunk(100, function ($users) use ($type, $botUser) {
             /** @var User $user */
             foreach ($users as $user) {
-                if (UserCheckinRecord::whereUserid($user->userid)->whereDate(date("Y-m-d"))->exists()) {
+                if (UserCheckinRecord::whereUserid($user->userid)->where('date', date("Y-m-d"))->exists()) {
                     continue;   // 已打卡
                 }
                 if (!UserCheckinRecord::whereUserid($user->userid)->where('created_at', '>', Carbon::now()->subDays(3))->exists()) {
