@@ -191,13 +191,15 @@ class WebSocketService implements WebSocketHandlerInterface
      */
     private function saveUser($fd, $userid)
     {
+        Cache::put("User::fd:" . $fd, "on", Carbon::now()->addDay());
+        Cache::put("User::online:" . $userid, "on", Carbon::now()->addDay());
+        //
         WebSocket::updateInsert([
             'key' => md5($fd . '@' . $userid)
         ], [
             'fd' => $fd,
             'userid' => $userid,
         ]);
-        Cache::put("User::online:" . $userid, time(), Carbon::now()->addSeconds(30));
     }
 
     /**
@@ -206,6 +208,8 @@ class WebSocketService implements WebSocketHandlerInterface
      */
     private function deleteUser($fd)
     {
+        Cache::forget("User::fd:" . $fd);
+        //
         $array = [];
         WebSocket::whereFd($fd)->chunk(10, function($list) use (&$array) {
             /** @var WebSocket $item */
@@ -216,6 +220,7 @@ class WebSocketService implements WebSocketHandlerInterface
                     User::whereUserid($item->userid)->update([
                         'line_at' => Carbon::now()
                     ]);
+                    Cache::forget("User::online:" . $item->userid);
                 }
                 if ($item->path && str_starts_with($item->path, "/single/file/")) {
                     $array[$item->path] = $item->path;

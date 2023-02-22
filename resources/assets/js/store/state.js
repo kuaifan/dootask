@@ -64,6 +64,7 @@ export default {
     wsListener: {},
     wsReadTimeout: null,
     wsReadWaitData: {},
+    wsCallReconnect: 0,
 
     // 会员信息
     userInfo: {},

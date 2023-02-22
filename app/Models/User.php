@@ -82,19 +82,6 @@ class User extends AbstractModel
     public static $basicField = ['userid', 'email', 'nickname', 'profession', 'department', 'userimg', 'bot', 'az', 'pinyin', 'line_at', 'disable_at'];
 
     /**
-     * 更新数据校验
-     * @param array $param
-     */
-    public function updateInstance(array $param)
-    {
-        parent::updateInstance($param);
-        //
-        if (isset($param['line_at']) && $this->userid) {
-            Cache::put("User::online:" . $this->userid, time(), Carbon::now()->addSeconds(30));
-        }
-    }
-
-    /**
      * 昵称
      * @param $value
      * @return string
@@ -163,7 +150,7 @@ class User extends AbstractModel
      */
     public function getOnlineStatus()
     {
-        $online = $this->bot || intval(Cache::get("User::online:" . $this->userid, 0)) > 0;
+        $online = $this->bot || Cache::get("User::online:" . $this->userid) === "on";
         if ($online) {
             return true;
         }

@@ -2786,7 +2786,7 @@ export default {
                     break
 
                 default:
-                    msgId && dispatch("websocketSend", {type: 'receipt', msgId});
+                    msgId && dispatch("websocketSend", {type: 'receipt', msgId}).catch(_ => {});
                     state.wsMsg = msgDetail;
                     Object.values(state.wsListener).forEach((call) => {
                         if (typeof call === "function") {
@@ -3055,7 +3055,7 @@ export default {
         state.wsPathValue = path;
         state.wsPathTimeout = setTimeout(() => {
             if (state.wsPathValue == path) {
-                dispatch("websocketSend", {type: 'path', data: {path}});
+                dispatch("websocketSend", {type: 'path', data: {path}}).catch(_ => {});
             }
         }, 1000);
     },

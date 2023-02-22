@@ -1537,10 +1537,8 @@ class Base
      */
     public static function jsonEcho($param)
     {
-        global $_GPC;
-        //
         $json = json_encode($param);
-        $callback = $_GPC['callback'];
+        $callback = Request::input('callback');
         if ($callback) {
             return $callback . '(' . $json . ')';
         } else {
@@ -1557,11 +1555,11 @@ class Base
      */
     public static function retSuccess($msg, $data = [], $ret = 1)
     {
-        return array(
+        return [
             'ret' => $ret,
             'msg' => self::Lang($msg),
             'data' => $data
-        );
+        ];
     }
 
     /**
@@ -1573,11 +1571,11 @@ class Base
      */
     public static function retError($msg, $data = [], $ret = 0)
     {
-        return array(
+        return [
             'ret' => $ret,
             'msg' => self::Lang($msg),
             'data' => $data
-        );
+        ];
     }
 
     /**
