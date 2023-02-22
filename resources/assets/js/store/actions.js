@@ -2245,16 +2245,20 @@ export default {
      * @param state
      * @param dispatch
      * @param dialog_id
+     * @returns {Promise<unknown>}
      */
     openDialog({state, dispatch}, dialog_id) {
-        let search_msg_id;
-        if ($A.isJson(dialog_id)) {
-            search_msg_id = dialog_id.search_msg_id;
-            dialog_id = dialog_id.dialog_id;
-        }
-        requestAnimationFrame(_ => {
-            state.dialogSearchMsgId = /^\d+$/.test(search_msg_id) ? search_msg_id : 0;
-            state.dialogId = /^\d+$/.test(dialog_id) ? dialog_id : 0;
+        return new Promise(resolve => {
+            let search_msg_id;
+            if ($A.isJson(dialog_id)) {
+                search_msg_id = dialog_id.search_msg_id;
+                dialog_id = dialog_id.dialog_id;
+            }
+            requestAnimationFrame(_ => {
+                state.dialogSearchMsgId = /^\d+$/.test(search_msg_id) ? search_msg_id : 0;
+                state.dialogId = /^\d+$/.test(dialog_id) ? dialog_id : 0;
+                resolve()
+            })
         })
     },
 

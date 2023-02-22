@@ -850,8 +850,8 @@ export default {
         },
 
         dialogMsgTransfer: {
-            handler({time, msgFile, msgRecord, msgText}) {
-                if (time > $A.Time()) {
+            handler({time, msgFile, msgRecord, msgText, dialogId}) {
+                if (time > $A.Time() && dialogId == this.dialogId) {
                     this.$store.state.dialogMsgTransfer.time = 0;
                     this.$nextTick(() => {
                         if ($A.isArray(msgFile) && msgFile.length > 0) {

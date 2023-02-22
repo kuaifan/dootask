@@ -799,10 +799,8 @@ export default {
         openTask: {
             handler(data) {
                 this.taskDetail = $A.cloneJSON(data);
-                if (this.$refs.name) {
-                    this.__openTask && clearTimeout(this.__openTask);
-                    this.__openTask = setTimeout(this.$refs.name.resizeTextarea, 100)
-                }
+                this.__openTask && clearTimeout(this.__openTask);
+                this.__openTask = setTimeout(_ => this.$refs.name?.resizeTextarea(), 100)
             },
             immediate: true,
             deep: true
@@ -1291,11 +1289,12 @@ export default {
                     this.$nextTick(() => {
                         if (this.windowSmall) {
                             $A.onBlur();
-                            this.$store.state.dialogMsgTransfer = {
+                            const transferData = {
                                 time: $A.Time() + 10,
                                 msgRecord: this.msgRecord,
                                 msgFile: this.msgFile,
                                 msgText: typeof msgText === 'string' && msgText ? msgText : this.msgText,
+                                dialogId: data.dialog_id,
                             };
                             this.msgRecord = {};
                             this.msgFile = [];
@@ -1304,7 +1303,9 @@ export default {
                                 // 如果当前打开着对话窗口则关闭任务窗口
                                 this.$store.dispatch("openTask", 0);
                             }
-                            this.$store.dispatch('openDialog', data.dialog_id)
+                            this.$store.dispatch('openDialog', data.dialog_id).then(_ => {
+                                this.$store.state.dialogMsgTransfer = transferData
+                            })
                         } else {
                             this.sendDialogMsg(msgText);
                         }
