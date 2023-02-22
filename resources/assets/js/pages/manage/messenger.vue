@@ -508,11 +508,11 @@ export default {
                 index = this.dialogList.findIndex(dialog => $A.getDialogUnread(dialog, true) > 0)
             }
             if (index > -1) {
-                const el = this.$refs[`dialog_${this.dialogList[index]?.id}`][0]
-                if (el) {
-                    $A.scrollIntoViewIfNeeded(el)
-                    el.classList.remove("common-shake")
-                    requestAnimationFrame(_ => el.classList.add("common-shake"))
+                const el = this.$refs[`dialog_${this.dialogList[index]?.id}`]
+                if (el && el[0]) {
+                    $A.scrollIntoViewIfNeeded(el[0])
+                    el[0].classList.remove("common-shake")
+                    requestAnimationFrame(_ => el[0].classList.add("common-shake"))
                 }
             }
         },
