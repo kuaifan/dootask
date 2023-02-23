@@ -485,10 +485,10 @@ export default {
             });
         },
 
-        exportMenu(act) {
+        exportMenu(type) {
             switch (this.file.type) {
                 case 'mind':
-                    this.$refs.myMind.exportHandle(act == 'pdf' ? 1 : 0, this.file.name);
+                    this.$refs.myMind.exportHandle(type, this.file.name);
                     break;
             }
         },

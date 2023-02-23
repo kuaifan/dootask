@@ -50,10 +50,10 @@
                 </div>
             </ETooltip>
             <ETooltip placement="top" :content="$L('居中')">
-                <div @click="execCommand('camera', 600)"><i class="ft icon">&#xE61F;</i></div>
+                <div @click="execCommand('goCenter')"><i class="ft icon">&#xE61F;</i></div>
             </ETooltip>
             <ETooltip placement="top" :content="$L('移动')">
-                <div @click="[execCommand('hand'),isHand=!isHand]"><i class="ft icon" :class="{active:isHand}">&#xE6CF;</i></div>
+                <div @click="onHand"><i class="ft icon" :class="{active:isHand}">&#xE6CF;</i></div>
             </ETooltip>
         </div>
         <div class="minder-content">
@@ -218,8 +218,10 @@
         data() {
             return {
                 loadIng: true,
-                isHand: false,
+                isHand: this.readOnly,
                 zoom: 100,
+
+                backup: null
             };
         },
         mounted() {
@@ -233,22 +235,51 @@
                 if (data.app !== 'minder') {
                     return
                 }
-                if (data.action === 'ready') {
-                    this.loadIng = false
-                    this.rendData()
+                switch (data.action) {
+                    case 'ready':
+                        this.loadIng = false
+                        this.rendData()
+                        break;
+
+                    case 'content':
+                        this.backup = JSON.stringify(data.content)
+                        this.$emit('input', data.content);
+                        break;
                 }
             },
 
-            execCommand(var1, var2) {
-
+            onHand() {
+                if (this.readOnly) {
+                    this.execCommand('removeAllSelected')
+                    return
+                }
+                this.execCommand('Hand')
+                this.isHand = !this.isHand
             },
 
-            exportHandle(n, filename) {
-                filename = filename || (this.value.root.data.text || this.$L('无标题'));
+            execCommand(command, value) {
+                this.$refs.frame.postMessage({
+                    app: 'minder',
+                    action: 'command',
+                    command,
+                    value
+                })
+            },
+
+            exportHandle(type, filename) {
+                this.$refs.frame.postMessage({
+                    app: 'minder',
+                    action: 'export',
+                    type,
+                    name: filename || (this.value.root.data.text || this.$L('无标题'))
+                })
             },
 
             rendData() {
                 if (this.loadIng) {
+                    return
+                }
+                if (this.backup === JSON.stringify(this.value)) {
                     return
                 }
                 this.$refs.frame.postMessage({
