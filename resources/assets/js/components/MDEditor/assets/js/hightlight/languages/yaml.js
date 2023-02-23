@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var LITERALS = 'true false yes no null';
 
   var keyPrefix = '^[ \\-]*';

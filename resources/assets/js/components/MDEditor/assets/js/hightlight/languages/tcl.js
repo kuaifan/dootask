@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   return {
     aliases: ['tk'],
     keywords: 'after append apply array auto_execok auto_import auto_load auto_mkindex ' +

@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var KEYWORDS = {
     keyword:
       // Normal keywords.

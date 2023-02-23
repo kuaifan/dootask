@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
     var GCODE_IDENT_RE = '[A-Z_][A-Z0-9_.]*';
     var GCODE_CLOSE_RE = '\\%';
     var GCODE_KEYWORDS =

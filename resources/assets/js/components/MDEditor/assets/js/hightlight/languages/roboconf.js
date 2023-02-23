@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var IDENTIFIER = '[a-zA-Z-_][^\\n{]+\\{';
 
   var PROPERTY = {

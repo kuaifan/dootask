@@ -17,6 +17,8 @@ import ViewUI from 'view-design-hi'
 import store from './store/index'
 import mixin from "./store/mixin"
 
+import "../sass/app.scss";
+
 Vue.use(Vuex);
 Vue.use(ViewUI, {
     modal: {
@@ -196,12 +198,11 @@ Vue.mixin(mixin)
 let app;
 store.dispatch("init").then(_ => {
     app = new Vue({
-        el: '#app',
         router,
         store,
+        render: h => h(App),
         template: '<App/>',
-        components: { App }
-    });
+    }).$mount('#app');
 
     $A.goForward = app.goForward;
     $A.goBack = app.goBack;

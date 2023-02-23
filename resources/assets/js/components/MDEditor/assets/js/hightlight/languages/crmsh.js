@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var RESOURCES = 'primitive rsc_template';
 
   var COMMANDS = 'group clone ms master location colocation order fencing_topology ' +

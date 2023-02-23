@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   return {
     case_insensitive: true,
     contains: [

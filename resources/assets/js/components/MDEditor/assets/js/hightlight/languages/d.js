@@ -1,4 +1,4 @@
-module.exports = /**
+export default /**
  * Known issues:
  *
  * - invalid hex string literals will be recognized as a double quoted strings

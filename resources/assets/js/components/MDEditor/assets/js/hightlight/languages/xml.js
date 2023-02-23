@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var XML_IDENT_RE = '[A-Za-z0-9\\._:-]+';
   var TAG_INTERNALS = {
     endsWithParent: true,

@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   return {
     aliases: ['xlsx', 'xls'],
     case_insensitive: true,
@@ -9,7 +9,7 @@ module.exports = function(hljs) {
     },
     contains: [
       {
-        /* matches a beginning equal sign found in Excel formula examples */ 
+        /* matches a beginning equal sign found in Excel formula examples */
         begin: /^=/,
         end: /[^=]/, returnEnd: true, illegal: /=/, /* only allow single equal sign at front of line */
         relevance: 10

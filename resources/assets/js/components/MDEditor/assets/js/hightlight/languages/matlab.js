@@ -1,4 +1,4 @@
-module.exports = /*
+export default /*
   Formal syntax is not published, helpful link:
   https://github.com/kornilova-l/matlab-IntelliJ-plugin/blob/master/src/main/grammar/Matlab.bnf
 */

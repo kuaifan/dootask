@@ -3035,7 +3035,7 @@ export default {
                 state.wsCall[msgId] = callback
             }
             try {
-                state.ws.send(JSON.stringify({type, msgId, data}))
+                state.ws?.send(JSON.stringify({type, msgId, data}))
                 resolve()
             } catch (e) {
                 typeof callback === "function" && callback(null, false)

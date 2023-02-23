@@ -1,4 +1,4 @@
-module.exports = function (hljs) {
+export default function (hljs) {
   var KEYWORDS =
     'false synchronized int abstract float private char boolean static null if const ' +
     'for true while long throw strictfp finally protected import native final return void ' +

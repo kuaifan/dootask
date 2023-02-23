@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var STEP21_IDENT_RE = '[A-Z_][A-Z0-9_.]*';
   var STEP21_KEYWORDS = {
     keyword: 'HEADER ENDSEC DATA'

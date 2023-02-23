@@ -39,20 +39,18 @@
 </template>
 
 <script>
-import Vue from 'vue'
-import Minder from '../../../components/Minder'
 import IFrame from "./IFrame";
-Vue.use(Minder)
 
 const MDPreview = () => import('../../../components/MDEditor/preview');
 const TEditor = () => import('../../../components/TEditor');
 const AceEditor = () => import('../../../components/AceEditor');
 const OnlyOffice = () => import('../../../components/OnlyOffice');
 const Drawio = () => import('../../../components/Drawio');
+const Minder = () => import('../../../components/Minder');
 
 export default {
     name: "FilePreview",
-    components: {IFrame, AceEditor, TEditor, MDPreview, OnlyOffice, Drawio},
+    components: {IFrame, AceEditor, TEditor, MDPreview, OnlyOffice, Drawio, Minder},
     props: {
         code: {
             type: String,

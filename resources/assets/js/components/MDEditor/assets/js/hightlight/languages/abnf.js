@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
     var regexes = {
         ruleDeclaration: "^[a-zA-Z][a-zA-Z0-9-]*",
         unexpectedChars: "[!@#$^&',?+~`|:]"

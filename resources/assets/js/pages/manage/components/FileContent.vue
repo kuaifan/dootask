@@ -114,22 +114,20 @@
 </template>
 
 <script>
-import Vue from 'vue'
-import Minder from '../../../components/Minder'
 import {mapState} from "vuex";
 import FileHistory from "./FileHistory";
 import IFrame from "./IFrame";
-Vue.use(Minder)
 
 const MDEditor = () => import('../../../components/MDEditor/index');
 const TEditor = () => import('../../../components/TEditor');
 const AceEditor = () => import('../../../components/AceEditor');
 const OnlyOffice = () => import('../../../components/OnlyOffice');
 const Drawio = () => import('../../../components/Drawio');
+const Minder = () => import('../../../components/Minder');
 
 export default {
     name: "FileContent",
-    components: {IFrame, FileHistory, AceEditor, TEditor, MDEditor, OnlyOffice, Drawio},
+    components: {IFrame, FileHistory, AceEditor, TEditor, MDEditor, OnlyOffice, Drawio, Minder},
     props: {
         value: {
             type: Boolean,

@@ -11,7 +11,6 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'WebPage') }}</title>
     <link rel="shortcut icon" href="{{ asset_main('favicon.ico') }}">
-    <link rel="stylesheet" type="text/css" href="{{ mix('css/app.css') }}?v={{ $version }}-{{ $hash }}">
     <link rel="stylesheet" type="text/css" href="{{ asset_main('css/iview.css') }}">
     <script src="{{ asset_main('js/scroll-into-view.min.js') }}"></script>
     <script>
@@ -37,7 +36,19 @@
     </div>
 </div>
 
-<script src="{{ mix('js/app.js') }}?v={{ $version }}-{{ $hash }}"></script>
+@php
+    if (config('app.debug')) {
+        echo ' <script type="module" src="http://127.0.0.1:22222/resources/assets/js/app.js"></script> ';
+    }else{
+       $manifest = json_decode(file_get_contents(public_path('manifest.json')), true);
+       $css = $manifest['resources/assets/js/app.js']['css'][0];
+       $css2 = $manifest['resources/assets/js/pages/manage/calendar.vue']['css'][0];
+       $js = $manifest['resources/assets/js/app.js']['file'];
+       echo ' <link rel="stylesheet" href="/' . $css . '" /> ';
+       echo ' <link rel="stylesheet" href="/' . $css2 . '" /> ';
+       echo ' <script type="module" src="/'.$js.'"></script> ';
+    }
+@endphp
 
 </body>
 </html>

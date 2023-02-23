@@ -47,6 +47,7 @@ services:
       - fileview
       - drawio-webapp
       - drawio-export
+      - minder
     restart: unless-stopped
 
   redis:
@@ -145,6 +146,16 @@ services:
       TZ: "Asia/Shanghai"
     volumes:
       - ./docker/drawio/export/fonts:/usr/share/fonts/drawio
+    restart: unless-stopped
+
+  minder:
+    container_name: "dootask-minder-${APP_ID}"
+    image: "kuaifan/minder:latest"
+    networks:
+      extnetwork:
+        ipv4_address: "${APP_IPPR}.10"
+    environment:
+      TZ: "Asia/Shanghai"
     restart: unless-stopped
 
 networks:

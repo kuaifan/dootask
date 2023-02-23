@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var VERSION = 'HTTP/[0-9\\.]+';
   return {
     aliases: ['https'],

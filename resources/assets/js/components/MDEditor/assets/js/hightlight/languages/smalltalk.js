@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var VAR_IDENT_RE = '[a-z][a-zA-Z0-9_]*';
   var CHAR = {
     className: 'string',

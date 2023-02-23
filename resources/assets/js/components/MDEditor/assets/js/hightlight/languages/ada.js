@@ -1,4 +1,4 @@
-module.exports = // We try to support full Ada2012
+export default // We try to support full Ada2012
 //
 // We highlight all appearances of types, keywords, literals (string, char, number, bool)
 // and titles (user defined function/procedure/package)

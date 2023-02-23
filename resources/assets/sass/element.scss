@@ -5,15 +5,15 @@ $--tooltip-font-size: 14px;
 $--dropdown-menuItem-hover-fill: #f4f5f7;
 $--dropdown-menuItem-hover-color: #606266;
 
-@import "~element-ui/packages/theme-chalk/src/common/transition";
-@import "~element-ui/packages/theme-chalk/src/icon";
-@import "~element-ui/packages/theme-chalk/src/avatar";
-@import "~element-ui/packages/theme-chalk/src/tooltip";
-@import "~element-ui/packages/theme-chalk/src/popover";
-@import "~element-ui/packages/theme-chalk/src/dropdown";
-@import "~element-ui/packages/theme-chalk/src/dropdown-menu";
-@import "~element-ui/packages/theme-chalk/src/dropdown-item";
-@import "~element-ui/packages/theme-chalk/src/notification";
+@import "element-ui/packages/theme-chalk/src/common/transition";
+@import "element-ui/packages/theme-chalk/src/icon";
+@import "element-ui/packages/theme-chalk/src/avatar";
+@import "element-ui/packages/theme-chalk/src/tooltip";
+@import "element-ui/packages/theme-chalk/src/popover";
+@import "element-ui/packages/theme-chalk/src/dropdown";
+@import "element-ui/packages/theme-chalk/src/dropdown-menu";
+@import "element-ui/packages/theme-chalk/src/dropdown-item";
+@import "element-ui/packages/theme-chalk/src/notification";
 
 .el-dropdown-menu {
     user-select: none;

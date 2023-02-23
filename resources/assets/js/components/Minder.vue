@@ -50,13 +50,16 @@
                 </div>
             </ETooltip>
             <ETooltip placement="top" :content="$L('居中')">
-                <div @click="minder.execCommand('camera', minder.getRoot(), 600)"><i class="ft icon">&#xE61F;</i></div>
+                <div @click="execCommand('camera', 600)"><i class="ft icon">&#xE61F;</i></div>
             </ETooltip>
             <ETooltip placement="top" :content="$L('移动')">
-                <div @click="[minder.execCommand('Hand'),isHand=!isHand]"><i class="ft icon" :class="{active:isHand}">&#xE6CF;</i></div>
+                <div @click="[execCommand('hand'),isHand=!isHand]"><i class="ft icon" :class="{active:isHand}">&#xE6CF;</i></div>
             </ETooltip>
         </div>
-        <div :id="id"></div>
+        <div class="minder-content">
+            <IFrame ref="frame" class="minder-iframe" :src="url" @on-message="onMessage"/>
+            <div v-if="loadIng" class="minder-loading"><Loading/></div>
+        </div>
     </div>
 </template>
 
@@ -124,6 +127,34 @@
             }
         }
     }
+
+    .minder-content {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        .minder-iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 0 0;
+            border: 0;
+            float: none;
+            margin: -1px 0 0;
+            max-width: none;
+            outline: 0;
+            padding: 0;
+        }
+        .minder-loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    }
 </style>
 <style lang="less">
 .minder-editor-quickul {
@@ -168,12 +199,10 @@
 }
 </style>
 <script>
-    import {generateMixed} from 'vue-kityminder-ggg/src/utils/index.js';
-    import 'vue-kityminder-ggg/examples/styles/minder.css';
-    import JSPDF from 'jspdf';
-
+    import IFrame from "../pages/manage/components/IFrame.vue";
     export default {
         name: 'mind-editor',
+        components: {IFrame},
         props: {
             value: {
                 type: Object,
@@ -181,149 +210,90 @@
                     return {}
                 }
             },
-            AccessKey: {
-                type: String,
-                default: ''
-            },
-            SecretKey: {
-                type: String,
-                default: ''
-            },
-            Domain: {
-                type: String,
-                default: ''
-            },
-            scope: {
-                type: String,
-                default: ''
-            },
-            isImageUpload: {
-                type: Boolean,
-                default: true
-            },
-            saveShow: {
-                type: Boolean,
-                default: true
-            },
             readOnly: {
                 type: Boolean,
                 default: false
             },
-            id: {
-                type: String,
-                default: 'minder-component-' + generateMixed(12)
-            },
         },
         data() {
             return {
-                minder: null,
+                loadIng: true,
                 isHand: false,
-                bakValue: '',
-
                 zoom: 100,
             };
         },
+        mounted() {
+            window.addEventListener('message', this.handleMessage)
+        },
+        beforeDestroy() {
+            window.removeEventListener('message', this.handleMessage)
+        },
         methods: {
-            execCommand(var1, var2) {
-                if (this.readOnly === true) {
-                    this.minder.enable();
-                    this.$nextTick(() => {
-                        this.minder.execCommand(var1, var2);
-                        this.$nextTick(() => {
-                            this.minder.disable();
-                            if (this.isHand) {
-                                this.minder.execCommand('Hand');
-                            }
-                        });
-                    });
-                } else {
-                    this.minder.execCommand(var1, var2);
+            onMessage(data) {
+                if (data.app !== 'minder') {
+                    return
+                }
+                if (data.action === 'ready') {
+                    this.loadIng = false
+                    this.rendData()
                 }
             },
+
+            execCommand(var1, var2) {
+
+            },
+
             exportHandle(n, filename) {
                 filename = filename || (this.value.root.data.text || this.$L('无标题'));
-                if (n === 0 || n === 'png') {
-                    this.minder.exportData('png').then((content) => {
-                        let element = document.createElement('a');
-                        element.setAttribute('href', content);
-                        element.setAttribute('download', filename);
-                        element.style.display = 'none';
-                        document.body.appendChild(element);
-                        element.click();
-                        document.body.removeChild(element);
-                    });
-                } else if (n === 1 || n === 'pdf') {
-                    this.minder.exportData('png').then((content) => {
-                        let doc = new JSPDF();
-                        doc.addImage(content, 'PNG', 0, 0, 0, 0);
-                        doc.save(`${filename}.pdf`);
-                    });
-                }
             },
+
             rendData() {
-                this.$nextTick(() => {
-                    setTimeout(() => {
-                        if (this.minder !== null) {
-                            if (this.bakValue == JSON.stringify(this.value)) {
-                                return;
-                            }
-                            this.bakValue = JSON.stringify(this.value);
-                            this.minder.importJson(this.value);
-                            return;
-                        }
-                        window.__minderReadOnly = this.readOnly;
-                        const Editor = require('./editor');
-                        this.minder = window.editor = new Editor(document.getElementById(this.id)).minder;
-                        this.bakValue = JSON.stringify(this.value);
-                        this.minder.importJson(this.value);
-                        if (this.readOnly === true) {
-                            this.minder.disable();
-                            this.minder.execCommand('Hand');
-                            this.isHand = true;
-                        }
-                        this.$emit('minderHandle', this.minder);
-                        this.minder.on('contentchange', e => {
-                            const newJson = this.minder.exportJson();
-                            if (this.bakValue == JSON.stringify(newJson)) {
-                                return;
-                            }
-                            this.bakValue = JSON.stringify(newJson);
-                            this.$emit('input', newJson);
-                        });
-                    }, 300)
-                });
+                if (this.loadIng) {
+                    return
+                }
+                this.$refs.frame.postMessage({
+                    app: 'minder',
+                    action: 'setContent',
+                    content: this.value
+                })
+            }
+        },
+        computed: {
+            url() {
+                return $A.apiUrl(`../minder/index.html?type=manual&readonly=${this.readOnly ? 'yes' : 'no'}`)
             }
         },
         watch: {
             value: {
-                handler: function (newObj) {
-                    if (typeof newObj !== "object" || newObj === null) {
-                        newObj = {
-                            root: newObj,
+                handler: function (json) {
+                    if (typeof json !== "object" || json === null) {
+                        json = {
+                            root: json,
                             theme: "fresh-blue",
                             template: "default",
                         };
                     }
-                    if (typeof newObj.root !== "object" || newObj.root === null || newObj.root.length == 0) {
-                        newObj.root = {
+                    if (typeof json.root !== "object" || json.root === null || json.root.length == 0) {
+                        json.root = {
                             data: {
-                                id: generateMixed(12),
+                                id: $A.randomString(12),
                                 text: this.$L('默认节点'),
                             },
                             children: []
                         }
                     }
-                    if (typeof newObj.theme !== "string") {
-                        newObj.theme = "fresh-blue";
+                    if (typeof json.theme !== "string") {
+                        json.theme = "fresh-blue";
                     }
-                    if (typeof newObj.template !== "string") {
-                        newObj.template = "default";
+                    if (typeof json.template !== "string") {
+                        json.template = "default";
                     }
                     this.rendData();
                 },
                 deep: true,
                 immediate: true
             },
+
             zoom(val) {
                 this.execCommand('Zoom', val)
             }

@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var COMMENT_MODE = hljs.COMMENT('--', '$');
   return {
     case_insensitive: true,

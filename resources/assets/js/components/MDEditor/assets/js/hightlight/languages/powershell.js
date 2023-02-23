@@ -1,4 +1,4 @@
-module.exports = function(hljs){
+export default function(hljs){
   var BACKTICK_ESCAPE = {
     begin: "`[\\s\\S]",
     relevance: 0,

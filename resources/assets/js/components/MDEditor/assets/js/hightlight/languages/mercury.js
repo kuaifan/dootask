@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var KEYWORDS = {
     keyword:
       'module use_module import_module include_module end_module initialise ' +

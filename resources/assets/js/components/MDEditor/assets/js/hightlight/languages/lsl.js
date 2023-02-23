@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
 
     var LSL_STRING_ESCAPE_CHARS = {
         className: 'subst',

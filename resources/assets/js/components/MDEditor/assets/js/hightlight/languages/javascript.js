@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var IDENT_RE = '[A-Za-z$_][0-9A-Za-z$_]*';
   var KEYWORDS = {
     keyword:

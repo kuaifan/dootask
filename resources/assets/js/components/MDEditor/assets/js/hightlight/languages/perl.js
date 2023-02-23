@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var PERL_KEYWORDS = 'getpwent getservent quotemeta msgrcv scalar kill dbmclose undef lc ' +
     'ma syswrite tr send umask sysopen shmwrite vec qx utime local oct semctl localtime ' +
     'readpipe do return format read sprintf dbmopen pop getpgrp not getpwnam rewinddir qq' +

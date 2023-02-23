@@ -1,4 +1,4 @@
-module.exports = function cos (hljs) {
+export default function cos (hljs) {
 
   var STRINGS = {
     className: 'string',
