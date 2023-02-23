@@ -45,7 +45,8 @@
                 <Dropdown v-if="file.type=='mind'"
                           trigger="click"
                           class="header-hint"
-                          @on-click="exportMenu">
+                          @on-click="exportMenu"
+                          transfer>
                     <a href="javascript:void(0)">{{$L('导出')}}<Icon type="ios-arrow-down"></Icon></a>
                     <DropdownMenu slot="list">
                         <DropdownItem name="png">{{$L('导出PNG图片')}}</DropdownItem>

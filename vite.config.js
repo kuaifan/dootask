@@ -1,3 +1,4 @@
+import {resolve} from "path";
 import {defineConfig} from 'vite'
 import {createVuePlugin} from 'vite-plugin-vue2';
 import vitePluginRequire from 'vite-plugin-require'
@@ -19,6 +20,13 @@ export default defineConfig(({command, mode}) => {
             port: serverPort,
         },
         resolve: {
+            alias: {
+                '~element-ui': resolve(__dirname, './node_modules/element-ui'),
+                '~quill': resolve(__dirname, './node_modules/quill'),
+                '~quill-mention-hi': resolve(__dirname, './node_modules/quill-mention-hi'),
+                '../images': resolve(__dirname, command === 'serve' ? '/images' : './resources/assets/statics/public/images'),
+                '../css': resolve(__dirname, command === 'serve' ? '/css' : './resources/assets/statics/public/css')
+            },
             extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
         },
         define: {
@@ -36,7 +44,7 @@ export default defineConfig(({command, mode}) => {
         plugins: [
             createVuePlugin(),
             vitePluginRequire(),
-            vitePluginFileCopy([{src: 'resources/assets/statics/public', dest: publicPath}]),   // 拷贝 public
+            vitePluginFileCopy([{src: 'resources/assets/statics/public', dest: publicPath}]),
         ]
     };
 });

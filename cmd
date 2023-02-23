@@ -104,11 +104,11 @@ run_compile() {
     #
     if [ "$type" = "prod" ]; then
         rm -rf "./public/js/build"
-        npx mix --production
+        npx vite build
         mix_manifest "public"
         echo "$(rand_string 16)" > ./public/js/hash
     else
-        npx mix watch --hot
+        npx vite
     fi
 }
 
@@ -134,7 +134,7 @@ run_electron() {
     cp ./electron/index.html ./electron/public/index.html
     #
     if [ "$argv" != "dev" ] && [ "$argv" != "--nobuild" ]; then
-        npx mix --production -- --env --electron
+        npx vite build -- --env --electron
         mix_manifest "electron/public"
     fi
     if [ "$argv" == "dev" ]; then
