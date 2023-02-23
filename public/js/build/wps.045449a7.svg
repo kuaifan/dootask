@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 25.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 1024 1024" style="enable-background:new 0 0 1024 1024;" xml:space="preserve">
+<style type="text/css">
+	.st0{clip-path:url(#SVGID_2_);}
+	.st1{clip-path:url(#SVGID_4_);}
+	.st2{fill:#CC353A;}
+	.st3{opacity:0.4;}
+	.st4{clip-path:url(#SVGID_6_);}
+	.st5{fill:#FFFFFF;}
+</style>
+<g>
+	<defs>
+		<rect id="SVGID_1_" x="96" y="96" width="832" height="832"/>
+	</defs>
+	<clipPath id="SVGID_2_">
+		<use xlink:href="#SVGID_1_"  style="overflow:visible;"/>
+	</clipPath>
+	<g id="组_335" class="st0">
+		<g id="组_334" transform="translate(8 2)">
+			<g>
+				<defs>
+					<rect id="SVGID_3_" x="192" y="120" width="624" height="780"/>
+				</defs>
+				<clipPath id="SVGID_4_">
+					<use xlink:href="#SVGID_3_"  style="overflow:visible;"/>
+				</clipPath>
+				<g id="组_333" class="st1">
+					<g id="路径_177">
+						<path class="st2" d="M270,120c-43,0.1-77.9,35-78,78v624c0.1,43,35,77.9,78,78h468c43-0.1,77.9-35,78-78V352.1L584,120H270z"
+							/>
+					</g>
+					<g id="组_332" transform="translate(30.15)" class="st3">
+						<g id="组_331">
+							<g>
+								<defs>
+									<rect id="SVGID_5_" x="553.8" y="120" width="232.1" height="232.1"/>
+								</defs>
+								<clipPath id="SVGID_6_">
+									<use xlink:href="#SVGID_5_"  style="overflow:visible;"/>
+								</clipPath>
+								<g id="组_330" class="st4">
+									<g id="路径_178">
+										<path class="st5" d="M631.8,352.1h154L553.8,120v154.1C553.9,317.1,588.8,351.9,631.8,352.1"/>
+									</g>
+								</g>
+							</g>
+						</g>
+					</g>
+					<g id="路径_179">
+						<path class="st5" d="M490,729.5c-1.2,0-2.5-0.3-3.7-0.9c-4-2-5.6-6.9-3.6-10.9l92.6-183.2h-79.3L399.8,725
+							c-2,4-6.9,5.6-10.9,3.6c-4-2-5.6-6.9-3.6-10.9l98.6-195c1.4-2.7,4.2-4.5,7.2-4.5h97.5c2.8,0,5.4,1.5,6.9,3.9
+							c1.5,2.4,1.6,5.4,0.3,7.9l-98.6,195C495.9,727.9,493,729.5,490,729.5z"/>
+					</g>
+					<g id="路径_180">
+						<path class="st5" d="M392.5,729.5c-3,0-5.8-1.6-7.3-4.5l-98.5-195c-1.3-2.5-1.1-5.5,0.3-7.9c1.5-2.4,4.1-3.9,6.9-3.9h97.5
+							c3.1,0,5.9,1.7,7.2,4.5l33.4,66c2,4,0.4,8.9-3.6,10.9c-4,2-8.9,0.4-10.9-3.6l-31.1-61.6h-79.3l92.5,183.2
+							c2,4,0.4,8.9-3.6,10.9C395,729.2,393.7,729.5,392.5,729.5z"/>
+					</g>
+					<g id="直线_95">
+						<path class="st5" d="M490,729.5c-3,0-5.8-1.6-7.3-4.5l-32.4-64.1c-2-4-0.4-8.9,3.6-10.9c4-2,8.9-0.4,10.9,3.6l32.4,64.1
+							c2,4,0.4,8.9-3.6,10.9C492.5,729.2,491.2,729.5,490,729.5z"/>
+					</g>
+				</g>
+			</g>
+		</g>
+	</g>
+</g>
+</svg>

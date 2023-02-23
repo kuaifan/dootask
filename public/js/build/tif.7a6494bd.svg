@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 25.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 1024 1024" style="enable-background:new 0 0 1024 1024;" xml:space="preserve">
+<style type="text/css">
+	.st0{clip-path:url(#SVGID_1_);}
+	.st1{clip-path:url(#SVGID_2_);}
+	.st2{fill:#615ECC;}
+	.st3{opacity:0.4;}
+	.st4{clip-path:url(#SVGID_3_);}
+	.st5{fill:#FFFFFF;}
+	.st6{enable-background:new    ;}
+</style>
+<g>
+	<g>
+		<g>
+			<defs>
+				<rect id="SVGID_7_" x="96" y="96" width="832" height="832"/>
+			</defs>
+			<clipPath id="SVGID_1_">
+				<use xlink:href="#SVGID_7_"  style="overflow:visible;"/>
+			</clipPath>
+			<g id="组_320" class="st0">
+				<g id="组_322" transform="translate(8 2)">
+					<g id="组_317">
+						<g>
+							<g>
+								<g>
+									<defs>
+										<rect id="SVGID_9_" x="192" y="120" width="624" height="780"/>
+									</defs>
+									<clipPath id="SVGID_2_">
+										<use xlink:href="#SVGID_9_"  style="overflow:visible;"/>
+									</clipPath>
+									<g id="组_316" class="st1">
+										<g id="路径_170">
+											<path class="st2" d="M270,120c-43,0.1-77.9,35-78,78v624c0.1,43,35,77.9,78,78h468c43-0.1,77.9-35,78-78V352.1L584,120
+												H270z"/>
+										</g>
+										<g id="组_315" transform="translate(30.15)" class="st3">
+											<g id="组_314">
+												<g>
+													<g>
+														<g>
+															<defs>
+																<rect id="SVGID_11_" x="553.8" y="120" width="232.1" height="232.1"/>
+															</defs>
+															<clipPath id="SVGID_3_">
+																<use xlink:href="#SVGID_11_"  style="overflow:visible;"/>
+															</clipPath>
+															<g id="组_313" class="st4">
+																<g id="路径_171">
+																	<path class="st5" d="M631.8,352.1h154L553.8,120v154.1C553.9,317.1,588.8,351.9,631.8,352.1"/>
+																</g>
+															</g>
+														</g>
+													</g>
+												</g>
+											</g>
+										</g>
+									</g>
+								</g>
+							</g>
+						</g>
+					</g>
+					<g class="st6">
+						<path class="st5" d="M325.3,706.4V605.9h-35.9v-20.5h96.1v20.5h-35.8v100.5H325.3z"/>
+						<path class="st5" d="M400.6,706.4v-121H425v121H400.6z"/>
+						<path class="st5" d="M448.5,706.4v-121h82.9v20.5h-58.5v28.6h50.5V655h-50.5v51.4H448.5z"/>
+						<path class="st5" d="M551.7,706.4v-121h82.9v20.5h-58.5v28.6h50.5V655h-50.5v51.4H551.7z"/>
+					</g>
+				</g>
+			</g>
+		</g>
+	</g>
+</g>
+</svg>

@@ -54,12 +54,12 @@ class IndexController extends InvokeController
     {
         $scripts = [];
         if (config('app.debug')) {
-            $port = env("APP_DEV_PORT");
-            $scripts[] = "<script type=\"module\" src=\"http://localhost:{$port}/resources/assets/js/app.js\"></script>";
+            $src = preg_replace("/^(\/\/(.*?))(:\d+)?\//i", "$1:" . env("APP_DEV_PORT") . "/", asset_main("resources/assets/js/app.js"));
+            $scripts[] = "<script type=\"module\" src=\"{$src}\"></script>";
         } else {
-            $manifest = Base::json2array(file_get_contents(public_path('manifest.json')));
-            $scripts[] = "<link rel=\"stylesheet\" href=\"" . asset_main($manifest['resources/assets/js/app.js']['css'][0]) . "\"/>";
-            $scripts[] = "<script type=\"module\" src=\"" . asset_main($manifest['resources/assets/js/app.js']['file']) . "\"></script>";
+            $array = Base::json2array(file_get_contents(public_path('manifest.json')));
+            $scripts[] = "<link rel=\"stylesheet\" href=\"" . asset_main($array['resources/assets/js/app.js']['css'][0]) . "\"/>";
+            $scripts[] = "<script type=\"module\" src=\"" . asset_main($array['resources/assets/js/app.js']['file']) . "\"></script>";
         }
         return response()->view('main', [
             'version' => Base::getVersion(),

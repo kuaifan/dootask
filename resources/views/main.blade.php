@@ -11,9 +11,9 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'WebPage') }}</title>
     <link rel="shortcut icon" href="{{ asset_main('favicon.ico') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset_main('css/iview.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset_main('css/loading.css') }}">
-    <script src="{{ asset_main('js/scroll-into-view.min.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ asset_main('css/iview.css') }}?v={{ $version }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset_main('css/loading.css') }}?v={{ $version }}">
+    <script src="{{ asset_main('js/scroll-into-view.min.js') }}?v={{ $version }}"></script>
     <script>
         window.csrfToken = { csrfToken : "{{ csrf_token() }}" };
         window.systemInfo = { title: "{{config('app.name', 'WebPage')}}", debug: "{{config('app.debug') ? 'yes' : 'no'}}", version : "{{ $version }}", origin: window.location.origin + "/", homeUrl: null, apiUrl: null };

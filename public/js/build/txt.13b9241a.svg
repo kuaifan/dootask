@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 25.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 1024 1024" style="enable-background:new 0 0 1024 1024;" xml:space="preserve">
+<style type="text/css">
+	.st0{clip-path:url(#SVGID_2_);}
+	.st1{clip-path:url(#SVGID_4_);}
+	.st2{opacity:0.375;}
+	.st3{clip-path:url(#SVGID_6_);}
+	.st4{fill:#E5E5E5;}
+	.st5{opacity:0.4;}
+	.st6{clip-path:url(#SVGID_8_);}
+	.st7{fill:#FFFFFF;}
+	.st8{enable-background:new    ;}
+</style>
+<g>
+	<defs>
+		<rect id="SVGID_1_" x="96" y="96" width="832" height="832"/>
+	</defs>
+	<clipPath id="SVGID_2_">
+		<use xlink:href="#SVGID_1_"  style="overflow:visible;"/>
+	</clipPath>
+	<g id="组_357" class="st0">
+		<g id="组_359" transform="translate(8 2)">
+			<g id="组_354">
+				<g>
+					<defs>
+						<rect id="SVGID_3_" x="192" y="120" width="624" height="780"/>
+					</defs>
+					<clipPath id="SVGID_4_">
+						<use xlink:href="#SVGID_3_"  style="overflow:visible;"/>
+					</clipPath>
+					<g id="组_353" class="st1">
+						<g id="组_349" class="st2">
+							<g id="组_348">
+								<g>
+									<defs>
+										<rect id="SVGID_5_" x="192" y="120" width="624" height="780"/>
+									</defs>
+									<clipPath id="SVGID_6_">
+										<use xlink:href="#SVGID_5_"  style="overflow:visible;"/>
+									</clipPath>
+									<g id="组_347" class="st3">
+										<g id="路径_187">
+											<path class="st4" d="M270,120c-43,0.1-77.9,35-78,78v624c0.1,43,35,77.9,78,78h468c43-0.1,77.9-35,78-78V352.1L584,120
+												H270z"/>
+										</g>
+									</g>
+								</g>
+							</g>
+						</g>
+						<g id="组_352" transform="translate(30.15)" class="st5">
+							<g id="组_351">
+								<g>
+									<defs>
+										<rect id="SVGID_7_" x="553.8" y="120" width="232.1" height="232.1"/>
+									</defs>
+									<clipPath id="SVGID_8_">
+										<use xlink:href="#SVGID_7_"  style="overflow:visible;"/>
+									</clipPath>
+									<g id="组_350" class="st6">
+										<g id="路径_188">
+											<path class="st7" d="M631.8,352.1h154L553.8,120v154.1C553.9,317.1,588.8,351.9,631.8,352.1"/>
+										</g>
+									</g>
+								</g>
+							</g>
+						</g>
+					</g>
+				</g>
+			</g>
+			<g class="st8">
+				<path class="st7" d="M345.4,698.9V598.4h-35.9V578h96.1v20.5h-35.8v100.5H345.4z"/>
+				<path class="st7" d="M409.1,698.9l41.3-63.1L413,578h28.6l24.3,38.9l23.8-38.9h28.3l-37.6,58.8l41.3,62.2h-29.5l-26.8-41.8
+					l-26.9,41.8H409.1z"/>
+				<path class="st7" d="M561.4,698.9V598.4h-35.9V578h96.1v20.5h-35.8v100.5H561.4z"/>
+			</g>
+		</g>
+	</g>
+</g>
+</svg>

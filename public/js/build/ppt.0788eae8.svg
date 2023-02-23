@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 25.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 1024 1024" style="enable-background:new 0 0 1024 1024;" xml:space="preserve">
+<style type="text/css">
+	.st0{clip-path:url(#SVGID_1_);}
+	.st1{clip-path:url(#SVGID_2_);}
+	.st2{fill:#CC7356;}
+	.st3{opacity:0.4;}
+	.st4{clip-path:url(#SVGID_3_);}
+	.st5{fill:#FFFFFF;}
+</style>
+<g>
+	<g>
+		<defs>
+			<rect id="SVGID_7_" x="96" y="96" width="832" height="832"/>
+		</defs>
+		<clipPath id="SVGID_1_">
+			<use xlink:href="#SVGID_7_"  style="overflow:visible;"/>
+		</clipPath>
+		<g id="组_286" class="st0">
+			<g id="组_285" transform="translate(8 2)">
+				<g>
+					<g>
+						<defs>
+							<rect id="SVGID_9_" x="192" y="120" width="624" height="780"/>
+						</defs>
+						<clipPath id="SVGID_2_">
+							<use xlink:href="#SVGID_9_"  style="overflow:visible;"/>
+						</clipPath>
+						<g id="组_284" class="st1">
+							<path id="路径_152" class="st2" d="M270,120c-43,0.1-77.9,35-78,78v624c0.1,43,35,77.9,78,78h468c43-0.1,77.9-35,78-78
+								V352.1L584,120H270z"/>
+							<g id="组_283" transform="translate(30.15)" class="st3">
+								<g id="组_282">
+									<g>
+										<g>
+											<defs>
+												<rect id="SVGID_11_" x="553.8" y="120" width="232.1" height="232.1"/>
+											</defs>
+											<clipPath id="SVGID_3_">
+												<use xlink:href="#SVGID_11_"  style="overflow:visible;"/>
+											</clipPath>
+											<g id="组_281" class="st4">
+												<path id="路径_153" class="st5" d="M631.8,352.1h154L553.8,120v154.1C553.9,317.1,588.8,351.9,631.8,352.1"/>
+											</g>
+										</g>
+									</g>
+								</g>
+							</g>
+							<path id="路径_154" class="st5" d="M510.2,555.6c-3.4-8.4-8.9-15.7-16-21.3c-7.2-5.4-15.6-8.9-24.5-10.4
+								c-9.7-1.6-19.4-2.3-29.2-2.1h-74V737h30.8v-85.1h45.4c27.4,0,46.8-6.6,57.5-19.6c10.8-13.3,16.5-30,16-47.1
+								C516.3,575,514.2,564.9,510.2,555.6 M484.6,586.1c0.6,9.6-2.8,19-9.3,26c-9.2,7-20.7,10.3-32.3,9.1h-45.8v-68.9h45.2
+								c7.5-0.3,15,0.2,22.4,1.7c5.9,1.8,11,5.8,14.2,11.2C482.9,571.5,484.8,578.7,484.6,586.1"/>
+						</g>
+					</g>
+				</g>
+			</g>
+		</g>
+	</g>
+</g>
+</svg>

@@ -84,15 +84,6 @@ docker_name() {
     echo `$COMPOSE ps | awk '{print $1}' | grep "\-$1\-"`
 }
 
-mix_manifest() {
-    local file=$1
-    if [[ `uname` == 'Linux' ]]; then
-        sed -i '/\"\/uploads/d' ${cur_path}/$file/mix-manifest.json
-    else
-        docker run -it --rm -v ${cur_path}/$file:/public alpine sh -c "sed -i '/\"\/uploads/d' /public/mix-manifest.json"
-    fi
-}
-
 run_compile() {
     local type=$1
     check_node
@@ -100,6 +91,7 @@ run_compile() {
         npm install
     fi
     if [ "$type" = "dev" ]; then
+        echo "<script>window.location.href=window.location.href.replace(/:\d+/, ':' + $(env_get APP_PORT))</script>" > ./index.html
         env_set APP_DEV_PORT $(rand 20001 30000)
     fi
     run_exec php "php bin/run --mode=$type"
@@ -108,8 +100,6 @@ run_compile() {
     if [ "$type" = "prod" ]; then
         rm -rf "./public/js/build"
         npx vite build
-        mix_manifest "public"
-        echo "$(rand_string 16)" > ./public/js/hash
     else
         npx vite
     fi
@@ -138,7 +128,6 @@ run_electron() {
     #
     if [ "$argv" != "dev" ] && [ "$argv" != "--nobuild" ]; then
         npx vite build -- --env --electron
-        mix_manifest "electron/public"
     fi
     if [ "$argv" == "dev" ]; then
         run_exec php "php bin/run --mode=$argv"
@@ -373,10 +362,10 @@ if [ $# -gt 0 ]; then
     elif [[ "$1" == "repassword" ]]; then
         shift 1
         run_exec mariadb "sh /etc/mysql/repassword.sh \"$@\""
-    elif [[ "$1" == "dev" ]] || [[ "$1" == "development" ]]; then
+    elif [[ "$1" == "serve" ]] || [[ "$1" == "dev" ]] || [[ "$1" == "development" ]]; then
         shift 1
         run_compile dev
-    elif [[ "$1" == "prod" ]] || [[ "$1" == "production" ]]; then
+    elif [[ "$1" == "build" ]] || [[ "$1" == "prod" ]] || [[ "$1" == "production" ]]; then
         shift 1
         run_compile prod
     elif [[ "$1" == "appbuild" ]] || [[ "$1" == "buildapp" ]]; then

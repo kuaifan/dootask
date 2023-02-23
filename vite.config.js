@@ -39,7 +39,6 @@ export default defineConfig(({command, mode}) => {
             outDir: publicPath,
             assetsDir: "js/build",
             emptyOutDir: false,
-            copyPublicDir: false,
             rollupOptions: {
                 input: 'resources/assets/js/app.js',
             },
