@@ -79,6 +79,10 @@ class LdapUser extends Model
         }
         //
         $setting = Base::setting('thirdAccessSetting');
+        if ($setting['ldap_open'] !== 'open') {
+            return self::$init = false;
+        }
+        //
         $connection = Container::getDefaultConnection();
         try {
             $connection->setConfiguration([
