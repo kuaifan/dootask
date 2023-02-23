@@ -52,19 +52,19 @@ class IndexController extends InvokeController
      */
     public function main()
     {
-        $hash = 'no';
-        $path = public_path('js/hash');
-        $murl = url('manifest.txt');
-        if (file_exists($path)) {
-            $hash = trim(file_get_contents(public_path('js/hash')));
-            if (strlen($hash) > 16) {
-                $hash = 'long';
-            }
+        $scripts = [];
+        if (config('app.debug')) {
+            $port = env("APP_DEV_PORT");
+            $scripts[] = "<script type=\"module\" src=\"http://localhost:{$port}/resources/assets/js/app.js\"></script>";
+        } else {
+            $manifest = Base::json2array(file_get_contents(public_path('manifest.json')));
+            $scripts[] = "<link rel=\"stylesheet\" href=\"" . asset_main($manifest['resources/assets/js/app.js']['css'][0]) . "\"/>";
+            $scripts[] = "<script type=\"module\" src=\"" . asset_main($manifest['resources/assets/js/app.js']['file']) . "\"></script>";
         }
         return response()->view('main', [
             'version' => Base::getVersion(),
-            'hash' => $hash
-        ])->header('Link', "<{$murl}>; rel=\"prefetch\"");
+            'script' => implode("\n", $scripts),
+        ])->header('Link', "<" . url('manifest.txt') . ">; rel=\"prefetch\"");
     }
 
     /**

@@ -99,6 +99,9 @@ run_compile() {
     if [ ! -d "./node_modules" ]; then
         npm install
     fi
+    if [ "$type" = "dev" ]; then
+        env_set APP_DEV_PORT $(rand 20001 30000)
+    fi
     run_exec php "php bin/run --mode=$type"
     supervisorctl_restart php
     #

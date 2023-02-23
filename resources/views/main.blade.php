@@ -37,19 +37,7 @@
     </div>
 </div>
 
-@php
-    if (config('app.debug')) {
-        echo ' <script type="module" src="http://127.0.0.1:22222/resources/assets/js/app.js"></script> ';
-    }else{
-       $manifest = json_decode(file_get_contents(public_path('manifest.json')), true);
-       $css = $manifest['resources/assets/js/app.js']['css'][0];
-       $css2 = $manifest['resources/assets/js/pages/manage/calendar.vue']['css'][0];
-       $js = $manifest['resources/assets/js/app.js']['file'];
-       echo ' <link rel="stylesheet" href="/' . $css . '" /> ';
-       echo ' <link rel="stylesheet" href="/' . $css2 . '" /> ';
-       echo ' <script type="module" src="/'.$js.'"></script> ';
-    }
-@endphp
+{!! $script !!}
 
 </body>
 </html>
