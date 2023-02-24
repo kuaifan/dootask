@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.23.71]
+
+### Bug Fixes
+
+- Ldap一处报错
+
 ## [0.23.62]
 
 ### Bug Fixes
