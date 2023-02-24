@@ -299,10 +299,15 @@ try {
                 print_r("[$type] $file saved\n");
             }
         } elseif ($type === 'web') {
+            if (!is_dir("../resources/assets/statics/public/js/language")) {
+                mkdir("../resources/assets/statics/public/js/language", 0777, true);
+            }
             if (!is_dir("../public/js/language")) {
                 mkdir("../public/js/language", 0777, true);
             }
             foreach ($results as $key => $item) {
+                $file = "../resources/assets/statics/public/js/language/$key.js";
+                file_put_contents($file, "if(typeof window.LANGUAGE_DATA===\"undefined\")window.LANGUAGE_DATA={};window.LANGUAGE_DATA[\"{$key}\"]=" . json_encode($item, JSON_UNESCAPED_UNICODE));
                 $file = "../public/js/language/$key.js";
                 file_put_contents($file, "if(typeof window.LANGUAGE_DATA===\"undefined\")window.LANGUAGE_DATA={};window.LANGUAGE_DATA[\"{$key}\"]=" . json_encode($item, JSON_UNESCAPED_UNICODE));
                 print_r("[$type] $file saved\n");

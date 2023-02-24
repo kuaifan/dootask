@@ -432,6 +432,9 @@ if [ $# -gt 0 ]; then
         shift 1
         run_exec php "php app/Models/clearHelper.php"
         run_exec php "php artisan ide-helper:models -W"
+    elif [[ "$1" == "translate" ]]; then
+        shift 1
+        run_exec php "cd /var/www/language && php translate.php"
     elif [[ "$1" == "test" ]]; then
         shift 1
         e="./vendor/bin/phpunit $@" && run_exec php "$e"

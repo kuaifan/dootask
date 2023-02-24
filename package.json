@@ -5,7 +5,8 @@
     "scripts": {
         "start": "./cmd dev",
         "build": "./cmd prod",
-        "version": "node ./version.js"
+        "version": "node ./version.js",
+        "translate": "./cmd translate"
     },
     "author": {
         "name": "KuaiFan",

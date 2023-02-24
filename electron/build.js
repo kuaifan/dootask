@@ -52,10 +52,9 @@ function changeLog() {
     }
     let start = content.indexOf(array[0]);
     if (array.length > 5) {
-        let length = content.indexOf(array[5]) - start;
-        content = content.substr(start, length)
+        content = content.substring(start, content.indexOf(array[5]))
     } else {
-        content = content.substr(start)
+        content = content.substring(start)
     }
     return content;
 }
@@ -120,8 +119,6 @@ function startBuild(data, publish, release) {
         // drawio
         cloneDrawio(systemInfo)
     }
-    // language
-    fse.copySync(path.resolve(__dirname, "../public/js/language"), path.resolve(electronDir, "js/language"))
     // config.js
     fs.writeFileSync(electronDir + "/config.js", "window.systemInfo = " + JSON.stringify(systemInfo), 'utf8');
     fs.writeFileSync(nativeCachePath, utils.formatUrl(data.url));
@@ -129,10 +126,19 @@ function startBuild(data, publish, release) {
     // default (解决 Failed to load resource: net::ERR_FILE_NOT_FOUND 报错)
     fs.writeFileSync(electronDir + "/default", "default", 'utf8');
     // index.html
+    let manifestFile = path.resolve(electronDir, "manifest.json");
+    if (!fs.existsSync(manifestFile)) {
+        console.log("manifest non-existent!");
+        process.exit()
+    }
+    let manifestContent = JSON.parse(fs.readFileSync(manifestFile, 'utf8'));
     let indexFile = path.resolve(electronDir, "index.html");
     let indexString = fs.readFileSync(indexFile, 'utf8');
     indexString = indexString.replace(/<title>(.*?)<\/title>/g, `<title>${data.name}</title>`);
+    indexString = indexString.replace("<!--style-->", `<link rel="stylesheet" type="text/css" href="./${manifestContent['resources/assets/js/app.js']['css'][0]}">`);
+    indexString = indexString.replace("<!--script-->", `<script type="module" src="./${manifestContent['resources/assets/js/app.js']['file']}"></script>`);
     fs.writeFileSync(indexFile, indexString, 'utf8');
+    //
     if (data.id === 'app') {
         const publicDir = path.resolve(__dirname, "../resources/mobile/src/public");
         fse.removeSync(publicDir)
@@ -152,7 +158,7 @@ function startBuild(data, publish, release) {
     econfig.name = data.name;
     econfig.version = config.version;
     econfig.build.appId = data.id;
-    econfig.build.directories.output = `dist/${data.id}/${data.platform}`;
+    econfig.build.directories.output = `dist/${data.id.replace(/\./g, '-')}/${data.platform}`;
     econfig.build.artifactName = appName + "-v${version}-${os}-${arch}.${ext}";
     econfig.build.nsis.artifactName = appName + "-v${version}-${os}-${arch}.${ext}";
     if (!process.env.APPLEID || !process.env.APPLEIDPASS || publish !== true) {
@@ -187,7 +193,7 @@ function startBuild(data, publish, release) {
 if (["dev"].includes(argv[2])) {
     // 开发模式
     fs.writeFileSync(devloadCachePath, utils.formatUrl("127.0.0.1:" + env.parsed.APP_PORT), 'utf8');
-    child_process.spawn("npx", ["mix", "watch", "--hot", "--", "--env", "--electron"], {stdio: "inherit"});
+    child_process.spawn("npx", ["vite", "--", "fromcmd", "electron"], {stdio: "inherit"});
     child_process.spawn("npm", ["run", "start-quiet"], {stdio: "inherit", cwd: "electron"});
 } else if (["app"].includes(argv[2])) {
     // 编译给app

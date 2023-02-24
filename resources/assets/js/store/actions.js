@@ -2558,7 +2558,7 @@ export default {
                 const resData = result.data;
                 if ($A.isJson(resData.dialog)) {
                     const dialogData = Object.assign(resData.dialog, {user_ms: $A.TimeM(resData.dialog.user_at)})
-                    setTimeout(_ => dispatch("saveDialog", dialogData), 100)    // 延迟更新对话详情是因为等消息处理完
+                    setTimeout(_ => dispatch("saveDialog", dialogData), 300)    // 延迟更新对话详情是因为等消息处理完
                     //
                     const ids = resData.list.map(({id}) => id)
                     state.dialogMsgs = state.dialogMsgs.filter(item => {

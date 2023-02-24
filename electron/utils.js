@@ -1,7 +1,7 @@
 const fs = require("fs");
 const {shell, dialog, session} = require("electron");
 
-export default {
+module.exports = {
     /**
      * 是否数组
      * @param obj

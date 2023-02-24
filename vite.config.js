@@ -21,7 +21,7 @@ export default defineConfig(({command, mode}) => {
     const port = parseInt(env['APP_DEV_PORT'])
 
     return {
-        base: '/',
+        base: isElectron ? './' : '/',
         publicDir: publicPath,
         server: {
             host,
