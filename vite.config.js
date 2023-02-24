@@ -1,12 +1,19 @@
 import {resolve} from "path";
+import {spawnSync} from "child_process";
 import {defineConfig, loadEnv} from 'vite'
 import {createVuePlugin} from 'vite-plugin-vue2';
 import vitePluginRequire from 'vite-plugin-require'
 import vitePluginFileCopy from 'vite-plugin-file-copy';
 
 const argv = process.argv;
-const isElectron = argv.includes('--electron');
+const isCmd = argv.includes('fromcmd');
+const isElectron = argv.includes('electron');
 const publicPath = isElectron ? 'electron/public' : 'public';
+
+if (!isCmd) {
+    spawnSync("npx", [resolve(__dirname, 'cmd'), argv.includes("build") ? "build" : "dev"], {stdio: "inherit"});
+    process.exit()
+}
 
 export default defineConfig(({command, mode}) => {
     const env = loadEnv(mode, process.cwd(), '')

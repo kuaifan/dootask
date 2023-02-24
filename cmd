@@ -41,10 +41,15 @@ rand_string() {
     fi
 }
 
-supervisorctl_restart() {
-    local RES=`run_exec php "supervisorctl update $1"`
+restart_php() {
+    local RES=`run_exec php "supervisorctl update php"`
     if [ -z "$RES" ]; then
-        run_exec php "supervisorctl restart $1"
+        RES=`run_exec php "supervisorctl restart php"`
+    fi
+    local IN=`echo $RES | grep "ERROR"`
+    if [[ "$IN" != "" ]]; then
+        $COMPOSE stop php
+        $COMPOSE start php
     else
         echo -e "$RES"
     fi
@@ -95,13 +100,13 @@ run_compile() {
         env_set APP_DEV_PORT $(rand 20001 30000)
     fi
     run_exec php "php bin/run --mode=$type"
-    supervisorctl_restart php
+    restart_php
     #
     if [ "$type" = "prod" ]; then
         rm -rf "./public/js/build"
-        npx vite build
+        npx vite build -- fromcmd
     else
-        npx vite
+        npx vite -- fromcmd
     fi
 }
 
@@ -120,18 +125,17 @@ run_electron() {
     if [ -d "./electron/dist" ]; then
         rm -rf "./electron/dist"
     fi
-    if [ -d "./electron/public" ] && [ "$argv" != "--nobuild" ]; then
+    if [ -d "./electron/public" ]; then
         rm -rf "./electron/public"
     fi
-    mkdir -p ./electron/public
-    cp ./electron/index.html ./electron/public/index.html
     #
-    if [ "$argv" != "dev" ] && [ "$argv" != "--nobuild" ]; then
-        npx vite build -- --env --electron
-    fi
     if [ "$argv" == "dev" ]; then
         run_exec php "php bin/run --mode=$argv"
-        supervisorctl_restart php
+        restart_php
+    else
+        mkdir -p ./electron/public
+        cp ./electron/index.html ./electron/public/index.html
+        npx vite build -- fromcmd electron
     fi
     node ./electron/build.js $argv
 }
@@ -304,7 +308,7 @@ if [ $# -gt 0 ]; then
         # 设置初始化密码
         res=`run_exec mariadb "sh /etc/mysql/repassword.sh"`
         $COMPOSE up -d
-        supervisorctl_restart php
+        restart_php
         echo -e "${OK} ${GreenBG} 安装完成 ${Font}"
         echo -e "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
         echo -e "$res"
@@ -316,7 +320,7 @@ if [ $# -gt 0 ]; then
         git pull
         run_exec php "composer update"
         run_exec php "php artisan migrate"
-        supervisorctl_restart php
+        restart_php
         $COMPOSE up -d
     elif [[ "$1" == "uninstall" ]]; then
         shift 1
@@ -350,14 +354,14 @@ if [ $# -gt 0 ]; then
     elif [[ "$1" == "url" ]]; then
         shift 1
         env_set APP_URL "$1"
-        supervisorctl_restart php
+        restart_php
         echo -e "${OK} ${GreenBG} 修改成功 ${Font}"
     elif [[ "$1" == "env" ]]; then
         shift 1
         if [ -n "$1" ]; then
             env_set $1 "$2"
         fi
-        supervisorctl_restart php
+        restart_php
         echo -e "${OK} ${GreenBG} 修改成功 ${Font}"
     elif [[ "$1" == "repassword" ]]; then
         shift 1
@@ -385,7 +389,7 @@ if [ $# -gt 0 ]; then
         else
             env_set APP_DEBUG "true"
         fi
-        supervisorctl_restart php
+        restart_php
     elif [[ "$1" == "https" ]]; then
         shift 1
         if [[ "$@" == "auto" ]]; then
@@ -393,7 +397,7 @@ if [ $# -gt 0 ]; then
         else
             env_set APP_SCHEME "true"
         fi
-        supervisorctl_restart php
+        restart_php
     elif [[ "$1" == "artisan" ]]; then
         shift 1
         e="php artisan $@" && run_exec php "$e"

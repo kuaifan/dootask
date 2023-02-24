@@ -52,18 +52,18 @@ class IndexController extends InvokeController
      */
     public function main()
     {
-        $scripts = [];
         if (config('app.debug')) {
-            $src = preg_replace("/^(\/\/(.*?))(:\d+)?\//i", "$1:" . env("APP_DEV_PORT") . "/", asset_main("resources/assets/js/app.js"));
-            $scripts[] = "<script type=\"module\" src=\"{$src}\"></script>";
+            $style = null;
+            $script = preg_replace("/^(\/\/(.*?))(:\d+)?\//i", "$1:" . env("APP_DEV_PORT") . "/", asset_main("resources/assets/js/app.js"));
         } else {
             $array = Base::json2array(file_get_contents(public_path('manifest.json')));
-            $scripts[] = "<link rel=\"stylesheet\" href=\"" . asset_main($array['resources/assets/js/app.js']['css'][0]) . "\"/>";
-            $scripts[] = "<script type=\"module\" src=\"" . asset_main($array['resources/assets/js/app.js']['file']) . "\"></script>";
+            $style = asset_main($array['resources/assets/js/app.js']['css'][0]);
+            $script = asset_main($array['resources/assets/js/app.js']['file']);
         }
         return response()->view('main', [
             'version' => Base::getVersion(),
-            'script' => implode("\n", $scripts),
+            'style' => $style,
+            'script' => $script,
         ])->header('Link', "<" . url('manifest.txt') . ">; rel=\"prefetch\"");
     }
 
