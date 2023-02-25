@@ -119,6 +119,7 @@ class WebSocketDialogMsgTask extends AbstractTask
                 ];
             } else {
                 $mention = array_intersect([0, $userid], $mentions) ? 1 : 0;
+                $silence = $mention ? false : $silence;
                 WebSocketDialogMsgRead::createInstance([
                     'dialog_id' => $msg->dialog_id,
                     'msg_id' => $msg->id,
