@@ -50,6 +50,9 @@ contextBridge.exposeInMainWorld(
         sendMessage: function (action, args) {
             ipcRenderer.send(action, args);
         },
+        sendSyncMessage: function (action, args) {
+            ipcRenderer.sendSync(action, args)
+        },
         listenOnce: function (action, callback) {
             ipcRenderer.once(action, function (event, args) {
                 callback(args);

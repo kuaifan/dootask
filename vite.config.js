@@ -7,11 +7,10 @@ import vitePluginFileCopy from 'vite-plugin-file-copy';
 import autoprefixer from 'autoprefixer';
 
 const argv = process.argv;
-const isCmd = argv.includes('fromcmd');
-const isElectron = argv.includes('electron');
-const publicPath = isElectron ? 'electron/public' : 'public';
+const basePath = argv.includes('electronBuild') ? './' : '/';
+const publicPath = argv.includes('electronBuild') ? 'electron/public' : 'public';
 
-if (!isCmd) {
+if (!argv.includes('fromcmd')) {
     spawnSync("npx", [resolve(__dirname, 'cmd'), argv.includes("build") ? "build" : "dev"], {stdio: "inherit"});
     process.exit()
 }
@@ -22,7 +21,7 @@ export default defineConfig(({command, mode}) => {
     const port = parseInt(env['APP_DEV_PORT'])
 
     return {
-        base: isElectron ? './' : '/',
+        base: basePath,
         publicDir: publicPath,
         server: {
             host,
@@ -38,9 +37,6 @@ export default defineConfig(({command, mode}) => {
                 '../css': resolve(__dirname, command === 'serve' ? '/css' : 'resources/assets/statics/public/css')
             },
             extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
-        },
-        define: {
-            'process.env.NODE_ENV': command === 'serve' ? '"development"' : '"production"',
         },
         build: {
             manifest: true,
