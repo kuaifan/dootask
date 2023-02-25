@@ -1299,12 +1299,13 @@ export default {
                             this.msgRecord = {};
                             this.msgFile = [];
                             this.msgText = "";
-                            if (this.dialogId > 0) {
-                                // 如果当前打开着对话窗口则关闭任务窗口
-                                this.$store.dispatch("openTask", 0);
-                            }
-                            this.$store.dispatch('openDialog', data.dialog_id).then(_ => {
-                                this.$store.state.dialogMsgTransfer = transferData
+                            this.$nextTick(_ => {
+                                if (this.dialogId > 0) {
+                                    this.$store.dispatch("openTask", 0)    // 如果当前打开着对话窗口则关闭任务窗口
+                                }
+                                this.$store.dispatch('openDialog', data.dialog_id).then(_ => {
+                                    this.$store.state.dialogMsgTransfer = transferData
+                                })
                             })
                         } else {
                             this.sendDialogMsg(msgText);
