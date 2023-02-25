@@ -852,41 +852,44 @@ export default {
      * @param state
      * @param dispatch
      * @param getters
-     * @param callData
+     * @param requestData
      * @returns {Promise<unknown>}
      */
-    getProjects({state, dispatch, getters}, callData) {
+    getProjects({state, dispatch, getters}, requestData) {
         return new Promise(function (resolve, reject) {
             if (state.userId === 0) {
                 state.cacheProjects = [];
                 reject({msg: 'Parameter error'});
                 return;
             }
-            if ($A.isJson(callData)) {
-                typeof callData.deleted_at !== "undefined" && delete callData.deleted_at
-            } else {
-                callData = {deleted_at: state.projectDeletedAt || getters.getProjectLastAt}
+            if (!$A.isJson(requestData)) {
+                requestData = {}
+            }
+            if (typeof requestData.deleted_at === "undefined") {
+                requestData.deleted_at = state.projectDeletedAt || getters.getProjectLastAt
             }
             //
-            !callData.hideLoad && state.loadProjects++;
+            !requestData.hideLoad && state.loadProjects++;
             dispatch("call", {
                 url: 'project/lists',
-                data: callData
+                data: requestData
             }).then(({data}) => {
                 state.projectTotal = data.total_all;
                 dispatch("saveProject", data.data);
                 //
-                data.deleted_at && $A.IDBSet("projectDeletedAt", data.deleted_at).then(_ => {
-                    state.projectDeletedAt = data.deleted_at
-                    data.deleted_data.some(id => dispatch("forgetProject", id))
-                });
+                if (data.current_page === 1) {
+                    data.deleted_at && $A.IDBSet("projectDeletedAt", data.deleted_at).then(_ => {
+                        state.projectDeletedAt = data.deleted_at
+                        data.deleted_data.some(id => dispatch("forgetProject", id))
+                    });
+                }
                 //
                 resolve(data)
             }).catch(e => {
                 console.warn(e);
                 reject(e)
             }).finally(_ => {
-                !callData.hideLoad && state.loadProjects--;
+                !requestData.hideLoad && state.loadProjects--;
             });
         });
     },
@@ -2128,49 +2131,50 @@ export default {
      * @param state
      * @param dispatch
      * @param getters
-     * @param callData
+     * @param requestData
      * @returns {Promise<unknown>}
      */
-    getDialogs({state, dispatch, getters}, callData) {
+    getDialogs({state, dispatch, getters}, requestData) {
         return new Promise(function (resolve, reject) {
             if (state.userId === 0) {
                 state.cacheDialogs = [];
                 reject({msg: 'Parameter error'});
                 return;
             }
-            if ($A.isJson(callData)) {
-                typeof callData.deleted_at !== "undefined" && delete callData.deleted_at
-            } else {
-                callData = {deleted_at: state.dialogDeletedAt || getters.getDialogLastAt}
+            if (!$A.isJson(requestData)) {
+                requestData = {}
             }
-            if (typeof callData.pagesize === "undefined") {
-                callData.pagesize = 20
+            if (typeof requestData.page === "undefined") {
+                requestData.page = 1
             }
-            if (typeof callData.page === "undefined") {
-                callData.page = 1
-                if (state.cacheDialogs.length > 0) {
-                    const tmpList = state.cacheDialogs.sort((a, b) => {
-                        return $A.Date(b.user_at) - $A.Date(a.user_at);
-                    })
-                    callData.at_after = tmpList[0].user_at;
-                }
+            if (typeof requestData.pagesize === "undefined") {
+                requestData.pagesize = 20
+            }
+            if (typeof requestData.updated_at === "undefined") {
+                requestData.updated_at = state.dialogUpdatedAt
+            }
+            if (typeof requestData.deleted_at === "undefined") {
+                requestData.deleted_at = state.dialogDeletedAt || getters.getDialogLastAt
             }
             //
-            !callData.hideLoad && state.loadDialogs++;
+            !requestData.hideLoad && state.loadDialogs++;
             dispatch("call", {
                 url: 'dialog/lists',
-                data: callData,
+                data: requestData,
             }).then(({data}) => {
                 dispatch("saveDialog", data.data);
                 //
-                data.deleted_at && $A.IDBSet("dialogDeletedAt", data.deleted_at).then(_ => {
-                    state.dialogDeletedAt = data.deleted_at
-                    data.deleted_data.some(id => dispatch("forgetDialog", id))
-                });
+                if (data.current_page === 1) {
+                    data.deleted_at && $A.IDBSet("dialogDeletedAt", data.deleted_at).then(_ => {
+                        state.dialogDeletedAt = data.deleted_at
+                        data.deleted_data.some(id => dispatch("forgetDialog", id))
+                    });
+                    state.dialogUpdatedAt = $A.formatDate()
+                }
                 //
                 if (data.next_page_url && data.current_page < 5) {
-                    callData.page++
-                    dispatch("getDialogs", callData).then(resolve).catch(reject)
+                    requestData.page++
+                    dispatch("getDialogs", requestData).then(resolve).catch(reject)
                 } else {
                     resolve()
                 }
@@ -2178,7 +2182,7 @@ export default {
                 console.warn(e);
                 reject(e)
             }).finally(_ => {
-                !callData.hideLoad && state.loadDialogs--;
+                !requestData.hideLoad && state.loadDialogs--;
             });
         });
     },

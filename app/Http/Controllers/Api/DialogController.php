@@ -34,8 +34,8 @@ class DialogController extends AbstractController
      * @apiGroup dialog
      * @apiName lists
      *
-     * @apiParam {String} [at_after]        只读取在这个时间之后更新的对话
-     * @apiParam {String} [deleted_at]      读取在这个时间之后删除的对话ID，返回数据: deleted_data
+     * @apiParam {String} [updated_at]      只读取在这个时间之后更新的对话
+     * @apiParam {String} [deleted_at]      读取在这个时间之后删除的对话ID，返回数据: deleted_data（此参数仅第1页有效）
      * @apiParam {Number} [page]            当前页，默认:1
      * @apiParam {Number} [pagesize]        每页显示数量，默认:50，最大:100
      *
@@ -50,8 +50,8 @@ class DialogController extends AbstractController
         $builder = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.updated_at as user_at'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('u.userid', $user->userid);
-        if (Request::exists('at_after')) {
-            $builder->where('u.updated_at', '>', Carbon::parse(Request::input('at_after')));
+        if (Request::input('updated_at') || Request::input('at_after')) {
+            $builder->where('u.updated_at', '>', Carbon::parse(Request::input('updated_at') ?: Request::input('at_after')));
         }
         $list = $builder
             ->orderByDesc('u.top_at')
@@ -60,9 +60,9 @@ class DialogController extends AbstractController
         $list->transform(function (WebSocketDialog $item) use ($user) {
             return $item->formatData($user->userid);
         });
-        //
         $data = $list->toArray();
-        if (Request::exists('deleted_at')) {
+        //
+        if ($list->currentPage() === 1 && Request::input('deleted_at')) {
             $data['deleted_at'] = date("Y-m-d H:i:s");
             $data['deleted_data'] = WebSocketDialog::select(['web_socket_dialogs.id'])
                 ->withTrashed()

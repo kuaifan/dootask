@@ -58,7 +58,7 @@ class ProjectController extends AbstractController
      * - yes：取列表
      * @apiParam {Object} [keys]             搜索条件
      * - keys.name: 项目名称
-     * @apiParam {String} [deleted_at]       读取在这个时间之后删除的项目ID，返回数据: deleted_data
+     * @apiParam {String} [deleted_at]       读取在这个时间之后删除的项目ID，返回数据: deleted_data（此参数仅第1页有效）
      *
      * @apiParam {Number} [page]        当前页，默认:1
      * @apiParam {Number} [pagesize]    每页显示数量，默认:50，最大:100
@@ -131,7 +131,7 @@ class ProjectController extends AbstractController
         //
         $keys = Request::input('keys');
         if (is_array($keys)) {
-            $buildClone = $builder->clone();
+            $totalAll = $builder->clone()->count();
             if ($keys['name']) {
                 $builder->where("projects.name", "like", "%{$keys['name']}%");
             }
@@ -143,13 +143,9 @@ class ProjectController extends AbstractController
         });
         //
         $data = $list->toArray();
-        if (isset($buildClone)) {
-            $data['total_all'] = $buildClone->count();
-        } else {
-            $data['total_all'] = $data['total'];
-        }
+        $data['total_all'] = $totalAll ?? $data['total'];
         //
-        if (Request::exists('deleted_at')) {
+        if ($list->currentPage() === 1 && Request::input('deleted_at')) {
             $data['deleted_at'] = date("Y-m-d H:i:s");
             $data['deleted_data'] = Project::authData()
                 ->withTrashed()
