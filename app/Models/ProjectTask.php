@@ -628,7 +628,7 @@ class ProjectTask extends AbstractModel
                     if ($this->complete_at) {
                         throw new ApiException('任务已完成');
                     }
-                    $this->completeTask(Carbon::now());
+                    $this->completeTask(Carbon::now(), isset($newFlowItem) ? $newFlowItem->name : null);
                 } else {
                     // 标记未完成
                     if (!$this->complete_at) {
@@ -1180,11 +1180,12 @@ class ProjectTask extends AbstractModel
     /**
      * 标记已完成、未完成
      * @param Carbon|null $complete_at 完成时间
+     * @param String $complete_name 已完成名称（留空为：已完成）
      * @return bool
      */
-    public function completeTask($complete_at)
+    public function completeTask($complete_at, $complete_name = null)
     {
-        AbstractModel::transaction(function () use ($complete_at) {
+        AbstractModel::transaction(function () use ($complete_at, $complete_name) {
             $addMsg = $this->parent_id == 0 && $this->dialog_id > 0;
             if ($complete_at === null) {
                 // 标记未完成
@@ -1192,7 +1193,7 @@ class ProjectTask extends AbstractModel
                 $this->addLog("标记{任务}未完成");
                 if ($addMsg) {
                     WebSocketDialogMsg::sendMsg(null, $this->dialog_id, 'notice', [
-                        'notice' => '标记任务未完成'
+                        'notice' => "标记任务未完成"
                     ], 0, true, true);
                 }
             } else {
@@ -1205,11 +1206,14 @@ class ProjectTask extends AbstractModel
                 if (!$this->hasOwner()) {
                     throw new ApiException('请先领取任务');
                 }
+                if (empty($complete_name)) {
+                    $complete_name = '已完成';
+                }
                 $this->complete_at = $complete_at;
-                $this->addLog("标记{任务}已完成");
+                $this->addLog("标记{任务}{$complete_name}");
                 if ($addMsg) {
                     WebSocketDialogMsg::sendMsg(null, $this->dialog_id, 'notice', [
-                        'notice' => '标记任务已完成'
+                        'notice' => "标记任务{$complete_name}"
                     ], 0, true, true);
                 }
             }
