@@ -2,11 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.23.71]
+## [0.23.74]
 
 ### Bug Fixes
 
 - Ldap一处报错
+
+### Performance
+
+- 优化会话列表数据加载
 
 ## [0.23.62]
 
