@@ -1,4 +1,4 @@
-const isElectron = window && window.process && window.process.type;
+const isElectron = !!(window && window.process && window.process.type);
 const isEEUiApp = window && window.navigator && /eeui/i.test(window.navigator.userAgent);
 
 import {switchLanguage as $L} from "./language";

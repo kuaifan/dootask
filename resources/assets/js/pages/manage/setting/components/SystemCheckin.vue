@@ -46,7 +46,7 @@
                                     <label>{{ $L('分钟') }}</label>
                                 </div>
                             </FormItem>
-                            <div class="form-tip">{{$L('签到提醒对象：在职且3天内有签到过的成员')}}</div>
+                            <div class="form-tip">{{$L('签到提醒对象：3天内有签到的成员（法定工作日）')}}</div>
                         </Form>
                     </FormItem>
                     <FormItem :label="$L('允许修改')" prop="edit">

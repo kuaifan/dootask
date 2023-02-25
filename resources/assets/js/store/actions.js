@@ -35,6 +35,7 @@ export default {
             state.dialogInputCache = await $A.IDBArray("dialogInputCache")
             state.fileLists = await $A.IDBArray("fileLists")
             state.userInfo = await $A.IDBJson("userInfo")
+            state.dialogUpdatedAt = await $A.IDBString("dialogUpdatedAt")
             state.dialogDeletedAt = await $A.IDBString("dialogDeletedAt")
             state.projectDeletedAt = await $A.IDBString("projectDeletedAt")
 
@@ -2169,7 +2170,7 @@ export default {
                         state.dialogDeletedAt = data.deleted_at
                         data.deleted_data.some(id => dispatch("forgetDialog", id))
                     });
-                    state.dialogUpdatedAt = $A.formatDate()
+                    $A.IDBSet("dialogUpdatedAt", state.dialogUpdatedAt = $A.formatDate()).then(_ => {})
                 }
                 //
                 if (data.next_page_url && data.current_page < 5) {

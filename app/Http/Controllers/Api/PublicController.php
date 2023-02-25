@@ -92,7 +92,7 @@ class PublicController extends AbstractController
         if ($key != $setting['key']) {
             return 'key error';
         }
-        $times = $setting['time'] ? Base::json2array($setting['time']) : ['00:00', '23:59'];
+        $times = $setting['time'] ? Base::json2array($setting['time']) : ['09:00', '18:00'];
         $advance = (intval($setting['advance']) ?: 120) * 60;
         $delay = (intval($setting['delay']) ?: 120) * 60;
         //

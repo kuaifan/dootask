@@ -259,7 +259,9 @@
 
 .page-manage-menu-dropdown {
     flex-shrink: 0;
-    width: 86%;
+    &.main-menu {
+        width: 86%;
+    }
     .ivu-select-dropdown {
         padding: 7px 0;
         .ivu-dropdown-item {

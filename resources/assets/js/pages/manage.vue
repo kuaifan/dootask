@@ -2,7 +2,7 @@
     <div v-show="userId > 0" class="page-manage" :class="{'show-tabbar': showMobileTabbar}">
         <div class="manage-box-menu" :class="{'show768-menu': show768Menu}">
             <Dropdown
-                class="page-manage-menu-dropdown"
+                class="page-manage-menu-dropdown main-menu"
                 trigger="click"
                 @on-click="settingRoute"
                 @on-visible-change="menuVisibleChange">

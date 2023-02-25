@@ -267,7 +267,7 @@ class SystemController extends AbstractController
         }
         //
         $setting['open'] = $setting['open'] ?: 'close';
-        $setting['time'] = $setting['time'] ? Base::json2array($setting['time']) : ['00:00', '23:59'];
+        $setting['time'] = $setting['time'] ? Base::json2array($setting['time']) : ['09:00', '18:00'];
         $setting['advance'] = intval($setting['advance']) ?: 120;
         $setting['delay'] = intval($setting['delay']) ?: 120;
         $setting['remindin'] = intval($setting['remindin']) ?: 5;
