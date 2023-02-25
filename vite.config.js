@@ -4,6 +4,7 @@ import {defineConfig, loadEnv} from 'vite'
 import {createVuePlugin} from 'vite-plugin-vue2';
 import vitePluginRequire from 'vite-plugin-require'
 import vitePluginFileCopy from 'vite-plugin-file-copy';
+import autoprefixer from 'autoprefixer';
 
 const argv = process.argv;
 const isCmd = argv.includes('fromcmd');
@@ -59,6 +60,13 @@ export default defineConfig(({command, mode}) => {
                 src: resolve(__dirname, 'resources/assets/statics/public'),
                 dest: resolve(__dirname, publicPath)
             }]),
-        ]
+        ],
+        css: {
+            postcss: {
+                plugins: [
+                    autoprefixer
+                ]
+            }
+        }
     };
 });
