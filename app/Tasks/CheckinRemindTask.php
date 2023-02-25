@@ -7,6 +7,7 @@ use App\Models\UserCheckinRecord;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
+use App\Module\Ihttp;
 use Cache;
 use Carbon\Carbon;
 
@@ -25,8 +26,32 @@ class CheckinRemindTask extends AbstractTask
         if ($setting['open'] !== 'open') {
             return;
         }
+        // 判断非工作日
+        $holidayKey = "holiday::" . date("Ym");
+        $holidayData = Cache::remember($holidayKey, now()->addMonth(), function () {
+            $apiMonth = date("Ym");
+            $apiResult = Ihttp::ihttp_request("https://api.apihubs.cn/holiday/get?field=date&month={$apiMonth}&workday=2&size=31", [], [], 30);
+            if (Base::isError($apiResult)) {
+                info('[holiday] get error');
+                return [];
+            }
+            $apiResult = Base::json2array($apiResult['data']);
+            if ($apiResult['code'] !== 0) {
+                info('[holiday] result error');
+                return [];
+            }
+            return array_map(function ($item) {
+                return $item['date'];
+            }, $apiResult['data']['list']);
+        });
+        if (empty($holidayData)) {
+            Cache::forget($holidayKey);
+        }
+        if (in_array(date("Ymd"), $holidayData)) {
+            return;
+        }
         //
-        $times = $setting['time'] ? Base::json2array($setting['time']) : ['00:00', '23:59'];
+        $times = $setting['time'] ? Base::json2array($setting['time']) : ['09:00', '18:00'];
         $remindin = (intval($setting['remindin']) ?: 5) * 60;
         $remindexceed = (intval($setting['remindexceed']) ?: 10) * 60;
         //
@@ -65,8 +90,8 @@ class CheckinRemindTask extends AbstractTask
         if (!$botUser) {
             return;
         }
-        // 提醒对象：在职且3天内有签到过的成员
-        User::whereNull('disable_at')->chunk(100, function ($users) use ($type, $botUser) {
+        // 提醒对象：3天内有签到的成员（在职）
+        User::whereBot(0)->whereNull('disable_at')->chunk(100, function ($users) use ($type, $botUser) {
             /** @var User $user */
             foreach ($users as $user) {
                 if (UserCheckinRecord::whereUserid($user->userid)->where('date', date("Y-m-d"))->exists()) {
