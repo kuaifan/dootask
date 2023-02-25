@@ -368,6 +368,8 @@ return array (
   '创建任务：(*)' => 'Créer une tâche :(*)',
   '创建列表：(*)' => 'Créer une liste :(*)',
   '删除列表：(*)' => 'Supprimer la liste :(*)',
+  '标记子任务(*)' => NULL,
   '(*)上传成功' => '(*) téléchargement réussi',
+  '标记任务(*)' => NULL,
   '群主不可(*)' => 'Non disponible pour les propriétaires de groupe (*)',
 );

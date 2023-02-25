@@ -368,6 +368,8 @@ return array (
   '创建任务：(*)' => 'Auftrag erstellen :(*)',
   '创建列表：(*)' => 'Eine liste erstellen :(*)',
   '删除列表：(*)' => 'Liste wird gelöscht (*)',
+  '标记子任务(*)' => 'Eine aufgabe markieren (*)',
   '(*)上传成功' => '(*) erfolgreicher hochladen',
+  '标记任务(*)' => 'Job markieren (*)',
   '群主不可(*)' => 'Dies kann nicht geschehen.',
 );

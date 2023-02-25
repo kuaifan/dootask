@@ -368,6 +368,8 @@ return array (
   '创建任务：(*)' => 'Buat tugas :(*)',
   '创建列表：(*)' => 'Buat senarai :(*)',
   '删除列表：(*)' => 'Hapus senarai :(*)',
+  '标记子任务(*)' => NULL,
   '(*)上传成功' => '(*) pengunggahan berhasil',
+  '标记任务(*)' => NULL,
   '群主不可(*)' => 'Kelompok tuan tidak boleh (*)',
 );

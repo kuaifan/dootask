@@ -368,6 +368,8 @@ return array (
   '创建任务：(*)' => 'Create Task: (*)',
   '创建列表：(*)' => 'Create a list: (*)',
   '删除列表：(*)' => 'Delete list: (*)',
+  '标记子任务(*)' => 'Tag subtask (*)',
   '(*)上传成功' => '(*) the upload succeeds',
+  '标记任务(*)' => 'Tag task (*)',
   '群主不可(*)' => 'Group master cannot (*)',
 );

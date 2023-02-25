@@ -14276,5 +14276,38 @@
         "de": "Des nicht replizierten inhalts",
         "fr": "Contenu non reproductible",
         "id": "Yang tidak boleh ditiru"
+    },
+    {
+        "key": "标记任务(*)",
+        "zh": "",
+        "zh-CHT": "標記任務(*)",
+        "en": "Tag task (*)",
+        "ko": "작업 표시 (*)",
+        "ja": "マークタスク(*)です。",
+        "de": "Job markieren (*)",
+        "fr": null,
+        "id": null
+    },
+    {
+        "key": "标记子任务(*)",
+        "zh": "",
+        "zh-CHT": "標記子任務(*)",
+        "en": "Tag subtask (*)",
+        "ko": "하위 작업 표시 (*)",
+        "ja": "マークアップサブタスク(*)です。",
+        "de": "Eine aufgabe markieren (*)",
+        "fr": null,
+        "id": null
+    },
+    {
+        "key": "签到提醒对象：3天内有签到的成员（法定工作日）",
+        "zh": "",
+        "zh-CHT": null,
+        "en": null,
+        "ko": null,
+        "ja": null,
+        "de": "Warnung unterschreiben: innerhalb Von 3 tagen habe ein mitglied die unterschrift unterschrieben (innerhalb des vorgeschriebenen zeitraums)",
+        "fr": "Rappel de connexion pour les membres qui se sont inscrits dans les 3 jours (jours ouvrables légaux)",
+        "id": "Pengingat tanda tangan: anggota tanda tangan di dalam 3 hari"
     }
 ]

@@ -2,15 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.23.74]
+## [0.23.81]
 
 ### Bug Fixes
 
 - Ldap一处报错
+- 桌面端新窗口打开任务无法发起聊天的问题
+- 从任务窗口发送聊天输入缓存的问题
 
 ### Performance
 
 - 优化会话列表数据加载
+- 任务完成通知流程状态
+- 设置免打扰后被@也推送通知
+- 非工作日不推送签到提醒
 
 ## [0.23.62]
 
