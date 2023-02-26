@@ -53,10 +53,12 @@ class Youdao
         $signStr = $this->APP_KEY . $this->truncate($q) . $salt . $curtime . $this->SEC_KEY;
         $args['sign'] = hash("sha256", $signStr);
         // $args['vocabId'] = '您的用户词表ID';
-        $res = json_decode($this->call(self::URL, $args), true);
+        $data = $this->call(self::URL, $args);
+        $res = json_decode($data, true);
         if ($res['errorCode'] == 0 && $res['translation']) {
             return is_array($res['translation']) ? $res['translation'][0] : $res['translation'];
         }
+        file_put_contents('error.log', $data, FILE_APPEND);
         return null;
     }
 

@@ -14278,6 +14278,28 @@
         "id": "Yang tidak boleh ditiru"
     },
     {
+        "key": "文件链接不存在",
+        "zh": "",
+        "zh-CHT": "文件鏈接不存在",
+        "en": "The file link does not exist",
+        "ko": "파일 링크가 존재하지 않습니다",
+        "ja": "ファイルリンクが存在しません",
+        "de": "Eine verknüpfung gibt es nicht",
+        "fr": "Le lien de fichier n’existe pas",
+        "id": "Tautan berkas tidak ada"
+    },
+    {
+        "key": "【(*)】 文件链接不存在",
+        "zh": "",
+        "zh-CHT": "【(*)】 文件鏈接不存在",
+        "en": "[(*)] File link does not exist",
+        "ko": "파일 링크가 존재하지 않습니다",
+        "ja": "【(*)】ファイルリンクが存在しません。",
+        "de": "Der main-link existiert nicht (*",
+        "fr": "[(*)] le lien vers le fichier n’existe pas",
+        "id": "[*] tidak ada tautan berkas"
+    },
+    {
         "key": "标记任务(*)",
         "zh": "",
         "zh-CHT": "標記任務(*)",
@@ -14285,8 +14307,8 @@
         "ko": "작업 표시 (*)",
         "ja": "マークタスク(*)です。",
         "de": "Job markieren (*)",
-        "fr": null,
-        "id": null
+        "fr": "Tâches marquées (*)",
+        "id": "Tandai tugas (*)"
     },
     {
         "key": "标记子任务(*)",
@@ -14296,18 +14318,62 @@
         "ko": "하위 작업 표시 (*)",
         "ja": "マークアップサブタスク(*)です。",
         "de": "Eine aufgabe markieren (*)",
-        "fr": null,
-        "id": null
+        "fr": "Marquer une sous-tâche (*)",
+        "id": "Tandai sub tugas (*)"
     },
     {
         "key": "签到提醒对象：3天内有签到的成员（法定工作日）",
         "zh": "",
-        "zh-CHT": null,
-        "en": null,
-        "ko": null,
-        "ja": null,
+        "zh-CHT": "簽到提醒對象：3天內有簽到的成員（法定工作日）",
+        "en": "Sign-in reminder object: Members who sign in within 3 days (legal working days)",
+        "ko": "서명주의사항:3일내 서명한 성원 (법정근무일)",
+        "ja": "対象:3日以内にサインインした人(法定営業日)です。",
         "de": "Warnung unterschreiben: innerhalb Von 3 tagen habe ein mitglied die unterschrift unterschrieben (innerhalb des vorgeschriebenen zeitraums)",
         "fr": "Rappel de connexion pour les membres qui se sont inscrits dans les 3 jours (jours ouvrables légaux)",
         "id": "Pengingat tanda tangan: anggota tanda tangan di dalam 3 hari"
+    },
+    {
+        "key": "签到打卡提醒",
+        "zh": "",
+        "zh-CHT": "簽到打卡提醒",
+        "en": "Sign in and punch in",
+        "ko": "출근 카드 알람",
+        "ja": "タイムカードのリマインダーです",
+        "de": "Zeichne eine erinnerung ein",
+        "fr": "Check-in et rappel de pointage",
+        "id": "Pengingat punch masuk"
+    },
+    {
+        "key": "签到缺卡提醒",
+        "zh": "",
+        "zh-CHT": "簽到缺卡提醒",
+        "en": "Sign in missing card reminder",
+        "ko": "부재자 알람 체크인",
+        "ja": "カード不足のリマインダーです",
+        "de": "Vermerken sie eine notstandswarnung",
+        "fr": "Se connecter alerte carte manquante",
+        "id": "Pengingat kartu tanda masuk"
+    },
+    {
+        "key": "搜索表情",
+        "zh": "",
+        "zh-CHT": "搜索表情",
+        "en": "Search expression",
+        "ko": "이모티콘 검색",
+        "ja": "表情検索です",
+        "de": "Such-ausdruck.",
+        "fr": "Rechercher un emoji",
+        "id": "Ekspresi pencarian"
+    },
+    {
+        "key": "文件分享查看",
+        "zh": "",
+        "zh-CHT": "文件分享查看",
+        "en": "File sharing view",
+        "ko": "파일 공유 보기",
+        "ja": "ファイルを共有して見ます",
+        "de": "Weitergabe Von dokumenten",
+        "fr": "Fichier partager voir",
+        "id": "Tampilan berbagi berkas"
     }
 ]
