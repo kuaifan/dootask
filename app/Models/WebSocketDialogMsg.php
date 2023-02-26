@@ -686,7 +686,7 @@ class WebSocketDialogMsg extends AbstractModel
                     $keyId = $fileLink['code'];
                 } else {
                     preg_match("/\/single\/file\/(.*?)$/i", $keyId, $match);
-                    if ($match && strlen($match[1]) >= 32) {
+                    if ($match && strlen($match[1]) >= 8) {
                         $keyId = $match[1];
                     } else {
                         throw new ApiException('文件分享错误');
@@ -701,7 +701,7 @@ class WebSocketDialogMsg extends AbstractModel
             $herf = $matchs[2][$key];
             $title = $matchs[3][$key] ?: $herf;
             preg_match("/\/single\/file\/(.*?)$/i", strip_tags($title), $match);
-            if ($match && strlen($match[1]) >= 32) {
+            if ($match && strlen($match[1]) >= 8) {
                 $file = File::select(['files.id', 'files.name', 'files.ext'])->join('file_links as L', 'files.id', '=', 'L.file_id')->where('L.code', $match[1])->first();
                 if ($file && $file->name) {
                     $name = $file->ext ? "{$file->name}.{$file->ext}" : $file->name;
@@ -718,7 +718,7 @@ class WebSocketDialogMsg extends AbstractModel
         if ($matchs) {
             foreach ($matchs[0] as $str) {
                 preg_match("/\/single\/file\/(.*?)$/i", $str, $match);
-                if ($match && strlen($match[1]) >= 32) {
+                if ($match && strlen($match[1]) >= 8) {
                     $file = File::select(['files.id', 'files.name', 'files.ext'])->join('file_links as L', 'files.id', '=', 'L.file_id')->where('L.code', $match[1])->first();
                     if ($file && $file->name) {
                         $name = $file->ext ? "{$file->name}.{$file->ext}" : $file->name;

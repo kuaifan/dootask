@@ -387,6 +387,23 @@ class File extends AbstractModel
         return $array;
     }
 
+    /**
+     * code获取文件ID、名称
+     * @param $code
+     * @return File
+     */
+    public static function code2IdName($code) {
+        $arr = explode(",", base64_decode($code));
+        if (empty($arr)) {
+            return null;
+        }
+        $fileId = intval($arr[0]);
+        if (empty($fileId)) {
+            return null;
+        }
+        return File::select(['id', 'name'])->find($fileId);
+    }
+
 
     /**
      * 处理返回图片地址

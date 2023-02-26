@@ -51,12 +51,12 @@ class FileLink extends AbstractModel
             $fileLink = FileLink::createInstance([
                 'file_id' => $fileId,
                 'userid' => $userid,
-                'code' => Base::generatePassword(64),
+                'code' => base64_encode("{$fileId},{$userid}," . Base::generatePassword()),
             ]);
             $fileLink->save();
         } else {
             if ($refresh == 'yes') {
-                $fileLink->code = Base::generatePassword(64);
+                $fileLink->code = base64_encode("{$fileId},{$userid}," . Base::generatePassword());
                 $fileLink->save();
             }
         }

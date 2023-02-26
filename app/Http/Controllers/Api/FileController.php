@@ -140,7 +140,12 @@ class FileController extends AbstractController
             $fileLink = FileLink::whereCode($id)->first();
             $file = $fileLink?->file;
             if (empty($file)) {
-                return Base::retError('链接不存在');
+                $msg = '文件链接不存在';
+                $data = File::code2IdName($id);
+                if ($data) {
+                    $msg = "【{$data->name}】 {$msg}";
+                }
+                return Base::retError($msg, $data);
             }
         } else {
             return Base::retError('参数错误');
@@ -518,7 +523,12 @@ class FileController extends AbstractController
             $fileLink = FileLink::whereCode($id)->first();
             $file = $fileLink?->file;
             if (empty($file)) {
-                return Base::retError('链接不存在');
+                $msg = '文件链接不存在';
+                $data = File::code2IdName($id);
+                if ($data) {
+                    $msg = "【{$data->name}】 {$msg}";
+                }
+                return Base::retError($msg, $data);
             }
         } else {
             return Base::retError('参数错误');
