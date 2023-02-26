@@ -183,19 +183,19 @@ mxStencilRegistry.allowEval = false;
 		}
 
 		//Remove old relaxed CSP and add strict one
-		var allMeta = document.getElementsByTagName('meta');
-
-		for (var i = 0; i < allMeta.length; i++)
-		{
-			if (allMeta[i].getAttribute('http-equiv') == 'Content-Security-Policy')
-			{
-				allMeta[i].parentNode.removeChild(allMeta[i]);
-			}
-
-			break;
-		}
-
-		mxmeta(null, 'default-src \'self\'; connect-src \'self\' https://fonts.googleapis.com https://fonts.gstatic.com; img-src * data:; media-src *; font-src *; style-src \'self\' \'unsafe-inline\' https://fonts.googleapis.com', 'Content-Security-Policy');
+		// var allMeta = document.getElementsByTagName('meta');
+        //
+		// for (var i = 0; i < allMeta.length; i++)
+		// {
+		// 	if (allMeta[i].getAttribute('http-equiv') == 'Content-Security-Policy')
+		// 	{
+		// 		allMeta[i].parentNode.removeChild(allMeta[i]);
+		// 	}
+        //
+		// 	break;
+		// }
+        //
+		// mxmeta(null, 'default-src \'self\'; connect-src \'self\' https://fonts.googleapis.com https://fonts.gstatic.com; img-src * data:; media-src *; font-src *; style-src \'self\' \'unsafe-inline\' https://fonts.googleapis.com', 'Content-Security-Policy');
 
 		//Disable web plugins loading
 		urlParams['plugins'] = '0';
