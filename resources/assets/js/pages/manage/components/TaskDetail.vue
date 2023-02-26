@@ -1429,7 +1429,7 @@ export default {
 
         resizeDialog() {
             return new Promise(resolve => {
-                this.$Electron.sendSyncMessage('windowSize', {
+                this.$Electron.sendMessage('windowSize', {
                     width: Math.max(1100, this.windowWidth),
                     height: Math.max(720, this.windowHeight),
                     minWidth: 800,

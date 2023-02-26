@@ -6,6 +6,7 @@ const {
 let reqId = 1;
 let reqInfo = {};
 let fileChangedListeners = {};
+let onlyChangedListeners = {};
 
 ipcRenderer.on('mainResp', (event, resp) => {
     let callbacks = reqInfo[resp.reqId];
@@ -50,14 +51,21 @@ contextBridge.exposeInMainWorld(
         sendMessage: function (action, args) {
             ipcRenderer.send(action, args);
         },
-        sendSyncMessage: function (action, args) {
-            ipcRenderer.sendSync(action, args)
-        },
         listenOnce: function (action, callback) {
             ipcRenderer.once(action, function (event, args) {
                 callback(args);
             });
-        }
+        },
+        listenerOnly: function (action, callback) {
+            if (typeof onlyChangedListeners[action] === "function") {
+                ipcRenderer.removeListener(action, onlyChangedListeners[action])
+                delete onlyChangedListeners[action]
+            }
+            onlyChangedListeners[action] = (event, args) => {
+                callback(args)
+            }
+            ipcRenderer.on(action, onlyChangedListeners[action])
+        },
     }
 );
 

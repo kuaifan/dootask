@@ -636,6 +636,9 @@ export default {
                 state.cacheProjects = [];
                 state.cacheColumns = [];
                 state.cacheTasks = [];
+                state.dialogUpdatedAt = null;
+                state.dialogDeletedAt = null;
+                state.projectDeletedAt = null;
 
                 // localStorage
                 const languageType = window.localStorage.getItem("__language:type__");
@@ -2563,7 +2566,7 @@ export default {
                 const resData = result.data;
                 if ($A.isJson(resData.dialog)) {
                     const dialogData = Object.assign(resData.dialog, {user_ms: $A.TimeM(resData.dialog.user_at)})
-                    setTimeout(_ => dispatch("saveDialog", dialogData), 300)    // 延迟更新对话详情是因为等消息处理完
+                    setTimeout(_ => dispatch("saveDialog", dialogData), 600)    // 延迟更新对话详情是因为等消息处理完
                     //
                     const ids = resData.list.map(({id}) => id)
                     state.dialogMsgs = state.dialogMsgs.filter(item => {
