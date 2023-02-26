@@ -27,27 +27,7 @@ class CheckinRemindTask extends AbstractTask
             return;
         }
         // 判断非工作日
-        $holidayKey = "holiday::" . date("Ym");
-        $holidayData = Cache::remember($holidayKey, now()->addMonth(), function () {
-            $apiMonth = date("Ym");
-            $apiResult = Ihttp::ihttp_request("https://api.apihubs.cn/holiday/get?field=date&month={$apiMonth}&workday=2&size=31", [], [], 30);
-            if (Base::isError($apiResult)) {
-                info('[holiday] get error');
-                return [];
-            }
-            $apiResult = Base::json2array($apiResult['data']);
-            if ($apiResult['code'] !== 0) {
-                info('[holiday] result error');
-                return [];
-            }
-            return array_map(function ($item) {
-                return $item['date'];
-            }, $apiResult['data']['list']);
-        });
-        if (empty($holidayData)) {
-            Cache::forget($holidayKey);
-        }
-        if (in_array(date("Ymd"), $holidayData)) {
+        if (Base::isHoliday(date("Ymd")) > 0) {
             return;
         }
         //

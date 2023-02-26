@@ -3194,4 +3194,39 @@ class Base
         }
         return Response::streamDownload($callback, $name);
     }
+
+    /**
+     * 判断是否工作日
+     * @param string $Ymd 年月日（如：20220102）
+     * @return int
+     * 0: 工作日
+     * 1: 非工作日
+     * 2: 获取不到远程数据的非工作日（周六、日）
+     * 所以可以用>0来判断是否工作日
+     */
+    public static function isHoliday($Ymd) {
+        $time = strtotime($Ymd . " 00:00:00");
+        $holidayKey = "holiday::" . date("Ym", $time);
+        $holidayData = Cache::remember($holidayKey, now()->addMonth(), function () use ($time) {
+            $apiMonth = date("Ym", $time);
+            $apiResult = Ihttp::ihttp_request("https://api.apihubs.cn/holiday/get?field=date&month={$apiMonth}&workday=2&size=31", [], [], 20);
+            if (Base::isError($apiResult)) {
+                info('[holiday] get error');
+                return [];
+            }
+            $apiResult = Base::json2array($apiResult['data']);
+            if ($apiResult['code'] !== 0) {
+                info('[holiday] result error');
+                return [];
+            }
+            return array_map(function ($item) {
+                return $item['date'];
+            }, $apiResult['data']['list']);
+        });
+        if (empty($holidayData)) {
+            Cache::forget($holidayKey);
+            return in_array(date("w", $time), [0, 6]) ? 2 : 0;
+        }
+        return in_array($Ymd, $holidayData) ? 1 : 0;
+    }
 }
