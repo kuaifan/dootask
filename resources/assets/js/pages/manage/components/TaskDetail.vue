@@ -1497,6 +1497,7 @@ export default {
                     url: 'web.js',
                     params: {
                         titleFixed: true,
+                        allowAccess: true,
                         url: $A.rightDelete(window.location.href, window.location.hash) + `#${path}`
                     },
                 });
