@@ -340,14 +340,19 @@ class ReportController extends AbstractController
         } else {
             $title = $user->nickname . "的日报[" . $start_time->format("Y/m/d") . "]";
         }
+        // 生成内容
+        $content = '<h2>' . Base::Lang('已完成工作') . '</h2><ol>' .
+            $completeContent . '</ol><h2>' .
+            Base::Lang('未完成的工作') . '</h2><ol>' .
+            $unfinishedContent . '</ol>';
+        if ($type === Report::WEEKLY) {
+            $content .= "<h2>" . Base::Lang("下周拟定计划") . "[" . $start_time->addWeek()->format("m/d") . "-" . $end_time->addWeek()->format("m/d") . "]</h2><ol><li>&nbsp;</li></ol>";
+        }
         $data = [
             "time" => $start_time->toDateTimeString(),
             "sign" => $sign,
             "title" => $title,
-            "content" => '<h2>' . Base::Lang('已完成工作') . '</h2><ol>' .
-                $completeContent . '</ol><h2>' .
-                Base::Lang('未完成的工作') . '</h2><ol>' .
-                $unfinishedContent . '</ol>',
+            "content" => $content,
             "complete_task" => $complete_task,
             "unfinished_task" => $unfinished_task,
         ];
