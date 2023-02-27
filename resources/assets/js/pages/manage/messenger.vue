@@ -510,9 +510,16 @@ export default {
             if (index > -1) {
                 const el = this.$refs[`dialog_${this.dialogList[index]?.id}`]
                 if (el && el[0]) {
+                    if (el[0].classList.contains("common-shake")) {
+                        return
+                    }
                     $A.scrollIntoViewIfNeeded(el[0])
-                    el[0].classList.remove("common-shake")
-                    requestAnimationFrame(_ => el[0].classList.add("common-shake"))
+                    requestAnimationFrame(_ => {
+                        el[0].classList.add("common-shake")
+                        setTimeout(_ => {
+                            el[0].classList.remove("common-shake")
+                        }, 600)
+                    })
                 }
             }
         },
