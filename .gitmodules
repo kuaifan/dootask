@@ -3,4 +3,4 @@
 	url = https://github.com/jgraph/drawio.git
 [submodule "resources/mobile"]
 	path = resources/mobile
-	url = git@github.com:kuaifan/dootask-app.git
+	url = https://github.com/kuaifan/dootask-app.git
