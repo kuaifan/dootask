@@ -55,6 +55,17 @@ restart_php() {
     fi
 }
 
+switch_debug() {
+    local debug="false"
+    if [[ "$1" == "true" ]] || [[ "$1" == "dev" ]] || [[ "$1" == "open" ]]; then
+        debug="true"
+    fi
+    if [[ "$(env_get APP_DEBUG)" != "$debug" ]]; then
+        env_set APP_DEBUG "$debug"
+        restart_php
+    fi
+}
+
 check_docker() {
     docker --version &> /dev/null
     if [ $? -ne  0 ]; then
@@ -99,8 +110,7 @@ run_compile() {
         echo "<script>window.location.href=window.location.href.replace(/:\d+/, ':' + $(env_get APP_PORT))</script>" > ./index.html
         env_set APP_DEV_PORT $(rand 20001 30000)
     fi
-    run_exec php "php bin/run --mode=$type"
-    restart_php
+    switch_debug "$type"
     #
     if [ "$type" = "prod" ]; then
         rm -rf "./public/js/build"
@@ -130,8 +140,7 @@ run_electron() {
     fi
     #
     if [ "$argv" == "dev" ]; then
-        run_exec php "php bin/run --mode=$argv"
-        restart_php
+        switch_debug "$argv"
     else
         mkdir -p ./electron/public
         cp ./electron/index.html ./electron/public/index.html
@@ -288,7 +297,7 @@ if [ $# -gt 0 ]; then
             exit 1
         fi
         [[ -z "$(env_get APP_KEY)" ]] && run_exec php "php artisan key:generate"
-        run_exec php "php bin/run --mode=prod"
+        switch_debug "false"
         # 检查数据库
         remaining=20
         while [ ! -f "${cur_path}/docker/mysql/data/$(env_get DB_DATABASE)/db.opt" ]; do
@@ -384,12 +393,8 @@ if [ $# -gt 0 ]; then
         docker run -it --rm -v ${cur_path}:/home/node/apidoc kuaifan/apidoc -i app/Http/Controllers/Api -o public/docs
     elif [[ "$1" == "debug" ]]; then
         shift 1
-        if [[ "$@" == "close" ]]; then
-            env_set APP_DEBUG "false"
-        else
-            env_set APP_DEBUG "true"
-        fi
-        restart_php
+        switch_debug "$@"
+        echo "success"
     elif [[ "$1" == "https" ]]; then
         shift 1
         if [[ "$@" == "auto" ]]; then

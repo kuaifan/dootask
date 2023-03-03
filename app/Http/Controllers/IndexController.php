@@ -52,11 +52,14 @@ class IndexController extends InvokeController
      */
     public function main()
     {
-        if (config('app.debug')) {
+        $hotFile = public_path('hot');
+        $manifestFile = public_path('manifest.json');
+        if (file_exists($hotFile)) {
+            $array = Base::json2array(file_get_contents($hotFile));
             $style = null;
-            $script = preg_replace("/^(\/\/(.*?))(:\d+)?\//i", "$1:" . env("APP_DEV_PORT") . "/", asset_main("resources/assets/js/app.js"));
+            $script = preg_replace("/^(\/\/(.*?))(:\d+)?\//i", "$1:" . $array['APP_DEV_PORT'] . "/", asset_main("resources/assets/js/app.js"));
         } else {
-            $array = Base::json2array(file_get_contents(public_path('manifest.json')));
+            $array = Base::json2array(file_get_contents($manifestFile));
             $style = asset_main($array['resources/assets/js/app.js']['css'][0]);
             $script = asset_main($array['resources/assets/js/app.js']['file']);
         }

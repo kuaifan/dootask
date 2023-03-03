@@ -1,4 +1,5 @@
 import {resolve} from "path";
+import {writeFileSync, existsSync, unlinkSync} from "fs";
 import {spawnSync} from "child_process";
 import {defineConfig, loadEnv} from 'vite'
 import {createVuePlugin} from 'vite-plugin-vue2';
@@ -19,6 +20,23 @@ export default defineConfig(({command, mode}) => {
     const env = loadEnv(mode, process.cwd(), '')
     const host = "0.0.0.0"
     const port = parseInt(env['APP_DEV_PORT'])
+
+    if (command === 'serve') {
+        const hotFile = resolve(__dirname, 'public/hot')
+        const hotClean = (exit) => {
+            if (existsSync(hotFile)) {
+                unlinkSync(hotFile);
+            }
+            if (exit) {
+                process.exit()
+            }
+        }
+        hotClean(false)
+        writeFileSync(hotFile, JSON.stringify(env));
+        process.on('exit', () => hotClean(true));
+        process.on('SIGINT', () => hotClean(true));
+        process.on('SIGHUP', () => hotClean(true));
+    }
 
     return {
         base: basePath,
