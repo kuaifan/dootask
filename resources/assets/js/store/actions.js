@@ -388,6 +388,7 @@ export default {
         dispatch("getDialogs").catch(() => {});
         dispatch("getReportUnread", 1000);
         dispatch("getTaskForDashboard");
+        dispatch("dialogMsgRead");
         //
         const allIds = Object.values(state.userAvatar).map(({userid}) => userid);
         [...new Set(allIds)].some(userid => dispatch("getUserBasic", {userid}))
@@ -2609,15 +2610,19 @@ export default {
      * @param data
      */
     dialogMsgRead({state, dispatch}, data) {
-        if (data.userid == state.userId) return;
-        if (data.read_at) return;
-        data.read_at = $A.formatDate();
-        //
-        state.wsReadWaitData[data.id] = data.id;
+        if ($A.isJson(data)) {
+            if (data.userid == state.userId) return;
+            if (data.read_at) return;
+            data.read_at = $A.formatDate();
+            state.wsReadWaitData[data.id] = data.id;
+        }
         clearTimeout(state.wsReadTimeout);
         state.wsReadTimeout = setTimeout(_ => {
             const ids = Object.values(state.wsReadWaitData);
             state.wsReadWaitData = {};
+            if (ids.length === 0) {
+                return
+            }
             //
             dispatch("call", {
                 url: 'dialog/msg/read',
