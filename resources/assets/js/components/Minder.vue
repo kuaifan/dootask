@@ -245,6 +245,10 @@
                         this.backup = JSON.stringify(data.content)
                         this.$emit('input', data.content);
                         break;
+
+                    case "save":
+                        this.$emit('saveData');
+                        break;
                 }
             },
 
