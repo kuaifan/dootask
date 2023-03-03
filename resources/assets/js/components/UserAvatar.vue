@@ -300,7 +300,9 @@
 
             openDialog() {
                 this.$store.dispatch("showSpinner", 600)
-                this.$store.dispatch("openDialogUserid", this.userid).catch(({msg}) => {
+                this.$store.dispatch("openDialogUserid", this.userid).then(_ => {
+                    this.goForward({name: 'manage-messenger'})
+                }).catch(({msg}) => {
                     $A.modalError(msg)
                 }).finally(_ => {
                     this.$store.dispatch("hiddenSpinner")
