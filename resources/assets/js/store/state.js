@@ -158,6 +158,6 @@ export default {
     reportUnreadNumber: 0,
 
     // 表单布局
-    formLabelPosition: $A(window).width() > 425 ? 'right' : 'top',
-    formLabelWidth: $A(window).width() > 425 ? 'auto' : '',
+    formLabelPosition: $A(window).width() > 576 ? 'right' : 'top',
+    formLabelWidth: $A(window).width() > 576 ? 'auto' : '',
 };
