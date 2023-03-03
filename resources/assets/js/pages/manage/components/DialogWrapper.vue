@@ -134,8 +134,8 @@
             @on-error="onError"
             @on-emoji="onEmoji"
             @on-show-emoji-user="onShowEmojiUser">
-            <template slot="header">
-                <div v-if="(allMsgs.length === 0 && loadMsg) || prevId > 0" class="dialog-item loading"><Loading type="pure"/></div>
+            <template #header>
+                <div v-if="(allMsgs.length === 0 && loadMsg) || prevId > 0" class="dialog-item loading"><div class="dialog-wrapper-loading"></div></div>
                 <div v-else-if="allMsgs.length === 0" class="dialog-item nothing">{{$L('暂无消息')}}</div>
             </template>
         </VirtualList>

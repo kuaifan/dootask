@@ -953,15 +953,8 @@
 
             &.loading {
                 height: 20px;
-                box-sizing: content-box;
+                align-items: center;
                 justify-content: center;
-
-                .common-pureing {
-                    margin: 0;
-                    width: 18px;
-                    height: 18px;
-                    border-width: 2px;
-                }
             }
 
             &.nothing {
@@ -1472,6 +1465,25 @@
 .dialog-wrapper-drawer-list {
     position: absolute !important;
     overflow: hidden !important;
+}
+
+.dialog-wrapper-loading {
+    width: 14px;
+    height: 8px;
+    display: inline-block;
+    position: relative;
+    border-radius: 4px;
+    background: rgba($primary-text-color, 0.2);
+    animation: dialog-loading-animation 0.6s 0.3s ease infinite alternate;
+}
+
+@keyframes dialog-loading-animation {
+    0% {
+        width: 14px;
+    }
+    100% {
+        width: 24px;
+    }
 }
 
 body.eeui-app {
