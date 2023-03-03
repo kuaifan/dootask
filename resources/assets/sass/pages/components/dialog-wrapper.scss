@@ -953,6 +953,7 @@
 
             &.loading {
                 height: 20px;
+                box-sizing: content-box;
                 align-items: center;
                 justify-content: center;
             }
@@ -1468,21 +1469,25 @@
 }
 
 .dialog-wrapper-loading {
-    width: 14px;
-    height: 8px;
-    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: block;
+    margin: 0 auto;
     position: relative;
-    border-radius: 4px;
-    background: rgba($primary-text-color, 0.2);
-    animation: dialog-loading-animation 0.6s 0.3s ease infinite alternate;
+    background: #e3e3e3;
+    box-sizing: border-box;
+    animation: dialog-loading-animation 0.5s linear infinite alternate;
 }
 
 @keyframes dialog-loading-animation {
     0% {
-        width: 14px;
+        box-shadow: 0 0, 0 0;
+        color: rgba(#e3e3e3, 0.2);
     }
     100% {
-        width: 24px;
+        box-shadow: -12px 0, 12px 0;
+        color: rgba(#e3e3e3, 0.8);
     }
 }
 
