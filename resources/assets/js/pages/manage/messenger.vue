@@ -103,7 +103,10 @@
                                 <ul>
                                     <li v-for="(user, index) in items.list" :key="index" @click="openContacts(user)">
                                         <div class="avatar"><UserAvatar :userid="user.userid" :size="30"/></div>
-                                        <div class="nickname">{{user.nickname}}</div>
+                                        <div class="nickname">
+                                            <em>{{user.nickname}}</em>
+                                            <div v-if="user.tags" class="tags">{{user.tags.join(', ')}}</div>
+                                        </div>
                                         <div v-if="user.loading" class="loading"><Loading/></div>
                                     </li>
                                 </ul>
@@ -805,6 +808,18 @@ export default {
             const {type, group_type} = data
             return type === 'group' && group_type !== 'user'
         },
+
+        userTag({identity, department_name}) {
+            const array = []
+            const deps = department_name?.split(",").find(item => /\(M\)$/.test(item))
+            if (deps) {
+                array.push(deps.replace(/\(M\)$/, '') + ' ' + this.$L('负责人'))
+            }
+            if (identity?.includes('temp')) {
+                array.push(this.$L('临时'))
+            }
+            return array.join(', ')
+        }
     }
 }
 </script>

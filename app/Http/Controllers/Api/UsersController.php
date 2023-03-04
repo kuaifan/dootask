@@ -460,7 +460,13 @@ class UsersController extends AbstractController
      */
     public function search()
     {
-        $builder = User::select(User::$basicField);
+        $user = User::auth();
+        //
+        $columns = User::$basicField;
+        if ($user->isAdmin()) {
+            $columns[] = 'identity';
+        }
+        $builder = User::select($columns);
         //
         $keys = Request::input('keys');
         $sorts = Request::input('sorts');
@@ -513,12 +519,25 @@ class UsersController extends AbstractController
             $list = $builder->orderBy('userid')->take(Base::getPaginate(100, 10, 'take'))->get();
         }
         //
-        if ($state === 1) {
-            $list->transform(function (User $userInfo) {
-                $userInfo->online = $userInfo->getOnlineStatus();
-                return $userInfo;
+        $list->transform(function (User $userInfo) use ($state) {
+            $tags = [];
+            $dep = $userInfo->getDepartmentName();
+            $dep = array_filter(explode(",", $dep), function($item) {
+                return preg_match("/\(M\)$/", $item);
             });
-        }
+            if ($dep) {
+                $tags[] = preg_replace("/\(M\)$/", "", $dep[0]) . " " . Base::Lang("负责人");
+            }
+            if ($userInfo->isTemp()) {
+                $tags[] = Base::Lang("临时");
+            }
+            $userInfo->tags = $tags;
+            //
+            if ($state === 1) {
+                $userInfo->online = $userInfo->getOnlineStatus();
+            }
+            return $userInfo;
+        });
         return Base::retSuccess('success', $list);
     }
 
@@ -1364,6 +1383,12 @@ class UsersController extends AbstractController
         //
         if (mb_strlen($name) < 2 || mb_strlen($name) > 20) {
             return Base::retError('部门名称长度限制2-20个字');
+        }
+        if (preg_match('/[\Q~!@#$%^&*()+-_=.:?<>,\E]/', $name)) {
+            return Base::retError('部门名称不能包含特殊符号');
+        }
+        if (str_contains($name, '(M)')) {
+            return Base::retError('部门名称不能包含：(M)');
         }
         //
         if ($id > 0) {

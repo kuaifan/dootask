@@ -408,11 +408,29 @@
                                     }
                                     .nickname {
                                         flex: 1;
-                                        padding: 0 12px;
+                                        width: 0;
+                                        padding-left: 12px;
                                         font-size: 14px;
-                                        white-space: nowrap;
-                                        overflow: hidden;
-                                        text-overflow: ellipsis;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: space-between;
+                                        flex-flow: row wrap;
+                                        align-content: flex-start;
+                                        > em {
+                                            padding-right: 12px;
+                                            font-style: normal;
+                                            white-space: nowrap;
+                                            overflow: hidden;
+                                            text-overflow: ellipsis;
+                                        }
+                                        .tags {
+                                            padding-right: 12px;
+                                            font-size: 12px;
+                                            white-space: nowrap;
+                                            overflow: hidden;
+                                            text-overflow: ellipsis;
+                                            color: $primary-desc-color;
+                                        }
                                     }
                                     .loading {
                                         margin-right: 12px;

@@ -176,6 +176,15 @@ class User extends AbstractModel
     }
 
     /**
+     * 返回是否管理员
+     * @return bool
+     */
+    public function isAdmin()
+    {
+        return in_array('admin', $this->identity);
+    }
+
+    /**
      * 判断是否管理员
      */
     public function checkAdmin()
