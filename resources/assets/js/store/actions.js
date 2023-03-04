@@ -2877,8 +2877,7 @@ export default {
                                                     if (data.mention) {
                                                         newData.mention++;
                                                     }
-                                                    const timeout = state.dialogIns.findIndex(item => item.dialog_id === dialog_id) > -1 ? 3000 : 300
-                                                    setTimeout(_ => dispatch("saveDialog", newData), timeout)
+                                                    dispatch("saveDialog", newData)
                                                 }
                                             }
                                             if (!silence) {

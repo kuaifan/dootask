@@ -526,7 +526,7 @@ class UsersController extends AbstractController
                 return preg_match("/\(M\)$/", $item);
             });
             if ($dep) {
-                $tags[] = preg_replace("/\(M\)$/", "", trim($dep[0])) . " " . Base::Lang("负责人");
+                $tags[] = preg_replace("/\(M\)$/", "", trim($dep[0])) . Base::Lang("负责人");
             }
             if ($userInfo->isTemp()) {
                 $tags[] = Base::Lang("临时");

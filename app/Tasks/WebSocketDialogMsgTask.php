@@ -86,6 +86,7 @@ class WebSocketDialogMsgTask extends AbstractTask
         if (empty($dialog)) {
             return;
         }
+        $updateds = $dialog->dialogUser->pluck('updated_at', 'userid')->toArray();
         $silences = $dialog->dialogUser->pluck('silence', 'userid')->toArray();
         $userids = array_keys($silences);
 
@@ -113,11 +114,13 @@ class WebSocketDialogMsgTask extends AbstractTask
         $array = [];
         foreach ($userids AS $userid) {
             $silence = $this->silence || $silences[$userid];
+            $updated = $updateds[$userid] ?? $msg->created_at;
             if ($userid == $msg->userid) {
                 $array[$userid] = [
                     'userid' => $userid,
-                    'silence' => $silence,
                     'mention' => false,
+                    'silence' => $silence,
+                    'updated' => $updated,
                 ];
             } else {
                 $mention = array_intersect([0, $userid], $mentions) ? 1 : 0;
@@ -131,8 +134,9 @@ class WebSocketDialogMsgTask extends AbstractTask
                 ])->saveOrIgnore();
                 $array[$userid] = [
                     'userid' => $userid,
-                    'silence' => $silence,
                     'mention' => $mention,
+                    'silence' => $silence,
+                    'updated' => $updated,
                 ];
                 // 机器人收到消处理
                 $botUser = User::whereUserid($userid)->whereBot(1)->first();
@@ -156,8 +160,8 @@ class WebSocketDialogMsgTask extends AbstractTask
                     'silence' => $item['silence'] ? 1 : 0,
                     'data' => array_merge($msg->toArray(), [
                         'mention' => $item['mention'],
-                        'user_at' => Carbon::parse($msg->created_at)->toDateTimeString(),
-                        'user_ms' => WebSocketDialogUser::userMs($msg->created_at),
+                        'user_at' => Carbon::parse($item['updated'])->toDateTimeString(),
+                        'user_ms' => WebSocketDialogUser::userMs($item['updated']),
                     ]),
                 ]
             ];
