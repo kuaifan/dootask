@@ -233,6 +233,7 @@ return array (
   '@我的消息' => '@mon message',
   '上传失败' => 'Le téléchargement a échoué',
   '个人项目' => 'Personal project',
+  '临时帐号' => 'Un compte temporaire',
   '任务归档' => 'Archivage des tâches',
   '保存成功' => 'Sauvé avec succès',
   '修改成功' => 'Modifié avec succès',

@@ -528,8 +528,11 @@ class UsersController extends AbstractController
             if ($dep) {
                 $tags[] = preg_replace("/\(M\)$/", "", trim($dep[0])) . Base::Lang("负责人");
             }
+            if ($userInfo->isAdmin()) {
+                $tags[] = Base::Lang("系统管理员");
+            }
             if ($userInfo->isTemp()) {
-                $tags[] = Base::Lang("临时");
+                $tags[] = Base::Lang("临时帐号");
             }
             $userInfo->tags = $tags;
             //

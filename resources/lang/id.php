@@ -233,6 +233,7 @@ return array (
   '@我的消息' => 'Pesanku',
   '上传失败' => 'Gagal mengunggah',
   '个人项目' => 'Proyek pribadi',
+  '临时帐号' => 'Akun sementara',
   '任务归档' => 'Pengarsipan tugas',
   '保存成功' => 'Simpan sukses',
   '修改成功' => 'Revisi berhasil',

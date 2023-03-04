@@ -233,6 +233,7 @@ return array (
   '@我的消息' => 'Der mich darauf schreibt',
   '上传失败' => 'Download fehlgeschlagen',
   '个人项目' => 'Eine person.',
+  '临时帐号' => 'Das vorläufige konto.',
   '任务归档' => 'Nur für die missionen.',
   '保存成功' => 'Erhaltung erfolgreich',
   '修改成功' => 'Modifikation erfolgreich.',
