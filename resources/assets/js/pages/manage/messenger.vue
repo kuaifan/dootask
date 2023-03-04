@@ -545,11 +545,8 @@ export default {
             this.dialogKey = "";
             //
             if ($A.isJson(dialogId) && $A.leftExists(dialogId.dialog_id, "u:")) {
-                this.$store.dispatch("showSpinner", 300)
                 this.$store.dispatch("openDialogUserid", $A.leftDelete(dialogId.dialog_id, "u:")).catch(({msg}) => {
                     $A.modalError(msg)
-                }).finally(_ => {
-                    this.$store.dispatch("hiddenSpinner")
                 })
             } else {
                 this.$store.dispatch("openDialog", dialogId)
