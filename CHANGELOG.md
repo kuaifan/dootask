@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.24.10]
+## [0.24.14]
 
 ### Bug Fixes
 
@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - 通讯录显示部门负责人
 - 点击会话消息头像@
 - 优化阅读消息
+- 群组支持修改头像
 
 ## [0.23.94]
 
