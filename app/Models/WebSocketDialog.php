@@ -71,6 +71,7 @@ class WebSocketDialog extends AbstractModel
         $this->pinyin = Base::cn2pinyin($this->name);
         $this->top_at = $this->top_at ?? $dialogUserFun('top_at');
         $this->user_at = $this->user_at ?? $dialogUserFun('updated_at');
+        $this->user_ms = WebSocketDialogUser::userMs($this->user_at);
         //
         if (isset($this->search_msg_id)) {
             // 最后消息 (搜索预览消息)

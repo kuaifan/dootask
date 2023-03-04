@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+
 /**
  * App\Models\WebSocketDialogUser
  *
@@ -39,5 +41,18 @@ class WebSocketDialogUser extends AbstractModel
     public function webSocketDialog(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(WebSocketDialog::class, 'id', 'dialog_id');
+    }
+
+    /**
+     * 转时间戳加上现在的毫秒
+     * @param $time
+     * @return int
+     */
+    public static function userMs($time = 0)
+    {
+        if (empty($time)) {
+            return Carbon::now()->getPreciseTimestamp(3);
+        }
+        return intval(Carbon::parse($time)->timestamp . substr(Carbon::now()->getPreciseTimestamp(3), -3));
     }
 }

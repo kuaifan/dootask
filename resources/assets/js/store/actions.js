@@ -2075,8 +2075,8 @@ export default {
             const index = state.cacheDialogs.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 const original = state.cacheDialogs[index]
-                const nowTime = data.user_ms || $A.TimeM(data.user_at);
-                const originalTime = $A.TimeM(original.user_at || original.updated_at);
+                const nowTime = data.user_ms
+                const originalTime = original.user_ms || 0
                 if (nowTime < originalTime) {
                     typeof data.unread !== "undefined" && delete data.unread
                     typeof data.mention !== "undefined" && delete data.mention
@@ -2574,8 +2574,7 @@ export default {
                 saveBefore()
                 const resData = result.data;
                 if ($A.isJson(resData.dialog)) {
-                    const dialogData = Object.assign(resData.dialog, {user_ms: $A.TimeM(resData.dialog.user_at)})
-                    setTimeout(_ => dispatch("saveDialog", dialogData), 600)    // 延迟更新对话详情是因为等消息处理完
+                    setTimeout(_ => dispatch("saveDialog", resData.dialog), 300)    // 延迟更新对话详情是因为等消息处理完
                     //
                     const ids = resData.list.map(({id}) => id)
                     state.dialogMsgs = state.dialogMsgs.filter(item => {
@@ -2872,8 +2871,8 @@ export default {
                                                         id: dialog_id,
                                                         unread: dialog.unread + 1,
                                                         mention: dialog.mention,
-                                                        user_at: data.created_at,
-                                                        user_ms: $A.TimeM(data.created_at),
+                                                        user_at: data.user_at,
+                                                        user_ms: data.user_ms,
                                                     }
                                                     if (data.mention) {
                                                         newData.mention++;
