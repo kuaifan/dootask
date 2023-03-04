@@ -125,6 +125,7 @@
             @range="onRange"
             @totop="onPrevPage"
 
+            @on-mention="onMention"
             @on-longpress="onLongpress"
             @on-view-reply="onViewReply"
             @on-view-text="onViewText"
@@ -569,7 +570,8 @@ export default {
             'cacheDialogs',
             'wsOpenNum',
             'touchBackInProgress',
-            'dialogIns'
+            'dialogIns',
+            'cacheUserBasic'
         ]),
 
         ...mapGetters(['isLoad']),
@@ -1774,6 +1776,17 @@ export default {
                         this.msgType = type
                     }
                     break;
+            }
+        },
+
+        onMention(data) {
+            const user = this.cacheUserBasic.find(({userid}) => userid == data.userid);
+            if (user) {
+                this.$refs.input.addMention({
+                    denotationChar: "@",
+                    id: user.userid,
+                    value: user.nickname,
+                })
             }
         },
 

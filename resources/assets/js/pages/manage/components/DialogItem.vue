@@ -22,7 +22,12 @@
         </div>
         <template v-else>
             <div class="dialog-avatar">
-                <UserAvatar :userid="source.userid" tooltip-disabled :click-open-dialog="dialogData.type == 'group'" :size="30"/>
+                <UserAvatar
+                    v-longpress="{callback: onMention, delay: 300}"
+                    @open-dialog="onOpenDialog"
+                    :userid="source.userid"
+                    :size="30"
+                    tooltip-disabled/>
             </div>
             <DialogView
                 :msg-data="source"
@@ -48,10 +53,12 @@
 <script>
 import {mapState} from "vuex";
 import DialogView from "./DialogView";
+import longpress from "../../../directives/longpress";
 
 export default {
     name: "DialogItem",
     components: {DialogView},
+    directives: {longpress},
     props: {
         source: {
             type: Object,
@@ -167,6 +174,21 @@ export default {
                 msg_id: this.source.id,
                 reply_id: this.source.msg.data.id
             })
+        },
+
+        onOpenDialog(userid) {
+            if (this.dialogData.type != 'group') {
+                return
+            }
+            this.$store.dispatch("openDialogUserid", userid).then(_ => {
+                this.goForward({name: 'manage-messenger'})
+            }).catch(({msg}) => {
+                $A.modalError(msg)
+            });
+        },
+
+        onMention() {
+            this.dispatch("on-mention", this.source)
         },
 
         onLongpress(e) {

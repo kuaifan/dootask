@@ -1022,6 +1022,13 @@ export default {
             }
         },
 
+        addMention(data) {
+            if (!this.quill) {
+                return;
+            }
+            this.quill.getModule("mention").insertItem(data, true);
+        },
+
         getProjectId() {
             let object = null;
             if (this.dialogId > 0) {
