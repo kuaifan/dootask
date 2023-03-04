@@ -55,7 +55,8 @@
                             })"
                             v-longpress="handleLongpress">
                             <template v-if="dialog.type=='group'">
-                                <i v-if="dialog.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
+                                <EAvatar v-if="dialog.avatar" class="img-avatar" :src="dialog.avatar" :size="42"></EAvatar>
+                                <i v-else-if="dialog.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
                                 <i v-else-if="dialog.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
                                 <i v-else-if="dialog.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
                                 <Icon v-else class="icon-avatar" type="ios-people" />

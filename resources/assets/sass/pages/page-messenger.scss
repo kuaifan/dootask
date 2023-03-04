@@ -117,6 +117,7 @@
                             position: relative;
                             cursor: pointer;
                             list-style: none;
+                            .img-avatar,
                             .user-avatar,
                             .icon-avatar {
                                 width: 42px;
@@ -124,6 +125,15 @@
                                 margin: 2px;
                                 flex-grow: 0;
                                 flex-shrink: 0;
+                            }
+                            .img-avatar {
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                > img {
+                                    width: 100%;
+                                    height: 100%;
+                                }
                             }
                             .icon-avatar {
                                 display: flex;

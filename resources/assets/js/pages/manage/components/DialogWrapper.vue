@@ -20,7 +20,8 @@
                     <div class="dialog-block">
                         <div class="dialog-avatar">
                             <template v-if="dialogData.type=='group'">
-                                <i v-if="dialogData.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
+                                <EAvatar v-if="dialogData.avatar" class="img-avatar" :src="dialogData.avatar" :size="42"></EAvatar>
+                                <i v-else-if="dialogData.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
                                 <i v-else-if="dialogData.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
                                 <i v-else-if="dialogData.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
                                 <Icon v-else class="icon-avatar" type="ios-people" />
@@ -72,7 +73,7 @@
                         class="dialog-menu"
                         @command="onDialogMenu">
                         <i class="taskfont dialog-menu-icon">&#xe6e9;</i>
-                        <EDropdownMenu slot="dropdown">
+                        <EDropdownMenu v-slot="dropdown">
                             <EDropdownItem v-if="dialogData.type === 'user'" command="openCreate">
                                 <div>{{$L('创建群组')}}</div>
                             </EDropdownItem>
@@ -80,10 +81,18 @@
                                 <EDropdownItem command="groupInfo">
                                     <div>{{$L('群组设置')}}</div>
                                 </EDropdownItem>
-                                <EDropdownItem v-if="dialogData.owner_id != userId" command="exit">
-                                    <div style="color:#f00">{{$L('退出群组')}}</div>
-                                </EDropdownItem>
+                                <template v-if="dialogData.owner_id != userId">
+                                    <EDropdownItem v-if="dialogData.group_type === 'all' && userIsAdmin" command="avatarAdmin">
+                                        <div>{{$L('修改头像')}}</div>
+                                    </EDropdownItem>
+                                    <EDropdownItem command="exit">
+                                        <div style="color:#f00">{{$L('退出群组')}}</div>
+                                    </EDropdownItem>
+                                </template>
                                 <template v-else-if="dialogData.group_type === 'user'">
+                                    <EDropdownItem command="avatar">
+                                        <div>{{$L('修改头像')}}</div>
+                                    </EDropdownItem>
                                     <EDropdownItem command="transfer">
                                         <div>{{$L('转让群主')}}</div>
                                     </EDropdownItem>
@@ -287,16 +296,35 @@
             :title="$L('创建群组')"
             :mask-closable="false">
             <Form :model="createGroupData" label-width="auto" @submit.native.prevent>
-                <FormItem prop="userids" :label="$L('群成员')">
-                    <UserInput v-model="createGroupData.userids" :uncancelable="createGroupData.uncancelable" :multiple-max="100" show-bot :placeholder="$L('选择项目成员')"/>
+                <FormItem prop="avatar" :label="$L('群头像')">
+                    <ImgUpload v-model="createGroupData.avatar" :num="1" :width="512" :height="512" :whcut="1"/>
                 </FormItem>
                 <FormItem prop="chat_name" :label="$L('群名称')">
                     <Input v-model="createGroupData.chat_name" :placeholder="$L('输入群名称（选填）')"/>
+                </FormItem>
+                <FormItem prop="userids" :label="$L('群成员')">
+                    <UserInput v-model="createGroupData.userids" :uncancelable="createGroupData.uncancelable" :multiple-max="100" show-bot :placeholder="$L('选择项目成员')"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="createGroupShow=false">{{$L('取消')}}</Button>
                 <Button type="primary" :loading="createGroupLoad > 0" @click="onCreateGroup">{{$L('创建')}}</Button>
+            </div>
+        </Modal>
+
+        <!--修改头像-->
+        <Modal
+            v-model="avatarModifyShow"
+            :title="$L('修改头像')"
+            :mask-closable="false">
+            <Form :model="avatarModifyData" label-width="auto" @submit.native.prevent>
+                <FormItem prop="avatar" :label="$L('群头像')">
+                    <ImgUpload v-model="avatarModifyData.avatar" :num="1" :width="512" :height="512" :whcut="1"/>
+                </FormItem>
+            </Form>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="avatarModifyShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="avatarModifyLoad > 0" @click="onAvatarModify">{{$L('保存')}}</Button>
             </div>
         </Modal>
 
@@ -438,10 +466,12 @@ import ChatInput from "./ChatInput";
 import VirtualList from 'vue-virtual-scroll-list-hi'
 import {Store} from "le5le-store";
 import DialogSelect from "./DialogSelect";
+import ImgUpload from "../../../components/ImgUpload.vue";
 
 export default {
     name: "DialogWrapper",
     components: {
+        ImgUpload,
         DialogSelect,
         DialogRespond,
         DialogItem,
@@ -487,6 +517,10 @@ export default {
             createGroupShow: false,
             createGroupData: {},
             createGroupLoad: 0,
+
+            avatarModifyShow: false,
+            avatarModifyData: {},
+            avatarModifyLoad: 0,
 
             forwardShow: false,
             forwardLoad: false,
@@ -1553,6 +1587,16 @@ export default {
                     this.createGroupShow = true
                     break;
 
+                case "avatar":
+                    this.avatarModifyData = {dialog_id: this.dialogData.id, avatar: this.dialogData.avatar}
+                    this.avatarModifyShow = true
+                    break;
+
+                case "avatarAdmin":
+                    this.avatarModifyData = {dialog_id: this.dialogData.id, avatar: this.dialogData.avatar, admin: 1}
+                    this.avatarModifyShow = true
+                    break;
+
                 case "groupInfo":
                     this.groupInfoShow = true
                     break;
@@ -1665,6 +1709,23 @@ export default {
                 $A.modalError(msg);
             }).finally(_ => {
                 this.createGroupLoad--;
+            });
+        },
+
+        onAvatarModify() {
+            this.avatarModifyLoad++;
+            this.$store.dispatch("call", {
+                url: 'dialog/group/edit',
+                data: this.avatarModifyData
+            }).then(({data, msg}) => {
+                $A.messageSuccess(msg);
+                this.avatarModifyShow = false;
+                this.avatarModifyData = {};
+                this.$store.dispatch("saveDialog", data);
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            }).finally(_ => {
+                this.avatarModifyLoad--;
             });
         },
 

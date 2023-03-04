@@ -110,6 +110,7 @@
                     flex-shrink: 0;
                     margin-right: 12px;
 
+                    .img-avatar,
                     .user-avatar,
                     .icon-avatar {
                         width: 42px;
@@ -117,6 +118,16 @@
                         margin-right: 2px;
                         flex-grow: 0;
                         flex-shrink: 0;
+                    }
+
+                    .img-avatar {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        > img {
+                            width: 100%;
+                            height: 100%;
+                        }
                     }
 
                     .icon-avatar {
@@ -160,6 +171,8 @@
                             flex-shrink: 0;
                             margin: 0 6px 0 0;
                             padding: 0 5px;
+                            display: flex;
+                            align-items: center;
 
                             &.ivu-tag-success {
                                 padding: 0 6px;
@@ -167,6 +180,10 @@
 
                             &.after {
                                 margin: 0 0 0 6px;
+                            }
+
+                            &.pointer {
+                                cursor: pointer;
                             }
                         }
 
@@ -188,11 +205,13 @@
                         }
 
                         > em {
+                            display: inline-block;
                             flex-shrink: 0;
                             font-style: normal;
                             font-size: 17px;
                             font-weight: 500;
-                            padding-left: 6px;
+                            margin-left: 6px;
+                            cursor: pointer;
                         }
 
                         .load {

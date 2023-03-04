@@ -1417,8 +1417,9 @@ class DialogController extends AbstractController
      * @apiGroup dialog
      * @apiName group__add
      *
+     * @apiParam {String} [avatar]              群头像
+     * @apiParam {String} [chat_name]           群名称
      * @apiParam {Array} userids                群成员，格式: [userid1, userid2, userid3]
-     * @apiParam {String} chat_name             群名称
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1428,8 +1429,10 @@ class DialogController extends AbstractController
     {
         $user = User::auth();
         //
-        $userids = Request::input('userids');
+        $avatar = Request::input('avatar');
+        $avatar = $avatar ? Base::unFillUrl(is_array($avatar) ? $avatar[0]['path'] : $avatar) : '';
         $chatName = trim(Request::input('chat_name'));
+        $userids = Request::input('userids');
         //
         if (!is_array($userids)) {
             return Base::retError('请选择群成员');
@@ -1458,6 +1461,10 @@ class DialogController extends AbstractController
         if (empty($dialog)) {
             return Base::retError('创建群组失败');
         }
+        if ($avatar) {
+            $dialog->avatar = $avatar;
+            $dialog->save();
+        }
         $data = WebSocketDialog::find($dialog->id)?->formatData($user->userid);
         $userids = array_values(array_diff($userids, [$user->userid]));
         $dialog->pushMsg("groupAdd", null, $userids);
@@ -1473,7 +1480,9 @@ class DialogController extends AbstractController
      * @apiName group__edit
      *
      * @apiParam {Number} dialog_id             会话ID
-     * @apiParam {String} chat_name             群名称
+     * @apiParam {String} [avatar]              群头像
+     * @apiParam {String} [chat_name]           群名称
+     * @apiParam {Number} [admin]               系统管理员操作（1：只判断是不是系统管理员，否则判断是否群管理员）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1484,23 +1493,43 @@ class DialogController extends AbstractController
         $user = User::auth();
         //
         $dialog_id = intval(Request::input('dialog_id'));
-        $chatName = trim(Request::input('chat_name'));
+        $admin = intval(Request::input('admin'));
         //
-        if (mb_strlen($chatName) < 2) {
-            return Base::retError('群名称至少2个字');
+        if ($admin === 1) {
+            $user->checkAdmin();
+            $dialog = WebSocketDialog::find($dialog_id);
+            if (empty($dialog)) {
+                return Base::retError('对话不存在或已被删除', ['dialog_id' => $dialog_id], -4003);
+            }
+        } else {
+            $dialog = WebSocketDialog::checkDialog($dialog_id, true);
         }
-        if (mb_strlen($chatName) > 100) {
-            return Base::retError('群名称最长限制100个字');
+        //
+        $data = ['id' => $dialog->id];
+        $array = [];
+        if (Request::exists('avatar')) {
+            $avatar = Request::input('avatar');
+            $avatar = $avatar ? Base::unFillUrl(is_array($avatar) ? $avatar[0]['path'] : $avatar) : '';
+            $data['avatar'] = Base::fillUrl($array['avatar'] = $avatar);
+        }
+        if (Request::exists('chat_name') && $dialog->group_type === 'user') {
+            $chatName = trim(Request::input('chat_name'));
+            if (mb_strlen($chatName) < 2) {
+                return Base::retError('群名称至少2个字');
+            }
+            if (mb_strlen($chatName) > 100) {
+                return Base::retError('群名称最长限制100个字');
+            }
+            $data['name'] = $array['name'] = $chatName;
         }
         //
-        $dialog = WebSocketDialog::checkDialog($dialog_id, true);
+        if ($array) {
+            $dialog->updateInstance($array);
+            $dialog->save();
+            WebSocketDialogUser::whereDialogId($dialog->id)->update(['updated_at' => Carbon::now()]);
+        }
         //
-        $dialog->name = $chatName;
-        $dialog->save();
-        return Base::retSuccess('修改成功', [
-            'id' => $dialog->id,
-            'name' => $dialog->name,
-        ]);
+        return Base::retSuccess('修改成功', $data);
     }
 
     /**

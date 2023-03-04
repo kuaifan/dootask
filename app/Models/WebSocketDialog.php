@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $type 对话类型
  * @property string|null $group_type 聊天室类型
  * @property string|null $name 对话名称
+ * @property string|null $avatar 头像（群）
  * @property string|null $last_at 最后消息时间
  * @property int|null $owner_id 群主用户ID
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -28,6 +29,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog newQuery()
  * @method static \Illuminate\Database\Query\Builder|WebSocketDialog onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog query()
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereAvatar($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereGroupType($value)
@@ -44,6 +46,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class WebSocketDialog extends AbstractModel
 {
     use SoftDeletes;
+
+    /**
+     * 头像地址
+     * @param $value
+     * @return string
+     */
+    public function getAvatarAttribute($value)
+    {
+        return $value ? Base::fillUrl($value) : $value;
+    }
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
