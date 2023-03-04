@@ -8,7 +8,7 @@
             </div>
             <Button v-if="hasNextMonth" class="calendar-header-back" size="small" @click="nowMonth">{{$L('返回本月')}}</Button>
         </div>
-        <table class="sign_tab" border="0px" cellpadding="0px" cellspacing="0px">
+        <table class="check-table">
             <thead>
             <tr>
                 <th>{{$L('日')}}</th>
@@ -21,32 +21,25 @@
             </tr>
             </thead>
             <tbody>
-            <tr v-for="item in dateArr" v-if="contains(item)">
+            <tr v-for="item in dateArray">
                 <template v-for="data in item">
-                    <td v-if="isCheck(data.date)"
-                        :class="{'disa':monthClass(data.month), 'cur_day': doCheck(data.date),'check_day': isCheck(data.date) }">
-                        <Tooltip max-width="auto" transfer>
+                    <td v-if="data.month" :class="{today: data.today, checkin:isCheck(data.date)}">
+                        <ETooltip max-width="auto" :disabled="!isCheck(data.date)">
                             <div slot="content" v-html="getTimes(data.date)"></div>
-                            <template v-if="doCheck(data.date)">{{$L('今天')}}</template>
-                            <template v-else>{{data.date | getCD}}</template>
-                            <span :class="{'ui-state-down': true }">{{$L('已签到')}}</span>
-                        </Tooltip>
+                            <div class="item-day">
+                                <div v-if="data.today">{{$L('今天')}}</div>
+                                <div v-else>{{data.day}}</div>
+
+                                <div v-if="isCheck(data.date)" class="ui-state-down">{{$L('已签到')}}</div>
+                                <span v-else-if="data.today" class="ui-state-default">{{$L('尚未签到')}}</span>
+                            </div>
+                        </ETooltip>
                     </td>
-                    <template v-if="(!isCheck(data.date) && (doCheck(data.date) && !hasCheckin))">
-                        <td v-if="!monthClass(data.month)"
-                            @click="checkNow"
-                            :class="{'disa':monthClass(data.month), 'over':data.date == '', 'cur_day': doCheck(data.date) }">
-                            {{$L('今天')}}
-                            <span :class="{'ui-state-default': true }">{{$L('尚未签到')}}</span>
-                        </td>
-                        <td v-else
-                            :class="{'disa':monthClass(data.month), 'over':data.date == '', 'cur_day': doCheck(data.date) }">
-                            {{data.date | getCD}}
-                        </td>
-                    </template>
-                    <td v-if="!isCheck(data.date) && (!doCheck(data.date)) "
-                        :class="{'disa':monthClass(data.month), 'over':data.date == '', 'cur_day': doCheck(data.date) }">
-                        {{data.date | getCD}}
+                    <td v-else class="disabled">
+                        <div class="item-day">
+                            <div>{{data.day}}</div>
+                            <div v-if="isCheck(data.date)" class="ui-state-down">{{$L('已签到')}}</div>
+                        </div>
                     </td>
                 </template>
             </tr>
@@ -71,135 +64,85 @@ export default {
     },
     data() {
         return {
-            today: new Date(),
             year: '',
             month: '',
-            day: '',
-            date: '',
+
             startTime: '',
             endTime: '',
-            dateArr: [],
-            hasCheckin: false,
+
+            dateArray: [],
+            historys: [],
         };
     },
     created() {
-        this.year = this.today.getFullYear();
-        this.month = this.today.getMonth() + 1;
-        this.day = this.today.getDay();
-        this.date = this.today.getDate();
+        const today = new Date()
+        this.year = today.getFullYear();
+        this.month = today.getMonth() + 1;
 
-        this.getCalendar();
-    },
-    filters: {
-        getCD(val) {
-            return val.split('/')[2]
-        }
+        this.generateCalendar();
     },
     watch: {
-        dateArr: {
-            deep: true,
-            handler: function (val, oldVal) {
-                this.startTime = val[0][0].date;
-                this.endTime = val[5][6].date;
-                this.setMonth(this.year + '/' + this.month, [this.startTime, this.endTime]);
-            }
+        checkin: {
+            handler(arr) {
+                arr.some(({date, section}) => {
+                    date = date.replace(/-0?/g, '/')
+                    let index = this.historys.findIndex(item => item.date == date)
+                    if (index > -1) {
+                        this.historys.splice(index, 1, {date, section})
+                    } else {
+                        this.historys.push({date, section})
+                    }
+                })
+            },
+            immediate: true
         }
     },
     computed: {
         hasNextMonth() {
             const {year, month} = this;
-            const {y, m} = {y: $A.formatDate("Y"), m: $A.formatDate("m")};
-            return parseInt(year) != y || parseInt(month) < parseInt(m);
+            return parseInt(year) != $A.formatDate("Y") || parseInt(month) < $A.formatDate("m");
         }
     },
     methods: {
-        checkNow() {
-            this.$emit('checkIn')
+        ym() {
+            return this.year + '-' + (this.month < 10 ? ('0' + this.month) : this.month);
         },
-        setMonth(date,) {
+        isCheck(date) {
+            return !!this.historys.find(item => item.date == date)
+        },
+        setMonth(date) {
             this.$emit('setMonth', date, [this.startTime, this.endTime])
         },
-        monthClass(type) {
-            return type != 'cur';
+        getTimes(date) {
+            const data = this.historys.find(item => item.date == date)
+            return data?.section.map(item => {
+                return `${item[0]} - ${item[1] || 'None'}`
+            }).join('<br/>')
         },
-        getTimes(thisDay) {
-            for (let i in this.checkin) {
-                if (this.checkin.hasOwnProperty(i)) {
-                    if (new Date(thisDay).getTime() == $A.Date(this.checkin[i].date).getTime()) {
-                        return this.checkin[i].section.map(item => {
-                            return `${item[0]} - ${item[1] || 'None'}`
-                        }).join('<br/>');
-                    }
-                }
-            }
-        },
-        isLeap() {
-            const year = this.year;
-            if (year % 4 == 0 && year % 100 > 0) {
-                return true;
-            } else return year % 400 == 0 && year % 3200 > 0;
-        },
-        getLen(m) {
-            const month = m || this.month;
-            if (month == 2) {
-                if (this.isLeap) {
-                    return 29;
-                } else {
-                    return 28;
-                }
-            } else {
-                if (month < 8) {
-                    if (month % 2 > 0) {
-                        return 31;
-                    } else {
-                        return 30;
-                    }
-                } else {
-                    if (month % 2 > 0) {
-                        return 30;
-                    } else {
-                        return 31;
-                    }
-                }
-            }
-        },
-        getCalendarTime() {
-            return this.year + '-' + this.month + '-' + this.date;
-        },
-        getCalendar() {
-            let len = this.getLen();
-            let d = new Date(this.year, this.month - 1, 1);
-            let dfw = d.getDay();
-            let arr = [];
-            let tem = 0;
-            let nextTem = 1;
-            let pre = dfw - 1
-
-            let _lastLen = this.getLen(this.month - 1)
-
+        generateCalendar() {
+            let today = new Date($A.formatDate("Y/m/d"))
+            let one = new Date(this.year, this.month - 1, 1)
+            let calcTime = one.getTime() - one.getDay() * 86400 * 1000
+            let array = []
             for (let i = 0; i < 6; i++) {
-                arr[i] = [];
+                array[i] = []
                 for (let j = 0; j < 7; j++) {
-                    tem++;
-                    if (tem - dfw > 0 && tem - dfw <= len) {
-                        arr[i][j] = {date: this.year + '/' + (this.month) + '/' + (tem - dfw), month: 'cur'};
-                    } else {
-                        if (tem <= dfw) {
-                            arr[i][j] = {
-                                date: this.year + '/' + (this.month - 1) + '/' + (_lastLen - pre),
-                                month: 'pre'
-                            };
-                            pre--;
-
-                        } else {
-                            arr[i][j] = {date: this.year + '/' + (this.month + 1) + '/' + (nextTem), month: 'next'};
-                            nextTem++
-
-                        }
+                    let curDate = new Date(calcTime)
+                    let curMonth = curDate.getMonth() + 1
+                    array[i][j] = {
+                        day: curDate.getDate(),
+                        date: `${curDate.getFullYear()}/${curMonth}/${curDate.getDate()}`,
+                        today: today.getTime() == curDate.getTime(),
+                        future: today.getTime() < curDate.getTime(),
+                        month: curMonth == this.month
                     }
+                    calcTime += 86400 * 1000
                 }
             }
-            this.dateArr = arr;
+            this.dateArray = array
+            this.startTime = array[0][0].date;
+            this.endTime = array[5][6].date;
+            this.setMonth(this.year + '/' + this.month, [this.startTime, this.endTime]);
         },
         nextMonth() {
             if (this.month == 12) {
@@ -208,7 +151,7 @@ export default {
             } else {
                 this.month++;
             }
-            this.getCalendar();
+            this.generateCalendar();
             this.$emit('changeMonth', this.ym())
         },
         prevMonth() {
@@ -218,39 +161,14 @@ export default {
             } else {
                 this.month--;
             }
-            this.getCalendar();
+            this.generateCalendar();
             this.$emit('changeMonth', this.ym())
         },
         nowMonth() {
             this.year = parseInt($A.formatDate("Y"));
             this.month = parseInt($A.formatDate("m"));
-            this.getCalendar();
+            this.generateCalendar();
             this.$emit('changeMonth', this.ym())
-        },
-        contains(arr) {
-            return !((arr[0] == '') && (arr[1] == '') && (arr[2] == '') && (arr[3] == '') && (arr[4] == '') && (arr[5] == '') && (arr[6] == ''));
-        },
-        isCheck(index) {
-            const todayDate = new Date();
-            for (let i in this.checkin) {
-                if ($A.Date(todayDate.getFullYear() + '/' + todayDate.getMonth() + '/' + todayDate.getDate()).getTime() == $A.Date(this.checkin[i].date).getTime()) {
-                    //今日已经签到
-                    this.hasCheckin = true;
-                }
-
-                if (new Date(index).getTime() == $A.Date(this.checkin[i].date).getTime()) {
-                    //console.log('已经签到')
-                    return true;
-                }
-            }
-            return false;
-        },
-        doCheck(d) {
-            let dString = new Date().getFullYear() + '/' + (new Date().getMonth() + 1) + '/' + new Date().getDate();
-            return new Date(d).getTime() == new Date(dString).getTime();
-        },
-        ym() {
-            return this.year + '-' + (this.month < 10 ? ('0' + this.month) : this.month);
         }
     }
 };
@@ -308,8 +226,11 @@ export default {
             right: 10px;
         }
     }
-    .sign_tab {
+    .check-table {
         width: 100%;
+        border: 0;
+        border-spacing: 0;
+        border-collapse: collapse;
         table-layout: fixed;
         th {
             text-align: center;
@@ -318,48 +239,38 @@ export default {
         }
         td {
             position: relative;
-            padding: 15px 0;
             text-align: center;
-            font-size: 14px;
             border-right: 1px solid #eee;
             border-top: 1px solid #eee;
+            font-size: 14px;
+            height: 52px;
+            .item-day {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-direction: column;
+                line-height: 20px;
+            }
             &:last-child {
                 border-right: 0;
             }
-            &.over {
-                background-color: #fff;
-                border-left: 0;
-                border-right: 0;
-            }
-            &.disa {
-                color: #ccc !important;
-                background: none !important;
-
+            &.disabled {
+                color: #ccc;
+                background: none;
                 * {
-                    color: #ccc !important;
-
+                    color: #ccc;
                 }
             }
-            &.check_day {
-                background-color: #f8f8f8;
-                color: #58ce7a;
-                position: relative;
-                font-size: 14px;
+            &.today {
+                background-color: #F29D38;
+                color: #FFF;
                 padding-top: 2px;
                 line-height: 26px;
-                .ivu-tooltip {
-                    position: absolute;
-                    left: 0;
-                    right: 0;
-                    top: 0;
-                    bottom: 0;
-                    .ivu-tooltip-rel {
-                        width: 100%;
-                        height: 100%;
-                        line-height: 26px;
-                        padding-top: 4px;
-                    }
-                }
+            }
+            &.checkin {
+                color: #58ce7a;
+                background-color: #f8f8f8;
+                position: relative;
             }
         }
     }
@@ -367,25 +278,9 @@ export default {
     .ui-state-down,
     .ui-state-default {
         font-size: 12px;
-        width: 100%;
-        text-align: center;
-        position: absolute;
-        bottom: 3px;
-        left: 0;
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
-    }
-
-    .sign_tab {
-        td {
-            &.cur_day {
-                background-color: #F29D38;
-                color: #FFF;
-                padding-top: 2px;
-                line-height: 26px;
-            }
-        }
     }
 }
 </style>

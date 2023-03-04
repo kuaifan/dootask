@@ -162,7 +162,8 @@ export default {
             this.$store.dispatch("call", {
                 url: 'users/checkin/list',
                 data: {
-                    ym: $A.formatDate("Y-m")
+                    ym: $A.formatDate("Y-m"),
+                    before: 1
                 }
             }).then(({data}) => {
                 this.latelyFormat(data)
@@ -173,14 +174,11 @@ export default {
 
         latelyFormat(data) {
             const time = $A.Time();
-            const Ym = $A.formatDate("Ym", time)
             this.latelyData = [];
             for (let i = 0; i < 5; i++) {
-                if (Ym == $A.formatDate("Ym", time - i * 86400)) {
-                    const ymd = $A.formatDate("Y-m-d", time - i * 86400)
-                    const item = data.find(({date}) => date == ymd) || {date: ymd, section: []}
-                    this.latelyData.push(item)
-                }
+                const ymd = $A.formatDate("Y-m-d", time - i * 86400)
+                const item = data.find(({date}) => date == ymd) || {date: ymd, section: []}
+                this.latelyData.push(item)
             }
         },
 
@@ -196,7 +194,10 @@ export default {
             }, 600)
             this.$store.dispatch("call", {
                 url: 'users/checkin/list',
-                data: {ym}
+                data: {
+                    ym,
+                    before: 1
+                }
             }).then(({data}) => {
                 if (this.$refs.calendar.ym() != ym) {
                     return;

@@ -1513,6 +1513,7 @@ class UsersController extends AbstractController
      * @apiName checkin__list
      *
      * @apiParam {String} ym            年-月（如：2020-01）
+     * @apiParam {Number} [before]      取月份之前的数据（单位：月数，最大3）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1525,6 +1526,11 @@ class UsersController extends AbstractController
         $ym = trim(Request::input('ym'));
         $start = Carbon::parse(date("Y-m-01 00:00:00", strtotime($ym)));
         $end = (clone $start)->addMonth()->subSecond();
+        //
+        $before = min(3, intval(Request::input('before')));
+        if ($before > 0) {
+            $start = $start->subMonths($before);
+        }
         //
         $recordTimes = UserCheckinRecord::getTimes($user->userid, [$start, $end]);
         $array = [];
