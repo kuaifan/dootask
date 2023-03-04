@@ -28,9 +28,11 @@ class Youdao
      * @param $q
      * @param $from
      * @param $to
+     * @param $successSleep
      * @return mixed|null
+     * @throws Exception
      */
-    public function translate($q, $from = null, $to = null)
+    public function translate($q, $from = null, $to = null, $successSleep = 2)
     {
         if ($from === null) {
             $from = 'auto';
@@ -56,9 +58,11 @@ class Youdao
         $data = $this->call(self::URL, $args);
         $res = json_decode($data, true);
         if ($res['errorCode'] == 0 && $res['translation']) {
+            sleep($successSleep);
             return is_array($res['translation']) ? $res['translation'][0] : $res['translation'];
         }
-        file_put_contents('error.log', $data, FILE_APPEND);
+        file_put_contents('error.log', $data . "\n", FILE_APPEND);
+        throw new Exception("翻译失败，详细查看：error.log\n\n");
         return null;
     }
 
@@ -298,7 +302,7 @@ try {
                     $var[$k] = $item[$i++];
                 }
                 file_put_contents($file, "<?php \nreturn " . var_export($var, true) . ";");
-                print_r("[$type] $file saved\n");
+                // print_r("[$type] $file saved\n");
             }
         } elseif ($type === 'web') {
             if (!is_dir("../resources/assets/statics/public/js/language")) {
@@ -312,7 +316,7 @@ try {
                 file_put_contents($file, "if(typeof window.LANGUAGE_DATA===\"undefined\")window.LANGUAGE_DATA={};window.LANGUAGE_DATA[\"{$key}\"]=" . json_encode($item, JSON_UNESCAPED_UNICODE));
                 $file = "../public/js/language/$key.js";
                 file_put_contents($file, "if(typeof window.LANGUAGE_DATA===\"undefined\")window.LANGUAGE_DATA={};window.LANGUAGE_DATA[\"{$key}\"]=" . json_encode($item, JSON_UNESCAPED_UNICODE));
-                print_r("[$type] $file saved\n");
+                // print_r("[$type] $file saved\n");
             }
         }
         print_r("[$type] translate success\ntotal: " . count($results['key']) . "\nadd: " . count($needs) . "\n\n");

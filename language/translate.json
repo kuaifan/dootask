@@ -14375,5 +14375,27 @@
         "de": "Weitergabe Von dokumenten",
         "fr": "Fichier partager voir",
         "id": "Tampilan berbagi berkas"
+    },
+    {
+        "key": "部门名称不能包含：(*)",
+        "zh": "",
+        "zh-CHT": "部門名稱不能包含：(*)",
+        "en": "The department name cannot contain: (*)",
+        "ko": "부문명칭에는 다음과 같은 내용이 포함되지 않는다.",
+        "ja": "部門名には(*)は含まれません。",
+        "de": "Die abteilungsnamen dürfen nicht enthalten (*)",
+        "fr": "Le nom du ministère ne doit pas contenir :(*)",
+        "id": "Nama departemen tidak bisa berisi :(*)"
+    },
+    {
+        "key": "部门名称不能包含特殊符号",
+        "zh": "",
+        "zh-CHT": "部門名稱不能包含特殊符號",
+        "en": "The department name cannot contain special symbols",
+        "ko": "부문명에는 특수부호가 포함되지 않는다",
+        "ja": "部署名に特殊な記号を含めることはできません。",
+        "de": "Die branchennamen dürfen keine besonderen symbole enthalten",
+        "fr": "Le nom du ministère ne doit pas contenir de symboles spéciaux",
+        "id": "Nama departemen tidak boleh berisi simbol khusus"
     }
 ]
