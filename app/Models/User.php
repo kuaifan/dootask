@@ -136,10 +136,14 @@ class User extends AbstractModel
         if (empty($this->department)) {
             return "";
         }
-        $list = UserDepartment::select(['id', 'owner_userid', 'name'])->whereIn('id', $this->department)->take(10)->get();
+        $key = "UserDepartment::" . md5(Cache::get("UserDepartment::rand") . '-' . implode(',' , $this->department));
+        $list = Cache::remember($key, now()->addMonth(), function() {
+            $list = UserDepartment::select(['id', 'owner_userid', 'name'])->whereIn('id', $this->department)->take(10)->get();
+            return $list->toArray();
+        });
         $array = [];
         foreach ($list as $item) {
-            $array[] = $item->name . ($item->owner_userid === $this->userid ? '(M)' : '');
+            $array[] = $item['name'] . ($item['owner_userid'] === $this->userid ? '(M)' : '');
         }
         return implode(', ', $array);
     }

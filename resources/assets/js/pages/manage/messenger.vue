@@ -137,8 +137,8 @@
                     </div>
                 </ScrollerY>
                 <div class="messenger-menu">
-                    <div class="menu-icon" @click="onActive(null)">
-                        <Icon @click="tabActive='dialog'" :class="{active:tabActive==='dialog'}" type="ios-chatbubbles" />
+                    <div class="menu-icon">
+                        <Icon @click="onActive(null)" :class="{active:tabActive==='dialog'}" type="ios-chatbubbles" />
                         <Badge class="menu-num" :overflow-count="999" :count="msgUnread('all')"/>
                     </div>
                     <div class="menu-icon">
@@ -490,19 +490,18 @@ export default {
         },
 
         onActive(type) {
-            let block = "start"
             if (type === null) {
                 if (this.tabActive !== 'dialog') {
+                    this.tabActive = 'dialog'
                     return;
                 }
                 type = this.dialogActive
-                block = "end"
             }
             if (this.dialogActive == type) {
-                // 再次点击滚动到未读条目
-                this.shakeUnread()
+                this.shakeUnread()  // 再次点击滚动到未读条目
+            } else {
+                this.dialogActive = type
             }
-            this.dialogActive = type
         },
 
         shakeUnread() {

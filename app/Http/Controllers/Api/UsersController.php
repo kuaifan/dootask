@@ -526,7 +526,7 @@ class UsersController extends AbstractController
                 return preg_match("/\(M\)$/", $item);
             });
             if ($dep) {
-                $tags[] = preg_replace("/\(M\)$/", "", $dep[0]) . " " . Base::Lang("负责人");
+                $tags[] = preg_replace("/\(M\)$/", "", trim($dep[0])) . " " . Base::Lang("负责人");
             }
             if ($userInfo->isTemp()) {
                 $tags[] = Base::Lang("临时");
@@ -1427,6 +1427,7 @@ class UsersController extends AbstractController
             'parent_id' => $parent_id,
             'owner_userid' => $owner_userid,
         ], $dialog_useid);
+        Cache::forever("UserDepartment::rand", Base::generatePassword());
         //
         return Base::retSuccess($parent_id > 0 ? '保存成功' : '新建成功');
     }
@@ -1456,6 +1457,7 @@ class UsersController extends AbstractController
             return Base::retError('部门不存在或已被删除');
         }
         $userDepartment->deleteDepartment();
+        Cache::forever("UserDepartment::rand", Base::generatePassword());
         //
         return Base::retSuccess('删除成功');
     }

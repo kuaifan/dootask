@@ -80,8 +80,8 @@
                     <div class="emoji-users">
                         <ul>
                             <template v-for="(uitem, uindex) in item.userids">
-                                <li v-if="uindex < 5" :class="{bold:uitem==userId}"><UserAvatar :userid="uitem" tooltip-disabled show-name :show-icon="false"/></li>
-                                <li v-else-if="uindex == 5" @click.stop="onShowEmojiUser(item)">+{{item.userids.length - 5}}位</li>
+                                <li v-if="uindex < emojiUsersNum" :class="{bold:uitem==userId}"><UserAvatar :userid="uitem" tooltip-disabled show-name :show-icon="false"/></li>
+                                <li v-else-if="uindex == emojiUsersNum" @click.stop="onShowEmojiUser(item)">+{{item.userids.length - emojiUsersNum}}位</li>
                             </template>
                         </ul>
                     </div>
@@ -228,7 +228,13 @@ export default {
             todoLoad: 0,
             todoShow: false,
             todoList: [],
+
+            emojiUsersNum: 5
         }
+    },
+
+    mounted() {
+        this.emojiUsersNum = Math.min(6, Math.max(2, Math.floor((this.windowWidth - 180) / 48)))
     },
 
     beforeDestroy() {

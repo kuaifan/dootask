@@ -845,9 +845,12 @@
                                         &.bold {
                                             font-weight: 600;
                                         }
-                                        + li {
-                                            &:before {
-                                                content: "、";
+                                        &:after {
+                                            content: "、";
+                                        }
+                                        &:last-child {
+                                            &:after {
+                                                display: none;
                                             }
                                         }
                                     }
@@ -1647,7 +1650,7 @@ body.eeui-app {
             .dialog-item {
                 .dialog-view {
                     &.text {
-                        max-width: calc(100% - 52px);
+                        max-width: calc(100% - 80px);
                     }
                     .dialog-head {
                         .dialog-content {
