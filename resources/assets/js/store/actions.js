@@ -2524,17 +2524,22 @@ export default {
      * @param state
      * @param dispatch
      * @param getters
-     * @param data {dialog_id, msg_id, ?msg_type, ?position_id, ?prev_id, ?next_id, ?save_before, ?clear_before, ?spinner}
+     * @param data {dialog_id, msg_id, ?msg_type, ?position_id, ?prev_id, ?next_id, ?save_before, ?save_after, ?clear_before, ?spinner}
      * @returns {Promise<unknown>}
      */
     getDialogMsgs({state, dispatch, getters}, data) {
         return new Promise((resolve, reject) => {
             let saveBefore = _ => {}
+            let saveAfter = _ => {}
             let clearBefore = false
             let spinner = false
             if (typeof data.save_before !== "undefined") {
                 saveBefore = typeof data.save_before === "function" ? data.save_before : _ => {}
                 delete data.save_before
+            }
+            if (typeof data.save_after !== "undefined") {
+                saveAfter = typeof data.save_after === "function" ? data.save_after : _ => {}
+                delete data.save_after
             }
             if (typeof data.clear_before !== "undefined") {
                 clearBefore = typeof data.clear_before === "boolean" ? data.clear_before : false
@@ -2582,6 +2587,7 @@ export default {
                 //
                 dispatch("saveDialogMsg", resData.list)
                 resolve(result)
+                saveAfter()
             }).catch(e => {
                 console.warn(e);
                 reject(e)

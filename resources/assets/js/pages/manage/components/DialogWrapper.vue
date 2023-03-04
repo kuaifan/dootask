@@ -1520,7 +1520,8 @@ export default {
                 msg_id: this.msgId,
                 msg_type: this.msgType,
                 prev_id: this.prevId,
-                save_before: _ => this.scrollDisabled = true
+                save_before: _ => this.scrollDisabled = true,
+                save_after: _ => this.scrollDisabled = false
             }).then(({data}) => {
                 const ids = data.list.map(item => item.id)
                 this.$nextTick(() => {
@@ -1534,7 +1535,7 @@ export default {
                         offset -= 36
                     }
                     this.onToOffset(offset)
-                    this.scrollDisabled = false
+                    setTimeout(_ => scroller.virtual.handleFront(), 10)
                 });
             }).catch(() => {})
         },
