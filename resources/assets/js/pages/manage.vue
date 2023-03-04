@@ -537,7 +537,7 @@ export default {
             ];
             if (userIsAdmin) {
                 array.push(...[
-                    {path: 'personal', name: '偏好设置', divided: true},
+                    {path: 'personal', name: '个人设置', divided: true},
                     {path: 'system', name: '系统设置'},
                     {path: 'clearCache', name: '清除缓存'},
 
@@ -550,7 +550,7 @@ export default {
                 ])
             } else {
                 array.push(...[
-                    {path: 'personal', name: '偏好设置', divided: true},
+                    {path: 'personal', name: '个人设置', divided: true},
                     {path: 'clearCache', name: '清除缓存'},
 
                     {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},

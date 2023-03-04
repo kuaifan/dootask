@@ -234,7 +234,7 @@ export default {
     },
 
     mounted() {
-        this.emojiUsersNum = Math.min(6, Math.max(2, Math.floor((this.windowWidth - 180) / 48)))
+        this.emojiUsersNum = Math.min(6, Math.max(2, Math.floor((this.windowWidth - 180) / 52)))
     },
 
     beforeDestroy() {

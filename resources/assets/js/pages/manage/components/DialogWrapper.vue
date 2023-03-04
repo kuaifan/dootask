@@ -41,10 +41,10 @@
                                     <Tag :color="tag.color" :fade="false">{{$L(tag.text)}}</Tag>
                                 </template>
                                 <h2>{{dialogData.name}}</h2>
-                                <em v-if="peopleNum > 0">({{peopleNum}})</em>
+                                <em v-if="peopleNum > 0" @click="onDialogMenu('groupInfo')">({{peopleNum}})</em>
                                 <Tag v-if="dialogData.bot" class="after" :fade="false">{{$L('机器人')}}</Tag>
-                                <Tag v-if="dialogData.group_type=='all'" class="after" :fade="false">{{$L('全员')}}</Tag>
-                                <Tag v-else-if="dialogData.group_type=='department'" class="after" :fade="false">{{$L('部门')}}</Tag>
+                                <Tag v-if="dialogData.group_type=='all'" class="after pointer" :fade="false" @on-click="onDialogMenu('groupInfo')">{{$L('全员')}}</Tag>
+                                <Tag v-else-if="dialogData.group_type=='department'" class="after pointer" :fade="false" @on-click="onDialogMenu('groupInfo')">{{$L('部门')}}</Tag>
                                 <div v-if="msgLoadIng > 0" class="load"><Loading/></div>
                             </div>
                             <ul class="title-desc">
@@ -145,7 +145,9 @@
             @on-emoji="onEmoji"
             @on-show-emoji-user="onShowEmojiUser">
             <template #header>
-                <div v-if="(allMsgs.length === 0 && loadMsg) || prevId > 0" class="dialog-item loading"><div class="dialog-wrapper-loading"></div></div>
+                <div v-if="(allMsgs.length === 0 && loadMsg) || prevId > 0" class="dialog-item loading">
+                    <div v-if="scrollOffset < 100" class="dialog-wrapper-loading"></div>
+                </div>
                 <div v-else-if="allMsgs.length === 0" class="dialog-item nothing">{{$L('暂无消息')}}</div>
             </template>
         </VirtualList>
@@ -551,7 +553,9 @@ export default {
             recordState: '',
             wrapperStart: {},
 
+            scrollOffset: 0,
             scrollTail: 0,
+
             preventMoreLoad: false,
             preventToBottom: false,
 
@@ -1762,7 +1766,8 @@ export default {
         onScroll(event) {
             this.operateVisible = false;
             //
-            const {tail} = this.scrollInfo();
+            const {offset, tail} = this.scrollInfo();
+            this.scrollOffset = offset;
             this.scrollTail = tail;
             if (this.scrollTail <= 10) {
                 this.msgNew = 0;
