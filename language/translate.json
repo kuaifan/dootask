@@ -14397,5 +14397,148 @@
         "de": "Die branchennamen dürfen keine besonderen symbole enthalten",
         "fr": "Le nom du ministère ne doit pas contenir de symboles spéciaux",
         "id": "Nama departemen tidak boleh berisi simbol khusus"
+    },
+    {
+        "key": "匿名消息功能暂停使用",
+        "zh": "",
+        "zh-CHT": "匿名消息功能暫停使用",
+        "en": "The anonymous message function is disabled",
+        "ko": "익명 메시지 사용을 일시 중지합니다",
+        "ja": "匿名メッセージ機能の使用を一時停止します",
+        "de": "Anonymität ist keine option",
+        "fr": "La fonction de messagerie anonyme est suspendue",
+        "id": "\"Fungsi informasi tanpa nama telah ditangguhkan."
+    },
+    {
+        "key": "匿名消息仅允许发送给个人",
+        "zh": "",
+        "zh-CHT": "匿名消息僅允許發送給個人",
+        "en": "Anonymous messages are only allowed to be sent to individuals",
+        "ko": "익명의 메시지는 개인에게만 보낼 수 있습니다",
+        "ja": "匿名メッセージは個人にしか送信できません",
+        "de": "Anonyme nachrichten dürfen nur an einzelpersonen verschickt werden",
+        "fr": "Les messages anonymes ne sont autorisés à être envoyés qu’aux particuliers",
+        "id": "Informasi anonim hanya diperbolehkan untuk dikirim ke individu"
+    },
+    {
+        "key": "对方已离职",
+        "zh": "",
+        "zh-CHT": "對方已離職",
+        "en": "The other party has left",
+        "ko": "상대방은 이미 사직하였다.",
+        "ja": "先方は退職されました",
+        "de": "Feind in sicht.",
+        "fr": "L’autre partie a quitté",
+        "id": "Dia sedang pergi."
+    },
+    {
+        "key": "匿名机器人不存在",
+        "zh": "",
+        "zh-CHT": "匿名機器人不存在",
+        "en": "Anonymous bots don't exist",
+        "ko": "익명의 로봇은 존재하지 않습니다",
+        "ja": "匿名ロボットは存在しません",
+        "de": "Anonyme roboter gibt es nicht",
+        "fr": "Le bot anonyme n’existe pas",
+        "id": "Anonymous robot tidak ada"
+    },
+    {
+        "key": "匿名机器人会话不存在",
+        "zh": "",
+        "zh-CHT": "匿名機器人會話不存在",
+        "en": "Anonymous bot session does not exist",
+        "ko": "익명의 로봇 세션이 존재하지 않습니다",
+        "ja": "匿名ロボット会話は存在しません",
+        "de": "Die gespräche der anonymen roboter existieren nicht",
+        "fr": "Anonyme bot session n’existe pas",
+        "id": "Sesi robot tanpa nama tidak ada"
+    },
+    {
+        "key": "匿名消息",
+        "zh": "",
+        "zh-CHT": "匿名消息",
+        "en": "Anonymous message",
+        "ko": "익명의 메시지",
+        "ja": "匿名のメッセージです",
+        "de": "Anonymer tipp.",
+        "fr": "Un message anonyme",
+        "id": "Sumber tanpa nama"
+    },
+    {
+        "key": "系统管理员",
+        "zh": "",
+        "zh-CHT": "系統管理員",
+        "en": "System administrator",
+        "ko": "시스템 관리자",
+        "ja": "システム管理者です",
+        "de": "Der systemverwalter",
+        "fr": "Administrateur du système",
+        "id": "Administrator sistem"
+    },
+    {
+        "key": "发送匿名消息",
+        "zh": "",
+        "zh-CHT": "發送匿名消息",
+        "en": "Send anonymous message",
+        "ko": "익명으로 메시지 보내기",
+        "ja": "匿名のメッセージを送ります",
+        "de": "Eine anonyme nachricht versenden.",
+        "fr": "Envoyer un message anonyme",
+        "id": "Mengirim pesan anonim"
+    },
+    {
+        "key": "匿名消息将通过匿名机器人发送给对方，绝对不会暴露你的身份",
+        "zh": "",
+        "zh-CHT": "匿名消息將通過匿名機器人發送給對方，絕對不會暴露你的身份",
+        "en": "Anonymous messages will be sent to each other via anonymous bots and will never reveal your identity",
+        "ko": "당신의 신원은 절대 드러나지 않는다. 익명의 로봇을 통해 상대방에게 익명의 정보를 보낸다",
+        "ja": "匿名メッセージは匿名ロボットを使って相手に送られます絶対に正体がばれません",
+        "de": "Anonyme nachrichten werden über anonyme roboter weitergeleitet und dürfen unsere identität niemals verraten",
+        "fr": "Un message anonyme sera envoyé à l’autre personne via un robot anonyme et ne révélera absolument pas votre identité",
+        "id": "Pesan tanpa nama akan dikirimkan ke robot tanpa nama dan pasti tidak akan merusak penyamaranmu"
+    },
+    {
+        "key": "匿名发送",
+        "zh": "",
+        "zh-CHT": "匿名發送",
+        "en": "Anonymous sending",
+        "ko": "익명으로 보내기",
+        "ja": "匿名で送ります",
+        "de": "Hat anonym gesendet.",
+        "fr": "Envoyer de manière anonyme",
+        "id": "Kirim secara anonim"
+    },
+    {
+        "key": "请输入消息内容",
+        "zh": "",
+        "zh-CHT": "請輸入消息內容",
+        "en": "Please enter the message content",
+        "ko": "메시지 내용을 입력하십시오",
+        "ja": "メッセージの入力をお願いします。",
+        "de": "Geben sie den inhalt der nachricht ein",
+        "fr": "Veuillez entrer le contenu du message",
+        "id": "Silahkan masukkan pesan"
+    },
+    {
+        "key": "隐藏共享文件",
+        "zh": "",
+        "zh-CHT": "隱藏共享文件",
+        "en": "Hide shared file",
+        "ko": "공유 파일 숨기기",
+        "ja": "共有ファイルを隠します",
+        "de": "Dateien ausdrucken",
+        "fr": "Cacher les fichiers partagés",
+        "id": "Sembunyikan file bersama"
+    },
+    {
+        "key": "单聊",
+        "zh": "",
+        "zh-CHT": "單聊",
+        "en": "Single chat",
+        "ko": "단 얘기",
+        "ja": "単话",
+        "de": "Ein wenig.",
+        "fr": "Questionnaire parler",
+        "id": "Mono."
     }
 ]
