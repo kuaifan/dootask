@@ -15,13 +15,30 @@
                     </div>
                 </div>
                 <div v-if="tabActive==='dialog' && !dialogKey" class="messenger-nav">
+                    <EDropdown
+                        trigger="click"
+                        placement="bottom-start"
+                        class="nav-menu"
+                        @command="onActive">
+                        <div><i class="taskfont nav-icon">&#xe634;</i></div>
+                        <EDropdownMenu v-slot="dropdown" class="messenger-nav-menu">
+                            <EDropdownItem v-for="(item, key) in dialogMenus" :key="key" :command="item.type">
+                                <div class="messenger-nav-item" :class="{active: dialogActive==item.type}">
+                                    <div class="nav-title">{{$L(item.name)}}</div>
+                                    <Badge class="nav-num" :overflow-count="999" :count="msgUnread(item.type)"/>
+                                </div>
+                            </EDropdownItem>
+                        </EDropdownMenu>
+                    </EDropdown>
                     <div
-                        v-for="(item, key) in dialogType"
+                        v-for="(item, key) in computedType"
                         :key="key"
                         :class="{active:dialogActive==item.type}"
                         @click="onActive(item.type)">
-                        <Badge class="nav-num" :overflow-count="999" :count="msgUnread(item.type)"/>
-                        <div class="nav-title">{{$L(item.name)}}</div>
+                        <div class="nav-title">
+                            <em>{{$L(item.name)}}</em>
+                            <Badge class="nav-num" :overflow-count="999" :count="msgUnread(item.type)"/>
+                        </div>
                     </div>
                 </div>
                 <div v-if="$isEEUiApp && !appNotificationPermission" class="messenger-notify-permission" @click="onOpenAppSetting">
@@ -166,6 +183,8 @@ import ScrollerY from "../../components/ScrollerY";
 import longpress from "../../directives/longpress";
 import {Store} from "le5le-store";
 
+const MessengerObject = {menuHistory: []};
+
 export default {
     components: {ScrollerY, DialogWrapper},
     directives: {longpress},
@@ -179,12 +198,15 @@ export default {
             dialogSearch: [],
 
             dialogActive: '',
-            dialogType: [
+            dialogMenus: [
                 {type: '', name: '全部'},
                 {type: 'project', name: '项目'},
                 {type: 'task', name: '任务'},
-                {type: 'user', name: '个人'},
+                {type: 'user', name: '单聊'},
+                {type: 'group', name: '群聊'},
+                {type: 'bot', name: '机器人'},
             ],
+            dialogHistory: MessengerObject.menuHistory,
 
             contactsKey: '',
             contactsLoad: 0,
@@ -199,6 +221,11 @@ export default {
 
             clickAgainSubscribe: null,
         }
+    },
+
+    async beforeRouteEnter(to, from, next) {
+        MessengerObject.menuHistory = await $A.IDBArray("dialogMenuHistory")
+        next()
     },
 
     mounted() {
@@ -239,6 +266,35 @@ export default {
             return this.$route.name
         },
 
+        computedType() {
+            const {dialogActive, dialogMenus, dialogHistory} = this
+            const types = []
+            if (this.dialogHistory.includes(dialogActive)) {
+                types.push(...this.dialogHistory)
+            } else {
+                types.push('')
+                if (dialogActive) {
+                    types.push(dialogActive)
+                }
+                dialogHistory.some(item => {
+                    if (!types.includes(item)) {
+                        types.push(item)
+                    }
+                });
+                ['project', 'task'].some(item => {
+                    if (!types.includes(item)) {
+                        types.push(item)
+                    }
+                })
+                this.dialogHistory = types.slice(0, 4)
+                $A.IDBSave("dialogMenuHistory", this.dialogHistory)
+            }
+            //
+            return this.dialogHistory.map(type => {
+                return dialogMenus.find(item => item.type == type)
+            })
+        },
+
         dialogList() {
             const {dialogActive, dialogKey, dialogSearch} = this;
             if (dialogActive == '' && dialogKey == '') {
@@ -277,12 +333,22 @@ export default {
                     switch (dialogActive) {
                         case 'project':
                         case 'task':
-                            if (dialog.group_type != dialogActive) {
+                            if (dialogActive != dialog.group_type) {
                                 return false;
                             }
                             break;
                         case 'user':
-                            if (dialog.type != 'user' || dialog.bot) {
+                            if (dialogActive != dialog.type || dialog.bot) {
+                                return false;
+                            }
+                            break;
+                        case 'group':
+                            if (dialogActive != dialog.type || ['project', 'task'].includes(dialog.group_type)) {
+                                return false;
+                            }
+                            break;
+                        case 'bot':
+                            if (!dialog.bot) {
                                 return false;
                             }
                             break;
@@ -379,6 +445,16 @@ export default {
                         case 'user':
                             if (type != dialog.type || dialog.bot) {
                                 return false
+                            }
+                            break;
+                        case 'group':
+                            if (type != dialog.type || ['project', 'task'].includes(dialog.group_type)) {
+                                return false
+                            }
+                            break;
+                        case 'bot':
+                            if (!dialog.bot) {
+                                return false;
                             }
                             break;
                     }

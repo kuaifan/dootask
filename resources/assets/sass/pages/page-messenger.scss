@@ -62,25 +62,37 @@
             .messenger-nav {
                 display: flex;
                 align-items: center;
-                justify-content: space-evenly;
-                padding: 2px 0 12px;
+                padding: 2px 10px 12px;
                 > div {
-                    max-width: 25%;
-                    position: relative;
+                    flex: 1;
+                    flex-shrink: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                     line-height: 1;
                     padding: 0 6px;
                     color: #888888;
                     cursor: pointer;
-                    .nav-num {
-                        position: absolute;
-                        top: -12px;
-                        right: -8px;
-                        transform: scale(0.7);
+                    &.nav-menu {
+                        max-width: 46px;
+                    }
+                    .nav-icon {
+                        font-size: 16px;
                     }
                     .nav-title {
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
+                        position: relative;
+                        > em {
+                            font-style: normal;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                        }
+                        .nav-num {
+                            position: absolute;
+                            top: -12px;
+                            right: -8px;
+                            transform: scale(0.7);
+                        }
                     }
                     &.active {
                         color: #555555;
@@ -536,6 +548,34 @@
                     border-radius: 14px;
                 }
             }
+        }
+    }
+}
+
+.messenger-nav-menu {
+    transform: translateX(-4px);
+    .popper__arrow {
+        transform: translateX(2px);
+    }
+    .messenger-nav-item {
+        display: flex;
+        align-items: center;
+        &.active {
+            .nav-title {
+                font-weight: bold;
+            }
+        }
+        .nav-title {
+            flex: 1;
+            max-width: 88px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 12px;
+        }
+        .nav-num {
+            transform: scale(0.7);
+            transform-origin: center right;
         }
     }
 }
