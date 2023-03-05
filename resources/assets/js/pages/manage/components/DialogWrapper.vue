@@ -1434,13 +1434,16 @@ export default {
 
         onEventMore(e) {
             switch (e) {
-                case 'call':
-                    this.onCallTel()
-                    break;
-
                 case 'image':
                 case 'file':
                     this.$refs.chatUpload.handleClick()
+                    break;
+
+                case 'call':
+                    this.onCallTel()
+                    break;
+                case 'anon':
+                    this.onAnon()
                     break;
             }
         },
@@ -1466,6 +1469,43 @@ export default {
                 }
             }).catch(({msg}) => {
                 $A.modalError(msg);
+            });
+        },
+
+        onAnon() {
+            if (this.dialogData.type !== 'user' || this.dialogData.bot) {
+                $A.modalWarning("匿名消息仅允许发送给个人");
+                return
+            }
+            $A.modalInput({
+                title: `发送匿名消息`,
+                placeholder: `匿名消息将通过匿名机器人发送给对方，绝对不会暴露你的身份`,
+                inputProps: {
+                    type: 'textarea',
+                    rows: 3,
+                    autosize: { minRows: 3, maxRows: 6 },
+                    maxlength: 2000,
+                },
+                okText: "匿名发送",
+                onOk: (value) => {
+                    if (!value) {
+                        return `请输入消息内容`
+                    }
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("call", {
+                            url: 'dialog/msg/sendanon',
+                            data: {
+                                userid: this.dialogData.dialog_user.userid,
+                                text: value,
+                            },
+                            method: 'post',
+                        }).then(({msg}) => {
+                            resolve(msg)
+                        }).catch(({msg}) => {
+                            reject(msg)
+                        });
+                    })
+                }
             });
         },
 

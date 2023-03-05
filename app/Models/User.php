@@ -180,6 +180,15 @@ class User extends AbstractModel
     }
 
     /**
+     * 返回是否禁用帐号（离职）
+     * @return bool
+     */
+    public function isDisable()
+    {
+        return in_array('disable', $this->identity);
+    }
+
+    /**
      * 返回是否管理员
      * @return bool
      */
@@ -575,14 +584,17 @@ class User extends AbstractModel
             return Base::fillUrl($userimg);
         }
         // 机器人头像
-        if ($email == 'system-msg@bot.system') {
-            return url("images/avatar/default_system.png");
-        } elseif ($email == 'task-alert@bot.system') {
-            return url("images/avatar/default_task.png");
-        } elseif ($email == 'check-in@bot.system') {
-            return url("images/avatar/default_checkin.png");
-        } elseif ($email == 'bot-manager@bot.system') {
-            return url("images/avatar/default_bot.png");
+        switch ($email) {
+            case 'system-msg@bot.system':
+                return url("images/avatar/default_system.png");
+            case 'task-alert@bot.system':
+                return url("images/avatar/default_task.png");
+            case 'check-in@bot.system':
+                return url("images/avatar/default_checkin.png");
+            case 'anon-msg@bot.system':
+                return url("images/avatar/default_anon.png");
+            case 'bot-manager@bot.system':
+                return url("images/avatar/default_bot.png");
         }
         // 生成文字头像
         if (self::$defaultAvatarMode === 'auto') {
@@ -652,14 +664,22 @@ class User extends AbstractModel
                 ])->save();
             }
             //
-            if ($key === 'system-msg') {
-                $update['nickname'] = '系统消息';
-            } elseif ($key === 'task-alert') {
-                $update['nickname'] = '任务提醒';
-            } elseif ($key === 'check-in') {
-                $update['nickname'] = '签到打卡';
-            } elseif ($key === 'bot-manager') {
-                $update['nickname'] = '机器人管理';
+            switch ($key) {
+                case 'system-msg':
+                    $update['nickname'] = '系统消息';
+                    break;
+                case 'task-alert':
+                    $update['nickname'] = '任务提醒';
+                    break;
+                case 'check-in':
+                    $update['nickname'] = '签到打卡';
+                    break;
+                case 'anon-msg':
+                    $update['nickname'] = '匿名消息';
+                    break;
+                case 'bot-manager':
+                    $update['nickname'] = '机器人管理';
+                    break;
             }
         }
         if ($update) {

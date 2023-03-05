@@ -41,7 +41,7 @@ class SystemController extends AbstractController
      * @apiParam {String} type
      * - get: 获取（默认）
      * - all: 获取所有（需要管理员权限）
-     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'auto_archived', 'archived_day', 'all_group_mute', 'all_group_autoin', 'start_home', 'home_footer']）
+     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'auto_archived', 'archived_day', 'all_group_mute', 'all_group_autoin', 'start_home', 'home_footer']）
 
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -65,6 +65,7 @@ class SystemController extends AbstractController
                     'password_policy',
                     'project_invite',
                     'chat_information',
+                    'anon_message',
                     'auto_archived',
                     'archived_day',
                     'all_group_mute',
@@ -101,6 +102,7 @@ class SystemController extends AbstractController
         $setting['password_policy'] = $setting['password_policy'] ?: 'simple';
         $setting['project_invite'] = $setting['project_invite'] ?: 'open';
         $setting['chat_information'] = $setting['chat_information'] ?: 'optional';
+        $setting['anon_message'] = $setting['anon_message'] ?: 'open';
         $setting['auto_archived'] = $setting['auto_archived'] ?: 'close';
         $setting['archived_day'] = floatval($setting['archived_day']) ?: 7;
         $setting['all_group_mute'] = $setting['all_group_mute'] ?: 'open';

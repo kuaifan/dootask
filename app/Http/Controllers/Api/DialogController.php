@@ -910,6 +910,59 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {post} api/dialog/msg/sendanon          16. 发送匿名消息
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__sendanon
+     *
+     * @apiParam {Number} userid            对方会员ID
+     * @apiParam {String} text              消息内容
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__sendanon()
+    {
+        User::auth();
+        //
+        $userid = Base::getPostInt('userid');
+        $text = trim(Base::getPostValue('text'));
+        //
+        $anonMessage = Base::settingFind('system', 'anon_message', 'open');
+        if ($anonMessage != 'open') {
+            return Base::retError("匿名消息功能暂停使用");
+        }
+        //
+        $toUser = User::whereUserid($userid)->first();
+        if (empty($toUser) || $toUser->bot) {
+            return Base::retError("匿名消息仅允许发送给个人");
+        }
+        if ($toUser->isDisable()) {
+            return Base::retError("对方已离职");
+        }
+        $strlen = mb_strlen($text);
+        if ($strlen < 1) {
+            return Base::retError('消息内容不能为空');
+        }
+        if ($strlen > 2000) {
+            return Base::retError('消息内容最大不能超过2000字');
+        }
+        //
+        $botUser = User::botGetOrCreate('anon-msg');
+        if (empty($botUser)) {
+            return Base::retError('匿名机器人不存在');
+        }
+        $dialog = WebSocketDialog::checkUserDialog($botUser, $toUser->userid);
+        if (empty($dialog)) {
+            return Base::retError('匿名机器人会话不存在');
+        }
+        return WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "<p>{$text}</p>"], $botUser->userid);
+    }
+
+    /**
      * @api {get} api/dialog/msg/readlist          17. 获取消息阅读情况
      *
      * @apiDescription 需要token身份
