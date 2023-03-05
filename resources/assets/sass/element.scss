@@ -5,6 +5,8 @@ $--tooltip-font-size: 14px;
 $--dropdown-menuItem-hover-fill: #f4f5f7;
 $--dropdown-menuItem-hover-color: #606266;
 
+$--font-path: '../css/fonts';
+
 @import "~element-ui/packages/theme-chalk/src/common/transition";
 @import "~element-ui/packages/theme-chalk/src/icon";
 @import "~element-ui/packages/theme-chalk/src/avatar";

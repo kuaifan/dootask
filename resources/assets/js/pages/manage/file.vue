@@ -56,9 +56,12 @@
                 </template>
                 <div v-if="loadIng > 0" class="nav-load"><Loading/></div>
                 <div class="flex-full"></div>
+                <div v-if="hasShareFile" class="only-checkbox">
+                    <Checkbox v-model="hideShared">{{$L('隐藏共享文件')}}</Checkbox>
+                </div>
                 <div :class="['switch-button', tableMode]">
-                    <div @click="tableMode='table'"><i class="taskfont">&#xe66a;</i></div>
                     <div @click="tableMode='block'"><i class="taskfont">&#xe60c;</i></div>
+                    <div @click="tableMode='table'"><i class="taskfont">&#xe66a;</i></div>
                 </div>
             </div>
 
@@ -67,7 +70,23 @@
                 @drop.prevent="filePasteDrag($event, 'drag')"
                 @dragover.prevent="fileDragOver(true, $event)"
                 @dragleave.prevent="fileDragOver(false, $event)">
-                <template v-if="tableMode === 'block'">
+                <div v-if="tableMode === 'table'" class="file-table" @contextmenu.prevent="handleContextmenu">
+                    <Table
+                        :columns="columns"
+                        :data="fileList"
+                        :height="tableHeight"
+                        :no-data-text="$L('没有任何文件')"
+                        @on-cell-click="clickRow"
+                        @on-contextmenu="handleContextMenu"
+                        @on-select="handleTableSelect"
+                        @on-select-cancel="handleTableSelect"
+                        @on-select-all-cancel="handleTableSelect"
+                        @on-select-all="handleTableSelect"
+                        @on-sort-change="handleTableSort"
+                        context-menu
+                        stripe/>
+                </div>
+                <template v-else>
                     <div v-if="fileList.length == 0 && loadIng == 0" class="file-no" @contextmenu.prevent="handleContextmenu">
                         <i class="taskfont">&#xe60b;</i>
                         <p>{{$L('没有任何文件')}}</p>
@@ -121,22 +140,6 @@
                         </ul>
                     </div>
                 </template>
-                <div v-else class="file-table" @contextmenu.prevent="handleContextmenu">
-                    <Table
-                        :columns="columns"
-                        :data="fileList"
-                        :height="tableHeight"
-                        :no-data-text="$L('没有任何文件')"
-                        @on-cell-click="clickRow"
-                        @on-contextmenu="handleContextMenu"
-                        @on-select="handleTableSelect"
-                        @on-select-cancel="handleTableSelect"
-                        @on-select-all-cancel="handleTableSelect"
-                        @on-select-all="handleTableSelect"
-                        @on-sort-change="handleTableSort"
-                        context-menu
-                        stripe/>
-                </div>
                 <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
                     <div class="drag-text">{{$L('拖动到这里发送')}}</div>
                 </div>
@@ -400,7 +403,7 @@ import DialogSelect from "./components/DialogSelect";
 
 const FilePreview = () => import('./components/FilePreview');
 const FileContent = () => import('./components/FileContent');
-const FileObject = {sort: null, mode: null};
+const FileObject = {sort: null, mode: null, shared: null};
 
 export default {
     components: {DialogSelect, PreviewImage, FilePreview, DrawerOverlay, UserInput, FileContent},
@@ -463,6 +466,7 @@ export default {
             ],
 
             tableMode: "",
+            hideShared: false,
             columns: [],
 
             shareShow: false,
@@ -516,12 +520,14 @@ export default {
     async beforeRouteEnter(to, from, next) {
         FileObject.sort = await $A.IDBJson("cacheFileSort")
         FileObject.mode = await $A.IDBString("fileTableMode")
+        FileObject.shared = await $A.IDBBoolean("fileHideShared")
         next()
     },
 
 
     created() {
         this.tableMode = FileObject.mode
+        this.hideShared = FileObject.shared
         this.columns = [
             {
                 type: 'selection',
@@ -713,9 +719,6 @@ export default {
     },
 
     mounted() {
-        if (!this.tableMode && this.$isEEUiApp) {
-            this.tableMode = 'block';
-        }
         this.uploadAccept = this.uploadFormat.map(item => {
             return '.' + item
         }).join(",");
@@ -758,8 +761,11 @@ export default {
         },
 
         fileList() {
-            const {fileLists, searchKey, pid, selectIds} = this;
+            const {fileLists, searchKey, hideShared, pid, selectIds, userId} = this;
             const list = $A.cloneJSON(sortBy(fileLists.filter((file) => {
+                if (hideShared && file.share && file.userid != userId) {
+                    return false
+                }
                 if (searchKey) {
                     return file.name.indexOf(searchKey) !== -1;
                 }
@@ -771,6 +777,11 @@ export default {
                 item._checked = selectIds.includes(item.id)
                 return item;
             })
+        },
+
+        hasShareFile() {
+            const {fileLists, userId} = this;
+            return fileLists.findIndex(file => file.share && file.userid != userId) !== -1
         },
 
         shearFirst() {
@@ -846,6 +857,10 @@ export default {
 
         tableMode(val) {
             $A.IDBSave("fileTableMode", val)
+        },
+
+        hideShared(val) {
+            $A.IDBSave("fileHideShared", val)
         },
 
         fileShow(val) {

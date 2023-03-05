@@ -100,7 +100,6 @@
                 display: flex;
                 align-items: center;
                 overflow: auto;
-                margin-right: 12px;
                 > li {
                     display: flex;
                     list-style: none;
@@ -182,8 +181,21 @@
             }
             .flex-full {
                 flex: 1;
+                margin-right: 24px;
+            }
+            .only-checkbox {
+                flex-shrink: 0;
+                display: flex;
+                align-items: center;
+                margin-right: 14px;
+                opacity: 0.9;
+                height: 30px;
+                .ivu-checkbox-focus {
+                    box-shadow: none;
+                }
             }
             .switch-button {
+                flex-shrink: 0;
                 display: flex;
                 align-items: center;
                 background-color: #ffffff;
@@ -224,7 +236,7 @@
                         color: $primary-color;
                     }
                 }
-                &.block {
+                &.table {
                     &:before {
                         left: 50%;
                     }
@@ -684,6 +696,12 @@
             }
             .file-navigator {
                 margin: 0 24px 0;
+                .flex-full {
+                    margin-right: 10px;
+                }
+                .only-checkbox {
+                    margin-right: 0;
+                }
             }
             .file-drag {
                 .file-list {
