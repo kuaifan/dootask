@@ -864,6 +864,14 @@
             }
             if (typeof config === "string") config = {title:config};
             let inputId = "modalInput_" + $A.randomString(6);
+            let inputProps = {
+                value: config.value,
+                placeholder: $A.L(config.placeholder),
+                elementId: inputId,
+            }
+            if ($A.isJson(config.inputProps)) {
+                inputProps = Object.assign(inputProps, config.inputProps)
+            }
             const onOk = () => {
                 return new Promise((resolve, reject) => {
                     if (!config.onOk) {
@@ -905,11 +913,7 @@
                             }
                         }, $A.L(config.title)),
                         h('Input', {
-                            props: {
-                                value: config.value,
-                                placeholder: $A.L(config.placeholder),
-                                elementId: inputId,
-                            },
+                            props: inputProps,
                             on: {
                                 input: (val) => {
                                     config.value = val;
