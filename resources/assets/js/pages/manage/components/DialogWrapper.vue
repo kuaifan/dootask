@@ -164,11 +164,18 @@
                 @on-progress="chatFile('progress', $event)"
                 @on-success="chatFile('success', $event)"
                 @on-error="chatFile('error', $event)"/>
-            <div v-if="todoShow" class="chat-todo">
-                <div class="todo-label">{{$L('待办')}}:</div>
+            <div v-if="todoShow" class="chat-bottom-menu">
+                <div class="bottom-menu-label">{{$L('待办')}}:</div>
                 <ul class="scrollbar-hidden">
                     <li v-for="item in todoList" @click.stop="onViewTodo(item)">
-                        <div class="todo-desc no-dark-content">{{$A.getMsgSimpleDesc(item.msg_data)}}</div>
+                        <div class="bottom-menu-desc no-dark-content">{{$A.getMsgSimpleDesc(item.msg_data)}}</div>
+                    </li>
+                </ul>
+            </div>
+            <div v-else-if="quickShow" class="chat-bottom-menu">
+                <ul class="scrollbar-hidden">
+                    <li v-for="text in quickMsg" @click.stop="sendMsg(text)">
+                        <div class="bottom-menu-desc no-dark-content">{{text}}</div>
                     </li>
                 </ul>
             </div>
@@ -721,6 +728,14 @@ export default {
                 array.push({type: 'task', label: '打开任务'})
             }
             return array
+        },
+
+        quickMsg() {
+            return this.dialogData.quick_msg || []
+        },
+
+        quickShow() {
+            return this.quickMsg.length > 0 && this.windowScrollY === 0 && this.replyId === 0
         },
 
         todoList() {
@@ -2355,7 +2370,7 @@ export default {
                     userids: [],
                     msg_id: this.operateItem.id,
                     my_id: this.userId,
-                    you_id: youId != this.userId ? youId : 0,
+                    you_id: youId != this.userId && !this.dialogData.bot ? youId : 0,
                 }
                 if (this.operateItem.todo) {
                     $A.modalConfirm({

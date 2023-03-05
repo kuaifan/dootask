@@ -84,6 +84,7 @@ class WebSocketDialog extends AbstractModel
         $this->top_at = $this->top_at ?? $dialogUserFun('top_at');
         $this->user_at = $this->user_at ?? $dialogUserFun('updated_at');
         $this->user_ms = WebSocketDialogUser::userMs($this->user_at);
+        $this->quick_msg = [];
         //
         if (isset($this->search_msg_id)) {
             // 最后消息 (搜索预览消息)

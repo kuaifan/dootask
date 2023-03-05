@@ -1187,12 +1187,12 @@
             overflow: hidden;
         }
 
-        .chat-todo {
+        .chat-bottom-menu {
             display: flex;
             align-items: center;
             padding: 8px 0;
 
-            .todo-label {
+            .bottom-menu-label {
                 flex-shrink: 0;
                 padding-right: 8px;
             }
@@ -1216,7 +1216,7 @@
                     display: flex;
                     align-items: center;
 
-                    .todo-desc {
+                    .bottom-menu-desc {
                         max-width: 150px;
                         overflow: hidden;
                         text-overflow: ellipsis;
