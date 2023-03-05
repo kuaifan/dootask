@@ -80,6 +80,10 @@
                             <i class="taskfont">&#xe7c1;</i>
                             {{$L('新会议')}}
                         </div>
+                        <div v-if="canCall" class="chat-input-popover-item" @click="onToolbar('call')">
+                            <i class="taskfont">&#xe7ba;</i>
+                            {{$L('拨打电话')}}
+                        </div>
                         <div class="chat-input-popover-item" @click="onToolbar('image')">
                             <i class="taskfont">&#xe7bc;</i>
                             {{$L('发送图片')}}
@@ -88,16 +92,10 @@
                             <i class="taskfont">&#xe7c0;</i>
                             {{$L('上传文件')}}
                         </div>
-                        <template v-if="dialogData.type === 'user' && !dialogData.bot">
-                            <div v-if="$isEEUiApp" class="chat-input-popover-item" @click="onToolbar('call')">
-                                <i class="taskfont">&#xe7ba;</i>
-                                {{$L('拨打电话')}}
-                            </div>
-                            <div class="chat-input-popover-item" @click="onToolbar('anon')">
-                                <i class="taskfont">&#xe690;</i>
-                                {{$L('匿名消息')}}
-                            </div>
-                        </template>
+                        <div v-if="canAnon" class="chat-input-popover-item" @click="onToolbar('anon')">
+                            <i class="taskfont">&#xe690;</i>
+                            {{$L('匿名消息')}}
+                        </div>
                     </EPopover>
                 </li>
 
@@ -322,6 +320,14 @@ export default {
             } else {
                 return this.$store.state.windowLarge
             }
+        },
+
+        canCall() {
+            return this.dialogData.type === 'user' && !this.dialogData.bot && this.$isEEUiApp
+        },
+
+        canAnon() {
+            return this.dialogData.type === 'user' && !this.dialogData.bot
         },
 
         editorStyle() {

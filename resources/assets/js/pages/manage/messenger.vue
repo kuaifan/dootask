@@ -281,7 +281,7 @@ export default {
                         types.push(item)
                     }
                 });
-                ['project', 'task'].some(item => {
+                ['project', 'task', 'user'].some(item => {
                     if (!types.includes(item)) {
                         types.push(item)
                     }
