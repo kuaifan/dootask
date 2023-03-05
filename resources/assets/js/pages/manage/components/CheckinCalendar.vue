@@ -31,7 +31,7 @@
                                 <div v-else>{{data.day}}</div>
 
                                 <div v-if="isCheck(data.date)" class="ui-state-down">{{$L('已签到')}}</div>
-                                <span v-else-if="data.today" class="ui-state-default">{{$L('尚未签到')}}</span>
+                                <div v-else-if="data.today" class="ui-state-default">{{$L('尚未签到')}}</div>
                             </div>
                         </ETooltip>
                     </td>
@@ -250,6 +250,13 @@ export default {
                 justify-content: center;
                 flex-direction: column;
                 line-height: 20px;
+                > div {
+                    max-width: 100%;
+                    padding: 0 4px;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                }
             }
             &:last-child {
                 border-right: 0;
@@ -278,9 +285,6 @@ export default {
     .ui-state-down,
     .ui-state-default {
         font-size: 12px;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
     }
 }
 </style>

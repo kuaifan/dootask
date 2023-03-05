@@ -86,8 +86,12 @@ class WebSocketDialogMsgTask extends AbstractTask
         if (empty($dialog)) {
             return;
         }
-        $updateds = $dialog->dialogUser->pluck('updated_at', 'userid')->toArray();
-        $silences = $dialog->dialogUser->pluck('silence', 'userid')->toArray();
+        $updateds = [];
+        $silences = [];
+        foreach ($dialog->dialogUser as $dialogUser) {
+            $updateds[$dialogUser->userid] = $dialogUser->updated_at;
+            $silences[$dialogUser->userid] = $dialogUser->silence;
+        }
         $userids = array_keys($silences);
 
         // 提及会员
