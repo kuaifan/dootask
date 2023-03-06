@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.24.24]
+## [0.24.30]
 
 ### Bug Fixes
 
@@ -14,6 +14,10 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
+- 工作包括周报模板添加下周拟定计划项
+- 优化ipad表单显示
+- 优化再次点击抖动
+- Dialog loading
 - 网络恢复后重新标记已读失败的信息
 - 优化开发执行脚本
 - 点击头像进入对话
@@ -26,15 +30,7 @@ All notable changes to this project will be documented in this file.
 - 文件列表支持隐藏共享文件
 - 优化消息类型分类
 - 消息快捷发送菜单
-
-## [0.23.94]
-
-### Performance
-
-- 工作包括周报模板添加下周拟定计划项
-- 优化ipad表单显示
-- 优化再次点击抖动
-- Dialog loading
+- 优化表情回复
 
 ## [0.23.86]
 

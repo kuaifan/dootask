@@ -260,6 +260,7 @@ return array (
   '复制成功' => 'Copiez avec succès',
   '密码错误' => 'Mot de passe incorrect',
   '成功发送' => 'Envoyé avec succès',
+  '我要签到' => 'Je veux Me Connecter',
   '扫码成功' => 'Code de balayage réussi',
   '操作成功' => 'Succès de l’opération',
   '新建成功' => 'Nouveau succès construit',

@@ -260,6 +260,7 @@ return array (
   '复制成功' => 'Kopie erfolgreich.',
   '密码错误' => 'Falsches passwort Julius cäsar',
   '成功发送' => 'Werden erfolgreich gesendet.',
+  '我要签到' => 'Ich muss mich anmelden',
   '扫码成功' => 'Scan abgeschlossen.',
   '操作成功' => 'Operation erfolgreich.',
   '新建成功' => 'Neuer erfolg',

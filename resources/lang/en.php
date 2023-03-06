@@ -260,6 +260,7 @@ return array (
   '复制成功' => 'Successful replication',
   '密码错误' => 'Password error',
   '成功发送' => 'Successfully sent',
+  '我要签到' => 'I\'d like to sign in',
   '扫码成功' => 'Successful code scanning',
   '操作成功' => 'Successful operation',
   '新建成功' => 'Successful creation',

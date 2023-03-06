@@ -32,7 +32,7 @@ class Youdao
      * @return mixed|null
      * @throws Exception
      */
-    public function translate($q, $from = null, $to = null, $successSleep = 2)
+    public function translate($q, $from = null, $to = null, $successSleep = 1)
     {
         if ($from === null) {
             $from = 'auto';

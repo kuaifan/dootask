@@ -14540,5 +14540,16 @@
         "de": "Ein wenig.",
         "fr": "Questionnaire parler",
         "id": "Mono."
+    },
+    {
+        "key": "我要签到",
+        "zh": "",
+        "zh-CHT": "我要簽到",
+        "en": "I'd like to sign in",
+        "ko": "서명하겠습니다",
+        "ja": "チェックインします",
+        "de": "Ich muss mich anmelden",
+        "fr": "Je veux Me Connecter",
+        "id": "Saya ingin masuk"
     }
 ]

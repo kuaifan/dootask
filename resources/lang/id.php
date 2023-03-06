@@ -260,6 +260,7 @@ return array (
   '复制成功' => 'Sukses menyalin',
   '密码错误' => 'Kata sandi salah',
   '成功发送' => 'Sukses kirim',
+  '我要签到' => 'Saya ingin masuk',
   '扫码成功' => 'Sapu bersih.',
   '操作成功' => 'Operasi sukses',
   '新建成功' => 'Pembangunan baru sukses',
