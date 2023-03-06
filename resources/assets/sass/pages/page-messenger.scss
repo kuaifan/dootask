@@ -553,13 +553,10 @@
 }
 
 .messenger-nav-menu {
-    transform: translateX(-4px);
-    .popper__arrow {
-        transform: translateX(2px);
-    }
     .messenger-nav-item {
         display: flex;
         align-items: center;
+        min-width: 90px;
         &.active {
             .nav-title {
                 font-weight: bold;
