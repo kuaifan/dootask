@@ -174,8 +174,8 @@
             </div>
             <div v-else-if="quickShow" class="chat-bottom-menu">
                 <ul class="scrollbar-hidden">
-                    <li v-for="text in quickMsg" @click.stop="sendMsg(text)">
-                        <div class="bottom-menu-desc no-dark-content">{{text}}</div>
+                    <li v-for="item in quickMsgs" @click.stop="sendQuick(item)">
+                        <div class="bottom-menu-desc no-dark-content">{{item.label}}</div>
                     </li>
                 </ul>
             </div>
@@ -730,12 +730,12 @@ export default {
             return array
         },
 
-        quickMsg() {
-            return this.dialogData.quick_msg || []
+        quickMsgs() {
+            return this.dialogData.quick_msgs || []
         },
 
         quickShow() {
-            return this.quickMsg.length > 0 && this.windowScrollY === 0 && this.replyId === 0
+            return this.quickMsgs.length > 0 && this.windowScrollY === 0 && this.replyId === 0
         },
 
         todoList() {
@@ -1142,6 +1142,14 @@ export default {
                     }
                 });
             }
+        },
+
+        /**
+         * 发送快捷消息
+         * @param item
+         */
+        sendQuick(item) {
+            this.sendMsg(`<p><span data-quick-key="${item.key}">${item.label}</span></p>`)
         },
 
         getMsgs(data) {

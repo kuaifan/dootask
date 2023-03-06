@@ -68,9 +68,20 @@ class BotReceiveMsgTask extends AbstractTask
         if ($msg->type !== 'text') {
             return;
         }
-        $pureText = trim(strip_tags($msg->msg['text']));
+        $original = $msg->msg['text'];
+        $pureText = trim(strip_tags($original));
+        // 签到机器人
+        if ($botUser->email === 'check-in@bot.system') {
+            if (preg_match("/<span[^>]*?data-quick-key=([\"'])(.*?)\\1[^>]*?>(.*?)<\/span>/is", $original, $match)) {
+                if ($match[2] === 'checkin') {
+                    $text = "暂未开放手动签到。";
+                    WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $text], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
+                    return;
+                }
+            }
+        }
+        // 管理机器人
         if (str_starts_with($pureText, '/')) {
-            // 管理机器人
             if ($botUser->email === 'bot-manager@bot.system') {
                 $isManager = true;
             } elseif (UserBot::whereBotId($botUser->userid)->whereUserid($msg->userid)->exists()) {
@@ -317,8 +328,10 @@ class BotReceiveMsgTask extends AbstractTask
             $text = preg_replace("/^\x20+/", "", $text);
             $text = preg_replace("/\n\x20+/", "\n", $text);
             WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $text], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
-        } elseif ($pureText) {
-            // 推送Webhook
+            return;
+        }
+        // 推送Webhook
+        if ($pureText) {
             $userBot = UserBot::whereBotId($botUser->userid)->first();
             if ($userBot && preg_match("/^https*:\/\//", $userBot->webhook_url)) {
                 Ihttp::ihttp_post($userBot->webhook_url, [

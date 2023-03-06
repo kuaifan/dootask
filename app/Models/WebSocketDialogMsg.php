@@ -695,6 +695,17 @@ class WebSocketDialogMsg extends AbstractModel
             }
             $text = str_replace($matchs[0][$key], "[:{$matchChar[1]}:{$keyId}:{$matchValye[1]}:]", $text);
         }
+        // 处理快捷消息
+        preg_match_all("/<span[^>]*?data-quick-key=([\"'])(.*?)\\1[^>]*?>(.*?)<\/span>/is", $text, $matchs);
+        foreach ($matchs[0] as $key => $str) {
+            $quickKey = $matchs[2][$key];
+            $quickLabel = $matchs[3][$key];
+            if ($quickKey && $quickLabel) {
+                $quickKey = str_replace(":", "", $quickKey);
+                $quickLabel = str_replace(":", "", $quickLabel);
+                $text = str_replace($str, "[:QUICK:{$quickKey}:{$quickLabel}:]", $text);
+            }
+        }
         // 处理链接标签
         preg_match_all("/<a[^>]*?href=([\"'])(.*?)\\1[^>]*?>(.*?)<\/a>/is", $text, $matchs);
         foreach ($matchs[0] as $key => $str) {
@@ -734,6 +745,7 @@ class WebSocketDialogMsg extends AbstractModel
         $text = preg_replace("/\[:@:(.*?):(.*?):\]/i", "<span class=\"mention user\" data-id=\"$1\">@$2</span>", $text);
         $text = preg_replace("/\[:#:(.*?):(.*?):\]/i", "<span class=\"mention task\" data-id=\"$1\">#$2</span>", $text);
         $text = preg_replace("/\[:~:(.*?):(.*?):\]/i", "<a class=\"mention file\" href=\"{{RemoteURL}}single/file/$1\" target=\"_blank\">~$2</a>", $text);
+        $text = preg_replace("/\[:QUICK:(.*?):(.*?):\]/i", "<span data-quick-key=\"$1\">$2</span>", $text);
         $text = preg_replace_callback("/\[:LINK:(.*?):(.*?):\]/i", function (array $match) {
             return "<a href=\"" . base64_decode($match[1]) . "\" target=\"_blank\">" . base64_decode($match[2]) . "</a>";
         }, $text);

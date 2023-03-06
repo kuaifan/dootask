@@ -84,7 +84,7 @@ class WebSocketDialog extends AbstractModel
         $this->top_at = $this->top_at ?? $dialogUserFun('top_at');
         $this->user_at = $this->user_at ?? $dialogUserFun('updated_at');
         $this->user_ms = WebSocketDialogUser::userMs($this->user_at);
-        $this->quick_msg = [];
+        $this->quick_msgs = [];
         //
         if (isset($this->search_msg_id)) {
             // 最后消息 (搜索预览消息)
@@ -118,6 +118,14 @@ class WebSocketDialog extends AbstractModel
                 if ($basic) {
                     $this->name = $basic->nickname;
                     $this->bot = $basic->bot;
+                    if ($basic->email === 'check-in@bot.system') {
+                        $this->quick_msgs = [
+                            [
+                                'key' => 'checkin',
+                                'label' => Base::Lang('我要签到')
+                            ]
+                        ];
+                    }
                 } else {
                     $this->name = 'non-existent';
                     $this->dialog_delete = 1;

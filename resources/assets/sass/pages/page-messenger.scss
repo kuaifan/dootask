@@ -556,7 +556,7 @@
     .messenger-nav-item {
         display: flex;
         align-items: center;
-        min-width: 90px;
+        min-width: 80px;
         &.active {
             .nav-title {
                 font-weight: bold;
@@ -640,6 +640,11 @@
             .messenger-msg {
                 display: none;
             }
+        }
+    }
+    .messenger-nav-menu {
+        .messenger-nav-item {
+            min-width: 100px;
         }
     }
 }
