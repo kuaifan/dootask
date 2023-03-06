@@ -959,7 +959,7 @@ class DialogController extends AbstractController
         if (empty($dialog)) {
             return Base::retError('匿名机器人会话不存在');
         }
-        return WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "<p>{$text}</p>"], $botUser->userid);
+        return WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "<p>{$text}</p>"], $botUser->userid, true);
     }
 
     /**
