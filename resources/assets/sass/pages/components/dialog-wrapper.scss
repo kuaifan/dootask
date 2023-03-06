@@ -837,6 +837,10 @@
                             }
                             .emoji-symbol {
                                 font-size: 16px;
+                                transition: transform 0.3s;
+                                &:hover {
+                                    transform: scale(1.5);
+                                }
                             }
                             .emoji-users {
                                 position: relative;
@@ -1687,6 +1691,10 @@ body.eeui-app {
                                 .emoji-symbol {
                                     font-size: 14px;
                                     margin-right: -1px;
+                                    transition: none;
+                                    &:hover {
+                                        transform: none;
+                                    }
                                 }
                             }
                         }

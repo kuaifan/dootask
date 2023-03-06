@@ -74,14 +74,13 @@
                 <li
                     v-for="(item, index) in msgData.emoji"
                     :key="index"
-                    :class="{hasme: item.userids.includes(userId)}"
-                    @click="onEmoji(item.symbol)">
-                    <div class="emoji-symbol no-dark-content">{{item.symbol}}</div>
-                    <div class="emoji-users">
+                    :class="{hasme: item.userids.includes(userId)}">
+                    <div class="emoji-symbol no-dark-content" @click="onEmoji(item.symbol)">{{item.symbol}}</div>
+                    <div class="emoji-users" @click="onShowEmojiUser(item)">
                         <ul>
                             <template v-for="(uitem, uindex) in item.userids">
                                 <li v-if="uindex < emojiUsersNum" :class="{bold:uitem==userId}"><UserAvatar :userid="uitem" tooltip-disabled show-name :show-icon="false"/></li>
-                                <li v-else-if="uindex == emojiUsersNum" @click.stop="onShowEmojiUser(item)">+{{item.userids.length - emojiUsersNum}}位</li>
+                                <li v-else-if="uindex == emojiUsersNum">+{{item.userids.length - emojiUsersNum}}位</li>
                             </template>
                         </ul>
                     </div>
