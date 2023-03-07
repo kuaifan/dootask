@@ -15,8 +15,6 @@ use Illuminate\Support\Facades\DB;
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel query()
- * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel modify(array $values)
- * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Model|object|static|null cancelAppend()
@@ -25,6 +23,8 @@ use Illuminate\Support\Facades\DB;
  * @method static \Illuminate\Database\Query\Builder|static select($columns = [])
  * @method static \Illuminate\Database\Query\Builder|static whereIn($column, $values, $boolean = 'and', $not = false)
  * @method static \Illuminate\Database\Query\Builder|static whereNotIn($column, $values, $boolean = 'and')
+ * @method int change(array $array)
+ * @method int remove()
  * @mixin \Eloquent
  */
 class AbstractModel extends Model
@@ -44,15 +44,15 @@ class AbstractModel extends Model
     /**
      * 通过模型修改数据
      * @param AbstractModel $builder
-     * @param $values
+     * @param $array
      * @return int
      */
-    protected function scopeModify($builder, $values)
+    protected function scopeChange($builder, $array)
     {
         $line = 0;
         $rows = $builder->get();
         foreach ($rows as $row) {
-            $row->updateInstance($values);
+            $row->updateInstance($array);
             if ($row->save()) {
                 $line++;
             }

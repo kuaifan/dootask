@@ -1265,7 +1265,7 @@ class ProjectTask extends AbstractModel
                 'archived_at' => $this->archived_at,
                 'archived_userid' => $this->archived_userid,
             ]);
-            self::whereParentId($this->id)->modify([
+            self::whereParentId($this->id)->change([
                 'archived_at' => $this->archived_at,
                 'archived_userid' => $this->archived_userid,
                 'archived_follow' => $this->archived_follow,

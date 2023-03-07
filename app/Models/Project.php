@@ -252,7 +252,7 @@ class Project extends AbstractModel
                 $this->archived_userid = User::userid();
                 $this->addLog("项目取消归档");
                 $this->pushMsg('recovery', $this);
-                ProjectTask::whereProjectId($this->id)->whereArchivedFollow(1)->modify([
+                ProjectTask::whereProjectId($this->id)->whereArchivedFollow(1)->change([
                     'archived_at' => null,
                     'archived_follow' => 0
                 ]);
@@ -262,7 +262,7 @@ class Project extends AbstractModel
                 $this->archived_userid = User::userid();
                 $this->addLog("项目归档");
                 $this->pushMsg('archived');
-                ProjectTask::whereProjectId($this->id)->whereArchivedAt(null)->modify([
+                ProjectTask::whereProjectId($this->id)->whereArchivedAt(null)->change([
                     'archived_at' => $archived_at,
                     'archived_follow' => 1
                 ]);
@@ -441,7 +441,7 @@ class Project extends AbstractModel
             });
             //
             foreach ($upTaskList as $id => $value) {
-                ProjectTask::whereFlowItemId($id)->update([
+                ProjectTask::whereFlowItemId($id)->change([
                     'flow_item_name' => $value
                 ]);
             }

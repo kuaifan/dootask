@@ -1573,7 +1573,7 @@ class DialogController extends AbstractController
         if ($array) {
             $dialog->updateInstance($array);
             $dialog->save();
-            WebSocketDialogUser::whereDialogId($dialog->id)->update(['updated_at' => Carbon::now()->toDateTimeString('millisecond')]);
+            WebSocketDialogUser::whereDialogId($dialog->id)->change(['updated_at' => Carbon::now()->toDateTimeString('millisecond')]);
         }
         //
         return Base::retSuccess('修改成功', $data);

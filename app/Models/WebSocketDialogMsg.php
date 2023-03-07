@@ -855,7 +855,7 @@ class WebSocketDialogMsg extends AbstractModel
                 $dialogMsg->send = 1;
                 $dialogMsg->key = $dialogMsg->generateMsgKey();
                 $dialogMsg->save();
-                WebSocketDialogUser::whereDialogId($dialog->id)->update(['updated_at' => Carbon::now()->toDateTimeString('millisecond')]);
+                WebSocketDialogUser::whereDialogId($dialog->id)->change(['updated_at' => Carbon::now()->toDateTimeString('millisecond')]);
             });
             //
             $task = new WebSocketDialogMsgTask($dialogMsg->id);

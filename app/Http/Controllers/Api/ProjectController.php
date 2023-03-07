@@ -510,7 +510,7 @@ class ProjectController extends AbstractController
         }
         //
         AbstractModel::transaction(function() use ($owner_userid, $project) {
-            ProjectUser::whereProjectId($project->id)->update(['owner' => 0]);
+            ProjectUser::whereProjectId($project->id)->change(['owner' => 0]);
             ProjectUser::updateInsert([
                 'project_id' => $project->id,
                 'userid' => $owner_userid,
@@ -571,11 +571,11 @@ class ProjectController extends AbstractController
                 if (!is_array($item['task'])) continue;
                 $index = 0;
                 foreach ($item['task'] as $task_id) {
-                    if (ProjectTask::whereId($task_id)->whereProjectId($project->id)->whereCompleteAt(null)->update([
+                    if (ProjectTask::whereId($task_id)->whereProjectId($project->id)->whereCompleteAt(null)->change([
                         'column_id' => $item['id'],
                         'sort' => $index
                     ])) {
-                        ProjectTask::whereParentId($task_id)->whereProjectId($project->id)->update([
+                        ProjectTask::whereParentId($task_id)->whereProjectId($project->id)->change([
                             'column_id' => $item['id'],
                         ]);
                     }

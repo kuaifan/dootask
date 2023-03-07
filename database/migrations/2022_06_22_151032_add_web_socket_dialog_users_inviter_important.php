@@ -25,7 +25,7 @@ class AddWebSocketDialogUsersInviterImportant extends Migration
             \App\Models\WebSocketDialog::whereIn('group_type', ['project', 'task'])->chunkById(100, function ($lists) {
                 /** @var \App\Models\WebSocketDialog $item */
                 foreach ($lists as $item) {
-                    \App\Models\WebSocketDialogUser::whereDialogId($item->id)->update([
+                    \App\Models\WebSocketDialogUser::whereDialogId($item->id)->change([
                         'important' => 1,
                     ]);
                 }
