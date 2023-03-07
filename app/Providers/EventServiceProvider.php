@@ -2,10 +2,21 @@
 
 namespace App\Providers;
 
+use App\Models\Project;
+use App\Models\ProjectTask;
+use App\Models\ProjectTaskUser;
+use App\Models\ProjectUser;
+use App\Models\WebSocketDialog;
+use App\Models\WebSocketDialogUser;
+use App\Observers\ProjectObserver;
+use App\Observers\ProjectTaskObserver;
+use App\Observers\ProjectTaskUserObserver;
+use App\Observers\ProjectUserObserver;
+use App\Observers\WebSocketDialogObserver;
+use App\Observers\WebSocketDialogUserObserver;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -27,6 +38,11 @@ class EventServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        Project::observe(ProjectObserver::class);
+        ProjectTask::observe(ProjectTaskObserver::class);
+        ProjectTaskUser::observe(ProjectTaskUserObserver::class);
+        ProjectUser::observe(ProjectUserObserver::class);
+        WebSocketDialog::observe(WebSocketDialogObserver::class);
+        WebSocketDialogUser::observe(WebSocketDialogUserObserver::class);
     }
 }

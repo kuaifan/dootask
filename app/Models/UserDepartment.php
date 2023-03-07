@@ -127,7 +127,6 @@ class UserDepartment extends AbstractModel
         $dialog = WebSocketDialog::find($this->dialog_id);
         if ($dialog) {
             $dialog->deleteDialog();
-            $dialog->pushMsg("groupDelete");
         }
         //
         $this->delete();

@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Module\Base;
-
 /**
  * App\Models\ProjectUser
  *

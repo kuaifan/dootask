@@ -2915,7 +2915,8 @@ export default {
                                         break;
                                     case 'groupAdd':
                                     case 'groupJoin':
-                                        // 群组添加、加入
+                                    case 'groupRestore':
+                                        // 群组添加、加入、恢复
                                         dispatch("getDialogOne", data.id).catch(() => {})
                                         break;
                                     case 'groupUpdate':
@@ -2942,14 +2943,15 @@ export default {
                                 switch (action) {
                                     case 'add':
                                     case 'update':
+                                    case 'recovery':
                                         dispatch("saveProject", data)
                                         break;
                                     case 'detail':
                                         dispatch("getProjectOne", data.id).catch(() => {})
                                         dispatch("getTaskForProject", data.id).catch(() => {})
                                         break;
-                                    case 'archived':
                                     case 'delete':
+                                    case 'archived':
                                         dispatch("forgetProject", data.id);
                                         break;
                                     case 'sort':
@@ -2985,10 +2987,12 @@ export default {
                                 const {action, data} = msg;
                                 switch (action) {
                                     case 'add':
-                                    case 'restore':
+                                    case 'restore':     // 恢复（删除）
                                         dispatch("addTaskSuccess", data)
                                         break;
                                     case 'update':
+                                    case 'archived':    // 归档
+                                    case 'recovery':    // 恢复（归档）
                                         dispatch("saveTask", data)
                                         break;
                                     case 'dialog':

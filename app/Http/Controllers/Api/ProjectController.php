@@ -1784,7 +1784,7 @@ class ProjectController extends AbstractController
         //
         $task = ProjectTask::userTask($task_id, null, $type !== 'recovery', true);
         if ($type == 'recovery') {
-            $task->recoveryTask();
+            $task->restoreTask();
             return Base::retSuccess('操作成功', ['id' => $task->id]);
         } else {
             $task->deleteTask();

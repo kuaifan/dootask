@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\DB;
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel modify(array $values)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Model|object|static|null cancelAppend()
@@ -38,6 +40,42 @@ class AbstractModel extends Model
     ];
 
     protected $appendattrs = [];
+
+    /**
+     * 通过模型修改数据
+     * @param AbstractModel $builder
+     * @param $values
+     * @return int
+     */
+    protected function scopeModify($builder, $values)
+    {
+        $line = 0;
+        $rows = $builder->get();
+        foreach ($rows as $row) {
+            $row->updateInstance($values);
+            if ($row->save()) {
+                $line++;
+            }
+        }
+        return $line;
+    }
+
+    /**
+     * 通过模型删除数据
+     * @param AbstractModel $builder
+     * @return int
+     */
+    protected function scopeRemove($builder)
+    {
+        $line = 0;
+        $rows = $builder->get();
+        foreach ($rows as $row) {
+            if ($row->delete()) {
+                $line++;
+            }
+        }
+        return $line;
+    }
 
     /**
      * 保存数据忽略错误

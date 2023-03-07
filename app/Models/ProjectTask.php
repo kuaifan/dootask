@@ -1260,7 +1260,7 @@ class ProjectTask extends AbstractModel
                 $this->archived_follow = 0;
                 $this->addLog($logText, [], $userid);
             }
-            $this->pushMsg('update', [
+            $this->pushMsg($archived_at === null ? 'recovery' : 'archived', [
                 'id' => $this->id,
                 'archived_at' => $this->archived_at,
                 'archived_userid' => $this->archived_userid,
@@ -1286,7 +1286,6 @@ class ProjectTask extends AbstractModel
             if ($this->dialog_id) {
                 $dialog = WebSocketDialog::find($this->dialog_id);
                 $dialog?->deleteDialog();
-                $dialog?->pushMsg("groupDelete");
             }
             self::whereParentId($this->id)->delete();
             $this->deleted_userid = User::userid();
@@ -1305,12 +1304,12 @@ class ProjectTask extends AbstractModel
      * @param bool $pushMsg 是否推送
      * @return bool
      */
-    public function recoveryTask($pushMsg = true)
+    public function restoreTask($pushMsg = true)
     {
         AbstractModel::transaction(function () {
             if ($this->dialog_id) {
                 $dialog = WebSocketDialog::withTrashed()->find($this->dialog_id);
-                $dialog?->recoveryDialog();
+                $dialog?->restoreDialog();
             }
             self::whereParentId($this->id)->withTrashed()->restore();
             $this->addLog("还原{任务}");

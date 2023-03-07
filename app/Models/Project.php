@@ -251,7 +251,7 @@ class Project extends AbstractModel
                 $this->archived_at = null;
                 $this->archived_userid = User::userid();
                 $this->addLog("项目取消归档");
-                $this->pushMsg('add', $this);
+                $this->pushMsg('recovery', $this);
                 ProjectTask::whereProjectId($this->id)->whereArchivedFollow(1)->update([
                     'archived_at' => null,
                     'archived_follow' => 0
@@ -281,7 +281,6 @@ class Project extends AbstractModel
         AbstractModel::transaction(function () {
             $dialog = WebSocketDialog::find($this->dialog_id);
             $dialog?->deleteDialog();
-            $dialog?->pushMsg("groupDelete");
             $columns = ProjectColumn::whereProjectId($this->id)->get();
             foreach ($columns as $column) {
                 $column->deleteColumn(false);

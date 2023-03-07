@@ -1728,7 +1728,6 @@ class DialogController extends AbstractController
         //
         $dialog->checkGroup('user');
         $dialog->deleteDialog();
-        $dialog->pushMsg("groupDelete");
         return Base::retSuccess('解散成功');
     }
 

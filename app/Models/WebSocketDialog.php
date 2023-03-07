@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $type 对话类型
  * @property string|null $group_type 聊天室类型
  * @property string|null $name 对话名称
- * @property string|null $avatar 头像（群）
+ * @property string $avatar 头像（群）
  * @property string|null $last_at 最后消息时间
  * @property int|null $owner_id 群主用户ID
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -311,6 +311,7 @@ class WebSocketDialog extends AbstractModel
                 });
             $this->delete();
         });
+        $this->pushMsg("groupDelete");
         return true;
     }
 
@@ -318,9 +319,10 @@ class WebSocketDialog extends AbstractModel
      * 还原会话
      * @return bool
      */
-    public function recoveryDialog()
+    public function restoreDialog()
     {
         $this->restore();
+        $this->pushMsg("groupRestore");
         return true;
     }
 
