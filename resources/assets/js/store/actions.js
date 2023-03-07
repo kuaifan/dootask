@@ -2077,7 +2077,7 @@ export default {
                 const original = state.cacheDialogs[index]
                 const nowTime = data.user_ms
                 const originalTime = original.user_ms || 0
-                if (nowTime < originalTime) {
+                if (nowTime <= originalTime) {
                     typeof data.unread !== "undefined" && delete data.unread
                     typeof data.mention !== "undefined" && delete data.mention
                     typeof data.position_msgs !== "undefined" && delete data.position_msgs
@@ -2574,7 +2574,7 @@ export default {
                 saveBefore()
                 const resData = result.data;
                 if ($A.isJson(resData.dialog)) {
-                    setTimeout(_ => dispatch("saveDialog", resData.dialog), 300)    // 延迟更新对话详情是因为等消息处理完
+                    setTimeout(_ => dispatch("saveDialog", resData.dialog), 10)    // 延迟更新对话详情是因为等消息处理完
                     //
                     const ids = resData.list.map(({id}) => id)
                     state.dialogMsgs = state.dialogMsgs.filter(item => {

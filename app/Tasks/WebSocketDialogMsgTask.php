@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogMsgRead;
-use App\Models\WebSocketDialogUser;
 use App\Module\Base;
 use Carbon\Carbon;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
@@ -164,8 +163,8 @@ class WebSocketDialogMsgTask extends AbstractTask
                     'silence' => $item['silence'] ? 1 : 0,
                     'data' => array_merge($msg->toArray(), [
                         'mention' => $item['mention'],
-                        'user_at' => Carbon::parse($item['updated'])->toDateTimeString(),
-                        'user_ms' => WebSocketDialogUser::userMs($item['updated']),
+                        'user_at' => Carbon::parse($item['updated'])->toDateTimeString('millisecond'),
+                        'user_ms' => Carbon::parse($item['updated'])->valueOf(),
                     ]),
                 ]
             ];
@@ -210,8 +209,8 @@ class WebSocketDialogMsgTask extends AbstractTask
                             'mode' => 'chat',
                             'silence' => $this->silence ? 1 : 0,
                             'data' => array_merge($msg->toArray(), [
-                                'user_at' => Carbon::parse($msg->created_at)->toDateTimeString(),
-                                'user_ms' => WebSocketDialogUser::userMs($msg->created_at),
+                                'user_at' => Carbon::parse($msg->created_at)->toDateTimeString('millisecond'),
+                                'user_ms' => Carbon::parse($msg->created_at)->valueOf(),
                             ]),
                         ]
                     ];

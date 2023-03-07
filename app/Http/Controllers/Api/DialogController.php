@@ -567,9 +567,8 @@ class DialogController extends AbstractController
                 'id' => $dialogUser->webSocketDialog->id,
                 'unread' => $dialogUser->webSocketDialog->unread,
                 'mention' => $dialogUser->webSocketDialog->mention,
-                'position_msgs' => $dialogUser->webSocketDialog->position_msgs,
-                'user_at' =>  Carbon::parse($dialogUser->updated_at)->toDateTimeString(),
-                'user_ms' => WebSocketDialogUser::userMs($dialogUser->updated_at)
+                'user_at' =>  Carbon::parse($dialogUser->updated_at)->toDateTimeString('millisecond'),
+                'user_ms' => Carbon::parse($dialogUser->updated_at)->valueOf()
             ];
         }
         return Base::retSuccess('success', $data);
@@ -593,8 +592,7 @@ class DialogController extends AbstractController
         "id": 43,
         "unread": 308,
         "mention": 11,
-        "position_msgs": [],
-        "user_at": "2020-12-12 00:00:00",
+        "user_at": "2020-12-12 00:00:00.000",
         "user_ms": 1677558147167,
     }
      */
@@ -612,9 +610,8 @@ class DialogController extends AbstractController
             'id' => $dialogUser->webSocketDialog->id,
             'unread' => $dialogUser->webSocketDialog->unread,
             'mention' => $dialogUser->webSocketDialog->mention,
-            'position_msgs' => $dialogUser->webSocketDialog->position_msgs,
-            'user_at' => Carbon::parse($dialogUser->updated_at)->toDateTimeString(),
-            'user_ms' => WebSocketDialogUser::userMs($dialogUser->updated_at)
+            'user_at' => Carbon::parse($dialogUser->updated_at)->toDateTimeString('millisecond'),
+            'user_ms' => Carbon::parse($dialogUser->updated_at)->valueOf()
         ]);
     }
 
@@ -1153,9 +1150,6 @@ class DialogController extends AbstractController
                     'id' => $dialogUser->webSocketDialog->id,
                     'unread' => $dialogUser->webSocketDialog->unread,
                     'mention' => $dialogUser->webSocketDialog->mention,
-                    'position_msgs' => $dialogUser->webSocketDialog->position_msgs,
-                    'user_at' => Carbon::now()->toDateTimeString(),
-                    'user_ms' => WebSocketDialogUser::userMs(),
                     'mark_unread' => 0,
                 ];
                 break;
@@ -1163,8 +1157,6 @@ class DialogController extends AbstractController
             case 'unread':
                 $data = [
                     'id' => $dialogUser->webSocketDialog->id,
-                    'user_at' => Carbon::now()->toDateTimeString(),
-                    'user_ms' => WebSocketDialogUser::userMs(),
                     'mark_unread' => 1,
                 ];
                 break;
@@ -1172,10 +1164,12 @@ class DialogController extends AbstractController
             default:
                 return Base::retError("参数错误");
         }
-        $dialogUser->updated_at = $data['user_at'];
         $dialogUser->mark_unread = $data['mark_unread'];
         $dialogUser->save();
-        return Base::retSuccess("success", $data);
+        return Base::retSuccess("success", array_merge($data, [
+            'user_at' => Carbon::parse($dialogUser->updated_at)->toDateTimeString('millisecond'),
+            'user_ms' => Carbon::parse($dialogUser->updated_at)->valueOf(),
+        ]));
     }
 
     /**
@@ -1579,7 +1573,7 @@ class DialogController extends AbstractController
         if ($array) {
             $dialog->updateInstance($array);
             $dialog->save();
-            WebSocketDialogUser::whereDialogId($dialog->id)->update(['updated_at' => Carbon::now()]);
+            WebSocketDialogUser::whereDialogId($dialog->id)->update(['updated_at' => Carbon::now()->toDateTimeString('millisecond')]);
         }
         //
         return Base::retSuccess('修改成功', $data);

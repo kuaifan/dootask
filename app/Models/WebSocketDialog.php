@@ -80,19 +80,16 @@ class WebSocketDialog extends AbstractModel
             return $data[$key] ?? $default;
         };
         //
-        $this->pinyin = Base::cn2pinyin($this->name);
+        $time = Carbon::parse($this->user_at ?? $dialogUserFun('updated_at'));
         $this->top_at = $this->top_at ?? $dialogUserFun('top_at');
-        $this->user_at = $this->user_at ?? $dialogUserFun('updated_at');
-        $this->user_ms = WebSocketDialogUser::userMs($this->user_at);
-        $this->quick_msgs = [];
+        $this->user_at = $time->toDateTimeString('millisecond');
+        $this->user_ms = $time->valueOf();
         //
         if (isset($this->search_msg_id)) {
             // 最后消息 (搜索预览消息)
             $this->last_msg = WebSocketDialogMsg::whereDialogId($this->id)->find($this->search_msg_id);
             $this->last_at = $this->last_msg?->created_at;
         } else {
-            // 最后消息
-            $this->last_msg = WebSocketDialogMsg::whereDialogId($this->id)->orderByDesc('id')->first();
             // 未读信息
             $this->generateUnread($userid, $hasData);
             // 未读标记
@@ -103,8 +100,12 @@ class WebSocketDialog extends AbstractModel
             $this->people = WebSocketDialogUser::whereDialogId($this->id)->count();
             // 有待办
             $this->todo_num = WebSocketDialogMsgTodo::whereDialogId($this->id)->whereUserid($userid)->whereDoneAt(null)->count();
+            // 最后消息
+            $this->last_msg = WebSocketDialogMsg::whereDialogId($this->id)->orderByDesc('id')->first();
         }
         // 对方信息
+        $this->pinyin = Base::cn2pinyin($this->name);
+        $this->quick_msgs = [];
         $this->dialog_user = null;
         $this->group_info = null;
         $this->bot = 0;
@@ -175,14 +176,11 @@ class WebSocketDialog extends AbstractModel
      * @param $positionData
      * @return $this
      */
-    public function generateUnread($userid, $positionData = true)
+    public function generateUnread($userid, $positionData = false)
     {
         $builder = WebSocketDialogMsgRead::whereDialogId($this->id)->whereUserid($userid)->whereReadAt(null);
         $this->unread = $builder->count();
-        $this->mention = 0;
-        if ($this->unread > 0) {
-            $this->mention = $builder->clone()->whereMention(1)->count();
-        }
+        $this->mention = $this->unread > 0 ? $builder->clone()->whereMention(1)->count() : 0;
         if ($positionData) {
             $array = [];
             // @我的消息
