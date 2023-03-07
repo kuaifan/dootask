@@ -75,9 +75,16 @@
                     cursor: pointer;
                     &.nav-menu {
                         max-width: 46px;
-                    }
-                    .nav-icon {
-                        font-size: 16px;
+                        .nav-icon {
+                            width: 100%;
+                            height: 100%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            > i {
+                                font-size: 16px;
+                            }
+                        }
                     }
                     .nav-title {
                         position: relative;

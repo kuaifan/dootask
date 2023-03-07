@@ -20,7 +20,7 @@
                         placement="bottom-start"
                         class="nav-menu"
                         @command="onActive">
-                        <div><i class="taskfont nav-icon">&#xe634;</i></div>
+                        <div class="nav-icon"><i class="taskfont">&#xe634;</i></div>
                         <EDropdownMenu v-slot="dropdown" class="messenger-nav-menu">
                             <EDropdownItem v-for="(item, key) in dialogMenus" :key="key" :command="item.type">
                                 <div class="messenger-nav-item" :class="{active: dialogActive==item.type}">
@@ -31,7 +31,7 @@
                         </EDropdownMenu>
                     </EDropdown>
                     <div
-                        v-for="(item, key) in computedType"
+                        v-for="(item, key) in typeItems"
                         :key="key"
                         :class="{active:dialogActive==item.type}"
                         @click="onActive(item.type)">
@@ -266,7 +266,7 @@ export default {
             return this.$route.name
         },
 
-        computedType() {
+        typeItems() {
             const {dialogActive, dialogMenus, dialogHistory} = this
             const types = []
             if (this.dialogHistory.includes(dialogActive)) {
