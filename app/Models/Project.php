@@ -211,7 +211,7 @@ class Project extends AbstractModel
                     'important' => 1
                 ]);
             }
-            WebSocketDialogUser::whereDialogId($this->dialog_id)->whereNotIn('userid', $userids)->whereImportant(1)->delete();
+            WebSocketDialogUser::whereDialogId($this->dialog_id)->whereNotIn('userid', $userids)->whereImportant(1)->remove();
         });
     }
 
@@ -252,7 +252,7 @@ class Project extends AbstractModel
                 $this->archived_userid = User::userid();
                 $this->addLog("项目取消归档");
                 $this->pushMsg('recovery', $this);
-                ProjectTask::whereProjectId($this->id)->whereArchivedFollow(1)->update([
+                ProjectTask::whereProjectId($this->id)->whereArchivedFollow(1)->modify([
                     'archived_at' => null,
                     'archived_follow' => 0
                 ]);
@@ -262,7 +262,7 @@ class Project extends AbstractModel
                 $this->archived_userid = User::userid();
                 $this->addLog("项目归档");
                 $this->pushMsg('archived');
-                ProjectTask::whereProjectId($this->id)->whereArchivedAt(null)->update([
+                ProjectTask::whereProjectId($this->id)->whereArchivedAt(null)->modify([
                     'archived_at' => $archived_at,
                     'archived_follow' => 1
                 ]);

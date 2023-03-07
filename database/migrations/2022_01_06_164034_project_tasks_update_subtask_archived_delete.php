@@ -18,7 +18,7 @@ class ProjectTasksUpdateSubtaskArchivedDelete extends Migration
             ->chunkById(100, function ($lists) {
                 /** @var ProjectTask $task */
                 foreach ($lists as $task) {
-                    ProjectTask::whereParentId($task->id)->update([
+                    ProjectTask::whereParentId($task->id)->modify([
                         'archived_at' => $task->archived_at,
                         'archived_userid' => $task->archived_userid,
                         'archived_follow' => $task->archived_follow,

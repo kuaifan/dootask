@@ -1047,7 +1047,7 @@ class ProjectTask extends AbstractModel
                     'important' => 1
                 ]);
             }
-            WebSocketDialogUser::whereDialogId($this->dialog_id)->whereNotIn('userid', $userids)->whereImportant(1)->delete();
+            WebSocketDialogUser::whereDialogId($this->dialog_id)->whereNotIn('userid', $userids)->whereImportant(1)->remove();
         });
     }
 
@@ -1265,7 +1265,7 @@ class ProjectTask extends AbstractModel
                 'archived_at' => $this->archived_at,
                 'archived_userid' => $this->archived_userid,
             ]);
-            self::whereParentId($this->id)->update([
+            self::whereParentId($this->id)->modify([
                 'archived_at' => $this->archived_at,
                 'archived_userid' => $this->archived_userid,
                 'archived_follow' => $this->archived_follow,
@@ -1287,7 +1287,7 @@ class ProjectTask extends AbstractModel
                 $dialog = WebSocketDialog::find($this->dialog_id);
                 $dialog?->deleteDialog();
             }
-            self::whereParentId($this->id)->delete();
+            self::whereParentId($this->id)->remove();
             $this->deleted_userid = User::userid();
             $this->save();
             $this->addLog("删除{任务}");
