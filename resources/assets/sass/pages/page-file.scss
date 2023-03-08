@@ -347,11 +347,14 @@
                     display: grid;
                     justify-content: space-between;
                     grid-template-columns: repeat(auto-fill, 100px);
-                    grid-gap: 12px;
+                    row-gap: 2px;
+                    column-gap: 12px;
                     > li {
                         list-style: none;
                         width: 100px;
-                        height: 110px;
+                        height: 124px;
+                    }
+                    .file-item {
                         position: relative;
                         border-radius: 5px;
                         display: flex;
@@ -382,16 +385,18 @@
                         .file-name {
                             display: block;
                             width: 100%;
-                            height: 20px;
-                            line-height: 20px;
+                            line-height: 16px;
                             color: $primary-text-color;
                             font-size: 12px;
                             text-align: center;
-                            margin-bottom: 5px;
+                            margin: 11px 0 5px;
                             padding: 0 6px;
-                            overflow: hidden;
-                            white-space: nowrap;
+                            word-break: break-all;
                             text-overflow: ellipsis;
+                            overflow: hidden;
+                            display: -webkit-box;
+                            -webkit-line-clamp: 2;
+                            -webkit-box-orient: vertical;
                         }
                         .file-check {
                             opacity: 0;
@@ -421,6 +426,7 @@
                             }
                         }
                         .file-icon {
+                            flex-shrink: 0;
                             display: inline-block;
                             width: 64px;
                             height: 64px;

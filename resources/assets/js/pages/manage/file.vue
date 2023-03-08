@@ -93,49 +93,51 @@
                     </div>
                     <div v-else class="file-list" @contextmenu.prevent="handleContextmenu">
                         <ul>
-                            <li
-                                v-for="item in fileList"
-                                :class="{
-                                    shear: shearIds.includes(item.id),
-                                    highlight: selectIds.includes(item.id),
-                                    operate: contextMenuVisible && item.id === contextMenuItem.id,
-                                }"
-                                :data-id="item.id"
-                                v-longpress="handleLongpress"
-                                @click="dropFile(item, 'openCheckMenu')">
-                                <div class="file-check" :class="{'file-checked':selectIds.includes(item.id)}" @click.stop="dropFile(item, 'select')">
-                                    <Checkbox :value="selectIds.includes(item.id)"/>
+                            <li v-for="item in fileList">
+                                <div
+                                    class="file-item"
+                                    :class="{
+                                        shear: shearIds.includes(item.id),
+                                        highlight: selectIds.includes(item.id),
+                                        operate: contextMenuVisible && item.id === contextMenuItem.id,
+                                    }"
+                                    :data-id="item.id"
+                                    v-longpress="handleLongpress"
+                                    @click="dropFile(item, 'openCheckMenu')">
+                                    <div class="file-check" :class="{'file-checked':selectIds.includes(item.id)}" @click.stop="dropFile(item, 'select')">
+                                        <Checkbox :value="selectIds.includes(item.id)"/>
+                                    </div>
+                                    <div class="file-menu" @click.stop="handleRightClick($event, item)">
+                                        <Icon type="ios-more" />
+                                    </div>
+                                    <div :class="`no-dark-before file-icon ${item.type}${item.share ? ' share' : ''}`">
+                                        <template v-if="item.share">
+                                            <UserAvatar v-if="item.userid != userId" :userid="item.userid" class="share-avatar" :size="20">
+                                                <p>{{$L('共享权限')}}: {{$L(item.permission == 1 ? '读/写' : '只读')}}</p>
+                                            </UserAvatar>
+                                            <div v-else class="share-icon no-dark-content">
+                                                <i class="taskfont">&#xe757;</i>
+                                            </div>
+                                        </template>
+                                        <template v-else-if="isParentShare">
+                                            <UserAvatar :userid="item.created_id" class="share-avatar" :size="20">
+                                                <p v-if="item.created_id != item.userid"><strong>{{$L('成员创建于')}}: {{item.created_at}}</strong></p>
+                                                <p v-else>{{$L('所有者创建于')}}: {{item.created_at}}</p>
+                                            </UserAvatar>
+                                        </template>
+                                    </div>
+                                    <div v-if="item._edit" class="file-input">
+                                        <Input
+                                            :ref="'input_' + item.id"
+                                            v-model="item.newname"
+                                            size="small"
+                                            :disabled="!!item._load"
+                                            @on-blur="onBlur(item)"
+                                            @on-keyup="onKeyup($event, item)"/>
+                                        <div v-if="item._load" class="file-load"><Loading/></div>
+                                    </div>
+                                    <div v-else class="file-name" :title="item.name">{{$A.getFileName(item)}}</div>
                                 </div>
-                                <div class="file-menu" @click.stop="handleRightClick($event, item)">
-                                    <Icon type="ios-more" />
-                                </div>
-                                <div :class="`no-dark-before file-icon ${item.type}${item.share ? ' share' : ''}`">
-                                    <template v-if="item.share">
-                                        <UserAvatar v-if="item.userid != userId" :userid="item.userid" class="share-avatar" :size="20">
-                                            <p>{{$L('共享权限')}}: {{$L(item.permission == 1 ? '读/写' : '只读')}}</p>
-                                        </UserAvatar>
-                                        <div v-else class="share-icon no-dark-content">
-                                            <i class="taskfont">&#xe757;</i>
-                                        </div>
-                                    </template>
-                                    <template v-else-if="isParentShare">
-                                        <UserAvatar :userid="item.created_id" class="share-avatar" :size="20">
-                                            <p v-if="item.created_id != item.userid"><strong>{{$L('成员创建于')}}: {{item.created_at}}</strong></p>
-                                            <p v-else>{{$L('所有者创建于')}}: {{item.created_at}}</p>
-                                        </UserAvatar>
-                                    </template>
-                                </div>
-                                <div v-if="item._edit" class="file-input">
-                                    <Input
-                                        :ref="'input_' + item.id"
-                                        v-model="item.newname"
-                                        size="small"
-                                        :disabled="!!item._load"
-                                        @on-blur="onBlur(item)"
-                                        @on-keyup="onKeyup($event, item)"/>
-                                    <div v-if="item._load" class="file-load"><Loading/></div>
-                                </div>
-                                <div v-else class="file-name" :title="item.name">{{$A.getFileName(item)}}</div>
                             </li>
                         </ul>
                     </div>
