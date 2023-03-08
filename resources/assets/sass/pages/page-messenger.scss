@@ -350,8 +350,7 @@
                                     }
                                 }
                             }
-                            &.nothing,
-                            &.loading {
+                            &.nothing {
                                 justify-content: center;
                                 padding: 24px;
                                 margin: 0;
@@ -359,16 +358,6 @@
                                 line-height: 22px;
                                 cursor: default;
                                 word-break: break-all;
-                            }
-                            &.loading {
-                                display: flex;
-                                align-items: flex-start;
-                                justify-content: center;
-                                .common-loading {
-                                    width: 20px;
-                                    height: 20px;
-                                    margin: 1px;
-                                }
                             }
                         }
                     }

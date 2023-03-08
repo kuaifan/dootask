@@ -5,16 +5,16 @@
             <div class="messenger-select">
                 <div class="messenger-search">
                     <div class="search-wrapper">
-                        <Input v-if="tabActive==='dialog'" v-model="dialogKey" :placeholder="$L(loadDialogs ? '更新中...' : '搜索消息')" clearable >
+                        <Input v-if="tabActive==='dialog'" v-model="dialogSearchKey" :placeholder="$L(loadDialogs ? '更新中...' : '搜索消息')" clearable >
                             <div class="search-pre" slot="prefix">
-                                <Loading v-if="loadDialogs"/>
+                                <Loading v-if="loadDialogs || dialogSearchLoad > 0"/>
                                 <Icon v-else type="ios-search" />
                             </div>
                         </Input>
                         <Input v-else prefix="ios-search" v-model="contactsKey" :placeholder="$L('搜索联系人')" clearable />
                     </div>
                 </div>
-                <div v-if="tabActive==='dialog' && !dialogKey" class="messenger-nav">
+                <div v-if="tabActive==='dialog' && !dialogSearchKey" class="messenger-nav">
                     <EDropdown
                         trigger="click"
                         placement="bottom-start"
@@ -53,14 +53,8 @@
                     <ul
                         v-if="tabActive==='dialog'"
                         class="dialog">
-                        <template v-if="dialogList.length === 0">
-                            <li v-if="dialogLoad > 0" class="loading"><Loading/></li>
-                            <li v-else class="nothing">
-                                {{$L(dialogKey ? `没有任何与"${dialogKey}"相关的会话` : `没有任何会话`)}}
-                            </li>
-                        </template>
                         <li
-                            v-else
+                            v-if="dialogList.length > 0"
                             v-for="(dialog, key) in dialogList"
                             :ref="`dialog_${dialog.id}`"
                             :key="key"
@@ -106,6 +100,9 @@
                             </div>
                             <Badge class="dialog-num" :type="dialog.silence ? 'normal' : 'error'" :overflow-count="999" :count="$A.getDialogUnread(dialog, true)"/>
                             <div class="dialog-line"></div>
+                        </li>
+                        <li v-else-if="dialogSearchLoad === 0" class="nothing">
+                            {{$L(dialogSearchKey ? `没有任何与"${dialogSearchKey}"相关的会话` : `没有任何会话`)}}
                         </li>
                     </ul>
                     <ul v-else class="contacts">
@@ -193,9 +190,9 @@ export default {
             activeNum: 0,
             tabActive: 'dialog',
 
-            dialogLoad: 0,
-            dialogKey: '',
-            dialogSearch: [],
+            dialogSearchLoad: 0,
+            dialogSearchKey: '',
+            dialogSearchList: [],
 
             dialogActive: '',
             dialogMenus: [
@@ -296,8 +293,14 @@ export default {
         },
 
         dialogList() {
-            const {dialogActive, dialogKey, dialogSearch} = this;
-            if (dialogActive == '' && dialogKey == '') {
+            const {dialogActive, dialogSearchKey, dialogSearchList} = this
+            if (dialogSearchList.length > 0) {
+                return dialogSearchList.sort((a, b) => {
+                    // 搜索结果排在后面
+                    return (a.is_search === true ? 1 : 0) - (b.is_search === true ? 1 : 0)
+                })
+            }
+            if (dialogActive == '' && dialogSearchKey == '') {
                 return this.cacheDialogs.filter(dialog => this.filterDialog(dialog)).sort((a, b) => {
                     if (a.top_at || b.top_at) {
                         return $A.Date(b.top_at) - $A.Date(a.top_at);
@@ -312,7 +315,7 @@ export default {
                 if (!this.filterDialog(dialog)) {
                     return false;
                 }
-                if (dialogKey) {
+                if (dialogSearchKey) {
                     const {name, pinyin, last_msg} = dialog;
                     let searchString = `${name} ${pinyin}`
                     if (last_msg) {
@@ -326,7 +329,7 @@ export default {
                                 break
                         }
                     }
-                    if (!$A.strExists(searchString, dialogKey)) {
+                    if (!$A.strExists(searchString, dialogSearchKey)) {
                         return false;
                     }
                 } else if (dialogActive) {
@@ -358,36 +361,7 @@ export default {
                 }
                 return true;
             })
-            if (dialogSearch.length > 0) {
-                const msgIds = [];
-                const userIds = [];
-                list.forEach(item => {
-                    if (item.last_msg && !msgIds.includes(item.last_msg.id)) {
-                        msgIds.push(item.last_msg.id)
-                    }
-                    if (item.dialog_user && !userIds.includes(item.dialog_user.userid)) {
-                        userIds.push(item.dialog_user.userid)
-                    }
-                })
-                dialogSearch.forEach(item => {
-                    if ($A.leftExists(item.id, "u:")) {
-                        if (!userIds.includes(item.dialog_user.userid)) {
-                            list.push(Object.assign(item, {is_search: true}))
-                        }
-                    } else {
-                        if (!item.last_msg || !msgIds.includes(item.last_msg.id)) {
-                            list.push(Object.assign(item, {is_search: true}))
-                        }
-                    }
-                })
-            }
             return list.sort((a, b) => {
-                // 搜索结果排在后面
-                a._by_search = a.is_search === true ? 1 : 0
-                b._by_search = b.is_search === true ? 1 : 0
-                if (a._by_search || b._by_search) {
-                    return a._by_search - b._by_search
-                }
                 // 根据置顶时间排序
                 if (a.top_at || b.top_at) {
                     return $A.Date(b.top_at) - $A.Date(a.top_at);
@@ -482,31 +456,24 @@ export default {
             immediate: true
         },
 
-        dialogKey(val) {
+        dialogSearchKey(val) {
             switch (val) {
-                case 'log.open':
-                case 'log:open':
-                case 'eruda:open':
+                case 'log.o':
                     $A.IDBSet("logOpen", "open").then(_ => $A.reloadUrl());
                     break;
-                case 'log.close':
-                case 'log:close':
-                case 'eruda:close':
+                case 'log.c':
                     $A.IDBSet("logOpen", "close").then(_ => $A.reloadUrl());
                     break;
             }
             //
-            this.dialogSearch = [];
+            this.dialogSearchList = [];
             if (val == '') {
-                return;
+                return
             }
-            this.dialogLoad++;
-            setTimeout(() => {
-                if (this.dialogKey == val) {
-                    this.searchDialog(val);
-                }
-                this.dialogLoad--;
-            }, 600);
+            this.__searchTimer && clearTimeout(this.__searchTimer)
+            this.__searchTimer = setTimeout(this.searchDialog, 600)
+            this.dialogSearchLoad++
+            setTimeout(_ => this.dialogSearchLoad--, 600)
         },
 
         contactsKey(val) {
@@ -604,7 +571,7 @@ export default {
         },
 
         dialogClass(dialog) {
-            if (this.dialogKey) {
+            if (this.dialogSearchKey) {
                 return null
             }
             return {
@@ -619,7 +586,6 @@ export default {
             if (this.operateVisible) {
                 return
             }
-            this.dialogKey = "";
             //
             if ($A.isJson(dialogId) && $A.leftExists(dialogId.dialog_id, "u:")) {
                 this.$store.dispatch("openDialogUserid", $A.leftDelete(dialogId.dialog_id, "u:")).catch(({msg}) => {
@@ -684,15 +650,45 @@ export default {
             return true;
         },
 
-        searchDialog(key) {
-            this.dialogLoad++;
+        searchDialog() {
+            const key = this.dialogSearchKey
+            if (key == '') {
+                return
+            }
+            //
+            this.dialogSearchLoad++;
             this.$store.dispatch("call", {
                 url: 'dialog/search',
                 data: {key},
             }).then(({data}) => {
-                this.dialogSearch = data;
+                if (key !== this.dialogSearchKey) {
+                    return
+                }
+                const list = $A.cloneJSON(this.dialogList)
+                const msgIds = [];
+                const userIds = [];
+                list.forEach(item => {
+                    if (item.last_msg && !msgIds.includes(item.last_msg.id)) {
+                        msgIds.push(item.last_msg.id)
+                    }
+                    if (item.dialog_user && !userIds.includes(item.dialog_user.userid)) {
+                        userIds.push(item.dialog_user.userid)
+                    }
+                })
+                data.some(item => {
+                    if ($A.leftExists(item.id, "u:")) {
+                        if (!userIds.includes(item.dialog_user.userid)) {
+                            list.push(Object.assign(item, {is_search: true}))
+                        }
+                    } else {
+                        if (!item.last_msg || !msgIds.includes(item.last_msg.id)) {
+                            list.push(Object.assign(item, {is_search: true}))
+                        }
+                    }
+                })
+                this.dialogSearchList = list;
             }).finally(_ => {
-                this.dialogLoad--;
+                this.dialogSearchLoad--;
             });
         },
 
@@ -801,7 +797,7 @@ export default {
         },
 
         handleLongpress(event, el) {
-            if (this.dialogKey) {
+            if (this.dialogSearchKey) {
                 return;
             }
             const dialogId = $A.getAttr(el, 'data-id')
