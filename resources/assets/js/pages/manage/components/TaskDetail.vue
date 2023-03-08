@@ -54,7 +54,7 @@
             <div slot="content">
                 <UserInput
                     v-model="ownerData.owner_userid"
-                    :multiple-max="1"
+                    :multiple-max="10"
                     :project-id="taskDetail.project_id"
                     :placeholder="$L('选择任务负责人')"
                     :transfer="false"

@@ -674,9 +674,6 @@ class ProjectTask extends AbstractModel
                         'owner' => 1,
                     ]);
                     $array[] = $uid;
-                    if ($this->parent_id) {
-                        break; // 子任务只能是一个负责人
-                    }
                 }
                 if ($array) {
                     if (count($older) == 0 && count($array) == 1 && $array[0] == User::userid()) {

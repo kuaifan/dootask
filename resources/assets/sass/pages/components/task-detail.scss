@@ -425,6 +425,12 @@
                             }
                             .subtask-avatar {
                                 cursor: pointer;
+                                display: flex;
+                                flex-direction: column;
+                                .avatar-wrapper {
+                                    margin-top: 3px;
+                                    margin-bottom: -2px;
+                                }
                             }
                             .ivu-icon-ios-loading {
                                 animation: animation-icon-loading 0.6s infinite linear;
