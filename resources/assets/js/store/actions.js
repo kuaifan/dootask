@@ -2021,7 +2021,7 @@ export default {
                 const original = state.cacheDialogs[index]
                 const nowTime = data.user_ms
                 const originalTime = original.user_ms || 0
-                if (nowTime <= originalTime) {
+                if (nowTime < originalTime) {
                     typeof data.unread !== "undefined" && delete data.unread
                     typeof data.mention !== "undefined" && delete data.mention
                     typeof data.position_msgs !== "undefined" && delete data.position_msgs
