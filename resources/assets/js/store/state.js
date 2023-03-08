@@ -21,6 +21,9 @@ export default {
     routeHistorys: [],
     routeHistoryLast: {},
 
+    // 请求时间
+    callAt: [],
+
     // 加载状态
     loads: [],
     loadDashboardTasks: false,
@@ -82,8 +85,6 @@ export default {
     dialogHistory: [],
     dialogInputCache: [],
     dialogMsgTransfer: {time: 0},
-    dialogUpdatedAt: null,
-    dialogDeletedAt: null,
 
     // 文件
     fileLists: [],
@@ -92,7 +93,6 @@ export default {
     projectId: 0,
     projectTotal: 0,
     projectLoad: 0,
-    projectDeletedAt: null,
     taskId: 0,
     taskCompleteTemps: [],
     taskContents: [],

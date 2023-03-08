@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+
+use Carbon\Carbon;
+
 /**
  * App\Models\Deleted
  *
@@ -22,6 +25,24 @@ namespace App\Models;
 class Deleted extends AbstractModel
 {
     const UPDATED_AT = null;
+
+    /**
+     * 获取删除的ID
+     * @param $type
+     * @param $userid
+     * @param $time
+     * @return array
+     */
+    public static function ids($type, $userid, $time): array
+    {
+        if (empty($time)) {
+            return [];
+        }
+        return self::where([
+            'type' => $type,
+            'userid' => $userid
+        ])->where('created_at', '>=', Carbon::parse($time))->pluck('did')->toArray();
+    }
 
     /**
      * 忘记（恢复或添加数据时删除记录）

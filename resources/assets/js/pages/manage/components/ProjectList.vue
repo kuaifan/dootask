@@ -141,7 +141,7 @@ export default {
                 keys: {
                     name: this.projectKeyValue
                 },
-                hideLoad: true,
+                hideload: true,
             }).finally(_ => {
                 this.projectKeyLoading--;
             });

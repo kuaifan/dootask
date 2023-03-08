@@ -248,33 +248,12 @@ export default {
                 return;
             }
             //
-            const timeStart = $A.Date($A.formatDate(time[0] + " 00:00:00")),
-                timeEnd = $A.Date($A.formatDate(time[1] + " 23:59:59")),
-                now = $A.Time();
-            const find = (item, n) => {
-                if (n === true && item._time < now) {
-                    return false
-                }
-                const start = $A.Date(item.start_at),
-                    end = $A.Date(item.end_at);
-                return (start <= timeStart && timeStart <= end) || (start <= timeEnd && timeEnd <= end) || (start > timeStart && timeEnd > end);
-            }
-            const currentIds = this.list.filter(item => find(item)).map(({id}) => id);
-            const call = () => {
-                const newIds = this.list.filter(item => find(item, true)).map(({id}) => id);
-                this.$store.dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
-            }
-            //
             this.loadIng++;
             this.$store.dispatch("getTasks", {
                 time,
                 complete: "no"
-            }).then(() => {
+            }).finally(_ => {
                 this.loadIng--;
-                call()
-            }).catch(() => {
-                this.loadIng--;
-                call()
             })
         },
 

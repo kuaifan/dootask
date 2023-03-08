@@ -1,5 +1,6 @@
 import {Store} from 'le5le-store';
 import {languageType} from "../language";
+import {$callData} from './utils'
 
 export default {
     /**
@@ -35,9 +36,7 @@ export default {
             state.dialogInputCache = await $A.IDBArray("dialogInputCache")
             state.fileLists = await $A.IDBArray("fileLists")
             state.userInfo = await $A.IDBJson("userInfo")
-            state.dialogUpdatedAt = await $A.IDBString("dialogUpdatedAt")
-            state.dialogDeletedAt = await $A.IDBString("dialogDeletedAt")
-            state.projectDeletedAt = await $A.IDBString("projectDeletedAt")
+            state.callAt = await $A.IDBArray("callAt")
 
             // 会员信息
             if (state.userInfo.userid) {
@@ -637,9 +636,7 @@ export default {
                 state.cacheProjects = [];
                 state.cacheColumns = [];
                 state.cacheTasks = [];
-                state.dialogUpdatedAt = null;
-                state.dialogDeletedAt = null;
-                state.projectDeletedAt = null;
+                state.callAt = [];
 
                 // localStorage
                 const languageType = window.localStorage.getItem("__language:type__");
@@ -706,7 +703,7 @@ export default {
     forgetFile({state, dispatch}, file_id) {
         $A.execMainDispatch("forgetFile", file_id)
         //
-        let ids = $A.isArray(file_id) ? file_id : [file_id];
+        const ids = $A.isArray(file_id) ? file_id : [file_id];
         ids.some(id => {
             state.fileLists = state.fileLists.filter(file => file.id != id);
             state.fileLists.some(file => {
@@ -827,7 +824,7 @@ export default {
     forgetProject({state}, project_id) {
         $A.execMainDispatch("forgetProject", project_id)
         //
-        let ids = $A.isArray(project_id) ? project_id : [project_id];
+        const ids = $A.isArray(project_id) ? project_id : [project_id];
         ids.some(id => {
             const index = state.cacheProjects.findIndex(project => project.id == id);
             if (index > -1) {
@@ -867,34 +864,23 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
-            if (!$A.isJson(requestData)) {
-                requestData = {}
-            }
-            if (typeof requestData.deleted_at === "undefined") {
-                requestData.deleted_at = state.projectDeletedAt || getters.getProjectLastAt
-            }
+            const callData = $callData('projects', requestData, state)
             //
-            !requestData.hideLoad && state.loadProjects++;
+            callData.showLoad() && state.loadProjects++;
             dispatch("call", {
                 url: 'project/lists',
-                data: requestData
+                data: callData.get()
             }).then(({data}) => {
                 state.projectTotal = data.total_all;
                 dispatch("saveProject", data.data);
-                //
-                if (data.current_page === 1) {
-                    data.deleted_at && $A.IDBSet("projectDeletedAt", data.deleted_at).then(_ => {
-                        state.projectDeletedAt = data.deleted_at
-                        data.deleted_data.some(id => dispatch("forgetProject", id))
-                    });
-                }
+                callData.save(data).then(ids => dispatch("forgetProject", ids))
                 //
                 resolve(data)
             }).catch(e => {
                 console.warn(e);
                 reject(e)
             }).finally(_ => {
-                !requestData.hideLoad && state.loadProjects--;
+                callData.showLoad() && state.loadProjects--;
             });
         });
     },
@@ -1054,8 +1040,8 @@ export default {
     forgetColumn({state, dispatch}, column_id) {
         $A.execMainDispatch("forgetColumn", column_id)
         //
-        let ids = $A.isArray(column_id) ? column_id : [column_id];
-        let project_ids = [];
+        const ids = $A.isArray(column_id) ? column_id : [column_id];
+        const project_ids = [];
         ids.some(id => {
             const index = state.cacheColumns.findIndex(column => column.id == id);
             if (index > -1) {
@@ -1228,9 +1214,9 @@ export default {
     forgetTask({state, dispatch}, task_id) {
         $A.execMainDispatch("forgetTask", task_id)
         //
-        let ids = $A.isArray(task_id) ? task_id : [task_id];
-        let parent_ids = [];
-        let project_ids = [];
+        const ids = $A.isArray(task_id) ? task_id : [task_id];
+        const parent_ids = [];
+        const project_ids = [];
         ids.some(id => {
             const index = state.cacheTasks.findIndex(task => task.id == id);
             if (index > -1) {
@@ -1318,15 +1304,16 @@ export default {
      * 获取任务
      * @param state
      * @param dispatch
-     * @param data
+     * @param requestData
      * @returns {Promise<unknown>}
      */
-    getTasks({state, dispatch}, data) {
-        let taskData = [];
-        if ($A.isArray(data.taskData)) {
-            taskData = data.taskData;
-            delete data.taskData;
+    getTasks({state, dispatch}, requestData) {
+        const taskData = [];
+        if ($A.isArray(requestData.taskData)) {
+            taskData.push(...requestData.taskData)
+            delete requestData.taskData;
         }
+        const callData = $callData('tasks', requestData, state)
         //
         return new Promise(function (resolve, reject) {
             if (state.userId === 0) {
@@ -1334,31 +1321,28 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
-            if (data.project_id) {
+            if (requestData.project_id) {
                 state.projectLoad++;
             }
             //
             dispatch("call", {
                 url: 'project/task/lists',
-                data
-            }).then(result => {
-                if (data.project_id) {
+                data: callData.get()
+            }).then(({data}) => {
+                if (requestData.project_id) {
                     state.projectLoad--;
                 }
+                taskData.push(...data.data);
+                callData.save(data).then(ids => dispatch("forgetTask", ids))
                 //
-                const resData = result.data;
-                taskData.push(...resData.data);
-                //
-                if (resData.next_page_url) {
-                    const nextData = Object.assign(data, {
-                        page: resData.current_page + 1,
-                        taskData,
-                    });
-                    if (resData.current_page % 5 === 0) {
+                if (data.next_page_url) {
+                    requestData.page = data.current_page + 1
+                    requestData.taskData = taskData
+                    if (data.current_page % 10 === 0) {
                         $A.modalWarning({
-                            content: "数据已超过" + resData.to + "条，是否继续加载？",
+                            content: "数据已超过" + data.to + "条，是否继续加载？",
                             onOk: () => {
-                                dispatch("getTasks", nextData).then(resolve).catch(reject)
+                                dispatch("getTasks", requestData).then(resolve).catch(reject)
                             },
                             onCancel: () => {
                                 dispatch("saveTask", taskData);
@@ -1366,7 +1350,7 @@ export default {
                             }
                         });
                     } else {
-                        dispatch("getTasks", nextData).then(resolve).catch(reject)
+                        dispatch("getTasks", requestData).then(resolve).catch(reject)
                     }
                 } else {
                     dispatch("saveTask", taskData);
@@ -1375,7 +1359,7 @@ export default {
             }).catch(e => {
                 console.warn(e);
                 reject(e)
-                if (data.project_id) {
+                if (requestData.project_id) {
                     state.projectLoad--;
                 }
             });
@@ -1447,22 +1431,8 @@ export default {
         }
         state.loadDashboardTasks = true;
         //
-        const time = $A.Time()
-        const {today, overdue, all} = getters.dashboardTask;
-        const currentIds = today.map(({id}) => id)
-        currentIds.push(...overdue.map(({id}) => id))
-        currentIds.push(...all.map(({id}) => id))
-        currentIds.push(...getters.assistTask.map(({id}) => id))
-        //
         dispatch("getTasks", {
             complete: "no",
-        }).then(_ => {
-            const {today, overdue, all} = getters.dashboardTask;
-            const newIds = today.filter(task => task._time >= time).map(({id}) => id)
-            newIds.push(...overdue.filter(task => task._time >= time).map(({id}) => id))
-            newIds.push(...all.filter(task => task._time >= time).map(({id}) => id))
-            newIds.push(...getters.assistTask.filter(task => task._time >= time).map(({id}) => id))
-            dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
         }).finally(_ => {
             state.loadDashboardTasks = false;
         })
@@ -1477,20 +1447,7 @@ export default {
      */
     getTaskForProject({state, dispatch}, project_id) {
         return new Promise(function (resolve, reject) {
-            const time = $A.Time()
-            const currentIds = state.cacheTasks.filter(task => task.project_id == project_id).map(({id}) => id)
-            //
-            const call = () => {
-                const newIds = state.cacheTasks.filter(task => task.project_id == project_id && task._time >= time).map(({id}) => id)
-                dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
-            }
-            dispatch("getTasks", {project_id}).then(() => {
-                call()
-                resolve()
-            }).catch(() => {
-                call()
-                reject()
-            })
+            dispatch("getTasks", {project_id}).then(resolve).catch(reject)
         })
     },
 
@@ -1503,23 +1460,10 @@ export default {
      */
     getTaskForParent({state, dispatch}, parent_id) {
         return new Promise(function (resolve, reject) {
-            const time = $A.Time()
-            const currentIds = state.cacheTasks.filter(task => task.parent_id == parent_id).map(({id}) => id)
-            //
-            let call = () => {
-                const newIds = state.cacheTasks.filter(task => task.parent_id == parent_id && task._time >= time).map(({id}) => id)
-                dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
-            }
             dispatch("getTasks", {
                 parent_id,
                 archived: 'all'
-            }).then(() => {
-                call()
-                resolve()
-            }).catch(() => {
-                call()
-                reject()
-            })
+            }).then(resolve).catch(reject)
         })
     },
 
@@ -1677,7 +1621,7 @@ export default {
      * @param file_id
      */
     forgetTaskFile({state, dispatch}, file_id) {
-        let ids = $A.isArray(file_id) ? file_id : [file_id];
+        const ids = $A.isArray(file_id) ? file_id : [file_id];
         ids.some(id => {
             const index = state.taskFiles.findIndex(file => file.id == id)
             if (index > -1) {
@@ -2155,27 +2099,15 @@ export default {
             if (typeof requestData.pagesize === "undefined") {
                 requestData.pagesize = 20
             }
-            if (typeof requestData.updated_at === "undefined") {
-                requestData.updated_at = state.dialogUpdatedAt
-            }
-            if (typeof requestData.deleted_at === "undefined") {
-                requestData.deleted_at = state.dialogDeletedAt || getters.getDialogLastAt
-            }
+            const callData = $callData('dialogs', requestData, state)
             //
-            !requestData.hideLoad && state.loadDialogs++;
+            callData.showLoad() && state.loadDialogs++;
             dispatch("call", {
                 url: 'dialog/lists',
-                data: requestData,
+                data: callData.get()
             }).then(({data}) => {
                 dispatch("saveDialog", data.data);
-                //
-                if (data.current_page === 1) {
-                    data.deleted_at && $A.IDBSet("dialogDeletedAt", data.deleted_at).then(_ => {
-                        state.dialogDeletedAt = data.deleted_at
-                        data.deleted_data.some(id => dispatch("forgetDialog", id))
-                    });
-                    $A.IDBSet("dialogUpdatedAt", state.dialogUpdatedAt = $A.formatDate()).then(_ => {})
-                }
+                callData.save(data).then(ids => dispatch("forgetDialog", ids))
                 //
                 if (data.next_page_url && data.current_page < 5) {
                     requestData.page++
@@ -2187,7 +2119,7 @@ export default {
                 console.warn(e);
                 reject(e)
             }).finally(_ => {
-                !requestData.hideLoad && state.loadDialogs--;
+                callData.showLoad() && state.loadDialogs--;
             });
         });
     },
@@ -2317,7 +2249,7 @@ export default {
     forgetDialog({state}, dialog_id) {
         $A.execMainDispatch("forgetDialog", dialog_id)
         //
-        let ids = $A.isArray(dialog_id) ? dialog_id : [dialog_id];
+        const ids = $A.isArray(dialog_id) ? dialog_id : [dialog_id];
         ids.some(id => {
             const index = state.cacheDialogs.findIndex(dialog => dialog.id == id);
             if (index > -1) {

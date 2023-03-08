@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\AbstractModel;
+use App\Models\Deleted;
 use App\Models\File;
 use App\Models\FileContent;
 use App\Models\ProjectTask;
@@ -14,6 +15,7 @@ use App\Models\WebSocketDialogMsgRead;
 use App\Models\WebSocketDialogMsgTodo;
 use App\Models\WebSocketDialogUser;
 use App\Module\Base;
+use App\Module\TimeRange;
 use Carbon\Carbon;
 use DB;
 use Redirect;
@@ -34,8 +36,10 @@ class DialogController extends AbstractController
      * @apiGroup dialog
      * @apiName lists
      *
-     * @apiParam {String} [updated_at]      只读取在这个时间之后更新的对话
-     * @apiParam {String} [deleted_at]      读取在这个时间之后删除的对话ID，返回数据: deleted_data（此参数仅第1页有效）
+     * @apiParam {String} [timerange]        时间范围（如：1678248944,1678248944）
+     * - 第一个时间: 读取在这个时间之后更新的数据
+     * - 第二个时间: 读取在这个时间之后删除的数据ID（第1页附加返回数据: deleted_id）
+     *
      * @apiParam {Number} [page]            当前页，默认:1
      * @apiParam {Number} [pagesize]        每页显示数量，默认:50，最大:100
      *
@@ -47,11 +51,13 @@ class DialogController extends AbstractController
     {
         $user = User::auth();
         //
+        $timerange = TimeRange::parse(Request::input());
+        //
         $builder = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.updated_at as user_at'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('u.userid', $user->userid);
-        if (Request::input('updated_at') || Request::input('at_after')) {
-            $builder->where('u.updated_at', '>', Carbon::parse(Request::input('updated_at') ?: Request::input('at_after')));
+        if ($timerange->updated) {
+            $builder->where('u.updated_at', '>', $timerange->updated);
         }
         $list = $builder
             ->orderByDesc('u.top_at')
@@ -60,18 +66,10 @@ class DialogController extends AbstractController
         $list->transform(function (WebSocketDialog $item) use ($user) {
             return $item->formatData($user->userid);
         });
-        $data = $list->toArray();
         //
-        if ($list->currentPage() === 1 && Request::input('deleted_at')) {
-            $data['deleted_at'] = date("Y-m-d H:i:s");
-            $data['deleted_data'] = WebSocketDialog::select(['web_socket_dialogs.id'])
-                ->withTrashed()
-                ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
-                ->where('u.userid', $user->userid)
-                ->where('web_socket_dialogs.deleted_at', '>=', Carbon::parse(Request::input('deleted_at')))
-                ->orderByDesc('web_socket_dialogs.deleted_at')
-                ->take(100)
-                ->pluck('id');
+        $data = $list->toArray();
+        if ($list->currentPage() === 1) {
+            $data['deleted_id'] = Deleted::ids('dialog', $user->userid, $timerange->deleted);
         }
         //
         return Base::retSuccess('success', $data);

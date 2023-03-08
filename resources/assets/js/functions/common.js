@@ -1232,6 +1232,21 @@ const localforage = require("localforage");
                     }
                 }
             }, 1);
+        },
+
+        /**
+         * 排序JSON对象
+         * @param obj
+         * @param ignore
+         * @returns {{}}
+         */
+        sortObject(obj, ignore = []) {
+            return Object.keys(obj).sort().reduce(function (result, key) {
+                if (!ignore.includes(key)) {
+                    result[key] = obj[key];
+                }
+                return result;
+            }, {});
         }
     });
 

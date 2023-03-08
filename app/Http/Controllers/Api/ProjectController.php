@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
 use App\Models\AbstractModel;
+use App\Models\Deleted;
 use App\Models\File;
 use App\Models\FileContent;
 use App\Models\Project;
@@ -21,6 +22,7 @@ use App\Models\WebSocketDialog;
 use App\Module\Base;
 use App\Module\BillExport;
 use App\Module\BillMultipleExport;
+use App\Module\TimeRange;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Madzipper;
@@ -58,7 +60,9 @@ class ProjectController extends AbstractController
      * - yes：取列表
      * @apiParam {Object} [keys]             搜索条件
      * - keys.name: 项目名称
-     * @apiParam {String} [deleted_at]       读取在这个时间之后删除的项目ID，返回数据: deleted_data（此参数仅第1页有效）
+     * @apiParam {String} [timerange]        时间范围（如：1678248944,1678248944）
+     * - 第一个时间: 读取在这个时间之后更新的数据
+     * - 第二个时间: 读取在这个时间之后删除的数据ID（第1页附加返回数据: deleted_id）
      *
      * @apiParam {Number} [page]        当前页，默认:1
      * @apiParam {Number} [pagesize]    每页显示数量，默认:50，最大:100
@@ -137,6 +141,11 @@ class ProjectController extends AbstractController
             }
         }
         //
+        $timerange = TimeRange::parse(Request::input('timerange'));
+        if ($timerange->updated) {
+            $builder->where('projects.updated_at', '>', $timerange->updated);
+        }
+        //
         $list = $builder->orderByDesc('projects.id')->paginate(Base::getPaginate(100, 50));
         $list->transform(function (Project $project) use ($user) {
             return array_merge($project->toArray(), $project->getTaskStatistics($user->userid));
@@ -144,15 +153,8 @@ class ProjectController extends AbstractController
         //
         $data = $list->toArray();
         $data['total_all'] = $totalAll ?? $data['total'];
-        //
-        if ($list->currentPage() === 1 && Request::input('deleted_at')) {
-            $data['deleted_at'] = date("Y-m-d H:i:s");
-            $data['deleted_data'] = Project::authData()
-                ->withTrashed()
-                ->where('projects.deleted_at', '>=', Carbon::parse(Request::input('deleted_at')))
-                ->orderByDesc('projects.deleted_at')
-                ->take(100)
-                ->pluck('id');
+        if ($list->currentPage() === 1) {
+            $data['deleted_id'] = Deleted::ids('project', $user->userid, $timerange->deleted);
         }
         //
         return Base::retSuccess('success', $data);
@@ -842,13 +844,17 @@ class ProjectController extends AbstractController
      *
      * @apiParam {Object} [keys]             搜索条件
      * - keys.name: 任务名称
+     *
      * @apiParam {Number} [project_id]       项目ID
      * @apiParam {Number} [parent_id]        主任务ID（project_id && parent_id ≤ 0 时 仅查询自己参与的任务）
      * - 大于0：指定主任务下的子任务
      * - 等于-1：表示仅主任务
-     * @apiParam {String} [name]             任务描述关键词
+     *
      * @apiParam {Array} [time]              指定时间范围，如：['2020-12-12', '2020-12-30']
-     * @apiParam {String} [time_before]      指定时间之前，如：2020-12-30 00:00:00（填写此项时 time 参数无效）
+     * @apiParam {String} [timerange]        时间范围（如：1678248944,1678248944）
+     * - 第一个时间: 读取在这个时间之后更新的数据
+     * - 第二个时间: 读取在这个时间之后删除的数据ID（第1页附加返回数据: deleted_id）
+     *
      * @apiParam {String} [complete]         完成状态
      * - all：所有（默认）
      * - yes：已完成
@@ -861,7 +867,8 @@ class ProjectController extends AbstractController
      * - all：所有
      * - yes：已删除
      * - no：未删除（默认）
-     * @apiParam {Object} sorts              排序方式
+     *
+     * @apiParam {Object} [sorts]              排序方式
      * - sorts.complete_at  完成时间：asc|desc
      * - sorts.archived_at  归档时间：asc|desc
      * - sorts.end_at  到期时间：asc|desc
@@ -872,7 +879,7 @@ class ProjectController extends AbstractController
      */
     public function task__lists()
     {
-        User::auth();
+        $user = User::auth();
         //
         $builder = ProjectTask::with(['taskUser', 'taskTag']);
         //
@@ -880,7 +887,7 @@ class ProjectController extends AbstractController
         $project_id = intval(Request::input('project_id'));
         $name = Request::input('name');
         $time = Request::input('time');
-        $time_before = Request::input('time_before');
+        $timerange = TimeRange::parse(Request::input('timerange'));
         $complete = Request::input('complete', 'all');
         $archived = Request::input('archived', 'no');
         $deleted = Request::input('deleted', 'no');
@@ -920,12 +927,13 @@ class ProjectController extends AbstractController
             });
         }
         //
-        if (Base::isDateOrTime($time_before)) {
-            $builder->whereNotNull('project_tasks.end_at')->where('project_tasks.end_at', '<', Carbon::parse($time_before));
-        } elseif (is_array($time)) {
+        if (is_array($time)) {
             if (Base::isDateOrTime($time[0]) && Base::isDateOrTime($time[1])) {
                 $builder->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay());
             }
+        }
+        if ($timerange->updated) {
+            $builder->where('project_tasks.updated_at', '>', $timerange->updated);
         }
         //
         if ($complete === 'yes') {
@@ -954,7 +962,12 @@ class ProjectController extends AbstractController
         //
         $list = $builder->orderByDesc('project_tasks.id')->paginate(Base::getPaginate(200, 100));
         //
-        return Base::retSuccess('success', $list);
+        $data = $list->toArray();
+        if ($list->currentPage() === 1) {
+            $data['deleted_id'] = Deleted::ids('projectTask', $user->userid, $timerange->deleted);
+        }
+        //
+        return Base::retSuccess('success', $data);
     }
 
     /**
