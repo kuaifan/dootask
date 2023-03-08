@@ -801,6 +801,9 @@ export default {
         },
 
         handleLongpress(event, el) {
+            if (this.dialogKey) {
+                return;
+            }
             const dialogId = $A.getAttr(el, 'data-id')
             const dialogItem = this.dialogList.find(item => item.id == dialogId)
             if (!dialogItem) {
