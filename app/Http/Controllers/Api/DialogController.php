@@ -370,7 +370,7 @@ class DialogController extends AbstractController
      * @apiName msg__list
      *
      * @apiParam {Number} dialog_id         对话ID
-     * @apiParam {Number} msg_id            消息ID
+     * @apiParam {Number} [msg_id]          消息ID
      * @apiParam {Number} [position_id]     此消息ID前后的数据
      * @apiParam {Number} [prev_id]         此消息ID之前的数据
      * @apiParam {Number} [next_id]         此消息ID之后的数据
@@ -490,6 +490,43 @@ class DialogController extends AbstractController
             $data['todo'] = $data['dialog']->todo_num > 0 ? WebSocketDialogMsgTodo::whereDialogId($dialog->id)->whereUserid($user->userid)->whereDoneAt(null)->orderByDesc('id')->take(50)->get() : [];
         }
         return Base::retSuccess('success', $data);
+    }
+
+    /**
+     * @api {get} api/dialog/msg/search          10. 搜索消息位置
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__search
+     *
+     * @apiParam {Number} dialog_id         对话ID
+     * @apiParam {String} key               搜索关键词
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__search()
+    {
+        User::auth();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        $key = trim(Request::input('key'));
+        //
+        if (empty($key)) {
+            return Base::retError('关键词不能为空');
+        }
+        //
+        WebSocketDialog::checkDialog($dialog_id);
+        //
+        $data = WebSocketDialogMsg::whereDialogId($dialog_id)
+            ->where('key', 'LIKE', "%{$key}%")
+            ->take(200)
+            ->pluck('id');
+        return Base::retSuccess('success', [
+            'data' => $data
+        ]);
     }
 
     /**

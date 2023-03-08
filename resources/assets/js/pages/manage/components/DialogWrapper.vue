@@ -74,6 +74,9 @@
                         @command="onDialogMenu">
                         <i class="taskfont dialog-menu-icon">&#xe6e9;</i>
                         <EDropdownMenu v-slot="dropdown">
+                            <EDropdownItem command="searchMsg">
+                                <div>{{$L('搜索消息')}}</div>
+                            </EDropdownItem>
                             <EDropdownItem v-if="dialogData.type === 'user'" command="openCreate">
                                 <div>{{$L('创建群组')}}</div>
                             </EDropdownItem>
@@ -103,11 +106,29 @@
                             </template>
                         </EDropdownMenu>
                     </EDropdown>
+
+                    <!--搜索框-->
+                    <div v-if="searchShow" class="dialog-search">
+                        <div class="search-location">
+                            <i class="taskfont" @click="onSearchSwitch('prev')">&#xe702;</i>
+                            <i class="taskfont" @click="onSearchSwitch('next')">&#xe705;</i>
+                        </div>
+                        <div class="search-input">
+                            <Input ref="searchInput" v-model="searchKey" :placeholder="$L('搜索消息')" @on-keyup="onSearchKeyup" clearable>
+                                <div class="search-pre" slot="prefix">
+                                    <Loading v-if="searchLoad > 0"/>
+                                    <Icon v-else type="ios-search" />
+                                </div>
+                            </Input>
+                            <div v-if="searchLoad === 0 && searchResult.length > 0" class="search-total" slot="append">{{searchLocation}}/{{searchResult.length}}</div>
+                        </div>
+                        <div class="search-cancel" @click="onSearchKeyup(null)">{{$L('取消')}}</div>
+                    </div>
                 </div>
             </slot>
         </div>
 
-        <!--顶部提示-->
+        <!--跳转提示-->
         <div v-if="positionMsg" class="dialog-position" :class="{'down': tagShow}">
             <div class="position-label" @click="onPositionMark">
                 <Icon v-if="positionLoad > 0" type="ios-loading" class="icon-loading"></Icon>
@@ -523,6 +544,12 @@ export default {
             pasteFile: [],
             pasteItem: [],
 
+            searchShow: false,
+            searchKey: '',
+            searchLoad: 0,
+            searchLocation: 1,
+            searchResult: [],
+
             createGroupShow: false,
             createGroupData: {},
             createGroupLoad: 0,
@@ -759,7 +786,7 @@ export default {
         },
 
         tagShow() {
-            return this.msgTags.length > 1 && this.windowScrollY === 0
+            return this.msgTags.length > 1 && this.windowScrollY === 0 && !this.searchShow
         },
 
         scrollerClass() {
@@ -898,6 +925,46 @@ export default {
                 msg_type: this.msgType,
                 clear_before: true
             }).catch(_ => {})
+        },
+
+        searchKey(key) {
+            if (!key) {
+                return
+            }
+            this.searchLoad++
+            setTimeout(_ => {
+                if (this.searchKey === key) {
+                    this.searchLoad++
+                    this.searchResult = []
+                    this.searchLocation = 0
+                    this.$store.dispatch("call", {
+                        url: 'dialog/msg/search',
+                        data: {
+                            dialog_id: this.dialogId,
+                            key,
+                        },
+                    }).then(({data}) => {
+                        if (this.searchKey !== key) {
+                            return
+                        }
+                        this.searchResult = data.data
+                        this.searchLocation = this.searchResult.length
+                    }).finally(_ => {
+                        this.searchLoad--
+                    });
+                }
+                this.searchLoad--
+            }, 600)
+        },
+
+        searchLocation(position) {
+            if (position === 0) {
+                return
+            }
+            const id = this.searchResult[position - 1]
+            if (id) {
+                this.onPositionId(id)
+            }
         },
 
         dialogSearchMsgId() {
@@ -1645,6 +1712,13 @@ export default {
 
         onDialogMenu(cmd) {
             switch (cmd) {
+                case "searchMsg":
+                    this.searchShow = true
+                    this.$nextTick(_ => {
+                        this.$refs.searchInput.focus()
+                    })
+                    break;
+
                 case "openCreate":
                     const userids = [this.userId]
                     if (this.dialogData.dialog_user && this.userId != this.dialogData.dialog_user.userid) {
@@ -2420,6 +2494,37 @@ export default {
             if (data.add) {
                 this.$store.dispatch("saveDialogMsg", data.add);
                 this.$store.dispatch("updateDialogLastMsg", data.add);
+            }
+        },
+
+        onSearchSwitch(type) {
+            if (this.searchResult.length === 0) {
+                return
+            }
+            if (this.searchLocation === 1 && this.searchResult.length === 1) {
+                this.onPositionId(this.searchResult[0])
+                return
+            }
+            if (type === 'prev') {
+                if (this.searchLocation <= 1) {
+                    this.searchLocation = this.searchResult.length
+                } else {
+                    this.searchLocation--
+                }
+            } else {
+                if (this.searchLocation >= this.searchResult.length) {
+                    this.searchLocation = 1
+                } else {
+                    this.searchLocation++
+                }
+            }
+        },
+
+        onSearchKeyup(e) {
+            if (e === null || e.keyCode === 27) {
+                this.searchShow = false
+                this.searchKey = ''
+                this.searchResult = []
             }
         },
 

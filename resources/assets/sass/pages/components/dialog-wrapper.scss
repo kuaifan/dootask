@@ -346,6 +346,70 @@
                 display: none;
                 cursor: pointer;
             }
+
+            .dialog-search {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 1px;
+                z-index: 1;
+                background-color: #ffffff;
+                display: flex;
+                align-items: center;
+                .search-location {
+                    margin-left: 14px;
+                    display: flex;
+                    align-items: center;
+                    > i {
+                        cursor: pointer;
+                        font-size: 18px;
+                        padding: 0 6px;
+                    }
+                }
+                .search-input {
+                    flex: 1;
+                    margin-left: 12px;
+                    border-radius: 12px;
+                    background-color: #F7F7F7;
+                    overflow: hidden;
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+
+                    .search-pre {
+                        width: 100%;
+                        height: 100%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        .common-loading {
+                            width: 14px;
+                            height: 14px;
+                            margin: 0;
+                        }
+                    }
+
+                    .ivu-input {
+                        border-color: transparent;
+                        background-color: transparent;
+
+                        &:hover,
+                        &:focus {
+                            box-shadow: none;
+                        }
+                    }
+
+                    .search-total {
+                        padding-right: 12px;
+                    }
+                }
+                .search-cancel {
+                    cursor: pointer;
+                    padding: 0 18px;
+                    color: $primary-color;
+                }
+            }
         }
     }
 
