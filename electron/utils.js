@@ -308,6 +308,8 @@ module.exports = {
                     resolve()
                 })
                 event.preventDefault()
+            } else {
+                resolve()
             }
         })
     },
