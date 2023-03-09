@@ -3,20 +3,22 @@
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
             <div class="block-setting-box">
                 <h3>{{ $L('AgoraIO') }}</h3>
-                <FormItem :label="$L('会议功能')" prop="open">
-                    <RadioGroup v-model="formData.open">
-                        <Radio label="open">{{ $L('开启') }}</Radio>
-                        <Radio label="close">{{ $L('关闭') }}</Radio>
-                    </RadioGroup>
-                </FormItem>
-                <template v-if="formData.open === 'open'">
-                    <FormItem label="App ID " prop="appid">
-                        <Input :maxlength="255" v-model="formData.appid"/>
+                <div class="form-box">
+                    <FormItem :label="$L('会议功能')" prop="open">
+                        <RadioGroup v-model="formData.open">
+                            <Radio label="open">{{ $L('开启') }}</Radio>
+                            <Radio label="close">{{ $L('关闭') }}</Radio>
+                        </RadioGroup>
                     </FormItem>
-                    <FormItem label="App certificate" prop="app_certificate">
-                        <Input :maxlength="255" v-model="formData.app_certificate" type="password"/>
-                    </FormItem>
-                </template>
+                    <template v-if="formData.open === 'open'">
+                        <FormItem label="App ID " prop="appid">
+                            <Input :maxlength="255" v-model="formData.appid"/>
+                        </FormItem>
+                        <FormItem label="App certificate" prop="app_certificate">
+                            <Input :maxlength="255" v-model="formData.app_certificate" type="password"/>
+                        </FormItem>
+                    </template>
+                </div>
             </div>
         </Form>
         <div class="setting-footer">

@@ -2734,7 +2734,7 @@ class Base
         }
 
         $src = $createfun($src_img);
-        $dst = imagecreatetruecolor($width ? $width : $dst_w, $height ? $height : $dst_h);
+        $dst = imagecreatetruecolor($width ?: $dst_w, $height ?: $dst_h);
         try {
             $white = imagecolorallocate($dst, 255, 255, 255);
             imagefill($dst, 0, 0, $white);

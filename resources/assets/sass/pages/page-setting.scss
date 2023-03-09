@@ -281,6 +281,10 @@
                                     transform: translateY(-50%);
                                 }
 
+                                .form-box {
+                                    overflow: auto;
+                                }
+
                                 .ivu-form-item {
                                     .ivu-form {
                                         padding: 12px 0 0 0;

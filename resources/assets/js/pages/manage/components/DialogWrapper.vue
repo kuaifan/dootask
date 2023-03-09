@@ -196,7 +196,7 @@
             <div v-else-if="quickShow" class="chat-bottom-menu">
                 <ul class="scrollbar-hidden">
                     <li v-for="item in quickMsgs" @click.stop="sendQuick(item)">
-                        <div class="bottom-menu-desc no-dark-content">{{item.label}}</div>
+                        <div class="bottom-menu-desc no-dark-content" :style="item.style || null">{{item.label}}</div>
                     </li>
                 </ul>
             </div>
@@ -890,6 +890,7 @@ export default {
                     this.msgNew = 0
                     this.msgType = ''
                     this.replyActiveId = 0
+                    this.searchShow = false
                     //
                     if (this.allMsgList.length > 0) {
                         this.allMsgs = this.allMsgList

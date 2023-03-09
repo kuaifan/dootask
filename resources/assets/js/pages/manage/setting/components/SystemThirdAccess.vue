@@ -3,41 +3,43 @@
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
             <div class="block-setting-box">
                 <h3>{{ $L('LDAP') }}</h3>
-                <FormItem :label="$L('启用 LDAP 认证')" prop="ldap_open">
-                    <RadioGroup v-model="formData.ldap_open">
-                        <Radio label="open">{{ $L('开启') }}</Radio>
-                        <Radio label="close">{{ $L('关闭') }}</Radio>
-                    </RadioGroup>
-                    <div class="form-tip">{{$L('开启后可以直接使用 LDAP 帐号密码登录')}}</div>
-                </FormItem>
-                <template v-if="formData.ldap_open === 'open'">
-                    <FormItem :label="$L('LDAP 地址')" prop="ldap_host">
-                        <Input v-model="formData.ldap_host"/>
-                        <div class="form-tip">{{$L('例如')}}: 192.168.1.200、www.ldap.com</div>
-                    </FormItem>
-                    <FormItem :label="$L('LDAP 端口')" prop="ldap_port">
-                        <Input v-model="formData.ldap_port" type="number" :placeholder="`${$L('默认')}: 389`"/>
-                    </FormItem>
-                    <FormItem label="Base DN" prop="ldap_base_dn">
-                        <Input v-model="formData.ldap_base_dn"/>
-                    </FormItem>
-                    <FormItem label="User DN" prop="ldap_user_dn">
-                        <Input v-model="formData.ldap_user_dn"/>
-                    </FormItem>
-                    <FormItem :label="$L('密码')" prop="ldap_password">
-                        <Input v-model="formData.ldap_password" type="password"/>
-                    </FormItem>
-                    <FormItem :label="$L('同步本地帐号')" prop="ldap_sync_local">
-                        <RadioGroup v-model="formData.ldap_sync_local">
+                <div class="form-box">
+                    <FormItem :label="$L('启用 LDAP 认证')" prop="ldap_open">
+                        <RadioGroup v-model="formData.ldap_open">
                             <Radio label="open">{{ $L('开启') }}</Radio>
                             <Radio label="close">{{ $L('关闭') }}</Radio>
                         </RadioGroup>
-                        <div class="form-tip">{{$L('开启同步本地帐号登录后将同步到 LDAP 服务器')}}</div>
+                        <div class="form-tip">{{$L('开启后可以直接使用 LDAP 帐号密码登录')}}</div>
                     </FormItem>
-                    <FormItem>
-                        <Button :loading="testLoad" @click="checkTest">{{ $L('测试链接') }}</Button>
-                    </FormItem>
-                </template>
+                    <template v-if="formData.ldap_open === 'open'">
+                        <FormItem :label="$L('LDAP 地址')" prop="ldap_host">
+                            <Input v-model="formData.ldap_host"/>
+                            <div class="form-tip">{{$L('例如')}}: 192.168.1.200、www.ldap.com</div>
+                        </FormItem>
+                        <FormItem :label="$L('LDAP 端口')" prop="ldap_port">
+                            <Input v-model="formData.ldap_port" type="number" :placeholder="`${$L('默认')}: 389`"/>
+                        </FormItem>
+                        <FormItem label="Base DN" prop="ldap_base_dn">
+                            <Input v-model="formData.ldap_base_dn"/>
+                        </FormItem>
+                        <FormItem label="User DN" prop="ldap_user_dn">
+                            <Input v-model="formData.ldap_user_dn"/>
+                        </FormItem>
+                        <FormItem :label="$L('密码')" prop="ldap_password">
+                            <Input v-model="formData.ldap_password" type="password"/>
+                        </FormItem>
+                        <FormItem :label="$L('同步本地帐号')" prop="ldap_sync_local">
+                            <RadioGroup v-model="formData.ldap_sync_local">
+                                <Radio label="open">{{ $L('开启') }}</Radio>
+                                <Radio label="close">{{ $L('关闭') }}</Radio>
+                            </RadioGroup>
+                            <div class="form-tip">{{$L('开启同步本地帐号登录后将同步到 LDAP 服务器')}}</div>
+                        </FormItem>
+                        <FormItem>
+                            <Button :loading="testLoad" @click="checkTest">{{ $L('测试链接') }}</Button>
+                        </FormItem>
+                    </template>
+                </div>
             </div>
         </Form>
         <div class="setting-footer">
