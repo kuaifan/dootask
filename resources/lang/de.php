@@ -131,6 +131,7 @@ return array (
   '修改子任务标题' => 'Teiltitel ändern',
   '修改子任务状态' => 'Status der teilaufgaben ändern',
   '修改部门不存在' => 'Die umgebende abteilung existiert nicht',
+  '关键词不能为空' => 'Das geht niemals verloren',
   '创建文件夹失败' => 'Erstellen des ordners fehlgeschlagen',
   '删除任务负责人' => 'Verantwortlicher entfernt',
   '子任务禁止复制' => 'Zweitbesetzung ist verboten',

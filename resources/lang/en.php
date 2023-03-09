@@ -131,6 +131,7 @@ return array (
   '修改子任务标题' => 'Modify the subtask title',
   '修改子任务状态' => 'Change the subtask status',
   '修改部门不存在' => 'The modification department does not exist',
+  '关键词不能为空' => 'Keywords cannot be empty',
   '创建文件夹失败' => 'Failed to create a folder',
   '删除任务负责人' => 'Remove task leader',
   '子任务禁止复制' => 'Replication is prohibited for subtasks',

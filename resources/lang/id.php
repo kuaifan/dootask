@@ -131,6 +131,7 @@ return array (
   '修改子任务标题' => 'Revisi judul sub tugas',
   '修改子任务状态' => 'Revisi status sub misi',
   '修改部门不存在' => 'Departemen revisi tidak ada',
+  '关键词不能为空' => 'Kata kuncinya tidak bisa kosong',
   '创建文件夹失败' => 'Gagal membuat folder',
   '删除任务负责人' => 'Hapus pemimpin misi',
   '子任务禁止复制' => 'Sumisi melarang penggandaan',

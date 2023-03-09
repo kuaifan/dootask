@@ -131,6 +131,7 @@ return array (
   '修改子任务标题' => 'Modifier le titre de la sous-tâche',
   '修改子任务状态' => 'Modifier l’état des sous-tâches',
   '修改部门不存在' => 'Le département de modification n’existe pas',
+  '关键词不能为空' => 'Les mots-clés ne peuvent pas être vides',
   '创建文件夹失败' => 'Échec de la création du dossier',
   '删除任务负责人' => 'Supprimer un chef de tâche',
   '子任务禁止复制' => 'Sous-tâche copie interdite',
