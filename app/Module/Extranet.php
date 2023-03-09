@@ -218,47 +218,57 @@ class Extranet
             case "it":
                 $data = self::curl('http://vvhan.api.hitosea.com/api/hotlist?type=itNews', 3600);
                 if ($data = Base::json2array($data)) {
-                    $array = array_map(function ($item, $key) {
-                        $content = "<p>" . ($key + 1) . ". <strong><a href='{$item['mobilUrl']}' target='_blank'>{$item['title']}</a></strong></p>";
-                        if ($item['desc']) {
-                            $content .= "<p>{$item['desc']}</p>";
+                    $i = 1;
+                    $array = array_map(function ($item) use (&$i) {
+                        if ($item['title'] && $item['desc']) {
+                            return "<p>" . ($i++) . ". <strong><a href='{$item['mobilUrl']}' target='_blank'>{$item['title']}</a></strong></p><p>{$item['desc']}</p>";
+                        } else {
+                            return null;
                         }
-                        return $content;
-                    }, $data['data'], array_keys($data['data']));
+                    }, $data['data']);
+                    $array = array_values(array_filter($array));
                     if ($array) {
                         array_unshift($array, "<p><strong>{$data['title']}</strong>（{$data['update_time']}）</p>");
+                        $text = implode("<p>&nbsp;</p>", $array);
                     }
-                    $text = implode("<p>&nbsp;</p>", $array);
                 }
                 break;
 
             case "36ke":
                 $data = self::curl('http://vvhan.api.hitosea.com/api/hotlist?type=36Ke', 3600);
                 if ($data = Base::json2array($data)) {
-                    $array = array_map(function ($item, $key) {
-                        $content = "<p>" . ($key + 1) . ". <strong><a href='{$item['mobilUrl']}' target='_blank'>{$item['title']}</a></strong></p>";
-                        if ($item['desc']) {
-                            $content .= "<p>{$item['desc']}</p>";
+                    $i = 1;
+                    $array = array_map(function ($item) use (&$i) {
+                        if ($item['title'] && $item['desc']) {
+                            return "<p>" . ($i++) . ". <strong><a href='{$item['mobilUrl']}' target='_blank'>{$item['title']}</a></strong></p><p>{$item['desc']}</p>";
+                        } else {
+                            return null;
                         }
-                        return $content;
-                    }, $data['data'], array_keys($data['data']));
+                    }, $data['data']);
+                    $array = array_values(array_filter($array));
                     if ($array) {
                         array_unshift($array, "<p><strong>{$data['title']}</strong>（{$data['update_time']}）</p>");
+                        $text = implode("<p>&nbsp;</p>", $array);
                     }
-                    $text = implode("<p>&nbsp;</p>", $array);
                 }
                 break;
 
             case "60s":
                 $data = self::curl('http://vvhan.api.hitosea.com/api/60s?type=json', 3600);
                 if ($data = Base::json2array($data)) {
-                    $array = array_map(function ($item, $key) {
-                        return "<p>" . ($key + 1) . ". {$item}</p>";
-                    }, $data['data'], array_keys($data['data']));
+                    $i = 1;
+                    $array = array_map(function ($item) use (&$i) {
+                        if ($item) {
+                            return "<p>" . ($i++) . ". {$item}</p>";
+                        } else {
+                            return null;
+                        }
+                    }, $data['data']);
+                    $array = array_values(array_filter($array));
                     if ($array) {
                         array_unshift($array, "<p><strong>{$data['name']}</strong>（{$data['time'][0]}）</p>");
+                        $text = implode("<p>&nbsp;</p>", $array);
                     }
-                    $text = implode("<p>&nbsp;</p>", $array);
                 }
                 break;
 
