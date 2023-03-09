@@ -959,6 +959,7 @@ export default {
                 id: id,
                 type: command,
                 name: '',
+                userid: this.userId,
                 newname: this.$L('未命名')
             });
             this.autoBlur(id)
