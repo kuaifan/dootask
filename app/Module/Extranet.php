@@ -216,7 +216,7 @@ class Extranet
         $text = "维护中...";
         switch ($type) {
             case "it":
-                $data = self::curl('https://api.vvhan.com/api/hotlist?type=itNews', 3600);
+                $data = self::curl('http://vvhan.api.dootask.com/api/hotlist?type=itNews', 3600);
                 if ($data = Base::json2array($data)) {
                     $array = array_map(function ($item, $key) {
                         $content = "<p>" . ($key + 1) . ". <strong><a href='{$item['mobilUrl']}' target='_blank'>{$item['title']}</a></strong></p>";
@@ -233,7 +233,7 @@ class Extranet
                 break;
 
             case "36ke":
-                $data = self::curl('https://api.vvhan.com/api/hotlist?type=36Ke', 3600);
+                $data = self::curl('http://vvhan.api.dootask.com/api/hotlist?type=36Ke', 3600);
                 if ($data = Base::json2array($data)) {
                     $array = array_map(function ($item, $key) {
                         $content = "<p>" . ($key + 1) . ". <strong><a href='{$item['mobilUrl']}' target='_blank'>{$item['title']}</a></strong></p>";
@@ -250,7 +250,7 @@ class Extranet
                 break;
 
             case "60s":
-                $data = self::curl('https://api.vvhan.com/api/60s?type=json', 3600);
+                $data = self::curl('http://vvhan.api.dootask.com/api/60s?type=json', 3600);
                 if ($data = Base::json2array($data)) {
                     $array = array_map(function ($item, $key) {
                         return "<p>" . ($key + 1) . ". {$item}</p>";
@@ -264,7 +264,7 @@ class Extranet
 
             case "joke":
                 $text = "笑话被掏空";
-                $data = self::curl('https://api.vvhan.com/api/joke?type=json', 5);
+                $data = self::curl('http://vvhan.api.dootask.com/api/joke?type=json', 5);
                 if ($data = Base::json2array($data)) {
                     if ($data = trim($data['joke'])) {
                         $text = "开心笑话：{$data}";
