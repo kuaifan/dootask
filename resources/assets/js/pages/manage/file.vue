@@ -57,7 +57,7 @@
                 <div v-if="loadIng > 0" class="nav-load"><Loading/></div>
                 <div class="flex-full"></div>
                 <div v-if="hasShareFile" class="only-checkbox">
-                    <Checkbox v-model="hideShared">{{$L('隐藏共享文件')}}</Checkbox>
+                    <Checkbox v-model="hideShared">{{$L('仅显示我的')}}</Checkbox>
                 </div>
                 <div :class="['switch-button', tableMode]">
                     <div @click="tableMode='block'"><i class="taskfont">&#xe60c;</i></div>
@@ -764,15 +764,15 @@ export default {
 
         fileList() {
             const {fileLists, searchKey, hideShared, pid, selectIds, userId} = this;
-            const list = $A.cloneJSON(sortBy(fileLists.filter((file) => {
-                if (hideShared && file.share && file.userid != userId) {
+            const list = $A.cloneJSON(sortBy(fileLists.filter(file => {
+                if (hideShared && file.userid != userId && file.created_id != userId) {
                     return false
                 }
                 if (searchKey) {
                     return file.name.indexOf(searchKey) !== -1;
                 }
                 return file.pid == pid;
-            }), (file) => {
+            }), file => {
                 return (file.type == 'folder' ? 'a' : 'b') + file.name;
             }));
             return list.map(item => {
