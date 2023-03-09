@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.24.53]
+## [0.24.55]
 
 ### Bug Fixes
 
@@ -26,6 +26,8 @@ All notable changes to this project will be documented in this file.
 - 文件消息新增显示文件菜单
 - 会员选择框支持搜索拼音
 - 可以通过ID搜索任务
+- 整理请求外部接口
+- 新增管理机器人菜单
 
 ## [0.24.30]
 

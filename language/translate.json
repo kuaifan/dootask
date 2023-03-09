@@ -14793,5 +14793,16 @@
         "de": "Willst du es wirklich löschen?",
         "fr": "Êtes-vous sûr de vouloir restaurer supprimer?",
         "id": "Kau yakin ingin menghapusnya kembali?"
+    },
+    {
+        "key": "匿名消息将通过匿名消息（机器人）发送给对方，不会记录你的任何身份信息",
+        "zh": "",
+        "zh-CHT": "匿名消息將通過匿名消息（機器人）發送給對方，不會記錄你的任何身份信息",
+        "en": "Anonymous messages will be sent to each other via anonymous messages (bots) and will not record any identifying information about you",
+        "ko": "신원을 기록하지 않고 익명의 메시지 (로봇)를 통해 상대방에게 전달될 것이다",
+        "ja": "匿名メッセージは匿名メッセージ(ロボット)を介して相手に送られますあなたの識別情報は一切記録されません",
+        "de": "Anonyme nachrichten werden über diese anonymen nachrichten übermittelt, ohne dass ihre identität aufgezeichnet wird",
+        "fr": "Un message anonyme sera envoyé à l’autre partie via un message anonyme (bot) et aucune information d’identification de vous ne sera enregistrée",
+        "id": "Pesan anonim akan dikirim ke pihak lain melalui pesan anonim (robot) yang tidak akan merekam informasi identitas anda"
     }
 ]
