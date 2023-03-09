@@ -30,7 +30,7 @@
                 v-for="(item, key) in list"
                 :value="item.userid"
                 :key="key"
-                :key-value="item.email"
+                :key-value="`${item.email}|${item.pinyin}`"
                 :label="item.nickname"
                 :avatar="item.userimg"
                 :disabled="isDisabled(item.userid)">

@@ -437,7 +437,7 @@ class UsersController extends AbstractController
      * @apiName searchinfo
      *
      * @apiParam {Object} keys          搜索条件
-     * - keys.key                           昵称、邮箱关键字
+     * - keys.key                           昵称、拼音、邮箱关键字
      * - keys.disable                       0-排除禁止（默认），1-仅禁止，2-含禁止
      * - keys.bot                           0-排除机器人（默认），1-仅机器人，2-含机器人
      * - keys.project_id                    在指定项目ID
@@ -476,10 +476,14 @@ class UsersController extends AbstractController
         $sorts = is_array($sorts) ? $sorts : [];
         //
         if ($keys['key']) {
-            $builder->where(function($query) use ($keys) {
-                $query->where("email", "like", "%{$keys['key']}%")
-                    ->orWhere("nickname", "like", "%{$keys['key']}%");
-            });
+            if (str_contains($keys['key'], "@")) {
+                $builder->where("email", "like", "%{$keys['key']}%");
+            } else {
+                $builder->where(function($query) use ($keys) {
+                    $query->where("nickname", "like", "%{$keys['key']}%")
+                        ->orWhere("pinyin", "like", "%{$keys['key']}%");
+                });
+            }
         }
         if (intval($keys['disable']) == 0) {
             $builder->whereNull("disable_at");
