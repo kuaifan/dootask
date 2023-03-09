@@ -927,6 +927,7 @@ export default {
             this.$store.dispatch("getFiles", this.pid).then(async () => {
                 this.loadIng--;
                 this.openFileJudge()
+                this.shakeFile(this.$route.params.shakeId);
                 await $A.IDBSet("fileFolderId", this.pid)
             }).catch(({msg}) => {
                 this.loadIng--;
@@ -997,9 +998,9 @@ export default {
             })
         },
 
-        browseFolder(id) {
+        browseFolder(id, shakeId = null) {
             if (id > 0) {
-                this.goForward({name: 'manage-file', params: {folderId: id, fileId: null}});
+                this.goForward({name: 'manage-file', params: {folderId: id, fileId: null, shakeId}});
             } else {
                 this.searchKey = '';
                 this.goForward({name: 'manage-file'});
@@ -1152,7 +1153,7 @@ export default {
 
                 case 'upperFolder':
                     this.searchKey = '';
-                    this.browseFolder(item.pid)
+                    this.browseFolder(item.pid, item.id)
                     break;
 
                 case 'select':
@@ -1624,6 +1625,9 @@ export default {
         },
 
         shakeFile(fileId) {
+            if (!fileId) {
+                return
+            }
             this.$nextTick(_ => {
                 const dom = $A(this.$el).find(`[data-id="${fileId}"]`)
                 if (dom.length > 0) {

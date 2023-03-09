@@ -164,6 +164,7 @@ class FileController extends AbstractController
      * @apiGroup file
      * @apiName search
      *
+     * @apiParam {String} [link]        通过分享地址搜索（如：https://t.hitosea.com/single/file/ODcwOCwzOSxpa0JBS2lmVQ==）
      * @apiParam {String} [key]         关键词
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -174,28 +175,42 @@ class FileController extends AbstractController
     {
         $user = User::auth();
         //
+        $link = trim(Request::input('link'));
         $key = trim(Request::input('key'));
+        $id = 0;
+        $take = 50;
+        if (preg_match("/\/single\/file\/(.*?)$/i", $link, $match)) {
+            $id = intval(FileLink::whereCode($match[1])->value('file_id'));
+            $take = 1;
+        }
         // 搜索自己的
         $builder = File::whereUserid($user->userid);
+        if ($id) {
+            $builder->where("id", $id);
+        }
         if ($key) {
             $builder->where("name", "like", "%{$key}%");
         }
-        $array = $builder->take(50)->get()->toArray();
+        $array = $builder->take($take)->get()->toArray();
         // 搜索共享的
-        $take = 50 - count($array);
-        if ($take > 0 && $key) {
-            $list = File::where("name", "like", "%{$key}%")
-                ->whereIn('pshare', function ($queryA) use ($user) {
-                    $queryA->select('files.id')
-                        ->from('files')
-                        ->join('file_users', 'files.id', '=', 'file_users.file_id')
-                        ->where('files.userid', '!=', $user->userid)
-                        ->where(function ($queryB) use ($user) {
-                            $queryB->whereIn('file_users.userid', [0, $user->userid]);
-                        });
-                })
-                ->take($take)
-                ->get();
+        $take = $take - count($array);
+        if ($take > 0 && ($id || $key)) {
+            $builder = File::whereIn('pshare', function ($queryA) use ($user) {
+                $queryA->select('files.id')
+                    ->from('files')
+                    ->join('file_users', 'files.id', '=', 'file_users.file_id')
+                    ->where('files.userid', '!=', $user->userid)
+                    ->where(function ($queryB) use ($user) {
+                        $queryB->whereIn('file_users.userid', [0, $user->userid]);
+                    });
+            });
+            if ($id) {
+                $builder->where("id", $id);
+            }
+            if ($key) {
+                $builder->where("name", "like", "%{$key}%");
+            }
+            $list = $builder->take($take)->get();
             if ($list->isNotEmpty()) {
                 foreach ($list as $file) {
                     $temp = $file->toArray();

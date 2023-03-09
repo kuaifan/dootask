@@ -643,7 +643,8 @@ export default {
             'wsOpenNum',
             'touchBackInProgress',
             'dialogIns',
-            'cacheUserBasic'
+            'cacheUserBasic',
+            'fileLinks'
         ]),
 
         ...mapGetters(['isLoad']),
@@ -2006,6 +2007,9 @@ export default {
                     value: $A.rightDelete(event.target.currentSrc, '_thumb.jpg'),
                 })
             } else if (event.target.nodeName === 'A') {
+                if (event.target.classList.contains("mention") && event.target.classList.contains("file")) {
+                    this.findOperateFile(this.operateItem.id, event.target.href)
+                }
                 this.operateCopys.push({
                     type: 'link',
                     icon: '&#xe7cb;',
@@ -2147,7 +2151,10 @@ export default {
                         url: value,
                         token: false
                     })
+                    break;
 
+                case 'filepos':
+                    this.goForward({name: 'manage-file', params: value});
                     break;
 
                 case 'link':
@@ -2549,6 +2556,47 @@ export default {
                 $A.modalError(msg)
             }).finally(_ => {
                 this.positionLoad--
+            })
+        },
+
+        findOperateFile(msgId, link) {
+            const file = this.fileLinks.find(item => item.link === link)
+            if (file) {
+                this.addFileMenu(msgId, file)
+                return
+            }
+            this.$store.dispatch("searchFiles", {
+                link
+            }).then(({data}) => {
+                if (data.length === 1) {
+                    const file = {
+                        link,
+                        id: data[0].id,
+                        pid: data[0].pid,
+                    }
+                    this.fileLinks.push(file)
+                    this.addFileMenu(msgId, file)
+                }
+            }).catch(_ => {})
+        },
+
+        addFileMenu(msgId, data) {
+            if (this.operateItem.id != msgId) {
+                return
+            }
+            if (this.operateCopys.findIndex(item => item.type === 'filepos') !== -1) {
+                return
+            }
+            const index = Math.max(0, this.operateCopys.findIndex(item => item.type === 'link') - 1)
+            this.operateCopys.splice(index, 0, {
+                type: 'filepos',
+                icon: '&#xe6f3;',
+                label: '显示文件',
+                value: {
+                    folderId: data.pid,
+                    fileId: null,
+                    shakeId: data.id
+                },
             })
         },
 

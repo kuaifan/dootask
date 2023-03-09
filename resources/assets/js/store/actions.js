@@ -747,16 +747,17 @@ export default {
      * 搜索文件
      * @param state
      * @param dispatch
-     * @param key
+     * @param data
      * @returns {Promise<unknown>}
      */
-    searchFiles({state, dispatch}, key) {
+    searchFiles({state, dispatch}, data) {
+        if (!$A.isJson(data)) {
+            data = {key: data}
+        }
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'file/search',
-                data: {
-                    key,
-                },
+                data,
             }).then((result) => {
                 dispatch("saveFile", result.data);
                 resolve(result)
