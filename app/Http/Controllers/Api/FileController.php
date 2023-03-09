@@ -248,8 +248,12 @@ class FileController extends AbstractController
             $file->name = $name;
             $file->handleDuplicateName();
             $file->save();
-            $file->pushMsg('update', $file);
-            return Base::retSuccess('修改成功', $file);
+            $data = [
+                'id' => $file->id,
+                'name' => $file->name,
+            ];
+            $file->pushMsg('update', $data);
+            return Base::retSuccess('修改成功', $data);
         } else {
             // 添加
             if (!in_array($type, [
