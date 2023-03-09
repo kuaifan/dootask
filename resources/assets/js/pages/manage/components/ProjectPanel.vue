@@ -39,7 +39,7 @@
                     <Tooltip :always="searchText!=''" @on-popper-show="searchFocus" theme="light" :rawIndex="10">
                         <Icon class="menu-icon" type="ios-search" @click="searchFocus" />
                         <div slot="content">
-                            <Input v-model="searchText" ref="searchInput" :placeholder="$L('名称、描述...')" class="search-input" clearable/>
+                            <Input v-model="searchText" ref="searchInput" :placeholder="$L('ID、名称、描述...')" class="search-input" clearable/>
                         </div>
                     </Tooltip>
                 </li>
@@ -443,7 +443,7 @@
         <DrawerOverlay
             v-model="archivedTaskShow"
             placement="right"
-            :size="900">
+            :size="1000">
             <TaskArchived v-if="archivedTaskShow" :project-id="projectId"/>
         </DrawerOverlay>
 
@@ -451,7 +451,7 @@
         <DrawerOverlay
             v-model="deletedTaskShow"
             placement="right"
-            :size="900">
+            :size="1000">
             <TaskDeleted v-if="deletedTaskShow" :project-id="projectId"/>
         </DrawerOverlay>
     </div>
@@ -609,7 +609,9 @@ export default {
                     list = list.filter(({flow_item_id}) => flow_item_id === flowInfo.value);
                 }
                 if (searchText) {
-                    list = list.filter(({name, desc}) => $A.strExists(`${name} ${desc}`, searchText));
+                    list = list.filter(({id, name, desc}) => {
+                        return id == searchText || $A.strExists(`${name} ${desc}`, searchText)
+                    });
                 }
                 return list;
             }
@@ -727,7 +729,7 @@ export default {
                     return false;
                 }
                 if (searchText) {
-                    if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
+                    if (task.id != searchText && !$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
                         return false;
                     }
                 }
@@ -758,7 +760,7 @@ export default {
                     return false;
                 }
                 if (searchText) {
-                    if (!$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
+                    if (task.id != searchText && !$A.strExists(task.name, searchText) && !$A.strExists(task.desc, searchText)) {
                         return false;
                     }
                 }
@@ -1298,7 +1300,7 @@ export default {
         },
 
         taskIsHidden(task) {
-            const {name, desc, complete_at} = task;
+            const {id, name, desc, complete_at} = task;
             const {searchText} = this;
             if (!this.projectData.cacheParameter.completedTask) {
                 if (complete_at) {
@@ -1309,7 +1311,7 @@ export default {
                 return true;
             }
             if (searchText) {
-                if (!$A.strExists(`${name} ${desc}`, searchText)) {
+                if (id != searchText && !$A.strExists(`${name} ${desc}`, searchText)) {
                     return true;
                 }
             }
@@ -1405,7 +1407,7 @@ export default {
                 return false;
             }
             if (this.searchText) {
-                if (!$A.strExists(task.name, this.searchText) && !$A.strExists(task.desc, this.searchText)) {
+                if (task.id != this.searchText && !$A.strExists(task.name, this.searchText) && !$A.strExists(task.desc, this.searchText)) {
                     return false;
                 }
             }
@@ -1425,7 +1427,7 @@ export default {
                 return false;
             }
             if (this.searchText) {
-                if (!$A.strExists(task.name, this.searchText) && !$A.strExists(task.desc, this.searchText)) {
+                if (task.id != this.searchText && !$A.strExists(task.name, this.searchText) && !$A.strExists(task.desc, this.searchText)) {
                     return false;
                 }
             }

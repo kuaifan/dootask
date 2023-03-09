@@ -10,10 +10,10 @@
             <ul>
                 <li>
                     <div class="search-label">
-                        {{$L("任务名")}}
+                        {{$L("关键词")}}
                     </div>
                     <div class="search-content">
-                        <Input v-model="keys.name" clearable/>
+                        <Input v-model="keys.name" :placeholder="$L('ID、任务名...')" clearable/>
                     </div>
                 </li>
                 <li class="search-button">

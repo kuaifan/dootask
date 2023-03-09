@@ -843,7 +843,7 @@ class ProjectController extends AbstractController
      * @apiName task__lists
      *
      * @apiParam {Object} [keys]             搜索条件
-     * - keys.name: 任务名称
+     * - keys.name: ID、任务名称
      *
      * @apiParam {Number} [project_id]       项目ID
      * @apiParam {Number} [parent_id]        主任务ID（project_id && parent_id ≤ 0 时 仅查询自己参与的任务）
@@ -897,7 +897,11 @@ class ProjectController extends AbstractController
         $sorts = is_array($sorts) ? $sorts : [];
         //
         if ($keys['name']) {
-            $builder->where("project_tasks.name", "like", "%{$keys['name']}%");
+            if (Base::isNumber($keys['name'])) {
+                $builder->where("project_tasks.id", intval($keys['name']));
+            } else {
+                $builder->where("project_tasks.name", "like", "%{$keys['name']}%");
+            }
         }
         //
         $scopeAll = false;
