@@ -275,7 +275,7 @@ class Extranet
             case "soup":
                 $text = "鸡汤分完了";
                 $data = self::curl('https://api.ayfre.com/jt/?type=bot', 5);
-                if ($data = trim($data)) {
+                if ($data) {
                     $text = "心灵鸡汤：{$data}";
                 }
                 break;
@@ -285,22 +285,27 @@ class Extranet
 
     /**
      * @param $url
-     * @param int $cacheSecond
+     * @param int $cacheSecond 缓存时间（秒），如果结果为空则缓存有效30秒
      * @param int $timeout
      * @return string
      */
     private static function curl($url, int $cacheSecond = 0, int $timeout = 15): string
     {
         if ($cacheSecond > 0) {
-            $res = Cache::remember("curlCache::" . md5($url), Carbon::now()->addSeconds($cacheSecond), function () use ($timeout, $url) {
-                return Ihttp::ihttp_request($url, [], [], $timeout);
+            $key = "curlCache::" . md5($url);
+            $content = Cache::remember($key, Carbon::now()->addSeconds($cacheSecond), function () use ($cacheSecond, $key, $timeout, $url) {
+                $result = Ihttp::ihttp_request($url, [], [], $timeout);
+                $content = Base::isSuccess($result) ? trim($result['data']) : '';
+                if (empty($content) && $cacheSecond > 30) {
+                    Cache::put($key, "", Carbon::now()->addSeconds(30));
+                }
+                return $content;
             });
         } else {
-            $res = Ihttp::ihttp_request($url, [], [], $timeout);
+            $result = Ihttp::ihttp_request($url, [], [], $timeout);
+            $content = Base::isSuccess($result) ? trim($result['data']) : '';
         }
-        if (Base::isSuccess($res)) {
-            return $res['data'];
-        }
-        return '';
+        //
+        return $content;
     }
 }
