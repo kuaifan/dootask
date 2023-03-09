@@ -2,6 +2,11 @@
 
 namespace App\Models;
 
+use App\Module\Base;
+use App\Module\Extranet;
+use Cache;
+use Carbon\Carbon;
+
 /**
  * App\Models\UserBot
  *
@@ -31,4 +36,61 @@ namespace App\Models;
 class UserBot extends AbstractModel
 {
 
+    /**
+     * 机器人菜单
+     * @param $email
+     * @return array|array[]
+     */
+    public static function quickMsgs($email)
+    {
+        if ($email === 'check-in@bot.system') {
+            return [
+                [
+                    'key' => 'checkin',
+                    'label' => Base::Lang('我要签到')
+                ], [
+                    'key' => 'it',
+                    'label' => Base::Lang('IT资讯')
+                ], [
+                    'key' => '36ke',
+                    'label' => Base::Lang('36氪')
+                ], [
+                    'key' => '60s',
+                    'label' => Base::Lang('60s读世界')
+                ], [
+                    'key' => 'joke',
+                    'label' => Base::Lang('一个笑话')
+                ], [
+                    'key' => 'soup',
+                    'label' => Base::Lang('一碗鸡汤')
+                ]
+            ];
+        }
+        return [];
+    }
+
+    /**
+     * 签到机器人
+     * @param $type
+     * @param $userid
+     * @return string
+     */
+    public static function checkinBotQuickMsg($type, $userid)
+    {
+        if (Cache::get("UserBot::checkinBotQuickMsg:{$userid}") === "yes") {
+            return "操作频繁！";
+        }
+        Cache::put("UserBot::checkinBotQuickMsg:{$userid}", "yes", Carbon::now()->addSecond());
+        //
+        switch ($type) {
+            case "checkin":
+                $text = "暂未开放手动签到。";
+                break;
+
+            default:
+                $text = Extranet::checkinBotQuickMsg($type);
+                break;
+        }
+        return $text ?: '维护中...';
+    }
 }

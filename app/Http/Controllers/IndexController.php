@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\File;
 use App\Module\Base;
-use App\Module\Ihttp;
+use App\Module\Extranet;
 use App\Module\RandomColor;
 use App\Tasks\AppPushTask;
 use App\Tasks\AutoArchivedTask;
@@ -295,20 +295,10 @@ class IndexController extends InvokeController
      */
     public function drawio__iconsearch()
     {
-        $query = Request::input('q');
-        $page = Request::input('p');
-        $size = Request::input('c');
-        $url = "https://app.diagrams.net/iconSearch?q={$query}&p={$page}&c={$size}";
-        $result = Cache::remember("drawioIconsearch::" . md5($url), now()->addDays(15), function () use ($url) {
-            return Ihttp::ihttp_get($url);
-        });
-        if (Base::isSuccess($result)) {
-            return $result['data'];
-        }
-        return [
-            'icons' => [],
-            'total_count' => 0
-        ];
+        $query = trim(Request::input('q'));
+        $page = trim(Request::input('p'));
+        $size = trim(Request::input('c'));
+        return Extranet::drawioIconSearch($query, $page, $size);
     }
 
     /**

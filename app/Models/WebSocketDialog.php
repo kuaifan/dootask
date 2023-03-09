@@ -119,14 +119,7 @@ class WebSocketDialog extends AbstractModel
                 if ($basic) {
                     $this->name = $basic->nickname;
                     $this->bot = $basic->bot;
-                    if ($basic->email === 'check-in@bot.system') {
-                        $this->quick_msgs = [
-                            [
-                                'key' => 'checkin',
-                                'label' => Base::Lang('我要签到')
-                            ]
-                        ];
-                    }
+                    $this->quick_msgs = UserBot::quickMsgs($basic->email);
                 } else {
                     $this->name = 'non-existent';
                     $this->dialog_delete = 1;

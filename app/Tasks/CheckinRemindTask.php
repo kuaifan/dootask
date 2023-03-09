@@ -7,7 +7,7 @@ use App\Models\UserCheckinRecord;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
-use App\Module\Ihttp;
+use App\Module\Extranet;
 use Cache;
 use Carbon\Carbon;
 
@@ -27,7 +27,7 @@ class CheckinRemindTask extends AbstractTask
             return;
         }
         // 判断非工作日
-        if (Base::isHoliday(date("Ymd")) > 0) {
+        if (Extranet::isHoliday(date("Ymd")) > 0) {
             return;
         }
         //

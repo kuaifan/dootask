@@ -73,11 +73,11 @@ class BotReceiveMsgTask extends AbstractTask
         // 签到机器人
         if ($botUser->email === 'check-in@bot.system') {
             if (preg_match("/<span[^>]*?data-quick-key=([\"'])(.*?)\\1[^>]*?>(.*?)<\/span>/is", $original, $match)) {
-                if ($match[2] === 'checkin') {
-                    $text = "暂未开放手动签到。";
+                $text = UserBot::checkinBotQuickMsg($match[2], $msg->userid);
+                if ($text) {
                     WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $text], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
-                    return;
                 }
+                return;
             }
         }
         // 管理机器人

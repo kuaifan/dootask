@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.24.53]
+
+### Bug Fixes
+
+- 重命名别人共享的文件后不见了
+
+### Features
+
+- 搜索会话消息
+
+### Performance
+
+- 优化数据同步
+- 重写更新和删除方法
+- 重写项目和会话接口数据
+- 搜索消息禁止右键
+- 优化搜索
+- 子任务允许多个负责人
+- 文件名称显示两行
+- 隐藏共享文件改为仅显示我的
+- 优化链接识别
+- 文件消息新增显示文件菜单
+- 会员选择框支持搜索拼音
+- 可以通过ID搜索任务
+
 ## [0.24.30]
 
 ### Bug Fixes

@@ -2,20 +2,17 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Ldap\LdapUser;
 use App\Models\Setting;
 use App\Models\User;
 use App\Models\UserCheckinRecord;
 use App\Module\Base;
 use App\Module\BillExport;
 use App\Module\BillMultipleExport;
+use App\Module\Extranet;
 use Arr;
 use Carbon\Carbon;
-use Config;
 use Guanguans\Notify\Factory;
 use Guanguans\Notify\Messages\EmailMessage;
-use LdapRecord\Auth\PasswordRequiredException;
-use LdapRecord\Auth\UsernameRequiredException;
 use LdapRecord\Container;
 use LdapRecord\LdapRecordException;
 use Madzipper;
@@ -535,8 +532,8 @@ class SystemController extends AbstractController
         }
         return Base::retSuccess('success', [
             'ip' => Base::getIp(),
-            'ip-info' => Base::getIpInfo(Base::getIp()),
-            'ip-gcj02' => Base::getIpGcj02(Base::getIp()),
+            'ip-info' => Extranet::getIpInfo(Base::getIp()),
+            'ip-gcj02' => Extranet::getIpGcj02(Base::getIp()),
             'ip-iscn' => Base::isCnIp(Base::getIp()),
             'header' => Request::header(),
             'token' => Base::getToken(),
@@ -590,7 +587,7 @@ class SystemController extends AbstractController
      * @apiSuccess {Object} data    返回数据
      */
     public function get__ipgcj02() {
-        return Base::getIpGcj02(Request::input("ip"));
+        return Extranet::getIpGcj02(Request::input("ip"));
     }
 
     /**
@@ -607,7 +604,7 @@ class SystemController extends AbstractController
      * @apiSuccess {Object} data    返回数据
      */
     public function get__ipinfo() {
-        return Base::getIpInfo(Request::input("ip"));
+        return Extranet::getIpInfo(Request::input("ip"));
     }
 
     /**

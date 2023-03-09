@@ -6,8 +6,6 @@ use App\Exceptions\ApiException;
 use App\Models\Setting;
 use App\Models\Tmp;
 use Cache;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Config;
 use Overtrue\Pinyin\Pinyin;
 use Redirect;
 use Request;
@@ -1917,111 +1915,6 @@ class Base
     }
 
     /**
-     * 获取IP地址经纬度
-     * @param string $ip
-     * @return array|mixed
-     */
-    public static function getIpGcj02($ip = '')
-    {
-        if (empty($ip)) {
-            $ip = self::getIp();
-        }
-        $cacheKey = "getIpPoint::" . md5($ip);
-        $result = Cache::rememberForever($cacheKey, function () use ($ip) {
-            return Ihttp::ihttp_request("https://www.ifreesite.com/ipaddress/address.php?q=" . $ip, [], [], 12);
-        });
-        if (Base::isError($result)) {
-            Cache::forget($cacheKey);
-            return $result;
-        }
-        $data = $result['data'];
-        $lastPos = strrpos($data, ',');
-        $long = floatval(Base::getMiddle(substr($data, $lastPos + 1), null, ')'));
-        $lat = floatval(Base::getMiddle(substr($data, strrpos(substr($data, 0, $lastPos), ',') + 1), null, ','));
-        return Base::retSuccess("success", [
-            'long' => $long,
-            'lat' => $lat,
-        ]);
-    }
-
-    /**
-     * 百度接口：根据ip获取经纬度
-     * @param string $ip
-     * @return array|mixed
-     */
-    public static function getIpGcj02ByBaidu($ip = ''): array
-    {
-        if (empty($ip)) {
-            $ip = self::getIp();
-        }
-
-        $cacheKey = "getIpPoint::" . md5($ip);
-        $result = Cache::rememberForever($cacheKey, function () use ($ip) {
-            $ak = Config::get('app.baidu_app_key');
-            $url = 'http://api.map.baidu.com/location/ip?ak=' . $ak . '&ip=' . $ip . '&coor=bd09ll';
-            return Ihttp::ihttp_request($url, [], [], 12);
-        });
-
-        if (Base::isError($result)) {
-            Cache::forget($cacheKey);
-            return $result;
-        }
-        $data = json_decode($result['data'], true);
-
-        // x坐标纬度, y坐标经度
-        $long = Arr::get($data, 'content.point.x');
-        $lat = Arr::get($data, 'content.point.y');
-        return Base::retSuccess("success", [
-            'long' => $long,
-            'lat' => $lat,
-        ]);
-    }
-
-    /**
-     * 获取IP地址详情
-     * @param string $ip
-     * @return array|mixed
-     */
-    public static function getIpInfo($ip = '')
-    {
-        if (empty($ip)) {
-            $ip = self::getIp();
-        }
-        $cacheKey = "getIpInfo::" . md5($ip);
-        $result = Cache::rememberForever($cacheKey, function () use ($ip) {
-            return Ihttp::ihttp_request("http://ip.taobao.com/service/getIpInfo.php?accessKey=alibaba-inc&ip=" . $ip, [], [], 12);
-        });
-        if (Base::isError($result)) {
-            Cache::forget($cacheKey);
-            return $result;
-        }
-        $data = json_decode($result['data'], true);
-        if (!is_array($data) || intval($data['code']) != 0) {
-            Cache::forget($cacheKey);
-            return Base::retError("error ip: -1");
-        }
-        $data = $data['data'];
-        if (!is_array($data) || !isset($data['country'])) {
-            return Base::retError("error ip: -2");
-        }
-        $data['text'] = $data['country'];
-        $data['textSmall'] = $data['country'];
-        if ($data['region'] && $data['region'] != $data['country'] && $data['region'] != "XX") {
-            $data['text'] .= " " . $data['region'];
-            $data['textSmall'] = $data['region'];
-        }
-        if ($data['city'] && $data['city'] != $data['region'] && $data['city'] != "XX") {
-            $data['text'] .= " " . $data['city'];
-            $data['textSmall'] .= " " . $data['city'];
-        }
-        if ($data['county'] && $data['county'] != $data['city'] && $data['county'] != "XX") {
-            $data['text'] .= " " . $data['county'];
-            $data['textSmall'] .= " " . $data['county'];
-        }
-        return Base::retSuccess("success", $data);
-    }
-
-    /**
      * 是否是中国IP：-1错误、1是、0否
      * @param string $ip
      * @return int
@@ -3193,40 +3086,5 @@ class Base
             $name .= ".";
         }
         return Response::streamDownload($callback, $name);
-    }
-
-    /**
-     * 判断是否工作日
-     * @param string $Ymd 年月日（如：20220102）
-     * @return int
-     * 0: 工作日
-     * 1: 非工作日
-     * 2: 获取不到远程数据的非工作日（周六、日）
-     * 所以可以用>0来判断是否工作日
-     */
-    public static function isHoliday($Ymd) {
-        $time = strtotime($Ymd . " 00:00:00");
-        $holidayKey = "holiday::" . date("Ym", $time);
-        $holidayData = Cache::remember($holidayKey, now()->addMonth(), function () use ($time) {
-            $apiMonth = date("Ym", $time);
-            $apiResult = Ihttp::ihttp_request("https://api.apihubs.cn/holiday/get?field=date&month={$apiMonth}&workday=2&size=31", [], [], 20);
-            if (Base::isError($apiResult)) {
-                info('[holiday] get error');
-                return [];
-            }
-            $apiResult = Base::json2array($apiResult['data']);
-            if ($apiResult['code'] !== 0) {
-                info('[holiday] result error');
-                return [];
-            }
-            return array_map(function ($item) {
-                return $item['date'];
-            }, $apiResult['data']['list']);
-        });
-        if (empty($holidayData)) {
-            Cache::forget($holidayKey);
-            return in_array(date("w", $time), [0, 6]) ? 2 : 0;
-        }
-        return in_array($Ymd, $holidayData) ? 1 : 0;
     }
 }
