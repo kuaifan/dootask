@@ -69,19 +69,27 @@ class BotReceiveMsgTask extends AbstractTask
             return;
         }
         $original = $msg->msg['text'];
-        $pureText = trim(strip_tags($original));
+        if (preg_match("/<span[^>]*?data-quick-key=([\"'])(.*?)\\1[^>]*?>(.*?)<\/span>/is", $original, $match)) {
+            $command = $match[2];
+        } else {
+            $command = trim(strip_tags($original));
+        }
         // 签到机器人
         if ($botUser->email === 'check-in@bot.system') {
-            if (preg_match("/<span[^>]*?data-quick-key=([\"'])(.*?)\\1[^>]*?>(.*?)<\/span>/is", $original, $match)) {
-                $text = UserBot::checkinBotQuickMsg($match[2], $msg->userid);
-                if ($text) {
-                    WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $text], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
-                }
-                return;
+            $text = UserBot::checkinBotQuickMsg($command, $msg->userid);
+            if ($text) {
+                WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $text], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
+            }
+        }
+        // 隐私机器人
+        if ($botUser->email === 'anon-msg@bot.system') {
+            $text = UserBot::anonBotQuickMsg($command);
+            if ($text) {
+                WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $text], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
             }
         }
         // 管理机器人
-        if (str_starts_with($pureText, '/')) {
+        if (str_starts_with($command, '/')) {
             if ($botUser->email === 'bot-manager@bot.system') {
                 $isManager = true;
             } elseif (UserBot::whereBotId($botUser->userid)->whereUserid($msg->userid)->exists()) {
@@ -92,7 +100,7 @@ class BotReceiveMsgTask extends AbstractTask
                 return;
             }
             //
-            $array = Base::newTrim(explode(" ", "{$pureText}    "));
+            $array = Base::newTrim(explode(" ", "{$command}    "));
             $type = $array[0];
             $data = [];
             $notice = "";
@@ -331,11 +339,11 @@ class BotReceiveMsgTask extends AbstractTask
             return;
         }
         // 推送Webhook
-        if ($pureText) {
+        if ($command) {
             $userBot = UserBot::whereBotId($botUser->userid)->first();
             if ($userBot && preg_match("/^https*:\/\//", $userBot->webhook_url)) {
                 Ihttp::ihttp_post($userBot->webhook_url, [
-                    'text' => $pureText,
+                    'text' => $command,
                     'token' => User::token($botUser),
                     'dialog_id' => $msg->dialog_id,
                     'msg_id' => $msg->id,

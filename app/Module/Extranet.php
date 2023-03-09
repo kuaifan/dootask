@@ -213,7 +213,7 @@ class Extranet
      */
     public static function checkinBotQuickMsg($type): string
     {
-        $text = '';
+        $text = "维护中...";
         switch ($type) {
             case "it":
                 $data = self::curl('https://api.vvhan.com/api/hotlist?type=itNews', 3600);
@@ -263,15 +263,21 @@ class Extranet
                 break;
 
             case "joke":
+                $text = "笑话被掏空";
                 $data = self::curl('https://api.vvhan.com/api/joke?type=json', 5);
                 if ($data = Base::json2array($data)) {
-                    $text = $data['joke'] ?: '笑话被掏空';
+                    if ($data = trim($data['joke'])) {
+                        $text = "开心笑话：{$data}";
+                    }
                 }
                 break;
 
             case "soup":
+                $text = "鸡汤分完了";
                 $data = self::curl('https://api.ayfre.com/jt/?type=bot', 5);
-                $text = trim($data) ?: "鸡汤分完了";
+                if ($data = trim($data)) {
+                    $text = "心灵鸡汤：{$data}";
+                }
                 break;
         }
         return $text;

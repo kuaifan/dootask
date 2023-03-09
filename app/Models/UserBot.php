@@ -43,8 +43,8 @@ class UserBot extends AbstractModel
      */
     public static function quickMsgs($email)
     {
-        if ($email === 'check-in@bot.system') {
-            return [
+        return match ($email) {
+            'check-in@bot.system' => [
                 [
                     'key' => 'checkin',
                     'label' => Base::Lang('我要签到')
@@ -59,38 +59,69 @@ class UserBot extends AbstractModel
                     'label' => Base::Lang('60s读世界')
                 ], [
                     'key' => 'joke',
-                    'label' => Base::Lang('一个笑话')
+                    'label' => Base::Lang('开心笑话')
                 ], [
                     'key' => 'soup',
-                    'label' => Base::Lang('一碗鸡汤')
+                    'label' => Base::Lang('心灵鸡汤')
                 ]
-            ];
-        }
-        return [];
+            ],
+            'anon-msg@bot.system' => [
+                [
+                    'key' => 'help',
+                    'label' => Base::Lang('使用说明')
+                ], [
+                    'key' => 'privacy',
+                    'label' => Base::Lang('隐私说明')
+                ],
+            ],
+            'bot-manager@bot.system' => [
+                [
+                    'key' => '/help',
+                    'label' => Base::Lang('帮助指令')
+                ], [
+                    'key' => '/api',
+                    'label' => Base::Lang('Api接口文档')
+                ], [
+                    'key' => '/list',
+                    'label' => Base::Lang('我的机器人')
+                ],
+            ],
+            default => [],
+        };
+
     }
 
     /**
      * 签到机器人
-     * @param $type
+     * @param $command
      * @param $userid
      * @return string
      */
-    public static function checkinBotQuickMsg($type, $userid)
+    public static function checkinBotQuickMsg($command, $userid)
     {
         if (Cache::get("UserBot::checkinBotQuickMsg:{$userid}") === "yes") {
             return "操作频繁！";
         }
         Cache::put("UserBot::checkinBotQuickMsg:{$userid}", "yes", Carbon::now()->addSecond());
         //
-        switch ($type) {
-            case "checkin":
-                $text = "暂未开放手动签到。";
-                break;
-
-            default:
-                $text = Extranet::checkinBotQuickMsg($type);
-                break;
-        }
+        $text = match ($command) {
+            "checkin" => "暂未开放手动签到。",
+            default => Extranet::checkinBotQuickMsg($command),
+        };
         return $text ?: '维护中...';
+    }
+
+    /**
+     * 隐私机器人
+     * @param $command
+     * @return string
+     */
+    public static function anonBotQuickMsg($command)
+    {
+        return match ($command) {
+            "help" => "使用说明：打开你想要发匿名消息的个人对话，点击输入框右边的 ⊕ 号，选择 <u>匿名消息</u> 即可输入你想要发送的匿名消息内容。",
+            "privacy" => "匿名消息将通过 <u>匿名消息（机器人）</u> 发送给对方，不会记录你的身份信息。",
+            default => '',
+        };
     }
 }

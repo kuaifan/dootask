@@ -1571,7 +1571,7 @@ export default {
             }
             $A.modalInput({
                 title: `发送匿名消息`,
-                placeholder: `匿名消息将通过匿名机器人发送给对方，绝对不会暴露你的身份`,
+                placeholder: `匿名消息将通过匿名消息（机器人）发送给对方，不会记录你的任何身份信息`,
                 inputProps: {
                     type: 'textarea',
                     rows: 3,
