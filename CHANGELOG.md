@@ -2,11 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.24.55]
+## [0.24.58]
 
 ### Bug Fixes
 
 - 重命名别人共享的文件后不见了
+- 仅显示我的文件时无法创建文件
+- 客户端无法关闭窗口的情况
 
 ### Features
 
