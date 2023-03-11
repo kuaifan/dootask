@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Deleted;
 use App\Models\ProjectTaskUser;
+use App\Models\ProjectUser;
 
 class ProjectTaskUserObserver
 {
@@ -37,7 +38,9 @@ class ProjectTaskUserObserver
      */
     public function deleted(ProjectTaskUser $projectTaskUser)
     {
-        Deleted::record('projectTask', $projectTaskUser->task_id, $projectTaskUser->userid);
+        if (!ProjectUser::whereProjectId($projectTaskUser->project_id)->whereUserid($projectTaskUser->userid)->exists()) {
+            Deleted::record('projectTask', $projectTaskUser->task_id, $projectTaskUser->userid);
+        }
     }
 
     /**
