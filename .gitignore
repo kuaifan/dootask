@@ -5,6 +5,7 @@
 /public/.well-known
 /public/.user.ini
 /storage/*.key
+/config/LICENSE
 /vendor
 /build
 /tmp

@@ -820,15 +820,18 @@ export default {
     /**
      * 忘记项目数据
      * @param state
+     * @param dispatch
      * @param project_id
      */
-    forgetProject({state}, project_id) {
+    forgetProject({state, dispatch}, project_id) {
         $A.execMainDispatch("forgetProject", project_id)
         //
         const ids = $A.isArray(project_id) ? project_id : [project_id];
         ids.some(id => {
             const index = state.cacheProjects.findIndex(project => project.id == id);
             if (index > -1) {
+                dispatch("forgetTask", state.cacheTasks.filter(item => item.project_id == project_id).map(item => item.id))
+                dispatch("forgetColumn", state.cacheColumns.filter(item => item.project_id == project_id).map(item => item.id))
                 state.cacheProjects.splice(index, 1);
                 state.projectTotal = Math.max(0, state.projectTotal - 1)
             }
@@ -1046,8 +1049,8 @@ export default {
         ids.some(id => {
             const index = state.cacheColumns.findIndex(column => column.id == id);
             if (index > -1) {
+                dispatch("forgetTask", state.cacheTasks.filter(item => item.column_id == column_id).map(item => item.id))
                 project_ids.push(state.cacheColumns[index].project_id)
-                dispatch('getProjectOne', state.cacheColumns[index].project_id).catch(() => {})
                 state.cacheColumns.splice(index, 1);
             }
         })
@@ -2245,15 +2248,17 @@ export default {
     /**
      * 忘记对话数据
      * @param state
+     * @param dispatch
      * @param dialog_id
      */
-    forgetDialog({state}, dialog_id) {
+    forgetDialog({state, dispatch}, dialog_id) {
         $A.execMainDispatch("forgetDialog", dialog_id)
         //
         const ids = $A.isArray(dialog_id) ? dialog_id : [dialog_id];
         ids.some(id => {
             const index = state.cacheDialogs.findIndex(dialog => dialog.id == id);
             if (index > -1) {
+                dispatch("forgetDialogMsg", state.dialogMsgs.filter(item => item.dialog_id == dialog_id).map(item => item.id))
                 state.cacheDialogs.splice(index, 1);
             }
         })

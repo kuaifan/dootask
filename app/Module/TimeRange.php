@@ -15,7 +15,7 @@ class TimeRange
     public function __construct($data)
     {
         if (is_array($data)) {
-            $range = Base::explodeInt($data['timerange']);
+            $range = explode("," , $data['timerange']);
             if ($data['updated_at'] || $data['at_after']) {
                 $range[0] = $data['updated_at'] ?: $data['at_after'];
             }
@@ -23,11 +23,14 @@ class TimeRange
                 $range[1] = $data['deleted_at'];
             }
         } else {
-            $range = Base::explodeInt($data);
+            $range = explode("," , $data);
         }
         //
-        $this->updated = $range[0] ? Carbon::parse($range[0]) : null;
-        $this->deleted = $range[1] ? Carbon::parse($range[1]) : null;
+        $updated = Base::isNumber($range[0]) ? intval($range[0]) : trim($range[0]);
+        $deleted = Base::isNumber($range[1]) ? intval($range[1]) : trim($range[1]);
+        //
+        $this->updated = $updated ? Carbon::parse($updated) : null;
+        $this->deleted = $deleted ? Carbon::parse($deleted) : null;
     }
 
     /**
