@@ -67,8 +67,8 @@ export default {
 
             //
             $A.loadScriptS([
-                `js/language/key.js`,
-                `js/language/${languageType}.js`,
+                `language/web/key.js`,
+                `language/web/${languageType}.js`,
             ], resolve);
         })
     },

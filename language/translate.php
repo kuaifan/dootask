@@ -288,35 +288,20 @@ try {
         }
         // 生成文件
         if ($type === 'api') {
-            if (!is_dir("../resources/lang")) {
-                mkdir("../resources/lang", 0777, true);
+            if (!is_dir("../public/language/api")) {
+                mkdir("../public/language/api", 0777, true);
             }
             foreach ($results as $key => $item) {
-                if ($key === 'key') {
-                    continue;
-                }
-                $file = "../resources/lang/$key.php";
-                $var = [];
-                $i = 0;
-                foreach ($results['key'] as $k => $v) {
-                    $var[$k] = $item[$i++];
-                }
-                file_put_contents($file, "<?php \nreturn " . var_export($var, true) . ";");
-                // print_r("[$type] $file saved\n");
+                $file = "../public/language/api/$key.json";
+                file_put_contents($file, json_encode($item, JSON_UNESCAPED_UNICODE));
             }
         } elseif ($type === 'web') {
-            if (!is_dir("../resources/assets/statics/public/js/language")) {
-                mkdir("../resources/assets/statics/public/js/language", 0777, true);
-            }
-            if (!is_dir("../public/js/language")) {
-                mkdir("../public/js/language", 0777, true);
+            if (!is_dir("../public/language/web")) {
+                mkdir("../public/language/web", 0777, true);
             }
             foreach ($results as $key => $item) {
-                $file = "../resources/assets/statics/public/js/language/$key.js";
+                $file = "../public/language/web/$key.js";
                 file_put_contents($file, "if(typeof window.LANGUAGE_DATA===\"undefined\")window.LANGUAGE_DATA={};window.LANGUAGE_DATA[\"{$key}\"]=" . json_encode($item, JSON_UNESCAPED_UNICODE));
-                $file = "../public/js/language/$key.js";
-                file_put_contents($file, "if(typeof window.LANGUAGE_DATA===\"undefined\")window.LANGUAGE_DATA={};window.LANGUAGE_DATA[\"{$key}\"]=" . json_encode($item, JSON_UNESCAPED_UNICODE));
-                // print_r("[$type] $file saved\n");
             }
         }
         print_r("[$type] translate success\ntotal: " . count($results['key']) . "\nadd: " . count($needs) . "\n\n");

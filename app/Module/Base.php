@@ -1517,12 +1517,9 @@ class Base
         $language = trim(self::headerOrInput('language'));
         if (!isset($_A["__static_langdata_" . $language])) {
             $_A["__static_langdata_" . $language] = [];
-            $langpath = resource_path('lang/' . $language . '.php');
-            if (file_exists($langpath)) {
-                $data = include $langpath;
-                if (is_array($data)) {
-                    $_A["__static_langdata_" . $language] = $data;
-                }
+            $langpath = public_path('language/api/' . $language . '.json');
+            if (file_exists($langpath) && $data = Base::json2array(file_get_contents($langpath))) {
+                $_A["__static_langdata_" . $language] = $data;
             }
         }
         return $_A["__static_langdata_" . $language];

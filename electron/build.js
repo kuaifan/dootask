@@ -119,6 +119,8 @@ function startBuild(data, publish, release) {
         // drawio
         cloneDrawio(systemInfo)
     }
+    // language
+    fse.copySync(path.resolve(__dirname, "../public/language"), path.resolve(electronDir, "language"))
     // config.js
     fs.writeFileSync(electronDir + "/config.js", "window.systemInfo = " + JSON.stringify(systemInfo), 'utf8');
     fs.writeFileSync(nativeCachePath, utils.formatUrl(data.url));
