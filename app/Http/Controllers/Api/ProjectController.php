@@ -22,6 +22,7 @@ use App\Models\WebSocketDialog;
 use App\Module\Base;
 use App\Module\BillExport;
 use App\Module\BillMultipleExport;
+use App\Module\Doo;
 use App\Module\TimeRange;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
@@ -2082,12 +2083,12 @@ class ProjectController extends AbstractController
             if ($task_id === 0) {
                 $log->projectTask?->cancelAppend();
             }
-            $log->detail = Base::Lang($log->detail);
+            $log->detail = Doo::translate($log->detail);
             $log->time = [
                 'ymd' => date(date("Y", $timestamp) == date("Y", Base::time()) ? "m-d" : "Y-m-d", $timestamp),
                 'hi' => date("h:i", $timestamp) ,
-                'week' => Base::Lang("周" . Base::getTimeWeek($timestamp)),
-                'segment' => Base::Lang(Base::getTimeDayeSegment($timestamp)),
+                'week' => Doo::translate("周" . Base::getTimeWeek($timestamp)),
+                'segment' => Doo::translate(Base::getTimeDayeSegment($timestamp)),
             ];
             return $log;
         });

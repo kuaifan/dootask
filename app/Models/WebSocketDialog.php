@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Exceptions\ApiException;
 use App\Module\Base;
+use App\Module\Doo;
 use App\Tasks\PushTask;
 use Cache;
 use Carbon\Carbon;
@@ -147,7 +148,7 @@ class WebSocketDialog extends AbstractModel
                         }
                         break;
                     case 'all':
-                        $this->name = Base::Lang('全体成员');
+                        $this->name = Doo::translate('全体成员');
                         $this->all_group_mute = Base::settingFind('system', 'all_group_mute');
                         break;
                 }
@@ -181,7 +182,7 @@ class WebSocketDialog extends AbstractModel
                 && $mention_id = intval($builder->clone()->whereMention(1)->orderByDesc('msg_id')->value('msg_id'))) {
                 $array[] = [
                     'msg_id' => $mention_id,
-                    'label' => Base::Lang('@我的消息'),
+                    'label' => Doo::translate('@我的消息'),
                 ];
             }
             // 最早一条未读消息
@@ -374,7 +375,7 @@ class WebSocketDialog extends AbstractModel
                         $name = \DB::table('project_tasks')->where('dialog_id', $this->id)->value('name');
                         break;
                     case 'all':
-                        $name = Base::Lang('全体成员');
+                        $name = Doo::translate('全体成员');
                         break;
                 }
             }

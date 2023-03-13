@@ -19,6 +19,7 @@ use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Module\AgoraIO\AgoraTokenGenerator;
 use App\Module\Base;
+use App\Module\Doo;
 use Arr;
 use Cache;
 use Captcha;
@@ -135,8 +136,8 @@ class UsersController extends AbstractController
         //
         if (!Project::withTrashed()->whereUserid($user->userid)->wherePersonal(1)->exists()) {
             Project::createProject([
-                'name' => Base::Lang('个人项目'),
-                'desc' => Base::Lang('注册时系统自动创建项目，你可以自由删除。'),
+                'name' => Doo::translate('个人项目'),
+                'desc' => Doo::translate('注册时系统自动创建项目，你可以自由删除。'),
                 'personal' => 1,
             ], $user->userid);
         }
@@ -530,13 +531,13 @@ class UsersController extends AbstractController
                 return preg_match("/\(M\)$/", $item);
             });
             if ($dep) {
-                $tags[] = preg_replace("/\(M\)$/", "", trim($dep[0])) . Base::Lang("负责人");
+                $tags[] = preg_replace("/\(M\)$/", "", trim($dep[0])) . Doo::translate("负责人");
             }
             if ($userInfo->isAdmin()) {
-                $tags[] = Base::Lang("系统管理员");
+                $tags[] = Doo::translate("系统管理员");
             }
             if ($userInfo->isTemp()) {
-                $tags[] = Base::Lang("临时帐号");
+                $tags[] = Doo::translate("临时帐号");
             }
             $userInfo->tags = $tags;
             //

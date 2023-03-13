@@ -1459,73 +1459,6 @@ class Base
     }
 
     /**
-     * 国际化（替换国际语言）
-     * @param $val
-     * @return mixed
-     */
-    public static function Lang($val)
-    {
-        $data = self::langData();
-        if (isset($data[$val])) {
-            return $data[$val] ?: $val;
-        }
-        foreach ($data as $key => $item) {
-            if (str_contains($key, "(*)")) {
-                $regex = str_replace("(*)", "~%~", $key);
-                $regex = preg_quote($regex);
-                $regex = str_replace("~%~", "(.*?)", $regex);
-                $regex = "/^" . $regex . "$/";
-                if (preg_match($regex, $val)) {
-                    $r = $item ?: $key;
-                    return preg_replace_callback($regex, function($m) use ($r) {
-                        $i = 0;
-                        foreach ($m as $v) {
-                            if ($i > 0) {
-                                $r = preg_replace("/\(\*\)/", $v, $r, 1);
-                            }
-                            $i++;
-                        }
-                        return $r;
-                    }, $val);
-                }
-            }
-        }
-        //
-        $undefinedPath = base_path('language/undefined-api.txt');
-        if (self::$undefinedLang === null) {
-            self::$undefinedLang = [];
-            if (file_exists($undefinedPath)) {
-                self::$undefinedLang = explode("\n", file_get_contents($undefinedPath));
-                self::$undefinedLang = array_values(array_filter(array_unique(self::$undefinedLang)));
-            }
-        }
-        if (!in_array($val, self::$undefinedLang)) {
-            self::$undefinedLang[] = $val;
-            @file_put_contents(base_path('language/undefined-api.txt'), "$val\n", FILE_APPEND);
-        }
-        return $val;
-    }
-    private static $undefinedLang = null;
-
-    /**
-     * 加载语言数据
-     * @return array
-     */
-    public static function langData()
-    {
-        global $_A;
-        $language = trim(self::headerOrInput('language'));
-        if (!isset($_A["__static_langdata_" . $language])) {
-            $_A["__static_langdata_" . $language] = [];
-            $langpath = public_path('language/api/' . $language . '.json');
-            if (file_exists($langpath) && $data = Base::json2array(file_get_contents($langpath))) {
-                $_A["__static_langdata_" . $language] = $data;
-            }
-        }
-        return $_A["__static_langdata_" . $language];
-    }
-
-    /**
      * JSON返回
      * @param $param
      * @return string
@@ -1552,7 +1485,7 @@ class Base
     {
         return [
             'ret' => $ret,
-            'msg' => self::Lang($msg),
+            'msg' => Doo::translate($msg),
             'data' => $data
         ];
     }
@@ -1568,7 +1501,7 @@ class Base
     {
         return [
             'ret' => $ret,
-            'msg' => self::Lang($msg),
+            'msg' => Doo::translate($msg),
             'data' => $data
         ];
     }

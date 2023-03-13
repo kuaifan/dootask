@@ -9,6 +9,7 @@ use App\Models\Report;
 use App\Models\ReportReceive;
 use App\Models\User;
 use App\Module\Base;
+use App\Module\Doo;
 use App\Tasks\PushTask;
 use Carbon\Carbon;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
@@ -306,7 +307,7 @@ class ReportController extends AbstractController
         if ($complete_task->isNotEmpty()) {
             foreach ($complete_task as $task) {
                 $complete_at = Carbon::parse($task->complete_at);
-                $pre = $type == Report::WEEKLY ? ('<span>[' . Base::Lang('周' . ['日', '一', '二', '三', '四', '五', '六'][$complete_at->dayOfWeek]) . ']</span>&nbsp;') : '';
+                $pre = $type == Report::WEEKLY ? ('<span>[' . Doo::translate('周' . ['日', '一', '二', '三', '四', '五', '六'][$complete_at->dayOfWeek]) . ']</span>&nbsp;') : '';
                 $completeContent .= "<li>{$pre}[{$task->project->name}] {$task->name}</li>";
             }
         } else {
@@ -327,7 +328,7 @@ class ReportController extends AbstractController
         if ($unfinished_task->isNotEmpty()) {
             foreach ($unfinished_task as $task) {
                 empty($task->end_at) || $end_at = Carbon::parse($task->end_at);
-                $pre = (!empty($end_at) && $end_at->lt($now_dt)) ? '<span style="color:#ff0000;">[' . Base::Lang('超期') . ']</span>&nbsp;' : '';
+                $pre = (!empty($end_at) && $end_at->lt($now_dt)) ? '<span style="color:#ff0000;">[' . Doo::translate('超期') . ']</span>&nbsp;' : '';
                 $unfinishedContent .= "<li>{$pre}[{$task->project->name}] {$task->name}</li>";
             }
         } else {
@@ -341,12 +342,12 @@ class ReportController extends AbstractController
             $title = $user->nickname . "的日报[" . $start_time->format("Y/m/d") . "]";
         }
         // 生成内容
-        $content = '<h2>' . Base::Lang('已完成工作') . '</h2><ol>' .
+        $content = '<h2>' . Doo::translate('已完成工作') . '</h2><ol>' .
             $completeContent . '</ol><h2>' .
-            Base::Lang('未完成的工作') . '</h2><ol>' .
+            Doo::translate('未完成的工作') . '</h2><ol>' .
             $unfinishedContent . '</ol>';
         if ($type === Report::WEEKLY) {
-            $content .= "<h2>" . Base::Lang("下周拟定计划") . "[" . $start_time->addWeek()->format("m/d") . "-" . $end_time->addWeek()->format("m/d") . "]</h2><ol><li>&nbsp;</li></ol>";
+            $content .= "<h2>" . Doo::translate("下周拟定计划") . "[" . $start_time->addWeek()->format("m/d") . "-" . $end_time->addWeek()->format("m/d") . "]</h2><ol><li>&nbsp;</li></ol>";
         }
         $data = [
             "time" => $start_time->toDateTimeString(),

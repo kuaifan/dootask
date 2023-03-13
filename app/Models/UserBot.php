@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Module\Base;
+use App\Module\Doo;
 use App\Module\Extranet;
 use Cache;
 use Carbon\Carbon;
@@ -47,43 +47,43 @@ class UserBot extends AbstractModel
             'check-in@bot.system' => [
                 [
                     'key' => 'checkin',
-                    'label' => Base::Lang('我要签到')
+                    'label' => Doo::translate('我要签到')
                 ], [
                     'key' => 'it',
-                    'label' => Base::Lang('IT资讯')
+                    'label' => Doo::translate('IT资讯')
                 ], [
                     'key' => '36ke',
-                    'label' => Base::Lang('36氪')
+                    'label' => Doo::translate('36氪')
                 ], [
                     'key' => '60s',
-                    'label' => Base::Lang('60s读世界')
+                    'label' => Doo::translate('60s读世界')
                 ], [
                     'key' => 'joke',
-                    'label' => Base::Lang('开心笑话')
+                    'label' => Doo::translate('开心笑话')
                 ], [
                     'key' => 'soup',
-                    'label' => Base::Lang('心灵鸡汤')
+                    'label' => Doo::translate('心灵鸡汤')
                 ]
             ],
             'anon-msg@bot.system' => [
                 [
                     'key' => 'help',
-                    'label' => Base::Lang('使用说明')
+                    'label' => Doo::translate('使用说明')
                 ], [
                     'key' => 'privacy',
-                    'label' => Base::Lang('隐私说明')
+                    'label' => Doo::translate('隐私说明')
                 ],
             ],
             'bot-manager@bot.system' => [
                 [
                     'key' => '/help',
-                    'label' => Base::Lang('帮助指令')
+                    'label' => Doo::translate('帮助指令')
                 ], [
                     'key' => '/api',
-                    'label' => Base::Lang('Api接口文档')
+                    'label' => Doo::translate('Api接口文档')
                 ], [
                     'key' => '/list',
-                    'label' => Base::Lang('我的机器人')
+                    'label' => Doo::translate('我的机器人')
                 ],
             ],
             default => [],
