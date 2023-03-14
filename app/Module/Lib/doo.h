@@ -74,19 +74,18 @@ typedef struct { void *data; GoInt len; GoInt cap; } GoSlice;
 extern "C" {
 #endif
 
-extern void initialize();
-extern void setWorkDir(char* val);
-extern void setDefaultLanguage(char* val);
+extern void initialize(char* work, char* lang);
 extern void setUserToken(char* token);
 extern char* license();
 extern int userId();
 extern char* userExpiredAt();
 extern char* userEmail();
 extern char* userToken();
+extern char* userCreate(char* email, char* password);
 extern char* tokenEncode(int userid, char* email, char* encrypt, int days);
 extern char* tokenDecode(char* token);
-extern char* translate(char* text);
-extern char* translateSpecified(char* text, char* langType);
+extern char* translate(char* text, char* langType);
+extern char* md5s(char* text, char* password);
 
 #ifdef __cplusplus
 }

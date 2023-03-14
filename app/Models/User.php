@@ -5,6 +5,7 @@ namespace App\Models;
 
 use App\Exceptions\ApiException;
 use App\Module\Base;
+use App\Module\Doo;
 use Cache;
 use Carbon\Carbon;
 
@@ -294,19 +295,13 @@ class User extends AbstractModel
         // 密码
         self::passwordPolicy($password);
         // 开始注册
-        $encrypt = Base::generatePassword(6);
-        $inArray = [
-            'encrypt' => $encrypt,
-            'email' => $email,
-            'password' => Base::md52($password, $encrypt),
-            'created_ip' => Base::getIp(),
-        ];
+        $user = Doo::userCreate($email, $password);
         if ($other) {
-            $inArray = array_merge($inArray, $other);
+            $user->updateInstance($other);
         }
-        $user = User::createInstance($inArray);
         $user->az = Base::getFirstCharter($user->nickname);
         $user->pinyin = Base::cn2pinyin($user->nickname);
+        $user->created_ip = Base::getIp();
         if ($user->save()) {
             $setting = Base::setting('system');
             $reg_identity = $setting['reg_identity'] ?: 'normal';
@@ -641,19 +636,19 @@ class User extends AbstractModel
      * @param $key
      * @param $update
      * @param $userid
-     * @return self
+     * @return self|null
      */
     public static function botGetOrCreate($key, $update = [], $userid = 0)
     {
         $email = "{$key}@bot.system";
         $botUser = self::whereEmail($email)->first();
         if (empty($botUser)) {
-            $encrypt = Base::generatePassword(6);
-            $botUser = self::createInstance([
+            $botUser = Doo::userCreate($email, Base::generatePassword(32));
+            if (empty($botUser)) {
+                return null;
+            }
+            $botUser->updateInstance([
                 'bot' => 1,
-                'encrypt' => $encrypt,
-                'email' => $email,
-                'password' => Base::md52(Base::generatePassword(32), $encrypt),
                 'created_ip' => Base::getIp(),
             ]);
             $botUser->save();

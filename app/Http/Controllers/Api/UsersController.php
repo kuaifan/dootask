@@ -108,7 +108,7 @@ class UsersController extends AbstractController
             if (empty($user)) {
                 return $retError('帐号或密码错误');
             }
-            if ($usePassword && $user->password != Base::md52($password, $user->encrypt)) {
+            if ($usePassword && $user->password != Doo::md5s($password, $user->encrypt)) {
                 return $retError('帐号或密码错误');
             }
             //
@@ -415,13 +415,13 @@ class UsersController extends AbstractController
         }
         User::passwordPolicy($newpass);
         //
-        $verify = User::whereUserid($user->userid)->wherePassword(Base::md52($oldpass, User::token2encrypt()))->count();
+        $verify = User::whereUserid($user->userid)->wherePassword(Doo::md5s($oldpass, User::token2encrypt()))->count();
         if (empty($verify)) {
             return Base::retError('请填写正确的旧密码');
         }
         //
         $user->encrypt = Base::generatePassword(6);
-        $user->password = Base::md52($newpass, $user->encrypt);
+        $user->password = Doo::md5s($newpass, $user->encrypt);
         $user->changepass = 0;
         $user->save();
         User::token($user);
@@ -879,7 +879,7 @@ class UsersController extends AbstractController
             $password = trim($data['password']);
             User::passwordPolicy($password);
             $upArray['encrypt'] = Base::generatePassword(6);
-            $upArray['password'] = Base::md52($password, $upArray['encrypt']);
+            $upArray['password'] = Doo::md5s($password, $upArray['encrypt']);
             $upArray['changepass'] = 1;
             $upLdap['userPassword'] = $password;
         }
@@ -1324,7 +1324,7 @@ class UsersController extends AbstractController
             if (!$password) {
                 return Base::retError('请输入登录密码');
             }
-            if ($user->password != Base::md52($password, $user->encrypt)) {
+            if ($user->password != Doo::md5s($password, $user->encrypt)) {
                 return Base::retError('密码错误');
             }
         }

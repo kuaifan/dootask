@@ -2,6 +2,8 @@
 
 namespace App\Module;
 
+use App\Exceptions\ApiException;
+use App\Models\User;
 use Carbon\Carbon;
 use FFI;
 
@@ -22,23 +24,20 @@ class Doo
     {
         if (self::$doo === null) {
             $doo = FFI::cdef(<<<EOF
-                void initialize();
-                void setWorkDir(char* val);
-                void setDefaultLanguage(char* val);
+                void initialize(char* work, char* lang);
                 void setUserToken(char* val);
                 char* license();
                 int userId();
                 char* userExpiredAt();
                 char* userEmail();
                 char* userToken();
+                char* userCreate(char* email, char* password);
                 char* tokenEncode(int userid, char* email, char* encrypt, int days);
                 char* tokenDecode(char* val);
-                char* translate(char* val);
-                char* translateSpecified(char* val, char* val);
+                char* translate(char* val, char* val);
+                char* md5s(char* text, char* password);
             EOF, app_path("Module/Lib/doo.so"));
-            $doo->initialize();
-            $doo->setWorkDir("/var/www");
-            $doo->setDefaultLanguage(Base::headerOrInput('language'));
+            $doo->initialize("/var/www", Base::headerOrInput('language'));
             $doo->setUserToken(Base::getToken());
             self::$doo = $doo;
         }
@@ -127,6 +126,25 @@ class Doo
     }
 
     /**
+     * 创建帐号
+     * @param $email
+     * @param $password
+     * @return User|\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model|object|null
+     */
+    public static function userCreate($email, $password)
+    {
+        $data = Base::json2array(self::string(self::init()->userCreate($email, $password)));
+        if (Base::isError($data)) {
+            throw new ApiException($data['msg'] ?: '注册失败');
+        }
+        $user = User::whereEmail($email)->first();
+        if (empty($user)) {
+            throw new ApiException('注册失败');
+        }
+        return $user;
+    }
+
+    /**
      * 生成token（编码token）
      * @param $userid
      * @param $email
@@ -151,20 +169,25 @@ class Doo
         return $array;
     }
 
-
     /**
      * 翻译
      * @param string $text
-     * @param string|null $type
+     * @param string $type
      * @return string
      */
-    public static function translate($text, $type = null)
+    public static function translate($text, $type = "")
     {
-        if ($type) {
-            $test = self::init()->translateSpecified($text, $type);
-        } else {
-            $test = self::init()->translate($text);
-        }
-        return self::string($test);
+        return self::string(self::init()->translate($text, $type));
+    }
+
+    /**
+     * md5防破解
+     * @param string $text
+     * @param string $password
+     * @return string
+     */
+    public static function md5s($text, $password = "")
+    {
+        return self::string(self::init()->md5s($text, $password));
     }
 }

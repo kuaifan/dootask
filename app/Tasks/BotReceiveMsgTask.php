@@ -7,6 +7,7 @@ use App\Models\UserBot;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
+use App\Module\Doo;
 use App\Module\Ihttp;
 use Carbon\Carbon;
 
@@ -236,7 +237,7 @@ class BotReceiveMsgTask extends AbstractTask
                     $data = $this->botManagerOne($botId, $msg->userid);
                     if ($data) {
                         $data->encrypt = Base::generatePassword(6);
-                        $data->password = Base::md52(Base::generatePassword(32), $data->encrypt);
+                        $data->password = Doo::md5s(Base::generatePassword(32), $data->encrypt);
                         $data->save();
                     } else {
                         $type = "notice";
