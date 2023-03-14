@@ -648,7 +648,6 @@ class User extends AbstractModel
                 return null;
             }
             $botUser->updateInstance([
-                'bot' => 1,
                 'created_ip' => Base::getIp(),
             ]);
             $botUser->save();

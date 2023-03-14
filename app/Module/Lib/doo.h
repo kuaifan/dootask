@@ -77,6 +77,8 @@ extern "C" {
 extern void initialize(char* work, char* lang);
 extern void setUserToken(char* token);
 extern char* license();
+extern char* licenseDecode(char* license);
+extern GoUint8 licenseSave(char* license);
 extern int userId();
 extern char* userExpiredAt();
 extern char* userEmail();
