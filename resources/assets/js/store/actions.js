@@ -121,16 +121,19 @@ export default {
                     return;
                 }
                 const {ret, data, msg} = result;
-                if (ret === -1 && params.checkRole !== false) {
-                    //身份丢失
-                    $A.modalError({
-                        content: msg,
-                        onOk: () => {
-                            dispatch("logout")
-                        }
-                    });
-                    reject(result)
-                    return;
+                if (ret === -1) {
+                    state.userId = 0
+                    if (params.skipAuthError !== true) {
+                        //身份丢失
+                        $A.modalError({
+                            content: msg,
+                            onOk: () => {
+                                dispatch("logout")
+                            }
+                        });
+                        reject(result)
+                        return;
+                    }
                 }
                 if (ret === -2 && params.checkNick !== false) {
                     // 需要昵称
@@ -516,7 +519,7 @@ export default {
             data: {
                 userid: [...new Set(array.map(({userid}) => userid))]
             },
-            checkRole: false
+            skipAuthError: true
         }).then(result => {
             time = $A.Time();
             array.forEach(value => {

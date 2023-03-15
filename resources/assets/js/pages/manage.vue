@@ -953,7 +953,7 @@ export default {
                             data: {
                                 userid: [userid]
                             },
-                            checkRole: false
+                            skipAuthError: true
                         }).then(({data}) => {
                             tempUser = data.find(item => item.userid == userid);
                             if (tempUser) {
