@@ -2020,29 +2020,6 @@ class Base
     }
 
     /**
-     * 获取tonken
-     * @return string
-     */
-    public static function getToken()
-    {
-        global $_A;
-        if (!isset($_A["__static_token"])) {
-            $_A["__static_token"] = self::headerOrInput('token');
-        }
-        return $_A["__static_token"];
-    }
-
-    /**
-     * 设置tonken
-     * @param $token
-     */
-    public static function setToken($token)
-    {
-        global $_A;
-        $_A["__static_token"] = $token;
-    }
-
-    /**
      * 是否微信
      * @return bool
      */

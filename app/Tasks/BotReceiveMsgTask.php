@@ -222,7 +222,7 @@ class BotReceiveMsgTask extends AbstractTask
                     $botId = $isManager ? $array[1] : $botUser->userid;
                     $data = $this->botManagerOne($botId, $msg->userid);
                     if ($data) {
-                        User::token($data);
+                        User::generateToken($data);
                     } else {
                         $type = "notice";
                         $notice = "机器人不存在。";
@@ -345,7 +345,7 @@ class BotReceiveMsgTask extends AbstractTask
             if ($userBot && preg_match("/^https*:\/\//", $userBot->webhook_url)) {
                 Ihttp::ihttp_post($userBot->webhook_url, [
                     'text' => $command,
-                    'token' => User::token($botUser),
+                    'token' => User::generateToken($botUser),
                     'dialog_id' => $msg->dialog_id,
                     'msg_id' => $msg->id,
                     'msg_uid' => $msg->userid,

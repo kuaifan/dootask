@@ -8,6 +8,7 @@ use App\Models\UserCheckinRecord;
 use App\Module\Base;
 use App\Module\BillExport;
 use App\Module\BillMultipleExport;
+use App\Module\Doo;
 use App\Module\Extranet;
 use Arr;
 use Carbon\Carbon;
@@ -536,7 +537,7 @@ class SystemController extends AbstractController
             'ip-gcj02' => Extranet::getIpGcj02(Base::getIp()),
             'ip-iscn' => Base::isCnIp(Base::getIp()),
             'header' => Request::header(),
-            'token' => Base::getToken(),
+            'token' => Doo::userToken(),
             'url' => url('') . Base::getUrl(),
         ]);
     }

@@ -345,6 +345,7 @@ if [ $# -gt 0 ]; then
             ;;
         esac
         $COMPOSE down
+        env_set APP_DEBUG "false"
         rm -rf "./docker/mysql/data"
         rm -rf "./docker/log/supervisor"
         find "./storage/logs" -name "*.log" | xargs rm -rf

@@ -131,7 +131,7 @@ class UsersController extends AbstractController
         ];
         $user->updateInstance($array);
         $user->save();
-        User::token($user);
+        User::generateToken($user);
         LdapUser::userSync($user, $password);
         //
         if (!Project::withTrashed()->whereUserid($user->userid)->wherePersonal(1)->exists()) {
@@ -189,7 +189,7 @@ class UsersController extends AbstractController
             ];
             $user->updateInstance($array);
             $user->save();
-            User::token($user);
+            User::generateToken($user);
             return Base::retSuccess("success", $user);
         }
         //
@@ -299,7 +299,7 @@ class UsersController extends AbstractController
     public function info()
     {
         $user = User::auth();
-        User::token($user);
+        User::generateToken($user);
         //
         $data = $user->toArray();
         $data['nickname_original'] = $user->getRawOriginal('nickname');
@@ -382,7 +382,7 @@ class UsersController extends AbstractController
         }
         //
         $user->save();
-        User::token($user);
+        User::generateToken($user);
         LdapUser::userUpdate($user->email, $upLdap);
         //
         return Base::retSuccess('修改成功', $user);
@@ -415,7 +415,7 @@ class UsersController extends AbstractController
         }
         User::passwordPolicy($newpass);
         //
-        $verify = User::whereUserid($user->userid)->wherePassword(Doo::md5s($oldpass, User::token2encrypt()))->count();
+        $verify = User::whereUserid($user->userid)->wherePassword(Doo::md5s($oldpass, Doo::userEncrypt()))->count();
         if (empty($verify)) {
             return Base::retError('请填写正确的旧密码');
         }
@@ -424,7 +424,7 @@ class UsersController extends AbstractController
         $user->password = Doo::md5s($newpass, $user->encrypt);
         $user->changepass = 0;
         $user->save();
-        User::token($user);
+        User::generateToken($user);
         LdapUser::userUpdate($user->email, ['userPassword' => $newpass]);
         return Base::retSuccess('修改成功', $user);
     }
@@ -1272,7 +1272,7 @@ class UsersController extends AbstractController
 
         $user->email = $newEmail;
         $user->save();
-        User::token($user);
+        User::generateToken($user);
         return Base::retSuccess('修改成功', $user);
     }
 

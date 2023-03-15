@@ -82,6 +82,7 @@ extern GoUint8 licenseSave(char* license);
 extern int userId();
 extern char* userExpiredAt();
 extern char* userEmail();
+extern char* userEncrypt();
 extern char* userToken();
 extern char* userCreate(char* email, char* password);
 extern char* tokenEncode(int userid, char* email, char* encrypt, int days);

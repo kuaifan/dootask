@@ -32,7 +32,7 @@ class WebApi
         if (in_array(strtolower($APP_SCHEME), ['https', 'on', 'ssl', '1', 'true', 'yes'], true)) {
             $request->setTrustedProxies([$request->getClientIp()], $request::HEADER_X_FORWARDED_PROTO);
         }
-        Doo::init();
+        Doo::load();
 
         return $next($request);
     }

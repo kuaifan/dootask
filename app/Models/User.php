@@ -283,9 +283,9 @@ class User extends AbstractModel
         if (!Base::isEmail($email)) {
             throw new ApiException('请输入正确的邮箱地址');
         }
-        if (User::email2userid($email) > 0) {
+        $user = self::whereEmail($email)->first();
+        if ($user) {
             $isRegVerify = Base::settingFind('emailSetting', 'reg_verify') === 'open';
-            $user = self::whereUserid(User::email2userid($email))->first();
             if ($isRegVerify && $user->email_verity === 0) {
                 UserEmailVerification::userEmailSend($user);
                 throw new ApiException('您的帐号已注册过，请验证邮箱', ['code' => 'email']);
@@ -318,73 +318,6 @@ class User extends AbstractModel
             }
         }
         return $user->find($user->userid);
-    }
-
-    /**
-     * 邮箱获取userid
-     * @param $email
-     * @return int
-     */
-    public static function email2userid($email)
-    {
-        if (empty($email)) {
-            return 0;
-        }
-        return intval(self::whereEmail($email)->value('userid'));
-    }
-
-    /**
-     * token获取会员userid
-     * @return int
-     */
-    public static function token2userid()
-    {
-        return self::authFind('userid', Base::getToken());
-    }
-
-    /**
-     * token获取会员邮箱
-     * @return int
-     */
-    public static function token2email()
-    {
-        return self::authFind('email', Base::getToken());
-    }
-
-    /**
-     * token获取encrypt
-     * @return mixed|string
-     */
-    public static function token2encrypt()
-    {
-        return self::authFind('encrypt', Base::getToken());
-    }
-
-    /**
-     * 获取token身份信息
-     * @param $find
-     * @param null $token
-     * @return array|mixed|string
-     */
-    public static function authFind($find, $token = null)
-    {
-        if ($token === null) {
-            $token = Base::getToken();
-        }
-        list($userid, $email, $encrypt, $timestamp) = explode("#$", base64_decode($token) . "#$#$#$#$");
-        $array = [
-            'userid' => intval($userid),
-            'email' => $email ?: '',
-            'encrypt' => $encrypt ?: '',
-            'timestamp' => intval($timestamp),
-        ];
-        if (isset($array[$find])) {
-            return $array[$find];
-        }
-        if ($find == 'all') {
-            return $array;
-        }
-        return '';
     }
 
     /**
@@ -422,9 +355,15 @@ class User extends AbstractModel
     {
         $user = self::authInfo();
         if (!$user) {
-            $authorization = Base::getToken();
-            if ($authorization) {
-                throw new ApiException('身份已失效,请重新登录', [], -1);
+            if (Base::headerOrInput('token')) {
+                throw new ApiException('身份已失效,请重新登录', [
+                    'token' => Base::headerOrInput('token'),
+                    'tokenDecode' => Doo::tokenDecode(Base::headerOrInput('token')),
+                    'userToken' => Doo::userToken(),
+                    'userId' => Doo::userId(),
+                    'userEmail' => Doo::userEmail(),
+                    'userEncrypt' => Doo::userEncrypt(),
+                ], -1);
             } else {
                 throw new ApiException('请登录后继续...', [], -1);
             }
@@ -448,61 +387,46 @@ class User extends AbstractModel
         if (isset($_A["__static_auth"])) {
             return $_A["__static_auth"];
         }
-        $authorization = Base::getToken();
-        if ($authorization) {
-            $authInfo = self::authFind('all', $authorization);
-            if ($authInfo['userid'] > 0) {
-                $loginValid = floatval(Base::settingFind('system', 'loginValid')) ?: 720;
-                $loginValid *= 3600;
-                if ($authInfo['timestamp'] + $loginValid > time() || $authInfo['timestamp'] === -1) {
-                    $row = self::whereUserid($authInfo['userid'])->whereEmail($authInfo['email'])->whereEncrypt($authInfo['encrypt'])->first();
-                    if ($row) {
-                        if (!$row->bot && $authInfo['timestamp'] === -1) {
-                            return $_A["__static_auth"] = false;    // 非机器人token时间不允许-1
-                        }
-                        $upArray = [];
-                        if (Base::getIp() && $row->line_ip != Base::getIp()) {
-                            $upArray['line_ip'] = Base::getIp();
-                        }
-                        if (Carbon::parse($row->line_at)->addSeconds(30)->lt(Carbon::now())) {
-                            $upArray['line_at'] = Carbon::now();
-                        }
-                        if ($upArray) {
-                            $row->updateInstance($upArray);
-                            $row->save();
-                        }
-                        return $_A["__static_auth"] = $row;
-                    }
-                }
+        if (Doo::userId() > 0
+            && !Doo::userExpired()
+            && $user = self::whereUserid(Doo::userId())->whereEmail(Doo::userEmail())->whereEncrypt(Doo::userEncrypt())->first()) {
+            $upArray = [];
+            if (Base::getIp() && $user->line_ip != Base::getIp()) {
+                $upArray['line_ip'] = Base::getIp();
             }
+            if (Carbon::parse($user->line_at)->addSeconds(30)->lt(Carbon::now())) {
+                $upArray['line_at'] = Carbon::now();
+            }
+            if ($upArray) {
+                $user->updateInstance($upArray);
+                $user->save();
+            }
+            return $_A["__static_auth"] = $user;
         }
         return $_A["__static_auth"] = false;
     }
 
     /**
-     * 生成token
+     * 生成 token
      * @param self $userinfo
+     * @param bool $force  获取新的token
      * @return string
      */
-    public static function token($userinfo)
+    public static function generateToken($userinfo, $force = false)
     {
-        $time = $userinfo->bot ? -1 : time();
-        $userinfo->token = base64_encode($userinfo->userid . '#$' . $userinfo->email . '#$' . $userinfo->encrypt . '#$' . $time . '#$' . Base::generatePassword(6));
+        if (!$force && Doo::userId() == $userinfo->userid) {
+            $token = Doo::userToken();
+        } else {
+            if ($userinfo->bot) {
+                $days = 0;
+            } else {
+                $days = max(1, intval(Base::settingFind('system', 'token_valid_days', 7)));
+            }
+            $token = Doo::tokenEncode($userinfo->userid, $userinfo->email, $userinfo->encrypt, $days);
+        }
         unset($userinfo->encrypt);
         unset($userinfo->password);
-        return $userinfo->token;
-    }
-
-    /**
-     * 判断用户权限（身份）
-     * @param $identity
-     * @param $userIdentity
-     * @return bool
-     */
-    public static function identityRaw($identity, $userIdentity)
-    {
-        $userIdentity = is_array($userIdentity) ? $userIdentity : explode(",", trim($userIdentity, ","));
-        return $identity && in_array($identity, $userIdentity);
+        return $userinfo->token = $token;
     }
 
     /**
@@ -536,8 +460,7 @@ class User extends AbstractModel
      */
     public static function userid2nickname($userid)
     {
-        $basic = self::userid2basic($userid);
-        return $basic ? $basic->nickname : '';
+        return self::userid2basic($userid)?->nickname ?: '';
     }
 
     /**
