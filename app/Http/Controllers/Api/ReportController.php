@@ -466,17 +466,14 @@ class ReportController extends AbstractController
      * @apiGroup report
      * @apiName unread
      *
-     * @apiParam {Number} [userid]          用户id
-     *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      */
     public function unread(): array
     {
-        $userid = intval(trim(Request::input("userid")));
-        $user = empty($userid) ? User::auth() : User::find($userid);
-
+        $user = User::auth();
+        //
         $data = Report::whereHas("Receives", function (Builder $query) use ($user) {
             $query->where("userid", $user->userid)->where("read", 0);
         })->orderByDesc('created_at')->paginate(Base::getPaginate(50, 20));

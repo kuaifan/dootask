@@ -356,14 +356,7 @@ class User extends AbstractModel
         $user = self::authInfo();
         if (!$user) {
             if (Base::headerOrInput('token')) {
-                throw new ApiException('身份已失效,请重新登录', [
-                    'token' => Base::headerOrInput('token'),
-                    'tokenDecode' => Doo::tokenDecode(Base::headerOrInput('token')),
-                    'userToken' => Doo::userToken(),
-                    'userId' => Doo::userId(),
-                    'userEmail' => Doo::userEmail(),
-                    'userEncrypt' => Doo::userEncrypt(),
-                ], -1);
+                throw new ApiException('身份已失效,请重新登录', [], -1);
             } else {
                 throw new ApiException('请登录后继续...', [], -1);
             }
@@ -409,20 +402,23 @@ class User extends AbstractModel
     /**
      * 生成 token
      * @param self $userinfo
-     * @param bool $force  获取新的token
+     * @param bool $refresh  获取新的token
      * @return string
      */
-    public static function generateToken($userinfo, $force = false)
+    public static function generateToken($userinfo, $refresh = false)
     {
-        if (!$force && Doo::userId() == $userinfo->userid) {
-            $token = Doo::userToken();
-        } else {
-            if ($userinfo->bot) {
-                $days = 0;
-            } else {
-                $days = max(1, intval(Base::settingFind('system', 'token_valid_days', 7)));
+        if (!$refresh) {
+            if (Doo::userId() != $userinfo->userid
+                || Doo::userEmail() != $userinfo->email
+                || Doo::userEncrypt() != $userinfo->encrypt) {
+                $refresh = true;
             }
+        }
+        if ($refresh) {
+            $days = $userinfo->bot ? 0 : max(1, intval(Base::settingFind('system', 'token_valid_days', 7)));
             $token = Doo::tokenEncode($userinfo->userid, $userinfo->email, $userinfo->encrypt, $days);
+        } else {
+            $token = Doo::userToken();
         }
         unset($userinfo->encrypt);
         unset($userinfo->password);

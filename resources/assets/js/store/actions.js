@@ -2697,7 +2697,7 @@ export default {
         let url = $A.apiUrl('../ws');
         url = url.replace("https://", "wss://");
         url = url.replace("http://", "ws://");
-        url += "?action=web&token=" + state.userToken;
+        url += `?action=web&token=${state.userToken}&language=${languageType}`;
         //
         const wgLog = $A.openLog;
         const wsRandom = $A.randomString(16);

@@ -9,24 +9,30 @@ use FFI;
 
 class Doo
 {
-    private static $doo = null;
-    private static $token = null;
-    private static $language = null;
+    private static $doo;
 
     /**
-     * 加载模块
+     * char转为字符串
+     * @param $text
+     * @return string
+     */
+    private static function string($text): string
+    {
+        return FFI::string($text);
+    }
+
+    /**
+     * 装载
      * @param $token
      * @param $language
-     * @return null
      */
     public static function load($token = null, $language = null)
     {
-        if (self::$doo === null) {
-            self::$doo = FFI::cdef(<<<EOF
+        self::$doo = FFI::cdef(<<<EOF
                 void initialize(char* work, char* token, char* lang);
                 char* license();
                 char* licenseDecode(char* license);
-                bool licenseSave(char* license);
+                char* licenseSave(char* license);
                 int userId();
                 char* userExpiredAt();
                 char* userEmail();
@@ -37,31 +43,32 @@ class Doo
                 char* tokenDecode(char* val);
                 char* translate(char* val, char* val);
                 char* md5s(char* text, char* password);
-                EOF, app_path("Module/Lib/doo.so"));
-            self::$token = $token ?: Base::headerOrInput('token');
-            self::$language = $language ?: Base::headerOrInput('language');
-        }
-        self::$doo->initialize("/var/www", self::$token, self::$language);
-        return self::$doo;
+            EOF, app_path("Module/Lib/doo.so"));
+        $token = $token ?: Base::headerOrInput('token');
+        $language = $language ?: Base::headerOrInput('language');
+        self::$doo->initialize("/var/www", $token, $language);
     }
 
     /**
-     * char转为字符串
-     * @param $text
-     * @return string
+     * 获取实例
+     * @param $token
+     * @param $language
+     * @return mixed
      */
-    private static function string($text)
-    {
-        return FFI::string($text);
+    public static function doo($token = null, $language = null) {
+        if (self::$doo == null) {
+            self::load($token, $language);
+        }
+        return self::$doo;
     }
 
     /**
      * License
      * @return array
      */
-    public static function license()
+    public static function license(): array
     {
-        $array = Base::json2array(self::string(self::load()->license()));
+        $array = Base::json2array(self::string(self::doo()->license()));
 
         $ips = explode(",", $array['ip']);
         $array['ip'] = [];
@@ -95,35 +102,37 @@ class Doo
      * @param $license
      * @return array
      */
-    public static function licenseDecode($license)
+    public static function licenseDecode($license): array
     {
-        return Base::json2array(self::string(self::load()->licenseDecode($license)));
+        return Base::json2array(self::string(self::doo()->licenseDecode($license)));
     }
 
     /**
      * 保存License
      * @param $license
-     * @return bool
      */
-    public static function licenseSave($license)
+    public static function licenseSave($license): void
     {
-        return (bool)self::load()->licenseSave($license);
+        $res = self::string(self::doo()->licenseSave($license));
+        if ($res != 'success') {
+            throw new ApiException($res ?: 'LICENSE 保存失败');
+        }
     }
 
     /**
      * 当前会员ID（来自请求的token）
      * @return int
      */
-    public static function userId()
+    public static function userId(): int
     {
-        return intval(self::load()->userId());
+        return intval(self::doo()->userId());
     }
 
     /**
      * token是否过期（来自请求的token）
      * @return bool
      */
-    public static function userExpired()
+    public static function userExpired(): bool
     {
         $expiredAt = self::userExpiredAt();
         return $expiredAt != 'forever' && Carbon::parse($expiredAt)->isBefore(Carbon::now());
@@ -131,49 +140,49 @@ class Doo
 
     /**
      * token过期时间（来自请求的token）
-     * @return bool
+     * @return string
      */
-    public static function userExpiredAt()
+    public static function userExpiredAt(): string
     {
-        return self::string(self::load()->userExpiredAt());
+        return self::string(self::doo()->userExpiredAt());
     }
 
     /**
      * 当前会员邮箱地址（来自请求的token）
      * @return string
      */
-    public static function userEmail()
+    public static function userEmail(): string
     {
-        return self::string(self::load()->userEmail());
+        return self::string(self::doo()->userEmail());
     }
 
     /**
      * 当前会员Encrypt（来自请求的token）
      * @return string
      */
-    public static function userEncrypt()
+    public static function userEncrypt(): string
     {
-        return self::string(self::load()->userEncrypt());
+        return self::string(self::doo()->userEncrypt());
     }
 
     /**
      * 当前会员token（来自请求的token）
      * @return string
      */
-    public static function userToken()
+    public static function userToken(): string
     {
-        return self::string(self::load()->userToken());
+        return self::string(self::doo()->userToken());
     }
 
     /**
      * 创建帐号
      * @param $email
      * @param $password
-     * @return User|\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model|object|null
+     * @return User|null
      */
-    public static function userCreate($email, $password)
+    public static function userCreate($email, $password): User|null
     {
-        $data = Base::json2array(self::string(self::load()->userCreate($email, $password)));
+        $data = Base::json2array(self::string(self::doo()->userCreate($email, $password)));
         if (Base::isError($data)) {
             throw new ApiException($data['msg'] ?: '注册失败');
         }
@@ -192,9 +201,9 @@ class Doo
      * @param int $days 有效时间（天）
      * @return string
      */
-    public static function tokenEncode($userid, $email, $encrypt, $days = 7)
+    public static function tokenEncode($userid, $email, $encrypt, int $days = 7): string
     {
-        return self::string(self::load()->tokenEncode($userid, $email, $encrypt, $days));
+        return self::string(self::doo()->tokenEncode($userid, $email, $encrypt, $days));
     }
 
     /**
@@ -202,30 +211,30 @@ class Doo
      * @param $token
      * @return array
      */
-    public static function tokenDecode($token)
+    public static function tokenDecode($token): array
     {
-        return Base::json2array(self::string(self::load()->tokenDecode($token)));
+        return Base::json2array(self::string(self::doo()->tokenDecode($token)));
     }
 
     /**
      * 翻译
-     * @param string $text
+     * @param $text
      * @param string $type
      * @return string
      */
-    public static function translate($text, $type = "")
+    public static function translate($text, string $type = ""): string
     {
-        return self::string(self::load()->translate($text, $type));
+        return self::string(self::doo()->translate($text, $type));
     }
 
     /**
      * md5防破解
-     * @param string $text
+     * @param $text
      * @param string $password
      * @return string
      */
-    public static function md5s($text, $password = "")
+    public static function md5s($text, string $password = ""): string
     {
-        return self::string(self::load()->md5s($text, $password));
+        return self::string(self::doo()->md5s($text, $password));
     }
 }

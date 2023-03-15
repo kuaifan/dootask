@@ -14804,5 +14804,82 @@
         "de": "Anonyme nachrichten werden über diese anonymen nachrichten übermittelt, ohne dass ihre identität aufgezeichnet wird",
         "fr": "Un message anonyme sera envoyé à l’autre partie via un message anonyme (bot) et aucune information d’identification de vous ne sera enregistrée",
         "id": "Pesan anonim akan dikirim ke pihak lain melalui pesan anonim (robot) yang tidak akan merekam informasi identitas anda"
+    },
+    {
+        "key": "LICENSE 已过期",
+        "zh": "",
+        "zh-CHT": "LICENSE 已過期",
+        "en": "LICENSE has expired",
+        "ko": "라이선스가 만료되었습니다",
+        "ja": "ライセンスの期限が切れました",
+        "de": "Der maßstab ist ververfallen",
+        "fr": "La licence a expiré",
+        "id": "LICENSE sudah habis masa berlakunya"
+    },
+    {
+        "key": "邮箱地址格式错误",
+        "zh": "",
+        "zh-CHT": "郵箱地址格式錯誤",
+        "en": "The email address format is incorrect",
+        "ko": "전자 우편 주소의 형식이 잘못되었습니다",
+        "ja": "メールアドレスの書式が間違っています。",
+        "de": "Die e-mail-adresse ist falsch geschrieben",
+        "fr": "Adresse e-mail format incorrect",
+        "id": "Alamat email berada dalam format yang salah"
+    },
+    {
+        "key": "数据库连接失败",
+        "zh": "",
+        "zh-CHT": "數據庫連接失敗",
+        "en": "Database connection failure",
+        "ko": "데이터베이스 연결 실패",
+        "ja": "データベースの接続に失敗しました",
+        "de": "Datenbankzugriff fehlgeschlagen",
+        "fr": "Connexion base de données échouée",
+        "id": "Koneksi database gagal"
+    },
+    {
+        "key": "帐号数量已上限",
+        "zh": "",
+        "zh-CHT": "帳號數量已上限",
+        "en": "The number of accounts reached the upper limit. Procedure",
+        "ko": "계정의 최대 수량이 설정되었습니다",
+        "ja": "アカウント数が上限になりました。",
+        "de": "Die anzahl der kontonummern wurde begrenzt",
+        "fr": "Nombre de comptes limité",
+        "id": "Nomor rekening dibatasi"
+    },
+    {
+        "key": "LICENSE 格式错误",
+        "zh": "",
+        "zh-CHT": "LICENSE 格式錯誤",
+        "en": "LICENSE format error",
+        "ko": "라이선스 형식 오류",
+        "ja": "ライセンスのフォーマットが間違っています",
+        "de": "Das format ist fehlerhaft",
+        "fr": "Format de licence incorrect",
+        "id": "LICENSE salah format"
+    },
+    {
+        "key": "LICENSE 保存失败",
+        "zh": "",
+        "zh-CHT": "LICENSE 保存失敗",
+        "en": "LICENSE saving failure",
+        "ko": "라이선스 저장에 실패했습니다",
+        "ja": "ライセンス保存に失敗しました",
+        "de": "Der schisma hat abgebrochen",
+        "fr": "Échec de l’enregistrement de la licence",
+        "id": "LICENSE gagal menyelamatkan"
+    },
+    {
+        "key": "LICENSE 无效",
+        "zh": "",
+        "zh-CHT": "LICENSE 無效",
+        "en": "Invalid LICENSE",
+        "ko": "라이선스가 유효하지 않습니다",
+        "ja": "ライセンス無効です",
+        "de": "University of the mathe.",
+        "fr": "La licence est invalide",
+        "id": "LICENSE tidak valid"
     }
 ]
