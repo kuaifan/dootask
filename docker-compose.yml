@@ -3,7 +3,7 @@ version: '3'
 services:
   php:
     container_name: "dootask-php-${APP_ID}"
-    image: "kuaifan/php:swoole-8.0.rc3"
+    image: "kuaifan/php:swoole-8.0.rc4"
     shm_size: "1024m"
     volumes:
       - ./docker/crontab/crontab.conf:/etc/supervisor/conf.d/crontab.conf
@@ -12,7 +12,6 @@ services:
       - ./docker/log/supervisor:/var/log/supervisor
       - ./:/var/www
     environment:
-      TZ: "Asia/Shanghai"
       LANG: "C.UTF-8"
       MODE: "production"
       MYSQL_HOST: "${DB_HOST}"
@@ -36,8 +35,6 @@ services:
     volumes:
       - ./docker/nginx:/etc/nginx/conf.d
       - ./public:/var/www/public
-    environment:
-      TZ: "Asia/Shanghai"
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.3"
@@ -53,8 +50,6 @@ services:
   redis:
     container_name: "dootask-redis-${APP_ID}"
     image: "redis:alpine"
-    environment:
-      TZ: "Asia/Shanghai"
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.4"
@@ -70,7 +65,6 @@ services:
       - ./docker/mysql/conf.d:/etc/mysql/conf.d
       - ./docker/mysql/data:/var/lib/mysql
     environment:
-      TZ: "Asia/Shanghai"
       MYSQL_PREFIX: "${DB_PREFIX}"
       MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
       MYSQL_DATABASE: "${DB_DATABASE}"
@@ -95,7 +89,6 @@ services:
       - ./docker/office/resources/spreadsheeteditor/main/resources/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/spreadsheeteditor/main/resources/css/app.css
       - ./docker/office/resources/spreadsheeteditor/mobile/css/887.css:/var/www/onlyoffice/documentserver/web-apps/apps/spreadsheeteditor/mobile/css/887.css
     environment:
-      TZ: "Asia/Shanghai"
       JWT_ENABLED: false
     networks:
       extnetwork:
@@ -107,7 +100,6 @@ services:
     image: "kuaifan/fileview:4.1.0-SNAPSHOT-RC20"
     platform: linux/amd64
     environment:
-      TZ: "Asia/Shanghai"
       KK_CONTEXT_PATH: "/fileview"
       KK_OFFICE_PREVIEW_SWITCH_DISABLED: true
       KK_FILE_UPLOAD_ENABLED: true
@@ -129,8 +121,6 @@ services:
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.8"
-    environment:
-      TZ: "Asia/Shanghai"
     depends_on:
       - drawio-export
     restart: unless-stopped
@@ -142,8 +132,6 @@ services:
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.9"
-    environment:
-      TZ: "Asia/Shanghai"
     volumes:
       - ./docker/drawio/export/fonts:/usr/share/fonts/drawio
     restart: unless-stopped
@@ -154,8 +142,6 @@ services:
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.10"
-    environment:
-      TZ: "Asia/Shanghai"
     restart: unless-stopped
 
 networks:

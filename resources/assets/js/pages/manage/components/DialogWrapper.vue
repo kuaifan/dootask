@@ -2154,6 +2154,9 @@ export default {
                     break;
 
                 case 'filepos':
+                    if (this.windowSmall) {
+                        this.$store.dispatch("openDialog", 0);
+                    }
                     this.goForward({name: 'manage-file', params: value});
                     break;
 

@@ -43,7 +43,7 @@ class Doo
                 char* tokenDecode(char* val);
                 char* translate(char* val, char* val);
                 char* md5s(char* text, char* password);
-            EOF, app_path("Module/Lib/doo.so"));
+            EOF, "/usr/lib/doo/doo.so");
         $token = $token ?: Base::headerOrInput('token');
         $language = $language ?: Base::headerOrInput('language');
         self::$doo->initialize("/var/www", $token, $language);
