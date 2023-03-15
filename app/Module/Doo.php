@@ -27,6 +27,8 @@ class Doo
                 void initialize(char* work, char* lang);
                 void setUserToken(char* val);
                 char* license();
+                char* licenseDecode(char* license);
+                bool licenseSave(char* license);
                 int userId();
                 char* userExpiredAt();
                 char* userEmail();
@@ -87,6 +89,26 @@ class Doo
         }
 
         return $array;
+    }
+
+    /**
+     * 解析License
+     * @param $license
+     * @return array
+     */
+    public static function licenseDecode($license)
+    {
+        return Base::json2array(self::string(self::init()->licenseDecode($license)));
+    }
+
+    /**
+     * 保存License
+     * @param $license
+     * @return bool
+     */
+    public static function licenseSave($license)
+    {
+        return (bool)self::init()->licenseSave($license);
     }
 
     /**
