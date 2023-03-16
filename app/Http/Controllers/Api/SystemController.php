@@ -514,6 +514,41 @@ class SystemController extends AbstractController
     }
 
     /**
+     * @api {post} api/system/license          08. License
+     *
+     * @apiDescription 获取License信息、保存License（限管理员）
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName license
+     *
+     * @apiParam {String} type
+     * - get: 获取
+     * - save: 保存
+     * @apiParam {String} license   License 原文
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function license()
+    {
+        User::auth('admin');
+        //
+        $type = trim(Request::input('type'));
+        if ($type == 'save') {
+            $license = Base::getPostValue('license');
+            Doo::licenseSave($license);
+        }
+        //
+        return Base::retSuccess('success', [
+            'license' => Doo::licenseContent(),
+            'info' => Doo::license(),
+            'macs' => Doo::macs(),
+            'user_count' => User::whereBot(0)->whereNull('disable_at')->count(),
+        ]);
+    }
+
+    /**
      * @api {get} api/system/get/info          10. 获取终端详细信息
      *
      * @apiVersion 1.0.0

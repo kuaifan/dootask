@@ -24,6 +24,9 @@ class VerifyCsrfToken extends Middleware
         // 保存创建项目列表模板
         'api/system/column/template/',
 
+        // License 设置
+        'api/system/license/',
+
         // 添加任务
         'api/project/task/add/',
 

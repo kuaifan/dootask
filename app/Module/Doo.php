@@ -43,6 +43,7 @@ class Doo
                 char* tokenDecode(char* val);
                 char* translate(char* val, char* val);
                 char* md5s(char* text, char* password);
+                char* macs();
             EOF, "/usr/lib/doo/doo.so");
         $token = $token ?: Base::headerOrInput('token');
         $language = $language ?: Base::headerOrInput('language');
@@ -55,7 +56,8 @@ class Doo
      * @param $language
      * @return mixed
      */
-    public static function doo($token = null, $language = null) {
+    public static function doo($token = null, $language = null)
+    {
         if (self::$doo == null) {
             self::load($token, $language);
         }
@@ -86,6 +88,14 @@ class Doo
             }
         }
 
+        $macs = explode(",", $array['mac']);
+        $array['mac'] = [];
+        foreach ($macs as $mac) {
+            if (Base::isMac($mac)) {
+                $array['mac'][] = $mac;
+            }
+        }
+
         $emails = explode(",", $array['email']);
         $array['email'] = [];
         foreach ($emails as $email) {
@@ -95,6 +105,28 @@ class Doo
         }
 
         return $array;
+    }
+
+    /**
+     * 获取License原文
+     * @return string
+     */
+    public static function licenseContent(): string
+    {
+        $paths = [
+            config_path("LICENSE"),
+            config_path("license"),
+            app_path("LICENSE"),
+            app_path("license"),
+        ];
+        $content = "";
+        foreach ($paths as $path) {
+            if (file_exists($path)) {
+                $content = file_get_contents($path);
+                break;
+            }
+        }
+        return $content;
     }
 
     /**
@@ -236,5 +268,21 @@ class Doo
     public static function md5s($text, string $password = ""): string
     {
         return self::string(self::doo()->md5s($text, $password));
+    }
+
+    /**
+     * 获取php容器mac地址组
+     * @return array
+     */
+    public static function macs(): array
+    {
+        $macs = explode(",", self::string(self::doo()->macs()));
+        $array = [];
+        foreach ($macs as $mac) {
+            if (Base::isMac($mac)) {
+                $array[] = $mac;
+            }
+        }
+        return $array;
     }
 }

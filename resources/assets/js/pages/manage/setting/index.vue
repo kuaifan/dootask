@@ -99,15 +99,13 @@ export default {
             if (this.userIsAdmin) {
                 menu.push(...[
                     {path: 'system', name: '系统设置', divided: true},
-                    {path: 'clearCache', name: '清除缓存'},
-                    {path: 'logout', name: '退出登录'},
-                ])
-            } else {
-                menu.push(...[
-                    {path: 'clearCache', name: '清除缓存', divided: true},
-                    {path: 'logout', name: '退出登录'},
+                    {path: 'license', name: 'License Key'},
                 ])
             }
+            menu.push(...[
+                {path: 'clearCache', name: '清除缓存', divided: true},
+                {path: 'logout', name: '退出登录'},
+            ])
             return menu;
         },
 

@@ -539,7 +539,7 @@ export default {
                 array.push(...[
                     {path: 'personal', name: '个人设置', divided: true},
                     {path: 'system', name: '系统设置'},
-                    {path: 'clearCache', name: '清除缓存'},
+                    {path: 'license', name: 'License Key'},
 
                     {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
 
@@ -551,7 +551,6 @@ export default {
             } else {
                 array.push(...[
                     {path: 'personal', name: '个人设置', divided: true},
-                    {path: 'clearCache', name: '清除缓存'},
 
                     {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
 
@@ -562,11 +561,13 @@ export default {
             if (needStartHome) {
                 array.push(...[
                     {path: 'goHome', name: '打开首页', divided: true},
+                    {path: 'clearCache', name: '清除缓存'},
                     {path: 'logout', name: '退出登录', style: {color: '#f40'}}
                 ])
             } else {
                 array.push(...[
-                    {path: 'logout', name: '退出登录', style: {color: '#f40'}, divided: true}
+                    {path: 'clearCache', name: '清除缓存', divided: true},
+                    {path: 'logout', name: '退出登录', style: {color: '#f40'}}
                 ])
             }
             return array
