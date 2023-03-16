@@ -61,7 +61,11 @@ export default {
         handleProgress(event, file) {
             //上传时
             if (file.tempId === undefined) {
-                file.tempId = $A.randNum(1000000000, 9999999999)
+                if (this.$parent.$options.name === 'DialogWrapper') {
+                    file.tempId = this.$parent.getTempId()
+                } else {
+                    file.tempId = $A.randNum(1000000000, 9999999999)
+                }
                 this.$emit('on-progress', file)
             }
         },

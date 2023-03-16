@@ -538,6 +538,7 @@ export default {
 
             allMsgs: [],
             tempMsgs: [],
+            tempId: $A.randNum(1000000000, 9999999999),
             msgLoadIng: 0,
 
             pasteShow: false,
@@ -1102,10 +1103,9 @@ export default {
                 });
             } else {
                 // 发送
-                const tempId = $A.randNum(1000000000, 9999999999)
                 const typeLoad = $A.stringLength(msgText.replace(/<img[^>]*?>/g, '')) > 5000
                 const tempMsg = {
-                    id: tempId,
+                    id: this.getTempId(),
                     dialog_id: this.dialogData.id,
                     reply_id: this.replyId,
                     reply_data: this.replyItem,
@@ -1130,7 +1130,7 @@ export default {
                     },
                     method: 'post',
                 }).then(({data}) => {
-                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
+                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempMsg.id)
                     this.sendSuccess(data)
                 }).catch(error => {
                     this.$set(tempMsg, 'error', true)
@@ -1147,9 +1147,8 @@ export default {
          * @param msg {base64, duration}
          */
         sendRecord(msg) {
-            const tempId = $A.randNum(1000000000, 9999999999);
             const tempMsg = {
-                id: tempId,
+                id: this.getTempId(),
                 dialog_id: this.dialogData.id,
                 reply_id: this.replyId,
                 reply_data: this.replyItem,
@@ -1171,7 +1170,7 @@ export default {
                 }),
                 method: 'post',
             }).then(({data}) => {
-                this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
+                this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempMsg.id)
                 this.sendSuccess(data);
             }).catch(error => {
                 this.$set(tempMsg, 'error', true)
@@ -1219,6 +1218,10 @@ export default {
          */
         sendQuick(item) {
             this.sendMsg(`<p><span data-quick-key="${item.key}">${item.label}</span></p>`)
+        },
+
+        getTempId() {
+            return this.tempId++
         },
 
         getMsgs(data) {
