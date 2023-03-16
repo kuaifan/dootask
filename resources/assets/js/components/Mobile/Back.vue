@@ -44,7 +44,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['fileLists']),
+        ...mapState(['fileLists', 'messengerSearchKey']),
 
         style() {
             const offset = 135;
@@ -119,6 +119,17 @@ export default {
             if (this.fileFolderId > 0) {
                 return true;
             }
+            if (this.routeName === 'manage-messenger') {
+                if (this.$route.params.dialogAction === 'contacts') {
+                    if (this.messengerSearchKey.contacts) {
+                        return true;
+                    }
+                } else {
+                    if (this.messengerSearchKey.dialog) {
+                        return true;
+                    }
+                }
+            }
             return false;
         },
 
@@ -137,6 +148,19 @@ export default {
                 }
                 this.goForward({name: 'manage-file'});
                 return;
+            }
+            if (this.routeName === 'manage-messenger') {
+                if (this.$route.params.dialogAction === 'contacts') {
+                    if (this.messengerSearchKey.contacts) {
+                        this.$store.state.messengerSearchKey.contacts = ""
+                        return;
+                    }
+                } else {
+                    if (this.messengerSearchKey.dialog) {
+                        this.$store.state.messengerSearchKey.dialog = ""
+                        return;
+                    }
+                }
             }
             this.goBack();
         },

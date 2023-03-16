@@ -86,6 +86,9 @@ export default {
     dialogInputCache: [],
     dialogMsgTransfer: {time: 0},
 
+    // 搜索关键词（主要用于移动端判断滑动返回）
+    messengerSearchKey: {dialog: '', contacts: ''},
+
     // 文件
     fileLists: [],
     fileLinks: [],

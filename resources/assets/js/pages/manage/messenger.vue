@@ -257,7 +257,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs', 'loadDialogs', 'dialogId', 'appNotificationPermission']),
+        ...mapState(['cacheDialogs', 'loadDialogs', 'dialogId', 'messengerSearchKey', 'appNotificationPermission']),
 
         routeName() {
             return this.$route.name
@@ -456,13 +456,22 @@ export default {
             immediate: true
         },
 
+        messengerSearchKey: {
+            handler(obj) {
+                this.dialogSearchKey = obj.dialog
+                this.contactsKey = obj.contacts
+            },
+            deep: true
+        },
+
         dialogSearchKey(val) {
+            this.$store.state.messengerSearchKey.dialog = val
             switch (val) {
                 case 'log.o':
-                    $A.IDBSet("logOpen", "open").then(_ => $A.reloadUrl());
+                    $A.IDBSet("logOpen", "open").then($A.reloadUrl);
                     break;
                 case 'log.c':
-                    $A.IDBSet("logOpen", "close").then(_ => $A.reloadUrl());
+                    $A.IDBSet("logOpen", "close").then($A.reloadUrl);
                     break;
             }
             //
@@ -477,6 +486,7 @@ export default {
         },
 
         contactsKey(val) {
+            this.$store.state.messengerSearchKey.contacts = val
             if (val == '') {
                 return;
             }
