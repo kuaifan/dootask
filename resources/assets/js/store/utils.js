@@ -27,7 +27,7 @@ function __callData(key, requestData, state) {
      * @returns {*}
      */
     this.get = () => {
-        requestData.timerange = requestData.timerange || `${callData.updated},${callData.deleted}`
+        requestData.timerange = requestData.timerange || `${callData.updated}-${callData.deleted}`
         return requestData
     }
 
