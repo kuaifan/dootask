@@ -324,10 +324,12 @@ if [ $# -gt 0 ]; then
     elif [[ "$1" == "update" ]]; then
         shift 1
         run_mysql backup
-        git fetch --all
-        git reset --hard origin/$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
-        git pull
-        run_exec php "composer update"
+        if [[ -z "$(arg_get local)" ]]; then
+            git fetch --all
+            git reset --hard origin/$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
+            git pull
+            run_exec php "composer update"
+        fi
         run_exec php "php artisan migrate"
         restart_php
         $COMPOSE up -d
