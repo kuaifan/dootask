@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.24.83]
+## [0.24.85]
 
 ### Bug Fixes
 
@@ -152,13 +152,25 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
-- 栏目内添加任务应该直接归属此栏目
 - LDAP Exception
 
 ### Features
 
-- 新增ldap帐号
 - 二维码登录
+
+### Performance
+
+- 优化删除数据
+
+## [0.22.84]
+
+### Bug Fixes
+
+- 栏目内添加任务应该直接归属此栏目
+
+### Features
+
+- 新增ldap帐号
 
 ### Performance
 
@@ -172,7 +184,6 @@ All notable changes to this project will be documented in this file.
 - 优化根据会员筛选任务
 - 优化表情输入
 - 优化会话删除
-- 优化删除数据
 
 ## [0.22.66]
 
