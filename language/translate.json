@@ -14881,5 +14881,137 @@
         "de": "University of the mathe.",
         "fr": "La licence est invalide",
         "id": "LICENSE tidak valid"
+    },
+    {
+        "key": "转换成markdown",
+        "zh": "",
+        "zh-CHT": "轉換成markdown",
+        "en": "Convert to markdown",
+        "ko": "Markdown으로 변환",
+        "ja": "Markdownに変換します",
+        "de": "Ardhi: in markab konvertiert",
+        "fr": "Convertir en markdown",
+        "id": "Markdown"
+    },
+    {
+        "key": "请输入html代码...",
+        "zh": "",
+        "zh-CHT": "請輸入html代碼...",
+        "en": "Please enter the html code...",
+        "ko": "Html 코드를 입력하십시오...",
+        "ja": "Htmlコードを入力します。",
+        "de": "Bitte geben sie den html-code ein",
+        "fr": "Veuillez entrer le code HTML...",
+        "id": "Silahkan masukkan kode HTML …"
+    },
+    {
+        "key": "请输入License...",
+        "zh": "",
+        "zh-CHT": "請輸入License...",
+        "en": "Please enter the License...",
+        "ko": "라이선스를 입력하십시오...",
+        "ja": "Licenseを入力します…",
+        "de": "Bitte geben sie ihren titel ein.",
+        "fr": "Veuillez entrer une licence...",
+        "id": "Tolong masukkan License …"
+    },
+    {
+        "key": "详细信息",
+        "zh": "",
+        "zh-CHT": "詳細信息",
+        "en": "Detailed information",
+        "ko": "자세한 정보",
+        "ja": "詳しい情報です",
+        "de": "Einzelheiten.",
+        "fr": "Informations détaillées ici",
+        "id": "Informasi rinci"
+    },
+    {
+        "key": "域名",
+        "zh": "",
+        "zh-CHT": "域名",
+        "en": "Domain name",
+        "ko": "도메인",
+        "ja": "ドメイン",
+        "de": "Domains?",
+        "fr": "Un nom de domaine",
+        "id": "Nama domain"
+    },
+    {
+        "key": "使用人数",
+        "zh": "",
+        "zh-CHT": "使用人數",
+        "en": "Number of users",
+        "ko": "사용자 수",
+        "ja": "利用者数です",
+        "de": "Zahl: stück?",
+        "fr": "Nombre d’usagers",
+        "id": "Jumlah yang digunakan"
+    },
+    {
+        "key": "无限制",
+        "zh": "",
+        "zh-CHT": "無限制",
+        "en": "Unlimited",
+        "ko": "제한 없음",
+        "ja": "無制限です",
+        "de": "Unbegrenzte möglichkeiten.",
+        "fr": "Illimité et illimité",
+        "id": "Tidak ada batasan"
+    },
+    {
+        "key": "已使用",
+        "zh": "",
+        "zh-CHT": "已使用",
+        "en": "Already in use",
+        "ko": "사용됨",
+        "ja": "使用済みです",
+        "de": "Aye, aye, sir.",
+        "fr": "Déjà utilisé dans",
+        "id": "Telah digunakan"
+    },
+    {
+        "key": "永久",
+        "zh": "",
+        "zh-CHT": "永久",
+        "en": "Forever",
+        "ko": "영구",
+        "ja": "永久に",
+        "de": "Und ewig",
+        "fr": "Permanente",
+        "id": "Permanen"
+    },
+    {
+        "key": "当前环境",
+        "zh": "",
+        "zh-CHT": "當前環境",
+        "en": "Current environment",
+        "ko": "현재 환경",
+        "ja": "現在の環境です",
+        "de": "Die umstände Von heute.",
+        "fr": "Le contexte actuel",
+        "id": "Lingkungan saat ini"
+    },
+    {
+        "key": "限制注册人数",
+        "zh": "",
+        "zh-CHT": "限制註冊人數",
+        "en": "Limit enrollment",
+        "ko": "등록 인원수를 제한하다.",
+        "ja": "登録者数を制限します",
+        "de": "Beschränken sie die registrierung.",
+        "fr": "Limiter le nombre d’inscriptions",
+        "id": "Membatasi jumlah pendaftaran"
+    },
+    {
+        "key": "到期后限制注册帐号",
+        "zh": "",
+        "zh-CHT": "到期後限制註冊帳號",
+        "en": "Account registration is restricted after the expiration date",
+        "ko": "기간이 경과한 후에는 등록 계정을 제한할 수 있습니다",
+        "ja": "満期後のアカウント登録を制限します。",
+        "de": "Die regierungsnummer ist nach dem verfall begrenzt",
+        "fr": "Limiter l’enregistrement des comptes après l’expiration",
+        "id": "Batasi jumlah akun saat jatuh tempo"
     }
 ]
