@@ -672,7 +672,7 @@
                                 .mention {
                                     color: $flow-status-end-color;
                                     background-color: transparent;
-                                    user-select: auto;
+                                    user-select: inherit;
                                     padding: 0;
                                     margin: 0;
 
@@ -1581,7 +1581,7 @@
     }
 }
 
-body.eeui-app {
+body.support-touch {
     .dialog-wrapper {
         .dialog-scroller {
             user-select: none;
@@ -1727,7 +1727,6 @@ body.eeui-app {
             padding-right: 14px;
             padding-left: 14px;
             overscroll-behavior: none;
-            user-select: none;
             background-color: #ffffff;
 
             &.default-header {
@@ -1769,7 +1768,6 @@ body.eeui-app {
                                 a, img {
                                     -webkit-touch-callout: default;
                                 }
-                                user-select: text;
                             }
                         }
                     }

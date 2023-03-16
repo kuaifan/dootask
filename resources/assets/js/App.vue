@@ -77,7 +77,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['ws', 'themeMode']),
+        ...mapState(['ws', 'themeMode', 'supportTouch']),
 
         isSoftware() {
             return this.$Electron || this.$isEEUiApp;
@@ -140,6 +140,17 @@ export default {
                             });
                         }
                     })
+                }
+            },
+            immediate: true
+        },
+
+        supportTouch: {
+            handler(support) {
+                if (support) {
+                    $A("body").addClass("support-touch")
+                } else {
+                    $A("body").removeClass("support-touch")
                 }
             },
             immediate: true
@@ -259,8 +270,6 @@ export default {
             if (!this.$isEEUiApp) {
                 return;
             }
-            // bodyClass
-            $A("body").addClass("eeui-app")
             // 页面失活
             window.__onPagePause = () => {
                 this.$store.state.windowActive = false;

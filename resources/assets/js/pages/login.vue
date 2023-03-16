@@ -566,7 +566,9 @@ export default {
             this.loginJump = true;
             const fromUrl = decodeURIComponent($A.getObject(this.$route.query, 'from'));
             if (fromUrl) {
-                window.location.replace(fromUrl);
+                $A.IDBSet("callAt", []).then(_ => {
+                    window.location.replace(fromUrl);
+                })
             } else {
                 this.goForward({name: 'manage-dashboard'}, true);
             }

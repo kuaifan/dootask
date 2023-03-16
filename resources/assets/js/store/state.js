@@ -1,4 +1,7 @@
 export default {
+    // 是否移动端（支持触摸）
+    supportTouch: "ontouchend" in document,
+
     // 浏览器尺寸信息
     windowWidth: $A(window).width(),
     windowHeight: $A(window).height(),

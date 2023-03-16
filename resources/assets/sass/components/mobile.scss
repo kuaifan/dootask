@@ -306,7 +306,7 @@
     opacity: 0;
 }
 
-body.eeui-app {
+body.support-touch {
     .mobile-back {
         display: block;
     }
@@ -315,9 +315,6 @@ body.eeui-app {
 @media (max-width: 768px) {
     .mobile-tabbar {
         display: flex;
-    }
-    .mobile-back {
-        display: block;
     }
     .mobile-notification {
         top: 12px;
