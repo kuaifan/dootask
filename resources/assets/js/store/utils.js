@@ -36,16 +36,26 @@ function __callData(key, requestData, state) {
      * @param deleted_id
      * @returns {Promise<unknown>}
      */
-    this.save = ({current_page, deleted_id}) => {
+    this.save = ({total, current_page, deleted_id}) => {
         return new Promise(resolve => {
             if (current_page === 1) {
-                callData.updated = $A.Time()
-                if ($A.isArray(deleted_id)) {
-                    callData.deleted = callData.updated
+                let hasUpdate = false
+                const time = $A.Time()
+                if (total > 0) {
+                    callData.updated = time
+                    hasUpdate = true
+                }
+                if ($A.isArray(deleted_id) && deleted_id.length > 0) {
+                    callData.deleted = time
+                    hasUpdate = true
                 } else {
                     deleted_id = []
                 }
-                $A.IDBSet("callAt", state.callAt).then(_ => resolve(deleted_id))
+                if (hasUpdate) {
+                    $A.IDBSet("callAt", state.callAt).then(_ => resolve(deleted_id))
+                } else {
+                    resolve(deleted_id)
+                }
             }
         })
     }
