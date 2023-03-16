@@ -299,7 +299,7 @@ class UsersController extends AbstractController
     public function info()
     {
         $user = User::auth();
-        User::generateToken($user);
+        User::generateToken($user, in_array(Base::platform(), ['ios', 'android']));
         //
         $data = $user->toArray();
         $data['nickname_original'] = $user->getRawOriginal('nickname');
@@ -1025,12 +1025,7 @@ class UsersController extends AbstractController
             'alias.between:2,20' => '别名的长度在2-20个字符',
         ]);
         //
-        $agent = strtolower(Request::server('HTTP_USER_AGENT'));
-        if (str_contains($agent, 'android')) {
-            $platform = 'android';
-        } elseif (str_contains($agent, 'iphone') || str_contains($agent, 'ipad')) {
-            $platform = 'ios';
-        } else {
+        if (!in_array(Base::platform(), ['ios', 'android'])) {
             return Base::retError('设备类型错误');
         }
         //
@@ -1038,7 +1033,7 @@ class UsersController extends AbstractController
         $inArray = [
             'userid' => $user->userid,
             'alias' => $data['alias'],
-            'platform' => $platform,
+            'platform' => Base::platform(),
         ];
         $row = UmengAlias::where($inArray);
         if ($row->exists()) {

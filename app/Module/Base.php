@@ -2045,6 +2045,27 @@ class Base
     }
 
     /**
+     * 获取平台类型
+     * @return string
+     */
+    public static function platform()
+    {
+        $platform = strtolower(trim(Request::header('platform')));
+        if (in_array($platform, ['android', 'ios', 'win', 'mac', 'web'])) {
+            return $platform;
+        }
+        $agent = strtolower(Request::server('HTTP_USER_AGENT'));
+        if (str_contains($agent, 'android')) {
+            $platform = 'android';
+        } elseif (str_contains($agent, 'iphone') || str_contains($agent, 'ipad')) {
+            $platform = 'ios';
+        } else {
+            $platform = 'unknown';
+        }
+        return $platform;
+    }
+
+    /**
      * 返回根据距离sql排序语句
      * @param $lat
      * @param $lng

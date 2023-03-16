@@ -149,6 +149,8 @@ if (isElectron) {
     $A.Platform = /macintosh|mac os x/i.test(navigator.userAgent) ? "mac" : "win";
     $A.isMainElectron = /\s+MainTaskWindow\//.test(window.navigator.userAgent);
     $A.isSubElectron = /\s+SubTaskWindow\//.test(window.navigator.userAgent);
+} else if (isEEUiApp) {
+    $A.Platform = /(iPhone|iPad|iPod|iOS)/i.test(navigator.userAgent) ? "ios" : "android";
 }
 
 // 子窗口给主窗口发送指令相关
