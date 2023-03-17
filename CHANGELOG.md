@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.25.0]
+## [0.25.3]
 
 ### Bug Fixes
 
@@ -79,10 +79,6 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
-- 工作包括周报模板添加下周拟定计划项
-- 优化ipad表单显示
-- 优化再次点击抖动
-- Dialog loading
 - 网络恢复后重新标记已读失败的信息
 - 优化开发执行脚本
 - 点击头像进入对话
@@ -96,6 +92,15 @@ All notable changes to this project will be documented in this file.
 - 优化消息类型分类
 - 消息快捷发送菜单
 - 优化表情回复
+
+## [0.23.94]
+
+### Performance
+
+- 工作包括周报模板添加下周拟定计划项
+- 优化ipad表单显示
+- 优化再次点击抖动
+- Dialog loading
 
 ## [0.23.86]
 
@@ -214,6 +219,13 @@ All notable changes to this project will be documented in this file.
 
 ## [0.22.66]
 
+### Performance
+
+- 优化未读消息提示
+- 优化消息对话框loading
+
+## [0.22.64]
+
 ### Bug Fixes
 
 - 任务首次发消息消失的情况
@@ -228,8 +240,6 @@ All notable changes to this project will be documented in this file.
 - 会话顶部提示剩余未读消息
 - 回复/引用机器人消息图标移位的问题
 - 优化移动端打开会话
-- 优化未读消息提示
-- 优化消息对话框loading
 
 ## [0.22.56]
 
@@ -438,10 +448,15 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
+- @结果相同时避免刷新
+
+## [0.20.95]
+
+### Performance
+
 - 升级onlyoffice
 - 离职后退出所有群
 - 离职移交部门
-- @结果相同时避免刷新
 
 ## [0.20.90]
 
@@ -492,7 +507,7 @@ All notable changes to this project will be documented in this file.
 - Win通知标题
 - 优化会议聊天
 
-## [0.20.51]
+## [0.20.52]
 
 ### Bug Fixes
 
@@ -694,19 +709,30 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
-- 无法通过项目点击聊天的情况
 - 移动文件所有者错误
 
 ### Features
 
-- 支持编辑已发送的消息
 - 新增全员群组
 
 ### Performance
 
-- 添加邮件忽略功能
 - 调整消息标签位置
 - 所有项目列表支持筛选个人项目
+
+## [0.18.54]
+
+### Bug Fixes
+
+- 无法通过项目点击聊天的情况
+
+### Features
+
+- 支持编辑已发送的消息
+
+### Performance
+
+- 添加邮件忽略功能
 
 ## [0.18.44]
 
@@ -752,8 +778,6 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
-- 无法点击图片预览的问题
-- 部分长按菜单移位的问题
 - 撤回消息导致未读数错误的问题
 - 任务成员应该禁止退出任务群聊
 
@@ -763,11 +787,21 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
-- 项目群、任务群可添加成员
-- 支持@群聊以外成员
 - 优化pdf浏览方式
 - 仅(群聊)且(是群主或没有群主)才可以@成员以外的人
 - 优化@其他成员在线状态
+
+## [0.17.88]
+
+### Bug Fixes
+
+- 无法点击图片预览的问题
+- 部分长按菜单移位的问题
+
+### Performance
+
+- 项目群、任务群可添加成员
+- 支持@群聊以外成员
 
 ## [0.17.75]
 
@@ -854,6 +888,12 @@ All notable changes to this project will be documented in this file.
 
 ## [0.16.60]
 
+### Performance
+
+- 优化消息已读未读
+
+## [0.16.58]
+
 ### Bug Fixes
 
 - 修复任务窗口无法发送表情的问题
@@ -866,7 +906,6 @@ All notable changes to this project will be documented in this file.
 - 优化首页加载失败的情况
 - 新窗口打开任务时保持日志显示状态
 - 预览图片尺寸的优化
-- 优化消息已读未读
 
 ## [0.16.22]
 
@@ -1049,14 +1088,6 @@ All notable changes to this project will be documented in this file.
 
 ## [0.13.48]
 
-### Performance
-
-- 文件浏览保存排序
-- 客户端填写周报后保存关闭窗口
-- 优化暗黑模式
-
-## [0.13.32]
-
 ### Bug Fixes
 
 - 修复文件协作不提醒的问题
@@ -1080,6 +1111,9 @@ All notable changes to this project will be documented in this file.
 - 优化聊天输入框
 - 群聊信息预览显示发言人昵称
 - 优化@提醒
+- 文件浏览保存排序
+- 客户端填写周报后保存关闭窗口
+- 优化暗黑模式
 
 ## [0.12.95]
 
@@ -1174,6 +1208,14 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- 去掉调试信息
+- '最近打开任务'数据没有根据用户区分问题修改
+- 任务第二次邮件提醒判断错误修改
+- 拖动任务列表排序后会自动还原的情况
+- 添加任务时开始时间和结束时间为同一天可能发生报错
+- 修复自定义SSO自动升级版本出错的问题
+- 修正验证邮箱页面文案
+- 优化验证邮箱页面文案
 - 首页重写
 - 修改图片
 - 官网首页修改
@@ -1188,44 +1230,14 @@ All notable changes to this project will be documented in this file.
 
 ### Features
 
-- 客户端登录，新增工作报告、修改工作报告、查看工作报告，全部直接在新窗口打开
-- 项目任务新增一个甘特图展示选项
-
-### Performance
-
-- 优化消息标记已读/未读
-- 首页兼容暗黑模式及文案和查询优化
-- 项目--删除任务查看详情页功能
-- 已删除任务操作文案及显示优化
-- 已删除任务详情任务描述改为只读
-- 更新icon图标库
-- 更新icon图标库
-- 优化任务列表切换显示
-- 优化甘特图
-- 优化工作报告前端
-- 图片预览使用当前页组件，支持多图
-
-## [0.10.30]
-
-### Bug Fixes
-
-- 去掉调试信息
-- '最近打开任务'数据没有根据用户区分问题修改
-- 任务第二次邮件提醒判断错误修改
-- 拖动任务列表排序后会自动还原的情况
-- 添加任务时开始时间和结束时间为同一天可能发生报错
-- 修复自定义SSO自动升级版本出错的问题
-- 修正验证邮箱页面文案
-- 优化验证邮箱页面文案
-
-### Features
-
 - 添加“最近打开的任务”
 - 消息右键对话新增：标记已读、标记未读
 - 头像加载失败时显示名称首字
 - 优化TableAction组件
 - 优化表格分页样式
 - 在项目设置里新增一个“已删除任务”菜单
+- 客户端登录，新增工作报告、修改工作报告、查看工作报告，全部直接在新窗口打开
+- 项目任务新增一个甘特图展示选项
 
 ### Performance
 
@@ -1245,6 +1257,17 @@ All notable changes to this project will be documented in this file.
 - 修改验证邮件有效期为10分钟方便测试(验证完后改为24小时)
 - 优化邮件设置页面样式
 - 修改验证邮件有效期改回24小时
+- 优化消息标记已读/未读
+- 首页兼容暗黑模式及文案和查询优化
+- 项目--删除任务查看详情页功能
+- 已删除任务操作文案及显示优化
+- 已删除任务详情任务描述改为只读
+- 更新icon图标库
+- 更新icon图标库
+- 优化任务列表切换显示
+- 优化甘特图
+- 优化工作报告前端
+- 图片预览使用当前页组件，支持多图
 
 ## [0.10.21]
 
@@ -1321,19 +1344,6 @@ All notable changes to this project will be documented in this file.
 
 ## [0.9.83]
 
-### Features
-
-- 导出任务功能
-
-### Performance
-
-- 支持nodejs16+
-- 优化任务排序
-- 优化修改工作流的过程
-- 记录任务工作流变化
-
-## [0.9.73]
-
 ### Bug Fixes
 
 - 项目列表处于置顶选中状态显示选中样式
@@ -1345,17 +1355,33 @@ All notable changes to this project will be documented in this file.
 ### Features
 
 - 文件支持拖动到列表上传
+- 导出任务功能
 
 ### Performance
 
 - 添加首页文字翻译
 - 优化首页判断时间一闪而过问题
 - 首页判断是否登录优先于判断是否需要启动首页
+- 支持nodejs16+
+- 优化任务排序
+- 优化修改工作流的过程
+- 记录任务工作流变化
 
 ## [0.9.68]
 
 ### Bug Fixes
 
+- 【文件】流程图只读接入新组件及删除旧组件引入代码
+- 为引入组件报错
+- 消息：列表滚动在任意位置右键菜单错位问题修复
+- 消息：列表滚动右键Y轴值判断错误修复
+- 文件：列表模式右键后已选内容会错乱修复
+- 消息：列表滚动隐藏'置顶'文案
+- 【文件】右键多选所有文件复选框显示，取消所有选中消失
+- 项目列表滚动'置顶'框隐藏
+- 修复邮箱大写报错的问题
+- 修复客户端任务新窗口无法修改任务等级
+- 项目、消息置顶样式修改
 - 合并异常代码修改
 - 客户端无法下载文件
 - 客户端无法编辑office文件
@@ -1364,32 +1390,16 @@ All notable changes to this project will be documented in this file.
 
 ### Features
 
+- 支持文本、图表、思维导图下载上传
+- 项目列表添加置顶功能
 - 首页启动设置
 
 ### Performance
 
-- 【文件】剪切后加'取消剪切'按钮
-- 项目列表置顶优化
-- 项目列表置顶优化
-- 消息列表详情增加'置顶'标识
-- 调整消息置顶标识位置
-- 文件、聊天文件、任务文件预览优化（支持预览drawio、mind等）
-
-## [0.9.61]
-
-### Bug Fixes
-
-- 项目列表滚动'置顶'框隐藏
-- 修复邮箱大写报错的问题
-- 修复客户端任务新窗口无法修改任务等级
-- 项目、消息置顶样式修改
-
-### Features
-
-- 项目列表添加置顶功能
-
-### Performance
-
+- 消息列表需支持多个置顶
+- 优化注册提示
+- 【文件】多个选择剪切功能与右键剪切重复，数据处理应该合拼；方格列表默认不显示复选框，右键菜单新增一个多选菜单
+- 更新流程图表
 - 任务聊天中发送图片时，回车可确定发送
 - 修改任务时间日志
 - 任务创建人和协助人可修改任务内容和详情，但不可修改任务状态
@@ -1402,29 +1412,12 @@ All notable changes to this project will be documented in this file.
 - 客户端版本更新提示关闭
 - 页面高度足够时只滚动项目部分
 - 消息会话右键时隐藏滚动条
-
-## [0.9.16]
-
-### Bug Fixes
-
-- 【文件】流程图只读接入新组件及删除旧组件引入代码
-- 为引入组件报错
-- 消息：列表滚动在任意位置右键菜单错位问题修复
-- 消息：列表滚动右键Y轴值判断错误修复
-- 文件：列表模式右键后已选内容会错乱修复
-- 消息：列表滚动隐藏'置顶'文案
-- 【文件】右键多选所有文件复选框显示，取消所有选中消失
-
-### Features
-
-- 支持文本、图表、思维导图下载上传
-
-### Performance
-
-- 消息列表需支持多个置顶
-- 优化注册提示
-- 【文件】多个选择剪切功能与右键剪切重复，数据处理应该合拼；方格列表默认不显示复选框，右键菜单新增一个多选菜单
-- 更新流程图表
+- 【文件】剪切后加'取消剪切'按钮
+- 项目列表置顶优化
+- 项目列表置顶优化
+- 消息列表详情增加'置顶'标识
+- 调整消息置顶标识位置
+- 文件、聊天文件、任务文件预览优化（支持预览drawio、mind等）
 
 ## [0.8.22]
 
@@ -1469,12 +1462,6 @@ All notable changes to this project will be documented in this file.
 
 ## [0.8.2]
 
-### Performance
-
-- 单条消息最长2000个字符，超过自动分割发送，总最长20000
-
-## [0.8.0]
-
 ### Bug Fixes
 
 - 修复聊天mp4文件无法预览的问题
@@ -1490,6 +1477,7 @@ All notable changes to this project will be documented in this file.
 - 任务详细描述取消文件上传
 - 下载、查看任务文件权限改为所有项目成员
 - 去掉刷新提示及前端报错
+- 单条消息最长2000个字符，超过自动分割发送，总最长20000
 
 ## [0.7.94]
 

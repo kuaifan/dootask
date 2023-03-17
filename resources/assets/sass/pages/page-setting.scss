@@ -169,11 +169,17 @@
             }
         }
         .setting-footer {
+            display: flex;
+            align-items: center;
             > button {
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 height: 34px;
                 line-height: 32px;
                 min-width: 94px;
                 > span {
+                    margin-left: 6px;
                     max-width: 100%;
                     overflow: hidden;
                     text-overflow: ellipsis;
@@ -417,13 +423,10 @@
         }
         .setting-item {
             .setting-footer {
-                display: flex;
-                align-items: center;
-                justify-content: center;
                 > button {
                     flex: 1;
-                    height: 38px;
-                    line-height: 36px;
+                    height: 40px;
+                    line-height: 38px;
                 }
             }
         }
