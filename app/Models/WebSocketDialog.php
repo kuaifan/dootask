@@ -258,8 +258,13 @@ class WebSocketDialog extends AbstractModel
                 /** @var WebSocketDialogUser $item */
                 foreach ($list as $item) {
                     if ($checkDelete) {
-                        if ($type === 'remove' && !in_array(User::userid(), [$this->owner_id, $item->inviter])) {
-                            throw new ApiException('只有群主或邀请人可以移出成员');
+                        if ($type === 'remove') {
+                            // 移出时：如果是全员群仅允许管理员操作，其他群仅群主或邀请人可以操作
+                            if ($this->group_type === 'all') {
+                                User::auth("admin");
+                            } elseif (!in_array(User::userid(), [$this->owner_id, $item->inviter])) {
+                                throw new ApiException('只有群主或邀请人可以移出成员');
+                            }
                         }
                         if ($item->userid == $this->owner_id) {
                             throw new ApiException('群主不可' . $typeDesc);

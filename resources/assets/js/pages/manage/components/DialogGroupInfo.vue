@@ -21,9 +21,7 @@
                 <li v-for="(item, index) in userList" :key="index" @click="openUser(item.userid)">
                     <UserAvatar :userid="item.userid" :size="32" showName tooltipDisabled/>
                     <div v-if="item.userid === dialogData.owner_id" class="user-tag">{{ $L("群主") }}</div>
-                    <div v-else-if="dialogData.owner_id == userId || item.inviter == userId" class="user-exit" @click.stop="onExit(item)">
-                        <Icon type="md-exit"/>
-                    </div>
+                    <div v-else-if="operableExit(item)" class="user-exit" @click.stop="onExit(item)"><Icon type="md-exit"/></div>
                 </li>
                 <li v-if="userList.length === 0" class="no">
                     <Loading v-if="loadIng > 0"/>
@@ -32,7 +30,7 @@
             </ul>
         </div>
 
-        <div v-if="dialogData.group_type !== 'all'" class="group-info-button">
+        <div v-if="operableAdd" class="group-info-button">
             <Button v-if="dialogData.owner_id == userId || dialogData.owner_id == 0" @click="openAdd" type="primary" icon="md-add">{{ $L("添加成员") }}</Button>
         </div>
 
@@ -88,7 +86,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs', 'cacheUserBasic']),
+        ...mapState(['cacheDialogs', 'cacheUserBasic', 'userIsAdmin']),
 
         dialogData() {
             return this.cacheDialogs.find(({id}) => id == this.dialogId) || {};
@@ -183,6 +181,14 @@ export default {
             });
         },
 
+        operableAdd() {
+            const {owner_id, group_type} = this.dialogData
+            if (group_type == 'all') {
+                return this.userIsAdmin
+            }
+            return [0, this.userId].includes(owner_id)
+        },
+
         openAdd() {
             this.addData = {
                 dialog_id: this.dialogId,
@@ -209,10 +215,18 @@ export default {
             });
         },
 
+        operableExit(item) {
+            const {owner_id, group_type} = this.dialogData
+            if (group_type == 'all') {
+                return this.userIsAdmin
+            }
+            return owner_id == this.userId || item.inviter == this.userId
+        },
+
         onExit(item) {
             let content = "你确定要退出群组吗？"
             let userids = [];
-            if ($A.isJson(item)) {
+            if ($A.isJson(item) && item.userid != this.userId) {
                 content = `你确定要将【${item.nickname}】移出群组吗？`
                 userids = [item.userid];
             }
