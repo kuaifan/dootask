@@ -14,6 +14,7 @@
                 ref="input"
                 v-model="content"
                 :disabled="isLoad"
+                :parser="parser"
                 enterkeyhint="done"
                 @on-keydown="onKeydown"
                 @on-blur="onBlur"/>
@@ -54,6 +55,9 @@ export default {
         disabled: {
             type: Boolean,
             default: false
+        },
+        parser: {
+            type: Function
         },
     },
 

@@ -255,6 +255,10 @@ class FileController extends AbstractController
         } elseif (mb_strlen($name) > 32) {
             return Base::retError('文件名称最多只能设置32个字');
         }
+        $tmpName = preg_replace("/[\\\\\/:*?\"<>|]/", '', $name);
+        if ($tmpName != $name) {
+            return Base::retError("文件名称不能包含这些字符：\/:*?\"<>|");
+        }
         //
         if ($id > 0) {
             // 修改

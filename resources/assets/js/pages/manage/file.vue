@@ -132,6 +132,7 @@
                                             v-model="item.newname"
                                             size="small"
                                             :disabled="!!item._load"
+                                            :parser="onParser"
                                             @on-blur="onBlur(item)"
                                             @on-keyup="onKeyup($event, item)"/>
                                         <div v-if="item._load" class="file-load"><Loading/></div>
@@ -552,6 +553,7 @@ export default {
                                 value: row.newname,
                                 autofocus: true,
                                 disabled: !!row._load,
+                                parser: this.onParser
                             },
                             style: {
                                 width: 'auto'
@@ -590,6 +592,7 @@ export default {
                                 value: row.name,
                                 autoEdit: !!row._edit,
                                 clickOutSide: false,
+                                parser: this.onParser
                             },
                             on: {
                                 'on-edit-change': (b) => {
@@ -1402,6 +1405,10 @@ export default {
             })
         },
 
+        onParser(val) {
+            return val.replace(/[\\\/:*?\"<>|]/g, '')
+        },
+
         onBlur(item) {
             if (this.fileLists.find(({id, _edit}) => id == item.id && !_edit)) {
                 return;
@@ -1450,6 +1457,7 @@ export default {
                     name: item.newname,
                     type: item.type,
                 },
+                spinner: 2000
             }).then(({data, msg}) => {
                 $A.messageSuccess(msg)
                 this.setLoad(item.id, false)
