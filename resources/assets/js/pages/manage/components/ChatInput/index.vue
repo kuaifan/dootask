@@ -425,10 +425,8 @@ export default {
         },
 
         // Watch disabled change
-        disabled(newVal) {
-            if (this.quill) {
-                this.quill.enable(!newVal)
-            }
+        disabled(val) {
+            this.quill?.enable(!val)
         },
 
         // Reset lists
@@ -448,6 +446,13 @@ export default {
         },
 
         showEmoji(val) {
+            if (this.emojiBottom) {
+                if (val) {
+                    this.quill.enable(false)
+                } else if (!this.disabled) {
+                    this.quill.enable(true)
+                }
+            }
             if (val) {
                 let text = this.value.replace(/&nbsp;/g," ")
                 text = text.replace(/<[^>]+>/g, "")
@@ -626,18 +631,13 @@ export default {
 
             // Instance
             this.quill = new Quill(this.$refs.editor, this._options)
-            this.quill.enable(false)
+            this.quill.enable(!this.disabled)
 
             // Set editor content
             if (this.value) {
                 this.setContent(this.value)
             } else {
                 this.$emit('input', this.getInputCache())
-            }
-
-            // Disabled editor
-            if (!this.disabled) {
-                this.quill.enable(true)
             }
 
             // Mark model as touched if editor lost focus
