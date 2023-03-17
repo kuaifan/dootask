@@ -2814,7 +2814,7 @@ export default {
                                             // 新增回复数量
                                             dispatch("increaseMsgReplyNum", data);
                                             //
-                                            if (mode === "chat") {
+                                            if (mode === "chat" || $A.isSubElectron) {
                                                 return;
                                             }
                                             if (data.userid !== state.userId) {
