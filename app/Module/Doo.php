@@ -44,6 +44,7 @@ class Doo
                 char* translate(char* val, char* val);
                 char* md5s(char* text, char* password);
                 char* macs();
+                char* hostID();
             EOF, "/usr/lib/doo/doo.so");
         $token = $token ?: Base::headerOrInput('token');
         $language = $language ?: Base::headerOrInput('language');
@@ -167,7 +168,7 @@ class Doo
     public static function userExpired(): bool
     {
         $expiredAt = self::userExpiredAt();
-        return $expiredAt != 'forever' && Carbon::parse($expiredAt)->isBefore(Carbon::now());
+        return $expiredAt && Carbon::parse($expiredAt)->isBefore(Carbon::now());
     }
 
     /**
@@ -176,7 +177,8 @@ class Doo
      */
     public static function userExpiredAt(): string
     {
-        return self::string(self::doo()->userExpiredAt());
+        $expiredAt = self::string(self::doo()->userExpiredAt());
+        return $expiredAt === 'forever' ? '' : $expiredAt;
     }
 
     /**
@@ -233,7 +235,7 @@ class Doo
      * @param int $days 有效时间（天）
      * @return string
      */
-    public static function tokenEncode($userid, $email, $encrypt, int $days = 7): string
+    public static function tokenEncode($userid, $email, $encrypt, int $days = 15): string
     {
         return self::string(self::doo()->tokenEncode($userid, $email, $encrypt, $days));
     }

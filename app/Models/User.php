@@ -415,7 +415,7 @@ class User extends AbstractModel
             }
         }
         if ($refresh) {
-            $days = $userinfo->bot ? 0 : max(1, intval(Base::settingFind('system', 'token_valid_days', 7)));
+            $days = $userinfo->bot ? 0 : max(1, intval(Base::settingFind('system', 'token_valid_days', 15)));
             $token = Doo::tokenEncode($userinfo->userid, $userinfo->email, $userinfo->encrypt, $days);
         } else {
             $token = Doo::userToken();

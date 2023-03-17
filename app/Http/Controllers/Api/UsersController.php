@@ -299,7 +299,16 @@ class UsersController extends AbstractController
     public function info()
     {
         $user = User::auth();
-        User::generateToken($user, in_array(Base::platform(), ['ios', 'android']));
+        //
+        $refreshToken = false;
+        if (in_array(Base::platform(), ['ios', 'android'])) {
+            // 移动端token还剩7天到期时获取新的token
+            $expiredAt = Doo::userExpiredAt();
+            if ($expiredAt && Carbon::parse($expiredAt)->isBefore(Carbon::now()->addDays(7))) {
+                $refreshToken = true;
+            }
+        }
+        User::generateToken($user, $refreshToken);
         //
         $data = $user->toArray();
         $data['nickname_original'] = $user->getRawOriginal('nickname');
