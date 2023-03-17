@@ -126,7 +126,10 @@
                                     </li>
                                 </ul>
                             </li>
-                            <li class="loaded">{{$L('共' + contactsFilter.length + '位联系人')}}</li>
+                            <li class="loaded">
+                                <template v-if="contactsKey">{{$L('搜索到' + contactsFilter.length + '位联系人')}}</template>
+                                <template v-else>{{$L('共' + contactsTotal + '位联系人')}}</template>
+                            </li>
                         </template>
                     </ul>
                     <div class="operate-position" :style="operateStyles">
@@ -137,7 +140,7 @@
                             @on-clickoutside="operateVisible = false"
                             transfer>
                             <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
-                            <DropdownMenu slot="list">
+                            <DropdownMenu v-slot="list">
                                 <DropdownItem @click.native="handleTopClick">
                                     {{ $L(operateItem.top_at ? '取消置顶' : '置顶') }}
                                 </DropdownItem>
@@ -208,6 +211,7 @@ export default {
             contactsKey: '',
             contactsLoad: 0,
             contactsData: null,
+            contactsTotal: 0,
             contactsCurrentPage: 1,
             contactsHasMorePages: false,
             contactsLastTime: 0,
@@ -532,11 +536,7 @@ export default {
             switch (res.directionreal) {
                 case 'up':
                     if (res.scrollE < 10) {
-                        if (this.tabActive === 'contacts'
-                            && this.contactsLoad == 0
-                            && this.contactsHasMorePages) {
-                            this.getContactsList(this.contactsCurrentPage + 1);
-                        }
+                        this.getContactsNextPage()
                     }
                     break;
             }
@@ -704,12 +704,11 @@ export default {
 
         getContactsList(page) {
             this.contactsLoad++;
+            const key = this.contactsKey
             this.$store.dispatch("call", {
                 url: 'users/search',
                 data: {
-                    keys: {
-                        key: this.contactsKey
-                    },
+                    keys: {key},
                     sorts: {
                         az: 'asc'
                     },
@@ -717,6 +716,9 @@ export default {
                     pagesize: 50
                 },
             }).then(({data}) => {
+                if (key == '') {
+                    this.contactsTotal = data.total;
+                }
                 if (this.contactsData === null) {
                     this.contactsData = [];
                 }
@@ -727,12 +729,26 @@ export default {
                 });
                 this.contactsCurrentPage = data.current_page;
                 this.contactsHasMorePages = data.current_page < data.last_page;
+                this.$nextTick(this.getContactsNextPage);
             }).catch(() => {
+                if (key == '') {
+                    this.contactsTotal = 0;
+                }
                 this.contactsHasMorePages = false;
             }).finally(_ => {
                 this.contactsLoad--;
                 this.contactsLastTime = $A.Time()
             });
+        },
+
+        getContactsNextPage() {
+            const {scrollE} = this.$refs.list.scrollInfo();
+            if (scrollE < 10
+                && this.tabActive === 'contacts'
+                && this.contactsLoad === 0
+                && this.contactsHasMorePages) {
+                this.getContactsList(this.contactsCurrentPage + 1);
+            }
         },
 
         updateContactsList(timeout) {
