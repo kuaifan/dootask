@@ -18,7 +18,7 @@
                     </div>
 
                     <div class="dialog-block">
-                        <div class="dialog-avatar">
+                        <div class="dialog-avatar" @click="onViewAvatar">
                             <template v-if="dialogData.type=='group'">
                                 <EAvatar v-if="dialogData.avatar" class="img-avatar" :src="dialogData.avatar" :size="42"></EAvatar>
                                 <i v-else-if="dialogData.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
@@ -2226,8 +2226,7 @@ export default {
                     if (target.classList.contains('browse')) {
                         this.onViewPicture(target.currentSrc);
                     } else {
-                        this.$store.state.previewImageIndex = 0;
-                        this.$store.state.previewImageList = $A.getTextImagesInfo(target.outerHTML);
+                        this.$store.dispatch("previewImage", $A.getTextImagesInfo(target.outerHTML))
                     }
                     break;
 
@@ -2310,11 +2309,9 @@ export default {
             //
             const index = list.findIndex(({src}) => src === currentUrl);
             if (index > -1) {
-                this.$store.state.previewImageIndex = index;
-                this.$store.state.previewImageList = list;
+                this.$store.dispatch("previewImage", {index, list})
             } else {
-                this.$store.state.previewImageIndex = 0;
-                this.$store.state.previewImageList = [currentUrl];
+                this.$store.dispatch("previewImage", currentUrl)
             }
         },
 
@@ -2628,6 +2625,18 @@ export default {
                 img.src = url;
             })
         },
+
+        onViewAvatar(e) {
+            let src = null
+            if (e.target.tagName === "IMG") {
+                src = e.target.src
+            } else {
+                src = $A(e.target).find("img").attr("src")
+            }
+            if (src) {
+                this.$store.dispatch("previewImage", src)
+            }
+        }
     }
 }
 </script>

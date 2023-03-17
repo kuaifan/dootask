@@ -46,7 +46,7 @@
         </div>
         <Modal :title="$L('浏览图片空间')" v-model="browseVisible" class="img-upload-modal" width="710">
             <div class="browse-load" v-if="isLoading">{{$L('加载中...')}}</div>
-            <div class="browse-list" :class="httpType==='input'?'browse-list-disabled':''" ref="browselistbox">
+            <div class="browse-list" v-else :class="httpType==='input'?'browse-list-disabled':''" ref="browselistbox">
                 <div v-if="browseList.length <= 0">{{$L('无内容')}}</div>
                 <div v-else class="browse-item" v-for="item in browseList" @click="browseItem(item)">
                     <Icon v-if="item.active" class="browse-icon" type="ios-checkmark-circle"></Icon>
@@ -217,8 +217,9 @@
             },
             handleView (item) {
                 //查看
-                this.visible = true;
-                this.imgVisible = item.url;
+                this.$store.dispatch("previewImage", item.url)
+                // this.visible = true;
+                // this.imgVisible = item.url;
             },
             handleRemove (item) {
                 //删除

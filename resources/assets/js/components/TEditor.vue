@@ -333,8 +333,7 @@
                                 if (imgElm && imgElm.nodeName === "IMG") {
                                     index = array.findIndex(item => item.src === imgElm.getAttribute("src"));
                                 }
-                                this.$store.state.previewImageIndex = index;
-                                this.$store.state.previewImageList = array;
+                                this.$store.dispatch("previewImage", {index, list: array})
                             }
                         });
                         editor.ui.registry.addButton('uploadFiles', {

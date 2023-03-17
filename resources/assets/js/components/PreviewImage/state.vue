@@ -23,8 +23,7 @@ export default {
     watch: {
         show(v) {
             if (v) {
-                this.$store.state.previewImageIndex = Math.max(this.$store.state.previewImageIndex, 0)
-                this.$store.state.previewImageIndex = Math.min(this.$store.state.previewImageIndex, this.$store.state.previewImageList.length - 1)
+                this.$store.state.previewImageIndex = Math.min(Math.max(this.$store.state.previewImageIndex, 0), this.$store.state.previewImageList.length - 1)
             } else {
                 this.$store.state.previewImageIndex = 0;
                 this.$store.state.previewImageList = [];
@@ -33,9 +32,8 @@ export default {
         previewImageList(l) {
             if (l.length > 0) {
                 if ($A.isEEUiApp) {
-                    let position = Math.max(this.$store.state.previewImageIndex, 0)
-                    position = Math.min(position, this.$store.state.previewImageList.length - 1)
-                    let paths = l.map(item => {
+                    const position = Math.min(Math.max(this.$store.state.previewImageIndex, 0), this.$store.state.previewImageList.length - 1)
+                    const paths = l.map(item => {
                         if ($A.isJson(item)) {
                             return $A.rightDelete(item.src, "_thumb.jpg");
                         }

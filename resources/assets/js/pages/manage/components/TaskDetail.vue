@@ -1454,21 +1454,23 @@ export default {
                 const list = this.fileList.filter(item => ['jpg', 'jpeg', 'gif', 'png'].includes(item.ext))
                 const index = list.findIndex(item => item.id === file.id);
                 if (index > -1) {
-                    this.$store.state.previewImageIndex = index;
-                    this.$store.state.previewImageList = list.map(item => {
-                        return {
-                            src: item.path,
-                            width: item.width,
-                            height: item.height,
-                        }
-                    });
+                    this.$store.dispatch("previewImage", {
+                        index, list: list.map(item => {
+                            return {
+                                src: item.path,
+                                width: item.width,
+                                height: item.height,
+                            }
+                        })
+                    })
                 } else {
-                    this.$store.state.previewImageIndex = 0;
-                    this.$store.state.previewImageList = [{
-                        src: file.path,
-                        width: file.width,
-                        height: file.height,
-                    }];
+                    this.$store.dispatch("previewImage", {
+                        index: 0, list: [{
+                            src: file.path,
+                            width: file.width,
+                            height: file.height,
+                        }]
+                    })
                 }
                 return
             }

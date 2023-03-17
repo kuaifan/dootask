@@ -2677,6 +2677,19 @@ export default {
         }
     },
 
+    /**
+     * 预览图片
+     * @param state
+     * @param data
+     */
+    previewImage({state}, data) {
+        if (!$A.isJson(data)) {
+            data = {index:0, list: [data]}
+        }
+        state.previewImageIndex = data.index;
+        state.previewImageList = data.list;
+    },
+
     /** *****************************************************************************************/
     /** *********************************** websocket *******************************************/
     /** *****************************************************************************************/

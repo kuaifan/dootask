@@ -33,8 +33,7 @@ export default {
             }
             data = $A.jsonParse(data);
             if (data.source === 'fileView' && data.action === 'picture') {
-                this.$store.state.previewImageIndex = data.params.index;
-                this.$store.state.previewImageList = data.params.array;
+                this.$store.dispatch("previewImage", {index: data.params.index, list: data.params.array})
             }
             this.$emit("on-message", data)
         },
