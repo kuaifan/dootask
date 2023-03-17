@@ -365,6 +365,46 @@
         padding: 8px 8px 0;
     }
 
+    .chat-emoji-nav {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        overflow: auto;
+        background: #f8f8f8;
+        > div {
+            position: relative;
+            width: 46px;
+            height: 40px;
+            margin: auto;
+            color: rgba($primary-title-color, 0.9);
+            &.active {
+                color: $primary-color;
+                &:before {
+                    content: "";
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: #ffffff;
+                    border-top-left-radius: 4px;
+                    border-top-right-radius: 4px;
+                    z-index: 1;
+                }
+            }
+            > svg {
+                fill: currentColor;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                width: 18px;
+                height: 18px;
+                transform: translate(-50%, -50%);
+                z-index: 2;
+            }
+        }
+    }
+
     .chat-emoji-box {
         display: flex;
         flex-direction: column;
