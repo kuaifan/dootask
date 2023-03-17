@@ -605,7 +605,7 @@ export default {
                                 },
                                 'on-update': (val, cb) => {
                                     const file = this.fileLists.find(({id}) => id == row.id);
-                                    if (file) {
+                                    if (file && file._edit === true) {
                                         file.newname = val
                                         this.onEnter(file);
                                     }
