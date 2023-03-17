@@ -4,7 +4,7 @@
         :mask="false"
         :mask-closable="false"
         :footer-hide="true"
-        :transition-names="[transition, '']"
+        :transition-names="['mobile-dialog', '']"
         :beforeClose="onBeforeClose"
         class-name="dialog-modal"
         fullscreen>
@@ -54,7 +54,6 @@ export default {
     data() {
         return {
             timer: null,
-            transition: $A.isIos() ? 'mobile-dialog' : ''
         }
     },
 

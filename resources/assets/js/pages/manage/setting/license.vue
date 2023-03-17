@@ -2,7 +2,7 @@
     <div class="setting-item submit">
         <Form ref="formData" :model="formData" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
             <FormItem label="License" prop="license">
-                <Input v-model="formData.license" type="textarea" :autosize="{minRows: 3,maxRows: 14}" :placeholder="$L('请输入License...')" />
+                <Input v-model="formData.license" type="textarea" :autosize="{minRows: 2,maxRows: 5}" :placeholder="$L('请输入License...')" />
             </FormItem>
             <FormItem :label="$L('详细信息')">
                 <div class="license-box">
