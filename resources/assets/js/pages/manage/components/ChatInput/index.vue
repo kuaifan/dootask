@@ -583,6 +583,9 @@ export default {
                                 const botHtml = data.bot ? `<div class="taskfont mention-item-bot">&#xe68c;</div>` : ''
                                 return `<div class="mention-item-img${data.online ? ' online' : ''}"><img src="${data.avatar}"/><em></em></div>${botHtml}<div class="mention-item-name">${data.value}</div>`;
                             }
+                            if (data.tip) {
+                                return `<div class="mention-item-name" title="${data.value}">${data.value}</div><div class="mention-item-tip">${data.tip}</div>`;
+                            }
                             return `<div class="mention-item-name" title="${data.value}">${data.value}</div>`;
                         },
                         renderLoading: () => {
@@ -1181,11 +1184,12 @@ export default {
                             list = list.map(item => {
                                 return {
                                     id: item.id,
-                                    value: item.name
+                                    value: item.name,
+                                    tip: item.complete_at ? this.$L('已完成') : null,
                                 }
-                            })
+                            }).splice(0, 100)
                             this.taskList.push({
-                                label: [{id: 0, value: this.$L('项目未完成任务'), disabled: true}],
+                                label: [{id: 0, value: this.$L('项目任务'), disabled: true}],
                                 list,
                             })
                         }
@@ -1194,7 +1198,7 @@ export default {
                         if (dataA.length > 0) {
                             dataA = dataA.sort((a, b) => {
                                 return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
-                            })
+                            }).splice(0, 100)
                             this.taskList.push({
                                 label: [{id: 0, value: this.$L('我的待完成任务'), disabled: true}],
                                 list: dataA.map(item => {
@@ -1210,7 +1214,7 @@ export default {
                         if (dataB.length > 0) {
                             dataB = dataB.sort((a, b) => {
                                 return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
-                            })
+                            }).splice(0, 100)
                             this.taskList.push({
                                 label: [{id: 0, value: this.$L('我协助的任务'), disabled: true}],
                                 list: dataB.map(item => {
@@ -1234,10 +1238,11 @@ export default {
                                 return task.project_id == projectId
                                     && task.parent_id === 0
                                     && !task.archived_at
-                                    && !task.complete_at
+                            }).sort((a, b) => {
+                                return $A.Date(b.complete_at || "2099-12-31 23:59:59") - $A.Date(a.complete_at || "2099-12-31 23:59:59")
                             })
                             if (tasks.length > 0) {
-                                taskCallback(tasks);
+                                taskCallback(tasks)
                             } else {
                                 taskCallback([])
                             }

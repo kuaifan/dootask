@@ -691,6 +691,7 @@
         }
 
         .mention-item-name {
+            flex: 1;
             padding: 0 8px;
             font-size: 14px;
             overflow: hidden;
@@ -699,7 +700,7 @@
         }
 
         .mention-item-tip {
-            flex: 1;
+            flex-shrink: 0;
             text-align: right;
             color: #8f8f8e;
             font-size: 12px;
