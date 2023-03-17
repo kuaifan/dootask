@@ -464,9 +464,8 @@ class UsersController extends AbstractController
         $user = User::auth();
         //
         $columns = User::$basicField;
-        if ($user->isAdmin()) {
-            $columns[] = 'identity';
-        }
+        $columns[] = 'created_at';
+        $columns[] = 'identity';
         $builder = User::select($columns);
         //
         $keys = Request::input('keys');
@@ -524,7 +523,7 @@ class UsersController extends AbstractController
             $list = $builder->orderBy('userid')->take(Base::getPaginate(100, 10, 'take'))->get();
         }
         //
-        $list->transform(function (User $userInfo) use ($state) {
+        $list->transform(function (User $userInfo) use ($user, $state) {
             $tags = [];
             $dep = $userInfo->getDepartmentName();
             $dep = array_filter(explode(",", $dep), function($item) {
@@ -533,11 +532,16 @@ class UsersController extends AbstractController
             if ($dep) {
                 $tags[] = preg_replace("/\(M\)$/", "", trim($dep[0])) . Doo::translate("负责人");
             }
-            if ($userInfo->isAdmin()) {
-                $tags[] = Doo::translate("系统管理员");
-            }
-            if ($userInfo->isTemp()) {
-                $tags[] = Doo::translate("临时帐号");
+            if ($user->isAdmin()) {
+                if ($userInfo->isAdmin()) {
+                    $tags[] = Doo::translate("系统管理员");
+                }
+                if ($userInfo->isTemp()) {
+                    $tags[] = Doo::translate("临时帐号");
+                }
+                if ($userInfo->userid > 3 && Carbon::parse($userInfo->created_at)->isAfter(Carbon::now()->subDays(30))) {
+                    $tags[] = Doo::translate("新帐号");
+                }
             }
             $userInfo->tags = $tags;
             //
