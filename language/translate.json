@@ -15013,5 +15013,49 @@
         "de": "Die regierungsnummer ist nach dem verfall begrenzt",
         "fr": "Limiter l’enregistrement des comptes après l’expiration",
         "id": "Batasi jumlah akun saat jatuh tempo"
+    },
+    {
+        "key": "文件名称不能包含这些字符：(*)",
+        "zh": "",
+        "zh-CHT": "文件名稱不能包含這些字符：(*)",
+        "en": "The file name cannot contain these characters: (*)",
+        "ko": "파일 이름에이 문자를 포함할 수 없습니다:*)",
+        "ja": "ファイル名にこれらの文字を含めることはできません:(*)",
+        "de": "Dateiname kann diese zeichen nicht enthalten :(*)",
+        "fr": "Le nom du fichier ne doit pas contenir ces caractères :(*)",
+        "id": "Nama berkas tidak boleh berisi karakter ini :(*)"
+    },
+    {
+        "key": "新帐号",
+        "zh": "",
+        "zh-CHT": "新帳號",
+        "en": "New account",
+        "ko": "새 계정",
+        "ja": "新しいアカウントです",
+        "de": "Ein neues konto.",
+        "fr": "Créer un compte",
+        "id": "Akun baru"
+    },
+    {
+        "key": "项目任务",
+        "zh": "",
+        "zh-CHT": "項目任務",
+        "en": "Project task",
+        "ko": "프로젝트 작업",
+        "ja": "プロジェクトタスクです",
+        "de": "Projektjob, sir.",
+        "fr": "Tâches du projet",
+        "id": "Tugas proyek"
+    },
+    {
+        "key": "搜索到(*)位联系人",
+        "zh": "",
+        "zh-CHT": "搜索到(*)位聯繫人",
+        "en": "The contact with (*) bits is found",
+        "ko": "주소록 (*)을 검색했습니다",
+        "ja": "(*)桁の連絡先を検索します。",
+        "de": "Suche nach (*) -kontakten",
+        "fr": "Recherche de (*) contact",
+        "id": "Cari (*) kontak bit"
     }
 ]
