@@ -16,6 +16,7 @@
                 </div>
                 <div v-if="tabActive==='dialog' && !dialogSearchKey" class="messenger-nav">
                     <EDropdown
+                        ref="navMenu"
                         trigger="click"
                         placement="bottom-start"
                         class="nav-menu"
@@ -48,6 +49,7 @@
                     ref="list"
                     class="messenger-list"
                     :class="listClassName"
+                    @touchstart.native="listTouch"
                     @on-scroll="listScroll"
                     static>
                     <ul
@@ -534,6 +536,12 @@ export default {
     },
 
     methods: {
+        listTouch() {
+            if (this.$refs.navMenu.visible) {
+                this.$refs.navMenu.hide()
+            }
+        },
+
         listScroll(res) {
             if (res.scrollE < 10) {
                 this.getContactsNextPage()

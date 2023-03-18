@@ -2,12 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.25.3]
+## [0.25.7]
 
 ### Bug Fixes
 
 - 桌面端开启子窗口消息数倍数增长的问题
 - 列表模式下重命名文件名称导致其他文件重命名的情况
+- 操作菜单导致的页面错位
 
 ### Performance
 
