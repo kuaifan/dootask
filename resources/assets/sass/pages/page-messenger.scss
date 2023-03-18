@@ -448,6 +448,9 @@
                                             overflow: hidden;
                                             text-overflow: ellipsis;
                                             color: $primary-desc-color;
+                                            > span + span:before {
+                                                content: "\002c\0020";
+                                            }
                                         }
                                     }
                                     .loading {

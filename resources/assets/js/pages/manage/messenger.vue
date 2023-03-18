@@ -120,7 +120,9 @@
                                         <div class="avatar"><UserAvatar :userid="user.userid" :size="30"/></div>
                                         <div class="nickname">
                                             <em>{{user.nickname}}</em>
-                                            <div v-if="user.tags" class="tags">{{user.tags.join(', ')}}</div>
+                                            <div v-if="user.tags" class="tags">
+                                                <span v-for="tag in user.tags" :style="tagField(tag,'style')">{{tagField(tag, 'label')}}</span>
+                                            </div>
                                         </div>
                                         <div v-if="user.loading" class="loading"><Loading/></div>
                                     </li>
@@ -533,12 +535,8 @@ export default {
 
     methods: {
         listScroll(res) {
-            switch (res.directionreal) {
-                case 'up':
-                    if (res.scrollE < 10) {
-                        this.getContactsNextPage()
-                    }
-                    break;
+            if (res.scrollE < 10) {
+                this.getContactsNextPage()
             }
             this.operateVisible = false;
         },
@@ -620,6 +618,19 @@ export default {
             }).finally(_ => {
                 this.$set(user, 'loading', false);
             });
+        },
+
+        tagField(item, field) {
+            if (!$A.isJson(item)) {
+                item = {label: item}
+            }
+            switch (field) {
+                case 'style':
+                    return item.style || null
+                case 'label':
+                    return item.label
+            }
+            return null
         },
 
         filterDialog(dialog) {

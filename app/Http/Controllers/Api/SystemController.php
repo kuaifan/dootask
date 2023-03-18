@@ -544,6 +544,7 @@ class SystemController extends AbstractController
             'license' => Doo::licenseContent(),
             'info' => Doo::license(),
             'macs' => Doo::macs(),
+            'doo_sn' => Doo::dooSN(),
             'user_count' => User::whereBot(0)->whereNull('disable_at')->count(),
         ]);
     }

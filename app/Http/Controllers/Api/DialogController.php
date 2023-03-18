@@ -114,7 +114,11 @@ class DialogController extends AbstractController
         if (count($list) < 20 && Base::judgeClientVersion("0.21.60")) {
             $users = User::select(User::$basicField)
                 ->where(function ($query) use ($key) {
-                    $query->where("email", "like", "%{$key}%")->orWhere("nickname", "like", "%{$key}%");
+                    if (str_contains($key, "@")) {
+                        $query->where("email", "like", "%{$key}%");
+                    } else {
+                        $query->where("nickname", "like", "%{$key}%")->orWhere("pinyin", "like", "%{$key}%");
+                    }
                 })->orderBy('userid')
                 ->take(20 - count($list))
                 ->get();

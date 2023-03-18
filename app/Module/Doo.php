@@ -44,7 +44,7 @@ class Doo
                 char* translate(char* val, char* val);
                 char* md5s(char* text, char* password);
                 char* macs();
-                char* hostID();
+                char* dooSN();
             EOF, "/usr/lib/doo/doo.so");
         $token = $token ?: Base::headerOrInput('token');
         $language = $language ?: Base::headerOrInput('language');
@@ -114,6 +114,9 @@ class Doo
      */
     public static function licenseContent(): string
     {
+        if (env("SYSTEM_LICENSE") == 'hidden') {
+            return '';
+        }
         $paths = [
             config_path("LICENSE"),
             config_path("license"),
@@ -286,5 +289,14 @@ class Doo
             }
         }
         return $array;
+    }
+
+    /**
+     * 获取当前SN
+     * @return string
+     */
+    public static function dooSN(): string
+    {
+        return self::string(self::doo()->dooSN());
     }
 }

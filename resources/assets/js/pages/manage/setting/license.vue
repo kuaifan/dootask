@@ -10,6 +10,10 @@
                         <li>
                             <em>SN:</em>
                             <span>{{formData.info.sn}}</span>
+                            <ETooltip max-width="auto" placement="right">
+                                <div slot="content">{{$L('当前环境')}}: {{formData.doo_sn}}</div>
+                                <Icon class="information" type="ios-information-circle-outline" />
+                            </ETooltip>
                         </li>
                         <li>
                             <em>IP:</em>
@@ -98,6 +102,7 @@ export default {
                 license: '',
                 info: {},
                 macs: [],
+                doo_sn: '',
                 user_count: 0
             },
         }
