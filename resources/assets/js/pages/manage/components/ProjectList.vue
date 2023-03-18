@@ -52,7 +52,7 @@
                 </div>
             </li>
         </ul>
-        <div class="operate-position" :style="operateStyles">
+        <div class="operate-position" :style="operateStyles" v-show="operateVisible">
             <Dropdown
                 trigger="custom"
                 :placement="windowLarge ? 'bottom' : 'top'"

@@ -73,7 +73,7 @@
                         class="dialog-menu"
                         @command="onDialogMenu">
                         <i class="taskfont dialog-menu-icon">&#xe6e9;</i>
-                        <EDropdownMenu v-slot="dropdown">
+                        <EDropdownMenu slot="dropdown">
                             <EDropdownItem command="searchMsg">
                                 <div>{{$L('搜索消息')}}</div>
                             </EDropdownItem>
@@ -225,7 +225,7 @@
         </div>
 
         <!--长按、右键-->
-        <div class="operate-position" :style="operateStyles">
+        <div class="operate-position" :style="operateStyles" v-show="operateVisible">
             <Dropdown
                 trigger="custom"
                 placement="top"

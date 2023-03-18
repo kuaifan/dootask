@@ -21,7 +21,7 @@
                         class="nav-menu"
                         @command="onActive">
                         <div class="nav-icon"><i class="taskfont">&#xe634;</i></div>
-                        <EDropdownMenu v-slot="dropdown" class="messenger-nav-menu">
+                        <EDropdownMenu slot="dropdown" class="messenger-nav-menu">
                             <EDropdownItem v-for="(item, key) in dialogMenus" :key="key" :command="item.type">
                                 <div class="messenger-nav-item" :class="{active: dialogActive==item.type}">
                                     <div class="nav-title">{{$L(item.name)}}</div>
@@ -134,7 +134,7 @@
                             </li>
                         </template>
                     </ul>
-                    <div class="operate-position" :style="operateStyles">
+                    <div class="operate-position" :style="operateStyles" v-show="operateVisible">
                         <Dropdown
                             trigger="custom"
                             :placement="windowLarge ? 'bottom' : 'top'"
@@ -142,7 +142,7 @@
                             @on-clickoutside="operateVisible = false"
                             transfer>
                             <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
-                            <DropdownMenu v-slot="list">
+                            <DropdownMenu slot="list">
                                 <DropdownItem @click.native="handleTopClick">
                                     {{ $L(operateItem.top_at ? '取消置顶' : '置顶') }}
                                 </DropdownItem>
