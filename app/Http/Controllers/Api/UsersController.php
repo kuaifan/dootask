@@ -524,6 +524,8 @@ class UsersController extends AbstractController
         }
         if (in_array($sorts['az'], ['asc', 'desc'])) {
             $builder->orderBy('az', $sorts['az']);
+        } else {
+            $builder->orderBy('bot');
         }
         //
         if (Request::exists('page')) {
