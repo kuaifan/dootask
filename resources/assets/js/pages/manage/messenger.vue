@@ -89,14 +89,20 @@
                                     <em v-if="dialog.last_at">{{$A.formatTime(dialog.last_at)}}</em>
                                 </div>
                                 <div class="dialog-text no-dark-content">
-                                    <template v-if="dialog.type=='group' && dialog.last_msg && dialog.last_msg.userid">
-                                        <div v-if="dialog.last_msg.userid == userId" class="last-self">{{$L('你')}}</div>
-                                        <UserAvatar v-else :userid="dialog.last_msg.userid" :show-name="true" :show-icon="false" tooltip-disabled/>
+                                    <template v-if="dialog.draft && dialog.id != dialogId">
+                                        <div class="last-draft">[{{$L('草稿')}}]</div>
+                                        <div class="last-text"><span>{{dialog.draft}}</span></div>
                                     </template>
-                                    <div class="last-text">
-                                        <em v-if="formatMsgEmojiDesc(dialog.last_msg)">{{formatMsgEmojiDesc(dialog.last_msg)}}</em>
-                                        <span>{{$A.getMsgSimpleDesc(dialog.last_msg)}}</span>
-                                    </div>
+                                    <template v-else>
+                                        <template v-if="dialog.type=='group' && dialog.last_msg && dialog.last_msg.userid">
+                                            <div v-if="dialog.last_msg.userid == userId" class="last-self">{{$L('你')}}</div>
+                                            <UserAvatar v-else :userid="dialog.last_msg.userid" :show-name="true" :show-icon="false" tooltip-disabled/>
+                                        </template>
+                                        <div class="last-text">
+                                            <em v-if="formatMsgEmojiDesc(dialog.last_msg)">{{formatMsgEmojiDesc(dialog.last_msg)}}</em>
+                                            <span>{{$A.getMsgSimpleDesc(dialog.last_msg)}}</span>
+                                        </div>
+                                    </template>
                                     <div v-if="dialog.silence" class="taskfont last-silence">&#xe7d7;</div>
                                 </div>
                             </div>
@@ -309,15 +315,7 @@ export default {
                 })
             }
             if (dialogActive == '' && dialogSearchKey == '') {
-                return this.cacheDialogs.filter(dialog => this.filterDialog(dialog)).sort((a, b) => {
-                    if (a.top_at || b.top_at) {
-                        return $A.Date(b.top_at) - $A.Date(a.top_at);
-                    }
-                    if (a.todo_num > 0 || b.todo_num > 0) {
-                        return b.todo_num - a.todo_num;
-                    }
-                    return $A.Date(b.last_at) - $A.Date(a.last_at);
-                });
+                return this.cacheDialogs.filter(dialog => this.filterDialog(dialog)).sort(this.dialogSort);
             }
             const list = this.cacheDialogs.filter(dialog => {
                 if (!this.filterDialog(dialog)) {
@@ -369,18 +367,7 @@ export default {
                 }
                 return true;
             })
-            return list.sort((a, b) => {
-                // 根据置顶时间排序
-                if (a.top_at || b.top_at) {
-                    return $A.Date(b.top_at) - $A.Date(a.top_at);
-                }
-                // 根据未读数排序
-                if (a.todo_num > 0 || b.todo_num > 0) {
-                    return b.todo_num - a.todo_num;
-                }
-                // 根据最后会话时间排序
-                return $A.Date(b.last_at) - $A.Date(a.last_at);
-            })
+            return list.sort(this.dialogSort)
         },
 
         contactsFilter() {
@@ -596,6 +583,23 @@ export default {
                 operate: this.operateVisible && dialog.id == this.operateItem.id,
                 completed: $A.dialogCompleted(dialog)
             }
+        },
+
+        dialogSort(a, b) {
+            // 根据置顶时间排序
+            if (a.top_at || b.top_at) {
+                return $A.Date(b.top_at) - $A.Date(a.top_at);
+            }
+            // 根据未读数排序
+            if (a.todo_num > 0 || b.todo_num > 0) {
+                return b.todo_num - a.todo_num;
+            }
+            // 根据草稿排序
+            if (a.draft || b.draft) {
+                return (b.draft ? 1 : 0) - (a.draft ? 1 : 0);
+            }
+            // 根据最后会话时间排序
+            return $A.Date(b.last_at) - $A.Date(a.last_at);
         },
 
         openDialog(dialogId) {
@@ -925,18 +929,6 @@ export default {
             const {type, group_type} = data
             return type === 'group' && group_type !== 'user'
         },
-
-        userTag({identity, department_name}) {
-            const array = []
-            const deps = department_name?.split(",").find(item => /\(M\)$/.test(item))
-            if (deps) {
-                array.push(deps.replace(/\(M\)$/, '') + ' ' + this.$L('负责人'))
-            }
-            if (identity?.includes('temp')) {
-                array.push(this.$L('临时'))
-            }
-            return array.join(', ')
-        }
     }
 }
 </script>

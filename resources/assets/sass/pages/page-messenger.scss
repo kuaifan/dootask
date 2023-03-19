@@ -247,18 +247,32 @@
                                     align-items: center;
                                     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 
+                                    .last-draft,
                                     .common-avatar,
                                     .last-self {
                                         flex-shrink: 0;
                                         padding-right: 4px;
                                         margin-right: 4px;
                                         position: relative;
+                                        overflow: hidden;
                                         &:after {
                                             content: ":";
                                             position: absolute;
                                             top: 50%;
                                             transform: translateY(-50%);
                                             right: 0;
+                                        }
+                                    }
+                                    .last-draft {
+                                        color: #ff0000;
+                                        &:after {
+                                            color: $primary-desc-color;
+                                        }
+                                    }
+                                    .common-avatar {
+                                        flex-shrink: 1;
+                                        .avatar-name {
+                                            max-width: 100%;
                                         }
                                     }
                                     .last-text {

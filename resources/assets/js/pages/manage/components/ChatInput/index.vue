@@ -435,14 +435,14 @@ export default {
             this.userCache = null;
             this.taskList = null;
             this.fileList = {};
-            this.$emit('input', this.getInputCache())
+            this.loadInputCache()
         },
         taskId() {
             this.userList = null;
             this.userCache = null;
             this.taskList = null;
             this.fileList = {};
-            this.$emit('input', this.getInputCache())
+            this.loadInputCache()
         },
 
         showEmoji(val) {
@@ -516,7 +516,7 @@ export default {
             if (this.isFocus) {
                 return
             }
-            this.$emit('input', this.getInputCache())
+            this.loadInputCache()
         },
 
         wrapperHeight(newVal, oldVal) {
@@ -637,7 +637,7 @@ export default {
             if (this.value) {
                 this.setContent(this.value)
             } else {
-                this.$emit('input', this.getInputCache())
+                this.loadInputCache()
             }
 
             // Mark model as touched if editor lost focus
@@ -806,9 +806,15 @@ export default {
             this.pasteClean = bool
         },
 
-        getInputCache() {
+        loadInputCache() {
             const item = this.dialogInputCache.find(item => item.key == this.cacheKey);
-            return item ? item.cache : '';
+            if (item) {
+                this.pasteClean = false
+                this.$emit('input', item.cache)
+                this.$nextTick(_ => this.pasteClean = true)
+            } else {
+                this.$emit('input', '')
+            }
         },
 
         onClickEditor() {

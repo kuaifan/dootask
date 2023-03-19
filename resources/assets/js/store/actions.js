@@ -26,7 +26,7 @@ export default {
             // 读取缓存
             state.cacheServerUrl = await $A.IDBString("cacheServerUrl")
             state.cacheUserBasic = await $A.IDBArray("cacheUserBasic")
-            state.cacheDialogs = (await $A.IDBArray("cacheDialogs")).map(item => Object.assign(item, {loading: false}))
+            state.cacheDialogs = (await $A.IDBArray("cacheDialogs")).map(item => Object.assign(item, {loading: false, draft: null}))
             state.cacheProjects = await $A.IDBArray("cacheProjects")
             state.cacheColumns = await $A.IDBArray("cacheColumns")
             state.cacheTasks = await $A.IDBArray("cacheTasks")
@@ -37,6 +37,11 @@ export default {
             state.fileLists = await $A.IDBArray("fileLists")
             state.userInfo = await $A.IDBJson("userInfo")
             state.callAt = await $A.IDBArray("callAt")
+
+            // 聊天草稿
+            state.dialogInputCache.some(item => {
+                dispatch("saveDialogDraft", item)
+            })
 
             // 会员信息
             if (state.userInfo.userid) {
@@ -2202,6 +2207,7 @@ export default {
                 search_msg_id = dialog_id.search_msg_id;
                 dialog_id = dialog_id.dialog_id;
             }
+            //
             requestAnimationFrame(_ => {
                 state.dialogSearchMsgId = /^\d+$/.test(search_msg_id) ? search_msg_id : 0;
                 state.dialogId = /^\d+$/.test(dialog_id) ? dialog_id : 0;
@@ -2338,6 +2344,9 @@ export default {
         if (!/^\d+$/.test(dialog_id)) {
             return
         }
+        // 保存聊天草稿
+        const item = state.dialogInputCache.find(item => item.key == dialog_id) || {key: dialog_id, cache: null};
+        dispatch("saveDialogDraft", item)
         // 关闭会话后只保留会话最后50条数据
         const retain = 50
         const msgs = state.dialogMsgs.filter(item => item.dialog_id == dialog_id)
@@ -2389,19 +2398,37 @@ export default {
     },
 
     /**
-     * 保存聊天草稿
+     * 保存输入缓存
      * @param state
-     * @param data {key, cache}
+     * @param key
+     * @param cache
      */
-    saveDialogInputCache({state}, data) {
-        const index = state.dialogInputCache.findIndex(item => item.key == data.key);
+    saveDialogInputCache({state}, {key, cache}) {
+        const index = state.dialogInputCache.findIndex(item => item.key == key);
         if (index > -1) {
-            state.dialogInputCache.splice(index, 1, data)
-        } else {
-            state.dialogInputCache.push(data)
+            if (cache) {
+                state.dialogInputCache.splice(index, 1, {key, cache})
+            } else {
+                state.dialogInputCache.splice(index, 1)
+            }
+        } else if (cache) {
+            state.dialogInputCache.push({key, cache})
         }
         //
         $A.IDBSave("dialogInputCache", state.dialogInputCache, 600);
+    },
+
+    /**
+     * 保存聊天草稿
+     * @param state
+     * @param key
+     * @param cache
+     */
+    saveDialogDraft({state}, {key, cache}) {
+        const dialogs = state.cacheDialogs.find(item => item.id == key);
+        if (dialogs) {
+            dialogs.draft = cache?.replace(/<img[^>]*>/gi, `[${$A.L('图片')}]`).replace(/<[^>]*>/g, '') || null;
+        }
     },
 
     /** *****************************************************************************************/
