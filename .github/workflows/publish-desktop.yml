@@ -26,6 +26,8 @@ jobs:
           APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
+          GH_REPOSITORY: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
           DP_KEY: ${{ secrets.DP_KEY }}
         run: ./cmd electron workflows
 

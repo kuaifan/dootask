@@ -176,9 +176,9 @@ function startBuild(data, publish, release) {
     if (publish !== true || !process.env.APPLEID || !process.env.APPLEIDPASS) {
         delete econfig.build.afterSign;
     }
-    if (publish === true && process.env.GITHUB_REPOSITORY) {
+    if (publish === true && process.env.GH_REPOSITORY) {
         // publish github package config
-        let repository = process.env.GITHUB_REPOSITORY.split("/")
+        let repository = process.env.GH_REPOSITORY.split("/")
         econfig.build.publish = {
             "provider": "github",
             "owner": repository[0],
