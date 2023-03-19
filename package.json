@@ -71,25 +71,7 @@
             "id": "com.dootask.task",
             "name": "DooTask",
             "url": "http://public/",
-            "publish": {
-                "provider": "github",
-                "owner": "kuaifan",
-                "repo": "dootask"
-            }
-        },
-        {
-            "id": "com.dootask.task",
-            "name": "DooTask",
-            "url": "http://public/",
-            "urls": [
-                "https://dootask.com/",
-                "https://www.dootask.com/",
-                "https://t.hitosea.com/"
-            ],
-            "publish": {
-                "provider": "generic",
-                "url": "https://www.dootask.com/desktop/publish"
-            }
+            "publish": "https://www.dootask.com/desktop/publish"
         }
     ]
 }

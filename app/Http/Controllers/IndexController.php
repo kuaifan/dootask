@@ -211,24 +211,28 @@ class IndexController extends InvokeController
      */
     public function desktop__publish($name = '')
     {
-        $genericVersion = Request::header('generic-version');
+        $publishVersion = Request::header('publish-version');
         $latestFile = public_path("uploads/desktop/latest");
         $latestVersion = file_exists($latestFile) ? trim(file_get_contents($latestFile)) : "0.0.1";
         if (strtolower($name) === 'latest') {
             $name = $latestVersion;
         }
         // 上传
-        if (preg_match("/^\d+\.\d+\.\d+$/", $genericVersion)) {
-            if (version_compare($genericVersion, $latestVersion) > -1) {    // 限制上传版本必须 ≥ 当前版本
-                $genericPath = "uploads/desktop/{$genericVersion}/";
+        if (preg_match("/^\d+\.\d+\.\d+$/", $publishVersion)) {
+            $publishKey = Request::header('publish-key');
+            if ($publishKey !== env('APP_KEY')) {
+                return Base::retError("key error");
+            }
+            if (version_compare($publishVersion, $latestVersion) > -1) {    // 限制上传版本必须 ≥ 当前版本
+                $publishPath = "uploads/desktop/{$publishVersion}/";
                 $res = Base::upload([
                     "file" => Request::file('file'),
                     "type" => 'desktop',
-                    "path" => $genericPath,
+                    "path" => $publishPath,
                     "fileName" => true
                 ]);
                 if (Base::isSuccess($res)) {
-                    file_put_contents($latestFile, $genericVersion);
+                    file_put_contents($latestFile, $publishVersion);
                 }
                 return $res;
             }
@@ -278,9 +282,9 @@ class IndexController extends InvokeController
         }
         // 下载
         if ($name && file_exists($latestFile)) {
-            $genericVersion = file_get_contents($latestFile);
-            if (preg_match("/^\d+\.\d+\.\d+$/", $genericVersion)) {
-                $filePath = public_path("uploads/desktop/{$genericVersion}/{$name}");
+            $publishVersion = file_get_contents($latestFile);
+            if (preg_match("/^\d+\.\d+\.\d+$/", $publishVersion)) {
+                $filePath = public_path("uploads/desktop/{$publishVersion}/{$name}");
                 if (file_exists($filePath)) {
                     return Response::download($filePath);
                 }

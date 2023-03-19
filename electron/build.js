@@ -17,7 +17,7 @@ const nativeCachePath = path.resolve(__dirname, ".native");
 const devloadCachePath = path.resolve(__dirname, ".devload");
 const packageFile = path.resolve(__dirname, "package.json");
 const packageBakFile = path.resolve(__dirname, "package-bak.json");
-const platform = ["build-mac", "build-win"];
+const platforms = ["build-mac", "build-win"];
 const comSuffix = os.type() == 'Windows_NT' ? '.cmd' : '';
 
 // 克隆 Drawio
@@ -60,7 +60,11 @@ function changeLog() {
 }
 
 // 通用发布
-function genericPublish({url, version, output}) {
+function genericPublish({url, key, version, output}) {
+    if (!/https*:\/\//i.test(url)) {
+        console.warn("publish url error: " + url)
+        return
+    }
     const filePath = path.resolve(__dirname, output)
     fs.readdir(filePath, async (err, files) => {
         if (err) {
@@ -81,7 +85,8 @@ function genericPublish({url, version, output}) {
                             maxContentLength: Infinity,
                             maxBodyLength: Infinity,
                             headers: {
-                                'Generic-Version': version,
+                                'Publish-Version': version,
+                                'Publish-Key': key,
                                 'Content-Type': 'multipart/form-data;boundary=' + formData.getBoundary(),
                             }
                         }).then(_ => {
@@ -116,6 +121,7 @@ function startBuild(data, publish, release) {
         console.log("Version: " + config.version);
         console.log("Platform: " + data.platform);
         console.log("Publish: " + (publish ? 'Yes' : 'No'));
+        console.log("Release: " + (release ? 'Yes' : 'No'));
         // drawio
         cloneDrawio(systemInfo)
     }
@@ -163,32 +169,29 @@ function startBuild(data, publish, release) {
     econfig.build.directories.output = `dist/${data.id.replace(/\./g, '-')}/${data.platform}`;
     econfig.build.artifactName = appName + "-v${version}-${os}-${arch}.${ext}";
     econfig.build.nsis.artifactName = appName + "-v${version}-${os}-${arch}.${ext}";
-    if (!process.env.APPLEID || !process.env.APPLEIDPASS || publish !== true) {
-        delete econfig.build.afterSign;
-    }
-    if (process.env.RELEASE_BODY) {
-        econfig.build.releaseInfo.releaseNotes = process.env.RELEASE_BODY
-    } else {
-        econfig.build.releaseInfo.releaseNotes = changeLog()
-    }
+    econfig.build.releaseInfo.releaseNotes = changeLog()
     if (release) {
         econfig.build.releaseInfo.releaseNotes = econfig.build.releaseInfo.releaseNotes.replace(`## [${config.version}]`, `## [${config.version}-Release]`)
     }
-    if (utils.isJson(data.publish)) {
-        econfig.build.publish = data.publish
+    if (publish !== true || !process.env.APPLEID || !process.env.APPLEIDPASS) {
+        delete econfig.build.afterSign;
     }
     fs.writeFileSync(packageFile, JSON.stringify(econfig, null, 2), 'utf8');
     // build
-    child_process.spawnSync("npm" + comSuffix, ["run", data.platform + (publish === true ? "-publish" : "")], {stdio: "inherit", cwd: "electron"});
+    child_process.spawnSync("npm" + comSuffix, ["run", data.platform], {stdio: "inherit", cwd: "electron"});
     // package.json Recovery
     fse.copySync(packageBakFile, packageFile)
-    // generic publish
-    if (publish === true && econfig.build.publish.provider === "generic") {
-        genericPublish({
-            url: econfig.build.publish.url,
-            version: config.version,
-            output: econfig.build.directories.output
-        })
+    // publish
+    if (publish === true) {
+        // generic
+        if (process.env.DP_KEY) {
+            genericPublish({
+                url: data.publish,
+                key: process.env.DP_KEY,
+                version: config.version,
+                output: econfig.build.directories.output
+            })
+        }
     }
 }
 
@@ -210,50 +213,30 @@ if (["dev"].includes(argv[2])) {
         platform: '',
         url: 'http://public/',
     }, false, false)
-} else if (platform.includes(argv[2])) {
+} else if (["workflows"].includes(argv[2])) {
     // 自动编译
-    let data = config.app.find(({id, publish}) => id === process.env.APPID && publish.provider === process.env.PROVIDER);
-    if (data) {
-        data.platform = argv[2];
-        startBuild(data, true, false)
-    } else {
-        console.warn("not build appid!");
-    }
-} else {
-    // 自定义编译
-    let appChoices = [];
-    config.app.forEach(data => {
-        appChoices.push({
-            name: `${data.name} (${data.publish.provider})`,
-            value: data
+    platforms.forEach(platform => {
+        config.app.forEach(data => {
+            data.platform = platform
+            startBuild(data, true, false)
         })
     })
-    if (config.app.filter(({publish}) => publish.provider === 'generic').length > 1) {
-        appChoices.push({
-            name: "All generic",
-            value: 'generic'
-        })
-    }
+} else {
+    // 手动编译（默认）
     const questions = [
         {
             type: 'list',
-            name: 'app',
-            message: "选择编译应用",
-            choices: appChoices
-        },
-        {
-            type: 'list',
-            name: 'platform',
+            name: 'platforms',
             message: "选择编译系统",
             choices: [{
                 name: "MacOS",
-                value: [platform[0]]
+                value: [platforms[0]]
             }, {
                 name: "Window",
-                value: [platform[1]]
+                value: [platforms[1]]
             }, {
                 name: "All platforms",
-                value: platform
+                value: platforms
             }]
         },
         {
@@ -282,14 +265,8 @@ if (["dev"].includes(argv[2])) {
         }
     ];
     inquirer.prompt(questions).then(answers => {
-        answers.platform.forEach(platform => {
-            let array = [];
-            if (answers.app === 'generic') {
-                array = config.app.filter(({publish}) => publish.provider === 'generic')
-            } else {
-                array.push(answers.app)
-            }
-            array.forEach(data => {
+        answers.platforms.forEach(platform => {
+            config.app.forEach(data => {
                 data.platform = platform
                 startBuild(data, answers.publish, answers.release)
             })

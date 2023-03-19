@@ -4,23 +4,20 @@
 
 1. 添加环境变量 `APPLEID`、`APPLEIDPASS`、`CSC_LINK`
 2. 发布GitHub还需要添加 `GH_PAT`
+3. 发布私有服务器还需要添加 `DP_KEY`
 
 ## 通过 GitHub Actions 发布
 
-1. 执行 `./cmd prod` 编译
-2. 执行 `node ./version.js` 制作版本
-3. 执行 `git commit` 相关操作
-4. 制作标签
-5. 推送标签
+1. 执行 `npm run version` 生成版本
+2. 执行 `npm run build` 编译前端
+3. 执行 `git commit` 提交并推送
+4. 添加并推送标签
 
 ## 本地发布
 
-1. 执行 `./cmd prod` 编译
-2. 执行 `node ./version.js` 制作版本
-3. 执行 `git commit` 相关操作
-4. 制作标签
-5. 执行 `./cmd electron` 相关操作
-
+1. 执行 `npm run version` 生成版本
+2. 执行 `npm run build` 编译前端
+3. 执行 `./cmd electron` 相关操作
 
 ## 编译App
 
