@@ -250,7 +250,7 @@ class IndexController extends InvokeController
                 $fileName = Base::leftDelete($file, $dirPath);
                 $files[] = [
                     'name' => substr($fileName, 1),
-                    'time' => date("Y-m-d H:i:s", fileatime($file)),
+                    'time' => date("Y-m-d H:i:s", filemtime($file)),
                     'size' => Base::readableBytes(filesize($file)),
                     'url' => Base::fillUrl($path . $fileName),
                 ];
@@ -264,13 +264,13 @@ class IndexController extends InvokeController
                 if (!str_ends_with($file, '.apk')) {
                     continue;
                 }
-                if ($apkFile && strtotime($apkFile['time']) > fileatime($file)) {
+                if ($apkFile && strtotime($apkFile['time']) > filemtime($file)) {
                     continue;
                 }
                 $fileName = Base::leftDelete($file, $dirPath);
                 $apkFile = [
                     'name' => substr($fileName, 1),
-                    'time' => date("Y-m-d H:i:s", fileatime($file)),
+                    'time' => date("Y-m-d H:i:s", filemtime($file)),
                     'size' => Base::readableBytes(filesize($file)),
                     'url' => Base::fillUrl($path . $fileName),
                 ];

@@ -760,7 +760,7 @@ class SystemController extends AbstractController
                     'path' => $pathTemp,
                     'url' => Base::fillUrl($pathTemp),
                     'thumb' => Base::fillUrl('images/other/dir.png'),
-                    'inode' => fileatime($v),
+                    'inode' => filemtime($v),
                 ];
             } elseif (!str_ends_with($filename, "_thumb.jpg")) {
                 $array = [
@@ -769,7 +769,7 @@ class SystemController extends AbstractController
                     'path' => $pathTemp,
                     'url' => Base::fillUrl($pathTemp),
                     'thumb' => $pathTemp,
-                    'inode' => fileatime($v),
+                    'inode' => filemtime($v),
                 ];
                 //
                 $extension = pathinfo($dirPath . $filename, PATHINFO_EXTENSION);
