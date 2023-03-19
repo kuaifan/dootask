@@ -3,7 +3,7 @@
 ## 发布前
 
 1. 添加环境变量 `APPLEID`、`APPLEIDPASS`、`CSC_LINK`
-2. 发布GitHub还需要添加 `GH_PAT`
+2. 发布GitHub还需要添加 `GH_TOKEN`
 3. 发布私有服务器还需要添加 `DP_KEY`
 
 ## 通过 GitHub Actions 发布

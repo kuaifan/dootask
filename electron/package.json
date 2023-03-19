@@ -73,7 +73,7 @@
         ],
         "npmRebuild": false,
         "publish": {
-            "provider": "github"
+            "provider": "generic"
         },
         "releaseInfo": {},
         "afterSign": "./notarize.js",
