@@ -71,7 +71,15 @@
             "id": "com.dootask.task",
             "name": "DooTask",
             "url": "http://public/",
-            "publish": "https://www.dootask.com/desktop/publish"
+            "urls": [
+                "https://dootask.com/",
+                "https://www.dootask.com/",
+                "https://t.hitosea.com/"
+            ],
+            "publish": {
+                "provider": "generic",
+                "url": "https://www.dootask.com/desktop/publish"
+            }
         }
     ]
 }

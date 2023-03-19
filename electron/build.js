@@ -161,6 +161,7 @@ function startBuild(data, publish, release) {
     fse.copySync(packageFile, packageBakFile)
     // package.json Generated
     const econfig = require('./package.json')
+    let npmArg = data.platform
     let appName = utils.getDomain(data.url)
     if (appName === "public") appName = "DooTask"
     econfig.name = data.name;
@@ -184,16 +185,17 @@ function startBuild(data, publish, release) {
             "owner": repository[0],
             "repo": repository[1]
         }
+        npmArg = `${npmArg}-publish`
     }
     fs.writeFileSync(packageFile, JSON.stringify(econfig, null, 2), 'utf8');
     // build
-    child_process.spawnSync("npm" + comSuffix, ["run", data.platform], {stdio: "inherit", cwd: "electron"});
+    child_process.spawnSync("npm" + comSuffix, ["run", npmArg], {stdio: "inherit", cwd: "electron"});
     // package.json Recovery
     fse.copySync(packageBakFile, packageFile)
     // publish generic method
     if (publish === true && process.env.DP_KEY) {
         genericPublish({
-            url: data.publish,
+            url: data.publish.url,
             key: process.env.DP_KEY,
             version: config.version,
             output: econfig.build.directories.output

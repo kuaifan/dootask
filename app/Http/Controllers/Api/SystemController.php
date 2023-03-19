@@ -1149,14 +1149,16 @@ class SystemController extends AbstractController
         $package = Base::getPackage();
         $array = [
             'version' => Base::getVersion(),
-            'publish' => Arr::get($package, 'app.0.publish'),
+            'publish' => [],
         ];
         if (is_array($package['app'])) {
+            $i = 0;
             foreach ($package['app'] as $item) {
                 $urls = $item['urls'] && is_array($item['urls']) ? $item['urls'] : $item['url'];
-                if (is_array($item['publish']) && Base::hostContrast($url, $urls)) {
+                if (is_array($item['publish']) && ($i === 0 || Base::hostContrast($url, $urls))) {
                     $array['publish'] = $item['publish'];
                 }
+                $i++;
             }
         }
         return $array;
