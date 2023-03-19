@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.25.11]
+
+### Performance
+
+- 搜索会员默认机器人排在最后
+- 优化输入草稿
+
 ## [0.25.7]
 
 ### Bug Fixes
@@ -80,6 +87,10 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
+- 工作包括周报模板添加下周拟定计划项
+- 优化ipad表单显示
+- 优化再次点击抖动
+- Dialog loading
 - 网络恢复后重新标记已读失败的信息
 - 优化开发执行脚本
 - 点击头像进入对话
@@ -93,15 +104,6 @@ All notable changes to this project will be documented in this file.
 - 优化消息类型分类
 - 消息快捷发送菜单
 - 优化表情回复
-
-## [0.23.94]
-
-### Performance
-
-- 工作包括周报模板添加下周拟定计划项
-- 优化ipad表单显示
-- 优化再次点击抖动
-- Dialog loading
 
 ## [0.23.86]
 
@@ -220,13 +222,6 @@ All notable changes to this project will be documented in this file.
 
 ## [0.22.66]
 
-### Performance
-
-- 优化未读消息提示
-- 优化消息对话框loading
-
-## [0.22.64]
-
 ### Bug Fixes
 
 - 任务首次发消息消失的情况
@@ -241,6 +236,8 @@ All notable changes to this project will be documented in this file.
 - 会话顶部提示剩余未读消息
 - 回复/引用机器人消息图标移位的问题
 - 优化移动端打开会话
+- 优化未读消息提示
+- 优化消息对话框loading
 
 ## [0.22.56]
 
@@ -449,15 +446,10 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
-- @结果相同时避免刷新
-
-## [0.20.95]
-
-### Performance
-
 - 升级onlyoffice
 - 离职后退出所有群
 - 离职移交部门
+- @结果相同时避免刷新
 
 ## [0.20.90]
 
@@ -710,30 +702,19 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- 无法通过项目点击聊天的情况
 - 移动文件所有者错误
 
 ### Features
 
+- 支持编辑已发送的消息
 - 新增全员群组
 
 ### Performance
 
+- 添加邮件忽略功能
 - 调整消息标签位置
 - 所有项目列表支持筛选个人项目
-
-## [0.18.54]
-
-### Bug Fixes
-
-- 无法通过项目点击聊天的情况
-
-### Features
-
-- 支持编辑已发送的消息
-
-### Performance
-
-- 添加邮件忽略功能
 
 ## [0.18.44]
 
@@ -779,6 +760,8 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- 无法点击图片预览的问题
+- 部分长按菜单移位的问题
 - 撤回消息导致未读数错误的问题
 - 任务成员应该禁止退出任务群聊
 
@@ -788,21 +771,11 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
+- 项目群、任务群可添加成员
+- 支持@群聊以外成员
 - 优化pdf浏览方式
 - 仅(群聊)且(是群主或没有群主)才可以@成员以外的人
 - 优化@其他成员在线状态
-
-## [0.17.88]
-
-### Bug Fixes
-
-- 无法点击图片预览的问题
-- 部分长按菜单移位的问题
-
-### Performance
-
-- 项目群、任务群可添加成员
-- 支持@群聊以外成员
 
 ## [0.17.75]
 
@@ -826,16 +799,11 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
+- 使用系统浏览器打开新窗口链接
+- 默认使用文字头像
 - 优化消息列表
 - 优化移动客户端滚动穿透
 - 取消置顶标签
-
-## [0.17.30]
-
-### Performance
-
-- 使用系统浏览器打开新窗口链接
-- 默认使用文字头像
 
 ## [0.17.20]
 
@@ -889,12 +857,6 @@ All notable changes to this project will be documented in this file.
 
 ## [0.16.60]
 
-### Performance
-
-- 优化消息已读未读
-
-## [0.16.58]
-
 ### Bug Fixes
 
 - 修复任务窗口无法发送表情的问题
@@ -907,6 +869,7 @@ All notable changes to this project will be documented in this file.
 - 优化首页加载失败的情况
 - 新窗口打开任务时保持日志显示状态
 - 预览图片尺寸的优化
+- 优化消息已读未读
 
 ## [0.16.22]
 
