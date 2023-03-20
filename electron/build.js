@@ -181,6 +181,7 @@ function startBuild(data, publish, release) {
         // publish github package config
         let repository = process.env.GH_REPOSITORY.split("/")
         econfig.build.publish = {
+            "releaseType": "release",
             "provider": "github",
             "owner": repository[0],
             "repo": repository[1]
