@@ -5,7 +5,7 @@
             <Spin size="large" v-if="!success && !error"></Spin>
             <div class="validation-text" v-if="success">
                 <p>{{$L('您的邮箱已通过验证')}}</p>
-                <p>{{$L('今后您可以通过此邮箱重置您的账号密码')}}</p>
+                <p>{{$L('今后您可以通过此邮箱重置您的帐号密码')}}</p>
             </div>
             <div class="validation-text" v-if="error">
                 <div>{{errorText}}</div>
@@ -69,7 +69,7 @@ export default {
                 this.error = false;
             }).catch(({data, msg}) => {
                 if (data.code === 2) {
-                    this.goForward({name: 'index'}, true);
+                    this.goForward({name: 'index', query: {action: 'index'}}, true);
                 } else {
                     this.success = false;
                     this.error = true;

@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var MACRO = {
     className: 'variable',
     begin: /\$[\w\d#@][\w\d_]*/

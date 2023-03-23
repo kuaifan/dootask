@@ -7,7 +7,7 @@
     display: flex;
     flex-direction: column;
     .workflow-title {
-        color: #333333;
+        color: $primary-title-color;
         font-size: 20px;
         font-weight: 500;
         line-height: 1;
@@ -30,6 +30,10 @@
         flex: 1;
         padding: 0 20px;
         overflow: auto;
+
+        .ivu-collapse {
+            min-width: 700px;
+        }
 
         .ivu-collapse-header {
             display: flex;
@@ -66,18 +70,18 @@
                         color: $flow-status-start-color;
                     }
                     &.progress {
-                        background-color: rgba($flow-status-progress-color, 0.1);;
-                        border-color: rgba($flow-status-progress-color, 0.1);;
+                        background-color: rgba($flow-status-progress-color, 0.1);
+                        border-color: rgba($flow-status-progress-color, 0.1);
                         color: $flow-status-progress-color;
                     }
                     &.test {
-                        background-color: rgba($flow-status-test-color, 0.1);;
-                        border-color: rgba($flow-status-test-color, 0.1);;
+                        background-color: rgba($flow-status-test-color, 0.1);
+                        border-color: rgba($flow-status-test-color, 0.1);
                         color: $flow-status-test-color;
                     }
                     &.end {
-                        background-color: rgba($flow-status-end-color, 0.1);;
-                        border-color: rgba($flow-status-end-color, 0.1);;
+                        background-color: rgba($flow-status-end-color, 0.1);
+                        border-color: rgba($flow-status-end-color, 0.1);
                         color: $flow-status-end-color;
                     }
                 }
@@ -433,15 +437,15 @@
                     color: $flow-status-start-color;
                 }
                 &.progress {
-                    background-color: rgba($flow-status-progress-color, 0.1);;
+                    background-color: rgba($flow-status-progress-color, 0.1);
                     color: $flow-status-progress-color;
                 }
                 &.test {
-                    background-color: rgba($flow-status-test-color, 0.1);;
+                    background-color: rgba($flow-status-test-color, 0.1);
                     color: $flow-status-test-color;
                 }
                 &.end {
-                    background-color: rgba($flow-status-end-color, 0.1);;
+                    background-color: rgba($flow-status-end-color, 0.1);
                     color: $flow-status-end-color;
                 }
 

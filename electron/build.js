@@ -9,18 +9,22 @@ const axios = require('axios');
 const FormData =require('form-data');
 const utils = require('./utils');
 const config = require('../package.json')
-const argv = process.argv;
 const env = require('dotenv').config({ path: './.env' })
+const argv = process.argv;
+const {APPLEID, APPLEIDPASS, GH_TOKEN, GH_REPOSITORY, DP_KEY} = process.env;
 
 const electronDir = path.resolve(__dirname, "public");
 const nativeCachePath = path.resolve(__dirname, ".native");
 const devloadCachePath = path.resolve(__dirname, ".devload");
 const packageFile = path.resolve(__dirname, "package.json");
 const packageBakFile = path.resolve(__dirname, "package-bak.json");
-const platform = ["build-mac", "build-win"];
+const platforms = ["build-mac", "build-win"];
 const comSuffix = os.type() == 'Windows_NT' ? '.cmd' : '';
 
-// 克隆 Drawio
+/**
+ * 克隆 Drawio
+ * @param systemInfo
+ */
 function cloneDrawio(systemInfo) {
     child_process.spawnSync("git", ["submodule", "update", "--quiet", "--init", "--depth=1"], {stdio: "inherit"});
     const drawioSrcDir = path.resolve(__dirname, "../resources/drawio/src/main/webapp");
@@ -30,8 +34,8 @@ function cloneDrawio(systemInfo) {
     fse.copySync(drawioCoverDir, drawioDestDir)
     //
     const preConfigFile = path.resolve(drawioDestDir, "js/PreConfig.js");
-    if (!fse.existsSync(preConfigFile)) {
-        console.log("clone drawio error!");
+    if (!fs.existsSync(preConfigFile)) {
+        console.error("Clone Drawio error!");
         process.exit()
     }
     let preConfigString = fs.readFileSync(preConfigFile, 'utf8');
@@ -40,139 +44,318 @@ function cloneDrawio(systemInfo) {
     fs.writeFileSync(preConfigFile, preConfigString, 'utf8');
 }
 
-// 通用发布
-function genericPublish(url, version) {
-    const filePath = path.resolve(__dirname, "dist")
+/**
+ * 获取更新日志
+ * @returns {string}
+ */
+function changeLog() {
+    let filePath = path.resolve(__dirname, "../CHANGELOG.md");
+    if (!fs.existsSync(filePath)) {
+        return "";
+    }
+    let content = fs.readFileSync(filePath, 'utf8')
+    let array = content.match(/## \[([0-9]+.+)\]/g)
+    if (!array) {
+        return ""
+    }
+    let start = content.indexOf(array[0]);
+    if (array.length > 5) {
+        content = content.substring(start, content.indexOf(array[5]))
+    } else {
+        content = content.substring(start)
+    }
+    return content;
+}
+
+/**
+ * 封装 axios 自动重试
+ * @param data // {axios: object{}, onRetry: function, retryNumber: number}
+ * @returns {Promise<unknown>}
+ */
+function axiosAutoTry(data) {
+    return new Promise((resolve, reject) => {
+        axios(data.axios).then(result => {
+            resolve(result)
+        }).catch(error => {
+            if (typeof data.retryNumber == 'number' && data.retryNumber > 0) {
+                data.retryNumber--;
+                if (typeof data.onRetry === "function") {
+                    data.onRetry()
+                }
+                if (error.code == 'ECONNABORTED' || error.code == 'ECONNRESET') {
+                    // 中止，超时
+                    return resolve(axiosAutoTry(data))
+                } else {
+                    if (error.response && error.response.status == 407) {
+                        // 代理407
+                        return setTimeout(v => {
+                            resolve(axiosAutoTry(data))
+                        }, 500 + Math.random() * 500)
+                    } else if (error.response && error.response.status == 503) {
+                        // 服务器异常
+                        return setTimeout(v => {
+                            resolve(axiosAutoTry(data))
+                        }, 1000 + Math.random() * 500)
+                    } else if (error.response && error.response.status == 429) {
+                        // 并发超过限制
+                        return setTimeout(v => {
+                            resolve(axiosAutoTry(data))
+                        }, 1000 + Math.random() * 1000)
+                    }
+                }
+            }
+            reject(error)
+        })
+    })
+}
+
+/**
+ * 通用发布
+ * @param url
+ * @param key
+ * @param version
+ * @param output
+ */
+function genericPublish({url, key, version, output}) {
+    if (!/https*:\/\//i.test(url)) {
+        console.warn("Publish url is invalid: " + url)
+        return
+    }
+    const filePath = path.resolve(__dirname, output)
     fs.readdir(filePath, async (err, files) => {
         if (err) {
             console.warn(err)
         } else {
+            const uploadOras = {}
             for (const filename of files) {
                 const localFile = path.join(filePath, filename)
-                const fileStat = fs.statSync(localFile)
-                if (fileStat.isFile()) {
-                    const uploadOra = ora(`${filename} uploading...`).start()
-                    const formData = new FormData()
-                    formData.append("file", fs.createReadStream(localFile));
-                    await axios({
-                        method: 'post',
-                        url: url,
-                        data: formData,
-                        maxContentLength: Infinity,
-                        maxBodyLength: Infinity,
-                        headers: {
-                            'Generic-Version': version,
-                            'Content-Type': 'multipart/form-data;boundary=' + formData.getBoundary(),
-                        }
-                    }).then(_ => {
-                        uploadOra.succeed(`${filename} upload successful`)
-                    }).catch(_ => {
-                        uploadOra.fail(`${filename} upload fail`)
-                    })
+                if (fs.existsSync(localFile)) {
+                    const fileStat = fs.statSync(localFile)
+                    if (fileStat.isFile()) {
+                        uploadOras[filename] = ora(`Upload [0%] ${filename}`).start()
+                        const formData = new FormData()
+                        formData.append("file", fs.createReadStream(localFile));
+                        await axiosAutoTry({
+                            axios: {
+                                method: 'post',
+                                url: url,
+                                data: formData,
+                                headers: {
+                                    'Publish-Version': version,
+                                    'Publish-Key': key,
+                                    'Content-Type': 'multipart/form-data;boundary=' + formData.getBoundary(),
+                                },
+                                onUploadProgress: progress => {
+                                    const complete = Math.min(99, Math.round(progress.loaded / progress.total * 100 | 0)) + '%'
+                                    uploadOras[filename].text = `Upload [${complete}] ${filename}`
+                                },
+                            },
+                            onRetry: _ => {
+                                uploadOras[filename].warn(`Upload [retry] ${filename}`)
+                                uploadOras[filename] = ora(`Upload [0%] ${filename}`).start()
+                            },
+                            retryNumber: 3
+                        }).then(_ => {
+                            uploadOras[filename].succeed(`Upload [100%] ${filename}`)
+                        }).catch(_ => {
+                            uploadOras[filename].fail(`Upload [fail] ${filename}`)
+                        })
+                    }
                 }
             }
         }
     });
 }
 
-// 生成配置、编译应用
-function startBuild(data, publish) {
-    // information
-    console.log("Name: " + data.name);
-    console.log("AppId: " + data.id);
-    console.log("Version: " + config.version);
-    console.log("Publish: " + (publish ? 'Yes' : 'No'));
-    let systemInfo = {
+/**
+ * 生成配置、编译应用
+ * @param data
+ */
+function startBuild(data) {
+    const {platform, publish, release, notarize} = data.configure
+    // system info
+    const systemInfo = {
         title: data.name,
+        debug: "no",
         version: config.version,
         origin: "./",
         homeUrl:  utils.formatUrl(data.url),
         apiUrl:  utils.formatUrl(data.url) + "api/",
     }
-    // drawio
-    cloneDrawio(systemInfo)
+    // information
+    if (data.id === 'app') {
+        console.log("Name: " + data.name);
+        console.log("Version: " + config.version);
+    } else {
+        console.log("Name: " + data.name);
+        console.log("AppId: " + data.id);
+        console.log("Version: " + config.version);
+        console.log("Platform: " + platform);
+        console.log("Publish: " + (publish ? 'Yes' : 'No'));
+        console.log("Release: " + (release ? 'Yes' : 'No'));
+        console.log("Notarize: " + (notarize ? 'Yes' : 'No'));
+        // drawio
+        cloneDrawio(systemInfo)
+    }
+    // language
+    fse.copySync(path.resolve(__dirname, "../public/language"), path.resolve(electronDir, "language"))
     // config.js
     fs.writeFileSync(electronDir + "/config.js", "window.systemInfo = " + JSON.stringify(systemInfo), 'utf8');
     fs.writeFileSync(nativeCachePath, utils.formatUrl(data.url));
     fs.writeFileSync(devloadCachePath, "", 'utf8');
+    // default (fix "Failed to load resource: net::ERR_FILE_NOT_FOUND" report)
+    fs.writeFileSync(electronDir + "/default", "default", 'utf8');
     // index.html
+    let manifestFile = path.resolve(electronDir, "manifest.json");
+    if (!fs.existsSync(manifestFile)) {
+        console.error("manifest.json not found");
+        return;
+    }
+    let manifestContent = JSON.parse(fs.readFileSync(manifestFile, 'utf8'));
     let indexFile = path.resolve(electronDir, "index.html");
     let indexString = fs.readFileSync(indexFile, 'utf8');
     indexString = indexString.replace(/<title>(.*?)<\/title>/g, `<title>${data.name}</title>`);
+    indexString = indexString.replace("<!--style-->", `<link rel="stylesheet" type="text/css" href="./${manifestContent['resources/assets/js/app.js']['css'][0]}">`);
+    indexString = indexString.replace("<!--script-->", `<script type="module" src="./${manifestContent['resources/assets/js/app.js']['file']}"></script>`);
     fs.writeFileSync(indexFile, indexString, 'utf8');
+    //
+    if (data.id === 'app') {
+        const publicDir = path.resolve(__dirname, "../resources/mobile/src/public");
+        fse.removeSync(publicDir)
+        fse.copySync(electronDir, publicDir)
+        if (argv[3] === "setting") {
+            child_process.spawnSync("eeui", ["setting"], {stdio: "inherit", cwd: "resources/mobile"});
+        }
+        if (['setting', 'build'].includes(argv[3])) {
+            child_process.spawnSync("eeui", ["build", "--simple"], {stdio: "inherit", cwd: "resources/mobile"});
+        } else {
+            [
+                path.resolve(publicDir, "../../platforms/ios/eeuiApp/bundlejs/eeui/public"),
+                path.resolve(publicDir, "../../platforms/android/eeuiApp/app/src/main/assets/eeui/public"),
+            ].some(dir => {
+                fse.removeSync(dir)
+                fse.copySync(electronDir, dir)
+            })
+        }
+        return;
+    }
+    const output = `dist/${data.id.replace(/\./g, '-')}/${platform}`
     // package.json Backup
     fse.copySync(packageFile, packageBakFile)
+    const recoveryPackage = (onlyRecovery) => {
+        fse.copySync(packageBakFile, packageFile)
+        if (onlyRecovery !== true) {
+            process.exit()
+        }
+    }
+    process.on('exit', recoveryPackage);
+    process.on('SIGINT', recoveryPackage);
+    process.on('SIGHUP', recoveryPackage);
     // package.json Generated
     const econfig = require('./package.json')
+    let appName = utils.getDomain(data.url)
+    if (appName === "public") appName = "DooTask"
     econfig.name = data.name;
     econfig.version = config.version;
     econfig.build.appId = data.id;
-    econfig.build.artifactName = utils.getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
-    econfig.build.nsis.artifactName = utils.getDomain(data.url) + "-v${version}-${os}-${arch}.${ext}";
-    econfig.build.pkg.mustClose = [data.id];
-    if (!process.env.APPLEID || !process.env.APPLEIDPASS) {
-        delete econfig.build.afterSign;
+    econfig.build.artifactName = appName + "-v${version}-${os}-${arch}.${ext}";
+    econfig.build.nsis.artifactName = appName + "-v${version}-${os}-${arch}.${ext}";
+    // changelog
+    econfig.build.releaseInfo.releaseNotes = changeLog()
+    if (release) {
+        econfig.build.releaseInfo.releaseNotes = econfig.build.releaseInfo.releaseNotes.replace(`## [${config.version}]`, `## [${config.version}-Release]`)
     }
-    if (process.env.RELEASE_BODY) {
-        econfig.build.releaseInfo.releaseNotes = process.env.RELEASE_BODY
+    // darwin notarize
+    if (notarize && APPLEID && APPLEIDPASS) {
+        econfig.build.afterSign = "./notarize.js"
     }
-    if (utils.isJson(data.publish)) {
-        econfig.build.publish = data.publish
+    // github (build && publish)
+    if (publish === true && GH_TOKEN && utils.strExists(GH_REPOSITORY, "/")) {
+        const repository = GH_REPOSITORY.split("/")
+        econfig.build.publish = {
+            "releaseType": "release",
+            "provider": "github",
+            "owner": repository[0],
+            "repo": repository[1]
+        }
+        econfig.build.directories.output = `${output}-github`;
+        fs.writeFileSync(packageFile, JSON.stringify(econfig, null, 2), 'utf8');
+        child_process.spawnSync("npm" + comSuffix, ["run", `${platform}-publish`], {stdio: "inherit", cwd: "electron"});
     }
+    // generic (build || publish)
+    econfig.build.publish = data.publish
+    econfig.build.directories.output = `${output}-generic`;
     fs.writeFileSync(packageFile, JSON.stringify(econfig, null, 2), 'utf8');
-    // build
-    child_process.spawnSync("npm" + comSuffix, ["run", data.platform + (publish === true ? "-publish" : "")], {stdio: "inherit", cwd: "electron"});
-    // package.json Recovery
-    fse.copySync(packageBakFile, packageFile)
-    // generic publish
-    if (publish === true && econfig.build.publish.provider === "generic") {
-        genericPublish(econfig.build.publish.url, config.version)
+    child_process.spawnSync("npm" + comSuffix, ["run", platform], {stdio: "inherit", cwd: "electron"});
+    if (publish === true && DP_KEY) {
+        genericPublish({
+            url: econfig.build.publish.url,
+            key: DP_KEY,
+            version: config.version,
+            output: econfig.build.directories.output
+        })
     }
+    // package.json Recovery
+    recoveryPackage(true)
 }
+
+/** ************************************************************************************/
+/** ************************************************************************************/
+/** ************************************************************************************/
 
 if (["dev"].includes(argv[2])) {
     // 开发模式
     fs.writeFileSync(devloadCachePath, utils.formatUrl("127.0.0.1:" + env.parsed.APP_PORT), 'utf8');
-    child_process.spawn("npx", ["mix", "watch", "--hot", "--", "--env", "--electron"], {stdio: "inherit"});
+    child_process.spawn("npx", ["vite", "--", "fromcmd", "electronDev"], {stdio: "inherit"});
     child_process.spawn("npm", ["run", "start-quiet"], {stdio: "inherit", cwd: "electron"});
-} else if (platform.includes(argv[2])) {
-    // 自动编译
-    let provider = process.env.PROVIDER === "generic" ? "generic" : "github"
-    config.app.forEach(data => {
-        if (data.publish.provider === provider) {
-            data.platform = argv[2];
-            startBuild(data, true)
+} else if (["app"].includes(argv[2])) {
+    // 编译给app
+    let mobileSrcDir = path.resolve(__dirname, "../resources/mobile");
+    if (!fs.existsSync(mobileSrcDir)) {
+        console.error("resources/mobile not found");
+        process.exit()
+    }
+    startBuild({
+        name: 'App',
+        id: 'app',
+        platform: '',
+        url: 'http://public/',
+        configure: {
+            platform: '',
+            publish: false,
+            release: false,
+            notarize: false,
         }
-    })
-} else {
-    // 自定义编译
-    let appChoices = [];
-    config.app.forEach(data => {
-        appChoices.push({
-            name: data.name,
-            value: data
+    }, false, false)
+} else if (["all"].includes(argv[2])) {
+    // 自动编译
+    platforms.forEach(platform => {
+        config.app.forEach(data => {
+            data.configure = {
+                platform,
+                publish: true,
+                release: false,
+                notarize: false,
+            }
+            startBuild(data)
         })
     })
+} else {
+    // 手动编译（默认）
     const questions = [
         {
             type: 'list',
-            name: 'app',
-            message: "选择编译应用",
-            choices: appChoices
-        },
-        {
-            type: 'list',
-            name: 'platform',
+            name: 'platforms',
             message: "选择编译系统",
             choices: [{
                 name: "MacOS",
-                value: [platform[0]]
+                value: [platforms[0]]
             }, {
                 name: "Window",
-                value: [platform[1]]
+                value: [platforms[1]]
             }, {
                 name: "All platforms",
-                value: platform
+                value: platforms
             }]
         },
         {
@@ -186,13 +369,51 @@ if (["dev"].includes(argv[2])) {
                 name: "Yes",
                 value: true
             }]
+        },
+        {
+            type: 'list',
+            name: 'release',
+            message: "选择是否弹出升级提示框",
+            choices: [{
+                name: "No",
+                value: false
+            }, {
+                name: "Yes",
+                value: true
+            }]
+        },
+        {
+            type: 'list',
+            name: 'notarize',
+            message: "选择是否需要公证MacOS应用",
+            choices: [{
+                name: "No",
+                value: false
+            }, {
+                name: "Yes",
+                value: true
+            }]
         }
     ];
     inquirer.prompt(questions).then(answers => {
-        answers.platform.forEach(platform => {
-            let data = answers.app;
-            data.platform = platform
-            startBuild(data, answers.publish)
+        if (answers.publish === true) {
+            if (!DP_KEY && (!GH_TOKEN || !utils.strExists(GH_REPOSITORY, "/"))) {
+                console.error("Missing Deploy Key or GitHub Token and Repository!");
+                process.exit()
+            }
+        }
+        if (answers.notarize === true) {
+            if (!APPLEID || !APPLEIDPASS) {
+                console.error("Missing Apple ID or Apple ID password!");
+                process.exit()
+            }
+        }
+        answers.platforms.forEach(platform => {
+            config.app.forEach(data => {
+                data.configure = answers
+                data.configure.platform = platform
+                startBuild(data)
+            })
         });
     });
 }

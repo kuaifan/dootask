@@ -1,8 +1,12 @@
+const localforage = require("localforage");
+
 /**
  * 基础函数
  */
 (function (window, $, undefined) {
     window.systemInfo = window.systemInfo || {};
+    window.modalTransferIndex = 1000;
+    localforage.config({name: 'DooTask', storeName: 'common'});
 
     /**
      * =============================================================================
@@ -238,7 +242,7 @@
          * @returns {number}
          * @constructor
          */
-        Time(v) {
+        Time(v = undefined) {
             let time
             if (typeof v === "string" && this.strExists(v, "-")) {
                 v = v.replace(/-/g, '/');
@@ -247,6 +251,27 @@
                 time = new Date().getTime();
             }
             return Math.round(time / 1000)
+        },
+
+        /**
+         * 返回毫秒时间戳
+         * @param v
+         * @param cm  使用当前的毫秒
+         * @returns {number}
+         * @constructor
+         */
+        TimeM(v = undefined, cm = true) {
+            let time
+            if (typeof v === "string" && this.strExists(v, "-")) {
+                v = v.replace(/-/g, '/');
+                time = new Date(v).getTime();
+                if (cm && v.indexOf('.') === -1) {
+                    time = parseInt(`${Math.round(time / 1000)}${new Date().getMilliseconds()}`)
+                }
+            } else {
+                time = new Date().getTime();
+            }
+            return time
         },
 
         /**
@@ -600,6 +625,34 @@
         },
 
         /**
+         * 获取文本长度
+         * @param string
+         * @returns {number}
+         */
+        stringLength(string) {
+            if (typeof string === "number" || typeof string === "string") {
+                return (string + "").length
+            }
+            return 0;
+        },
+
+        /**
+         * 获取数组长度（处理数组不存在）
+         * @param array
+         * @returns {number|*}
+         */
+        arrayLength(array) {
+            if (array) {
+                try {
+                    return array.length;
+                } catch (e) {
+                    return 0
+                }
+            }
+            return 0;
+        },
+
+        /**
          * 将数组或对象内容部分拼成字符串
          * @param obj
          * @returns {string}
@@ -632,7 +685,7 @@
         },
 
         urlParameterAll() {
-            let search = window.location.search || "";
+            let search = window.location.search || window.location.hash || "";
             let arr = [];
             if (this.strExists(search, "?")) {
                 arr = this.getMiddle(search, "?").split("&");
@@ -700,6 +753,40 @@
                 }
             }
             return this.rightDelete(url.replace("?&", "?"), '?');
+        },
+
+        /**
+         * 刷新当前地址
+         * @returns {string}
+         */
+        reloadUrl() {
+            if ($A.isEEUiApp && $A.isAndroid()) {
+                let url = window.location.href;
+                let key = '_='
+                let reg = new RegExp(key + '\\d+');
+                let timestamp = this.Time();
+                if (url.indexOf(key) > -1) {
+                    url = url.replace(reg, key + timestamp);
+                } else {
+                    if (url.indexOf('\?') > -1) {
+                        let urlArr = url.split('\?');
+                        if (urlArr[1]) {
+                            url = urlArr[0] + '?' + key + timestamp + '&' + urlArr[1];
+                        } else {
+                            url = urlArr[0] + '?' + key + timestamp;
+                        }
+                    } else {
+                        if (url.indexOf('#') > -1) {
+                            url = url.split('#')[0] + '?' + key + timestamp + location.hash;
+                        } else {
+                            url = url + '?' + key + timestamp;
+                        }
+                    }
+                }
+                $A.eeuiAppSetUrl(url);
+            } else {
+                window.location.reload();
+            }
         },
 
         /**
@@ -993,6 +1080,11 @@
             if (!element) {
                 return;
             }
+            if (typeof options === "undefined" || options === true) {
+                options = {block: "start", inline: "nearest"}
+            } else if (options === false) {
+                options = {block: "end", inline: "nearest"}
+            }
             if (typeof options.scrollMode !== "undefined" && typeof window.scrollIntoView === "function") {
                 window.scrollIntoView(element, options)
                 return;
@@ -1004,50 +1096,264 @@
                     window.scrollIntoView(element, options)
                 }
             }
+        },
+
+        /**
+         * 按需滚动到View
+         * @param element
+         */
+        scrollIntoViewIfNeeded(element) {
+            if (!element) {
+                return;
+            }
+            if (typeof element.scrollIntoViewIfNeeded === "function") {
+                element.scrollIntoViewIfNeeded()
+            } else {
+                $A.scrollToView(element, {block: "nearest", inline: "nearest"})
+            }
+        },
+
+        /**
+         * 等比缩放尺寸
+         * @param width
+         * @param height
+         * @param maxWidth
+         * @param maxHeight
+         * @returns {{width, height}|{width: number, height: number}}
+         */
+        scaleToScale(width, height, maxWidth, maxHeight) {
+            let tempWidth;
+            let tempHeight;
+            if (width > 0 && height > 0) {
+                if (width / height >= maxWidth / maxHeight) {
+                    if (width > maxWidth) {
+                        tempWidth = maxWidth;
+                        tempHeight = (height * maxWidth) / width;
+                    } else {
+                        tempWidth = width;
+                        tempHeight = height;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        tempHeight = maxHeight;
+                        tempWidth = (width * maxHeight) / height;
+                    } else {
+                        tempWidth = width;
+                        tempHeight = height;
+                    }
+                }
+                return {width: parseInt(tempWidth), height: parseInt(tempHeight)};
+            }
+            return {width, height};
+        },
+
+        /**
+         * 阻止滑动穿透
+         * @param el
+         */
+        scrollPreventThrough(el) {
+            if (!el) {
+                return;
+            }
+            if (el.getAttribute("data-prevent-through") === "yes") {
+                return;
+            }
+            el.setAttribute("data-prevent-through", "yes")
+            //
+            let targetY = null;
+            el.addEventListener('touchstart', function (e) {
+                targetY = Math.floor(e.targetTouches[0].clientY);
+            });
+            el.addEventListener('touchmove', function (e) {
+                // 检测可滚动区域的滚动事件，如果滑到了顶部或底部，阻止默认事件
+                let NewTargetY = Math.floor(e.targetTouches[0].clientY),    //本次移动时鼠标的位置，用于计算
+                    sTop = el.scrollTop,        //当前滚动的距离
+                    sH = el.scrollHeight,       //可滚动区域的高度
+                    lyBoxH = el.clientHeight;   //可视区域的高度
+                if (sTop <= 0 && NewTargetY - targetY > 0) {
+                    // 下拉页面到顶
+                    e.preventDefault();
+                } else if (sTop >= sH - lyBoxH && NewTargetY - targetY < 0) {
+                    // 上翻页面到底
+                    e.preventDefault();
+                }
+            }, false);
+        },
+
+        /**
+         * 获取元素属性
+         * @param el
+         * @param attrName
+         * @param def
+         * @returns {Property<any>|string|string}
+         */
+        getAttr(el, attrName, def = "") {
+            return el ? el.getAttribute(attrName) : def;
+        },
+
+        /**
+         * 主动失去焦点（关闭键盘）
+         * @param el
+         * @param inputMode
+         */
+        onBlur(el = null, inputMode = false) {
+            setTimeout(_ => {
+                $A.eeuiAppKeyboardHide();
+                if (typeof el === "boolean") {
+                    inputMode = el;
+                    el = null;
+                }
+                if (el) {
+                    el.blur();
+                } else {
+                    if (document.activeElement) {
+                        if (inputMode === true && document.activeElement.tagName === "BODY") {
+                            let inputElement = document.getElementById("toLoseFocusInput")
+                            if (!inputElement) {
+                                inputElement = document.createElement("input");
+                                inputElement.id = "toLoseFocusInput";
+                                inputElement.type = "text";
+                                inputElement.style.position = "fixed";
+                                inputElement.style.top = "0px";
+                                inputElement.style.left = "0px";
+                                inputElement.style.zIndex = "-1";
+                                inputElement.style.opacity = "0";
+                                inputElement.addEventListener("focus", e => {
+                                    document.activeElement.blur();
+                                });
+                                document.body.appendChild(inputElement);
+                            }
+                            setTimeout(_ => {
+                                inputElement.focus()
+                            }, 1)
+                        } else {
+                            document.activeElement.blur();
+                        }
+                    }
+                }
+            }, 1);
+        },
+
+        /**
+         * 排序JSON对象
+         * @param obj
+         * @param ignore
+         * @returns {{}}
+         */
+        sortObject(obj, ignore = []) {
+            return Object.keys(obj).sort().reduce(function (result, key) {
+                if (!ignore.includes(key)) {
+                    result[key] = obj[key];
+                }
+                return result;
+            }, {});
         }
     });
 
     /**
      * =============================================================================
-     * ********************************   storage   ********************************
+     * *****************************   localForage   ******************************
+     * =============================================================================
+     */
+    $.extend({
+        __IDBTimer: {},
+
+        IDBSave(key, value, delay = 100) {
+            if (typeof this.__IDBTimer[key] !== "undefined") {
+                clearTimeout(this.__IDBTimer[key])
+                delete this.__IDBTimer[key]
+            }
+            this.__IDBTimer[key] = setTimeout(async _ => {
+                await localforage.setItem(key, value)
+            }, delay)
+        },
+
+        IDBDel(key) {
+            localforage.removeItem(key).then(_ => {})
+        },
+
+        IDBSet(key, value) {
+            return localforage.setItem(key, value)
+        },
+
+        IDBRemove(key) {
+            return localforage.removeItem(key)
+        },
+
+        IDBClear() {
+            return localforage.clear()
+        },
+
+        IDBValue(key) {
+            return localforage.getItem(key)
+        },
+
+        async IDBString(key, def = "") {
+            const value = await this.IDBValue(key)
+            return typeof value === "string" || typeof value === "number" ? value : def;
+        },
+
+        async IDBInt(key, def = 0) {
+            const value = await this.IDBValue(key)
+            return typeof value === "number" ? value : def;
+        },
+
+        async IDBBoolean(key, def = false) {
+            const value = await this.IDBValue(key)
+            return typeof value === "boolean" ? value : def;
+        },
+
+        async IDBArray(key, def = []) {
+            const value = await this.IDBValue(key)
+            return this.isArray(value) ? value : def;
+        },
+
+        async IDBJson(key, def = {}) {
+            const value = await this.IDBValue(key)
+            return this.isJson(value) ? value : def;
+        }
+    });
+
+    /**
+     * =============================================================================
+     * *****************************   localStorage   ******************************
      * =============================================================================
      */
     $.extend({
         setStorage(key, value) {
-            return this.storage(key, value);
+            return this.__operationStorage(key, value);
         },
 
-        getStorage(key, def = null) {
-            let value = this.storage(key);
-            return value || def;
+        getStorageValue(key) {
+            return this.__operationStorage(key);
         },
 
         getStorageString(key, def = '') {
-            let value = this.storage(key);
+            let value = this.__operationStorage(key);
             return typeof value === "string" || typeof value === "number" ? value : def;
         },
 
         getStorageInt(key, def = 0) {
-            let value = this.storage(key);
+            let value = this.__operationStorage(key);
             return typeof value === "number" ? value : def;
         },
 
         getStorageBoolean(key, def = false) {
-            let value = this.storage(key);
+            let value = this.__operationStorage(key);
             return typeof value === "boolean" ? value : def;
         },
 
         getStorageArray(key, def = []) {
-            let value = this.storage(key);
+            let value = this.__operationStorage(key);
             return this.isArray(value) ? value : def;
         },
 
         getStorageJson(key, def = {}) {
-            let value = this.storage(key);
+            let value = this.__operationStorage(key);
             return this.isJson(value) ? value : def;
         },
 
-        storage(key, value) {
+        __operationStorage(key, value) {
             if (!key) {
                 return;
             }
@@ -1056,13 +1362,13 @@
                 keyName = '__state:' + key + '__';
             }
             if (typeof value === 'undefined') {
-                return this.loadFromlLocal(key, '', keyName);
+                return this.__loadFromlLocal(key, '', keyName);
             } else {
-                this.savaToLocal(key, value, keyName);
+                this.__savaToLocal(key, value, keyName);
             }
         },
 
-        savaToLocal(key, value, keyName) {
+        __savaToLocal(key, value, keyName) {
             try {
                 if (typeof keyName === 'undefined') keyName = '__seller__';
                 let seller = window.localStorage[keyName];
@@ -1077,10 +1383,82 @@
             }
         },
 
-        loadFromlLocal(key, def, keyName) {
+        __loadFromlLocal(key, def, keyName) {
             try {
                 if (typeof keyName === 'undefined') keyName = '__seller__';
                 let seller = window.localStorage[keyName];
+                if (!seller) {
+                    return def;
+                }
+                seller = JSON.parse(seller);
+                if (!seller || typeof seller[key] === 'undefined') {
+                    return def;
+                }
+                return seller[key];
+            } catch (e) {
+                return def;
+            }
+        },
+    });
+
+    /**
+     * =============================================================================
+     * *****************************   sessionStorage   ****************************
+     * =============================================================================
+     */
+    $.extend({
+        setSessionStorage(key, value) {
+            return this.__operationSessionStorage(key, value);
+        },
+
+        getSessionStorageValue(key) {
+            return this.__operationSessionStorage(key);
+        },
+
+        getSessionStorageString(key, def = '') {
+            let value = this.__operationSessionStorage(key);
+            return typeof value === "string" || typeof value === "number" ? value : def;
+        },
+
+        getSessionStorageInt(key, def = 0) {
+            let value = this.__operationSessionStorage(key);
+            return typeof value === "number" ? value : def;
+        },
+
+        __operationSessionStorage(key, value) {
+            if (!key) {
+                return;
+            }
+            let keyName = '__state__';
+            if (key.substring(0, 5) === 'cache') {
+                keyName = '__state:' + key + '__';
+            }
+            if (typeof value === 'undefined') {
+                return this.__loadFromlSession(key, '', keyName);
+            } else {
+                this.__savaToSession(key, value, keyName);
+            }
+        },
+
+        __savaToSession(key, value, keyName) {
+            try {
+                if (typeof keyName === 'undefined') keyName = '__seller__';
+                let seller = window.sessionStorage.getItem(keyName);
+                if (!seller) {
+                    seller = {};
+                } else {
+                    seller = JSON.parse(seller);
+                }
+                seller[key] = value;
+                window.sessionStorage.setItem(keyName, JSON.stringify(seller))
+            } catch (e) {
+            }
+        },
+
+        __loadFromlSession(key, def, keyName) {
+            try {
+                if (typeof keyName === 'undefined') keyName = '__seller__';
+                let seller = window.sessionStorage.getItem(keyName);
                 if (!seller) {
                     return def;
                 }

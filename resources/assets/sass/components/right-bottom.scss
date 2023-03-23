@@ -18,8 +18,8 @@
         font-size: 14px;
         border-radius: 4px;
         color: #fff;
-        background-color: #8bcf70;
-        border-color: #8bcf70;
+        background-color: $primary-color;
+        border-color: $primary-color;
         &:hover {
             color: #fff;
             opacity: 0.9;
@@ -46,7 +46,6 @@
     .notification-body {
         max-height: 210px;
         overflow-x: hidden;
-        overflow-y: auto;
         margin-bottom: 16px;
         .markdown-preview {
             margin: -20px -12px;
@@ -75,7 +74,7 @@
     }
     .notification-tip {
         display: inline-block;
-        color: #999999;
+        color: $primary-desc-color;
         line-height: 22px;
         padding-top: 4px;
         font-size: 12px;
@@ -86,5 +85,27 @@
         > button + button {
             margin-left: 6px;
         }
+    }
+}
+
+@media (max-width: 768px) {
+    .common-right-bottom {
+        bottom: 20px;
+        right: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        align-items: center;
+
+        .common-right-bottom-link {
+            color: $primary-text-color !important;
+            background-color: transparent;
+            border-color: transparent;
+        }
+    }
+}
+
+@media (max-height: 640px) {
+    .common-right-bottom {
+        display: none;
     }
 }

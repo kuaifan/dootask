@@ -34,40 +34,17 @@ export default {
 
     data() {
         return {
-            uploadFormat: [
-                'text', 'md', 'markdown',
-                'drawio',
-                'mind',
-                'docx', 'wps', 'doc', 'xls', 'xlsx', 'ppt', 'pptx',
-                'jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw', 'svg',
-                'rar', 'zip', 'jar', '7-zip', 'tar', 'gzip', '7z', 'gz', 'apk', 'dmg',
-                'tif', 'tiff',
-                'dwg', 'dxf',
-                'ofd',
-                'pdf',
-                'txt',
-                'htaccess', 'htgroups', 'htpasswd', 'conf', 'bat', 'cmd', 'cpp', 'c', 'cc', 'cxx', 'h', 'hh', 'hpp', 'ino', 'cs', 'css',
-                'dockerfile', 'go', 'golang', 'html', 'htm', 'xhtml', 'vue', 'we', 'wpy', 'java', 'js', 'jsm', 'jsx', 'json', 'jsp', 'less', 'lua', 'makefile', 'gnumakefile',
-                'ocamlmakefile', 'make', 'mysql', 'nginx', 'ini', 'cfg', 'prefs', 'm', 'mm', 'pl', 'pm', 'p6', 'pl6', 'pm6', 'pgsql', 'php',
-                'inc', 'phtml', 'shtml', 'php3', 'php4', 'php5', 'phps', 'phpt', 'aw', 'ctp', 'module', 'ps1', 'py', 'r', 'rb', 'ru', 'gemspec', 'rake', 'guardfile', 'rakefile',
-                'gemfile', 'rs', 'sass', 'scss', 'sh', 'bash', 'bashrc', 'sql', 'sqlserver', 'swift', 'ts', 'typescript', 'str', 'vbs', 'vb', 'v', 'vh', 'sv', 'svh', 'xml',
-                'rdf', 'rss', 'wsdl', 'xslt', 'atom', 'mathml', 'mml', 'xul', 'xbl', 'xaml', 'yaml', 'yml',
-                'asp', 'properties', 'gitignore', 'log', 'bas', 'prg', 'python', 'ftl', 'aspx',
-                'mp3', 'wav', 'mp4', 'flv',
-                'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm',
-                'xmind',
-                'rp',
-            ],
+            uploadFormat: [],   // 不限制上传文件类型
             actionUrl: $A.apiUrl('dialog/msg/sendfile'),
         }
     },
 
     computed: {
-        ...mapState(['userToken']),
+        ...mapState(['cacheDialogs']),
 
         headers() {
             return {
-                fd: $A.getStorageString("userWsFd"),
+                fd: $A.getSessionStorageString("userWsFd"),
                 token: this.userToken,
             }
         },
@@ -75,16 +52,25 @@ export default {
         params() {
             return {
                 dialog_id: this.dialogId,
+                reply_id: this.dialogData.extra_quote_id || 0,
             }
-        }
+        },
+
+        dialogData() {
+            return this.cacheDialogs.find(({id}) => id == this.dialogId) || {};
+        },
     },
 
     methods: {
         handleProgress(event, file) {
             //上传时
             if (file.tempId === undefined) {
-                file.tempId = $A.randomString(8);
-                this.$emit('on-progress', file);
+                if (this.$parent.$options.name === 'DialogWrapper') {
+                    file.tempId = this.$parent.getTempId()
+                } else {
+                    file.tempId = $A.randNum(1000000000, 9999999999)
+                }
+                this.$emit('on-progress', file)
             }
         },
 

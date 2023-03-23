@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   /* Variables: simple (eg $(var)) and special (eg $@) */
   var VARIABLE = {
     className: 'variable',

@@ -1,8 +1,8 @@
 <template>
-    <div v-show="userId > 0" class="page-manage">
+    <div v-show="userId > 0" class="page-manage" :class="{'show-tabbar': showMobileTabbar}">
         <div class="manage-box-menu" :class="{'show768-menu': show768Menu}">
             <Dropdown
-                class="page-manage-menu-dropdown"
+                class="page-manage-menu-dropdown main-menu"
                 trigger="click"
                 @on-click="settingRoute"
                 @on-visible-change="menuVisibleChange">
@@ -11,7 +11,7 @@
                         <UserAvatar :userid="userId" :size="36" tooltipDisabled/>
                     </div>
                     <span>{{userInfo.nickname}}</span>
-                    <Badge v-if="reportUnreadNumber > 0" class="manage-box-top-report" :count="reportUnreadNumber"/>
+                    <Badge v-if="reportUnreadNumber > 0" class="manage-box-top-report" :overflow-count="999" :count="reportUnreadNumber"/>
                     <Badge v-else-if="!!clientNewVersion" class="manage-box-top-report" dot/>
                     <div class="manage-box-arrow">
                         <Icon type="ios-arrow-up" />
@@ -26,7 +26,7 @@
                             transfer
                             transfer-class-name="page-manage-menu-dropdown"
                             placement="right-start">
-                            <DropdownItem>
+                            <DropdownItem :divided="!!item.divided">
                                 <div class="manage-menu-flex">
                                     {{$L(item.name)}}
                                     <Icon type="ios-arrow-forward"></Icon>
@@ -39,7 +39,10 @@
                                     :key="key"
                                     class="task-title"
                                     @click.native="openTask(item)"
-                                    :name="item.name">{{ item.name }}</DropdownItem>
+                                    :name="item.name">
+                                    <span v-if="item.flow_item_name" :class="item.flow_item_status">{{item.flow_item_name}}</span>
+                                    <div class="task-title-text">{{ item.name }}</div>
+                                </DropdownItem>
                             </DropdownMenu>
                             <DropdownMenu v-else slot="list">
                                 <DropdownItem style="color:darkgrey">{{ $L('暂无打开记录') }}</DropdownItem>
@@ -51,10 +54,10 @@
                             transfer
                             transfer-class-name="page-manage-menu-dropdown"
                             placement="right-start">
-                            <DropdownItem divided>
+                            <DropdownItem :divided="!!item.divided">
                                 <div class="manage-menu-flex">
                                     {{$L(item.name)}}
-                                    <Badge v-if="reportUnreadNumber > 0" class="manage-menu-report-badge" :count="reportUnreadNumber"/>
+                                    <Badge v-if="reportUnreadNumber > 0" class="manage-menu-report-badge" :overflow-count="999" :count="reportUnreadNumber"/>
                                     <Icon v-else type="ios-arrow-forward"></Icon>
                                 </div>
                             </DropdownItem>
@@ -63,52 +66,12 @@
                                 <DropdownItem name="workReport">
                                     <div class="manage-menu-flex">
                                         {{$L('工作报告')}}
-                                        <Badge v-if="reportUnreadNumber > 0" class="manage-menu-report-badge" :count="reportUnreadNumber"/>
+                                        <Badge v-if="reportUnreadNumber > 0" class="manage-menu-report-badge" :overflow-count="999" :count="reportUnreadNumber"/>
                                     </div>
                                 </DropdownItem>
                                 <DropdownItem name="exportTask">{{$L('导出任务统计')}}</DropdownItem>
-                            </DropdownMenu>
-                        </Dropdown>
-                        <!-- 主题皮肤 -->
-                        <Dropdown
-                            v-else-if="item.path === 'theme'"
-                            placement="right-start"
-                            transfer
-                            transfer-class-name="page-manage-menu-dropdown"
-                            @on-click="setTheme">
-                            <DropdownItem divided>
-                                <div class="manage-menu-flex">
-                                    {{$L(item.name)}}
-                                    <Icon type="ios-arrow-forward"></Icon>
-                                </div>
-                            </DropdownItem>
-                            <DropdownMenu slot="list">
-                                <DropdownItem
-                                    v-for="(item, key) in themeList"
-                                    :key="key"
-                                    :name="item.value"
-                                    :selected="themeMode === item.value">{{$L(item.name)}}</DropdownItem>
-                            </DropdownMenu>
-                        </Dropdown>
-                        <!-- 语言设置 -->
-                        <Dropdown
-                            v-else-if="item.path === 'language'"
-                            placement="right-start"
-                            transfer
-                            transfer-class-name="page-manage-menu-dropdown"
-                            @on-click="setLanguage">
-                            <DropdownItem divided>
-                                <div class="manage-menu-flex">
-                                    {{currentLanguage}}
-                                    <Icon type="ios-arrow-forward"></Icon>
-                                </div>
-                            </DropdownItem>
-                            <DropdownMenu slot="list">
-                                <DropdownItem
-                                    v-for="(item, key) in languageList"
-                                    :key="key"
-                                    :name="key"
-                                    :selected="getLanguage() === key">{{item}}</DropdownItem>
+                                <DropdownItem name="exportOverdueTask">{{$L('导出超期任务')}}</DropdownItem>
+                                <DropdownItem name="exportCheckin">{{$L('导出签到数据')}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                         <!-- 其他菜单 -->
@@ -132,13 +95,13 @@
                     </template>
                 </DropdownMenu>
             </Dropdown>
-            <ul :class="overlayClass" @scroll="handleClickTopOperateOutside">
+            <ul :class="listClassName" @scroll="operateVisible = false">
                 <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
                     <i class="taskfont">&#xe6fb;</i>
                     <div class="menu-title">{{$L('仪表盘')}}</div>
-                    <Badge v-if="dashboardTask.overdue.length > 0" class="menu-badge" type="error" :count="dashboardTask.overdue.length"/>
-                    <Badge v-else-if="dashboardTask.today.length > 0" class="menu-badge" type="info" :count="dashboardTask.today.length"/>
-                    <Badge v-else-if="dashboardTask.all.length > 0" class="menu-badge" type="primary" :count="dashboardTask.all.length"/>
+                    <Badge v-if="dashboardTask.overdue_count > 0" class="menu-badge" type="error" :overflow-count="999" :count="dashboardTask.overdue_count"/>
+                    <Badge v-else-if="dashboardTask.today_count > 0" class="menu-badge" type="info" :overflow-count="999" :count="dashboardTask.today_count"/>
+                    <Badge v-else-if="dashboardTask.all_count > 0" class="menu-badge" type="primary" :overflow-count="999" :count="dashboardTask.all_count"/>
                 </li>
                 <li @click="toggleRoute('calendar')" :class="classNameRoute('calendar')">
                     <i class="taskfont">&#xe6f5;</i>
@@ -147,20 +110,22 @@
                 <li @click="toggleRoute('messenger')" :class="classNameRoute('messenger')">
                     <i class="taskfont">&#xe6eb;</i>
                     <div class="menu-title">{{$L('消息')}}</div>
-                    <Badge class="menu-badge" :count="msgAllUnread"/>
+                    <Badge class="menu-badge" :overflow-count="999" :text="msgUnreadMention"/>
                 </li>
                 <li @click="toggleRoute('file')" :class="classNameRoute('file')">
                     <i class="taskfont">&#xe6f3;</i>
                     <div class="menu-title">{{$L('文件')}}</div>
                 </li>
-                <li ref="projectWrapper" class="menu-project">
-                    <ul :class="overlayClass" @scroll="handleClickTopOperateOutside">
+                <li ref="menuProject" class="menu-project">
+                    <ul :class="listClassName" @scroll="operateVisible = false">
                         <li
                             v-for="(item, key) in projectLists"
+                            :ref="`project_${item.id}`"
                             :key="key"
                             :class="classNameProject(item)"
-                            @click="toggleRoute('project/' + item.id)"
-                            @contextmenu.prevent.stop="handleRightClick($event, item)">
+                            :data-id="item.id"
+                            @click="toggleRoute('project', {projectId: item.id})"
+                            v-longpress="handleLongpress">
                             <div class="project-h1">
                                 <em @click.stop="toggleOpenMenu(item.id)"></em>
                                 <div class="title">{{item.name}}</div>
@@ -180,38 +145,45 @@
                                 </p>
                             </div>
                         </li>
+                        <li v-if="projectKeyLoading > 0" class="loading"><Loading/></li>
                     </ul>
-                    <Loading v-if="loadIng > 0"/>
-                    <div class="top-operate" :style="topOperateStyles">
-                        <Dropdown
-                            trigger="custom"
-                            :visible="topOperateVisible"
-                            transfer-class-name="page-file-dropdown-menu"
-                            @on-clickoutside="handleClickTopOperateOutside"
-                            transfer>
-                            <DropdownMenu slot="list">
-                                <DropdownItem @click.native="handleTopClick">
-                                    {{ $L(topOperateItem.top_at ? '取消置顶' : '置顶该项目') }}
-                                </DropdownItem>
-                            </DropdownMenu>
-                        </Dropdown>
-                    </div>
                 </li>
             </ul>
+            <div class="operate-position" :style="operateStyles" v-show="operateVisible">
+                <Dropdown
+                    trigger="custom"
+                    :placement="windowLarge ? 'bottom' : 'top'"
+                    :visible="operateVisible"
+                    @on-clickoutside="operateVisible = false"
+                    transfer>
+                    <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
+                    <DropdownMenu slot="list">
+                        <DropdownItem @click.native="handleTopClick">
+                            {{ $L(operateItem.top_at ? '取消置顶' : '置顶该项目') }}
+                        </DropdownItem>
+                    </DropdownMenu>
+                </Dropdown>
+            </div>
             <div
-                v-if="projectTotal > 20"
-                class="manage-project-search"
-                :class="{loading:projectKeyLoading > 0}">
-                <Input prefix="ios-search" v-model="projectKeyValue" :placeholder="$L('共' + projectTotal + '个项目，搜索...')" clearable />
+                v-if="(projectSearchShow || projectTotal > 20) && windowHeight > 600"
+                class="manage-project-search">
+                <Input v-model="projectKeyValue" :placeholder="$L(`共${projectTotal || cacheProjects.length}个项目，搜索...`)" clearable>
+                    <div class="search-pre" slot="prefix">
+                        <Loading v-if="projectKeyLoading > 0"/>
+                        <Icon v-else type="ios-search" />
+                    </div>
+                </Input>
             </div>
             <ButtonGroup class="manage-box-new-group">
                 <Button class="manage-box-new" type="primary" icon="md-add" @click="onAddShow">{{$L('新建项目')}}</Button>
-                <Dropdown @on-click="onAddTask(0)">
+                <Dropdown @on-click="onAddMenu" trigger="click">
                     <Button type="primary">
                         <Icon type="ios-arrow-down"></Icon>
                     </Button>
                     <DropdownMenu slot="list">
-                        <DropdownItem>{{$L('新建任务')}} ({{mateName}}+K)</DropdownItem>
+                        <DropdownItem name="task">{{$L('新建任务')}} ({{mateName}}+K)</DropdownItem>
+                        <DropdownItem name="createMeeting">{{$L('新会议')}} ({{mateName}}+J)</DropdownItem>
+                        <DropdownItem name="joinMeeting">{{$L('加入会议')}}</DropdownItem>
                     </DropdownMenu>
                 </Dropdown>
             </ButtonGroup>
@@ -219,7 +191,7 @@
 
         <div class="manage-box-main">
             <keep-alive>
-                <router-view class="manage-box-view overlay"></router-view>
+                <router-view class="manage-box-view"></router-view>
             </keep-alive>
         </div>
 
@@ -266,63 +238,30 @@
         </Modal>
 
         <!--导出任务统计-->
-        <Modal
-            v-model="exportTaskShow"
-            :title="$L('导出任务统计')"
-            :mask-closable="false">
-            <Form ref="exportTask" :model="exportData" label-width="auto" @submit.native.prevent>
-                <FormItem :label="$L('导出会员')">
-                    <UserInput v-model="exportData.userid" :multiple-max="20" :placeholder="$L('请选择会员')"/>
-                </FormItem>
-                <FormItem :label="$L('时间范围')">
-                    <DatePicker
-                        v-model="exportData.time"
-                        type="daterange"
-                        format="yyyy/MM/dd"
-                        style="width:100%"
-                        :placeholder="$L('请选择时间')"/>
-                </FormItem>
-                <FormItem prop="type" :label="$L('导出时间类型')">
-                    <RadioGroup v-model="exportData.type">
-                        <Radio label="taskTime">{{$L('任务时间')}}</Radio>
-                        <Radio label="createdTime">{{$L('创建时间')}}</Radio>
-                    </RadioGroup>
-                </FormItem>
-            </Form>
-            <div slot="footer" class="adaption">
-                <Button type="default" @click="exportTaskShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="exportLoadIng > 0" @click="onExportTask">{{$L('导出')}}</Button>
-            </div>
-        </Modal>
+        <TaskExport v-model="exportTaskShow"/>
+
+        <!--导出签到数据-->
+        <CheckinExport v-model="exportCheckinShow"/>
 
         <!--任务详情-->
-        <Modal
-            :value="taskId > 0"
-            :styles="{
-                width: '90%',
-                maxWidth: taskData.dialog_id ? '1200px' : '700px'
-            }"
-            :mask-closable="false"
-            :footer-hide="true"
-            @on-visible-change="taskVisibleChange">
-            <div class="page-manage-task-modal" :style="taskStyle">
-                <TaskDetail ref="taskDetail" :task-id="taskId" :open-task="taskData"/>
-            </div>
-        </Modal>
+        <TaskModal ref="taskModal"/>
+
+        <!--聊天窗口（移动端）-->
+        <DialogModal ref="dialogModal"/>
 
         <!--工作报告-->
         <DrawerOverlay
             v-model="workReportShow"
             placement="right"
-            :size="1100">
-            <Report v-if="workReportShow" :reportType="reportTabs" :reportUnreadNumber="reportUnreadNumber" @on-read="getReportUnread" />
+            :size="1200">
+            <Report v-if="workReportShow" :reportType="reportTabs" @on-read="$store.dispatch('getReportUnread', 1000)" />
         </DrawerOverlay>
 
         <!--查看所有团队-->
         <DrawerOverlay
             v-model="allUserShow"
             placement="right"
-            :size="1100">
+            :size="1380">
             <TeamManagement v-if="allUserShow"/>
         </DrawerOverlay>
 
@@ -330,7 +269,7 @@
         <DrawerOverlay
             v-model="allProjectShow"
             placement="right"
-            :size="1100">
+            :size="1200">
             <ProjectManagement v-if="allProjectShow"/>
         </DrawerOverlay>
 
@@ -338,53 +277,63 @@
         <DrawerOverlay
             v-model="archivedProjectShow"
             placement="right"
-            :size="1100">
+            :size="1200">
             <ProjectArchived v-if="archivedProjectShow"/>
         </DrawerOverlay>
 
-        <!--菜单按钮-->
-        <DragBallComponent
-            :distanceLeft="0"
-            :distanceTop="60"
-            @on-click="show768Menu=!show768Menu">
-            <div class="manage-mini-menu">
-                <Icon :type="show768Menu ? 'md-close' : 'md-menu'" />
-                <Badge :count="unreadTotal"/>
-            </div>
-        </DragBallComponent>
+        <!--会议管理-->
+        <MeetingManager/>
+
+        <!--移动端选项卡-->
+        <transition name="mobile-slide">
+            <MobileTabbar v-if="showMobileTabbar" @on-click="onTabbarClick"/>
+        </transition>
+        <MobileBack :showTabbar="showMobileTabbar"/>
+        <MobileNotification ref="mobileNotification"/>
     </div>
 </template>
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import TaskDetail from "./manage/components/TaskDetail";
 import ProjectArchived from "./manage/components/ProjectArchived";
 import TeamManagement from "./manage/components/TeamManagement";
 import ProjectManagement from "./manage/components/ProjectManagement";
 import DrawerOverlay from "../components/DrawerOverlay";
-import DragBallComponent from "../components/DragBallComponent";
+import MobileTabbar from "../components/Mobile/Tabbar";
 import TaskAdd from "./manage/components/TaskAdd";
 import Report from "./manage/components/Report";
+import MobileBack from "../components/Mobile/Back";
+import MobileNotification from "../components/Mobile/Notification";
+import MeetingManager from "./manage/components/MeetingManager";
+import longpress from "../directives/longpress";
+import DialogModal from "./manage/components/DialogModal";
+import TaskModal from "./manage/components/TaskModal";
+import CheckinExport from "./manage/components/CheckinExport";
+import TaskExport from "./manage/components/TaskExport";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
-import UserInput from "../components/UserInput";
 
 export default {
     components: {
-        UserInput,
+        TaskExport,
+        CheckinExport,
+        TaskModal,
+        DialogModal,
+        MeetingManager,
+        MobileNotification,
+        MobileBack,
+        MobileTabbar,
         TaskAdd,
-        TaskDetail,
         Report,
-        DragBallComponent,
         DrawerOverlay,
         ProjectManagement,
         TeamManagement,
         ProjectArchived},
+    directives: {longpress},
     data() {
         return {
             loadIng: 0,
 
-            curPath: this.$route.path,
             mateName: /macintosh|mac os x/i.test(navigator.userAgent) ? '⌘' : 'Ctrl',
 
             addShow: false,
@@ -393,66 +342,66 @@ export default {
                 columns: '',
                 flow: 'open',
             },
-            addRule: {},
+            addRule: {
+                name: [
+                    { required: true, message: this.$L('请填写项目名称！'), trigger: 'change' },
+                    { type: 'string', min: 2, message: this.$L('项目名称至少2个字！'), trigger: 'change' }
+                ]
+            },
 
             addTaskShow: false,
             addTaskSubscribe: null,
 
             exportTaskShow: false,
-            exportLoadIng: 0,
-            exportData: {
-                userid: [],
-                time: [],
-                type:'taskTime',
-            },
+            exportCheckinShow: false,
 
             dialogMsgSubscribe: null,
 
             projectKeyValue: '',
-            projectKeyAlready: {},
             projectKeyLoading: 0,
+            projectSearchShow: false,
 
             openMenu: {},
             visibleMenu: false,
             show768Menu: false,
-            innerHeight: window.innerHeight,
 
             workReportShow: false,
             allUserShow: false,
             allProjectShow: false,
             archivedProjectShow: false,
 
-            natificationHidden: false,
             natificationReady: false,
-            notificationClass: null,
+            notificationManage: null,
 
             reportTabs: "my",
-            reportUnreadNumber: 0,
 
-            topOperateStyles: {},
-            topOperateVisible: false,
-            topOperateItem: {},
+            operateStyles: {},
+            operateVisible: false,
+            operateItem: {},
+
+            needStartHome: false,
         }
     },
 
     mounted() {
-        if ($A.getStorageString("clearCache")) {
-            $A.setStorage("clearCache", "")
-            $A.messageSuccess("清除成功");
-        }
-        //
-        this.$store.dispatch("getUserInfo").catch(() => {})
-        this.$store.dispatch("getTaskPriority").catch(() => {})
-        //
-        this.getReportUnread(0);
         this.notificationInit();
-        this.onVisibilityChange();
         //
         this.addTaskSubscribe = Store.subscribe('addTask', this.onAddTask);
         this.dialogMsgSubscribe = Store.subscribe('dialogMsgPush', this.addDialogMsg);
         //
         document.addEventListener('keydown', this.shortcutEvent);
-        window.addEventListener('resize', this.innerHeightListener);
+    },
+
+    activated() {
+        this.$store.dispatch("getUserInfo").catch(_ => {})
+        this.$store.dispatch("getTaskPriority").catch(_ => {})
+        this.$store.dispatch("getReportUnread", 0)
+        //
+        this.$store.dispatch("needHome").then(_ => {
+            this.needStartHome = true
+        }).catch(_ => {
+            this.needStartHome = false
+        })
     },
 
     beforeDestroy() {
@@ -466,7 +415,6 @@ export default {
         }
         //
         document.removeEventListener('keydown', this.shortcutEvent);
-        window.removeEventListener('resize', this.innerHeightListener);
     },
 
     deactivated() {
@@ -475,96 +423,153 @@ export default {
 
     computed: {
         ...mapState([
-            'userId',
             'userInfo',
             'userIsAdmin',
+            'cacheUserBasic',
             'cacheTasks',
             'cacheDialogs',
             'cacheProjects',
             'projectTotal',
-            'taskId',
             'wsOpenNum',
             'columnTemplate',
-            'dialogOpenId',
-
-            'themeMode',
-            'themeList',
 
             'wsMsg',
 
             'clientNewVersion',
             'cacheTaskBrowse',
+
+            'dialogIns',
+
+            'reportUnreadNumber',
         ]),
 
-        ...mapGetters(['taskData', 'dashboardTask']),
+        ...mapGetters(['dashboardTask']),
 
+        routeName() {
+            return this.$route.name
+        },
+
+        /**
+         * 综合数（未读、提及、待办）
+         * @returns {string|string}
+         */
+        msgUnreadMention() {
+            let num = 0;        // 未读
+            let mention = 0;    // 提及
+            this.cacheDialogs.some(dialog => {
+                num += $A.getDialogUnread(dialog, false);
+                mention += $A.getDialogMention(dialog);
+            })
+            if (num > 999) {
+                num = "999+"
+            }
+            if (mention > 999) {
+                mention = "999+"
+            }
+            const todoNum = this.msgTodoTotal   // 待办
+            if (todoNum) {
+                if (mention) {
+                    return `@${mention}·${todoNum}`
+                }
+                if (num) {
+                    return `${num}·${todoNum}`
+                }
+                return todoNum;
+            }
+            if (num) {
+                if (mention) {
+                    return `${num}·@${mention}`
+                }
+                return String(num)
+            }
+            if (mention) {
+                return `@${mention}`
+            }
+            return "";
+        },
+
+        /**
+         * 未读消息数
+         * @returns {number}
+         */
         msgAllUnread() {
             let num = 0;
             this.cacheDialogs.some(dialog => {
-                let unread = $A.getDialogUnread(dialog);
-                if (unread) {
-                    num += unread;
-                }
+                num += $A.getDialogNum(dialog);
             })
             return num;
         },
 
-        unreadTotal() {
+        /**
+         * 待办消息数
+         * @returns {string|null}
+         */
+        msgTodoTotal() {
+            let todoNum = this.cacheDialogs.reduce((total, current) => total + (current.todo_num || 0), 0)
+            if (todoNum > 0) {
+                if (todoNum > 99) {
+                    todoNum = "99+"
+                } else if (todoNum === 1) {
+                    todoNum = ""
+                }
+                return `${this.$L("待办")}${todoNum}`
+            }
+            return null;
+        },
+
+        /**
+         * 未读消息 + 逾期任务
+         * @returns {number|*}
+         */
+        unreadAndOverdue() {
             if (this.userId > 0) {
-                return this.msgAllUnread + this.dashboardTask.overdue.length + this.reportUnreadNumber
+                return this.msgAllUnread + this.dashboardTask.overdue_count
             } else {
                 return 0
             }
         },
 
-        currentLanguage() {
-            return this.languageList[this.languageType] || 'Language'
-        },
-
         menu() {
-            const {userIsAdmin} = this;
+            const {userIsAdmin, needStartHome} = this;
+            const array = [
+                {path: 'taskBrowse', name: '最近打开的任务'}
+            ];
             if (userIsAdmin) {
-                return [
-                    {path: 'taskBrowse', name: '最近打开的任务'},
-
+                array.push(...[
                     {path: 'personal', name: '个人设置', divided: true},
-                    {path: 'password', name: '密码设置'},
-                    {path: 'clearCache', name: '清除缓存'},
+                    {path: 'system', name: '系统设置'},
+                    {path: 'license', name: 'License Key'},
 
-                    {path: 'system', name: '系统设置', divided: true},
-                    {path: 'version', name: '更新版本', visible: !!this.clientNewVersion},
+                    {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
 
                     {path: 'allProject', name: '所有项目', divided: true},
                     {path: 'archivedProject', name: '已归档的项目'},
 
                     {path: 'team', name: '团队管理', divided: true},
-
-                    {path: 'theme', name: '主题皮肤', divided: true},
-
-                    {path: 'language', name: this.currentLanguage, divided: true},
-
-                    {path: 'logout', name: '退出登录', style: {color: '#f40'}, divided: true},
-                ]
+                ])
             } else {
-                return [
-                    {path: 'taskBrowse', name: '最近打开的任务'},
-
+                array.push(...[
                     {path: 'personal', name: '个人设置', divided: true},
-                    {path: 'password', name: '密码设置'},
-                    {path: 'clearCache', name: '清除缓存'},
 
                     {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
 
                     {path: 'workReport', name: '工作报告', divided: true},
                     {path: 'archivedProject', name: '已归档的项目'},
-
-                    {path: 'theme', name: '主题皮肤', divided: true},
-
-                    {path: 'language', name: this.currentLanguage, divided: true},
-
-                    {path: 'logout', name: '退出登录', style: {color: '#f40'}, divided: true},
-                ]
+                ])
             }
+            if (needStartHome) {
+                array.push(...[
+                    {path: 'goHome', name: '打开首页', divided: true},
+                    {path: 'clearCache', name: '清除缓存'},
+                    {path: 'logout', name: '退出登录', style: {color: '#f40'}}
+                ])
+            } else {
+                array.push(...[
+                    {path: 'clearCache', name: '清除缓存', divided: true},
+                    {path: 'logout', name: '退出登录', style: {color: '#f40'}}
+                ])
+            }
+            return array
         },
 
         columns() {
@@ -585,22 +590,15 @@ export default {
                 return b.id - a.id;
             });
             if (projectKeyValue) {
-                return data.filter(({name}) => name.toLowerCase().indexOf(projectKeyValue.toLowerCase()) > -1);
+                return data.filter(item => $A.strExists(`${item.name} ${item.desc}`, projectKeyValue));
             }
             return data;
         },
 
-        taskStyle() {
-            const {innerHeight} = this;
+        listClassName() {
             return {
-                maxHeight: (innerHeight - (innerHeight > 900 ? 200 : 70) - 20) + 'px'
-            }
-        },
-
-        overlayClass() {
-            return {
-                'overlay-y': true,
-                'overlay-none': this.topOperateVisible === true,
+                'scrollbar-overlay': true,
+                'scrollbar-hidden': this.operateVisible === true,
             }
         },
 
@@ -610,22 +608,22 @@ export default {
                 return cacheTasks.find(task => task.id === id) || {}
             });
         },
+
+        showMobileTabbar() {
+            if (this.routeName === 'manage-project' && !/^\d+$/.test(this.$route.params.projectId)) {
+                return true;
+            }
+            return ['manage-dashboard', 'manage-calendar', 'manage-messenger', 'manage-file', 'manage-setting'].includes(this.routeName)
+        },
     },
 
     watch: {
-        '$route' (route) {
-            this.curPath = route.path;
+        '$route' () {
             this.chackPass();
         },
 
         userInfo() {
             this.chackPass();
-        },
-
-        taskId(id) {
-            if (id > 0) {
-                this.$Modal.resetIndex();
-            }
         },
 
         projectKeyValue(val) {
@@ -639,42 +637,41 @@ export default {
             }, 600);
         },
 
-        natificationHidden(val) {
-            clearTimeout(this.notificationTimeout);
-            if (!val && this.notificationClass) {
-                this.notificationTimeout = setTimeout(() => {
-                    this.notificationClass.close();
-                }, 6000);
-            }
-        },
-
         wsOpenNum(num) {
             if (num <= 1) return
-            this.wsOpenTimeout && clearTimeout(this.wsOpenTimeout)
-            this.wsOpenTimeout = setTimeout(() => {
-                this.$store.dispatch("getBasicData")
-                this.getReportUnread()
-            }, 5000)
+            this.$store.dispatch("getBasicData", 600)
         },
 
         workReportShow(show) {
             if (show) {
-                this.getReportUnread(0);
+                this.$store.dispatch("getReportUnread", 0)
             }
         },
 
-        unreadTotal: {
-            handler(num) {
-                if (this.$Electron) {
-                    this.$Electron.sendMessage('setDockBadge', num);
-                }
+        'cacheProjects.length': {
+            handler() {
+                this.$nextTick(_ => {
+                    const menuProject = this.$refs.menuProject
+                    const lastEl = $A.last($A.getObject(menuProject, 'children.0.children'))
+                    if (lastEl) {
+                        const lastRect = lastEl.getBoundingClientRect()
+                        const menuRect = menuProject.getBoundingClientRect()
+                        if (lastRect.top > menuRect.top + menuRect.height) {
+                            this.projectSearchShow = true
+                            return
+                        }
+                    }
+                    this.projectSearchShow = false
+                })
             },
             immediate: true
         },
 
-        userId: {
-            handler() {
-                this.$store.dispatch("websocketConnection")
+        unreadAndOverdue: {
+            handler(val) {
+                if (this.$Electron) {
+                    this.$Electron.sendMessage('setDockBadge', val);
+                }
             },
             immediate: true
         },
@@ -685,7 +682,7 @@ export default {
                 switch (type) {
                     case 'report':
                         if (action == 'unreadUpdate') {
-                            this.getReportUnread()
+                            this.$store.dispatch("getReportUnread", 1000)
                         }
                         break;
                 }
@@ -695,32 +692,20 @@ export default {
     },
 
     methods: {
-        initLanguage() {
-            this.addRule = {
-                name: [
-                    { required: true, message: this.$L('请填写项目名称！'), trigger: 'change' },
-                    { type: 'string', min: 2, message: this.$L('项目名称至少2个字！'), trigger: 'change' }
-                ]
-            };
-        },
-
-        innerHeightListener() {
-            this.innerHeight = window.innerHeight;
-        },
-
         chackPass() {
             if (this.userInfo.changepass === 1) {
                 this.goForward({name: 'manage-setting-password'});
             }
         },
 
-        setTheme(mode) {
-            this.$store.dispatch("setTheme", mode)
-        },
-
-        toggleRoute(path) {
+        async toggleRoute(path, params) {
             this.show768Menu = false;
-            this.goForward({path: '/manage/' + path});
+            let location = {name: 'manage-' + path, params: params || {}};
+            let fileFolderId = await $A.IDBInt("fileFolderId");
+            if (path === 'file' && fileFolderId > 0) {
+                location.params.folderId = fileFolderId
+            }
+            this.goForward(location);
         },
 
         toggleOpenMenu(id) {
@@ -741,6 +726,12 @@ export default {
                 case 'exportTask':
                     this.exportTaskShow = true;
                     return;
+                case 'exportOverdueTask':
+                    this.exportOverdueTask();
+                    return;
+                case 'exportCheckin':
+                    this.exportCheckinShow = true;
+                    return;
                 case 'workReport':
                     if (this.reportUnreadNumber > 0) {
                         this.reportTabs = "receive";
@@ -751,12 +742,15 @@ export default {
                     Store.set('updateNotification', null);
                     return;
                 case 'clearCache':
-                    this.$store.dispatch("handleClearCache", null).then(() => {
-                        $A.setStorage("clearCache", $A.randomString(6))
-                        window.location.reload()
-                    }).catch(() => {
-                        window.location.reload()
+                    this.$store.dispatch("handleClearCache", null).then(async () => {
+                        await $A.IDBSet("clearCache", "handle")
+                        $A.reloadUrl()
                     });
+                    return;
+                case 'goHome':
+                    if (this.needStartHome) {
+                        this.goForward({name: 'index', query: {action: 'index'}});
+                    }
                     return;
                 case 'logout':
                     $A.modalConfirm({
@@ -769,8 +763,30 @@ export default {
                     return;
             }
             if (this.menu.findIndex((m) => m.path == path) > -1) {
-                this.toggleRoute('setting/' + path);
+                this.toggleRoute('setting-' + path);
             }
+        },
+
+        exportOverdueTask() {
+            $A.modalConfirm({
+                title: '导出任务',
+                content: '你确定要导出所有超期任务吗？',
+                loading: true,
+                onOk: () => {
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("call", {
+                            url: 'project/task/exportoverdue',
+                        }).then(({data}) => {
+                            resolve();
+                            this.$store.dispatch('downUrl', {
+                                url: data.url
+                            });
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        });
+                    })
+                },
+            });
         },
 
         menuVisibleChange(visible) {
@@ -779,18 +795,37 @@ export default {
 
         classNameRoute(path) {
             return {
-                "active": this.curPath == '/manage/' + path,
+                "active": this.routeName === `manage-${path}`,
             };
         },
 
         classNameProject(item) {
-            let path = 'project/' + item.id;
-            let openMenu = this.openMenu[item.id];
             return {
-                "active": this.curPath == '/manage/' + path,
-                "open-menu": openMenu === true,
-                "operate": item.id == this.topOperateItem.id && this.topOperateVisible
+                "active": this.routeName === 'manage-project' && this.$route.params.projectId == item.id,
+                "open-menu": this.openMenu[item.id] === true,
+                "operate": item.id == this.operateItem.id && this.operateVisible
             };
+        },
+
+        onAddMenu(name) {
+            switch (name) {
+                case 'task':
+                    this.onAddTask(0)
+                    break;
+
+                case 'createMeeting':
+                    Store.set('addMeeting', {
+                        type: 'create',
+                        userids: [this.userId],
+                    });
+                    break;
+
+                case 'joinMeeting':
+                    Store.set('addMeeting', {
+                        type: 'join',
+                    });
+                    break;
+            }
         },
 
         onAddShow() {
@@ -810,13 +845,13 @@ export default {
                         data: this.addData,
                     }).then(({data, msg}) => {
                         $A.messageSuccess(msg);
-                        this.loadIng--;
                         this.addShow = false;
                         this.$refs.addProject.resetFields();
                         this.$store.dispatch("saveProject", data);
-                        this.toggleRoute('project/' + data.id)
+                        this.toggleRoute('project', {projectId: data.id})
                     }).catch(({msg}) => {
                         $A.modalError(msg);
+                    }).finally(_ => {
                         this.loadIng--;
                     });
                 }
@@ -824,11 +859,6 @@ export default {
         },
 
         searchProject() {
-            if (this.projectKeyAlready[this.projectKeyValue] === true) {
-                return;
-            }
-            this.projectKeyAlready[this.projectKeyValue] = true;
-            //
             setTimeout(() => {
                 this.projectKeyLoading++;
             }, 1000)
@@ -836,9 +866,7 @@ export default {
                 keys: {
                     name: this.projectKeyValue
                 }
-            }).then(() => {
-                this.projectKeyLoading--;
-            }).catch(() => {
+            }).finally(_ => {
                 this.projectKeyLoading--;
             });
         },
@@ -851,23 +879,31 @@ export default {
 
         shortcutEvent(e) {
             if (e.metaKey || e.ctrlKey) {
-                if (e.keyCode === 75 || e.keyCode === 78) {
+                if (e.keyCode === 74) {
                     e.preventDefault();
-                    this.onAddTask(0)
-                } else if (e.keyCode === 83 && this.taskId > 0) {
+                    this.onAddMenu('createMeeting')
+                } else if (e.keyCode === 75 || e.keyCode === 78) {
                     e.preventDefault();
-                    this.$refs.taskDetail.checkUpdate(true)
+                    this.onAddMenu('task')
+                } else if (e.keyCode === 83 && this.$refs.taskModal.checkUpdate()) {
+                    e.preventDefault();
                 }
             }
         },
 
-        onAddTask(data) {
-            this.$refs.addTask.defaultPriority();
-            this.$refs.addTask.setData($A.isJson(data) ? data : {
-                'owner': [this.userId],
-                'column_id': data,
-            });
-            this.addTaskShow = true;
+        onAddTask(params) {
+            this.addTaskShow = true
+            this.$nextTick(_ => {
+                let data = {
+                    owner: [this.userId],
+                }
+                if ($A.isJson(params)) {
+                    data = params
+                } else if (/^[1-9]\d*$/.test(params)) {
+                    data.column_id = params
+                }
+                this.$refs.addTask.setData(data)
+            })
         },
 
         openTask(task) {
@@ -875,18 +911,21 @@ export default {
         },
 
         addDialogMsg(data) {
-            if (!this.natificationReady) {
-                return;
+            if (!this.natificationReady && !this.$isEEUiApp) {
+                return; // 通知未准备好不通知
             }
-            if (!this.natificationHidden && this.curPath == "/manage/messenger" && this.dialogOpenId == data.dialog_id) {
-                return;
+            if (this.windowActive && data.dialog_id === $A.last(this.dialogIns)?.dialog_id) {
+                return; // 窗口激活且最后打开的会话是通知的会话时不通知
             }
             //
-            const {id, dialog_id, type, msg} = data;
-            let body = '';
+            const {id, dialog_id, dialog_type, type, msg, userid} = data;
+            if (userid == this.userId) {
+                return; // 自己的消息不通知
+            }
+            let body;
             switch (type) {
                 case 'text':
-                    body = msg.text;
+                    body = $A.getMsgTextPreview(msg.text)
                     break;
                 case 'file':
                     body = '[' + this.$L(msg.type == 'img' ? '图片信息' : '文件信息') + ']'
@@ -894,78 +933,107 @@ export default {
                 default:
                     return;
             }
-            this._notificationId = id;
-            this.notificationClass.replaceOptions({
-                icon: $A.originUrl('images/logo.png'),
-                body: body,
-                data: data,
-                tag: "dialog",
-                requireInteraction: true
-            });
-            let dialog = this.cacheDialogs.find((item) => item.id == dialog_id);
-            if (dialog) {
-                this.notificationClass.replaceTitle(dialog.name);
-                this.notificationClass.userAgreed();
-            } else {
-                this.$store.dispatch("getDialogOne", dialog_id).then(({data}) => {
-                    if (this._notificationId === id) {
-                        this.notificationClass.replaceTitle(data.name);
-                        this.notificationClass.userAgreed();
+            this.__notificationId = id;
+            const notificationFuncA = (title) => {
+                if (dialog_type === 'group') {
+                    let tempUser = this.cacheUserBasic.find(item => item.userid == userid);
+                    if (tempUser) {
+                        notificationFuncB(`${title} (${tempUser.nickname})`)
+                    } else {
+                        this.$store.dispatch("call", {
+                            url: 'users/basic',
+                            data: {
+                                userid: [userid]
+                            },
+                            skipAuthError: true
+                        }).then(({data}) => {
+                            tempUser = data.find(item => item.userid == userid);
+                            if (tempUser) {
+                                notificationFuncB(`${title} (${tempUser.nickname})`)
+                            }
+                        }).catch(_ => {
+                            notificationFuncB(title)
+                        });
                     }
-                }).catch(() => {})
+                } else {
+                    notificationFuncB(title)
+                }
+            }
+            const notificationFuncB = (title) => {
+                if (this.__notificationId === id) {
+                    if (this.$isEEUiApp) {
+                        this.$refs.mobileNotification.open({
+                            userid: userid,
+                            title,
+                            desc: body,
+                            callback: () => {
+                                this.goForward({name: 'manage-messenger'});
+                                this.$store.dispatch('openDialog', dialog_id)
+                            }
+                        })
+                    } else if (this.$Electron) {
+                        this.$Electron.sendMessage('openNotification', {
+                            icon: $A.originUrl('images/logo.png'),
+                            title,
+                            body,
+                            data,
+                            tag: "dialog",
+                            hasReply: true,
+                            replyPlaceholder: this.$L('回复消息')
+                        })
+                    } else {
+                        this.notificationManage.replaceOptions({
+                            icon: $A.originUrl('images/logo.png'),
+                            body: body,
+                            data: data,
+                            tag: "dialog",
+                            // requireInteraction: true // true为通知不自动关闭
+                        });
+                        this.notificationManage.replaceTitle(title);
+                        this.notificationManage.userAgreed();
+                    }
+                }
+            }
+            const dialog = this.cacheDialogs.find((item) => item.id == dialog_id);
+            if (dialog) {
+                notificationFuncA(dialog.name)
+            } else {
+                this.$store.dispatch("getDialogOne", dialog_id).then(({data}) => notificationFuncA(data.name)).catch(() => {})
             }
         },
 
-        taskVisibleChange(visible) {
-            if (!visible) {
-                this.openTask(0)
+        handleLongpress(event, el) {
+            const projectId = $A.getAttr(el, 'data-id')
+            const projectItem = this.projectLists.find(item => item.id == projectId)
+            if (!projectItem) {
+                return
             }
-        },
-
-        getReportUnread(timeout) {
-            this.reportUnreadTimeout && clearTimeout(this.reportUnreadTimeout)
-            this.reportUnreadTimeout = setTimeout(() => {
-                this.$store.dispatch("call", {
-                    url: 'report/unread',
-                }).then(({data}) => {
-                    this.reportUnreadNumber = data.total || 0;
-                }).catch(() => {});
-            }, typeof timeout === "number" ? timeout : 1000)
-        },
-
-        handleRightClick(event, item) {
-            this.handleClickTopOperateOutside();
-            this.topOperateItem = item;
+            this.operateVisible = false;
+            this.operateItem = $A.isJson(projectItem) ? projectItem : {};
             this.$nextTick(() => {
-                const projectWrap = this.$refs.projectWrapper;
-                const projectBounding = projectWrap.getBoundingClientRect();
-                this.topOperateStyles = {
-                    left: `${event.clientX - projectBounding.left}px`,
-                    top: `${event.clientY - projectBounding.top}px`
-                };
-                this.topOperateVisible = true;
+                const projectRect = el.getBoundingClientRect();
+                const wrapRect = this.$refs.menuProject.getBoundingClientRect();
+                this.operateStyles = {
+                    left: `${event.clientX - wrapRect.left}px`,
+                    top: `${projectRect.top + this.windowScrollY}px`,
+                    height: projectRect.height + 'px',
+                }
+                this.operateVisible = true;
             })
-        },
-
-        handleClickTopOperateOutside() {
-            this.topOperateVisible = false;
         },
 
         handleTopClick() {
             this.$store.dispatch("call", {
                 url: 'project/top',
                 data: {
-                    project_id: this.topOperateItem.id,
+                    project_id: this.operateItem.id,
                 },
             }).then(({data}) => {
                 this.$store.dispatch("saveProject", data);
                 this.$nextTick(() => {
-                    let active = this.$refs.projectWrapper.querySelector(".active")
+                    const active = this.$refs.menuProject.querySelector(".active")
                     if (active) {
-                        $A.scrollToView(active, {
-                            behavior: 'instant',
-                            scrollMode: 'if-needed',
-                        });
+                        $A.scrollIntoViewIfNeeded(active);
                     }
                 });
             }).catch(({msg}) => {
@@ -973,52 +1041,50 @@ export default {
             });
         },
 
-        onExportTask() {
-            if (this.exportLoadIng > 0) {
-                return;
+        onTabbarClick(act) {
+            switch (act) {
+                case 'addTask':
+                    this.onAddTask(0)
+                    break;
+                case 'addProject':
+                    this.onAddShow()
+                    break;
             }
-            this.exportLoadIng++;
-            this.$store.dispatch("call", {
-                url: 'project/task/export',
-                data: this.exportData,
-            }).then(({data}) => {
-                this.exportLoadIng--;
-                this.exportTaskShow = false;
-                this.$store.dispatch('downUrl', {
-                    url: data.url
-                });
-            }).catch(({msg}) => {
-                this.exportLoadIng--;
-                $A.modalError(msg);
-            });
         },
 
+        /**
+         * 初始化通知
+         */
         notificationInit() {
-            this.notificationClass = new notificationKoro(this.$L("打开通知成功"));
-            if (this.notificationClass.support) {
-                this.notificationClass.notificationEvent({
+            this.notificationManage = new notificationKoro(this.$L("打开通知成功"));
+            if (this.notificationManage.support) {
+                this.notificationManage.notificationEvent({
                     onclick: ({target}) => {
-                        console.log("[Notification] Click", target);
-                        this.notificationClass.close();
-                        window.focus();
-                        //
-                        const {tag, data} = target;
-                        if (tag == 'dialog') {
-                            if (!$A.isJson(data)) {
-                                return;
-                            }
-                            this.goForward({name: 'manage-messenger'});
-                            if (data.dialog_id) {
-                                $A.setStorage("messenger::dialogId", data.dialog_id)
-                                this.$store.state.dialogOpenId = data.dialog_id;
-                            }
-                        }
+                        console.log("[Notification] A Click", target);
+                        this.notificationManage.close();
+                        this.notificationClick(target)
+                        window.focus()
                     },
                 });
                 this.notificationPermission();
             }
+            //
+            if (this.$Electron) {
+                this.$Electron.registerMsgListener('clickNotification', target => {
+                    console.log("[Notification] B Click", target);
+                    this.$Electron.sendMessage('mainWindowActive')
+                    this.notificationClick(target)
+                })
+                this.$Electron.registerMsgListener('replyNotification', target => {
+                    console.log("[Notification] B Reply", target);
+                    this.notificationReply(target)
+                })
+            }
         },
 
+        /**
+         * 通知权限
+         */
         notificationPermission() {
             const userSelectFn = msg => {
                 switch (msg) {
@@ -1029,7 +1095,7 @@ export default {
 
                     // 请求权限通知被关闭，再次调用
                     case 'close':
-                        return this.notificationClass.initNotification(userSelectFn);
+                        return this.notificationManage.initNotification(userSelectFn);
 
                     // 请求权限当前被拒绝 || 曾经被拒绝
                     case 'denied':
@@ -1042,16 +1108,49 @@ export default {
                         break;
                 }
             };
-            this.notificationClass.initNotification(userSelectFn);
+            this.notificationManage.initNotification(userSelectFn);
         },
 
-        onVisibilityChange() {
-            let hiddenProperty = 'hidden' in document ? 'hidden' : 'webkitHidden' in document ? 'webkitHidden' : 'mozHidden' in document ? 'mozHidden' : null;
-            let visibilityChangeEvent = hiddenProperty.replace(/hidden/i, 'visibilitychange');
-            let visibilityChangeListener = () => {
-                this.natificationHidden = !!document[hiddenProperty]
+        /**
+         * 点击通知（客户端）
+         * @param target
+         */
+        notificationClick(target) {
+            const {tag, data} = target;
+            if (tag == 'dialog') {
+                if (!$A.isJson(data)) {
+                    return;
+                }
+                this.goForward({name: 'manage-messenger'});
+                this.$nextTick(_ => {
+                    this.$store.dispatch('openDialog', data.dialog_id)
+                })
             }
-            document.addEventListener(visibilityChangeEvent, visibilityChangeListener);
+        },
+
+        /**
+         * 回复通知（客户端）
+         * @param target
+         */
+        notificationReply(target) {
+            const {tag, data, reply} = target;
+            if (tag == 'dialog' && reply) {
+                this.$store.dispatch("call", {
+                    url: 'dialog/msg/sendtext',
+                    data: {
+                        dialog_id: data.dialog_id,
+                        text: reply,
+                    },
+                    method: 'post',
+                }).then(({data}) => {
+                    this.$store.dispatch("saveDialogMsg", data);
+                    this.$store.dispatch("increaseTaskMsgNum", data);
+                    this.$store.dispatch("increaseMsgReplyNum", data);
+                    this.$store.dispatch("updateDialogLastMsg", data);
+                }).catch(({msg}) => {
+                    $A.modalError(msg)
+                });
+            }
         },
     }
 }

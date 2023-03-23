@@ -12,7 +12,7 @@
                     <TaskMenu :ref="`taskMenu_${item.id}`" :task="item"/>
                     <div class="item-title" @click="openTask(item)">
                         <!--工作流状态-->
-                        <span v-if="item.flow_item_name" :class="item.flow_item_status" @click.stop="openMenu(item)">{{item.flow_item_name}}</span>
+                        <span v-if="item.flow_item_name" :class="item.flow_item_status" @click.stop="openMenu($event, item)">{{item.flow_item_name}}</span>
                         <!--是否子任务-->
                         <span v-if="item.sub_top === true">{{$L('子任务')}}</span>
                         <!--有多少个子任务-->
@@ -86,6 +86,7 @@
                     <ETooltip
                         v-if="!item.complete_at && item.end_at"
                         :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
+                        :disabled="windowSmall || $isEEUiApp"
                         :open-delay="600"
                         :content="item.end_at">
                         <div @click="openTask(item)">{{expiresFormat(item.end_at)}}</div>
@@ -191,7 +192,7 @@ export default {
                 // 修改列表
                 el[0].updateTask({
                     column_id: $A.leftDelete(command, 'column::')
-                }).catch(() => {})
+                })
                 return;
             }
             if ($A.leftExists(command, 'priority::')) {
@@ -202,7 +203,7 @@ export default {
                         p_level: data.priority,
                         p_name: data.name,
                         p_color: data.color,
-                    }).catch(() => {})
+                    })
                 }
             }
         },
@@ -248,10 +249,10 @@ export default {
             }
         },
 
-        openMenu(task) {
+        openMenu(event, task) {
             const el = this.$refs[`taskMenu_${task.id}`];
             if (el) {
-                el[0].handleClick()
+                el[0].handleClick(event)
             }
         },
 

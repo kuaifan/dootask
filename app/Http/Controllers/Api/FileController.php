@@ -13,6 +13,7 @@ use App\Module\Base;
 use App\Module\Ihttp;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Redirect;
 use Request;
 
 /**
@@ -44,11 +45,12 @@ class FileController extends AbstractController
         $pid = intval($data['pid']);
         //
         $permission = 1000;
+        $userids = $user->isTemp() ? [$user->userid] : [0, $user->userid];
+        $builder = File::wherePid($pid);
         if ($pid > 0) {
-            File::permissionFind($pid, 0, $permission);
-            $builder = File::wherePid($pid);
+            File::permissionFind($pid, $userids, 0, $permission);
         } else {
-            $builder = File::whereUserid($user->userid);
+            $builder->whereUserid($user->userid);
         }
         //
         $array = $builder->take(500)->get()->toArray();
@@ -65,8 +67,24 @@ class FileController extends AbstractController
                 }
                 $pid = $file->pid;
                 $temp = $file->toArray();
-                $temp['permission'] = $file->getPermission($user->userid);
+                $temp['permission'] = $file->getPermission($userids);
                 $array[] = $temp;
+            }
+            // 去除没有权限的文件
+            $isUnset = false;
+            foreach ($array as $index1 => $item1) {
+                if ($item1['permission'] === -1) {
+                    foreach ($array as $index2 => $item2) {
+                        if ($item2['pid'] === $item1['id']) {
+                            $array[$index2]['pid'] = 0;
+                        }
+                    }
+                    $isUnset = true;
+                    unset($array[$index1]);
+                }
+            }
+            if ($isUnset) {
+                $array = array_values($array);
             }
         } else {
             // 获取共享相关
@@ -75,10 +93,7 @@ class FileController extends AbstractController
             $list = File::select(["files.*", DB::raw("MAX({$pre}file_users.permission) as permission")])
                 ->join('file_users', 'files.id', '=', 'file_users.file_id')
                 ->where('files.userid', '!=', $user->userid)
-                ->where(function ($query) use ($user) {
-                    $query->where('file_users.userid', 0);
-                    $query->orWhere('file_users.userid', $user->userid);
-                })
+                ->whereIn('file_users.userid', $userids)
                 ->groupBy('files.id')
                 ->take(100)
                 ->get();
@@ -92,7 +107,7 @@ class FileController extends AbstractController
         }
         // 图片直接返回预览地址
         foreach ($array as &$item) {
-            File::handleImageUrl($item);
+            $item = File::handleImageUrl($item);
         }
         return Base::retSuccess('success', $array);
     }
@@ -119,13 +134,18 @@ class FileController extends AbstractController
         //
         $permission = 0;
         if (Base::isNumber($id)) {
-            User::auth();
-            $file = File::permissionFind(intval($id), 0, $permission);
+            $user = User::auth();
+            $file = File::permissionFind(intval($id), $user, 0, $permission);
         } elseif ($id) {
             $fileLink = FileLink::whereCode($id)->first();
             $file = $fileLink?->file;
             if (empty($file)) {
-                return Base::retError('链接不存在');
+                $msg = '文件链接不存在';
+                $data = File::code2IdName($id);
+                if ($data) {
+                    $msg = "【{$data->name}】 {$msg}";
+                }
+                return Base::retError($msg, $data);
             }
         } else {
             return Base::retError('参数错误');
@@ -144,6 +164,7 @@ class FileController extends AbstractController
      * @apiGroup file
      * @apiName search
      *
+     * @apiParam {String} [link]        通过分享地址搜索（如：https://t.hitosea.com/single/file/ODcwOCwzOSxpa0JBS2lmVQ==）
      * @apiParam {String} [key]         关键词
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -154,15 +175,54 @@ class FileController extends AbstractController
     {
         $user = User::auth();
         //
+        $link = trim(Request::input('link'));
         $key = trim(Request::input('key'));
-        if (empty($key)) {
-            return Base::retError('请输入关键词');
+        $id = 0;
+        $take = 50;
+        if (preg_match("/\/single\/file\/(.*?)$/i", $link, $match)) {
+            $id = intval(FileLink::whereCode($match[1])->value('file_id'));
+            $take = 1;
+        }
+        // 搜索自己的
+        $builder = File::whereUserid($user->userid);
+        if ($id) {
+            $builder->where("id", $id);
+        }
+        if ($key) {
+            $builder->where("name", "like", "%{$key}%");
+        }
+        $array = $builder->take($take)->get()->toArray();
+        // 搜索共享的
+        $take = $take - count($array);
+        if ($take > 0 && ($id || $key)) {
+            $builder = File::whereIn('pshare', function ($queryA) use ($user) {
+                $queryA->select('files.id')
+                    ->from('files')
+                    ->join('file_users', 'files.id', '=', 'file_users.file_id')
+                    ->where('files.userid', '!=', $user->userid)
+                    ->where(function ($queryB) use ($user) {
+                        $queryB->whereIn('file_users.userid', [0, $user->userid]);
+                    });
+            });
+            if ($id) {
+                $builder->where("id", $id);
+            }
+            if ($key) {
+                $builder->where("name", "like", "%{$key}%");
+            }
+            $list = $builder->take($take)->get();
+            if ($list->isNotEmpty()) {
+                foreach ($list as $file) {
+                    $temp = $file->toArray();
+                    if ($file->pshare === $file->id) {
+                        $temp['pid'] = 0;
+                    }
+                    $array[] = $temp;
+                }
+            }
         }
         //
-        $builder = File::whereUserid($user->userid)->where("name", "like", "%{$key}%");
-        $list = $builder->take(50)->get();
-        //
-        return Base::retSuccess('success', $list);
+        return Base::retSuccess('success', $array);
     }
 
     /**
@@ -195,15 +255,24 @@ class FileController extends AbstractController
         } elseif (mb_strlen($name) > 32) {
             return Base::retError('文件名称最多只能设置32个字');
         }
+        $tmpName = preg_replace("/[\\\\\/:*?\"<>|]/", '', $name);
+        if ($tmpName != $name) {
+            return Base::retError("文件名称不能包含这些字符：\/:*?\"<>|");
+        }
         //
         if ($id > 0) {
             // 修改
-            $file = File::permissionFind($id, 1);
+            $file = File::permissionFind($id, $user, 1);
             //
             $file->name = $name;
+            $file->handleDuplicateName();
             $file->save();
-            $file->pushMsg('update', $file);
-            return Base::retSuccess('修改成功', $file);
+            $data = [
+                'id' => $file->id,
+                'name' => $file->name,
+            ];
+            $file->pushMsg('update', $data);
+            return Base::retSuccess('修改成功', $data);
         } else {
             // 添加
             if (!in_array($type, [
@@ -240,7 +309,7 @@ class FileController extends AbstractController
                 if (File::wherePid($pid)->count() >= 300) {
                     return Base::retError('每个文件夹里最多只能创建300个文件或文件夹');
                 }
-                $row = File::permissionFind($pid, 1);
+                $row = File::permissionFind($pid, $user, 1);
                 $userid = $row->userid;
             } else {
                 if (File::whereUserid($user->userid)->wherePid(0)->count() >= 300) {
@@ -256,7 +325,8 @@ class FileController extends AbstractController
                 'userid' => $userid,
                 'created_id' => $user->userid,
             ]);
-            $file->saveBeforePids();
+            $file->handleDuplicateName();
+            $file->saveBeforePP();
             //
             $data = File::find($file->id);
             $data->pushMsg('add', $data);
@@ -284,7 +354,7 @@ class FileController extends AbstractController
         //
         $id = intval(Request::input('id'));
         //
-        $row = File::permissionFind($id);
+        $row = File::permissionFind($id, $user);
         //
         $userid = $user->userid;
         if ($row->pid > 0) {
@@ -306,10 +376,11 @@ class FileController extends AbstractController
             'userid' => $userid,
             'created_id' => $user->userid,
         ]);
+        $file->handleDuplicateName();
         $data = AbstractModel::transaction(function() use ($file) {
             $content = FileContent::select(['content', 'text', 'size'])->whereFid($file->cid)->orderByDesc('id')->first();
             $file->size = $content?->size ?: 0;
-            $file->saveBeforePids();
+            $file->saveBeforePP();
             if ($content) {
                 $content = $content->toArray();
                 $content['fid'] = $file->id;
@@ -340,7 +411,7 @@ class FileController extends AbstractController
      */
     public function move()
     {
-        User::auth();
+        $user = User::auth();
         //
         $ids = Request::input('ids');
         $pid = intval(Request::input('pid'));
@@ -351,29 +422,44 @@ class FileController extends AbstractController
         if (count($ids) > 100) {
             return Base::retError('一次最多只能移动100个文件或文件夹');
         }
+        $toShareFile = false;
         if ($pid > 0) {
-            File::permissionFind($pid, 1);
+            $tmpFile = File::permissionFind($pid, $user, 1);
+            $toShareFile = $tmpFile->getShareInfo();
         }
         //
         $files = [];
-        AbstractModel::transaction(function() use ($pid, $ids, &$files) {
+        AbstractModel::transaction(function() use ($user, $pid, $ids, $toShareFile, &$files) {
             foreach ($ids as $id) {
-                $file = File::permissionFind($id, 1000);
+                $file = File::permissionFind($id, $user, 1000);
                 //
                 if ($pid > 0) {
-                    $arr = [];
-                    $tid = $pid;
-                    while ($tid > 0) {
-                        $arr[] = $tid;
-                        $tid = intval(File::whereId($tid)->value('pid'));
+                    if ($toShareFile) {
+                        if ($file->share) {
+                            throw new ApiException("{$file->name} 当前正在共享，无法移动到另一个共享文件夹内");
+                        }
+                        if ($file->isSubShare()) {
+                            throw new ApiException("{$file->name} 内含有共享文件，无法移动到另一个共享文件夹内");
+                        }
+                        $file->userid = $toShareFile->userid;
+                        File::where('pids', 'LIKE', "%,{$file->id},%")->update(['userid' => $toShareFile->userid]);
                     }
-                    if (in_array($id, $arr)) {
-                        throw new ApiException('移动位置错误');
+                    //
+                    $tmpId = $pid;
+                    while ($tmpId > 0) {
+                        if ($id == $tmpId) {
+                            throw new ApiException('移动位置错误');
+                        }
+                        $tmpId = intval(File::whereId($tmpId)->value('pid'));
                     }
+                } else {
+                    $file->userid = $user->userid;
+                    File::where('pids', 'LIKE', "%,{$file->id},%")->update(['userid' => $user->userid]);
                 }
                 //
                 $file->pid = $pid;
-                $file->saveBeforePids();
+                $file->handleDuplicateName();
+                $file->saveBeforePP();
                 $files[] = $file;
             }
         });
@@ -399,7 +485,7 @@ class FileController extends AbstractController
      */
     public function remove()
     {
-        User::auth();
+        $user = User::auth();
         //
         $ids = Request::input('ids');
         //
@@ -411,9 +497,9 @@ class FileController extends AbstractController
         }
         //
         $files = [];
-        AbstractModel::transaction(function() use ($ids, &$files) {
+        AbstractModel::transaction(function() use ($user, $ids, &$files) {
             foreach ($ids as $id) {
-                $file = File::permissionFind($id, 1000);
+                $file = File::permissionFind($id, $user, 1000);
                 $file->deleteFile();
                 $files[] = $file;
             }
@@ -438,7 +524,9 @@ class FileController extends AbstractController
      * - yes
      * @apiParam {String} down                  直接下载
      * - no: 浏览（默认）
-     * - yes: 下载（office文件直接下载）
+     * - yes: 下载（office文件直接下载，除非是preview）
+     * - preview: 转预览地址
+     * @apiParam {Number} [history_id]          读取历史记录ID
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -449,15 +537,21 @@ class FileController extends AbstractController
         $id = Request::input('id');
         $down = Request::input('down', 'no');
         $only_update_at = Request::input('only_update_at', 'no');
+        $history_id = intval(Request::input('history_id'));
         //
         if (Base::isNumber($id)) {
-            User::auth();
-            $file = File::permissionFind(intval($id));
+            $user = User::auth();
+            $file = File::permissionFind(intval($id), $user);
         } elseif ($id) {
             $fileLink = FileLink::whereCode($id)->first();
             $file = $fileLink?->file;
             if (empty($file)) {
-                return Base::retError('链接不存在');
+                $msg = '文件链接不存在';
+                $data = File::code2IdName($id);
+                if ($data) {
+                    $msg = "【{$data->name}】 {$msg}";
+                }
+                return Base::retError($msg, $data);
             }
         } else {
             return Base::retError('参数错误');
@@ -470,7 +564,14 @@ class FileController extends AbstractController
             ]);
         }
         //
-        $content = FileContent::whereFid($file->id)->orderByDesc('id')->first();
+        $builder = FileContent::whereFid($file->id);
+        if ($history_id > 0) {
+            $builder->whereId($history_id);
+        }
+        $content = $builder->orderByDesc('id')->first();
+        if ($down === 'preview') {
+            return Redirect::to(FileContent::formatPreview($file, $content?->content));
+        }
         return FileContent::formatContent($file, $content?->content, $down == 'yes');
     }
 
@@ -492,25 +593,25 @@ class FileController extends AbstractController
      */
     public function content__save()
     {
-        Base::checkClientVersion('0.9.13');
         $user = User::auth();
         //
         $id = Base::getPostInt('id');
         $content = Base::getPostValue('content');
         //
-        $file = File::permissionFind($id, 1);
+        $file = File::permissionFind($id, $user, 1);
         //
         $text = '';
         if ($file->type == 'document') {
             $data = Base::json2array($content);
             $isRep = false;
-            preg_match_all("/<img\s*src=\"data:image\/(png|jpg|jpeg);base64,(.*?)\"/s", $data['content'], $matchs);
+            preg_match_all("/<img\s+src=\"data:image\/(png|jpg|jpeg);base64,(.*?)\"/s", $data['content'], $matchs);
             foreach ($matchs[2] as $key => $text) {
                 $tmpPath = "uploads/file/document/" . date("Ym") . "/" . $id . "/attached/";
                 Base::makeDir(public_path($tmpPath));
                 $tmpPath .= md5($text) . "." . $matchs[1][$key];
                 if (file_put_contents(public_path($tmpPath), base64_decode($text))) {
-                    $data['content'] = str_replace($matchs[0][$key], '<img src="' . Base::fillUrl($tmpPath) . '"', $data['content']);
+                    $paramet = getimagesize(public_path($tmpPath));
+                    $data['content'] = str_replace($matchs[0][$key], '<img src="' . Base::fillUrl($tmpPath) . '" original-width="' . $paramet[0] . '" original-height="' . $paramet[1] . '"', $data['content']);
                     $isRep = true;
                 }
             }
@@ -535,9 +636,10 @@ class FileController extends AbstractController
                 $contentString = $content;
                 $file->ext = 'mind';
                 break;
-            case 'code':
             case 'txt':
-                $contentString = $content;
+            case 'code':
+                $contentArray = Base::json2array($content);
+                $contentString = $contentArray['content'];
                 break;
             default:
                 return Base::retError('参数错误');
@@ -589,7 +691,7 @@ class FileController extends AbstractController
         $key = Request::input('key');
         $url = Request::input('url');
         //
-        $file = File::permissionFind($id, 1);
+        $file = File::permissionFind($id, $user, 1);
         //
         if ($status === 2) {
             $parse = parse_url($url);
@@ -628,7 +730,7 @@ class FileController extends AbstractController
      * @apiGroup file
      * @apiName content__upload
      *
-     * @apiParam {Number} [pid]         父级ID
+     * @apiParam {Number} [pid]             父级ID
      * @apiParam {String} [files]           文件名
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -647,7 +749,7 @@ class FileController extends AbstractController
             if (File::wherePid($pid)->count() >= 300) {
                 return Base::retError('每个文件夹里最多只能创建300个文件或文件夹');
             }
-            $row = File::permissionFind($pid, 1);
+            $row = File::permissionFind($pid, $user, 1);
             $userid = $row->userid;
         } else {
             if (File::whereUserid($user->userid)->wherePid(0)->count() >= 300) {
@@ -656,11 +758,11 @@ class FileController extends AbstractController
         }
         //
         $dirs = explode("/", $webkitRelativePath);
+        $addItem = [];
         while (count($dirs) > 1) {
             $dirName = array_shift($dirs);
             if ($dirName) {
-                $pushMsg = [];
-                AbstractModel::transaction(function () use ($dirName, $user, $userid, &$pid, &$pushMsg) {
+                AbstractModel::transaction(function () use ($dirName, $user, $userid, &$pid, &$addItem) {
                     $dirRow = File::wherePid($pid)->whereType('folder')->whereName($dirName)->lockForUpdate()->first();
                     if (empty($dirRow)) {
                         $dirRow = File::createInstance([
@@ -670,8 +772,9 @@ class FileController extends AbstractController
                             'userid' => $userid,
                             'created_id' => $user->userid,
                         ]);
-                        if ($dirRow->saveBeforePids()) {
-                            $pushMsg[] = File::find($dirRow->id);
+                        $dirRow->handleDuplicateName();
+                        if ($dirRow->saveBeforePP()) {
+                            $addItem[] = File::find($dirRow->id);
                         }
                     }
                     if (empty($dirRow)) {
@@ -679,7 +782,7 @@ class FileController extends AbstractController
                     }
                     $pid = $dirRow->id;
                 });
-                foreach ($pushMsg as $tmpRow) {
+                foreach ($addItem as $tmpRow) {
                     $tmpRow->pushMsg('add', $tmpRow);
                 }
             }
@@ -718,7 +821,7 @@ class FileController extends AbstractController
             'inc', 'phtml', 'shtml', 'php3', 'php4', 'php5', 'phps', 'phpt', 'aw', 'ctp', 'module', 'ps1', 'py', 'r', 'rb', 'ru', 'gemspec', 'rake', 'guardfile', 'rakefile',
             'gemfile', 'rs', 'sass', 'scss', 'sh', 'bash', 'bashrc', 'sql', 'sqlserver', 'swift', 'ts', 'typescript', 'str', 'vbs', 'vb', 'v', 'vh', 'sv', 'svh', 'xml',
             'rdf', 'rss', 'wsdl', 'xslt', 'atom', 'mathml', 'mml', 'xul', 'xbl', 'xaml', 'yaml', 'yml',
-            'asp', 'properties', 'gitignore', 'log', 'bas', 'prg', 'python', 'ftl', 'aspx' => "code",
+            'asp', 'properties', 'gitignore', 'log', 'bas', 'prg', 'python', 'ftl', 'aspx', 'plist' => "code",
             'mp3', 'wav', 'mp4', 'flv',
             'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm' => "media",
             'xmind' => "xmind",
@@ -736,20 +839,26 @@ class FileController extends AbstractController
             'userid' => $userid,
             'created_id' => $user->userid,
         ]);
+        $file->handleDuplicateName();
         // 开始创建
-        return AbstractModel::transaction(function () use ($webkitRelativePath, $type, $user, $data, $file) {
+        return AbstractModel::transaction(function () use ($addItem, $webkitRelativePath, $type, $user, $data, $file) {
             $file->size = $data['size'] * 1024;
-            $file->saveBeforePids();
+            $file->saveBeforePP();
             //
             $data = Base::uploadMove($data, "uploads/file/" . $file->type . "/" . date("Ym") . "/" . $file->id . "/");
+            $content = [
+                'from' => '',
+                'type' => $type,
+                'ext' => $data['ext'],
+                'url' => $data['path'],
+            ];
+            if (isset($data['width'])) {
+                $content['width'] = $data['width'];
+                $content['height'] = $data['height'];
+            }
             $content = FileContent::createInstance([
                 'fid' => $file->id,
-                'content' => [
-                    'from' => '',
-                    'type' => $type,
-                    'ext' => $data['ext'],
-                    'url' => $data['path']
-                ],
+                'content' => $content,
                 'text' => '',
                 'size' => $file->size,
                 'userid' => $user->userid,
@@ -759,15 +868,88 @@ class FileController extends AbstractController
             $tmpRow = File::find($file->id);
             $tmpRow->pushMsg('add', $tmpRow);
             //
-            $data = $tmpRow->toArray();
+            $data = File::handleImageUrl($tmpRow->toArray());
             $data['full_name'] = $webkitRelativePath ?: $data['name'];
-            File::handleImageUrl($data);
-            return Base::retSuccess($data['name'] . ' 上传成功', $data);
+            //
+            $addItem[] = $data;
+            return Base::retSuccess($data['name'] . ' 上传成功', $addItem);
         });
     }
 
     /**
-     * @api {get} api/file/share          12. 获取共享信息
+     * @api {get} api/file/content/history          12. 获取内容历史
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName content__history
+     *
+     * @apiParam {Number} id                文件ID
+     *
+     * @apiParam {Number} [page]            当前页，默认:1
+     * @apiParam {Number} [pagesize]        每页显示数量，默认:20，最大:100
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function content__history()
+    {
+        $user = User::auth();
+        //
+        $id = Request::input('id');
+        //
+        $file = File::permissionFind(intval($id), $user);
+        //
+        $data = FileContent::select(['id', 'size', 'userid', 'created_at'])
+            ->whereFid($file->id)
+            ->orderByDesc('id')
+            ->paginate(Base::getPaginate(100, 20));
+        return Base::retSuccess('success', $data);
+    }
+
+    /**
+     * @api {get} api/file/content/restore          13. 恢复文件历史
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName content__restore
+     *
+     * @apiParam {Number} id                文件ID
+     * @apiParam {Number} history_id        历史数据ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function content__restore()
+    {
+        $user = User::auth();
+        //
+        $id = intval(Request::input('id'));
+        $history_id = intval(Request::input('history_id'));
+        //
+        $file = File::permissionFind($id, $user);
+        //
+        $history = FileContent::whereFid($file->id)->whereId($history_id)->first();
+        if (empty($history)) {
+            return Base::retError('历史数据不存在或已被删除');
+        }
+        //
+        $content = $history->replicate();
+        $content->userid = $user->userid;
+        $content->save();
+        //
+        $file->size = $content->size;
+        $file->save();
+        $file->pushMsg('content');
+        //
+        return Base::retSuccess('还原成功');
+    }
+
+    /**
+     * @api {get} api/file/share          14. 获取共享信息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -803,7 +985,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/share/update          13. 设置共享
+     * @api {get} api/file/share/update          15. 设置共享
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -845,8 +1027,10 @@ class FileController extends AbstractController
             return Base::retError('仅限所有者操作');
         }
         //
-        if ($file->isNnShare()) {
-            return Base::retError('已经处于共享文件夹中');
+        $share = $file->isNnShare();
+        if ($share) {
+            $typeCn = $file->type === 'folder' ? '文件夹' : '文件';
+            return Base::retError("此{$typeCn}已经处于【{$share->name}】共享文件夹中，无法重复共享");
         }
         //
         if (!is_array($userids) || empty($userids)) {
@@ -866,7 +1050,7 @@ class FileController extends AbstractController
             // 设置共享
             $action = "update";
             if ($force === 0) {
-                if (File::where("pids", "like", "%,{$file->id},%")->whereShare(1)->exists()) {
+                if ($file->isSubShare()) {
                     return Base::retError('此文件夹内已有共享文件夹', [], -3001);
                 }
             }
@@ -891,7 +1075,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/share/out          14. 退出共享
+     * @api {get} api/file/share/out          16. 退出共享
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -910,7 +1094,7 @@ class FileController extends AbstractController
         //
         $id = intval(Request::input('id'));
         //
-        $file = File::permissionFind($id);
+        $file = File::permissionFind($id, $user);
         //
         if ($file->userid == $user->userid) {
             return Base::retError('不能退出自己共享的文件');
@@ -925,7 +1109,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/link          15. 获取链接
+     * @api {get} api/file/link          17. 获取链接
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -948,29 +1132,9 @@ class FileController extends AbstractController
         $id = intval(Request::input('id'));
         $refresh = Request::input('refresh', 'no');
         //
-        $file = File::permissionFind($id);
-        if ($file->type == 'folder') {
-            return Base::retError('文件夹暂不支持此功能');
-        }
+        $file = File::permissionFind($id, $user);
+        $fileLink = $file->getShareLink($user->userid, $refresh == 'yes');
         //
-        $fileLink = FileLink::whereFileId($file->id)->whereUserid($user->userid)->first();
-        if (empty($fileLink)) {
-            $fileLink = FileLink::createInstance([
-                'file_id' => $file->id,
-                'userid' => $user->userid,
-                'code' => Base::generatePassword(64),
-            ]);
-            $fileLink->save();
-        } else {
-            if ($refresh == 'yes') {
-                $fileLink->code = Base::generatePassword(64);
-                $fileLink->save();
-            }
-        }
-        return Base::retSuccess('success', [
-            'id' => $file->id,
-            'url' => Base::fillUrl('single/file/' . $fileLink->code),
-            'num' => $fileLink->num
-        ]);
+        return Base::retSuccess('success', $fileLink);
     }
 }

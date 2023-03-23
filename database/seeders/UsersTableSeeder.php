@@ -49,7 +49,7 @@ class UsersTableSeeder extends Seeder
             array (
                 'userid' => 2,
                 'identity' => '',
-                'az' => 'z',
+                'az' => 'T',
                 'email' => 'test@dootask.com',
                 'nickname' => '',
                 'profession' => '测试员',
@@ -70,7 +70,5 @@ class UsersTableSeeder extends Seeder
                 'updated_at' => seeders_at('2021-07-01 16:58:00'),
             ),
         ));
-
-
     }
 }

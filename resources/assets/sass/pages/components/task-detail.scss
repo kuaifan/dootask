@@ -4,7 +4,6 @@
     margin: 0 -32px 12px -10px;
     padding: 0 22px 12px 0;
     min-height: 120px;
-    overflow: auto;
     .task-info {
         flex: 3;
         display: flex;
@@ -26,25 +25,23 @@
                 height: 1px;
                 background-color: #f4f5f5;
             }
-            .icon {
+            .task-menu-icon {
                 margin-right: 18px;
-                .task-menu-icon {
-                    display: flex;
-                    align-items: center;
-                    .ivu-icon {
-                        font-size: 18px;
+                display: flex;
+                align-items: center;
+                .ivu-icon {
+                    font-size: 18px;
+                }
+                .loading {
+                    width: 18px;
+                    height: 18px;
+                    .common-loading {
+                        width: 16px;
+                        height: 16px;
                     }
-                    .loading {
-                        width: 18px;
-                        height: 18px;
-                        .common-loading {
-                            width: 16px;
-                            height: 16px;
-                        }
-                    }
-                    .uncomplete {
-                        color: #888888;
-                    }
+                }
+                .uncomplete {
+                    color: #888888;
                 }
             }
             .flow {
@@ -57,8 +54,8 @@
                     line-height: 24px;
                     padding: 0 8px;
                     border-radius: 4px;
-                    color: #8bcf70;
-                    border: 1px solid #8bcf70;
+                    color: $primary-color;
+                    border: 1px solid $primary-color;
                     display: inline-block;
                     text-align: center;
                     cursor: pointer;
@@ -76,18 +73,18 @@
                         color: $flow-status-start-color;
                     }
                     &.progress {
-                        background-color: rgba($flow-status-progress-color, 0.1);;
-                        border-color: rgba($flow-status-progress-color, 0.1);;
+                        background-color: rgba($flow-status-progress-color, 0.1);
+                        border-color: rgba($flow-status-progress-color, 0.1);
                         color: $flow-status-progress-color;
                     }
                     &.test {
-                        background-color: rgba($flow-status-test-color, 0.1);;
-                        border-color: rgba($flow-status-test-color, 0.1);;
+                        background-color: rgba($flow-status-test-color, 0.1);
+                        border-color: rgba($flow-status-test-color, 0.1);
                         color: $flow-status-test-color;
                     }
                     &.end {
-                        background-color: rgba($flow-status-end-color, 0.1);;
-                        border-color: rgba($flow-status-end-color, 0.1);;
+                        background-color: rgba($flow-status-end-color, 0.1);
+                        border-color: rgba($flow-status-end-color, 0.1);
                         color: $flow-status-end-color;
                     }
                 }
@@ -141,9 +138,12 @@
                     margin-left: 12px;
                     display: flex;
                     align-items: center;
+                    .task-menu-icon {
+                        margin-right: 0;
+                    }
                     .ivu-icon {
                         font-size: 22px;
-                        color: #606266;
+                        color: $primary-text-color;
                     }
                 }
             }
@@ -153,7 +153,6 @@
             padding-left: 8px;
             padding-right: 36px;
             overflow-x: hidden;
-            overflow-y: auto;
             .title {
                 margin-top: 18px;
                 .ivu-input {
@@ -220,13 +219,15 @@
                         .picker-time {
                             display: flex;
                             align-items: center;
+                            flex-wrap: wrap;
                             line-height: 26px;
                             .time {
                                 cursor: pointer;
+                                margin-right: 10px;
                             }
                             .ivu-tag {
                                 flex-shrink: 0;
-                                margin-left: 10px;
+                                margin-right: 10px;
                                 padding: 0 4px;
                                 height: 20px;
                                 line-height: 18px;
@@ -352,8 +353,8 @@
                                     line-height: 16px;
                                     padding: 0 2px;
                                     border-radius: 3px;
-                                    color: #8bcf70;
-                                    border: 1px solid #8bcf70;
+                                    color: $primary-color;
+                                    border: 1px solid $primary-color;
                                     display: inline-block;
                                     margin-right: 3px;
                                     text-align: center;
@@ -364,18 +365,18 @@
                                         color: $flow-status-start-color;
                                     }
                                     &.progress {
-                                        background-color: rgba($flow-status-progress-color, 0.1);;
-                                        border-color: rgba($flow-status-progress-color, 0.1);;
+                                        background-color: rgba($flow-status-progress-color, 0.1);
+                                        border-color: rgba($flow-status-progress-color, 0.1);
                                         color: $flow-status-progress-color;
                                     }
                                     &.test {
-                                        background-color: rgba($flow-status-test-color, 0.1);;
-                                        border-color: rgba($flow-status-test-color, 0.1);;
+                                        background-color: rgba($flow-status-test-color, 0.1);
+                                        border-color: rgba($flow-status-test-color, 0.1);
                                         color: $flow-status-test-color;
                                     }
                                     &.end {
-                                        background-color: rgba($flow-status-end-color, 0.1);;
-                                        border-color: rgba($flow-status-end-color, 0.1);;
+                                        background-color: rgba($flow-status-end-color, 0.1);
+                                        border-color: rgba($flow-status-end-color, 0.1);
                                         color: $flow-status-end-color;
                                     }
                                 }
@@ -423,12 +424,16 @@
                                 }
                             }
                             .subtask-avatar {
-                                height: 20px;
-                                margin-top: 3px;
                                 cursor: pointer;
+                                display: flex;
+                                flex-direction: column;
+                                .avatar-wrapper {
+                                    margin-top: 3px;
+                                    margin-bottom: -2px;
+                                }
                             }
                             .ivu-icon-ios-loading {
-                                animation: icon-loading-load 0.6s infinite linear;
+                                animation: animation-icon-loading 0.6s infinite linear;
                             }
                         }
                     }
@@ -446,12 +451,22 @@
             .add {
                 margin-top: 12px;
                 margin-bottom: 10px;
+                .el-dropdown {
+                    max-width: 100%;
+                    .add-button {
+                        > em {
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                        }
+                    }
+                }
             }
             .add-input {
                 margin-top: 6px;
                 &.loading {
                     .ivu-icon-ios-loading {
-                        animation: icon-loading-load 0.6s infinite linear;
+                        animation: animation-icon-loading 0.6s infinite linear;
                     }
                 }
             }
@@ -481,7 +496,7 @@
                     }
                 }
                 &:hover {
-                    color: #999999;
+                    color: $primary-desc-color;
                 }
             }
         }
@@ -494,12 +509,13 @@
         flex-shrink: 0;
         display: flex;
         flex-direction: column;
+        justify-content: flex-end;
         margin-top: 22px;
         position: relative;
         .head {
             display: flex;
             align-items: center;
-            height: 40px;
+            height: 42px;
             padding-bottom: 10px;
             color: #888888;
             position: relative;
@@ -522,7 +538,7 @@
                 align-items: center;
                 padding-left: 18px;
                 font-weight: 500;
-                color: #666666;
+                color: $primary-text-color;
                 > p {
                     display: flex;
                     align-items: center;
@@ -556,6 +572,27 @@
                     }
                 }
             }
+            .menu {
+                .menu-item {
+                    display: flex;
+                    align-items: center;
+                    line-height: 24px;
+                    .menu-load {
+                        margin-right: 8px;
+                        width: 14px;
+                        height: 14px;
+                        display: flex;
+                    }
+                    > em {
+                        font-style: normal;
+                        padding-left: 1px;
+                    }
+                    > i {
+                        margin-left: 4px;
+                        font-size: 14px;
+                    }
+                }
+            }
         }
         .no-dialog {
             flex: 1;
@@ -568,27 +605,25 @@
                 margin-left: 36px;
             }
             .no-input {
-                display: flex;
-                align-items: center;
+                position: relative;
                 margin: 22px 0 0 36px;
                 background-color: #F4F5F7;
-                padding: 10px 12px;
+                padding: 10px 4px 10px 6px;
                 border-radius: 10px;
-                .ivu-input {
-                    border: 0;
-                    resize: none;
-                    background-color: transparent;
-                    &:focus {
-                        box-shadow: none;
+                .chat-input-box {
+                    .chat-input-quick-emoji {
+                        right: 0;
                     }
-                }
-                .no-send {
-                    display: none;
-                    .ivu-badge {
-                        position: absolute;
-                        transform: scale(0.6);
-                        top: 5px;
-                        left: 4px;
+                    .chat-input-wrapper {
+                        padding: 0;
+                        background-color: #F4F5F7;
+                        .chat-toolbar {
+                            > li {
+                                &.chat-record-recwave {
+                                    background-color: #F4F5F7;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -616,7 +651,7 @@
                 .drag-text {
                     padding: 12px;
                     font-size: 18px;
-                    color: #666666;
+                    color: $primary-text-color;
                 }
             }
         }
@@ -647,10 +682,16 @@
         }
         .dialog-wrapper {
             .dialog-scroller {
-                padding: 0 16px 0 32px
+                padding-right: 16px;
+                padding-left: 32px;
             }
             .dialog-footer {
-                padding: 0 14px 0 28px;
+                padding: 0 0 0 24px;
+                .chat-input-box {
+                    .chat-input-quick-emoji {
+                        right: 2px;
+                    }
+                }
             }
         }
     }
@@ -681,16 +722,8 @@
             margin: 0 0 0 18px;
             min-width: 320px;
             max-width: 450px;
-            &:before {
-                content: "";
-                position: absolute;
-                top: 0;
-                left: 0;
-                bottom: 0;
-                z-index: 1;
-                width: 1px;
-                background-color: #f4f5f5;
-            }
+            border-left: 1px solid #f4f5f5;
+
             .head {
                 &:before {
                     left: 18px;
@@ -716,7 +749,7 @@
                     align-items: center;
                     justify-content: center;
                     margin-left: 18px;
-                    color: #999999;
+                    color: $primary-desc-color;
                 }
                 .no-input {
                     margin: 0 0 0 18px;
@@ -819,34 +852,17 @@
     }
 }
 
+.task-detail-loop {
+    > li {
+        text-align: center;
+    }
+}
+
 @media (max-width: 768px) {
     .task-detail {
         .task-info {
             .scroller {
                 overflow-x: auto;
-            }
-        }
-        .task-dialog {
-            .no-dialog {
-                .no-input {
-                    position: relative;
-                    padding-right: 52px;
-                    .no-send {
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        bottom: 0;
-                        font-size: 18px;
-                        width: 46px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        .common-loading {
-                            width: 20px;
-                            height: 20px;
-                        }
-                    }
-                }
             }
         }
     }

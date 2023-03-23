@@ -18,6 +18,7 @@ class IhttpTask extends AbstractTask
     protected $extra;
     protected $apiWebsocket;
     protected $apiUserid;
+    protected $endPush = [];
 
     /**
      * IhttpTask constructor.
@@ -27,6 +28,7 @@ class IhttpTask extends AbstractTask
      */
     public function __construct($url, $post = [], $extra = [])
     {
+        parent::__construct(...func_get_args());
         $this->url = $url;
         $this->post = $post;
         $this->extra = $extra;
@@ -53,7 +55,7 @@ class IhttpTask extends AbstractTask
         $res = Ihttp::ihttp_request($this->url, $this->post, $this->extra);
         if ($this->apiWebsocket && $this->apiUserid) {
             $data = Base::isSuccess($res) ? Base::json2array($res['data']) : $res;
-            PushTask::push([
+            $this->endPush[] = [
                 'userid' => $this->apiUserid,
                 'msg' => [
                     'type' => 'apiWebsocket',
@@ -61,7 +63,13 @@ class IhttpTask extends AbstractTask
                     'apiSuccess' => Base::isSuccess($res),
                     'data' => $data,
                 ]
-            ]);
+            ];
+
         }
+    }
+
+    public function end()
+    {
+        PushTask::push($this->endPush);
     }
 }

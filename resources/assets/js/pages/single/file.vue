@@ -1,9 +1,9 @@
 <template>
     <div class="single-file">
-        <PageTitle :title="fileInfo.name"/>
+        <PageTitle :title="pageName"/>
         <Loading v-if="loadIng > 0"/>
-        <template v-else>
-            <FilePreview v-if="code || fileInfo.permission === 0" :code="code" :file="fileInfo"/>
+        <template v-else-if="fileInfo">
+            <FilePreview v-if="isPreview" :code="code" :file="fileInfo" :historyId="historyId" :headerShow="!$isEEUiApp"/>
             <FileContent v-else v-model="fileShow" :file="fileInfo"/>
         </template>
     </div>
@@ -32,11 +32,26 @@ export default {
             code: null,
 
             fileShow: true,
-            fileInfo: {},
+            fileInfo: null,
         }
     },
     mounted() {
         //
+    },
+    computed: {
+        historyId() {
+            return this.$route.query ? $A.runNum(this.$route.query.history_id) : 0;
+        },
+        isPreview() {
+            return this.windowSmall || this.code || this.historyId > 0 || (this.fileInfo && this.fileInfo.permission === 0)
+        },
+        pageName() {
+            let name = this.fileInfo ? this.fileInfo.name : '';
+            if (this.$route.query && this.$route.query.history_at) {
+                name += ` [${this.$route.query.history_at}]`
+            }
+            return name;
+        }
     },
     watch: {
         '$route': {
@@ -48,30 +63,32 @@ export default {
     },
     methods: {
         getInfo() {
-            let id = this.$route.params.id;
-            let data = {id};
-            if (/^\d+$/.test(id)) {
+            let {codeOrFileId} = this.$route.params;
+            let data = {id: codeOrFileId};
+            if (/^\d+$/.test(codeOrFileId)) {
                 this.code = null;
-            } else if (id) {
-                this.code = id;
+            } else if (codeOrFileId) {
+                this.code = codeOrFileId;
             } else {
                 return;
             }
-            this.loadIng++;
+            setTimeout(_ => {
+                this.loadIng++;
+            }, 600)
             this.$store.dispatch("call", {
                 url: 'file/one',
                 data,
             }).then(({data}) => {
-                this.loadIng--;
                 this.fileInfo = data;
             }).catch(({msg}) => {
-                this.loadIng--;
                 $A.modalError({
                     content: msg,
                     onOk: () => {
                         window.close();
                     }
                 });
+            }).finally(_ => {
+                this.loadIng--;
             });
         }
     }

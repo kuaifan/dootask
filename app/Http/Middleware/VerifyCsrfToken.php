@@ -24,6 +24,9 @@ class VerifyCsrfToken extends Middleware
         // 保存创建项目列表模板
         'api/system/column/template/',
 
+        // License 设置
+        'api/system/license/',
+
         // 添加任务
         'api/project/task/add/',
 
@@ -36,8 +39,14 @@ class VerifyCsrfToken extends Middleware
         // 聊天发文本
         'api/dialog/msg/sendtext/',
 
+        // 聊天发语音
+        'api/dialog/msg/sendrecord/',
+
         // 聊天发文件
         'api/dialog/msg/sendfile/',
+
+        // 聊天发匿名消息
+        'api/dialog/msg/sendanon/',
 
         // 保存文件内容
         'api/file/content/save/',
@@ -50,6 +59,12 @@ class VerifyCsrfToken extends Middleware
 
         // 保存汇报
         'api/report/store/',
+
+        // 签到设置
+        'api/users/checkin/save/',
+
+        // 签到上报
+        'api/public/checkin/report/',
 
         // 发布桌面端
         'desktop/publish/',

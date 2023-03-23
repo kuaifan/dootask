@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   return {
     keywords: {
       keyword: 'package import option optional required repeated group oneof',

@@ -13,6 +13,7 @@ namespace App\Models;
  * @property int|null $owner 是否任务负责人
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\ProjectTask|null $projectTask
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskUser newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskUser newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskUser query()
@@ -29,4 +30,45 @@ namespace App\Models;
 class ProjectTaskUser extends AbstractModel
 {
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function projectTask(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ProjectTask::class, 'id', 'task_id');
+    }
+
+    /**
+     * 移交任务身份
+     * @param $originalUserid
+     * @param $newUserid
+     * @return void
+     */
+    public static function transfer($originalUserid, $newUserid)
+    {
+        self::whereUserid($originalUserid)->chunk(100, function ($list) use ($originalUserid, $newUserid) {
+            $tastIds = [];
+            /** @var self $item */
+            foreach ($list as $item) {
+                $row = self::whereTaskId($item->task_id)->whereUserid($newUserid)->first();
+                if ($row) {
+                    // 已存在则删除原数据，判断改变已存在的数据
+                    $row->owner = max($row->owner, $item->owner);
+                    $row->save();
+                    $item->delete();
+                } else {
+                    // 不存在则改变原数据
+                    $item->userid = $newUserid;
+                    $item->save();
+                }
+                if ($item->projectTask) {
+                    $item->projectTask->addLog("移交{任务}身份", ['userid' => [$originalUserid, ' => ',$newUserid]]);
+                    if (!in_array($item->task_pid, $tastIds)) {
+                        $tastIds[] = $item->task_pid;
+                        $item->projectTask->syncDialogUser();
+                    }
+                }
+            }
+        });
+    }
 }

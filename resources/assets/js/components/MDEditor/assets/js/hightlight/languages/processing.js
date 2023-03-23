@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   return {
     keywords: {
       keyword: 'BufferedReader PVector PFont PImage PGraphics HashMap boolean byte char color ' +

@@ -5,6 +5,7 @@ namespace App\Models;
 
 use App\Exceptions\ApiException;
 use App\Module\Base;
+use App\Module\Doo;
 use Cache;
 use Carbon\Carbon;
 
@@ -13,8 +14,11 @@ use Carbon\Carbon;
  *
  * @property int $userid
  * @property array $identity 身份
+ * @property array $department 所属部门
  * @property string|null $az A-Z
+ * @property string|null $pinyin 拼音（主要用于搜索）
  * @property string|null $email 邮箱
+ * @property string|null $tel 联系电话
  * @property string $nickname 昵称
  * @property string|null $profession 职位/职称
  * @property string $userimg 头像
@@ -28,8 +32,9 @@ use Carbon\Carbon;
  * @property string|null $line_at 最后在线时间（接口）
  * @property int|null $task_dialog_id 最后打开的任务会话ID
  * @property string|null $created_ip 注册IP
- * @property string|null $disable_at 禁用时间
+ * @property string|null $disable_at 禁用时间（离职时间）
  * @property int|null $email_verity 邮箱是否已验证
+ * @property int|null $bot 是否机器人
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Database\Factories\UserFactory factory(...$parameters)
@@ -37,9 +42,11 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|User newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|User query()
  * @method static \Illuminate\Database\Eloquent\Builder|User whereAz($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereBot($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereChangepass($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereCreatedIp($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereDepartment($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereDisableAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereEmailVerity($value)
@@ -52,8 +59,10 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLoginNum($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereNickname($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User wherePassword($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User wherePinyin($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereProfession($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereTaskDialogId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereTel($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUserimg($value)
@@ -64,22 +73,14 @@ class User extends AbstractModel
     protected $primaryKey = 'userid';
 
     protected $hidden = [
-        'disable_at',
         'updated_at',
     ];
 
-    /**
-     * 更新数据校验
-     * @param array $param
-     */
-    public function updateInstance(array $param)
-    {
-        parent::updateInstance($param);
-        //
-        if (isset($param['line_at']) && $this->userid) {
-            Cache::put("User::online:" . $this->userid, time(), Carbon::now()->addSeconds(30));
-        }
-    }
+    // 默认头像类型：auto自动生成，system系统默认
+    public static $defaultAvatarMode = 'auto';
+
+    // 基本信息的字段
+    public static $basicField = ['userid', 'email', 'nickname', 'profession', 'department', 'userimg', 'bot', 'az', 'pinyin', 'line_at', 'disable_at'];
 
     /**
      * 昵称
@@ -98,11 +99,7 @@ class User extends AbstractModel
      */
     public function getUserimgAttribute($value)
     {
-        if ($value) {
-            return Base::fillUrl($value);
-        }
-        $name = ($this->userid - 1) % 21 + 1;
-        return url("images/avatar/default_{$name}.png");
+        return self::getAvatar($this->userid, $value, $this->email, $this->nickname);
     }
 
     /**
@@ -119,12 +116,46 @@ class User extends AbstractModel
     }
 
     /**
+     * 部门
+     * @param $value
+     * @return array
+     */
+    public function getDepartmentAttribute($value)
+    {
+        if (empty($value)) {
+            return [];
+        }
+        return array_filter(is_array($value) ? $value : Base::explodeInt($value));
+    }
+
+    /**
+     * 获取所属部门名称
+     * @return string
+     */
+    public function getDepartmentName()
+    {
+        if (empty($this->department)) {
+            return "";
+        }
+        $key = "UserDepartment::" . md5(Cache::get("UserDepartment::rand") . '-' . implode(',' , $this->department));
+        $list = Cache::remember($key, now()->addMonth(), function() {
+            $list = UserDepartment::select(['id', 'owner_userid', 'name'])->whereIn('id', $this->department)->take(10)->get();
+            return $list->toArray();
+        });
+        $array = [];
+        foreach ($list as $item) {
+            $array[] = $item['name'] . ($item['owner_userid'] === $this->userid ? '(M)' : '');
+        }
+        return implode(', ', $array);
+    }
+
+    /**
      * 是否在线
      * @return bool
      */
     public function getOnlineStatus()
     {
-        $online = intval(Cache::get("User::online:" . $this->userid, 0));
+        $online = $this->bot || Cache::get("User::online:" . $this->userid) === "on";
         if ($online) {
             return true;
         }
@@ -132,9 +163,45 @@ class User extends AbstractModel
     }
 
     /**
-     * 判断是否管理员
+     * 返回是否LDAP用户
+     * @return bool
+     */
+    public function isLdap()
+    {
+        return in_array('ldap', $this->identity);
+    }
+
+    /**
+     * 返回是否临时帐号
+     * @return bool
+     */
+    public function isTemp()
+    {
+        return in_array('temp', $this->identity);
+    }
+
+    /**
+     * 返回是否禁用帐号（离职）
+     * @return bool
+     */
+    public function isDisable()
+    {
+        return in_array('disable', $this->identity);
+    }
+
+    /**
+     * 返回是否管理员
+     * @return bool
      */
     public function isAdmin()
+    {
+        return in_array('admin', $this->identity);
+    }
+
+    /**
+     * 判断是否管理员
+     */
+    public function checkAdmin()
     {
         $this->identity('admin');
     }
@@ -169,6 +236,36 @@ class User extends AbstractModel
         }
     }
 
+    /**
+     * 删除会员
+     * @param $reason
+     * @return bool|null
+     */
+    public function deleteUser($reason)
+    {
+        return AbstractModel::transaction(function () use ($reason) {
+            // 删除原因
+            $userDelete = UserDelete::createInstance([
+                'operator' => User::userid(),
+                'userid' => $this->userid,
+                'email' => $this->email,
+                'reason' => $reason,
+                'cache' => array_merge($this->getRawOriginal(), [
+                    'department_name' => $this->getDepartmentName()
+                ])
+            ]);
+            $userDelete->save();
+            // 删除未读
+            WebSocketDialogMsgRead::whereUserid($this->userid)->delete();
+            // 删除待办
+            WebSocketDialogMsgTodo::whereUserid($this->userid)->delete();
+            // 删除邮箱验证记录
+            UserEmailVerification::whereEmail($this->email)->delete();
+            //
+            return $this->delete();
+        });
+    }
+
     /** ***************************************************************************************** */
     /** ***************************************************************************************** */
     /** ***************************************************************************************** */
@@ -182,103 +279,45 @@ class User extends AbstractModel
      */
     public static function reg($email, $password, $other = [])
     {
-        //邮箱
+        // 邮箱
         if (!Base::isEmail($email)) {
             throw new ApiException('请输入正确的邮箱地址');
         }
-        if (User::email2userid($email) > 0) {
+        $user = self::whereEmail($email)->first();
+        if ($user) {
             $isRegVerify = Base::settingFind('emailSetting', 'reg_verify') === 'open';
-            $user = self::whereUserid(User::email2userid($email))->first();
             if ($isRegVerify && $user->email_verity === 0) {
                 UserEmailVerification::userEmailSend($user);
-                throw new ApiException('您的账号已注册过，请验证邮箱', ['code' => 'email']);
+                throw new ApiException('您的帐号已注册过，请验证邮箱', ['code' => 'email']);
             }
             throw new ApiException('邮箱地址已存在');
         }
-        //密码
+        // 密码
         self::passwordPolicy($password);
-        //开始注册
-        $encrypt = Base::generatePassword(6);
-        $inArray = [
-            'encrypt' => $encrypt,
-            'email' => $email,
-            'password' => Base::md52($password, $encrypt),
-            'created_ip' => Base::getIp(),
-        ];
+        // 开始注册
+        $user = Doo::userCreate($email, $password);
         if ($other) {
-            $inArray = array_merge($inArray, $other);
+            $user->updateInstance($other);
         }
-        $user = User::createInstance($inArray);
-        $user->save();
-        User::AZUpdate($user->userid);
+        $user->az = Base::getFirstCharter($user->nickname);
+        $user->pinyin = Base::cn2pinyin($user->nickname);
+        $user->created_ip = Base::getIp();
+        if ($user->save()) {
+            $setting = Base::setting('system');
+            $reg_identity = $setting['reg_identity'] ?: 'normal';
+            $all_group_autoin = $setting['all_group_autoin'] ?: 'yes';
+            // 注册临时身份
+            if ($reg_identity === 'temp') {
+                $user->identity = Base::arrayImplode(array_merge(array_diff($user->identity, ['temp']), ['temp']));
+                $user->save();
+            }
+            // 加入全员群组
+            if ($all_group_autoin === 'yes') {
+                $dialog = WebSocketDialog::whereGroupType('all')->orderByDesc('id')->first();
+                $dialog?->joinGroup($user->userid, 0);
+            }
+        }
         return $user->find($user->userid);
-    }
-
-    /**
-     * 邮箱获取userid
-     * @param $email
-     * @return int
-     */
-    public static function email2userid($email)
-    {
-        if (empty($email)) {
-            return 0;
-        }
-        return intval(self::whereEmail($email)->value('userid'));
-    }
-
-    /**
-     * token获取会员userid
-     * @return int
-     */
-    public static function token2userid()
-    {
-        return self::authFind('userid', Base::getToken());
-    }
-
-    /**
-     * token获取会员邮箱
-     * @return int
-     */
-    public static function token2email()
-    {
-        return self::authFind('email', Base::getToken());
-    }
-
-    /**
-     * token获取encrypt
-     * @return mixed|string
-     */
-    public static function token2encrypt()
-    {
-        return self::authFind('encrypt', Base::getToken());
-    }
-
-    /**
-     * 获取token身份信息
-     * @param $find
-     * @param null $token
-     * @return array|mixed|string
-     */
-    public static function authFind($find, $token = null)
-    {
-        if ($token === null) {
-            $token = Base::getToken();
-        }
-        list($userid, $email, $encrypt, $timestamp) = explode("#$", base64_decode($token) . "#$#$#$#$");
-        $array = [
-            'userid' => intval($userid),
-            'email' => $email ?: '',
-            'encrypt' => $encrypt ?: '',
-            'timestamp' => intval($timestamp),
-        ];
-        if (isset($array[$find])) {
-            return $array[$find];
-        }
-        if ($find == 'all') {
-            return $array;
-        }
-        return '';
     }
 
     /**
@@ -316,8 +355,7 @@ class User extends AbstractModel
     {
         $user = self::authInfo();
         if (!$user) {
-            $authorization = Base::getToken();
-            if ($authorization) {
+            if (Base::headerOrInput('token')) {
                 throw new ApiException('身份已失效,请重新登录', [], -1);
             } else {
                 throw new ApiException('请登录后继续...', [], -1);
@@ -342,57 +380,49 @@ class User extends AbstractModel
         if (isset($_A["__static_auth"])) {
             return $_A["__static_auth"];
         }
-        $authorization = Base::getToken();
-        if ($authorization) {
-            $authInfo = self::authFind('all', $authorization);
-            if ($authInfo['userid'] > 0) {
-                $loginValid = floatval(Base::settingFind('system', 'loginValid')) ?: 720;
-                $loginValid *= 3600;
-                if ($authInfo['timestamp'] + $loginValid > time()) {
-                    $row = self::whereUserid($authInfo['userid'])->whereEmail($authInfo['email'])->whereEncrypt($authInfo['encrypt'])->first();
-                    if ($row) {
-                        $upArray = [];
-                        if (Base::getIp() && $row->line_ip != Base::getIp()) {
-                            $upArray['line_ip'] = Base::getIp();
-                        }
-                        if (Carbon::parse($row->line_at)->addSeconds(30)->lt(Carbon::now())) {
-                            $upArray['line_at'] = Carbon::now();
-                        }
-                        if ($upArray) {
-                            $row->updateInstance($upArray);
-                            $row->save();
-                        }
-                        return $_A["__static_auth"] = $row;
-                    }
-                }
+        if (Doo::userId() > 0
+            && !Doo::userExpired()
+            && $user = self::whereUserid(Doo::userId())->whereEmail(Doo::userEmail())->whereEncrypt(Doo::userEncrypt())->first()) {
+            $upArray = [];
+            if (Base::getIp() && $user->line_ip != Base::getIp()) {
+                $upArray['line_ip'] = Base::getIp();
             }
+            if (Carbon::parse($user->line_at)->addSeconds(30)->lt(Carbon::now())) {
+                $upArray['line_at'] = Carbon::now();
+            }
+            if ($upArray) {
+                $user->updateInstance($upArray);
+                $user->save();
+            }
+            return $_A["__static_auth"] = $user;
         }
         return $_A["__static_auth"] = false;
     }
 
     /**
-     * 生成token
+     * 生成 token
      * @param self $userinfo
+     * @param bool $refresh  获取新的token
      * @return string
      */
-    public static function token($userinfo)
+    public static function generateToken($userinfo, $refresh = false)
     {
-        $userinfo->token = base64_encode($userinfo->userid . '#$' . $userinfo->email . '#$' . $userinfo->encrypt . '#$' . time() . '#$' . Base::generatePassword(6));
+        if (!$refresh) {
+            if (Doo::userId() != $userinfo->userid
+                || Doo::userEmail() != $userinfo->email
+                || Doo::userEncrypt() != $userinfo->encrypt) {
+                $refresh = true;
+            }
+        }
+        if ($refresh) {
+            $days = $userinfo->bot ? 0 : max(1, intval(Base::settingFind('system', 'token_valid_days', 15)));
+            $token = Doo::tokenEncode($userinfo->userid, $userinfo->email, $userinfo->encrypt, $days);
+        } else {
+            $token = Doo::userToken();
+        }
         unset($userinfo->encrypt);
         unset($userinfo->password);
-        return $userinfo->token;
-    }
-
-    /**
-     * 判断用户权限（身份）
-     * @param $identity
-     * @param $userIdentity
-     * @return bool
-     */
-    public static function identityRaw($identity, $userIdentity)
-    {
-        $userIdentity = is_array($userIdentity) ? $userIdentity : explode(",", trim($userIdentity, ","));
-        return $identity && in_array($identity, $userIdentity);
+        return $userinfo->token = $token;
     }
 
     /**
@@ -410,10 +440,10 @@ class User extends AbstractModel
         if (isset($_A["__static_userid2basic_" . $userid])) {
             return $_A["__static_userid2basic_" . $userid];
         }
-        $fields = ['userid', 'email', 'nickname', 'profession', 'userimg'];
-        $userInfo = self::whereUserid($userid)->select($fields)->first();
+        $userInfo = self::whereUserid($userid)->select(User::$basicField)->first();
         if ($userInfo) {
             $userInfo->online = $userInfo->getOnlineStatus();
+            $userInfo->department_name = $userInfo->getDepartmentName();
         }
         return $_A["__static_userid2basic_" . $userid] = ($userInfo ?: []);
     }
@@ -426,21 +456,7 @@ class User extends AbstractModel
      */
     public static function userid2nickname($userid)
     {
-        $basic = self::userid2basic($userid);
-        return $basic ? $basic->nickname : '';
-    }
-
-    /**
-     * 更新首字母
-     * @param $userid
-     */
-    public static function AZUpdate($userid)
-    {
-        $row = self::whereUserid($userid)->first();
-        if ($row) {
-            $row->az = Base::getFirstCharter($row->nickname);
-            $row->save();
-        }
+        return self::userid2basic($userid)?->nickname ?: '';
     }
 
     /**
@@ -465,6 +481,42 @@ class User extends AbstractModel
                     return Base::retError('no');
                 }
         }
+    }
+
+    /**
+     * 获取头像
+     * @param $userid
+     * @param $userimg
+     * @param $email
+     * @param $nickname
+     * @return string
+     */
+    public static function getAvatar($userid, $userimg, $email, $nickname)
+    {
+        // 自定义头像
+        if ($userimg && !str_contains($userimg, 'avatar/')) {
+            return Base::fillUrl($userimg);
+        }
+        // 机器人头像
+        switch ($email) {
+            case 'system-msg@bot.system':
+                return url("images/avatar/default_system.png");
+            case 'task-alert@bot.system':
+                return url("images/avatar/default_task.png");
+            case 'check-in@bot.system':
+                return url("images/avatar/default_checkin.png");
+            case 'anon-msg@bot.system':
+                return url("images/avatar/default_anon.png");
+            case 'bot-manager@bot.system':
+                return url("images/avatar/default_bot.png");
+        }
+        // 生成文字头像
+        if (self::$defaultAvatarMode === 'auto') {
+            return url("avatar/" . urlencode($nickname) . ".png");
+        }
+        // 系统默认头像
+        $name = ($userid - 1) % 21 + 1;
+        return url("images/avatar/default_{$name}.png");
     }
 
     /**
@@ -496,5 +548,61 @@ class User extends AbstractModel
                 throw new ApiException('密码不能全是数字+小写字母，密码包含数字，字母大小写或者特殊字符');
             }
         }
+    }
+
+    /**
+     * 获取机器人或创建
+     * @param $key
+     * @param $update
+     * @param $userid
+     * @return self|null
+     */
+    public static function botGetOrCreate($key, $update = [], $userid = 0)
+    {
+        $email = "{$key}@bot.system";
+        $botUser = self::whereEmail($email)->first();
+        if (empty($botUser)) {
+            $botUser = Doo::userCreate($email, Base::generatePassword(32));
+            if (empty($botUser)) {
+                return null;
+            }
+            $botUser->updateInstance([
+                'created_ip' => Base::getIp(),
+            ]);
+            $botUser->save();
+            if ($userid > 0) {
+                UserBot::createInstance([
+                    'userid' => $userid,
+                    'bot_id' => $botUser->userid,
+                ])->save();
+            }
+            //
+            switch ($key) {
+                case 'system-msg':
+                    $update['nickname'] = '系统消息';
+                    break;
+                case 'task-alert':
+                    $update['nickname'] = '任务提醒';
+                    break;
+                case 'check-in':
+                    $update['nickname'] = '签到打卡';
+                    break;
+                case 'anon-msg':
+                    $update['nickname'] = '匿名消息';
+                    break;
+                case 'bot-manager':
+                    $update['nickname'] = '机器人管理';
+                    break;
+            }
+        }
+        if ($update) {
+            $botUser->updateInstance($update);
+            if (isset($update['nickname'])) {
+                $botUser->az = Base::getFirstCharter($botUser->nickname);
+                $botUser->pinyin = Base::cn2pinyin($botUser->nickname);
+            }
+            $botUser->save();
+        }
+        return $botUser;
     }
 }

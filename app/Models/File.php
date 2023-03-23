@@ -13,8 +13,8 @@ use Request;
  * App\Models\File
  *
  * @property int $id
- * @property string|null $pids 上级ID递归
  * @property int|null $pid 上级ID
+ * @property string|null $pids 上级ID递归
  * @property int|null $cid 复制ID
  * @property string|null $name 名称
  * @property string|null $type 类型
@@ -22,6 +22,7 @@ use Request;
  * @property int|null $size 大小(B)
  * @property int|null $userid 拥有者ID
  * @property int|null $share 是否共享
+ * @property int|null $pshare 所属分享ID
  * @property int|null $created_id 创建者
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -39,6 +40,7 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|File whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File wherePid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File wherePids($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|File wherePshare($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereShare($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereSize($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereType($value)
@@ -63,7 +65,7 @@ class File extends AbstractModel
         'inc', 'phtml', 'shtml', 'php3', 'php4', 'php5', 'phps', 'phpt', 'aw', 'ctp', 'module', 'ps1', 'py', 'r', 'rb', 'ru', 'gemspec', 'rake', 'guardfile', 'rakefile',
         'gemfile', 'rs', 'sass', 'scss', 'sh', 'bash', 'bashrc', 'sql', 'sqlserver', 'swift', 'ts', 'typescript', 'str', 'vbs', 'vb', 'v', 'vh', 'sv', 'svh', 'xml',
         'rdf', 'rss', 'wsdl', 'xslt', 'atom', 'mathml', 'mml', 'xul', 'xbl', 'xaml', 'yaml', 'yml',
-        'asp', 'properties', 'gitignore', 'log', 'bas', 'prg', 'python', 'ftl', 'aspx'
+        'asp', 'properties', 'gitignore', 'log', 'bas', 'prg', 'python', 'ftl', 'aspx', 'plist'
     ];
 
     /**
@@ -94,21 +96,18 @@ class File extends AbstractModel
 
     /**
      * 是否有访问权限
-     * @param $userid
+     * @param array $userids
      * @return int -1:没有权限，0:访问权限，1:读写权限，1000:所有者或创建者
      */
-    public function getPermission($userid)
+    public function getPermission(array $userids)
     {
-        if ($userid == $this->userid || $userid == $this->created_id) {
+        if (in_array($this->userid, $userids) || in_array($this->created_id, $userids)) {
             // ① 自己的文件夹 或 自己创建的文件夹
             return 1000;
         }
         $row = $this->getShareInfo();
         if ($row) {
-            $fileUser = FileUser::whereFileId($row->id)->where(function ($query) use ($userid) {
-                $query->where('userid', 0);
-                $query->orWhere('userid', $userid);
-            })->orderByDesc('permission')->first();
+            $fileUser = FileUser::whereFileId($row->id)->whereIn('userid', $userids)->orderByDesc('permission')->first();
             if ($fileUser) {
                 // ② 在指定共享成员内
                 return $fileUser->permission;
@@ -142,7 +141,7 @@ class File extends AbstractModel
 
     /**
      * 是否处于共享文件夹内（不含自身）
-     * @return bool
+     * @return File|false
      */
     public function isNnShare()
     {
@@ -153,11 +152,20 @@ class File extends AbstractModel
                 break;
             }
             if ($row->share) {
-                return true;
+                return $row;
             }
             $pid = $row->pid;
         }
         return false;
+    }
+
+    /**
+     * 目录内是否存在共享文件或文件夹
+     * @return bool
+     */
+    public function isSubShare()
+    {
+        return $this->type == 'folder' && File::where("pids", "like", "%,{$this->id},%")->whereShare(1)->exists();
     }
 
     /**
@@ -174,6 +182,7 @@ class File extends AbstractModel
             AbstractModel::transaction(function () use ($share) {
                 $this->share = $share;
                 $this->save();
+                File::where("pids", "like", "%,{$this->id},%")->update(['pshare' => $share ? $this->id : 0]);
                 if ($share === 0) {
                     FileUser::deleteFileAll($this->id, $this->userid);
                 }
@@ -189,16 +198,50 @@ class File extends AbstractModel
     }
 
     /**
-     * 保存前更新pids
+     * 处理重名
+     * @return void
+     */
+    public function handleDuplicateName()
+    {
+        $builder = self::wherePid($this->pid)->whereUserid($this->userid)->whereExt($this->ext);
+        $exist = $builder->clone()->whereName($this->name)->exists();
+        if (!$exist) {
+            return;    // 未重名，不需要处理
+        }
+        // 发现重名，自动重命名
+        $nextNum = 2;
+        if (preg_match("/(.*?)(\s+\(\d+\))*$/", $this->name)) {
+            $preName = preg_replace("/(.*?)(\s+\(\d+\))*$/", "$1", $this->name);
+            $nextNum = $builder->clone()->where("name", "LIKE", "{$preName}%")->count() + 1;
+        }
+        $newName = "{$this->name} ({$nextNum})";
+        if ($builder->clone()->whereName($newName)->exists()) {
+            $nextNum = rand(100, 9999);
+            $newName = "{$this->name} ({$nextNum})";
+        }
+        $this->name = $newName;
+    }
+
+    /**
+     * 保存前更新pids/pshare
      * @return bool
      */
-    public function saveBeforePids()
+    public function saveBeforePP()
     {
         $pid = $this->pid;
+        $pshare = $this->share ? $this->id : 0;
         $array = [];
         while ($pid > 0) {
             $array[] = $pid;
-            $pid = intval(self::whereId($pid)->value('pid'));
+            $file = self::select(['id', 'pid', 'share'])->find($pid);
+            if ($file) {
+                $pid = $file->pid;
+                if ($file->share) {
+                    $pshare = $file->id;
+                }
+            } else {
+                $pid = 0;
+            }
         }
         $opids = $this->pids;
         if ($array) {
@@ -207,6 +250,7 @@ class File extends AbstractModel
         } else {
             $this->pids = '';
         }
+        $this->pshare = $pshare;
         if (!$this->save()) {
             return false;
         }
@@ -215,7 +259,7 @@ class File extends AbstractModel
             self::wherePid($this->id)->chunkById(100, function ($lists) {
                 /** @var self $item */
                 foreach ($lists as $item) {
-                    $item->saveBeforePids();
+                    $item->saveBeforePP();
                 }
             });
         }
@@ -244,6 +288,29 @@ class File extends AbstractModel
     }
 
     /**
+     * 获取文件分享链接
+     * @param $userid
+     * @param $refresh
+     * @return array
+     */
+    public function getShareLink($userid, $refresh = false)
+    {
+        if ($this->type == 'folder') {
+            throw new ApiException('文件夹不支持分享');
+        }
+        return FileLink::generateLink($this->id, $userid, $refresh);
+    }
+
+    /**
+     * 获取文件名称加后缀
+     * @return string|null
+     */
+    public function getNameAndExt()
+    {
+        return $this->ext ? "{$this->name}.{$this->ext}" : $this->name;
+    }
+
+    /**
      * 推送消息
      * @param $action
      * @param File|null $data   发送内容，默认为[id]
@@ -257,19 +324,7 @@ class File extends AbstractModel
             ];
         }
         //
-        if ($userid === null) {
-            $userid = [$this->userid];
-            if ($this->share == 1) {
-                $builder = WebSocket::select(['userid']);
-                if ($action == 'content') {
-                    $builder->wherePath('file/content/' . $this->id);
-                }
-                $userid = array_merge($userid, $builder->pluck('userid')->toArray());
-            } elseif ($this->share == 2) {
-                $userid = array_merge($userid, FileUser::whereFileId($this->id)->pluck('userid')->toArray());
-            }
-            $userid = array_values(array_filter(array_unique($userid)));
-        }
+        $userid = $this->pushUserid($action, $userid);
         if (empty($userid)) {
             return;
         }
@@ -293,35 +348,102 @@ class File extends AbstractModel
     }
 
     /**
-     * 处理返回图片地址
-     * @param $item
-     * @return void
+     * 获取推送会员
+     * @param $action
+     * @param $userid
+     * @return array|int[]|mixed|null[]
      */
-    public static function handleImageUrl(&$item)
+    public function pushUserid($action, $userid = null) {
+        $wherePath = "/manage/file";
+        if ($userid === null) {
+            $array = [$this->userid];
+            if ($action == 'add' && $this->pid == 0) {
+                return $array;
+            }
+            if ($action == 'content') {
+                $wherePath = "/single/file/{$this->id}";
+            } elseif ($this->pid > 0) {
+                $wherePath = "/manage/file/{$this->pid}";
+            } else {
+                $tmpArray = FileUser::whereFileId($this->id)->pluck('userid')->toArray();
+                if (empty($tmpArray)) {
+                    return $array;
+                }
+                if (!in_array(0, $tmpArray)) {
+                    return $tmpArray;
+                }
+            }
+            $tmpArray = WebSocket::wherePath($wherePath)->pluck('userid')->toArray();
+            if (empty($tmpArray)) {
+                return $array;
+            }
+            $array = array_values(array_filter(array_unique(array_merge($array, $tmpArray))));
+        } else {
+            $array = is_array($userid) ? $userid : [$userid];
+            if (in_array(0, $array)) {
+                return WebSocket::wherePath($wherePath)->pluck('userid')->toArray();
+            }
+        }
+        return $array;
+    }
+
+    /**
+     * code获取文件ID、名称
+     * @param $code
+     * @return File
+     */
+    public static function code2IdName($code) {
+        $arr = explode(",", base64_decode($code));
+        if (empty($arr)) {
+            return null;
+        }
+        $fileId = intval($arr[0]);
+        if (empty($fileId)) {
+            return null;
+        }
+        return File::select(['id', 'name'])->find($fileId);
+    }
+
+
+    /**
+     * 处理返回图片地址
+     * @param array $item
+     * @return array
+     */
+    public static function handleImageUrl($item)
     {
         if (in_array($item['ext'], self::imageExt) ) {
             $content = Base::json2array(FileContent::whereFid($item['id'])->orderByDesc('id')->value('content'));
             if ($content) {
                 $item['image_url'] = Base::fillUrl($content['url']);
+                $item['image_width'] = intval($content['width']);
+                $item['image_height'] = intval($content['height']);
             }
         }
+        return $item;
     }
 
     /**
      * 获取文件并检测权限
-     * @param $id
-     * @param int $limit 要求权限: 0-访问权限、1-读写权限、1000-所有者或创建者
-     * @param $permission
+     * @param int $id
+     * @param User|array|int $user      要求权限的用户，如：[0, 1]
+     * @param int $limit                要求权限: 0-访问权限、1-读写权限、1000-所有者或创建者
+     * @param int $permission
      * @return File
      */
-    public static function permissionFind($id, $limit = 0, &$permission = -1)
+    public static function permissionFind(int $id, $user, int $limit = 0, int &$permission = -1)
     {
         $file = File::find($id);
         if (empty($file)) {
             throw new ApiException('文件不存在或已被删除');
         }
         //
-        $permission = $file->getPermission(User::userid());
+        if ($user instanceof User) {
+            $userids = $user->isTemp() ? [$user->userid] : [0, $user->userid];
+        } else {
+            $userids = is_array($user) ? $user : [$user];
+        }
+        $permission = $file->getPermission($userids);
         if ($permission < $limit) {
             $msg = match ($limit) {
                 1000 => '仅限所有者或创建者操作',
@@ -340,11 +462,10 @@ class File extends AbstractModel
      */
     public static function formatFileData(array $data)
     {
+        $fileName = $data['name'];
         $filePath = $data['path'];
         $fileSize = $data['size'];
         $fileExt = $data['ext'];
-        $fileDotExt = '.' . $fileExt;
-        $fileName = Base::rightDelete($data['name'], $fileDotExt) . $fileDotExt;
         $publicPath = public_path($filePath);
         //
         switch ($fileExt) {
@@ -376,27 +497,27 @@ class File extends AbstractModel
                 if (in_array($fileExt, self::codeExt) && $fileSize < 2 * 1024 * 1024)
                 {
                     // 文本预览，限制2M内的文件
-                    $data['content'] = file_get_contents($publicPath) ?: 'Content deleted';
+                    $data['content'] = [
+                        'content' => file_get_contents($publicPath) ?: 'Content deleted',
+                    ];
                     $data['file_mode'] = 'code';
                 }
                 elseif (in_array($fileExt, File::officeExt))
                 {
                     // office预览
-                    $data['content'] = '';
+                    $data['content'] = json_decode('{}');
                     $data['file_mode'] = 'office';
                 }
                 else
                 {
                     // 其他预览
-                    if (in_array($fileExt, File::localExt)) {
-                        $url = Base::fillUrl($filePath);
-                    } else {
-                        $url = 'http://' . env('APP_IPPR') . '.3/' . $filePath;
-                    }
+                    $name = Base::rightDelete($fileName, ".{$fileExt}") . ".{$fileExt}";
                     $data['content'] = [
                         'preview' => true,
-                        'url' => base64_encode(Base::urlAddparameter($url, [
-                            'fullfilename' => $fileName
+                        'name' => $name,
+                        'key' => urlencode(Base::urlAddparameter($filePath, [
+                            'name' => $name,
+                            'ext' => $fileExt
                         ])),
                     ];
                     $data['file_mode'] = 'preview';
@@ -404,5 +525,61 @@ class File extends AbstractModel
                 break;
         }
         return $data;
+    }
+
+    /**
+     * 移交文件
+     * @param $originalUserid
+     * @param $newUserid
+     * @return void
+     */
+    public static function transfer($originalUserid, $newUserid)
+    {
+        if (!self::whereUserid($originalUserid)->exists()) {
+            return;
+        }
+
+        // 创建一个文件夹存放移交的文件
+        $name = User::userid2nickname($originalUserid) ?: ('ID:' . $originalUserid);
+        $file = File::createInstance([
+            'pid' => 0,
+            'name' => "【{$name}】移交的文件",
+            'type' => "folder",
+            'ext' => "",
+            'userid' => $newUserid,
+            'created_id' => 0,
+        ]);
+        $file->handleDuplicateName();
+        $file->saveBeforePP();
+
+        // 移交文件
+        self::whereUserid($originalUserid)->chunkById(100, function($list) use ($file, $newUserid) {
+            /** @var self $item */
+            foreach ($list as $item) {
+                if ($item->pid === 0) {
+                    $item->pid = $file->id;
+                }
+                $item->userid = $newUserid;
+                $item->saveBeforePP();
+            }
+        });
+
+        // 移交文件权限
+        FileUser::whereUserid($originalUserid)->chunkById(100, function ($list) use ($newUserid) {
+            /** @var FileUser $item */
+            foreach ($list as $item) {
+                $row = FileUser::whereFileId($item->file_id)->whereUserid($newUserid)->first();
+                if ($row) {
+                    // 已存在则删除原数据，判断改变已存在的数据
+                    $row->permission = max($row->permission, $item->permission);
+                    $row->save();
+                    $item->delete();
+                } else {
+                    // 不存在则改变原数据
+                    $item->userid = $newUserid;
+                    $item->save();
+                }
+            }
+        });
     }
 }

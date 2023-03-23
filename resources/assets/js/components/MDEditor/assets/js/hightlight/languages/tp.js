@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var TPID = {
     className: 'number',
     begin: '[1-9][0-9]*', /* no leading zeros */

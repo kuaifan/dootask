@@ -18,13 +18,25 @@
                 </li>
                 <li>
                     <div class="search-label">
+                        {{$L("项目类型")}}
+                    </div>
+                    <div class="search-content">
+                        <Select v-model="keys.type" :placeholder="$L('团队项目')">
+                            <Option value="">{{$L('团队项目')}}</Option>
+                            <Option value="personal">{{$L('个人项目')}}</Option>
+                            <Option value="all">{{$L('全部项目')}}</Option>
+                        </Select>
+                    </div>
+                </li>
+                <li>
+                    <div class="search-label">
                         {{$L("项目状态")}}
                     </div>
                     <div class="search-content">
-                        <Select v-model="keys.status" :placeholder="$L('请选择')">
-                            <Option value="">{{$L('全部')}}</Option>
-                            <Option value="unarchived">{{$L('未归档')}}</Option>
+                        <Select v-model="keys.status" :placeholder="$L('未归档')">
+                            <Option value="">{{$L('未归档')}}</Option>
                             <Option value="archived">{{$L('已归档')}}</Option>
+                            <Option value="all">{{$L('全部')}}</Option>
                         </Select>
                     </div>
                 </li>
@@ -55,7 +67,7 @@
                 :current="page"
                 :page-size="pageSize"
                 :disabled="loadIng > 0"
-                :simple="windowMax768"
+                :simple="windowSmall"
                 :page-size-opts="[10,20,30,50,100]"
                 show-elevator
                 show-sizer
@@ -78,32 +90,7 @@ export default {
             keys: {},
             keyIs: false,
 
-            columns: [],
-            list: [],
-
-            page: 1,
-            pageSize: 20,
-            total: 0,
-            noText: ''
-        }
-    },
-    mounted() {
-        this.getLists();
-    },
-    computed: {
-        ...mapState(['windowMax768'])
-    },
-    watch: {
-        keyIs(v) {
-            if (!v) {
-                this.keys = {}
-                this.setPage(1)
-            }
-        }
-    },
-    methods: {
-        initLanguage() {
-            this.columns = [
+            columns: [
                 {
                     title: 'ID',
                     key: 'id',
@@ -186,20 +173,44 @@ export default {
                     key: 'created_at',
                     width: 168,
                 },
-            ]
-        },
+            ],
+            list: [],
 
+            page: 1,
+            pageSize: 20,
+            total: 0,
+            noText: ''
+        }
+    },
+    mounted() {
+        this.getLists();
+    },
+    watch: {
+        keyIs(v) {
+            if (!v) {
+                this.keys = {}
+                this.setPage(1)
+            }
+        }
+    },
+    methods: {
         onSearch() {
             this.page = 1;
             this.getLists();
         },
 
         getLists() {
-            let archived = 'all';
-            if (this.keys.status == 'archived') {
+            let type = 'team';
+            if (this.keys.type == 'all') {
+                type = 'all';
+            } else if (this.keys.type == 'personal') {
+                type = 'personal';
+            }
+            let archived = 'no';
+            if (this.keys.status == 'all') {
+                archived = 'all';
+            } else if (this.keys.status == 'archived') {
                 archived = 'yes';
-            } else if (this.keys.status == 'unarchived') {
-                archived = 'no';
             }
             this.loadIng++;
             this.keyIs = $A.objImplode(this.keys) != "";
@@ -209,18 +220,19 @@ export default {
                     keys: this.keys,
                     all: 1,
                     archived,
+                    type,
                     page: Math.max(this.page, 1),
                     pagesize: Math.max($A.runNum(this.pageSize), 10),
                 },
             }).then(({data}) => {
-                this.loadIng--;
                 this.page = data.current_page;
                 this.total = data.total;
                 this.list = data.data;
                 this.noText = '没有相关的数据';
             }).catch(() => {
-                this.loadIng--;
                 this.noText = '数据加载失败';
+            }).finally(_ => {
+                this.loadIng--;
             })
         },
 

@@ -111,7 +111,6 @@ export default {
                     pagesize: Math.max($A.runNum(this.listPageSize), 10),
                 }
             }).then(({data}) => {
-                this.loadIng--;
                 if (resetLoad === true) {
                     this.lists = [];
                 }
@@ -143,10 +142,11 @@ export default {
                 this.hasMorePages = data.current_page < data.last_page;
                 this.totalNum = data.total;
             }).catch(() => {
-                this.loadIng--;
                 this.lists = [];
                 this.hasMorePages = false;
                 this.totalNum = 0;
+            }).finally(_ => {
+                this.loadIng--;
             });
         },
 
@@ -167,7 +167,7 @@ export default {
          * @returns {*[]}
          */
         logDetail(h, {detail, record}) {
-            let vNode = [h('span', this.$L(detail))];
+            let vNode = [h('span', detail)];
             if ($A.isJson(record)) {
                 if ($A.isArray(record.change)) {
                     let [before, now] = record.change
@@ -184,12 +184,16 @@ export default {
                     let userids = $A.isArray(record.userid) ? record.userid : [record.userid]
                     let userNode = [];
                     userids.some(userid => {
-                        userNode.push(h('UserAvatar', {
-                            props: {
-                                size: 18,
-                                userid
-                            }
-                        }))
+                        if (/^\d+$/.test(userid)) {
+                            userNode.push(h('UserAvatar', {
+                                props: {
+                                    size: 18,
+                                    userid
+                                }
+                            }))
+                        } else {
+                            userNode.push(h('span', userid))
+                        }
                     })
                     if (userNode.length > 0) {
                         vNode.push(h('div', {
@@ -223,8 +227,8 @@ export default {
                 if (name) {
                     list.push({
                         id,
-                        button: '重置',
-                        content: `确定重置为【${name}】吗？`,
+                        button: this.$L('重置'),
+                        content: this.$L(`确定重置为【${name}】吗？`),
                     })
                 }
             }
@@ -240,20 +244,20 @@ export default {
                 content: item.content,
                 loading: true,
                 onOk: () => {
-                    this.$store.dispatch("call", {
-                        url: 'project/task/resetfromlog',
-                        data: {
-                            id: item.id
-                        }
-                    }).then(({data, msg}) => {
-                        $A.messageSuccess(msg);
-                        this.$Modal.remove();
-                        this.$store.dispatch("saveTask", data);
-                        this.getLists(true);
-                    }).catch(({msg}) => {
-                        $A.modalError(msg, 301);
-                        this.$Modal.remove();
-                    });
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("call", {
+                            url: 'project/task/resetfromlog',
+                            data: {
+                                id: item.id
+                            }
+                        }).then(({data, msg}) => {
+                            resolve(msg);
+                            this.$store.dispatch("saveTask", data);
+                            this.getLists(true);
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        });
+                    })
                 }
             });
         },

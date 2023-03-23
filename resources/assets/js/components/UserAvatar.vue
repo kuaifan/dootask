@@ -3,18 +3,22 @@
         v-if="user"
         class="common-avatar"
         :open-delay="openDelay"
-        :disabled="tooltipDisabled"
+        :disabled="windowSmall || $isEEUiApp || tooltipDisabled || isBot"
         :placement="tooltipPlacement">
         <div slot="content" class="common-avatar-transfer">
             <slot/>
-            <p>{{$L('昵称')}}: {{user.nickname}}</p>
+            <p>{{$L('昵称')}}: {{user.nickname}}<em v-if="user.delete_at" class="deleted no-dark-content">{{$L('已删除')}}</em><em v-else-if="user.disable_at" class="disabled no-dark-content">{{$L('已离职')}}</em></p>
+            <p class="department-name" :title="user.department_name || ''">{{$L('部门')}}: {{user.department_name || '-'}}</p>
             <p>{{$L('职位/职称')}}: {{user.profession || '-'}}</p>
-            <div v-if="userId != userid && showIconMenu" class="avatar-icons">
+            <p v-if="user.delete_at"><strong>{{$L('删除时间')}}: {{user.delete_at}}</strong></p>
+            <p v-else-if="user.disable_at"><strong>{{$L('离职时间')}}: {{user.disable_at}}</strong></p>
+            <slot name="end"/>
+            <div v-if="showMenu" class="avatar-icons">
                 <Icon type="ios-chatbubbles" @click="openDialog"/>
             </div>
         </div>
-        <div class="avatar-wrapper">
-            <div v-if="showIcon" :class="['avatar-box', userId === userid || user.online ? 'online' : '']" :style="boxStyle">
+        <div class="avatar-wrapper" :class="{'avatar-pointer': clickOpenDialog}" @click="onClickOpen">
+            <div v-if="showIcon" :class="boxClass" :style="boxStyle">
                 <em :style="spotStyle"></em>
                 <EAvatar v-if="showImg" ref="avatar" :class="{'avatar-default':isDefault}" :src="user.userimg" :size="avatarSize" :error="onError">
                     <span class="avatar-char" :style="spotStyle">{{nickname}}</span>
@@ -23,7 +27,10 @@
                     <span class="avatar-char" :style="spotStyle">{{nickname}}</span>
                 </EAvatar>
             </div>
-            <div v-if="showName" class="avatar-name" :style="nameStyle">{{user.nickname}}</div>
+            <div v-if="showName" class="avatar-name" :style="nameStyle">
+                <div v-if="user.bot" class="taskfont bot">&#xe68c;</div>
+                <span>{{nameText || user.nickname}}</span>
+            </div>
         </div>
     </ETooltip>
 </template>
@@ -51,11 +58,19 @@
                 type: Boolean,
                 default: false
             },
+            nameText: {
+                type: String,
+                default: null   // showName = true 时有效，留空就显示会员昵称
+            },
             tooltipDisabled: {
                 type: Boolean,
                 default: false
             },
             showIconMenu: {
+                type: Boolean,
+                default: false
+            },
+            clickOpenDialog: {
                 type: Boolean,
                 default: false
             },
@@ -75,6 +90,11 @@
                 type: Number,
                 default: 600
             },
+            userResult: {
+                type: Function,
+                default: () => {
+                }
+            }
         },
         data() {
             return {
@@ -90,15 +110,28 @@
                     this.setUser(data)
                 }
             });
+            this.$store.state.userAvatar[this._uid] = this.$props;
         },
         beforeDestroy() {
             if (this.subscribe) {
                 this.subscribe.unsubscribe();
                 this.subscribe = null;
             }
+            if (this.$store.state.userAvatar[this._uid] !== undefined) {
+                delete this.$store.state.userAvatar[this._uid];
+            }
         },
         computed: {
-            ...mapState(["userId", "userInfo", "userOnline"]),
+            ...mapState(['userInfo', 'userOnline', 'cacheUserBasic']),
+
+            boxClass() {
+                return {
+                    'avatar-box': true,
+                    'online': this.userId === this.userid || this.user.online || this.isBot,
+                    'disabled': this.user.disable_at,
+                    'deleted': this.user.delete_at
+                }
+            },
 
             boxStyle() {
                 const style = {};
@@ -123,13 +156,16 @@
 
             nameStyle() {
                 const {showIcon} = this;
+                const {delete_at, disable_at} = this.user
+                const styles = {}
                 if (!showIcon) {
-                    return {
-                        paddingLeft: 0
-                    }
-                } else {
-                    return {}
+                    styles.marginLeft = 0
                 }
+                if (delete_at || disable_at) {
+                    styles.opacity = 0.8
+                    styles.textDecoration = "line-through"
+                }
+                return styles
             },
 
             avatarSize() {
@@ -150,9 +186,23 @@
                 return !$A.rightExists(userimg, '/avatar.png');
             },
 
+            showMenu() {
+                if (this.userId == this.userid) {
+                    return false
+                }
+                if (this.user.delete_at || this.user.disable_at) {
+                    return false
+                }
+                return this.showIconMenu
+            },
+
             isDefault() {
                 const {userimg} = this.user
-                return $A.strExists(userimg, '/avatar/default_');
+                return $A.strExists(userimg, '/avatar');
+            },
+
+            isBot() {
+                return !!(this.user && this.user.bot);
             },
 
             nickname() {
@@ -182,6 +232,36 @@
                 if (this.user && typeof data[this.user.userid] !== "undefined") {
                     this.$set(this.user, 'online', data[this.user.userid]);
                 }
+            },
+
+            'user.online'(val) {
+                if (val || this.userId === this.userid) {
+                    this.$emit('update:online', true)
+                } else {
+                    const now = $A.Time()
+                    const line = $A.Time(this.user.line_at)
+                    const seconds = now - line
+                    let stats = '最后在线于很久以前';
+                    if (seconds < 60) {
+                        stats = `最后在线于刚刚`
+                    } else if (seconds < 3600) {
+                        stats = `最后在线于 ${Math.floor(seconds / 60)} 分钟前`
+                    } else if (seconds < 3600 * 6) {
+                        stats = `最后在线于 ${Math.floor(seconds / 3600)} 小时前`
+                    } else {
+                        const nowYmd = $A.formatDate('Y-m-d', now)
+                        const lineYmd = $A.formatDate('Y-m-d', line)
+                        const lineHi = $A.formatDate('H:i', line)
+                        if (nowYmd === lineYmd) {
+                            stats = `最后在线于今天 ${lineHi}`
+                        } else if ($A.formatDate('Y-m-d', now - 86400) === lineYmd) {
+                            stats = `最后在线于昨天 ${lineHi}`
+                        } else if (seconds < 3600 * 24 * 365) {
+                            stats = `最后在线于 ${lineYmd}`
+                        }
+                    }
+                    this.$emit('update:online', this.$L(stats))
+                }
             }
         },
         methods: {
@@ -192,6 +272,10 @@
                 if (this.userid == this.userInfo.userid) {
                     this.setUser(this.userInfo);
                     return;
+                }
+                const tempUser = this.cacheUserBasic.find(({userid}) => userid == this.userid);
+                if (tempUser) {
+                    this.setUser(tempUser);
                 }
                 this.$store.dispatch("getUserBasic", {userid: this.userid});
             },
@@ -205,16 +289,28 @@
                     //
                 }
                 this.user = info;
+                this.userResult(info);
+            },
+
+            onClickOpen() {
+                if (this.clickOpenDialog) {
+                    this.openDialog()
+                } else {
+                    this.$emit('open-dialog', this.userid)
+                }
+            },
+
+            openDialog() {
+                this.$store.dispatch("openDialogUserid", this.userid).then(_ => {
+                    this.goForward({name: 'manage-messenger'})
+                }).catch(({msg}) => {
+                    $A.modalError(msg)
+                });
             },
 
             onError() {
                 return true
             },
-
-            openDialog() {
-                this.goForward({name: 'manage-messenger'});
-                this.$store.dispatch("openDialogUserid", this.userid).catch(() => {})
-            }
         }
     };
 </script>

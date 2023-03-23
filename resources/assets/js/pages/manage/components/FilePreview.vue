@@ -1,20 +1,21 @@
 <template>
     <div class="file-preview">
-        <iframe v-if="isPreview" ref="myPreview" class="preview-iframe" :src="previewUrl"></iframe>
-        <template v-else>
-            <div v-show="!['word', 'excel', 'ppt'].includes(file.type)" class="edit-header">
+        <IFrame v-if="isPreview" class="preview-iframe" :src="previewUrl" @on-load="onFrameLoad"/>
+        <template v-else-if="contentDetail">
+            <div v-show="headerShow && !['word', 'excel', 'ppt'].includes(file.type)" class="edit-header">
                 <div class="header-title">
-                    {{formatName(file)}}
+                    <div class="title-name">{{$A.getFileName(file)}}</div>
                     <Tag color="default">{{$L('只读')}}</Tag>
                     <div class="refresh">
                         <Loading v-if="contentLoad"/>
                         <Icon v-else type="ios-refresh" @click="getContent" />
                     </div>
                 </div>
-                <Dropdown v-if="file.type=='mind'"
-                          trigger="click"
-                          class="header-hint"
-                          @on-click="exportMenu">
+                <Dropdown
+                    v-if="file.type=='mind'"
+                    trigger="click"
+                    class="header-hint"
+                    @on-click="exportMenu">
                     <a href="javascript:void(0)">{{$L('导出')}}<Icon type="ios-arrow-down"></Icon></a>
                     <DropdownMenu slot="list">
                         <DropdownItem name="png">{{$L('导出PNG图片')}}</DropdownItem>
@@ -22,15 +23,15 @@
                     </DropdownMenu>
                 </Dropdown>
             </div>
-            <div v-if="contentDetail" class="content-body">
+            <div class="content-body">
                 <template v-if="file.type=='document'">
                     <MDPreview v-if="contentDetail.type=='md'" :initialValue="contentDetail.content"/>
                     <TEditor v-else :value="contentDetail.content" height="100%" readOnly/>
                 </template>
                 <Drawio v-else-if="file.type=='drawio'" ref="myFlow" :value="contentDetail" :title="file.name" readOnly/>
                 <Minder v-else-if="file.type=='mind'" ref="myMind" :value="contentDetail" readOnly/>
-                <AceEditor v-else-if="['code', 'txt'].includes(file.type)" :value="contentDetail" :ext="file.ext" readOnly/>
-                <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" :value="contentDetail" :code="code" :documentKey="documentKey" readOnly/>
+                <AceEditor v-else-if="['code', 'txt'].includes(file.type)" :value="contentDetail.content" :ext="file.ext" readOnly/>
+                <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" :value="contentDetail" :code="code" :historyId="historyId" :documentKey="documentKey" readOnly/>
             </div>
         </template>
         <div v-if="contentLoad" class="content-load"><Loading/></div>
@@ -38,29 +39,36 @@
 </template>
 
 <script>
-import Vue from 'vue'
-import Minder from '../../../components/Minder'
-Vue.use(Minder)
+import IFrame from "./IFrame";
 
 const MDPreview = () => import('../../../components/MDEditor/preview');
 const TEditor = () => import('../../../components/TEditor');
 const AceEditor = () => import('../../../components/AceEditor');
 const OnlyOffice = () => import('../../../components/OnlyOffice');
 const Drawio = () => import('../../../components/Drawio');
+const Minder = () => import('../../../components/Minder');
 
 export default {
     name: "FilePreview",
-    components: {AceEditor, TEditor, MDPreview, OnlyOffice, Drawio},
+    components: {IFrame, AceEditor, TEditor, MDPreview, OnlyOffice, Drawio, Minder},
     props: {
         code: {
             type: String,
             default: ''
+        },
+        historyId: {
+            type: Number,
+            default: 0
         },
         file: {
             type: Object,
             default: () => {
                 return {};
             }
+        },
+        headerShow: {
+            type: Boolean,
+            default: true
         },
     },
 
@@ -70,13 +78,6 @@ export default {
             contentDetail: null,
             loadPreview: true,
         }
-    },
-
-    mounted() {
-        window.addEventListener('message', this.handleMessage)
-    },
-    beforeDestroy() {
-        window.removeEventListener('message', this.handleMessage)
     },
 
     watch: {
@@ -107,21 +108,16 @@ export default {
 
         previewUrl() {
             if (this.isPreview) {
-                return $A.apiUrl("../fileview/onlinePreview?url=" + encodeURIComponent(this.contentDetail.url))
-            } else {
-                return '';
+                const {name, key} = this.contentDetail;
+                return $A.apiUrl(`../online/preview/${name}?key=${key}`)
             }
+            return '';
         },
     },
 
     methods: {
-        handleMessage (event) {
-            const data = event.data;
-            switch (data.act) {
-                case 'ready':
-                    this.loadPreview = false;
-                    break
-            }
+        onFrameLoad() {
+            this.loadPreview = false;
         },
 
         getContent() {
@@ -129,17 +125,20 @@ export default {
                 this.contentDetail = $A.cloneJSON(this.file);
                 return;
             }
-            this.loadContent++;
+            setTimeout(_ => {
+                this.loadContent++;
+            }, 600)
             this.$store.dispatch("call", {
                 url: 'file/content',
                 data: {
                     id: this.code || this.file.id,
+                    history_id: this.historyId
                 },
             }).then(({data}) => {
-                this.loadContent--;
                 this.contentDetail = data.content;
             }).catch(({msg}) => {
                 $A.modalError(msg);
+            }).finally(_ => {
                 this.loadContent--;
             })
         },
@@ -153,27 +152,19 @@ export default {
                         only_update_at: 'yes'
                     },
                 }).then(({data}) => {
-                    resolve($A.Date(data.update_at, true))
+                    resolve(`${data.id}-${$A.Time(data.update_at)}`)
                 }).catch(() => {
                     resolve(0)
                 });
             })
         },
 
-        exportMenu(act) {
+        exportMenu(type) {
             switch (this.file.type) {
                 case 'mind':
-                    this.$refs.myMind.exportHandle(act == 'pdf' ? 1 : 0, this.file.name);
+                    this.$refs.myMind.exportHandle(type, this.file.name);
                     break;
             }
-        },
-
-        formatName(file) {
-            let {name, ext} = file;
-            if (ext != '') {
-                name += "." + ext;
-            }
-            return name;
         },
     }
 }

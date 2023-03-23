@@ -5,7 +5,6 @@ namespace App\Models;
 
 use App\Module\Base;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Response;
 
 /**
  * App\Models\FileContent
@@ -41,11 +40,51 @@ class FileContent extends AbstractModel
     use SoftDeletes;
 
     /**
+     * 转预览地址
+     * @param array $array
+     * @return string
+     */
+    public static function toPreviewUrl($array)
+    {
+        $fileExt = $array['ext'];
+        $fileName = $array['name'];
+        $filePath = $array['path'];
+        $name = Base::rightDelete($fileName, ".{$fileExt}") . ".{$fileExt}";
+        $key = urlencode(Base::urlAddparameter($filePath, [
+            'name' => $name,
+            'ext' => $fileExt
+        ]));
+        return Base::fillUrl("online/preview/{$name}?key={$key}");
+    }
+
+    /**
+     * 转预览地址
+     * @param File $file
+     * @param $content
+     * @return string
+     */
+    public static function formatPreview($file, $content)
+    {
+        $content = Base::json2array($content ?: []);
+        $filePath = $content['url'];
+        if (in_array($file->type, ['word', 'excel', 'ppt'])) {
+            if (empty($content)) {
+                $filePath = 'assets/office/empty.' . str_replace(['word', 'excel', 'ppt'], ['docx', 'xlsx', 'pptx'], $file->type);
+            }
+        }
+        return self::toPreviewUrl([
+            'ext' => $file->ext,
+            'name' => $file->name,
+            'path' => $filePath,
+        ]);
+    }
+
+    /**
      * 获取格式内容（或下载）
      * @param File $file
      * @param $content
      * @param $download
-     * @return array|\Symfony\Component\HttpFoundation\BinaryFileResponse
+     * @return array|\Symfony\Component\HttpFoundation\StreamedResponse
      */
     public static function formatContent($file, $content, $download = false)
     {
@@ -53,9 +92,13 @@ class FileContent extends AbstractModel
         $content = Base::json2array($content ?: []);
         if (in_array($file->type, ['word', 'excel', 'ppt'])) {
             if (empty($content)) {
-                return Response::download(resource_path('assets/statics/office/empty.' . str_replace(['word', 'excel', 'ppt'], ['docx', 'xlsx', 'pptx'], $file->type)), $name);
+                $filePath = public_path('assets/office/empty.' . str_replace(['word', 'excel', 'ppt'], ['docx', 'xlsx', 'pptx'], $file->type));
+            } else {
+                $filePath = public_path($content['url']);
             }
-            return Response::download(public_path($content['url']), $name);
+            return Base::streamDownload(function() use ($filePath) {
+                echo file_get_contents($filePath);
+            }, $name);
         }
         if (empty($content)) {
             $content = match ($file->type) {
@@ -84,7 +127,9 @@ class FileContent extends AbstractModel
             if ($download) {
                 $filePath = public_path($path);
                 if (isset($filePath)) {
-                    return Response::download($filePath, $name);
+                    return Base::streamDownload(function() use ($filePath) {
+                        echo file_get_contents($filePath);
+                    }, $name);
                 } else {
                     abort(403, "This file not support download.");
                 }

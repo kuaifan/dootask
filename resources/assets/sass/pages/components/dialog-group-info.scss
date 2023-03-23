@@ -1,0 +1,152 @@
+.dialog-group-info {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 10px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    .group-info-title {
+        color: #b7b1b1;
+        margin: 18px 24px 0;
+    }
+
+    .group-info-value {
+        margin: 4px 24px 0;
+        line-height: 34px;
+
+        .quick-text {
+            padding: 6px 0;
+            height: auto;
+            line-height: 20px;
+            box-sizing: content-box;
+            overflow: visible;
+            white-space: normal;
+        }
+
+        .quick-input {
+            display: flex;
+            flex-direction: column;
+        }
+    }
+
+    .group-info-search {
+        margin: 24px 24px 0;
+    }
+
+    .group-info-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 18px 24px;
+        cursor: pointer;
+
+        > button {
+            margin: 0 8px;
+        }
+    }
+
+    .group-info-user {
+        flex: 1;
+        overflow: auto;
+        margin-top: 12px;
+        padding: 0 12px;
+
+        > ul {
+            > li {
+                display: flex;
+                align-items: center;
+                list-style: none;
+                padding: 12px;
+                height: 56px;
+                border-radius: 6px;
+
+                &:hover {
+                    background-color: rgba($primary-desc-color, 0.1);
+
+                    .user-exit {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
+
+                @media (max-width: 768px) {
+                    &:hover {
+                        background-color: transparent;
+                    }
+                }
+
+                &.no {
+                    &:hover {
+                        background-color: transparent;
+                    }
+
+                    justify-content: center;
+                    color: #999;
+
+                    .common-loading {
+                        width: 16px;
+                        height: 16px;
+                    }
+                }
+
+                .common-avatar {
+                    width: 0;
+                    flex: 1;
+
+                    .avatar-name {
+                        margin-left: 8px;
+                    }
+                }
+
+                .user-tag {
+                    margin-left: 4px;
+                    height: 22px;
+                    line-height: 22px;
+                    padding: 0 6px;
+                    border-radius: 3px;
+                    transform: scale(0.9);
+                    transform-origin: right center;
+                    color: #ffffff;
+                    background-color: $primary-color;
+                }
+
+                .user-exit {
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-end;
+                    cursor: pointer;
+                    height: 100%;
+                    width: 32px;
+                    opacity: 0;
+                    transform: translateX(50%);
+                    transition: all 0.2s;
+
+                    @media (max-width: 768px) {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+
+                    &:hover {
+                        > i {
+                            color: $primary-text-color;
+                        }
+                    }
+
+                    > i {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 22px;
+                        height: 22px;
+                        font-size: 12px;
+                        color: $primary-desc-color;
+                        border: 1px solid #dddddd;
+                        border-radius: 50%;
+                    }
+                }
+            }
+        }
+    }
+}

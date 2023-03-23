@@ -9,6 +9,7 @@
             v-model="content"
             :style="{ minWidth: minWidth + 'px' }"
             :placeholder="tis || placeholderText"
+            :enterkeyhint="enterkeyhint"
             @keydown.enter="downEnter($event)"
             @keydown.delete="delTag(false)"
             @keyup="onKeyup"
@@ -44,10 +45,14 @@
             max: {
                 default: 0
             },
+            enterkeyhint: {
+                type: String,
+                default: ''
+            },
         },
         data() {
-            let disSource = [];
-            this.value.split(",").forEach((item) => {
+            const disSource = [];
+            this.value?.split(",").forEach(item => {
                 if (item) {
                     disSource.push(item)
                 }
@@ -62,7 +67,7 @@
 
                 content: '',
 
-                disSource: disSource,
+                disSource,
 
                 isFocus: false
             }
@@ -74,20 +79,18 @@
             placeholder() {
                 this.wayMinWidth();
             },
-            value (val) {
+            value(val) {
                 let disSource = [];
-                if ($A.count(val) > 0) {
-                    val.split(",").forEach((item) => {
-                        if (item) {
-                            disSource.push(item)
-                        }
-                    });
-                }
+                val?.split(",").forEach(item => {
+                    if (item) {
+                        disSource.push(item)
+                    }
+                });
                 this.disSource = disSource;
             },
             disSource(val) {
                 let temp = '';
-                val.forEach((item) => {
+                val.forEach(item => {
                     if (temp != '') {
                         temp += this.cut;
                     }

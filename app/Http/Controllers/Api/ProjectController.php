@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ApiException;
 use App\Models\AbstractModel;
+use App\Models\Deleted;
 use App\Models\File;
+use App\Models\FileContent;
 use App\Models\Project;
 use App\Models\ProjectColumn;
 use App\Models\ProjectFlow;
@@ -19,9 +21,13 @@ use App\Models\User;
 use App\Models\WebSocketDialog;
 use App\Module\Base;
 use App\Module\BillExport;
+use App\Module\BillMultipleExport;
+use App\Module\Doo;
+use App\Module\TimeRange;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Madzipper;
+use Redirect;
 use Request;
 use Response;
 use Session;
@@ -42,6 +48,10 @@ class ProjectController extends AbstractController
      * @apiName lists
      *
      * @apiParam {String} [all]              是否查看所有项目（限制管理员）
+     * @apiParam {String} [type]             项目类型
+     * - all：全部（默认）
+     * - team：团队项目
+     * - personal：个人项目
      * @apiParam {String} [archived]         归档状态
      * - all：全部
      * - no：未归档（默认）
@@ -51,6 +61,9 @@ class ProjectController extends AbstractController
      * - yes：取列表
      * @apiParam {Object} [keys]             搜索条件
      * - keys.name: 项目名称
+     * @apiParam {String} [timerange]        时间范围（如：1678248944,1678248944）
+     * - 第一个时间: 读取在这个时间之后更新的数据
+     * - 第二个时间: 读取在这个时间之后删除的数据ID（第1页附加返回数据: deleted_id）
      *
      * @apiParam {Number} [page]        当前页，默认:1
      * @apiParam {Number} [pagesize]    每页显示数量，默认:50，最大:100
@@ -94,8 +107,11 @@ class ProjectController extends AbstractController
         $user = User::auth();
         //
         $all = Request::input('all');
+        $type = Request::input('type', 'all');
         $archived = Request::input('archived', 'no');
         $getcolumn = Request::input('getcolumn', 'no');
+        $keys = Request::input('keys');
+        $timerange = TimeRange::parse(Request::input('timerange'));
         //
         if ($all) {
             $user->identity('admin');
@@ -108,18 +124,30 @@ class ProjectController extends AbstractController
             $builder->with(['projectColumn']);
         }
         //
+        if ($type === 'team') {
+            $builder->where('projects.personal', 0);
+        } elseif ($type === 'personal') {
+            $builder->where('projects.personal', 1);
+        }
+        //
         if ($archived == 'yes') {
             $builder->whereNotNull('projects.archived_at');
         } elseif ($archived == 'no') {
             $builder->whereNull('projects.archived_at');
         }
         //
-        $keys = Request::input('keys');
+        if (is_array($keys) || $timerange->updated) {
+            $totalAll = $builder->clone()->count();
+        }
+        //
         if (is_array($keys)) {
-            $buildClone = $builder->clone();
             if ($keys['name']) {
                 $builder->where("projects.name", "like", "%{$keys['name']}%");
             }
+        }
+        //
+        if ($timerange->updated) {
+            $builder->where('projects.updated_at', '>', $timerange->updated);
         }
         //
         $list = $builder->orderByDesc('projects.id')->paginate(Base::getPaginate(100, 50));
@@ -128,10 +156,9 @@ class ProjectController extends AbstractController
         });
         //
         $data = $list->toArray();
-        if (isset($buildClone)) {
-            $data['total_all'] = $buildClone->count();
-        } else {
-            $data['total_all'] = $data['total'];
+        $data['total_all'] = $totalAll ?? $data['total'];
+        if ($list->currentPage() === 1) {
+            $data['deleted_id'] = Deleted::ids('project', $user->userid, $timerange->deleted);
         }
         //
         return Base::retSuccess('success', $data);
@@ -212,6 +239,7 @@ class ProjectController extends AbstractController
      * @apiParam {String} [flow]        开启流程
      * - open: 开启
      * - close: 关闭（默认）
+     * @apiParam {Number} [personal]    个人项目，注册成功时创建（仅支持创建一个个人项目）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -220,73 +248,8 @@ class ProjectController extends AbstractController
     public function add()
     {
         $user = User::auth();
-        // 项目名称
-        $name = trim(Request::input('name', ''));
-        $desc = trim(Request::input('desc', ''));
-        $flow = trim(Request::input('flow', 'close'));
-        if (mb_strlen($name) < 2) {
-            return Base::retError('项目名称不可以少于2个字');
-        } elseif (mb_strlen($name) > 32) {
-            return Base::retError('项目名称最多只能设置32个字');
-        }
-        if (mb_strlen($desc) > 255) {
-            return Base::retError('项目介绍最多只能设置255个字');
-        }
-        // 列表
-        $columns = explode(",", Request::input('columns'));
-        $insertColumns = [];
-        $sort = 0;
-        foreach ($columns AS $column) {
-            $column = trim($column);
-            if ($column) {
-                $insertColumns[] = [
-                    'name' => $column,
-                    'sort' => $sort++,
-                ];
-            }
-        }
-        if (empty($insertColumns)) {
-            $insertColumns[] = [
-                'name' => 'Default',
-                'sort' => 0,
-            ];
-        }
-        if (count($insertColumns) > 30) {
-            return Base::retError('项目列表最多不能超过30个');
-        }
-        // 开始创建
-        $project = Project::createInstance([
-            'name' => $name,
-            'desc' => $desc,
-            'userid' => $user->userid,
-        ]);
-        AbstractModel::transaction(function() use ($flow, $insertColumns, $project) {
-            $project->save();
-            ProjectUser::createInstance([
-                'project_id' => $project->id,
-                'userid' => $project->userid,
-                'owner' => 1,
-            ])->save();
-            foreach ($insertColumns AS $column) {
-                $column['project_id'] = $project->id;
-                ProjectColumn::createInstance($column)->save();
-            }
-            $dialog = WebSocketDialog::createGroup(null, $project->userid, 'project');
-            if (empty($dialog)) {
-                throw new ApiException('创建项目聊天室失败');
-            }
-            $project->dialog_id = $dialog->id;
-            $project->save();
-            //
-            if ($flow == 'open') {
-                $project->addFlow(Base::json2array('[{"id":-10,"name":"待处理","status":"start","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0},{"id":-11,"name":"进行中","status":"progress","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0},{"id":-12,"name":"待测试","status":"test","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0},{"id":-13,"name":"已完成","status":"end","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0},{"id":-14,"name":"已取消","status":"end","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0}]'));
-            }
-        });
         //
-        $data = Project::find($project->id);
-        $data->addLog("创建项目");
-        $data->pushMsg('add', $data);
-        return Base::retSuccess('添加成功', $data);
+        return Project::createProject(Request::all(), $user->userid);
     }
 
     /**
@@ -322,18 +285,22 @@ class ProjectController extends AbstractController
         }
         //
         $project = Project::userProject($project_id, true, true);
-        //
-        if ($project->name != $name) {
-            $project->addLog("修改项目名称", [
-                'change' => [$project->name, $name]
-            ]);
-            $project->name = $name;
-        }
-        if ($project->desc != $desc) {
-            $project->desc = $desc;
-            $project->addLog("修改项目介绍");
-        }
-        $project->save();
+        AbstractModel::transaction(function () use ($desc, $name, $project) {
+            if ($project->name != $name) {
+                $project->addLog("修改项目名称", [
+                    'change' => [$project->name, $name]
+                ]);
+                $project->name = $name;
+                if ($project->dialog_id) {
+                    WebSocketDialog::updateData(['id' => $project->dialog_id], ['name' => $project->name]);
+                }
+            }
+            if ($project->desc != $desc) {
+                $project->desc = $desc;
+                $project->addLog("修改项目介绍");
+            }
+            $project->save();
+        });
         $project->pushMsg('update', $project);
         //
         return Base::retSuccess('修改成功', $project);
@@ -382,6 +349,8 @@ class ProjectController extends AbstractController
             }
             $project->syncDialogUser();
             $project->addLog("修改项目成员");
+            $project->user_simple = count($array) . "|" . implode(",", array_slice($array, 0, 3));
+            $project->save();
             return $deleteUser->toArray();
         });
         //
@@ -543,11 +512,11 @@ class ProjectController extends AbstractController
         $project = Project::userProject($project_id, true, true);
         //
         if (!User::whereUserid($owner_userid)->exists()) {
-            return Base::retError('会员不存在');
+            return Base::retError('成员不存在');
         }
         //
         AbstractModel::transaction(function() use ($owner_userid, $project) {
-            ProjectUser::whereProjectId($project->id)->update(['owner' => 0]);
+            ProjectUser::whereProjectId($project->id)->change(['owner' => 0]);
             ProjectUser::updateInsert([
                 'project_id' => $project->id,
                 'userid' => $owner_userid,
@@ -608,11 +577,11 @@ class ProjectController extends AbstractController
                 if (!is_array($item['task'])) continue;
                 $index = 0;
                 foreach ($item['task'] as $task_id) {
-                    if (ProjectTask::whereId($task_id)->whereProjectId($project->id)->whereCompleteAt(null)->update([
+                    if (ProjectTask::whereId($task_id)->whereProjectId($project->id)->whereCompleteAt(null)->change([
                         'column_id' => $item['id'],
                         'sort' => $index
                     ])) {
-                        ProjectTask::whereParentId($task_id)->whereProjectId($project->id)->update([
+                        ProjectTask::whereParentId($task_id)->whereProjectId($project->id)->change([
                             'column_id' => $item['id'],
                         ]);
                     }
@@ -878,14 +847,18 @@ class ProjectController extends AbstractController
      * @apiName task__lists
      *
      * @apiParam {Object} [keys]             搜索条件
-     * - keys.name: 任务名称
+     * - keys.name: ID、任务名称
+     *
      * @apiParam {Number} [project_id]       项目ID
      * @apiParam {Number} [parent_id]        主任务ID（project_id && parent_id ≤ 0 时 仅查询自己参与的任务）
      * - 大于0：指定主任务下的子任务
      * - 等于-1：表示仅主任务
-     * @apiParam {String} [name]             任务描述关键词
+     *
      * @apiParam {Array} [time]              指定时间范围，如：['2020-12-12', '2020-12-30']
-     * @apiParam {String} [time_before]      指定时间之前，如：2020-12-30 00:00:00（填写此项时 time 参数无效）
+     * @apiParam {String} [timerange]        时间范围（如：1678248944,1678248944）
+     * - 第一个时间: 读取在这个时间之后更新的数据
+     * - 第二个时间: 读取在这个时间之后删除的数据ID（第1页附加返回数据: deleted_id）
+     *
      * @apiParam {String} [complete]         完成状态
      * - all：所有（默认）
      * - yes：已完成
@@ -898,7 +871,8 @@ class ProjectController extends AbstractController
      * - all：所有
      * - yes：已删除
      * - no：未删除（默认）
-     * @apiParam {Object} sorts              排序方式
+     *
+     * @apiParam {Object} [sorts]              排序方式
      * - sorts.complete_at  完成时间：asc|desc
      * - sorts.archived_at  归档时间：asc|desc
      * - sorts.end_at  到期时间：asc|desc
@@ -909,7 +883,7 @@ class ProjectController extends AbstractController
      */
     public function task__lists()
     {
-        User::auth();
+        $user = User::auth();
         //
         $builder = ProjectTask::with(['taskUser', 'taskTag']);
         //
@@ -917,7 +891,7 @@ class ProjectController extends AbstractController
         $project_id = intval(Request::input('project_id'));
         $name = Request::input('name');
         $time = Request::input('time');
-        $time_before = Request::input('time_before');
+        $timerange = TimeRange::parse(Request::input('timerange'));
         $complete = Request::input('complete', 'all');
         $archived = Request::input('archived', 'no');
         $deleted = Request::input('deleted', 'no');
@@ -927,7 +901,11 @@ class ProjectController extends AbstractController
         $sorts = is_array($sorts) ? $sorts : [];
         //
         if ($keys['name']) {
-            $builder->where("project_tasks.name", "like", "%{$keys['name']}%");
+            if (Base::isNumber($keys['name'])) {
+                $builder->where("project_tasks.id", intval($keys['name']));
+            } else {
+                $builder->where("project_tasks.name", "like", "%{$keys['name']}%");
+            }
         }
         //
         $scopeAll = false;
@@ -957,12 +935,13 @@ class ProjectController extends AbstractController
             });
         }
         //
-        if (Base::isDateOrTime($time_before)) {
-            $builder->whereNotNull('project_tasks.end_at')->where('project_tasks.end_at', '<', Carbon::parse($time_before));
-        } elseif (is_array($time)) {
+        if (is_array($time)) {
             if (Base::isDateOrTime($time[0]) && Base::isDateOrTime($time[1])) {
                 $builder->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay());
             }
+        }
+        if ($timerange->updated) {
+            $builder->where('project_tasks.updated_at', '>', $timerange->updated);
         }
         //
         if ($complete === 'yes') {
@@ -991,7 +970,12 @@ class ProjectController extends AbstractController
         //
         $list = $builder->orderByDesc('project_tasks.id')->paginate(Base::getPaginate(200, 100));
         //
-        return Base::retSuccess('success', $list);
+        $data = $list->toArray();
+        if ($list->currentPage() === 1) {
+            $data['deleted_id'] = Deleted::ids('projectTask', $user->userid, $timerange->deleted);
+        }
+        //
+        return Base::retSuccess('success', $data);
     }
 
     /**
@@ -1018,12 +1002,12 @@ class ProjectController extends AbstractController
         //
         $userid = Base::arrayRetainInt(Request::input('userid'), true);
         $time = Request::input('time');
-        $type = Request::input('type','taskTime');
+        $type = Request::input('type', 'taskTime');
         if (empty($userid) || empty($time)) {
             return Base::retError('参数错误');
         }
-        if (count($userid) > 20) {
-            return Base::retError('导出会员限制最多20个');
+        if (count($userid) > 100) {
+            return Base::retError('导出成员限制最多100个');
         }
         if (!(is_array($time) && Base::isDateOrTime($time[0]) && Base::isDateOrTime($time[1]))) {
             return Base::retError('时间选择错误');
@@ -1047,6 +1031,7 @@ class ProjectController extends AbstractController
         $headings[] = '验收/测试用时';
         $headings[] = '负责人';
         $headings[] = '创建人';
+        $headings[] = '状态';
         $datas = [];
         //
         $builder = ProjectTask::select(['project_tasks.*', 'project_task_users.userid as ownerid'])
@@ -1054,22 +1039,18 @@ class ProjectController extends AbstractController
             ->where('project_task_users.owner', 1)
             ->whereIn('project_task_users.userid', $userid)
             ->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay(), $type);
-        $builder->orderByDesc('project_tasks.id')->chunk(100, function($tasks) use (&$datas) {
+        $builder->orderByDesc('project_tasks.id')->chunk(100, function ($tasks) use (&$datas) {
             /** @var ProjectTask $task */
             foreach ($tasks as $task) {
                 $flowChanges = ProjectTaskFlowChange::whereTaskId($task->id)->get();
-                $developTime = 0;//开发时间
                 $testTime = 0;//验收/测试时间
+                $taskStartTime = $task->start_at ? Carbon::parse($task->start_at)->timestamp : Carbon::parse($task->created_at)->timestamp;
+                $taskCompleteTime = $task->complete_at ? Carbon::parse($task->complete_at)->timestamp : time();
+                $totalTime = $taskCompleteTime - $taskStartTime; //开发测试总用时
                 foreach ($flowChanges as $change) {
                     if (!str_contains($change->before_flow_item_name, 'end')) {
                         $upOne = ProjectTaskFlowChange::where('id', '<', $change->id)->whereTaskId($task->id)->orderByDesc('id')->first();
                         if ($upOne) {
-                            if (str_contains($change->before_flow_item_name, 'progress') && str_contains($change->before_flow_item_name, '进行')) {
-                                $devCtime = Carbon::parse($change->created_at)->timestamp;
-                                $oCtime = Carbon::parse($upOne->created_at)->timestamp;
-                                $minusNum = $devCtime - $oCtime;
-                                $developTime += $minusNum;
-                            }
                             if (str_contains($change->before_flow_item_name, 'test') || str_contains($change->before_flow_item_name, '测试') || strpos($change->before_flow_item_name, '验收') !== false) {
                                 $testCtime = Carbon::parse($change->created_at)->timestamp;
                                 $tTime = Carbon::parse($upOne->created_at)->timestamp;
@@ -1083,29 +1064,11 @@ class ProjectController extends AbstractController
                     $lastChange = ProjectTaskFlowChange::whereTaskId($task->id)->orderByDesc('id')->first();
                     $nowTime = time();
                     $unFinishTime = $nowTime - Carbon::parse($lastChange->created_at)->timestamp;
-                    if (str_contains($lastChange->after_flow_item_name, 'progress') || str_contains($lastChange->after_flow_item_name, '进行')) {
-                        $developTime += $unFinishTime;
-                    } elseif (str_contains($lastChange->after_flow_item_name, 'test') || str_contains($lastChange->after_flow_item_name, '测试') || strpos($lastChange->after_flow_item_name, '验收') !== false) {
+                    if (str_contains($lastChange->after_flow_item_name, 'test') || str_contains($lastChange->after_flow_item_name, '测试') || strpos($lastChange->after_flow_item_name, '验收') !== false) {
                         $testTime += $unFinishTime;
                     }
                 }
-                $firstChange = ProjectTaskFlowChange::whereTaskId($task->id)->orderBy('id')->first();
-                if (str_contains($firstChange->after_flow_item_name, 'end')) {
-                    $firstDevTime = Carbon::parse($firstChange->created_at)->timestamp - Carbon::parse($task->created_at)->timestamp;
-                    $developTime += $firstDevTime;
-                }
-                if (count($flowChanges) === 0 && $task->start_at) {
-                    $lastTime = $task->complete_at ? Carbon::parse($task->complete_at)->timestamp : time();
-                    $developTime = $lastTime - Carbon::parse($task->start_at)->timestamp;
-                }
-                $totalTime = $developTime + $testTime; //任务总用时
-                if ($task->complete_at) {
-                    $a = Carbon::parse($task->complete_at)->timestamp;
-                    if ($task->start_at) {
-                        $b = Carbon::parse($task->start_at)->timestamp;
-                        $totalTime = $a - $b;
-                    }
-                }
+                $developTime = $totalTime - $testTime;//开发时间
                 $planTime = '-';//任务计划用时
                 $overTime = '-';//超时时间
                 if ($task->end_at) {
@@ -1119,7 +1082,35 @@ class ProjectController extends AbstractController
                     $planTime = Base::timeDiff($startTime, $endTime);
                 }
                 $actualTime = $task->complete_at ? $totalTime : 0;//实际完成用时
-                $datas[] = [
+                $statusText = '未完成';
+                if ($task->flow_item_name) {
+                    if (str_contains($task->flow_item_name, '已取消')) {
+                        $statusText = '已取消';
+                        $actualTime = 0;
+                        $testTime = 0;
+                        $developTime = 0;
+                        $overTime = '-';
+                    } elseif (str_contains($task->flow_item_name, '已完成')) {
+                        $statusText = '已完成';
+                    }
+                } elseif ($task->complete_at) {
+                    $statusText = '已完成';
+                }
+                if (!isset($datas[$task->ownerid])) {
+                    $datas[$task->ownerid] = [
+                        'index' => 1,
+                        'nickname' => Base::filterEmoji(User::userid2nickname($task->ownerid)),
+                        'styles' => ["A1:P1" => ["font" => ["bold" => true]]],
+                        'data' => [],
+                    ];
+                }
+                $datas[$task->ownerid]['index']++;
+                if ($statusText === '未完成') {
+                    $datas[$task->ownerid]['styles']["P{$datas[$task->ownerid]['index']}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];  // 未完成
+                } elseif ($statusText === '已完成' && $task->end_at && Carbon::parse($task->complete_at)->gt($task->end_at)) {
+                    $datas[$task->ownerid]['styles']["P{$datas[$task->ownerid]['index']}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];  // 已完成超期
+                }
+                $datas[$task->ownerid]['data'][] = [
                     $task->id,
                     $task->parent_id ?: '-',
                     Base::filterEmoji($task->project?->name) ?: '-',
@@ -1131,13 +1122,28 @@ class ProjectController extends AbstractController
                     $planTime ?: '-',
                     $actualTime ? Base::timeFormat($actualTime) : '-',
                     $overTime,
-                    $developTime > 0? Base::timeFormat($developTime) : '-',
+                    $developTime > 0 ? Base::timeFormat($developTime) : '-',
                     $testTime > 0 ? Base::timeFormat($testTime) : '-',
                     Base::filterEmoji(User::userid2nickname($task->ownerid)) . " (ID: {$task->ownerid})",
                     Base::filterEmoji(User::userid2nickname($task->userid)) . " (ID: {$task->userid})",
+                    $statusText
                 ];
             }
         });
+        if (empty($datas)) {
+            return Base::retError('没有任何数据');
+        }
+        //
+        $sheets = [];
+        foreach ($userid as $ownerid) {
+            $data = $datas[$ownerid] ?? [
+                    'nickname' => Base::filterEmoji(User::userid2nickname($ownerid)),
+                    'styles' => ["A1:P1" => ["font" => ["bold" => true]]],
+                    'data' => [],
+                ];
+            $title = (count($sheets) + 1) . "." . ($data['nickname'] ?: $ownerid);
+            $sheets[] = BillExport::create()->setTitle($title)->setHeadings($headings)->setData($data['data'])->setStyles($data['styles']);
+        }
         //
         $fileName = User::userid2nickname($userid[0]) ?: $userid[0];
         if (count($userid) > 1) {
@@ -1145,19 +1151,21 @@ class ProjectController extends AbstractController
         }
         $fileName .= '任务统计_' . Base::time() . '.xls';
         $filePath = "temp/task/export/" . date("Ym", Base::time());
-        $res = BillExport::create()->setHeadings($headings)->setData($datas)->store($filePath . "/" . $fileName);
+        $export = new BillMultipleExport($sheets);
+        $res = $export->store($filePath . "/" . $fileName);
         if ($res != 1) {
             return Base::retError('导出失败，' . $fileName . '！');
         }
         $xlsPath = storage_path("app/" . $filePath . "/" . $fileName);
-        $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xls'). ".zip";
+        $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xls') . ".zip";
         $zipPath = storage_path($zipFile);
         if (file_exists($zipPath)) {
             Base::deleteDirAndFile($zipPath, true);
         }
         try {
             Madzipper::make($zipPath)->add($xlsPath)->close();
-        } catch (\Exception) { }
+        } catch (\Throwable) {
+        }
         //
         if (file_exists($zipPath)) {
             $base64 = base64_encode(Base::array2string([
@@ -1174,9 +1182,117 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/down          20. 导出任务（限管理员）
+     * @api {get} api/project/task/exportoverdue          20. 导出超期任务（限管理员）
      *
      * @apiDescription 导出指定范围任务（已完成、未完成、已归档），返回下载地址，需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__exportoverdue
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__exportoverdue()
+    {
+        $user = User::auth('admin');
+        //
+        $headings = [];
+        $headings[] = '任务ID';
+        $headings[] = '父级任务ID';
+        $headings[] = '所属项目';
+        $headings[] = '任务标题';
+        $headings[] = '任务开始时间';
+        $headings[] = '任务结束时间';
+        $headings[] = '任务计划用时';
+        $headings[] = '超时时间';
+        $headings[] = '负责人';
+        $headings[] = '创建人';
+        $data = [];
+        //
+        ProjectTask::whereNull('complete_at')
+            ->whereNotNull('end_at')
+            ->where('end_at', '<=', Carbon::now())
+            ->orderBy('end_at')
+            ->chunk(100, function ($tasks) use (&$data) {
+                /** @var ProjectTask $task */
+                foreach ($tasks as $task) {
+                    $taskStartTime = Carbon::parse($task->start_at ?: $task->created_at)->timestamp;
+                    $totalTime = time() - $taskStartTime; //开发测试总用时
+                    $planTime = '-';//任务计划用时
+                    $overTime = '-';//超时时间
+                    if ($task->end_at) {
+                        $startTime = Carbon::parse($task->start_at)->timestamp;
+                        $endTime = Carbon::parse($task->end_at)->timestamp;
+                        $planTotalTime = $endTime - $startTime;
+                        $residueTime = $planTotalTime - $totalTime;
+                        if ($residueTime < 0) {
+                            $overTime = Base::timeFormat(abs($residueTime));
+                        }
+                        $planTime = Base::timeDiff($startTime, $endTime);
+                    }
+                    $ownerIds = $task->taskUser->where('owner', 1)->pluck('userid')->toArray();
+                    $ownerNames = [];
+                    foreach ($ownerIds as $ownerId) {
+                        $ownerNames[] = Base::filterEmoji(User::userid2nickname($ownerId)) . " (ID: {$ownerId})";
+                    }
+                    $data[] = [
+                        $task->id,
+                        $task->parent_id ?: '-',
+                        Base::filterEmoji($task->project?->name) ?: '-',
+                        Base::filterEmoji($task->name),
+                        $task->start_at ?: '-',
+                        $task->end_at ?: '-',
+                        $planTime ?: '-',
+                        $overTime,
+                        implode("、", $ownerNames),
+                        Base::filterEmoji(User::userid2nickname($task->userid)) . " (ID: {$task->userid})",
+                    ];
+                }
+            });
+        if (empty($data)) {
+            return Base::retError('没有任何数据');
+        }
+        //
+        $sheets = [
+            BillExport::create()->setTitle("超期任务")->setHeadings($headings)->setData($data)->setStyles(["A1:J1" => ["font" => ["bold" => true]]])
+        ];
+        //
+        $fileName = '超期任务_' . Base::time() . '.xls';
+        $filePath = "temp/task/export/" . date("Ym", Base::time());
+        $export = new BillMultipleExport($sheets);
+        $res = $export->store($filePath . "/" . $fileName);
+        if ($res != 1) {
+            return Base::retError('导出失败，' . $fileName . '！');
+        }
+        $xlsPath = storage_path("app/" . $filePath . "/" . $fileName);
+        $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xls') . ".zip";
+        $zipPath = storage_path($zipFile);
+        if (file_exists($zipPath)) {
+            Base::deleteDirAndFile($zipPath, true);
+        }
+        try {
+            Madzipper::make($zipPath)->add($xlsPath)->close();
+        } catch (\Throwable) {
+        }
+        //
+        if (file_exists($zipPath)) {
+            $base64 = base64_encode(Base::array2string([
+                'file' => $zipFile,
+            ]));
+            Session::put('task::export:userid', $user->userid);
+            return Base::retSuccess('success', [
+                'size' => Base::twoFloat(filesize($zipPath) / 1024, true),
+                'url' => Base::fillUrl('api/project/task/down?key=' . urlencode($base64)),
+            ]);
+        } else {
+            return Base::retError('打包失败，请稍后再试...');
+        }
+    }
+
+    /**
+     * @api {get} api/project/task/down          21. 下载导出的任务
+     *
      * @apiVersion 1.0.0
      * @apiGroup project
      * @apiName task__down
@@ -1197,11 +1313,11 @@ class ProjectController extends AbstractController
         if (empty($file) || !file_exists(storage_path($file))) {
             return Base::ajaxError("文件不存在！", [], 0, 502);
         }
-        return response()->download(storage_path($file));
+        return Response::download(storage_path($file));
     }
 
     /**
-     * @api {get} api/project/task/one          21. 获取单个任务信息
+     * @api {get} api/project/task/one          22. 获取单个任务信息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1235,7 +1351,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/content          22. 获取任务详细描述
+     * @api {get} api/project/task/content          23. 获取任务详细描述
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1263,7 +1379,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/files          23. 获取任务文件列表
+     * @api {get} api/project/task/files          24. 获取任务文件列表
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1288,7 +1404,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/filedelete          24. 删除任务文件
+     * @api {get} api/project/task/filedelete          25. 删除任务文件
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1321,7 +1437,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/filedetail          25. 获取任务文件详情
+     * @api {get} api/project/task/filedetail          26. 获取任务文件详情
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1365,7 +1481,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/filedown          26. 下载任务文件
+     * @api {get} api/project/task/filedown          27. 下载任务文件
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1373,6 +1489,9 @@ class ProjectController extends AbstractController
      * @apiName task__filedown
      *
      * @apiParam {Number} file_id            文件ID
+     * @apiParam {String} down                  直接下载
+     * - yes: 下载（默认）
+     * - preview: 转预览地址
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1383,6 +1502,7 @@ class ProjectController extends AbstractController
         User::auth();
         //
         $file_id = intval(Request::input('file_id'));
+        $down = Request::input('down', 'yes');
         //
         $file = ProjectTaskFile::find($file_id);
         if (empty($file)) {
@@ -1391,15 +1511,26 @@ class ProjectController extends AbstractController
         //
         try {
             ProjectTask::userTask($file->task_id, null);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             abort(403, $e->getMessage() ?: "This file not support download.");
         }
         //
-        return Response::download(public_path($file->getRawOriginal('path')), $file->name);
+        if ($down === 'preview') {
+            return Redirect::to(FileContent::toPreviewUrl([
+                'ext' => $file->ext,
+                'name' => $file->name,
+                'path' => $file->getRawOriginal('path'),
+            ]));
+        }
+        //
+        $filePath = public_path($file->getRawOriginal('path'));
+        return Base::streamDownload(function() use ($filePath) {
+            echo file_get_contents($filePath);
+        }, $file->name);
     }
 
     /**
-     * @api {post} api/project/task/add          27. 添加任务
+     * @api {post} api/project/task/add          28. 添加任务
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1466,11 +1597,12 @@ class ProjectController extends AbstractController
             $data['new_column'] = $newColumn;
         }
         $task->pushMsg('add', $data);
+        $task->taskPush(null, 0);
         return Base::retSuccess('添加成功', $data);
     }
 
     /**
-     * @api {get} api/project/task/addsub          28. 添加子任务
+     * @api {get} api/project/task/addsub          29. 添加子任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1510,7 +1642,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/task/update          29. 修改任务、子任务
+     * @api {post} api/project/task/update          30. 修改任务、子任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1520,6 +1652,7 @@ class ProjectController extends AbstractController
      * @apiParam {Number} task_id               任务ID
      * @apiParam {String} [name]                任务描述
      * @apiParam {Array} [times]                计划时间（格式：开始时间,结束时间；如：2020-01-01 00:00,2020-01-01 23:59）
+     * @apiParam {String} [loop]                重复周期，数字代表天数（子任务不支持）
      * @apiParam {Array} [owner]                修改负责人
      * @apiParam {String} [content]             任务详情（子任务不支持）
      * @apiParam {String} [color]               背景色（子任务不支持）
@@ -1556,7 +1689,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/dialog          30. 创建/获取聊天室
+     * @api {get} api/project/task/dialog          31. 创建/获取聊天室
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1571,7 +1704,7 @@ class ProjectController extends AbstractController
      */
     public function task__dialog()
     {
-        User::auth();
+        $user = User::auth();
         //
         $task_id = intval(Request::input('task_id'));
         //
@@ -1584,7 +1717,7 @@ class ProjectController extends AbstractController
         AbstractModel::transaction(function() use ($task) {
             if (empty($task->dialog_id)) {
                 $task->lockForUpdate();
-                $dialog = WebSocketDialog::createGroup(null, $task->relationUserids(), 'task');
+                $dialog = WebSocketDialog::createGroup($task->name, $task->relationUserids(), 'task');
                 if ($dialog) {
                     $task->dialog_id = $dialog->id;
                     $task->save();
@@ -1596,14 +1729,16 @@ class ProjectController extends AbstractController
         });
         //
         $task->pushMsg('dialog');
+        $dialogData = WebSocketDialog::find($task->dialog_id)?->formatData($user->userid);
         return Base::retSuccess('success', [
             'id' => $task->id,
             'dialog_id' => $task->dialog_id,
+            'dialog_data' => $dialogData,
         ]);
     }
 
     /**
-     * @api {get} api/project/task/archived          31. 归档任务
+     * @api {get} api/project/task/archived          32. 归档任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1645,7 +1780,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/remove          32. 删除任务
+     * @api {get} api/project/task/remove          33. 删除任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1670,7 +1805,7 @@ class ProjectController extends AbstractController
         //
         $task = ProjectTask::userTask($task_id, null, $type !== 'recovery', true);
         if ($type == 'recovery') {
-            $task->recoveryTask();
+            $task->restoreTask();
             return Base::retSuccess('操作成功', ['id' => $task->id]);
         } else {
             $task->deleteTask();
@@ -1679,7 +1814,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/resetfromlog          33. 根据日志重置任务
+     * @api {get} api/project/task/resetfromlog          34. 根据日志重置任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1738,7 +1873,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/flow          34. 任务工作流信息
+     * @api {get} api/project/task/flow          35. 任务工作流信息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1820,7 +1955,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/flow/list          35. 工作流列表
+     * @api {get} api/project/flow/list          36. 工作流列表
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1846,7 +1981,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/flow/save          36. 保存工作流
+     * @api {post} api/project/flow/save          37. 保存工作流
      *
      * @apiDescription 需要token身份（限：项目负责人）
      * @apiVersion 1.0.0
@@ -1880,7 +2015,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/flow/delete          37. 删除工作流
+     * @api {get} api/project/flow/delete          38. 删除工作流
      *
      * @apiDescription 需要token身份（限：项目负责人）
      * @apiVersion 1.0.0
@@ -1912,7 +2047,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/log/lists          38. 获取项目、任务日志
+     * @api {get} api/project/log/lists          39. 获取项目、任务日志
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1951,11 +2086,12 @@ class ProjectController extends AbstractController
             if ($task_id === 0) {
                 $log->projectTask?->cancelAppend();
             }
+            $log->detail = Doo::translate($log->detail);
             $log->time = [
                 'ymd' => date(date("Y", $timestamp) == date("Y", Base::time()) ? "m-d" : "Y-m-d", $timestamp),
                 'hi' => date("h:i", $timestamp) ,
-                'week' => "周" . Base::getTimeWeek($timestamp),
-                'segment' => Base::getTimeDayeSegment($timestamp),
+                'week' => Doo::translate("周" . Base::getTimeWeek($timestamp)),
+                'segment' => Doo::translate(Base::getTimeDayeSegment($timestamp)),
             ];
             return $log;
         });
@@ -1964,7 +2100,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/top          39. 项目置顶
+     * @api {get} api/project/top          40. 项目置顶
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0

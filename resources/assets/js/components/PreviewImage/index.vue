@@ -1,26 +1,30 @@
 <template>
     <Modal
-        :value="previewImageList.length > 0"
+        v-model="show"
         :mask="false"
         :mask-closable="false"
         :footer-hide="true"
         :transition-names="['', '']"
-        fullscreen
-        @on-visible-change="visibleChange"
-        class-name="common-preview-image">
-        <PreviewImageView v-if="previewImageList.length > 0" :initial-index="previewImageIndex" :url-list="previewImageList" infinite/>
+        :class-name="viewMode === 'desktop' ? 'common-preview-image-view' : 'common-preview-image-swipe'"
+        fullscreen>
+        <template v-if="list.length > 0">
+            <PreviewImageView v-if="viewMode === 'desktop'" :initial-index="index" :url-list="list" infinite/>
+            <PreviewImageSwipe v-if="viewMode === 'mobile'" :initial-index="index" :url-list="list" @on-destroy="show=false"/>
+        </template>
     </Modal>
 </template>
 
 <style lang="scss">
 body {
     .ivu-modal-wrap {
-        &.common-preview-image {
+        &.common-preview-image-view {
             .ivu-modal {
                 margin: 0;
                 padding: 0;
+
                 .ivu-modal-content {
                     background: transparent;
+
                     .ivu-modal-close {
                         display: flex;
                         align-items: center;
@@ -32,6 +36,12 @@ body {
                         right: 40px;
                         top: 40px;
                         width: 40px;
+
+                        @media (max-width: 640px) {
+                            right: 24px;
+                            top: 24px;
+                        }
+
                         .ivu-icon-ios-close {
                             top: 0;
                             right: 0;
@@ -39,39 +49,67 @@ body {
                             color: #fff;
                         }
                     }
+
                     .ivu-modal-body {
                         padding: 0;
                     }
                 }
             }
         }
+        &.common-preview-image-swipe {
+            display: none;
+        }
     }
 }
 </style>
 
 <script>
-import PreviewImageView from "./view";
-import {mapState} from "vuex";
+const PreviewImageView = () => import('./components/view');
+const PreviewImageSwipe = () => import('./components/swipe');
 
 export default {
     name: 'PreviewImage',
-    components: {PreviewImageView},
-    computed: {
-        ...mapState([
-            'previewImageIndex',
-            'previewImageList',
-        ]),
-    },
-    methods: {
-        visibleChange(val) {
-            if (!val) {
-                this.close()
+    components: {PreviewImageSwipe, PreviewImageView},
+    props: {
+        value: {
+            type: Boolean,
+            default: false
+        },
+        index: {
+            type: Number,
+            default: 0
+        },
+        list: {
+            type: Array,
+            default: () => {
+                return [];
             }
         },
-        close() {
-            this.$store.state.previewImageIndex = 0;
-            this.$store.state.previewImageList = [];
+        mode: {
+            type: String,
+            default: null
+        }
+    },
+    data() {
+        return {
+            show: this.value,
+        }
+    },
+    watch: {
+        value(v) {
+            this.show = v;
         },
+        show(v) {
+            this.value !== v && this.$emit("input", v)
+        }
+    },
+    computed: {
+        viewMode() {
+            if (this.mode) {
+                return this.mode
+            }
+            return this.$store.state.windowLarge ? 'desktop' : 'mobile'
+        }
     }
 };
 </script>

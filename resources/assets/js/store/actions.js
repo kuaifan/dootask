@@ -1,6 +1,92 @@
 import {Store} from 'le5le-store';
+import {languageType} from "../language";
+import {$callData} from './utils'
 
 export default {
+    /**
+     * 初始化
+     * @param state
+     * @param dispatch
+     * @returns {Promise<unknown>}
+     */
+    init({state, dispatch}) {
+        return new Promise(async resolve => {
+            let action = null
+
+            // 迁移缓存
+            const initTag = await $A.IDBBoolean("initTag")
+            if (!initTag) {
+                await $A.IDBSet("initTag", true)
+                const userInfo = $A.getStorageJson("userInfo")
+                if (userInfo.userid > 0) {
+                    await $A.IDBSet("userInfo", userInfo)
+                    await $A.IDBSet("cacheServerUrl", $A.getStorageString("cacheServerUrl"))
+                    window.localStorage.clear()
+                }
+            }
+
+            // 读取缓存
+            state.cacheServerUrl = await $A.IDBString("cacheServerUrl")
+            state.cacheUserBasic = await $A.IDBArray("cacheUserBasic")
+            state.cacheDialogs = (await $A.IDBArray("cacheDialogs")).map(item => Object.assign(item, {loading: false, extra_draft_has: item.extra_draft_content ? 1 : 0}))
+            state.cacheProjects = await $A.IDBArray("cacheProjects")
+            state.cacheColumns = await $A.IDBArray("cacheColumns")
+            state.cacheTasks = await $A.IDBArray("cacheTasks")
+            state.cacheProjectParameter = await $A.IDBArray("cacheProjectParameter")
+            state.cacheTaskBrowse = await $A.IDBArray("cacheTaskBrowse")
+            state.dialogMsgs = await $A.IDBArray("dialogMsgs")
+            state.fileLists = await $A.IDBArray("fileLists")
+            state.userInfo = await $A.IDBJson("userInfo")
+            state.callAt = await $A.IDBArray("callAt")
+            state.cacheEmojis = await $A.IDBArray("cacheEmojis")
+
+            // 清理缓存
+            const clearCache = await $A.IDBString("clearCache")
+            if (clearCache) {
+                await $A.IDBRemove("clearCache")
+                await $A.IDBSet("callAt", state.callAt = [])
+                if (clearCache === "handle") {
+                    action = "clearCacheSuccess"
+                }
+            }
+
+            // 会员信息
+            if (state.userInfo.userid) {
+                state.userId = state.userInfo.userid = $A.runNum(state.userInfo.userid)
+                state.userToken = state.userInfo.token
+                state.userIsAdmin = $A.inArray("admin", state.userInfo.identity)
+            }
+
+            // ServerUrl
+            if (state.cacheServerUrl) {
+                window.systemInfo.apiUrl = state.cacheServerUrl
+            }
+
+            // 主题皮肤
+            switch (state.themeMode) {
+                case 'dark':
+                    $A.dark.enableDarkMode()
+                    break;
+                case 'light':
+                    $A.dark.disableDarkMode()
+                    break;
+                default:
+                    state.themeMode = "auto"
+                    $A.dark.autoDarkMode()
+                    break;
+            }
+            state.themeIsDark = $A.dark.isDarkEnabled()
+
+            //
+            $A.loadScriptS([
+                `language/web/key.js`,
+                `language/web/${languageType}.js`,
+            ], _ => {
+                resolve(action)
+            });
+        })
+    },
+
     /**
      * 访问接口
      * @param state
@@ -10,53 +96,74 @@ export default {
      */
     call({state, dispatch}, params) {
         if (!$A.isJson(params)) params = {url: params}
-        if (!$A.isJson(params.header)) params.header = {}
+        const header = {
+            'Content-Type': 'application/json',
+            'language': languageType,
+            'token': state.userToken,
+            'fd': $A.getSessionStorageString("userWsFd"),
+            'version': window.systemInfo.version || "0.0.1",
+            'platform': $A.Platform,
+        }
+        if ($A.isJson(params.header)) {
+            params.header = Object.assign(header, params.header)
+        } else {
+            params.header = header;
+        }
         params.url = $A.apiUrl(params.url);
         params.data = $A.date2string(params.data);
-        params.header['Content-Type'] = 'application/json';
-        params.header['language'] = $A.getLanguage();
-        params.header['token'] = state.userToken;
-        params.header['fd'] = $A.getStorageString("userWsFd");
-        params.header['version'] = window.systemInfo.version || "0.0.1";
-        params.header['platform'] = $A.Platform;
         //
         const cloneParams = $A.cloneJSON(params);
         return new Promise(function (resolve, reject) {
-            if (params.spinner === true) {
+            if (params.spinner === true || (typeof params.spinner === "number" && params.spinner > 0)) {
+                const {before, complete} = params;
                 params.before = () => {
-                    $A.spinnerShow();
+                    dispatch("showSpinner", typeof params.spinner === "number" ? params.spinner : 0)
+                    typeof before === "function" && before()
                 };
                 //
                 params.complete = () => {
-                    $A.spinnerHide();
+                    dispatch("hiddenSpinner")
+                    typeof complete === "function" && complete()
                 };
             }
             //
             params.success = (result, status, xhr) => {
+                state.ajaxNetworkException = false;
                 if (!$A.isJson(result)) {
                     console.log(result, status, xhr);
                     reject({ret: -1, data: {}, msg: "Return error"})
                     return;
                 }
                 const {ret, data, msg} = result;
-                if (ret === -1 && params.checkRole !== false) {
-                    //身份丢失
-                    $A.modalError({
-                        content: msg,
-                        onOk: () => {
-                            dispatch("logout")
-                        }
-                    });
-                    return;
+                if (ret === -1) {
+                    state.userId = 0
+                    if (params.skipAuthError !== true) {
+                        //身份丢失
+                        $A.modalError({
+                            content: msg,
+                            onOk: () => {
+                                dispatch("logout")
+                            }
+                        });
+                        reject(result)
+                        return;
+                    }
                 }
                 if (ret === -2 && params.checkNick !== false) {
                     // 需要昵称
-                    dispatch("userNickNameInput").then(() => {
-                        dispatch("call", Object.assign(cloneParams, {
-                            checkNick: false
-                        })).then(resolve).catch(reject);
-                    }).catch(() => {
-                        reject({ret: -1, data, msg: $A.L('请设置昵称！')})
+                    dispatch("userEditInput", 'nickname').then(() => {
+                        dispatch("call", cloneParams).then(resolve).catch(reject);
+                    }).catch(err => {
+                        reject({ret: -1, data, msg: err || $A.L('请设置昵称！')})
+                    });
+                    return;
+                }
+                if (ret === -3 && params.checkTel !== false) {
+                    // 需要联系电话
+                    dispatch("userEditInput", 'tel').then(() => {
+                        dispatch("call", cloneParams).then(resolve).catch(reject);
+                    }).catch(err => {
+                        reject({ret: -1, data, msg: err || $A.L('请设置联系电话！')})
                     });
                     return;
                 }
@@ -75,8 +182,12 @@ export default {
                 }
             };
             params.error = (xhr, status) => {
-                if (window.navigator.onLine === false || (status === 0 && xhr.readyState === 4)) {
-                    reject({ret: -1, data: {}, msg: $A.L('网络异常，请稍后再试！')})
+                const networkException = window.navigator.onLine === false || (status === 0 && xhr.readyState === 4);
+                if (params.checkNetwork !== false) {
+                    state.ajaxNetworkException = networkException;
+                }
+                if (networkException) {
+                    reject({ret: -1001, data: {}, msg: "Network exception"})
                 } else {
                     reject({ret: -1, data: {}, msg: "System error"})
                 }
@@ -140,6 +251,26 @@ export default {
     },
 
     /**
+     * 是否启用首页
+     * @param dispatch
+     * @param state
+     * @returns {Promise<unknown>}
+     */
+    needHome({dispatch, state}) {
+        return new Promise((resolve, reject) => {
+            dispatch("call", {
+                url: "system/get/starthome",
+            }).then(({data}) => {
+                if (!!data.need_start) {
+                    resolve(data)
+                } else {
+                    reject()
+                }
+            }).catch(reject);
+        })
+    },
+
+    /**
      * 下载文件
      * @param state
      * @param data
@@ -149,20 +280,29 @@ export default {
             return
         }
         let url = data;
-        let params = {
-            token: state.userToken
-        };
+        let addToken = true
         if ($A.isJson(data)) {
-            url = data.url;
-            params = data.params || {};
+            url = data.url
+            addToken = !!data.token
         }
-        url = $A.urlAddParams(url, params);
+        if (addToken) {
+            let params = {
+                token: state.userToken
+            };
+            if ($A.isJson(data)) {
+                url = data.url;
+                params = data.params || {};
+            }
+            url = $A.urlAddParams(url, params);
+        }
         if ($A.Electron) {
             $A.Electron.request({action: 'openExternal', url}, () => {
                 // 成功
             }, () => {
                 // 失败
             });
+        } else if ($A.isEEUiApp) {
+            $A.eeuiAppOpenWeb(url);
         } else {
             window.open(url)
         }
@@ -195,9 +335,8 @@ export default {
                 key = {[key]: value || !cache[key]};
             }
             state.cacheProjectParameter.splice(index, 1, Object.assign(cache, key))
-            setTimeout(() => {
-                $A.setStorage("cacheProjectParameter", state.cacheProjectParameter);
-            });
+            //
+            $A.IDBSave("cacheProjectParameter", state.cacheProjectParameter);
         }
     },
 
@@ -205,39 +344,91 @@ export default {
      * 设置主题
      * @param state
      * @param mode
+     * @returns {Promise<unknown>}
      */
     setTheme({state}, mode) {
-        if (mode === undefined) {
-            return;
-        }
-        if (!$A.isChrome()) {
-            $A.modalWarning("仅客户端或Chrome浏览器支持主题功能");
-            return;
-        }
-        switch (mode) {
-            case 'dark':
-                $A.dark.enableDarkMode()
-                break;
-            case 'light':
-                $A.dark.disableDarkMode()
-                break;
-            default:
-                $A.dark.autoDarkMode()
-                break;
-        }
-        state.themeMode = mode;
-        state.themeIsDark = $A.dark.isDarkEnabled();
-        $A.setStorage("cacheThemeMode", mode);
+        return new Promise(function (resolve) {
+            if (mode === undefined) {
+                resolve(false)
+                return;
+            }
+            if (!$A.isChrome()) {
+                if ($A.isEEUiApp) {
+                    $A.modalWarning("仅Android设置支持主题功能");
+                } else {
+                    $A.modalWarning("仅客户端或Chrome浏览器支持主题功能");
+                }
+                resolve(false)
+                return;
+            }
+            switch (mode) {
+                case 'dark':
+                    $A.dark.enableDarkMode()
+                    break;
+                case 'light':
+                    $A.dark.disableDarkMode()
+                    break;
+                default:
+                    $A.dark.autoDarkMode()
+                    break;
+            }
+            state.themeMode = mode;
+            state.themeIsDark = $A.dark.isDarkEnabled();
+            window.localStorage.setItem("__theme:mode__", mode);
+            resolve(true)
+        });
     },
 
     /**
-     * 获取基本数据（项目、对话、仪表盘任务）
+     * 获取基本数据（项目、对话、仪表盘任务、会员基本信息）
+     * @param state
      * @param dispatch
+     * @param timeout
      */
-    getBasicData({dispatch}) {
+    getBasicData({state, dispatch}, timeout) {
+        if (typeof timeout === "number") {
+            window.__getBasicDataTimer && clearTimeout(window.__getBasicDataTimer)
+            if (timeout > -1) {
+                window.__getBasicDataTimer = setTimeout(_ => dispatch("getBasicData", null), timeout)
+            }
+            return
+        }
+        //
+        const tmpKey = state.userId + $A.Time()
+        if (window.__getBasicDataKey === tmpKey) {
+            return
+        }
+        window.__getBasicDataKey = tmpKey
+        //
         dispatch("getProjects").catch(() => {});
         dispatch("getDialogs").catch(() => {});
+        dispatch("getReportUnread", 1000);
         dispatch("getTaskForDashboard");
+        dispatch("dialogMsgRead");
+        //
+        const allIds = Object.values(state.userAvatar).map(({userid}) => userid);
+        [...new Set(allIds)].some(userid => dispatch("getUserBasic", {userid}))
+    },
+
+    /**
+     * 获取未读工作报告数量
+     * @param state
+     * @param dispatch
+     * @param timeout
+     */
+    getReportUnread({state, dispatch}, timeout) {
+        window.__getReportUnread && clearTimeout(window.__getReportUnread)
+        window.__getReportUnread = setTimeout(() => {
+            if (state.userId === 0) {
+                state.reportUnreadNumber = 0;
+            } else {
+                dispatch("call", {
+                    url: 'report/unread',
+                }).then(({data}) => {
+                    state.reportUnreadNumber = data.total || 0;
+                }).catch(_ => {});
+            }
+        }, typeof timeout === "number" ? timeout : 1000)
     },
 
     /**
@@ -267,7 +458,7 @@ export default {
      * @returns {Promise<unknown>}
      */
     saveUserInfo({state, dispatch}, info) {
-        return new Promise(function (resolve) {
+        return new Promise(async resolve => {
             const userInfo = $A.cloneJSON(info);
             userInfo.userid = $A.runNum(userInfo.userid);
             userInfo.token = userInfo.userid > 0 ? (userInfo.token || state.userToken) : '';
@@ -275,8 +466,12 @@ export default {
             state.userId = userInfo.userid;
             state.userToken = userInfo.token;
             state.userIsAdmin = $A.inArray('admin', userInfo.identity);
-            $A.setStorage("userInfo", state.userInfo);
-            dispatch("getBasicData");
+            await $A.IDBSet("userInfo", state.userInfo);
+            //
+            dispatch("getBasicData", null);
+            if (state.userId > 0) {
+                dispatch("saveUserBasic", state.userInfo);
+            }
             resolve()
         });
     },
@@ -300,7 +495,7 @@ export default {
      * @param data {userid}
      */
     getUserBasic({state, dispatch}, data) {
-        if (state.cacheLoading["loadUserBasic"] === true) {
+        if (state.loadUserBasic === true) {
             data && state.cacheUserWait.push(data);
             return;
         }
@@ -332,12 +527,13 @@ export default {
             array = array.slice(0, 30)
         }
         //
-        state.cacheLoading["loadUserBasic"] = true;
+        state.loadUserBasic = true;
         dispatch("call", {
             url: 'users/basic',
             data: {
                 userid: [...new Set(array.map(({userid}) => userid))]
             },
+            skipAuthError: true
         }).then(result => {
             time = $A.Time();
             array.forEach(value => {
@@ -345,11 +541,11 @@ export default {
                 data._time = time;
                 dispatch("saveUserBasic", data);
             });
-            state.cacheLoading["loadUserBasic"] = false;
+            state.loadUserBasic = false;
             dispatch("getUserBasic");
         }).catch(e => {
             console.warn(e);
-            state.cacheLoading["loadUserBasic"] = false;
+            state.loadUserBasic = false;
             dispatch("getUserBasic");
         });
     },
@@ -362,7 +558,7 @@ export default {
     saveUserBasic({state}, data) {
         $A.execMainDispatch("saveUserBasic", data)
         //
-        let index = state.cacheUserBasic.findIndex(({userid}) => userid == data.userid);
+        const index = state.cacheUserBasic.findIndex(({userid}) => userid == data.userid);
         if (index > -1) {
             data = Object.assign({}, state.cacheUserBasic[index], data)
             state.cacheUserBasic.splice(index, 1, data);
@@ -371,58 +567,57 @@ export default {
         }
         state.cacheUserActive = Object.assign(data, {__:Math.random()});
         Store.set('cacheUserActive', data);
-        setTimeout(() => {
-            $A.setStorage("cacheUserBasic", state.cacheUserBasic);
-        })
+        //
+        $A.IDBSave("cacheUserBasic", state.cacheUserBasic)
     },
 
     /**
-     * 设置用户昵称
+     * 设置用户信息
      * @param dispatch
+     * @param type
      * @returns {Promise<unknown>}
      */
-    userNickNameInput({dispatch}) {
-        return new Promise(function (resolve, reject) {
-            let callback = (cb, success) => {
-                if (typeof cb === "function") {
-                    cb();
-                }
-                if (success === true) {
-                    setTimeout(resolve, 301)
-                } else {
-                    setTimeout(reject, 301)
-                }
+    userEditInput({dispatch}, type) {
+        return new Promise(function (userResolve, userReject) {
+            let desc = '';
+            if (type === 'nickname') {
+                desc = '昵称';
+            } else if (type === 'tel') {
+                desc = '联系电话';
+            } else {
+                userReject('参数错误')
+                return
             }
-            $A.modalInput({
-                title: "设置昵称",
-                placeholder: "请输入昵称",
-                okText: "保存",
-                onOk: (value, cb) => {
-                    if (value) {
-                        dispatch("call", {
-                            url: 'users/editdata',
-                            data: {
-                                nickname: value,
-                            },
-                            checkNick: false,
-                        }).then(() => {
-                            dispatch('getUserInfo').then(() => {
-                                callback(cb, true);
-                            }).catch(() => {
-                                callback(cb, false);
+            setTimeout(_ => {
+                $A.modalInput({
+                    title: `设置${desc}`,
+                    placeholder: `请输入您的${desc}`,
+                    okText: "保存",
+                    onOk: (value) => {
+                        if (!value) {
+                            return `请输入${desc}`
+                        }
+                        return new Promise((inResolve, inReject) => {
+                            dispatch("call", {
+                                url: 'users/editdata',
+                                data: {
+                                    [type]: value,
+                                },
+                                checkNick: false,
+                                checkTel: false,
+                            }).then(() => {
+                                dispatch('getUserInfo').finally(_ => {
+                                    inResolve()
+                                    userResolve()
+                                });
+                            }).catch(({msg}) => {
+                                inReject(msg)
                             });
-                        }).catch(({msg}) => {
-                            $A.modalError(msg, 301);
-                            callback(cb, false);
-                        });
-                    } else {
-                        callback(cb, false);
-                    }
-                },
-                onCancel: () => {
-                    callback(null, false);
-                }
-            });
+                        })
+                    },
+                    onCancel: _ => userReject
+                });
+            }, 100)
         });
     },
 
@@ -450,27 +645,38 @@ export default {
      * @returns {Promise<unknown>}
      */
     handleClearCache({state, dispatch}, userInfo) {
-        return new Promise(function (resolve) {
+        return new Promise(async resolve => {
             try {
-                const cacheLoginEmail = $A.getStorageString("cacheLoginEmail");
-                const cacheThemeMode = $A.getStorageString("cacheThemeMode");
-                //
-                window.localStorage.clear();
-                //
+                // state
                 state.cacheUserBasic = [];
                 state.cacheDialogs = [];
                 state.cacheProjects = [];
                 state.cacheColumns = [];
                 state.cacheTasks = [];
-                //
-                $A.setStorage("cacheProjectParameter", state.cacheProjectParameter);
-                $A.setStorage("cacheServerUrl", state.cacheServerUrl);
-                $A.setStorage("cacheLoginEmail", cacheLoginEmail);
-                $A.setStorage("cacheThemeMode", cacheThemeMode);
-                $A.setStorage("cacheTaskBrowse", state.cacheTaskBrowse);
-                dispatch("saveUserInfo", $A.isJson(userInfo) ? userInfo : state.userInfo);
-                //
-                resolve()
+                state.callAt = [];
+
+                // localStorage
+                const languageType = window.localStorage.getItem("__language:type__");
+                const keyboardData = window.localStorage.getItem("__keyboard:data__");
+                const themeMode = window.localStorage.getItem("__theme:mode__");
+                window.localStorage.clear();
+                window.localStorage.setItem("__language:type__", languageType)
+                window.localStorage.setItem("__keyboard:data__", keyboardData)
+                window.localStorage.setItem("__theme:mode__", themeMode)
+
+                // localForage
+                const cacheLoginEmail = await $A.IDBString("cacheLoginEmail");
+                const cacheFileSort = await $A.IDBJson("cacheFileSort");
+                await $A.IDBClear();
+                await $A.IDBSet("cacheServerUrl", state.cacheServerUrl);
+                await $A.IDBSet("cacheProjectParameter", state.cacheProjectParameter);
+                await $A.IDBSet("cacheLoginEmail", cacheLoginEmail);
+                await $A.IDBSet("cacheFileSort", cacheFileSort);
+                await $A.IDBSet("cacheTaskBrowse", state.cacheTaskBrowse);
+                await $A.IDBSet("cacheEmojis", state.cacheEmojis);
+
+                // userInfo
+                dispatch("saveUserInfo", $A.isJson(userInfo) ? userInfo : state.userInfo).then(resolve);
             } catch (e) {
                 resolve()
             }
@@ -496,12 +702,13 @@ export default {
             });
         } else if ($A.isJson(data)) {
             let base = {_load: false, _edit: false};
-            let index = state.files.findIndex(({id}) => id == data.id);
+            const index = state.fileLists.findIndex(({id}) => id == data.id);
             if (index > -1) {
-                state.files.splice(index, 1, Object.assign(base, state.files[index], data));
+                state.fileLists.splice(index, 1, Object.assign(base, state.fileLists[index], data));
             } else {
-                state.files.push(Object.assign(base, data))
+                state.fileLists.push(Object.assign(base, data))
             }
+            $A.IDBSave("fileLists", state.fileLists, 600)
         }
     },
 
@@ -514,14 +721,15 @@ export default {
     forgetFile({state, dispatch}, file_id) {
         $A.execMainDispatch("forgetFile", file_id)
         //
-        let ids = $A.isArray(file_id) ? file_id : [file_id];
+        const ids = $A.isArray(file_id) ? file_id : [file_id];
         ids.some(id => {
-            state.files = state.files.filter(file => file.id != id);
-            state.files.some(file => {
+            state.fileLists = state.fileLists.filter(file => file.id != id);
+            state.fileLists.some(file => {
                 if (file.pid == id) {
                     dispatch("forgetFile", file.id);
                 }
             });
+            $A.IDBSave("fileLists", state.fileLists, 600)
         })
     },
 
@@ -541,7 +749,8 @@ export default {
                 },
             }).then((result) => {
                 const ids = result.data.map(({id}) => id)
-                state.files = state.files.filter((item) => item.pid != pid || ids.includes(item.id));
+                state.fileLists = state.fileLists.filter((item) => item.pid != pid || ids.includes(item.id));
+                $A.IDBSave("fileLists", state.fileLists, 600)
                 //
                 dispatch("saveFile", result.data);
                 resolve(result)
@@ -556,16 +765,17 @@ export default {
      * 搜索文件
      * @param state
      * @param dispatch
-     * @param key
+     * @param data
      * @returns {Promise<unknown>}
      */
-    searchFiles({state, dispatch}, key) {
+    searchFiles({state, dispatch}, data) {
+        if (!$A.isJson(data)) {
+            data = {key: data}
+        }
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'file/search',
-                data: {
-                    key,
-                },
+                data,
             }).then((result) => {
                 dispatch("saveFile", result.data);
                 resolve(result)
@@ -598,7 +808,7 @@ export default {
                 dispatch("saveColumn", data.project_column)
                 delete data.project_column;
             }
-            let index = state.cacheProjects.findIndex(({id}) => id == data.id);
+            const index = state.cacheProjects.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 state.cacheProjects.splice(index, 1, Object.assign({}, state.cacheProjects[index], data));
             } else {
@@ -606,6 +816,7 @@ export default {
                     data.project_user = []
                 }
                 state.cacheProjects.push(data);
+                state.projectTotal++
             }
             //
             state.cacheDialogs.some(dialog => {
@@ -620,64 +831,78 @@ export default {
                 }
             })
             //
-            setTimeout(() => {
-                $A.setStorage("cacheProjects", state.cacheProjects);
-            })
+            $A.IDBSave("cacheProjects", state.cacheProjects);
         }
     },
 
     /**
      * 忘记项目数据
      * @param state
+     * @param dispatch
      * @param project_id
      */
-    forgetProject({state}, project_id) {
+    forgetProject({state, dispatch}, project_id) {
         $A.execMainDispatch("forgetProject", project_id)
         //
-        let ids = $A.isArray(project_id) ? project_id : [project_id];
+        const ids = $A.isArray(project_id) ? project_id : [project_id];
         ids.some(id => {
-            let index = state.cacheProjects.findIndex(project => project.id == id);
+            const index = state.cacheProjects.findIndex(project => project.id == id);
             if (index > -1) {
+                dispatch("forgetTask", state.cacheTasks.filter(item => item.project_id == project_id).map(item => item.id))
+                dispatch("forgetColumn", state.cacheColumns.filter(item => item.project_id == project_id).map(item => item.id))
                 state.cacheProjects.splice(index, 1);
+                state.projectTotal = Math.max(0, state.projectTotal - 1)
             }
         })
         if (ids.includes(state.projectId)) {
-            const project = state.cacheProjects.find(({id}) => id && id != project_id);
+            const project = $A.cloneJSON(state.cacheProjects).sort((a, b) => {
+                if (a.top_at || b.top_at) {
+                    return $A.Date(b.top_at) - $A.Date(a.top_at);
+                }
+                return b.id - a.id;
+            }).find(({id}) => id && id != project_id);
             if (project) {
-                $A.goForward({path: '/manage/project/' + project.id});
+                $A.goForward({name: 'manage-project', params: {projectId: project.id}});
             } else {
                 $A.goForward({name: 'manage-dashboard'});
             }
         }
-        setTimeout(() => {
-            $A.setStorage("cacheProjects", state.cacheProjects);
-        })
+        //
+        $A.IDBSave("cacheProjects", state.cacheProjects);
     },
 
     /**
      * 获取项目
      * @param state
      * @param dispatch
-     * @param data
+     * @param getters
+     * @param requestData
      * @returns {Promise<unknown>}
      */
-    getProjects({state, dispatch}, data) {
+    getProjects({state, dispatch, getters}, requestData) {
         return new Promise(function (resolve, reject) {
             if (state.userId === 0) {
                 state.cacheProjects = [];
                 reject({msg: 'Parameter error'});
                 return;
             }
+            const callData = $callData('projects', requestData, state)
+            //
+            callData.showLoad() && state.loadProjects++;
             dispatch("call", {
                 url: 'project/lists',
-                data: data || {}
+                data: callData.get()
             }).then(({data}) => {
                 state.projectTotal = data.total_all;
                 dispatch("saveProject", data.data);
+                callData.save(data).then(ids => dispatch("forgetProject", ids))
+                //
                 resolve(data)
             }).catch(e => {
                 console.warn(e);
                 reject(e)
+            }).finally(_ => {
+                callData.showLoad() && state.loadProjects--;
             });
         });
     },
@@ -817,15 +1042,14 @@ export default {
                 dispatch("saveColumn", column)
             });
         } else if ($A.isJson(data)) {
-            let index = state.cacheColumns.findIndex(({id}) => id == data.id);
+            const index = state.cacheColumns.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 state.cacheColumns.splice(index, 1, Object.assign({}, state.cacheColumns[index], data));
             } else {
                 state.cacheColumns.push(data);
             }
-            setTimeout(() => {
-                $A.setStorage("cacheColumns", state.cacheColumns);
-            })
+            //
+            $A.IDBSave("cacheColumns", state.cacheColumns);
         }
     },
 
@@ -838,21 +1062,19 @@ export default {
     forgetColumn({state, dispatch}, column_id) {
         $A.execMainDispatch("forgetColumn", column_id)
         //
-        let ids = $A.isArray(column_id) ? column_id : [column_id];
-        let project_ids = [];
+        const ids = $A.isArray(column_id) ? column_id : [column_id];
+        const project_ids = [];
         ids.some(id => {
-            let index = state.cacheColumns.findIndex(column => column.id == id);
+            const index = state.cacheColumns.findIndex(column => column.id == id);
             if (index > -1) {
+                dispatch("forgetTask", state.cacheTasks.filter(item => item.column_id == column_id).map(item => item.id))
                 project_ids.push(state.cacheColumns[index].project_id)
-                dispatch('getProjectOne', state.cacheColumns[index].project_id).catch(() => {})
                 state.cacheColumns.splice(index, 1);
             }
         })
         Array.from(new Set(project_ids)).some(id => dispatch("getProjectOne", id).catch(() => {}))
         //
-        setTimeout(() => {
-            $A.setStorage("cacheColumns", state.cacheColumns);
-        })
+        $A.IDBSave("cacheColumns", state.cacheColumns);
     },
 
     /**
@@ -969,7 +1191,7 @@ export default {
                 delete data.update_marking;
             }
             //
-            let index = state.cacheTasks.findIndex(({id}) => id == data.id);
+            const index = state.cacheTasks.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 state.cacheTasks.splice(index, 1, Object.assign({}, state.cacheTasks[index], data));
             } else {
@@ -1001,9 +1223,7 @@ export default {
                 }
             })
             //
-            setTimeout(() => {
-                $A.setStorage("cacheTasks", state.cacheTasks);
-            })
+            $A.IDBSave("cacheTasks", state.cacheTasks);
         }
     },
 
@@ -1016,11 +1236,11 @@ export default {
     forgetTask({state, dispatch}, task_id) {
         $A.execMainDispatch("forgetTask", task_id)
         //
-        let ids = $A.isArray(task_id) ? task_id : [task_id];
-        let parent_ids = [];
-        let project_ids = [];
+        const ids = $A.isArray(task_id) ? task_id : [task_id];
+        const parent_ids = [];
+        const project_ids = [];
         ids.some(id => {
-            let index = state.cacheTasks.findIndex(task => task.id == id);
+            const index = state.cacheTasks.findIndex(task => task.id == id);
             if (index > -1) {
                 if (state.cacheTasks[index].parent_id) {
                     parent_ids.push(state.cacheTasks[index].parent_id)
@@ -1042,76 +1262,126 @@ export default {
         if (ids.includes(state.taskId)) {
             state.taskId = 0;
         }
-        setTimeout(() => {
-            $A.setStorage("cacheTasks", state.cacheTasks);
-        })
+        //
+        $A.IDBSave("cacheTasks", state.cacheTasks);
     },
 
     /**
      * 增加任务消息数量
      * @param state
-     * @param dialog_id
+     * @param data {id, dialog_id}
      */
-    increaseTaskMsgNum({state}, dialog_id) {
-        $A.execMainDispatch("increaseTaskMsgNum", dialog_id)
+    increaseTaskMsgNum({state}, data) {
+        $A.execMainDispatch("increaseTaskMsgNum", data)
         //
-        const task = state.cacheTasks.find(task => task.dialog_id === dialog_id);
-        if (task) task.msg_num++;
+        if ($A.execMainCacheJudge(`increaseTaskMsgNum:${data.id}`)) {
+            return
+        }
+        //
+        if (data.dialog_id) {
+            const task = state.cacheTasks.find(({dialog_id}) => dialog_id === data.dialog_id);
+            if (task) task.msg_num++;
+        }
+    },
+
+    /**
+     * 新增回复数量
+     * @param state
+     * @param dispatch
+     * @param data {id, reply_id}
+     */
+    increaseMsgReplyNum({state, dispatch}, data) {
+        $A.execMainDispatch("increaseMsgReplyNum", data)
+        //
+        if ($A.execMainCacheJudge(`increaseMsgReplyNum:${data.id}`)) {
+            return
+        }
+        //
+        if (data.reply_id > 0) {
+            const msg = state.dialogMsgs.find(({id}) => id == data.reply_id)
+            if (msg) msg.reply_num++;
+        }
+    },
+
+    /**
+     * 减少回复数量
+     * @param state
+     * @param dispatch
+     * @param data {id, reply_id}
+     */
+    decrementMsgReplyNum({state, dispatch}, data) {
+        $A.execMainDispatch("decrementMsgReplyNum", data)
+        //
+        if ($A.execMainCacheJudge(`decrementMsgReplyNum:${data.id}`)) {
+            return
+        }
+        //
+        if (data.reply_id > 0) {
+            const msg = state.dialogMsgs.find(({id}) => id == data.reply_id)
+            if (msg) msg.reply_num--;
+        }
     },
 
     /**
      * 获取任务
      * @param state
      * @param dispatch
-     * @param data
+     * @param requestData
      * @returns {Promise<unknown>}
      */
-    getTasks({state, dispatch}, data) {
+    getTasks({state, dispatch}, requestData) {
+        const taskData = [];
+        if ($A.isArray(requestData.taskData)) {
+            taskData.push(...requestData.taskData)
+            delete requestData.taskData;
+        }
+        const callData = $callData('tasks', requestData, state)
+        //
         return new Promise(function (resolve, reject) {
             if (state.userId === 0) {
                 state.cacheTasks = [];
                 reject({msg: 'Parameter error'});
                 return;
             }
-            if (data.project_id) {
+            if (requestData.project_id) {
                 state.projectLoad++;
             }
             //
             dispatch("call", {
                 url: 'project/task/lists',
-                data: data
-            }).then(result => {
-                if (data.project_id) {
+                data: callData.get()
+            }).then(({data}) => {
+                if (requestData.project_id) {
                     state.projectLoad--;
                 }
+                taskData.push(...data.data);
+                callData.save(data).then(ids => dispatch("forgetTask", ids))
                 //
-                const resData = result.data;
-                dispatch("saveTask", resData.data);
-                //
-                if (resData.next_page_url) {
-                    const nextData = Object.assign(data, {
-                        page: resData.current_page + 1,
-                    });
-                    if (resData.current_page % 5 === 0) {
+                if (data.next_page_url) {
+                    requestData.page = data.current_page + 1
+                    requestData.taskData = taskData
+                    if (data.current_page % 10 === 0) {
                         $A.modalWarning({
-                            content: "数据已超过" + resData.to + "条，是否继续加载？",
+                            content: "数据已超过" + data.to + "条，是否继续加载？",
                             onOk: () => {
-                                dispatch("getTasks", nextData).then(resolve).catch(reject)
+                                dispatch("getTasks", requestData).then(resolve).catch(reject)
                             },
                             onCancel: () => {
+                                dispatch("saveTask", taskData);
                                 resolve()
                             }
                         });
                     } else {
-                        dispatch("getTasks", nextData).then(resolve).catch(reject)
+                        dispatch("getTasks", requestData).then(resolve).catch(reject)
                     }
                 } else {
+                    dispatch("saveTask", taskData);
                     resolve()
                 }
             }).catch(e => {
                 console.warn(e);
                 reject(e)
-                if (data.project_id) {
+                if (requestData.project_id) {
                     state.projectLoad--;
                 }
             });
@@ -1134,15 +1404,30 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
+            //
+            if ($A.isArray(state.taskOneLoad[data.task_id])) {
+                state.taskOneLoad[data.task_id].push({resolve, reject})
+                return;
+            }
+            state.taskOneLoad[data.task_id] = []
+            //
             dispatch("call", {
                 url: 'project/task/one',
                 data,
             }).then(result => {
                 dispatch("saveTask", result.data);
                 resolve(result)
+                state.taskOneLoad[data.task_id].some(item => {
+                    item.resolve(result)
+                })
             }).catch(e => {
                 console.warn(e);
                 reject(e)
+                state.taskOneLoad[data.task_id].some(item => {
+                    item.reject(e)
+                })
+            }).finally(_ => {
+                delete state.taskOneLoad[data.task_id]
             });
         });
     },
@@ -1152,55 +1437,27 @@ export default {
      * @param state
      * @param dispatch
      * @param getters
+     * @param timeout
      */
-    getTaskForDashboard({state, dispatch, getters}) {
-        if (state.cacheLoading["loadDashboardTasks"] === true) {
+    getTaskForDashboard({state, dispatch, getters}, timeout) {
+        window.__getTaskForDashboard && clearTimeout(window.__getTaskForDashboard)
+        if (typeof timeout === "number") {
+            if (timeout > -1) {
+                window.__getTaskForDashboard = setTimeout(_ => dispatch("getTaskForDashboard", null), timeout)
+            }
             return;
         }
-        state.cacheLoading["loadDashboardTasks"] = true;
         //
-        const time = $A.Time()
-        const {today, overdue,all} = getters.dashboardTask;
-        const currentIds = today.map(({id}) => id)
-        currentIds.push(...overdue.map(({id}) => id))
-        currentIds.push(...all.map(({id}) => id))
-        //
-        let loadIng = 3;
-        let call = () => {
-            if (loadIng <= 0) {
-                state.cacheLoading["loadDashboardTasks"] = false;
-                //
-                const {today, overdue,all} = getters.dashboardTask;
-                const newIds = today.filter(task => task._time >= time).map(({id}) => id)
-                newIds.push(...overdue.filter(task => task._time >= time).map(({id}) => id))
-                newIds.push(...all.filter(task => task._time >= time).map(({id}) => id))
-                dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
-                return;
-            }
-            loadIng--;
-            if (loadIng == 2) {
-                // 获取今日任务
-                dispatch("getTasks", {
-                    complete: "no",
-                    time: [
-                        $A.formatDate("Y-m-d 00:00:00"),
-                        $A.formatDate("Y-m-d 23:59:59")
-                    ],
-                }).then(call).catch(call)
-            } else if (loadIng == 1) {
-                // 获取过期任务
-                dispatch("getTasks", {
-                    complete: "no",
-                    time_before: $A.formatDate("Y-m-d H:i:s"),
-                }).then(call).catch(call)
-            } else if((loadIng == 0)) {
-                // 获取待处理任务
-                dispatch("getTasks", {
-                    complete: "no",
-                }).then(call).catch(call)
-            }
+        if (state.loadDashboardTasks === true) {
+            return;
         }
-        call();
+        state.loadDashboardTasks = true;
+        //
+        dispatch("getTasks", {
+            complete: "no",
+        }).finally(_ => {
+            state.loadDashboardTasks = false;
+        })
     },
 
     /**
@@ -1212,20 +1469,7 @@ export default {
      */
     getTaskForProject({state, dispatch}, project_id) {
         return new Promise(function (resolve, reject) {
-            const time = $A.Time()
-            const currentIds = state.cacheTasks.filter(task => task.project_id == project_id).map(({id}) => id)
-            //
-            const call = () => {
-                const newIds = state.cacheTasks.filter(task => task.project_id == project_id && task._time >= time).map(({id}) => id)
-                dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
-            }
-            dispatch("getTasks", {project_id}).then(() => {
-                call()
-                resolve()
-            }).catch(() => {
-                call()
-                reject()
-            })
+            dispatch("getTasks", {project_id}).then(resolve).catch(reject)
         })
     },
 
@@ -1238,23 +1482,10 @@ export default {
      */
     getTaskForParent({state, dispatch}, parent_id) {
         return new Promise(function (resolve, reject) {
-            const time = $A.Time()
-            const currentIds = state.cacheTasks.filter(task => task.parent_id == parent_id).map(({id}) => id)
-            //
-            let call = () => {
-                const newIds = state.cacheTasks.filter(task => task.parent_id == parent_id && task._time >= time).map(({id}) => id)
-                dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
-            }
             dispatch("getTasks", {
                 parent_id,
                 archived: 'all'
-            }).then(() => {
-                call()
-                resolve()
-            }).catch(() => {
-                call()
-                reject()
-            })
+            }).then(resolve).catch(reject)
         })
     },
 
@@ -1271,19 +1502,22 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
-            dispatch("taskLoadStart", data.task_id)
+            dispatch("setLoad", {
+                key: `task-${data.task_id}`,
+                delay: 300
+            })
             dispatch("call", {
                 url: 'project/task/remove',
                 data,
             }).then(result => {
                 dispatch("forgetTask", data.task_id)
-                dispatch("taskLoadEnd", data.task_id)
                 resolve(result)
             }).catch(e => {
                 console.warn(e);
                 dispatch("getTaskOne", data.task_id).catch(() => {})
-                dispatch("taskLoadEnd", data.task_id)
                 reject(e)
+            }).finally(_ => {
+                dispatch("cancelLoad", `task-${data.task_id}`)
             });
         });
     },
@@ -1304,19 +1538,22 @@ export default {
                 reject({msg: 'Parameter error'});
                 return;
             }
-            dispatch("taskLoadStart", data.task_id)
+            dispatch("setLoad", {
+                key: `task-${data.task_id}`,
+                delay: 300
+            })
             dispatch("call", {
                 url: 'project/task/archived',
                 data,
             }).then(result => {
                 dispatch("saveTask", result.data)
-                dispatch("taskLoadEnd", data.task_id)
                 resolve(result)
             }).catch(e => {
                 console.warn(e);
                 dispatch("getTaskOne", data.task_id).catch(() => {})
-                dispatch("taskLoadEnd", data.task_id)
                 reject(e)
+            }).finally(_ => {
+                dispatch("cancelLoad", `task-${data.task_id}`)
             });
         });
     },
@@ -1357,7 +1594,7 @@ export default {
                 dispatch("saveTaskContent", item)
             });
         } else if ($A.isJson(data)) {
-            let index = state.taskContents.findIndex(({task_id}) => task_id == data.task_id);
+            const index = state.taskContents.findIndex(({task_id}) => task_id == data.task_id);
             if (index > -1) {
                 state.taskContents.splice(index, 1, Object.assign({}, state.taskContents[index], data));
             } else {
@@ -1383,7 +1620,7 @@ export default {
             },
         }).then(result => {
             result.data.forEach((data) => {
-                let index = state.taskFiles.findIndex(({id}) => id == data.id)
+                const index = state.taskFiles.findIndex(({id}) => id == data.id)
                 if (index > -1) {
                     state.taskFiles.splice(index, 1, data)
                 } else {
@@ -1406,9 +1643,9 @@ export default {
      * @param file_id
      */
     forgetTaskFile({state, dispatch}, file_id) {
-        let ids = $A.isArray(file_id) ? file_id : [file_id];
+        const ids = $A.isArray(file_id) ? file_id : [file_id];
         ids.some(id => {
-            let index = state.taskFiles.findIndex(file => file.id == id)
+            const index = state.taskFiles.findIndex(file => file.id == id)
             if (index > -1) {
                 state.taskFiles.splice(index, 1)
             }
@@ -1521,21 +1758,24 @@ export default {
      */
     taskUpdate({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
-            dispatch("taskBeforeUpdate", data).then(({confirm, post}) => {
-                dispatch("taskLoadStart", post.task_id)
+            dispatch("taskBeforeUpdate", data).then(({post}) => {
+                dispatch("setLoad", {
+                    key: `task-${post.task_id}`,
+                    delay: 300
+                })
                 dispatch("call", {
                     url: 'project/task/update',
                     data: post,
                     method: 'post',
                 }).then(result => {
-                    dispatch("taskLoadEnd", post.task_id)
                     dispatch("saveTask", result.data)
                     resolve(result)
                 }).catch(e => {
                     console.warn(e);
-                    dispatch("taskLoadEnd", post.task_id)
                     dispatch("getTaskOne", post.task_id).catch(() => {})
-                    setTimeout(() => { reject(e) }, confirm === true ? 301 : 0)
+                    reject(e)
+                }).finally(_ => {
+                    dispatch("cancelLoad", `task-${post.task_id}`)
                 });
             }).catch(reject)
         });
@@ -1645,42 +1885,6 @@ export default {
     },
 
     /**
-     * 任务增加等待
-     * @param state
-     * @param task_id
-     */
-    taskLoadStart({state}, task_id) {
-        setTimeout(() => {
-            const load = state.taskLoading.find(({id}) => id == task_id)
-            if (!load) {
-                state.taskLoading.push({
-                    id: task_id,
-                    num: 1
-                })
-            } else {
-                load.num++;
-            }
-        }, 300)
-    },
-
-    /**
-     * 任务减少等待
-     * @param state
-     * @param task_id
-     */
-    taskLoadEnd({state}, task_id) {
-        const load = state.taskLoading.find(({id}) => id == task_id)
-        if (!load) {
-            state.taskLoading.push({
-                id: task_id,
-                num: -1
-            })
-        } else {
-            load.num--;
-        }
-    },
-
-    /**
      * 获取任务流程信息
      * @param state
      * @param dispatch
@@ -1698,7 +1902,7 @@ export default {
                 let task = state.cacheTasks.find(({id}) => id == task_id)
                 let {data} = result
                 data.turns.some(item => {
-                    let index = state.taskFlowItems.findIndex(({id}) => id == item.id);
+                    const index = state.taskFlowItems.findIndex(({id}) => id == item.id);
                     if (index > -1) {
                         state.taskFlowItems.splice(index, 1, item);
                     } else {
@@ -1717,7 +1921,7 @@ export default {
                 })
                 //
                 delete data.turns;
-                let index = state.taskFlows.findIndex(({task_id}) => task_id == data.task_id);
+                const index = state.taskFlows.findIndex(({task_id}) => task_id == data.task_id);
                 if (index > -1) {
                     state.taskFlows.splice(index, 1, data);
                 } else {
@@ -1801,7 +2005,7 @@ export default {
      * @param task_id
      */
     saveTaskBrowse({state}, task_id) {
-        let index = state.cacheTaskBrowse.findIndex(({id}) => id == task_id)
+        const index = state.cacheTaskBrowse.findIndex(({id}) => id == task_id)
         if (index > -1) {
             state.cacheTaskBrowse.splice(index, 1)
         }
@@ -1812,9 +2016,8 @@ export default {
         if (state.cacheTaskBrowse.length > 200) {
             state.cacheTaskBrowse.splice(200);
         }
-        setTimeout(() => {
-            $A.setStorage("cacheTaskBrowse", state.cacheTaskBrowse);
-        })
+        //
+        $A.IDBSave("cacheTaskBrowse", state.cacheTaskBrowse);
     },
 
     /** *****************************************************************************************/
@@ -1835,15 +2038,22 @@ export default {
                 dispatch("saveDialog", dialog)
             });
         } else if ($A.isJson(data)) {
-            let index = state.cacheDialogs.findIndex(({id}) => id == data.id);
+            const index = state.cacheDialogs.findIndex(({id}) => id == data.id);
             if (index > -1) {
-                state.cacheDialogs.splice(index, 1, Object.assign({}, state.cacheDialogs[index], data));
+                const original = state.cacheDialogs[index]
+                const nowTime = data.user_ms
+                const originalTime = original.user_ms || 0
+                if (nowTime < originalTime) {
+                    typeof data.unread !== "undefined" && delete data.unread
+                    typeof data.mention !== "undefined" && delete data.mention
+                    typeof data.position_msgs !== "undefined" && delete data.position_msgs
+                }
+                state.cacheDialogs.splice(index, 1, Object.assign({}, original, data));
             } else {
                 state.cacheDialogs.push(data);
             }
-            setTimeout(() => {
-                $A.setStorage("cacheDialogs", state.cacheDialogs);
-            })
+            //
+            $A.IDBSave("cacheDialogs", state.cacheDialogs);
         }
     },
 
@@ -1856,15 +2066,34 @@ export default {
     updateDialogLastMsg({state, dispatch}, data) {
         $A.execMainDispatch("updateDialogLastMsg", data)
         //
-        let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
-        if (dialog) {
-            dispatch("saveDialog", {
-                id: data.dialog_id,
-                last_msg: data,
-                last_at: $A.formatDate("Y-m-d H:i:s")
+        if ($A.isArray(data)) {
+            data.forEach((msg) => {
+                dispatch("updateDialogLastMsg", msg)
             });
-        } else {
-            dispatch("getDialogOne", data.dialog_id).catch(() => {})
+        } else if ($A.isJson(data)) {
+            const index = state.cacheDialogs.findIndex(({id}) => id == data.dialog_id);
+            if (index > -1) {
+                const updateData = {
+                    id: data.dialog_id,
+                    last_msg: data,
+                    last_at: $A.formatDate("Y-m-d H:i:s")
+                }
+                if (data.mtype == 'tag') {
+                    updateData.has_tag = true;
+                }
+                if (data.mtype == 'image') {
+                    updateData.has_image = true;
+                }
+                if (data.mtype == 'file') {
+                    updateData.has_file = true;
+                }
+                if (data.link) {
+                    updateData.has_link = true;
+                }
+                dispatch("saveDialog", updateData);
+            } else {
+                dispatch("getDialogOne", data.dialog_id).catch(() => {})
+            }
         }
     },
 
@@ -1872,23 +2101,47 @@ export default {
      * 获取会话列表
      * @param state
      * @param dispatch
+     * @param getters
+     * @param requestData
      * @returns {Promise<unknown>}
      */
-    getDialogs({state, dispatch}) {
+    getDialogs({state, dispatch, getters}, requestData) {
         return new Promise(function (resolve, reject) {
             if (state.userId === 0) {
                 state.cacheDialogs = [];
                 reject({msg: 'Parameter error'});
                 return;
             }
+            if (!$A.isJson(requestData)) {
+                requestData = {}
+            }
+            if (typeof requestData.page === "undefined") {
+                requestData.page = 1
+            }
+            if (typeof requestData.pagesize === "undefined") {
+                requestData.pagesize = 20
+            }
+            const callData = $callData('dialogs', requestData, state)
+            //
+            callData.showLoad() && state.loadDialogs++;
             dispatch("call", {
                 url: 'dialog/lists',
-            }).then(result => {
-                dispatch("saveDialog", result.data.data);
-                resolve(result)
+                data: callData.get()
+            }).then(({data}) => {
+                dispatch("saveDialog", data.data);
+                callData.save(data).then(ids => dispatch("forgetDialog", ids))
+                //
+                if (data.next_page_url && data.current_page < 5) {
+                    requestData.page++
+                    dispatch("getDialogs", requestData).then(resolve).catch(reject)
+                } else {
+                    resolve()
+                }
             }).catch(e => {
                 console.warn(e);
                 reject(e)
+            }).finally(_ => {
+                callData.showLoad() && state.loadDialogs--;
             });
         });
     },
@@ -1922,6 +2175,58 @@ export default {
     },
 
     /**
+     * 获取会话待办
+     * @param state
+     * @param dispatch
+     * @param dialog_id
+     */
+    getDialogTodo({state, dispatch}, dialog_id) {
+        dispatch("call", {
+            url: 'dialog/todo',
+            data: {
+                dialog_id,
+            },
+        }).then(({data}) => {
+            if ($A.arrayLength(data) > 0) {
+                dispatch("saveDialog", {
+                    id: dialog_id,
+                    todo_num: $A.arrayLength(data)
+                });
+                state.dialogTodos = state.dialogTodos.filter(item => item.dialog_id != dialog_id)
+                dispatch("saveDialogTodo", data)
+            } else {
+                dispatch("saveDialog", {
+                    id: dialog_id,
+                    todo_num: 0
+                });
+            }
+        }).catch(console.warn);
+    },
+
+    /**
+     * 打开会话
+     * @param state
+     * @param dispatch
+     * @param dialog_id
+     * @returns {Promise<unknown>}
+     */
+    openDialog({state, dispatch}, dialog_id) {
+        return new Promise(resolve => {
+            let search_msg_id;
+            if ($A.isJson(dialog_id)) {
+                search_msg_id = dialog_id.search_msg_id;
+                dialog_id = dialog_id.dialog_id;
+            }
+            //
+            requestAnimationFrame(_ => {
+                state.dialogSearchMsgId = /^\d+$/.test(search_msg_id) ? search_msg_id : 0;
+                state.dialogId = /^\d+$/.test(dialog_id) ? dialog_id : 0;
+                resolve()
+            })
+        })
+    },
+
+    /**
      * 打开个人会话
      * @param state
      * @param dispatch
@@ -1929,50 +2234,195 @@ export default {
      */
     openDialogUserid({state, dispatch}, userid) {
         return new Promise(function (resolve, reject) {
-            if (userid === state.userId) {
-                reject({msg: 'Parameter error'});
+            const dialog = state.cacheDialogs.find(item => {
+                if (item.type !== 'user' || !item.dialog_user) {
+                    return false
+                }
+                return item.dialog_user.userid === userid
+            });
+            if (dialog) {
+                dispatch("openDialog", dialog.id);
+                resolve(dialog);
                 return;
             }
-            state.dialogOpenId = 0; // 先重置dialogOpenId，否者无法重复打开相同对话
+            dispatch("showSpinner", 600)
             dispatch("call", {
                 url: 'dialog/open/user',
                 data: {
                     userid,
                 },
-            }).then(result => {
-                dispatch("saveDialog", result.data);
-                $A.setStorage("messenger::dialogId", result.data.id);
-                state.dialogOpenId = result.data.id;
-                resolve(result);
+            }).then(({data}) => {
+                dispatch("saveDialog", data);
+                dispatch("openDialog", data.id);
+                resolve(data);
             }).catch(e => {
                 console.warn(e);
                 reject(e);
-            });
+            }).finally(_ => {
+                dispatch("hiddenSpinner")
+            })
         });
     },
 
     /**
      * 忘记对话数据
      * @param state
+     * @param dispatch
      * @param dialog_id
      */
-    forgetDialog({state}, dialog_id) {
+    forgetDialog({state, dispatch}, dialog_id) {
         $A.execMainDispatch("forgetDialog", dialog_id)
         //
-        let ids = $A.isArray(dialog_id) ? dialog_id : [dialog_id];
+        const ids = $A.isArray(dialog_id) ? dialog_id : [dialog_id];
         ids.some(id => {
-            let index = state.cacheDialogs.findIndex(dialog => dialog.id == id);
+            const index = state.cacheDialogs.findIndex(dialog => dialog.id == id);
             if (index > -1) {
+                dispatch("forgetDialogMsg", state.dialogMsgs.filter(item => item.dialog_id == dialog_id).map(item => item.id))
                 state.cacheDialogs.splice(index, 1);
             }
         })
-        if (ids.includes($A.getStorageInt("messenger::dialogId"))) {
-            $A.setStorage("messenger::dialogId", 0)
+        if (ids.includes(state.dialogId)) {
+            state.dialogId = 0
         }
         //
-        setTimeout(() => {
-            $A.setStorage("cacheDialogs", state.cacheDialogs);
-        })
+        $A.IDBSave("cacheDialogs", state.cacheDialogs);
+    },
+
+    /**
+     * 保存正在会话
+     * @param state
+     * @param dispatch
+     * @param data {uid, dialog_id}
+     */
+    saveInDialog({state, dispatch}, data) {
+        $A.execMainDispatch("saveInDialog", data)
+        //
+        const index = state.dialogIns.findIndex(item => item.uid == data.uid);
+        if (index > -1) {
+            state.dialogIns.splice(index, 1, Object.assign({}, state.dialogIns[index], data));
+        } else {
+            state.dialogIns.push(data);
+        }
+        // 会话消息总数量大于1500时只保留最近打开的30个会话
+        const msg_max = 1500
+        const retain_num = 30
+        state.dialogHistory = state.dialogHistory.filter(id => id != data.dialog_id)
+        state.dialogHistory.push(data.dialog_id)
+        if (state.dialogMsgs.length > msg_max && state.dialogHistory.length > retain_num) {
+            const historys = state.dialogHistory.slice().reverse()
+            const newIds = []
+            const delIds = []
+            historys.forEach(id => {
+                if (newIds.length < retain_num || state.dialogIns.findIndex(item => item.dialog_id == id) > -1) {
+                    newIds.push(id)
+                } else {
+                    delIds.push(id)
+                }
+            })
+            if (delIds.length > 0) {
+                state.dialogMsgs = state.dialogMsgs.filter(item => !delIds.includes(item.dialog_id));
+                $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
+            }
+            state.dialogHistory = newIds
+        }
+    },
+
+    /**
+     * 忘记正在会话
+     * @param state
+     * @param dispatch
+     * @param uid
+     */
+    forgetInDialog({state, dispatch}, uid) {
+        $A.execMainDispatch("forgetInDialog", uid)
+        //
+        const index = state.dialogIns.findIndex(item => item.uid == uid);
+        if (index > -1) {
+            state.dialogIns.splice(index, 1);
+        }
+    },
+
+    /**
+     * 关闭对话
+     * @param state
+     * @param dispatch
+     * @param dialog_id
+     */
+    closeDialog({state, dispatch}, dialog_id) {
+        $A.execMainDispatch("closeDialog", dialog_id)
+        //
+        if (!/^\d+$/.test(dialog_id)) {
+            return
+        }
+        // 更新草稿状态
+        const dialog = state.cacheDialogs.find(item => item.id == dialog_id);
+        if (dialog) {
+            dialog.extra_draft_has = dialog.extra_draft_content ? 1 : 0
+        }
+        // 关闭会话后只保留会话最后50条数据
+        const retain = 50
+        const msgs = state.dialogMsgs.filter(item => item.dialog_id == dialog_id)
+        if (msgs.length > retain) {
+            const delIds = msgs.sort((a, b) => {
+                return b.id - a.id
+            }).splice(retain).map(item => item.id)
+            state.dialogMsgs = state.dialogMsgs.filter(item => !delIds.includes(item.id))
+            $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
+        }
+    },
+
+    /**
+     * 保存待办数据
+     * @param state
+     * @param dispatch
+     * @param data
+     */
+    saveDialogTodo({state, dispatch}, data) {
+        $A.execMainDispatch("saveDialogTodo", data)
+        //
+        if ($A.isArray(data)) {
+            data.forEach(item => {
+                dispatch("saveDialogTodo", item)
+            });
+        } else if ($A.isJson(data)) {
+            const index = state.dialogTodos.findIndex(item => item.id == data.id);
+            if (index > -1) {
+                state.dialogTodos.splice(index, 1, Object.assign({}, state.dialogTodos[index], data));
+            } else {
+                state.dialogTodos.push(data);
+            }
+        }
+    },
+
+    /**
+     * 忘记待办数据
+     * @param state
+     * @param dispatch
+     * @param msg_id
+     */
+    forgetDialogTodoForMsgId({state, dispatch}, msg_id) {
+        $A.execMainDispatch("forgetDialogTodoForMsgId", msg_id)
+        //
+        const index = state.dialogTodos.findIndex(item => item.msg_id == msg_id);
+        if (index > -1) {
+            state.dialogTodos.splice(index, 1);
+        }
+    },
+
+    /**
+     * 保存聊天草稿
+     * @param state
+     * @param dispatch
+     * @param data {id, extra_draft_content}
+     */
+    saveDialogDraft({state, dispatch}, data) {
+        state.dialogDraftTimer[data.id] && clearInterval(state.dialogDraftTimer[data.id])
+        state.dialogDraftTimer[data.id] = setTimeout(_ => {
+            if (state.dialogId != data.id) {
+                data.extra_draft_has = data.extra_draft_content ? 1 : 0
+            }
+            dispatch("saveDialog", data)
+        }, data.extra_draft_content ? 600 : 0)
     },
 
     /** *****************************************************************************************/
@@ -1993,11 +2443,21 @@ export default {
                 dispatch("saveDialogMsg", msg)
             });
         } else if ($A.isJson(data)) {
-            let index = state.dialogMsgs.findIndex(({id}) => id == data.id);
+            const index = state.dialogMsgs.findIndex(({id}) => id == data.id);
+            data = Object.assign({}, state.dialogMsgs[index], data)
             if (index > -1) {
-                state.dialogMsgs.splice(index, 1, Object.assign({}, state.dialogMsgs[index], data));
+                state.dialogMsgs.splice(index, 1, data);
             } else {
                 state.dialogMsgs.push(data);
+            }
+            $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
+            //
+            const dialog = state.cacheDialogs.find(({id, last_msg}) => id == data.dialog_id && last_msg && last_msg.id === data.id);
+            if (dialog) {
+                dispatch("saveDialog", {
+                    id: data.dialog_id,
+                    last_msg: Object.assign({}, dialog.last_msg, data),
+                })
             }
         }
     },
@@ -2005,114 +2465,111 @@ export default {
     /**
      * 忘记消息数据
      * @param state
+     * @param dispatch
      * @param msg_id
      */
-    forgetDialogMsg({state}, msg_id) {
+    forgetDialogMsg({state, dispatch}, msg_id) {
         $A.execMainDispatch("forgetDialogMsg", msg_id)
         //
-        let ids = $A.isArray(msg_id) ? msg_id : [msg_id];
+        const ids = $A.isArray(msg_id) ? msg_id : [msg_id];
         ids.some(id => {
-            let index = state.dialogMsgs.findIndex(item => item.id == id);
+            const index = state.dialogMsgs.findIndex(item => item.id == id);
             if (index > -1) {
+                const msgData = state.dialogMsgs[index]
+                dispatch("decrementMsgReplyNum", msgData);
+                dispatch("audioStop", $A.getObject(msgData, 'msg.path'));
                 state.dialogMsgs.splice(index, 1);
+                $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
             }
         })
+        dispatch("forgetDialogTodoForMsgId", msg_id)
     },
 
     /**
      * 获取会话消息
      * @param state
      * @param dispatch
-     * @param dialog_id
+     * @param getters
+     * @param data {dialog_id, msg_id, ?msg_type, ?position_id, ?prev_id, ?next_id, ?save_before, ?save_after, ?clear_before, ?spinner}
      * @returns {Promise<unknown>}
      */
-    getDialogMsgs({state, dispatch}, dialog_id) {
-        return new Promise(resolve => {
-            if (!dialog_id) {
-                resolve()
-                return;
+    getDialogMsgs({state, dispatch, getters}, data) {
+        return new Promise((resolve, reject) => {
+            let saveBefore = _ => {}
+            let saveAfter = _ => {}
+            let clearBefore = false
+            let spinner = false
+            if (typeof data.save_before !== "undefined") {
+                saveBefore = typeof data.save_before === "function" ? data.save_before : _ => {}
+                delete data.save_before
             }
-            let dialog = state.cacheDialogs.find(({id}) => id == dialog_id);
-            if (!dialog) {
-                dialog = {
-                    id: dialog_id,
-                };
-                state.cacheDialogs.push(dialog);
+            if (typeof data.save_after !== "undefined") {
+                saveAfter = typeof data.save_after === "function" ? data.save_after : _ => {}
+                delete data.save_after
             }
-            if (dialog.loading) {
-                resolve()
-                return;
+            if (typeof data.clear_before !== "undefined") {
+                clearBefore = typeof data.clear_before === "boolean" ? data.clear_before : false
+                delete data.clear_before
             }
-            dialog.loading = true;
-            dialog.currentPage = 1;
-            dialog.hasMorePages = false;
+            if (typeof data.spinner !== "undefined") {
+                spinner = data.spinner
+                delete data.spinner
+            }
             //
-            dispatch("call", {
-                url: 'dialog/msg/lists',
-                data: {
-                    dialog_id: dialog_id,
-                    page: dialog.currentPage
-                },
-            }).then(result => {
-                dialog.loading = false;
-                dialog.currentPage = result.data.current_page;
-                dialog.hasMorePages = !!result.data.next_page_url;
-                dispatch("saveDialog", dialog);
-                //
-                const ids = result.data.data.map(({id}) => id)
-                state.dialogMsgs = state.dialogMsgs.filter((item) => item.dialog_id != dialog_id || ids.includes(item.id));
-                //
-                dispatch("saveDialog", result.data.dialog);
-                dispatch("saveDialogMsg", result.data.data);
-                resolve()
-            }).catch(e => {
-                console.warn(e);
-                dialog.loading = false;
-                resolve()
-            });
-        });
-    },
-
-    /**
-     * 获取更多(下一页)会话消息
-     * @param state
-     * @param dispatch
-     * @param dialog_id
-     */
-    getDialogMoreMsgs({state, dispatch}, dialog_id) {
-        return new Promise(function (resolve, reject) {
-            const dialog = state.cacheDialogs.find(({id}) => id == dialog_id);
-            if (!dialog) {
-                reject({msg: 'Parameter error'});
-                return;
-            }
-            if (!dialog.hasMorePages) {
-                reject({msg: 'No more page'});
-                return;
-            }
-            if (dialog.loading) {
+            const loadKey = `msg::${data.dialog_id}-${data.msg_id}-${data.msg_type || ''}`
+            if (getters.isLoad(loadKey)) {
                 reject({msg: 'Loading'});
-                return;
+                return
             }
-            dialog.loading = true;
-            dialog.currentPage++;
+            dispatch("setLoad", loadKey)
+            //
+            if (clearBefore) {
+                state.dialogMsgs = state.dialogMsgs.filter(({dialog_id}) => dialog_id !== data.dialog_id)
+                $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
+            }
             //
             dispatch("call", {
-                url: 'dialog/msg/lists',
-                data: {
-                    dialog_id: dialog_id,
-                    page: dialog.currentPage
-                },
+                url: 'dialog/msg/list',
+                data,
+                spinner,
+                complete: _ => dispatch("cancelLoad", loadKey)
             }).then(result => {
-                dialog.loading = false;
-                dialog.currentPage = result.data.current_page;
-                dialog.hasMorePages = !!result.data.next_page_url;
-                dispatch("saveDialogMsg", result.data.data);
+                saveBefore()
+                const resData = result.data;
+                if ($A.isJson(resData.dialog)) {
+                    setTimeout(_ => dispatch("saveDialog", resData.dialog), 10)    // 延迟更新对话详情是因为等消息处理完
+                    //
+                    const ids = resData.list.map(({id}) => id)
+                    state.dialogMsgs = state.dialogMsgs.filter(item => {
+                        return item.dialog_id != data.dialog_id || ids.includes(item.id) || $A.Time(item.created_at) >= resData.time
+                    });
+                    $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
+                }
+                if ($A.isArray(resData.todo)) {
+                    state.dialogTodos = state.dialogTodos.filter(item => item.dialog_id != data.dialog_id)
+                    dispatch("saveDialogTodo", resData.todo)
+                }
+                //
+                dispatch("saveDialogMsg", resData.list)
                 resolve(result)
+                saveAfter()
             }).catch(e => {
                 console.warn(e);
-                dialog.loading = false;
                 reject(e)
+            }).finally(_ => {
+                // 将原数据清除，避免死循环
+                if (data.prev_id) {
+                    const prevMsg = state.dialogMsgs.find(({prev_id}) => prev_id == data.prev_id)
+                    if (prevMsg) {
+                        prevMsg.prev_id = 0
+                    }
+                }
+                if (data.next_id) {
+                    const nextMsg = state.dialogMsgs.find(({next_id}) => next_id == data.next_id)
+                    if (nextMsg) {
+                        nextMsg.next_id = 0
+                    }
+                }
             });
         });
     },
@@ -2124,29 +2581,191 @@ export default {
      * @param data
      */
     dialogMsgRead({state, dispatch}, data) {
-        if (data.userid == state.userId) return;
-        if (data.is_read === true) return;
-        data.is_read = true;
-        //
-        let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
-        if (dialog && dialog.unread > 0) {
-            dialog.unread--
-            dialog.mark_unread = 0
-            dispatch("saveDialog", dialog)
+        if ($A.isJson(data)) {
+            if (data.userid == state.userId) return;
+            if (data.read_at) return;
+            data.read_at = $A.formatDate();
+            state.wsReadWaitData[data.id] = data.id;
         }
-        //
-        state.wsReadWaitList.push(data.id);
         clearTimeout(state.wsReadTimeout);
-        state.wsReadTimeout = setTimeout(() => {
-            dispatch("websocketSend", {
-                type: 'readMsg',
+        state.wsReadTimeout = setTimeout(_ => {
+            const ids = Object.values(state.wsReadWaitData);
+            state.wsReadWaitData = {};
+            if (ids.length === 0) {
+                return
+            }
+            //
+            dispatch("call", {
+                url: 'dialog/msg/read',
                 data: {
-                    id: $A.cloneJSON(state.wsReadWaitList)
+                    id: ids.join(",")
                 }
+            }).then(({data}) => {
+                dispatch("saveDialog", data)
+            }).catch(_ => {
+                ids.some(id => {
+                    state.wsReadWaitData[id] = id;
+                })
             });
-            state.wsReadWaitList = [];
         }, 50);
     },
+
+    /**
+     * 标记已读、未读
+     * @param state
+     * @param dispatch
+     * @param data
+     * @returns {Promise<unknown>}
+     */
+    dialogMsgMark({state, dispatch}, data) {
+        return new Promise((resolve, reject) => {
+            dispatch("call", {
+                url: 'dialog/msg/mark',
+                data,
+            }).then(result => {
+                dispatch("saveDialog", result.data)
+                resolve(result)
+            }).catch(e => {
+                reject(e)
+            })
+        })
+    },
+
+    /** *****************************************************************************************/
+    /** ************************************* loads *********************************************/
+    /** *****************************************************************************************/
+
+    /**
+     * 设置等待
+     * @param state
+     * @param dispatch
+     * @param key
+     */
+    setLoad({state, dispatch}, key) {
+        if ($A.isJson(key)) {
+            setTimeout(_ => {
+                dispatch("setLoad", key.key)
+            }, key.delay || 0)
+            return;
+        }
+        const load = state.loads.find(item => item.key == key)
+        if (!load) {
+            state.loads.push({key, num: 1})
+        } else {
+            load.num++;
+        }
+    },
+
+    /**
+     * 取消等待
+     * @param state
+     * @param key
+     */
+    cancelLoad({state}, key) {
+        const load = state.loads.find(item => item.key == key)
+        if (!load) {
+            state.loads.push({key, num: -1})
+        } else {
+            load.num--;
+        }
+    },
+
+    /**
+     * 显示全局浮窗加载器
+     * @param state
+     * @param delay
+     */
+    showSpinner({state}, delay) {
+        const id = $A.randomString(6)
+        state.floatSpinnerTimer.push({
+            id,
+            timer: setTimeout(_ => {
+                state.floatSpinnerTimer = state.floatSpinnerTimer.filter(item => item.id !== id)
+                state.floatSpinnerLoad++
+            }, typeof delay === "number" ? delay : 0)
+        })
+    },
+
+    /**
+     * 隐藏全局浮窗加载器
+     * @param state
+     */
+    hiddenSpinner({state}) {
+        const item = state.floatSpinnerTimer.shift()
+        if (item) {
+            clearTimeout(item.timer)
+        } else {
+            state.floatSpinnerLoad--
+        }
+    },
+
+    /**
+     * 预览图片
+     * @param state
+     * @param data
+     */
+    previewImage({state}, data) {
+        if (!$A.isJson(data)) {
+            data = {index:0, list: [data]}
+        }
+        state.previewImageIndex = data.index;
+        state.previewImageList = data.list;
+    },
+
+    /**
+     * 播放音频
+     * @param state
+     * @param dispatch
+     * @param src
+     */
+    audioPlay({state, dispatch}, src) {
+        const old = document.getElementById("__audio_play_element__")
+        if (old) {
+            // 删除已存在
+            old.pause()
+            old.src = null
+            old.parentNode.removeChild(old);
+        }
+        if (!src || src === state.audioPlaying) {
+            // 空地址或跟现在播放的地址一致时仅停止
+            state.audioPlaying = null
+            return
+        }
+        //
+        const audio = document.createElement("audio")
+        audio.id = state.audioPlayId = "__audio_play_element__"
+        audio.controls = false
+        audio.loop = false
+        audio.volume = 1
+        audio.src = state.audioPlaying = src
+        audio.onended = _ => {
+            dispatch("audioStop", audio.src)
+        }
+        document.body.appendChild(audio)
+        audio.play().then(_ => {})
+    },
+
+    /**
+     * 停止播放音频
+     * @param state
+     * @param src
+     */
+    audioStop({state}, src) {
+        const old = document.getElementById("__audio_play_element__")
+        if (!old) {
+            return
+        }
+        if (old.src === src || src === true) {
+            old.pause()
+            old.src = null
+            old.parentNode.removeChild(old);
+            state.audioPlaying = null
+        }
+    },
+
+    /** *****************************************************************************************/
+    /** *********************************** websocket *******************************************/
+    /** *****************************************************************************************/
 
     /**
      * 初始化 websocket
@@ -2156,29 +2775,30 @@ export default {
      */
     websocketConnection({state, dispatch, commit}) {
         clearTimeout(state.wsTimeout);
+        if (state.ws) {
+            state.ws.close();
+            state.ws = null;
+        }
         if (state.userId === 0) {
-            if (state.ws) {
-                state.ws.close();
-                state.ws = null;
-            }
             return;
         }
         //
         let url = $A.apiUrl('../ws');
         url = url.replace("https://", "wss://");
         url = url.replace("http://", "ws://");
-        url += "?action=web&token=" + state.userToken;
+        url += `?action=web&token=${state.userToken}&language=${languageType}`;
         //
+        const wgLog = $A.openLog;
         const wsRandom = $A.randomString(16);
         state.wsRandom = wsRandom;
         //
         state.ws = new WebSocket(url);
         state.ws.onopen = (e) => {
-            // console.log("[WS] Open", $A.formatDate())
+            wgLog && console.log("[WS] Open", e, $A.formatDate())
             state.wsOpenNum++;
         };
         state.ws.onclose = (e) => {
-            // console.log("[WS] Close", $A.formatDate())
+            wgLog && console.log("[WS] Close", e, $A.formatDate())
             state.ws = null;
             //
             clearTimeout(state.wsTimeout);
@@ -2187,7 +2807,7 @@ export default {
             }, 3000);
         };
         state.ws.onerror = (e) => {
-            // console.log("[WS] Error", $A.formatDate())
+            wgLog && console.log("[WS] Error", e, $A.formatDate())
             state.ws = null;
             //
             clearTimeout(state.wsTimeout);
@@ -2196,12 +2816,12 @@ export default {
             }, 3000);
         };
         state.ws.onmessage = (e) => {
-            // console.log("[WS] Message", e);
-            const msgDetail = $A.formatWebsocketMessageDetail($A.jsonParse(e.data));
+            wgLog && console.log("[WS] Message", e);
+            const msgDetail = $A.formatMsgBasic($A.jsonParse(e.data));
             const {type, msgId} = msgDetail;
             switch (type) {
                 case "open":
-                    $A.setStorage("userWsFd", msgDetail.data.fd)
+                    $A.setSessionStorage("userWsFd", msgDetail.data.fd)
                     break
 
                 case "receipt":
@@ -2214,14 +2834,14 @@ export default {
                     break
 
                 default:
-                    msgId && dispatch("websocketSend", {type: 'receipt', msgId});
+                    msgId && dispatch("websocketSend", {type: 'receipt', msgId}).catch(_ => {});
                     state.wsMsg = msgDetail;
                     Object.values(state.wsListener).forEach((call) => {
                         if (typeof call === "function") {
                             try {
                                 call(msgDetail);
                             } catch (err) {
-                                // console.log("[WS] Callerr", err);
+                                wgLog && console.log("[WS] Callerr", err);
                             }
                         }
                     });
@@ -2231,29 +2851,31 @@ export default {
                          */
                         case "dialog": // 更新会话
                             (function (msg) {
-                                const {mode, data} = msg;
+                                const {mode, silence, data} = msg;
                                 const {dialog_id} = data;
                                 switch (mode) {
                                     case 'delete':
                                         // 删除消息
                                         dispatch("forgetDialogMsg", data.id)
                                         //
-                                        let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
+                                        const dialog = state.cacheDialogs.find(({id}) => id == dialog_id);
                                         if (dialog) {
                                             // 更新最后消息
-                                            dialog.last_at = data.last_msg && data.last_msg.created_at;
-                                            dialog.last_msg = data.last_msg;
+                                            const newData = {
+                                                id: dialog_id,
+                                                last_at: data.last_msg && data.last_msg.created_at,
+                                                last_msg: data.last_msg,
+                                            }
                                             if (data.update_read) {
                                                 // 更新未读数量
                                                 dispatch("call", {
                                                     url: 'dialog/msg/unread',
-                                                    dialog_id: data.dialog_id
-                                                }).then(result => {
-                                                    dialog.unread = result.data.unread
-                                                    dispatch("saveDialog", dialog)
+                                                    data: {dialog_id}
+                                                }).then(({data}) => {
+                                                    dispatch("saveDialog", Object.assign(newData, data))
                                                 }).catch(() => {});
                                             } else {
-                                                dispatch("saveDialog", dialog)
+                                                dispatch("saveDialog", newData)
                                             }
                                         }
                                         break;
@@ -2261,31 +2883,79 @@ export default {
                                     case 'chat':
                                         if (!state.dialogMsgs.find(({id}) => id == data.id)) {
                                             // 新增任务消息数量
-                                            dispatch("increaseTaskMsgNum", dialog_id);
-                                            if (mode === "chat") {
+                                            dispatch("increaseTaskMsgNum", data);
+                                            // 新增回复数量
+                                            dispatch("increaseMsgReplyNum", data);
+                                            //
+                                            if (mode === "chat" || $A.isSubElectron) {
                                                 return;
                                             }
                                             if (data.userid !== state.userId) {
                                                 // 更新对话新增未读数
-                                                let dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
-                                                if (dialog && state.cacheUnreads[data.id] === undefined) {
-                                                    state.cacheUnreads[data.id] = true;
-                                                    dialog.unread++;
-                                                    dispatch("saveDialog", dialog)
+                                                const dialog = state.cacheDialogs.find(({id}) => id == dialog_id);
+                                                if (dialog) {
+                                                    const newData = {
+                                                        id: dialog_id,
+                                                        unread: dialog.unread + 1,
+                                                        mention: dialog.mention,
+                                                        user_at: data.user_at,
+                                                        user_ms: data.user_ms,
+                                                    }
+                                                    if (data.mention) {
+                                                        newData.mention++;
+                                                    }
+                                                    dispatch("saveDialog", newData)
                                                 }
                                             }
-                                            Store.set('dialogMsgPush', data);
+                                            if (!silence) {
+                                                Store.set('dialogMsgPush', data);
+                                            }
                                         }
                                         // 更新消息列表
                                         dispatch("saveDialogMsg", data)
                                         // 更新最后消息
                                         dispatch("updateDialogLastMsg", data);
                                         break;
+                                    case 'update':
                                     case 'readed':
-                                        // 已读回执
+                                        // 更新、已读回执
                                         if (state.dialogMsgs.find(({id}) => id == data.id)) {
                                             dispatch("saveDialogMsg", data)
+                                            // 更新待办
+                                            if (typeof data.todo !== "undefined") {
+                                                dispatch("getDialogTodo", dialog_id)
+                                            }
+                                        } else if (mode === 'readed') {
+                                            // 消息不存在，重试已读标记
+                                            let readedNum = 0
+                                            const readedTimer = setInterval(_ => {
+                                                if (readedNum > 6) {
+                                                    clearInterval(readedTimer)
+                                                }
+                                                if (state.dialogMsgs.find(({id}) => id == data.id)) {
+                                                    clearInterval(readedTimer)
+                                                    dispatch("saveDialogMsg", data)
+                                                }
+                                                readedNum++
+                                            }, 500)
                                         }
+                                        break;
+                                    case 'groupAdd':
+                                    case 'groupJoin':
+                                    case 'groupRestore':
+                                        // 群组添加、加入、恢复
+                                        dispatch("getDialogOne", data.id).catch(() => {})
+                                        break;
+                                    case 'groupUpdate':
+                                        // 群组更新
+                                        if (state.cacheDialogs.find(({id}) => id == data.id)) {
+                                            dispatch("saveDialog", data)
+                                        }
+                                        break;
+                                    case 'groupExit':
+                                    case 'groupDelete':
+                                        // 群组退出、解散
+                                        dispatch("forgetDialog", data.id)
                                         break;
                                 }
                             })(msgDetail);
@@ -2300,14 +2970,15 @@ export default {
                                 switch (action) {
                                     case 'add':
                                     case 'update':
+                                    case 'recovery':
                                         dispatch("saveProject", data)
                                         break;
                                     case 'detail':
                                         dispatch("getProjectOne", data.id).catch(() => {})
                                         dispatch("getTaskForProject", data.id).catch(() => {})
                                         break;
-                                    case 'archived':
                                     case 'delete':
+                                    case 'archived':
                                         dispatch("forgetProject", data.id);
                                         break;
                                     case 'sort':
@@ -2343,10 +3014,12 @@ export default {
                                 const {action, data} = msg;
                                 switch (action) {
                                     case 'add':
-                                    case 'restore':
+                                    case 'restore':     // 恢复（删除）
                                         dispatch("addTaskSuccess", data)
                                         break;
                                     case 'update':
+                                    case 'archived':    // 归档
+                                    case 'recovery':    // 恢复（归档）
                                         dispatch("saveTask", data)
                                         break;
                                     case 'dialog':
@@ -2393,31 +3066,33 @@ export default {
      * 发送 websocket 消息
      * @param state
      * @param params {type, data, callback}
+     * @returns {Promise<unknown>}
      */
     websocketSend({state}, params) {
-        if (!$A.isJson(params)) {
-            typeof callback === "function" && callback(null, false)
-            return;
-        }
-        const {type, data, callback} = params;
-        let msgId = undefined;
-        if (!state.ws) {
-            typeof callback === "function" && callback(null, false)
-            return;
-        }
-        if (typeof callback === "function") {
-            msgId = $A.randomString(16)
-            state.wsCall[msgId] = callback;
-        }
-        try {
-            state.ws.send(JSON.stringify({
-                type,
-                msgId,
-                data
-            }));
-        } catch (e) {
-            typeof callback === "function" && callback(null, false)
-        }
+        return new Promise((resolve, reject) => {
+            if (!$A.isJson(params)) {
+                reject()
+                return
+            }
+            const {type, data, callback} = params
+            let msgId = undefined
+            if (!state.ws) {
+                typeof callback === "function" && callback(null, false)
+                reject()
+                return
+            }
+            if (typeof callback === "function") {
+                msgId = $A.randomString(16)
+                state.wsCall[msgId] = callback
+            }
+            try {
+                state.ws?.send(JSON.stringify({type, msgId, data}))
+                resolve()
+            } catch (e) {
+                typeof callback === "function" && callback(null, false)
+                reject(e)
+            }
+        })
     },
 
     /**
@@ -2431,7 +3106,7 @@ export default {
         state.wsPathValue = path;
         state.wsPathTimeout = setTimeout(() => {
             if (state.wsPathValue == path) {
-                dispatch("websocketSend", {type: 'path', data: {path}});
+                dispatch("websocketSend", {type: 'path', data: {path}}).catch(_ => {});
             }
         }, 1000);
     },

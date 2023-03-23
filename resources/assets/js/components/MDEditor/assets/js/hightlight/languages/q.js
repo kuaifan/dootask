@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var Q_KEYWORDS = {
   keyword:
     'do while select delete by update from',

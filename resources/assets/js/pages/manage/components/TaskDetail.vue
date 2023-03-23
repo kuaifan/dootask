@@ -10,7 +10,7 @@
                 @on-update="getLogLists"/>
         </div>
         <div v-if="taskDetail.flow_item_name" class="subtask-flow">
-            <span :class="taskDetail.flow_item_status" @click.stop="openMenu(taskDetail)">{{taskDetail.flow_item_name}}</span>
+            <span :class="taskDetail.flow_item_status" @click.stop="openMenu($event, taskDetail)">{{taskDetail.flow_item_name}}</span>
         </div>
         <div class="subtask-name">
             <Input
@@ -20,6 +20,7 @@
                 :rows="1"
                 :autosize="{ minRows: 1, maxRows: 8 }"
                 :maxlength="255"
+                enterkeyhint="done"
                 @on-blur="updateBlur('name')"
                 @on-keydown="onNameKeydown"/>
         </div>
@@ -53,10 +54,11 @@
             <div slot="content">
                 <UserInput
                     v-model="ownerData.owner_userid"
-                    :multiple-max="1"
+                    :multiple-max="10"
                     :project-id="taskDetail.project_id"
                     :placeholder="$L('选择任务负责人')"
-                    :transfer="false"/>
+                    :transfer="false"
+                    max-hidden-select/>
                 <div class="task-detail-avatar-buttons">
                     <Button size="small" type="primary" @click="$refs.owner.ok()">{{$L('确定')}}</Button>
                 </div>
@@ -70,7 +72,8 @@
     <!--主任务-->
     <div
         v-else-if="ready"
-        :class="{'task-detail':true, 'open-dialog': hasOpenDialog, 'completed': taskDetail.complete_at}">
+        :class="{'task-detail':true, 'open-dialog': hasOpenDialog, 'completed': taskDetail.complete_at}"
+        :style="taskDetailStyle">
         <div v-show="taskDetail.id > 0" class="task-info">
             <div class="head">
                 <TaskMenu
@@ -82,10 +85,10 @@
                     :color-show="false"
                     @on-update="getLogLists"/>
                 <div v-if="taskDetail.flow_item_name" class="flow">
-                    <span :class="taskDetail.flow_item_status" @click.stop="openMenu(taskDetail)">{{taskDetail.flow_item_name}}</span>
+                    <span :class="taskDetail.flow_item_status" @click.stop="openMenu($event, taskDetail)">{{taskDetail.flow_item_name}}</span>
                 </div>
                 <div v-if="taskDetail.archived_at" class="flow">
-                    <span class="archived" @click.stop="openMenu(taskDetail)">{{$L('已归档')}}</span>
+                    <span class="archived" @click.stop="openMenu($event, taskDetail)">{{$L('已归档')}}</span>
                 </div>
                 <div class="nav">
                     <p v-if="projectName"><span>{{projectName}}</span></p>
@@ -119,7 +122,7 @@
                         </div>
                         <Button slot="reference" :loading="ownerLoad > 0" class="pick" type="primary">{{$L('我要领取任务')}}</Button>
                     </EPopover>
-                    <ETooltip v-if="$Electron" :content="$L('新窗口打开')">
+                    <ETooltip v-if="$Electron" :disabled="windowSmall || $isEEUiApp" :content="$L('新窗口打开')">
                         <i class="taskfont open" @click="openNewWin">&#xe776;</i>
                     </ETooltip>
                     <div class="menu">
@@ -134,7 +137,7 @@
                     </div>
                 </div>
             </div>
-            <div class="scroller overlay-y">
+            <div class="scroller scrollbar-overlay">
                 <div class="title">
                     <Input
                         v-model="taskDetail.name"
@@ -143,6 +146,7 @@
                         :rows="1"
                         :autosize="{ minRows: 1, maxRows: 8 }"
                         :maxlength="255"
+                        enterkeyhint="done"
                         @on-blur="updateBlur('name')"
                         @on-keydown="onNameKeydown"/>
                 </div>
@@ -272,6 +276,29 @@
                             </li>
                         </ul>
                     </FormItem>
+                    <FormItem v-if="(taskDetail.loop && taskDetail.loop != 'never') || loopForce">
+                        <div class="item-label" slot="label">
+                            <i class="taskfont">&#xe93f;</i>{{$L('重复周期')}}
+                        </div>
+                        <ul class="item-content">
+                            <li>
+                                <EDropdown
+                                    ref="loop"
+                                    trigger="click"
+                                    placement="bottom"
+                                    @command="updateData('loop', $event)">
+                                    <ETooltip :disabled="windowSmall || $isEEUiApp || !taskDetail.loop_at" :content="`${$L('下个周期')}: ${taskDetail.loop_at}`" placement="right">
+                                        <span>{{$L(loopLabel(taskDetail.loop))}}</span>
+                                    </ETooltip>
+                                    <EDropdownMenu slot="dropdown" class="task-detail-loop">
+                                        <EDropdownItem v-for="item in loops" :key="item.key" :command="item.key">
+                                            {{$L(item.label)}}
+                                        </EDropdownItem>
+                                    </EDropdownMenu>
+                                </EDropdown>
+                            </li>
+                        </ul>
+                    </FormItem>
                     <FormItem v-if="fileList.length > 0">
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe6e6;</i>{{$L('附件')}}
@@ -301,7 +328,7 @@
                         </ul>
                         <ul class="item-content">
                             <li>
-                                <div class="add-button" @click="$refs.upload.handleClick()">
+                                <div class="add-button" @click="onUploadClick(true)">
                                     <i class="taskfont">&#xe6f2;</i>{{$L('添加附件')}}
                                 </div>
                             </li>
@@ -331,6 +358,7 @@
                                     :placeholder="$L('+ 输入子任务，回车添加子任务')"
                                     :icon="addsubLoad > 0 ? 'ios-loading' : ''"
                                     :class="{loading: addsubLoad > 0}"
+                                    enterkeyhint="done"
                                     @on-blur="addsubChackClose"
                                     @on-keydown="addsubKeydown"/>
                                 <div v-else class="add-button" @click="addsubOpen">
@@ -348,7 +376,7 @@
                         <div class="add-button">
                             <i class="taskfont">&#xe6f2;</i>
                             {{$L('添加')}}
-                            <em v-for="item in menuList">{{$L(item.name)}}</em>
+                            <em>{{menuText}}</em>
                         </div>
                         <EDropdownMenu slot="dropdown">
                             <EDropdownItem v-for="(item, key) in menuList" :key="key" :command="item.command">
@@ -390,6 +418,14 @@
                             <Icon v-else type="ios-refresh" @click="getLogLists"></Icon>
                         </div>
                     </div>
+                    <div class="menu">
+                        <div v-if="navActive=='dialog' && taskDetail.msg_num > 0" class="menu-item" @click.stop="onSend('open')">
+                            <div v-if="openLoad > 0" class="menu-load"><Loading/></div>
+                            {{$L('任务聊天')}}
+                            <em>({{taskDetail.msg_num > 999 ? '999+' : taskDetail.msg_num}})</em>
+                            <i class="taskfont">&#xe703;</i>
+                        </div>
+                    </div>
                 </div>
                 <ProjectLog v-if="navActive=='log' && taskId > 0" ref="log" :task-id="taskDetail.id" :show-load="false" @on-load-change="logLoadChange"/>
                 <div v-else class="no-dialog"
@@ -398,24 +434,17 @@
                      @dragleave.prevent="taskDragOver(false, $event)">
                     <div class="no-tip">{{$L('暂无消息')}}</div>
                     <div class="no-input">
-                        <DragInput
-                            class="dialog-input"
+                        <ChatInput
+                            ref="chatInput"
+                            :task-id="taskId"
                             v-model="msgText"
-                            type="textarea"
-                            :disabled="sendLoad > 0"
-                            :rows="1"
-                            :autosize="{ minRows: 1, maxRows: 3 }"
-                            :maxlength="20000"
+                            :loading="sendLoad > 0"
+                            :maxlength="200000"
                             :placeholder="$L('输入消息...')"
-                            @on-keydown="msgKeydown"
-                            @on-input-paste="msgPasteDrag"/>
-                        <div class="no-send" @click="msgDialog">
-                            <Loading v-if="sendLoad > 0"/>
-                            <template v-else>
-                                <Badge :count="taskDetail.msg_num"/>
-                                <Icon type="md-send" />
-                            </template>
-                        </div>
+                            @on-more="onEventMore"
+                            @on-file="onSelectFile"
+                            @on-record="onRecord"
+                            @on-send="onSend"/>
                     </div>
                     <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
                         <div class="drag-text">{{$L('拖动到这里发送')}}</div>
@@ -437,11 +466,11 @@ import DialogWrapper from "./DialogWrapper";
 import ProjectLog from "./ProjectLog";
 import {Store} from "le5le-store";
 import TaskMenu from "./TaskMenu";
-import DragInput from "../../../components/DragInput";
+import ChatInput from "./ChatInput";
 
 export default {
     name: "TaskDetail",
-    components: {DragInput, TaskMenu, ProjectLog, DialogWrapper, TaskUpload, UserInput, TaskPriority, TEditor},
+    components: {ChatInput, TaskMenu, ProjectLog, DialogWrapper, TaskUpload, UserInput, TaskPriority, TEditor},
     props: {
         taskId: {
             type: Number,
@@ -460,6 +489,11 @@ export default {
         canUpdateBlur: {
             type: Boolean,
             default: true
+        },
+        // 是否Modal模式
+        modalMode: {
+            type: Boolean,
+            default: false
         },
     },
     data() {
@@ -487,17 +521,19 @@ export default {
             timeValue: [],
             timeOptions: {shortcuts:$A.timeOptionShortcuts()},
 
+            loopForce: false,
+
             nowTime: $A.Time(),
             nowInterval: null,
 
-            innerHeight: Math.min(1100, window.innerHeight),
-
             msgText: '',
             msgFile: [],
+            msgRecord: {},
             navActive: 'dialog',
             logLoadIng: false,
 
             sendLoad: 0,
+            openLoad: 0,
 
             taskPlugins: [
                 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
@@ -523,7 +559,26 @@ export default {
             },
 
             dialogDrag: false,
+            imageAttachment: true,
             receiveTaskSubscribe: null,
+
+            loops: [
+                {key: 'never', label: '从不'},
+                {key: 'day', label: '每天'},
+                {key: 'weekdays', label: '每个工作日'},
+                {key: 'week', label: '每周'},
+                {key: 'twoweeks', label: '每两周'},
+                {key: 'month', label: '每月'},
+                {key: 'year', label: '每年'},
+                {key: 'custom', label: '自定义'},
+            ]
+        }
+    },
+
+    created() {
+        const navActive = $A.getObject(this.$route.query, 'navActive')
+        if (['dialog', 'log'].includes(navActive)) {
+            this.navActive = navActive;
         }
     },
 
@@ -531,7 +586,6 @@ export default {
         this.nowInterval = setInterval(() => {
             this.nowTime = $A.Time();
         }, 1000);
-        window.addEventListener('resize', this.innerHeightListener);
         //
         this.receiveTaskSubscribe = Store.subscribe('receiveTask', () => {
             this.receiveShow = true;
@@ -540,7 +594,6 @@ export default {
 
     destroyed() {
         clearInterval(this.nowInterval);
-        window.removeEventListener('resize', this.innerHeightListener);
         //
         if (this.receiveTaskSubscribe) {
             this.receiveTaskSubscribe.unsubscribe();
@@ -550,16 +603,13 @@ export default {
 
     computed: {
         ...mapState([
-            'userId',
-            'userToken',
             'cacheProjects',
             'cacheColumns',
             'cacheTasks',
             'taskContents',
             'taskFiles',
             'taskPriority',
-
-            'windowMax768'
+            'dialogId',
         ]),
 
         projectName() {
@@ -615,20 +665,34 @@ export default {
         },
 
         hasOpenDialog() {
-            return this.taskDetail.dialog_id > 0 && !this.windowMax768;
+            return this.taskDetail.dialog_id > 0 && this.windowLarge;
         },
 
         dialogStyle() {
-            const {innerHeight, hasOpenDialog} = this;
-            if (!innerHeight) {
+            const {windowHeight, hasOpenDialog} = this;
+            const height = Math.min(1100, windowHeight)
+            if (!height) {
                 return {};
             }
             if (!hasOpenDialog) {
                 return {};
             }
+            const factor = height > 900 ? 200 : 70;
             return {
-                minHeight: (innerHeight - (innerHeight > 900 ? 200 : 70) - 48) + 'px'
+                minHeight: (height - factor - 48) + 'px'
             }
+        },
+
+        taskDetailStyle() {
+            const {modalMode, windowHeight, hasOpenDialog} = this;
+            const height = Math.min(1100, windowHeight)
+            if (modalMode && hasOpenDialog) {
+                const factor = height > 900 ? 200 : 70;
+                return {
+                    maxHeight: (height - factor - 30) + 'px'
+                }
+            }
+            return {}
         },
 
         cutTime() {
@@ -670,7 +734,7 @@ export default {
 
         menuList() {
             const {taskDetail} = this;
-            let list = [];
+            const list = [];
             if (!taskDetail.p_name) {
                 list.push({
                     command: 'priority',
@@ -692,6 +756,13 @@ export default {
                     name: '截止时间',
                 });
             }
+            if (!taskDetail.loop || taskDetail.loop == 'never') {
+                list.push({
+                    command: 'loop',
+                    icon: '&#xe93f;',
+                    name: '重复周期',
+                });
+            }
             if (this.fileList.length == 0) {
                 list.push({
                     command: 'file',
@@ -708,15 +779,28 @@ export default {
             }
             return list;
         },
+
+        menuText() {
+            const {menuList} = this
+            let text = ''
+            if (menuList.length > 0) {
+                menuList.forEach((item, index) => {
+                    if (index > 0) {
+                        text += " / "
+                    }
+                    text += this.$L(item.name)
+                })
+            }
+            return text
+        }
     },
 
     watch: {
         openTask: {
             handler(data) {
                 this.taskDetail = $A.cloneJSON(data);
-                this.$nextTick(() => {
-                    this.$refs.name && this.$refs.name.resizeTextarea();
-                })
+                this.__openTask && clearTimeout(this.__openTask);
+                this.__openTask = setTimeout(_ => this.$refs.name?.resizeTextarea(), 100)
             },
             immediate: true,
             deep: true
@@ -726,13 +810,18 @@ export default {
                 if (id > 0) {
                     this.ready = true;
                 } else {
+                    if (this.windowSmall) {
+                        $A.onBlur();
+                    }
                     this.timeOpen = false;
                     this.timeForce = false;
+                    this.loopForce = false;
                     this.assistForce = false;
                     this.addsubForce = false;
                     this.receiveShow = false;
                     this.$refs.owner && this.$refs.owner.handleClose();
                     this.$refs.assist && this.$refs.assist.handleClose();
+                    this.$refs.chatInput && this.$refs.chatInput.hidePopover();
                 }
             },
             immediate: true
@@ -741,14 +830,10 @@ export default {
             if (val) {
                 this.timeValue = this.taskDetail.end_at ? [this.taskDetail.start_at, this.taskDetail.end_at] : [];
             }
-        }
+        },
     },
 
     methods: {
-        innerHeightListener() {
-            this.innerHeight = Math.min(1100, window.innerHeight);
-        },
-
         within24Hours(date) {
             return $A.Date(date, true) - this.nowTime < 86400
         },
@@ -762,6 +847,14 @@ export default {
                 return true;
             }
             return $A.Date(taskDetail.end_at, true) < this.nowTime;
+        },
+
+        loopLabel(loop) {
+            const item = this.loops.find(item => item.key === loop)
+            if (item) {
+                return item.label
+            }
+            return loop ? `每${loop}天` : '从不'
         },
 
         onNameKeydown(e) {
@@ -827,7 +920,32 @@ export default {
                     break;
 
                 case 'times':
-                    this.$set(this.taskDetail, 'times', [params.start_at, params.end_at])
+                    if (this.taskDetail.start_at
+                        && (Math.abs($A.Time(this.taskDetail.start_at) - $A.Time(params.start_at)) > 60 || Math.abs($A.Time(this.taskDetail.end_at) - $A.Time(params.end_at)) > 60)
+                        && typeof params.desc === "undefined") {
+                        $A.modalInput({
+                            title: `修改任务时间`,
+                            placeholder: `请输入修改备注`,
+                            okText: "确定",
+                            onOk: (desc) => {
+                                if (!desc) {
+                                    return `请输入修改备注`
+                                }
+                                this.updateData("times", Object.assign(params, {desc}))
+                                return false
+                            },
+                        });
+                        return;
+                    }
+                    this.$set(this.taskDetail, 'times', [params.start_at, params.end_at, params.desc])
+                    break;
+
+                case 'loop':
+                    if (params === 'custom') {
+                        this.customLoop()
+                        return;
+                    }
+                    this.$set(this.taskDetail, 'loop', params)
                     break;
 
                 case 'content':
@@ -861,6 +979,51 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
             })
+        },
+
+        customLoop() {
+            let value = this.taskDetail.loop || 1
+            $A.Modal.confirm({
+                render: (h) => {
+                    return h('div', [
+                        h('div', {
+                            style: {
+                                fontSize: '16px',
+                                fontWeight: '500',
+                                marginBottom: '20px',
+                            }
+                        }, this.$L('重复周期')),
+                        h('Input', {
+                            style: {
+                                width: '160px',
+                                margin: '0 auto',
+                            },
+                            props: {
+                                type: 'number',
+                                value,
+                                maxlength: 3
+                            },
+                            on: {
+                                input: (val) => {
+                                    value = $.runNum(val)
+                                }
+                            }
+                        }, [
+                            h('span', {slot: 'prepend'}, this.$L('每')),
+                            h('span', {slot: 'append'}, this.$L('天'))
+                        ])
+                    ])
+                },
+                onOk: _ => {
+                    this.$Modal.remove()
+                    if (value > 0) {
+                        this.updateData('loop', value)
+                    }
+                },
+                loading: true,
+                okText: this.$L('确定'),
+                cancelText: this.$L('取消'),
+            });
         },
 
         openOwner() {
@@ -915,13 +1078,28 @@ export default {
             const list = this.getAssist.map(({userid}) => userid)
             this.$set(this.taskDetail, 'assist_userid', list)
             this.$set(this.assistData, 'assist_userid', list);
-            this.$set(this.assistData, 'disabled', this.getOwner.map(({userid}) => userid))
+            this.$set(this.assistData, 'disabled', this.getOwner.map(({userid}) => userid).filter(userid => userid != this.userId))
         },
 
         onAssist() {
             if ($A.jsonStringify(this.taskDetail.assist_userid) === $A.jsonStringify(this.assistData.assist_userid)) {
                 return;
             }
+            if (this.getOwner.find(({userid}) => userid === this.userId) && this.assistData.assist_userid.find(userid => userid === this.userId)) {
+                $A.modalConfirm({
+                    content: '你当前是负责人，确定要转为协助人员吗？',
+                    cancelText: '取消',
+                    okText: '确定',
+                    onOk: () => {
+                        this.onAssistConfirm()
+                    }
+                })
+                return
+            }
+            this.onAssistConfirm()
+        },
+
+        onAssistConfirm() {
             let assist = this.assistData.assist_userid;
             if (assist.length === 0) assist = false;
             this.assistLoad++;
@@ -1050,8 +1228,15 @@ export default {
                     })
                     break;
 
+                case 'loop':
+                    this.loopForce = true;
+                    this.$nextTick(() => {
+                        this.$refs.loop.show();
+                    })
+                    break;
+
                 case 'file':
-                    this.$refs.upload.handleClick();
+                    this.onUploadClick(true)
                     break;
 
                 case 'subtask':
@@ -1063,23 +1248,26 @@ export default {
             }
         },
 
-        msgKeydown(e) {
-            if (e.keyCode === 13) {
-                if (e.shiftKey) {
-                    return;
-                }
-                e.preventDefault();
-                if (this.msgText) {
-                    this.msgDialog();
-                }
+        onEventMore(e) {
+            if (['image', 'file'].includes(e)) {
+                this.onUploadClick(false)
             }
         },
 
-        msgDialog() {
-            if (this.sendLoad > 0) {
+        onUploadClick(attachment) {
+            this.imageAttachment = !!attachment;
+            this.$refs.upload.handleClick()
+        },
+
+        msgDialog(msgText = null, onlyOpen = false) {
+            if (this.sendLoad > 0 || this.openLoad > 0) {
                 return;
             }
-            this.sendLoad++;
+            if (onlyOpen === true) {
+                this.openLoad++;
+            } else {
+                this.sendLoad++;
+            }
             //
             this.$store.dispatch("call", {
                 url: 'project/task/dialog',
@@ -1087,64 +1275,78 @@ export default {
                     task_id: this.taskDetail.id,
                 },
             }).then(({data}) => {
-                this.$store.dispatch("saveTask", data);
-                this.$store.dispatch("getDialogOne", data.dialog_id).then(() => {
-                    this.sendLoad--;
-                    if ($A.isSubElectron) {
-                        this.resizeDialog().then(() => {
-                            this.sendDialogMsg();
-                        });
-                    } else {
-                        this.$nextTick(() => {
-                            if (this.windowMax768) {
-                                window.__sendDialogMsg = {
-                                    time: $A.Time() + 10,
-                                    msgText: this.msgText,
-                                    msgFile: this.msgFile
-                                };
-                                this.msgFile = [];
-                                this.msgText = "";
-                                this.goForward({name: 'manage-messenger', query: {_: $A.randomString(6)}});
-                                $A.setStorage("messenger::dialogId", data.dialog_id)
-                                this.$store.state.dialogOpenId = data.dialog_id;
-                                this.$store.dispatch('openTask', 0);
-                            } else {
-                                this.sendDialogMsg();
-                            }
-                        });
-                    }
-                }).catch(({msg}) => {
-                    this.sendLoad--;
-                    $A.modalError(msg);
+                this.$store.dispatch("saveTask", {
+                    id: data.id,
+                    dialog_id: data.dialog_id,
                 });
+                this.$store.dispatch("saveDialog", data.dialog_data);
+                //
+                if ($A.isSubElectron) {
+                    this.resizeDialog().then(() => {
+                        this.sendDialogMsg(msgText);
+                    });
+                } else {
+                    this.$nextTick(() => {
+                        if (this.windowSmall) {
+                            $A.onBlur();
+                            const transferData = {
+                                time: $A.Time() + 10,
+                                msgRecord: this.msgRecord,
+                                msgFile: this.msgFile,
+                                msgText: typeof msgText === 'string' && msgText ? msgText : this.msgText,
+                                dialogId: data.dialog_id,
+                            };
+                            this.msgRecord = {};
+                            this.msgFile = [];
+                            this.msgText = "";
+                            this.$nextTick(_ => {
+                                if (this.dialogId > 0) {
+                                    this.$store.dispatch("openTask", 0)    // 如果当前打开着对话窗口则关闭任务窗口
+                                }
+                                this.$store.dispatch('openDialog', data.dialog_id).then(_ => {
+                                    this.$store.state.dialogMsgTransfer = transferData
+                                })
+                            })
+                        } else {
+                            this.sendDialogMsg(msgText);
+                        }
+                    });
+                }
             }).catch(({msg}) => {
-                this.sendLoad--;
                 $A.modalError(msg);
+            }).finally(_ => {
+                if (onlyOpen === true) {
+                    this.openLoad--;
+                } else {
+                    this.sendLoad--;
+                }
             });
         },
 
-        sendDialogMsg() {
+        sendDialogMsg(msgText = null) {
             if (this.msgFile.length > 0) {
-                this.$refs.dialog.sendFileMsg(this.msgFile);
+                this.$refs.dialog.sendFileMsg(this.msgFile.map(file => Object.assign(file, {
+                    ajaxExtraData: {
+                        image_attachment: this.imageAttachment ? 1 : 0
+                    }
+                })));
             } else if (this.msgText) {
                 this.$refs.dialog.sendMsg(this.msgText);
+            } else if (typeof msgText === 'string' && msgText) {
+                this.$refs.dialog.sendMsg(msgText);
             }
             this.msgFile = [];
             this.msgText = "";
         },
 
-        msgPasteDrag(e, type) {
+        taskPasteDrag(e, type) {
+            this.dialogDrag = false;
             const files = type === 'drag' ? e.dataTransfer.files : e.clipboardData.files;
             this.msgFile = Array.prototype.slice.call(files);
             if (this.msgFile.length > 0) {
                 e.preventDefault();
                 this.msgDialog()
             }
-        },
-
-        taskPasteDrag(e, type) {
-            this.dialogDrag = false;
-            this.msgPasteDrag(e, type);
         },
 
         taskDragOver(show, e) {
@@ -1163,9 +1365,23 @@ export default {
             }
         },
 
-        onSelectFile(file) {
-            this.msgFile = [file];
+        onSelectFile(row) {
+            this.msgFile = $A.isArray(row) ? row : [row];
             this.msgDialog()
+        },
+
+        onRecord(row) {
+            this.msgRecord = row;
+            this.msgDialog()
+        },
+
+        onSend(msgText) {
+            this.$refs.chatInput && this.$refs.chatInput.hidePopover();
+            if (msgText === 'open') {
+                this.msgDialog(null, true);
+            } else {
+                this.msgDialog(msgText);
+            }
         },
 
         deleteFile(file) {
@@ -1183,9 +1399,9 @@ export default {
             });
         },
 
-        openMenu(task) {
+        openMenu(event, task) {
             const el = this.$refs[`taskMenu_${task.id}`];
-            el && el.handleClick()
+            el && el.handleClick(event)
         },
 
         openNewWin() {
@@ -1203,8 +1419,8 @@ export default {
                 config.minHeight = 600;
             }
             this.$Electron.sendMessage('windowRouter', {
-                name: 'task-' + this.taskDetail.id,
-                path: "/single/task/" + this.taskDetail.id,
+                name: `task-${this.taskDetail.id}`,
+                path: `/single/task/${this.taskDetail.id}?navActive=${this.navActive}`,
                 force: false,
                 config
             });
@@ -1213,9 +1429,9 @@ export default {
 
         resizeDialog() {
             return new Promise(resolve => {
-                this.$Electron.sendSyncMessage('windowSize', {
-                    width: Math.max(1100, window.innerWidth),
-                    height: Math.max(720, window.innerHeight),
+                this.$Electron.sendMessage('windowSize', {
+                    width: Math.max(1100, this.windowWidth),
+                    height: Math.max(720, this.windowHeight),
                     minWidth: 800,
                     minHeight: 600,
                     autoZoom: true,
@@ -1238,18 +1454,31 @@ export default {
                 const list = this.fileList.filter(item => ['jpg', 'jpeg', 'gif', 'png'].includes(item.ext))
                 const index = list.findIndex(item => item.id === file.id);
                 if (index > -1) {
-                    this.$store.state.previewImageIndex = index;
-                    this.$store.state.previewImageList = list.map(({path}) => path);
+                    this.$store.dispatch("previewImage", {
+                        index, list: list.map(item => {
+                            return {
+                                src: item.path,
+                                width: item.width,
+                                height: item.height,
+                            }
+                        })
+                    })
                 } else {
-                    this.$store.state.previewImageIndex = 0;
-                    this.$store.state.previewImageList = [file.path];
+                    this.$store.dispatch("previewImage", {
+                        index: 0, list: [{
+                            src: file.path,
+                            width: file.width,
+                            height: file.height,
+                        }]
+                    })
                 }
                 return
             }
+            const path = `/single/file/task/${file.id}`;
             if (this.$Electron) {
                 this.$Electron.sendMessage('windowRouter', {
-                    name: 'file-task-' + file.id,
-                    path: "/single/file/task/" + file.id,
+                    name: `file-task-${file.id}`,
+                    path: path,
                     userAgent: "/hideenOfficeTitle/",
                     force: false,
                     config: {
@@ -1258,10 +1487,24 @@ export default {
                         parent: null,
                         width: Math.min(window.screen.availWidth, 1440),
                         height: Math.min(window.screen.availHeight, 900),
-                    }
+                    },
+                    webPreferences: {
+                        nodeIntegrationInSubFrames: file.ext === 'drawio'
+                    },
+                });
+            } else if (this.$isEEUiApp) {
+                $A.eeuiAppOpenPage({
+                    pageType: 'app',
+                    pageTitle: `${file.name} (${$A.bytesToSize(file.size)})`,
+                    url: 'web.js',
+                    params: {
+                        titleFixed: true,
+                        allowAccess: true,
+                        url: $A.rightDelete(window.location.href, window.location.hash) + `#${path}`
+                    },
                 });
             } else {
-                window.open($A.apiUrl(`../single/file/task/${file.id}`))
+                window.open($A.apiUrl(`..${path}`))
             }
         },
 

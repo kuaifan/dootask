@@ -2,20 +2,23 @@
     <div class="single-file-msg">
         <PageTitle :title="title"/>
         <Loading v-if="loadIng > 0"/>
-        <template v-else>
+        <template v-else-if="!isWait">
             <MDPreview v-if="isType('md')" :initialValue="msgDetail.content.content"/>
             <TEditor v-else-if="isType('text')" :value="msgDetail.content.content" height="100%" readOnly/>
             <Drawio v-else-if="isType('drawio')" v-model="msgDetail.content" :title="msgDetail.msg.name" readOnly/>
             <Minder v-else-if="isType('mind')" :value="msgDetail.content" readOnly/>
-            <AceEditor v-else-if="isType('code')" v-model="msgDetail.content" :ext="msgDetail.msg.ext" class="view-editor" readOnly/>
+            <template v-else-if="isType('code')">
+                <div v-if="isLongText(msgDetail.msg.name)" class="view-code" v-html="$A.formatTextMsg(msgDetail.content.content, userId)"></div>
+                <AceEditor v-else v-model="msgDetail.content.content" :ext="msgDetail.msg.ext" class="view-editor" readOnly/>
+            </template>
             <OnlyOffice v-else-if="isType('office')" v-model="officeContent" :code="officeCode" :documentKey="documentKey" readOnly/>
-            <iframe v-else-if="isType('preview')" class="preview-iframe" :src="previewUrl"/>
+            <IFrame v-else-if="isType('preview')" class="preview-iframe" :src="previewUrl"/>
             <div v-else class="no-support">{{$L('不支持单独查看此消息')}}</div>
         </template>
     </div>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .single-file-msg {
     display: flex;
     align-items: center;
@@ -23,7 +26,8 @@
     .ace_editor,
     .markdown-preview-warp,
     .teditor-wrapper,
-    .no-support {
+    .no-support,
+    .view-code {
         position: absolute;
         top: 0;
         left: 0;
@@ -34,10 +38,23 @@
         outline: 0;
         padding: 0;
     }
+    .markdown-preview-warp {
+        overflow: auto;
+    }
     .preview-iframe {
         background: 0 0;
         float: none;
         max-width: none;
+    }
+    .teditor-wrapper {
+        .teditor-box {
+            height: 100%;
+        }
+    }
+    .view-code {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        overflow: auto;
     }
     .view-editor,
     .no-support {
@@ -47,31 +64,23 @@
     }
 }
 </style>
-<style lang="scss">
-.single-file-msg {
-    .teditor-wrapper {
-        .teditor-box {
-            height: 100%;
-        }
-    }
-}
-</style>
 <script>
-import Vue from 'vue'
-import Minder from '../../components/Minder'
-Vue.use(Minder)
+import {mapState} from "vuex";
+import IFrame from "../manage/components/IFrame";
 
 const MDPreview = () => import('../../components/MDEditor/preview');
 const TEditor = () => import('../../components/TEditor');
 const AceEditor = () => import('../../components/AceEditor');
 const OnlyOffice = () => import('../../components/OnlyOffice');
 const Drawio = () => import('../../components/Drawio');
+const Minder = () => import('../../components/Minder');
 
 export default {
-    components: {AceEditor, TEditor, MDPreview, OnlyOffice, Drawio},
+    components: {IFrame, AceEditor, TEditor, MDPreview, OnlyOffice, Drawio, Minder},
     data() {
         return {
             loadIng: 0,
+            isWait: false,
 
             msgDetail: {},
         }
@@ -88,8 +97,11 @@ export default {
         },
     },
     computed: {
+        ...mapState(['userId']),
+
         msgId() {
-            return $A.runNum(this.$route.params.id);
+            const {msgId} = this.$route.params;
+            return parseInt(/^\d+$/.test(msgId) ? msgId : 0);
         },
 
         title() {
@@ -120,7 +132,8 @@ export default {
         },
 
         previewUrl() {
-            return $A.apiUrl("../fileview/onlinePreview?url=" + encodeURIComponent(this.msgDetail.content.url))
+            const {name, key} = this.msgDetail.content;
+            return $A.apiUrl(`../online/preview/${name}?key=${key}`)
         }
     },
     methods: {
@@ -128,17 +141,18 @@ export default {
             if (this.msgId <= 0) {
                 return;
             }
-            this.loadIng++;
+            setTimeout(_ => {
+                this.loadIng++;
+            }, 600)
+            this.isWait = true;
             this.$store.dispatch("call", {
                 url: 'dialog/msg/detail',
                 data: {
                     msg_id: this.msgId,
                 },
             }).then(({data}) => {
-                this.loadIng--;
                 this.msgDetail = data;
             }).catch(({msg}) => {
-                this.loadIng--;
                 $A.modalError({
                     content: msg,
                     onOk: () => {
@@ -147,8 +161,12 @@ export default {
                         }
                     }
                 });
+            }).finally(_ => {
+                this.loadIng--;
+                this.isWait = false;
             });
         },
+
         documentKey() {
             return new Promise(resolve => {
                 this.$store.dispatch("call", {
@@ -158,12 +176,16 @@ export default {
                         only_update_at: 'yes'
                     },
                 }).then(({data}) => {
-                    resolve($A.Date(data.update_at, true))
+                    resolve(`${data.id}-${$A.Time(data.update_at)}`)
                 }).catch(() => {
                     resolve(0)
                 });
             });
-        }
+        },
+
+        isLongText(name) {
+            return /^LongText-/.test(name)
+        },
     }
 }
 </script>

@@ -1,54 +1,77 @@
 <template>
     <div class="setting-component-item">
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
-            <div class="email-setting-box">
+            <div class="block-setting-box">
                 <h3>{{ $L('邮箱服务器设置') }}</h3>
-                <FormItem :label="$L('SMTP服务器')" prop="smtp_server">
-                    <Input v-model="formData.smtp_server"/>
-                </FormItem>
-                <FormItem :label="$L('端口')" prop="port">
-                    <Input :maxlength="20" v-model="formData.port"/>
-                </FormItem>
-                <FormItem :label="$L('账号')" prop="account">
-                    <Input :maxlength="128" v-model="formData.account"/>
-                </FormItem>
-                <FormItem :label="$L('密码')" prop="password">
-                    <Input :maxlength="128" v-model="formData.password" type="password"/>
-                </FormItem>
-                <FormItem>
-                    <Button @click="checkEmailSend">{{ $L('邮件发送测试') }}</Button>
-                </FormItem>
+                <div class="form-box">
+                    <FormItem :label="$L('SMTP服务器')" prop="smtp_server">
+                        <Input v-model="formData.smtp_server"/>
+                    </FormItem>
+                    <FormItem :label="$L('端口')" prop="port">
+                        <Input :maxlength="20" v-model="formData.port"/>
+                    </FormItem>
+                    <FormItem :label="$L('帐号')" prop="account">
+                        <Input :maxlength="128" v-model="formData.account"/>
+                    </FormItem>
+                    <FormItem :label="$L('密码')" prop="password">
+                        <Input :maxlength="128" v-model="formData.password" type="password"/>
+                    </FormItem>
+                    <FormItem>
+                        <Button @click="checkEmailSend">{{ $L('邮件发送测试') }}</Button>
+                    </FormItem>
+                </div>
             </div>
 
-            <div class="email-setting-placeholder"></div>
+            <div class="block-setting-placeholder"></div>
 
-            <div class="email-setting-box">
+            <div class="block-setting-box">
                 <h3>{{ $L('邮件通知设置') }}</h3>
-                <FormItem :label="$L('开启注册验证')" prop="reg_verify">
-                    <RadioGroup v-model="formData.reg_verify">
-                        <Radio label="open">{{ $L('开启') }}</Radio>
-                        <Radio label="close">{{ $L('关闭') }}</Radio>
-                    </RadioGroup>
-                    <div v-if="formData.reg_verify == 'open'" class="form-tip">{{$L('开启后账号需验证通过才可登录')}}</div>
-                </FormItem>
-                <FormItem :label="$L('开启通知')" prop="notice">
-                    <RadioGroup v-model="formData.notice">
-                        <Radio label="open">{{ $L('开启') }}</Radio>
-                        <Radio label="close">{{ $L('关闭') }}</Radio>
-                    </RadioGroup>
-                </FormItem>
-                <template v-if="formData.notice == 'open'">
-                    <FormItem :label="$L('任务提醒:')" prop="task_remind_hours">
-                        <label>{{ $L('到期前') }}</label>
-                        <InputNumber v-model="formData.task_remind_hours" :min="0.5" :step="0.5" @on-change="hoursChange"/>
-                        <label>{{ $L('小时') }}</label>
+                <div class="form-box">
+                    <FormItem :label="$L('开启注册验证')" prop="reg_verify">
+                        <RadioGroup v-model="formData.reg_verify">
+                            <Radio label="open">{{ $L('开启') }}</Radio>
+                            <Radio label="close">{{ $L('关闭') }}</Radio>
+                        </RadioGroup>
+                        <div v-if="formData.reg_verify == 'open'" class="form-tip">
+                            {{$L('开启后：')}}<br/>
+                            ① {{$L('帐号需验证通过才可登录')}}<br/>
+                            ② {{$L('修改邮箱和删除帐号需要邮箱验证码')}}
+                        </div>
                     </FormItem>
-                    <FormItem :label="$L('第二次任务提醒:')" prop="task_remind_hours2">
-                        <label>{{ $L('到期后') }}</label>
-                        <InputNumber v-model="formData.task_remind_hours2" :min="0.5" :step="0.5" @on-change="hours2Change"/>
-                        <label>{{ $L('小时') }}</label>
+                    <FormItem :label="$L('消息提醒')" prop="notice_msg">
+                        <RadioGroup v-model="formData.notice_msg">
+                            <Radio label="open">{{ $L('开启') }}</Radio>
+                            <Radio label="close">{{ $L('关闭') }}</Radio>
+                        </RadioGroup>
+                        <Form v-if="formData.notice_msg == 'open'" @submit.native.prevent>
+                            <FormItem :label="$L('未读个人消息')" prop="msg_unread_user_minute">
+                                <div class="input-number-box">
+                                    <InputNumber v-model="formData.msg_unread_user_minute" :min="0" :step="1"/>
+                                    <label>{{ $L('分钟') }}(m)</label>
+                                </div>
+                            </FormItem>
+                            <FormItem :label="$L('未读群聊消息')" prop="msg_unread_group_minute">
+                                <div class="input-number-box">
+                                    <InputNumber v-model="formData.msg_unread_group_minute" :min="0" :step="1"/>
+                                    <label>{{ $L('分钟') }}(m)</label>
+                                </div>
+                            </FormItem>
+                            <div class="form-tip">{{$L('填写-1则不通知，误差±10分钟')}}</div>
+                        </Form>
                     </FormItem>
-                </template>
+                </div>
+            </div>
+
+            <div class="block-setting-placeholder"></div>
+
+            <div class="block-setting-box">
+                <h3>{{ $L('忽略邮箱地址') }}</h3>
+                <div class="form-box">
+                    <FormItem :label="$L('忽略邮箱')" prop="ignore_addr">
+                        <Input v-model="formData.ignore_addr" type="textarea" :autosize="{ minRows: 3, maxRows: 50 }" />
+                        <div class="form-tip">{{$L('不会向忽略的邮箱地址发送邮件，可使用换行分割多个地址。')}}</div>
+                    </FormItem>
+                </div>
             </div>
         </Form>
         <div class="setting-footer">
@@ -70,9 +93,10 @@ export default {
                 account: '',
                 password: '',
                 reg_verify: 'colse',
-                notice: 'open',
-                task_remind_hours: 0,
-                task_remind_hours2: 0,
+                notice_msg: 'open',
+                msg_unread_user_minute: -1,
+                msg_unread_group_minute: -1,
+                ignore_addr: '',
             },
             ruleData: {},
         }
@@ -104,63 +128,40 @@ export default {
                 if (save) {
                     $A.messageSuccess('修改成功');
                 }
-                this.loadIng--;
                 this.formData = data;
                 this.formDatum_bak = $A.cloneJSON(this.formData);
             }).catch(({msg}) => {
                 if (save) {
                     $A.modalError(msg);
                 }
+            }).finally(_ => {
                 this.loadIng--;
             });
-        },
-
-        hoursChange(e) {
-            let newNum = e * 10;
-            if (newNum % 5 !== 0) {
-                setTimeout(() => {
-                    this.formData.task_remind_hours = 1;
-                })
-                $A.messageError('任务提醒只能是0.5的倍数');
-            }
-        },
-
-        hours2Change(e) {
-            let newNum = e * 10;
-            if (newNum % 5 !== 0) {
-                setTimeout(() => {
-                    this.formData.task_remind_hours2 = 1;
-                })
-                $A.messageError('第二次任务提醒只能是0.5的倍数');
-            }
         },
 
         checkEmailSend() {
             $A.modalInput({
                 title: "测试邮件",
                 placeholder: "请输入收件人地址",
-                onOk: (value, cb) => {
+                onOk: (value) => {
                     if (!value) {
-                        cb()
-                        return
+                        return '请输入收件人地址'
                     }
                     if (!$A.isEmail(value)) {
-                        $A.modalError("请输入正确的收件人地址", 301)
-                        cb()
-                        return
+                        return '请输入正确的收件人地址'
                     }
-                    this.$store.dispatch("call", {
-                        url: 'system/email/check',
-                        data: Object.assign(this.formData, {
-                            to: value
-                        }),
-                    }).then(({msg}) => {
-                        $A.messageSuccess(msg)
-                        cb()
-                    }).catch(({msg}) => {
-                        $A.modalError(msg, 301)
-                        cb()
-                    });
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("call", {
+                            url: 'system/email/check',
+                            data: Object.assign(this.formData, {
+                                to: value
+                            }),
+                        }).then(({msg}) => {
+                            resolve(msg)
+                        }).catch(({msg}) => {
+                            reject(msg)
+                        });
+                    })
                 }
             });
         }

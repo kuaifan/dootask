@@ -17,7 +17,7 @@
                 align-items: center;
                 margin-right: 36px;
                 > h1 {
-                    color: #333333;
+                    color: $primary-title-color;
                     font-size: 28px;
                     font-weight: 600;
                 }
@@ -209,6 +209,36 @@
         }
         .calendar-box {
             padding: 0 24px 5px;
+            user-select: none;
+            .calendar-wrapper {
+                .tui-full-calendar-popup {
+                    font-weight: normal;
+                }
+                .tui-full-calendar-section-button {
+                    > button {
+                        .tui-full-calendar-icon {
+                            width: 14px;
+                            height: 14px;
+                            background-size: 14px;
+                        }
+                        .tui-full-calendar-content {
+                            font-size: 14px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 640px) {
+    .page-calendar {
+        .calendar-box {
+            .calendar-wrapper {
+                .tui-full-calendar-popup-arrow {
+                    display: none;
+                }
+            }
         }
     }
 }

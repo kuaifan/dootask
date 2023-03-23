@@ -22,8 +22,14 @@ export default {
             detailData: {},
         };
     },
+    computed: {
+        reportDetailId() {
+            const {reportDetailId} = this.$route.params;
+            return parseInt(/^\d+$/.test(reportDetailId) ? reportDetailId : 0);
+        },
+    },
     watch: {
-        '$route': {
+        reportDetailId: {
             handler() {
                 this.getDetail();
             },
@@ -32,10 +38,13 @@ export default {
     },
     methods: {
         getDetail() {
+            if (this.reportDetailId <= 0) {
+                return;
+            }
             this.$store.dispatch("call", {
                 url: 'report/detail',
                 data: {
-                    id: $A.runNum(this.$route.params.id),
+                    id: this.reportDetailId,
                 },
             }).then(({data}) => {
                 this.detailData = data;

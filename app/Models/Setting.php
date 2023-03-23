@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Module\Base;
+
 /**
  * App\Models\Setting
  *
@@ -24,5 +26,40 @@ namespace App\Models;
  */
 class Setting extends AbstractModel
 {
-
+    /**
+     * 验证邮箱地址（过滤忽略地址）
+     * @param $array
+     * @param \Closure $resultClosure
+     * @param \Closure|null $emptyClosure
+     * @return array|mixed
+     */
+    public static function validateAddr($array, $resultClosure, $emptyClosure = null)
+    {
+        if (!is_array($array)) {
+            $array = [$array];
+        }
+        $ignoreAddr = Base::settingFind('emailSetting', 'ignore_addr');
+        $ignoreAddr = explode("\n", $ignoreAddr);
+        $ignoreArray = ['admin@dootask.com', 'test@dootask.com'];
+        foreach ($ignoreAddr as $item) {
+            if (Base::isEmail($item)) {
+                $ignoreArray[] = trim($item);
+            }
+        }
+        if ($ignoreArray) {
+            $array = array_diff($array, $ignoreArray);
+        }
+        if ($array) {
+            if ($resultClosure instanceof \Closure) {
+                foreach ($array as $value) {
+                    $resultClosure($value);
+                }
+            }
+        } else {
+            if ($emptyClosure instanceof \Closure) {
+                $emptyClosure();
+            }
+        }
+        return $array;
+    }
 }

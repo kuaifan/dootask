@@ -48,8 +48,7 @@ body.dark-mode-reverse {
         }
     }
 
-    .drawer-overlay {
-        background: rgba(230, 230, 230, 0.6);
+    .common-drawer-overlay {
         .overlay-body {
             .overlay-close {
                 > a {
@@ -85,20 +84,13 @@ body.dark-mode-reverse {
         }
     }
 
-    .project-list {
-        .project-head {
-            .project-titbox {
-                .project-title {
-                    .top-text {
-                        color: #000000;
-                    }
-                }
-                .project-icons {
-                    > li {
-                        &.project-icon {
-                            &.active {
-                                color: #000000;
-                            }
+    .project-panel {
+        .project-titbox {
+            .project-icons {
+                > li {
+                    &.project-icon {
+                        &.active {
+                            color: #000000;
                         }
                     }
                 }
@@ -150,38 +142,101 @@ body.dark-mode-reverse {
 
     .dialog-wrapper {
         .dialog-nav {
-            .dialog-avatar {
-                .icon-avatar {
-                    color: #1c1917;
-                }
-            }
-            .dialog-title {
-                .main-title {
-                    > h2 {
-                        color: #555;
+            .nav-wrapper {
+                .dialog-block {
+                    .dialog-avatar {
+                        .icon-avatar {
+                            color: #1c1917;
+                        }
+                    }
+                    .dialog-title {
+                        .main-title {
+                            > h2 {
+                                color: #555;
+                            }
+                        }
                     }
                 }
             }
         }
         .dialog-scroller {
-            .dialog-list {
-                > ul {
-                    > li {
-                        .dialog-view {
+            .dialog-item {
+                .dialog-view {
+                    .dialog-head {
+                        background-color: #e1e1e1;
+                        .dialog-reply {
+                            .reply-desc {
+                                color: #ffffff;
+                            }
+                        }
+                        .dialog-content {
+                            .content-text,
+                            .content-record,
+                            .content-meeting {
+                                color: #ffffff;
+                            }
+                        }
+                        .dialog-emoji {
+                            > li {
+                                background-color: rgba(#f3f3f3, 0.5);
+                                &.hasme {
+                                    background-color: #f3f3f3;
+                                }
+                            }
+                        }
+                    }
+                }
+                &.self {
+                    .dialog-view {
+                        .dialog-head {
+                            background-color: $primary-color;
                             .dialog-content {
-                                background-color: #e1e1e1;
                                 .content-text {
-                                    color: #ffffff;
+                                    > pre {
+                                        a {
+                                            color: #0027a1;
+                                        }
+                                        .mention {
+                                            color: #000000;
+                                            &.file,
+                                            &[data-denotation-char="~"] {
+                                                color: #0027a1 !important;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            .dialog-emoji {
+                                > li {
+                                    background-color: rgba(#b2ff93, 0.5);
+                                    &.hasme {
+                                        background-color: #b2ff93;
+                                    }
+                                    .emoji-users {
+                                        &:before {
+                                            background-color: rgba(#000000, 0.7);
+                                        }
+                                        > ul {
+                                            > li {
+                                                color: #000000;
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
-                        &.self {
-                            .dialog-view {
-                                .dialog-content {
-                                    background-color: #8bcf70;
-                                }
-                            }
-                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .dialog-group-info {
+        .group-info-user {
+            > ul {
+                > li {
+                    .user-tag {
+                        color: #1c1917;
                     }
                 }
             }
@@ -213,8 +268,15 @@ body.dark-mode-reverse {
         &.flow:before {
             background-image: url("../images/file/dark/flow.svg");
         }
-        &.folder:before {
-            background-image: url("../images/file/dark/folder.svg");
+        &.folder {
+            &:before {
+                background-image: url("../images/file/dark/folder.svg");
+            }
+            &.share {
+                &:before {
+                    background-image: url("../images/file/dark/folder-share.svg");
+                }
+            }
         }
         &.media:before {
             background-image: url("../images/file/dark/media.svg");
@@ -337,22 +399,22 @@ body.dark-mode-reverse {
             .page-header {
                 .header-nav {
                     .header-nav-box {
-                        .header-right-one {
-                            .header-right-one-dropdown {
+                        .header-right-github,
+                        .header-right-uplog {
+                            color: #000000;
+                        }
+                        .header-right-1 {
+                            .header-right-1-dropdown {
                                 color: #000000;
                             }
                         }
-                        .header-right-two {
-                            color: #000000;
-                        }
-                        .header-right-four {
-                            .ivu-dropdown{
-                                .ivu-dropdown-rel{
-                                    .header-right-one-dropdown {
-                                        color: #000000;
-                                    }
-                                }
+                        .header-right-2 {
+                            .header-right-2-dropdown {
+                                color: #000000;
                             }
+                        }
+                        .header-right-3 {
+                            color: #000000;
                         }
                     }
                 }
@@ -364,6 +426,33 @@ body.dark-mode-reverse {
             }
             .page-header-bottom{
                 background-color: #efefef;
+            }
+        }
+    }
+
+    .chat-input-box {
+        .chat-input-wrapper {
+            .ql-container {
+                .ql-editor {
+                    color: #ccc;
+                    &.ql-blank {
+                        &::before {
+                            color: #333;
+                        }
+                    }
+                    .mention {
+                        color: #333;
+                    }
+                }
+            }
+            .chat-toolbar {
+                > li {
+                    &.chat-send {
+                        .taskfont {
+                            color: #000000;
+                        }
+                    }
+                }
             }
         }
     }

@@ -1,44 +1,40 @@
 export default {
     /**
-     * 当前打开的项目
+     * 是否加载中
      * @param state
-     * @returns {{}|{readonly id?: *}}
+     * @returns {function(*)}
      */
-    projectData(state) {
-        let projectId = state.projectId;
-        if (projectId == 0) {
-            projectId = $A.runNum(window.__projectId);
+    isLoad(state) {
+        return function (key) {
+            const load = state.loads.find(item => item.key === key);
+            return load && load.num > 0
         }
-        if (projectId > 0) {
-            window.__projectId = projectId;
-            const project = state.cacheProjects.find(({id}) => id == projectId);
-            if (project) {
-                return project;
-            }
-        }
-        return {};
     },
 
     /**
-     * 当前打开的项目面板参数
+     * 当前打开的项目
      * @param state
-     * @returns {(function(*): (boolean|*))|*}
+     * @returns {{cacheParameter: {}}}
      */
-    projectParameter(state) {
-        return function (key) {
-            if (!state.projectId) {
-                return false;
+    projectData(state) {
+        if (state.projectId > 0) {
+            let data = state.cacheProjects.find(({id}) => id == state.projectId);
+            if (data) {
+                let cacheParameter = state.cacheProjectParameter.find(({project_id}) => project_id == state.projectId);
+                if (!cacheParameter) {
+                    cacheParameter = $A.projectParameterTemplate(state.projectId)
+                    state.cacheProjectParameter.push(cacheParameter);
+                }
+                if (cacheParameter.menuType === undefined) {
+                    cacheParameter.menuType = 'column'
+                }
+                data.cacheParameter = cacheParameter;
+                return data;
             }
-            let cache = state.cacheProjectParameter.find(({project_id}) => project_id == state.projectId);
-            if (!cache) {
-                cache = $A.projectParameterTemplate(state.projectId)
-                state.cacheProjectParameter.push(cache);
-            }
-            if (key === 'menuType' && typeof cache[key] === "undefined") {
-                return 'column'
-            }
-            return cache[key];
         }
+        return {
+            cacheParameter: {}
+        };
     },
 
     /**
@@ -131,6 +127,56 @@ export default {
             return task.owner;
         }
         let array = state.cacheTasks.filter(task => filterTask(task));
+        let tmpCount = 0;
+        if (state.taskCompleteTemps.length > 0) {
+            let tmps = state.cacheTasks.filter(task => state.taskCompleteTemps.includes(task.id) && filterTask(task, false));
+            if (tmps.length > 0) {
+                tmpCount = tmps.length
+                array = $A.cloneJSON(array)
+                array.push(...tmps);
+            }
+        }
+        const todayTasks = array.filter(task => {
+            const end = $A.Date(task.end_at);
+            return todayStart <= end && end <= todayEnd;
+        })
+        const overdueTasks = array.filter(task => {
+            return task.end_at && $A.Date(task.end_at) <= todayNow;
+        })
+        const result = {
+            today: todayTasks,
+            today_count: todayTasks.length,
+
+            overdue: overdueTasks,
+            overdue_count: overdueTasks.length,
+
+            all: array,
+            all_count: array.length,
+        };
+        if (tmpCount > 0) {
+            result.today_count -= todayTasks.filter(task => state.taskCompleteTemps.includes(task.id)).length
+            result.overdue_count -= overdueTasks.filter(task => state.taskCompleteTemps.includes(task.id)).length
+            result.all_count -= tmpCount
+        }
+        return result
+    },
+
+    /**
+     * 协助任务
+     * @param state
+     * @returns {*}
+     */
+    assistTask(state) {
+        const filterTask = (task, chackCompleted = true) => {
+            if (task.archived_at) {
+                return false;
+            }
+            if (task.complete_at && chackCompleted === true) {
+                return false;
+            }
+            return task.assist && !task.owner;
+        }
+        let array = state.cacheTasks.filter(task => filterTask(task));
         if (state.taskCompleteTemps.length > 0) {
             let tmps = state.cacheTasks.filter(task => state.taskCompleteTemps.includes(task.id) && filterTask(task, false));
             if (tmps.length > 0) {
@@ -138,19 +184,6 @@ export default {
                 array.push(...tmps);
             }
         }
-        const todayTasks = array.filter(task => {
-            const start = $A.Date(task.start_at),
-                end = $A.Date(task.end_at);
-            return (start <= todayStart && todayStart <= end) || (start <= todayEnd && todayEnd <= end) || (start > todayStart && todayEnd > end);
-        })
-        const overdueTasks = array.filter(task => {
-            return task.end_at && $A.Date(task.end_at) <= todayNow;
-        })
-
-        return {
-            today: todayTasks,
-            overdue: overdueTasks,
-            all: array
-        }
+        return array
     },
 }

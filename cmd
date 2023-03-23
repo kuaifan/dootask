@@ -41,12 +41,28 @@ rand_string() {
     fi
 }
 
-supervisorctl_restart() {
-    local RES=`run_exec php "supervisorctl update $1"`
+restart_php() {
+    local RES=`run_exec php "supervisorctl update php"`
     if [ -z "$RES" ]; then
-        run_exec php "supervisorctl restart $1"
+        RES=`run_exec php "supervisorctl restart php"`
+    fi
+    local IN=`echo $RES | grep "ERROR"`
+    if [[ "$IN" != "" ]]; then
+        $COMPOSE stop php
+        $COMPOSE start php
     else
         echo -e "$RES"
+    fi
+}
+
+switch_debug() {
+    local debug="false"
+    if [[ "$1" == "true" ]] || [[ "$1" == "dev" ]] || [[ "$1" == "open" ]]; then
+        debug="true"
+    fi
+    if [[ "$(env_get APP_DEBUG)" != "$debug" ]]; then
+        env_set APP_DEBUG "$debug"
+        restart_php
     fi
 }
 
@@ -90,15 +106,17 @@ run_compile() {
     if [ ! -d "./node_modules" ]; then
         npm install
     fi
-    run_exec php "php bin/run --mode=$type"
-    supervisorctl_restart php
+    if [ "$type" = "dev" ]; then
+        echo "<script>window.location.href=window.location.href.replace(/:\d+/, ':' + $(env_get APP_PORT))</script>" > ./index.html
+        env_set APP_DEV_PORT $(rand 20001 30000)
+    fi
+    switch_debug "$type"
     #
     if [ "$type" = "prod" ]; then
         rm -rf "./public/js/build"
-        npx mix --production
-        echo "$(rand_string 16)" > ./public/js/hash
+        npx vite build -- fromcmd
     else
-        npx mix watch --hot
+        npx vite -- fromcmd
     fi
 }
 
@@ -117,14 +135,16 @@ run_electron() {
     if [ -d "./electron/dist" ]; then
         rm -rf "./electron/dist"
     fi
-    if [ -d "./electron/public" ] && [ "$argv" != "--nobuild" ]; then
+    if [ -d "./electron/public" ]; then
         rm -rf "./electron/public"
     fi
-    mkdir -p ./electron/public
-    cp ./electron/index.html ./electron/public/index.html
     #
-    if [ "$argv" != "dev" ] && [ "$argv" != "--nobuild" ]; then
-        npx mix --production -- --env --electron
+    if [ "$argv" == "dev" ]; then
+        switch_debug "$argv"
+    else
+        mkdir -p ./electron/public
+        cp ./electron/index.html ./electron/public/index.html
+        npx vite build -- fromcmd electronBuild
     fi
     node ./electron/build.js $argv
 }
@@ -239,15 +259,6 @@ arg_get() {
     echo $value
 }
 
-is_arm() {
-    local get_arch=`arch`
-    if [[ $get_arch =~ "aarch" ]] || [[ $get_arch =~ "arm" ]]; then
-        echo "yes"
-    else
-        echo "no"
-    fi
-}
-
 ####################################################################################
 ####################################################################################
 ####################################################################################
@@ -260,11 +271,6 @@ fi
 if [ $# -gt 0 ]; then
     if [[ "$1" == "init" ]] || [[ "$1" == "install" ]]; then
         shift 1
-        # 判断架构
-        if [[ "$(is_arm)" == "yes" ]] && [[ -z "$(arg_get force)" ]]; then
-            echo -e "${Error} ${RedBG}暂不支持arm架构，强制安装请使用：./cmd install --force${Font}"
-            exit 1
-        fi
         # 初始化文件
         if [[ -n "$(arg_get relock)" ]]; then
             rm -rf node_modules
@@ -291,9 +297,9 @@ if [ $# -gt 0 ]; then
             exit 1
         fi
         [[ -z "$(env_get APP_KEY)" ]] && run_exec php "php artisan key:generate"
-        run_exec php "php bin/run --mode=prod"
+        switch_debug "false"
         # 检查数据库
-        remaining=10
+        remaining=20
         while [ ! -f "${cur_path}/docker/mysql/data/$(env_get DB_DATABASE)/db.opt" ]; do
             ((remaining=$remaining-1))
             if [ $remaining -lt 0 ]; then
@@ -311,24 +317,26 @@ if [ $# -gt 0 ]; then
         # 设置初始化密码
         res=`run_exec mariadb "sh /etc/mysql/repassword.sh"`
         $COMPOSE up -d
-        supervisorctl_restart php
+        restart_php
         echo -e "${OK} ${GreenBG} 安装完成 ${Font}"
         echo -e "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
         echo -e "$res"
     elif [[ "$1" == "update" ]]; then
         shift 1
         run_mysql backup
-        git fetch --all
-        git reset --hard origin/$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
-        git pull
-        run_exec php "composer update"
+        if [[ -z "$(arg_get local)" ]]; then
+            git fetch --all
+            git reset --hard origin/$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
+            git pull
+            run_exec php "composer update"
+        fi
         run_exec php "php artisan migrate"
-        supervisorctl_restart php
+        restart_php
         $COMPOSE up -d
     elif [[ "$1" == "uninstall" ]]; then
         shift 1
-        read -rp "确定要卸载（含：删除容器、数据库、日志）吗？(y/n): " uninstall
-        [[ -z ${uninstall} ]] && uninstall="N"
+        read -rp "确定要卸载（含：删除容器、数据库、日志）吗？(Y/n): " uninstall
+        [[ -z ${uninstall} ]] && uninstall="Y"
         case $uninstall in
         [yY][eE][sS] | [yY])
             echo -e "${RedBG} 开始卸载... ${Font}"
@@ -339,6 +347,7 @@ if [ $# -gt 0 ]; then
             ;;
         esac
         $COMPOSE down
+        env_set APP_DEBUG "false"
         rm -rf "./docker/mysql/data"
         rm -rf "./docker/log/supervisor"
         find "./storage/logs" -name "*.log" | xargs rm -rf
@@ -354,15 +363,30 @@ if [ $# -gt 0 ]; then
         $COMPOSE up -d
         echo -e "${OK} ${GreenBG} 修改成功 ${Font}"
         echo -e "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
+    elif [[ "$1" == "url" ]]; then
+        shift 1
+        env_set APP_URL "$1"
+        restart_php
+        echo -e "${OK} ${GreenBG} 修改成功 ${Font}"
+    elif [[ "$1" == "env" ]]; then
+        shift 1
+        if [ -n "$1" ]; then
+            env_set $1 "$2"
+        fi
+        restart_php
+        echo -e "${OK} ${GreenBG} 修改成功 ${Font}"
     elif [[ "$1" == "repassword" ]]; then
         shift 1
         run_exec mariadb "sh /etc/mysql/repassword.sh \"$@\""
-    elif [[ "$1" == "dev" ]] || [[ "$1" == "development" ]]; then
+    elif [[ "$1" == "serve" ]] || [[ "$1" == "dev" ]] || [[ "$1" == "development" ]]; then
         shift 1
         run_compile dev
-    elif [[ "$1" == "prod" ]] || [[ "$1" == "production" ]]; then
+    elif [[ "$1" == "build" ]] || [[ "$1" == "prod" ]] || [[ "$1" == "production" ]]; then
         shift 1
         run_compile prod
+    elif [[ "$1" == "appbuild" ]] || [[ "$1" == "buildapp" ]]; then
+        shift 1
+        run_electron app $@
     elif [[ "$1" == "electron" ]]; then
         shift 1
         run_electron $@
@@ -372,12 +396,8 @@ if [ $# -gt 0 ]; then
         docker run -it --rm -v ${cur_path}:/home/node/apidoc kuaifan/apidoc -i app/Http/Controllers/Api -o public/docs
     elif [[ "$1" == "debug" ]]; then
         shift 1
-        if [[ "$@" == "close" ]]; then
-            env_set APP_DEBUG "false"
-        else
-            env_set APP_DEBUG "true"
-        fi
-        supervisorctl_restart php
+        switch_debug "$@"
+        echo "success"
     elif [[ "$1" == "https" ]]; then
         shift 1
         if [[ "$@" == "auto" ]]; then
@@ -385,7 +405,7 @@ if [ $# -gt 0 ]; then
         else
             env_set APP_SCHEME "true"
         fi
-        supervisorctl_restart php
+        restart_php
     elif [[ "$1" == "artisan" ]]; then
         shift 1
         e="php artisan $@" && run_exec php "$e"
@@ -418,7 +438,11 @@ if [ $# -gt 0 ]; then
         e="supervisorctl $@" && run_exec php "$e"
     elif [[ "$1" == "models" ]]; then
         shift 1
+        run_exec php "php app/Models/clearHelper.php"
         run_exec php "php artisan ide-helper:models -W"
+    elif [[ "$1" == "translate" ]]; then
+        shift 1
+        run_exec php "cd /var/www/language && php translate.php"
     elif [[ "$1" == "test" ]]; then
         shift 1
         e="./vendor/bin/phpunit $@" && run_exec php "$e"

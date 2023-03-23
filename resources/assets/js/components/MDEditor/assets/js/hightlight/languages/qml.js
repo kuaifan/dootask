@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var KEYWORDS = {
       keyword:
         'in of on if for while finally var new function do return void else break catch ' +

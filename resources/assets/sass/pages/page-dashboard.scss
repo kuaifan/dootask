@@ -24,16 +24,26 @@
         }
         .dashboard-hello {
             padding: 6% 12px 0;
-            color: #333333;
+            color: $primary-title-color;
             font-size: 24px;
             font-weight: 600;
             word-wrap: break-word;
         }
         .dashboard-desc {
+            display: flex;
+            align-items: center;
             margin-top: 18px;
             padding: 0 12px;
             color: #888888;
             font-size: 13px;
+            .dashboard-load {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 14px;
+                height: 14px;
+                margin: 0 0 0 4px;
+            }
         }
         .dashboard-block {
             margin-top: 18px;
@@ -95,7 +105,6 @@
             width: 100%;
             margin-top: 48px;
             padding-bottom: 6%;
-            overflow: auto;
             .dashboard-ref {
                 height: 0;
             }
@@ -113,7 +122,7 @@
             }
             .dashboard-ul {
                 margin: 0 auto 18px;
-                padding: 0 12px;
+                padding: 6px 12px 0;
                 overflow: hidden;
                 > li {
                     position: relative;
@@ -124,9 +133,8 @@
                     margin-bottom: 8px;
                     border-radius: 6px;
                     cursor: pointer;
-                    transition: transform 0.3s ease-out 0s, box-shadow 0.3s ease-out 0s;
+                    transition: box-shadow 0.3s ease-out 0s;
                     &:hover {
-                        transform: translateX(-2px);
                         box-shadow: 0 0 6px #dfdfdf;
                     }
                     &.complete {
@@ -146,7 +154,7 @@
                         height: 12px;
                         width: 2px;
                     }
-                    .el-dropdown {
+                    .item-select {
                         flex-shrink: 0;
                         width: 22px;
                         height: 22px;
@@ -170,8 +178,8 @@
                             line-height: 16px;
                             padding: 0 2px;
                             border-radius: 3px;
-                            color: #8bcf70;
-                            border: 1px solid #8bcf70;
+                            color: $primary-color;
+                            border: 1px solid $primary-color;
                             display: inline-block;
                             vertical-align: top;
                             margin-top: 3px;
@@ -183,18 +191,18 @@
                                 color: $flow-status-start-color;
                             }
                             &.progress {
-                                background-color: rgba($flow-status-progress-color, 0.1);;
-                                border-color: rgba($flow-status-progress-color, 0.1);;
+                                background-color: rgba($flow-status-progress-color, 0.1);
+                                border-color: rgba($flow-status-progress-color, 0.1);
                                 color: $flow-status-progress-color;
                             }
                             &.test {
-                                background-color: rgba($flow-status-test-color, 0.1);;
-                                border-color: rgba($flow-status-test-color, 0.1);;
+                                background-color: rgba($flow-status-test-color, 0.1);
+                                border-color: rgba($flow-status-test-color, 0.1);
                                 color: $flow-status-test-color;
                             }
                             &.end {
-                                background-color: rgba($flow-status-end-color, 0.1);;
-                                border-color: rgba($flow-status-end-color, 0.1);;
+                                background-color: rgba($flow-status-end-color, 0.1);
+                                border-color: rgba($flow-status-end-color, 0.1);
                                 color: $flow-status-end-color;
                             }
                         }
@@ -251,17 +259,33 @@
     }
 }
 
+// 加载状态（延时显示，立即隐藏）
+.dashboard-load-enter-active {
+    transition: opacity 0.3s ease;
+    transition-delay: 1s;
+}
+
+.dashboard-load-leave-active {
+    transition: opacity 0.2s ease;
+    transition-delay: 0s;
+}
+
+.dashboard-load-enter,
+.dashboard-load-leave-to {
+    opacity: 0;
+}
+
 @media (max-width: 768px) {
     .page-dashboard {
         .dashboard-wrapper {
             display: block;
-            max-height: 86%;
+            max-height: 96%;
             .dashboard-hello,
             .dashboard-desc ,
             .dashboard-block ,
             .dashboard-list .dashboard-title,
             .dashboard-list .dashboard-ul {
-                max-width: 86%;
+                max-width: 96%;
             }
             .dashboard-block {
                 display: block;
@@ -272,10 +296,11 @@
                 }
             }
             .dashboard-list {
-                overflow: visible !important;
                 padding-bottom: 2px;
+                overflow: visible;
                 .dashboard-ul {
                     margin-bottom: 36px;
+                    user-select: none;
                 }
             }
         }

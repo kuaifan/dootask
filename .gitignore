@@ -5,6 +5,7 @@
 /public/.well-known
 /public/.user.ini
 /storage/*.key
+/config/LICENSE
 /vendor
 /build
 /tmp
@@ -14,7 +15,6 @@
 .vscode
 .vagrant
 .phpunit.result.cache
-CHANGELOG.md
 Homestead.json
 Homestead.yaml
 npm-debug.log

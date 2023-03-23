@@ -12,13 +12,13 @@
                 <Radio label="daily" :disabled="id > 0 && reportData.type =='weekly'">{{ $L("日报") }}</Radio>
             </RadioGroup>
             <ButtonGroup v-if="id === 0" class="report-buttongroup">
-                <ETooltip :content="prevCycleText" placement="bottom">
+                <ETooltip :disabled="windowSmall || $isEEUiApp" :content="prevCycleText" placement="bottom">
                     <Button type="primary" @click="prevCycle">
                         <Icon type="ios-arrow-back" />
                     </Button>
                 </ETooltip>
                 <div class="report-buttongroup-vertical"></div>
-                <ETooltip :disabled="reportData.offset >= 0" :content="nextCycleText" placement="bottom">
+                <ETooltip :disabled="windowSmall || $isEEUiApp || reportData.offset >= 0" :content="nextCycleText" placement="bottom">
                     <Button type="primary" @click="nextCycle" :disabled="reportData.offset >= 0">
                         <Icon type="ios-arrow-forward" />
                     </Button>
@@ -36,7 +36,9 @@
                     :placeholder="$L('选择接收人')"
                     :transfer="false"/>
                 <a class="report-user-link" href="javascript:void(0);" @click="getLastSubmitter">
-                    <Icon type="ios-share-outline" />{{ $L("使用我上次的汇报对象") }}
+                    <Icon v-if="receiveLoad > 0" type="ios-loading" class="icon-loading"/>
+                    <Icon v-else type="ios-share-outline" />
+                    {{ $L("使用我上次的汇报对象") }}
                 </a>
             </div>
         </FormItem>
@@ -44,7 +46,7 @@
             <TEditor v-model="reportData.content" height="100%"/>
         </FormItem>
         <FormItem class="report-foot">
-            <Button type="primary" @click="handleSubmit" class="report-bottom">{{$L(id > 0 ? '修改' : '提交')}}</Button>
+            <Button type="primary" @click="handleSubmit" :loading="loadIng > 0" class="report-bottom">{{$L(id > 0 ? '修改' : '提交')}}</Button>
         </FormItem>
     </Form>
 </template>
@@ -66,7 +68,11 @@ export default {
     },
     data() {
         return {
+            loadIng: 0,
+            receiveLoad: 0,
+
             reportData: {
+                sign: "",
                 title: "",
                 content: "",
                 type: "weekly",
@@ -93,25 +99,17 @@ export default {
             immediate: true
         },
     },
-    computed: {
-        ...mapState(["userId"])
-    },
     mounted() {
         //
     },
     methods: {
         handleSubmit() {
-            if (this.reportData.receive.length === 0) {
-                $A.messageError(this.$L("请选择接收人"));
-                return false;
-            }
             if (this.id === 0 && this.reportData.id > 0) {
                 $A.modalConfirm({
                     title: '覆盖提交',
                     content: '你已提交过此日期的报告，是否覆盖提交？',
-                    loading: true,
                     onOk: () => {
-                        this.doSubmit(true);
+                        this.doSubmit();
                     }
                 });
             } else {
@@ -119,29 +117,31 @@ export default {
             }
         },
 
-        doSubmit(isModal = false) {
+        doSubmit() {
+            this.loadIng++;
             this.$store.dispatch("call", {
                 url: 'report/store',
                 data: this.reportData,
                 method: 'post',
             }).then(({data, msg}) => {
-                isModal && this.$Modal.remove();
                 // data 结果数据
                 this.reportData.offset = 0;
                 this.reportData.type = "weekly";
                 this.reportData.receive = [];
                 this.getTemplate();
                 // msg 结果描述
-                $A.messageSuccess(msg);
-                this.$emit("saveSuccess", data);
+                !this.$isSubElectron && $A.messageSuccess(msg);
+                this.$emit("saveSuccess", {data, msg});
             }).catch(({msg}) => {
-                isModal && this.$Modal.remove();
                 // msg 错误原因
                 $A.messageError(msg);
+            }).finally(_ => {
+                this.loadIng--;
             });
         },
 
         getTemplate() {
+            this.loadIng++;
             this.$store.dispatch("call", {
                 url: 'report/template',
                 data: {
@@ -156,17 +156,21 @@ export default {
                     if (this.id > 0) {
                         this.getDetail(data.id);
                     } else {
+                        this.reportData.sign = data.sign;
                         this.reportData.title = data.title;
                         this.reportData.content = data.content;
                     }
                 } else {
                     this.reportData.id = 0;
+                    this.reportData.sign = data.sign;
                     this.reportData.title = data.title;
                     this.reportData.content = data.content;
                 }
             }).catch(({msg}) => {
                 // msg 错误原因
                 $A.messageError(msg);
+            }).finally(_ => {
+                this.loadIng--;
             });
         },
 
@@ -219,12 +223,17 @@ export default {
 
         // 获取上一次接收人
         getLastSubmitter() {
+            setTimeout(_ => {
+                this.receiveLoad++;
+            }, 300)
             this.$store.dispatch("call", {
                 url: 'report/last_submitter',
             }).then(({data}) => {
                 this.reportData.receive = data;
             }).catch(({msg}) => {
                 $A.messageError(msg);
+            }).finally(_ => {
+                this.receiveLoad--;
             });
         },
 

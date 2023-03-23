@@ -43,7 +43,7 @@
                 :current="page"
                 :page-size="pageSize"
                 :disabled="loadIng > 0"
-                :simple="windowMax768"
+                :simple="windowSmall"
                 :page-size-opts="[10,20,30,50,100]"
                 show-elevator
                 show-sizer
@@ -66,32 +66,7 @@ export default {
             keys: {},
             keyIs: false,
 
-            columns: [],
-            list: [],
-
-            page: 1,
-            pageSize: 20,
-            total: 0,
-            noText: ''
-        }
-    },
-    mounted() {
-        this.getLists();
-    },
-    computed: {
-        ...mapState(['windowMax768'])
-    },
-    watch: {
-        keyIs(v) {
-            if (!v) {
-                this.keys = {}
-                this.setPage(1)
-            }
-        }
-    },
-    methods: {
-        initLanguage() {
-            this.columns = [
+            columns: [
                 {
                     title: 'ID',
                     key: 'id',
@@ -121,7 +96,7 @@ export default {
                     width: 168,
                 },
                 {
-                    title: this.$L('归档会员'),
+                    title: this.$L('归档人员'),
                     key: 'archived_userid',
                     minWidth: 80,
                     render: (h, {row}) => {
@@ -162,11 +137,13 @@ export default {
                                     confirm: true,
                                     transfer: true,
                                     placement: 'left',
+                                    okText: this.$L('确定'),
+                                    cancelText: this.$L('取消'),
                                 },
                                 style: {
                                     fontSize: '13px',
                                     cursor: 'pointer',
-                                    color: '#8bcf70',
+                                    color: '#84C56A',
                                 },
                                 on: {
                                     'on-ok': () => {
@@ -180,6 +157,8 @@ export default {
                                     confirm: true,
                                     transfer: true,
                                     placement: 'left',
+                                    okText: this.$L('确定'),
+                                    cancelText: this.$L('取消'),
                                 },
                                 style: {
                                     marginLeft: '8px',
@@ -201,9 +180,27 @@ export default {
                         }, vNode);
                     },
                 }
-            ]
-        },
+            ],
+            list: [],
 
+            page: 1,
+            pageSize: 20,
+            total: 0,
+            noText: ''
+        }
+    },
+    mounted() {
+        this.getLists();
+    },
+    watch: {
+        keyIs(v) {
+            if (!v) {
+                this.keys = {}
+                this.setPage(1)
+            }
+        }
+    },
+    methods: {
         onSearch() {
             this.page = 1;
             this.getLists();
@@ -221,14 +218,14 @@ export default {
                     pagesize: Math.max($A.runNum(this.pageSize), 10),
                 },
             }).then(({data}) => {
-                this.loadIng--;
                 this.page = data.current_page;
                 this.total = data.total;
                 this.list = data.data;
                 this.noText = '没有相关的数据';
             }).catch(() => {
-                this.loadIng--;
                 this.noText = '数据加载失败';
+            }).finally(_ => {
+                this.loadIng--;
             })
         },
 
@@ -253,13 +250,13 @@ export default {
                     type: 'recovery'
                 },
             }).then(() => {
-                this.loadIng--;
                 this.getLists();
                 this.$store.dispatch("getProjectOne", row.id).catch(() => {});
             }).catch(({msg}) => {
                 $A.modalError(msg);
-                this.loadIng--;
                 this.getLists();
+            }).finally(_ => {
+                this.loadIng--;
             })
         },
 
@@ -268,12 +265,12 @@ export default {
             this.loadIng++;
             this.$store.dispatch("removeProject", row.id).then(({msg}) => {
                 $A.messageSuccess(msg);
-                this.loadIng--;
                 this.getLists();
             }).catch(({msg}) => {
                 $A.modalError(msg);
-                this.loadIng--;
                 this.getLists();
+            }).finally(_ => {
+                this.loadIng--;
             });
         }
     }

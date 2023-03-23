@@ -106,9 +106,9 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'windowWidth', 'taskPriority']),
+        ...mapState(['taskPriority']),
 
-        ...mapGetters(['projectParameter']),
+        ...mapGetters(['projectData']),
 
         menuWidth() {
             return this.windowWidth < 1440 ? 180 : 260;
@@ -119,7 +119,7 @@ export default {
         },
 
         completedTask() {
-            return this.projectParameter('completedTask');
+            return this.projectData.cacheParameter.completedTask;
         }
     },
 
@@ -147,12 +147,21 @@ export default {
             this.projectColumn && this.projectColumn.some(this.checkAdd);
         },
 
+        flowTask(task) {
+            if ($A.leftExists(this.flowInfo.value, "user:") && !task.task_user.find(({userid, owner}) => userid === this.flowInfo.userid && owner)) {
+                return true;
+            } else if (this.flowInfo.value > 0 && task.flow_item_id !== this.flowInfo.value) {
+                return true;
+            }
+            return false;
+        },
+
         filtrLength(list) {
             return list.filter(taskData => {
                 if (taskData.complete_at && !this.completedTask) {
                     return false;
                 }
-                if (this.flowInfo.value > 0 && taskData.flow_item_id !== this.flowInfo.value) {
+                if (this.flowTask(taskData)) {
                     return false;
                 }
                 return true
@@ -174,7 +183,7 @@ export default {
                 if (taskData.complete_at && !this.completedTask) {
                     return false;
                 }
-                if (this.flowInfo.value > 0 && taskData.flow_item_id !== this.flowInfo.value) {
+                if (this.flowTask(taskData)) {
                     return false;
                 }
                 // 等级颜色
@@ -254,11 +263,6 @@ export default {
                 }
             });
             this.editData = [];
-        },
-
-        getRawTime(taskId) {
-            let task = this.lists.find(({id}) => id == taskId)
-            return task ? this.getTimeObj(task) : null;
         },
 
         getTimeObj(taskData) {

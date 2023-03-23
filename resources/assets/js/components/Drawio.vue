@@ -1,6 +1,6 @@
 <template>
     <div class="drawio-content">
-        <iframe ref="myFlow" class="drawio-iframe" :src="url"></iframe>
+        <IFrame ref="frame" class="drawio-iframe" :src="url" @on-message="onMessage"/>
         <div v-if="loadIng" class="drawio-loading"><Loading/></div>
     </div>
 </template>
@@ -36,9 +36,12 @@
 </style>
 <script>
 import {mapState} from "vuex";
+import IFrame from "../pages/manage/components/IFrame";
+import {languageType} from "../language";
 
 export default {
     name: "Drawio",
+    components: {IFrame},
     props: {
         value: {
             type: Object,
@@ -64,18 +67,17 @@ export default {
         }
     },
     created() {
-        let language = 'en';
-        switch (this.getLanguage()) {
-            case 'CN':
-            case 'TC':
-                language = 'zh'
+        let lang = languageType;
+        switch (languageType) {
+            case 'zh-CHT':
+                lang = 'zh-tw'
                 break;
         }
         let lightbox = this.readOnly ? 1 : 0;
         let chrome = this.readOnly ? 0 : 1;
         let theme = this.themeIsDark ? 'dark' : 'kennedy';
         let title = this.title ? encodeURIComponent(this.title) : '';
-        let query = `?title=${title}&chrome=${chrome}&lightbox=${lightbox}&ui=${theme}&lang=${language}&offline=1&pwa=0&embed=1&noLangIcon=1&noExitBtn=1&noSaveBtn=1&saveAndExit=0&spin=1&proto=json`;
+        let query = `?title=${title}&chrome=${chrome}&lightbox=${lightbox}&ui=${theme}&lang=${lang}&offline=1&pwa=0&embed=1&noLangIcon=1&noExitBtn=1&noSaveBtn=1&saveAndExit=0&spin=1&proto=json`;
         if (this.$Electron) {
             this.url = $A.originUrl(`drawio/webapp/index.html${query}`);
         } else {
@@ -109,20 +111,15 @@ export default {
         },
 
         updateContent() {
-            this.$refs.myFlow.contentWindow.postMessage(JSON.stringify({
+            this.$refs.frame.postMessage(JSON.stringify({
                 action: "load",
                 autosave: 1,
                 xml: this.value.xml,
-            }), "*");
+            }));
         },
 
-        handleMessage(event) {
-            const editWindow = this.$refs.myFlow.contentWindow;
-            if (event.source !== editWindow) {
-                return;
-            }
-            const payload = $A.jsonParse(event.data);
-            switch (payload.event) {
+        onMessage(data) {
+            switch (data.event) {
                 case "init":
                     this.loadIng = false;
                     this.updateContent();
@@ -130,15 +127,15 @@ export default {
 
                 case "load":
                     if (typeof this.value.xml === "undefined") {
-                        editWindow.postMessage(JSON.stringify({
+                        this.$refs.frame.postMessage(JSON.stringify({
                             action: "template"
-                        }), "*");
+                        }));
                     }
                     break;
 
                 case "autosave":
                     const content = {
-                        xml: payload.xml,
+                        xml: data.xml,
                     }
                     this.bakData = $A.jsonStringify(content);
                     this.$emit('input', content);

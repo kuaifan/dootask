@@ -2,8 +2,6 @@
 
 namespace App\Module;
 
-use Exception;
-
 @error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
 class Ihttp
@@ -88,7 +86,7 @@ class Ihttp
                 return Base::retError($error);
             } else {
                 if ($isGb2312) {
-                    try { $data = iconv('GB2312', 'UTF-8', $data); }catch (Exception $e) { }
+                    try { $data = iconv('GB2312', 'UTF-8', $data); }catch (\Throwable) { }
                 }
                 $response = self::ihttp_response_parse($data);
                 Base::addLog([
@@ -148,7 +146,7 @@ class Ihttp
                 $content .= fgets($fp, 512);
             fclose($fp);
             if ($isGb2312) {
-                try { $content = iconv('GB2312', 'UTF-8', $content); }catch (Exception $e) { }
+                try { $content = iconv('GB2312', 'UTF-8', $content); }catch (\Throwable) { }
             }
             $response = self::ihttp_response_parse($content, true);
             Base::addLog([

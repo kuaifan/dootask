@@ -1,42 +1,67 @@
-const stateData = {
-    // 是否桌面端
-    isDesktop: $A.isDesktop(),
+export default {
+    // 是否移动端（支持触摸）
+    supportTouch: "ontouchend" in document,
 
-    // 浏览器宽度
-    windowWidth: window.innerWidth,
+    // 浏览器尺寸信息
+    windowWidth: $A(window).width(),
+    windowHeight: $A(window).height(),
+    windowScrollY: 0,
 
-    // 浏览器宽度≤768返回true
-    windowMax768: window.innerWidth <= 768,
+    // 浏览器窗口类型
+    windowLarge: $A(window).width() > 768, // 大窗口
+    windowSmall: $A(window).width() <= 768, // 小窗口
 
-    // 数据缓存
-    cacheLoading: {},
+    // 窗口是否激活
+    windowActive: true,
 
-    // DrawerOverlay
-    cacheDrawerIndex: 0,
-    cacheDrawerOverlay: [],
+    // App通知权限
+    appNotificationPermission: true,
+
+    // 播放中的音频地址
+    audioPlaying: null,
+
+    // 路由记录
+    routeHistorys: [],
+    routeHistoryLast: {},
+
+    // 请求时间
+    callAt: [],
+
+    // 加载状态
+    loads: [],
+    loadDashboardTasks: false,
+    loadUserBasic: false,
+    loadProjects: 0,
+    loadDialogs: 0,
+    floatSpinnerTimer: [],
+    floatSpinnerLoad: 0,
+    touchBackInProgress: false,
 
     // User
     cacheUserActive: {},
     cacheUserWait: [],
-    cacheUserBasic: $A.getStorageArray("cacheUserBasic"),
+    cacheUserBasic: [],
 
     // Dialog
-    cacheDialogs: $A.getStorageArray("cacheDialogs"),
-    cacheUnreads: {},
+    cacheDialogs: [],
 
     // Project
-    cacheProjects: $A.getStorageArray("cacheProjects"),
-    cacheColumns: $A.getStorageArray("cacheColumns"),
-    cacheTasks: $A.getStorageArray("cacheTasks"),
-    cacheProjectParameter: $A.getStorageArray("cacheProjectParameter"),
-    cacheTaskBrowse: $A.getStorageArray("cacheTaskBrowse"),
+    cacheProjects: [],
+    cacheColumns: [],
+    cacheTasks: [],
+    cacheProjectParameter: [],
+    cacheTaskBrowse: [],
+
+    // Emoji
+    cacheEmojis: [],
 
     // ServerUrl
-    cacheServerUrl: $A.getStorageString("cacheServerUrl"),
+    cacheServerUrl: "",
 
     // Ajax
     ajaxWsReady: false,
     ajaxWsListener: [],
+    ajaxNetworkException: false,
 
     // Websocket
     ws: null,
@@ -47,22 +72,32 @@ const stateData = {
     wsOpenNum: 0,
     wsListener: {},
     wsReadTimeout: null,
-    wsReadWaitList: [],
+    wsReadWaitData: {},
 
     // 会员信息
-    userInfo: $A.getStorageJson("userInfo"),
+    userInfo: {},
     userId: 0,
     userToken: '',
     userIsAdmin: false,
     userOnline: {},
+    userAvatar: {},
 
     // 会话聊天
+    dialogId: 0,
+    dialogSearchMsgId: 0,
+    dialogIns: [],
     dialogMsgs: [],
-    dialogOpenId: 0,
+    dialogTodos: [],
+    dialogHistory: [],
+    dialogDraftTimer: {},
+    dialogMsgTransfer: {time: 0},
+
+    // 搜索关键词（主要用于移动端判断滑动返回）
+    messengerSearchKey: {dialog: '', contacts: ''},
 
     // 文件
-    files: [],
-    fileContent: {},
+    fileLists: [],
+    fileLinks: [],
 
     // 项目任务
     projectId: 0,
@@ -73,9 +108,10 @@ const stateData = {
     taskContents: [],
     taskFiles: [],
     taskLogs: [],
+    taskOperation: {},
 
     // 任务等待状态
-    taskLoading: [],
+    taskOneLoad: {},
 
     // 任务流程信息
     taskFlows: [],
@@ -113,7 +149,7 @@ const stateData = {
     ],
 
     // 主题皮肤
-    themeMode: $A.getStorageString("cacheThemeMode"),
+    themeMode: window.localStorage.getItem("__theme:mode__"),
     themeList: [
         {name: '跟随系统', value: 'auto'},
         {name: '明亮', value: 'light'},
@@ -127,33 +163,11 @@ const stateData = {
     // 预览图片
     previewImageIndex: 0,
     previewImageList: [],
+
+    // 工作报告未读数量
+    reportUnreadNumber: 0,
+
+    // 表单布局
+    formLabelPosition: $A(window).width() > 576 ? 'right' : 'top',
+    formLabelWidth: $A(window).width() > 576 ? 'auto' : '',
 };
-
-// 会员信息
-if (stateData.userInfo.userid) {
-    stateData.userId = stateData.userInfo.userid = $A.runNum(stateData.userInfo.userid);
-    stateData.userToken = stateData.userInfo.token;
-    stateData.userIsAdmin = $A.inArray("admin", stateData.userInfo.identity);
-}
-
-// ServerUrl
-if (stateData.cacheServerUrl) {
-    window.systemInfo.apiUrl = stateData.cacheServerUrl;
-}
-
-// 主题皮肤
-switch (stateData.themeMode) {
-    case 'dark':
-        $A.dark.enableDarkMode()
-        break;
-    case 'light':
-        $A.dark.disableDarkMode()
-        break;
-    default:
-        stateData.themeMode = "auto"
-        $A.dark.autoDarkMode()
-        break;
-}
-stateData.themeIsDark = $A.dark.isDarkEnabled();
-
-export default stateData

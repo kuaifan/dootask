@@ -25,7 +25,7 @@ class AddFilesPids extends Migration
             \App\Models\File::where('pid', '>', 0)->chunkById(100, function ($lists) {
                 /** @var \App\Models\File $item */
                 foreach ($lists as $item) {
-                    $item->saveBeforePids();
+                    $item->saveBeforePP();
                 }
             });
             \App\Models\File::whereShare(0)->chunkById(100, function ($lists) {

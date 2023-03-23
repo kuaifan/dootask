@@ -46,7 +46,7 @@
         </div>
         <Modal :title="$L('浏览图片空间')" v-model="browseVisible" class="img-upload-modal" width="710">
             <div class="browse-load" v-if="isLoading">{{$L('加载中...')}}</div>
-            <div class="browse-list" :class="httpType==='input'?'browse-list-disabled':''" ref="browselistbox">
+            <div class="browse-list" v-else :class="httpType==='input'?'browse-list-disabled':''" ref="browselistbox">
                 <div v-if="browseList.length <= 0">{{$L('无内容')}}</div>
                 <div v-else class="browse-item" v-for="item in browseList" @click="browseItem(item)">
                     <Icon v-if="item.active" class="browse-icon" type="ios-checkmark-circle"></Icon>
@@ -90,6 +90,8 @@
             },
             height: {
             },
+            whcut: {
+            },
             type: {
             },
             http: {
@@ -110,10 +112,6 @@
         data () {
             return {
                 actionUrl: $A.apiUrl('system/imgupload'),
-                params: {
-                    width: this.width,
-                    height: this.height
-                },
                 multiple: this.num > 1,
                 visible: false,
                 browseVisible: false,
@@ -166,20 +164,23 @@
             }
         },
         computed: {
-            ...mapState(['userToken']),
-
             uploadHeaders() {
                 return {
-                    fd: $A.getStorageString("userWsFd"),
+                    fd: $A.getSessionStorageString("userWsFd"),
                     token: this.userToken,
                 }
             },
 
             uploadParams() {
+                let params = {
+                    width: this.width,
+                    height: this.height,
+                    whcut: this.whcut,
+                };
                 if (Object.keys(this.otherParams).length > 0) {
-                    return Object.assign(this.params, this.otherParams);
+                    return Object.assign(params, this.otherParams);
                 } else {
-                    return this.params;
+                    return params;
                 }
             }
         },
@@ -216,8 +217,9 @@
             },
             handleView (item) {
                 //查看
-                this.visible = true;
-                this.imgVisible = item.url;
+                this.$store.dispatch("previewImage", item.url)
+                // this.visible = true;
+                // this.imgVisible = item.url;
             },
             handleRemove (item) {
                 //删除
@@ -277,10 +279,6 @@
                 if (!check) {
                     $A.noticeWarning(this.$L('最多只能上传 ' + this.maxNum + ' 张图片。'));
                 }
-                this.params = {
-                    width: this.width,
-                    height: this.height
-                };
                 return check;
             },
             handleClick() {
@@ -305,16 +303,16 @@
                     url: 'system/imgview',
                     data: {path: path ? path : ''},
                 }).then(({data}) => {
-                    this.isLoading = false;
                     let dirs = data['dirs'];
                     for (let i = 0; i < dirs.length; i++) {
                         this.browseList.push(dirs[i]);
                     }
                     this.browsePictureFor(data['files']);
                 }).catch(({msg}) => {
-                    this.isLoading = false;
                     this.browseVisible = false;
                     $A.noticeWarning(msg);
+                }).finally(_ => {
+                    this.isLoading = false;
                 });
             },
 

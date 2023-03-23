@@ -1,7 +1,11 @@
 <template>
     <div class="component-only-office">
-        <div :id="this.id" class="placeholder"></div>
-        <div v-if="loadIng > 0" class="office-loading"><Loading/></div>
+        <template v-if="$A.isDesktop()">
+            <Alert v-if="loadError" class="load-error" type="error" show-icon>{{$L('组件加载失败！')}}</Alert>
+            <div :id="id" class="placeholder"></div>
+        </template>
+        <IFrame v-else class="preview-iframe" :src="previewUrl" @on-load="onFrameLoad"/>
+        <div v-if="loading" class="office-loading"><Loading/></div>
     </div>
 </template>
 
@@ -15,11 +19,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
+
     .placeholder {
         flex: 1;
         width: 100%;
         height: 100%;
     }
+
     .office-loading {
         position: absolute;
         top: 0;
@@ -33,12 +39,36 @@
     }
 }
 </style>
+<style lang="scss">
+.component-only-office {
+    .load-error {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+
+        .ivu-alert-icon {
+            position: static;
+            margin-right: 8px;
+            margin-left: 4px;
+        }
+    }
+}
+</style>
 <script>
+// 只有桌面端才使用 OnlyOffice
 
 import {mapState} from "vuex";
+import IFrame from "../pages/manage/components/IFrame";
+import {languageType} from "../language";
 
 export default {
     name: "OnlyOffice",
+    components: {IFrame},
     props: {
         id: {
             type: String,
@@ -49,6 +79,10 @@ export default {
         code: {
             type: String,
             default: ''
+        },
+        historyId: {
+            type: Number,
+            default: 0
         },
         value: {
             type: [Object, Array],
@@ -65,14 +99,11 @@ export default {
 
     data() {
         return {
-            loadIng: 0,
+            loading: false,
+            loadError: false,
 
             docEditor: null,
         }
-    },
-
-    mounted() {
-        //
     },
 
     beforeDestroy() {
@@ -83,7 +114,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userToken', 'userInfo', 'themeIsDark']),
+        ...mapState(['userInfo', 'themeIsDark']),
 
         fileType() {
             return this.getType(this.value.type);
@@ -92,6 +123,26 @@ export default {
         fileName() {
             return this.value.name;
         },
+
+        fileUrl() {
+            let codeId = this.code || this.value.id;
+            let fileUrl
+            if ($A.leftExists(codeId, "msgFile_")) {
+                fileUrl = `dialog/msg/download/?msg_id=${$A.leftDelete(codeId, "msgFile_")}&token=${this.userToken}`;
+            } else if ($A.leftExists(codeId, "taskFile_")) {
+                fileUrl = `project/task/filedown/?file_id=${$A.leftDelete(codeId, "taskFile_")}&token=${this.userToken}`;
+            } else {
+                fileUrl = `file/content/?id=${codeId}&token=${this.userToken}`;
+                if (this.historyId > 0) {
+                    fileUrl += `&history_id=${this.historyId}`
+                }
+            }
+            return fileUrl;
+        },
+
+        previewUrl() {
+            return $A.apiUrl(this.fileUrl) + "&down=preview"
+        }
     },
 
     watch: {
@@ -100,11 +151,15 @@ export default {
                 if (!id) {
                     return;
                 }
-                this.loadIng++;
+                if (!$A.isDesktop()) {
+                    return;
+                }
+                this.loading = true;
+                this.loadError = false;
                 $A.loadScript($A.apiUrl("../office/web-apps/apps/api/documents/api.js"), (e) => {
-                    this.loadIng--;
+                    this.loading = false;
                     if (e !== null) {
-                        $A.modalAlert("组件加载失败！");
+                        this.loadError = true;
                         return;
                     }
                     if (!this.documentKey) {
@@ -120,10 +175,23 @@ export default {
                 })
             },
             immediate: true,
+        },
+
+        previewUrl: {
+            handler() {
+                if (!$A.isDesktop()) {
+                    this.loading = true;
+                }
+            },
+            immediate: true
         }
     },
 
     methods: {
+        onFrameLoad() {
+            this.loading = false;
+        },
+
         getType(type) {
             switch (type) {
                 case 'word':
@@ -142,63 +210,69 @@ export default {
                 this.docEditor = null;
             }
             //
-            let lang = "zh";
-            switch (this.getLanguage()) {
-                case 'CN':
-                case 'TC':
-                    lang = "zh";
-                    break;
-                default:
-                    lang = 'en';
+            let lang = languageType;
+            switch (languageType) {
+                case 'zh-CHT':
+                    lang = "zh-TW";
                     break;
             }
             //
-            let fileKey = this.code || this.value.id;
+            let codeId = this.code || this.value.id;
             let fileName = $A.strExists(this.fileName, '.') ? this.fileName : (this.fileName + '.' + this.fileType);
+            let fileKey = `${this.fileType}-${keyAppend||codeId}`;
+            if (this.historyId > 0) {
+                fileKey += `-${this.historyId}`
+            }
             const config = {
                 "document": {
                     "fileType": this.fileType,
-                    "key": `${this.fileType}-${fileKey}-${keyAppend}`,
                     "title": fileName,
-                    "url": `http://nginx/api/file/content/?id=${fileKey}&token=${this.userToken}`,
+                    "key": fileKey,
+                    "url": `http://nginx/api/${this.fileUrl}`,
                 },
                 "editorConfig": {
                     "mode": "edit",
                     "lang": lang,
                     "user": {
-                        "id": this.userInfo.userid,
+                        "id": String(this.userInfo.userid),
                         "name": this.userInfo.nickname
                     },
                     "customization": {
                         "uiTheme": this.themeIsDark ? "theme-dark" : "theme-classic-light",
+                        "forcesave": true,
+                        "help": false,
                     },
-                    "callbackUrl": `http://nginx/api/file/content/office?id=${fileKey}&token=${this.userToken}`,
-                }
+                    "callbackUrl": `http://nginx/api/file/content/office?id=${codeId}&token=${this.userToken}`,
+                },
+                "events": {
+                    "onDocumentReady": this.onDocumentReady,
+                },
             };
             if (/\/hideenOfficeTitle\//.test(window.navigator.userAgent)) {
                 config.document.title = " ";
             }
-            if ($A.leftExists(fileKey, "msgFile_")) {
-                config.document.url = `http://nginx/api/dialog/msg/download/?msg_id=${$A.leftDelete(fileKey, "msgFile_")}&token=${this.userToken}`;
-            } else if ($A.leftExists(fileKey, "taskFile_")) {
-                config.document.url = `http://nginx/api/project/task/filedown/?file_id=${$A.leftDelete(fileKey, "taskFile_")}&token=${this.userToken}`;
-            }
-            if (this.readOnly) {
-                config.editorConfig.mode = "view";
-                config.editorConfig.callbackUrl = null;
-                if (!config.editorConfig.user.id) {
-                    let viewer = $A.getStorageInt("viewer")
-                    if (!viewer) {
-                        viewer = $A.randNum(1000, 99999);
-                        $A.setStorage("viewer", viewer)
+            (async _ => {
+                if (this.readOnly || this.historyId > 0) {
+                    config.editorConfig.mode = "view";
+                    config.editorConfig.callbackUrl = null;
+                    if (!config.editorConfig.user.id) {
+                        let officeViewer = await $A.IDBInt("officeViewer")
+                        if (!officeViewer) {
+                            officeViewer = $A.randNum(1000, 99999);
+                            await $A.IDBSet("officeViewer", officeViewer)
+                        }
+                        config.editorConfig.user.id = "viewer_" + officeViewer;
+                        config.editorConfig.user.name = "Viewer_" + officeViewer
                     }
-                    config.editorConfig.user.id = "viewer_" + viewer;
-                    config.editorConfig.user.name = "Viewer_" + viewer
                 }
-            }
-            this.$nextTick(() => {
-                this.docEditor = new DocsAPI.DocEditor(this.id, config);
-            })
+                this.$nextTick(() => {
+                    this.docEditor = new DocsAPI.DocEditor(this.id, config);
+                })
+            })()
+        },
+
+        onDocumentReady() {
+            this.$emit("on-document-ready", this.docEditor)
         }
     }
 }

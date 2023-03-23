@@ -22,22 +22,27 @@
             </div>
 
             <div class="file-navigator">
-                <ul>
-                    <li @click="backHomeDirectory">{{$L('全部文件')}}</li>
+                <ul class="scrollbar-hidden">
+                    <li @click="browseFolder(0)">
+                        <span>{{$L('全部文件')}}</span>
+                    </li>
                     <li v-if="searchKey">{{$L('搜索')}} "{{searchKey}}"</li>
-                    <li v-else v-for="item in navigator" @click="pid=item.id">
+                    <li v-else v-for="item in navigator" :ref="`nav_${item.id}`" @click="browseFolder(item.id)">
                         <i v-if="item.share" class="taskfont">&#xe63f;</i>
                         <span :title="item.name">{{item.name}}</span>
                         <span v-if="item.share && item.permission == 0" class="readonly">{{$L('只读')}}</span>
                     </li>
                 </ul>
-                <Button v-if="shearFirst" :disabled="shearFirst.pid == pid" size="small" type="primary" @click="shearTo">
-                    <div class="file-shear">
-                        <span>{{$L('粘贴')}}</span>
-                        "<em>{{shearFirst.name}}</em>"
-                        <span v-if="shearIds.length > 1">{{$L('等')}}{{shearIds.length}}{{$L('个文件')}}</span>
-                    </div>
-                </Button>
+                <template v-if="shearFirst">
+                    <Button :disabled="shearFirst.pid == pid" size="small" type="primary" @click="shearTo">
+                        <div class="file-shear">
+                            <span>{{$L('粘贴')}}</span>
+                            "<em>{{shearFirst.name}}</em>"
+                            <span v-if="shearIds.length > 1">{{$L('等')}}{{shearIds.length}}{{$L('个文件')}}</span>
+                        </div>
+                    </Button>
+                    <Button type="primary" size="small" @click="clearShear">{{ $L('取消剪切') }}</Button>
+                </template>
                 <template v-else-if="selectIds.length > 0">
                     <Button size="small" type="info" @click="handleContextClick('shearSelect')">
                         <Icon type="ios-cut" />
@@ -51,9 +56,12 @@
                 </template>
                 <div v-if="loadIng > 0" class="nav-load"><Loading/></div>
                 <div class="flex-full"></div>
+                <div v-if="hasShareFile" class="only-checkbox">
+                    <Checkbox v-model="hideShared">{{$L('仅显示我的')}}</Checkbox>
+                </div>
                 <div :class="['switch-button', tableMode]">
-                    <div @click="tableMode='table'"><i class="taskfont">&#xe66a;</i></div>
                     <div @click="tableMode='block'"><i class="taskfont">&#xe60c;</i></div>
+                    <div @click="tableMode='table'"><i class="taskfont">&#xe66a;</i></div>
                 </div>
             </div>
 
@@ -62,59 +70,7 @@
                 @drop.prevent="filePasteDrag($event, 'drag')"
                 @dragover.prevent="fileDragOver(true, $event)"
                 @dragleave.prevent="fileDragOver(false, $event)">
-                <template v-if="tableMode === 'block'">
-                    <div v-if="fileList.length == 0 && loadIng == 0" class="file-no" @contextmenu.prevent="handleRightClick">
-                        <i class="taskfont">&#xe60b;</i>
-                        <p>{{$L('没有任何文件')}}</p>
-                    </div>
-                    <div v-else class="file-list" @contextmenu.prevent="handleRightClick">
-                        <ul class="clearfix">
-                            <li
-                                v-for="item in fileList"
-                                :class="{
-                                    shear: shearIds.includes(item.id),
-                                    highlight: selectIds.includes(item.id),
-                                }"
-                                @contextmenu.prevent.stop="handleRightClick($event, item)"
-                                @click="openFile(item)">
-                                <div class="file-check" :class="{'file-checked':selectIds.includes(item.id)}" @click.stop="dropFile(item, 'select')">
-                                    <Checkbox :value="selectIds.includes(item.id)"/>
-                                </div>
-                                <div class="file-menu" @click.stop="handleRightClick($event, item)">
-                                    <Icon type="ios-more" />
-                                </div>
-                                <div :class="`no-dark-mode-before file-icon ${item.type}`">
-                                    <template v-if="item.share">
-                                        <UserAvatar v-if="item.userid != userId" :userid="item.userid" class="share-avatar" :size="20">
-                                            <p>{{$L('共享权限')}}: {{$L(item.permission == 1 ? '读/写' : '只读')}}</p>
-                                        </UserAvatar>
-                                        <div v-else class="share-icon no-dark-mode">
-                                            <i class="taskfont">&#xe757;</i>
-                                        </div>
-                                    </template>
-                                    <template v-else-if="isParentShare">
-                                        <UserAvatar :userid="item.created_id" class="share-avatar" :size="20">
-                                            <p v-if="item.created_id != item.userid"><strong>{{$L('成员创建于')}}: {{item.created_at}}</strong></p>
-                                            <p v-else>{{$L('所有者创建于')}}: {{item.created_at}}</p>
-                                        </UserAvatar>
-                                    </template>
-                                </div>
-                                <div v-if="item._edit" class="file-input">
-                                    <Input
-                                        :ref="'input_' + item.id"
-                                        v-model="item.newname"
-                                        size="small"
-                                        :disabled="!!item._load"
-                                        @on-blur="onBlur(item)"
-                                        @on-keyup="onKeyup($event, item)"/>
-                                    <div v-if="item._load" class="file-load"><Loading/></div>
-                                </div>
-                                <div v-else class="file-name" :title="item.name">{{formatName(item)}}</div>
-                            </li>
-                        </ul>
-                    </div>
-                </template>
-                <div v-else class="file-table" @contextmenu.prevent="handleRightClick">
+                <div v-if="tableMode === 'table'" class="file-table" @contextmenu.prevent="handleContextmenu">
                     <Table
                         :columns="columns"
                         :data="fileList"
@@ -126,9 +82,67 @@
                         @on-select-cancel="handleTableSelect"
                         @on-select-all-cancel="handleTableSelect"
                         @on-select-all="handleTableSelect"
+                        @on-sort-change="handleTableSort"
                         context-menu
                         stripe/>
                 </div>
+                <template v-else>
+                    <div v-if="fileList.length == 0 && loadIng == 0" class="file-no" @contextmenu.prevent="handleContextmenu">
+                        <i class="taskfont">&#xe60b;</i>
+                        <p>{{$L('没有任何文件')}}</p>
+                    </div>
+                    <div v-else class="file-list" @contextmenu.prevent="handleContextmenu">
+                        <ul>
+                            <li v-for="item in fileList">
+                                <div
+                                    class="file-item"
+                                    :class="{
+                                        shear: shearIds.includes(item.id),
+                                        highlight: selectIds.includes(item.id),
+                                        operate: contextMenuVisible && item.id === contextMenuItem.id,
+                                    }"
+                                    :data-id="item.id"
+                                    v-longpress="handleLongpress"
+                                    @click="dropFile(item, 'openCheckMenu')">
+                                    <div class="file-check" :class="{'file-checked':selectIds.includes(item.id)}" @click.stop="dropFile(item, 'select')">
+                                        <Checkbox :value="selectIds.includes(item.id)"/>
+                                    </div>
+                                    <div class="file-menu" @click.stop="handleRightClick($event, item)">
+                                        <Icon type="ios-more" />
+                                    </div>
+                                    <div :class="`no-dark-before file-icon ${item.type}${item.share ? ' share' : ''}`">
+                                        <template v-if="item.share">
+                                            <UserAvatar v-if="item.userid != userId" :userid="item.userid" class="share-avatar" :size="20">
+                                                <p>{{$L('共享权限')}}: {{$L(item.permission == 1 ? '读/写' : '只读')}}</p>
+                                            </UserAvatar>
+                                            <div v-else class="share-icon no-dark-content">
+                                                <i class="taskfont">&#xe757;</i>
+                                            </div>
+                                        </template>
+                                        <template v-else-if="isParentShare">
+                                            <UserAvatar :userid="item.created_id" class="share-avatar" :size="20">
+                                                <p v-if="item.created_id != item.userid"><strong>{{$L('成员创建于')}}: {{item.created_at}}</strong></p>
+                                                <p v-else>{{$L('所有者创建于')}}: {{item.created_at}}</p>
+                                            </UserAvatar>
+                                        </template>
+                                    </div>
+                                    <div v-if="item._edit" class="file-input">
+                                        <Input
+                                            :ref="'input_' + item.id"
+                                            v-model="item.newname"
+                                            size="small"
+                                            :disabled="!!item._load"
+                                            :parser="onParser"
+                                            @on-blur="onBlur(item)"
+                                            @on-keyup="onKeyup($event, item)"/>
+                                        <div v-if="item._load" class="file-load"><Loading/></div>
+                                    </div>
+                                    <div v-else class="file-name" :title="item.name">{{$A.getFileName(item)}}</div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </template>
                 <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
                     <div class="drag-text">{{$L('拖动到这里发送')}}</div>
                 </div>
@@ -139,16 +153,24 @@
                     trigger="custom"
                     :visible="contextMenuVisible"
                     transfer-class-name="page-file-dropdown-menu"
+                    @on-click="handleContextClick"
                     @on-clickoutside="handleClickContextMenuOutside"
                     @on-visible-change="handleVisibleChangeMenu"
                     transfer>
                     <DropdownMenu slot="list">
                         <template v-if="contextMenuItem.id">
-                            <DropdownItem @click.native="handleContextClick('open')">{{$L('打开')}}</DropdownItem>
-                            <DropdownItem @click.native="handleContextClick('select')">{{$L(selectIds.includes(contextMenuItem.id) ? '取消选择' : '选择')}}</DropdownItem>
+                            <DropdownItem name="open" class="item-open">
+                                {{$L('打开')}}
+                                <div class="open-name">“{{contextMenuItem.name}}”</div>
+                            </DropdownItem>
+                            <DropdownItem v-if="searchKey" name="upperFolder" class="item-open">
+                                {{$L('在上层文件夹中显示')}}
+                            </DropdownItem>
+
+                            <DropdownItem name="select">{{$L(selectIds.includes(contextMenuItem.id) ? '取消选择' : '选择')}}</DropdownItem>
 
                             <Dropdown placement="right-start" transfer>
-                                <DropdownItem divided>
+                                <DropdownItem divided @click.native.stop="" name="new:">
                                     <div class="arrow-forward-item">{{$L('新建')}}<Icon type="ios-arrow-forward"></Icon></div>
                                 </DropdownItem>
                                 <DropdownMenu slot="list" class="page-file-dropdown-menu">
@@ -157,22 +179,23 @@
                                         v-if="type.label"
                                         :key="key"
                                         :divided="!!type.divided"
-                                        @click.native="addFile(type.value)">
-                                        <div :class="`no-dark-mode-before file-item file-icon ${type.value}`">{{$L(type.label)}}</div>
+                                        :name="`new:${type.value}`">
+                                        <div :class="`no-dark-before file-item file-icon ${type.value}`">{{$L(type.label)}}</div>
                                     </DropdownItem>
                                 </DropdownMenu>
                             </Dropdown>
 
-                            <DropdownItem @click.native="handleContextClick('rename')" divided>{{$L('重命名')}}</DropdownItem>
-                            <DropdownItem @click.native="handleContextClick('copy')" :disabled="contextMenuItem.type == 'folder'">{{$L('复制')}}</DropdownItem>
-                            <DropdownItem @click.native="handleContextClick('shear')" :disabled="contextMenuItem.userid != userId">{{$L('剪切')}}</DropdownItem>
+                            <DropdownItem name="rename" divided>{{$L('重命名')}}</DropdownItem>
+                            <DropdownItem name="copy" :disabled="contextMenuItem.type == 'folder'">{{$L('复制')}}</DropdownItem>
+                            <DropdownItem name="shear" :disabled="contextMenuItem.userid != userId">{{$L('剪切')}}</DropdownItem>
 
-                            <DropdownItem v-if="contextMenuItem.userid == userId" @click.native="handleContextClick('share')" divided>{{$L('共享')}}</DropdownItem>
-                            <DropdownItem v-else-if="contextMenuItem.share" @click.native="handleContextClick('outshare')" divided>{{$L('退出共享')}}</DropdownItem>
-                            <DropdownItem @click.native="handleContextClick('link')" :divided="contextMenuItem.userid != userId && !contextMenuItem.share" :disabled="contextMenuItem.type == 'folder'">{{$L('链接')}}</DropdownItem>
-                            <DropdownItem @click.native="handleContextClick('download')" :disabled="contextMenuItem.ext == ''">{{$L('下载')}}</DropdownItem>
+                            <DropdownItem v-if="contextMenuItem.userid == userId" name="share" divided>{{$L('共享')}}</DropdownItem>
+                            <DropdownItem v-else-if="contextMenuItem.share" name="outshare" divided>{{$L('退出共享')}}</DropdownItem>
+                            <DropdownItem name="send" :disabled="contextMenuItem.type == 'folder'">{{$L('发送')}}</DropdownItem>
+                            <DropdownItem name="link" :divided="contextMenuItem.userid != userId && !contextMenuItem.share" :disabled="contextMenuItem.type == 'folder'">{{$L('链接')}}</DropdownItem>
+                            <DropdownItem name="download" :disabled="contextMenuItem.ext == ''">{{$L('下载')}}</DropdownItem>
 
-                            <DropdownItem @click.native="handleContextClick('delete')" divided style="color:red">{{$L('删除')}}</DropdownItem>
+                            <DropdownItem name="delete" divided style="color:red">{{$L('删除')}}</DropdownItem>
                         </template>
                         <template v-else>
                             <DropdownItem
@@ -180,8 +203,8 @@
                                 v-if="type.label"
                                 :key="key"
                                 :divided="!!type.divided"
-                                @click.native="addFile(type.value)">
-                                <div :class="`no-dark-mode-before file-item file-icon ${type.value}`">{{$L(type.label)}}</div>
+                                :name="`new:${type.value}`">
+                                <div :class="`no-dark-before file-item file-icon ${type.value}`">{{$L(type.label)}}</div>
                             </DropdownItem>
                         </template>
                     </DropdownMenu>
@@ -298,14 +321,27 @@
             </div>
         </Modal>
 
+        <!-- 文件发送 -->
+        <Modal
+            v-model="sendShow"
+            :title="$L('发送文件')"
+            :mask-closable="false">
+            <DialogSelect v-model="sendData"/>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="sendShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="sendLoad" @click="onSendFile">{{$L('发送文件')}}</Button>
+            </div>
+        </Modal>
+
         <!--文件链接-->
         <Modal
             v-model="linkShow"
             :title="$L('文件链接')"
             :mask-closable="false">
             <div>
+                <div style="margin:-10px 0 8px">{{$L('文件名称')}}: {{linkData.name}}</div>
                 <Input ref="linkInput" v-model="linkData.url" type="textarea" :rows="3" @on-focus="linkFocus" readonly/>
-                <div class="form-tip" style="padding-top:6px">{{$L('可通过此链接浏览文件。')}}</div>
+                <div class="form-tip" style="padding-top:6px">{{$L('可通过此链接浏览文件。')}}<a href="javascript:void(0)" @click="linkCopy">{{$L('点击复制链接')}}</a></div>
             </div>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="linkShow=false">{{$L('取消')}}</Button>
@@ -313,6 +349,8 @@
                     confirm
                     placement="bottom"
                     style="margin-left:8px"
+                    :ok-text="$L('确定')"
+                    :cancel-text="$L('取消')"
                     @on-ok="linkGet(true)"
                     transfer>
                     <div slot="title">
@@ -327,10 +365,17 @@
         <DrawerOverlay
             v-model="fileShow"
             class="page-file-drawer"
+            :beforeClose="fileBeforeClose"
             :mask-closable="false">
-            <FilePreview v-if="fileInfo.permission === 0" :file="fileInfo"/>
-            <FileContent v-else v-model="fileShow" :file="fileInfo"/>
+            <FilePreview v-if="isPreview" :file="fileInfo"/>
+            <FileContent v-else ref="fileContent" v-model="fileShow" :file="fileInfo"/>
         </DrawerOverlay>
+
+        <!--预览文件-->
+        <PreviewImage
+            v-model="imageShow"
+            :index="imageIndex"
+            :list="imageList"/>
 
         <!--拖动上传提示-->
         <Modal
@@ -340,39 +385,37 @@
             :ok-text="$L('立即上传')"
             :enter-ok="true"
             @on-ok="pasteSend">
-            <div class="dialog-wrapper-paste">
-                <template v-for="item in pasteItem">
+            <ul class="dialog-wrapper-paste" :class="pasteWrapperClass">
+                <li v-for="item in pasteItem">
                     <img v-if="item.type == 'image'" :src="item.result"/>
                     <div v-else>{{$L('文件')}}: {{item.name}} ({{$A.bytesToSize(item.size)}})</div>
-                </template>
-            </div>
+                </li>
+            </ul>
         </Modal>
     </div>
 </template>
 
 <script>
-import Vue from 'vue'
-import VueClipboard from 'vue-clipboard2'
-Vue.use(VueClipboard)
-
 import {mapState} from "vuex";
 import {sortBy} from "lodash";
 import UserInput from "../../components/UserInput";
 import DrawerOverlay from "../../components/DrawerOverlay";
+import PreviewImage from "../../components/PreviewImage";
+import longpress from "../../directives/longpress";
+import DialogSelect from "./components/DialogSelect";
 
 const FilePreview = () => import('./components/FilePreview');
 const FileContent = () => import('./components/FileContent');
-
+const FileObject = {sort: null, mode: null, shared: null};
 
 export default {
-    components: {FilePreview, DrawerOverlay, UserInput, FileContent},
+    components: {DialogSelect, PreviewImage, FilePreview, DrawerOverlay, UserInput, FileContent},
+    directives: {longpress},
     data() {
         return {
             loadIng: 0,
             searchKey: '',
             searchTimeout: null,
-
-            pid: $A.getStorageInt("fileOpenPid"),
 
             types: [
                 {
@@ -425,14 +468,21 @@ export default {
                 }
             ],
 
-            tableHeight: 500,
-            tableMode: $A.getStorageString("fileTableMode"),
+            tableMode: "",
+            hideShared: false,
             columns: [],
 
             shareShow: false,
             shareInfo: {id: 0, userid: 0, permission: 1},
             shareList: [],
             shareLoad: 0,
+
+            sendShow: false,
+            sendLoad: false,
+            sendData: {
+                dialogids: [],
+                userids: [],
+            },
 
             linkShow: false,
             linkData: {},
@@ -441,34 +491,15 @@ export default {
             fileShow: false,
             fileInfo: {permission: -1},
 
+            imageShow: false,
+            imageIndex: 0,
+            imageList:[],
+
             uploadDir: false,
             uploadIng: 0,
             uploadShow: false,
             uploadList: [],
-            uploadFormat: [
-                'text', 'md', 'markdown',
-                'drawio',
-                'mind',
-                'docx', 'wps', 'doc', 'xls', 'xlsx', 'ppt', 'pptx',
-                'jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw', 'svg',
-                'rar', 'zip', 'jar', '7-zip', 'tar', 'gzip', '7z', 'gz', 'apk', 'dmg',
-                'tif', 'tiff',
-                'dwg', 'dxf',
-                'ofd',
-                'pdf',
-                'txt',
-                'htaccess', 'htgroups', 'htpasswd', 'conf', 'bat', 'cmd', 'cpp', 'c', 'cc', 'cxx', 'h', 'hh', 'hpp', 'ino', 'cs', 'css',
-                'dockerfile', 'go', 'golang', 'html', 'htm', 'xhtml', 'vue', 'we', 'wpy', 'java', 'js', 'jsm', 'jsx', 'json', 'jsp', 'less', 'lua', 'makefile', 'gnumakefile',
-                'ocamlmakefile', 'make', 'mysql', 'nginx', 'ini', 'cfg', 'prefs', 'm', 'mm', 'pl', 'pm', 'p6', 'pl6', 'pm6', 'pgsql', 'php',
-                'inc', 'phtml', 'shtml', 'php3', 'php4', 'php5', 'phps', 'phpt', 'aw', 'ctp', 'module', 'ps1', 'py', 'r', 'rb', 'ru', 'gemspec', 'rake', 'guardfile', 'rakefile',
-                'gemfile', 'rs', 'sass', 'scss', 'sh', 'bash', 'bashrc', 'sql', 'sqlserver', 'swift', 'ts', 'typescript', 'str', 'vbs', 'vb', 'v', 'vh', 'sv', 'svh', 'xml',
-                'rdf', 'rss', 'wsdl', 'xslt', 'atom', 'mathml', 'mml', 'xul', 'xbl', 'xaml', 'yaml', 'yml',
-                'asp', 'properties', 'gitignore', 'log', 'bas', 'prg', 'python', 'ftl', 'aspx',
-                'mp3', 'wav', 'mp4', 'flv',
-                'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm',
-                'xmind',
-                'rp',
-            ],
+            uploadFormat: [],   // 不限制上传文件类型
             uploadAccept: '',
             maxSize: 1024000,
 
@@ -489,20 +520,231 @@ export default {
         }
     },
 
+    async beforeRouteEnter(to, from, next) {
+        FileObject.sort = await $A.IDBJson("cacheFileSort")
+        FileObject.mode = await $A.IDBString("fileTableMode")
+        FileObject.shared = await $A.IDBBoolean("fileHideShared")
+        next()
+    },
+
+
+    created() {
+        this.tableMode = FileObject.mode
+        this.hideShared = FileObject.shared
+        this.columns = [
+            {
+                type: 'selection',
+                width: 50,
+                align: 'right'
+            },
+            {
+                title: this.$L('文件名'),
+                key: 'name',
+                minWidth: 300,
+                sortable: true,
+                render: (h, {row}) => {
+                    let array = [];
+                    let isCreate = !/^\d+$/.test(row.id);
+                    if (isCreate) {
+                        // 新建
+                        array.push(h('Input', {
+                            props: {
+                                elementId: 'input_' + row.id,
+                                value: row.newname,
+                                autofocus: true,
+                                disabled: !!row._load,
+                                parser: this.onParser
+                            },
+                            style: {
+                                width: 'auto'
+                            },
+                            on: {
+                                'on-change': (event) => {
+                                    row.newname = event.target.value;
+                                },
+                                'on-blur': () => {
+                                    const file = this.fileLists.find(({id}) => id == row.id);
+                                    if (file) {
+                                        file.newname = row.newname;
+                                        this.onBlur(file)
+                                    }
+                                },
+                                'on-enter': () => {
+                                    const file = this.fileLists.find(({id}) => id == row.id);
+                                    if (file) {
+                                        file.newname = row.newname;
+                                        this.onEnter(file)
+                                    }
+                                }
+                            }
+                        }))
+                        return h('div', {
+                            class: 'file-nbox'
+                        }, [
+                            h('div', {
+                                class: `no-dark-before file-name file-icon ${row.type}`,
+                            }, array),
+                        ]);
+                    } else {
+                        // 编辑、查看
+                        array.push(h('QuickEdit', {
+                            props: {
+                                value: row.name,
+                                autoEdit: !!row._edit,
+                                clickOutSide: false,
+                                parser: this.onParser
+                            },
+                            on: {
+                                'on-edit-change': (b) => {
+                                    const file = this.fileLists.find(({id}) => id == row.id);
+                                    if (file) {
+                                        setTimeout(() => {
+                                            this.setEdit(file.id, b)
+                                        }, 100);
+                                    }
+                                },
+                                'on-update': (val, cb) => {
+                                    const file = this.fileLists.find(({id}) => id == row.id);
+                                    if (file && file._edit === true) {
+                                        file.newname = val
+                                        this.onEnter(file);
+                                    }
+                                    cb();
+                                }
+                            }
+                        }, [
+                            h('AutoTip', {
+                                props: {
+                                    placement: 'right'
+                                }
+                            }, $A.getFileName(row))
+                        ]));
+                        //
+                        const iconArray = [];
+                        if (row.share) {
+                            if (row.userid != this.userId) {
+                                iconArray.push(h('UserAvatar', {
+                                    props: {
+                                        userid: row.userid,
+                                        size: 20
+                                    },
+                                }))
+                            } else {
+                                iconArray.push(h('i', {
+                                    class: 'taskfont',
+                                    domProps: {
+                                        innerHTML: '&#xe757;'
+                                    },
+                                }))
+                            }
+                        } else if (this.isParentShare) {
+                            iconArray.push(h('UserAvatar', {
+                                props: {
+                                    userid: row.created_id,
+                                    size: 20
+                                },
+                            }, [
+                                row.created_id != row.userid ? h('p', [h('strong', this.$L('成员创建于') + ": " + row.created_at)]) : h('p', this.$L('所有者创建于') + ": " + row.created_at)
+                            ]))
+                        }
+                        const shearClass = this.shearIds.includes(row.id) ? ' shear' : '';
+                        const shareClass = row.share ? ' share' : '';
+                        return h('div', {
+                            class: `file-nbox${shearClass}`,
+                            attrs: {
+                                'data-id': row.id
+                            }
+                        }, [
+                            h('div', {
+                                class: `no-dark-before file-name file-icon ${row.type}${shareClass}`,
+                            }, array),
+                            iconArray
+                        ]);
+                    }
+                }
+            },
+            {
+                title: this.$L('大小'),
+                key: 'size',
+                width: 110,
+                resizable: true,
+                sortable: true,
+                render: (h, {row}) => {
+                    if (row.type == 'folder') {
+                        return h('div', '-')
+                    }
+                    return h('AutoTip', $A.bytesToSize(row.size));
+                }
+            },
+            {
+                title: this.$L('类型'),
+                key: 'type',
+                width: 110,
+                resizable: true,
+                sortable: true,
+                render: (h, {row}) => {
+                    let type = this.types.find(({value, name}) => value == row.type && name);
+                    if (type) {
+                        return h('AutoTip', this.$L(type.name));
+                    } else {
+                        return h('div', (row.ext || row.type).toUpperCase())
+                    }
+                }
+            },
+            {
+                title: this.$L('所有者'),
+                key: 'userid',
+                width: 130,
+                resizable: true,
+                sortable: true,
+                render: (h, {row}) => {
+                    return h('UserAvatar', {
+                        props: {
+                            size: 18,
+                            userid: row.userid,
+                            showIcon: false,
+                            showName: true,
+                        }
+                    });
+                }
+            },
+            {
+                title: this.$L('最后修改'),
+                key: 'updated_at',
+                width: 168,
+                resizable: true,
+                sortable: true,
+            },
+        ].map(item => {
+            if (item.key === FileObject.sort.key) {
+                item.sortType = FileObject.sort.order
+            }
+            return item;
+        });
+    },
+
     mounted() {
-        this.tableHeight = window.innerHeight - 160;
         this.uploadAccept = this.uploadFormat.map(item => {
             return '.' + item
         }).join(",");
     },
 
     activated() {
-        this.$store.dispatch("websocketPath", "file");
         this.getFileList();
     },
 
     computed: {
-        ...mapState(['userId', 'userToken', 'userIsAdmin', 'userInfo', 'files', 'wsOpenNum']),
+        ...mapState(['userIsAdmin', 'userInfo', 'fileLists', 'wsOpenNum']),
+
+        pid() {
+            const {folderId} = this.$route.params;
+            return parseInt(/^\d+$/.test(folderId) ? folderId : 0);
+        },
+
+        fid() {
+            const {fileId} = this.$route.params;
+            return parseInt(/^\d+$/.test(fileId) ? fileId : 0);
+        },
 
         actionUrl() {
             return $A.apiUrl('file/content/upload?pid=' + this.pid)
@@ -510,7 +752,7 @@ export default {
 
         headers() {
             return {
-                fd: $A.getStorageString("userWsFd"),
+                fd: $A.getSessionStorageString("userWsFd"),
                 token: this.userToken,
             }
         },
@@ -524,13 +766,16 @@ export default {
         },
 
         fileList() {
-            const {files, searchKey, pid, selectIds} = this;
-            const list = $A.cloneJSON(sortBy(files.filter((file) => {
+            const {fileLists, searchKey, hideShared, pid, selectIds, userId} = this;
+            const list = $A.cloneJSON(sortBy(fileLists.filter(file => {
+                if (hideShared && file.userid != userId && file.created_id != userId) {
+                    return false
+                }
                 if (searchKey) {
                     return file.name.indexOf(searchKey) !== -1;
                 }
                 return file.pid == pid;
-            }), (file) => {
+            }), file => {
                 return (file.type == 'folder' ? 'a' : 'b') + file.name;
             }));
             return list.map(item => {
@@ -539,19 +784,24 @@ export default {
             })
         },
 
+        hasShareFile() {
+            const {fileLists, userId} = this;
+            return fileLists.findIndex(file => file.share && file.userid != userId) !== -1
+        },
+
         shearFirst() {
-            const {files, shearIds} = this;
+            const {fileLists, shearIds} = this;
             if (shearIds.length === 0) {
                 return null;
             }
-            return files.find(item => item.id == shearIds[0])
+            return fileLists.find(item => item.id == shearIds[0])
         },
 
         navigator() {
-            let {pid, files} = this;
+            let {pid, fileLists} = this;
             let array = [];
             while (pid > 0) {
-                let file = files.find(({id, permission}) => id == pid && permission > -1);
+                let file = fileLists.find(({id, permission}) => id == pid && permission > -1);
                 if (file) {
                     array.unshift(file);
                     pid = file.pid;
@@ -560,6 +810,10 @@ export default {
                 }
             }
             return array;
+        },
+
+        isPreview() {
+            return this.windowSmall || this.fileInfo.permission === 0
         },
 
         isParentShare() {
@@ -577,26 +831,67 @@ export default {
                 return '上传图片'
             }
             return '上传文件'
+        },
+
+        pasteWrapperClass() {
+            if (this.pasteItem.find(({type}) => type !== 'image')) {
+                return ['multiple'];
+            }
+            return [];
+        },
+
+        tableHeight() {
+            if (this.windowLarge) {
+                return Math.max(300, this.windowHeight - 160)
+            } else {
+                return Math.max(300, this.windowHeight - 200)
+            }
         }
     },
 
     watch: {
         pid() {
+            this.searchKey = '';
             this.selectIds = [];
             this.getFileList();
         },
 
+        fid() {
+            this.openFileJudge();
+        },
+
         tableMode(val) {
-            $A.setStorage("fileTableMode", val)
+            $A.IDBSave("fileTableMode", val)
+        },
+
+        hideShared(val) {
+            $A.IDBSave("fileHideShared", val)
         },
 
         fileShow(val) {
-            if (val) {
-                this.$store.dispatch("websocketPath", "file/content/" + this.fileInfo.id);
-            } else {
-                this.$store.dispatch("websocketPath", "file");
-                this.getFileList();
+            if (!val) {
+                this.browseFile(0)
+                if (this.windowSmall) {
+                    $A.onBlur(true)
+                }
             }
+        },
+
+        imageShow(val) {
+            if (!val) {
+                this.browseFile(0)
+            }
+        },
+
+        navigator: {
+            handler() {
+                this.$nextTick(_ => {
+                    if (this.$refs[`nav_${this.pid}`]) {
+                        $A.scrollToView(this.$refs[`nav_${this.pid}`][0], false)
+                    }
+                });
+            },
+            immediate: true
         },
 
         selectIds: {
@@ -621,222 +916,37 @@ export default {
             if (num <= 1) return
             this.wsOpenTimeout && clearTimeout(this.wsOpenTimeout)
             this.wsOpenTimeout = setTimeout(() => {
-                if (this.$route.name == 'manage-file') {
-                    this.getFileList();
-                }
+                this.$route.name == 'manage-file' && this.getFileList();
             }, 5000)
         }
     },
 
     methods: {
-        initLanguage() {
-            this.columns = [
-                {
-                    type: 'selection',
-                    width: 50,
-                    align: 'right'
-                },
-                {
-                    title: this.$L('文件名'),
-                    key: 'name',
-                    minWidth: 200,
-                    sortable: true,
-                    render: (h, {row}) => {
-                        let array = [];
-                        let isCreate = !/^\d+$/.test(row.id);
-                        if (isCreate) {
-                            // 新建
-                            array.push(h('Input', {
-                                props: {
-                                    elementId: 'input_' + row.id,
-                                    value: row.newname,
-                                    autofocus: true,
-                                    disabled: !!row._load,
-                                },
-                                style: {
-                                    width: 'auto'
-                                },
-                                on: {
-                                    'on-change': (event) => {
-                                        row.newname = event.target.value;
-                                    },
-                                    'on-blur': () => {
-                                        const file = this.files.find(({id}) => id == row.id);
-                                        if (file) {
-                                            file.newname = row.newname;
-                                            this.onBlur(file)
-                                        }
-                                    },
-                                    'on-enter': () => {
-                                        const file = this.files.find(({id}) => id == row.id);
-                                        if (file) {
-                                            file.newname = row.newname;
-                                            this.onEnter(file)
-                                        }
-                                    }
-                                }
-                            }))
-                            return h('div', {
-                                class: 'file-nbox'
-                            }, [
-                                h('div', {
-                                    class: `no-dark-mode-before file-name file-icon ${row.type}`,
-                                }, array),
-                            ]);
-                        } else {
-                            // 编辑、查看
-                            array.push(h('QuickEdit', {
-                                props: {
-                                    value: row.name,
-                                    autoEdit: !!row._edit,
-                                    clickOutSide: false,
-                                },
-                                on: {
-                                    'on-edit-change': (b) => {
-                                        const file = this.files.find(({id}) => id == row.id);
-                                        if (file) {
-                                            setTimeout(() => {
-                                                this.setEdit(file.id, b)
-                                            }, 100);
-                                        }
-                                    },
-                                    'on-update': (val, cb) => {
-                                        const file = this.files.find(({id}) => id == row.id);
-                                        if (file) {
-                                            file.newname = val
-                                            this.onEnter(file);
-                                        }
-                                        cb();
-                                    }
-                                }
-                            }, [
-                                h('AutoTip', this.formatName(row))
-                            ]));
-                            //
-                            const iconArray = [];
-                            if (row.share) {
-                                if (row.userid != this.userId) {
-                                    iconArray.push(h('UserAvatar', {
-                                        props: {
-                                            userid: row.userid,
-                                            size: 20
-                                        },
-                                    }))
-                                } else {
-                                    iconArray.push(h('i', {
-                                        class: 'taskfont',
-                                        domProps: {
-                                            innerHTML: '&#xe757;'
-                                        },
-                                    }))
-                                }
-                            } else if (this.isParentShare) {
-                                iconArray.push(h('UserAvatar', {
-                                    props: {
-                                        userid: row.created_id,
-                                        size: 20
-                                    },
-                                }, [
-                                    row.created_id != row.userid ? h('p', [h('strong', this.$L('成员创建于') + ": " + row.created_at)]) : h('p', this.$L('所有者创建') + ": " + row.created_at)
-                                ]))
-                            }
-                            return h('div', {
-                                class: `file-nbox ${this.shearIds.includes(row.id) ? 'shear' : ''}`,
-                            }, [
-                                h('div', {
-                                    class: `no-dark-mode-before file-name file-icon ${row.type}`,
-                                }, array),
-                                iconArray
-                            ]);
-                        }
-                    }
-                },
-                {
-                    title: this.$L('大小'),
-                    key: 'size',
-                    width: 110,
-                    resizable: true,
-                    sortable: true,
-                    render: (h, {row}) => {
-                        if (row.type == 'folder') {
-                            return h('div', '-')
-                        }
-                        return h('AutoTip', $A.bytesToSize(row.size));
-                    }
-                },
-                {
-                    title: this.$L('类型'),
-                    key: 'type',
-                    width: 110,
-                    resizable: true,
-                    sortable: true,
-                    render: (h, {row}) => {
-                        let type = this.types.find(({value, name}) => value == row.type && name);
-                        if (type) {
-                            return h('AutoTip', type.name);
-                        } else {
-                            return h('div', (row.ext || row.type).replace(/^\S/, s => s.toUpperCase()))
-                        }
-                    }
-                },
-                {
-                    title: this.$L('所有者'),
-                    key: 'userid',
-                    width: 130,
-                    resizable: true,
-                    sortable: true,
-                    render: (h, {row}) => {
-                        return h('UserAvatar', {
-                            props: {
-                                size: 18,
-                                userid: row.userid,
-                                showIcon: false,
-                                showName: true,
-                            }
-                        });
-                    }
-                },
-                {
-                    title: this.$L('最后修改'),
-                    key: 'updated_at',
-                    width: 168,
-                    resizable: true,
-                    sortable: true,
-                },
-            ];
-        },
-
-        formatName(file) {
-            let {name, ext} = file;
-            if (ext != '') {
-                name += "." + ext;
-            }
-            return name;
-        },
-
-        backHomeDirectory() {
-            this.pid = 0
-            this.searchKey = ''
-        },
-
         getFileList() {
+            if (this.$route.name !== 'manage-file') {
+                return;
+            }
             this.loadIng++;
-            this.$store.dispatch("getFiles", this.pid).then(() => {
+            this.$store.dispatch("getFiles", this.pid).then(async () => {
                 this.loadIng--;
-                $A.setStorage("fileOpenPid", this.pid)
+                this.openFileJudge()
+                this.shakeFile(this.$route.params.shakeId);
+                await $A.IDBSet("fileFolderId", this.pid)
             }).catch(({msg}) => {
                 this.loadIng--;
                 $A.modalError({
                     content: msg,
                     onOk: () => {
-                        this.backHomeDirectory();
+                        this.browseFolder(0);
                     }
                 });
             });
         },
 
         addFile(command) {
-            if (command == 'upload') {
+            if (!command) {
+                return;
+            } else if (command == 'upload') {
                 this.uploadDir = false
                 this.$refs.fileUpload.handleClick();
                 return;
@@ -846,15 +956,31 @@ export default {
                 return;
             }
             let id = $A.randomString(8);
-            this.files.push({
+            this.fileLists.push({
                 _edit: true,
                 pid: this.pid,
                 id: id,
                 type: command,
                 name: '',
+                userid: this.userId,
                 newname: this.$L('未命名')
             });
             this.autoBlur(id)
+        },
+
+        handleLongpress(event, el) {
+            const fileId = $A.getAttr(el, 'data-id')
+            const fileItem = this.fileList.find(item => item.id == fileId)
+            if (!fileItem) {
+                return
+            }
+            this.handleRightClick(event, fileItem)
+        },
+
+        handleContextmenu(event) {
+            if (this.windowLarge) {
+                this.handleRightClick(event)
+            }
         },
 
         handleRightClick(event, item, isAddButton) {
@@ -876,57 +1002,103 @@ export default {
             })
         },
 
-        openFile(item, checkMenuVisible = true) {
-            if (checkMenuVisible && this.contextMenuVisible) {
-                return;
-            }
-            if (this.fileList.findIndex((file) => file._edit === true) > -1) {
-                return;
-            }
-            if (item._load) {
-                return;
-            }
-            if (item.type == 'folder') {
-                this.searchKey = '';
-                this.pid = item.id;
+        browseFolder(id, shakeId = null) {
+            if (id > 0) {
+                this.goForward({name: 'manage-file', params: {folderId: id, fileId: null, shakeId}});
             } else {
-                // 图片直接浏览
-                if (item.image_url) {
-                    const list = this.fileList.filter(({image_url}) => !!image_url)
-                    if (list.length > 0) {
-                        this.$store.state.previewImageIndex = list.findIndex(({id}) => item.id === id);
-                        this.$store.state.previewImageList = list.map(item => item.image_url);
-                        return;
-                    }
-                }
-                // 客户端打开独立窗口
-                if (this.$Electron) {
-                    this.openSingle(item);
-                    return;
-                }
-                // 正常显示弹窗
-                this.fileInfo = item;
-                this.fileShow = true;
+                this.searchKey = '';
+                this.goForward({name: 'manage-file'});
             }
         },
 
-        openSingle(item) {
-            this.$Electron.sendMessage('windowRouter', {
-                name: 'file-' + item.id,
-                path: "/single/file/" + item.id,
-                userAgent: "/hideenOfficeTitle/",
-                force: false, // 如果窗口已存在不重新加载
-                config: {
-                    title: this.formatName(item),
-                    titleFixed: true,
-                    parent: null,
-                    width: Math.min(window.screen.availWidth, 1440),
-                    height: Math.min(window.screen.availHeight, 900),
-                },
-                webPreferences: {
-                    nodeIntegrationInSubFrames: item.type === 'drawio'
-                },
-            });
+        browseFile(id) {
+            if (id > 0) {
+                this.goForward({name: 'manage-file', params: {folderId: this.pid, fileId: id}});
+            } else {
+                this.browseFolder(this.pid);
+            }
+        },
+
+        openFileJudge() {
+            if (this.$route.name !== 'manage-file') {
+                this.fileShow = false;
+                this.imageShow = false;
+                return;
+            }
+            if (this.fid <= 0) {
+                this.fileShow = false;
+                this.imageShow = false;
+                return;
+            }
+            const item = this.fileList.find(({id}) => id === this.fid)
+            if (!item) {
+                this.fileShow = false;
+                this.imageShow = false;
+                return;
+            }
+            // 图片直接浏览
+            if (item.image_url) {
+                const list = this.fileList.filter(({image_url}) => !!image_url)
+                if (list.length > 0) {
+                    this.imageIndex = list.findIndex(({id}) => item.id === id)
+                    this.imageList = list.map(item => {
+                        if (item.image_width) {
+                            return {
+                                src: item.image_url,
+                                width: item.image_width,
+                                height: item.image_height,
+                            }
+                        }
+                        return item.image_url;
+                    })
+                    this.imageShow = true
+                    return;
+                }
+            }
+            // 客户端打开独立窗口
+            if (this.$Electron || this.$isEEUiApp) {
+                this.openFileSingle(item);
+                return;
+            }
+            // 正常显示弹窗
+            this.fileInfo = item;
+            this.fileShow = true;
+        },
+
+        openFileSingle(item) {
+            const path = `/single/file/${item.id}`;
+            if (this.$Electron) {
+                this.$Electron.sendMessage('windowRouter', {
+                    name: `file-${item.id}`,
+                    path: path,
+                    userAgent: "/hideenOfficeTitle/",
+                    force: false, // 如果窗口已存在不重新加载
+                    config: {
+                        title: $A.getFileName(item),
+                        titleFixed: true,
+                        parent: null,
+                        width: Math.min(window.screen.availWidth, 1440),
+                        height: Math.min(window.screen.availHeight, 900),
+                    },
+                    webPreferences: {
+                        nodeIntegrationInSubFrames: item.type === 'drawio'
+                    },
+                });
+            } else if (this.$isEEUiApp) {
+                $A.eeuiAppOpenPage({
+                    pageType: 'app',
+                    pageTitle: $A.getFileName(item),
+                    url: 'web.js',
+                    params: {
+                        titleFixed: true,
+                        allowAccess: true,
+                        url: $A.rightDelete(window.location.href, window.location.hash) + `#${path}`
+                    },
+                });
+            } else {
+                window.open($A.apiUrl(`..${path}`))
+            }
+            this.browseFile(0);
         },
 
         clickRow(row, column) {
@@ -938,11 +1110,15 @@ export default {
         },
 
         handleContextMenu(row, event) {
-            this.handleRightClick(event, this.files.find(({id}) => id === row.id) || {});
+            this.handleRightClick(event, this.fileLists.find(({id}) => id === row.id) || {});
         },
 
         handleContextClick(command) {
-            this.dropFile(this.contextMenuItem, command)
+            if ($A.leftExists(command, "new:")) {
+                this.addFile($A.leftDelete(command, "new:"))
+            } else {
+                this.dropFile(this.contextMenuItem, command)
+            }
         },
 
         handleClickContextMenuOutside() {
@@ -950,7 +1126,7 @@ export default {
         },
 
         handleVisibleChangeMenu(visible) {
-            let file = this.files.find(({_highlight}) => !!_highlight)
+            let file = this.fileLists.find(({_highlight}) => !!_highlight)
             if (file) {
                 this.$set(file, '_highlight', false);
             }
@@ -962,7 +1138,26 @@ export default {
         dropFile(item, command) {
             switch (command) {
                 case 'open':
-                    this.openFile(item, false);
+                case 'openCheckMenu':
+                    if (command === 'openCheckMenu' && this.contextMenuVisible) {
+                        return;
+                    }
+                    if (this.fileList.findIndex((file) => file._edit === true) > -1) {
+                        return;
+                    }
+                    if (item._load) {
+                        return;
+                    }
+                    if (item.type == 'folder') {
+                        this.browseFolder(item.id)
+                    } else {
+                        this.browseFile(item.id)
+                    }
+                    break;
+
+                case 'upperFolder':
+                    this.searchKey = '';
+                    this.browseFolder(item.pid, item.id)
                     break;
 
                 case 'select':
@@ -1001,6 +1196,15 @@ export default {
                     this.shearIds = $A.cloneJSON(this.selectIds);
                     break;
 
+                case 'send':
+                    this.sendData = {
+                        dialogids: [],
+                        userids: [],
+                        file_id: item.id
+                    };
+                    this.sendShow = true;
+                    break;
+
                 case 'share':
                     this.shareInfo = {
                         id: item.id,
@@ -1017,26 +1221,27 @@ export default {
                         content: '你确定要退出【' + item.name + '】共享成员吗？',
                         loading: true,
                         onOk: () => {
-                            this.$store.dispatch("call", {
-                                url: 'file/share/out',
-                                data: {
-                                    id: item.id,
-                                },
-                            }).then(({msg}) => {
-                                $A.messageSuccess(msg);
-                                this.$Modal.remove();
-                                this.$store.dispatch("forgetFile", item.id);
-                            }).catch(({msg}) => {
-                                this.$Modal.remove();
-                                $A.modalError(msg, 301);
-                            });
+                            return new Promise((resolve, reject) => {
+                                this.$store.dispatch("call", {
+                                    url: 'file/share/out',
+                                    data: {
+                                        id: item.id,
+                                    },
+                                }).then(({msg}) => {
+                                    resolve(msg);
+                                    this.$store.dispatch("forgetFile", item.id);
+                                }).catch(({msg}) => {
+                                    reject(msg);
+                                });
+                            })
                         }
                     });
                     break;
 
                 case 'link':
                     this.linkData = {
-                        id: item.id
+                        id: item.id,
+                        name: item.name
                     };
                     this.linkShow = true;
                     this.linkGet()
@@ -1062,6 +1267,27 @@ export default {
             }
         },
 
+        onSendFile() {
+            if ($A.arrayLength(this.sendData.dialogids) === 0 && $A.arrayLength(this.sendData.userids) === 0) {
+                $A.messageWarning("请选择转发对话或成员");
+                return
+            }
+            this.sendLoad = true;
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/sendfileid',
+                data: this.sendData
+            }).then(({data, msg}) => {
+                this.sendShow = false;
+                this.$store.dispatch("saveDialogMsg", data.msgs);
+                this.$store.dispatch("updateDialogLastMsg", data.msgs);
+                $A.messageSuccess(msg);
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            }).finally(_ => {
+                this.sendLoad = false;
+            });
+        },
+
         linkGet(refresh) {
             this.linkLoad++;
             this.$store.dispatch("call", {
@@ -1071,15 +1297,16 @@ export default {
                     refresh: refresh === true ? 'yes' : 'no'
                 },
             }).then(({data}) => {
-                this.linkLoad--;
                 this.linkData = Object.assign(data, {
-                    id: this.linkData.id
+                    id: this.linkData.id,
+                    name: this.linkData.name
                 });
-                this.linkCopy();
+                this.linkFocus();
             }).catch(({msg}) => {
-                this.linkLoad--;
                 this.linkShow = false
                 $A.modalError(msg);
+            }).finally(_ => {
+                this.linkLoad--;
             });
         },
 
@@ -1087,20 +1314,30 @@ export default {
             if (!this.linkData.url) {
                 return;
             }
-            this.$copyText(this.linkData.url).then(() => {
-                $A.messageSuccess(this.$L('复制成功！'));
-            }, () => {
-                $A.messageError(this.$L('复制失败！'));
+            this.linkFocus();
+            this.$copyText(this.linkData.url).then(_ => {
+                $A.messageSuccess('复制成功');
+            }).catch(_ => {
+                $A.messageError('复制失败');
             });
         },
 
         linkFocus() {
-            this.$refs.linkInput.focus({cursor:'all'});
+            this.$nextTick(_ => {
+                this.$refs.linkInput.focus({cursor:'all'});
+            });
         },
 
         shearTo() {
             if (this.shearIds.length == 0) {
                 return;
+            }
+            if (this.isParentShare) {
+                const tmpFile = this.fileLists.find(({id, share}) => share && this.shearIds.includes(id));
+                if (tmpFile) {
+                    $A.modalError(`${tmpFile.name} 当前正在共享，无法移动到另一个共享文件夹内`)
+                    return;
+                }
             }
             this.$store.dispatch("call", {
                 url: 'file/move',
@@ -1121,9 +1358,9 @@ export default {
             if (ids.length === 0) {
                 return
             }
-            const firstFile = this.files.find(item => item.id == ids[0]) || {};
+            const firstFile = this.fileLists.find(item => item.id == ids[0]) || {};
             const allFolder = !ids.find(id => {
-                return this.files.find(item => item.type != 'folder' && item.id == id)
+                return this.fileLists.find(item => item.type != 'folder' && item.id == id)
             });
             let typeName = allFolder ? "文件夹" : "文件"
             let fileName = `【${firstFile.name}】等${ids.length}个${typeName}`
@@ -1135,20 +1372,20 @@ export default {
                 content: '你确定要删除' + fileName + '吗？',
                 loading: true,
                 onOk: () => {
-                    this.$store.dispatch("call", {
-                        url: 'file/remove',
-                        data: {
-                            ids,
-                        },
-                    }).then(({msg}) => {
-                        $A.messageSuccess(msg);
-                        this.$Modal.remove();
-                        this.$store.dispatch("forgetFile", ids);
-                        this.selectIds = this.selectIds.filter(id => !ids.includes(id))
-                    }).catch(({msg}) => {
-                        $A.modalError(msg, 301);
-                        this.$Modal.remove();
-                    });
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("call", {
+                            url: 'file/remove',
+                            data: {
+                                ids,
+                            },
+                        }).then(({msg}) => {
+                            resolve(msg);
+                            this.$store.dispatch("forgetFile", ids);
+                            this.selectIds = this.selectIds.filter(id => !ids.includes(id))
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        });
+                    })
                 }
             });
         },
@@ -1168,8 +1405,12 @@ export default {
             })
         },
 
+        onParser(val) {
+            return val.replace(/[\\\/:*?\"<>|]/g, '')
+        },
+
         onBlur(item) {
-            if (this.files.find(({id, _edit}) => id == item.id && !_edit)) {
+            if (this.fileLists.find(({id, _edit}) => id == item.id && !_edit)) {
                 return;
             }
             this.onEnter(item);
@@ -1179,13 +1420,19 @@ export default {
             if (e.keyCode === 13) {
                 this.onEnter(item);
             } else if (e.keyCode === 27) {
-                this.setLoad(item.id, false)
-                this.setEdit(item.id, false)
+                const isCreate = !/^\d+$/.test(item.id);
+                if (isCreate) {
+                    item.newname = ''
+                    this.$store.dispatch("forgetFile", item.id);
+                } else {
+                    this.setLoad(item.id, false)
+                    this.setEdit(item.id, false)
+                }
             }
         },
 
         onEnter(item) {
-            let isCreate = !/^\d+$/.test(item.id);
+            const isCreate = !/^\d+$/.test(item.id);
             if (!item.newname) {
                 if (isCreate) {
                     this.$store.dispatch("forgetFile", item.id);
@@ -1210,6 +1457,7 @@ export default {
                     name: item.newname,
                     type: item.type,
                 },
+                spinner: 2000
             }).then(({data, msg}) => {
                 $A.messageSuccess(msg)
                 this.setLoad(item.id, false)
@@ -1217,6 +1465,7 @@ export default {
                 this.$store.dispatch("saveFile", data);
                 if (isCreate) {
                     this.$store.dispatch("forgetFile", item.id);
+                    this.shakeFile(data.id);
                 }
             }).catch(({msg}) => {
                 $A.modalError(msg)
@@ -1228,7 +1477,7 @@ export default {
         },
 
         setEdit(fileId, is) {
-            let item = this.$store.state.files.find(({id}) => id == fileId)
+            const item = this.$store.state.fileLists.find(({id}) => id == fileId)
             if (item) {
                 this.$set(item, '_edit', is);
                 if (is) {
@@ -1238,7 +1487,7 @@ export default {
         },
 
         setLoad(fileId, is) {
-            let item = this.$store.state.files.find(({id}) => id == fileId)
+            const item = this.$store.state.fileLists.find(({id}) => id == fileId)
             if (item) {
                 this.$set(item, '_load', is);
             }
@@ -1253,11 +1502,11 @@ export default {
         },
 
         onSearchChange() {
-            clearTimeout(this.searchTimeout);
+            this.searchTimeout && clearTimeout(this.searchTimeout);
             if (this.searchKey.trim() != '') {
                 this.searchTimeout = setTimeout(() => {
                     this.loadIng++;
-                    this.$store.dispatch("searchFiles", this.searchKey).then(() => {
+                    this.$store.dispatch("searchFiles", this.searchKey.trim()).then(() => {
                         this.loadIng--;
                     }).catch(() => {
                         this.loadIng--;
@@ -1274,7 +1523,6 @@ export default {
                     id: this.shareInfo.id
                 },
             }).then(({data}) => {
-                this.shareLoad--;
                 if (data.id == this.shareInfo.id) {
                     this.shareList = data.list.map(item => {
                         item._permission = item.permission;
@@ -1282,9 +1530,10 @@ export default {
                     });
                 }
             }).catch(({msg}) => {
-                this.shareLoad--;
                 this.shareShow = false;
                 $A.modalError(msg)
+            }).finally(_ => {
+                this.shareLoad--;
             })
         },
 
@@ -1300,13 +1549,11 @@ export default {
                     force: force === true ? 1 : 0
                 }),
             }).then(({data, msg}) => {
-                this.shareLoad--;
                 $A.messageSuccess(msg)
                 this.$store.dispatch("saveFile", data);
                 this.$set(this.shareInfo, 'userids', []);
                 this.getShare();
             }).catch(({ret, msg}) => {
-                this.shareLoad--;
                 if (ret === -3001) {
                     $A.modalConfirm({
                         content: '此文件夹内已有共享文件夹，子文件的共享状态将被取消，是否继续？',
@@ -1315,8 +1562,10 @@ export default {
                         }
                     })
                 } else {
-                    $A.modalError(msg, force === true ? 301 : 0)
+                    $A.modalError(msg)
                 }
+            }).finally(_ => {
+                this.shareLoad--;
             })
         },
 
@@ -1359,13 +1608,17 @@ export default {
                     })
                 } else {
                     item.permission = item._permission;
-                    $A.modalError(msg, force === true ? 301 : 0)
+                    $A.modalError(msg)
                 }
             })
         },
 
         uploadName(item) {
             return $A.getObject(item, 'response.data.full_name') || item.name
+        },
+
+        handleTableSort({key, order}) {
+            $A.IDBSave("cacheFileSort", ['asc', 'desc'].includes(order) ? {key, order} : {});
         },
 
         handleTableSelect(selection) {
@@ -1376,6 +1629,24 @@ export default {
             this.selectIds = [];
         },
 
+        clearShear() {
+            this.shearIds = [];
+        },
+
+        shakeFile(fileId) {
+            if (!fileId) {
+                return
+            }
+            this.$nextTick(_ => {
+                const dom = $A(this.$el).find(`[data-id="${fileId}"]`)
+                if (dom.length > 0) {
+                    $A.scrollIntoViewIfNeeded(dom[0])
+                    $A(dom[0]).addClass("common-shake")
+                    setTimeout(_ => $A(dom[0]).removeClass("common-shake"), 800)
+                }
+            })
+        },
+
         /********************拖动上传部分************************/
 
         pasteDragNext(e, type) {
@@ -1383,24 +1654,31 @@ export default {
             files = Array.prototype.slice.call(files);
             if (files.length > 0) {
                 e.preventDefault();
-                if (files.length > 0) {
-                    this.pasteFile = [];
-                    this.pasteItem = [];
-                    files.some(file => {
-                        let reader = new FileReader();
+                //
+                this.pasteFile = [];
+                this.pasteItem = [];
+                files.some(file => {
+                    const item = {
+                        type: $A.getMiddle(file.type, null, '/'),
+                        name: file.name,
+                        size: file.size,
+                        result: null
+                    }
+                    if (item.type === 'image') {
+                        const reader = new FileReader();
                         reader.readAsDataURL(file);
                         reader.onload = ({target}) => {
+                            item.result = target.result
                             this.pasteFile.push(file)
-                            this.pasteItem.push({
-                                type: $A.getMiddle(file.type, null, '/'),
-                                name: file.name,
-                                size: file.size,
-                                result: target.result
-                            })
+                            this.pasteItem.push(item)
                             this.pasteShow = true
                         }
-                    });
-                }
+                    } else {
+                        this.pasteFile.push(file)
+                        this.pasteItem.push(item)
+                        this.pasteShow = true
+                    }
+                });
             }
         },
 
@@ -1426,9 +1704,34 @@ export default {
         },
 
         pasteSend() {
+            const names = []
             this.pasteFile.some(file => {
-                this.$refs.fileUpload.upload(file)
+                if (!names.find(name => name === file.name)) {
+                    names.push(file.name)
+                    this.$refs.fileUpload.upload(file)
+                }
             });
+        },
+
+        fileBeforeClose() {
+            return new Promise(resolve => {
+                if (!this.$refs.fileContent) {
+                    resolve();
+                    return;
+                }
+                if (this.$refs.fileContent.equalContent) {
+                    resolve()
+                    return
+                }
+                $A.modalConfirm({
+                    content: '修改的内容尚未保存，确定要放弃修改吗？',
+                    cancelText: '取消',
+                    okText: '放弃',
+                    onOk: () => {
+                        resolve()
+                    }
+                });
+            })
         },
 
         /********************文件上传部分************************/
@@ -1446,6 +1749,8 @@ export default {
 
         uploadClear() {
             this.uploadList = this.uploadList.filter(({status}) => status !== 'finished')
+            this.$refs.fileUpload.clearFiles();
+            this.$refs.dirUpload.clearFiles();
         },
 
         uploadPercentageParse(val) {

@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var DETAILS = {
     className: 'string',
     begin: '\\[\n(multipart)?', end: '\\]\n'

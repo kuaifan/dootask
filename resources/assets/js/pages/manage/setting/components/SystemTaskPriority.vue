@@ -1,7 +1,7 @@
 <template>
     <div class="setting-component-item">
         <Form ref="formDatum" label-width="auto" @submit.native.prevent>
-            <Row class="setting-color">
+            <Row class="setting-color color-label-box">
                 <Col span="12">{{$L('名称')}}</Col>
                 <Col span="4">
                     <ETooltip :content="$L('数值越小级别越高')" max-width="auto" placement="top" transfer>
@@ -58,7 +58,7 @@ export default {
                 'name': '',
                 'priority': 1,
                 'days': 1,
-                'color': '#8bcf70',
+                'color': '#84C56A',
             }
         }
     },
@@ -119,12 +119,12 @@ export default {
                 if (save) {
                     $A.messageSuccess('修改成功');
                 }
-                this.loadIng--;
                 this.$store.state.taskPriority = $A.cloneJSON(data);
             }).catch(({msg}) => {
                 if (save) {
                     $A.modalError(msg);
                 }
+            }).finally(_ => {
                 this.loadIng--;
             });
         }

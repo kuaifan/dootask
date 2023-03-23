@@ -3,7 +3,7 @@ version: '3'
 services:
   php:
     container_name: "dootask-php-${APP_ID}"
-    image: "kuaifan/php:swoole-8.0"
+    image: "kuaifan/php:swoole-8.0.rc7"
     shm_size: "1024m"
     volumes:
       - ./docker/crontab/crontab.conf:/etc/supervisor/conf.d/crontab.conf
@@ -12,7 +12,6 @@ services:
       - ./docker/log/supervisor:/var/log/supervisor
       - ./:/var/www
     environment:
-      TZ: "Asia/Shanghai"
       LANG: "C.UTF-8"
       MODE: "production"
       MYSQL_HOST: "${DB_HOST}"
@@ -36,8 +35,6 @@ services:
     volumes:
       - ./docker/nginx:/etc/nginx/conf.d
       - ./public:/var/www/public
-    environment:
-      TZ: "Asia/Shanghai"
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.3"
@@ -47,13 +44,12 @@ services:
       - fileview
       - drawio-webapp
       - drawio-export
+      - minder
     restart: unless-stopped
 
   redis:
     container_name: "dootask-redis-${APP_ID}"
     image: "redis:alpine"
-    environment:
-      TZ: "Asia/Shanghai"
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.4"
@@ -62,14 +58,13 @@ services:
   mariadb:
     container_name: "dootask-mariadb-${APP_ID}"
     image: "mariadb:10.7.3"
-    ports: # mysql ports item
-      - "33062:3306" # mysql ports value
+    ports:
+      - "${DB_OPEN_PORT:-}:3306"
     volumes:
       - ./docker/mysql/repassword.sh:/etc/mysql/repassword.sh
       - ./docker/mysql/conf.d:/etc/mysql/conf.d
       - ./docker/mysql/data:/var/lib/mysql
     environment:
-      TZ: "Asia/Shanghai"
       MYSQL_PREFIX: "${DB_PREFIX}"
       MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
       MYSQL_DATABASE: "${DB_DATABASE}"
@@ -82,18 +77,19 @@ services:
 
   office:
     container_name: "dootask-office-${APP_ID}"
-    image: "onlyoffice/documentserver:7.0.0.132"
+    image: "onlyoffice/documentserver:7.3.2.8"
     volumes:
-      - ./docker/office/data:/var/www/onlyoffice/Data
       - ./docker/office/logs:/var/log/onlyoffice
-      - ./docker/office/resources/documenteditor/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/main/resources/css/app.css
-      - ./docker/office/resources/presentationeditor/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/presentationeditor/main/resources/css/app.css
-      - ./docker/office/resources/spreadsheeteditor/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/spreadsheeteditor/main/resources/css/app.css
-      - ./docker/office/resources/documenteditor/mobile/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/mobile/css/app.css
-      - ./docker/office/resources/presentationeditor/mobile/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/presentationeditor/mobile/css/app.css
-      - ./docker/office/resources/spreadsheeteditor/mobile/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/spreadsheeteditor/mobile/css/app.css
+      - ./docker/office/data:/var/www/onlyoffice/Data
+      - ./docker/office/resources/require.js:/var/www/onlyoffice/documentserver/web-apps/vendor/requirejs/require.js
+      - ./docker/office/resources/documenteditor/main/resources/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/main/resources/css/app.css
+      - ./docker/office/resources/documenteditor/mobile/css/964.css:/var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/mobile/css/964.css
+      - ./docker/office/resources/presentationeditor/main/resources/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/presentationeditor/main/resources/css/app.css
+      - ./docker/office/resources/presentationeditor/mobile/css/612.css:/var/www/onlyoffice/documentserver/web-apps/apps/presentationeditor/mobile/css/612.css
+      - ./docker/office/resources/spreadsheeteditor/main/resources/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/spreadsheeteditor/main/resources/css/app.css
+      - ./docker/office/resources/spreadsheeteditor/mobile/css/887.css:/var/www/onlyoffice/documentserver/web-apps/apps/spreadsheeteditor/mobile/css/887.css
     environment:
-      TZ: "Asia/Shanghai"
+      JWT_ENABLED: false
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.6"
@@ -101,10 +97,13 @@ services:
 
   fileview:
     container_name: "dootask-fileview-${APP_ID}"
-    image: "kuaifan/fileview:4.1.0-SNAPSHOT-RC4"
+    image: "kuaifan/fileview:4.1.0-SNAPSHOT-RC20"
+    platform: linux/amd64
     environment:
-      TZ: "Asia/Shanghai"
       KK_CONTEXT_PATH: "/fileview"
+      KK_OFFICE_PREVIEW_SWITCH_DISABLED: true
+      KK_FILE_UPLOAD_ENABLED: true
+      KK_MEDIA: "mp3,wav,mp4,mov,avi,wmv"
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.7"
@@ -112,7 +111,7 @@ services:
 
   drawio-webapp:
     container_name: "dootask-drawio-webapp-${APP_ID}"
-    image: "jgraph/drawio:16.6.1"
+    image: "jgraph/drawio:20.8.20"
     volumes:
       - ./docker/drawio/webapp/index.html:/usr/local/tomcat/webapps/draw/index.html
       - ./docker/drawio/webapp/stencils:/usr/local/tomcat/webapps/draw/stencils
@@ -122,22 +121,27 @@ services:
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.8"
-    environment:
-      TZ: "Asia/Shanghai"
     depends_on:
       - drawio-export
     restart: unless-stopped
 
   drawio-export:
     container_name: "dootask-drawio-export-${APP_ID}"
-    image: "jgraph/export-server"
+    image: "kuaifan/export-server:latest"
+    platform: linux/amd64
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.9"
-    environment:
-      TZ: "Asia/Shanghai"
     volumes:
       - ./docker/drawio/export/fonts:/usr/share/fonts/drawio
+    restart: unless-stopped
+
+  minder:
+    container_name: "dootask-minder-${APP_ID}"
+    image: "kuaifan/minder:0.1.1"
+    networks:
+      extnetwork:
+        ipv4_address: "${APP_IPPR}.10"
     restart: unless-stopped
 
 networks:

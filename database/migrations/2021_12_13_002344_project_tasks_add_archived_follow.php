@@ -27,7 +27,7 @@ class ProjectTasksAddArchivedFollow extends Migration
             // 更新数据
             Project::whereNotNull('archived_at')->chunkById(100, function ($lists) {
                 foreach ($lists as $item) {
-                    ProjectTask::whereProjectId($item->id)->whereArchivedAt(null)->update([
+                    ProjectTask::whereProjectId($item->id)->whereArchivedAt(null)->change([
                         'archived_at' => $item->archived_at,
                         'archived_follow' => 1
                     ]);

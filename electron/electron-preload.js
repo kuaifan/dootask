@@ -6,6 +6,7 @@ const {
 let reqId = 1;
 let reqInfo = {};
 let fileChangedListeners = {};
+let onlyChangedListeners = {};
 
 ipcRenderer.on('mainResp', (event, resp) => {
     let callbacks = reqInfo[resp.reqId];
@@ -33,6 +34,8 @@ contextBridge.exposeInMainWorld(
             msg.reqId = reqId++;
             reqInfo[msg.reqId] = {callback: callback, error: error};
 
+            //TODO Maybe a special function for this better than this hack?
+            //File watch special case where the callback is called multiple times
             if (msg.action == 'watchFile') {
                 fileChangedListeners[msg.path] = msg.listener;
                 delete msg.listener;
@@ -40,22 +43,29 @@ contextBridge.exposeInMainWorld(
 
             ipcRenderer.send('rendererReq', msg);
         },
-        registerMsgListener: (action, callback) => {
-            ipcRenderer.on(action, (event, args) => {
+        registerMsgListener: function (action, callback) {
+            ipcRenderer.on(action, function (event, args) {
                 callback(args);
             });
         },
-        listenOnce: (action, callback) => {
-            ipcRenderer.once(action, (event, args) => {
-                callback(args);
-            });
-        },
-        sendMessage: (action, args) => {
+        sendMessage: function (action, args) {
             ipcRenderer.send(action, args);
         },
-        sendSyncMessage: (action, args) => {
-            ipcRenderer.sendSync(action, args);
-        }
+        listenOnce: function (action, callback) {
+            ipcRenderer.once(action, function (event, args) {
+                callback(args);
+            });
+        },
+        listenerOnly: function (action, callback) {
+            if (typeof onlyChangedListeners[action] === "function") {
+                ipcRenderer.removeListener(action, onlyChangedListeners[action])
+                delete onlyChangedListeners[action]
+            }
+            onlyChangedListeners[action] = (event, args) => {
+                callback(args)
+            }
+            ipcRenderer.on(action, onlyChangedListeners[action])
+        },
     }
 );
 

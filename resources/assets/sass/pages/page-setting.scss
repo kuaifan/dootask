@@ -14,9 +14,13 @@
                 align-items: center;
                 > h1 {
                     flex: 1;
-                    color: #333333;
+                    width: 0;
+                    color: $primary-title-color;
                     font-size: 28px;
                     font-weight: 600;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    overflow: hidden;
                 }
                 .setting-more {
                     display: none;
@@ -44,8 +48,14 @@
                     padding: 0 20px;
                     margin: 5px 0;
                     position: relative;
-                    display: flex;
-                    align-items: center;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    overflow: hidden;
+
+                    &.flex {
+                        display: flex;
+                        align-items: center;
+                    }
 
                     .ivu-badge {
                         transform: scale(0.8);
@@ -55,13 +65,6 @@
                     &.active,
                     &:hover {
                         background-color: #F4F5F7;
-                    }
-
-                    &.version {
-                        cursor: default;
-                        &:hover {
-                            background-color: transparent;
-                        }
                     }
 
                     &.divided {
@@ -94,7 +97,7 @@
         }
         .setting-content {
             flex: 1;
-            overflow: auto;
+            overflow: hidden;
             position: relative;
             display: flex;
             flex-direction: column;
@@ -114,7 +117,7 @@
     }
     .setting-item {
         .ivu-input,
-        .ivu-select-selection {
+        .ivu-select-default {
             max-width: 460px;
         }
         .ivu-form {
@@ -142,7 +145,16 @@
                 }
             }
             .information {
-                color: #999999;
+                color: $primary-desc-color;
+            }
+        }
+        .setting-color {
+            &.color-label-box {
+                .el-tooltip {
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    overflow: hidden;
+                }
             }
         }
         .setting-template {
@@ -157,10 +169,22 @@
             }
         }
         .setting-footer {
+            display: flex;
+            align-items: center;
             > button {
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 height: 34px;
                 line-height: 32px;
                 min-width: 94px;
+                > span {
+                    margin-left: 6px;
+                    max-width: 100%;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
             }
         }
         .setting-auto-day {
@@ -169,6 +193,36 @@
             margin-top: 12px;
             line-height: 32px;
             margin-bottom: -10px;
+        }
+        .setting-checkin-load {
+            margin-bottom: 12px;
+            .common-loading {
+                width: 20px;
+                height: 20px;
+            }
+        }
+        .setting-checkin-lately {
+            > li {
+                padding-bottom: 8px;
+                .time {
+                    font-weight: bold;
+                }
+                .content {
+                    font-size: 13px;
+                    opacity: 0.7;
+                }
+            }
+        }
+        .setting-checkin-row {
+            overflow: auto;
+        }
+        .setting-checkin-button {
+            padding-bottom: 4px;
+            cursor: pointer;
+            color: #2b85e4;
+            &:hover {
+                text-decoration: underline;
+            }
         }
         &.submit {
             position: absolute;
@@ -209,9 +263,9 @@
                             .setting-footer {
                                 margin: 0 -32px;
                             }
-                            .email-setting-box {
+                            .block-setting-box {
                                 position: relative;
-                                padding: 36px 24px 4px;
+                                padding: 44px 24px 4px;
                                 margin: 24px 0 12px;
                                 border-radius: 8px;
                                 border: 1px solid #eeeeee;
@@ -232,9 +286,37 @@
                                     font-weight: 500;
                                     transform: translateY(-50%);
                                 }
+
+                                .form-box {
+                                    overflow: auto;
+                                }
+
+                                .ivu-form-item {
+                                    .ivu-form {
+                                        padding: 12px 0 0 0;
+                                        .ivu-form-item {
+                                            margin-bottom: 8px;
+                                            .ivu-form-item-content {
+                                                display: flex;
+                                                align-items: center;
+                                            }
+                                        }
+                                    }
+                                }
+
                             }
-                            .email-setting-placeholder {
+                            .block-setting-placeholder {
                                 height: 8px;
+                            }
+                            .export-data {
+                                margin-top: 6px;
+                                > p {
+                                    cursor: pointer;
+                                    color: #2b85e4;
+                                    &:hover {
+                                        text-decoration: underline;
+                                    }
+                                }
                             }
                         }
                     }
@@ -246,13 +328,54 @@
                 padding: 16px 24px 0;
                 border-top: 1px solid #F4F4F5;
             }
+
+            .setting-input {
+                max-width: 460px;
+            }
+
+            .setting-send-input {
+                max-width: 460px;
+
+                .ivu-input-group-append {
+                    background-color: #EDEDED !important;
+                    border: 1px solid #EDEDED !important;
+                    color: #999 !important;
+
+                    &:before {
+                        background: #EDEDED;
+                    }
+                }
+            }
+            .setting-button {
+                margin-left: 8px;
+            }
         }
+    }
+}
+
+.page-setting-delete-box {
+    .big-text {
+        font-size: 16px;
+        font-weight: 500;
+        color: #f00;
+    }
+
+    .small-text {
+        margin-top: 15px;
+
+        > div {
+            margin: 10px 0;
+        }
+    }
+    .button-box {
+        text-align: center;
     }
 }
 
 @media (max-width: 768px) {
     .page-setting {
         .setting-head {
+            margin: 32px 32px 0;
             .setting-titbox {
                 .setting-title {
                     .setting-more {
@@ -268,6 +391,11 @@
         }
         .setting-box {
             position: relative;
+            &.show768-box {
+                .setting-menu {
+                    transform: translateX(0);
+                }
+            }
             .setting-menu {
                 position: absolute;
                 top: 0;
@@ -275,14 +403,30 @@
                 width: 100%;
                 height: 100%;
                 z-index: 9;
-                transition: all 0.2s;
                 background-color: #ffffff;
                 transform: translateX(-120%);
-                &.show768-menu {
-                    transform: translateX(0);
-                }
                 > ul {
                     padding: 12px 32px;
+                    > li {
+                        padding: 0 8px;
+                        &:hover {
+                            background-color: transparent;
+                        }
+                    }
+                }
+            }
+            .setting-content {
+                .setting-content-title {
+                    display: none;
+                }
+            }
+        }
+        .setting-item {
+            .setting-footer {
+                > button {
+                    flex: 1;
+                    height: 40px;
+                    line-height: 38px;
                 }
             }
         }

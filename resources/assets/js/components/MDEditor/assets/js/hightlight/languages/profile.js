@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   return {
     contains: [
       hljs.C_NUMBER_MODE,

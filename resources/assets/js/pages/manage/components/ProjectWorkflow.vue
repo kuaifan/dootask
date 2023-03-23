@@ -27,7 +27,7 @@
                         <div class="taskflow-config-table">
                             <div class="taskflow-config-table-left-container">
                                 <div class="taskflow-config-table-column-header left-header">{{$L('配置项')}}</div>
-                                <div :ref="`overlay_${data.id}`" class="taskflow-config-table-column-body overlay-y">
+                                <div :ref="`overlay_${data.id}`" class="taskflow-config-table-column-body scrollbar-overlay">
                                     <div class="taskflow-config-table-block">
                                         <div class="taskflow-config-table-block-title">{{$L('设置状态为')}}</div>
                                         <div class="taskflow-config-table-block-item">
@@ -67,7 +67,7 @@
                                 <Draggable
                                     :list="data.project_flow_item"
                                     :animation="150"
-                                    :disabled="!isDesktop"
+                                    :disabled="windowSmall || $isEEUiApp"
                                     class="taskflow-config-table-list-wrapper"
                                     tag="div"
                                     draggable=".column-border"
@@ -113,7 +113,7 @@
                                                 </EDropdown>
                                             </div>
                                         </div>
-                                        <div :ref="`overlay_${data.id}`" class="taskflow-config-table-column-body overlay-y">
+                                        <div :ref="`overlay_${data.id}`" class="taskflow-config-table-column-body scrollbar-overlay">
                                             <div class="taskflow-config-table-block">
                                                 <div class="taskflow-config-table-block-title"></div>
                                                 <RadioGroup v-model="item.status">
@@ -159,14 +159,14 @@
                         <Radio label="replace">{{$L('流转模式')}}</Radio>
                         <Radio label="merge">{{$L('剔除模式')}}</Radio>
                     </RadioGroup>
-                    <div v-if="userData.usertype=='replace'" class="form-tip">{{$L('流转到此状态时改变任务负责人为状态负责人，原本的任务负责人移至协助人员。')}}</div>
-                    <div v-else-if="userData.usertype=='merge'" class="form-tip">{{$L('流转到此状态时改变任务负责人为状态负责人（并保留操作状态的人员），原本的任务负责人移至协助人员。')}}</div>
-                    <div v-else class="form-tip">{{$L('流转到此状态时添加状态负责人至任务负责人。')}}</div>
+                    <div v-if="userData.usertype=='replace'" class="form-tip">{{$L(`流转到【${userData.name}】时改变任务负责人为状态负责人，原本的任务负责人移至协助人员。`)}}</div>
+                    <div v-else-if="userData.usertype=='merge'" class="form-tip">{{$L(`流转到【${userData.name}】时改变任务负责人为状态负责人（并保留操作状态的人员），原本的任务负责人移至协助人员。`)}}</div>
+                    <div v-else class="form-tip">{{$L(`流转到【${userData.name}】时添加状态负责人至任务负责人。`)}}</div>
                 </FormItem>
                 <FormItem prop="userlimit" :label="$L('限制负责人')">
                     <iSwitch v-model="userData.userlimit" :true-value="1" :false-value="0"/>
-                    <div v-if="userData.userlimit===1" class="form-tip">{{$L('在此状态的任务状态负责人、项目管理员可以修改状态。')}}</div>
-                    <div v-else class="form-tip">{{$L('在此状态的任务任务负责人、项目管理员可以修改状态。')}}</div>
+                    <div v-if="userData.userlimit===1" class="form-tip">{{$L(`流转到【${userData.name}】时，[任务负责人] 和 [项目管理员] 可以修改状态。`)}}</div>
+                    <div v-else class="form-tip">{{$L(`流转到【${userData.name}】时，[任务负责人] 和 [项目管理员] 可以修改状态。`)}}</div>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -207,10 +207,6 @@ export default {
 
     },
 
-    computed: {
-        ...mapState(['isDesktop'])
-    },
-
     watch: {
         projectId: {
             handler(val) {
@@ -231,7 +227,6 @@ export default {
                     project_id: this.projectId,
                 },
             }).then(({data}) => {
-                this.loadIng--;
                 this.list = data.map(item => {
                     item.project_flow_bak = JSON.stringify(item.project_flow_item)
                     return item;
@@ -239,8 +234,9 @@ export default {
                 this.openIndex = this.list.length === 1 ? ("index_" + this.list[0].id) : ""
                 this.$nextTick(this.syncScroller);
             }).catch(({msg}) => {
-                this.loadIng--;
                 $A.modalError(msg);
+            }).finally(_ => {
+                this.loadIng--;
             });
         },
 
@@ -340,32 +336,30 @@ export default {
                 loading: true,
                 onOk: () => {
                     if (data.id > 0) {
-                        this.loadIng++;
-                        this.$store.dispatch("call", {
-                            url: 'project/flow/delete',
-                            data: {
-                                project_id: this.projectId,
-                            },
-                        }).then(({msg}) => {
-                            this.loadIng--;
-                            $.messageSuccess(msg);
-                            this.$Modal.remove();
-                            //
-                            let index = this.list.findIndex(({id}) => id == data.id)
-                            if (index > -1) {
-                                this.list.splice(index, 1)
-                            }
-                        }).catch(({msg}) => {
-                            this.loadIng--;
-                            $A.modalError(msg, 301);
-                            this.$Modal.remove();
-                        });
-                    } else {
-                        let index = this.list.findIndex(({id}) => id == data.id)
-                        if (index > -1) {
-                            this.list.splice(index, 1)
-                        }
-                        this.$Modal.remove();
+                        return new Promise((resolve, reject) => {
+                            this.loadIng++;
+                            this.$store.dispatch("call", {
+                                url: 'project/flow/delete',
+                                data: {
+                                    project_id: this.projectId,
+                                },
+                            }).then(({msg}) => {
+                                resolve(msg);
+                                //
+                                let index = this.list.findIndex(({id}) => id == data.id)
+                                if (index > -1) {
+                                    this.list.splice(index, 1)
+                                }
+                            }).catch(({msg}) => {
+                                reject(msg);
+                            }).finally(_ => {
+                                this.loadIng--;
+                            });
+                        })
+                    }
+                    const index = this.list.findIndex(({id}) => id == data.id)
+                    if (index > -1) {
+                        this.list.splice(index, 1)
                     }
                 }
             });
@@ -408,12 +402,12 @@ export default {
             $A.modalInput({
                 value: item.name,
                 title: "修改名称",
-                placeholder: "输入流程名称",
+                placeholder: "请输入流程名称",
                 onOk: (name) => {
-                    if (name) {
-                        this.$set(item, 'name', name);
+                    if (!name) {
+                        return '请输入流程名称';
                     }
-                    return true;
+                    this.$set(item, 'name', name);
                 }
             });
         },
@@ -434,25 +428,25 @@ export default {
         onAdd(data) {
             $A.modalInput({
                 title: "添加状态",
-                placeholder: "输入状态名称",
+                placeholder: "请输入状态名称",
                 onOk: (name) => {
-                    if (name) {
-                        let id = $A.randNum(100000, 999999) * -1;
-                        let turns = data.project_flow_item.map(({id}) => id)
-                        data.project_flow_item.push({
-                            id,
-                            name,
-                            status: 'end',
-                            turns,
-                            userids: [],
-                            usertype: 'add',
-                            userlimit: 0,
-                        })
-                        data.project_flow_item.some(item => {
-                            item.turns.push(id)
-                        })
+                    if (!name) {
+                        return '请输入状态名称'
                     }
-                    return true;
+                    const id = $A.randNum(100000, 999999) * -1;
+                    const turns = data.project_flow_item.map(({id}) => id)
+                    data.project_flow_item.push({
+                        id,
+                        name,
+                        status: 'end',
+                        turns,
+                        userids: [],
+                        usertype: 'add',
+                        userlimit: 0,
+                    })
+                    data.project_flow_item.some(item => {
+                        item.turns.push(id)
+                    })
                 }
             });
         },
@@ -475,7 +469,6 @@ export default {
                 },
                 method: 'post',
             }).then(({data, msg}) => {
-                this.loadIng--;
                 $.messageSuccess(msg)
                 //
                 data.project_flow_bak = JSON.stringify(data.project_flow_item)
@@ -488,8 +481,9 @@ export default {
                 this.openIndex = "index_" + data.id;
                 this.$nextTick(this.syncScroller);
             }).catch(({msg}) => {
-                this.loadIng--;
                 $A.modalError(msg);
+            }).finally(_ => {
+                this.loadIng--;
             });
         },
 

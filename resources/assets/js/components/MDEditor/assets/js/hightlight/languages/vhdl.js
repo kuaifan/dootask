@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   // Regular expression for VHDL numeric literals.
 
   // Decimal literal:

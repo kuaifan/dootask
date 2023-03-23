@@ -5,7 +5,7 @@
                 <ReportMy ref="report" v-if="reportTabs === 'my'" @on-view="onView" @on-edit="onEditReport"/>
             </TabPane>
             <TabPane :label="tabRebder(reportUnreadNumber)" name="receive">
-                <ReportReceive v-if="reportTabs === 'receive'" @on-view="onView"/>
+                <ReportReceive v-if="reportTabs === 'receive'" @on-view="onView" @on-read="onRead"/>
             </TabPane>
         </Tabs>
         <DrawerOverlay
@@ -31,6 +31,7 @@ import ReportMy from "./ReportMy"
 import ReportReceive from "./ReportReceive"
 import ReportDetail from "./ReportDetail"
 import DrawerOverlay from "../../../components/DrawerOverlay";
+import {mapState} from "vuex";
 
 export default {
     name: "Report",
@@ -40,10 +41,6 @@ export default {
     },
 
     props: {
-        reportUnreadNumber: {
-            type: Number,
-            default: 0
-        },
         reportType: {
             default: "my"
         }
@@ -63,8 +60,17 @@ export default {
         this.reportTabs = this.reportType;
         //
         if (this.$isMainElectron) {
-            this.$Electron.registerMsgListener('reportSaveSuccess', this.saveSuccess)
+            this.$Electron.listenerOnly('reportSaveSuccess', ({data, msg}) => {
+                $A.messageSuccess(msg)
+                this.saveSuccess(data)
+            })
         }
+    },
+
+    computed: {
+        ...mapState([
+            'reportUnreadNumber'
+        ])
     },
 
     methods: {
@@ -100,14 +106,18 @@ export default {
                     height: Math.min(window.screen.availHeight, 900),
                 }
                 this.$Electron.sendMessage('windowRouter', {
-                    name: 'report-' + row.id,
-                    path: "/single/report/detail/" + row.id,
+                    name: `report-detail-${row.id}`,
+                    path: `/single/report/detail/${row.id}`,
                     force: false,
                     config
                 });
             }else{
                 this.showDetailDrawer = true;
             }
+        },
+
+        onRead() {
+            this.$emit("on-read", 0)
         },
 
         onEditReport(id) {
@@ -119,8 +129,8 @@ export default {
                     height: Math.min(window.screen.availHeight, 900),
                 }
                 this.$Electron.sendMessage('windowRouter', {
-                    name: 'report-' + id,
-                    path: "/single/report/edit/" + id,
+                    name: `report-edit-${id}`,
+                    path: `/single/report/edit/${id}`,
                     force: false,
                     config
                 });

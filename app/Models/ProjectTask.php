@@ -7,12 +7,9 @@ use App\Module\Base;
 use App\Tasks\PushTask;
 use Arr;
 use Carbon\Carbon;
-use Config;
 use DB;
-use Exception;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Mail;
 use Request;
 
 /**
@@ -39,6 +36,8 @@ use Request;
  * @property string|null $p_name 优先级名称
  * @property string|null $p_color 优先级颜色
  * @property int|null $sort 排序(ASC)
+ * @property string|null $loop 重复周期
+ * @property string|null $loop_at 下一次重复时间
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -81,6 +80,8 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereFlowItemId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereFlowItemName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereLoop($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereLoopAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask wherePColor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask wherePLevel($value)
@@ -303,6 +304,7 @@ class ProjectTask extends AbstractModel
                 'project_tasks.*',
                 'project_task_users.owner'
             ])
+            ->selectRaw("1 AS assist")
             ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_id')
             ->where('project_task_users.userid', $userid);
         if ($owner !== null) {
@@ -529,7 +531,7 @@ class ProjectTask extends AbstractModel
     {
         AbstractModel::transaction(function () use ($data, &$updateMarking) {
             // 判断版本
-            Base::checkClientVersion('0.6.0');
+            Base::checkClientVersion('0.19.0');
             // 主任务
             $mainTask = $this->parent_id > 0 ? self::find($this->parent_id) : null;
             // 工作流
@@ -626,7 +628,7 @@ class ProjectTask extends AbstractModel
                     if ($this->complete_at) {
                         throw new ApiException('任务已完成');
                     }
-                    $this->completeTask(Carbon::now());
+                    $this->completeTask(Carbon::now(), isset($newFlowItem) ? $newFlowItem->name : null);
                 } else {
                     // 标记未完成
                     if (!$this->complete_at) {
@@ -647,10 +649,13 @@ class ProjectTask extends AbstractModel
                     'change' => [$this->name, $data['name']]
                 ]);
                 $this->name = $data['name'];
+                if ($this->dialog_id) {
+                    WebSocketDialog::updateData(['id' => $this->dialog_id], ['name' => $this->name]);
+                }
             }
             // 负责人
             if (Arr::exists($data, 'owner')) {
-                $count = $this->taskUser->where('owner', 1)->count();
+                $older = $this->taskUser->where('owner', 1)->pluck('userid')->toArray();
                 $array = [];
                 $owner = is_array($data['owner']) ? $data['owner'] : [$data['owner']];
                 if (count($owner) > 10) {
@@ -669,20 +674,18 @@ class ProjectTask extends AbstractModel
                         'owner' => 1,
                     ]);
                     $array[] = $uid;
-                    if ($this->parent_id) {
-                        break; // 子任务只能是一个负责人
-                    }
                 }
                 if ($array) {
-                    if ($count == 0 && count($array) == 1 && $array[0] == User::userid()) {
+                    if (count($older) == 0 && count($array) == 1 && $array[0] == User::userid()) {
                         $this->addLog("认领{任务}");
                     } else {
                         $this->addLog("修改{任务}负责人", ['userid' => $array]);
                     }
+                    $this->taskPush(array_values(array_diff($array, $older)), 0);
                 }
                 $rows = ProjectTaskUser::whereTaskId($this->id)->whereOwner(1)->whereNotIn('userid', $array)->get();
                 if ($rows->isNotEmpty()) {
-                    $this->addLog("删除{任务}负责人", ['userid' => $rows->implode('userid', ',')]);
+                    $this->addLog("删除{任务}负责人", ['userid' => $rows->pluck('userid')]);
                     foreach ($rows as $row) {
                         $row->delete();
                     }
@@ -697,7 +700,7 @@ class ProjectTask extends AbstractModel
                 $this->start_at = null;
                 $this->end_at = null;
                 $times = $data['times'];
-                list($start, $end) = is_string($times) ? explode(",", $times) : (is_array($times) ? $times : []);
+                list($start, $end, $desc) = is_string($times) ? explode(",", $times) : (is_array($times) ? $times : []);
                 if (Base::isDate($start) && Base::isDate($end) && $start != $end) {
                     $start_at = Carbon::parse($start);
                     $end_at = Carbon::parse($end);
@@ -758,15 +761,38 @@ class ProjectTask extends AbstractModel
                     });
                 }
                 $newStringAt = $this->start_at ? ($this->start_at->toDateTimeString() . '~' . $this->end_at->toDateTimeString()) : '';
-                $this->addLog("修改{任务}时间", [
+                $newDesc = $desc ? "（备注：{$desc}）" : "";
+                $this->addLog("修改{任务}时间" . $newDesc, [
                     'change' => [$oldStringAt, $newStringAt]
                 ]);
-
-                //修改计划时间需要重置任务邮件提醒日志
-                ProjectTaskMailLog::whereTaskId($this->id)->delete();
+                $this->taskPush(null, 3, $newDesc);
             }
-            // 以下紧顶级任务可修改
+            // 以下仅顶级任务可修改
             if ($this->parent_id === 0) {
+                // 重复周期
+                $loopAt = $this->loop_at;
+                $loopDesc = $this->loopDesc();
+                if (Arr::exists($data, 'loop')) {
+                    $this->loop = $data['loop'];
+                    if (!$this->refreshLoop()) {
+                        throw new ApiException('重复周期选择错误');
+                    }
+                } elseif (Arr::exists($data, 'times')) {
+                    // 更新任务时间也要更新重复周期
+                    $this->refreshLoop();
+                }
+                $oldLoop = $loopAt ? Carbon::parse($loopAt)->toDateTimeString() : null;
+                $newLoop = $this->loop_at ? Carbon::parse($this->loop_at)->toDateTimeString() : null;
+                if ($oldLoop != $newLoop) {
+                    $this->addLog("修改{任务}下个周期", [
+                        'change' => [$oldLoop, $newLoop]
+                    ]);
+                }
+                if ($loopDesc != $this->loopDesc()) {
+                    $this->addLog("修改{任务}重复周期", [
+                        'change' => [$loopDesc, $this->loopDesc()]
+                    ]);
+                }
                 // 协助人员
                 if (Arr::exists($data, 'assist')) {
                     $array = [];
@@ -793,7 +819,7 @@ class ProjectTask extends AbstractModel
                     }
                     $rows = ProjectTaskUser::whereTaskId($this->id)->whereOwner(0)->whereNotIn('userid', $array)->get();
                     if ($rows->isNotEmpty()) {
-                        $this->addLog("删除{任务}协助人员", ['userid' => $rows->implode('userid', ',')]);
+                        $this->addLog("删除{任务}协助人员", ['userid' => $rows->pluck('userid')]);
                         foreach ($rows as $row) {
                             $row->delete();
                         }
@@ -861,6 +887,141 @@ class ProjectTask extends AbstractModel
     }
 
     /**
+     * 刷新重复周期时间
+     * @param bool $save 是否执行保存
+     * @return bool
+     */
+    public function refreshLoop($save = false)
+    {
+        $success = true;
+        if ($this->start_at) {
+            $base = Carbon::parse($this->start_at);
+            if ($base->lt(Carbon::today())) {
+                // 如果任务开始时间小于今天则基数时间为今天
+                $base = Carbon::parse(date("Y-m-d {$base->toTimeString()}"));
+            }
+        } else {
+            // 未设置任务时间时基数时间为今天
+            $base = Carbon::today();
+        }
+        switch ($this->loop) {
+            case "day":
+                $this->loop_at = $base->addDay();
+                break;
+            case "weekdays":
+                $this->loop_at = $base->addWeekday();
+                break;
+            case "week":
+                $this->loop_at = $base->addWeek();
+                break;
+            case "twoweeks":
+                $this->loop_at = $base->addWeeks(2);
+                break;
+            case "month":
+                $this->loop_at = $base->addMonth();
+                break;
+            case "year":
+                $this->loop_at = $base->addYear();
+                break;
+            case "never":
+                $this->loop_at = null;
+                break;
+            default:
+                if (Base::isNumber($this->loop)) {
+                    $this->loop_at = $base->addDays($this->loop);
+                } else {
+                    $this->loop_at = null;
+                    $success = false;
+                }
+                break;
+        }
+        if ($success && $save) {
+            $this->save();
+        }
+        return $success;
+    }
+
+    /**
+     * 获取周期描述
+     * @return string
+     */
+    public function loopDesc() {
+        $loopDesc = "从不";
+        switch ($this->loop) {
+            case "day":
+                $loopDesc = "每天";
+                break;
+            case "weekdays":
+                $loopDesc = "每个工作日";
+                break;
+            case "week":
+                $loopDesc = "每周";
+                break;
+            case "twoweeks":
+                $loopDesc = "每两周";
+                break;
+            case "month":
+                $loopDesc = "每月";
+                break;
+            case "year":
+                $loopDesc = "每年";
+                break;
+            default:
+                if (Base::isNumber($this->loop)) {
+                    $loopDesc = "每{$this->loop}天";
+                }
+                break;
+        }
+        return $loopDesc;
+    }
+
+    /**
+     * 复制任务
+     * @return self
+     */
+    public function copyTask()
+    {
+        if ($this->parent_id > 0) {
+            throw new ApiException('子任务禁止复制');
+        }
+        return AbstractModel::transaction(function() {
+            // 复制任务
+            $task = $this->replicate();
+            $task->dialog_id = 0;
+            $task->archived_at = null;
+            $task->archived_userid = 0;
+            $task->archived_follow = 0;
+            $task->complete_at = null;
+            $task->created_at = Carbon::now();
+            $task->save();
+            // 复制任务内容
+            if ($this->content) {
+                $tmp = $this->content->replicate();
+                $tmp->task_id = $task->id;
+                $tmp->created_at = Carbon::now();
+                $tmp->save();
+            }
+            // 复制任务附件
+            foreach ($this->taskFile as $taskFile) {
+                $tmp = $taskFile->replicate();
+                $tmp->task_id = $task->id;
+                $tmp->created_at = Carbon::now();
+                $tmp->save();
+            }
+            // 复制任务成员
+            foreach ($this->taskUser as $taskUser) {
+                $tmp = $taskUser->replicate();
+                $tmp->task_id = $task->id;
+                $tmp->task_pid = $task->id;
+                $tmp->created_at = Carbon::now();
+                $tmp->save();
+            }
+            //
+            return $task;
+        });
+    }
+
+    /**
      * 同步项目成员至聊天室
      */
     public function syncDialogUser()
@@ -879,9 +1040,11 @@ class ProjectTask extends AbstractModel
                 WebSocketDialogUser::updateInsert([
                     'dialog_id' => $this->dialog_id,
                     'userid' => $userid,
+                ], [
+                    'important' => 1
                 ]);
             }
-            WebSocketDialogUser::whereDialogId($this->dialog_id)->whereNotIn('userid', $userids)->delete();
+            WebSocketDialogUser::whereDialogId($this->dialog_id)->whereNotIn('userid', $userids)->whereImportant(1)->remove();
         });
     }
 
@@ -929,11 +1092,18 @@ class ProjectTask extends AbstractModel
 
     /**
      * 权限版本
-     * @param int $level 1-负责人，2-协助人/负责人，3-创建人/协助人/负责人
+     * @param int $level
+     * 1：负责人
+     * 2：协助人/负责人
+     * 3：创建人/协助人/负责人
+     * 4：任务群聊成员/3
      * @return bool
      */
     public function permission($level = 1)
     {
+        if ($level >= 4) {
+            return $this->permission(3) || $this->existDialogUser();
+        }
         if ($level >= 3 && $this->isCreater()) {
             return true;
         }
@@ -941,6 +1111,15 @@ class ProjectTask extends AbstractModel
             return true;
         }
         return $this->isOwner();
+    }
+
+    /**
+     * 判断是否在任务对话里
+     * @return bool
+     */
+    public function existDialogUser()
+    {
+        return $this->dialog_id && WebSocketDialogUser::whereDialogId($this->dialog_id)->whereUserid(User::userid())->exists();
     }
 
     /**
@@ -998,15 +1177,22 @@ class ProjectTask extends AbstractModel
     /**
      * 标记已完成、未完成
      * @param Carbon|null $complete_at 完成时间
+     * @param String $complete_name 已完成名称（留空为：已完成）
      * @return bool
      */
-    public function completeTask($complete_at)
+    public function completeTask($complete_at, $complete_name = null)
     {
-        AbstractModel::transaction(function () use ($complete_at) {
+        AbstractModel::transaction(function () use ($complete_at, $complete_name) {
+            $addMsg = $this->parent_id == 0 && $this->dialog_id > 0;
             if ($complete_at === null) {
                 // 标记未完成
                 $this->complete_at = null;
                 $this->addLog("标记{任务}未完成");
+                if ($addMsg) {
+                    WebSocketDialogMsg::sendMsg(null, $this->dialog_id, 'notice', [
+                        'notice' => "标记任务未完成"
+                    ], 0, true, true);
+                }
             } else {
                 // 标记已完成
                 if ($this->parent_id == 0) {
@@ -1017,8 +1203,16 @@ class ProjectTask extends AbstractModel
                 if (!$this->hasOwner()) {
                     throw new ApiException('请先领取任务');
                 }
+                if (empty($complete_name)) {
+                    $complete_name = '已完成';
+                }
                 $this->complete_at = $complete_at;
-                $this->addLog("标记{任务}已完成");
+                $this->addLog("标记{任务}{$complete_name}");
+                if ($addMsg) {
+                    WebSocketDialogMsg::sendMsg(null, $this->dialog_id, 'notice', [
+                        'notice' => "标记任务{$complete_name}"
+                    ], 0, true, true);
+                }
             }
             $this->save();
         });
@@ -1063,12 +1257,12 @@ class ProjectTask extends AbstractModel
                 $this->archived_follow = 0;
                 $this->addLog($logText, [], $userid);
             }
-            $this->pushMsg('update', [
+            $this->pushMsg($archived_at === null ? 'recovery' : 'archived', [
                 'id' => $this->id,
                 'archived_at' => $this->archived_at,
                 'archived_userid' => $this->archived_userid,
             ]);
-            self::whereParentId($this->id)->update([
+            self::whereParentId($this->id)->change([
                 'archived_at' => $this->archived_at,
                 'archived_userid' => $this->archived_userid,
                 'archived_follow' => $this->archived_follow,
@@ -1090,7 +1284,7 @@ class ProjectTask extends AbstractModel
                 $dialog = WebSocketDialog::find($this->dialog_id);
                 $dialog?->deleteDialog();
             }
-            self::whereParentId($this->id)->delete();
+            self::whereParentId($this->id)->remove();
             $this->deleted_userid = User::userid();
             $this->save();
             $this->addLog("删除{任务}");
@@ -1107,12 +1301,12 @@ class ProjectTask extends AbstractModel
      * @param bool $pushMsg 是否推送
      * @return bool
      */
-    public function recoveryTask($pushMsg = true)
+    public function restoreTask($pushMsg = true)
     {
         AbstractModel::transaction(function () {
             if ($this->dialog_id) {
                 $dialog = WebSocketDialog::withTrashed()->find($this->dialog_id);
-                $dialog?->recoveryDialog();
+                $dialog?->restoreDialog();
             }
             self::whereParentId($this->id)->withTrashed()->restore();
             $this->addLog("还原{任务}");
@@ -1175,32 +1369,122 @@ class ProjectTask extends AbstractModel
             $data = $data->toArray();
         }
         //
-        $array = [$userid, []];
+        $userids = [];
         if ($userid === null) {
-            $array[0] = $this->project->relationUserids();
+            $userids = $this->project->relationUserids();
         } elseif (!is_array($userid)) {
-            $array[0] = [$userid];
+            $userids = [$userid];
         }
         //
-        if (isset($data['owner'])) {
-            $owners = ProjectTaskUser::whereTaskId($data['id'])->whereOwner(1)->pluck('userid')->toArray();
-            $array = [array_intersect($array[0], $owners), array_diff($array[0], $owners)];
-        }
-        foreach ($array as $index => $item) {
-            if ($index > 0) {
-                $data['owner'] = 0;
+        $array = [];
+        if (empty($data['parent_id'])) {
+            if (Arr::exists($data, 'owner') || Arr::exists($data, 'assist')) {
+                $taskUser = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($data['id'])->get();
+                // 负责人
+                $owners = $taskUser->where('owner', 1)->pluck('userid')->toArray();
+                $owners = array_intersect($userids, $owners);
+                if ($owners) {
+                    $array[] = [
+                        'userid' => array_values($owners),
+                        'data' => array_merge($data, [
+                            'owner' => 1,
+                            'assist' => 1,
+                        ])
+                    ];
+                }
+                // 协助人
+                $assists = $taskUser->pluck('userid')->toArray();
+                $assists = array_intersect($userids, array_diff($assists, $owners));
+                if ($assists) {
+                    $array[] = [
+                        'userid' => array_values($assists),
+                        'data' => array_merge($data, [
+                            'owner' => 0,
+                            'assist' => 1,
+                        ])
+                    ];
+                }
+                // 项目成员（其他人）
+                $userids = array_diff($userids, $owners, $assists);
+                $data = array_merge($data, [
+                    'owner' => 0,
+                    'assist' => 0,
+                ]);
             }
+        }
+        $array[] = [
+            'userid' => array_values($userids),
+            'data' => $data
+        ];
+        //
+        foreach ($array as $item) {
             $params = [
                 'ignoreFd' => Request::header('fd'),
                 'userid' => array_values($item),
                 'msg' => [
                     'type' => 'projectTask',
                     'action' => $action,
-                    'data' => $data,
+                    'data' => $item['data'],
                 ]
             ];
             $task = new PushTask($params, false);
             Task::deliver($task);
+        }
+    }
+
+    /**
+     * 任务提醒
+     * @param $userids
+     * @param int $type 0-新任务、1-即将超时、2-已超时、3-修改时间
+     * @param string $suffix 描述后缀
+     * @return void
+     */
+    public function taskPush($userids, int $type, string $suffix = "")
+    {
+        if ($userids === null) {
+            $userids = $this->taskUser->pluck('userid')->toArray();
+        }
+        if (empty($userids)) {
+            return;
+        }
+        $owners = $this->taskUser->pluck('owner', 'userid')->toArray();
+        $receivers = User::whereIn('userid', $userids)->whereNull('disable_at')->get();
+        if (empty($receivers)) {
+            return;
+        }
+
+        $botUser = User::botGetOrCreate('task-alert');
+        if (empty($botUser)) {
+            return;
+        }
+
+        $taskHtml = "<span class=\"mention task\" data-id=\"{$this->id}\">#{$this->name}</span>";
+        $text = match ($type) {
+            1 => "您的任务 {$taskHtml} 即将超时。",
+            2 => "您的任务 {$taskHtml} 已经超时。",
+            3 => "您的任务 {$taskHtml} 时间已修改。",
+            default => "您有一个新任务 {$taskHtml}。",
+        };
+
+        /** @var User $user */
+        foreach ($receivers as $receiver) {
+            $data = [
+                'type' => $type,
+                'userid' => $receiver->userid,
+                'task_id' => $this->id,
+            ];
+            if (in_array($type, [1, 2]) && ProjectTaskPushLog::where($data)->exists()) {
+                continue;
+            }
+            //
+            $replace = $owners[$receiver->userid] ? "您负责的任务" : "您协助的任务";
+            $dialog = WebSocketDialog::checkUserDialog($botUser, $receiver->userid);
+            if ($dialog) {
+                ProjectTaskPushLog::createInstance($data)->save();
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', [
+                    'text' => str_replace("您的任务", $replace, $text) . $suffix
+                ], $botUser->userid);
+            }
         }
     }
 
@@ -1211,7 +1495,15 @@ class ProjectTask extends AbstractModel
      */
     public static function oneTask($task_id)
     {
-        return self::with(['taskUser', 'taskTag'])->allData()->where("project_tasks.id", intval($task_id))->first();
+        $data = self::with(['taskUser', 'taskTag'])->allData()->where("project_tasks.id", intval($task_id))->first();
+        if ($data && $data->parent_id === 0) {
+            if ($data->owner || ProjectTaskUser::select(['owner'])->whereTaskId($data->id)->whereUserid(User::userid())->exists()) {
+                $data->assist = 1;
+            } else {
+                $data->assist = 0;
+            }
+        }
+        return $data;
     }
 
     /**
@@ -1219,7 +1511,10 @@ class ProjectTask extends AbstractModel
      * @param int $task_id
      * @param bool $archived true:仅限未归档, false:仅限已归档, null:不限制
      * @param bool $trashed true:仅限未删除, false:仅限已删除, null:不限制
-     * @param int|bool $permission 0|false:不限制, 1|true:限制项目负责人、任务负责人、协助人员及任务创建者, 2:已有负责人才限制true (子任务时如果是主任务负责人也可以)
+     * @param int|bool $permission
+     * - 0|false   限制：项目成员、任务成员、任务群聊成员（任务成员 = 任务创建人+任务协助人+任务负责人）
+     * - 1|true    限制：项目负责人、任务成员
+     * - 2         已有负责人才限制true (子任务时如果是主任务负责人也可以)
      * @param array $with
      * @return self
      */
@@ -1245,20 +1540,21 @@ class ProjectTask extends AbstractModel
         //
         try {
             $project = Project::userProject($task->project_id);
-        } catch (Exception $e) {
-            if ($task->owner === null) {
+        } catch (\Throwable $e) {
+            if ($task->owner !== null || (!$permission && $task->permission(4))) {
+                $project = Project::find($task->project_id);
+                if (empty($project)) {
+                    throw new ApiException('项目不存在或已被删除', [ 'task_id' => $task_id ], -4002);
+                }
+            } else {
                 throw new ApiException($e->getMessage(), [ 'task_id' => $task_id ], -4002);
-            }
-            $project = Project::find($task->project_id);
-            if (empty($project)) {
-                throw new ApiException('项目不存在或已被删除', [ 'task_id' => $task_id ], -4002);
             }
         }
         //
-        if ($permission === 2) {
+        if ($permission >= 2) {
             $permission = $task->hasOwner() ? 1 : 0;
         }
-        if (($permission === 1 || $permission === true) && !$project->owner && !$task->permission(3)) {
+        if ($permission && !$project->owner && !$task->permission(3)) {
             throw new ApiException('仅限项目负责人、任务负责人、协助人员或任务创建者操作');
         }
         //

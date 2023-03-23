@@ -1,4 +1,4 @@
-module.exports = function (hljs) {
+export default function (hljs) {
   return {
     aliases: ['feature'],
     keywords: 'Feature Background Ability Business\ Need Scenario Scenarios Scenario\ Outline Scenario\ Template Examples Given And Then But When',

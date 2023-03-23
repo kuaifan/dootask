@@ -13,7 +13,7 @@
         overflow: auto;
 
         .log-title {
-            color: #333333;
+            color: $primary-title-color;
             font-size: 20px;
             font-weight: 500;
             line-height: 1;
@@ -164,7 +164,7 @@
                 &:hover {
                     opacity: 1;
                     > em {
-                        color: #8bcf70;
+                        color: $primary-color;
                     }
                 }
                 > em {
@@ -174,7 +174,7 @@
                     line-height: 18px;
                     height: 18px;
                     max-width: 100%;
-                    color: #999999;
+                    color: $primary-desc-color;
                     border-radius: 5px;
                     overflow: hidden;
                     text-overflow: ellipsis;

@@ -3,31 +3,36 @@
         <PageTitle :title="$L('仪表盘')"/>
         <div class="dashboard-wrapper">
             <div class="dashboard-hello">{{$L('欢迎您，' + userInfo.nickname)}}</div>
-            <div class="dashboard-desc">{{$L('以下是你当前的任务统计数据')}}</div>
+            <div class="dashboard-desc">
+                {{$L('以下是你当前的任务统计数据')}}
+                <transition name="dashboard-load">
+                    <div v-if="loadDashboardTasks" class="dashboard-load"><Loading/></div>
+                </transition>
+            </div>
             <ul class="dashboard-block">
                 <li @click="scrollTo('today')">
                     <div class="block-title">{{getTitle('today')}}</div>
                     <div class="block-data">
-                        <div class="block-num">{{dashboardTask.today.length}}</div>
+                        <div class="block-num">{{dashboardTask.today_count}}</div>
                         <i class="taskfont">&#xe6f4;</i>
                     </div>
                 </li>
                 <li @click="scrollTo('overdue')">
                     <div class="block-title">{{getTitle('overdue')}}</div>
                     <div class="block-data">
-                        <div class="block-num">{{dashboardTask.overdue.length}}</div>
+                        <div class="block-num">{{dashboardTask.overdue_count}}</div>
                         <i class="taskfont">&#xe603;</i>
                     </div>
                 </li>
                 <li @click="scrollTo('all')">
                     <div class="block-title">{{getTitle('all')}}</div>
                     <div class="block-data">
-                        <div class="block-num">{{dashboardTask.all.length}}</div>
+                        <div class="block-num">{{dashboardTask.all_count}}</div>
                         <i class="taskfont">&#xe6f9;</i>
                     </div>
                 </li>
             </ul>
-            <div class="dashboard-list overlay-y">
+            <div class="dashboard-list scrollbar-overlay">
                 <template
                     v-for="column in columns"
                     v-if="column.list.length > 0">
@@ -44,14 +49,12 @@
                                 v-if="item.p_name"
                                 class="priority-color"
                                 :style="{backgroundColor:item.p_color}"></em>
-                            <TaskMenu :ref="`taskMenu_${column.type}_${item.id}`" :task="item">
-                                <div slot="icon" class="drop-icon" @click.stop="">
-                                    <i class="taskfont" v-html="item.complete_at ? '&#xe627;' : '&#xe625;'"></i>
-                                </div>
-                            </TaskMenu>
+                            <div class="item-select" @click.stop="openMenu($event, item)">
+                                <i class="taskfont" v-html="item.complete_at ? '&#xe627;' : '&#xe625;'"></i>
+                            </div>
                             <div class="item-title">
                                 <!--工作流状态-->
-                                <span v-if="item.flow_item_name" :class="item.flow_item_status" @click.stop="openMenu(column.type, item)">{{item.flow_item_name}}</span>
+                                <span v-if="item.flow_item_name" :class="item.flow_item_status" @click.stop="openMenu($event, item)">{{item.flow_item_name}}</span>
                                 <!--是否子任务-->
                                 <span v-if="item.sub_top === true">{{$L('子任务')}}</span>
                                 <!--有多少个子任务-->
@@ -66,7 +69,7 @@
                                 <i class="taskfont">&#xe71f;</i>
                                 <em>{{item.sub_complete}}/{{item.sub_num}}</em>
                             </div>
-                            <ETooltip v-if="item.end_at" :content="item.end_at" placement="right">
+                            <ETooltip v-if="item.end_at" :disabled="windowSmall || $isEEUiApp" :content="item.end_at" placement="right">
                                 <div :class="['item-icon', item.today ? 'today' : '', item.overdue ? 'overdue' : '']">
                                     <i class="taskfont">&#xe71d;</i>
                                     <em>{{expiresFormat(item.end_at)}}</em>
@@ -107,7 +110,7 @@ export default {
     },
 
     activated() {
-        this.$store.dispatch("getTaskForDashboard");
+        this.$store.dispatch("getTaskForDashboard", 600);
     },
 
     deactivated() {
@@ -115,12 +118,12 @@ export default {
     },
 
     computed: {
-        ...mapState(['userInfo']),
+        ...mapState(['userInfo', 'cacheTasks', 'taskCompleteTemps', 'loadDashboardTasks']),
 
-        ...mapGetters(['dashboardTask', 'transforTasks']),
+        ...mapGetters(['dashboardTask', 'assistTask', 'transforTasks']),
 
         columns() {
-            let list = [];
+            const list = [];
             ['today', 'overdue', 'all'].some(type => {
                 let data = this.transforTasks(this.dashboardTask[type]);
                 list.push({
@@ -131,12 +134,19 @@ export default {
                     })
                 })
             })
+            list.push({
+                type: 'assist',
+                title: this.getTitle('assist'),
+                list: this.assistTask.sort((a, b) => {
+                    return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
+                })
+            })
             return list;
         },
 
         total() {
             const {dashboardTask} = this;
-            return dashboardTask.today.length + dashboardTask.overdue.length + dashboardTask.all.length;
+            return dashboardTask.today_count + dashboardTask.overdue_count + dashboardTask.all_count;
         },
     },
 
@@ -144,11 +154,13 @@ export default {
         getTitle(type) {
             switch (type) {
                 case 'today':
-                    return this.$L('今日任务');
+                    return this.$L('今日到期');
                 case 'overdue':
                     return this.$L('超期任务');
                 case 'all':
                     return this.$L('待完成任务');
+                case 'assist':
+                    return this.$L('协助的任务');
                 default:
                     return '';
             }
@@ -165,11 +177,8 @@ export default {
             this.$store.dispatch("openTask", task)
         },
 
-        openMenu(type, task) {
-            const el = this.$refs[`taskMenu_${type}_${task.id}`];
-            if (el) {
-                el[0].handleClick()
-            }
+        openMenu(event, task) {
+            this.$store.state.taskOperation = {event, task}
         },
 
         expiresFormat(date) {

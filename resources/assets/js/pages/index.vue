@@ -1,15 +1,22 @@
 <template>
     <div v-if="needStartHome" class="page-index">
+        <PageTitle :title="appTitle"/>
         <div class="page-warp">
             <div class="page-header">
                 <div class="header-nav">
                     <div class="header-nav-box">
-                        <div class="logo no-dark-mode"></div>
+                        <div class="logo no-dark-content"></div>
                     </div>
                     <div class="header-nav-box header-nav-boxs" v-if="windowWidth > 780">
-                        <div class="header-right-one">
-                            <Dropdown trigger="click" @on-click="setLanguage">
-                                <a href="javascript:void(0)" class="header-right-one-dropdown">
+                        <Button v-if="showItem.pro" class="header-right-pro no-dark-content" size="small" @click="onPro">{{$L('Pro版')}}</Button>
+                        <template v-if="windowWidth >= 820">
+                            <a v-if="showItem.github" class="header-right-github" :href="showItem.github" target="_blank"><Icon type="logo-github"/></a>
+                            <div v-if="showItem.updateLog" class="header-right-uplog" @click="uplogShow=true">{{$L('更新日志')}}</div>
+                        </template>
+
+                        <div class="header-right-1">
+                            <Dropdown trigger="click" @on-click="onLanguage">
+                                <a href="javascript:void(0)" class="header-right-1-dropdown">
                                     {{ currentLanguage }}
                                     <Icon type="ios-arrow-down"></Icon>
                                 </a>
@@ -18,13 +25,13 @@
                                         v-for="(item, key) in languageList"
                                         :key="key"
                                         :name="key"
-                                        :selected="getLanguage() === key">{{ item }}</DropdownItem>
+                                        :selected="languageType === key">{{ item }}</DropdownItem>
                                 </DropdownMenu>
                             </Dropdown>
                         </div>
-                        <div class="header-right-four">
+                        <div v-if="windowWidth >= 980" class="header-right-2">
                             <Dropdown trigger="click" @on-click="setTheme">
-                                <a href="javascript:void(0)" class="header-right-one-dropdown">
+                                <a href="javascript:void(0)" class="header-right-2-dropdown">
                                     {{$L('主题皮肤')}}
                                     <Icon type="ios-arrow-down"></Icon>
                                 </a>
@@ -37,33 +44,47 @@
                                 </DropdownMenu>
                             </Dropdown>
                         </div>
-                        <div class="header-right-two" @click="register">{{ $L("注册账号") }}</div>
-                        <div class="header-right-three no-dark-mode" @click="login">{{ $L("登录") }}</div>
+                        <div v-if="userId > 0" class="header-right-5 no-dark-content" @click="login">
+                            <UserAvatar :userid="userId" :size="38"/>
+                        </div>
+                        <template v-else>
+                            <div class="header-right-3" @click="register">{{ $L("注册帐号") }}</div>
+                            <div class="header-right-4 no-dark-content" @click="login">{{ $L("登录") }}</div>
+                        </template>
                     </div>
                     <div class="header-nav-box header-nav-boxs" v-else>
                         <Dropdown trigger="click">
                             <a href="javascript:void(0)">
-                                <Icon type="md-menu" class="header-nav-more"/>
+                                <Icon type="md-menu" class="header-nav-more no-dark-content"/>
                             </a>
                             <DropdownMenu slot="list">
-                                <DropdownItem @click.native="login">{{ $L("登录") }}</DropdownItem>
-                                <DropdownItem @click.native="register">{{ $L("注册账号") }}</DropdownItem>
-                                <Dropdown placement="right-start" @on-click="setLanguage">
+                                <DropdownItem v-if="userId > 0" @click.native="login">
+                                    <UserAvatar :userid="userId" show-name :show-icon="false"/>
+                                </DropdownItem>
+                                <template v-else>
+                                    <DropdownItem @click.native="login">{{ $L("登录") }}</DropdownItem>
+                                    <DropdownItem @click.native="register">{{ $L("注册帐号") }}</DropdownItem>
+                                </template>
+                                <DropdownItem v-if="showItem.github" @click.native="windowOpen(showItem.github)">Github</DropdownItem>
+                                <DropdownItem v-if="showItem.updateLog" @click.native="uplogShow=true">{{ $L("更新日志") }}</DropdownItem>
+                                <Dropdown placement="right-start" @on-click="onLanguage" transfer>
                                     <DropdownItem>
-                                        <Icon class="header-right-one-language no-dark-mode" type="md-globe"/>
-                                        <a href="javascript:void(0)" class="header-right-one-dropdown">{{ currentLanguage }}</a>
+                                        <div class="header-nav-dropdown-item">
+                                            {{ currentLanguage }}
+                                            <Icon type="ios-arrow-forward"></Icon>
+                                        </div>
                                     </DropdownItem>
                                     <DropdownMenu slot="list">
                                         <DropdownItem
                                             v-for="(item, key) in languageList"
                                             :key="key"
                                             :name="key"
-                                            :selected="getLanguage() === key">{{ item }}</DropdownItem>
+                                            :selected="languageType === key">{{ item }}</DropdownItem>
                                     </DropdownMenu>
                                 </Dropdown>
-                                <Dropdown trigger="click" placement="right-end" @on-click="setTheme">
+                                <Dropdown trigger="click" placement="right-end" @on-click="setTheme" transfer>
                                     <DropdownItem>
-                                        <div class="login-setting-item">
+                                        <div class="header-nav-dropdown-item">
                                             {{$L('主题皮肤')}}
                                             <Icon type="ios-arrow-forward"></Icon>
                                         </div>
@@ -88,7 +109,7 @@
                     <div class="header-tips">
                         {{ $L(`${appTitle}是一款轻量级的开源在线项目任务管理工具，提供各类文档协作工具、在线思维导图、在线流程图、项目管理、任务分发、即时IM，文件管理等工具。`) }}
                     </div>
-                    <div class="login-buttom no-dark-mode" @click="login">
+                    <div class="login-buttom no-dark-content" @click="login">
                         {{ $L("登录") }}
                     </div>
                 </div>
@@ -160,9 +181,24 @@
                         <p>{{$L('通过灵活的任务日历，轻松安排每一天的日程，把任务拆解到每天，让工作目标更清晰，时间分配更合理。')}}</p>
                     </Col>
                 </Row>
+
+                <Row :class="windowWidth > 1200 ? 'page-main-row':'page-main-rows'">
+                    <Col :class="windowWidth > 1200 ? 'page-main-img':'page-main-imgs'" :xs="24" :sm="24" :xl="12">
+                        <ImgView :src="themeIsDark ? 'images/index/dark/6.png':'images/index/light/6.png'"/>
+                    </Col>
+                    <Col class="page-main-text" :xs="24" :sm="24" :xl="12" v-if="windowWidth > 1200">
+                        <ImgView src="images/index/square.png"/>
+                        <h3>{{$L('支持多平台应用')}}</h3>
+                        <p>{{$L('多平台应用支持，打开客户端即可跟进项目任务进度， 同时让你在工作中每一个步骤都能拥有更高效愉悦的体验。')}}</p>
+                    </Col>
+                    <Col class="page-main-text page-main-texts" :xs="24" :sm="24" :xl="12" v-else>
+                        <h3><ImgView src="images/index/square.png"/>{{$L('支持多平台应用')}}</h3>
+                        <p>{{$L('多平台应用支持，打开客户端即可跟进项目任务进度， 同时让你在工作中每一个步骤都能拥有更高效愉悦的体验。')}}</p>
+                    </Col>
+                </Row>
             </div>
             <div class="page-footer">
-                <div class="footer-service no-dark-mode">
+                <div class="footer-service no-dark-content">
                     <div class="footer-bg-box">
                         <div class="box-title">{{ $L(`开启您的 ${appTitle} 团队协作`) }}</div>
                         <div class="buttom-box">
@@ -171,52 +207,112 @@
                         </div>
                     </div>
                 </div>
-                <div class="footer-copyright" v-if="this.homeFooter" v-html="this.homeFooter"></div>
+                <div class="footer-copyright" v-if="homeFooter" v-html="homeFooter"></div>
             </div>
         </div>
+
+        <!--更新日志-->
+        <UpdateLog v-model="uplogShow" :update-log="showItem.updateLog" :update-ver="showItem.updateVer"/>
     </div>
 </template>
 
 <script>
 import {mapState} from "vuex";
+import {languageList, languageType, setLanguage} from "../language";
+import UpdateLog from "./manage/components/UpdateLog";
 
 export default {
+    components: {UpdateLog},
     data() {
         return {
+            languageList,
+            languageType,
+
+            showItem: {
+                pro: false,
+                github: '',
+                updateLog: '',
+                updateVer: ''
+            },
             needStartHome: false,
             homeFooter: '',
+
+            uplogShow: false,
         };
     },
     computed: {
-        ...mapState(['userId', 'windowWidth', 'themeMode', 'themeIsDark', 'themeList',]),
+        ...mapState(['themeMode', 'themeIsDark', 'themeList',]),
+
+        isSoftware() {
+            return this.$Electron || this.$isEEUiApp;
+        },
 
         currentLanguage() {
-            return this.languageList[this.languageType] || "Language";
+            return languageList[languageType] || "Language";
         },
 
         appTitle() {
             return  window.systemInfo.title || "DooTask";
         },
     },
+
     mounted() {
+        if (/^https*:/i.test(window.location.protocol)) {
+            if (this.$router.mode === "hash") {
+                if ($A.stringLength(window.location.pathname) > 2) {
+                    window.location.href = `${window.location.origin}/#${window.location.pathname}${window.location.search}`
+                }
+            } else if (this.$router.mode === "history") {
+                if ($A.strExists(window.location.href, "/#/")) {
+                    window.location.href = window.location.href.replace("/#/", "/")
+                }
+            }
+        }
+    },
+
+    activated() {
+        this.getShowItem();
         this.getNeedStartHome();
     },
 
     methods: {
+        onPro() {
+            this.goForward({name: 'pro'});
+        },
+
         setTheme(mode) {
             this.$store.dispatch("setTheme", mode)
         },
 
         login() {
-            this.goForward({name: 'login'});
+            if (this.userId > 0) {
+                this.goForward({name: 'manage-dashboard'}, true);
+            } else {
+                this.goForward({name: 'login'}, true);
+            }
         },
 
         register() {
             this.goForward({name: 'login', query: {type: "reg"}});
         },
 
+        windowOpen(url) {
+            window.open(url)
+        },
+
+        getShowItem() {
+            this.$store.dispatch("call", {
+                url: "system/get/showitem",
+                spinner: 1000
+            }).then(({data}) => {
+                this.showItem = data
+            }).catch(_ => {
+                this.showItem = {}
+            });
+        },
+
         getNeedStartHome() {
-            if (this.$Electron) {
+            if (this.isSoftware) {
                 this.needStartHome = false;
                 if (this.userId > 0) {
                     this.goForward({name: 'manage-dashboard'}, true);
@@ -225,23 +321,34 @@ export default {
                 }
                 return;
             }
-            this.$store.dispatch("call", {
-                url: "system/get/starthome",
-            }).then(({data}) => {
-                this.homeFooter = data.home_footer;
-                if (this.userId > 0) {
-                    this.goForward({name: 'manage-dashboard'}, true);
+            //
+            this.$store.dispatch("showSpinner", 1000)
+            this.$store.dispatch("needHome").then(data => {
+                if (this.userId === 0 || this.$route.query.action === 'index') {
+                    this.needStartHome = true;
+                    this.homeFooter = data.home_footer;
                 } else {
-                    this.needStartHome = !!data.need_start;
-                    if (this.needStartHome === false) {
-                        this.goForward({name: 'login'}, true);
-                    }
+                    this.goNext();
                 }
             }).catch(_ => {
                 this.needStartHome = false;
-                this.goForward({name: 'login'}, true);
+                this.goNext();
+            }).finally(_ => {
+                this.$store.dispatch("hiddenSpinner")
             });
         },
+
+        goNext() {
+            if (this.userId > 0) {
+                this.goForward({name: 'manage-dashboard'}, true);
+            } else {
+                this.goForward({name: 'login'}, true);
+            }
+        },
+
+        onLanguage(l) {
+            setLanguage(l)
+        }
     },
 };
 </script>

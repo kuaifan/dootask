@@ -1,4 +1,4 @@
-<template lang="html">
+<template>
     <div :class="`markdown ${fullscreen ? 'fullscreen' : ''} ${bordered ? 'border' : ''}`" ref="markdown" :style="{ width: width + (typeof width === 'string'?'':'px'), height: height + (typeof height === 'string'?'':'px') }">
         <!-- 头部工具栏 -->
         <ul class="markdown-toolbars" v-show="!preview">

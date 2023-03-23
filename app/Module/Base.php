@@ -6,11 +6,10 @@ use App\Exceptions\ApiException;
 use App\Models\Setting;
 use App\Models\Tmp;
 use Cache;
-use Exception;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Config;
+use Overtrue\Pinyin\Pinyin;
 use Redirect;
 use Request;
+use Response;
 use Storage;
 use Validator;
 
@@ -77,6 +76,16 @@ class Base
     }
 
     /**
+     * 如果header没有则通过input读取
+     * @param $key
+     * @return mixed|string
+     */
+    public static function headerOrInput($key)
+    {
+        return Base::nullShow(Request::header($key), Request::input($key));
+    }
+
+    /**
      * 获取版本号
      * @return string
      */
@@ -94,7 +103,7 @@ class Base
     {
         global $_A;
         if (!isset($_A["__static_client_version"])) {
-            $_A["__static_client_version"] = Request::header('version') ?: '0.0.1';
+            $_A["__static_client_version"] = self::headerOrInput('version') ?: '0.0.1';
         }
         return $_A["__static_client_version"];
     }
@@ -106,9 +115,19 @@ class Base
      */
     public static function checkClientVersion($min)
     {
-        if (version_compare(Base::getClientVersion(), $min, '<')) {
-            throw new ApiException('当前版本 (v' . Base::getClientVersion() . ') 过低');
+        if (!self::judgeClientVersion($min)) {
+            throw new ApiException('当前版本 (v' . Base::getClientVersion() . ') 过低，最低版本要求 (v' . $min . ')。');
         }
+    }
+
+    /**
+     * 判断客户端版本
+     * @param $min
+     * @return bool
+     */
+    public static function judgeClientVersion($min)
+    {
+        return !version_compare(Base::getClientVersion(), $min, '<');
     }
 
     /**
@@ -285,7 +304,7 @@ class Base
     {
         try {
             Storage::makeDirectory($path);
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
         }
         if (!file_exists($path)) {
             self::makeDir(dirname($path));
@@ -486,7 +505,7 @@ class Base
         try {
             $array = json_decode($string, true);
             return is_array($array) ? $array : [];
-        } catch (Exception $e) {
+        } catch (\Throwable) {
             return [];
         }
     }
@@ -504,7 +523,7 @@ class Base
         }
         try {
             return json_encode($array, $options);
-        } catch (Exception $e) {
+        } catch (\Throwable) {
             return '';
         }
     }
@@ -717,24 +736,20 @@ class Base
     /**
      * 判断两个地址域名是否相同
      * @param string $var1
-     * @param string $var2
+     * @param string|array $var2
      * @return bool
      */
     public static function hostContrast($var1, $var2)
     {
         $arr1 = parse_url($var1);
-        $arr2 = parse_url($var2);
+        $host1 = $arr1['host'] ?? $var1;
         //
-        $host1 = $var1;
-        if (isset($arr1['host'])) {
-            $host1 = $arr1['host'];
+        $host2 = [];
+        foreach (is_array($var2) ? $var2 : [$var2] as $url) {
+            $arr2 = parse_url($url);
+            $host2[] = $arr2['host'] ?? $url;
         }
-        //
-        $host2 = $var2;
-        if (isset($arr2['host'])) {
-            $host2 = $arr2['host'];
-        }
-        return $host1 == $host2;
+        return in_array($host1, $host2);
     }
 
     /**
@@ -877,34 +892,59 @@ class Base
      * 打散字符串，只留为数字的项
      * @param $delimiter
      * @param $string
+     * @param bool $reInt 是否格式化值
      * @return array
      */
-    public static function explodeInt($delimiter, $string = null)
+    public static function explodeInt($delimiter, $string = null, $reInt = true)
     {
         if ($string == null) {
             $string = $delimiter;
             $delimiter = ',';
         }
         $array = is_array($string) ? $string : explode($delimiter, $string);
-        return self::arrayRetainInt($array);
+        return self::arrayRetainInt($array, $reInt);
     }
 
     /**
      * 数组只保留数字的
      * @param $array
-     * @param bool $int 是否格式化值
+     * @param bool $reInt 是否格式化值
      * @return array
      */
-    public static function arrayRetainInt($array, $int = false)
+    public static function arrayRetainInt($array, $reInt = false)
     {
+        if (!is_array($array)) {
+            return $array;
+        }
         foreach ($array as $k => $v) {
             if (!is_numeric($v)) {
                 unset($array[$k]);
-            } elseif ($int === true) {
+            } elseif ($reInt === true) {
                 $array[$k] = intval($v);
             }
         }
         return array_values($array);
+    }
+
+    /**
+     * 数组拼接字符串（前后也加上）
+     * @param $glue
+     * @param $pieces
+     * @param $around
+     * @return string
+     */
+    public static function arrayImplode($glue = "", $pieces = null, $around = true)
+    {
+        if ($pieces == null) {
+            $pieces = $glue;
+            $glue = ',';
+        }
+        $pieces = array_values(array_filter(array_unique($pieces)));
+        $string = implode($glue, $pieces);
+        if ($around && $string) {
+            $string = ",{$string},";
+        }
+        return $string;
     }
 
     /**
@@ -1015,7 +1055,21 @@ class Base
      */
     public static function isNumber($str)
     {
-        if (preg_match("/^\d*$/", $str)) {
+        if (preg_match("/^\d+$/", $str)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * 正则判断是否MAC地址
+     * @param $str
+     * @return bool
+     */
+    public static function isMac($str)
+    {
+        if (preg_match("/^[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}:[A-Fa-f\d]{2}$/", $str)) {
             return true;
         } else {
             return false;
@@ -1257,6 +1311,27 @@ class Base
     }
 
     /**
+     * 时间转毫秒时间戳
+     * @param $time
+     * @return float|int
+     */
+    public static function strtotimeM($time)
+    {
+        if (str_contains($time, '.')) {
+            list($t, $m) = explode(".", $time);
+            if (is_string($t)) {
+                $t = strtotime($t);
+            }
+            $time = $t . str_pad($m, 3, "0", STR_PAD_LEFT);
+        }
+        if (is_numeric($time)) {
+            return (int) str_pad($time, 13, "0");
+        } else {
+            return strtotime($time) * 1000;
+        }
+    }
+
+    /**
      * 获取设置值
      * @param $setname
      * @param $keyname
@@ -1384,64 +1459,14 @@ class Base
     }
 
     /**
-     * 国际化（替换国际语言）
-     * @param $val
-     * @return mixed
-     */
-    public static function Lang($val)
-    {
-        $repArray = [];
-        if (is_array($val)) {
-            if (self::strExists($val[0], '%') && count($val) > 1) {
-                $repArray = array_slice($val, 1);
-            }
-            $val = $val[0];
-        }
-        $data = self::langData();
-        if (isset($data[$val]) && $data[$val] !== null) {
-            $val = $data[$val];
-        }
-        if ($repArray) {
-            foreach ($repArray as $item) {
-                $val = self::strReplaceLimit('%', $item, $val, 1);
-            }
-        }
-        return $val;
-    }
-
-    /**
-     * 加载语言数据
-     * @param bool $refresh
-     * @return array
-     */
-    public static function langData($refresh = false)
-    {
-        global $_A;
-        if (!isset($_A["__static_langdata"]) || $refresh === true) {
-            $_A["__static_langdata"] = [];
-            $language = trim(Request::header('language'));
-            $langpath = resource_path('lang/' . $language . '/general.php');
-            if (file_exists($langpath)) {
-                $data = include $langpath;
-                if (is_array($data)) {
-                    $_A["__static_langdata"] = $data;
-                }
-            }
-        }
-        return $_A["__static_langdata"];
-    }
-
-    /**
      * JSON返回
      * @param $param
      * @return string
      */
     public static function jsonEcho($param)
     {
-        global $_GPC;
-        //
         $json = json_encode($param);
-        $callback = $_GPC['callback'];
+        $callback = Request::input('callback');
         if ($callback) {
             return $callback . '(' . $json . ')';
         } else {
@@ -1458,11 +1483,11 @@ class Base
      */
     public static function retSuccess($msg, $data = [], $ret = 1)
     {
-        return array(
+        return [
             'ret' => $ret,
-            'msg' => self::Lang($msg),
+            'msg' => Doo::translate($msg),
             'data' => $data
-        );
+        ];
     }
 
     /**
@@ -1474,11 +1499,11 @@ class Base
      */
     public static function retError($msg, $data = [], $ret = 0)
     {
-        return array(
+        return [
             'ret' => $ret,
-            'msg' => self::Lang($msg),
+            'msg' => Doo::translate($msg),
             'data' => $data
-        );
+        ];
     }
 
     /**
@@ -1632,7 +1657,7 @@ class Base
     }
 
     /**
-     * 用户名、邮箱、手机账号、银行卡号中间字符串以*隐藏
+     * 用户名、邮箱、手机帐号、银行卡号中间字符串以*隐藏
      * @param $str
      * @return string
      */
@@ -1814,114 +1839,9 @@ class Base
                 $onlineip = '0,0,0,0';
             }
             preg_match("/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/", $onlineip, $match);
-            $_A["__static_ip"] = $match[0] ?: 'unknown';
+            $_A["__static_ip"] = $match ? ($match[0] ?: 'unknown') : '';
         }
         return $_A["__static_ip"];
-    }
-
-    /**
-     * 获取IP地址经纬度
-     * @param string $ip
-     * @return array|mixed
-     */
-    public static function getIpGcj02($ip = '')
-    {
-        if (empty($ip)) {
-            $ip = self::getIp();
-        }
-        $cacheKey = "getIpPoint::" . md5($ip);
-        $result = Cache::rememberForever($cacheKey, function () use ($ip) {
-            return Ihttp::ihttp_request("https://www.ifreesite.com/ipaddress/address.php?q=" . $ip, [], [], 12);
-        });
-        if (Base::isError($result)) {
-            Cache::forget($cacheKey);
-            return $result;
-        }
-        $data = $result['data'];
-        $lastPos = strrpos($data, ',');
-        $long = floatval(Base::getMiddle(substr($data, $lastPos + 1), null, ')'));
-        $lat = floatval(Base::getMiddle(substr($data, strrpos(substr($data, 0, $lastPos), ',') + 1), null, ','));
-        return Base::retSuccess("success", [
-            'long' => $long,
-            'lat' => $lat,
-        ]);
-    }
-
-    /**
-     * 百度接口：根据ip获取经纬度
-     * @param string $ip
-     * @return array|mixed
-     */
-    public static function getIpGcj02ByBaidu($ip = ''): array
-    {
-        if (empty($ip)) {
-            $ip = self::getIp();
-        }
-
-        $cacheKey = "getIpPoint::" . md5($ip);
-        $result = Cache::rememberForever($cacheKey, function () use ($ip) {
-            $ak = Config::get('app.baidu_app_key');
-            $url = 'http://api.map.baidu.com/location/ip?ak=' . $ak . '&ip=' . $ip . '&coor=bd09ll';
-            return Ihttp::ihttp_request($url, [], [], 12);
-        });
-
-        if (Base::isError($result)) {
-            Cache::forget($cacheKey);
-            return $result;
-        }
-        $data = json_decode($result['data'], true);
-
-        // x坐标纬度, y坐标经度
-        $long = Arr::get($data, 'content.point.x');
-        $lat = Arr::get($data, 'content.point.y');
-        return Base::retSuccess("success", [
-            'long' => $long,
-            'lat' => $lat,
-        ]);
-    }
-
-    /**
-     * 获取IP地址详情
-     * @param string $ip
-     * @return array|mixed
-     */
-    public static function getIpInfo($ip = '')
-    {
-        if (empty($ip)) {
-            $ip = self::getIp();
-        }
-        $cacheKey = "getIpInfo::" . md5($ip);
-        $result = Cache::rememberForever($cacheKey, function () use ($ip) {
-            return Ihttp::ihttp_request("http://ip.taobao.com/service/getIpInfo.php?accessKey=alibaba-inc&ip=" . $ip, [], [], 12);
-        });
-        if (Base::isError($result)) {
-            Cache::forget($cacheKey);
-            return $result;
-        }
-        $data = json_decode($result['data'], true);
-        if (!is_array($data) || intval($data['code']) != 0) {
-            Cache::forget($cacheKey);
-            return Base::retError("error ip: -1");
-        }
-        $data = $data['data'];
-        if (!is_array($data) || !isset($data['country'])) {
-            return Base::retError("error ip: -2");
-        }
-        $data['text'] = $data['country'];
-        $data['textSmall'] = $data['country'];
-        if ($data['region'] && $data['region'] != $data['country'] && $data['region'] != "XX") {
-            $data['text'] .= " " . $data['region'];
-            $data['textSmall'] = $data['region'];
-        }
-        if ($data['city'] && $data['city'] != $data['region'] && $data['city'] != "XX") {
-            $data['text'] .= " " . $data['city'];
-            $data['textSmall'] .= " " . $data['city'];
-        }
-        if ($data['county'] && $data['county'] != $data['city'] && $data['county'] != "XX") {
-            $data['text'] .= " " . $data['county'];
-            $data['textSmall'] .= " " . $data['county'];
-        }
-        return Base::retSuccess("success", $data);
     }
 
     /**
@@ -2100,29 +2020,6 @@ class Base
     }
 
     /**
-     * 获取tonken
-     * @return string
-     */
-    public static function getToken()
-    {
-        global $_A;
-        if (!isset($_A["__static_token"])) {
-            $_A["__static_token"] = Base::nullShow(Request::header('token'), Request::input('token'));
-        }
-        return $_A["__static_token"];
-    }
-
-    /**
-     * 设置tonken
-     * @param $token
-     */
-    public static function setToken($token)
-    {
-        global $_A;
-        $_A["__static_token"] = $token;
-    }
-
-    /**
      * 是否微信
      * @return bool
      */
@@ -2145,6 +2042,27 @@ class Base
         } else {
             return 'none';
         }
+    }
+
+    /**
+     * 获取平台类型
+     * @return string
+     */
+    public static function platform()
+    {
+        $platform = strtolower(trim(Request::header('platform')));
+        if (in_array($platform, ['android', 'ios', 'win', 'mac', 'web'])) {
+            return $platform;
+        }
+        $agent = strtolower(Request::server('HTTP_USER_AGENT'));
+        if (str_contains($agent, 'android')) {
+            $platform = 'android';
+        } elseif (str_contains($agent, 'iphone') || str_contains($agent, 'ipad')) {
+            $platform = 'ios';
+        } else {
+            $platform = 'unknown';
+        }
+        return $platform;
     }
 
     /**
@@ -2179,8 +2097,41 @@ class Base
     }
 
     /**
+     * base64语音保存
+     * @param array $param [ base64=带前缀的base64, path=>文件路径 ]
+     * @return array [name=>文件名, size=>文件大小(单位KB),file=>绝对地址, path=>相对地址, url=>全路径地址, ext=>文件后缀名]
+     */
+    public static function record64save($param)
+    {
+        $base64 = $param['base64'];
+        if (preg_match('/^(data:\s*audio\/(\w+);base64,)/', $base64, $res)) {
+            $extension = $res[2];
+            if (!in_array($extension, ['mp3', 'wav'])) {
+                return Base::retError('语音格式错误');
+            }
+            $fileName = 'record_' . md5($base64) . '.' . $extension;
+            $fileDir = $param['path'];
+            $filePath = public_path($fileDir);
+            Base::makeDir($filePath);
+            if (file_put_contents($filePath . $fileName, base64_decode(str_replace($res[1], '', $base64)))) {
+                $fileSize = filesize($filePath . $fileName);
+                $array = [
+                    "name" => $fileName,                                                //原文件名
+                    "size" => Base::twoFloat($fileSize / 1024, true),         //大小KB
+                    "file" => $filePath . $fileName,                                    //文件的完整路径                "D:\www....KzZ.jpg"
+                    "path" => $fileDir . $fileName,                                     //相对路径                     "uploads/pic....KzZ.jpg"
+                    "url" => Base::fillUrl($fileDir . $fileName),                   //完整的URL                    "https://.....hhsKzZ.jpg"
+                    "ext" => $extension,                                                //文件后缀名
+                ];
+                return Base::retSuccess('success', $array);
+            }
+        }
+        return Base::retError('语音保存失败');
+    }
+
+    /**
      * image64图片保存
-     * @param array $param [ image64=带前缀的base64, path=>文件路径, fileName=>文件名称, scale=>[压缩原图宽,高, 压缩方式] ]
+     * @param array $param [ image64=带前缀的base64, path=>文件路径, fileName=>文件名称, scale=>[压缩原图宽,高, 压缩方式], autoThumb=>false不要自动生成缩略图 ]
      * @return array [name=>文件名, size=>文件大小(单位KB),file=>绝对地址, path=>相对地址, url=>全路径地址, ext=>文件后缀名]
      */
     public static function image64save($param)
@@ -2200,7 +2151,7 @@ class Base
                     if ($width > 0 || $height > 0) {
                         $scaleName = "_{WIDTH}x{HEIGHT}";
                         if (isset($param['scale'][2])) {
-                            $scaleName .= $param['scale'][2];
+                            $scaleName .= "_c{$param['scale'][2]}";
                         }
                     }
                 }
@@ -2261,8 +2212,13 @@ class Base
                 }
                 //生成缩略图
                 $array['thumb'] = $array['path'];
-                if (Base::imgThumb($array['file'], $array['file'] . "_thumb.jpg", 180, 0)) {
-                    $array['thumb'] .= "_thumb.jpg";
+                if ($extension === 'gif' && !isset($param['autoThumb'])) {
+                    $param['autoThumb'] = false;
+                }
+                if ($param['autoThumb'] !== false) {
+                    if (Base::imgThumb($array['file'], $array['file'] . "_thumb.jpg", 320, 0)) {
+                        $array['thumb'] .= "_thumb.jpg";
+                    }
                 }
                 $array['thumb'] = Base::fillUrl($array['thumb']);
                 return Base::retSuccess('success', $array);
@@ -2273,12 +2229,13 @@ class Base
 
     /**
      * 上传文件
-     * @param array $param [ type=[文件类型], file=>Request::file, path=>文件路径, fileName=>文件名称, scale=>[压缩原图宽,高, 压缩方式], size=>限制大小KB, autoThumb=>false不要自动生成缩略图 ]
+     * @param array $param [ type=[文件类型], file=>Request::file, path=>文件路径, fileName=>文件名称, scale=>[压缩原图宽,高, 压缩方式], size=>限制大小KB, autoThumb=>false不要自动生成缩略图, chmod=>权限(默认0644) ]
      * @return array [name=>原文件名, size=>文件大小(单位KB),file=>绝对地址, path=>相对地址, url=>全路径地址, ext=>文件后缀名]
      */
     public static function upload($param)
     {
         $file = $param['file'];
+        $chmod = $param['chmod'] ?: 0644;
         if (empty($file)) {
             return Base::retError("您没有选择要上传的文件");
         }
@@ -2323,30 +2280,7 @@ class Base
                     $type = ['yml', 'yaml', 'dmg', 'pkg', 'blockmap', 'zip', 'exe', 'msi'];
                     break;
                 case 'more':
-                    $type = [
-                        'text', 'md', 'markdown',
-                        'drawio',
-                        'mind',
-                        'docx', 'wps', 'doc', 'xls', 'xlsx', 'ppt', 'pptx',
-                        'jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw', 'svg',
-                        'rar', 'zip', 'jar', '7-zip', 'tar', 'gzip', '7z', 'gz', 'apk', 'dmg',
-                        'tif', 'tiff',
-                        'dwg', 'dxf',
-                        'ofd',
-                        'pdf',
-                        'txt',
-                        'htaccess', 'htgroups', 'htpasswd', 'conf', 'bat', 'cmd', 'cpp', 'c', 'cc', 'cxx', 'h', 'hh', 'hpp', 'ino', 'cs', 'css',
-                        'dockerfile', 'go', 'golang', 'html', 'htm', 'xhtml', 'vue', 'we', 'wpy', 'java', 'js', 'jsm', 'jsx', 'json', 'jsp', 'less', 'lua', 'makefile', 'gnumakefile',
-                        'ocamlmakefile', 'make', 'mysql', 'nginx', 'ini', 'cfg', 'prefs', 'm', 'mm', 'pl', 'pm', 'p6', 'pl6', 'pm6', 'pgsql', 'php',
-                        'inc', 'phtml', 'shtml', 'php3', 'php4', 'php5', 'phps', 'phpt', 'aw', 'ctp', 'module', 'ps1', 'py', 'r', 'rb', 'ru', 'gemspec', 'rake', 'guardfile', 'rakefile',
-                        'gemfile', 'rs', 'sass', 'scss', 'sh', 'bash', 'bashrc', 'sql', 'sqlserver', 'swift', 'ts', 'typescript', 'str', 'vbs', 'vb', 'v', 'vh', 'sv', 'svh', 'xml',
-                        'rdf', 'rss', 'wsdl', 'xslt', 'atom', 'mathml', 'mml', 'xul', 'xbl', 'xaml', 'yaml', 'yml',
-                        'asp', 'properties', 'gitignore', 'log', 'bas', 'prg', 'python', 'ftl', 'aspx',
-                        'mp3', 'wav', 'mp4', 'flv',
-                        'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm',
-                        'xmind',
-                        'rp',
-                    ];
+                    $type = []; // 不限制上传文件类型
                     break;
                 default:
                     return Base::retError('错误的类型参数');
@@ -2360,7 +2294,7 @@ class Base
                 if ($param['size'] > 0 && $fileSize > $param['size'] * 1024) {
                     return Base::retError('文件大小超限，最大限制：' . $param['size'] . 'KB');
                 }
-            } catch (Exception $e) {
+            } catch (\Throwable) {
                 $fileSize = 0;
             }
             $scaleName = "";
@@ -2374,30 +2308,36 @@ class Base
                     if ($width > 0 || $height > 0) {
                         $scaleName = "_{WIDTH}x{HEIGHT}";
                         if (isset($param['scale'][2])) {
-                            $scaleName .= $param['scale'][2];
+                            $scaleName .= "_c{$param['scale'][2]}";
                         }
                     }
                 }
-                $fileName = md5_file($file) . '.' . $extension;
-                $scaleName = md5_file($file) . $scaleName . '.' . $extension;
+                $fileName = md5_file($file);
+                $scaleName = md5_file($file) . $scaleName;
+                if ($extension) {
+                    $fileName = $fileName . '.' . $extension;
+                    $scaleName = $scaleName . '.' . $extension;
+                }
             }
             //
             $file->move(public_path($param['path']), $fileName);
             //
+            $path = $param['path'] . $fileName;
             $array = [
-                "name" => $file->getClientOriginalName(),               //原文件名
-                "size" => Base::twoFloat($fileSize / 1024, true),       //大小KB
-                "file" => public_path($param['path'] . $fileName),        //文件的完整路径                "D:\www....KzZ.jpg"
-                "path" => $param['path'] . $fileName,                     //相对路径                     "uploads/pic....KzZ.jpg"
-                "url" => Base::fillUrl($param['path'] . $fileName),       //完整的URL                    "https://.....hhsKzZ.jpg"
-                "thumb" => '',                                          //缩略图（预览图）               "https://.....hhsKzZ.jpg_thumb.jpg"
-                "width" => -1,                                          //图片宽度
-                "height" => -1,                                         //图片高度
-                "ext" => $extension,                                    //文件后缀名
+                "name" => $file->getClientOriginalName(),                       //原文件名
+                "size" => Base::twoFloat($fileSize / 1024, true),     //大小KB
+                "file" => public_path($path),                                   //文件的完整路径                "D:\www....KzZ.jpg"
+                "path" => $path,                                                //相对路径                     "uploads/pic....KzZ.jpg"
+                "url" => Base::fillUrl($path),                                  //完整的URL                    "https://.....hhsKzZ.jpg"
+                "thumb" => '',                                                  //缩略图（预览图）               "https://.....hhsKzZ.jpg_thumb.jpg"
+                "width" => -1,                                                  //图片宽度
+                "height" => -1,                                                 //图片高度
+                "ext" => $extension,                                            //文件后缀名
             ];
             if (!is_file($array['file'])) {
                 return Base::retError('上传失败');
             }
+            @chmod($array['file'], $chmod);
             //iOS照片颠倒处理
             if (in_array($extension, ['jpg', 'jpeg']) && function_exists('exif_read_data')) {
                 $data = imagecreatefromstring(file_get_contents($array['file']));
@@ -2454,7 +2394,9 @@ class Base
                 }
                 //生成缩略图
                 $array['thumb'] = $array['path'];
-                if ($param['autoThumb'] === "false") $param['autoThumb'] = false;
+                if ($extension === 'gif' && !isset($param['autoThumb'])) {
+                    $param['autoThumb'] = false;
+                }
                 if ($param['autoThumb'] !== false) {
                     if (Base::imgThumb($array['file'], $array['file'] . "_thumb.jpg", 320, 0)) {
                         $array['thumb'] .= "_thumb.jpg";
@@ -2613,11 +2555,11 @@ class Base
         }
 
         $src = $createfun($src_img);
-        $dst = imagecreatetruecolor($width ? $width : $dst_w, $height ? $height : $dst_h);
+        $dst = imagecreatetruecolor($width ?: $dst_w, $height ?: $dst_h);
         try {
             $white = imagecolorallocate($dst, 255, 255, 255);
             imagefill($dst, 0, 0, $white);
-        } catch (Exception $e) {
+        } catch (\Throwable) {
 
         }
         if (function_exists('imagecopyresampled')) {
@@ -2802,36 +2744,34 @@ class Base
         if (empty($str)) {
             return '';
         }
-        $fchar = ord($str[0]);
-        if ($fchar >= ord('A') && $fchar <= ord('z')) return strtoupper($str[0]);
-        $s1 = iconv('UTF-8', 'gb2312', $str);
-        $s2 = iconv('gb2312', 'UTF-8', $s1);
-        $s = $s2 == $str ? $s1 : $str;
-        $asc = ord($s[0]) * 256 + ord($s[1]) - 65536;
-        if ($asc >= -20319 && $asc <= -20284) return 'A';
-        if ($asc >= -20283 && $asc <= -19776) return 'B';
-        if ($asc >= -19775 && $asc <= -19219) return 'C';
-        if ($asc >= -19218 && $asc <= -18711) return 'D';
-        if ($asc >= -18710 && $asc <= -18527) return 'E';
-        if ($asc >= -18526 && $asc <= -18240) return 'F';
-        if ($asc >= -18239 && $asc <= -17923) return 'G';
-        if ($asc >= -17922 && $asc <= -17418) return 'H';
-        if ($asc >= -17417 && $asc <= -16475) return 'J';
-        if ($asc >= -16474 && $asc <= -16213) return 'K';
-        if ($asc >= -16212 && $asc <= -15641) return 'L';
-        if ($asc >= -15640 && $asc <= -15166) return 'M';
-        if ($asc >= -15165 && $asc <= -14923) return 'N';
-        if ($asc >= -14922 && $asc <= -14915) return 'O';
-        if ($asc >= -14914 && $asc <= -14631) return 'P';
-        if ($asc >= -14630 && $asc <= -14150) return 'Q';
-        if ($asc >= -14149 && $asc <= -14091) return 'R';
-        if ($asc >= -14090 && $asc <= -13319) return 'S';
-        if ($asc >= -13318 && $asc <= -12839) return 'T';
-        if ($asc >= -12838 && $asc <= -12557) return 'W';
-        if ($asc >= -12556 && $asc <= -11848) return 'X';
-        if ($asc >= -11847 && $asc <= -11056) return 'Y';
-        if ($asc >= -11055 && $asc <= -10247) return 'Z';
-        return '#';
+        $first = mb_substr($str, 0, 1);
+        if (preg_match("/^\d$/", $first)) {
+            return '#';
+        }
+        if (!preg_match("/^[a-zA-Z]$/", $first)) {
+            $pinyin = new Pinyin();
+            $first = $pinyin->abbr($first, '', PINYIN_NAME);
+        }
+        return $first ? strtoupper($first) : '#';
+    }
+
+    /**
+     * 中文转拼音
+     * @param $str
+     * @return string
+     */
+    public static function cn2pinyin($str)
+    {
+        if (empty($str)) {
+            return '';
+        }
+        if (!preg_match("/^[a-zA-Z0-9_.]+$/", $str)) {
+            $str = Cache::rememberForever("cn2pinyin:" . md5($str), function() use ($str) {
+                $pinyin = new Pinyin();
+                return $pinyin->permalink($str, '');
+            });
+        }
+        return $str;
     }
 
     /**
@@ -3061,5 +3001,18 @@ class Base
         if ($validator->fails()) {
             throw new ApiException($validator->errors()->first());
         }
+    }
+
+    /**
+     * 流下载，解决没有后缀无法下载的问题
+     * @param $callback
+     * @param $name
+     * @return mixed
+     */
+    public static function streamDownload($callback, $name = null) {
+        if ($name && !str_contains($name, '.')) {
+            $name .= ".";
+        }
+        return Response::streamDownload($callback, $name);
     }
 }

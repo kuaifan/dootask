@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var START_BRACKET = '\\[';
   var END_BRACKET = '\\]';
   return {

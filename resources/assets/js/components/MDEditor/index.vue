@@ -56,8 +56,8 @@
                 <div>{{$L('正在上传文件...')}}</div>
             </Spin>
         </Modal>
-        <Modal v-model="html2md" title="html转markdown" okText="转换成markdown" width="680" class-name="simple-modal" @on-ok="htmlOk" transfer>
-            <Input type="textarea" v-model="htmlValue" :rows="14" placeholder="请输入html代码..." />
+        <Modal v-model="html2md" :title="$L('html转markdown')" :okText="$L('转换成markdown')" width="680" class-name="simple-modal" @on-ok="htmlOk" transfer>
+            <Input type="textarea" v-model="htmlValue" :rows="14" :placeholder="$L('请输入html代码...')" />
         </Modal>
     </div>
 </template>
@@ -169,11 +169,9 @@
             this.content = this.value;
         },
         computed: {
-            ...mapState(['userToken']),
-
             headers() {
                 return {
-                    fd: $A.getStorageString("userWsFd"),
+                    fd: $A.getSessionStorageString("userWsFd"),
                     token: this.userToken,
                 }
             },
@@ -229,7 +227,7 @@
             htmlOk() {
                 $A.loadScript('js/html2md.js', (e) => {
                     if (e !== null || typeof toMarkdown !== 'function') {
-                        $A.modalAlert("组件加载失败！");
+                        $A.modalError("组件加载失败！");
                         return;
                     }
                     if (this.transfer) {

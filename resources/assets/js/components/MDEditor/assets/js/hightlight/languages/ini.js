@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var STRING = {
     className: "string",
     contains: [hljs.BACKSLASH_ESCAPE],

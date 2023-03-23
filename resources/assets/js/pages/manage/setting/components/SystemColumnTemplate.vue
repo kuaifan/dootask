@@ -101,7 +101,6 @@ export default {
                 if (save) {
                     $A.messageSuccess('修改成功');
                 }
-                this.loadIng--;
                 this.$store.state.columnTemplate = $A.cloneJSON(data).map(item => {
                     if ($A.isArray(item.columns)) {
                         item.columns = item.columns.join(",")
@@ -112,6 +111,7 @@ export default {
                 if (save) {
                     $A.modalError(msg);
                 }
+            }).finally(_ => {
                 this.loadIng--;
             });
         }

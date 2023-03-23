@@ -10,10 +10,10 @@
             <ul>
                 <li>
                     <div class="search-label">
-                        {{$L("任务名")}}
+                        {{$L("关键词")}}
                     </div>
                     <div class="search-content">
-                        <Input v-model="keys.name" clearable/>
+                        <Input v-model="keys.name" :placeholder="$L('ID、任务名...')" clearable/>
                     </div>
                 </li>
                 <li class="search-button">
@@ -43,7 +43,7 @@
                 :current="page"
                 :page-size="pageSize"
                 :disabled="loadIng > 0"
-                :simple="windowMax768"
+                :simple="windowSmall"
                 :page-size-opts="[10,20,30,50,100]"
                 show-elevator
                 show-sizer
@@ -72,38 +72,7 @@ export default {
             keys: {},
             keyIs: false,
 
-            columns: [],
-            list: [],
-
-            page: 1,
-            pageSize: 20,
-            total: 0,
-            noText: ''
-        }
-    },
-    mounted() {
-
-    },
-    computed: {
-        ...mapState(['cacheTasks', 'windowMax768'])
-    },
-    watch: {
-        projectId: {
-            handler() {
-                this.getLists();
-            },
-            immediate: true
-        },
-        keyIs(v) {
-            if (!v) {
-                this.keys = {}
-                this.setPage(1)
-            }
-        }
-    },
-    methods: {
-        initLanguage() {
-            this.columns = [
+            columns: [
                 {
                     title: 'ID',
                     key: 'id',
@@ -166,11 +135,13 @@ export default {
                                     confirm: true,
                                     transfer: true,
                                     placement: 'left',
+                                    okText: this.$L('确定'),
+                                    cancelText: this.$L('取消'),
                                 },
                                 style: {
                                     fontSize: '13px',
                                     cursor: 'pointer',
-                                    color: '#8bcf70',
+                                    color: '#84C56A',
                                 },
                                 on: {
                                     'on-ok': () => {
@@ -186,9 +157,36 @@ export default {
                         }, vNodes);
                     }
                 }
-            ]
-        },
+            ],
+            list: [],
 
+            page: 1,
+            pageSize: 20,
+            total: 0,
+            noText: ''
+        }
+    },
+    mounted() {
+
+    },
+    computed: {
+        ...mapState(['cacheTasks'])
+    },
+    watch: {
+        projectId: {
+            handler() {
+                this.getLists();
+            },
+            immediate: true
+        },
+        keyIs(v) {
+            if (!v) {
+                this.keys = {}
+                this.setPage(1)
+            }
+        }
+    },
+    methods: {
         onSearch() {
             this.page = 1;
             this.getLists();
@@ -214,14 +212,14 @@ export default {
                     pagesize: Math.max($A.runNum(this.pageSize), 10),
                 },
             }).then(({data}) => {
-                this.loadIng--;
                 this.page = data.current_page;
                 this.total = data.total;
                 this.list = data.data;
                 this.noText = '没有相关的数据';
             }).catch(() => {
-                this.loadIng--;
                 this.noText = '数据加载失败';
+            }).finally(_ => {
+                this.loadIng--;
             })
         },
 

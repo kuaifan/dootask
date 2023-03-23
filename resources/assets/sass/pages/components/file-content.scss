@@ -5,10 +5,12 @@
     left: 0;
     right: 0;
     bottom: 0;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     border-radius: 18px 18px 0 0;
     overflow: hidden;
+    transform: translateZ(0);
 
     .preview-iframe {
         position: absolute;
@@ -19,10 +21,18 @@
         background: 0 0;
         border: 0;
         float: none;
-        margin: -1px 0 0;
         max-width: none;
-        outline: 0;
+        margin: 0;
         padding: 0;
+        outline: 0;
+    }
+
+    .office-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: -1;
+        opacity: 0;
     }
 
     .edit-header {
@@ -37,7 +47,7 @@
         z-index: 99;
         .header-title {
             flex: 1;
-            color: #333333;
+            color: $primary-title-color;
             padding-left: 24px;
             padding-right: 24px;
             line-height: 24px;
@@ -46,7 +56,7 @@
             text-overflow:ellipsis;
             white-space: nowrap;
             .file-unsave-tip {
-                color: #333333;
+                color: $primary-title-color;
                 padding-right: 6px;
                 font-weight: 500;
                 cursor: pointer;
@@ -71,7 +81,7 @@
                         line-height: 24px;
                         font-size: 12px;
                         border: 2px solid #ffffff;
-                        background-color: #8bcf70;
+                        background-color: $primary-color;
                         color: #ffffff;
                         z-index: 1;
                         border-radius: 50%;
@@ -92,6 +102,26 @@
                 font-size: 12px !important;
             }
         }
+        .header-icons {
+            margin-left: -4px;
+            margin-right: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            .header-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 44px;
+                height: 100%;
+                color: #777777;
+                cursor: pointer;
+                > i {
+                    font-size: 20px;
+                }
+            }
+        }
+
         .header-button {
             font-size: 12px;
             margin-right: 24px;
@@ -107,6 +137,14 @@
         .mdeditor-wrapper {
             flex: 1;
             display: flex;
+        }
+
+        .teditor-wrapper {
+            .tox-editor-header {
+                .tox-toolbar--scrolling {
+                    flex-wrap: wrap;
+                }
+            }
         }
 
         .mdeditor-box {
@@ -183,6 +221,15 @@
                 }
             }
         }
+
+        .content-mask {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 2;
+        }
     }
 
     .content-load {
@@ -207,7 +254,14 @@
             display: flex;
             align-items: center;
 
+            .title-name {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
             .ivu-tag {
+                flex-shrink: 0;
                 margin-left: 6px;
                 padding: 0 6px;
                 line-height: 20px;
@@ -238,9 +292,34 @@
     }
     .content-body {
         overflow: hidden;
+        .teditor-wrapper {
+            .tox-editor-header,
+            .tox-statusbar {
+                display: none;
+            }
+        }
+        .teditor-loadedstyle {
+            .tox-menubar,
+            .tox-toolbar-overlord {
+                padding: 0;
+            }
+            .tox-sidebar-wrap {
+                margin: 0;
+            }
+        }
         .markdown-preview-warp {
             flex: 1;
             overflow: auto;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .file-preview {
+        .edit-header {
+            .header-hint {
+                display: none;
+            }
         }
     }
 }
@@ -252,11 +331,6 @@
         .content-body {
             min-width: 768px;
             overflow-x: auto;
-            .tox {
-                .tox-toolbar--scrolling {
-                    flex-wrap: wrap;
-                }
-            }
             .teditor-loadedstyle {
                 .tox-menubar,
                 .tox-toolbar-overlord {

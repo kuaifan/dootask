@@ -59,7 +59,7 @@
                 :current="listPage"
                 :page-size="listPageSize"
                 :disabled="loadIng > 0"
-                :simple="windowMax768"
+                :simple="windowSmall"
                 :page-size-opts="[10,20,30,50,100]"
                 show-elevator
                 show-sizer
@@ -71,63 +71,59 @@
 </template>
 
 <script>
-import {mapState} from "vuex";
-
 export default {
     name: "ReportMy",
     data() {
         return {
             loadIng: 0,
-            columns: [],
-            lists: [],
-            listPage: 1,
-            listTotal: 0,
-            listPageSize: 20,
-            noDataText: "数据加载中.....",
-
-            keys: {},
-            keyIs: false,
-
-            reportTypeList: [
-                {value: "", label: this.$L('全部')},
-                {value: "weekly", label: this.$L('周报')},
-                {value: "daily", label: this.$L('日报')},
-            ],
-        }
-    },
-    mounted() {
-        this.getLists();
-    },
-    computed: {
-        ...mapState(['windowMax768'])
-    },
-    watch: {
-        keyIs(v) {
-            if (!v) {
-                this.keys = {}
-                this.setPage(1)
-            }
-        }
-    },
-    methods: {
-        initLanguage() {
-            this.columns = [{
+            columns: [{
                 title: this.$L("名称"),
                 key: 'title',
-                sortable: true,
                 minWidth: 120,
             }, {
                 title: this.$L("类型"),
                 key: 'type',
                 align: 'center',
-                sortable: true,
                 width: 90,
             }, {
                 title: this.$L("汇报时间"),
                 key: 'created_at',
                 align: 'center',
-                sortable: true,
                 width: 180,
+            }, {
+                title: this.$L("汇报对象"),
+                key: 'receives',
+                align: 'center',
+                width: 90,
+                render: (h, {row}) => {
+                    if (row.receives.length === 0) {
+                        return h('div', '-')
+                    }
+                    const array = [];
+                    if (row.receives.length <= 2) {
+                        row.receives.some(userid => {
+                            array.push(h('UserAvatar', {
+                                props: {
+                                    size: 22,
+                                    userid: userid,
+                                }
+                            }))
+                        })
+                    } else {
+                        array.push(h('UserAvatar', {
+                            props: {
+                                size: 22,
+                                userid: row.receives[0],
+                            }
+                        }))
+                        array.push(h('div', {
+                            class: "more-avatar"
+                        }, `+${row.receives.length - 1}`))
+                    }
+                    return h('div', {
+                        class: "report-table-avatar"
+                    }, array)
+                }
             }, {
                 title: this.$L("操作"),
                 align: 'center',
@@ -162,9 +158,35 @@ export default {
                         }
                     });
                 },
-            }];
-        },
+            }],
+            lists: [],
+            listPage: 1,
+            listTotal: 0,
+            listPageSize: 20,
+            noDataText: "数据加载中.....",
 
+            keys: {},
+            keyIs: false,
+
+            reportTypeList: [
+                {value: "", label: this.$L('全部')},
+                {value: "weekly", label: this.$L('周报')},
+                {value: "daily", label: this.$L('日报')},
+            ],
+        }
+    },
+    mounted() {
+        this.getLists();
+    },
+    watch: {
+        keyIs(v) {
+            if (!v) {
+                this.keys = {}
+                this.setPage(1)
+            }
+        }
+    },
+    methods: {
         onSearch() {
             this.listPage = 1;
             this.getLists();

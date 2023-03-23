@@ -1,8 +1,17 @@
 <template>
     <div v-if="ready" class="file-content">
-        <iframe v-if="isPreview" ref="myPreview" class="preview-iframe" :src="previewUrl"></iframe>
-        <template v-else>
-            <div v-show="!['word', 'excel', 'ppt'].includes(file.type)" class="edit-header">
+        <IFrame v-if="isPreview" class="preview-iframe" :src="previewUrl" @on-load="onFrameLoad"/>
+        <template v-else-if="contentDetail">
+            <EPopover
+                v-if="['word', 'excel', 'ppt'].includes(file.type)"
+                v-model="historyShow"
+                trigger="click">
+                <div class="file-content-history">
+                    <FileHistory :value="historyShow" :file="file" @on-restore="onRestoreHistory"/>
+                </div>
+                <div slot="reference" ref="officeHeader" class="office-header"></div>
+            </EPopover>
+            <div v-else class="edit-header">
                 <div class="header-title">
                     <EPopover v-if="!equalContent" v-model="unsaveTip" class="file-unsave-tip">
                         <div class="task-detail-delete-file-popover">
@@ -14,20 +23,20 @@
                         </div>
                         <span slot="reference">[{{$L('未保存')}}*]</span>
                     </EPopover>
-                    {{formatName(file)}}
+                    {{fileName}}
                 </div>
                 <div class="header-user">
                     <ul>
                         <li v-for="(userid, index) in editUser" :key="index" v-if="index <= 10">
                             <UserAvatar :userid="userid" :size="28" :border-witdh="2"/>
                         </li>
-                        <li v-if="editUser.length > 10" class="more">{{editUser.length > 99 ? '99+' : editUser.length}}</li>
+                        <li v-if="editUser.length > 10" class="more" :title="editUser.length">{{editUser.length > 999 ? '...' : editUser.length}}</li>
                     </ul>
                 </div>
                 <div v-if="file.type=='document' && contentDetail" class="header-hint">
                     <ButtonGroup size="small" shape="circle">
-                        <Button :type="`${contentDetail.type=='md'?'primary':'default'}`" @click="$set(contentDetail, 'type', 'md')">{{$L('MD编辑器')}}</Button>
-                        <Button :type="`${contentDetail.type!='md'?'primary':'default'}`" @click="$set(contentDetail, 'type', 'text')">{{$L('文本编辑器')}}</Button>
+                        <Button :type="`${contentDetail.type=='md'?'primary':'default'}`" @click="setTextType('md')">{{$L('MD编辑器')}}</Button>
+                        <Button :type="`${contentDetail.type!='md'?'primary':'default'}`" @click="setTextType('text')">{{$L('文本编辑器')}}</Button>
                     </ButtonGroup>
                 </div>
                 <div v-if="file.type=='mind'" class="header-hint">
@@ -36,45 +45,90 @@
                 <Dropdown v-if="file.type=='mind'"
                           trigger="click"
                           class="header-hint"
-                          @on-click="exportMenu">
+                          @on-click="exportMenu"
+                          transfer>
                     <a href="javascript:void(0)">{{$L('导出')}}<Icon type="ios-arrow-down"></Icon></a>
                     <DropdownMenu slot="list">
                         <DropdownItem name="png">{{$L('导出PNG图片')}}</DropdownItem>
                         <DropdownItem name="pdf">{{$L('导出PDF文件')}}</DropdownItem>
                     </DropdownMenu>
                 </Dropdown>
-                <Button v-if="!file.only_view" :disabled="equalContent" :loading="loadIng > 0" class="header-button" size="small" type="primary" @click="handleClick('save')">{{$L('保存')}}</Button>
+                <template v-if="!file.only_view">
+                    <div class="header-icons">
+                        <ETooltip :disabled="windowSmall || $isEEUiApp" :content="$L('文件链接')">
+                            <div class="header-icon" @click="handleClick('link')"><i class="taskfont">&#xe785;</i></div>
+                        </ETooltip>
+                        <EPopover v-model="historyShow" trigger="click">
+                            <div class="file-content-history">
+                                <FileHistory :value="historyShow" :file="file" @on-restore="onRestoreHistory"/>
+                            </div>
+                            <ETooltip slot="reference" ref="historyTip" :disabled="windowSmall || $isEEUiApp || historyShow" :content="$L('历史版本')">
+                                <div class="header-icon"><i class="taskfont">&#xe71d;</i></div>
+                            </ETooltip>
+                        </EPopover>
+                    </div>
+                    <Button :disabled="equalContent" :loading="loadSave > 0" class="header-button" size="small" type="primary" @click="handleClick('save')">{{$L('保存')}}</Button>
+                </template>
             </div>
-            <div v-if="contentDetail" class="content-body">
+            <div class="content-body">
+                <div v-if="historyShow" class="content-mask"></div>
                 <template v-if="file.type=='document'">
                     <MDEditor v-if="contentDetail.type=='md'" v-model="contentDetail.content" height="100%"/>
                     <TEditor v-else v-model="contentDetail.content" height="100%" @editorSave="handleClick('saveBefore')"/>
                 </template>
                 <Drawio v-else-if="file.type=='drawio'" ref="myFlow" v-model="contentDetail" :title="file.name" @saveData="handleClick('saveBefore')"/>
                 <Minder v-else-if="file.type=='mind'" ref="myMind" v-model="contentDetail" @saveData="handleClick('saveBefore')"/>
-                <AceEditor v-else-if="['code', 'txt'].includes(file.type)" v-model="contentDetail" :ext="file.ext" @saveData="handleClick('saveBefore')"/>
-                <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail" :documentKey="documentKey"/>
+                <AceEditor v-else-if="['code', 'txt'].includes(file.type)" v-model="contentDetail.content" :ext="file.ext" @saveData="handleClick('saveBefore')"/>
+                <OnlyOffice v-else-if="['word', 'excel', 'ppt'].includes(file.type)" v-model="contentDetail" :documentKey="documentKey" @on-document-ready="handleClick('officeReady')"/>
             </div>
         </template>
         <div v-if="contentLoad" class="content-load"><Loading/></div>
+
+        <!--文件链接-->
+        <Modal
+            v-model="linkShow"
+            :title="$L('文件链接')"
+            :mask-closable="false">
+            <div>
+                <div style="margin:-10px 0 8px">{{$L('文件名称')}}: {{linkData.name}}</div>
+                <Input ref="linkInput" v-model="linkData.url" type="textarea" :rows="3" @on-focus="linkFocus" readonly/>
+                <div class="form-tip" style="padding-top:6px">{{$L('可通过此链接浏览文件。')}}<a href="javascript:void(0)" @click="linkCopy">{{$L('点击复制链接')}}</a></div>
+            </div>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="linkShow=false">{{$L('取消')}}</Button>
+                <Poptip
+                    confirm
+                    placement="bottom"
+                    style="margin-left:8px"
+                    :ok-text="$L('确定')"
+                    :cancel-text="$L('取消')"
+                    @on-ok="linkGet(true)"
+                    transfer>
+                    <div slot="title">
+                        <p><strong>{{$L('注意：刷新将导致原来的链接失效！')}}</strong></p>
+                    </div>
+                    <Button type="primary" :loading="linkLoad > 0">{{$L('刷新')}}</Button>
+                </Poptip>
+            </div>
+        </Modal>
     </div>
 </template>
 
 <script>
-import Vue from 'vue'
-import Minder from '../../../components/Minder'
 import {mapState} from "vuex";
-Vue.use(Minder)
+import FileHistory from "./FileHistory";
+import IFrame from "./IFrame";
 
 const MDEditor = () => import('../../../components/MDEditor/index');
 const TEditor = () => import('../../../components/TEditor');
 const AceEditor = () => import('../../../components/AceEditor');
 const OnlyOffice = () => import('../../../components/OnlyOffice');
 const Drawio = () => import('../../../components/Drawio');
+const Minder = () => import('../../../components/Minder');
 
 export default {
     name: "FileContent",
-    components: {AceEditor, TEditor, MDEditor, OnlyOffice, Drawio},
+    components: {IFrame, FileHistory, AceEditor, TEditor, MDEditor, OnlyOffice, Drawio, Minder},
     props: {
         value: {
             type: Boolean,
@@ -92,31 +146,37 @@ export default {
         return {
             ready: false,
 
+            loadSave: 0,
             loadContent: 0,
-            loadIng: 0,
-
-            fileId: 0,
 
             unsaveTip: false,
 
+            fileExt: null,
             contentDetail: null,
             contentBak: {},
 
             editUser: [],
 
             loadPreview: true,
+
+            linkShow: false,
+            linkData: {},
+            linkLoad: 0,
+
+            historyShow: false,
+            officeReady: false,
         }
     },
 
     mounted() {
         document.addEventListener('keydown', this.keySave)
-        window.addEventListener('message', this.handleMessage)
+        window.addEventListener('message', this.handleOfficeMessage)
         //
         if (this.$isSubElectron) {
             window.__onBeforeUnload = () => {
                 if (!this.equalContent) {
                     $A.modalConfirm({
-                        content: '修改的内容尚未保存，真的要放弃修改吗？',
+                        content: '修改的内容尚未保存，确定要放弃修改吗？',
                         cancelText: '取消',
                         okText: '放弃',
                         onOk: () => {
@@ -126,52 +186,49 @@ export default {
                     return true
                 }
             }
-            this.$store.dispatch("websocketConnection")
         }
     },
 
     beforeDestroy() {
         document.removeEventListener('keydown', this.keySave)
-        window.removeEventListener('message', this.handleMessage)
+        window.removeEventListener('message', this.handleOfficeMessage)
     },
 
     watch: {
-        file: {
-            handler(info) {
-                if (this.fileId != info.id) {
-                    this.fileId = info.id;
-                    this.contentDetail = null;
-                    this.getContent();
-                }
-            },
-            immediate: true,
-            deep: true,
-        },
-
         value: {
             handler(val) {
                 if (val) {
                     this.ready = true;
                     this.editUser = [this.userId];
+                    this.getContent();
                 } else {
-                    this.fileContent[this.fileId] = this.contentDetail;
+                    this.linkShow = false;
+                    this.historyShow = false;
+                    this.officeReady = false;
+                    this.fileExt = null;
                 }
             },
             immediate: true,
         },
 
+        historyShow(val) {
+            if (!val && this.$refs.historyTip) {
+                this.$refs.historyTip.updatePopper()
+            }
+        },
+
         wsMsg: {
             handler(info) {
-                const {type, data} = info;
+                const {type, action, data} = info;
                 switch (type) {
                     case 'path':
-                        if (data.path == 'file/content/' + this.fileId) {
+                        if (data.path == '/single/file/' + this.fileId) {
                             this.editUser = data.userids;
                         }
                         break;
 
                     case 'file':
-                        if (data.action == 'content') {
+                        if (action == 'content') {
                             if (this.value && data.id == this.fileId) {
                                 $A.modalConfirm({
                                     title: "更新提示",
@@ -187,16 +244,23 @@ export default {
             },
             deep: true,
         },
-
-        wsOpenNum() {
-            if (this.$isSubElectron) {
-                this.$store.dispatch("websocketPath", "file/content/" + this.fileId);
-            }
-        },
     },
 
     computed: {
-        ...mapState(['fileContent', 'wsMsg', 'userId', 'wsOpenNum']),
+        ...mapState(['wsMsg']),
+
+        fileId() {
+            return this.file.id || 0
+        },
+
+        fileName() {
+            if (this.fileExt) {
+                return $A.getFileName(Object.assign(this.file, {
+                    ext: this.fileExt
+                }))
+            }
+            return $A.getFileName(this.file)
+        },
 
         equalContent() {
             return this.contentBak == $A.jsonStringify(this.contentDetail);
@@ -216,21 +280,41 @@ export default {
 
         previewUrl() {
             if (this.isPreview) {
-                return $A.apiUrl("../fileview/onlinePreview?url=" + encodeURIComponent(this.contentDetail.url))
-            } else {
-                return '';
+                const {name, key} = this.contentDetail;
+                return $A.apiUrl(`../online/preview/${name}?key=${key}`)
             }
+            return '';
         },
     },
 
     methods: {
-        handleMessage (event) {
-            const data = event.data;
-            switch (data.act) {
-                case 'ready':
-                    this.loadPreview = false;
-                    break
+        handleOfficeMessage({data, source}) {
+            if (data.source === 'onlyoffice') {
+                switch (data.action) {
+                    case 'ready':
+                        source.postMessage("createMenu", "*");
+                        break;
+
+                    case 'link':
+                        this.handleClick('link')
+                        break;
+
+                    case 'history':
+                        const dom = this.$refs.officeHeader;
+                        if (dom) {
+                            dom.style.top = `${data.rect.top}px`;
+                            dom.style.left = `${data.rect.left}px`;
+                            dom.style.width = `${data.rect.width}px`;
+                            dom.style.height = `${data.rect.height}px`;
+                            dom.click();
+                        }
+                        break;
+                }
             }
+        },
+
+        onFrameLoad() {
+            this.loadPreview = false;
         },
 
         keySave(e) {
@@ -243,13 +327,8 @@ export default {
         },
 
         getContent() {
-            if (!this.fileId) {
+            if (this.fileId === 0) {
                 this.contentDetail = {};
-                this.updateBak();
-                return;
-            }
-            if (typeof this.fileContent[this.fileId] !== "undefined") {
-                this.contentDetail = this.fileContent[this.fileId];
                 this.updateBak();
                 return;
             }
@@ -258,21 +337,22 @@ export default {
                 this.updateBak();
                 return;
             }
-            this.loadIng++;
-            this.loadContent++;
+            this.loadSave++;
+            setTimeout(_ => {
+                this.loadContent++;
+            }, 600)
             this.$store.dispatch("call", {
                 url: 'file/content',
                 data: {
                     id: this.fileId,
                 },
             }).then(({data}) => {
-                this.loadIng--;
-                this.loadContent--;
                 this.contentDetail = data.content;
                 this.updateBak();
             }).catch(({msg}) => {
                 $A.modalError(msg);
-                this.loadIng--;
+            }).finally(_ => {
+                this.loadSave--;
                 this.loadContent--;
             })
         },
@@ -283,20 +363,29 @@ export default {
 
         handleClick(act) {
             switch (act) {
+                case "link":
+                    this.linkData = {
+                        id: this.fileId,
+                        name: this.file.name
+                    };
+                    this.linkShow = true;
+                    this.linkGet()
+                    break;
+
                 case "saveBefore":
-                    if (!this.equalContent && this.loadIng == 0) {
+                    if (!this.equalContent && this.loadSave == 0) {
                         this.handleClick('save');
                     } else {
                         $A.messageWarning('没有任何修改！');
                     }
-                    return;
+                    break;
 
                 case "save":
                     if (this.file.only_view) {
                         return;
                     }
                     this.updateBak();
-                    this.loadIng++;
+                    this.loadSave++;
                     this.$store.dispatch("call", {
                         url: 'file/content/save',
                         method: 'post',
@@ -306,30 +395,105 @@ export default {
                         },
                     }).then(({data, msg}) => {
                         $A.messageSuccess(msg);
-                        this.loadIng--;
-                        this.$store.dispatch("saveFile", {
+                        const newData = {
                             id: this.fileId,
                             size: data.size,
-                        });
+                        };
+                        if (this.fileExt) {
+                            newData.ext = this.fileExt;
+                            this.fileExt = null;
+                        }
+                        this.$store.dispatch("saveFile", newData);
                     }).catch(({msg}) => {
                         $A.modalError(msg);
-                        this.loadIng--;
                         this.getContent();
+                    }).finally(_ => {
+                        this.loadSave--;
                     })
+                    break;
+
+                case "officeReady":
+                    this.officeReady = true
                     break;
             }
         },
 
-        exportMenu(act) {
+        onRestoreHistory(item) {
+            this.historyShow = false;
+            $A.modalConfirm({
+                content: `你确定文件还原至【${item.created_at}】吗？`,
+                cancelText: '取消',
+                okText: '确定',
+                loading: true,
+                onOk: () => {
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("call", {
+                            url: 'file/content/restore',
+                            data: {
+                                id: this.fileId,
+                                history_id: item.id,
+                            }
+                        }).then(({msg}) => {
+                            resolve(msg);
+                            this.contentDetail = null;
+                            this.getContent();
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        });
+                    })
+                }
+            });
+        },
+
+        linkGet(refresh) {
+            this.linkLoad++;
+            this.$store.dispatch("call", {
+                url: 'file/link',
+                data: {
+                    id: this.linkData.id,
+                    refresh: refresh === true ? 'yes' : 'no'
+                },
+            }).then(({data}) => {
+                this.linkData = Object.assign(data, {
+                    id: this.linkData.id,
+                    name: this.linkData.name,
+                });
+                this.linkFocus();
+            }).catch(({msg}) => {
+                this.linkShow = false
+                $A.modalError(msg);
+            }).finally(_ => {
+                this.linkLoad--;
+            });
+        },
+
+        linkCopy() {
+            if (!this.linkData.url) {
+                return;
+            }
+            this.linkFocus();
+            this.$copyText(this.linkData.url).then(_ => {
+                $A.messageSuccess('复制成功');
+            }).catch(_ => {
+                $A.messageError('复制失败');
+            });
+        },
+
+        linkFocus() {
+            this.$nextTick(_ => {
+                this.$refs.linkInput.focus({cursor:'all'});
+            });
+        },
+
+        exportMenu(type) {
             switch (this.file.type) {
                 case 'mind':
-                    this.$refs.myMind.exportHandle(act == 'pdf' ? 1 : 0, this.file.name);
+                    this.$refs.myMind.exportHandle(type, this.file.name);
                     break;
             }
         },
 
         unSaveGive() {
-            delete this.fileContent[this.fileId];
             this.getContent();
             this.unsaveTip = false;
         },
@@ -337,6 +501,11 @@ export default {
         onSaveSave() {
             this.handleClick('save');
             this.unsaveTip = false;
+        },
+
+        setTextType(type) {
+            this.fileExt = type
+            this.$set(this.contentDetail, 'type', type)
         },
 
         documentKey() {
@@ -348,19 +517,11 @@ export default {
                         only_update_at: 'yes'
                     },
                 }).then(({data}) => {
-                    resolve($A.Date(data.update_at, true))
+                    resolve(`${data.id}-${$A.Time(data.update_at)}`)
                 }).catch(() => {
                     resolve(0)
                 });
             })
-        },
-
-        formatName(file) {
-            let {name, ext} = file;
-            if (ext != '') {
-                name += "." + ext;
-            }
-            return name;
         },
     }
 }

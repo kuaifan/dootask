@@ -21,7 +21,10 @@ use Illuminate\Support\Facades\DB;
  * @method static \Illuminate\Database\Eloquent\Model|object|static|null cancelHidden()
  * @method static \Illuminate\Database\Eloquent\Builder|static with($relations)
  * @method static \Illuminate\Database\Query\Builder|static select($columns = [])
+ * @method static \Illuminate\Database\Query\Builder|static whereIn($column, $values, $boolean = 'and', $not = false)
  * @method static \Illuminate\Database\Query\Builder|static whereNotIn($column, $values, $boolean = 'and')
+ * @method int change(array $array)
+ * @method int remove()
  * @mixin \Eloquent
  */
 class AbstractModel extends Model
@@ -39,6 +42,42 @@ class AbstractModel extends Model
     protected $appendattrs = [];
 
     /**
+     * 通过模型修改数据
+     * @param AbstractModel $builder
+     * @param $array
+     * @return int
+     */
+    protected function scopeChange($builder, $array)
+    {
+        $line = 0;
+        $rows = $builder->get();
+        foreach ($rows as $row) {
+            $row->updateInstance($array);
+            if ($row->save()) {
+                $line++;
+            }
+        }
+        return $line;
+    }
+
+    /**
+     * 通过模型删除数据
+     * @param AbstractModel $builder
+     * @return int
+     */
+    protected function scopeRemove($builder)
+    {
+        $line = 0;
+        $rows = $builder->get();
+        foreach ($rows as $row) {
+            if ($row->delete()) {
+                $line++;
+            }
+        }
+        return $line;
+    }
+
+    /**
      * 保存数据忽略错误
      * @return bool
      */
@@ -46,7 +85,7 @@ class AbstractModel extends Model
     {
         try {
             return $this->save();
-        } catch (\Exception $e) {
+        } catch (\Throwable) {
             return false;
         }
     }

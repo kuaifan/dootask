@@ -1,247 +1,114 @@
-const languageTypeLists = {
-    "EN": "English",
-    "KM": "ភាសាខ្មែរ",
-    "TH": "ภาษาไทย",
-    "KO": "한국어",
-    "JA": "日本語",
-    "CN": "简体中文",
-    "TC": "繁體中文",
-};
-const languageCachesObjects = {};
-const languageListenerObjects = [];
+const utils = require('./utils')
 
-export default {
-    install(Vue) {
-        Vue.mixin({
-            data() {
-                return {
-                    languageInit: false,
-                    languageData: [],
-                    languageType: window.localStorage['__language:type__'] || this.__getNavigatorLanguage(),
-                    languageList: languageTypeLists,
-                }
-            },
+const languageList = utils.languageTypes
+const languageType = utils.getLanguage()
+const languageRege = {}
 
-            watch: {
-                languageType: {
-                    handler(type) {
-                        if (type && typeof this.initLanguage === "function") {
-                            this.initLanguage();
-                        }
-                    },
-                    immediate: true
-                },
-            },
+/**
+ * 添加语言数据
+ * @param data
+ */
+function addLanguage(data) {
+    if (!$A.isArray(data)) {
+        return
+    }
+    const keys = Object.assign(Object.keys(languageList))
+    data.some(item => {
+        let index = -1;
+        item.key && keys.some(key => {
+            const value = item[key] || item['general'] || null
+            if (value && typeof window.LANGUAGE_DATA[key] !== "undefined") {
+                index = window.LANGUAGE_DATA[key].push(value) - 1
+            }
+        })
+        if (index > -1) {
+            window.LANGUAGE_DATA['key'][item.key] = index
+        }
+    })
+}
 
-            methods: {
-                /**
-                 * 获取浏览器默认语言
-                 * @returns {string}
-                 * @private
-                 */
-                __getNavigatorLanguage() {
-                    let lang = 'EN';
-                    let navLang = (navigator.language || navigator.userLanguage + "").toUpperCase();
-                    switch (navLang) {
-                        case "EN":
-                        case "KM":
-                        case "TH":
-                        case "KO":
-                        case "JA":
-                            lang = navLang
-                            break;
-                        case "ZH-CN":
-                        case "ZH":
-                            lang = 'CN'
-                            break;
-                        case "ZH-TW":
-                        case "ZH-HK":
-                            lang = 'TC'
-                            break;
-                    }
-                    return window.localStorage['__language:type__'] = lang;
-                },
+/**
+ * 设置语言
+ * @param language
+ */
+function setLanguage(language) {
+    if (language === undefined) {
+        return
+    }
+    $A.modalConfirm({
+        content: '切换语言需要刷新后生效，是否确定刷新？',
+        cancelText: '取消',
+        okText: '确定',
+        onOk: () => {
+            window.localStorage.setItem("__language:type__", language)
+            $A.reloadUrl()
+        }
+    })
+}
 
-                /**
-                 * 初始化语言数据
-                 * @private
-                 */
-                __initLanguageData() {
-                    if (this.languageInit === undefined) {
-                        this.languageInit = false;
-                        this.languageData = [];
-                        this.languageType = window.localStorage['__language:type__'] || this.__getNavigatorLanguage();
-                        this.languageList = languageTypeLists;
-                    }
-                    if (this.languageInit === false) {
-                        this.languageInit = true;
-                        //
-                        this.addLanguageData(require("./language.js").default);
-                        this.addLanguageData(window.languageData);
-                        //
-                        languageListenerObjects.push((lang) => {
-                            this.languageType = lang;
-                        });
-                    }
-                },
-
-                /**
-                 * 是否数组
-                 * @param obj
-                 * @returns {boolean}
-                 * @private
-                 */
-                __isArray(obj) {
-                    return typeof (obj) == "object" && Object.prototype.toString.call(obj).toLowerCase() == '[object array]' && typeof obj.length == "number";
-                },
-
-                /**
-                 * 监听语言变化
-                 * @param callback
-                 */
-                setLanguageListener(callback) {
-                    if (typeof callback === 'function') {
-                        languageListenerObjects.push((lang) => {
-                            callback(lang);
-                        });
-                    }
-                },
-
-                /**
-                 * 语言包数据
-                 * @param data
-                 */
-                addLanguageData(data) {
-                    if (!this.__isArray(data)) {
-                        return;
-                    }
-                    this.__initLanguageData();
-                    this.languageData.unshift(...data);
-                },
-
-                /**
-                 * 变化语言
-                 * @param language
-                 */
-                setLanguage(language) {
-                    if (language === undefined) {
-                        return
-                    }
-                    this.__initLanguageData();
-                    setTimeout(() => {
-                        window.localStorage['__language:type__'] = language;
-                        languageListenerObjects.forEach((call) => {
-                            if (typeof call === 'function') {
-                                call(language);
-                            }
-                        });
-                    }, 10)
-                },
-
-                /**
-                 * 获取语言
-                 * @returns {*}
-                 */
-                getLanguage() {
-                    this.__initLanguageData();
-                    return this.languageType;
-                },
-
-                /**
-                 * 替换%遍历
-                 * @param text
-                 * @param objects
-                 */
-                replaceArgumentsLanguage(text, objects) {
-                    let j = 1;
-                    while (text.indexOf("%") !== -1) {
-                        if (typeof objects[j] === "object") {
-                            text = text.replace("%", "");
-                        } else {
-                            text = text.replace("%", objects[j]);
-                        }
-                        j++;
-                    }
-                    return text;
-                },
-
-                /**
-                 * 译文转义
-                 * @param val
-                 * @returns {string|*}
-                 */
-                replaceEscape(val) {
-                    if (!val || val == '') {
-                        return '';
-                    }
-                    return val.replace(/％/g, '%').replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                },
-
-                /**
-                 * 显示语言
-                 * @return {string}
-                 */
-                $L(text) {
-                    if (typeof arguments[1] !== "undefined") {
-                        return this.$L(this.replaceArgumentsLanguage(text, arguments));
-                    }
-                    if (typeof text !== "string" || !text) {
-                        return text;
-                    }
-                    this.__initLanguageData();
-                    //
-                    if (typeof languageCachesObjects[text] === "undefined") {
-                        let tmpRege = null;
-                        let tmpData = this.languageData.find((obj) => {
-                            if (typeof obj._ !== "undefined") {
-                                tmpRege = new RegExp("^" + this.replaceEscape(obj._).replace(/%/g, "(.*?)") + "$", "g");
-                                return !!text.match(tmpRege);
-                            }
-                            return Object.values(obj).find((val) => {
-                                tmpRege = new RegExp("^" + this.replaceEscape(val).replace(/%/g, "(.*?)") + "$", "g");
-                                return !!text.match(tmpRege);
-                            })
-                        });
-                        languageCachesObjects[text] = {
-                            rege: tmpRege,
-                            data: tmpData,
-                        };
-                    }
-                    const {rege, data} = languageCachesObjects[text];
-                    if (data
-                        && typeof data === "object"
-                        && typeof data[this.languageType] !== "undefined"
-                        && data[this.languageType]) {
-                        let index = 0;
-                        let value = data[this.languageType];
-                        value = value.replace(/%/g, function () {
-                            return "$" + (++index);
-                        });
-                        return text.replace(rege, value);
-                    }
-                    //
-                    if (this.languageType == "CN") {
-                        try {
-                            let key = '__language:Undefined__';
-                            let languageTmp = JSON.parse(window.localStorage[key] || '[]');
-                            if (!this.__isArray(languageTmp)) {
-                                languageTmp = [];
-                            }
-                            let tmpRege = null;
-                            let tmpData = languageTmp.find((val) => {
-                                tmpRege = new RegExp("^" + val.replace(/%/g, "(.*?)") + "$", "g");
-                                return !!text.match(tmpRege);
-                            });
-                            if (!tmpData) {
-                                languageTmp.push(text);
-                                window.localStorage[key] = JSON.stringify(languageTmp);
-                            }
-                        } catch (e) { }
-                    }
-                    //
-                    return text;
+/**
+ * 转换语言
+ * @param text
+ * @returns {string|*}
+ */
+function switchLanguage(text) {
+    if (typeof arguments[1] !== "undefined") {
+        return switchLanguage(utils.replaceArgumentsLanguage(text, arguments))
+    }
+    if (typeof text !== "string" || !text) {
+        return text
+    }
+    //
+    if (typeof window.LANGUAGE_DATA === "undefined"
+        || typeof window.LANGUAGE_DATA["key"] === "undefined"
+        || typeof window.LANGUAGE_DATA[languageType] === "undefined") {
+        return text
+    }
+    const index = window.LANGUAGE_DATA["key"][text] || -1
+    if (index > -1) {
+        return window.LANGUAGE_DATA[languageType][index] || text
+    }
+    if (typeof languageRege[text] === "undefined") {
+        languageRege[text] = false
+        for (let key in window.LANGUAGE_DATA["key"]) {
+            if (key.indexOf("(*)") > -1) {
+                const rege = new RegExp("^" + utils.replaceEscape(key) + "$", "g")
+                if (rege.test(text)) {
+                    let j = 0
+                    const index = window.LANGUAGE_DATA["key"][key]
+                    const value = (window.LANGUAGE_DATA[languageType][index] || key)?.replace(/\(\*\)/g, function () {
+                        return "$" + (++j)
+                    })
+                    languageRege[text] = {rege, value}
+                    break
                 }
             }
-        });
+        }
     }
+    if (languageRege[text]) {
+        return text.replace(languageRege[text].rege, languageRege[text].value)
+    }
+    if (window.systemInfo.debug === "yes") {
+        setTimeout(_ => {
+            try {
+                let key = '__language:Undefined__'
+                let languageTmp = JSON.parse(window.localStorage.getItem(key) || '[]')
+                if (!$A.isArray(languageTmp)) {
+                    languageTmp = []
+                }
+                let tmpRege = null
+                let tmpData = languageTmp.find((val) => {
+                    tmpRege = new RegExp("^" + val.replace(/\(\*\)/g, "(.*?)") + "$", "g")
+                    return !!text.match(tmpRege)
+                })
+                if (!tmpData) {
+                    languageTmp.push(text)
+                    window.localStorage.setItem(key, JSON.stringify(languageTmp))
+                }
+            } catch (e) { }
+        }, 10)
+    }
+    return text
 }
+
+export { languageType, languageList, addLanguage, setLanguage, switchLanguage }

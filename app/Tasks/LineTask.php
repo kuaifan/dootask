@@ -16,6 +16,7 @@ class LineTask extends AbstractTask
 {
     protected $userid;
     protected $online;
+    protected $endPush = [];
 
     /**
      * LineTask constructor.
@@ -24,6 +25,7 @@ class LineTask extends AbstractTask
      */
     public function __construct($userid, bool $online)
     {
+        parent::__construct(...func_get_args());
         $this->userid = $userid;
         $this->online = $online;
     }
@@ -36,7 +38,7 @@ class LineTask extends AbstractTask
                 $fd[] = $ws->fd;
             }
             if ($fd) {
-                PushTask::push([
+                $this->endPush[] = [
                     'fd' => $fd,
                     'msg' => [
                         'type' => 'line',
@@ -45,8 +47,13 @@ class LineTask extends AbstractTask
                             'online' => $this->online,
                         ],
                     ]
-                ]);
+                ];
             }
         });
+    }
+
+    public function end()
+    {
+        PushTask::push($this->endPush);
     }
 }

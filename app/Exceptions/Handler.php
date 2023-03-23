@@ -67,7 +67,13 @@ class Handler extends ExceptionHandler
     public function report(Throwable $e)
     {
         if ($e instanceof ApiException) {
-            Log::error($e->getMessage(), ['exception' => ' at ' . $e->getFile() .':' . $e->getLine()]);
+            if ($e->getCode() !== -1) {
+                Log::error($e->getMessage(), [
+                    'code' => $e->getCode(),
+                    'data' => $e->getData(),
+                    'exception' => ' at ' . $e->getFile() . ':' . $e->getLine()
+                ]);
+            }
         } else {
             parent::report($e);
         }

@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var SWIFT_KEYWORDS = {
       keyword: '#available #colorLiteral #column #else #elseif #endif #file ' +
         '#fileLiteral #function #if #imageLiteral #line #selector #sourceLocation ' +

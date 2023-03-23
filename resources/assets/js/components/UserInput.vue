@@ -18,18 +18,25 @@
             multiple
             filterable
             transfer-class-name="common-user-transfer">
-            <div v-if="multipleMax" slot="drop-prepend" class="user-drop-prepend">{{$L('最多只能选择' + multipleMax + '个')}}</div>
+            <div v-if="multipleMax" slot="drop-prepend" class="user-drop-prepend">
+                <div class="user-drop-text">
+                    {{$L('最多只能选择' + multipleMax + '个')}}
+                    <em v-if="selects.length">({{$L(`已选${selects.length}个`)}})</em>
+                </div>
+                <Checkbox class="user-drop-check" v-model="multipleCheck" @on-change="onMultipleChange"></Checkbox>
+            </div>
             <slot name="option-prepend"></slot>
             <Option
                 v-for="(item, key) in list"
                 :value="item.userid"
                 :key="key"
-                :key-value="item.email"
+                :key-value="`${item.email}|${item.pinyin}`"
                 :label="item.nickname"
                 :avatar="item.userimg"
                 :disabled="isDisabled(item.userid)">
                 <div class="user-input-option">
                     <div class="user-input-avatar"><EAvatar class="avatar" :src="item.userimg"/></div>
+                    <div v-if="item.bot" class="taskfont user-input-bot">&#xe68c;</div>
                     <div class="user-input-nickname">{{ item.nickname }}</div>
                     <div class="user-input-userid">ID: {{ item.userid }}</div>
                 </div>
@@ -78,6 +85,10 @@
                 type: Boolean,
                 default: true
             },
+            maxHiddenSelect: {
+                type: Boolean,
+                default: false
+            },
             projectId: {
                 type: Number,
                 default: 0
@@ -86,6 +97,14 @@
                 type: Number,
                 default: 0
             },
+            dialogId: {
+                type: Number,
+                default: 0
+            },
+            showBot: {
+                type: Boolean,
+                default: false
+            },
         },
         data() {
             return {
@@ -93,6 +112,8 @@
 
                 selects: [],
                 list: [],
+
+                multipleCheck: false,
 
                 searchKey: null,
                 searchHistory: [],
@@ -137,7 +158,11 @@
                 immediate: true,
             },
             selects(val) {
-                this.$emit('input', val);
+                this.$emit('input', val)
+                if (this.maxHiddenSelect && val.length >= this.maxHiddenSelect && this.$refs.select) {
+                    this.$refs.select.hideMenu()
+                }
+                this.calcMultipleSelect()
             }
         },
         methods: {
@@ -146,7 +171,10 @@
                 this.searchKey = key;
                 //
                 const history = this.searchHistory.find(item => item.key == key);
-                if (history) this.list = history.data;
+                if (history) {
+                    this.list = history.data
+                    this.calcMultipleSelect()
+                }
                 //
                 if (!history) this.loadIng++;
                 setTimeout(() => {
@@ -161,12 +189,14 @@
                                 key,
                                 project_id: this.projectId,
                                 no_project_id: this.noProjectId,
+                                dialog_id: this.dialogId,
+                                bot: this.showBot ? 2 : 0,
                             },
-                            take: 30
+                            take: 50
                         },
                     }).then(({data}) => {
-                        if (!history) this.loadIng--;
-                        this.list = data;
+                        this.list = data
+                        this.calcMultipleSelect()
                         //
                         const index = this.searchHistory.findIndex(item => item.key == key);
                         const tmpData = {
@@ -180,9 +210,11 @@
                             this.searchHistory.push(tmpData)
                         }
                     }).catch(({msg}) => {
+                        this.list = []
+                        this.calcMultipleSelect()
+                        $A.messageWarning(msg)
+                    }).finally(_ => {
                         if (!history) this.loadIng--;
-                        this.list = [];
-                        $A.messageWarning(msg);
                     });
                 }, this.searchHistory.length > 0 ? 300 : 0)
             },
@@ -198,6 +230,7 @@
                 if (show) {
                     this.$nextTick(this.searchUser);
                 }
+                this.calcMultipleSelect()
             },
 
             remoteMethod() {
@@ -217,8 +250,9 @@
                 }
                 this.selects.some(userid => {
                     if (!this.list.find(item => item.userid == userid)) {
-                        this.list.push({userid, nickname: userid});
-                        this.$store.dispatch("getUserBasic", {userid});
+                        this.list.push({userid, nickname: userid})
+                        this.calcMultipleSelect()
+                        this.$store.dispatch("getUserBasic", {userid})
                     }
                 })
             },
@@ -238,6 +272,44 @@
                         }
                     })
                 }, 100);
+            },
+
+            calcMultipleSelect() {
+                if (this.multipleMax && this.list.length > 0) {
+                    this.calcMultipleTime && clearTimeout(this.calcMultipleTime)
+                    this.calcMultipleTime = setTimeout(_ => {
+                        let allSelected = true
+                        this.$refs.select.selectOptions.some(({componentInstance}) => {
+                            if (!this.selects.includes(componentInstance.value)) {
+                                allSelected = false
+                            }
+                        })
+                        this.multipleCheck = allSelected
+                    }, 10)
+                } else {
+                    this.multipleCheck = false
+                }
+            },
+
+            onMultipleChange(val) {
+                if (val) {
+                    let optional = this.multipleMax - this.selects.length
+                    this.$refs.select.selectOptions.some(({componentInstance}) => {
+                        if (this.multipleMax && optional <= 0) {
+                            this.$nextTick(_ => {
+                                $A.messageWarning("已超过最大选择数量")
+                                this.multipleCheck = false
+                            })
+                            return true
+                        }
+                        if (!this.selects.includes(componentInstance.value)) {
+                            componentInstance.select()
+                            optional--
+                        }
+                    })
+                } else {
+                    this.selects = []
+                }
             }
         }
     };

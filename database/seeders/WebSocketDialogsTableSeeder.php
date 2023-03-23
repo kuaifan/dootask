@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\User;
+use App\Models\WebSocketDialog;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
 class WebSocketDialogsTableSeeder extends Seeder
@@ -221,6 +224,16 @@ class WebSocketDialogsTableSeeder extends Seeder
             ),
         ));
 
+        $botUser = User::botGetOrCreate('bot-manager');
+        if ($botUser) {
+            $dialog = WebSocketDialog::checkUserDialog($botUser, 1);
+            if ($dialog) {
+                $dialog->last_at = Carbon::now();
+                $dialog->save();
+            }
+        }
 
+        $userids = User::whereBot(0)->whereNull('disable_at')->pluck('userid')->toArray();
+        WebSocketDialog::createGroup("全体成员 All members", $userids, 'all');
     }
 }

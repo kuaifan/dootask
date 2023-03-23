@@ -5,11 +5,13 @@ export default [
         component: () => import('./pages/index.vue')
     },
     {
+        name: 'pro',
+        path: '/pro',
+        component: () => import('./pages/pro.vue'),
+    },
+    {
         name: 'manage',
         path: '/manage',
-        meta: {
-            slide: false
-        },
         component: () => import('./pages/manage.vue'),
         children: [
             {
@@ -24,22 +26,43 @@ export default [
             },
             {
                 name: 'manage-messenger',
-                path: 'messenger',
+                path: 'messenger/:dialogAction?',
                 component: () => import('./pages/manage/messenger.vue'),
             },
             {
+                name: 'manage-setting',
                 path: 'setting',
                 component: () => import('./pages/manage/setting/index.vue'),
                 children: [
                     {
-                        name: 'manage-setting',
-                        path: '',
-                        redirect: 'personal',
-                    },
-                    {
                         name: 'manage-setting-personal',
                         path: 'personal',
                         component: () => import('./pages/manage/setting/personal.vue'),
+                    },
+                    {
+                        name: 'manage-setting-checkin',
+                        path: 'checkin',
+                        component: () => import('./pages/manage/setting/checkin.vue'),
+                    },
+                    {
+                        name: 'manage-setting-language',
+                        path: 'language',
+                        component: () => import('./pages/manage/setting/language.vue'),
+                    },
+                    {
+                        name: 'manage-setting-theme',
+                        path: 'theme',
+                        component: () => import('./pages/manage/setting/theme.vue'),
+                    },
+                    {
+                        name: 'manage-setting-keyboard',
+                        path: 'keyboard',
+                        component: () => import('./pages/manage/setting/keyboard.vue'),
+                    },
+                    {
+                        name: 'manage-setting-license',
+                        path: 'license',
+                        component: () => import('./pages/manage/setting/license.vue'),
                     },
                     {
                         name: 'manage-setting-password',
@@ -47,9 +70,19 @@ export default [
                         component: () => import('./pages/manage/setting/password.vue'),
                     },
                     {
+                        name: 'manage-setting-email',
+                        path: 'email',
+                        component: () => import('./pages/manage/setting/email.vue'),
+                    },
+                    {
                         name: 'manage-setting-system',
                         path: 'system',
                         component: () => import('./pages/manage/setting/system.vue'),
+                    },
+                    {
+                        name: 'manage-setting-delete',
+                        path: 'delete',
+                        component: () => import('./pages/manage/setting/delete.vue'),
                     },
                 ]
             },
@@ -60,51 +93,55 @@ export default [
             },
             {
                 name: 'manage-project',
-                path: 'project/:id',
+                path: 'project/:projectId',
                 component: () => import('./pages/manage/project.vue'),
             },
             {
                 name: 'manage-file',
-                path: 'file',
+                path: 'file/:folderId?/:fileId?',
                 component: () => import('./pages/manage/file.vue'),
             },
         ]
     },
     {
         name: 'single-file-msg',
-        path: '/single/file/msg/:id',
+        path: '/single/file/msg/:msgId',
         component: () => import('./pages/single/fileMsg.vue'),
     },
     {
         name: 'single-file-task',
-        path: '/single/file/task/:id',
+        path: '/single/file/task/:fileId',
         component: () => import('./pages/single/fileTask.vue'),
     },
     {
         name: 'single-file',
-        path: '/single/file/:id',
+        path: '/single/file/:codeOrFileId',
         component: () => import('./pages/single/file.vue'),
     },
     {
         name: 'single-task',
-        path: '/single/task/:id',
+        path: '/single/task/:taskId',
         component: () => import('./pages/single/task.vue'),
     },
     {
         name: 'valid-email',
         path: '/single/valid/email',
-        meta: {title: '验证绑定邮箱'},
         component: () => import('./pages/single/validEmail.vue')
     },
     {
         name: 'report-edit',
-        path: '/single/report/edit/:id',
+        path: '/single/report/edit/:reportEditId',
         component: () => import('./pages/single/reportEdit.vue')
     },
     {
         name: 'report-detail',
-        path: '/single/report/detail/:id',
+        path: '/single/report/detail/:reportDetailId',
         component: () => import('./pages/single/reportDetail.vue')
+    },
+    {
+        name: 'token',
+        path: '/token',
+        component: () => import('./pages/token.vue'),
     },
     {
         name: 'login',

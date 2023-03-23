@@ -1,0 +1,33 @@
+name: Publish Desktop
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: macos-latest
+    environment: build
+
+    if: startsWith(github.event.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+
+      - name: Build
+        env:
+          APPLEID: ${{ secrets.APPLEID }}
+          APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          DP_KEY: ${{ secrets.DP_KEY }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_REPOSITORY: ${{ github.repository }}
+        run: ./cmd electron all
+

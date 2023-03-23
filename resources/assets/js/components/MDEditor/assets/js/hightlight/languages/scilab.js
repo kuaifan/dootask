@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
 
   var COMMON_CONTAINS = [
     hljs.C_NUMBER_MODE,

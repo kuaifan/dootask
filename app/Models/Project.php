@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Exceptions\ApiException;
 use App\Module\Base;
 use App\Tasks\PushTask;
+use Arr;
 use Carbon\Carbon;
 use DB;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
@@ -18,6 +19,8 @@ use Request;
  * @property string|null $name 名称
  * @property string|null $desc 描述、备注
  * @property int|null $userid 创建人
+ * @property int|null $personal 是否个人项目
+ * @property string|null $user_simple 成员总数|1,2,3
  * @property int|null $dialog_id 聊天会话ID
  * @property string|null $archived_at 归档时间
  * @property int|null $archived_userid 归档会员
@@ -45,7 +48,9 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereDialogId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Project wherePersonal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Project whereUserSimple($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereUserid($value)
  * @method static \Illuminate\Database\Query\Builder|Project withTrashed()
  * @method static \Illuminate\Database\Query\Builder|Project withoutTrashed()
@@ -202,9 +207,11 @@ class Project extends AbstractModel
                 WebSocketDialogUser::updateInsert([
                     'dialog_id' => $this->dialog_id,
                     'userid' => $userid,
+                ], [
+                    'important' => 1
                 ]);
             }
-            WebSocketDialogUser::whereDialogId($this->dialog_id)->whereNotIn('userid', $userids)->delete();
+            WebSocketDialogUser::whereDialogId($this->dialog_id)->whereNotIn('userid', $userids)->whereImportant(1)->remove();
         });
     }
 
@@ -244,8 +251,8 @@ class Project extends AbstractModel
                 $this->archived_at = null;
                 $this->archived_userid = User::userid();
                 $this->addLog("项目取消归档");
-                $this->pushMsg('add', $this);
-                ProjectTask::whereProjectId($this->id)->whereArchivedFollow(1)->update([
+                $this->pushMsg('recovery', $this);
+                ProjectTask::whereProjectId($this->id)->whereArchivedFollow(1)->change([
                     'archived_at' => null,
                     'archived_follow' => 0
                 ]);
@@ -255,7 +262,7 @@ class Project extends AbstractModel
                 $this->archived_userid = User::userid();
                 $this->addLog("项目归档");
                 $this->pushMsg('archived');
-                ProjectTask::whereProjectId($this->id)->whereArchivedAt(null)->update([
+                ProjectTask::whereProjectId($this->id)->whereArchivedAt(null)->change([
                     'archived_at' => $archived_at,
                     'archived_follow' => 1
                 ]);
@@ -434,7 +441,7 @@ class Project extends AbstractModel
             });
             //
             foreach ($upTaskList as $id => $value) {
-                ProjectTask::whereFlowItemId($id)->update([
+                ProjectTask::whereFlowItemId($id)->change([
                     'flow_item_name' => $value
                 ]);
             }
@@ -459,6 +466,93 @@ class Project extends AbstractModel
             }
             return $projectFlow;
         });
+    }
+
+    /**
+     * 创建项目
+     * @param $params
+     * - name   项目名称
+     * - desc
+     * - flow
+     * - personal
+     * - columns
+     * @return array
+     */
+    public static function createProject($params, $userid)
+    {
+        $name = trim(Arr::get($params, 'name', ''));
+        $desc = trim(Arr::get($params, 'desc', ''));
+        $flow = trim(Arr::get($params, 'flow', 'close'));
+        $isPersonal = intval(Arr::get($params, 'personal'));
+        if (mb_strlen($name) < 2) {
+            return Base::retError('项目名称不可以少于2个字');
+        } elseif (mb_strlen($name) > 32) {
+            return Base::retError('项目名称最多只能设置32个字');
+        }
+        if (mb_strlen($desc) > 255) {
+            return Base::retError('项目介绍最多只能设置255个字');
+        }
+        // 列表
+        $columns = explode(",", Arr::get($params, 'columns'));
+        $insertColumns = [];
+        $sort = 0;
+        foreach ($columns AS $column) {
+            $column = trim($column);
+            if ($column) {
+                $insertColumns[] = [
+                    'name' => $column,
+                    'sort' => $sort++,
+                ];
+            }
+        }
+        if (empty($insertColumns)) {
+            $insertColumns[] = [
+                'name' => 'Default',
+                'sort' => 0,
+            ];
+        }
+        if (count($insertColumns) > 30) {
+            return Base::retError('项目列表最多不能超过30个');
+        }
+        // 开始创建
+        $project = Project::createInstance([
+            'name' => $name,
+            'desc' => $desc,
+            'userid' => $userid,
+        ]);
+        if ($isPersonal) {
+            if (Project::whereUserid($userid)->wherePersonal(1)->exists()) {
+                return Base::retError('个人项目已存在，无须重复创建');
+            }
+            $project->personal = 1;
+        }
+        AbstractModel::transaction(function() use ($flow, $insertColumns, $project) {
+            $project->save();
+            ProjectUser::createInstance([
+                'project_id' => $project->id,
+                'userid' => $project->userid,
+                'owner' => 1,
+            ])->save();
+            foreach ($insertColumns AS $column) {
+                $column['project_id'] = $project->id;
+                ProjectColumn::createInstance($column)->save();
+            }
+            $dialog = WebSocketDialog::createGroup($project->name, $project->userid, 'project');
+            if (empty($dialog)) {
+                throw new ApiException('创建项目聊天室失败');
+            }
+            $project->dialog_id = $dialog->id;
+            $project->save();
+            //
+            if ($flow == 'open') {
+                $project->addFlow(Base::json2array('[{"id":-10,"name":"待处理","status":"start","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0},{"id":-11,"name":"进行中","status":"progress","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0},{"id":-12,"name":"待测试","status":"test","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0},{"id":-13,"name":"已完成","status":"end","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0},{"id":-14,"name":"已取消","status":"end","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0}]'));
+            }
+        });
+        //
+        $data = Project::find($project->id);
+        $data->addLog("创建项目");
+        $data->pushMsg('add', $data);
+        return Base::retSuccess('添加成功', $data);
     }
 
     /**

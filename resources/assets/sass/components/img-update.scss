@@ -192,8 +192,10 @@
 }
 
 .browse-load {
-    margin: 20px;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 110px;
 }
 
 .browse-list {

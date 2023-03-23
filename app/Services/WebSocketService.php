@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\WebSocket;
 use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
+use App\Module\Doo;
 use App\Tasks\LineTask;
 use App\Tasks\PushTask;
 use Cache;
@@ -39,55 +40,44 @@ class WebSocketService implements WebSocketHandlerInterface
      */
     public function onOpen(Server $server, Request $request)
     {
-        global $_A;
-        $_A = [
-            '__static_langdata' => [],
-        ];
         $fd = $request->fd;
-        $data = Base::newTrim($request->get);
-        $action = $data['action'];
+        $get = Base::newTrim($request->get);
+        $action = $get['action'];
         switch ($action) {
             /**
              * 网页访问
              */
             case 'web':
                 {
-                    // 判断token参数
-                    $token = $data['token'];
-                    $cacheKey = "ws::token:" . md5($token);
-                    $userid = Cache::remember($cacheKey, now()->addSeconds(1), function () use ($token) {
-                        $authInfo = User::authFind('all', $token);
-                        if ($authInfo['userid'] > 0) {
-                            if (User::whereUserid($authInfo['userid'])->whereEmail($authInfo['email'])->whereEncrypt($authInfo['encrypt'])->exists()) {
-                                return $authInfo['userid'];
-                            }
-                        }
-                        return 0;
-                    });
-                    if (empty($userid)) {
-                        Cache::forget($cacheKey);
+                    Doo::load($get['token'], $get['language']);
+                    //
+                    if (Doo::userId() > 0
+                        && !Doo::userExpired()
+                        && $user = User::whereUserid(Doo::userId())->whereEmail(Doo::userEmail())->whereEncrypt(Doo::userEncrypt())->first()) {
+                        // 保存用户
+                        $this->saveUser($fd, $user->userid);
+                        // 发送open事件
+                        $server->push($fd, Base::array2json([
+                            'type' => 'open',
+                            'data' => [
+                                'fd' => $fd,
+                            ],
+                        ]));
+                        // 通知上线
+                        Task::deliver(new LineTask($user->userid, true));
+                        // 推送离线时收到的消息
+                        Task::deliver(new PushTask("RETRY::" . $user->userid));
+                    } else {
+                        // 用户不存在
                         $server->push($fd, Base::array2json([
                             'type' => 'error',
                             'data' => [
-                                'error' => '会员不存在'
+                                'error' => 'No member'
                             ],
                         ]));
                         $server->close($fd);
                         $this->deleteUser($fd);
-                        return;
                     }
-                    // 保存用户、发送open事件
-                    $this->saveUser($fd, $userid);
-                    $server->push($fd, Base::array2json([
-                        'type' => 'open',
-                        'data' => [
-                            'fd' => $fd,
-                        ],
-                    ]));
-                    // 通知上线
-                    Task::deliver(new LineTask($userid, true));
-                    // 推送离线时收到的消息
-                    Task::deliver(new PushTask("RETRY::" . $userid));
                 }
                 break;
 
@@ -103,11 +93,6 @@ class WebSocketService implements WebSocketHandlerInterface
      */
     public function onMessage(Server $server, Frame $frame)
     {
-        global $_A;
-        $_A = [
-            '__static_langdata' => [],
-        ];
-        //
         $msg = Base::json2array($frame->data);
         $type = $msg['type'];       // 消息类型
         $msgId = $msg['msgId'];     // 消息ID（用于回调）
@@ -145,10 +130,10 @@ class WebSocketService implements WebSocketHandlerInterface
                     $pathOld = $row->path;
                     $row->path = $pathNew;
                     $row->save();
-                    if (preg_match("/^file\/content\/\d+$/", $pathOld)) {
+                    if (preg_match("/^\/single\/file\/\d+$/", $pathOld)) {
                         $this->pushPath($pathOld);
                     }
-                    if (preg_match("/^file\/content\/\d+$/", $pathNew)) {
+                    if (preg_match("/^\/single\/file\/\d+$/", $pathNew)) {
                         $this->pushPath($pathNew);
                     }
                 }
@@ -191,13 +176,15 @@ class WebSocketService implements WebSocketHandlerInterface
      */
     private function saveUser($fd, $userid)
     {
+        Cache::put("User::fd:" . $fd, "on", Carbon::now()->addDay());
+        Cache::put("User::online:" . $userid, "on", Carbon::now()->addDay());
+        //
         WebSocket::updateInsert([
             'key' => md5($fd . '@' . $userid)
         ], [
             'fd' => $fd,
             'userid' => $userid,
         ]);
-        Cache::put("User::online:" . $userid, time(), Carbon::now()->addSeconds(30));
     }
 
     /**
@@ -206,12 +193,21 @@ class WebSocketService implements WebSocketHandlerInterface
      */
     private function deleteUser($fd)
     {
+        Cache::forget("User::fd:" . $fd);
+        //
         $array = [];
         WebSocket::whereFd($fd)->chunk(10, function($list) use (&$array) {
             /** @var WebSocket $item */
             foreach ($list as $item) {
                 $item->delete();
-                if ($item->path && str_starts_with($item->path, "file/content/")) {
+                if ($item->userid) {
+                    // 离线时更新会员最后在线时间
+                    User::whereUserid($item->userid)->update([
+                        'line_at' => Carbon::now()
+                    ]);
+                    Cache::forget("User::online:" . $item->userid);
+                }
+                if ($item->path && str_starts_with($item->path, "/single/file/")) {
                     $array[$item->path] = $item->path;
                 }
             }

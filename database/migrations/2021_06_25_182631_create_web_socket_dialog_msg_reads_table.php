@@ -20,7 +20,7 @@ class CreateWebSocketDialogMsgReadsTable extends Migration
             $table->bigInteger('userid')->nullable()->default(0)->comment('发送会员ID');
             $table->tinyInteger('after')->nullable()->default(0)->comment('在阅读之后才添加的记录');
             $table->timestamp('read_at')->nullable()->comment('阅读时间');
-            $table->unique(['msg_id', 'userid'], 'IDEX_msg_id_userid');
+            $table->unique(['msg_id', 'userid']);
         });
     }
 

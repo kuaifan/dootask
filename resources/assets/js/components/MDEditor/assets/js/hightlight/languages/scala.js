@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
 
   var ANNOTATION = { className: 'meta', begin: '@[A-Za-z]+' };
 

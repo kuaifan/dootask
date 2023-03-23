@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var KEYWORDS =
     'exports register file shl array record property for mod while set ally label uses raise not ' +
     'stored class safecall var interface or private static exit index inherited to else stdcall ' +

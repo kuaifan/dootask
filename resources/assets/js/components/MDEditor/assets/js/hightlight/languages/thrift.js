@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var BUILT_IN_TYPES = 'bool byte i16 i32 i64 double string binary';
   return {
     keywords: {

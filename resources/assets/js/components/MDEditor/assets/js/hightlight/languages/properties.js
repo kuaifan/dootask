@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
 
   // whitespaces: space, tab, formfeed
   var WS0 = '[ \\t\\f]*';

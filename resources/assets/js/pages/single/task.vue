@@ -11,12 +11,12 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    overflow: auto;
     .task-detail {
         flex: 1;
         margin: 0;
         padding: 18px 22px;
         border-radius: 0;
+        overflow: auto;
     }
 }
 </style>
@@ -45,8 +45,6 @@ export default {
     data() {
         return {
             loadIng: 0,
-            taskId: 0,
-
             canUpdateBlur: true
         }
     },
@@ -80,12 +78,17 @@ export default {
     computed: {
         ...mapState(['cacheTasks']),
 
+        taskId() {
+            const {taskId} = this.$route.params;
+            return parseInt(/^\d+$/.test(taskId) ? taskId : 0);
+        },
+
         taskInfo() {
             return this.cacheTasks.find(({id}) => id === this.taskId) || {}
         }
     },
     watch: {
-        '$route': {
+        taskId: {
             handler() {
                 this.getInfo();
             },
@@ -94,7 +97,6 @@ export default {
     },
     methods: {
         getInfo() {
-            this.taskId = $A.runNum(this.$route.params.id);
             if (this.taskId <= 0) {
                 return;
             }
@@ -103,13 +105,11 @@ export default {
                 task_id: this.taskId,
                 archived: 'all'
             }).then(() => {
-                this.loadIng--;
                 this.$store.dispatch("getTaskContent", this.taskId);
                 this.$store.dispatch("getTaskFiles", this.taskId);
                 this.$store.dispatch("getTaskForParent", this.taskId).catch(() => {})
                 this.$store.dispatch("getTaskPriority").catch(() => {})
             }).catch(({msg}) => {
-                this.loadIng--;
                 $A.modalError({
                     content: msg,
                     onOk: () => {
@@ -118,6 +118,8 @@ export default {
                         }
                     }
                 });
+            }).finally(_ => {
+                this.loadIng--;
             });
         },
         shortcutEvent(e) {

@@ -38,7 +38,7 @@ export default {
     },
     render(createElement) {
         return createElement('div', {
-            class: "no-dark-mode"
+            class: "no-dark-content"
         })
     },
     data: () => ({
@@ -170,7 +170,7 @@ export default {
                 "v|vh|sv|svh"
             ],
             "XML": [
-                "xml|rdf|rss|wsdl|xslt|atom|mathml|mml|xul|xbl|xaml"
+                "xml|rdf|rss|wsdl|xslt|atom|mathml|mml|xul|xbl|xaml|plist"
             ],
             "YAML": [
                 "yaml|yml"
@@ -210,8 +210,7 @@ export default {
             }
 
             // set value and clear selection
-            this.editor.setValue(this.value)
-            this.editor.clearSelection()
+            this.setValue(this.value)
 
             // set ace editor options and theme
             this.editor.setOptions(this.options)
@@ -262,6 +261,17 @@ export default {
             dom.style.width = width && typeof width === 'number' ? `${width}px` : '100%'
             dom.style.height = height && typeof height === 'number' ? `${height}px` : '100%'
             this.$nextTick(() => this.editor && this.editor.resize())
+        },
+
+        /**
+         * 设置内容
+         * @param value
+         */
+        setValue(value) {
+            if (typeof value === "string" && this.editor) {
+                this.editor.setValue(value)
+                this.editor.clearSelection()
+            }
         },
 
         /**
@@ -359,8 +369,7 @@ export default {
             if (newCode == this.code) {
                 return;
             }
-            this.editor.setValue(newCode)
-            this.editor.clearSelection()
+            this.setValue(newCode)
             const {row, column} = this.cursorPosition
             // move cursor to current position
             this.editor.selection.moveCursorTo(row, column)

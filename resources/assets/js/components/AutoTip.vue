@@ -4,7 +4,7 @@
         :placement="placement"
         :effect="tooltipTheme"
         :delay="delay"
-        :disabled="!showTooltip || disabled"
+        :disabled="windowSmall || $isEEUiApp || !showTooltip || disabled"
         :max-width="tooltipMaxWidth"
         transfer>
         <span ref="content" @mouseenter="handleTooltipIn" class="common-auto-tip" @click="onClick">

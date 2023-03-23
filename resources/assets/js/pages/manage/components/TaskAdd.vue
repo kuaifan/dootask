@@ -1,5 +1,5 @@
 <template>
-    <div v-if="ready" class="task-add">
+    <div class="task-add">
         <div class="head" :class="{empty:addData.cascader.length == 0,visible:cascaderShow}">
             <Cascader
                 v-model="addData.cascader"
@@ -22,6 +22,7 @@
                     :autosize="{ minRows: 1, maxRows: 8 }"
                     :maxlength="255"
                     :placeholder="$L('任务描述')"
+                    enterkeyhint="done"
                     @on-keydown="onKeydown"/>
             </div>
             <div class="desc">
@@ -30,7 +31,7 @@
                     :plugins="taskPlugins"
                     :options="taskOptions"
                     :option-full="taskOptionFull"
-                    :placeholder="$L(isDesktop ? '详细描述，选填...（点击右键使用工具栏）' : '详细描述，选填...')"
+                    :placeholder="$L(windowLarge ? '详细描述，选填...（点击右键使用工具栏）' : '详细描述，选填...')"
                     :placeholderFull="$L('详细描述...')"
                     inline/>
             </div>
@@ -38,7 +39,7 @@
                 <Button :class="{advanced: advanced}" @click="advanced=!advanced">{{$L('高级选项')}}</Button>
                 <ul class="advanced-priority">
                     <li v-for="(item, key) in taskPriority" :key="key">
-                        <ETooltip :content="taskPriorityContent(item)">
+                        <ETooltip :disabled="windowSmall || $isEEUiApp" :content="taskPriorityContent(item)">
                             <i
                                 class="taskfont"
                                 :style="{color:item.color}"
@@ -86,7 +87,7 @@
                     :transfer="false"/>
                 <div v-if="showAddAssist" class="task-add-assist">
                     <Checkbox v-model="addData.add_assist" :true-value="1" :false-value="0">{{$L('加入任务协助人员列表')}}</Checkbox>
-                    <ETooltip :content="$L('你不是任务负责人时建议加入任务协助人员列表')">
+                    <ETooltip :disabled="windowSmall || $isEEUiApp" :content="$L('你不是任务负责人时建议加入任务协助人员列表')">
                         <Icon type="ios-alert-outline" />
                     </ETooltip>
                 </div>
@@ -122,7 +123,8 @@
                                 :multiple-max="1"
                                 :placeholder="$L('选择负责人')"
                                 :project-id="addData.project_id"
-                                :transfer="false"/>
+                                :transfer="false"
+                                max-hidden-select/>
                         </Col>
                     </Row>
                 </div>
@@ -140,7 +142,7 @@
                 <Button type="default" @click="close">{{$L('取消')}}</Button>
                 <ButtonGroup class="page-manage-add-task-button-group">
                     <Button type="primary" :loading="loadIng > 0" @click="onAdd">{{$L('添加任务')}}</Button>
-                    <Dropdown @on-click="onAdd(true)">
+                    <Dropdown @on-click="onAdd(true)" transfer>
                         <Button type="primary">
                             <Icon type="ios-arrow-down"></Icon>
                         </Button>
@@ -156,8 +158,8 @@
 
 <script>
 import TEditor from "../../../components/TEditor";
-import {mapState} from "vuex";
 import UserInput from "../../../components/UserInput";
+import {mapState} from "vuex";
 
 export default {
     name: "TaskAdd",
@@ -170,8 +172,6 @@ export default {
     },
     data() {
         return {
-            ready: false,
-
             addData: {
                 cascader: [],
                 name: "",
@@ -224,15 +224,28 @@ export default {
             timeOptions: {shortcuts:$A.timeOptionShortcuts()},
 
             loadIng: 0,
+            isMounted: false,
 
             beforeClose: [],
         }
     },
-    mounted() {
 
+    async mounted() {
+        this.initCascaderData();
+        await this.initProjectData();
+        this.$nextTick(() => this.$refs.input.focus())
+        this.isMounted = true
     },
+
+    beforeDestroy() {
+        this.beforeClose.some(func => {
+            typeof func === "function" && func()
+        })
+        this.beforeClose = [];
+    },
+
     computed: {
-        ...mapState(['isDesktop', 'userId', 'cacheProjects', 'projectId', 'cacheColumns', 'taskPriority']),
+        ...mapState(['cacheProjects', 'projectId', 'cacheColumns', 'taskPriority']),
 
         taskDays() {
             const {times} = this.addData;
@@ -250,56 +263,45 @@ export default {
             return !this.addData.owner.includes(this.userId);
         }
     },
+
     watch: {
-        value(val) {
-            if (val) {
-                this.ready = true;
-                this.initCascaderData();
-                this.initProjectData();
-                this.$nextTick(() => {
-                    this.$refs.input.focus()
-                })
-            } else {
-                this.beforeClose.some(func => {
-                    typeof func === "function" && func()
-                })
-                this.beforeClose = [];
-                this.taskTimeOpen = false;
+        'addData.project_id'(projectId) {
+            if (projectId > 0) {
+                $A.IDBSave("cacheAddTaskProjectId", projectId);
             }
         },
-        'addData.project_id'(id) {
-            if (id > 0) {
-                $A.setStorage("cacheAddTaskProjectId", id);
+        'addData.column_id'(columnId) {
+            if (columnId > 0) {
+                $A.IDBSave("cacheAddTaskColumnId", columnId);
             }
-        },
-        'addData.column_id'(id) {
             const {project_id} = this.addData;
-            this.$nextTick(() => {
-                if (project_id && id) {
-                    this.$set(this.addData, 'cascader', [project_id, id]);
-                } else {
-                    this.$set(this.addData, 'cascader', []);
-                }
-            })
-            if (id > 0) {
-                $A.setStorage("cacheAddTaskColumnId", id);
+            if (project_id && columnId) {
+                this.$set(this.addData, 'cascader', [project_id, columnId]);
+            } else {
+                this.$set(this.addData, 'cascader', []);
             }
         }
     },
+
     methods: {
-        initLanguage() {
-
-        },
-
+        /**
+         * 初始化级联数据
+         */
         initCascaderData() {
-            this.cascaderData = this.cacheProjects.map(project => {
+            const data = $A.cloneJSON(this.cacheProjects).sort((a, b) => {
+                if (a.top_at || b.top_at) {
+                    return $A.Date(b.top_at) - $A.Date(a.top_at);
+                }
+                return b.id - a.id;
+            });
+            this.cascaderData = data.map(project => {
                 const children = this.cacheColumns.filter(({project_id}) => project_id == project.id).map(column => {
                     return {
                         value: column.id,
                         label: column.name
                     }
                 });
-                let data = {
+                const data = {
                     value: project.id,
                     label: project.name,
                     children,
@@ -311,42 +313,37 @@ export default {
             });
         },
 
-        initProjectData() {
-            let column_id = this.addData.column_id;
-            if (column_id) {
-                let column = this.cacheColumns.find(({id}) => id == column_id);
+        /**
+         * 初始化项目、列表、优先级
+         */
+        async initProjectData() {
+            // 项目、列表
+            let cacheAddTaskProjectId = await $A.IDBInt("cacheAddTaskProjectId");
+            let project = this.cacheProjects.find(({id}) => id == this.projectId)
+                || this.cacheProjects.find(({id}) => id == cacheAddTaskProjectId)
+                || this.cacheProjects.find(({id}) => id > 0);
+            if (project) {
+                let cacheAddTaskColumnId = await $A.IDBInt("cacheAddTaskColumnId");
+                let column = this.cacheColumns.find(({project_id, id}) => project_id == project.id && id == cacheAddTaskColumnId)
+                    || this.cacheColumns.find(({project_id}) => project_id == project.id);
                 if (column) {
                     this.addData.project_id = column.project_id;
                     this.addData.column_id = column.id;
-                }
-            } else {
-                let cacheAddTaskProjectId = $A.getStorageInt("cacheAddTaskProjectId");
-                let cacheAddTaskColumnId = $A.getStorageInt("cacheAddTaskColumnId");
-                let project = this.cacheProjects.find(({id}) => id == this.projectId)
-                    || this.cacheProjects.find(({id}) => id == cacheAddTaskProjectId)
-                    || this.cacheProjects.find(({id}) => id > 0);
-                if (project) {
-                    let column = this.cacheColumns.find(({project_id, id}) => project_id == project.id && id == cacheAddTaskColumnId)
-                        || this.cacheColumns.find(({project_id}) => project_id == project.id);
-                    if (column) {
-                        this.addData.project_id = column.project_id;
-                        this.addData.column_id = column.id;
-                    } else {
-                        this.$store.dispatch("getColumns", project.id).then(() => {
-                            column = this.cacheColumns.find(({project_id, id}) => project_id == project.id && id == cacheAddTaskColumnId)
-                                || this.cacheColumns.find(({project_id}) => project_id == project.id);
-                            if (column) {
-                                this.addData.project_id = column.project_id;
-                                this.addData.column_id = column.id;
-                            }
-                        }).catch(() => {});
-                    }
+                } else {
+                    this.$store.dispatch("getColumns", project.id).then(() => {
+                        column = this.cacheColumns.find(({project_id, id}) => project_id == project.id && id == cacheAddTaskColumnId)
+                            || this.cacheColumns.find(({project_id}) => project_id == project.id);
+                        if (column) {
+                            this.addData.project_id = column.project_id;
+                            this.addData.column_id = column.id;
+                        }
+                    }).catch(() => {});
                 }
             }
-        },
-
-        taskTimeOpenChange(val) {
-            this.taskTimeOpen = val;
+            // 优先级
+            if (this.taskPriority.length > 0) {
+                this.choosePriority(this.taskPriority[0]);
+            }
         },
 
         taskTimeChange(times) {
@@ -359,6 +356,10 @@ export default {
                     ])
                 }
             }
+        },
+
+        taskTimeOpenChange(val) {
+            this.taskTimeOpen = val;
         },
 
         onKeydown(e) {
@@ -404,16 +405,6 @@ export default {
             this.$set(this.addData, 'p_color', item.color)
         },
 
-        defaultPriority() {
-            if (this.taskPriority.length === 0) {
-                return;
-            }
-            if (this.addData.p_name) {
-                return;
-            }
-            this.choosePriority(this.taskPriority[0]);
-        },
-
         cascaderLoadData(item, callback) {
             item.loading = true;
             this.$store.dispatch("getColumns", item.value).then((data) => {
@@ -432,7 +423,10 @@ export default {
         },
 
         cascaderChange(value) {
-            value[1] && this.$set(this.addData, 'column_id', value[1])
+            if (value[1]) {
+                this.$set(this.addData, 'project_id', value[0])
+                this.$set(this.addData, 'column_id', value[1])
+            }
         },
 
         cascaderInputChange(key) {
@@ -460,6 +454,11 @@ export default {
         },
 
         setData(data) {
+            if (!this.isMounted) {
+                this.__setData && clearTimeout(this.__setData)
+                this.__setData = setTimeout(_ => this.setData(data) , 10)
+                return
+            }
             if (typeof data.beforeClose !== "undefined") {
                 this.beforeClose.push(data.beforeClose)
                 delete data.beforeClose;

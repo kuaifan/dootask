@@ -22,7 +22,7 @@ class CreateReportReceivesTable extends Migration
             $table->timestamp("receive_time")->nullable()->comment("接收时间");
             $table->unsignedBigInteger("userid")->default(0)->comment("接收人");
             $table->unsignedTinyInteger("read")->default(0)->comment("是否已读");
-            $table->index(["userid", "receive_time"], "default");
+            $table->index(["userid", "receive_time"]);
         });
     }
 

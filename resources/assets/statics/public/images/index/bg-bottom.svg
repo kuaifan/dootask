@@ -12,8 +12,8 @@
                     <mask id="mask-2" fill="white">
                         <use xlink:href="#path-1"></use>
                     </mask>
-                    <use id="蒙版" fill="#8BCF70" opacity="0" xlink:href="#path-1"></use>
-                    <path d="M0,-410 L1920,-410 L1920,70 C1920,235.685425 1785.68542,370 1620,370 L300,370 C134.314575,370 2.02906125e-14,235.685425 0,70 L0,-410 L0,-410 Z" id="矩形" fill="#8BCF70" mask="url(#mask-2)"></path>
+                    <use id="蒙版" fill="#84C56A" opacity="0" xlink:href="#path-1"></use>
+                    <path d="M0,-410 L1920,-410 L1920,70 C1920,235.685425 1785.68542,370 1620,370 L300,370 C134.314575,370 2.02906125e-14,235.685425 0,70 L0,-410 L0,-410 Z" id="矩形" fill="#84C56A" mask="url(#mask-2)"></path>
                     <g id="decoration" mask="url(#mask-2)" opacity="0.2">
                         <g transform="translate(259.000000, 159.000000)" id="圆">
                             <circle id="椭圆形备份-63" fill="#FFFFFF" cx="50" cy="50" r="50"></circle>

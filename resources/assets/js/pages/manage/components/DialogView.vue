@@ -1,18 +1,30 @@
 <template>
-    <div :class="`dialog-view ${msgData.type}`" :data-id="msgData.id">
+    <div class="dialog-view" :class="viewClass" :data-id="msgData.id">
+        <!--昵称-->
+        <div v-if="dialogType === 'group'" class="dialog-username">
+            <UserAvatar :userid="msgData.userid" :show-icon="false" :show-name="true" click-open-dialog/>
+        </div>
 
-        <div class="dialog-head">
+        <div
+            class="dialog-head"
+            :class="headClass"
+            v-longpress="{callback: handleLongpress, delay: 300}">
+            <!--回复-->
+            <div v-if="!hideReply && msgData.reply_data" class="dialog-reply no-dark-content" @click="viewReply">
+                <UserAvatar :userid="msgData.reply_data.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
+                <div class="reply-desc">{{$A.getMsgSimpleDesc(msgData.reply_data)}}</div>
+            </div>
             <!--详情-->
-            <div class="dialog-content">
+            <div class="dialog-content" :class="contentClass">
                 <!--文本-->
-                <div v-if="msgData.type === 'text'" class="content-text">
-                    <pre class="no-dark-mode">{{textMsg(msgData.msg.text)}}</pre>
+                <div v-if="msgData.type === 'text'" class="content-text no-dark-content">
+                    <pre @click="viewText" v-html="$A.formatTextMsg(msgData.msg.text, userId)"></pre>
                 </div>
                 <!--文件-->
                 <div v-else-if="msgData.type === 'file'" :class="`content-file ${msgData.msg.type}`">
                     <div class="dialog-file">
                         <img v-if="msgData.msg.type === 'img'" class="file-img" :style="imageStyle(msgData.msg)" :src="msgData.msg.thumb" @click="viewFile"/>
-                        <div v-else class="file-box">
+                        <div v-else class="file-box" @click="downFile">
                             <img class="file-thumb" :src="msgData.msg.thumb"/>
                             <div class="file-info">
                                 <div class="file-name">{{msgData.msg.name}}</div>
@@ -21,68 +33,155 @@
                         </div>
                     </div>
                 </div>
+                <!--录音-->
+                <div v-else-if="msgData.type === 'record'" class="content-record no-dark-content">
+                    <div class="dialog-record" :class="{playing: audioPlaying === msgData.msg.path}" :style="recordStyle(msgData.msg)" @click="playRecord">
+                        <div class="record-time">{{recordDuration(msgData.msg.duration)}}</div>
+                        <div class="record-icon taskfont"></div>
+                    </div>
+                </div>
+                <!--会议-->
+                <div v-else-if="msgData.type === 'meeting'" class="content-meeting no-dark-content">
+                    <ul class="dialog-meeting">
+                        <li>
+                            <em>{{$L('会议主题')}}</em>
+                            {{msgData.msg.name}}
+                        </li>
+                        <li>
+                            <em>{{$L('会议创建人')}}</em>
+                            <UserAvatar :userid="msgData.msg.userid" :show-icon="false" :show-name="true" tooltip-disabled/>
+                        </li>
+                        <li>
+                            <em>{{$L('频道ID')}}</em>
+                            {{msgData.msg.meetingid.replace(/^(.{3})(.{3})(.*)$/, '$1 $2 $3')}}
+                        </li>
+                        <li class="meeting-operation" @click="openMeeting">
+                            {{$L('点击加入会议')}}
+                            <i class="taskfont">&#xe68b;</i>
+                        </li>
+                    </ul>
+                </div>
                 <!--等待-->
                 <div v-else-if="msgData.type === 'loading'" class="content-loading">
-                    <Loading/>
+                    <Icon v-if="msgData.error === true" type="ios-alert-outline" />
+                    <Loading v-else/>
                 </div>
                 <!--未知-->
                 <div v-else class="content-unknown">{{$L("未知的消息类型")}}</div>
             </div>
+            <!--emoji-->
+            <ul v-if="$A.arrayLength(msgData.emoji) > 0" class="dialog-emoji">
+                <li
+                    v-for="(item, index) in msgData.emoji"
+                    :key="index"
+                    :class="{hasme: item.userids.includes(userId)}">
+                    <div class="emoji-symbol no-dark-content" @click="onEmoji(item.symbol)">{{item.symbol}}</div>
+                    <div class="emoji-users" @click="onShowEmojiUser(item)">
+                        <ul>
+                            <template v-for="(uitem, uindex) in item.userids">
+                                <li v-if="uindex < emojiUsersNum" :class="{bold:uitem==userId}"><UserAvatar :userid="uitem" tooltip-disabled show-name :show-icon="false"/></li>
+                                <li v-else-if="uindex == emojiUsersNum">+{{item.userids.length - emojiUsersNum}}位</li>
+                            </template>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </div>
 
-            <!--菜单-->
-            <div v-if="showMenu" class="dialog-menu">
-                <div class="menu-icon">
-                    <Icon v-if="msgData.userid == userId" @click="withdraw" type="md-undo" :title="$L('撤回')"/>
-                    <template v-if="msgData.type === 'file'">
-                        <Icon @click="viewFile" type="md-eye" :title="$L('查看')"/>
-                        <Icon @click="downFile" type="md-arrow-round-down" :title="$L('下载')"/>
-                    </template>
-                </div>
+        <div class="dialog-foot">
+            <!--回复数-->
+            <div v-if="!hideReply && msgData.reply_num > 0" class="reply" @click="replyList">
+                <i class="taskfont">&#xe6eb;</i>
+                {{msgData.reply_num}}条回复
             </div>
+            <!--标注-->
+            <div v-if="msgData.tag" class="tag">
+                <i class="taskfont">&#xe61e;</i>
+            </div>
+            <!--待办-->
+            <div v-if="msgData.todo" class="todo" @click="openTodo">
+                <EPopover
+                    v-model="todoShow"
+                    ref="todo"
+                    popper-class="dialog-wrapper-read-poptip"
+                    :placement="isRightMsg ? 'bottom-end' : 'bottom-start'">
+                    <div class="read-poptip-content">
+                        <ul class="read scrollbar-overlay">
+                            <li class="read-title"><em>{{ todoDoneList.length }}</em>{{ $L('完成') }}</li>
+                            <li v-for="item in todoDoneList">
+                                <UserAvatar :userid="item.userid" :size="26" showName tooltipDisabled/>
+                            </li>
+                        </ul>
+                        <ul class="unread scrollbar-overlay">
+                            <li class="read-title"><em>{{ todoUndoneList.length }}</em>{{ $L('待办') }}</li>
+                            <li v-for="item in todoUndoneList">
+                                <UserAvatar :userid="item.userid" :size="26" showName tooltipDisabled/>
+                            </li>
+                        </ul>
+                    </div>
+                    <div slot="reference" class="popover-reference"></div>
+                </EPopover>
+                <Loading v-if="todoLoad > 0"/>
+                <i v-else class="taskfont">&#xe7b7;</i>
+            </div>
+            <!--编辑-->
+            <div v-if="msgData.modify" class="modify">
+                <i class="taskfont">&#xe779;</i>
+            </div>
+            <!--错误/等待/时间/阅读-->
+            <div v-if="msgData.error === true" class="error" @click="onError">
+                <Icon type="ios-alert" />
+            </div>
+            <Loading v-else-if="isLoading"/>
+            <template v-else>
+                <!--时间-->
+                <div v-if="timeShow" class="time" @click="timeShow=false">{{msgData.created_at}}</div>
+                <div v-else class="time" :title="msgData.created_at" @click="timeShow=true">{{$A.formatTime(msgData.created_at)}}</div>
+                <!--阅读-->
+                <template v-if="!hidePercentage">
+                    <div v-if="msgData.send > 1 || dialogType === 'group'" class="percent" @click="openReadPercentage">
+                        <EPopover
+                            v-model="percentageShow"
+                            ref="percent"
+                            popper-class="dialog-wrapper-read-poptip"
+                            :placement="isRightMsg ? 'bottom-end' : 'bottom-start'">
+                            <div class="read-poptip-content">
+                                <ul class="read scrollbar-overlay">
+                                    <li class="read-title"><em>{{ readList.length }}</em>{{ $L('已读') }}</li>
+                                    <li v-for="item in readList">
+                                        <UserAvatar :userid="item.userid" :size="26" showName tooltipDisabled/>
+                                    </li>
+                                </ul>
+                                <ul class="unread scrollbar-overlay">
+                                    <li class="read-title"><em>{{ unreadList.length }}</em>{{ $L('未读') }}</li>
+                                    <li v-for="item in unreadList">
+                                        <UserAvatar :userid="item.userid" :size="26" showName tooltipDisabled/>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div slot="reference" class="popover-reference"></div>
+                        </EPopover>
+                        <Loading v-if="percentageLoad > 0"/>
+                        <WCircle v-else :percent="msgData.percentage" :size="14"/>
+                    </div>
+                    <Icon v-else-if="msgData.percentage === 100" class="done" type="md-done-all"/>
+                    <Icon v-else class="done" type="md-checkmark"/>
+                </template>
+            </template>
         </div>
-
-        <!--时间/阅读-->
-        <div v-if="msgData.created_at" class="dialog-foot">
-            <div class="time" :title="msgData.created_at">{{$A.formatTime(msgData.created_at)}}</div>
-            <EPopover
-                v-if="msgData.send > 1 || dialogType == 'group'"
-                v-model="popperShow"
-                ref="percent"
-                class="percent"
-                placement="left-end"
-                :width="360"
-                :offset="-8">
-                <div class="dialog-wrapper-read-poptip-content">
-                    <ul class="read overlay-y">
-                        <li class="read-title"><em>{{ readList.length }}</em>{{ $L('已读') }}</li>
-                        <li v-for="item in readList">
-                            <UserAvatar :userid="item.userid" :size="26" showName/>
-                        </li>
-                    </ul>
-                    <ul class="unread overlay-y">
-                        <li class="read-title"><em>{{ unreadList.length }}</em>{{ $L('未读') }}</li>
-                        <li v-for="item in unreadList">
-                            <UserAvatar :userid="item.userid" :size="26" showName/>
-                        </li>
-                    </ul>
-                </div>
-                <WCircle slot="reference" :percent="msgData.percentage" :size="14"/>
-            </EPopover>
-            <Icon v-else-if="msgData.percentage === 100" class="done" type="md-done-all"/>
-            <Icon v-else class="done" type="md-checkmark"/>
-        </div>
-        <div v-else class="dialog-foot"><Loading/></div>
-
     </div>
 </template>
 
 <script>
 import WCircle from "../../../components/WCircle";
-import {mapState} from "vuex";
+import {mapGetters, mapState} from "vuex";
+import {Store} from "le5le-store";
+import longpress from "../../../directives/longpress";
 
 export default {
     name: "DialogView",
     components: {WCircle},
+    directives: {longpress},
     props: {
         msgData: {
             type: Object,
@@ -94,89 +193,218 @@ export default {
             type: String,
             default: ''
         },
+        hidePercentage: {
+            type: Boolean,
+            default: false
+        },
+        hideReply: {
+            type: Boolean,
+            default: false
+        },
+        operateVisible: {
+            type: Boolean,
+            default: false
+        },
+        operateAction: {
+            type: Boolean,
+            default: false
+        },
+        isRightMsg: {
+            type: Boolean,
+            default: false
+        },
     },
 
     data() {
         return {
-            popperShow: false,
-            allList: [],
+            timeShow: false,
+            operateEnter: false,
+
+            percentageLoad: 0,
+            percentageShow: false,
+            percentageList: [],
+
+            todoLoad: 0,
+            todoShow: false,
+            todoList: [],
+
+            emojiUsersNum: 5
         }
     },
 
-    activated() {
-        this.msgRead()
+    mounted() {
+        this.emojiUsersNum = Math.min(6, Math.max(2, Math.floor((this.windowWidth - 180) / 52)))
+    },
+
+    beforeDestroy() {
+        this.$store.dispatch("audioStop", this.msgData.msg.path)
     },
 
     computed: {
-        ...mapState(['userToken', 'userId', 'dialogMsgs']),
+        ...mapState(['loads', 'audioPlaying']),
+        ...mapGetters(['isLoad']),
+
+        isLoading() {
+            if (!this.msgData.created_at) {
+                return true;
+            }
+            return this.isLoad(`msg-${this.msgData.id}`)
+        },
+
+        viewClass() {
+            const {msgData, operateAction, operateEnter} = this;
+            const array = [];
+            if (msgData.type) {
+                array.push(msgData.type)
+            }
+            if (msgData.reply_data) {
+                array.push('reply-view')
+            }
+            if (operateAction) {
+                array.push('operate-action')
+                if (operateEnter) {
+                    array.push('operate-enter')
+                }
+            }
+            return array
+        },
 
         readList() {
-            return this.allList.filter(({read_at}) => read_at)
+            return this.percentageList.filter(({read_at}) => read_at)
         },
 
         unreadList() {
-            return this.allList.filter(({read_at}) => !read_at)
+            return this.percentageList.filter(({read_at}) => !read_at)
         },
 
-        showMenu() {
-            return this.msgData.userid == this.userId || this.msgData.type === 'file'
+        todoDoneList() {
+            return this.todoList.filter(({done_at}) => done_at)
+        },
+
+        todoUndoneList() {
+            return this.todoList.filter(({done_at}) => !done_at)
+        },
+
+        headClass() {
+            const {reply_id, type, msg, emoji} = this.msgData;
+            const array = [];
+            if (reply_id === 0 && $A.arrayLength(emoji) === 0) {
+                if (type === 'text') {
+                    if (/^<img\s+class="emoticon"[^>]*?>$/.test(msg.text)
+                        || /^\s*<p>\s*([\uD800-\uDBFF][\uDC00-\uDFFF]){1,3}\s*<\/p>\s*$/.test(msg.text)) {
+                        array.push('transparent')
+                    }
+                }
+            }
+            return array;
+        },
+
+        contentClass() {
+            const {type, msg} = this.msgData;
+            const classArray = [];
+            if (type === 'text') {
+                if (/^<img\s+class="emoticon"[^>]*?>$/.test(msg.text)) {
+                    classArray.push('an-emoticon')
+                } else if (/^\s*<p>\s*([\uD800-\uDBFF][\uDC00-\uDFFF]){3}\s*<\/p>\s*$/.test(msg.text)) {
+                    classArray.push('three-emoji')
+                } else if (/^\s*<p>\s*([\uD800-\uDBFF][\uDC00-\uDFFF]){2}\s*<\/p>\s*$/.test(msg.text)) {
+                    classArray.push('two-emoji')
+                } else if (/^\s*<p>\s*[\uD800-\uDBFF][\uDC00-\uDFFF]\s*<\/p>\s*$/.test(msg.text)) {
+                    classArray.push('an-emoji')
+                }
+            }
+            return classArray;
         }
     },
 
     watch: {
-        msgData: {
-            handler() {
-                this.msgRead();
-            },
-            immediate: true,
-        },
-        popperShow(val) {
+        operateAction(val) {
+            this.operateEnter = false;
             if (val) {
-                this.$store.dispatch("call", {
-                    url: 'dialog/msg/readlist',
-                    data: {
-                        msg_id: this.msgData.id,
-                    },
-                }).then(({data}) => {
-                    this.allList = data;
-                    setTimeout(this.$refs.percent.updatePopper, 10)
-                }).catch(() => {
-                    this.allList = [];
-                    setTimeout(this.$refs.percent.updatePopper, 10)
-                });
+                setTimeout(_ => this.operateEnter = true, 500)
             }
         }
     },
 
     methods: {
-        msgRead() {
-            if (this.msgData._r === true) {
-                return;
-            }
-            this.msgData._r = true;
-            //
-            setTimeout(() => {
-                if (!this.$el.offsetParent) {
-                    this.msgData._r = false;
-                    return
-                }
-                this.$store.dispatch("dialogMsgRead", this.msgData);
-            }, 50)
+        handleLongpress(event, el) {
+            this.$emit("on-longpress", {event, el, msgData: this.msgData})
         },
 
-        textMsg(text) {
-            if (!text) {
-                return ""
+        openTodo() {
+            if (this.todoLoad > 0) {
+                return;
             }
-            text = text.trim().replace(/(\n\x20*){3,}/g, "\n\n");
-            return text;
+            if (this.todoShow) {
+                this.todoShow = false;
+                return;
+            }
+            this.todoLoad++;
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/todolist',
+                data: {
+                    msg_id: this.msgData.id,
+                },
+            }).then(({data}) => {
+                this.todoList = data;
+            }).catch(() => {
+                this.todoList = [];
+            }).finally(_ => {
+                setTimeout(() => {
+                    this.todoLoad--;
+                    this.todoShow = true
+                }, 100)
+            });
+        },
+
+        openReadPercentage() {
+            if (this.percentageLoad > 0) {
+                return;
+            }
+            if (this.percentageShow) {
+                this.percentageShow = false;
+                return;
+            }
+            this.percentageLoad++;
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/readlist',
+                data: {
+                    msg_id: this.msgData.id,
+                },
+            }).then(({data}) => {
+                this.percentageList = data;
+            }).catch(() => {
+                this.percentageList = [];
+            }).finally(_ => {
+                setTimeout(() => {
+                    this.percentageLoad--;
+                    this.percentageShow = true
+                }, 100)
+            });
+        },
+
+        recordStyle(info) {
+            const {duration} = info;
+            const width = 50 + Math.min(180, Math.floor(duration / 150));
+            return {
+                width: width + 'px',
+            };
+        },
+
+        recordDuration(duration) {
+            const minute = Math.floor(duration / 60000),
+                seconds = Math.floor(duration / 1000) % 60;
+            if (minute > 0) {
+                return `${minute}:${seconds}″`
+            }
+            return `${Math.max(1, seconds)}″`
         },
 
         imageStyle(info) {
             const {width, height} = info;
             if (width && height) {
-                let maxW = 180,
-                    maxH = 180,
+                let maxW = 220,
+                    maxH = 220,
                     tempW = width,
                     tempH = height;
                 if (width > maxW || height > maxH) {
@@ -196,76 +424,64 @@ export default {
             return {};
         },
 
-        withdraw() {
-            $A.modalConfirm({
-                content: `确定撤回此信息吗？`,
-                okText: '撤回',
-                loading: true,
-                onOk: () => {
-                    this.$store.dispatch("call", {
-                        url: 'dialog/msg/withdraw',
-                        data: {
-                            msg_id: this.msgData.id
-                        },
-                    }).then(() => {
-                        $A.messageSuccess("消息已撤回");
-                        this.$store.dispatch("forgetDialogMsg", this.msgData.id);
-                        this.$Modal.remove();
-                    }).catch(({msg}) => {
-                        $A.messageError(msg, 301);
-                        this.$Modal.remove();
-                    });
-                }
+        playRecord() {
+            if (this.operateVisible) {
+                return
+            }
+            this.$store.dispatch("audioPlay", this.msgData.msg.path)
+        },
+
+        openMeeting() {
+            if (this.operateVisible) {
+                return
+            }
+            Store.set('addMeeting', {
+                type: 'join',
+                name: this.msgData.msg.name,
+                meetingid: this.msgData.msg.meetingid,
+                meetingdisabled: true,
             });
+        },
+
+        viewReply() {
+            this.$emit("on-view-reply", {
+                msg_id: this.msgData.id,
+                reply_id: this.msgData.reply_id
+            })
+        },
+
+        viewText(el) {
+            this.$emit("on-view-text", el)
         },
 
         viewFile() {
-            const {id, dialog_id, msg} = this.msgData;
-            if (['jpg', 'jpeg', 'gif', 'png'].includes(msg.ext)) {
-                const list = $A.cloneJSON(this.dialogMsgs.filter(item => {
-                    return item.dialog_id === dialog_id && item.type === 'file' && ['jpg', 'jpeg', 'gif', 'png'].includes(item.msg.ext);
-                })).sort((a, b) => {
-                    return a.id - b.id;
-                });
-                const index = list.findIndex(item => item.id === id);
-                if (index > -1) {
-                    this.$store.state.previewImageIndex = index;
-                    this.$store.state.previewImageList = list.map(({msg}) => msg.path);
-                } else {
-                    this.$store.state.previewImageIndex = 0;
-                    this.$store.state.previewImageList = [msg.path];
-                }
-                return
-            }
-            if (this.$Electron) {
-                this.$Electron.sendMessage('windowRouter', {
-                    name: 'file-msg-' + this.msgData.id,
-                    path: "/single/file/msg/" + this.msgData.id,
-                    userAgent: "/hideenOfficeTitle/",
-                    force: false,
-                    config: {
-                        title: `${this.msgData.msg.name} (${$A.bytesToSize(this.msgData.msg.size)})`,
-                        titleFixed: true,
-                        parent: null,
-                        width: Math.min(window.screen.availWidth, 1440),
-                        height: Math.min(window.screen.availHeight, 900),
-                    }
-                });
-            } else {
-                window.open($A.apiUrl(`../single/file/msg/${this.msgData.id}`))
-            }
+            this.$emit("on-view-file", this.msgData)
         },
 
         downFile() {
-            $A.modalConfirm({
-                title: '下载文件',
-                content: `${this.msgData.msg.name} (${$A.bytesToSize(this.msgData.msg.size)})`,
-                okText: '立即下载',
-                onOk: () => {
-                    this.$store.dispatch('downUrl', $A.apiUrl(`dialog/msg/download?msg_id=${this.msgData.id}`))
-                }
-            });
-        }
+            this.$emit("on-down-file", this.msgData)
+        },
+
+        replyList() {
+            this.$emit("on-reply-list", {
+                msg_id: this.msgData.id,
+            })
+        },
+
+        onError() {
+            this.$emit("on-error", this.msgData)
+        },
+
+        onEmoji(symbol) {
+            this.$emit("on-emoji", {
+                msg_id: this.msgData.id,
+                symbol
+            })
+        },
+
+        onShowEmojiUser(item) {
+            this.$emit("on-show-emoji-user", item)
+        },
     }
 }
 </script>

@@ -1,7 +1,7 @@
 <template>
     <div class="electron-report">
         <PageTitle :title="title"/>
-        <ReportEdit :id="id" @saveSuccess="saveSuccess"/>
+        <ReportEdit :id="reportEditId" @saveSuccess="saveSuccess"/>
     </div>
 </template>
 <style lang="scss" scoped>
@@ -23,11 +23,15 @@ export default {
         }
     },
     computed: {
-        id() {
-            return $A.runNum(this.detail.id || this.$route.params.id)
+        reportEditId() {
+            if (/^\d+$/.test(this.detail.id)) {
+                return parseInt(this.detail.id)
+            }
+            const {reportEditId} = this.$route.params;
+            return parseInt(/^\d+$/.test(reportEditId) ? reportEditId : 0);
         },
         title() {
-            return this.$L(this.id > 0 ? '修改报告' : '新增报告');
+            return this.$L(this.reportEditId > 0 ? '修改报告' : '新增报告');
         }
     },
     methods: {
@@ -38,6 +42,7 @@ export default {
                     channel: 'reportSaveSuccess',
                     data,
                 });
+                window.close();
             }
         }
     }

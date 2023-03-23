@@ -35,6 +35,12 @@
                 line-height: 26px;
             }
         }
+        .user-input-bot {
+            font-size: 16px;
+            margin-left: 10px;
+            margin-right: -6px;
+            color: $primary-color;
+        }
         .user-input-nickname {
             margin-left: 10px;
             flex: 1;
@@ -59,12 +65,35 @@
         }
     }
     .user-drop-prepend {
-        text-align: center;
-        color: #c5c8ce;
-        line-height: 20px;
-        padding-bottom: 5px;
-        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: sticky;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1;
+        transform: translateY(-5px);
+        background-color: #ffffff;
+        padding: 5px 15px;
         border-bottom: 1px solid #f1f1f1;
-        margin-bottom: 5px;
+        .user-drop-text {
+            flex: 1;
+            color: #c5c8ce;
+            line-height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            > em {
+                font-style: normal;
+                padding: 0 4px;
+                white-space: nowrap;
+            }
+        }
+        .user-drop-check {
+            margin-right: 0;
+            transform: scale(0.9);
+            transform-origin: right center;
+        }
     }
 }

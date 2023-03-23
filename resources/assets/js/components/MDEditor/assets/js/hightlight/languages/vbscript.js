@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   return {
     aliases: ['vbs'],
     case_insensitive: true,

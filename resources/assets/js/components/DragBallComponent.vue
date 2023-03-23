@@ -12,17 +12,9 @@ export default {
             type: String,
             default: ""
         },
-        distanceLeft: {
-            type: Number,
-            default: -1 // 大于 -1 时 distanceRight 无效
-        },
         distanceRight: {
             type: Number,
             default: 0
-        },
-        distanceTop: {
-            type: Number,
-            default: -1 // 大于 -1 时 distanceBottom 无效
         },
         distanceBottom: {
             type: Number,
@@ -72,16 +64,8 @@ export default {
                     this.left = window._DragBallComponent[this.id].left
                     this.top = window._DragBallComponent[this.id].top
                 } else {
-                    if (this.distanceLeft > -1) {
-                        this.left = this.distanceLeft;
-                    } else {
-                        this.left = this.clientWidth - this.floatDrag.offsetWidth - this.distanceRight;
-                    }
-                    if (this.distanceTop > -1) {
-                        this.top = this.distanceTop;
-                    } else {
-                        this.top = this.clientHeight - this.floatDrag.offsetHeight - this.distanceBottom;
-                    }
+                    this.left = this.clientWidth - this.floatDrag.offsetWidth - this.distanceRight;
+                    this.top = this.clientHeight - this.floatDrag.offsetHeight - this.distanceBottom;
                 }
                 this.initDraggable();
             });
@@ -154,7 +138,7 @@ export default {
         handleResize() {
             this.clientWidth = document.documentElement.clientWidth;
             this.clientHeight = document.documentElement.clientHeight;
-            this.checkDraggablePosition();
+            this.$nextTick(this.checkDraggablePosition);
         },
 
         /**

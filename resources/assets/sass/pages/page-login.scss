@@ -7,7 +7,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #F3F6FE;
+    background-color: #f8f8f8;
     .login-body {
         display: flex;
         flex-direction: column;
@@ -18,8 +18,8 @@
         overflow: auto;
         .login-logo {
             flex-shrink: 0;
-            width: 68px;
-            height: 68px;
+            width: 84px;
+            height: 84px;
             background: url("../images/logo.svg") no-repeat center center;
             background-size: contain;
             &.can-click {
@@ -27,16 +27,59 @@
             }
         }
         .login-box {
-            margin-top: 32px;
+            flex-shrink: 0;
+            position: relative;
+            margin-top: 36px;
             width: 400px;
+            max-width: 90%;
             border-radius: 12px;
             background-color: #ffffff;
             box-shadow: 0 0 10px #e6ecfa;
+            overflow: hidden;
+            .login-mode-switch {
+                position: absolute;
+                top: 4px;
+                right: 4px;
+                z-index: 1;
+                border-radius: 8px;
+                overflow: hidden;
+                .login-mode-switch-box {
+                    width: 80px;
+                    height: 80px;
+                    transform: translate(40px,-40px) rotate(45deg);
+                    cursor: pointer;
+                    background-color: rgba($primary-color, 0.8);
+                    transition: background-color .3s;
+                    overflow: hidden;
+                    &:hover {
+                        background-color: $primary-color;
+                    }
+                    .login-mode-switch-icon {
+                        position: absolute;
+                        font-size: 32px;
+                        width: 50px;
+                        height: 50px;
+                        color: #ffffff;
+                        bottom: -20px;
+                        left: 16px;
+                        transform: rotate(-45deg);
+                        display: flex;
+                        align-items: flex-start;
+                        justify-content: flex-start;
+                        > svg {
+                            width: 32px;
+                            height: 32px;
+                            margin-left: 13px;
+                            margin-top: 3px;
+                        }
+                    }
+                }
+            }
             .login-title {
                 font-size: 24px;
                 font-weight: 600;
                 text-align: center;
-                margin-top: 36px;
+                margin-top: 46px;
             }
             .login-subtitle {
                 font-size: 14px;
@@ -45,8 +88,14 @@
                 padding: 0 12px;
                 color: #AAAAAA;
             }
-            .login-input {
-                margin: 32px 40px;
+            .login-qrcode {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 50px auto 51px;
+            }
+            .login-access {
+                margin: 26px 40px 30px;
                 > * {
                     margin-top: 26px;
                 }
@@ -62,12 +111,19 @@
                 .login-code {
                     .ivu-input-group-prepend,
                     .ivu-input-group-append {
-                        font-size: 14px;
+                        font-size: 16px;
                         background: transparent;
                         border-color: #f1f1f1;
+                        > span {
+                            font-size: 14px;
+                        }
+                    }
+                    .ivu-input-group-prepend {
+                        padding-right: 0;
                     }
                     .ivu-input {
                         border-left-color: transparent;
+                        box-shadow: none;
                     }
                     .login-code-end {
                         margin: -6px -7px;
@@ -82,16 +138,6 @@
                 .login-switch {
                     color: #aaaaaa;
                 }
-                .login-input-tips-box{
-                    position: relative;
-                    .login-input-tips{
-                        font-size: 12px;
-                        position: absolute;
-                        left: 0;
-                        bottom: -20px;
-                        color: #c7c7c7;
-                    }
-                }
                 > .ivu-poptip {
                     width: 100%;
                     > .ivu-poptip-rel {
@@ -105,12 +151,13 @@
             display: flex;
             align-items: center;
             width: 388px;
+            max-width: 90%;
             .login-setting {
                 flex-shrink: 0;
                 display: flex;
                 align-items: center;
                 cursor: pointer;
-                color: #666666;
+                color: $primary-text-color;
                 .taskfont {
                     margin-top: 1px;
                     margin-left: 3px;
@@ -127,7 +174,7 @@
                 align-items: center;
                 justify-content: space-between;
                 .ivu-icon {
-                    color: #666666;
+                    color: $primary-text-color;
                     padding-left: 6px;
                     margin-right: -6px;
                 }
@@ -137,6 +184,101 @@
                 padding-left: 24px;
                 color: #aaaaaa;
                 text-align: right;
+            }
+        }
+    }
+}
+
+.privacy-content {
+    margin-bottom: 12px;
+    line-height: 26px;
+    font-size: 16px;
+    > p {
+        text-indent: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-login {
+        .login-body {
+            padding: 0 0 110px;
+
+            .login-logo {
+                margin-top: 24px;
+                width: 76px;
+                height: 76px;
+            }
+
+            .login-box {
+                margin-top: 0;
+                width: 100%;
+                max-width: 460px;
+                border-radius: 12px;
+                background-color: transparent;
+                box-shadow: none;
+
+                .login-mode-switch {
+                    display: none;
+                }
+
+                .login-title {
+                    font-size: 26px;
+                }
+
+                .login-subtitle {
+                    margin-top: 4px;
+                }
+
+                .login-access {
+                    margin: 20px 36px;
+
+                    .ivu-input-large {
+                        height: 44px;
+                    }
+
+                    .ivu-input-with-prefix {
+                        padding-left: 40px;
+                    }
+
+                    .ivu-input-prefix,
+                    .ivu-input-suffix {
+                        width: 44px;
+                    }
+
+                    .ivu-input-wrapper-large {
+                        .ivu-input-prefix i,
+                        .ivu-input-suffix i {
+                            font-size: 20px;
+                            line-height: 44px;
+                        }
+                        .ivu-input-icon {
+                            height: 44px;
+                            line-height: 44px;
+                        }
+                    }
+
+                    .login-code {
+                        .ivu-input-group-prepend,
+                        .ivu-input-group-append {
+                            font-size: 18px;
+                            background: #ffffff;
+                            .login-code-end {
+                                height: 42px;
+                            }
+                        }
+                        .ivu-input-group-prepend {
+                            padding-left: 12px;
+                            padding-right: 2px;
+                        }
+                    }
+                }
+            }
+
+            .login-bottom {
+                margin-top: 8px;
+                width: 100%;
+                max-width: 460px;
+                padding: 0 36px;
             }
         }
     }

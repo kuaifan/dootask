@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 @error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
+use App\Module\Doo;
 use Closure;
 use Request;
 
@@ -31,6 +32,7 @@ class WebApi
         if (in_array(strtolower($APP_SCHEME), ['https', 'on', 'ssl', '1', 'true', 'yes'], true)) {
             $request->setTrustedProxies([$request->getClientIp()], $request::HEADER_X_FORWARDED_PROTO);
         }
+        Doo::load();
 
         return $next($request);
     }

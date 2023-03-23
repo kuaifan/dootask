@@ -90,7 +90,7 @@
             }
         }
         .advanced-option {
-            margin-top: 42px;
+            padding-top: 42px;
             z-index: 1;
             display: flex;
             align-items: center;
@@ -108,6 +108,11 @@
                 align-items: center;
                 margin-left: 24px;
                 height: 34px;
+                overflow-y: hidden;
+                overflow-x: auto;
+                &::-webkit-scrollbar {
+                    display: none;
+                }
                 > li {
                     list-style: none;
                     margin-left: 3px;
@@ -136,7 +141,7 @@
                     min-width: 20px;
                     line-height: 20px;
                     border-radius: 10px;
-                    background: #8bcf70;
+                    background: $primary-color;
                     color: #fff;
                     text-align: center;
                     padding: 0 6px;
@@ -193,10 +198,34 @@
         justify-content: flex-end;
         .ivu-icon {
             font-size: 16px;
-            color: #999999;
+            color: $primary-desc-color;
         }
     }
     .ivu-modal-footer {
         padding: 26px 0 22px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .task-add {
+        .task-add-form,
+        .task-add-advanced {
+            .advanced-option {
+                width: calc(100% + 8px);
+                padding-right: 8px;
+                justify-content: space-between;
+                > button {
+                    &.advanced {
+                        margin-left: 0;
+                    }
+                }
+                .advanced-priority {
+                    margin-left: 8px;
+                }
+                .advanced-time {
+                    margin-left: 4px;
+                }
+            }
+        }
     }
 }

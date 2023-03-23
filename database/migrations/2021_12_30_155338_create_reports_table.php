@@ -23,7 +23,7 @@ class CreateReportsTable extends Migration
             $table->enum("type", ["weekly", "daily"])->default("daily")->comment("汇报类型");
             $table->unsignedBigInteger("userid")->default(0);
             $table->longText("content")->nullable();
-            $table->index(["userid", "created_at"], "default");
+            $table->index(["userid", "created_at"]);
         });
     }
 

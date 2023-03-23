@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var GML_KEYWORDS = {
     keywords: 'begin end if then else while do for break continue with until ' +
       'repeat exit and or xor not return mod div switch case default var ' +

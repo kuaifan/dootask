@@ -52,6 +52,7 @@ import Calendar from "./components/Calendar";
 import moment from "moment";
 import {Store} from "le5le-store";
 import TaskMenu from "./components/TaskMenu";
+import {addLanguage} from "../../language";
 
 export default {
     components: {TaskMenu, Calendar},
@@ -78,6 +79,57 @@ export default {
         }
     },
 
+    created() {
+        addLanguage([
+            {"key": "{日}", "zh": "日", "general": "Sun"},
+            {"key": "{一}", "zh": "一", "general": "Mon"},
+            {"key": "{二}", "zh": "二", "general": "Tue"},
+            {"key": "{三}", "zh": "三", "general": "Wed"},
+            {"key": "{四}", "zh": "四", "general": "Thu"},
+            {"key": "{五}", "zh": "五", "general": "Fri"},
+            {"key": "{六}", "zh": "六", "general": "Sat"},
+        ]);
+        let daynames = [
+            this.$L('{日}'),
+            this.$L('{一}'),
+            this.$L('{二}'),
+            this.$L('{三}'),
+            this.$L('{四}'),
+            this.$L('{五}'),
+            this.$L('{六}')
+        ];
+        this.calendarWeek = {daynames};
+        this.calendarMonth = {daynames};
+        this.calendarTheme = {
+            'common.border': '1px solid rgba(0,0,0,0)',
+            'month.dayname.fontSize': '14px',
+            'month.dayname.borderLeft': '1px solid rgba(0,0,0,0)',
+            'month.dayname.height': '50px',
+        }
+        if (this.windowLarge) {
+            this.calendarTheme = {
+                'common.border': '1px solid #f4f5f5',
+                'month.dayname.fontSize': '14px',
+                'month.dayname.borderLeft': '1px solid #f4f5f5',
+                'month.dayname.height': '50px',
+            }
+        }
+        this.calendarTemplate = {
+            titlePlaceholder: () => {
+                return this.$L("任务描述")
+            },
+            popupSave: () => {
+                return this.$L("保存");
+            },
+            popupEdit: () => {
+                return this.$L("详情");
+            },
+            popupDelete: () => {
+                return this.$L("删除");
+            }
+        }
+    },
+
     activated() {
         this.$refs.cal.resetRender();
         this.setRenderRange();
@@ -88,7 +140,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'cacheTasks', 'taskCompleteTemps', 'wsOpenNum', 'themeIsDark']),
+        ...mapState(['cacheTasks', 'taskCompleteTemps', 'wsOpenNum', 'themeIsDark']),
 
         ...mapGetters(['transforTasks']),
 
@@ -181,57 +233,12 @@ export default {
             if (num <= 1) return
             this.wsOpenTimeout && clearTimeout(this.wsOpenTimeout)
             this.wsOpenTimeout = setTimeout(() => {
-                if (this.$route.name == 'manage-calendar') {
-                    this.setRenderRange();
-                }
+                this.$route.name == 'manage-calendar' && this.setRenderRange();
             }, 5000)
         }
     },
 
     methods: {
-        initLanguage() {
-            this.addLanguageData([
-                {"_": "{日}","CN": "日","EN": "Sun","TC": "日","KM": "Sun","TH": "Sun","KO": "Sun","JA": "Sun"},
-                {"_": "{一}","CN": "一","EN": "Mon","TC": "一","KM": "Mon","TH": "Mon","KO": "Mon","JA": "Mon"},
-                {"_": "{二}","CN": "二","EN": "Tue","TC": "二","KM": "Tue","TH": "Tue","KO": "Tue","JA": "Tue"},
-                {"_": "{三}","CN": "三","EN": "Wed","TC": "三","KM": "Wed","TH": "Wed","KO": "Wed","JA": "Wed"},
-                {"_": "{四}","CN": "四","EN": "Thu","TC": "四","KM": "Thu","TH": "Thu","KO": "Thu","JA": "Thu"},
-                {"_": "{五}","CN": "五","EN": "Fri","TC": "五","KM": "Fri","TH": "Fri","KO": "Fri","JA": "Fri"},
-                {"_": "{六}","CN": "六","EN": "Sat","TC": "六","KM": "Sat","TH": "Sat","KO": "Sat","JA": "Sat"},
-            ]);
-            let daynames = [
-                this.$L('{日}'),
-                this.$L('{一}'),
-                this.$L('{二}'),
-                this.$L('{三}'),
-                this.$L('{四}'),
-                this.$L('{五}'),
-                this.$L('{六}')
-            ];
-            this.calendarWeek = {daynames};
-            this.calendarMonth = {daynames};
-            this.calendarTheme = {
-                'common.border': '1px solid #f4f5f5',
-                'month.dayname.fontSize': '14px',
-                'month.dayname.borderLeft': '1px solid #f4f5f5',
-                'month.dayname.height': '50px',
-            }
-            this.calendarTemplate = {
-                titlePlaceholder: () => {
-                    return this.$L("任务描述")
-                },
-                popupSave: () => {
-                    return this.$L("保存");
-                },
-                popupEdit: () => {
-                    return this.$L("详情");
-                },
-                popupDelete: () => {
-                    return this.$L("删除");
-                }
-            }
-        },
-
         getTask(time) {
             if (this.loadIng > 0) {
                 clearTimeout(this.loadTimeout)
@@ -241,33 +248,12 @@ export default {
                 return;
             }
             //
-            const timeStart = $A.Date($A.formatDate(time[0] + " 00:00:00")),
-                timeEnd = $A.Date($A.formatDate(time[1] + " 23:59:59")),
-                now = $A.Time();
-            const find = (item, n) => {
-                if (n === true && item._time < now) {
-                    return false
-                }
-                const start = $A.Date(item.start_at),
-                    end = $A.Date(item.end_at);
-                return (start <= timeStart && timeStart <= end) || (start <= timeEnd && timeEnd <= end) || (start > timeStart && timeEnd > end);
-            }
-            const currentIds = this.list.filter(item => find(item)).map(({id}) => id);
-            const call = () => {
-                const newIds = this.list.filter(item => find(item, true)).map(({id}) => id);
-                this.$store.dispatch("forgetTask", currentIds.filter(v => newIds.indexOf(v) == -1))
-            }
-            //
             this.loadIng++;
             this.$store.dispatch("getTasks", {
                 time,
                 complete: "no"
-            }).then(() => {
+            }).finally(_ => {
                 this.loadIng--;
-                call()
-            }).catch(() => {
-                this.loadIng--;
-                call()
             })
         },
 
@@ -329,9 +315,7 @@ export default {
             Store.set('addTask', {
                 times: [start, end],
                 owner: [this.userId],
-                beforeClose: () => {
-                    guide.clearGuideElement();
-                }
+                beforeClose: () => guide.clearGuideElement()
             });
         },
 
@@ -361,14 +345,14 @@ export default {
                         content: '你确定要删除任务【' + data.name + '】吗？',
                         loading: true,
                         onOk: () => {
-                            this.$store.dispatch("removeTask", {task_id: data.id}).then(({msg}) => {
-                                $A.messageSuccess(msg);
-                                this.$Modal.remove();
-                            }).catch(({msg}) => {
-                                $A.modalError(msg, 301);
-                                this.$Modal.remove();
-                                this.setRenderRange();
-                            });
+                            return new Promise((resolve, reject) => {
+                                this.$store.dispatch("removeTask", {task_id: data.id}).then(({msg}) => {
+                                    resolve(msg);
+                                }).catch(({msg}) => {
+                                    reject(msg);
+                                    this.setRenderRange();
+                                });
+                            })
                         }
                     });
                     break;

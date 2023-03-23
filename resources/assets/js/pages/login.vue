@@ -2,33 +2,101 @@
     <div class="page-login">
         <PageTitle :title="$L('登录')"/>
         <div class="login-body">
-            <div class="login-logo no-dark-mode" :class="{'can-click':needStartHome}" @click="goHome"></div>
+            <div class="login-logo no-dark-content" :class="{'can-click':needStartHome}" @click="goHome"></div>
             <div class="login-box">
+                <div class="login-mode-switch">
+                    <div class="login-mode-switch-box">
+                        <ETooltip :disabled="windowSmall || $isEEUiApp" :content="$L(loginMode=='qrcode' ? '帐号登录' : '扫码登录')" placement="left">
+                            <span class="login-mode-switch-icon" @click="switchLoginMode">
+                                <svg v-if="loginMode=='qrcode'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" data-icon="PcOutlined"><path d="M23 16a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h18a2 2 0 0 1 2 2v12ZM21 4H3v9h18V4ZM3 15v1h18v-1H3Zm3 6a1 1 0 0 1 1-1h10a1 1 0 1 1 0 2H7a1 1 0 0 1-1-1Z" fill="currentColor"></path></svg>
+                                <svg v-else viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" data-icon="QrOutlined"><path d="M6.5 7.5a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1Z" fill="currentColor"></path><path d="M4.5 2.5c-1.1 0-2 .9-2 2v7c0 1.1.9 2 2 2h7c1.1 0 2-.9 2-2v-7c0-1.1-.9-2-2-2h-7Zm0 2h7v7h-7v-7ZM11 16a1 1 0 1 1 2 0 1 1 0 0 1-2 0Zm0 3.5a1 1 0 1 1 2 0v1a1 1 0 1 1-2 0v-1Zm4-7.5a1 1 0 1 1 2 0 1 1 0 0 1-2 0Zm3.5 0a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2h-1a1 1 0 0 1-1-1ZM15 17c0-1.1.9-2 2-2h2.5c1.1 0 2 .9 2 2v2.5c0 1.1-.9 2-2 2H17c-1.1 0-2-.9-2-2V17Zm4.5 0H17v2.5h2.5V17Zm-15-2c-1.1 0-2 .9-2 2v2.5c0 1.1.9 2 2 2H7c1.1 0 2-.9 2-2V17c0-1.1-.9-2-2-2H4.5Zm0 2H7v2.5H4.5V17ZM15 4.5c0-1.1.9-2 2-2h2.5c1.1 0 2 .9 2 2V7c0 1.1-.9 2-2 2H17c-1.1 0-2-.9-2-2V4.5Zm4.5 0H17V7h2.5V4.5Z" fill="currentColor"></path></svg>
+                            </span>
+                        </ETooltip>
+                    </div>
+                </div>
+
                 <div class="login-title">{{welcomeTitle}}</div>
 
-                <div v-if="loginType=='reg'" class="login-subtitle">{{$L('输入您的信息以创建帐户。')}}</div>
-                <div v-else class="login-subtitle">{{$L('输入您的凭证以访问您的帐户。')}}</div>
+                <div class="login-subtitle">{{$L(subTitle)}}</div>
 
-                <div class="login-input">
-                    <Input v-if="$Electron && cacheServerUrl" :value="$A.getDomain(cacheServerUrl)" prefix="ios-globe-outline" size="large" readonly clearable @on-clear="clearServerUrl"/>
+                <transition name="login-mode">
+                    <div v-if="loginMode=='qrcode'" class="login-qrcode" @click="qrcodeRefresh">
+                        <VueQrcode :value="qrcodeUrl" :options="{width:200,margin:0}"></VueQrcode>
+                    </div>
+                </transition>
+                <transition name="login-mode">
+                    <div v-if="loginMode=='access'" class="login-access">
+                        <Input
+                            v-if="isSoftware && cacheServerUrl"
+                            :value="$A.getDomain(cacheServerUrl)"
+                            prefix="ios-globe-outline"
+                            size="large"
+                            readonly
+                            clearable
+                            @on-clear="setServerUrl('')"/>
 
-                    <Input v-model="email" prefix="ios-mail-outline" :placeholder="$L('输入您的电子邮件')" size="large" @on-enter="onLogin" @on-blur="onBlur" />
+                        <Input
+                            v-model="email"
+                            ref="email"
+                            prefix="ios-mail-outline"
+                            :placeholder="$L('输入您的电子邮件')"
+                            type="email"
+                            size="large"
+                            @on-enter="onLogin"
+                            @on-blur="onBlur"
+                            clearable/>
 
-                    <Input v-model="password" prefix="ios-lock-outline" :placeholder="$L('输入您的密码')" type="password" size="large" @on-enter="onLogin" />
+                        <Input
+                            v-model="password"
+                            ref="password"
+                            prefix="ios-lock-outline"
+                            :placeholder="$L('输入您的密码')"
+                            type="password"
+                            size="large"
+                            @on-enter="onLogin"
+                            clearable/>
 
-                    <Input v-if="loginType=='reg'" v-model="password2" prefix="ios-lock-outline" :placeholder="$L('输入确认密码')" type="password" size="large" @on-enter="onLogin" />
-                    <Input v-if="loginType=='reg' && needInvite" v-model="invite" class="login-code" :placeholder="$L('请输入注册邀请码')" type="text" size="large" @on-enter="onLogin"><span slot="prepend">&nbsp;{{$L('邀请码')}}&nbsp;</span></Input>
+                        <Input
+                            v-if="loginType=='reg'"
+                            v-model="password2"
+                            ref="password2"
+                            prefix="ios-lock-outline"
+                            :placeholder="$L('输入确认密码')"
+                            type="password"
+                            size="large"
+                            @on-enter="onLogin"
+                            clearable/>
+                        <Input
+                            v-if="loginType=='reg' && needInvite"
+                            v-model="invite"
+                            ref="invite"
+                            class="login-code"
+                            :placeholder="$L('请输入注册邀请码')"
+                            type="text"
+                            size="large"
+                            @on-enter="onLogin"
+                            clearable><span slot="prepend">&nbsp;{{$L('邀请码')}}&nbsp;</span></Input>
 
-                    <Input v-if="loginType=='login' && codeNeed" v-model="code" class="login-code" :placeholder="$L('输入图形验证码')" size="large" @on-enter="onLogin">
-                        <Icon type="ios-checkmark-circle-outline" class="login-icon" slot="prepend"></Icon>
-                        <div slot="append" class="login-code-end" @click="reCode"><img :src="codeUrl"/></div>
-                    </Input>
+                        <Input
+                            v-if="loginType=='login' && codeNeed"
+                            v-model="code"
+                            ref="code"
+                            class="login-code"
+                            :placeholder="$L('输入图形验证码')"
+                            type="text"
+                            size="large"
+                            @on-enter="onLogin"
+                            clearable>
+                            <Icon type="ios-checkmark-circle-outline" class="login-icon" slot="prepend"></Icon>
+                            <div slot="append" class="login-code-end" @click="reCode"><img :src="codeUrl"/></div>
+                        </Input>
 
-                    <Button type="primary" :loading="loadIng > 0 || loginJump" size="large" long @click="onLogin">{{$L(loginText)}}</Button>
+                        <Button type="primary" :loading="loadIng > 0 || loginJump" size="large" long @click="onLogin">{{$L(loginText)}}</Button>
 
-                    <div v-if="loginType=='reg'" class="login-switch">{{$L('已经有帐号？')}}<a href="javascript:void(0)" @click="loginType='login'">{{$L('登录帐号')}}</a></div>
-                    <div v-else class="login-switch">{{$L('还没有帐号？')}}<a href="javascript:void(0)" @click="loginType='reg'">{{$L('注册帐号')}}</a></div>
-                </div>
+                        <div v-if="loginType=='reg'" class="login-switch">{{$L('已经有帐号？')}}<a href="javascript:void(0)" @click="loginType='login'">{{$L('登录帐号')}}</a></div>
+                        <div v-else class="login-switch">{{$L('还没有帐号？')}}<a href="javascript:void(0)" @click="loginType='reg'">{{$L('注册帐号')}}</a></div>
+                    </div>
+                </transition>
             </div>
             <div class="login-bottom">
                 <Dropdown trigger="click" placement="bottom-start">
@@ -52,7 +120,7 @@
                                     :selected="themeMode === item.value">{{$L(item.name)}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
-                        <Dropdown placement="right-start" transfer @on-click="setLanguage">
+                        <Dropdown placement="right-start" transfer @on-click="onLanguage">
                             <DropdownItem divided>
                                 <div class="login-setting-item">
                                     {{currentLanguage}}
@@ -64,7 +132,7 @@
                                     v-for="(item, key) in languageList"
                                     :key="key"
                                     :name="key"
-                                    :selected="getLanguage() === key">{{item}}</DropdownItem>
+                                    :selected="languageType === key">{{item}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                     </DropdownMenu>
@@ -72,25 +140,51 @@
                 <div class="login-forgot">{{$L('忘记密码了？')}}<a href="javascript:void(0)" @click="forgotPassword">{{$L('重置密码')}}</a></div>
             </div>
         </div>
+
+        <!--隐私政策提醒-->
+        <Modal
+            v-model="privacyShow"
+            :title="$L('隐私协议')"
+            :mask-closable="false">
+            <div class="privacy-content">
+                <div>欢迎使用本软件！</div>
+                <p>在您使用本软件前，请您认真阅读并了解相应的<a target="_blank" :href="$A.apiUrl('privacy')">《{{ $L('隐私政策') }}》</a>，以了解我们的服务内容和您相关个人信息的处理规则。我们将严格的按照隐私服务协议为您提供服务，保护您的个人信息。</p>
+            </div>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="onPrivacy(false)">{{$L('不同意')}}</Button>
+                <Button type="primary" @click="onPrivacy(true)">{{$L('同意')}}</Button>
+            </div>
+        </Modal>
     </div>
 </template>
 
 <script>
 import {mapState} from "vuex";
 import {Store} from "le5le-store";
+import {languageList, languageType, setLanguage} from "../language";
+import VueQrcode from "@chenfengyuan/vue-qrcode";
 
 export default {
+    components: {VueQrcode},
     data() {
         return {
             loadIng: 0,
 
+            languageList,
+            languageType,
+
+            qrcodeVal: '',
+            qrcodeTimer: null,
+            qrcodeLoad: false,
+
             codeNeed: false,
             codeUrl: $A.apiUrl('users/login/codeimg?_=' + Math.random()),
 
+            loginMode: 'access',
             loginType: 'login',
             loginJump: false,
 
-            email: $A.getStorageString("cacheLoginEmail") || '',
+            email: '',
             password: '',
             password2: '',
             code: '',
@@ -101,35 +195,47 @@ export default {
             needInvite: false,
 
             subscribe: null,
+
+            privacyShow: false,
         }
     },
-    mounted() {
-        this.getDemoAccount();
-        this.getNeedStartHome();
+
+    async mounted() {
+        this.privacyShow = !!this.$isEEUiApp && (await $A.IDBString("cachePrivacyShow")) !== "no";
+        this.email = await $A.IDBString("cacheLoginEmail") || ''
         //
-        if (this.$Electron) {
+        if (this.isSoftware) {
             this.chackServerUrl().catch(_ => {});
         } else {
-            this.clearServerUrl();
+            this.setServerUrl('').catch(_ => {});
         }
+        //
+        this.qrcodeTimer = setInterval(this.qrcodeStatus, 2000);
         //
         this.subscribe = Store.subscribe('useSSOLogin', () => {
             this.inputServerUrl();
         });
     },
+
     beforeDestroy() {
+        clearInterval(this.qrcodeTimer);
         if (this.subscribe) {
             this.subscribe.unsubscribe();
             this.subscribe = null;
         }
     },
+
     activated() {
-        this.loginType = 'login'
+        this.loginType = this.$route.query.type === 'reg' ? 'reg' : 'login'
+        //
+        this.getDemoAccount();
+        this.getNeedStartHome();
         //
         if (this.$Electron) {
             this.$Electron.sendMessage('subWindowDestroyAll')
         }
     },
+
     deactivated() {
         this.loginJump = false;
         this.password = "";
@@ -137,6 +243,7 @@ export default {
         this.code = "";
         this.invite = "";
     },
+
     computed: {
         ...mapState([
             'cacheServerUrl',
@@ -145,17 +252,31 @@ export default {
             'themeList',
         ]),
 
+        isSoftware() {
+            return this.$Electron || this.$isEEUiApp;
+        },
+
         currentLanguage() {
-            return this.languageList[this.languageType] || 'Language'
+            return languageList[languageType] || 'Language'
         },
 
         welcomeTitle() {
-            let title = window.systemInfo.title || "DooTask";
-            if (title == "PublicDooTask") {
-                return "Public DooTask"
-            } else {
-                return "Welcome " + title
+            if (this.loginMode == 'qrcode') {
+                return this.$L("扫码登录")
             }
+            const title = window.systemInfo.title || "DooTask";
+            return "Welcome " + title
+        },
+
+        subTitle() {
+            const title = window.systemInfo.title || "DooTask";
+            if (this.loginMode == 'qrcode') {
+                return this.$L(`请使用${title}移动端扫描二维码。`)
+            }
+            if (this.loginType=='reg') {
+                return this.$L(`输入您的信息以创建帐户。`)
+            }
+            return this.$L(`输入您的凭证以访问您的帐户。`)
         },
 
         loginText() {
@@ -164,8 +285,13 @@ export default {
                 text += "成功..."
             }
             return text
-        }
+        },
+
+        qrcodeUrl() {
+            return $A.apiUrl('../login?qrcode=' + this.qrcodeVal)
+        },
     },
+
     watch: {
         '$route' ({query}) {
             if (query.type=='reg'){
@@ -174,16 +300,20 @@ export default {
                 })
             }
         },
+        loginMode() {
+            this.qrcodeRefresh()
+        },
         loginType(val) {
             if (val == 'reg') {
                 this.getNeedInvite();
             }
-        }
+        },
     },
+
     methods: {
         goHome() {
             if (this.needStartHome) {
-                this.goForward({name: 'index'});
+                this.goForward({name: 'index', query: {action: 'index'}});
             }
         },
 
@@ -209,15 +339,13 @@ export default {
 
         getNeedStartHome() {
             if (this.isNotServer()) {
-                return;
+                return
             }
-            this.$store.dispatch("call", {
-                url: "system/get/starthome",
-            }).then(({data}) => {
-                this.needStartHome = !!data.need_start;
+            this.$store.dispatch("needHome").then(_ => {
+                this.needStartHome = true
             }).catch(_ => {
-                this.needStartHome = false;
-            });
+                this.needStartHome = false
+            })
         },
 
         getNeedInvite() {
@@ -230,6 +358,42 @@ export default {
             });
         },
 
+        switchLoginMode() {
+            this.chackServerUrl(true).then(() => {
+                if (this.loginMode === 'qrcode') {
+                    this.loginMode = 'access'
+                } else {
+                    this.loginMode = 'qrcode'
+                }
+            })
+        },
+
+        qrcodeRefresh() {
+            if (this.loginMode == 'qrcode') {
+                this.qrcodeVal = $A.randomString(32)
+            }
+        },
+
+        qrcodeStatus() {
+            if (this.$route.name !== 'login' || this.loginMode != 'qrcode') {
+                return;
+            }
+            if (this.qrcodeLoad) {
+                return;
+            }
+            this.qrcodeLoad = true
+            //
+            this.$store.dispatch("call", {
+                url: 'users/login/qrcode?code=' + this.qrcodeVal,
+            }).then(({data}) => {
+                this.$store.dispatch("handleClearCache", data).then(this.goNext);
+            }).catch(_ => {
+                //
+            }).finally(_ => {
+                this.qrcodeLoad = false
+            });
+        },
+
         forgotPassword() {
             $A.modalWarning("请联系管理员！");
         },
@@ -239,41 +403,57 @@ export default {
         },
 
         inputServerUrl() {
+            if (this.privacyShow) {
+                return
+            }
+            let value = $A.rightDelete(this.cacheServerUrl, "/api/");
+            value = $A.leftDelete(value, "http://");
             $A.modalInput({
                 title: "使用 SSO 登录",
-                value: this.cacheServerUrl,
+                value,
                 placeholder: "请输入服务器地址",
-                onOk: (value, cb) => {
-                    if (value) {
-                        if (!$A.leftExists(value, "http://") && !$A.leftExists(value, "https://")) {
-                            value = "http://" + value;
-                        }
-                        if (!$A.rightExists(value, "/api/")) {
-                            value = value + ($A.rightExists(value, "/") ? "api/" : "/api/");
-                        }
-                        this.$store.dispatch("call", {
-                            url: value + 'system/setting',
-                        }).then(() => {
-                            this.setServerUrl(value)
-                            cb()
-                        }).catch(({msg}) => {
-                            $A.modalError(msg || "服务器地址无效", 301);
-                            cb()
-                        });
-                        return;
+                onOk: (value) => {
+                    if (!value) {
+                        return '请输入服务器地址'
                     }
-                    this.clearServerUrl();
+                    return this.inputServerChack($A.trim(value))
                 }
             });
+        },
+
+        inputServerChack(value) {
+            return new Promise((resolve, reject) => {
+                let url = value;
+                if (!/\/api\/$/.test(url)) {
+                    url = url + ($A.rightExists(url, "/") ? "api/" : "/api/");
+                }
+                if (!/^https*:\/\//i.test(url)) {
+                    url = `https://${url}`;
+                }
+                this.$store.dispatch("call", {
+                    url: `${url}system/setting`,
+                    checkNetwork: false,
+                }).then(async () => {
+                    await this.setServerUrl(url)
+                    resolve()
+                }).catch(({ret, msg}) => {
+                    if (ret === -1001) {
+                        if (!/^https*:\/\//i.test(value)) {
+                            this.inputServerChack(`http://${value}`).then(resolve).catch(reject);
+                            return;
+                        }
+                        msg = "服务器地址无效";
+                    }
+                    reject(msg)
+                });
+            })
         },
 
         chackServerUrl(tip) {
             return new Promise((resolve, reject) => {
                 if (this.isNotServer()) {
-                    if (tip === true) {
-                        $A.messageWarning("请设置服务器")
-                    }
                     this.inputServerUrl()
+                    tip === true && this.$nextTick(_ => $A.messageWarning("请设置服务器"))
                     reject()
                 } else {
                     resolve()
@@ -281,20 +461,18 @@ export default {
             })
         },
 
-        setServerUrl(value) {
+        async setServerUrl(value) {
+            await $A.IDBSet("cachePrivacyShow", value ? "no" : "yes")
+            //
             if (value != this.cacheServerUrl) {
-                $A.setStorage("cacheServerUrl", value)
-                window.location.reload();
+                await $A.IDBSet("cacheServerUrl", value)
+                $A.reloadUrl();
             }
-        },
-
-        clearServerUrl() {
-            this.setServerUrl("")
         },
 
         isNotServer() {
             let apiHome = $A.getDomain(window.systemInfo.apiUrl)
-            return this.$Electron && (apiHome == "" || apiHome == "public")
+            return this.isSoftware && (apiHome == "" || apiHome == "public")
         },
 
         onBlur() {
@@ -309,13 +487,22 @@ export default {
                     email: this.email,
                 },
             }).then(() => {
-                this.loadIng--;
                 this.reCode();
                 this.codeNeed = true;
             }).catch(_ => {
-                this.loadIng--;
                 this.codeNeed = false;
+            }).finally(_ => {
+                this.loadIng--;
             });
+        },
+
+        onPrivacy(agree) {
+            if (agree) {
+                this.privacyShow = false
+                this.chackServerUrl().catch(_ => {});
+            } else {
+                $A.eeuiAppGoDesktop()
+            }
         },
 
         onLogin() {
@@ -328,15 +515,18 @@ export default {
                 //
                 if (!$A.isEmail(this.email)) {
                     $A.messageWarning("请输入正确的邮箱地址");
+                    this.$refs.email.focus();
                     return;
                 }
                 if (!this.password) {
                     $A.messageWarning("请输入密码");
+                    this.$refs.password.focus();
                     return;
                 }
                 if (this.loginType == 'reg') {
                     if (this.password != this.password2) {
                         $A.messageWarning("确认密码输入不一致");
+                        this.$refs.password2.focus();
                         return;
                     }
                 }
@@ -351,17 +541,12 @@ export default {
                         invite: this.invite,
                     },
                 }).then(({data}) => {
-                    this.loadIng--;
+                    $A.IDBSave("cacheLoginEmail", this.email)
                     this.codeNeed = false;
-                    $A.setStorage("cacheLoginEmail", this.email)
-                    this.$store.dispatch("handleClearCache", data).then(() => {
-                        this.goNext1();
-                    }).catch(_ => {
-                        this.goNext1();
-                    });
+                    this.$store.dispatch("handleClearCache", data).then(this.goNext);
                 }).catch(({data, msg}) => {
-                    this.loadIng--;
                     if (data.code === 'email') {
+                        this.loginType = 'login';
                         $A.modalWarning(msg);
                     } else {
                         $A.modalError(msg);
@@ -369,38 +554,28 @@ export default {
                     if (data.code === 'need') {
                         this.reCode();
                         this.codeNeed = true;
+                        this.$refs.code.focus();
                     }
+                }).finally(_ => {
+                    this.loadIng--;
                 });
             })
         },
 
-        goNext1() {
+        goNext() {
             this.loginJump = true;
-            if (this.loginType == 'login') {
-                this.goNext2();
-            } else {
-                // 新注册自动创建项目
-                this.$store.dispatch("call", {
-                    url: 'project/add',
-                    data: {
-                        name: this.$L('个人项目'),
-                        desc: this.$L('注册时系统自动创建项目，你可以自由删除。')
-                    },
-                }).then(() => {
-                    this.goNext2();
-                }).catch(_ => {
-                    this.goNext2();
-                });
-            }
-        },
-
-        goNext2() {
-            let fromUrl = decodeURIComponent($A.getObject(this.$route.query, 'from'));
+            const fromUrl = decodeURIComponent($A.getObject(this.$route.query, 'from'));
             if (fromUrl) {
-                window.location.replace(fromUrl);
+                $A.IDBSet("clearCache", "login").then(_ => {
+                    window.location.replace(fromUrl);
+                })
             } else {
                 this.goForward({name: 'manage-dashboard'}, true);
             }
+        },
+
+        onLanguage(l) {
+            setLanguage(l)
         }
     }
 }

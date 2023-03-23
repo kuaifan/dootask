@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var BACKTICK_ESCAPE = {
     begin: '`[\\s\\S]'
   };
@@ -40,7 +40,7 @@ module.exports = function(hljs) {
         ]
       },
       {
-        className: 'meta', 
+        className: 'meta',
         begin: '^\\s*#\\w+', end:'$',
         relevance: 0
       },

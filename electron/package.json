@@ -26,25 +26,26 @@
         "url": "https://github.com/kuaifan/dootask.git"
     },
     "devDependencies": {
-        "@electron-forge/cli": "^6.0.0-beta.63",
-        "@electron-forge/maker-deb": "^6.0.0-beta.63",
-        "@electron-forge/maker-rpm": "^6.0.0-beta.63",
-        "@electron-forge/maker-squirrel": "^6.0.0-beta.63",
-        "@electron-forge/maker-zip": "^6.0.0-beta.63",
-        "dotenv": "^16.0.0",
-        "electron": "^17.2.0",
-        "electron-builder": "^23.0.3",
-        "electron-notarize": "^1.2.1",
+        "@electron-forge/cli": "^6.0.5",
+        "@electron-forge/maker-deb": "^6.0.5",
+        "@electron-forge/maker-rpm": "^6.0.5",
+        "@electron-forge/maker-squirrel": "^6.0.5",
+        "@electron-forge/maker-zip": "^6.0.5",
+        "dotenv": "^16.0.3",
+        "electron": "^23.1.4",
+        "electron-builder": "^23.6.0",
+        "electron-notarize": "^1.2.2",
         "form-data": "^4.0.0",
         "ora": "^4.1.1"
     },
     "dependencies": {
-        "axios": "^0.26.1",
+        "axios": "^1.3.4",
         "crc": "^3.8.0",
-        "electron-log": "^4.4.6",
+        "electron-log": "^4.4.8",
+        "electron-screenshots-tool": "^1.0.4",
         "electron-squirrel-startup": "^1.0.0",
-        "electron-updater": "^4.6.5",
-        "fs-extra": "^10.0.1",
+        "electron-updater": "^5.3.0",
+        "fs-extra": "^10.1.0",
         "pdf-lib": "^1.17.1"
     },
     "trayIcon": {
@@ -61,6 +62,9 @@
         "appId": "com.dootask.task",
         "artifactName": "${productName}-v${version}-${os}-${arch}.${ext}",
         "asar": true,
+        "directories": {
+            "output": "dist"
+        },
         "files": [
             "public/**/*",
             "electron-preload.js",
@@ -69,10 +73,9 @@
         ],
         "npmRebuild": false,
         "publish": {
-            "provider": "github"
+            "provider": "generic"
         },
         "releaseInfo": {},
-        "afterSign": "./notarize.js",
         "mac": {
             "icon": "../resources/assets/statics/public/images/logo-app.png",
             "entitlements": "entitlements.plist",
@@ -87,18 +90,10 @@
                     ]
                 },
                 {
-                    "target": "pkg",
-                    "arch": [
-                        "x64",
-                        "arm64"
-                    ]
-                },
-                {
                     "target": "dmg",
                     "arch": [
                         "x64",
-                        "arm64",
-                        "universal"
+                        "arm64"
                     ]
                 }
             ]
@@ -109,31 +104,17 @@
                 {
                     "target": "nsis",
                     "arch": [
-                        "x64"
-                    ]
-                },
-                {
-                    "target": "msi",
-                    "arch": [
-                        "x64"
+                        "x64",
+                        "arm64"
                     ]
                 }
-            ]
+            ],
+            "verifyUpdateCodeSignature": false
         },
         "nsis": {
             "oneClick": false,
             "artifactName": "${productName}-v${version}-${os}-${arch}.${ext}",
             "allowToChangeInstallationDirectory": true
-        },
-        "pkg": {
-            "installLocation": "/Applications",
-            "mustClose": [],
-            "allowAnywhere": true,
-            "allowCurrentUserHome": true,
-            "allowRootDirectory": true,
-            "isVersionChecked": true,
-            "isRelocatable": false,
-            "overwriteAction": "upgrade"
         }
     },
     "config": {

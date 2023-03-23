@@ -9,6 +9,7 @@ use App\Models\Report;
 use App\Models\ReportReceive;
 use App\Models\User;
 use App\Module\Base;
+use App\Module\Doo;
 use App\Tasks\PushTask;
 use Carbon\Carbon;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
@@ -119,12 +120,13 @@ class ReportController extends AbstractController
      * @apiGroup report
      * @apiName store
      *
-     * @apiParam {Number} [id]           汇报ID
-     * @apiParam {String} [title]        汇报标题
-     * @apiParam {Array}  [type]         汇报类型，weekly:周报，daily:日报
-     * @apiParam {Number} [content]      内容
-     * @apiParam {Number} [receive]      汇报对象
-     * @apiParam {Number} [offset]       偏移量
+     * @apiParam {Number} id            汇报ID，0为新建
+     * @apiParam {String} [sign]        唯一签名，通过[api/report/template]接口返回
+     * @apiParam {String} title         汇报标题
+     * @apiParam {Array}  type          汇报类型，weekly:周报，daily:日报
+     * @apiParam {Number} content       内容
+     * @apiParam {Number} [receive]     汇报对象
+     * @apiParam {Number} offset        时间偏移量
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -132,8 +134,11 @@ class ReportController extends AbstractController
      */
     public function store(): array
     {
+        $user = User::auth();
+        //
         $input = [
             "id" => Base::getPostValue("id", 0),
+            "sign" => Base::getPostValue("sign"),
             "title" => Base::getPostValue("title"),
             "type" => Base::getPostValue("type"),
             "content" => Base::getPostValue("content"),
@@ -146,7 +151,6 @@ class ReportController extends AbstractController
             'title' => 'required',
             'type' => ['required', Rule::in([Report::WEEKLY, Report::DAILY])],
             'content' => 'required',
-            'receive' => 'required',
             'offset' => ['numeric', 'max:0'],
         ], [
             'id.numeric' => 'ID只能是数字',
@@ -154,14 +158,12 @@ class ReportController extends AbstractController
             'type.required' => '请选择汇报类型',
             'type.in' => '汇报类型错误',
             'content.required' => '请填写汇报内容',
-            'receive.required' => '请选择接收人',
             'offset.numeric' => '工作汇报周期格式错误，只能是数字',
             'offset.max' => '只能提交当天/本周或者之前的的工作汇报',
         ]);
         if ($validator->fails())
             return Base::retError($validator->errors()->first());
 
-        $user = User::auth();
         // 接收人
         if (is_array($input["receive"])) {
             // 删除当前登录人
@@ -193,25 +195,24 @@ class ReportController extends AbstractController
                 ]);
             } else {
                 // 生成唯一标识
-                $sign = Report::generateSign($input["type"], $input["offset"]);
+                $sign = Base::isNumber($input["sign"]) ? $input["sign"] : Report::generateSign($input["type"], $input["offset"]);
                 // 检查唯一标识是否存在
-                if (empty($input["id"])) {
-                    if (Report::query()->whereSign($sign)->whereType($input["type"])->count() > 0)
-                        throw new ApiException("请勿重复提交工作汇报");
+                if (empty($input["id"]) && Report::query()->whereSign($sign)->whereType($input["type"])->count() > 0) {
+                    throw new ApiException("请勿重复提交工作汇报");
                 }
                 $report = Report::createInstance([
+                    "sign" => $sign,
                     "title" => $input["title"],
                     "type" => $input["type"],
-                    "content" => htmlspecialchars($input["content"]),
                     "userid" => $user->userid,
-                    "sign" => $sign,
+                    "content" => htmlspecialchars($input["content"]),
                 ]);
             }
-
             $report->save();
-            if (!empty($input["receive_content"])) {
-                // 删除关联
-                $report->Receives()->delete();
+
+            // 删除关联
+            $report->Receives()->delete();
+            if ($input["receive_content"]) {
                 // 保存接收人
                 $report->Receives()->createMany($input["receive_content"]);
             }
@@ -286,9 +287,10 @@ class ReportController extends AbstractController
         // 如果已经提交了相关汇报
         if ($one && $id > 0) {
             return Base::retSuccess('success', [
-                "content" => $one->content,
-                "title" => $one->title,
                 "id" => $one->id,
+                "sign" => $one->sign,
+                "title" => $one->title,
+                "content" => $one->content,
             ]);
         }
 
@@ -305,8 +307,8 @@ class ReportController extends AbstractController
         if ($complete_task->isNotEmpty()) {
             foreach ($complete_task as $task) {
                 $complete_at = Carbon::parse($task->complete_at);
-                $pre = $type == Report::WEEKLY ? ('<span>[' . Base::Lang('周' . ['日', '一', '二', '三', '四', '五', '六'][$complete_at->dayOfWeek]) . ']</span>&nbsp;') : '';
-                $completeContent .= '<li>' . $pre . $task->name . '</li>';
+                $pre = $type == Report::WEEKLY ? ('<span>[' . Doo::translate('周' . ['日', '一', '二', '三', '四', '五', '六'][$complete_at->dayOfWeek]) . ']</span>&nbsp;') : '';
+                $completeContent .= "<li>{$pre}[{$task->project->name}] {$task->name}</li>";
             }
         } else {
             $completeContent = '<li>&nbsp;</li>';
@@ -326,8 +328,8 @@ class ReportController extends AbstractController
         if ($unfinished_task->isNotEmpty()) {
             foreach ($unfinished_task as $task) {
                 empty($task->end_at) || $end_at = Carbon::parse($task->end_at);
-                $pre = (!empty($end_at) && $end_at->lt($now_dt)) ? '<span style="color:#ff0000;">[' . Base::Lang('超期') . ']</span>&nbsp;' : '';
-                $unfinishedContent .= '<li>' . $pre . $task->name . '</li>';
+                $pre = (!empty($end_at) && $end_at->lt($now_dt)) ? '<span style="color:#ff0000;">[' . Doo::translate('超期') . ']</span>&nbsp;' : '';
+                $unfinishedContent .= "<li>{$pre}[{$task->project->name}] {$task->name}</li>";
             }
         } else {
             $unfinishedContent = '<li>&nbsp;</li>';
@@ -339,15 +341,21 @@ class ReportController extends AbstractController
         } else {
             $title = $user->nickname . "的日报[" . $start_time->format("Y/m/d") . "]";
         }
+        // 生成内容
+        $content = '<h2>' . Doo::translate('已完成工作') . '</h2><ol>' .
+            $completeContent . '</ol><h2>' .
+            Doo::translate('未完成的工作') . '</h2><ol>' .
+            $unfinishedContent . '</ol>';
+        if ($type === Report::WEEKLY) {
+            $content .= "<h2>" . Doo::translate("下周拟定计划") . "[" . $start_time->addWeek()->format("m/d") . "-" . $end_time->addWeek()->format("m/d") . "]</h2><ol><li>&nbsp;</li></ol>";
+        }
         $data = [
             "time" => $start_time->toDateTimeString(),
+            "sign" => $sign,
+            "title" => $title,
+            "content" => $content,
             "complete_task" => $complete_task,
             "unfinished_task" => $unfinished_task,
-            "content" => '<h2>' . Base::Lang('已完成工作') . '</h2><ol>' .
-                $completeContent . '</ol><h2>' .
-                Base::Lang('未完成的工作') . '</h2><ol>' .
-                $unfinishedContent . '</ol>',
-            "title" => $title,
         ];
         if ($one) {
             $data['id'] = $one->id;
@@ -393,7 +401,49 @@ class ReportController extends AbstractController
     }
 
     /**
-     * @api {get} api/report/last_submitter          06. 获取最后一次提交的接收人
+     * @api {get} api/report/mark          06. 标记已读/未读
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup report
+     * @apiName mark
+     *
+     * @apiParam {Number} id            报告id（组）
+     * @apiParam {Number} action        操作
+     * - read: 标记已读（默认）
+     * - unread: 标记未读
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function mark(): array
+    {
+        $user = User::auth();
+        //
+        $id = Request::input('id');
+        $action = Request::input('action');
+        //
+        if (is_array($id)) {
+            if (count(Base::arrayRetainInt($id)) > 100) {
+                return Base::retError("最多只能操作100条数据");
+            }
+            $builder = Report::whereIn("id", Base::arrayRetainInt($id));
+        } else {
+            $builder = Report::whereId(intval($id));
+        }
+        $builder ->chunkById(100, function ($list) use ($action, $user) {
+            /** @var Report $item */
+            foreach ($list as $item) {
+                $item->receivesUser()->updateExistingPivot($user->userid, [
+                    "read" => $action === 'unread' ? 0 : 1,
+                ]);
+            }
+        });
+        return Base::retSuccess("操作成功");
+    }
+
+    /**
+     * @api {get} api/report/last_submitter          07. 获取最后一次提交的接收人
      *
      * @apiVersion 1.0.0
      * @apiGroup report
@@ -410,13 +460,11 @@ class ReportController extends AbstractController
     }
 
     /**
-     * @api {get} api/report/unread          07. 获取未读
+     * @api {get} api/report/unread          08. 获取未读
      *
      * @apiVersion 1.0.0
      * @apiGroup report
      * @apiName unread
-     *
-     * @apiParam {Number} [userid]          用户id
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -424,9 +472,8 @@ class ReportController extends AbstractController
      */
     public function unread(): array
     {
-        $userid = intval(trim(Request::input("userid")));
-        $user = empty($userid) ? User::auth() : User::find($userid);
-
+        $user = User::auth();
+        //
         $data = Report::whereHas("Receives", function (Builder $query) use ($user) {
             $query->where("userid", $user->userid)->where("read", 0);
         })->orderByDesc('created_at')->paginate(Base::getPaginate(50, 20));
@@ -434,7 +481,7 @@ class ReportController extends AbstractController
     }
 
     /**
-     * @api {get} api/report/read          08. 标记汇报已读，可批量
+     * @api {get} api/report/read          09. 标记汇报已读，可批量
      *
      * @apiVersion 1.0.0
      * @apiGroup report
@@ -455,7 +502,7 @@ class ReportController extends AbstractController
         }
 
         if (is_string($ids)) {
-            $ids = explode(",", $ids);
+            $ids = Base::explodeInt($ids);
         }
 
         $data = Report::with(["receivesUser" => function (BelongsToMany $query) use ($user) {

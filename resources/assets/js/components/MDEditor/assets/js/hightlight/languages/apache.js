@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var NUMBER = {className: 'number', begin: '[\\$%]\\d+'};
   return {
     aliases: ['apacheconf'],

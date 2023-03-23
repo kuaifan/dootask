@@ -1,10 +1,97 @@
 body {
     overflow: hidden;
 
+    &.touch-back {
+        .dialog-wrapper .vue-recycle-scroller.direction-vertical:not(.page-mode),
+        .common-gantt .gantt-left .gantt-item,
+        .project-panel .project-column,
+        .project-panel .project-table,
+        .scrollbar-overlay,
+        .ivu-modal-wrap {
+            overflow: hidden;
+        }
+    }
+
     .form-tip {
-        color: #999999;
+        color: $primary-desc-color;
         line-height: 22px;
         padding: 5px 0;
+        &.red {
+            color: #ED4014;
+        }
+    }
+
+    .form-list {
+        ol,
+        ul {
+            li {
+                list-style-type: none;
+
+                &::before {
+                    display: inline-block;
+                    white-space: nowrap;
+                    width: 1.2em;
+                    text-align: left;
+                    margin-right: 0.2em;
+                }
+            }
+        }
+
+        ul {
+            li {
+                &::before {
+                    content: '\2022';
+                    font-weight: 900;
+                }
+            }
+        }
+
+        ol {
+            li {
+                counter-reset: list-1 list-2 list-3 list-4 list-5 list-6 list-7 list-8 list-9;
+                counter-increment: list-0;
+
+                &:before {
+                    width: auto;
+                    min-width: 1.2em;
+                    content: counter(list-0, decimal) '. ';
+                }
+            }
+        }
+    }
+
+    .ivu-badge-count {
+        font-family: "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
+    }
+
+    .input-number-box {
+        display: flex;
+        align-items: center;
+        border: 1px solid #dcdee2;
+        border-radius: 4px;
+        .ivu-input-number {
+            width: 72px;
+            margin: 0;
+            border: 0;
+        }
+        > label {
+            color: #515a6e;
+            text-align: center;
+            background-color: #f8f8f9;
+            padding: 0 7px;
+            font-weight: 400;
+            white-space: nowrap;
+            &:first-child {
+                border-left: 1px solid transparent;
+                border-right: 1px solid #dcdee2;
+                border-radius: 4px 0 0 4px;
+            }
+            &:last-child {
+                border-left: 1px solid #dcdee2;
+                border-right: 1px solid transparent;
+                border-radius: 0 4px 4px 0;
+            }
+        }
     }
 
     .ivu-input,
@@ -13,6 +100,7 @@ body {
     }
 
     .ivu-select-dropdown {
+        user-select: none;
         max-height: 360px;
 
         &.select-node {
@@ -33,11 +121,6 @@ body {
                     transform-origin: right center;
                 }
             }
-        }
-
-        &.ivu-date-picker-transfer {
-            max-width: 98%;
-            overflow: auto;
         }
     }
 
@@ -195,6 +278,9 @@ body {
 
             &.ivu-modal-fullscreen {
                 top: 0;
+                .ivu-modal-content {
+                    border-radius: 0;
+                }
             }
 
             .ivu-modal-header,
@@ -212,6 +298,11 @@ body {
 
             .ivu-modal-body {
                 padding: 16px 32px 2px;
+
+                .ivu-table-body,
+                .project-log {
+                    overscroll-behavior: none;
+                }
             }
 
             .ivu-modal-footer {
@@ -227,14 +318,7 @@ body {
                     .adaption {
                         display: flex;
                         align-items: center;
-
-                        > .ivu-btn {
-                            padding: 0;
-
-                            > span {
-                                padding: 0 15px;
-                            }
-                        }
+                        overflow-x: auto;
 
                         .ivu-btn {
                             height: 38px;
@@ -406,6 +490,11 @@ body {
             }
         }
     }
+
+    .ivu-tabs-nav-next,
+    .ivu-tabs-nav-prev {
+        padding-top: 3px;
+    }
 }
 
 *[hidden="hidden"] {
@@ -413,7 +502,7 @@ body {
 }
 
 .clearfix {
-    *zoom: 1;
+    zoom: 1;
 
     &:after,
     &:before {
@@ -447,34 +536,35 @@ body {
                 overflow-y: overlay !important;
 
                 &::-webkit-scrollbar {
-                    width: 10px;
-                    height: 10px;
+                    width: 0;
+                    height: 0;
                 }
 
                 &::-webkit-scrollbar-thumb {
-                    border-radius: 10px;
-                    background: rgba(0, 0, 0, 0);
-                }
-
-                &::-webkit-scrollbar-thumb:active {
-                    border-radius: 10px;
-                    background: rgba(0, 0, 0, .5);
-                }
-
-                &:hover::-webkit-scrollbar-thumb {
-                    border: 2px solid transparent;
-                    background: rgba(0, 0, 0, .2);
+                    border: 3px solid transparent;
+                    background-color: rgba(0, 0, 0, .2);
                     background-clip: content-box;
-                }
-
-                &:hover::-webkit-scrollbar-thumb:hover {
-                    border-top-width: 0;
-                    border-bottom-width: 0;
+                    border-radius: 12px;
+                    &:hover {
+                        border: 2px solid transparent;
+                        background-color: rgba(0, 0, 0, .2);
+                    }
+                    &:active {
+                        border: 2px solid transparent;
+                        background-color: rgba(0, 0, 0, .4);
+                    }
                 }
 
                 &::-webkit-scrollbar-track {
-                    border-radius: 10px;
+                    border-radius: 12px;
                     background: rgba(0, 0, 0, 0);
+                }
+
+                &:hover {
+                    &::-webkit-scrollbar {
+                        width: 12px;
+                        height: 12px;
+                    }
                 }
             }
         }
@@ -484,6 +574,27 @@ body {
         flex-shrink: 0;
         text-align: center;
         margin-top: 20px;
+    }
+
+    .table-attach {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 20px;
+        .select-box {
+            margin-right: 12px;
+            .ivu-select {
+                width: auto;
+                max-width: 200px;
+                margin-right: 3px;
+            }
+        }
+        .ivu-page {
+            padding: 0;
+            margin-top: 0;
+            margin-left: 12px;
+        }
     }
 }
 
@@ -609,17 +720,40 @@ body {
 }
 
 .icon-loading {
-    animation: icon-loading-load 0.6s infinite linear;
+    animation: animation-icon-loading 0.6s infinite linear;
 }
 
-@keyframes icon-loading-load {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+@keyframes animation-icon-loading {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
+.common-shake {
+    animation: animation-common-shake 600ms ease-in-out;
+    animation-delay: 200ms;
+}
 
+@keyframes animation-common-shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(+2px, 0, 0); }
+    30%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(+4px, 0, 0); }
+    50% { transform: translate3d(-4px, 0, 0); }
+}
 
+/*登录右侧滑入*/
+.login-mode-enter-active {
+    transition: all 0.3s ease;
+}
+
+.login-mode-leave-active {
+    position: absolute;
+    z-index: -1;
+    display: none;
+}
+
+.login-mode-enter,
+.login-mode-leave-to {
+    transform: translate(100%, 0);
+    opacity: 0;
+}

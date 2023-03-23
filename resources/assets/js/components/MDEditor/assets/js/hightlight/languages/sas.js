@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
 
     // Data step and PROC SQL statements
     var SAS_KEYWORDS = ''+

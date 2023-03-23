@@ -45,6 +45,16 @@ cd dootask
 ./cmd port 2222
 ```
 
+### Change App Url
+
+```bash
+# This URL only affects the email reply.
+./cmd url {Your domain url}
+
+# example:
+./cmd url https://domain.com
+```
+
 ### Stop server
 
 ```bash
@@ -106,7 +116,8 @@ git pull
 ./cmd mysql recovery
 ```
 
-If 502 after the upgrade please run `./cmd restart` restart the service.
+* Please try again if the upgrade fails across a large version.
+* If 502 after the upgrade please run `./cmd restart` restart the service.
 
 ## Transfer
 

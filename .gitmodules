@@ -1,3 +1,6 @@
 [submodule "resources/drawio"]
 	path = resources/drawio
 	url = https://github.com/jgraph/drawio.git
+[submodule "resources/mobile"]
+	path = resources/mobile
+	url = https://github.com/kuaifan/dootask-app.git

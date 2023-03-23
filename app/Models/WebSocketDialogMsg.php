@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
-use App\Exceptions\ApiException;
+use Carbon\Carbon;
+use App\Models\User;
 use App\Module\Base;
 use App\Tasks\PushTask;
+use App\Exceptions\ApiException;
 use App\Tasks\WebSocketDialogMsgTask;
-use Carbon\Carbon;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -15,15 +16,26 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  *
  * @property int $id
  * @property int|null $dialog_id 对话ID
+ * @property string|null $dialog_type 对话类型
  * @property int|null $userid 发送会员ID
  * @property string|null $type 消息类型
+ * @property string|null $mtype 消息类型（用于搜索）
  * @property array|mixed $msg 详细消息
+ * @property array|mixed $emoji emoji回复
+ * @property string|null $key 搜索关键词
  * @property int|null $read 已阅数量
  * @property int|null $send 发送数量
+ * @property int|null $tag 标注会员ID
+ * @property int|null $todo 设为待办会员ID
+ * @property int|null $link 是否存在链接
+ * @property int|null $modify 是否编辑
+ * @property int|null $reply_num 有多少条回复
+ * @property int|null $reply_id 回复ID
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read int|mixed $percentage
+ * @property-read \App\Models\WebSocketDialogMsg|null $reply_data
  * @property-read \App\Models\WebSocketDialog|null $webSocketDialog
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg newQuery()
@@ -32,10 +44,20 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDialogId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDialogType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereEmoji($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereKey($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereLink($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereModify($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereMsg($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereMtype($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereRead($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereReplyId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereReplyNum($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereSend($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereTag($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereTodo($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereUserid($value)
@@ -49,9 +71,11 @@ class WebSocketDialogMsg extends AbstractModel
 
     protected $appends = [
         'percentage',
+        'reply_data',
     ];
 
     protected $hidden = [
+        'key',
         'updated_at',
     ];
 
@@ -76,6 +100,21 @@ class WebSocketDialogMsg extends AbstractModel
     }
 
     /**
+     * 回复消息详情
+     * @return WebSocketDialogMsg|null
+     */
+    public function getReplyDataAttribute()
+    {
+        if (!isset($this->appendattrs['reply_data'])) {
+            $this->appendattrs['reply_data'] = null;
+            if ($this->reply_id > 0) {
+                $this->appendattrs['reply_data'] = self::find($this->reply_id, ['id', 'userid', 'type', 'msg'])?->cancelAppend() ?: null;
+            }
+        }
+        return $this->appendattrs['reply_data'];
+    }
+
+    /**
      * 消息格式化
      * @param $value
      * @return array|mixed
@@ -90,8 +129,23 @@ class WebSocketDialogMsg extends AbstractModel
             $value['type'] = in_array($value['ext'], ['jpg', 'jpeg', 'png', 'gif']) ? 'img' : 'file';
             $value['path'] = Base::fillUrl($value['path']);
             $value['thumb'] = Base::fillUrl($value['thumb'] ?: Base::extIcon($value['ext']));
+        } else if ($this->type === 'record') {
+            $value['path'] = Base::fillUrl($value['path']);
         }
         return $value;
+    }
+
+    /**
+     * emoji回复格式化
+     * @param $value
+     * @return array|mixed
+     */
+    public function getEmojiAttribute($value)
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+        return Base::json2array($value);
     }
 
     /**
@@ -158,10 +212,236 @@ class WebSocketDialogMsg extends AbstractModel
     }
 
     /**
+     * emoji回复
+     * @param $symbol
+     * @param int $sender       发送的会员ID
+     * @return mixed
+     */
+    public function emojiMsg($symbol, $sender)
+    {
+        $exist = false;
+        $array = $this->emoji;
+        foreach ($array as $index => &$item) {
+            if ($item['symbol'] === $symbol) {
+                if (in_array($sender, $item['userids'])) {
+                    // 已存在 去除
+                    $item['userids'] = array_values(array_diff($item['userids'], [$sender]));
+                    if (empty($item['userids'])) {
+                        unset($array[$index]);
+                        $array = array_values($array);
+                    }
+                } else {
+                    // 未存在 添加
+                    array_unshift($item['userids'], $sender);
+                }
+                $exist = true;
+                break;
+            }
+        }
+        if (!$exist) {
+            array_unshift($array, [
+                'symbol' => $symbol,
+                'userids' => [$sender]
+            ]);
+        }
+        //
+        $this->emoji = Base::array2json($array);
+        $this->save();
+        $resData = [
+            'id' => $this->id,
+            'emoji' => $array,
+        ];
+        //
+        $dialog = WebSocketDialog::find($this->dialog_id);
+        $dialog?->pushMsg('update', $resData);
+        //
+        return Base::retSuccess('success', $resData);
+    }
+
+    /**
+     * 标注、取消标注
+     * @param int $sender       标注的会员ID
+     * @return mixed
+     */
+    public function toggleTagMsg($sender)
+    {
+        if (in_array($this->type, ['tag', 'todo', 'notice'])) {
+            return Base::retError('此消息不支持标注');
+        }
+        $before = $this->tag;
+        $this->tag = $before ? 0 : $sender;
+        $this->save();
+        $resData = [
+            'id' => $this->id,
+            'tag' => $this->tag,
+        ];
+        //
+        $data = [
+            'update' => $resData
+        ];
+        $res = self::sendMsg(null, $this->dialog_id, 'tag', [
+            'action' => $this->tag ? 'add' : 'remove',
+            'data' => [
+                'id' => $this->id,
+                'type' => $this->type,
+                'msg' => $this->quoteTextMsg(),
+            ]
+        ], $sender);
+        if (Base::isSuccess($res)) {
+            $data['add'] = $res['data'];
+            $dialog = WebSocketDialog::find($this->dialog_id);
+            $dialog->pushMsg('update', $resData);
+        } else {
+            $this->tag = $before;
+            $this->save();
+        }
+        //
+        return Base::retSuccess($this->tag ? '标注成功' : '取消成功', $data);
+    }
+
+    /**
+     * 设待办、取消待办
+     * @param int $sender       设待办的会员ID
+     * @param array $userids    设置给指定会员
+     * @return mixed
+     */
+    public function toggleTodoMsg($sender, $userids = [])
+    {
+        if (in_array($this->type, ['tag', 'todo', 'notice'])) {
+            return Base::retError('此消息不支持设待办');
+        }
+        if ($this->todo && $this->todo != $sender) {
+            return Base::retError('仅支持设此待办人员【' . User::userid2nickname($this->todo) . '】取消');
+        }
+        $before = $this->todo;
+        $this->todo = $before ? 0 : $sender;
+        $this->save();
+        $resData = [
+            'id' => $this->id,
+            'todo' => $this->todo,
+        ];
+        //
+        $data = [
+            'update' => $resData
+        ];
+        $res = self::sendMsg(null, $this->dialog_id, 'todo', [
+            'action' => $this->todo ? 'add' : 'remove',
+            'data' => [
+                'id' => $this->id,
+                'type' => $this->type,
+                'msg' => $this->quoteTextMsg(),
+                'userids' => implode(",", $userids),
+            ]
+        ], $sender);
+        if (Base::isSuccess($res)) {
+            $data['add'] = $res['data'];
+            $dialog = WebSocketDialog::find($this->dialog_id);
+            $dialog->pushMsg('update', array_merge($resData, ['dialog_id' => $this->dialog_id]));
+            //
+            if ($this->todo) {
+                $useridList = $dialog->dialogUser->pluck('userid')->toArray();
+                foreach ($useridList as $userid) {
+                    if ($userids && !in_array($userid, $userids)) {
+                        continue;
+                    }
+                    if (empty($userid)) {
+                        continue;
+                    }
+                    WebSocketDialogMsgTodo::createInstance([
+                        'dialog_id' => $this->dialog_id,
+                        'msg_id' => $this->id,
+                        'userid' => $userid,
+                    ])->saveOrIgnore();
+                }
+            } else {
+                WebSocketDialogMsgTodo::whereMsgId($this->id)->delete();
+            }
+        } else {
+            $this->todo = $before;
+            $this->save();
+        }
+        //
+        return Base::retSuccess($this->todo ? '设置成功' : '取消成功', $data);
+    }
+
+    /**
+     * 转发消息
+     * @param array|int $dialogids
+     * @param array|int $userids
+     * @param User $user    发送的会员
+     * @return mixed
+     */
+    public function forwardMsg($dialogids, $userids, $user)
+    {
+        return AbstractModel::transaction(function() use ($dialogids, $user, $userids) {
+            $originalMsg = Base::json2array($this->getRawOriginal('msg'));
+            $msgs = [];
+            $already = [];
+            if ($dialogids) {
+                if (!is_array($dialogids)) {
+                    $dialogids = [$dialogids];
+                }
+                foreach ($dialogids as $dialogid) {
+                    $res = self::sendMsg(null, $dialogid, $this->type, $originalMsg, $user->userid);
+                    if (Base::isSuccess($res)) {
+                        $msgs[] = $res['data'];
+                        $already[] = $dialogid;
+                    }
+                }
+            }
+            if ($userids) {
+                if (!is_array($userids)) {
+                    $userids = [$userids];
+                }
+                foreach ($userids as $userid) {
+                    if (!User::whereUserid($userid)->exists()) {
+                        continue;
+                    }
+                    $dialog = WebSocketDialog::checkUserDialog($user, $userid);
+                    if ($dialog && !in_array($dialog->id, $already)) {
+                        $res = self::sendMsg(null, $dialog->id, $this->type, $originalMsg, $user->userid);
+                        if (Base::isSuccess($res)) {
+                            $msgs[] = $res['data'];
+                        }
+                    }
+                }
+            }
+            return Base::retSuccess('转发成功', [
+                'msgs' => $msgs
+            ]);
+        });
+    }
+
+    /**
      * 删除消息
+     * @param array|int $ids
      * @return void
      */
-    public function deleteMsg()
+    public static function deleteMsgs($ids) {
+        $ids = Base::arrayRetainInt(is_array($ids) ? $ids : [$ids], true);
+        AbstractModel::transaction(function() use ($ids) {
+            $dialogIds = WebSocketDialogMsg::select('dialog_id')->whereIn("id", $ids)->distinct()->get()->pluck('dialog_id');
+            $replyIds = WebSocketDialogMsg::select('reply_id')->whereIn("id", $ids)->distinct()->get()->pluck('reply_id');
+            //
+            WebSocketDialogMsgRead::whereIn('msg_id', $ids)->whereNull('read_at')->delete();    // 未阅读记录不需要软删除，直接删除即可
+            WebSocketDialogMsgTodo::whereIn('msg_id', $ids)->delete();
+            self::whereIn('id', $ids)->delete();
+            //
+            $dialogDatas = WebSocketDialog::whereIn('id', $dialogIds)->get();
+            foreach ($dialogDatas as $dialogData) {
+                $dialogData->updateMsgLastAt();
+            }
+            foreach ($replyIds as $id) {
+                self::whereId($id)->update(['reply_num' => self::whereReplyId($id)->count()]);
+            }
+        });
+    }
+
+    /**
+     * 撤回消息
+     * @return void
+     */
+    public function withdrawMsg()
     {
         $send_dt = Carbon::parse($this->created_at)->addDay();
         if ($send_dt->lt(Carbon::now())) {
@@ -171,16 +451,17 @@ class WebSocketDialogMsg extends AbstractModel
             $deleteRead = WebSocketDialogMsgRead::whereMsgId($this->id)->whereNull('read_at')->delete();    // 未阅读记录不需要软删除，直接删除即可
             $this->delete();
             //
-            $last_msg = null;
-            if ($this->webSocketDialog) {
-                $last_msg = WebSocketDialogMsg::whereDialogId($this->dialog_id)->orderByDesc('id')->first();
-                $this->webSocketDialog->last_at = $last_msg->created_at;
-                $this->webSocketDialog->save();
+            if ($this->reply_id > 0) {
+                self::whereId($this->reply_id)->decrement('reply_num');
             }
             //
-            $dialog = WebSocketDialog::find($this->dialog_id);
-            if ($dialog) {
-                $userids = $dialog->dialogUser->pluck('userid')->toArray();
+            $dialogData = $this->webSocketDialog;
+            if ($dialogData) {
+                foreach ($dialogData->dialogUser as $dialogUser) {
+                    $dialogUser->updated_at = Carbon::now();
+                    $dialogUser->save();
+                }
+                $userids = $dialogData->dialogUser->pluck('userid')->toArray();
                 PushTask::push([
                     'userid' => $userids,
                     'msg' => [
@@ -189,43 +470,407 @@ class WebSocketDialogMsg extends AbstractModel
                         'data' => [
                             'id' => $this->id,
                             'dialog_id' => $this->dialog_id,
-                            'last_msg' => $last_msg,
+                            'last_msg' => $dialogData->updateMsgLastAt(),
                             'update_read' => $deleteRead ? 1 : 0
                         ],
                     ]
                 ]);
             }
+            //
+            WebSocketDialogMsgTodo::whereMsgId($this->id)->delete();
         });
     }
 
     /**
-     * 发送消息
-     * @param int $dialog_id    会话ID（即 聊天室ID）
-     * @param string $type      消息类型
-     * @param array $msg        发送的消息
-     * @param int $sender       发送的会员ID（默认自己，0为系统）
+     * 预览消息
+     * @param bool $preserveHtml    保留html格式
+     * @param null|array $data
+     * @return string
+     */
+    public function previewMsg($preserveHtml = false, $data = null)
+    {
+        if ($data === null) {
+            $data = [
+                'type' => $this->type,
+                'msg' => $this->msg,
+            ];
+        }
+        switch ($data['type']) {
+            case 'text':
+                return $this->previewTextMsg($data['msg']['text'], $preserveHtml);
+            case 'record':
+                return "[语音]";
+            case 'meeting':
+                return "[会议] ${$data['msg']['name']}";
+            case 'file':
+                if ($data['msg']['type'] == 'img') {
+                    return "[图片]";
+                }
+                return "[文件] {$data['msg']['name']}";
+            case 'tag':
+                $action = $data['msg']['action'] === 'remove' ? '取消标注' : '标注';
+                return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
+            case 'todo':
+                $action = $data['msg']['action'] === 'remove' ? '取消待办' : ($data['msg']['action'] === 'done' ? '完成' : '设待办');
+                return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
+            case 'notice':
+                return $data['msg']['notice'];
+            default:
+                return "[未知的消息]";
+        }
+    }
+
+    /**
+     * 生成关键词
+     * @return string
+     */
+    public function generateMsgKey()
+    {
+        return match ($this->type) {
+            'text' => str_replace("&nbsp;", " ", strip_tags($this->msg['text'])),
+            'meeting', 'file' => $this->msg['name'],
+            default => '',
+        };
+    }
+
+    /**
+     * 返回引用消息（如果是文本消息则截取）
+     * @param int $strlen
+     * @return array|mixed
+     */
+    public function quoteTextMsg($strlen = 30)
+    {
+        $msg = $this->msg;
+        if ($this->type === 'text') {
+            $msg['text'] = $this->previewTextMsg($msg['text']);
+            if (mb_strlen($msg['text']) > $strlen) {
+                $msg['text'] = mb_substr($msg['text'], 0, $strlen - 3) . "...";
+            }
+        }
+        return $msg;
+    }
+
+    /**
+     * 返回文本预览消息
+     * @param $text
+     * @param bool $preserveHtml    保留html格式
+     * @return string|string[]|null
+     */
+    private function previewTextMsg($text, $preserveHtml = false)
+    {
+        if (!$text) return '';
+        $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?alt=\"(\S+)\"[^>]*?>/", "[$1]", $text);
+        $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?>/", "[动画表情]", $text);
+        $text = preg_replace("/<img\s+class=\"browse\"[^>]*?>/", "[图片]", $text);
+        if (!$preserveHtml) {
+            $text = strip_tags($text);
+            $text = str_replace(["&nbsp;", "&amp;", "&lt;", "&gt;"], [" ", "&", "<", ">"], $text);
+        }
+        return $text;
+    }
+
+    /**
+     * 处理文本消息内容，用于发送前
+     * @param $text
+     * @param $dialog_id
+     * @return mixed|string|string[]
+     */
+    public static function formatMsg($text, $dialog_id)
+    {
+        @ini_set("pcre.backtrack_limit", 999999999);
+        // 基础处理
+        $text = preg_replace("/<(\/[a-zA-Z]+)\s*>/s", "<$1>", $text);
+        // 图片 [:IMAGE:className:width:height:src:alt:]
+        preg_match_all("/<img\s+src=\"data:image\/(png|jpg|jpeg|gif);base64,(.*?)\"(.*?)>(<\/img>)*/s", $text, $matchs);
+        foreach ($matchs[2] as $key => $base64) {
+            $imagePath = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
+            Base::makeDir(public_path($imagePath));
+            $imagePath .= md5s($base64) . "." . $matchs[1][$key];
+            if (file_put_contents(public_path($imagePath), base64_decode($base64))) {
+                $imageSize = getimagesize(public_path($imagePath));
+                if (Base::imgThumb(public_path($imagePath), public_path($imagePath) . "_thumb.jpg", 320, 0)) {
+                    $imagePath .= "_thumb.jpg";
+                }
+                $text = str_replace($matchs[0][$key], "[:IMAGE:browse:{$imageSize[0]}:{$imageSize[1]}:{$imagePath}::]", $text);
+            }
+        }
+        // 表情图片
+        preg_match_all("/<img\s+class=\"emoticon\"(.*?)>/s", $text, $matchs);
+        foreach ($matchs[1] as $key => $str) {
+            preg_match("/data-asset=\"(.*?)\"/", $str, $matchAsset);
+            preg_match("/data-name=\"(.*?)\"/", $str, $matchName);
+            $imageSize = null;
+            $imagePath = "";
+            $imageName = "";
+            if ($matchAsset[1] === "emosearch") {
+                preg_match("/src=\"(.*?)\"/", $str, $matchSrc);
+                if ($matchSrc) {
+                    $srcMd5 = md5($matchSrc[1]);
+                    $imagePath = "uploads/emosearch/" . substr($srcMd5, 0, 2) . "/" . substr($srcMd5, 32 - 2) . "/";
+                    Base::makeDir(public_path($imagePath));
+                    $imagePath .= md5s($matchSrc[1]);
+                    if (file_exists(public_path($imagePath))) {
+                        $imageSize = getimagesize(public_path($imagePath));
+                    } else {
+                        $image = file_get_contents($matchSrc[1]);
+                        if ($image && file_put_contents(public_path($imagePath), $image)) {
+                            $imageSize = getimagesize(public_path($imagePath));
+                            // 添加后缀
+                            if ($imageSize && !str_contains($imagePath, '.')) {
+                                preg_match("/^image\/(png|jpg|jpeg|gif)$/", $imageSize['mime'], $matchMine);
+                                if ($matchMine) {
+                                    $imageNewPath = $imagePath . "." . $matchMine[1];
+                                    if (rename(public_path($imagePath), public_path($imageNewPath))) {
+                                        $imagePath = $imageNewPath;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } elseif (file_exists(public_path($matchAsset[1]))) {
+                $imagePath = $matchAsset[1];
+                $imageName = $matchName[1];
+                $imageSize = getimagesize(public_path($matchAsset[1]));
+            }
+            if ($imageSize) {
+                $text = str_replace($matchs[0][$key], "[:IMAGE:emoticon:{$imageSize[0]}:{$imageSize[1]}:{$imagePath}:{$imageName}:]", $text);
+            } else {
+                $text = str_replace($matchs[0][$key], "[:IMAGE:browse:90:90:images/other/imgerr.jpg::]", $text);
+            }
+        }
+        // 其他网络图片
+        preg_match_all("/<img[^>]*?src=([\"'])(.*?\.(png|jpg|jpeg|gif))\\1[^>]*?>/is", $text, $matchs);
+        foreach ($matchs[2] as $key => $str) {
+            if (str_starts_with($str, "{{RemoteURL}}")) {
+                $imagePath = Base::leftDelete($str, "{{RemoteURL}}");
+                $imagePath = Base::rightDelete($imagePath, "_thumb.jpg");
+            } else {
+                $imagePath = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
+                Base::makeDir(public_path($imagePath));
+                $imagePath .= md5s($str) . "." . $matchs[3][$key];
+            }
+            if (file_exists(public_path($imagePath))) {
+                $imageSize = getimagesize(public_path($imagePath));
+                if (Base::imgThumb(public_path($imagePath), public_path($imagePath) . "_thumb.jpg", 320, 0)) {
+                    $imagePath .= "_thumb.jpg";
+                }
+                $text = str_replace($matchs[0][$key], "[:IMAGE:browse:{$imageSize[0]}:{$imageSize[1]}:{$imagePath}::]", $text);
+            } else {
+                $image = file_get_contents($str);
+                if (empty($image)) {
+                    $text = str_replace($matchs[0][$key], "[:IMAGE:browse:90:90:images/other/imgerr.jpg::]", $text);
+                } else if (file_put_contents(public_path($imagePath), $image)) {
+                    $imageSize = getimagesize(public_path($imagePath));
+                    if (Base::imgThumb(public_path($imagePath), public_path($imagePath) . "_thumb.jpg", 320, 0)) {
+                        $imagePath .= "_thumb.jpg";
+                    }
+                    $text = str_replace($matchs[0][$key], "[:IMAGE:browse:{$imageSize[0]}:{$imageSize[1]}:{$imagePath}::]", $text);
+                }
+            }
+        }
+        // @成员、#任务、~文件
+        preg_match_all("/<span\s+class=\"mention\"(.*?)>.*?<\/span>.*?<\/span>.*?<\/span>/s", $text, $matchs);
+        foreach ($matchs[1] as $key => $str) {
+            preg_match("/data-denotation-char=\"(.*?)\"/", $str, $matchChar);
+            preg_match("/data-id=\"(.*?)\"/", $str, $matchId);
+            preg_match("/data-value=\"(.*?)\"/", $str, $matchValye);
+            $keyId = $matchId[1];
+            if ($matchChar[1] === "~") {
+                if (Base::isNumber($keyId)) {
+                    $file = File::permissionFind($keyId, User::auth());
+                    if ($file->type == 'folder') {
+                        throw new ApiException('文件夹不支持分享');
+                    }
+                    $fileLink = $file->getShareLink(User::userid());
+                    $keyId = $fileLink['code'];
+                } else {
+                    preg_match("/\/single\/file\/(.*?)$/i", $keyId, $match);
+                    if ($match && strlen($match[1]) >= 8) {
+                        $keyId = $match[1];
+                    } else {
+                        throw new ApiException('文件分享错误');
+                    }
+                }
+            }
+            $text = str_replace($matchs[0][$key], "[:{$matchChar[1]}:{$keyId}:{$matchValye[1]}:]", $text);
+        }
+        // 处理快捷消息
+        preg_match_all("/<span[^>]*?data-quick-key=([\"'])(.*?)\\1[^>]*?>(.*?)<\/span>/is", $text, $matchs);
+        foreach ($matchs[0] as $key => $str) {
+            $quickKey = $matchs[2][$key];
+            $quickLabel = $matchs[3][$key];
+            if ($quickKey && $quickLabel) {
+                $quickKey = str_replace(":", "", $quickKey);
+                $quickLabel = str_replace(":", "", $quickLabel);
+                $text = str_replace($str, "[:QUICK:{$quickKey}:{$quickLabel}:]", $text);
+            }
+        }
+        // 处理链接标签
+        preg_match_all("/<a[^>]*?href=([\"'])(.*?)\\1[^>]*?>(.*?)<\/a>/is", $text, $matchs);
+        foreach ($matchs[0] as $key => $str) {
+            $herf = $matchs[2][$key];
+            $title = $matchs[3][$key] ?: $herf;
+            preg_match("/\/single\/file\/(.*?)$/i", strip_tags($title), $match);
+            if ($match && strlen($match[1]) >= 8) {
+                $file = File::select(['files.id', 'files.name', 'files.ext'])->join('file_links as L', 'files.id', '=', 'L.file_id')->where('L.code', $match[1])->first();
+                if ($file && $file->name) {
+                    $name = $file->ext ? "{$file->name}.{$file->ext}" : $file->name;
+                    $text = str_replace($str, "[:~:{$match[1]}:{$name}:]", $text);
+                    continue;
+                }
+            }
+            $herf = base64_encode($herf);
+            $title = base64_encode($title);
+            $text = str_replace($str, "[:LINK:{$herf}:{$title}:]", $text);
+        }
+        // 文件分享链接
+        preg_match_all("/(https*:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;|#|@|,|!)+)/i", $text, $matchs);
+        if ($matchs) {
+            foreach ($matchs[0] as $str) {
+                preg_match("/\/single\/file\/(.*?)$/i", $str, $match);
+                if ($match && strlen($match[1]) >= 8) {
+                    $file = File::select(['files.id', 'files.name', 'files.ext'])->join('file_links as L', 'files.id', '=', 'L.file_id')->where('L.code', $match[1])->first();
+                    if ($file && $file->name) {
+                        $name = $file->ext ? "{$file->name}.{$file->ext}" : $file->name;
+                        $text = str_replace($str, "[:~:{$match[1]}:{$name}:]", $text);
+                    }
+                }
+            }
+        }
+        // 过滤标签
+        $text = strip_tags($text, '<blockquote> <strong> <pre> <ol> <ul> <li> <em> <p> <s> <u> <a>');
+        $text = preg_replace("/\<(blockquote|strong|pre|ol|ul|li|em|p|s|u).*?\>/is", "<$1>", $text);    // 不用去除a标签，上面已经处理过了
+        $text = preg_replace("/\[:IMAGE:(.*?):(.*?):(.*?):(.*?):(.*?):\]/i", "<img class=\"$1\" width=\"$2\" height=\"$3\" src=\"{{RemoteURL}}$4\" alt=\"$5\"/>", $text);
+        $text = preg_replace("/\[:@:(.*?):(.*?):\]/i", "<span class=\"mention user\" data-id=\"$1\">@$2</span>", $text);
+        $text = preg_replace("/\[:#:(.*?):(.*?):\]/i", "<span class=\"mention task\" data-id=\"$1\">#$2</span>", $text);
+        $text = preg_replace("/\[:~:(.*?):(.*?):\]/i", "<a class=\"mention file\" href=\"{{RemoteURL}}single/file/$1\" target=\"_blank\">~$2</a>", $text);
+        $text = preg_replace("/\[:QUICK:(.*?):(.*?):\]/i", "<span data-quick-key=\"$1\">$2</span>", $text);
+        $text = preg_replace_callback("/\[:LINK:(.*?):(.*?):\]/i", function (array $match) {
+            return "<a href=\"" . base64_decode($match[1]) . "\" target=\"_blank\">" . base64_decode($match[2]) . "</a>";
+        }, $text);
+        return preg_replace("/^(<p><\/p>)+|(<p><\/p>)+$/i", "", $text);
+    }
+
+    /**
+     * 发送消息、修改消息
+     * @param string $action            动作
+     * - reply-98：回复消息ID=98
+     * - update-99：更新消息ID=99
+     * @param int $dialog_id            会话ID（即 聊天室ID）
+     * @param string $type              消息类型
+     * @param array $msg                发送的消息
+     * @param int $sender               发送的会员ID（默认自己，0为系统）
+     * @param bool $push_self           推送-是否推给自己
+     * @param bool $push_retry          推送-失败后重试1次（有时候在事务里执行，数据还没生成时会出现找不到消息的情况）
+     * @param bool|null $push_silence   推送-静默
+     * - type = [text|file|record|meeting]  默认为：false
      * @return array
      */
-    public static function sendMsg($dialog_id, $type, $msg, $sender = 0)
+    public static function sendMsg($action, $dialog_id, $type, $msg, $sender = 0, $push_self = false, $push_retry = false, $push_silence = null)
     {
-        $dialogMsg = self::createInstance([
-            'userid' => $sender ?: User::userid(),
-            'type' => $type,
-            'msg' => $msg,
-            'read' => 0,
-        ]);
-        AbstractModel::transaction(function () use ($dialog_id, $msg, $dialogMsg) {
-            $dialog = WebSocketDialog::find($dialog_id);
-            if (empty($dialog)) {
-                throw new ApiException('获取会话失败');
+        $link = 0;
+        $mtype = $type;
+        if ($type === 'text') {
+            if (str_contains($msg['text'], '<a ') || preg_match("/https*:\/\//", $msg['text'])) {
+                $link = 1;
             }
-            $dialog->last_at = Carbon::now();
-            $dialog->save();
-            $dialogMsg->send = 1;
-            $dialogMsg->dialog_id = $dialog->id;
+            if (str_contains($msg['text'], '<img ')) {
+                $mtype = str_contains($msg['text'], '"emoticon"') ? 'emoticon' : 'image';
+            }
+            preg_match_all("/@([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,6})/i", $msg['text'], $matchs);
+            foreach($matchs[0] as $key => $item) {
+                $aiUser = User::whereEmail($matchs[1][$key])->whereDisableAt(null)->first();
+                if ($aiUser) {
+                    $msg['text'] = str_replace($item, "<span class=\"mention user\" data-id=\"{$aiUser->userid}\">@{$aiUser->nickname}</span>", $msg['text']);
+                }
+            }
+        } elseif ($type === 'file') {
+            if (in_array($msg['ext'], ['jpg', 'jpeg', 'png', 'gif'])) {
+                $mtype = 'image';
+            }
+        }
+        if ($push_silence === null) {
+            $push_silence = !in_array($type, ["text", "file", "record", "meeting"]);
+        }
+        //
+        $update_id = preg_match("/^update-(\d+)$/", $action, $match) ? $match[1] : 0;
+        $reply_id = preg_match("/^reply-(\d+)$/", $action, $match) ? $match[1] : 0;
+        $sender = $sender ?: User::userid();
+        //
+        $dialog = WebSocketDialog::find($dialog_id);
+        if (empty($dialog)) {
+            throw new ApiException('获取会话失败');
+        }
+        $dialog->checkMute($sender);
+        //
+        if ($update_id) {
+            // 修改
+            $dialogMsg = self::whereId($update_id)->whereDialogId($dialog_id)->first();
+            if (empty($dialogMsg)) {
+                throw new ApiException('消息不存在');
+            }
+            if ($dialogMsg->type !== 'text') {
+                throw new ApiException('此消息不支持此操作');
+            }
+            if ($dialogMsg->userid != $sender) {
+                throw new ApiException('仅支持修改自己的消息');
+            }
+            //
+            $updateData = [
+                'mtype' => $mtype,
+                'link' => $link,
+                'msg' => $msg,
+                'modify' => 1,
+            ];
+            $dialogMsg->updateInstance($updateData);
+            $dialogMsg->key = $dialogMsg->generateMsgKey();
             $dialogMsg->save();
-        });
-        Task::deliver(new WebSocketDialogMsgTask($dialogMsg->id));
-        return Base::retSuccess('发送成功', $dialogMsg);
+            //
+            $dialog->pushMsg('update', array_merge($updateData, [
+                'id' => $dialogMsg->id
+            ]));
+            //
+            return Base::retSuccess('修改成功', $dialogMsg);
+        } else {
+            // 发送
+            if ($reply_id && !self::whereId($reply_id)->increment('reply_num')) {
+                throw new ApiException('回复的消息不存在');
+            }
+            //
+            $dialogMsg = self::createInstance([
+                'dialog_id' => $dialog_id,
+                'dialog_type' => $dialog->type,
+                'reply_id' => $reply_id,
+                'userid' => $sender,
+                'type' => $type,
+                'mtype' => $mtype,
+                'link' => $link,
+                'msg' => $msg,
+                'read' => 0,
+            ]);
+            AbstractModel::transaction(function () use ($dialog, $dialogMsg) {
+                $dialog->last_at = Carbon::now();
+                $dialog->save();
+                $dialogMsg->send = 1;
+                $dialogMsg->key = $dialogMsg->generateMsgKey();
+                $dialogMsg->save();
+                WebSocketDialogUser::whereDialogId($dialog->id)->change(['updated_at' => Carbon::now()->toDateTimeString('millisecond')]);
+            });
+            //
+            $task = new WebSocketDialogMsgTask($dialogMsg->id);
+            if ($push_self) {
+                $task->setIgnoreFd(null);
+            }
+            if ($push_retry) {
+                $task->setMsgNotExistRetry(true);
+            }
+            if ($push_silence) {
+                $task->setSilence($push_silence);
+            }
+            Task::deliver($task);
+            //
+            return Base::retSuccess('发送成功', $dialogMsg);
+        }
     }
 }

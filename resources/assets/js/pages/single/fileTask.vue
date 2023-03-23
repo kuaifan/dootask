@@ -2,20 +2,20 @@
     <div class="single-file-task">
         <PageTitle :title="title"/>
         <Loading v-if="loadIng > 0"/>
-        <template v-else>
+        <template v-else-if="!isWait">
             <MDPreview v-if="isType('md')" :initialValue="fileDetail.content.content"/>
             <TEditor v-else-if="isType('text')" :value="fileDetail.content.content" height="100%" readOnly/>
             <Drawio v-else-if="isType('drawio')" v-model="fileDetail.content" :title="fileDetail.name" readOnly/>
             <Minder v-else-if="isType('mind')" :value="fileDetail.content" readOnly/>
-            <AceEditor v-else-if="isType('code')" v-model="fileDetail.content" :ext="fileDetail.ext" class="view-editor" readOnly/>
+            <AceEditor v-else-if="isType('code')" v-model="fileDetail.content.content" :ext="fileDetail.ext" class="view-editor" readOnly/>
             <OnlyOffice v-else-if="isType('office')" v-model="officeContent" :code="officeCode" :documentKey="documentKey" readOnly/>
-            <iframe v-else-if="isType('preview')" class="preview-iframe" :src="previewUrl"/>
+            <IFrame v-else-if="isType('preview')" class="preview-iframe" :src="previewUrl"/>
             <div v-else class="no-support">{{$L('不支持单独查看此消息')}}</div>
         </template>
     </div>
 </template>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .single-file-task {
     display: flex;
     align-items: center;
@@ -34,10 +34,18 @@
         outline: 0;
         padding: 0;
     }
+    .markdown-preview-warp {
+        overflow: auto;
+    }
     .preview-iframe {
         background: 0 0;
         float: none;
         max-width: none;
+    }
+    .teditor-wrapper {
+        .teditor-box {
+            height: 100%;
+        }
     }
     .view-editor,
     .no-support {
@@ -47,31 +55,22 @@
     }
 }
 </style>
-<style lang="scss">
-.single-file-task {
-    .teditor-wrapper {
-        .teditor-box {
-            height: 100%;
-        }
-    }
-}
-</style>
 <script>
-import Vue from 'vue'
-import Minder from '../../components/Minder'
-Vue.use(Minder)
+import IFrame from "../manage/components/IFrame";
 
 const MDPreview = () => import('../../components/MDEditor/preview');
 const TEditor = () => import('../../components/TEditor');
 const AceEditor = () => import('../../components/AceEditor');
 const OnlyOffice = () => import('../../components/OnlyOffice');
 const Drawio = () => import('../../components/Drawio');
+const Minder = () => import('../../components/Minder');
 
 export default {
-    components: {AceEditor, TEditor, MDPreview, OnlyOffice, Drawio},
+    components: {IFrame, AceEditor, TEditor, MDPreview, OnlyOffice, Drawio, Minder},
     data() {
         return {
             loadIng: 0,
+            isWait: false,
 
             fileDetail: {},
         }
@@ -89,7 +88,8 @@ export default {
     },
     computed: {
         fileId() {
-            return $A.runNum(this.$route.params.id);
+            const {fileId} = this.$route.params;
+            return parseInt(/^\d+$/.test(fileId) ? fileId : 0);
         },
 
         title() {
@@ -120,7 +120,8 @@ export default {
         },
 
         previewUrl() {
-            return $A.apiUrl("../fileview/onlinePreview?url=" + encodeURIComponent(this.fileDetail.content.url))
+            const {name, key} = this.fileDetail.content;
+            return $A.apiUrl(`../online/preview/${name}?key=${key}`)
         }
     },
     methods: {
@@ -128,17 +129,18 @@ export default {
             if (this.fileId <= 0) {
                 return;
             }
-            this.loadIng++;
+            setTimeout(_ => {
+                this.loadIng++;
+            }, 600)
+            this.isWait = true;
             this.$store.dispatch("call", {
                 url: 'project/task/filedetail',
                 data: {
                     file_id: this.fileId,
                 },
             }).then(({data}) => {
-                this.loadIng--;
                 this.fileDetail = data;
             }).catch(({msg}) => {
-                this.loadIng--;
                 $A.modalError({
                     content: msg,
                     onOk: () => {
@@ -147,6 +149,9 @@ export default {
                         }
                     }
                 });
+            }).finally(_ => {
+                this.loadIng--;
+                this.isWait = false;
             });
         },
         documentKey() {
@@ -158,7 +163,7 @@ export default {
                         only_update_at: 'yes'
                     },
                 }).then(({data}) => {
-                    resolve($A.Date(data.update_at, true))
+                    resolve(`${data.id}-${$A.Time(data.update_at)}`)
                 }).catch(() => {
                     resolve(0)
                 });

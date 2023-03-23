@@ -9,11 +9,14 @@
                 <Icon type="md-download"/>
                 {{ $L('客户端下载') }}
             </a>
-            <div v-else-if="updateVersion && $Electron" class="common-right-bottom-link" @click="updateShow=true">
+            <div v-else-if="updateVersion && updateBottomShow && $Electron" class="common-right-bottom-link" @click="updateShow=true">
                 <Icon type="md-download"/>
                 {{ $L('更新客户端') }}
             </div>
         </template>
+        <a v-if="showPrivacy" class="common-right-bottom-link" target="_blank" :href="$A.apiUrl('privacy')">
+            《{{ $L('隐私政策') }}》
+        </a>
         <Modal
             v-model="updateShow"
             :closable="false"
@@ -26,7 +29,7 @@
                 </div>
                 <div v-if="$Platform === 'mac'" class="notification-tip">{{$L('离最新版本只有一步之遥了！重新启动应用即可完成更新。')}}</div>
             </div>
-            <MarkdownPreview class="notification-body overlay-y" :initialValue="updateNote"/>
+            <MarkdownPreview class="notification-body scrollbar-overlay" :initialValue="updateNote"/>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="updateShow=false">{{$L('稍后')}}</Button>
                 <Button type="primary" :loading="updateIng" @click="updateQuitAndInstall">{{$L($Platform === 'mac' ? '重新启动' : '立即升级')}}</Button>
@@ -55,6 +58,7 @@ export default {
             updateVersion: '',
             updateNote: '',
             updateShow: false,
+            updateBottomShow: false,
             updateIng: false,
 
             downloadUrl: '',
@@ -69,9 +73,10 @@ export default {
                 this.updateShow = true
             })
             this.$Electron.registerMsgListener('updateDownloaded', info => {
+                this.$store.state.clientNewVersion = info.version
                 this.updateVersion = info.version;
                 this.updateNote = info.releaseNotes || this.$L('没有更新描述。');
-                this.updateShow = true;
+                this.updateShow = $A.strExists(this.updateNote, `[${this.updateVersion}-Release]`);
             })
         }
     },
@@ -83,25 +88,58 @@ export default {
         }
     },
 
+    watch: {
+        updateShow(show) {
+            if (show) {
+                this.updateBottomShow = true
+            }
+        }
+    },
+
     computed: {
-        ...mapState([
-            'isDesktop',
-        ]),
+        isSoftware() {
+            return this.$Electron || this.$isEEUiApp;
+        },
 
         showSSO() {
-            return this.$Electron && ['login'].includes(this.$route.name)
+            return this.isSoftware && ['login'].includes(this.$route.name)
         },
 
         showDown() {
-            return this.isDesktop && ['login', 'index', 'manage-dashboard'].includes(this.$route.name)
+            return !this.$isEEUiApp && this.windowLarge && ['login', 'index', 'manage-dashboard'].includes(this.$route.name)
+        },
+
+        showPrivacy() {
+            return [
+                '127.0.0.1:2222',
+                '192.168.100.88:2222',
+                'dootask.com',
+                'www.dootask.com',
+                't.hitosea.com',
+            ].includes($A.getDomain($A.apiUrl('../'))) && this.$isEEUiApp && ['login'].includes(this.$route.name)
         }
     },
 
     methods: {
+        isNotServer() {
+            let apiHome = $A.getDomain(window.systemInfo.apiUrl)
+            return this.isSoftware && (apiHome == "" || apiHome == "public")
+        },
+
         checkVersion() {
-            axios.get($A.apiUrl('../version')).then(({status, data}) => {
+            if (this.isNotServer()) {
+                return;
+            }
+            axios.get($A.apiUrl('system/version')).then(({status, data}) => {
                 if (status === 200) {
                     this.apiVersion = data.version || ''
+                    // 检查接口版本
+                    if (this.compareVersion(this.apiVersion, '0.19.0') === -1) {
+                        $A.modalWarning({
+                            title: '温馨提示',
+                            message: '服务器接口版本过低，部分功能可能无法正常使用。',
+                        });
+                    }
                     if (this.$Electron) {
                         // 客户端提示更新
                         this.$Electron.sendMessage('updateCheckAndDownload', {
@@ -127,33 +165,35 @@ export default {
             //
             switch (publish.provider) {
                 case 'generic':
-                    this.downloadUrl = `${publish.url}/${this.apiVersion}`
+                    this.downloadUrl = `${publish.url}/latest`
                     break;
 
                 case 'github':
-                    let key = "cacheAppdown::" + this.apiVersion
-                    let cache = $A.getStorageJson(key);
-                    let timeout = 600;
-                    if (cache.time && cache.time + timeout > Math.round(new Date().getTime() / 1000)) {
-                        this.downloadUrl = cache.data.html_url;
-                        return;
-                    }
-                    //
-                    if (this.loadIng > 0) {
-                        return;
-                    }
-                    this.loadIng++;
-                    axios.get(`https://api.github.com/repos/${publish.owner}/${publish.repo}/releases`).then(({status, data}) => {
-                        this.loadIng--;
-                        if (status === 200 && $A.isArray(data)) {
-                            cache.time = Math.round(new Date().getTime() / 1000)
-                            cache.data = data.find(({tag_name}) => this.compareVersion(this.tagVersion(tag_name), this.apiVersion) === 0) || {}
-                            $A.setStorage(key, cache);
+                    (async _ => {
+                        let key = "cacheAppdown::" + this.apiVersion
+                        let cache = await $A.IDBJson(key);
+                        let timeout = 600;
+                        if (cache.time && cache.time + timeout > Math.round(new Date().getTime() / 1000)) {
                             this.downloadUrl = cache.data.html_url;
+                            return;
                         }
-                    }).catch(() => {
-                        this.loadIng--;
-                    });
+                        //
+                        if (this.loadIng > 0) {
+                            return;
+                        }
+                        this.loadIng++;
+                        axios.get(`https://api.github.com/repos/${publish.owner}/${publish.repo}/releases`).then(({status, data}) => {
+                            this.loadIng--;
+                            if (status === 200 && $A.isArray(data)) {
+                                cache.time = Math.round(new Date().getTime() / 1000)
+                                cache.data = data.find(({tag_name}) => this.compareVersion(this.tagVersion(tag_name), this.apiVersion) === 0) || {}
+                                $A.IDBSave(key, cache);
+                                this.downloadUrl = cache.data.html_url;
+                            }
+                        }).catch(() => {
+                            this.loadIng--;
+                        });
+                    })()
                     break;
             }
         },

@@ -1,0 +1,64 @@
+.dialog-wrapper-dialogids {
+    .ivu-select-arrow {
+        display: none !important;
+    }
+}
+
+.dialog-wrapper-forward {
+    .forward-option {
+        max-width: 100%;
+        display: flex;
+        align-items: center;
+        .forward-avatar {
+            display: flex;
+            align-items: center;
+            .icon-avatar {
+                width: 26px;
+                height: 26px;
+                flex-grow: 0;
+                flex-shrink: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                font-size: 18px;
+                background-color: #61B2F9;
+                color: #ffffff;
+                &.department {
+                    background-color: #5BC7B0;
+                }
+                &.project {
+                    background-color: #6E99EB;
+                }
+                &.task {
+                    background-color: #9B96DF;
+                    font-size: 16px;
+                }
+            }
+        }
+        .forward-name {
+            margin-left: 10px;
+            flex: 1;
+            width: 0;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+    }
+    .ivu-select-item {
+        &.ivu-select-item-selected {
+            &:after {
+                top: 8px;
+            }
+        }
+    }
+    .forward-drop-prepend {
+        text-align: center;
+        color: #c5c8ce;
+        line-height: 20px;
+        padding-bottom: 5px;
+        font-size: 12px;
+        border-bottom: 1px solid #f1f1f1;
+        margin-bottom: 5px;
+    }
+}

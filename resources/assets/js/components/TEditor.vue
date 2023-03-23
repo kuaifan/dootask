@@ -59,6 +59,7 @@
     import tinymce from 'tinymce/tinymce';
     import ImgUpload from "./ImgUpload";
     import {mapState} from "vuex";
+    import {languageType} from "../language";
 
     export default {
         name: 'TEditor',
@@ -154,23 +155,32 @@
             this.content = this.value;
             this.init();
         },
+        beforeDestroy() {
+            if (this.editor !== null) {
+                this.editor.destroy()
+                this.editor = null
+            }
+            this.spinShow = true;
+            $A(this.$refs.myTextarea).show();
+        },
         activated() {
             this.content = this.value;
             this.init();
         },
         deactivated() {
             if (this.editor !== null) {
-                this.editor.destroy();
+                this.editor.destroy()
+                this.editor = null
             }
             this.spinShow = true;
             $A(this.$refs.myTextarea).show();
         },
         computed: {
-            ...mapState(['userToken', 'themeIsDark']),
+            ...mapState(['themeIsDark']),
 
             headers() {
                 return {
-                    fd: $A.getStorageString("userWsFd"),
+                    fd: $A.getSessionStorageString("userWsFd"),
                     token: this.userToken,
                 }
             },
@@ -216,11 +226,26 @@
             },
 
             option(isFull) {
-                let optionInfo = {
+                let lang = languageType;
+                switch (languageType) {
+                    case 'zh':
+                        lang = "zh_CN";
+                        break;
+                    case 'zh-CHT':
+                        lang = "zh-TW";
+                        break;
+                    case 'fr':
+                        lang = "fr_FR";
+                        break;
+                    case 'ko':
+                        lang = "ko_KR";
+                        break;
+                }
+                const optionInfo = {
                     inline: isFull ? false : this.inline,
                     selector: (isFull ? '#T_' : '#') + this.id,
                     base_url: $A.originUrl('js/tinymce'),
-                    language: "zh_CN",
+                    language: lang,
                     toolbar: this.toolbar,
                     plugins: this.plugin(isFull),
                     placeholder: isFull && this.placeholderFull ? this.placeholderFull : this.placeholder,
@@ -303,8 +328,12 @@
                                     $A.messageWarning("没有可预览的图片")
                                     return;
                                 }
-                                this.$store.state.previewImageIndex = 0;
-                                this.$store.state.previewImageList = array;
+                                let index = 0;
+                                const imgElm = editor.selection.getNode();
+                                if (imgElm && imgElm.nodeName === "IMG") {
+                                    index = array.findIndex(item => item.src === imgElm.getAttribute("src"));
+                                }
+                                this.$store.dispatch("previewImage", {index, list: array})
                             }
                         });
                         editor.ui.registry.addButton('uploadFiles', {
@@ -379,6 +408,14 @@
                             editor.on('KeyUp', (e) => {
                                 if (this.editor !== null) {
                                     this.submitNewContent();
+                                }
+                            });
+                            editor.on('KeyDown', (e) => {
+                                if (e.metaKey || e.ctrlKey) {
+                                    if (e.keyCode === 83) {
+                                        e.preventDefault();
+                                        this.$emit('editorSave', e);
+                                    }
                                 }
                             });
                             editor.on('Change', (e) => {
@@ -503,15 +540,23 @@
             },
 
             getValueImages() {
-                let imgs = [];
-                let imgReg = /<img.*?(?:>|\/>)/gi;
-                let srcReg = /src=['"]?([^'"]*)['"]?/i;
-                let array = (this.getContent() + "").match(imgReg);
+                const imgs = [];
+                const imgReg = /<img.*?(?:>|\/>)/gi,
+                    srcReg = new RegExp("src=([\"'])([^'\"]*)\\1"),
+                    widthReg = new RegExp("original-width=\"(\\d+)\""),
+                    heightReg = new RegExp("original-height=\"(\\d+)\"")
+                const array = (this.getContent() + "").match(imgReg);
                 if (array) {
                     for (let i = 0; i < array.length; i++) {
-                        let src = array[i].match(srcReg);
-                        if(src[1]){
-                            imgs.push(src[1]);
+                        const src = array[i].match(srcReg);
+                        const width = array[i].match(widthReg);
+                        const height = array[i].match(heightReg);
+                        if(src){
+                            imgs.push({
+                                src: src[2],
+                                width: width ? width[1] : -1,
+                                height: height ? height[1] : -1,
+                            });
                         }
                     }
                 }

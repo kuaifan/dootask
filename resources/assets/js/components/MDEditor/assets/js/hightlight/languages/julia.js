@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   // Since there are numerous special names in Julia, it is too much trouble
   // to maintain them by hand. Hence these names (i.e. keywords, literals and
   // built-ins) are automatically generated from Julia v0.6 itself through

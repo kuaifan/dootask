@@ -2,7 +2,7 @@
     flex: 1;
     display: flex;
     align-items: flex-start;
-    .project-list {
+    .project-panel {
         flex: 1;
         width: 0;
         height: 100%;
@@ -18,21 +18,14 @@
     }
 }
 
-@media (max-width: 768px) {
+@media (max-height: 700px) {
     .page-project {
-        .project-list {
+        .project-panel {
             height: auto;
+            min-height: 100%;
             &.gantt {
                 height: 100%;
             }
-        }
-        .project-dialog {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 100%;
-            max-width: none;
         }
     }
 }

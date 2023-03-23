@@ -1,6 +1,9 @@
 <?php
 namespace App\Tasks;
 
+use App\Models\TaskWorker;
+use App\Module\Base;
+use Carbon\Carbon;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 
 /**
@@ -9,27 +12,18 @@ use Hhxsv5\LaravelS\Swoole\Task\Task;
  */
 abstract class AbstractTask extends Task
 {
-    protected $newTask = [];
+    protected int $twid = 0;
 
-    /**
-     * 添加完成后执行的任务
-     * @param $task
-     */
-    final protected function addTask($task)
+    public function __construct(...$params)
     {
-        $this->newTask[] = $task;
-    }
-
-    /**
-     * 包装执行过程
-     */
-    final public function handle()
-    {
-        try {
-            $this->start();
-        } catch (\Exception $e) {
-            $this->info($e);
-            $this->failed($e);
+        $row = TaskWorker::createInstance([
+            'args' => [
+                'params' => $params,
+                'class' => get_class($this)
+            ],
+        ]);
+        if ($row->save()) {
+            $this->twid = $row->id;
         }
     }
 
@@ -41,31 +35,53 @@ abstract class AbstractTask extends Task
     /**
      * 任务完成事件
      */
-    public function finish()
+    abstract public function end();
+
+    /**
+     * 重写执行过程
+     */
+    final public function handle()
     {
-        foreach ($this->newTask AS $task) {
-            Task::deliver($task);
+        TaskWorker::whereId($this->twid)->update(['start_at' => Carbon::now()]);
+        //
+        try {
+            $this->start();
+        } catch (\Throwable $e) {
+            $this->failed("start", $e);
+        }
+    }
+
+    /**
+     * 重写完成事件
+     */
+    final public function finish()
+    {
+        TaskWorker::whereId($this->twid)->update(['end_at' => Carbon::now()]);
+        //
+        try {
+            $this->end();
+            TaskWorker::whereId($this->twid)->delete();
+        } catch (\Throwable $e) {
+            $this->failed("end", $e);
         }
     }
 
     /**
      * 任务失败事件
-     * @param $e
+     * @param string $type
+     * @param \Throwable $e
      */
-    public function failed($e)
+    public function failed(string $type, \Throwable $e)
     {
+        info($type);
+        info($e);
         //
-    }
-
-    /**
-     * 添加日志
-     * @param $var
-     */
-    private function info($var)
-    {
-        if (!config('app.debug') || defined('DO_NOT_ADD_LOGS')) {
-            return;
-        }
-        info($var);
+        TaskWorker::whereId($this->twid)->update(['error' => Base::array2json([
+            'time' => Carbon::now(),
+            'type' => $type,
+            'code' => $e->getCode(),
+            'file' => $e->getFile(),
+            'message' => $e->getMessage(),
+        ])]);
     }
 }

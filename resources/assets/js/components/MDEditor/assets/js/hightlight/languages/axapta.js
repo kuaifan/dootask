@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   return {
     keywords: 'false int abstract private char boolean static null if for true ' +
       'while long throw finally protected final return void enum else ' +

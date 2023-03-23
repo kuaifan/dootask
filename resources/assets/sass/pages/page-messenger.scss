@@ -4,6 +4,7 @@
         flex: 1;
         display: flex;
         align-items: flex-start;
+        overflow: hidden;
         .messenger-select {
             position: relative;
             height: 100%;
@@ -36,6 +37,18 @@
                     margin: 0 4px;
                     border-radius: 12px;
                     overflow: hidden;
+                    .search-pre {
+                        width: 100%;
+                        height: 100%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        .common-loading {
+                            width: 14px;
+                            height: 14px;
+                            margin: 0;
+                        }
+                    }
                     .ivu-input {
                         border-color: transparent;
                         background-color: transparent;
@@ -49,19 +62,44 @@
             .messenger-nav {
                 display: flex;
                 align-items: center;
-                justify-content: space-evenly;
-                padding: 2px 0 12px;
-                > p {
-                    position: relative;
+                padding: 2px 10px 12px;
+                > div {
+                    flex: 1;
+                    flex-shrink: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                     line-height: 1;
                     padding: 0 6px;
                     color: #888888;
                     cursor: pointer;
-                    .nav-num {
-                        position: absolute;
-                        top: -12px;
-                        right: -8px;
-                        transform: scale(0.7);
+                    &.nav-menu {
+                        max-width: 46px;
+                        .nav-icon {
+                            width: 100%;
+                            height: 100%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            > i {
+                                font-size: 16px;
+                            }
+                        }
+                    }
+                    .nav-title {
+                        position: relative;
+                        > em {
+                            font-style: normal;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                        }
+                        .nav-num {
+                            position: absolute;
+                            top: -12px;
+                            right: -8px;
+                            transform: scale(0.7);
+                        }
                     }
                     &.active {
                         color: #555555;
@@ -72,24 +110,33 @@
                     }
                 }
             }
+            .messenger-notify-permission {
+                position: sticky;
+                display: flex;
+                align-items: center;
+                padding: 6px 12px;
+                justify-content: space-between;
+                background-color: #FEF7EE;
+                border: 1px solid #FAE0B5;
+                margin: 8px 12px;
+                border-radius: 6px;
+            }
             .messenger-list {
                 flex: 1;
                 height: 0;
                 width: 100%;
                 overflow-x: hidden;
-                overflow-y: auto;
                 > ul {
                     &.dialog {
                         > li {
                             display: flex;
                             flex-direction: row;
                             align-items: flex-start;
-                            padding: 14px 10px;
+                            padding: 16px 12px;
                             position: relative;
                             cursor: pointer;
                             list-style: none;
-                            margin-right: 1px;
-                            border: 2px solid transparent;
+                            .img-avatar,
                             .user-avatar,
                             .icon-avatar {
                                 width: 42px;
@@ -97,6 +144,15 @@
                                 margin: 2px;
                                 flex-grow: 0;
                                 flex-shrink: 0;
+                            }
+                            .img-avatar {
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                > img {
+                                    width: 100%;
+                                    height: 100%;
+                                }
                             }
                             .icon-avatar {
                                 display: flex;
@@ -106,6 +162,9 @@
                                 font-size: 26px;
                                 background-color: #61B2F9;
                                 color: #ffffff;
+                                &.department {
+                                    background-color: #5BC7B0;
+                                }
                                 &.project {
                                     background-color: #6E99EB;
                                 }
@@ -126,6 +185,24 @@
                                     align-items: center;
                                     justify-content: space-between;
                                     line-height: 24px;
+                                    .todo,
+                                    .mention,
+                                    .bot {
+                                        color: #ff0000;
+                                        background-color: transparent;
+                                        font-weight: 600;
+                                        flex-shrink: 0;
+                                        margin-right: 4px;
+                                        padding: 0;
+                                        height: auto;
+                                        width: auto;
+                                        user-select: none;
+                                    }
+                                    .bot {
+                                        color: $primary-color;
+                                        font-size: 16px;
+                                        font-weight: normal;
+                                    }
                                     .ivu-tag {
                                         margin: 0 4px 0 0;
                                         padding: 0 5px;
@@ -135,7 +212,7 @@
                                     }
                                     > span {
                                         flex: 1;
-                                        color: #333333;
+                                        color: $primary-title-color;
                                         font-size: 14px;
                                         white-space: nowrap;
                                         overflow: hidden;
@@ -157,45 +234,115 @@
                                         flex-shrink: 0;
                                         margin-left: 8px;
                                         font-style: normal;
-                                        color: #999999;
+                                        color: $primary-desc-color;
                                         font-size: 12px;
                                     }
                                 }
                                 .dialog-text {
-                                    max-width: 170px;
-                                    color: #999999;
+                                    color: $primary-desc-color;
                                     font-size: 12px;
+                                    min-height: 24px;
                                     line-height: 24px;
-                                    white-space: nowrap;
-                                    overflow: hidden;
-                                    text-overflow: ellipsis;
+                                    display: flex;
+                                    align-items: center;
+                                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+
+                                    .last-draft,
+                                    .common-avatar,
+                                    .last-self {
+                                        flex-shrink: 0;
+                                        padding-right: 4px;
+                                        margin-right: 4px;
+                                        position: relative;
+                                        overflow: hidden;
+                                        &:after {
+                                            content: ":";
+                                            position: absolute;
+                                            top: 50%;
+                                            transform: translateY(-50%);
+                                            right: 0;
+                                        }
+                                    }
+                                    .last-draft {
+                                        color: #ff0000;
+                                        &:after {
+                                            color: $primary-desc-color;
+                                        }
+                                    }
+                                    .common-avatar {
+                                        flex-shrink: 1;
+                                        .avatar-name {
+                                            max-width: 100%;
+                                        }
+                                    }
+                                    .last-text {
+                                        flex: 1;
+                                        display: flex;
+                                        align-items: center;
+                                        > em {
+                                            flex-shrink: 0;
+                                            background-color: rgba($primary-desc-color, 0.25);
+                                            height: 20px;
+                                            width: 26px;
+                                            line-height: 20px;
+                                            text-align: center;
+                                            border-radius: 10px;
+                                            font-size: 14px;
+                                            font-style: normal;
+                                            margin-right: 4px;
+                                        }
+                                        > span {
+                                            flex: 1;
+                                            width: 0;
+                                            white-space: nowrap;
+                                            overflow: hidden;
+                                            text-overflow: ellipsis;
+                                        }
+                                    }
+                                    .last-silence {
+                                        font-size: 15px;
+                                        padding-left: 4px;
+                                        color: rgba($primary-desc-color, 0.5);
+                                    }
                                 }
                             }
                             .dialog-num {
                                 position: absolute;
                                 top: 10px;
-                                left: 42px;
-                                transform: scale(0.8);
+                                left: 58px;
+                                transform: scale(0.8) translateX(-100%);
+                            }
+                            .dialog-line {
+                                display: none;
+                                position: absolute;
+                                bottom: 0;
+                                right: 0;
+                                left: 68px;
+                                height: 1px;
+                                background-color: #f2f2f2;
+                                transform: scaleY(0.5);
+                            }
+                            &:before {
+                                display: none;
+                                position: absolute;
+                                content: "";
+                                top: 0;
+                                left: 0;
+                                right: 0;
+                                bottom: 0;
+                                z-index: 1;
+                                border: 2px solid $primary-color;
+                                pointer-events: none;
                             }
                             &.top {
-                                background-color: #EEEFF1;
-                            }
-                            &.active {
                                 background-color: #F4F5F7;
                             }
-                            &.operate {
-                                border-color: $primary-color;
+                            &.active {
+                                background-color: #EEEFF1;
                             }
-                            &.loading {
-                                margin: 0;
-                                height: 52px;
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                                .common-loading {
-                                    width: 20px;
-                                    height: 20px;
-                                    margin: 0;
+                            &.operate {
+                                &:before {
+                                    display: block;
                                 }
                             }
                             &.completed {
@@ -217,6 +364,15 @@
                                     }
                                 }
                             }
+                            &.nothing {
+                                justify-content: center;
+                                padding: 24px;
+                                margin: 0;
+                                border: 0;
+                                line-height: 22px;
+                                cursor: default;
+                                word-break: break-all;
+                            }
                         }
                     }
                     &.contacts {
@@ -230,20 +386,43 @@
                                 margin-bottom: 6px;
                                 height: 34px;
                                 line-height: 34px;
-                                border-bottom: 1px solid #efefef;
+                                position: relative;
+                                &:after {
+                                    content: "";
+                                    position: absolute;
+                                    bottom: 0;
+                                    right: 0;
+                                    left: 0;
+                                    height: 1px;
+                                    background-color: #f2f2f2;
+                                    transform: scaleY(0.5);
+                                }
                             }
-                            &.loading,
+                            &.nothing,
+                            &.loading {
+                                text-align: center;
+                                height: 100%;
+                                margin: 0;
+                                padding: 24px;
+                                border-radius: 0;
+                                line-height: 22px;
+                            }
+                            &.loading {
+                                display: flex;
+                                align-items: flex-start;
+                                justify-content: center;
+                                .common-loading {
+                                    width: 20px;
+                                    height: 20px;
+                                    margin: 1px;
+                                }
+                            }
                             &.loaded {
                                 margin: 0;
                                 height: 52px;
                                 display: flex;
                                 align-items: center;
                                 justify-content: center;
-                                .common-loading {
-                                    width: 20px;
-                                    height: 20px;
-                                    margin: 0;
-                                }
                             }
                             > ul {
                                 > li {
@@ -260,23 +439,55 @@
                                         height: 30px;
                                     }
                                     .nickname {
-                                        padding: 0 12px;
+                                        flex: 1;
+                                        width: 0;
+                                        padding-left: 12px;
                                         font-size: 14px;
-                                        white-space: nowrap;
-                                        overflow: hidden;
-                                        text-overflow: ellipsis;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: space-between;
+                                        flex-flow: row wrap;
+                                        align-content: flex-start;
+                                        > em {
+                                            padding-right: 12px;
+                                            font-style: normal;
+                                            white-space: nowrap;
+                                            overflow: hidden;
+                                            text-overflow: ellipsis;
+                                        }
+                                        .tags {
+                                            padding-right: 12px;
+                                            font-size: 12px;
+                                            white-space: nowrap;
+                                            overflow: hidden;
+                                            text-overflow: ellipsis;
+                                            color: $primary-desc-color;
+                                            > span + span:before {
+                                                content: "\002c\0020";
+                                            }
+                                        }
+                                    }
+                                    .loading {
+                                        margin-right: 12px;
+                                        width: 16px;
+                                        height: 16px;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
                                     }
                                 }
                             }
                         }
                     }
                 }
-                .top-operate {
+                .operate-position {
                     position: absolute;
                     top: 0;
-                    right: 0;
+                    left: 0;
+                    width: 1px;
                     opacity: 0;
-                    display: flex;
+                    visibility: hidden;
+                    pointer-events: none;
                 }
             }
             .messenger-menu {
@@ -321,13 +532,6 @@
             height: 100%;
             display: flex;
             position: relative;
-            .dialog-wrapper {
-                .dialog-footer {
-                    .dialog-back {
-                        display: none;
-                    }
-                }
-            }
             .msg-dialog-bg {
                 position: absolute;
                 top: 0;
@@ -361,6 +565,31 @@
     }
 }
 
+.messenger-nav-menu {
+    .messenger-nav-item {
+        display: flex;
+        align-items: center;
+        min-width: 80px;
+        &.active {
+            .nav-title {
+                font-weight: bold;
+            }
+        }
+        .nav-title {
+            flex: 1;
+            max-width: 88px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-right: 12px;
+        }
+        .nav-num {
+            transform: scale(0.7);
+            transform-origin: center right;
+        }
+    }
+}
+
 @media (max-width: 768px) {
     .page-messenger {
         .messenger-wrapper {
@@ -373,42 +602,62 @@
                 max-width: none;
                 background-color: #ffffff;
                 z-index: 48;
-                transition: all 0.2s;
-                transform: translateX(-120%);
-                &.show768-menu {
-                    transform: translateX(0);
+                &:after {
+                    display: none;
+                }
+                .messenger-search {
+                    background-color: #f8f8f8;
+                    .search-wrapper {
+                        background-color: #ffffff;
+                    }
+                }
+                .messenger-nav {
+                    background-color: #f8f8f8;
+                }
+                .messenger-menu {
+                    border-top: 0;
+                    height: 60px;
+                    opacity: 0;
+                }
+                .messenger-list {
+                    > ul {
+                        user-select: none;
+                        &.dialog {
+                            > li {
+                                .user-avatar {
+                                    .common-avatar {
+                                        &:after {
+                                            content: "";
+                                            position: absolute;
+                                            top: 0;
+                                            left: 0;
+                                            right: 0;
+                                            bottom: 0;
+                                            z-index: 1;
+                                        }
+                                    }
+                                }
+                                .dialog-line {
+                                    display: block;
+                                }
+                                &:last-child {
+                                    .dialog-line {
+                                        display: none;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
             .messenger-msg {
-                .dialog-wrapper {
-                    .dialog-nav {
-                        height: 54px;
-                        justify-content: center;
-                        .dialog-title {
-                            flex: 0;
-                            width: auto;
-                        }
-                    }
-                    .dialog-footer {
-                        position: relative;
-                        .dialog-back {
-                            position: absolute;
-                            left: 0;
-                            bottom: 0;
-                            width: 64px;
-                            height: 49px;
-                            z-index: 1;
-                            font-size: 26px;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                        }
-                        .dialog-input {
-                            width: calc(100% - 44px);
-                        }
-                    }
-                }
+                display: none;
             }
+        }
+    }
+    .messenger-nav-menu {
+        .messenger-nav-item {
+            min-width: 100px;
         }
     }
 }

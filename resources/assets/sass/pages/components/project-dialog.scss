@@ -5,108 +5,68 @@
     border-left: 1px solid #f4f5f5;
     z-index: 1;
     position: relative;
-    .project-dialog-wrapper {
-        .dialog-user {
-            margin-top: 26px;
+    .dialog-user {
+        margin-top: 26px;
+        .member-head {
+            display: flex;
+            align-items: center;
             padding: 0 22px;
-            .member-head {
-                display: flex;
-                align-items: center;
-                .member-title {
-                    flex: 1;
-                    font-size: 18px;
-                    font-weight: 600;
-                    > span {
-                        padding-left: 6px;
-                        color: $primary-color;
-                        cursor: pointer;
-                    }
-                }
-                .member-close {
+            .member-title {
+                flex: 1;
+                font-size: 18px;
+                font-weight: 600;
+                > span {
+                    padding-left: 6px;
+                    color: $primary-color;
                     cursor: pointer;
+                }
+            }
+            .member-close {
+                cursor: pointer;
 
+                .ivu-icon-ios-close {
+                    font-size: 38px;
+                    top: 3px;
+                    right: 2px;
+                    transition: all 0.2s;
+                }
+
+                &:hover {
                     .ivu-icon-ios-close {
-                        font-size: 38px;
-                        top: 3px;
-                        right: 2px;
-                        transition: all 0.2s;
-                    }
-
-                    &:hover {
-                        .ivu-icon-ios-close {
-                            transform: rotate(-90deg);
-                        }
-                    }
-                }
-            }
-            .member-list {
-                display: flex;
-                align-items: center;
-                margin-top: 12px;
-                overflow: auto;
-
-                &::-webkit-scrollbar {
-                    display: none;
-                }
-
-                > li {
-                    position: relative;
-                    list-style: none;
-                    margin-right: 10px;
-                    margin-bottom: 8px;
-                }
-                &.member-all {
-                    display: block;
-                    > li {
-                        display: inline-block;
-                        overflow: hidden;
+                        transform: rotate(-90deg);
                     }
                 }
             }
         }
-        .dialog-nav {
-            padding: 0 20px;
-        }
-        .dialog-footer {
-            .dialog-back {
+        .member-list {
+            display: flex;
+            align-items: center;
+            margin-top: 12px;
+            padding: 0 22px;
+            overflow: auto;
+
+            &::-webkit-scrollbar {
                 display: none;
+            }
+
+            > li {
+                position: relative;
+                list-style: none;
+                margin-right: 10px;
+                margin-bottom: 8px;
+            }
+            &.member-all {
+                display: block;
+                > li {
+                    display: inline-block;
+                    overflow: hidden;
+                }
             }
         }
     }
-}
-
-@media (max-width: 768px) {
-    .project-dialog {
-        .project-dialog-wrapper {
-            .dialog-user {
-                margin-top: 16px;
-                padding: 0 12px;
-            }
-            .dialog-nav {
-                padding: 0 12px;
-                height: 58px;
-            }
-            .dialog-scroller {
-                padding: 0 20px;
-            }
-            .dialog-footer {
-                position: relative;
-                .dialog-back {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    bottom: 0;
-                    width: 64px;
-                    z-index: 1;
-                    font-size: 26px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                .dialog-input {
-                    width: calc(100% - 44px);
-                }
-            }
+    .dialog-nav {
+        .nav-wrapper {
+            padding: 0 20px;
         }
     }
 }

@@ -15,6 +15,13 @@
          * @returns {string|string|*}
          */
         apiUrl(str) {
+            if (str == "privacy") {
+                const apiHome = $A.getDomain(window.systemInfo.apiUrl)
+                if (apiHome == "" || apiHome == "public") {
+                    return "https://www.dootask.com/privacy.html"
+                }
+                str = "../privacy.html"
+            }
             if (str.substring(0, 2) === "//" ||
                 str.substring(0, 7) === "http://" ||
                 str.substring(0, 8) === "https://" ||
@@ -77,36 +84,17 @@
         },
 
         /**
-         * 格式化websocket的消息
-         * @param data
-         */
-        formatWebsocketMessageDetail(data) {
-            if ($A.isJson(data)) {
-                for (let key in data) {
-                    if (!data.hasOwnProperty(key)) continue;
-                    data[key] = $A.formatWebsocketMessageDetail(data[key]);
-                }
-            } else if ($A.isArray(data)) {
-                data.forEach((val, index) => {
-                    data[index] = $A.formatWebsocketMessageDetail(val);
-                });
-            } else if (typeof data === "string") {
-                data = data.replace(/\{\{RemoteURL\}\}/g, this.apiUrl('../'))
-            }
-            return data;
-        },
-
-        /**
          * 格式化时间
          * @param date
          * @returns {*|string}
          */
         formatTime(date) {
-            let time = $A.Date(date, true),
+            let now = $A.Time(),
+                time = $A.Date(date, true),
                 string = '';
-            if ($A.formatDate('Ymd') === $A.formatDate('Ymd', time)) {
+            if (Math.abs(now - time) < 3600 * 6 || $A.formatDate('Ymd', now) === $A.formatDate('Ymd', time)) {
                 string = $A.formatDate('H:i', time)
-            } else if ($A.formatDate('Y') === $A.formatDate('Y', time)) {
+            } else if ($A.formatDate('Y', now) === $A.formatDate('Y', time)) {
                 string = $A.formatDate('m-d', time)
             } else {
                 string = $A.formatDate('Y-m-d', time)
@@ -166,103 +154,385 @@
         },
 
         /**
+         * 时间工具
+         */
+        dateRangeUtil: {
+            /***
+             * 获得当前时间
+             */
+            getCurrentDate() {
+                return new Date();
+            },
+
+            /***
+             * 获得本周起止时间
+             */
+            getCurrentWeek() {
+                //起止日期数组
+                let startStop = [];
+                //获取当前时间
+                let currentDate = this.getCurrentDate();
+                //返回date是一周中的某一天
+                let week = currentDate.getDay();
+
+                //一天的毫秒数
+                let millisecond = 1000 * 60 * 60 * 24;
+                //减去的天数
+                let minusDay = week != 0 ? week - 1 : 6;
+                //alert(minusDay);
+                //本周 周一
+                let monday = new Date(currentDate.getTime() - (minusDay * millisecond));
+                //本周 周日
+                let sunday = new Date(monday.getTime() + (6 * millisecond));
+                //添加本周时间
+                startStop.push(monday); //本周起始时间
+                //添加本周最后一天时间
+                startStop.push(sunday); //本周终止时间
+                //返回
+                return startStop;
+            },
+
+            /***
+             * 获得本月的起止时间
+             */
+            getCurrentMonth() {
+                //起止日期数组
+                let startStop = [];
+                //获取当前时间
+                let currentDate = this.getCurrentDate();
+                //获得当前月份0-11
+                let currentMonth = currentDate.getMonth();
+                //获得当前年份4位年
+                let currentYear = currentDate.getFullYear();
+                //求出本月第一天
+                let firstDay = new Date(currentYear, currentMonth, 1);
+
+
+                //当为12月的时候年份需要加1
+                //月份需要更新为0 也就是下一年的第一个月
+                if (currentMonth == 11) {
+                    currentYear++;
+                    currentMonth = 0; //就为
+                } else {
+                    //否则只是月份增加,以便求的下一月的第一天
+                    currentMonth++;
+                }
+
+
+                //一天的毫秒数
+                let millisecond = 1000 * 60 * 60 * 24;
+                //下月的第一天
+                let nextMonthDayOne = new Date(currentYear, currentMonth, 1);
+                //求出上月的最后一天
+                let lastDay = new Date(nextMonthDayOne.getTime() - millisecond);
+
+                //添加至数组中返回
+                startStop.push(firstDay);
+                startStop.push(lastDay);
+                //返回
+                return startStop;
+            },
+
+            /**
+             * 得到本季度开始的月份
+             * @param month 需要计算的月份
+             ***/
+            getQuarterSeasonStartMonth(month) {
+                let spring = 0; //春
+                let summer = 3; //夏
+                let fall = 6;   //秋
+                let winter = 9; //冬
+                //月份从0-11
+                if (month < 3) {
+                    return spring;
+                }
+
+                if (month < 6) {
+                    return summer;
+                }
+
+                if (month < 9) {
+                    return fall;
+                }
+
+                return winter;
+            },
+
+            /**
+             * 获得该月的天数
+             * @param year 年份
+             * @param month 月份
+             * */
+            getMonthDays(year, month) {
+                //本月第一天 1-31
+                let relativeDate = new Date(year, month, 1);
+                //获得当前月份0-11
+                let relativeMonth = relativeDate.getMonth();
+                //获得当前年份4位年
+                let relativeYear = relativeDate.getFullYear();
+
+                //当为12月的时候年份需要加1
+                //月份需要更新为0 也就是下一年的第一个月
+                if (relativeMonth == 11) {
+                    relativeYear++;
+                    relativeMonth = 0;
+                } else {
+                    //否则只是月份增加,以便求的下一月的第一天
+                    relativeMonth++;
+                }
+                //一天的毫秒数
+                let millisecond = 1000 * 60 * 60 * 24;
+                //下月的第一天
+                let nextMonthDayOne = new Date(relativeYear, relativeMonth, 1);
+                //返回得到上月的最后一天,也就是本月总天数
+                return new Date(nextMonthDayOne.getTime() - millisecond).getDate();
+            },
+
+            /**
+             * 获得本季度的起止日期
+             */
+            getCurrentSeason() {
+                //起止日期数组
+                let startStop = [];
+                //获取当前时间
+                let currentDate = this.getCurrentDate();
+                //获得当前月份0-11
+                let currentMonth = currentDate.getMonth();
+                //获得当前年份4位年
+                let currentYear = currentDate.getFullYear();
+                //获得本季度开始月份
+                let quarterSeasonStartMonth = this.getQuarterSeasonStartMonth(currentMonth);
+                //获得本季度结束月份
+                let quarterSeasonEndMonth = quarterSeasonStartMonth + 2;
+
+                //获得本季度开始的日期
+                let quarterSeasonStartDate = new Date(currentYear, quarterSeasonStartMonth, 1);
+                //获得本季度结束的日期
+                let quarterSeasonEndDate = new Date(currentYear, quarterSeasonEndMonth, this.getMonthDays(currentYear, quarterSeasonEndMonth));
+                //加入数组返回
+                startStop.push(quarterSeasonStartDate);
+                startStop.push(quarterSeasonEndDate);
+                //返回
+                return startStop;
+            },
+
+            /***
+             * 得到本年的起止日期
+             *
+             */
+            getCurrentYear() {
+                //起止日期数组
+                let startStop = [];
+                //获取当前时间
+                let currentDate = this.getCurrentDate();
+                //获得当前年份4位年
+                let currentYear = currentDate.getFullYear();
+
+                //本年第一天
+                let currentYearFirstDate = new Date(currentYear, 0, 1);
+                //本年最后一天
+                let currentYearLastDate = new Date(currentYear, 11, 31);
+                //添加至数组
+                startStop.push(currentYearFirstDate);
+                startStop.push(currentYearLastDate);
+                //返回
+                return startStop;
+            },
+
+            /**
+             * 返回上一个月的第一天Date类型
+             * @param year 年
+             * @param month 月
+             **/
+            getPriorMonthFirstDay(year, month) {
+                //年份为0代表,是本年的第一月,所以不能减
+                if (month == 0) {
+                    month = 11; //月份为上年的最后月份
+                    year--; //年份减1
+                    return new Date(year, month, 1);
+                }
+                //否则,只减去月份
+                month--;
+                return new Date(year, month, 1);
+            },
+
+            /**
+             * 获得上一月的起止日期
+             * ***/
+            getPreviousMonth() {
+                //起止日期数组
+                let startStop = [];
+                //获取当前时间
+                let currentDate = this.getCurrentDate();
+                //获得当前月份0-11
+                let currentMonth = currentDate.getMonth();
+                //获得当前年份4位年
+                let currentYear = currentDate.getFullYear();
+                //获得上一个月的第一天
+                let priorMonthFirstDay = this.getPriorMonthFirstDay(currentYear, currentMonth);
+                //获得上一月的最后一天
+                let priorMonthLastDay = new Date(priorMonthFirstDay.getFullYear(), priorMonthFirstDay.getMonth(), this.getMonthDays(priorMonthFirstDay.getFullYear(), priorMonthFirstDay.getMonth()));
+                //添加至数组
+                startStop.push(priorMonthFirstDay);
+                startStop.push(priorMonthLastDay);
+                //返回
+                return startStop;
+            },
+
+
+            /**
+             * 获得上一周的起止日期
+             * **/
+            getPreviousWeek() {
+                //起止日期数组
+                let startStop = [];
+                //获取当前时间
+                let currentDate = this.getCurrentDate();
+                //返回date是一周中的某一天
+                let week = currentDate.getDay();
+                //一天的毫秒数
+                let millisecond = 1000 * 60 * 60 * 24;
+                //减去的天数
+                let minusDay = week != 0 ? week - 1 : 6;
+                //获得当前周的第一天
+                let currentWeekDayOne = new Date(currentDate.getTime() - (millisecond * minusDay));
+                //上周最后一天即本周开始的前一天
+                let priorWeekLastDay = new Date(currentWeekDayOne.getTime() - millisecond);
+                //上周的第一天
+                let priorWeekFirstDay = new Date(priorWeekLastDay.getTime() - (millisecond * 6));
+
+                //添加至数组
+                startStop.push(priorWeekFirstDay);
+                startStop.push(priorWeekLastDay);
+
+                return startStop;
+            },
+
+            /**
+             * 得到上季度的起始日期
+             * year 这个年应该是运算后得到的当前本季度的年份
+             * month 这个应该是运算后得到的当前季度的开始月份
+             * */
+            getPriorSeasonFirstDay(year, month) {
+                let spring = 0; //春
+                let summer = 3; //夏
+                let fall = 6;   //秋
+                let winter = 9; //冬
+                //月份从0-11
+                switch (month) {//季度的其实月份
+                    case spring:
+                        //如果是第一季度则应该到去年的冬季
+                        year--;
+                        month = winter;
+                        break;
+                    case summer:
+                        month = spring;
+                        break;
+                    case fall:
+                        month = summer;
+                        break;
+                    case winter:
+                        month = fall;
+                        break;
+
+                }
+
+                return new Date(year, month, 1);
+            },
+
+            /**
+             * 得到上季度的起止日期
+             * **/
+            getPreviousSeason() {
+                //起止日期数组
+                let startStop = [];
+                //获取当前时间
+                let currentDate = this.getCurrentDate();
+                //获得当前月份0-11
+                let currentMonth = currentDate.getMonth();
+                //获得当前年份4位年
+                let currentYear = currentDate.getFullYear();
+                //上季度的第一天
+                let priorSeasonFirstDay = this.getPriorSeasonFirstDay(currentYear, currentMonth);
+                //上季度的最后一天
+                let priorSeasonLastDay = new Date(priorSeasonFirstDay.getFullYear(), priorSeasonFirstDay.getMonth() + 2, this.getMonthDays(priorSeasonFirstDay.getFullYear(), priorSeasonFirstDay.getMonth() + 2));
+                //添加至数组
+                startStop.push(priorSeasonFirstDay);
+                startStop.push(priorSeasonLastDay);
+                return startStop;
+            },
+
+            /**
+             * 得到去年的起止日期
+             * **/
+            getPreviousYear() {
+                //起止日期数组
+                let startStop = [];
+                //获取当前时间
+                let currentDate = this.getCurrentDate();
+                //获得当前年份4位年
+                let currentYear = currentDate.getFullYear();
+                currentYear--;
+                let priorYearFirstDay = new Date(currentYear, 0, 1);
+                let priorYearLastDay = new Date(currentYear, 11, 1);
+                //添加至数组
+                startStop.push(priorYearFirstDay);
+                startStop.push(priorYearLastDay);
+                return startStop;
+            }
+        },
+
+        /**
          * 获取一些指定时间
          * @param str
-         * @param retInt
+         * @param retDate
          * @returns {*|string}
          */
-        getData(str, retInt = false) {
-            let now = new Date();                   //当前日期
-            let nowDayOfWeek = now.getDay();        //今天本周的第几天
-            let nowDay = now.getDate();             //当前日
-            let nowMonth = now.getMonth();          //当前月
-            let nowYear = now.getYear();            //当前年
-            nowYear += (nowYear < 2000) ? 1900 : 0;
-            let lastMonthDate = new Date();         //上月日期
-            lastMonthDate.setDate(1);
-            lastMonthDate.setMonth(lastMonthDate.getMonth()-1);
-            let lastMonth = lastMonthDate.getMonth();
-            let getQuarterStartMonth = () => {
-                let quarterStartMonth = 0;
-                if(nowMonth < 3) {
-                    quarterStartMonth = 0;
-                }
-                if (2 < nowMonth && nowMonth < 6) {
-                    quarterStartMonth = 3;
-                }
-                if (5 < nowMonth && nowMonth < 9) {
-                    quarterStartMonth = 6;
-                }
-                if (nowMonth > 8) {
-                    quarterStartMonth = 9;
-                }
-                return quarterStartMonth;
-            };
-            let getMonthDays = (myMonth) => {
-                let monthStartDate = new Date(nowYear, myMonth, 1);
-                let monthEndDate = new Date(nowYear, myMonth + 1, 1);
-                return (monthEndDate - monthStartDate)/(1000 * 60 * 60 * 24);
-            };
-            //
-            let time = now.getTime();
+        getSpecifyDate(str, retDate = false) {
+            let time = new Date().getTime();
             switch (str) {
-                case '今天':
-                    time = now;
-                    break;
                 case '昨天':
-                    time = now - 86400000;
+                    time -= 86400 * 1000;
                     break;
                 case '前天':
-                    time = now - 86400000 * 2;
+                    time -= 86400 * 2000;
                     break;
                 case '本周':
-                    time = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek);
+                    time = $A.dateRangeUtil.getCurrentWeek()[0].getTime();
                     break;
                 case '本周结束':
-                    time = new Date(nowYear, nowMonth, nowDay + (6 - nowDayOfWeek));
+                    time = $A.dateRangeUtil.getCurrentWeek()[1].getTime();
                     break;
                 case '上周':
-                    time = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek - 7);
+                    time = $A.dateRangeUtil.getPreviousWeek()[0].getTime();
                     break;
                 case '上周结束':
-                    time = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek - 1);
-                    break;
-                case '本周2':
-                    time = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek + 1);
-                    break;
-                case '本周结束2':
-                    time = new Date(nowYear, nowMonth, nowDay + (6 - nowDayOfWeek) + 1);
-                    break;
-                case '上周2':
-                    time = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek - 7 + 1);
-                    break;
-                case '上周结束2':
-                    time = new Date(nowYear, nowMonth, nowDay - nowDayOfWeek - 1 + 1);
+                    time = $A.dateRangeUtil.getPreviousWeek()[1].getTime();
                     break;
                 case '本月':
-                    time = new Date(nowYear, nowMonth, 1);
+                    time = $A.dateRangeUtil.getCurrentMonth()[0].getTime();
                     break;
                 case '本月结束':
-                    time = new Date(nowYear, nowMonth, getMonthDays(nowMonth));
+                    time = $A.dateRangeUtil.getCurrentMonth()[1].getTime();
                     break;
                 case '上个月':
-                    time = new Date(nowYear, lastMonth, 1);
+                    time = $A.dateRangeUtil.getPreviousMonth()[0].getTime();
                     break;
                 case '上个月结束':
-                    time = new Date(nowYear, lastMonth, getMonthDays(lastMonth));
+                    time = $A.dateRangeUtil.getPreviousMonth()[1].getTime();
                     break;
                 case '本季度':
-                    time = new Date(nowYear, getQuarterStartMonth(), 1);
+                    time = $A.dateRangeUtil.getCurrentSeason()[0].getTime();
                     break;
                 case '本季度结束':
-                    let quarterEndMonth = getQuarterStartMonth() + 2;
-                    time = new Date(nowYear, quarterEndMonth, getMonthDays(quarterEndMonth));
+                    time = $A.dateRangeUtil.getCurrentSeason()[1].getTime();
                     break;
             }
-            if (retInt === true) {
-                return time;
+            time = $A.formatDate("Y-m-d", Math.floor(time / 1000))
+            if (retDate === true) {
+                return new Date(time);
             }
-            return $A.formatDate("Y-m-d", parseInt(time / 1000))
+            return time
         },
 
         /**
@@ -288,12 +558,12 @@
             }, {
                 text: $A.L('本周'),
                 value() {
-                    return [$A.getData('今天', true), lastSecond($A.getData('本周结束2', true))];
+                    return [new Date(), lastSecond($A.getSpecifyDate('本周结束', true).getTime())];
                 }
             }, {
                 text: $A.L('本月'),
                 value() {
-                    return [$A.getData('今天', true), lastSecond($A.getData('本月结束', true))];
+                    return [new Date(), lastSecond($A.getSpecifyDate('本月结束', true).getTime())];
                 }
             }, {
                 text: $A.L('3天'),
@@ -360,13 +630,204 @@
         },
 
         /**
-         * 返回对话未读数量
+         * 返回对话未读数量（不含免打扰，但如果免打扰中有@则返回@数量）
          * @param dialog
          * @returns {*|number}
          */
-        getDialogUnread(dialog) {
-            return dialog ? (dialog.unread || dialog.mark_unread || 0) : 0
+        getDialogNum(dialog) {
+            if (!dialog) {
+                return 0
+            }
+            const unread = !dialog.silence ? dialog.unread : 0
+            return unread || dialog.mention || dialog.mark_unread || 0
         },
+
+        /**
+         * 返回对话未读数量
+         * @param dialog
+         * @param containSilence    是否包含免打扰消息（true:包含, false:不包含）
+         * @returns {*|number}
+         */
+        getDialogUnread(dialog, containSilence) {
+            if (!dialog) {
+                return 0
+            }
+            const unread = (containSilence || !dialog.silence) ? dialog.unread : 0
+            return unread || dialog.mark_unread || 0
+        },
+
+        /**
+         * 返回对话@提及未读数量
+         * @param dialog
+         * @returns {*|number}
+         */
+        getDialogMention(dialog) {
+            return dialog?.mention || 0
+        },
+
+        /**
+         * 返回文本信息预览格式
+         * @param text
+         * @returns {*}
+         */
+        getMsgTextPreview(text) {
+            if (!text) return '';
+            text = text.replace(/<img\s+class="emoticon"[^>]*?alt="(\S+)"[^>]*?>/g, "[$1]")
+            text = text.replace(/<img\s+class="emoticon"[^>]*?>/g, `[${$A.L('动画表情')}]`)
+            text = text.replace(/<img\s+class="browse"[^>]*?>/g, `[${$A.L('图片')}]`)
+            text = text.replace(/<[^>]+>/g,"")
+            text = text.replace(/&nbsp;/g," ")
+            text = text.replace(/&amp;/g,"&")
+            text = text.replace(/&lt;/g,"<")
+            text = text.replace(/&gt;/g,">")
+            return text
+        },
+
+        /**
+         * 消息格式化处理（将消息内的RemoteURL换成真实地址）
+         * @param data
+         */
+        formatMsgBasic(data) {
+            if (!data) {
+                return data
+            }
+            if ($A.isJson(data)) {
+                for (let key in data) {
+                    if (!data.hasOwnProperty(key)) continue;
+                    data[key] = $A.formatMsgBasic(data[key]);
+                }
+            } else if ($A.isArray(data)) {
+                data.forEach((val, index) => {
+                    data[index] = $A.formatMsgBasic(val);
+                });
+            } else if (typeof data === "string") {
+                data = data.replace(/\{\{RemoteURL\}\}/g, this.apiUrl('../'))
+            }
+            return data
+        },
+
+        /**
+         * 消息格式化处理
+         * @param text
+         * @param userid
+         * @returns {string|*}
+         */
+        formatTextMsg(text, userid) {
+            if (!text) {
+                return ""
+            }
+            const atReg = new RegExp(`<span class="mention user" data-id="${userid}">`, "g")
+            text = text.trim().replace(/(\n\x20*){3,}/g, "\n\n");
+            text = text.replace(/&nbsp;/g, ' ')
+            text = text.replace(/<p><\/p>/g, '<p><br/></p>')
+            text = text.replace(/\{\{RemoteURL\}\}/g, $A.apiUrl('../'))
+            text = text.replace(atReg, `<span class="mention me" data-id="${userid}">`)
+            // 处理内容连接
+            if (/https*:\/\//.test(text)) {
+                text = text.split(/(<[^>]*>)/g).map(string => {
+                    if (string && !/<[^>]*>/.test(string)) {
+                        string = string.replace(/(^|[^'"])((https*:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;|#|@|,|!)+))/g, "$1<a href=\"$2\" target=\"_blank\">$2</a>")
+                    }
+                    return string;
+                }).join("")
+            }
+            // 处理图片显示尺寸
+            const array = text.match(/<img\s+[^>]*?>/g);
+            if (array) {
+                const widthReg = new RegExp("width=\"(\\d+)\""),
+                    heightReg = new RegExp("height=\"(\\d+)\"")
+                array.some(res => {
+                    const widthMatch = res.match(widthReg),
+                        heightMatch = res.match(heightReg);
+                    if (widthMatch && heightMatch) {
+                        const width = parseInt(widthMatch[1]),
+                            height = parseInt(heightMatch[1]),
+                            maxSize = res.indexOf("emoticon") > -1 ? 150 : 220;
+                        const scale = $A.scaleToScale(width, height, maxSize, maxSize);
+                        const value = res
+                            .replace(widthReg, `original-width="${width}" width="${scale.width}"`)
+                            .replace(heightReg, `original-height="${height}" height="${scale.height}"`)
+                        text = text.replace(res, value)
+                    }
+                })
+            }
+            return text;
+        },
+
+        /**
+         * 获取文本消息图片
+         * @param text
+         * @returns {*[]}
+         */
+        getTextImagesInfo(text) {
+            const baseUrl = $A.apiUrl('../');
+            const array = text.match(new RegExp(`<img[^>]*?>`, "g"));
+            const list = [];
+            if (array) {
+                const srcReg = new RegExp("src=([\"'])([^'\"]*)\\1"),
+                    widthReg = new RegExp("(original-)?width=\"(\\d+)\""),
+                    heightReg = new RegExp("(original-)?height=\"(\\d+)\"")
+                array.some(res => {
+                    const srcMatch = res.match(srcReg),
+                        widthMatch = res.match(widthReg),
+                        heightMatch = res.match(heightReg);
+                    if (srcMatch) {
+                        list.push({
+                            src: srcMatch[2].replace(/\{\{RemoteURL\}\}/g, baseUrl),
+                            width: widthMatch ? widthMatch[2] : -1,
+                            height: heightMatch ? heightMatch[2] : -1,
+                        })
+                    }
+                })
+            }
+            return list;
+        },
+
+        /**
+         * 消息简单描述
+         * @param data
+         * @returns {string|*}
+         */
+        getMsgSimpleDesc(data) {
+            if ($A.isJson(data)) {
+                switch (data.type) {
+                    case 'text':
+                        return $A.getMsgTextPreview(data.msg.text)
+                    case 'record':
+                        return `[${$A.L('语音')}]`
+                    case 'meeting':
+                        return `[${$A.L('会议')}] ${data.msg.name}`
+                    case 'file':
+                        if (data.msg.type == 'img') {
+                            return `[${$A.L('图片')}]`
+                        }
+                        return `[${$A.L('文件')}] ${data.msg.name}`
+                    case 'tag':
+                        return `[${$A.L(data.msg.action === 'remove' ? '取消标注' : '标注')}] ${$A.getMsgSimpleDesc(data.msg.data)}`
+                    case 'todo':
+                        return `[${$A.L(data.msg.action === 'remove' ? '取消待办' : (data.msg.action === 'done' ? '完成' : '设待办'))}] ${$A.getMsgSimpleDesc(data.msg.data)}`
+                    case 'notice':
+                        return data.msg.notice
+                    default:
+                        return `[${$A.L('未知的消息')}]`
+                }
+            }
+            return '';
+        },
+
+        /**
+         * 获取文件标题
+         * @param file
+         * @returns {*}
+         */
+        getFileName(file) {
+            let name = file.name || '';
+            let ext = file.ext || '';
+            if (ext != '') {
+                name += "." + ext;
+            }
+            return name;
+        }
     });
 
     /**
@@ -375,28 +836,6 @@
      * =============================================================================
      */
     $.extend({
-        // 加载器
-        spinnerShow() {
-            $A.spinnerLoadNum++
-            if ($A.spinnerLoadNum > 0) {
-                const spinner = document.getElementById("common-spinner");
-                if (spinner) {
-                    spinner.style.display = "block"
-                }
-            }
-        },
-
-        spinnerHide() {
-            $A.spinnerLoadNum--
-            if ($A.spinnerLoadNum <= 0) {
-                const spinner = document.getElementById("common-spinner");
-                if (spinner) {
-                    spinner.style.display = "none"
-                }
-            }
-        },
-        spinnerLoadNum: 0,
-
         // 弹窗
         modalConfig(config) {
             if (typeof config === "undefined") {
@@ -404,10 +843,17 @@
             } else if (typeof config === "string") {
                 config = {content: config};
             }
-            config.title = $A.L(config.title || (typeof config.render === 'undefined' ? '温馨提示' : ''));
-            config.content = $A.L(config.content || '');
-            config.okText = $A.L(config.okText || '确定');
-            config.cancelText = $A.L(config.cancelText || '取消');
+            config.title = config.title || (typeof config.render === 'undefined' ? '温馨提示' : '');
+            config.content = config.content || '';
+            config.okText = config.okText || '确定';
+            config.cancelText = config.cancelText || '取消';
+            if (config.language !== false) {
+                delete config.language;
+                config.title = $A.L(config.title);
+                config.content = $A.L(config.content);
+                config.okText = $A.L(config.okText);
+                config.cancelText = $A.L(config.cancelText);
+            }
             return config;
         },
 
@@ -418,16 +864,38 @@
             }
             if (typeof config === "string") config = {title:config};
             let inputId = "modalInput_" + $A.randomString(6);
+            let inputProps = {
+                value: config.value,
+                placeholder: $A.L(config.placeholder),
+                elementId: inputId,
+            }
+            if ($A.isJson(config.inputProps)) {
+                inputProps = Object.assign(inputProps, config.inputProps)
+            }
             const onOk = () => {
-                if (typeof config.onOk === "function") {
-                    if (config.onOk(config.value, () => {
-                        $A.Modal.remove();
-                    }) === true) {
-                        $A.Modal.remove();
+                return new Promise((resolve, reject) => {
+                    if (!config.onOk) {
+                        reject()    // 没有返回：取消等待
+                        return
                     }
-                } else {
-                    $A.Modal.remove();
-                }
+                    const call = config.onOk(config.value);
+                    if (!call) {
+                        resolve()   // 返回无内容：关闭弹窗
+                        return
+                    }
+                    if (call.then) {
+                        call.then(msg => {
+                            msg && $A.messageSuccess(msg)
+                            resolve()
+                        }).catch(err => {
+                            err && $A.messageError(err)
+                            reject()
+                        });
+                    } else {
+                        typeof call === "string" && $A.messageError(call)
+                        reject()
+                    }
+                })
             };
             const onCancel = () => {
                 if (typeof config.onCancel === "function") {
@@ -445,11 +913,7 @@
                             }
                         }, $A.L(config.title)),
                         h('Input', {
-                            props: {
-                                value: config.value,
-                                placeholder: $A.L(config.placeholder),
-                                elementId: inputId,
-                            },
+                            props: inputProps,
                             on: {
                                 input: (val) => {
                                     config.value = val;
@@ -479,6 +943,35 @@
             if (millisecond > 0) {
                 setTimeout(() => { $A.modalConfirm(config) }, millisecond);
                 return;
+            }
+            config = $A.modalConfig(config);
+            if (config.loading) {
+                const {onOk} = config;
+                config.onOk = () => {
+                    return new Promise((resolve, reject) => {
+                        if (!onOk) {
+                            reject()    // 没有返回：取消等待
+                            return
+                        }
+                        const call = onOk();
+                        if (!call) {
+                            resolve()   // 返回无内容：关闭弹窗
+                            return
+                        }
+                        if (call.then) {
+                            call.then(msg => {
+                                msg && $A.messageSuccess(msg)
+                                resolve()
+                            }).catch(err => {
+                                err && $A.messageError(err)
+                                reject()
+                            });
+                        } else {
+                            typeof call === "string" && $A.messageError(call)
+                            reject()
+                        }
+                    })
+                }
             }
             $A.Modal.confirm($A.modalConfig(config));
         },
@@ -513,6 +1006,12 @@
                 setTimeout(() => { $A.modalWarning(config) }, millisecond);
                 return;
             }
+            if (typeof config === "string" && config === "Network exception") {
+                return;
+            }
+            if ($A.isJson(config) && config.content === "Network exception") {
+                return;
+            }
             $A.Modal.warning($A.modalConfig(config));
         },
 
@@ -522,6 +1021,12 @@
             }
             if (millisecond > 0) {
                 setTimeout(() => { $A.modalError(config) }, millisecond);
+                return;
+            }
+            if (typeof config === "string" && config === "Network exception") {
+                return;
+            }
+            if ($A.isJson(config) && config.content === "Network exception") {
                 return;
             }
             $A.Modal.error($A.modalConfig(config));
@@ -540,10 +1045,16 @@
         },
 
         messageWarning(msg) {
+            if (typeof msg === "string" && msg === "Network exception") {
+                return;
+            }
             $A.Message.warning($A.L(msg));
         },
 
         messageError(msg) {
+            if (typeof msg === "string" && msg === "Network exception") {
+                return;
+            }
             $A.Message.error($A.L(msg));
         },
 
@@ -669,11 +1180,9 @@
                     [style*="background: url"],
                     [style*="background-image: url"],
                     [background],
-                    twitterwidget,
-                    .sr-reader,
                     .no-dark-mode,
-                    .no-dark-mode-before:before,
-                    .sr-backdrop {
+                    .no-dark-content,
+                    .no-dark-before:before {
                         ${this.utils.reverseFilter}
                     }
 
@@ -683,7 +1192,9 @@
                     [style*="background-image: url"] *,
                     input,
                     [background] *,
-                    twitterwidget .NaturalImage-image {
+                    .no-dark-content img,
+                    .no-dark-content canvas,
+                    .no-dark-content svg image {
                         ${this.utils.noneFilter}
                     }
 

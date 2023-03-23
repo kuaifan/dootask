@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+if [ ! -f ".env" ]; then
+    echo -e "配置文件不存在！"
+    exit 1
+fi
+
+debug=`cat .env | grep "^APP_DEBUG=" | awk -F '=' '{print $2}'`
+if [ "$debug" = "true" ]; then
+    echo "[MODE] development"
+    ./bin/inotify ./app
+else
+    echo "[MODE] production"
+    php bin/laravels start -i
+fi

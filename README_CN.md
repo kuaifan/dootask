@@ -45,6 +45,16 @@ cd dootask
 ./cmd port 2222
 ```
 
+### 更换URL
+
+```bash
+# 此地址仅影响邮件回复功能
+./cmd url {域名地址}
+
+# 例如:
+./cmd url https://domain.com
+```
+
 ### 停止服务
 
 ```bash
@@ -107,7 +117,8 @@ git pull
 ./cmd mysql recovery
 ```
 
-如果升级后出现502请运行 `./cmd restart` 重启服务即可。
+* 跨越大版本升级失败时请重试执行一次。
+* 如果升级后出现502请运行 `./cmd restart` 重启服务即可。
 
 ## 迁移项目
 

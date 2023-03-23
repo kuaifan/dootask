@@ -1,33 +1,13 @@
 {
     "name": "DooTask",
-    "version": "0.13.0",
+    "version": "0.25.39",
     "description": "DooTask is task management system.",
     "scripts": {
         "start": "./cmd dev",
         "build": "./cmd prod",
-        "version": "node ./version.js"
+        "version": "node ./version.js",
+        "translate": "./cmd translate"
     },
-    "app": [
-        {
-            "name": "DooTask",
-            "id": "com.dootask.task",
-            "url": "https://dootask.com/",
-            "publish": {
-                "provider": "github",
-                "owner": "kuaifan",
-                "repo": "dootask"
-            }
-        },
-        {
-            "name": "HitoseaTask",
-            "id": "com.hitosea.task",
-            "url": "https://t.hitosea.com/",
-            "publish": {
-                "provider": "generic",
-                "url": "https://t.hitosea.com/desktop/publish"
-            }
-        }
-    ],
     "author": {
         "name": "KuaiFan",
         "email": "aipaw@live.cn",
@@ -38,44 +18,68 @@
         "url": "git+https://github.com/kuaifan/dootask.git"
     },
     "devDependencies": {
+        "@chenfengyuan/vue-qrcode": "^1.0.2",
+        "autoprefixer": "^10.4.13",
         "axios": "^0.24.0",
         "cross-env": "^7.0.3",
-        "css-loader": "^6.5.1",
+        "css-loader": "^6.7.2",
         "echarts": "^5.2.2",
-        "element-ui": "^2.15.6",
+        "element-ui": "git+https://github.com/kuaifan/element.git#master",
         "file-loader": "^6.2.0",
         "inquirer": "^8.2.0",
         "internal-ip": "^6.2.0",
-        "jquery": "^3.6.0",
-        "jspdf": "^2.5.0",
-        "laravel-mix": "^6.0.39",
+        "jquery": "^3.6.1",
+        "jspdf": "^2.5.1",
         "le5le-store": "^1.0.7",
         "less": "^4.1.2",
         "less-loader": "^10.2.0",
+        "localforage": "^1.10.0",
         "lodash": "^4.17.21",
         "moment": "^2.29.1",
         "node-sass": "^6.0.1",
         "notification-koro1": "^1.1.1",
+        "photoswipe": "^5.2.8",
         "postcss": "^8.4.5",
+        "quill": "^1.3.7",
+        "quill-mention-hi": "^3.1.0-1",
         "resolve-url-loader": "^4.0.0",
-        "sass": "^1.45.1",
-        "sass-loader": "^12.4.0",
-        "stylus": "^0.56.0",
-        "stylus-loader": "^6.2.0",
+        "sass": "~1.32.13",
+        "sass-loader": "^12.6.0",
+        "stylus": "^0.59.0",
+        "stylus-loader": "^7.1.0",
         "tinymce": "^5.10.3",
         "tui-calendar-hi": "^1.15.1-5",
-        "view-design-hi": "^4.7.0-19",
-        "vue": "^2.6.14",
+        "view-design-hi": "^4.7.0-43",
+        "vite": "^2.9.15",
+        "vite-plugin-file-copy": "^1.0.0",
+        "vite-plugin-require": "^1.1.10",
+        "vite-plugin-vue2": "^2.0.3",
+        "vue": "~2.6.14",
         "vue-clipboard2": "^0.3.3",
-        "vue-emoji-picker": "^1.0.3",
+        "vue-jsonp": "^2.0.0",
         "vue-kityminder-ggg": "^1.3.10",
-        "vue-loader": "^15.9.8",
+        "vue-loader": "^15.10.1",
         "vue-resize-observer": "^2.0.16",
-        "vue-router": "^3.5.3",
-        "vue-template-compiler": "^2.6.14",
+        "vue-router": "^3.6.5",
+        "vue-template-compiler": "~2.6.14",
+        "vue-virtual-scroll-list-hi": "^2.3.4-6",
         "vuedraggable": "^2.24.3",
-        "vuex": "^3.6.2",
-        "webpack": "^5.69.1",
-        "webpack-cli": "^4.9.2"
-    }
+        "vuex": "^3.6.2"
+    },
+    "app": [
+        {
+            "id": "com.dootask.task",
+            "name": "DooTask",
+            "url": "http://public/",
+            "urls": [
+                "https://dootask.com/",
+                "https://www.dootask.com/",
+                "https://t.hitosea.com/"
+            ],
+            "publish": {
+                "provider": "generic",
+                "url": "https://www.dootask.com/desktop/publish"
+            }
+        }
+    ]
 }

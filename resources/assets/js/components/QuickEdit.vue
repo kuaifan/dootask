@@ -6,6 +6,7 @@
                 ref="input"
                 v-model="content"
                 :disabled="isLoad"
+                enterkeyhint="done"
                 @on-keydown="onKeydown"
                 @on-blur="onBlur"/>
             <Input
@@ -13,13 +14,15 @@
                 ref="input"
                 v-model="content"
                 :disabled="isLoad"
+                :parser="parser"
+                enterkeyhint="done"
                 @on-keydown="onKeydown"
                 @on-blur="onBlur"/>
             <div v-if="isLoad" class="quick-loading"><Loading/></div>
         </div>
         <template v-else>
             <div class="quick-text"><slot></slot></div>
-            <Icon class="quick-icon" type="ios-create-outline" @click.stop="onEdit"/>
+            <Icon v-if="!disabled" class="quick-icon" type="ios-create-outline" @click.stop="onEdit"/>
         </template>
     </div>
 </template>
@@ -48,6 +51,13 @@ export default {
         clickOutSide: {
             type: Boolean,
             default: true
+        },
+        disabled: {
+            type: Boolean,
+            default: false
+        },
+        parser: {
+            type: Function
         },
     },
 

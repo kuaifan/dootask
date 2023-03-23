@@ -10,13 +10,14 @@
                     :autosize="{ minRows: 1, maxRows: 3 }"
                     :maxlength="255"
                     :placeholder="$L(typeName + '描述，回车创建')"
+                    enterkeyhint="done"
                     @on-focus="onFocus=true"
                     @on-blur="onFocus=false"
                     @on-keydown="onKeydown"/>
                 <div v-if="parentId == 0" class="priority">
                     <ul>
                         <li v-for="(item, key) in taskPriority" :key="key">
-                            <ETooltip v-if="active" :content="taskPriorityContent(item)">
+                            <ETooltip v-if="active" :disabled="windowSmall || $isEEUiApp" :content="taskPriorityContent(item)">
                                 <i
                                     class="taskfont"
                                     :style="{color:item.color}"
@@ -46,6 +47,7 @@
             :autosize="{ minRows: 2, maxRows: 3 }"
             :maxlength="255"
             :placeholder="$L(typeName + '描述，回车创建')"
+            enterkeyhint="done"
             @on-focus="onFocus=true"
             @on-blur="onFocus=false"
             @on-keydown="onKeydown"/>
@@ -55,7 +57,7 @@
         <div class="priority">
             <ul>
                 <li v-for="(item, key) in taskPriority" :key="key">
-                    <ETooltip v-if="active" :content="taskPriorityContent(item)">
+                    <ETooltip v-if="active" :disabled="windowSmall || $isEEUiApp" :content="taskPriorityContent(item)">
                         <i
                             class="taskfont"
                             :style="{color:item.color}"
@@ -70,7 +72,7 @@
 </template>
 
 <script>
-import {mapGetters, mapState} from "vuex";
+import {mapState} from "vuex";
 
 export default {
     name: "TaskAddSimple",
@@ -126,7 +128,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userId', 'taskPriority']),
+        ...mapState(['taskPriority']),
 
         typeName() {
             return (this.parentId > 0 ? '子任务' : '任务');
@@ -231,9 +233,13 @@ export default {
         },
 
         choosePriority(item) {
-            let start = new Date();
-            let end = new Date(new Date().setDate(start.getDate() + $A.runNum(item.days)));
-            this.$set(this.addData, 'times', $A.date2string([start, end]))
+            if ($A.runNum(item.days) > 0) {
+                let start = new Date();
+                let end = new Date(new Date().setDate(start.getDate() + $A.runNum(item.days)));
+                this.$set(this.addData, 'times', $A.date2string([start, end]))
+            } else {
+                this.$set(this.addData, 'times', [])
+            }
             this.$set(this.addData, 'p_level', item.priority)
             this.$set(this.addData, 'p_name', item.name)
             this.$set(this.addData, 'p_color', item.color)

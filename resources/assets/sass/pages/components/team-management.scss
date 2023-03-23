@@ -7,9 +7,10 @@
     padding: 20px;
     display: flex;
     flex-direction: column;
+    overflow: auto;
 
     .management-title {
-        color: #333333;
+        color: $primary-title-color;
         font-size: 20px;
         font-weight: 500;
         line-height: 1;
@@ -31,6 +32,80 @@
         }
     }
 
+    .management-box {
+        flex: 1;
+        display: flex;
+        min-width: 500px;
+        height: 0;
+        .management-department {
+            width: 239px;
+            border-right: 1px solid #efefef;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            > ul {
+                flex: 1;
+                overflow: auto;
+                > li {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                    height: 40px;
+                    display: flex;
+                    align-items: center;
+                    cursor: pointer;
+                    overflow: hidden;
+                    &:hover,
+                    &.active {
+                        background-color: #ecf5ff;
+                    }
+                    &.level-1 {
+                        font-weight: 500;
+                    }
+                    &.level-2 {
+                        margin-left: 24px;
+                    }
+                    &.level-3 {
+                        margin-left: 48px;
+                    }
+                    &.level-4 {
+                        margin-left: 72px;
+                    }
+                    .department-icon {
+                        padding: 8px;
+                        font-size: 16px;
+                    }
+                    .department-title {
+                        flex: 1;
+                        flex-shrink: 0;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
+                    .department-menu {
+                        display: inline-block;
+                        padding: 12px;
+                        font-size: 16px;
+                        transform: rotate(-90deg);
+                    }
+                }
+            }
+            .department-buttons {
+                margin-top: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+        .management-user {
+            flex: 1;
+            width: 0;
+            display: flex;
+            flex-direction: column;
+            padding-left: 20px;
+        }
+    }
+
     .team-email {
         display: flex;
         align-items: center;
@@ -45,8 +120,8 @@
             height: 18px;
             line-height: 18px;
             padding: 0 4px;
-            transform: scale(0.8);
-            transform-origin: right center;
+            margin-left: 4px;
+            zoom: 0.8;
             flex-shrink: 0;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -57,5 +132,56 @@
     .table-page-box {
         flex: 1;
         height: 0;
+    }
+}
+
+.team-department-add-dialog-group {
+    display: flex;
+    align-items: center;
+    .dialog-name {
+        flex: 1;
+        width: 0;
+        padding-right: 12px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.team-department-checkin-item {
+    margin-bottom: 12px;
+    > div {
+        padding-right: 12px;
+        &:last-child {
+            padding-right: 0;
+        }
+    }
+}
+
+.team-table-department-warp {
+    display: flex;
+    align-items: center;
+
+    > span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .department-tag-num {
+        background-color: #515a6e;
+        border-radius: 9px;
+        color: #fff;
+        cursor: pointer;
+        flex-shrink: 0;
+        font-size: 12px;
+        height: 18px;
+        line-height: 18px;
+        margin-left: 4px;
+        min-width: 18px;
+        padding: 0 5px;
+        text-align: center;
+        transform: scale(0.9);
+        transform-origin: right center;
     }
 }

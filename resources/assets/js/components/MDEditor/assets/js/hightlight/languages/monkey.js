@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var NUMBER = {
     className: 'number', relevance: 0,
     variants: [

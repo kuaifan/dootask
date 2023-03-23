@@ -1,4 +1,4 @@
-module.exports = function(hljs) {
+export default function(hljs) {
   var CPP = hljs.getLanguage('cpp').exports;
 	return {
     keywords: {
