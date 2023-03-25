@@ -249,10 +249,7 @@ export default {
             }
             //
             this.loadIng++;
-            this.$store.dispatch("getTasks", {
-                time,
-                complete: "no"
-            }).finally(_ => {
+            this.$store.dispatch("getTasks", {time}).finally(_ => {
                 this.loadIng--;
             })
         },

@@ -859,12 +859,8 @@ class ProjectController extends AbstractController
      * - 第一个时间: 读取在这个时间之后更新的数据
      * - 第二个时间: 读取在这个时间之后删除的数据ID（第1页附加返回数据: deleted_id）
      *
-     * @apiParam {String} [complete]         完成状态
-     * - all：所有（默认）
-     * - yes：已完成
-     * - no：未完成
      * @apiParam {String} [archived]         归档状态
-     * - all：所有
+     * - all：所有（parent_id > 0 时强制 all）
      * - yes：已归档
      * - no：未归档（默认）
      * @apiParam {String} [deleted]          是否读取已删除
@@ -892,7 +888,6 @@ class ProjectController extends AbstractController
         $name = Request::input('name');
         $time = Request::input('time');
         $timerange = TimeRange::parse(Request::input('timerange'));
-        $complete = Request::input('complete', 'all');
         $archived = Request::input('archived', 'no');
         $deleted = Request::input('deleted', 'no');
         $keys = Request::input('keys');
@@ -914,6 +909,7 @@ class ProjectController extends AbstractController
             $isDeleted = str_replace(['all', 'yes', 'no'], [null, false, true], $deleted);
             ProjectTask::userTask($parent_id, $isArchived, $isDeleted);
             $scopeAll = true;
+            $archived = 'all';
             $builder->where('project_tasks.parent_id', $parent_id);
         } elseif ($parent_id === -1) {
             $builder->where('project_tasks.parent_id', 0);
@@ -942,12 +938,6 @@ class ProjectController extends AbstractController
         }
         if ($timerange->updated) {
             $builder->where('project_tasks.updated_at', '>', $timerange->updated);
-        }
-        //
-        if ($complete === 'yes') {
-            $builder->whereNotNull('project_tasks.complete_at');
-        } elseif ($complete === 'no') {
-            $builder->whereNull('project_tasks.complete_at');
         }
         //
         if ($archived == 'yes') {

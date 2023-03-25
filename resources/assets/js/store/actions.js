@@ -1331,6 +1331,9 @@ export default {
      */
     getTasks({state, dispatch}, requestData) {
         const taskData = [];
+        if (requestData === null) {
+            requestData = {}
+        }
         if ($A.isArray(requestData.taskData)) {
             taskData.push(...requestData.taskData)
             delete requestData.taskData;
@@ -1453,9 +1456,7 @@ export default {
         }
         state.loadDashboardTasks = true;
         //
-        dispatch("getTasks", {
-            complete: "no",
-        }).finally(_ => {
+        dispatch("getTasks", null).finally(_ => {
             state.loadDashboardTasks = false;
         })
     },
@@ -1482,10 +1483,7 @@ export default {
      */
     getTaskForParent({state, dispatch}, parent_id) {
         return new Promise(function (resolve, reject) {
-            dispatch("getTasks", {
-                parent_id,
-                archived: 'all'
-            }).then(resolve).catch(reject)
+            dispatch("getTasks", {parent_id}).then(resolve).catch(reject)
         })
     },
 
