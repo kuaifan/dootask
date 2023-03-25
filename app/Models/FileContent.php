@@ -40,6 +40,22 @@ class FileContent extends AbstractModel
     use SoftDeletes;
 
     /**
+     * 强制删除文件内容
+     * @return void
+     */
+    public function forceDeleteContent()
+    {
+        $this->forceDelete();
+        $content = Base::json2array($this->content ?: []);
+        if (str_starts_with($content['url'], 'uploads/')) {
+            $path = public_path($content['url']);
+            if (file_exists($path)) {
+                @unlink($path);
+            }
+        }
+    }
+
+    /**
      * 转预览地址
      * @param array $array
      * @return string

@@ -2,6 +2,7 @@
 
 namespace App\Tasks;
 
+use App\Models\File;
 use App\Models\TaskWorker;
 use App\Models\Tmp;
 use App\Models\WebSocketTmpMsg;
@@ -17,7 +18,11 @@ class DeleteTmpTask extends AbstractTask
     protected $data;
     protected $hours; // 多久后删除，单位小时
 
-    public function __construct(string $data, int $hours)
+    /**
+     * @param string $data
+     * @param int $hours
+     */
+    public function __construct(string $data, int $hours = 24)
     {
         parent::__construct(...func_get_args());
         $this->data = $data;
@@ -28,13 +33,14 @@ class DeleteTmpTask extends AbstractTask
     {
         switch ($this->data) {
             /**
-             * 表pre_wg_tmp_msgs
+             * 表pre_tmp_msgs
              */
             case 'wg_tmp_msgs':
                 {
-                    WebSocketTmpMsg::where('created_at', '<', Carbon::now()->subHours($this->hours)->toDateTimeString())
+                    WebSocketTmpMsg::where('created_at', '<', Carbon::now()->subHours($this->hours))
                         ->orderBy('id')
                         ->chunk(500, function ($msgs) {
+                            /** @var WebSocketTmpMsg $msg */
                             foreach ($msgs as $msg) {
                                 $msg->delete();
                             }
@@ -43,13 +49,14 @@ class DeleteTmpTask extends AbstractTask
                 break;
 
             /**
-             * 表pre_wg_tmp
+             * 表pre_tmp
              */
             case 'tmp':
                 {
-                    Tmp::where('created_at', '<', Carbon::now()->subHours($this->hours)->toDateTimeString())
+                    Tmp::where('created_at', '<', Carbon::now()->subHours($this->hours))
                         ->orderBy('id')
-                        ->chunk(2000, function ($tmps) {
+                        ->chunk(500, function ($tmps) {
+                            /** @var Tmp $tmp */
                             foreach ($tmps as $tmp) {
                                 $tmp->delete();
                             }
@@ -63,9 +70,30 @@ class DeleteTmpTask extends AbstractTask
             case 'task_worker':
                 {
                     TaskWorker::onlyTrashed()
-                        ->where('deleted_at', '<', Carbon::now()->subHours($this->hours)->toDateTimeString())
+                        ->where('deleted_at', '<', Carbon::now()->subHours($this->hours))
                         ->orderBy('id')
                         ->forceDelete();
+                }
+                break;
+
+            /**
+             * 表pre_file
+             */
+            case 'file':
+                {
+                    $day = intval(env("AUTO_EMPTY_FILE_RECYCLE", 365));
+                    if ($day <= 0) {
+                        return;
+                    }
+                    File::onlyTrashed()
+                        ->where('deleted_at', '<', Carbon::now()->addDays($day))
+                        ->orderBy('id')
+                        ->chunk(500, function ($files) {
+                            /** @var File $file */
+                            foreach ($files as $file) {
+                                $file->forceDeleteFile();
+                            }
+                        });
                 }
                 break;
         }

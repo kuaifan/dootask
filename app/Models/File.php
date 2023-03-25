@@ -288,6 +288,27 @@ class File extends AbstractModel
     }
 
     /**
+     * 强制删除文件
+     * @return true
+     */
+    public function forceDeleteFile()
+    {
+        AbstractModel::transaction(function () {
+            $this->forceDelete();
+            FileContent::withTrashed()
+                ->whereFid($this->id)
+                ->orderBy('id')
+                ->chunk(500, function ($contents) {
+                    /** @var FileContent $content */
+                    foreach ($contents as $content) {
+                        $content->forceDeleteContent();
+                    }
+                });
+        });
+        return true;
+    }
+
+    /**
      * 获取文件分享链接
      * @param $userid
      * @param $refresh
