@@ -10,7 +10,7 @@ English | **[中文文档](./README_CN.md)**
 **🎉 The Pro version is now available, and you can upgrade to the Pro version for free with the following command, [Functional compare](https://www.dootask.com/pro)。**
 
 ```bash
-# The Pro version is now available and can be upgraded to the Pro version for free with the following command
+# Upgrade from the regular version to the pro version
 
 git checkout -b pro origin/pro
 ./cmd up -d
@@ -27,15 +27,32 @@ Group No.: `546574618`
 - System: `Centos/Debian/Ubuntu/macOS`
 - Hardware suggestion: 2 cores and above 4G memory
 
-### Deployment project
+### Deployment（Pro Edition）
 
 ```bash
 # 1、Clone the repository
 
 # Clone projects on github
-git clone --depth=1 https://github.com/kuaifan/dootask.git
+git clone -b pro --depth=1 https://github.com/kuaifan/dootask.git
 # Or you can use gitee
-git clone --depth=1 https://gitee.com/aipaw/dootask.git
+git clone -b pro --depth=1 https://gitee.com/aipaw/dootask.git
+
+# 2、Enter directory
+cd dootask
+
+# 3、Installation（Custom port installation: ./cmd install --port 2222）
+./cmd install
+```
+
+### Deployment (Normal Edition)
+
+```bash
+# 1、Clone the repository
+
+# Clone projects on github
+git clone -b v0.13.0 --depth=1 https://github.com/kuaifan/dootask.git
+# Or you can use gitee
+git clone -b v0.13.0 --depth=1 https://gitee.com/aipaw/dootask.git
 
 # 2、Enter directory
 cd dootask

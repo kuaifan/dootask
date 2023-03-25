@@ -10,6 +10,8 @@
 **🎉 Pro版本现已发布，可通过一下命令免费升级至Pro版本，[版本功能比较](https://www.dootask.com/pro)。**
 
 ```bash
+# 普通版升级至Pro版
+
 git checkout -b pro origin/pro
 ./cmd up -d
 ./cmd update
@@ -25,15 +27,32 @@ git checkout -b pro origin/pro
 - 支持环境：`Centos/Debian/Ubuntu/macOS`
 - 硬件建议：2核4G以上
 
-### 部署项目
+### 部署项目（Pro版）
 
 ```bash
 # 1、克隆项目到您的本地或服务器
 
 # 通过github克隆项目
-git clone --depth=1 https://github.com/kuaifan/dootask.git
+git clone -b pro --depth=1 https://github.com/kuaifan/dootask.git
 # 或者你也可以使用gitee
-git clone --depth=1 https://gitee.com/aipaw/dootask.git
+git clone -b pro --depth=1 https://gitee.com/aipaw/dootask.git
+
+# 2、进入目录
+cd dootask
+
+# 3、一键安装项目（自定义端口安装 ./cmd install --port 2222）
+./cmd install
+```
+
+### 部署项目（普通版）
+
+```bash
+# 1、克隆项目到您的本地或服务器
+
+# 通过github克隆项目
+git clone -b v0.13.0 --depth=1 https://github.com/kuaifan/dootask.git
+# 或者你也可以使用gitee
+git clone -b v0.13.0 --depth=1 https://gitee.com/aipaw/dootask.git
 
 # 2、进入目录
 cd dootask
