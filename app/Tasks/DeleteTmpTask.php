@@ -86,7 +86,7 @@ class DeleteTmpTask extends AbstractTask
                         return;
                     }
                     File::onlyTrashed()
-                        ->where('deleted_at', '<', Carbon::now()->addDays($day))
+                        ->where('deleted_at', '<', Carbon::now()->subHours($day))
                         ->orderBy('id')
                         ->chunk(500, function ($files) {
                             /** @var File $file */
