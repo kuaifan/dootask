@@ -21,9 +21,9 @@
 # 1、克隆项目到您的本地或服务器
 
 # 通过github克隆项目
-git clone --depth=1 https://github.com/kuaifan/dootask.git
+git clone -b pro --depth=1 https://github.com/kuaifan/dootask.git
 # 或者你也可以使用gitee
-git clone --depth=1 https://gitee.com/aipaw/dootask.git
+git clone -b pro --depth=1 https://gitee.com/aipaw/dootask.git
 
 # 2、进入目录
 cd dootask

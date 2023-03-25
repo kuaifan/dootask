@@ -35,13 +35,16 @@ class Deleted extends AbstractModel
      */
     public static function ids($type, $userid, $time): array
     {
-        if (empty($time)) {
-            return [];
-        }
-        return self::where([
+        $builder = self::where([
             'type' => $type,
             'userid' => $userid
-        ])->where('created_at', '>=', Carbon::parse($time))->pluck('did')->toArray();
+        ])->orderByDesc('id');
+        if (empty($time)) {
+            $builder = $builder->take(50);
+        } else {
+            $builder = $builder->where('created_at', '>=', Carbon::parse($time))->take(500);
+        }
+        return $builder->pluck('did')->toArray();
     }
 
     /**
