@@ -22,7 +22,7 @@
             <TabPane :label="$L('认证设置')" name="thirdAccess">
                 <SystemThirdAccess/>
             </TabPane>
-            <TabPane v-if="appPush" :label="$L('APP推送')" name="appPush">
+            <TabPane v-if="$A.isDooServer()" :label="$L('APP推送')" name="appPush">
                 <SystemAppPush/>
             </TabPane>
         </Tabs>
@@ -48,19 +48,6 @@ export default {
     data() {
         return {
             tabAction: 'setting',
-            appPush: false,
-        }
-    },
-
-    mounted() {
-        if ([
-            '127.0.0.1:2222',
-            '192.168.100.88:2222',
-            'dootask.com',
-            'www.dootask.com',
-            't.hitosea.com',
-        ].includes($A.getDomain($A.apiUrl('../')))) {
-            this.appPush = true;
         }
     },
 }

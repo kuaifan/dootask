@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.25.42]
+
+### Performance
+
+- 优化任务接口数据逻辑
+
 ## [0.25.39]
 
 ### Bug Fixes

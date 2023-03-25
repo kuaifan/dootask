@@ -15,7 +15,7 @@ Group No.: `546574618`
 - System: `Centos/Debian/Ubuntu/macOS`
 - Hardware suggestion: 2 cores and above 4G memory
 
-### Deployment project
+### Deployment (Pro Edition)
 
 ```bash
 # 1、Clone the repository

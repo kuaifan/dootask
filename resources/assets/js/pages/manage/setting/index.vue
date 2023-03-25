@@ -83,13 +83,7 @@ export default {
                 menu.splice(2, 0, {path: 'keyboard', name: '快捷键', desc: ' (Beta)'})
             }
 
-            if ([
-                '127.0.0.1:2222',
-                '192.168.100.88:2222',
-                'dootask.com',
-                'www.dootask.com',
-                't.hitosea.com',
-            ].includes($A.getDomain($A.apiUrl('../'))) && this.$isEEUiApp) {
+            if ($A.isDooServer() && this.$isEEUiApp) {
                 menu.push(...[
                     {path: 'privacy', name: '隐私政策', divided: true},
                     {path: 'delete', name: '删除帐号'},

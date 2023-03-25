@@ -119,7 +119,7 @@
                     </FormItem>
                 </div>
             </div>
-            <div class="block-setting-box">
+            <div v-if="$A.isDooServer()" class="block-setting-box">
                 <h3>{{ $L('其他设置') }}</h3>
                 <div class="form-box">
                     <FormItem :label="$L('是否启动首页')" prop="startHome">

@@ -749,7 +749,7 @@ export default {
                     return;
                 case 'goHome':
                     if (this.needStartHome) {
-                        this.goForward({name: 'index', query: {action: 'index'}});
+                        this.goForward('index');
                     }
                     return;
                 case 'logout':

@@ -323,13 +323,9 @@ export default {
             }
             //
             this.$store.dispatch("showSpinner", 1000)
-            this.$store.dispatch("needHome").then(data => {
-                if (this.userId === 0 || this.$route.query.action === 'index') {
-                    this.needStartHome = true;
-                    this.homeFooter = data.home_footer;
-                } else {
-                    this.goNext();
-                }
+            this.$store.dispatch("needHome").then(({home_footer}) => {
+                this.needStartHome = true;
+                this.homeFooter = home_footer;
             }).catch(_ => {
                 this.needStartHome = false;
                 this.goNext();

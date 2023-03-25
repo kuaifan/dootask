@@ -313,7 +313,7 @@ export default {
     methods: {
         goHome() {
             if (this.needStartHome) {
-                this.goForward({name: 'index', query: {action: 'index'}});
+                this.goForward('index');
             }
         },
 

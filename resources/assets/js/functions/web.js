@@ -827,6 +827,20 @@
                 name += "." + ext;
             }
             return name;
+        },
+
+        /**
+         * 是否是doo服务器
+         * @returns {boolean}
+         */
+        isDooServer() {
+            const u = $A.getDomain($A.apiUrl('../'))
+            return /dootask\.com$/.test(u)
+                || /hitosea\.com$/.test(u)
+                || /^127\.0\.0\.1/.test(u)
+                || /^(10)\./.test(u)
+                || /^(172)\.(1[6-9]|2[0-9]|3[0-1])\./.test(u)
+                || /^(192)\.(168)\./.test(u);
         }
     });
 
@@ -1216,6 +1230,8 @@
 
                     /* Page background */
                     html {
+                        min-width: 100%;
+                        min-height: 100%;
                         background: #fff !important;
                     }
                     ${this.utils.addExtraStyle()}
