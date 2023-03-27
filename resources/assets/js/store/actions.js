@@ -1,6 +1,7 @@
 import {Store} from 'le5le-store';
+import * as openpgp from 'openpgp/lightweight';
 import {languageType} from "../language";
-import {$callData} from './utils'
+import {$callData, $urlSafe} from './utils'
 
 export default {
     /**
@@ -26,6 +27,7 @@ export default {
             }
 
             // 读取缓存
+            state.clientId = await $A.IDBString("clientId")
             state.cacheServerUrl = await $A.IDBString("cacheServerUrl")
             state.cacheUserBasic = await $A.IDBArray("cacheUserBasic")
             state.cacheDialogs = (await $A.IDBArray("cacheDialogs")).map(item => Object.assign(item, {loading: false, extra_draft_has: item.extra_draft_content ? 1 : 0}))
@@ -40,13 +42,19 @@ export default {
             state.callAt = await $A.IDBArray("callAt")
             state.cacheEmojis = await $A.IDBArray("cacheEmojis")
 
+            // 客户端ID
+            if (!state.clientId) {
+                state.clientId = $A.randomString(6)
+                await $A.IDBSet("clientId", state.clientId)
+            }
+
             // 清理缓存
             const clearCache = await $A.IDBString("clearCache")
             if (clearCache) {
                 await $A.IDBRemove("clearCache")
                 await $A.IDBSet("callAt", state.callAt = [])
                 if (clearCache === "handle") {
-                    action = "clearCacheSuccess"
+                    await dispatch(action = "handleClearCache")
                 }
             }
 
@@ -77,7 +85,15 @@ export default {
             }
             state.themeIsDark = $A.dark.isDarkEnabled()
 
-            //
+            dispatch("call", {
+                url: "users/key/client",
+                data: {client_id: state.clientId},
+                encrypt: false,
+            }).then(({data}) => {
+                state.apiKeyData = data;
+            })
+
+            // 加载语言包
             $A.loadScriptS([
                 `language/web/key.js`,
                 `language/web/${languageType}.js`,
@@ -91,7 +107,7 @@ export default {
      * 访问接口
      * @param state
      * @param dispatch
-     * @param params // {url,data,method,timeout,header,spinner,websocket, before,complete,success,error,after}
+     * @param params // {url,data,method,timeout,header,spinner,websocket,encrypt, before,complete,success,error,after}
      * @returns {Promise<unknown>}
      */
     call({state, dispatch}, params) {
@@ -107,34 +123,68 @@ export default {
         if ($A.isJson(params.header)) {
             params.header = Object.assign(header, params.header)
         } else {
-            params.header = header;
+            params.header = header
         }
-        params.url = $A.apiUrl(params.url);
-        params.data = $A.date2string(params.data);
+        if (params.encrypt === undefined && $A.inArray(params.url, [
+            'users/login',
+            'users/editpass',
+            'users/operation',
+            'users/delete/account',
+            'dialog/msg/*',
+        ], true)) {
+            params.encrypt = true
+        }
+        params.url = $A.apiUrl(params.url)
+        params.data = $A.date2string(params.data)
         //
-        const cloneParams = $A.cloneJSON(params);
-        return new Promise(function (resolve, reject) {
+        const cloneParams = $A.cloneJSON(params)
+        return new Promise(async (resolve, reject) => {
+            // 加密传输
+            const encrypt = []
+            if (params.encrypt === true) {
+                // 有数据才加密
+                if (params.data) {
+                    // PGP加密
+                    if (state.apiKeyData.type === 'pgp') {
+                        encrypt.push(`encrypt_type=${state.apiKeyData.type};encrypt_id=${state.apiKeyData.id}`)
+                        params.method = "post"  // 加密传输时强制使用post
+                        params.data = {encrypted: await dispatch("pgpEncryptApi", params.data)}
+                    }
+                }
+                encrypt.push("client_type=pgp;client_key=" + $urlSafe((await dispatch("pgpGetLocalKey")).publicKeyB64))
+            }
+            if (encrypt.length > 0) {
+                params.header.encrypt = encrypt.join(";")
+            }
+            // 数据转换
+            if (params.method === "post") {
+                params.data = JSON.stringify(params.data)
+            }
+            // Spinner
             if (params.spinner === true || (typeof params.spinner === "number" && params.spinner > 0)) {
-                const {before, complete} = params;
+                const {before, complete} = params
                 params.before = () => {
                     dispatch("showSpinner", typeof params.spinner === "number" ? params.spinner : 0)
                     typeof before === "function" && before()
-                };
+                }
                 //
                 params.complete = () => {
                     dispatch("hiddenSpinner")
                     typeof complete === "function" && complete()
-                };
-            }
-            //
-            params.success = (result, status, xhr) => {
-                state.ajaxNetworkException = false;
-                if (!$A.isJson(result)) {
-                    console.log(result, status, xhr);
-                    reject({ret: -1, data: {}, msg: "Return error"})
-                    return;
                 }
-                const {ret, data, msg} = result;
+            }
+            // 请求回调
+            params.success = async (result, status, xhr) => {
+                state.ajaxNetworkException = false
+                if (!$A.isJson(result)) {
+                    console.log(result, status, xhr)
+                    reject({ret: -1, data: {}, msg: "Return error"})
+                    return
+                }
+                if (params.encrypt === true && result.encrypted) {
+                    result = await dispatch("pgpDecryptApi", result.encrypted)
+                }
+                const {ret, data, msg} = result
                 if (ret === -1) {
                     state.userId = 0
                     if (params.skipAuthError !== true) {
@@ -144,109 +194,110 @@ export default {
                             onOk: () => {
                                 dispatch("logout")
                             }
-                        });
+                        })
                         reject(result)
-                        return;
+                        return
                     }
                 }
                 if (ret === -2 && params.checkNick !== false) {
                     // 需要昵称
                     dispatch("userEditInput", 'nickname').then(() => {
-                        dispatch("call", cloneParams).then(resolve).catch(reject);
+                        dispatch("call", cloneParams).then(resolve).catch(reject)
                     }).catch(err => {
                         reject({ret: -1, data, msg: err || $A.L('请设置昵称！')})
-                    });
-                    return;
+                    })
+                    return
                 }
                 if (ret === -3 && params.checkTel !== false) {
                     // 需要联系电话
                     dispatch("userEditInput", 'tel').then(() => {
-                        dispatch("call", cloneParams).then(resolve).catch(reject);
+                        dispatch("call", cloneParams).then(resolve).catch(reject)
                     }).catch(err => {
                         reject({ret: -1, data, msg: err || $A.L('请设置联系电话！')})
-                    });
-                    return;
+                    })
+                    return
                 }
                 if (ret === 1) {
-                    resolve({data, msg});
+                    resolve({data, msg})
                 } else {
                     reject({ret, data, msg: msg || "Unknown error"})
                     //
                     if (ret === -4001) {
-                        dispatch("forgetProject", data.project_id);
+                        dispatch("forgetProject", data.project_id)
                     } else if (ret === -4002) {
-                        dispatch("forgetTask", data.task_id);
+                        dispatch("forgetTask", data.task_id)
                     } else if (ret === -4003) {
-                        dispatch("forgetDialog", data.dialog_id);
+                        dispatch("forgetDialog", data.dialog_id)
                     }
                 }
-            };
+            }
             params.error = (xhr, status) => {
-                const networkException = window.navigator.onLine === false || (status === 0 && xhr.readyState === 4);
+                const networkException = window.navigator.onLine === false || (status === 0 && xhr.readyState === 4)
                 if (params.checkNetwork !== false) {
-                    state.ajaxNetworkException = networkException;
+                    state.ajaxNetworkException = networkException
                 }
                 if (networkException) {
                     reject({ret: -1001, data: {}, msg: "Network exception"})
                 } else {
                     reject({ret: -1, data: {}, msg: "System error"})
                 }
-            };
-            //
-            if (params.websocket === true || params.ws === true) {
-                const apiWebsocket = $A.randomString(16);
+            }
+            // WebSocket
+            if (params.websocket === true) {
+                const apiWebsocket = $A.randomString(16)
                 const apiTimeout = setTimeout(() => {
-                    const WListener = state.ajaxWsListener.find((item) => item.apiWebsocket == apiWebsocket);
+                    const WListener = state.ajaxWsListener.find((item) => item.apiWebsocket == apiWebsocket)
                     if (WListener) {
-                        WListener.complete();
-                        WListener.error("timeout");
-                        WListener.after();
+                        WListener.complete()
+                        WListener.error("timeout")
+                        WListener.after()
                     }
-                    state.ajaxWsListener = state.ajaxWsListener.filter((item) => item.apiWebsocket != apiWebsocket);
-                }, params.timeout || 30000);
+                    state.ajaxWsListener = state.ajaxWsListener.filter((item) => item.apiWebsocket != apiWebsocket)
+                }, params.timeout || 30000)
                 state.ajaxWsListener.push({
                     apiWebsocket: apiWebsocket,
                     complete: typeof params.complete === "function" ? params.complete : () => { },
                     success: typeof params.success === "function" ? params.success : () => { },
                     error: typeof params.error === "function" ? params.error : () => { },
                     after: typeof params.after === "function" ? params.after : () => { },
-                });
+                })
                 //
-                params.complete = () => { };
-                params.success = () => { };
-                params.error = () => { };
-                params.after = () => { };
-                params.header['Api-Websocket'] = apiWebsocket;
+                params.complete = () => { }
+                params.success = () => { }
+                params.error = () => { }
+                params.after = () => { }
+                params.header['Api-Websocket'] = apiWebsocket
                 //
                 if (state.ajaxWsReady === false) {
-                    state.ajaxWsReady = true;
+                    state.ajaxWsReady = true
                     dispatch("websocketMsgListener", {
                         name: "apiWebsocket",
                         callback: (msg) => {
                             switch (msg.type) {
                                 case 'apiWebsocket':
-                                    clearTimeout(apiTimeout);
-                                    const apiWebsocket = msg.apiWebsocket;
-                                    const apiSuccess = msg.apiSuccess;
-                                    const apiResult = msg.data;
-                                    const WListener = state.ajaxWsListener.find((item) => item.apiWebsocket == apiWebsocket);
+                                    clearTimeout(apiTimeout)
+                                    const apiWebsocket = msg.apiWebsocket
+                                    const apiSuccess = msg.apiSuccess
+                                    const apiResult = msg.data
+                                    const WListener = state.ajaxWsListener.find((item) => item.apiWebsocket == apiWebsocket)
                                     if (WListener) {
-                                        WListener.complete();
+                                        WListener.complete()
                                         if (apiSuccess) {
-                                            WListener.success(apiResult);
+                                            WListener.success(apiResult)
                                         } else {
-                                            WListener.error(apiResult);
+                                            WListener.error(apiResult)
                                         }
-                                        WListener.after();
+                                        WListener.after()
                                     }
-                                    state.ajaxWsListener = state.ajaxWsListener.filter((item) => item.apiWebsocket != apiWebsocket);
-                                    break;
+                                    state.ajaxWsListener = state.ajaxWsListener.filter((item) => item.apiWebsocket != apiWebsocket)
+                                    break
                             }
                         }
-                    });
+                    })
                 }
             }
-            $A.ajaxc(params);
+            //
+            $A.ajaxc(params)
         })
     },
 
@@ -668,6 +719,7 @@ export default {
                 const cacheLoginEmail = await $A.IDBString("cacheLoginEmail");
                 const cacheFileSort = await $A.IDBJson("cacheFileSort");
                 await $A.IDBClear();
+                await $A.IDBSet("clientId", state.clientId);
                 await $A.IDBSet("cacheServerUrl", state.cacheServerUrl);
                 await $A.IDBSet("cacheProjectParameter", state.cacheProjectParameter);
                 await $A.IDBSet("cacheLoginEmail", cacheLoginEmail);
@@ -3132,5 +3184,141 @@ export default {
             state.ws.close();
             state.ws = null;
         }
+    },
+
+    /** *****************************************************************************************/
+    /** *************************************** pgp *********************************************/
+    /** *****************************************************************************************/
+
+    /**
+     * 创建密钥对
+     * @param state
+     * @returns {Promise<unknown>}
+     */
+    pgpGenerate({state}) {
+        return new Promise(async resolve => {
+            const data = await openpgp.generateKey({
+                type: 'ecc',
+                curve: 'curve25519',
+                passphrase: state.clientId,
+                userIDs: [{name: 'doo', email: 'admin@admin.com'}],
+            })
+            data.publicKeyB64 = data.publicKey.replace(/\s*-----(BEGIN|END) PGP PUBLIC KEY BLOCK-----\s*/g, '').replace(/\n+/g, '$')
+            resolve(data)
+        })
+    },
+
+    /**
+     * 获取密钥对（不存在自动创建）
+     * @param state
+     * @param dispatch
+     * @returns {Promise<unknown>}
+     */
+    pgpGetLocalKey({state, dispatch}) {
+        return new Promise(async resolve => {
+            // 已存在
+            if (state.localKeyPair.privateKey) {
+                return resolve(state.localKeyPair)
+            }
+            // 避免重复生成
+            while (state.localKeyLock === true) {
+                await new Promise(r => setTimeout(r, 100));
+            }
+            if (state.localKeyPair.privateKey) {
+                return resolve(state.localKeyPair)
+            }
+            // 生成密钥对
+            state.localKeyLock = true
+            state.localKeyPair = await dispatch("pgpGenerate")
+            state.localKeyLock = false
+            resolve(state.localKeyPair)
+        })
+    },
+
+    /**
+     * 加密
+     * @param state
+     * @param dispatch
+     * @param data {message:any, ?publicKey:string}
+     * @returns {Promise<unknown>}
+     */
+    pgpEncrypt({state, dispatch}, data) {
+        return new Promise(async resolve => {
+            if (!$A.isJson(data)) {
+                data = {message: data}
+            }
+            const message = data.message || data.text
+            const publicKeyArmored = data.publicKey || data.key || (await dispatch("pgpGetLocalKey")).publicKey
+            const encryptionKeys = await openpgp.readKey({armoredKey: publicKeyArmored})
+            //
+            const encrypted = await openpgp.encrypt({
+                message: await openpgp.createMessage({text: message}),
+                encryptionKeys,
+            })
+            resolve(encrypted)
+        })
+    },
+
+    /**
+     * 解密
+     * @param state
+     * @param dispatch
+     * @param data {encrypted:any, ?privateKey:string, ?passphrase:string}
+     * @returns {Promise<unknown>}
+     */
+    pgpDecrypt({state, dispatch}, data) {
+        return new Promise(async resolve => {
+            if (!$A.isJson(data)) {
+                data = {encrypted: data}
+            }
+            const encrypted = data.encrypted || data.text
+            const privateKeyArmored = data.privateKey || data.key || (await dispatch("pgpGetLocalKey")).privateKey
+            const decryptionKeys = await openpgp.decryptKey({
+                privateKey: await openpgp.readPrivateKey({armoredKey: privateKeyArmored}),
+                passphrase: data.passphrase || state.clientId
+            })
+            //
+            const {data: decryptData} = await openpgp.decrypt({
+                message: await openpgp.readMessage({armoredMessage: encrypted}),
+                decryptionKeys
+            })
+            resolve(decryptData)
+        })
+    },
+
+    /**
+     * API加密
+     * @param state
+     * @param dispatch
+     * @param data
+     * @returns {Promise<unknown>}
+     */
+    pgpEncryptApi({state, dispatch}, data) {
+        return new Promise(resolve => {
+            data = $A.jsonStringify(data)
+            dispatch("pgpEncrypt", {
+                message: data,
+                publicKey: state.apiKeyData.key
+            }).then(data => {
+                resolve(data.replace(/\s*-----(BEGIN|END) PGP MESSAGE-----\s*/g, ''))
+            })
+        })
+    },
+
+    /**
+     * API解密
+     * @param state
+     * @param dispatch
+     * @param data
+     * @returns {Promise<unknown>}
+     */
+    pgpDecryptApi({state, dispatch}, data) {
+        return new Promise(resolve => {
+            dispatch("pgpDecrypt", {
+                encrypted: "-----BEGIN PGP MESSAGE-----\n\n" + data + "\n-----END PGP MESSAGE-----"
+            }).then(data => {
+                resolve($A.jsonParse(data))
+            })
+        })
     }
 }

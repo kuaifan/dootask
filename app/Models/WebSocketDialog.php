@@ -24,11 +24,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\WebSocketDialogUser[] $dialogUser
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\WebSocketDialogUser> $dialogUser
  * @property-read int|null $dialog_user_count
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog newQuery()
- * @method static \Illuminate\Database\Query\Builder|WebSocketDialog onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog query()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereAvatar($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereCreatedAt($value)
@@ -40,8 +40,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereOwnerId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereUpdatedAt($value)
- * @method static \Illuminate\Database\Query\Builder|WebSocketDialog withTrashed()
- * @method static \Illuminate\Database\Query\Builder|WebSocketDialog withoutTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog withoutTrashed()
  * @mixin \Eloquent
  */
 class WebSocketDialog extends AbstractModel

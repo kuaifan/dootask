@@ -1,4 +1,7 @@
 export default {
+    // 客户端ID（希望不变的，除非清除浏览器缓存或者卸载应用）
+    clientId: "",
+
     // 是否移动端（支持触摸）
     supportTouch: "ontouchend" in document,
 
@@ -170,4 +173,9 @@ export default {
     // 表单布局
     formLabelPosition: $A(window).width() > 576 ? 'right' : 'top',
     formLabelWidth: $A(window).width() > 576 ? 'auto' : '',
+
+    // 加密相关
+    apiKeyData: {},
+    localKeyPair: {},
+    localKeyLock: false,
 };

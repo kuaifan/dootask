@@ -20,11 +20,11 @@ use Request;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \App\Models\Project|null $project
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTask[] $projectTask
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProjectTask> $projectTask
  * @property-read int|null $project_task_count
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectColumn newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectColumn newQuery()
- * @method static \Illuminate\Database\Query\Builder|ProjectColumn onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectColumn onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectColumn query()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectColumn whereColor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectColumn whereCreatedAt($value)
@@ -34,8 +34,8 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectColumn whereProjectId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectColumn whereSort($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectColumn whereUpdatedAt($value)
- * @method static \Illuminate\Database\Query\Builder|ProjectColumn withTrashed()
- * @method static \Illuminate\Database\Query\Builder|ProjectColumn withoutTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectColumn withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectColumn withoutTrashed()
  * @mixin \Eloquent
  */
 class ProjectColumn extends AbstractModel

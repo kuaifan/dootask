@@ -137,14 +137,14 @@ class ReportController extends AbstractController
         $user = User::auth();
         //
         $input = [
-            "id" => Base::getPostValue("id", 0),
-            "sign" => Base::getPostValue("sign"),
-            "title" => Base::getPostValue("title"),
-            "type" => Base::getPostValue("type"),
-            "content" => Base::getPostValue("content"),
-            "receive" => Base::getPostValue("receive"),
+            "id" => Request::input("id", 0),
+            "sign" => Request::input("sign"),
+            "title" => Request::input("title"),
+            "type" => Request::input("type"),
+            "content" => Request::input("content"),
+            "receive" => Request::input("receive"),
             // 以当前日期为基础的周期偏移量。例如选择了上一周那么就是 -1，上一天同理。
-            "offset" => Base::getPostValue("offset", 0),
+            "offset" => Request::input("offset", 0),
         ];
         $validator = Validator::make($input, [
             'id' => 'numeric',

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.25.48]
+
+### Performance
+
+- 自动清空文件回收站
+
 ## [0.25.42]
 
 ### Performance

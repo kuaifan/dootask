@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @method static \Illuminate\Database\Eloquent\Builder|FileContent newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|FileContent newQuery()
- * @method static \Illuminate\Database\Query\Builder|FileContent onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|FileContent onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|FileContent query()
  * @method static \Illuminate\Database\Eloquent\Builder|FileContent whereContent($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FileContent whereCreatedAt($value)
@@ -31,8 +31,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|FileContent whereText($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FileContent whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FileContent whereUserid($value)
- * @method static \Illuminate\Database\Query\Builder|FileContent withTrashed()
- * @method static \Illuminate\Database\Query\Builder|FileContent withoutTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|FileContent withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|FileContent withoutTrashed()
  * @mixin \Eloquent
  */
 class FileContent extends AbstractModel

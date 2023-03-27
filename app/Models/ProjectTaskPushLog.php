@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskPushLog newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskPushLog newQuery()
- * @method static \Illuminate\Database\Query\Builder|ProjectTaskPushLog onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskPushLog onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskPushLog query()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskPushLog whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskPushLog whereDeletedAt($value)
@@ -28,8 +28,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskPushLog whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskPushLog whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskPushLog whereUserid($value)
- * @method static \Illuminate\Database\Query\Builder|ProjectTaskPushLog withTrashed()
- * @method static \Illuminate\Database\Query\Builder|ProjectTaskPushLog withoutTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskPushLog withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskPushLog withoutTrashed()
  * @mixin \Eloquent
  */
 class ProjectTaskPushLog extends AbstractModel

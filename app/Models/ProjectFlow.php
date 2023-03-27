@@ -12,7 +12,7 @@ use App\Module\Base;
  * @property string|null $name 流程名称
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectFlowItem[] $projectFlowItem
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProjectFlowItem> $projectFlowItem
  * @property-read int|null $project_flow_item_count
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlow newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlow newQuery()

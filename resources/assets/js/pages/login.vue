@@ -514,23 +514,23 @@ export default {
                 this.invite = $A.trim(this.invite)
                 //
                 if (!$A.isEmail(this.email)) {
-                    $A.messageWarning("请输入正确的邮箱地址");
-                    this.$refs.email.focus();
-                    return;
+                    $A.messageWarning("请输入正确的邮箱地址")
+                    this.$refs.email.focus()
+                    return
                 }
                 if (!this.password) {
-                    $A.messageWarning("请输入密码");
-                    this.$refs.password.focus();
-                    return;
+                    $A.messageWarning("请输入密码")
+                    this.$refs.password.focus()
+                    return
                 }
                 if (this.loginType == 'reg') {
                     if (this.password != this.password2) {
-                        $A.messageWarning("确认密码输入不一致");
-                        this.$refs.password2.focus();
-                        return;
+                        $A.messageWarning("确认密码输入不一致")
+                        this.$refs.password2.focus()
+                        return
                     }
                 }
-                this.loadIng++;
+                this.loadIng++
                 this.$store.dispatch("call", {
                     url: 'users/login',
                     data: {
@@ -542,35 +542,39 @@ export default {
                     },
                 }).then(({data}) => {
                     $A.IDBSave("cacheLoginEmail", this.email)
-                    this.codeNeed = false;
-                    this.$store.dispatch("handleClearCache", data).then(this.goNext);
+                    this.codeNeed = false
+                    this.$store.dispatch("handleClearCache", data).then(this.goNext)
                 }).catch(({data, msg}) => {
                     if (data.code === 'email') {
-                        this.loginType = 'login';
-                        $A.modalWarning(msg);
+                        this.loginType = 'login'
+                        $A.modalWarning(msg)
                     } else {
-                        $A.modalError(msg);
+                        $A.modalError({
+                            content: msg,
+                            onOk: _ => {
+                                this.$refs.code.focus()
+                            }
+                        })
                     }
                     if (data.code === 'need') {
-                        this.reCode();
-                        this.codeNeed = true;
-                        this.$refs.code.focus();
+                        this.reCode()
+                        this.codeNeed = true
                     }
                 }).finally(_ => {
-                    this.loadIng--;
-                });
+                    this.loadIng--
+                })
             })
         },
 
         goNext() {
-            this.loginJump = true;
-            const fromUrl = decodeURIComponent($A.getObject(this.$route.query, 'from'));
+            this.loginJump = true
+            const fromUrl = decodeURIComponent($A.getObject(this.$route.query, 'from'))
             if (fromUrl) {
                 $A.IDBSet("clearCache", "login").then(_ => {
-                    window.location.replace(fromUrl);
+                    window.location.replace(fromUrl)
                 })
             } else {
-                this.goForward({name: 'manage-dashboard'}, true);
+                this.goForward({name: 'manage-dashboard'}, true)
             }
         },
 

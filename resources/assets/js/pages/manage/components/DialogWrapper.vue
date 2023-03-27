@@ -166,7 +166,7 @@
             @on-emoji="onEmoji"
             @on-show-emoji-user="onShowEmojiUser">
             <template #header>
-                <div v-if="(allMsgs.length === 0 && loadMsg) || prevId > 0" class="dialog-item loading">
+                <div v-if="(allMsgs.length === 0 && loadIng) || prevId > 0" class="dialog-item loading">
                     <div v-if="scrollOffset < 100" class="dialog-wrapper-loading"></div>
                 </div>
                 <div v-else-if="allMsgs.length === 0" class="dialog-item nothing">{{$L('暂无消息')}}</div>
@@ -537,6 +537,7 @@ export default {
             msgText: '',
             msgNew: 0,
             msgType: '',
+            loadIng: 0,
 
             allMsgs: [],
             tempMsgs: [],
@@ -932,6 +933,19 @@ export default {
                     }
                 }
                 this.$store.dispatch('closeDialog', old_id)
+            },
+            immediate: true
+        },
+
+        loadMsg: {
+            handler(load) {
+                if (load) {
+                    this.loadIng++
+                } else {
+                    setTimeout(_ => {
+                        this.loadIng--
+                    }, 300)
+                }
             },
             immediate: true
         },

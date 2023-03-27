@@ -23,10 +23,10 @@ use JetBrains\PhpStorm\Pure;
  * @property int $userid
  * @property string $content
  * @property string $sign 汇报唯一标识
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ReportReceive[] $Receives
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ReportReceive> $Receives
  * @property-read int|null $receives_count
  * @property-read mixed $receives
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\User[] $receivesUser
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $receivesUser
  * @property-read int|null $receives_user_count
  * @property-read \App\Models\User|null $sendUser
  * @method static Builder|Report newModelQuery()

@@ -39,7 +39,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read \App\Models\WebSocketDialog|null $webSocketDialog
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg newQuery()
- * @method static \Illuminate\Database\Query\Builder|WebSocketDialogMsg onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg query()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDeletedAt($value)
@@ -61,8 +61,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereUserid($value)
- * @method static \Illuminate\Database\Query\Builder|WebSocketDialogMsg withTrashed()
- * @method static \Illuminate\Database\Query\Builder|WebSocketDialogMsg withoutTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg withoutTrashed()
  * @mixin \Eloquent
  */
 class WebSocketDialogMsg extends AbstractModel

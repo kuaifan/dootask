@@ -1527,7 +1527,7 @@ class UsersController extends AbstractController
             return Base::retError('未开放修改权限，请联系管理员');
         }
         //
-        $list = Base::getPostValue('list');
+        $list = Request::input('list');
         $array = [];
         if (empty($list) || !is_array($list)) {
             return Base::retError('参数错误');
@@ -1617,5 +1617,47 @@ class UsersController extends AbstractController
             return Base::retError('error');
         }
         return Base::retSuccess('success', $row);
+    }
+
+    /**
+     * @api {get} api/users/key/client          28. 客户端KEY
+     *
+     * @apiDescription 获取客户端KEY，用于加密数据发送给服务端
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName key__client
+     *
+     * @apiParam {String} [client_id]        客户端ID（希望不变的，除非清除浏览器缓存或者卸载应用）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function key__client()
+    {
+        $clientId = (trim(Request::input('client_id')) ?: Base::generatePassword(6)) . Doo::userId();
+        //
+        $cacheKey = "KeyPair::" . $clientId;
+        if (Cache::has($cacheKey)) {
+            $cacheData = Base::json2array(Cache::get($cacheKey));
+            if ($cacheData['private_key']) {
+                return Base::retSuccess('success', [
+                    'type' => 'pgp',
+                    'id' => $clientId,
+                    'key' => $cacheData['public_key'],
+                ]);
+            }
+        }
+        //
+        $name = Doo::userEmail() ?: Base::generatePassword(6);
+        $email = Doo::userEmail() ?: 'aa@bb.cc';
+        $data = Doo::pgpGenerateKeyPair($name, $email, Base::generatePassword());
+        Cache::put("KeyPair::" . $clientId, Base::array2json($data), Carbon::now()->addQuarter());
+        //
+        return Base::retSuccess('success', [
+            'type' => 'pgp',
+            'id' => $clientId,
+            'key' => $data['public_key'],
+        ]);
     }
 }

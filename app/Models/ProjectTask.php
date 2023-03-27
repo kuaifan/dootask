@@ -52,18 +52,18 @@ use Request;
  * @property-read bool $today
  * @property-read \App\Models\Project|null $project
  * @property-read \App\Models\ProjectColumn|null $projectColumn
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTaskFile[] $taskFile
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProjectTaskFile> $taskFile
  * @property-read int|null $task_file_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTaskTag[] $taskTag
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProjectTaskTag> $taskTag
  * @property-read int|null $task_tag_count
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\ProjectTaskUser[] $taskUser
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProjectTaskUser> $taskUser
  * @property-read int|null $task_user_count
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask allData($userid = null)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask authData($userid = null, $owner = null)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask betweenTime($start, $end, $type = 'taskTime')
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask newQuery()
- * @method static \Illuminate\Database\Query\Builder|ProjectTask onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask query()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereArchivedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereArchivedFollow($value)
@@ -92,8 +92,8 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereStartAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereUserid($value)
- * @method static \Illuminate\Database\Query\Builder|ProjectTask withTrashed()
- * @method static \Illuminate\Database\Query\Builder|ProjectTask withoutTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask withoutTrashed()
  * @mixin \Eloquent
  */
 class ProjectTask extends AbstractModel
@@ -530,8 +530,6 @@ class ProjectTask extends AbstractModel
     public function updateTask($data, &$updateMarking = [])
     {
         AbstractModel::transaction(function () use ($data, &$updateMarking) {
-            // 判断版本
-            Base::checkClientVersion('0.19.0');
             // 主任务
             $mainTask = $this->parent_id > 0 ? self::find($this->parent_id) : null;
             // 工作流
