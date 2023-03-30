@@ -3,8 +3,12 @@ version: '3'
 services:
   php:
     container_name: "dootask-php-${APP_ID}"
-    image: "kuaifan/php:swoole-8.0.rc8"
-    shm_size: "1024m"
+    image: "kuaifan/php:swoole-8.0.rc9"
+    shm_size: "2gb"
+    ulimits:
+      core:
+        soft: 0
+        hard: 0
     volumes:
       - ./docker/crontab/crontab.conf:/etc/supervisor/conf.d/crontab.conf
       - ./docker/php/php.conf:/etc/supervisor/conf.d/php.conf

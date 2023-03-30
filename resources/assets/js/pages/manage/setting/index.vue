@@ -138,8 +138,7 @@ export default {
         toggleRoute(path) {
             switch (path) {
                 case 'clearCache':
-                    this.$store.dispatch("handleClearCache", null).then(async () => {
-                        await $A.IDBSet("clearCache", "handle")
+                    $A.IDBSet("clearCache", "handle").then(_ => {
                         $A.reloadUrl()
                     });
                     break;

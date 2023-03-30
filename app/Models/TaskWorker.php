@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @method static \Illuminate\Database\Eloquent\Builder|TaskWorker newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|TaskWorker newQuery()
- * @method static \Illuminate\Database\Query\Builder|TaskWorker onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|TaskWorker onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|TaskWorker query()
  * @method static \Illuminate\Database\Eloquent\Builder|TaskWorker whereArgs($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TaskWorker whereCreatedAt($value)
@@ -27,8 +27,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|TaskWorker whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TaskWorker whereStartAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TaskWorker whereUpdatedAt($value)
- * @method static \Illuminate\Database\Query\Builder|TaskWorker withTrashed()
- * @method static \Illuminate\Database\Query\Builder|TaskWorker withoutTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|TaskWorker withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|TaskWorker withoutTrashed()
  * @mixin \Eloquent
  */
 class TaskWorker extends AbstractModel

@@ -29,7 +29,7 @@ use Request;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @method static \Illuminate\Database\Eloquent\Builder|File newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|File newQuery()
- * @method static \Illuminate\Database\Query\Builder|File onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|File onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|File query()
  * @method static \Illuminate\Database\Eloquent\Builder|File whereCid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereCreatedAt($value)
@@ -46,8 +46,8 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|File whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|File whereUserid($value)
- * @method static \Illuminate\Database\Query\Builder|File withTrashed()
- * @method static \Illuminate\Database\Query\Builder|File withoutTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|File withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|File withoutTrashed()
  * @mixin \Eloquent
  */
 class File extends AbstractModel

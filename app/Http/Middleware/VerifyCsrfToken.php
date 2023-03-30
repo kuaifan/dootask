@@ -12,59 +12,8 @@ class VerifyCsrfToken extends Middleware
      * @var array
      */
     protected $except = [
-        // 上传图片
-        'api/system/imgupload/',
-
-        // 上传文件
-        'api/system/fileupload/',
-
-        // 保存任务优先级
-        'api/system/priority/',
-
-        // 保存创建项目列表模板
-        'api/system/column/template/',
-
-        // License 设置
-        'api/system/license/',
-
-        // 添加任务
-        'api/project/task/add/',
-
-        // 保存工作流
-        'api/project/flow/save/',
-
-        // 修改任务
-        'api/project/task/update/',
-
-        // 聊天发文本
-        'api/dialog/msg/sendtext/',
-
-        // 聊天发语音
-        'api/dialog/msg/sendrecord/',
-
-        // 聊天发文件
-        'api/dialog/msg/sendfile/',
-
-        // 聊天发匿名消息
-        'api/dialog/msg/sendanon/',
-
-        // 保存文件内容
-        'api/file/content/save/',
-
-        // 保存文件内容（office）
-        'api/file/content/office/',
-
-        // 保存文件内容（上传）
-        'api/file/content/upload/',
-
-        // 保存汇报
-        'api/report/store/',
-
-        // 签到设置
-        'api/users/checkin/save/',
-
-        // 签到上报
-        'api/public/checkin/report/',
+        // 接口部分
+        'api/*',
 
         // 发布桌面端
         'desktop/publish/',

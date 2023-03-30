@@ -595,8 +595,8 @@ class FileController extends AbstractController
     {
         $user = User::auth();
         //
-        $id = Base::getPostInt('id');
-        $content = Base::getPostValue('content');
+        $id = intval(Request::input('id'));
+        $content = Request::input('content');
         //
         $file = File::permissionFind($id, $user, 1);
         //

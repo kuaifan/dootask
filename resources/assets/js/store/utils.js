@@ -73,3 +73,14 @@ function __callData(key, requestData, state) {
 export function $callData(key, requestData, state) {
     return new __callData(key, requestData, state)
 }
+
+export function $urlSafe(value, encode = true) {
+    if (value) {
+        if (encode) {
+            value = String(value).replace(/\+/g, "-").replace(/\//g, "_")
+        } else {
+            value = String(value).replace(/-/g, "+").replace(/_/g, "/")
+        }
+    }
+    return value
+}

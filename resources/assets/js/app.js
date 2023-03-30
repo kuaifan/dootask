@@ -212,7 +212,7 @@ store.dispatch("init").then(action => {
     $A.Notice = app.$Notice;
     $A.Modal = app.$Modal;
 
-    if (action === "clearCacheSuccess") {
+    if (action === "handleClearCache") {
         $A.messageSuccess("清除成功");
     }
 })
