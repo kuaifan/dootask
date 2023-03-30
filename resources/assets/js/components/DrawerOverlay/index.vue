@@ -20,6 +20,15 @@
     </Modal>
 </template>
 
+<style lang="scss">
+body {
+    .ivu-modal-wrap {
+        &.common-drawer-overlay {
+            overflow: hidden;
+        }
+    }
+}
+</style>
 <script>
 import DrawerOverlayView from "./view";
 
