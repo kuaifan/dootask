@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [0.25.48]
 
+### Bug Fixes
+
+- 无法查看已归档任务
+
+### Features
+
+- 实现非对称加密关键接口
+
 ### Performance
 
 - 自动清空文件回收站
