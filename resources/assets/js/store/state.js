@@ -112,6 +112,7 @@ export default {
     taskFiles: [],
     taskLogs: [],
     taskOperation: {},
+    taskArchiveView: 0,
 
     // 任务等待状态
     taskOneLoad: {},

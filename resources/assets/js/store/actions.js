@@ -1288,7 +1288,7 @@ export default {
     forgetTask({state, dispatch}, task_id) {
         $A.execMainDispatch("forgetTask", task_id)
         //
-        const ids = $A.isArray(task_id) ? task_id : [task_id];
+        const ids = ($A.isArray(task_id) ? task_id : [task_id]).filter(id => id != state.taskArchiveView);
         const parent_ids = [];
         const project_ids = [];
         ids.some(id => {

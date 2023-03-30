@@ -157,6 +157,7 @@ export default {
                                 },
                                 on: {
                                     'click': () => {
+                                        this.$store.state.taskArchiveView = params.row.id
                                         this.$store.dispatch("openTask", params.row);
                                     }
                                 },
