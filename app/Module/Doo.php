@@ -398,9 +398,22 @@ class Doo
             }
         }
         if ($array['client_type'] === 'pgp' && $array['client_key']) {
-            $array['client_key'] = str_replace(["-", "_", "$"], ["+", "/", "\n"], $array['client_key']);
-            $array['client_key'] = "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\n" . $array['client_key'] . "\n-----END PGP PUBLIC KEY BLOCK-----";
+            $array['client_key'] = self::pgpPublicFormat($array['client_key']);
         }
         return $array;
+    }
+
+    /**
+     * 还原公钥格式
+     * @param $key
+     * @return string
+     */
+    public static function pgpPublicFormat($key): string
+    {
+        $key = str_replace(["-", "_", "$"], ["+", "/", "\n"], $key);
+        if (!str_contains($key, '-----BEGIN PGP PUBLIC KEY BLOCK-----')) {
+            $key = "-----BEGIN PGP PUBLIC KEY BLOCK-----\n\n" . $key . "\n-----END PGP PUBLIC KEY BLOCK-----";
+        }
+        return $key;
     }
 }

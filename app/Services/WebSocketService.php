@@ -138,6 +138,16 @@ class WebSocketService implements WebSocketHandlerInterface
                     }
                 }
                 return;
+
+            /**
+             * 加密参数
+             */
+            case 'encrypt':
+                if ($data['type'] === 'pgp') {
+                    $data['key'] = Doo::pgpPublicFormat($data['key']);
+                }
+                Cache::put("User::encrypt:" . $frame->fd, Base::array2json($data), Carbon::now()->addDay());
+                return;
         }
         //
         if ($msgId) {

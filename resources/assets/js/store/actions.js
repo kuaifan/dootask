@@ -151,7 +151,7 @@ export default {
                         params.data = {encrypted: await dispatch("pgpEncryptApi", params.data)}
                     }
                 }
-                encrypt.push("client_type=pgp;client_key=" + $urlSafe((await dispatch("pgpGetLocalKey")).publicKeyB64))
+                encrypt.push("client_type=pgp;client_key=" + (await dispatch("pgpGetLocalKey")).publicKeyB64)
             }
             if (encrypt.length > 0) {
                 params.header.encrypt = encrypt.join(";")
@@ -2843,11 +2843,19 @@ export default {
         state.wsRandom = wsRandom;
         //
         state.ws = new WebSocket(url);
-        state.ws.onopen = (e) => {
+        state.ws.onopen = async (e) => {
             wgLog && console.log("[WS] Open", e, $A.formatDate())
             state.wsOpenNum++;
+            //
+            dispatch("websocketSend", {
+                type: 'encrypt',
+                data: {
+                    type: 'pgp',
+                    key: (await dispatch("pgpGetLocalKey")).publicKeyB64
+                }
+            })
         };
-        state.ws.onclose = (e) => {
+        state.ws.onclose = async (e) => {
             wgLog && console.log("[WS] Close", e, $A.formatDate())
             state.ws = null;
             //
@@ -2856,7 +2864,7 @@ export default {
                 wsRandom === state.wsRandom && dispatch('websocketConnection');
             }, 3000);
         };
-        state.ws.onerror = (e) => {
+        state.ws.onerror = async (e) => {
             wgLog && console.log("[WS] Error", e, $A.formatDate())
             state.ws = null;
             //
@@ -2865,9 +2873,13 @@ export default {
                 wsRandom === state.wsRandom && dispatch('websocketConnection');
             }, 3000);
         };
-        state.ws.onmessage = (e) => {
+        state.ws.onmessage = async (e) => {
             wgLog && console.log("[WS] Message", e);
-            const msgDetail = $A.formatMsgBasic($A.jsonParse(e.data));
+            let result = $A.jsonParse(e.data);
+            if (result.type === "encrypt" && result.encrypted) {
+                result = await dispatch("pgpDecryptApi", result.encrypted)
+            }
+            const msgDetail = $A.formatMsgBasic(result);
             const {type, msgId} = msgDetail;
             switch (type) {
                 case "open":
@@ -3203,7 +3215,7 @@ export default {
                 passphrase: state.clientId,
                 userIDs: [{name: 'doo', email: 'admin@admin.com'}],
             })
-            data.publicKeyB64 = data.publicKey.replace(/\s*-----(BEGIN|END) PGP PUBLIC KEY BLOCK-----\s*/g, '').replace(/\n+/g, '$')
+            data.publicKeyB64 = $urlSafe(data.publicKey.replace(/\s*-----(BEGIN|END) PGP PUBLIC KEY BLOCK-----\s*/g, ''))
             resolve(data)
         })
     },

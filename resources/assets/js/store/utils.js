@@ -77,9 +77,9 @@ export function $callData(key, requestData, state) {
 export function $urlSafe(value, encode = true) {
     if (value) {
         if (encode) {
-            value = String(value).replace(/\+/g, "-").replace(/\//g, "_")
+            value = String(value).replace(/\+/g, "-").replace(/\//g, "_").replace(/\n/g, '$')
         } else {
-            value = String(value).replace(/-/g, "+").replace(/_/g, "/")
+            value = String(value).replace(/\-/g, "+").replace(/\_/g, "/").replace(/\$/g, '\n')
         }
     }
     return value

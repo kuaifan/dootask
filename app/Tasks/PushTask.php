@@ -6,6 +6,7 @@ namespace App\Tasks;
 use App\Models\WebSocket;
 use App\Models\WebSocketTmpMsg;
 use App\Module\Base;
+use App\Module\Doo;
 use Cache;
 use Carbon\Carbon;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
@@ -177,10 +178,19 @@ class PushTask extends AbstractTask
                     Task::deliver($task);
                 } else {
                     try {
+                        $encrypt = Base::json2array(Cache::get("User::encrypt:" . $fid));
+                        if ($encrypt['type'] == 'pgp') {
+                            $msg = [
+                                'type' => 'encrypt',
+                                'encrypted' => Doo::pgpEncryptApi($msg, $encrypt['key']),
+                            ];
+                        }
                         $swoole->push($fid, Base::array2json($msg));
-                        $tmpMsgId > 0 && WebSocketTmpMsg::whereId($tmpMsgId)->update(['send' => 1]);
+                        if ($tmpMsgId > 0) {
+                            WebSocketTmpMsg::whereId($tmpMsgId)->update(['send' => 1]);
+                        }
                     } catch (\Throwable) {
-
+                        // 发送失败
                     }
                 }
             }
