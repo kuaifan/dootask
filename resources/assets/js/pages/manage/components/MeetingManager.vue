@@ -225,7 +225,7 @@ export default {
                         delete data.name;
                         delete data.msgs;
                         //
-                        $A.loadScript('js/AgoraRTC_N-4.14.2.js', e => {
+                        $A.loadScript('js/AgoraRTC_N-4.17.0.js', e => {
                             if (e !== null || typeof AgoraRTC !== 'object') {
                                 $A.modalError("会议组件加载失败！");
                             } else {
