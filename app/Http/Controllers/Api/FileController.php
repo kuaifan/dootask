@@ -182,6 +182,9 @@ class FileController extends AbstractController
         if (preg_match("/\/single\/file\/(.*?)$/i", $link, $match)) {
             $id = intval(FileLink::whereCode($match[1])->value('file_id'));
             $take = 1;
+            if (empty($id)) {
+                return Base::retSuccess('success', []);
+            }
         }
         // 搜索自己的
         $builder = File::whereUserid($user->userid);
