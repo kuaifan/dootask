@@ -150,6 +150,21 @@ class User extends AbstractModel
     }
 
     /**
+     * 获取机器人所有者
+     * @return int|mixed
+     */
+    public function getBotOwner()
+    {
+        if (!$this->bot) {
+            return 0;
+        }
+        $key = "BotOwner::" . $this->userid;
+        return Cache::remember($key, now()->addMonth(), function() {
+            return intval(UserBot::whereBotId($this->userid)->value('userid'));
+        });
+    }
+
+    /**
      * 是否在线
      * @return bool
      */

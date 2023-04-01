@@ -77,24 +77,29 @@
                             <EDropdownItem command="searchMsg">
                                 <div>{{$L('搜索消息')}}</div>
                             </EDropdownItem>
-                            <EDropdownItem v-if="dialogData.type === 'user'" command="openCreate">
-                                <div>{{$L('创建群组')}}</div>
-                            </EDropdownItem>
+                            <template v-if="dialogData.type === 'user'">
+                                <EDropdownItem v-if="dialogData.bot == userId" command="modifyNormal">
+                                    <div>{{$L('修改资料')}}</div>
+                                </EDropdownItem>
+                                <EDropdownItem command="openCreate">
+                                    <div>{{$L('创建群组')}}</div>
+                                </EDropdownItem>
+                            </template>
                             <template v-else>
                                 <EDropdownItem command="groupInfo">
                                     <div>{{$L('群组设置')}}</div>
                                 </EDropdownItem>
                                 <template v-if="dialogData.owner_id != userId">
-                                    <EDropdownItem v-if="dialogData.group_type === 'all' && userIsAdmin" command="avatarAdmin">
-                                        <div>{{$L('修改头像')}}</div>
+                                    <EDropdownItem v-if="dialogData.group_type === 'all' && userIsAdmin" command="modifyAdmin">
+                                        <div>{{$L('修改资料')}}</div>
                                     </EDropdownItem>
                                     <EDropdownItem command="exit">
                                         <div style="color:#f00">{{$L('退出群组')}}</div>
                                     </EDropdownItem>
                                 </template>
                                 <template v-else-if="dialogData.group_type === 'user'">
-                                    <EDropdownItem command="avatar">
-                                        <div>{{$L('修改头像')}}</div>
+                                    <EDropdownItem command="modifyNormal">
+                                        <div>{{$L('修改资料')}}</div>
                                     </EDropdownItem>
                                     <EDropdownItem command="transfer">
                                         <div>{{$L('转让群主')}}</div>
@@ -343,19 +348,30 @@
             </div>
         </Modal>
 
-        <!--修改头像-->
+        <!--修改资料-->
         <Modal
-            v-model="avatarModifyShow"
-            :title="$L('修改头像')"
+            v-model="modifyShow"
+            :title="$L('修改资料')"
             :mask-closable="false">
-            <Form :model="avatarModifyData" label-width="auto" @submit.native.prevent>
-                <FormItem prop="avatar" :label="$L('群头像')">
-                    <ImgUpload v-model="avatarModifyData.avatar" :num="1" :width="512" :height="512" :whcut="1"/>
+            <Form :model="modifyData" label-width="auto" @submit.native.prevent>
+                <FormItem prop="avatar" :label="$L('头像')">
+                    <ImgUpload v-model="modifyData.avatar" :num="1" :width="512" :height="512" :whcut="1"/>
+                </FormItem>
+                <FormItem v-if="typeof modifyData.name !== 'undefined'" prop="name" :label="$L('名称')">
+                    <Input v-model="modifyData.name" :maxlength="20" />
+                </FormItem>
+                <FormItem v-if="typeof modifyData.clear_day !== 'undefined'" prop="clear_day" :label="$L('消息保留')">
+                    <Input v-model="modifyData.clear_day" :maxlength="3" type="number">
+                        <div slot="append">{{$L('天')}}</div>
+                    </Input>
+                </FormItem>
+                <FormItem v-if="typeof modifyData.webhook_url !== 'undefined'" prop="webhook_url" label="Webhook">
+                    <Input v-model="modifyData.webhook_url" :maxlength="255" />
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
-                <Button type="default" @click="avatarModifyShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="avatarModifyLoad > 0" @click="onAvatarModify">{{$L('保存')}}</Button>
+                <Button type="default" @click="modifyShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="modifyLoad > 0" @click="onModify">{{$L('保存')}}</Button>
             </div>
         </Modal>
 
@@ -559,9 +575,9 @@ export default {
             createGroupData: {},
             createGroupLoad: 0,
 
-            avatarModifyShow: false,
-            avatarModifyData: {},
-            avatarModifyLoad: 0,
+            modifyShow: false,
+            modifyData: {},
+            modifyLoad: 0,
 
             forwardShow: false,
             forwardLoad: false,
@@ -1774,14 +1790,43 @@ export default {
                     this.createGroupShow = true
                     break;
 
-                case "avatar":
-                    this.avatarModifyData = {dialog_id: this.dialogData.id, avatar: this.dialogData.avatar}
-                    this.avatarModifyShow = true
+                case "modifyNormal":
+                    this.modifyData = {
+                        dialog_id: this.dialogData.id,
+                        avatar: this.dialogData.avatar,
+                        name: this.dialogData.name
+                    }
+                    if (this.dialogData.type === 'user') {
+                        // 机器人
+                        this.modifyData = Object.assign(this.modifyData, {
+                            userid: this.dialogData.dialog_user.userid,
+                            avatar: this.cacheUserBasic.find(item => item.userid === this.dialogData.dialog_user.userid)?.userimg,
+                            clear_day: 0,
+                            webhook_url: '',
+                        })
+                        this.modifyLoad++;
+                        this.$store.dispatch("call", {
+                            url: 'users/bot/info',
+                            data: {
+                                id: this.dialogData.dialog_user.userid
+                            },
+                        }).then(({data}) => {
+                            this.modifyData.clear_day = data.clear_day
+                            this.modifyData.webhook_url = data.webhook_url
+                        }).finally(() => {
+                            this.modifyLoad--;
+                        })
+                    }
+                    this.modifyShow = true
                     break;
 
-                case "avatarAdmin":
-                    this.avatarModifyData = {dialog_id: this.dialogData.id, avatar: this.dialogData.avatar, admin: 1}
-                    this.avatarModifyShow = true
+                case "modifyAdmin":
+                    this.modifyData = {
+                        dialog_id: this.dialogData.id,
+                        avatar: this.dialogData.avatar,
+                        admin: 1
+                    }
+                    this.modifyShow = true
                     break;
 
                 case "groupInfo":
@@ -1899,21 +1944,55 @@ export default {
             });
         },
 
-        onAvatarModify() {
-            this.avatarModifyLoad++;
-            this.$store.dispatch("call", {
-                url: 'dialog/group/edit',
-                data: this.avatarModifyData
-            }).then(({data, msg}) => {
-                $A.messageSuccess(msg);
-                this.avatarModifyShow = false;
-                this.avatarModifyData = {};
-                this.$store.dispatch("saveDialog", data);
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-            }).finally(_ => {
-                this.avatarModifyLoad--;
-            });
+        onModify() {
+            if (this.modifyData.userid) {
+                // 个人头像（机器人）
+                this.modifyLoad++;
+                this.$store.dispatch("call", {
+                    url: 'users/bot/edit',
+                    data: {
+                        id: this.modifyData.userid,
+                        avatar: this.modifyData.avatar,
+                        name: this.modifyData.name,
+                        clear_day: this.modifyData.clear_day,
+                        webhook_url: this.modifyData.webhook_url,
+                    },
+                    method: 'post'
+                }).then(({data, msg}) => {
+                    $A.messageSuccess(msg);
+                    this.$store.dispatch("saveUserBasic", {
+                        userid: this.modifyData.userid,
+                        nickname: data.name,
+                        userimg: data.avatar,
+                    });
+                    this.$store.dispatch("saveDialog", {
+                        id: this.modifyData.dialog_id,
+                        name: data.name
+                    });
+                    this.modifyShow = false;
+                    this.modifyData = {};
+                }).catch(({msg}) => {
+                    $A.modalError(msg);
+                }).finally(_ => {
+                    this.modifyLoad--;
+                });
+            } else {
+                // 群组头像
+                this.modifyLoad++;
+                this.$store.dispatch("call", {
+                    url: 'dialog/group/edit',
+                    data: this.modifyData
+                }).then(({data, msg}) => {
+                    $A.messageSuccess(msg);
+                    this.$store.dispatch("saveDialog", data);
+                    this.modifyShow = false;
+                    this.modifyData = {};
+                }).catch(({msg}) => {
+                    $A.modalError(msg);
+                }).finally(_ => {
+                    this.modifyLoad--;
+                });
+            }
         },
 
         onForward(type) {

@@ -8,6 +8,7 @@ use App\Models\Meeting;
 use App\Models\Project;
 use App\Models\UmengAlias;
 use App\Models\User;
+use App\Models\UserBot;
 use App\Models\UserCheckinMac;
 use App\Models\UserCheckinRecord;
 use App\Models\UserDelete;
@@ -336,6 +337,7 @@ class UsersController extends AbstractController
     public function editdata()
     {
         $user = User::auth();
+        //
         $data = Request::all();
         $user->checkSystem(1);
         $upLdap = [];
@@ -1658,6 +1660,114 @@ class UsersController extends AbstractController
             'type' => 'pgp',
             'id' => $clientId,
             'key' => $data['public_key'],
+        ]);
+    }
+
+    /**
+     * @api {get} api/users/bot/info          29. 机器人信息
+     *
+     * @apiDescription 需要token身份，获取我的机器人信息
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName bot__info
+     *
+     * @apiParam {Number} id        机器人ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function bot__info()
+    {
+        $user = User::auth();
+        //
+        $botId = intval(Request::input('id'));
+        $botUser = User::whereUserid($botId)->whereBot(1)->first();
+        if (empty($botUser)) {
+            return Base::retError('机器人不存在');
+        }
+        $userBot = UserBot::whereBotId($botUser->userid)->whereUserid($user->userid)->first();
+        if (empty($userBot)) {
+            return Base::retError('不是你的机器人');
+        }
+        return Base::retSuccess('success', [
+            'id' => $botUser->userid,
+            'name' => $botUser->nickname,
+            'avatar' => $botUser->userimg,
+            'clear_day' => $userBot->clear_day,
+            'webhook_url' => $userBot->webhook_url,
+        ]);
+    }
+
+    /**
+     * @api {post} api/users/bot/edit          30. 编辑机器人
+     *
+     * @apiDescription 需要token身份，编辑我的机器人信息
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName bot__edit
+     *
+     * @apiParam {Number} id            机器人ID
+     * @apiParam {String} [name]        机器人名称
+     * @apiParam {String} [avatar]      机器人头像
+     * @apiParam {Number} [clear_day]   清理天数
+     * @apiParam {String} [webhook_url] Webhook地址
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function bot__edit()
+    {
+        $user = User::auth();
+        //
+        $botId = intval(Request::input('id'));
+        $botUser = User::whereUserid($botId)->whereBot(1)->first();
+        if (empty($botUser)) {
+            return Base::retError('机器人不存在');
+        }
+        $userBot = UserBot::whereBotId($botUser->userid)->whereUserid($user->userid)->first();
+        if (empty($userBot)) {
+            return Base::retError('不是你的机器人');
+        }
+        //
+        $data = Request::input();
+        $upUser = [];
+        $upBot = [];
+        //
+        if (isset($data['name'])) {
+            $upUser['nickname'] = trim($data['name']);
+        }
+        if (isset($data['avatar'])) {
+            $avatar = $data['avatar'];
+            $avatar = $avatar ? Base::unFillUrl(is_array($avatar) ? $avatar[0]['path'] : $avatar) : '';
+            if (str_contains($avatar, 'avatar/')) {
+                $avatar = '';
+            }
+            $upUser['userimg'] = $avatar;
+        }
+        if (isset($data['clear_day'])) {
+            $upBot['clear_day'] = min(max(intval($data['clear_day']), 1), 999);
+        }
+        if (isset($data['webhook_url'])) {
+            $upBot['webhook_url'] = trim($data['webhook_url']);
+        }
+        //
+        if ($upUser) {
+            $botUser->updateInstance($upUser);
+            $botUser->save();
+        }
+        if ($upBot) {
+            $userBot->updateInstance($upBot);
+            $userBot->save();
+        }
+        //
+        return Base::retSuccess('修改成功', [
+            'id' => $botUser->userid,
+            'name' => $botUser->nickname,
+            'avatar' => $botUser->userimg,
+            'clear_day' => $userBot->clear_day,
+            'webhook_url' => $userBot->webhook_url,
         ]);
     }
 }

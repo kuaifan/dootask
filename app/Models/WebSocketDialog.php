@@ -119,7 +119,7 @@ class WebSocketDialog extends AbstractModel
                 $basic = User::userid2basic($dialog_user->userid);
                 if ($basic) {
                     $this->name = $basic->nickname;
-                    $this->bot = $basic->bot;
+                    $this->bot = $basic->getBotOwner();
                     $this->quick_msgs = UserBot::quickMsgs($basic->email);
                 } else {
                     $this->name = 'non-existent';

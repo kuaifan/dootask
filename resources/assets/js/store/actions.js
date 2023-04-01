@@ -131,6 +131,7 @@ export default {
             'users/editpass',
             'users/operation',
             'users/delete/account',
+            'users/bot/*',
             'dialog/msg/*',
         ], true)) {
             params.encrypt = true
