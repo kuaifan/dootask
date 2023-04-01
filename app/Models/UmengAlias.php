@@ -155,12 +155,12 @@ class UmengAlias extends AbstractModel
             $builder->whereUserid($userid);
         }
         $builder
-            ->orderByDesc('id')
+            ->orderByDesc('updated_at')
             ->chunkById(100, function ($datas) use ($array) {
                 $uids = $datas->groupBy('userid');
                 foreach ($uids as $uid => $rows) {
                     $array['badge'] = WebSocketDialogMsgRead::whereUserid($uid)->whereSilence(0)->whereReadAt(null)->count();
-                    $lists = $rows->groupBy('platform');
+                    $lists = $rows->take(5)->groupBy('platform');   // 每个会员最多推送5个别名
                     foreach ($lists as $platform => $list) {
                         $alias = $list->pluck('alias')->implode(',');
                         self::pushMsgToAlias($alias, $platform, $array);

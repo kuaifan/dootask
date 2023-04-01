@@ -112,7 +112,7 @@ class PushTask extends AbstractTask
      */
     public static function push(array $lists, $retryOffline = true, $key = null, $delay = 1)
     {
-        if (!is_array($lists) || empty($lists)) {
+        if (empty($lists)) {
             return;
         }
         if (!Base::isTwoArray($lists)) {
@@ -178,14 +178,7 @@ class PushTask extends AbstractTask
                     Task::deliver($task);
                 } else {
                     try {
-                        $encrypt = Base::json2array(Cache::get("User::encrypt:" . $fid));
-                        if ($encrypt['type'] == 'pgp') {
-                            $msg = [
-                                'type' => 'encrypt',
-                                'encrypted' => Doo::pgpEncryptApi($msg, $encrypt['key']),
-                            ];
-                        }
-                        $swoole->push($fid, Base::array2json($msg));
+                        $swoole->push($fid, self::pushMsgFormat($fid, $msg));
                         if ($tmpMsgId > 0) {
                             WebSocketTmpMsg::whereId($tmpMsgId)->update(['send' => 1]);
                         }
@@ -200,5 +193,23 @@ class PushTask extends AbstractTask
                 self::addTmpMsg($offlineUser, $msg);
             }
         }
+    }
+
+    /**
+     * 格式化推送消息
+     * @param $fid
+     * @param $msg
+     * @return string
+     */
+    private static function pushMsgFormat($fid, $msg)
+    {
+        $encrypt = Base::json2array(Cache::get("User::encrypt:" . $fid));
+        if ($encrypt['type'] == 'pgp') {
+            $msg = [
+                'type' => 'encrypt',
+                'encrypted' => Doo::pgpEncryptApi($msg, $encrypt['key']),
+            ];
+        }
+        return Base::array2json($msg);
     }
 }
