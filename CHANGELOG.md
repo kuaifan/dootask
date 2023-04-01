@@ -2,14 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.25.57]
+## [0.25.60]
 
 ### Bug Fixes
 
+- 文件搜索不到根目录的共享
 - 清除缓存导致获取不到数据的问题
 
 ### Performance
 
+- 优化会话搜索
 - 通过页面修改机器人资料
 
 ## [0.25.52]
