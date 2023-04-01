@@ -43,6 +43,7 @@ class WebSocketService implements WebSocketHandlerInterface
         $fd = $request->fd;
         $get = Base::newTrim($request->get);
         $action = $get['action'];
+        Cache::forget("User::encrypt:" . $fd);
         switch ($action) {
             /**
              * 网页访问

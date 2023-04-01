@@ -62,9 +62,10 @@
         methods: {
             handleTooltipIn () {
                 const $content = this.$refs.content;
+                if (!$content) return;
                 let range = document.createRange();
                 range.setStart($content, 0);
-                range.setEnd($content, $content.childNodes?.length || 0);
+                range.setEnd($content, $content.childNodes.length || 0);
                 const rangeWidth = range.getBoundingClientRect().width;
                 this.showTooltip = Math.floor(rangeWidth) > Math.floor($content.offsetWidth);
                 if (this.showTooltip && this.existSlot) {
