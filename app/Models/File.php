@@ -181,6 +181,7 @@ class File extends AbstractModel
         if ($this->share != $share) {
             AbstractModel::transaction(function () use ($share) {
                 $this->share = $share;
+                $this->pshare = $share ? $this->id : 0;
                 $this->save();
                 File::where("pids", "like", "%,{$this->id},%")->update(['pshare' => $share ? $this->id : 0]);
                 if ($share === 0) {
