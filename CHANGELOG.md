@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.25.57]
+
+### Bug Fixes
+
+- 清除缓存导致获取不到数据的问题
+
+### Performance
+
+- 通过页面修改机器人资料
+
 ## [0.25.52]
 
 ### Performance
