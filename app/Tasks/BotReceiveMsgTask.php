@@ -246,7 +246,7 @@ class BotReceiveMsgTask extends AbstractTask
                     break;
 
                 /**
-                 * 设置自动清理消息时间
+                 * 设置保留消息时间
                  */
                 case '/clearday':
                     $botId = $isManager ? $array[1] : $botUser->userid;

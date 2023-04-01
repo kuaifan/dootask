@@ -11,7 +11,7 @@
     <b>修改机器人</b>
     <span style="color:#84c56a">/setname {机器人ID} {机器人名称}</span> - 修改机器人名称
     <span style="color:#84c56a">/deletebot {机器人ID}</span> - 删除机器人
-    <span style="color:#84c56a">/clearday {机器人ID} {天数}</span> - 设置自动清理消息时间（默认30天）
+    <span style="color:#84c56a">/clearday {机器人ID} {天数}</span> - 设置保留消息时间（默认30天）
     <span style="color:#84c56a">/webhook {机器人ID} [url]</span> - 设置消息Webhook（详情请看 <u>Api接口文档</u>）
 
     <b>机器人设置</b>
@@ -35,7 +35,7 @@
 
     机器人ID：<span style="color:#84c56a">{{$data->userid}}</span>
     机器人名称：<span style="color:#84c56a">{{$data->nickname}}</span>
-    自动清理消息时间：<span style="color:#84c56a">{{$data->clear_day}}</span>
+    保留消息时间：<span style="color:#84c56a">{{$data->clear_day}}</span>
     最后一次清理时间：<span style="color:#84c56a">{{$data->clear_at ?: '-'}}</span>
     Webhook地址：<span style="color:#84c56a">{{$data->webhook_url ?: '-'}}</span>
     Webhook请求次数：<span style="color:#84c56a">{{$data->webhook_num}}</span>
@@ -72,7 +72,7 @@
     机器人名称：<span style="color:#84c56a">{{$data->nickname}}</span>
     Webhook地址：<span style="color:#84c56a">{{$data->webhook_url}}</span>
 @elseif ($type === '/clearday')
-    <b>设置自动清理消息时间。</b>
+    <b>设置保留消息时间。</b>
 
     机器人ID：<span style="color:#84c56a">{{$data->userid}}</span>
     机器人名称：<span style="color:#84c56a">{{$data->nickname}}</span>
