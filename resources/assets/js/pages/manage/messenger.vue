@@ -453,8 +453,10 @@ export default {
 
         messengerSearchKey: {
             handler(obj) {
-                this.dialogSearchKey = obj.dialog
-                this.contactsKey = obj.contacts
+                this.$nextTick(_ => {
+                    this.dialogSearchKey = obj.dialog
+                    this.contactsKey = obj.contacts
+                })
             },
             deep: true
         },

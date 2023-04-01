@@ -815,6 +815,7 @@ export default {
         },
 
         onClickEditor() {
+            this.$store.state.messengerSearchKey = {dialog: '', contacts: ''}
             this.updateEmojiQuick(this.value)
         },
 
