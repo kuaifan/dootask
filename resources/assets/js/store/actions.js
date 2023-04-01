@@ -42,22 +42,6 @@ export default {
             state.callAt = await $A.IDBArray("callAt")
             state.cacheEmojis = await $A.IDBArray("cacheEmojis")
 
-            // 客户端ID
-            if (!state.clientId) {
-                state.clientId = $A.randomString(6)
-                await $A.IDBSet("clientId", state.clientId)
-            }
-
-            // 清理缓存
-            const clearCache = await $A.IDBString("clearCache")
-            if (clearCache) {
-                await $A.IDBRemove("clearCache")
-                await $A.IDBSet("callAt", state.callAt = [])
-                if (clearCache === "handle") {
-                    await dispatch(action = "handleClearCache")
-                }
-            }
-
             // 会员信息
             if (state.userInfo.userid) {
                 state.userId = state.userInfo.userid = $A.runNum(state.userInfo.userid)
@@ -85,6 +69,23 @@ export default {
             }
             state.themeIsDark = $A.dark.isDarkEnabled()
 
+            // 客户端ID
+            if (!state.clientId) {
+                state.clientId = $A.randomString(6)
+                await $A.IDBSet("clientId", state.clientId)
+            }
+
+            // 清理缓存
+            const clearCache = await $A.IDBString("clearCache")
+            if (clearCache) {
+                await $A.IDBRemove("clearCache")
+                await $A.IDBSet("callAt", state.callAt = [])
+                if (clearCache === "handle") {
+                    await dispatch(action = "handleClearCache")
+                }
+            }
+
+            // 获取apiKey
             dispatch("call", {
                 url: "users/key/client",
                 data: {client_id: state.clientId},
