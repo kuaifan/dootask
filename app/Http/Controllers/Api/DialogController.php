@@ -20,6 +20,7 @@ use Carbon\Carbon;
 use DB;
 use Redirect;
 use Request;
+use Str;
 
 /**
  * @apiDefine dialog
@@ -664,7 +665,10 @@ class DialogController extends AbstractController
      *
      * @apiParam {Number} dialog_id         对话ID
      * @apiParam {String} text              消息内容
-     * @apiParam {Number} [update_id]       更新消息ID（优先大于reply_id）
+     * @apiParam {String} [text_type]       消息类型
+     * - html: HTML（默认）
+     * - md: MARKDOWN
+     * @apiParam {Number} [update_id]       更新消息ID（优先大于 reply_id）
      * @apiParam {Number} [reply_id]        回复ID
      * @apiParam {String} [silence]         是否静默发送
      * - no: 正常发送（默认）
@@ -694,7 +698,8 @@ class DialogController extends AbstractController
         $update_id = intval(Request::input('update_id'));
         $reply_id = intval(Request::input('reply_id'));
         $text = trim(Request::input('text'));
-        $silence = trim(Request::input('silence')) === 'yes';
+        $text_type = strtolower(trim(Request::input('text_type')));
+        $silence = in_array(strtolower(trim(Request::input('silence'))), ['yes', 'true', '1']);
         //
         WebSocketDialog::checkDialog($dialog_id);
         //
@@ -706,6 +711,9 @@ class DialogController extends AbstractController
             $action = "";
         }
         //
+        if (in_array($text_type, ['md', 'markdown'])) {
+            $text = Str::markdown($text);
+        }
         $text = WebSocketDialogMsg::formatMsg($text, $dialog_id);
         $strlen = mb_strlen($text);
         $noimglen = mb_strlen(preg_replace("/<img[^>]*?>/i", "", $text));
