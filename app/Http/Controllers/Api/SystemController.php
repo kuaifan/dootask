@@ -204,12 +204,19 @@ class SystemController extends AbstractController
                     unset($all[$key]);
                 }
             }
+            if ($all['open'] === 'open' && (!$all['appid'] || !$all['app_certificate'])) {
+                return Base::retError('请填写完整的参数');
+            }
             $setting = Base::setting('meetingSetting', Base::newTrim($all));
         } else {
             $setting = Base::setting('meetingSetting');
         }
         //
         $setting['open'] = $setting['open'] ?: 'close';
+        if (env("SYSTEM_SETTING") == 'disabled') {
+            $setting['appid'] = substr($setting['appid'], 0, 4) . str_repeat('*', strlen($setting['appid']) - 8) . substr($setting['appid'], -4);
+            $setting['app_certificate'] = substr($setting['app_certificate'], 0, 4) . str_repeat('*', strlen($setting['app_certificate']) - 8) . substr($setting['app_certificate'], -4);
+        }
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
     }
