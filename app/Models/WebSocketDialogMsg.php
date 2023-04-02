@@ -741,14 +741,14 @@ class WebSocketDialogMsg extends AbstractModel
         // 过滤标签
         $text = strip_tags($text, '<blockquote> <strong> <pre> <ol> <ul> <li> <em> <p> <s> <u> <a>');
         $text = preg_replace("/\<(blockquote|strong|pre|ol|ul|li|em|p|s|u).*?\>/is", "<$1>", $text);    // 不用去除a标签，上面已经处理过了
+         $text = preg_replace_callback("/\[:LINK:(.*?):(.*?):\]/i", function (array $match) {
+            return "<a href=\"" . base64_decode($match[1]) . "\" target=\"_blank\">" . base64_decode($match[2]) . "</a>";
+        }, $text);
         $text = preg_replace("/\[:IMAGE:(.*?):(.*?):(.*?):(.*?):(.*?):\]/i", "<img class=\"$1\" width=\"$2\" height=\"$3\" src=\"{{RemoteURL}}$4\" alt=\"$5\"/>", $text);
         $text = preg_replace("/\[:@:(.*?):(.*?):\]/i", "<span class=\"mention user\" data-id=\"$1\">@$2</span>", $text);
         $text = preg_replace("/\[:#:(.*?):(.*?):\]/i", "<span class=\"mention task\" data-id=\"$1\">#$2</span>", $text);
         $text = preg_replace("/\[:~:(.*?):(.*?):\]/i", "<a class=\"mention file\" href=\"{{RemoteURL}}single/file/$1\" target=\"_blank\">~$2</a>", $text);
         $text = preg_replace("/\[:QUICK:(.*?):(.*?):\]/i", "<span data-quick-key=\"$1\">$2</span>", $text);
-        $text = preg_replace_callback("/\[:LINK:(.*?):(.*?):\]/i", function (array $match) {
-            return "<a href=\"" . base64_decode($match[1]) . "\" target=\"_blank\">" . base64_decode($match[2]) . "</a>";
-        }, $text);
         return preg_replace("/^(<p><\/p>)+|(<p><\/p>)+$/i", "", $text);
     }
 

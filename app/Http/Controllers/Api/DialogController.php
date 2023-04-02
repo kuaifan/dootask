@@ -713,6 +713,7 @@ class DialogController extends AbstractController
         //
         if (in_array($text_type, ['md', 'markdown'])) {
             $text = Str::markdown($text);
+            $text = preg_replace("/\>\r?\n\s*+\</", "><", $text);
         }
         $text = WebSocketDialogMsg::formatMsg($text, $dialog_id);
         $strlen = mb_strlen($text);
