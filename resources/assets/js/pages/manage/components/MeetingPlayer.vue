@@ -75,19 +75,13 @@ export default {
     watch: {
         audio: {
             handler(b) {
-                if (this.isLocal || !b) {
-                    return
-                }
-                this.play('audio')
+                b && this.play('audio')
             },
             immediate: true
         },
         video: {
             handler(b) {
-                if (!b) {
-                    return
-                }
-                this.play('video')
+                b && this.play('video')
             },
             immediate: true
         }
@@ -97,7 +91,7 @@ export default {
             this.$nextTick(_ => {
                 try {
                     if (type === 'audio') {
-                        this.player.audioTrack.play();
+                        !this.isLocal && this.player.audioTrack.play();
                     } else if (type === 'video') {
                         this.player.videoTrack.play(this.id);
                     }

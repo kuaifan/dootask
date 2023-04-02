@@ -225,14 +225,13 @@ export default {
                         delete data.name;
                         delete data.msgs;
                         //
-                        $A.loadScript('js/AgoraRTC_N-4.17.0.js', e => {
-                            if (e !== null || typeof AgoraRTC !== 'object') {
-                                $A.modalError("会议组件加载失败！");
-                            } else {
-                                this.join(data)
-                            }
+                        $A.loadScript('js/AgoraRTC_N-4.17.0.js').then(_ => {
+                            this.join(data)
+                        }).catch(_ => {
+                            $A.modalError("会议组件加载失败！");
+                        }).finally(_ => {
                             this.loadIng--;
-                        });
+                        })
                     }).catch(({msg}) => {
                         this.loadIng--;
                         $A.modalError(msg);
@@ -323,7 +322,7 @@ export default {
             }
             // 音频或视频轨道自动播放失败回调
             AgoraRTC.onAutoplayFailed = () => {
-                //
+                $A.messageWarning("点击屏幕开始会议");
             }
 
             // 创建客户端
