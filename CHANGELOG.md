@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.25.68]
+
+### Bug Fixes
+
+- 会议回音
+
+### Performance
+
+- 优化动态加载静态资源
+- 消息接口支持MARKDOWN
+
 ## [0.25.60]
 
 ### Bug Fixes

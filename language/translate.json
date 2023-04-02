@@ -15299,5 +15299,16 @@
         "de": "Download starten. - ja.",
         "fr": "Télécharger maintenant télécharger",
         "id": "Download sekarang"
+    },
+    {
+        "key": "请填写完整的参数",
+        "zh": "",
+        "zh-CHT": "請填寫完整的參數",
+        "en": "Please fill in the complete parameters",
+        "ko": "완벽한 파라메터를 기입해 주십시오",
+        "ja": "完全なパラメータをお願いします。",
+        "de": "Füllen sie bitte die vollständige parameter aus",
+        "fr": "Veuillez remplir tous les paramètres",
+        "id": "Silahkan isi seluruh parameter"
     }
 ]
