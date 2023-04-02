@@ -187,7 +187,7 @@ export default {
         $A.loadScriptS([
             'js/ace/ace.js',
             'js/ace/mode-json.js',
-        ], () => {
+        ]).then(_ => {
             // set init editor size
             this.setSize(this.$el, {height: this.height, width: this.width})
 
@@ -234,7 +234,7 @@ export default {
                 this.code = this.editor.getValue()
                 this.$emit('input', this.code);
             });
-        });
+        })
     },
     methods: {
         /**

@@ -114,7 +114,7 @@ export default {
             $A.loadScriptS([
                 'js/emoji.all.js',
                 'js/emoticon.all.js',
-            ], _ => {
+            ]).then(_ => {
                 const baseUrl = $A.apiUrl("../images/emoticon")
                 if ($A.isArray(window.emojiData)) {
                     this.emojiData = window.emojiData.sort(function (a, b) {

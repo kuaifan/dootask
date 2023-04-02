@@ -906,110 +906,137 @@ const localforage = require("localforage");
         /**
          * 动态加载js文件
          * @param url
-         * @param callback
+         * @returns {Promise<unknown>}
          */
-        loadScript(url, callback) {
-            url = $A.originUrl(url);
-            if (this.rightExists(url, '.css')) {
-                this.loadCss(url, callback)
-                return;
-            }
-            if (this.__loadScript[url] === true) {
-                typeof callback === "function" && callback(null);
-                return;
-            }
-            let script = document.createElement("script");
-            script.type = "text/javascript";
-            if (script.readyState) {
-                script.onreadystatechange = () => {
-                    if (script.readyState === "loaded" || script.readyState === "complete") {
-                        script.onreadystatechange = null;
-                        this.__loadScript[url] = true;
-                        typeof callback === "function" && callback(null);
-                    }
-                };
-            } else {
-                script.onload = () => {
-                    this.__loadScript[url] = true;
-                    typeof callback === "function" && callback(null);
-                };
-                script.onerror = (e) => {
-                    typeof callback === "function" && callback(e);
-                };
-            }
-            if (this.rightExists(url, '.js')) {
-                script.src = url + "?hash=" + window.systemInfo.version;
-            } else {
-                script.src = url;
-            }
-            document.body.appendChild(script);
-        },
-        loadScriptS(urls, callback) {
-            let i = 0;
-            let recursiveCallback = () => {
-                if (++i < urls.length) {
-                    this.loadScript(urls[i], recursiveCallback)
-                } else {
-                    typeof callback === "function" && callback(null);
+        loadScript(url) {
+            return new Promise(async (resolve, reject) => {
+                url = $A.originUrl(url)
+                if (this.rightExists(url, '.css')) {
+                    return resolve(this.loadCss(url))
                 }
-            }
-            this.loadScript(urls[0], recursiveCallback);
+                //
+                let i = 0
+                while (this.__loadScript[url] === "loading") {
+                    await new Promise(r => setTimeout(r, 1000))
+                    i++
+                    if (i > 30) {
+                        return reject("加载超时")
+                    }
+                }
+                if (this.__loadScript[url] === "loaded") {
+                    return resolve(false)
+                }
+                this.__loadScript[url] = "loading"
+                //
+                const script = document.createElement("script")
+                script.type = "text/javascript"
+                if (script.readyState) {
+                    script.onreadystatechange = () => {
+                        if (script.readyState === "loaded" || script.readyState === "complete") {
+                            script.onreadystatechange = null
+                            this.__loadScript[url] = "loaded"
+                            resolve(true)
+                        }
+                    }
+                } else {
+                    script.onload = () => {
+                        this.__loadScript[url] = "loaded"
+                        resolve(true)
+                    }
+                    script.onerror = (e) => {
+                        this.__loadScript[url] = "error"
+                        reject(e)
+                    }
+                }
+                if (this.rightExists(url, '.js')) {
+                    script.src = url + "?hash=" + window.systemInfo.version
+                } else {
+                    script.src = url
+                }
+                document.body.appendChild(script)
+            })
+        },
+        loadScriptS(urls) {
+            return new Promise(resolve => {
+                let i = 0
+                const recursiveCallback = () => {
+                    if (++i < urls.length) {
+                        this.loadScript(urls[i]).finally(recursiveCallback)
+                    } else {
+                        resolve()
+                    }
+                }
+                this.loadScript(urls[0]).finally(recursiveCallback)
+            })
         },
         __loadScript: {},
 
         /**
-         * 动态加载css
+         * 动态加载css文件
          * @param url
-         * @param callback
+         * @returns {Promise<unknown>}
          */
-        loadCss(url, callback) {
-            url = $A.originUrl(url);
-            if (this.rightExists(url, '.js')) {
-                this.loadScript(url, callback)
-                return;
-            }
-            if (this.__loadCss[url] === true) {
-                typeof callback === "function" && callback(null);
-                return;
-            }
-            let script = document.createElement('link');
-            if (script.readyState) {
-                script.onreadystatechange = () => {
-                    if (script.readyState == 'loaded' || script.readyState == 'complete') {
-                        script.onreadystatechange = null;
-                        this.__loadCss[url] = true;
-                        typeof callback === "function" && callback(null);
+        loadCss(url) {
+            return new Promise(async (resolve, reject) => {
+                url = $A.originUrl(url)
+                if (this.rightExists(url, '.js')) {
+                    return resolve(this.loadScript(url))
+                }
+                //
+                let i = 0
+                while (this.__loadCss[url] === "loading") {
+                    await new Promise(r => setTimeout(r, 1000))
+                    i++
+                    if (i > 30) {
+                        return reject("加载超时")
+                    }
+                }
+                if (this.__loadCss[url] === "loaded") {
+                    return resolve(false)
+                }
+                this.__loadCss[url] = "loading"
+                //
+                const script = document.createElement('link')
+                if (script.readyState) {
+                    script.onreadystatechange = () => {
+                        if (script.readyState == 'loaded' || script.readyState == 'complete') {
+                            script.onreadystatechange = null
+                            this.__loadCss[url] = "loaded"
+                            resolve(true)
+                        }
+                    }
+                } else {
+                    script.onload = () => {
+                        this.__loadCss[url] = "loaded"
+                        resolve(true)
 
                     }
-                };
-            } else {
-                script.onload = () => {
-                    this.__loadCss[url] = true;
-                    typeof callback === "function" && callback(null);
-
-                };
-                script.onerror = (e) => {
-                    typeof callback === "function" && callback(e);
-                };
-            }
-            script.rel = 'stylesheet';
-            if (this.rightExists(url, '.css')) {
-                script.href = url + "?hash=" + window.systemInfo.version;
-            } else {
-                script.href = url;
-            }
-            document.getElementsByTagName('head').item(0).appendChild(script);
-        },
-        loadCssS(urls, callback) {
-            let i = 0;
-            let recursiveCallback = () => {
-                if (++i < urls.length) {
-                    this.loadCss(urls[i], recursiveCallback)
-                } else {
-                    typeof callback === "function" && callback(null);
+                    script.onerror = (e) => {
+                        this.__loadCss[url] = "error"
+                        reject(e)
+                    }
                 }
-            }
-            this.loadCss(urls[0], recursiveCallback);
+                script.rel = 'stylesheet'
+                if (this.rightExists(url, '.css')) {
+                    script.href = url + "?hash=" + window.systemInfo.version
+                } else {
+                    script.href = url
+                }
+                document.getElementsByTagName('head').item(0).appendChild(script)
+            })
+        },
+        loadCssS(urls) {
+            return new Promise(resolve => {
+                let i = 0
+                const recursiveCallback = () => {
+                    if (++i < urls.length) {
+                        this.loadCss(urls[i]).finally(recursiveCallback)
+                    } else {
+                        resolve()
+                    }
+                }
+                this.loadCss(urls[0]).finally(recursiveCallback)
+            })
         },
         __loadCss: {},
 

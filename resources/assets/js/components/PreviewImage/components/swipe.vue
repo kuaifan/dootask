@@ -79,33 +79,32 @@ export default {
                     showHideAnimationType: 'none',
                     pswpModule: () => import('photoswipe'),
                 });
-                this.lightbox.on('change', () => {
-                    if (htmlZoom) {
-                        $A.loadScript('js/pinch-zoom.umd.min.js', _ => {
-                            if (PinchZoom !== 'object') {
-                                const swiperItems = document.querySelector(`.${this.className}`).querySelectorAll(".preview-image-swipe")
-                                swiperItems.forEach(swipeItem => {
-                                    if (swipeItem.getAttribute("data-init-pinch-zoom") !== "init") {
-                                        swipeItem.setAttribute("data-init-pinch-zoom", "init")
-                                        swipeItem.querySelector("img").addEventListener("pointermove", e => {
-                                            if (dragIng) {
-                                                e.stopPropagation();
-                                            }
-                                        })
-                                        new PinchZoom.default(swipeItem, {
-                                            draggableUnzoomed: false,
-                                            onDragStart: () => {
-                                                dragIng = true;
-                                            },
-                                            onDragEnd: () => {
-                                                dragIng = false;
-                                            }
-                                        })
+                this.lightbox.on('change', _ => {
+                    if (!htmlZoom) {
+                        return;
+                    }
+                    $A.loadScript('js/pinch-zoom.umd.min.js').then(_ => {
+                        const swiperItems = document.querySelector(`.${this.className}`).querySelectorAll(".preview-image-swipe")
+                        swiperItems.forEach(swipeItem => {
+                            if (swipeItem.getAttribute("data-init-pinch-zoom") !== "init") {
+                                swipeItem.setAttribute("data-init-pinch-zoom", "init")
+                                swipeItem.querySelector("img").addEventListener("pointermove", e => {
+                                    if (dragIng) {
+                                        e.stopPropagation();
+                                    }
+                                })
+                                new PinchZoom.default(swipeItem, {
+                                    draggableUnzoomed: false,
+                                    onDragStart: () => {
+                                        dragIng = true;
+                                    },
+                                    onDragEnd: () => {
+                                        dragIng = false;
                                     }
                                 })
                             }
                         })
-                    }
+                    })
                 });
                 this.lightbox.on('close', () => {
                     this.$emit("on-close")

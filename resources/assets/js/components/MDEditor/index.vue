@@ -225,17 +225,15 @@
                 }
             },
             htmlOk() {
-                $A.loadScript('js/html2md.js', (e) => {
-                    if (e !== null || typeof toMarkdown !== 'function') {
-                        $A.modalError("组件加载失败！");
-                        return;
-                    }
+                $A.loadScript('js/html2md.js').then(_ => {
                     if (this.transfer) {
                         this.$refs.md2.insertContent('\n' + toMarkdown(this.htmlValue, { gfm: true }));
                     } else {
                         this.$refs.md1.insertContent('\n' + toMarkdown(this.htmlValue, { gfm: true }));
                     }
                     this.htmlValue = "";
+                }).catch(_ => {
+                    $A.modalError("组件加载失败！");
                 });
             },
 

@@ -95,12 +95,12 @@ export default {
             })
 
             // 加载语言包
-            $A.loadScriptS([
+            await $A.loadScriptS([
                 `language/web/key.js`,
                 `language/web/${languageType}.js`,
-            ], _ => {
-                resolve(action)
-            });
+            ])
+
+            resolve(action)
         })
     },
 

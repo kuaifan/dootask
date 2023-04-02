@@ -721,8 +721,8 @@ export default {
                     'js/recorder/recorder.mp3.min.js',
                     'js/recorder/lib.fft.js',
                     'js/recorder/frequency.histogram.view.js',
-                ], (e) => {
-                    if (e !== null || typeof window.Recorder !== 'function') {
+                ]).then(_ => {
+                    if (typeof window.Recorder !== 'function') {
                         return;
                     }
                     this.recordRec = window.Recorder({

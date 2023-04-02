@@ -156,12 +156,7 @@ export default {
                 }
                 this.loading = true;
                 this.loadError = false;
-                $A.loadScript($A.apiUrl("../office/web-apps/apps/api/documents/api.js"), (e) => {
-                    this.loading = false;
-                    if (e !== null) {
-                        this.loadError = true;
-                        return;
-                    }
+                $A.loadScript($A.apiUrl("../office/web-apps/apps/api/documents/api.js")).then(_ => {
                     if (!this.documentKey) {
                         this.handleClose();
                         return
@@ -172,6 +167,10 @@ export default {
                     } else {
                         this.loadFile();
                     }
+                }).catch(_ => {
+                    this.loadError = true
+                }).finally(_ => {
+                    this.loading = false
                 })
             },
             immediate: true,

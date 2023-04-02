@@ -120,11 +120,7 @@ export default {
                     $A.IDBString("logOpen").then(r => {
                         $A.openLog = r === "open"
                         if ($A.openLog) {
-                            $A.loadScript('js/vconsole.min.js', (e) => {
-                                if (e !== null || typeof window.VConsole !== 'function') {
-                                    $A.modalError("vConsole 组件加载失败！");
-                                    return;
-                                }
+                            $A.loadScript('js/vconsole.min.js').then(_ => {
                                 window.vConsole = new window.VConsole({
                                     onReady: () => {
                                         console.log('vConsole: onReady');
@@ -133,7 +129,9 @@ export default {
                                         console.log('vConsole: onClearLog');
                                     }
                                 });
-                            });
+                            }).catch(_ => {
+                                $A.modalError("vConsole 组件加载失败！");
+                            })
                         }
                     })
                 }
