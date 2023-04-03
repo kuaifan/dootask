@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Module\ImgCompress;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Module\Base;
@@ -587,6 +588,7 @@ class WebSocketDialogMsg extends AbstractModel
             Base::makeDir(public_path($imagePath));
             $imagePath .= md5s($base64) . "." . $matchs[1][$key];
             if (file_put_contents(public_path($imagePath), base64_decode($base64))) {
+                ImgCompress::compress(public_path($imagePath));
                 $imageSize = getimagesize(public_path($imagePath));
                 if (Base::imgThumb(public_path($imagePath), public_path($imagePath) . "_thumb.jpg", 320, 0)) {
                     $imagePath .= "_thumb.jpg";
@@ -661,6 +663,7 @@ class WebSocketDialogMsg extends AbstractModel
                 if (empty($image)) {
                     $text = str_replace($matchs[0][$key], "[:IMAGE:browse:90:90:images/other/imgerr.jpg::]", $text);
                 } else if (file_put_contents(public_path($imagePath), $image)) {
+                    ImgCompress::compress(public_path($imagePath));
                     $imageSize = getimagesize(public_path($imagePath));
                     if (Base::imgThumb(public_path($imagePath), public_path($imagePath) . "_thumb.jpg", 320, 0)) {
                         $imagePath .= "_thumb.jpg";
