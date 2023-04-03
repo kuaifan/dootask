@@ -15,6 +15,7 @@ use App\Models\WebSocketDialogMsgRead;
 use App\Models\WebSocketDialogMsgTodo;
 use App\Models\WebSocketDialogUser;
 use App\Module\Base;
+use App\Module\ImgCompress;
 use App\Module\TimeRange;
 use Carbon\Carbon;
 use DB;
@@ -853,6 +854,7 @@ class DialogController extends AbstractController
             $fileData = $data['data'];
             $fileData['thumb'] = Base::unFillUrl($fileData['thumb']);
             $fileData['size'] *= 1024;
+            ImgCompress::compress($fileData['file']);
             //
             if ($dialog->type === 'group' && $dialog->group_type === 'task') {                       // 任务群组保存文件
                 if ($image_attachment || !in_array($fileData['ext'], File::imageExt)) {     // 如果是图片不保存

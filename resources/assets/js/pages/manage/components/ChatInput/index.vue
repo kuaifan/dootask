@@ -868,6 +868,7 @@ export default {
 
         onSend() {
             this.rangeIndex = 0
+            this.$store.state.messengerSearchKey = {dialog: '', contacts: ''}
             this.$emit('on-send')
         },
 
