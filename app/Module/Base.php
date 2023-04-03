@@ -2077,7 +2077,7 @@ class Base
 
     /**
      * image64图片保存
-     * @param array $param [ image64=带前缀的base64, path=>文件路径, fileName=>文件名称, scale=>[压缩原图宽,高, 压缩方式], autoThumb=>false不要自动生成缩略图 ]
+     * @param array $param [ image64=带前缀的base64, path=>文件路径, fileName=>文件名称, scale=>[压缩原图宽,高, 压缩方式], autoThumb=>false不要自动生成缩略图, 'compress'=>是否压缩图片(默认true) ]
      * @return array [name=>文件名, size=>文件大小(单位KB),file=>绝对地址, path=>相对地址, url=>全路径地址, ext=>文件后缀名]
      */
     public static function image64save($param)
@@ -2156,6 +2156,11 @@ class Base
                         }
                     }
                 }
+                // 压缩图片
+                if ($param['compress'] !== false) {
+                    ImgCompress::compress($array['file']);
+                    $array['size'] = Base::twoFloat(filesize($array['file']) / 1024, true);
+                }
                 //生成缩略图
                 $array['thumb'] = $array['path'];
                 if ($extension === 'gif' && !isset($param['autoThumb'])) {
@@ -2175,7 +2180,7 @@ class Base
 
     /**
      * 上传文件
-     * @param array $param [ type=[文件类型], file=>Request::file, path=>文件路径, fileName=>文件名称, scale=>[压缩原图宽,高, 压缩方式], size=>限制大小KB, autoThumb=>false不要自动生成缩略图, chmod=>权限(默认0644) ]
+     * @param array $param [ type=[文件类型], file=>Request::file, path=>文件路径, fileName=>文件名称, scale=>[压缩原图宽,高, 压缩方式], size=>限制大小KB, autoThumb=>false不要自动生成缩略图, chmod=>权限(默认0644), 'compress'=>是否压缩图片(默认true) ]
      * @return array [name=>原文件名, size=>文件大小(单位KB),file=>绝对地址, path=>相对地址, url=>全路径地址, ext=>文件后缀名]
      */
     public static function upload($param)
@@ -2349,6 +2354,11 @@ class Base
                     }
                 }
                 $array['thumb'] = Base::fillUrl($array['thumb']);
+            }
+            // 压缩图片
+            if ($param['compress'] !== false) {
+                ImgCompress::compress($array['file']);
+                $array['size'] = Base::twoFloat(filesize($array['file']) / 1024, true);
             }
             //
             return Base::retSuccess('success', $array);
@@ -2960,5 +2970,22 @@ class Base
             $name .= ".";
         }
         return Response::streamDownload($callback, $name);
+    }
+
+    /**
+     * 保存图片到文件（同时压缩）
+     * @param $path
+     * @param $content
+     * @param $compress
+     * @return bool
+     */
+    public static function saveContentImage($path, $content, $compress = true) {
+        if (file_put_contents($path, $content)) {
+            if ($compress) {
+                ImgCompress::compress($path);
+            }
+            return true;
+        }
+        return false;
     }
 }

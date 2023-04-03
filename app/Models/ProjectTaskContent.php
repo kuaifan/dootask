@@ -66,7 +66,7 @@ class ProjectTaskContent extends AbstractModel
             $tmpPath = $path . 'attached/';
             Base::makeDir(public_path($tmpPath));
             $tmpPath .= md5($text) . "." . $matchs[1][$key];
-            if (file_put_contents(public_path($tmpPath), base64_decode($text))) {
+            if (Base::saveContentImage(public_path($tmpPath), base64_decode($text))) {
                 $paramet = getimagesize(public_path($tmpPath));
                 $content = str_replace($matchs[0][$key], '<img src="{{RemoteURL}}' . $tmpPath . '" original-width="' . $paramet[0] . '" original-height="' . $paramet[1] . '"', $content);
             }

@@ -4,6 +4,7 @@ namespace App\Ldap;
 
 use App\Models\User;
 use App\Module\Base;
+use App\Module\ImgCompress;
 use LdapRecord\Configuration\ConfigurationException;
 use LdapRecord\Container;
 use LdapRecord\LdapRecordException;
@@ -144,9 +145,11 @@ class LdapUser extends Model
             $userimg = $row->getPhoto();
             if ($userimg) {
                 $path = "uploads/user/ldap/";
+                $file = "{$path}{$user->userid}.jpeg";
                 Base::makeDir(public_path($path));
-                file_put_contents(public_path("{$path}{$user->userid}.jpeg"), $userimg);
-                $user->userimg = "{$path}{$user->userid}.jpeg";
+                if (Base::saveContentImage(public_path($file), $userimg)) {
+                    $user->userimg = $file;
+                }
             }
             $user->nickname = $row->getDisplayName();
             $user->save();

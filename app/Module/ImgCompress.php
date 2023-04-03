@@ -129,7 +129,7 @@ class ImgCompress
         if (!file_exists($src)) {
             return;
         }
-        $allowImgs = ['.jpg', '.jpeg', '.png', '.bmp', '.wbmp', '.gif'];
+        $allowImgs = ['.jpg', '.jpeg', '.png', '.bmp', '.wbmp'];
         if (!in_array(strrchr($src, "."), $allowImgs)) {
             return;
         }
