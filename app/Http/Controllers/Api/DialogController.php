@@ -20,7 +20,6 @@ use Carbon\Carbon;
 use DB;
 use Redirect;
 use Request;
-use Str;
 
 /**
  * @apiDefine dialog
@@ -700,6 +699,7 @@ class DialogController extends AbstractController
         $text = trim(Request::input('text'));
         $text_type = strtolower(trim(Request::input('text_type')));
         $silence = in_array(strtolower(trim(Request::input('silence'))), ['yes', 'true', '1']);
+        $markdown = in_array($text_type, ['md', 'markdown']);
         //
         WebSocketDialog::checkDialog($dialog_id);
         //
@@ -711,11 +711,9 @@ class DialogController extends AbstractController
             $action = "";
         }
         //
-        if (in_array($text_type, ['md', 'markdown'])) {
-            $text = Str::markdown($text);
-            $text = preg_replace("/\>\r?\n\s*+\</", "><", $text);
+        if (!$markdown) {
+            $text = WebSocketDialogMsg::formatMsg($text, $dialog_id);
         }
-        $text = WebSocketDialogMsg::formatMsg($text, $dialog_id);
         $strlen = mb_strlen($text);
         $noimglen = mb_strlen(preg_replace("/<img[^>]*?>/i", "", $text));
         if ($strlen < 1) {
@@ -735,8 +733,9 @@ class DialogController extends AbstractController
             if (empty($size)) {
                 return Base::retError('消息发送保存失败');
             }
+            $ext = $markdown ? 'md' : 'htm';
             $fileData = [
-                'name' => "LongText-{$strlen}.htm",
+                'name' => "LongText-{$strlen}.{$ext}",
                 'size' => $size,
                 'file' => $file,
                 'path' => $path,
@@ -744,12 +743,16 @@ class DialogController extends AbstractController
                 'thumb' => '',
                 'width' => -1,
                 'height' => -1,
-                'ext' => 'htm',
+                'ext' => $ext,
             ];
             return WebSocketDialogMsg::sendMsg($action, $dialog_id, 'file', $fileData, $user->userid, false, false, $silence);
         }
         //
-        return WebSocketDialogMsg::sendMsg($action, $dialog_id, 'text', ['text' => $text], $user->userid, false, false, $silence);
+        $msgData = ['text' => $text];
+        if ($markdown) {
+            $msgData['type'] = 'md';
+        }
+        return WebSocketDialogMsg::sendMsg($action, $dialog_id, 'text', $msgData, $user->userid, false, false, $silence);
     }
 
     /**

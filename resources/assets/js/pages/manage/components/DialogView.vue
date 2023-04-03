@@ -18,7 +18,8 @@
             <div class="dialog-content" :class="contentClass">
                 <!--文本-->
                 <div v-if="msgData.type === 'text'" class="content-text no-dark-content">
-                    <pre @click="viewText" v-html="$A.formatTextMsg(msgData.msg.text, userId)"></pre>
+                    <DialogMarkdown v-if="msgData.msg.type === 'md'" @click="viewText" :text="msgData.msg.text"/>
+                    <pre v-else @click="viewText" v-html="$A.formatTextMsg(msgData.msg.text, userId)"></pre>
                 </div>
                 <!--文件-->
                 <div v-else-if="msgData.type === 'file'" :class="`content-file ${msgData.msg.type}`">
@@ -177,10 +178,11 @@ import WCircle from "../../../components/WCircle";
 import {mapGetters, mapState} from "vuex";
 import {Store} from "le5le-store";
 import longpress from "../../../directives/longpress";
+import DialogMarkdown from "./DialogMarkdown.vue";
 
 export default {
     name: "DialogView",
-    components: {WCircle},
+    components: {DialogMarkdown, WCircle},
     directives: {longpress},
     props: {
         msgData: {

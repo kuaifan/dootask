@@ -510,6 +510,7 @@
                     min-width: 32px;
                     border-radius: 2px 8px 8px 8px;
                     transition: box-shadow 0.3s ease;
+                    max-width: 100%;
 
                     &.transparent {
                         background-color: transparent !important;
@@ -586,6 +587,7 @@
                         .content-text {
                             color: $primary-title-color;
                             padding: 2px;
+                            max-width: 100%;
 
                             > pre {
                                 display: block;
