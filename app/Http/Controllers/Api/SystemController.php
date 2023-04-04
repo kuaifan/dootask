@@ -38,7 +38,7 @@ class SystemController extends AbstractController
      * @apiParam {String} type
      * - get: 获取（默认）
      * - all: 获取所有（需要管理员权限）
-     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'auto_archived', 'archived_day', 'all_group_mute', 'all_group_autoin', 'start_home', 'home_footer']）
+     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'auto_archived', 'archived_day', 'all_group_mute', 'all_group_autoin', 'image_compress', 'image_save_local', 'start_home', 'home_footer']）
 
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -67,6 +67,8 @@ class SystemController extends AbstractController
                     'archived_day',
                     'all_group_mute',
                     'all_group_autoin',
+                    'image_compress',
+                    'image_save_local',
                     'start_home',
                     'home_footer'
                 ])) {
@@ -104,6 +106,8 @@ class SystemController extends AbstractController
         $setting['archived_day'] = floatval($setting['archived_day']) ?: 7;
         $setting['all_group_mute'] = $setting['all_group_mute'] ?: 'open';
         $setting['all_group_autoin'] = $setting['all_group_autoin'] ?: 'yes';
+        $setting['image_compress'] = $setting['image_compress'] ?: 'open';
+        $setting['image_save_local'] = $setting['image_save_local'] ?: 'open';
         $setting['start_home'] = $setting['start_home'] ?: 'close';
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));

@@ -124,8 +124,11 @@ class ImgCompress
      * @param float $minSize 最小压缩大小，小于这个不压缩，单位KB
      * @return void
      */
-    public static function compress(string $src, float $percent = 1, float $minSize = 100): void
+    public static function compress(string $src, float $percent = 1, float $minSize = 10): void
     {
+        if (Base::settingFind("system", "image_compress") === 'close') {
+            return;
+        }
         if (!file_exists($src)) {
             return;
         }

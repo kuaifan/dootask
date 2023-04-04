@@ -641,8 +641,18 @@ class WebSocketDialogMsg extends AbstractModel
             }
         }
         // 其他网络图片
+        $imageSaveLocal = Base::settingFind("system", "image_save_local");
         preg_match_all("/<img[^>]*?src=([\"'])(.*?\.(png|jpg|jpeg|gif))\\1[^>]*?>/is", $text, $matchs);
         foreach ($matchs[2] as $key => $str) {
+            if ($imageSaveLocal === 'close') {
+                $imageSize = getimagesize($str);
+                if ($imageSize === false) {
+                    $imageSize = ["auto", "auto"];
+                }
+                $imagePath = "base64-" . base64_encode($str);
+                $text = str_replace($matchs[0][$key], "[:IMAGE:browse:{$imageSize[0]}:{$imageSize[1]}:{$imagePath}::]", $text);
+                continue;
+            }
             if (str_starts_with($str, "{{RemoteURL}}")) {
                 $imagePath = Base::leftDelete($str, "{{RemoteURL}}");
                 $imagePath = Base::rightDelete($imagePath, "_thumb.jpg");
@@ -742,10 +752,14 @@ class WebSocketDialogMsg extends AbstractModel
         // 过滤标签
         $text = strip_tags($text, '<blockquote> <strong> <pre> <ol> <ul> <li> <em> <p> <s> <u> <a>');
         $text = preg_replace("/\<(blockquote|strong|pre|ol|ul|li|em|p|s|u).*?\>/is", "<$1>", $text);    // 不用去除a标签，上面已经处理过了
-         $text = preg_replace_callback("/\[:LINK:(.*?):(.*?):\]/i", function (array $match) {
+        $text = preg_replace_callback("/\[:LINK:(.*?):(.*?):\]/i", function (array $match) {
             return "<a href=\"" . base64_decode($match[1]) . "\" target=\"_blank\">" . base64_decode($match[2]) . "</a>";
         }, $text);
-        $text = preg_replace("/\[:IMAGE:(.*?):(.*?):(.*?):(.*?):(.*?):\]/i", "<img class=\"$1\" width=\"$2\" height=\"$3\" src=\"{{RemoteURL}}$4\" alt=\"$5\"/>", $text);
+        $text = preg_replace_callback("/\[:IMAGE:(.*?):(.*?):(.*?):(.*?):(.*?):\]/i", function (array $match) {
+            $wh = $match[2] === 'auto' ? "" : " width=\"{$match[2]}\" height=\"{$match[3]}\"";
+            $src = str_starts_with($match[4], "base64-") ? base64_decode(substr($match[4], 7)) : "{{RemoteURL}}{$match[4]}";
+            return "<img class=\"{$match[1]}\"{$wh} src=\"{$src}\" alt=\"{$match[5]}\"/>";
+        }, $text);
         $text = preg_replace("/\[:@:(.*?):(.*?):\]/i", "<span class=\"mention user\" data-id=\"$1\">@$2</span>", $text);
         $text = preg_replace("/\[:#:(.*?):(.*?):\]/i", "<span class=\"mention task\" data-id=\"$1\">#$2</span>", $text);
         $text = preg_replace("/\[:~:(.*?):(.*?):\]/i", "<a class=\"mention file\" href=\"{{RemoteURL}}single/file/$1\" target=\"_blank\">~$2</a>", $text);

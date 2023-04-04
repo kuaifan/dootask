@@ -119,10 +119,24 @@
                     </FormItem>
                 </div>
             </div>
-            <div v-if="$A.isDooServer()" class="block-setting-box">
+            <div class="block-setting-box">
                 <h3>{{ $L('其他设置') }}</h3>
                 <div class="form-box">
-                    <FormItem :label="$L('是否启动首页')" prop="startHome">
+                    <FormItem :label="$L('图片优化')" prop="image_compress">
+                        <RadioGroup v-model="formDatum.image_compress">
+                            <Radio label="open">{{$L('开启')}}</Radio>
+                            <Radio label="close">{{$L('关闭')}}</Radio>
+                        </RadioGroup>
+                        <div class="form-tip">{{$L('数码相机4M的图片，优化后仅有700KB左右，而且肉眼基本看不出区别。')}}</div>
+                    </FormItem>
+                    <FormItem :label="$L('保存网络图片')" prop="image_save_local">
+                        <RadioGroup v-model="formDatum.image_save_local">
+                            <Radio label="open">{{$L('开启')}}</Radio>
+                            <Radio label="close">{{$L('关闭')}}</Radio>
+                        </RadioGroup>
+                        <div class="form-tip">{{$L('是否将消息中的网络图片保存到本地服务器。')}}</div>
+                    </FormItem>
+                    <FormItem v-if="$A.isDooServer()" :label="$L('是否启动首页')" prop="startHome">
                         <RadioGroup v-model="formDatum.start_home">
                             <Radio label="open">{{$L('开启')}}</Radio>
                             <Radio label="close">{{$L('关闭')}}</Radio>
