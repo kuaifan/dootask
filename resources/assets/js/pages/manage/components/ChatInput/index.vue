@@ -36,7 +36,7 @@
                 @paste="handlePaste"></div>
 
             <!-- 工具栏 -->
-            <ul class="chat-toolbar" @click.stop="">
+            <ul class="chat-toolbar" @click.stop>
                 <!-- 桌面端表情（漂浮） -->
                 <li>
                     <EPopover
@@ -101,22 +101,42 @@
                 </li>
 
                 <!-- 发送按钮 -->
-                <li class="chat-send" :class="sendClass" v-touchmouse="clickSend">
-                    <ETooltip placement="top" :disabled="windowSmall || $isEEUiApp" :content="$L(sendClass === 'recorder' ? '长按录音' : '发送')">
-                        <div v-if="loading">
-                            <div class="chat-load">
-                                <Loading/>
+                <li
+                    ref="chatSend"
+                    class="chat-send"
+                    :class="sendClass"
+                    v-touchmouse="clickSend"
+                    v-longpress="{callback: longSend, delay: 300}">
+                    <EPopover
+                        v-model="showMenu"
+                        :visibleArrow="false"
+                        trigger="manual"
+                        placement="top"
+                        popperClass="chat-input-more-popover">
+                        <ETooltip slot="reference" ref="sendTip" placement="top" :disabled="windowSmall || $isEEUiApp || showMenu" :content="$L(sendContent)">
+                            <div v-if="loading">
+                                <div class="chat-load">
+                                    <Loading/>
+                                </div>
                             </div>
+                            <div v-else>
+                                <transition name="mobile-send">
+                                    <i v-if="sendClass === 'recorder'" class="taskfont">&#xe609;</i>
+                                </transition>
+                                <transition name="mobile-send">
+                                    <i v-if="sendClass !== 'recorder'" class="taskfont">&#xe606;</i>
+                                </transition>
+                            </div>
+                        </ETooltip>
+                        <div class="chat-input-popover-item" @click="onSend('silence')">
+                            <i class="taskfont">&#xe7d7;</i>
+                            {{$L('无声发送')}}
                         </div>
-                        <div v-else>
-                            <transition name="mobile-send">
-                                <i v-if="sendClass === 'recorder'" class="taskfont">&#xe609;</i>
-                            </transition>
-                            <transition name="mobile-send">
-                                <i v-if="sendClass !== 'recorder'" class="taskfont">&#xe606;</i>
-                            </transition>
+                        <div class="chat-input-popover-item" @click="onSend('md')">
+                            <i class="taskfont">&#xe647;</i>
+                            {{$L('Markdown 格式发送')}}
                         </div>
-                    </ETooltip>
+                    </EPopover>
                 </li>
 
                 <!-- 录音效果 -->
@@ -156,12 +176,13 @@ import ChatEmoji from "./emoji";
 import touchmouse from "../../../../directives/touchmouse";
 import TransferDom from "../../../../directives/transfer-dom";
 import clickoutside from "../../../../directives/clickoutside";
+import longpress from "../../../../directives/longpress";
 import {Store} from "le5le-store";
 
 export default {
     name: 'ChatInput',
     components: {ChatEmoji},
-    directives: {touchmouse, TransferDom, clickoutside},
+    directives: {touchmouse, TransferDom, clickoutside, longpress},
     props: {
         value: {
             type: [String, Number],
@@ -226,10 +247,12 @@ export default {
             taskList: null,
             fileList: {},
 
+            showMenu: false,
             showMore: false,
             showEmoji: false,
-            emojiQuickTimer: null,
+
             emojiQuickShow: false,
+            emojiQuickTimer: null,
             emojiQuickKey: '',
             emojiQuickItems: [],
 
@@ -356,6 +379,9 @@ export default {
                     array.push('record-ready');
                 }
             }
+            if (this.showMenu) {
+                array.push('show-menu');
+            }
             if (this.showMore) {
                 array.push('show-more');
             }
@@ -376,6 +402,20 @@ export default {
                 return 'recorder'
             }
             return ''
+        },
+
+        sendContent() {
+            const {sendTip} = this.$refs
+            if (sendTip && sendTip.$refs.popper) {
+                sendTip.$refs.popper.style.visibility = 'hidden'
+                sendTip.showPopper = false
+                setTimeout(_ => {
+                    if (sendTip.$refs.popper) {
+                        sendTip.$refs.popper.style.visibility = 'visible'
+                    }
+                }, 300)
+            }
+            return this.sendClass === 'recorder' ? '长按录音' : '发送'
         },
 
         recordFormatDuration() {
@@ -446,6 +486,24 @@ export default {
             this.loadInputDraft()
         },
 
+        showMenu(val) {
+            if (val) {
+                // this.showMenu = false;
+                this.showMore = false;
+                this.showEmoji = false;
+                this.emojiQuickShow = false;
+            }
+        },
+
+        showMore(val) {
+            if (val) {
+                this.showMenu = false;
+                // this.showMore = false;
+                this.showEmoji = false;
+                this.emojiQuickShow = false;
+            }
+        },
+
         showEmoji(val) {
             if (this.emojiBottom) {
                 if (val) {
@@ -466,7 +524,9 @@ export default {
                     this.emojiQuickKey = "";
                 }
                 //
+                this.showMenu = false;
                 this.showMore = false;
+                // this.showEmoji = false;
                 this.emojiQuickShow = false;
                 if (this.quill) {
                     const range = this.quill.selection.savedRange;
@@ -478,11 +538,13 @@ export default {
             this.$emit('on-emoji-visible-change', val)
         },
 
-        showMore(val) {
+        emojiQuickShow(val) {
             if (val) {
+                this.showMenu = false;
+                this.showMore = false;
                 this.showEmoji = false;
+                // this.emojiQuickShow = false;
             }
-            this.$emit('on-more-visible-change', val)
         },
 
         isFocus(val) {
@@ -787,6 +849,13 @@ export default {
             }, 100)
         },
 
+        getText() {
+            if (this.quill) {
+                return this.quill.getText()
+            }
+            return "";
+        },
+
         setText(value) {
             if (this.quill) {
                 this.quill.setText(value)
@@ -843,7 +912,7 @@ export default {
                     this.touchLimitX = false;
                     this.touchLimitY = false;
                     this.touchStart = event.type === "touchstart" ? event.touches[0] : event;
-                    if (this.startRecord()) {
+                    if (event.button === 0 && this.startRecord()) {
                         return;
                     }
                     break;
@@ -855,6 +924,9 @@ export default {
                     break;
 
                 case 'up':
+                    if (this.showMenu) {
+                        return;
+                    }
                     if (this.stopRecord(this.touchLimitY)) {
                         return;
                     }
@@ -866,10 +938,22 @@ export default {
             }
         },
 
-        onSend() {
+        longSend() {
+            if (this.sendClass === 'recorder') {
+                return;
+            }
+            this.showMenu = true;
+        },
+
+        onSend(type) {
+            this.hidePopover()
             this.rangeIndex = 0
             this.$store.state.messengerSearchKey = {dialog: '', contacts: ''}
-            this.$emit('on-send')
+            if (type) {
+                this.$emit('on-send', null, type)
+            } else {
+                this.$emit('on-send')
+            }
         },
 
         startRecord() {
@@ -931,6 +1015,7 @@ export default {
         },
 
         hidePopover() {
+            this.showMenu = false;
             this.showMore = false;
             this.showEmoji = false;
             this.emojiQuickShow = false;

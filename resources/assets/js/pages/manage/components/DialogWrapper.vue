@@ -1104,25 +1104,38 @@ export default {
         /**
          * 发送消息
          * @param text
+         * @param type
          */
-        sendMsg(text) {
-            let msgText;
-            let emptied = false;
+        sendMsg(text, type) {
+            let textBody,
+                textType = "text",
+                silence = "no",
+                emptied = false;
             if (typeof text === "string" && text) {
-                msgText = text;
+                textBody = text;
             } else {
-                msgText = this.msgText;
+                textBody = this.msgText;
                 emptied = true;
             }
-            if (msgText == '') {
+            if (type === "md") {
+                textBody = this.$refs.input.getText()
+                textType = "md"
+            } else if (type === "silence") {
+                silence = "yes"
+            }
+            if (textBody == '') {
                 this.inputFocus();
                 return;
             }
-            msgText = msgText.replace(/<\/span> <\/p>$/, "</span></p>")
+            if (textType === "text") {
+                textBody = textBody.replace(/<\/span> <\/p>$/, "</span></p>")
+            }
             //
             if (this.quoteUpdate) {
                 // 修改
-                msgText = msgText.replace(new RegExp(`src=(["'])${$A.apiUrl('../')}`, "g"), "src=$1{{RemoteURL}}")
+                if (textType === "text") {
+                    textBody = textBody.replace(new RegExp(`src=(["'])${$A.apiUrl('../')}`, "g"), "src=$1{{RemoteURL}}")
+                }
                 const update_id = this.quoteId
                 this.$store.dispatch("setLoad", {
                     key: `msg-${update_id}`,
@@ -1136,7 +1149,9 @@ export default {
                     data: {
                         dialog_id: this.dialogId,
                         update_id,
-                        text: msgText,
+                        text: textBody,
+                        text_type: textType,
+                        silence,
                     },
                     method: 'post',
                     complete: _ => this.$store.dispatch("cancelLoad", `msg-${update_id}`)
@@ -1148,7 +1163,7 @@ export default {
                 });
             } else {
                 // 发送
-                const typeLoad = $A.stringLength(msgText.replace(/<img[^>]*?>/g, '')) > 5000
+                const typeLoad = $A.stringLength(textBody.replace(/<img[^>]*?>/g, '')) > 5000
                 const tempMsg = {
                     id: this.getTempId(),
                     dialog_id: this.dialogData.id,
@@ -1157,7 +1172,8 @@ export default {
                     type: typeLoad ? 'loading' : 'text',
                     userid: this.userId,
                     msg: {
-                        text: typeLoad ? '' : msgText,
+                        text: typeLoad ? '' : textBody,
+                        type: textType,
                     },
                 }
                 this.tempMsgs.push(tempMsg)
@@ -1171,7 +1187,9 @@ export default {
                     data: {
                         dialog_id: tempMsg.dialog_id,
                         reply_id: tempMsg.reply_id,
-                        text: msgText,
+                        text: textBody,
+                        text_type: textType,
+                        silence,
                     },
                     method: 'post',
                 }).then(({data}) => {
@@ -1179,7 +1197,7 @@ export default {
                     this.sendSuccess(data)
                 }).catch(error => {
                     this.$set(tempMsg, 'error', true)
-                    this.$set(tempMsg, 'errorData', {type: 'text', content: error.msg, msg: msgText})
+                    this.$set(tempMsg, 'errorData', {type: 'text', content: error.msg, msg: textBody})
                 });
             }
             if (emptied) {
@@ -2244,16 +2262,20 @@ export default {
             const {type} = this.operateItem
             this.onReply(type === 'text' ? 'update' : 'reply')
             if (type === 'text') {
-                let {text} = this.operateItem.msg
-                if (text.indexOf("mention") > -1) {
-                    text = text.replace(/<a class="mention file" href="([^'"]*)"([^>]*)>~([^>]*)<\/a>/g, '<span class="mention" data-denotation-char="~" data-id="$1" data-value="$3">&#xFEFF;<span contenteditable="false"><span class="ql-mention-denotation-char">~</span>$3</span>&#xFEFF;</span>')
-                    text = text.replace(/<span class="mention ([^'"]*)" data-id="(\d+)">([@#])([^>]*)<\/span>/g, '<span class="mention" data-denotation-char="$3" data-id="$2" data-value="$4">&#xFEFF;<span contenteditable="false"><span class="ql-mention-denotation-char">$3</span>$4</span>&#xFEFF;</span>')
-                }
-                text = text.replace(/<img[^>]*>/gi, match => {
-                    return match.replace(/(width|height)="\d+"\s*/ig, "");
-                })
+                let {text, type} = this.operateItem.msg
                 this.$refs.input.setPasteMode(false)
-                this.msgText = $A.formatMsgBasic(text)
+                if (type === 'md') {
+                    this.$refs.input.setText(text)
+                } else {
+                    if (text.indexOf("mention") > -1) {
+                        text = text.replace(/<a class="mention file" href="([^'"]*)"([^>]*)>~([^>]*)<\/a>/g, '<span class="mention" data-denotation-char="~" data-id="$1" data-value="$3">&#xFEFF;<span contenteditable="false"><span class="ql-mention-denotation-char">~</span>$3</span>&#xFEFF;</span>')
+                        text = text.replace(/<span class="mention ([^'"]*)" data-id="(\d+)">([@#])([^>]*)<\/span>/g, '<span class="mention" data-denotation-char="$3" data-id="$2" data-value="$4">&#xFEFF;<span contenteditable="false"><span class="ql-mention-denotation-char">$3</span>$4</span>&#xFEFF;</span>')
+                    }
+                    text = text.replace(/<img[^>]*>/gi, match => {
+                        return match.replace(/(width|height)="\d+"\s*/ig, "");
+                    })
+                    this.msgText = $A.formatMsgBasic(text)
+                }
                 this.$nextTick(_ => this.$refs.input.setPasteMode(true))
             }
         },
