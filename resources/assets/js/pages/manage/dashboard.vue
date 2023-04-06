@@ -2,6 +2,7 @@
     <div class="page-dashboard">
         <PageTitle :title="$L('仪表盘')"/>
         <div class="dashboard-wrapper">
+            <Alert v-if="warningMsg" class="dashboard-warning" type="warning" show-icon>{{warningMsg}}</Alert>
             <div class="dashboard-hello">{{$L('欢迎您，' + userInfo.nickname)}}</div>
             <div class="dashboard-desc">
                 {{$L('以下是你当前的任务统计数据')}}
@@ -92,33 +93,31 @@ export default {
     data() {
         return {
             nowTime: $A.Time(),
-            nowInterval: null,
+            nowInter: null,
+
+            licenseTimer: null,
 
             loadIng: 0,
             dashboard: 'today',
+
+            warningMsg: '',
         }
-    },
-
-    mounted() {
-        this.nowInterval = setInterval(() => {
-            this.nowTime = $A.Time();
-        }, 1000)
-    },
-
-    destroyed() {
-        clearInterval(this.nowInterval)
     },
 
     activated() {
         this.$store.dispatch("getTaskForDashboard", 600);
+        this.loadInterval(true);
+        this.loadLicense(true);
     },
 
     deactivated() {
         this.$store.dispatch("forgetTaskCompleteTemp", true);
+        this.loadInterval(false);
+        this.loadLicense(false);
     },
 
     computed: {
-        ...mapState(['userInfo', 'cacheTasks', 'taskCompleteTemps', 'loadDashboardTasks']),
+        ...mapState(['userInfo', 'userIsAdmin', 'cacheTasks', 'taskCompleteTemps', 'loadDashboardTasks']),
 
         ...mapGetters(['dashboardTask', 'assistTask', 'transforTasks']),
 
@@ -148,6 +147,13 @@ export default {
             const {dashboardTask} = this;
             return dashboardTask.today_count + dashboardTask.overdue_count + dashboardTask.all_count;
         },
+    },
+
+    watch: {
+        windowActive(active) {
+            this.loadInterval(active)
+            this.loadLicense(active);
+        }
     },
 
     methods: {
@@ -184,6 +190,41 @@ export default {
         expiresFormat(date) {
             return $A.countDownFormat(date, this.nowTime)
         },
+
+        loadInterval(load) {
+            if (this.nowInter) {
+                clearInterval(this.nowInter)
+                this.nowInter = null;
+            }
+            if (load === false) {
+                return
+            }
+            this.nowInter = setInterval(_ => {
+                this.nowTime = $A.Time()
+            }, 1000)
+        },
+
+        loadLicense(load) {
+            if (this.licenseTimer) {
+                clearTimeout(this.licenseTimer)
+                this.licenseTimer = null;
+            }
+            if (load === false || !this.userIsAdmin) {
+                return
+            }
+            this.licenseTimer = setTimeout(_ => {
+                this.$store.dispatch("call", {
+                    url: 'system/license',
+                    data: {
+                        type: 'get'
+                    }
+                }).then(({data}) => {
+                    this.warningMsg = data.error.length > 0 ? data.error[0] : '';
+                }).catch(_ => {
+                    this.warningMsg = '';
+                })
+            }, 1500)
+        }
     }
 }
 </script>

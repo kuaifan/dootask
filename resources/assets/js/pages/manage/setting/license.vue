@@ -6,7 +6,7 @@
             </FormItem>
             <FormItem :label="$L('详细信息')">
                 <div class="license-box">
-                    <ul>
+                    <ul v-if="formData.info.sn">
                         <li>
                             <em>SN:</em>
                             <span>{{formData.info.sn}}</span>
@@ -51,6 +51,12 @@
                                 <Icon class="information" type="ios-information-circle-outline" />
                             </ETooltip>
                         </li>
+                        <li v-for="tip in formData.error" class="warning">{{tip}}</li>
+                    </ul>
+                    <ul v-else>
+                        <li>
+                            {{$L('加载中...')}}
+                        </li>
                     </ul>
                 </div>
             </FormItem>
@@ -72,6 +78,10 @@
             line-height: 22px;
             padding-bottom: 6px;
             display: flex;
+            &.warning {
+                font-weight: 500;
+                color: #ed4014;
+            }
             > em {
                 flex-shrink: 0;
                 font-style: normal;
@@ -103,7 +113,8 @@ export default {
                 info: {},
                 macs: [],
                 doo_sn: '',
-                user_count: 0
+                user_count: 0,
+                error: []
             },
         }
     },
@@ -129,9 +140,11 @@ export default {
         systemSetting(save) {
             this.loadIng++;
             this.$store.dispatch("call", {
-                url: 'system/license?type=' + (save ? 'save' : 'get'),
+                url: 'system/license',
+                data: Object.assign(this.formData, {
+                    type: save ? 'save' : 'get'
+                }),
                 method: 'post',
-                data: this.formData,
             }).then(({data}) => {
                 if (save) {
                     $A.messageSuccess('修改成功');

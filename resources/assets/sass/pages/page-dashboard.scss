@@ -13,6 +13,13 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+
+        .dashboard-warning {
+            border-top: 0;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+
         .dashboard-hello,
         .dashboard-desc ,
         .dashboard-block ,
