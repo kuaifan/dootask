@@ -783,7 +783,7 @@ class SystemController extends AbstractController
                 ];
                 //
                 $extension = pathinfo($dirPath . $filename, PATHINFO_EXTENSION);
-                if (in_array($extension, array('gif', 'jpg', 'jpeg', 'png', 'bmp'))) {
+                if (in_array($extension, array('gif', 'jpg', 'jpeg', 'webp', 'png', 'bmp'))) {
                     if (file_exists($dirPath . $filename . '_thumb.jpg')) {
                         $array['thumb'] .= '_thumb.jpg';
                     }

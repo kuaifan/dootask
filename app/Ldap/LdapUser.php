@@ -4,7 +4,6 @@ namespace App\Ldap;
 
 use App\Models\User;
 use App\Module\Base;
-use App\Module\ImgCompress;
 use LdapRecord\Configuration\ConfigurationException;
 use LdapRecord\Container;
 use LdapRecord\LdapRecordException;

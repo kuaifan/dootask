@@ -179,7 +179,7 @@ export default {
                 "tar|zip|7z|rar|gz|arj|z"
             ],
             "images": [
-                "icon|jpg|jpeg|png|bmp|gif|tif|emf"
+                "icon|jpg|jpeg|webp|png|bmp|gif|tif|emf"
             ]
         },
     }),

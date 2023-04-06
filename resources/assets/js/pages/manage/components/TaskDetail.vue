@@ -1450,8 +1450,8 @@ export default {
         },
 
         viewFile(file) {
-            if (['jpg', 'jpeg', 'gif', 'png'].includes(file.ext)) {
-                const list = this.fileList.filter(item => ['jpg', 'jpeg', 'gif', 'png'].includes(item.ext))
+            if (['jpg', 'jpeg', 'webp', 'gif', 'png'].includes(file.ext)) {
+                const list = this.fileList.filter(item => ['jpg', 'jpeg', 'webp', 'gif', 'png'].includes(item.ext))
                 const index = list.findIndex(item => item.id === file.id);
                 if (index > -1) {
                     this.$store.dispatch("previewImage", {

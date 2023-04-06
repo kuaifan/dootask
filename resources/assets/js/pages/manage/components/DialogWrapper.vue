@@ -2383,7 +2383,7 @@ export default {
                 data = this.operateItem
             }
             const {msg} = data;
-            if (['jpg', 'jpeg', 'gif', 'png'].includes(msg.ext)) {
+            if (['jpg', 'jpeg', 'webp', 'gif', 'png'].includes(msg.ext)) {
                 this.onViewPicture(msg.path);
                 return
             }
@@ -2424,7 +2424,7 @@ export default {
         onViewPicture(currentUrl) {
             const data = this.allMsgs.filter(item => {
                 if (item.type === 'file') {
-                    return ['jpg', 'jpeg', 'gif', 'png'].includes(item.msg.ext);
+                    return ['jpg', 'jpeg', 'webp', 'gif', 'png'].includes(item.msg.ext);
                 } else if (item.type === 'text') {
                     return item.msg.text.match(/<img\s+class="browse"[^>]*?>/);
                 }
@@ -2529,12 +2529,12 @@ export default {
             this.$store.dispatch("call", {
                 url: 'dialog/msg/emoji',
                 data,
-            }).then(({data}) => {
-                const index = this.dialogMsgs.findIndex(item => item.id == data.id)
+            }).then(({data: resData}) => {
+                const index = this.dialogMsgs.findIndex(item => item.id == resData.id)
                 if (index > -1) {
-                    this.$store.dispatch("saveDialogMsg", data);
-                } else if (this.todoViewData.id === data.id) {
-                    this.todoViewData = Object.assign(this.todoViewData, data)
+                    this.$store.dispatch("saveDialogMsg", resData);
+                } else if (this.todoViewData.id === resData.id) {
+                    this.todoViewData = Object.assign(this.todoViewData, resData)
                 }
             }).catch(({msg}) => {
                 $A.messageError(msg);
@@ -2758,6 +2758,8 @@ export default {
                     let format = "png";
                     if ($A.rightExists(url, "jpg") || $A.rightExists(url, "jpeg")) {
                         format = "jpeg"
+                    } else if ($A.rightExists(url, "webp")) {
+                        format = "webp"
                     } else if ($A.rightExists(url, "git")) {
                         format = "git"
                     }

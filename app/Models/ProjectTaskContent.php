@@ -61,7 +61,7 @@ class ProjectTaskContent extends AbstractModel
     {
         $path = 'uploads/task/content/' . date("Ym") . '/' . $task_id . '/';
         //
-        preg_match_all("/<img\s+src=\"data:image\/(png|jpg|jpeg);base64,(.*?)\"/s", $content, $matchs);
+        preg_match_all("/<img\s+src=\"data:image\/(png|jpg|jpeg|webp);base64,(.*?)\"/s", $content, $matchs);
         foreach ($matchs[2] as $key => $text) {
             $tmpPath = $path . 'attached/';
             Base::makeDir(public_path($tmpPath));

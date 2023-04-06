@@ -81,14 +81,14 @@ class File extends AbstractModel
      * 图片文件
      */
     const imageExt = [
-        'jpg', 'jpeg', 'png', 'gif', 'bmp'
+        'jpg', 'jpeg', 'webp', 'png', 'gif', 'bmp'
     ];
 
     /**
      * 本地媒体文件
      */
     const localExt = [
-        'jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw',
+        'jpg', 'jpeg', 'webp', 'png', 'gif', 'bmp', 'ico', 'raw',
         'tif', 'tiff',
         'mp3', 'wav', 'mp4', 'flv',
         'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm',

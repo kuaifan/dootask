@@ -94,7 +94,7 @@ class ProjectTaskFile extends AbstractModel
         if (!isset($this->appendattrs['width'])) {
             $width = -1;
             $height = -1;
-            if (in_array($this->ext, ['jpg', 'jpeg', 'gif', 'png'])) {
+            if (in_array($this->ext, ['jpg', 'jpeg', 'webp', 'gif', 'png'])) {
                 $path = public_path($this->getRawOriginal('path'));
                 [$width, $height] = Cache::remember("File::size-" . md5($path), now()->addDays(7), function () use ($path) {
                     $width = -1;

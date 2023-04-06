@@ -34,7 +34,9 @@ class ImgCompress
      */
     public function compressImg($saveName = '')
     {
-        $this->_openImage();
+        if (!$this->_openImage()) {   //打开图片
+            return;
+        }
         if (!empty($saveName)) $this->_saveImage($saveName);  //保存
         else $this->_showImage();
     }
@@ -52,8 +54,12 @@ class ImgCompress
             'attr' => $attr
         );
         $fun = "imagecreatefrom" . $this->imageinfo['type'];
+        if (!function_exists($fun)) {
+            return false;
+        }
         $this->image = $fun($this->src);
         $this->_thumpImage();
+        return true;
     }
 
     /**
@@ -90,7 +96,7 @@ class ImgCompress
         if (str_contains($dstImgName, '.')) {
             $dstName = $dstImgName;
         } else {
-            $allowImgs = ['.jpg', '.jpeg', '.png', '.bmp', '.wbmp', '.gif'];   //如果目标图片名有后缀就用目标图片扩展名 后缀，如果没有，则用源图的扩展名
+            $allowImgs = ['.jpg', '.jpeg', '.webp', '.png', '.bmp', '.wbmp', '.gif'];   //如果目标图片名有后缀就用目标图片扩展名 后缀，如果没有，则用源图的扩展名
             $dstExt = strrchr($dstImgName, ".");
             $sourseExt = strrchr($this->src, ".");
             if (!empty($dstExt)) $dstExt = strtolower($dstExt);
@@ -105,6 +111,9 @@ class ImgCompress
             }
         }
         $funcs = "image" . $this->imageinfo['type'];
+        if (!function_exists($funcs)) {
+            return false;
+        }
         $funcs($this->image, $dstName);
         return true;
     }
@@ -114,7 +123,9 @@ class ImgCompress
      */
     public function __destruct()
     {
-        imagedestroy($this->image);
+        if ($this->image) {
+            imagedestroy($this->image);
+        }
     }
 
     /**
@@ -132,7 +143,7 @@ class ImgCompress
         if (!file_exists($src)) {
             return;
         }
-        $allowImgs = ['.jpg', '.jpeg', '.png', '.bmp', '.wbmp'];
+        $allowImgs = ['.jpg', '.jpeg', '.webp', '.png', '.bmp', '.wbmp'];
         if (!in_array(strrchr($src, "."), $allowImgs)) {
             return;
         }

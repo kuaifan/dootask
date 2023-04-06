@@ -607,7 +607,7 @@ class FileController extends AbstractController
         if ($file->type == 'document') {
             $data = Base::json2array($content);
             $isRep = false;
-            preg_match_all("/<img\s+src=\"data:image\/(png|jpg|jpeg);base64,(.*?)\"/s", $data['content'], $matchs);
+            preg_match_all("/<img\s+src=\"data:image\/(png|jpg|jpeg|webp);base64,(.*?)\"/s", $data['content'], $matchs);
             foreach ($matchs[2] as $key => $text) {
                 $tmpPath = "uploads/file/document/" . date("Ym") . "/" . $id . "/attached/";
                 Base::makeDir(public_path($tmpPath));
@@ -811,7 +811,7 @@ class FileController extends AbstractController
             'xls', 'xlsx' => "excel",
             'ppt', 'pptx' => "ppt",
             'wps' => "wps",
-            'jpg', 'jpeg', 'png', 'gif', 'bmp', 'ico', 'raw', 'svg' => "picture",
+            'jpg', 'jpeg', 'webp', 'png', 'gif', 'bmp', 'ico', 'raw', 'svg' => "picture",
             'rar', 'zip', 'jar', '7-zip', 'tar', 'gzip', '7z', 'gz', 'apk', 'dmg' => "archive",
             'tif', 'tiff' => "tif",
             'dwg', 'dxf' => "cad",

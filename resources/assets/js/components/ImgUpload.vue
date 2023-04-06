@@ -30,7 +30,7 @@
                             :data="uploadParams"
                             :show-upload-list="false"
                             :max-size="maxSize"
-                            :format="['jpg', 'jpeg', 'gif', 'png']"
+                            :format="['jpg', 'jpeg', 'webp', 'gif', 'png']"
                             :default-file-list="defaultList"
                             :on-progress="handleProgress"
                             :on-success="handleSuccess"
@@ -259,7 +259,7 @@
                 //上传类型错误
                 $A.noticeWarning({
                     title: this.$L('文件格式不正确'),
-                    desc: this.$L('文件 ' + file.name + ' 格式不正确，请上传 jpg、jpeg、gif、png 格式的图片。')
+                    desc: this.$L('文件 ' + file.name + ' 格式不正确，请上传 jpg、jpeg、webp、gif、png 格式的图片。')
                 });
             },
             handleMaxSize (file) {

@@ -2,9 +2,7 @@
 
 namespace App\Models;
 
-use App\Module\ImgCompress;
 use Carbon\Carbon;
-use App\Models\User;
 use App\Module\Base;
 use App\Tasks\PushTask;
 use App\Exceptions\ApiException;
@@ -127,7 +125,7 @@ class WebSocketDialogMsg extends AbstractModel
         }
         $value = Base::json2array($value);
         if ($this->type === 'file') {
-            $value['type'] = in_array($value['ext'], ['jpg', 'jpeg', 'png', 'gif']) ? 'img' : 'file';
+            $value['type'] = in_array($value['ext'], ['jpg', 'jpeg', 'webp', 'png', 'gif']) ? 'img' : 'file';
             $value['path'] = Base::fillUrl($value['path']);
             $value['thumb'] = Base::fillUrl($value['thumb'] ?: Base::extIcon($value['ext']));
         } else if ($this->type === 'record') {
@@ -582,7 +580,7 @@ class WebSocketDialogMsg extends AbstractModel
         // 基础处理
         $text = preg_replace("/<(\/[a-zA-Z]+)\s*>/s", "<$1>", $text);
         // 图片 [:IMAGE:className:width:height:src:alt:]
-        preg_match_all("/<img\s+src=\"data:image\/(png|jpg|jpeg|gif);base64,(.*?)\"(.*?)>(<\/img>)*/s", $text, $matchs);
+        preg_match_all("/<img\s+src=\"data:image\/(png|jpg|jpeg|webp|gif);base64,(.*?)\"(.*?)>(<\/img>)*/s", $text, $matchs);
         foreach ($matchs[2] as $key => $base64) {
             $imagePath = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
             Base::makeDir(public_path($imagePath));
@@ -618,7 +616,7 @@ class WebSocketDialogMsg extends AbstractModel
                             $imageSize = getimagesize(public_path($imagePath));
                             // 添加后缀
                             if ($imageSize && !str_contains($imagePath, '.')) {
-                                preg_match("/^image\/(png|jpg|jpeg|gif)$/", $imageSize['mime'], $matchMine);
+                                preg_match("/^image\/(png|jpg|jpeg|webp|gif)$/", $imageSize['mime'], $matchMine);
                                 if ($matchMine) {
                                     $imageNewPath = $imagePath . "." . $matchMine[1];
                                     if (rename(public_path($imagePath), public_path($imageNewPath))) {
@@ -642,7 +640,7 @@ class WebSocketDialogMsg extends AbstractModel
         }
         // 其他网络图片
         $imageSaveLocal = Base::settingFind("system", "image_save_local");
-        preg_match_all("/<img[^>]*?src=([\"'])(.*?\.(png|jpg|jpeg|gif))\\1[^>]*?>/is", $text, $matchs);
+        preg_match_all("/<img[^>]*?src=([\"'])(.*?\.(png|jpg|jpeg|webp|gif))\\1[^>]*?>/is", $text, $matchs);
         foreach ($matchs[2] as $key => $str) {
             if ($imageSaveLocal === 'close') {
                 $imageSize = getimagesize($str);
@@ -801,7 +799,7 @@ class WebSocketDialogMsg extends AbstractModel
                 }
             }
         } elseif ($type === 'file') {
-            if (in_array($msg['ext'], ['jpg', 'jpeg', 'png', 'gif'])) {
+            if (in_array($msg['ext'], ['jpg', 'jpeg', 'webp', 'png', 'gif'])) {
                 $mtype = 'image';
             }
         }

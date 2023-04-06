@@ -2085,7 +2085,7 @@ class Base
         $imgBase64 = $param['image64'];
         if (preg_match('/^(data:\s*image\/(\w+);base64,)/', $imgBase64, $res)) {
             $extension = $res[2];
-            if (!in_array($extension, ['png', 'jpg', 'jpeg', 'gif'])) {
+            if (!in_array($extension, ['png', 'jpg', 'jpeg', 'webp', 'gif'])) {
                 return Base::retError('图片格式错误');
             }
             $scaleName = "";
@@ -2197,11 +2197,8 @@ class Base
                 case 'png':
                     $type = ['png'];
                     break;
-                case 'png+jpg':
-                    $type = ['jpg', 'jpeg', 'png'];
-                    break;
                 case 'image':
-                    $type = ['jpg', 'jpeg', 'gif', 'png'];
+                    $type = ['jpg', 'jpeg', 'webp', 'gif', 'png'];
                     break;
                 case 'video':
                     $type = ['rm', 'rmvb', 'wmv', 'avi', 'mpg', 'mpeg', 'mp4'];
@@ -2219,7 +2216,7 @@ class Base
                     $type = ['zip'];
                     break;
                 case 'file':
-                    $type = ['jpg', 'jpeg', 'png', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'esp', 'pdf', 'rar', 'zip', 'gz', 'ai', 'avi', 'bmp', 'cdr', 'eps', 'mov', 'mp3', 'mp4', 'pr', 'psd', 'svg', 'tif'];
+                    $type = ['jpg', 'jpeg', 'webp', 'png', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'esp', 'pdf', 'rar', 'zip', 'gz', 'ai', 'avi', 'bmp', 'cdr', 'eps', 'mov', 'mp3', 'mp4', 'pr', 'psd', 'svg', 'tif'];
                     break;
                 case 'firmware':
                     $type = ['img', 'tar', 'bin'];
@@ -2306,7 +2303,7 @@ class Base
                 }
             }
             //
-            if (in_array($extension, ['jpg', 'jpeg', 'gif', 'png'])) {
+            if (in_array($extension, ['jpg', 'jpeg', 'webp', 'gif', 'png'])) {
                 //图片尺寸
                 $paramet = getimagesize($array['file']);
                 $array['width'] = $paramet[0];
@@ -2417,7 +2414,7 @@ class Base
             $dst_img = $src_img;
         }
         $st = pathinfo($src_img, PATHINFO_EXTENSION);
-        if (!in_array(strtolower($st), array('jpg', 'jpeg', 'png', 'gif', 'bmp'))) {
+        if (!in_array(strtolower($st), array('jpg', 'jpeg', 'webp', 'png', 'gif', 'bmp'))) {
             return false;
         }
         $ot = pathinfo($dst_img, PATHINFO_EXTENSION);
