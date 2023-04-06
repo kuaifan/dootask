@@ -523,6 +523,7 @@ export default {
             //
             dispatch("getBasicData", null);
             if (state.userId > 0) {
+                state.cacheUserBasic = state.cacheUserBasic.filter(({userid}) => userid !== state.userId)
                 dispatch("saveUserBasic", state.userInfo);
             }
             resolve()
