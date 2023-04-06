@@ -441,3 +441,8 @@ Api接口文档
 心灵鸡汤
 
 请填写完整的参数
+
+终端SN与License不匹配
+终端MAC与License不匹配
+终端用户数超过License限制
+终端License已过期

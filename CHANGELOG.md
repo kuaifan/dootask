@@ -2,10 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.25.78]
+## [0.25.84]
+
+### Bug Fixes
+
+- 修改个人头像缓存不更新的情况
+- 无法查看已归档任务
 
 ### Performance
 
+- 对webp文件的支持
 - 右键或长按消息发送按钮可选无声发送、Markdown格式发送
 - 系统设置新增图片优化、是否保存网络图片功能
 
