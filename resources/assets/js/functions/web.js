@@ -748,6 +748,8 @@
                             .replace(widthReg, `original-width="${width}" width="${scale.width}"`)
                             .replace(heightReg, `original-height="${height}" height="${scale.height}"`)
                         text = text.replace(res, value)
+                    } else {
+                        text = text.replace(res, `<div class="no-size-image-box">${res}</div>`);
                     }
                 })
             }

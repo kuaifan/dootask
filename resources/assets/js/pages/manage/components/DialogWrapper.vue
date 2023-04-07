@@ -2354,7 +2354,7 @@ export default {
             this.onPositionId(data.reply_id, data.msg_id)
         },
 
-        onViewText({target}) {
+        onViewText({target}, el) {
             if (this.operateVisible) {
                 return
             }
@@ -2363,7 +2363,9 @@ export default {
                     if (target.classList.contains('browse')) {
                         this.onViewPicture(target.currentSrc);
                     } else {
-                        this.$store.dispatch("previewImage", {index:0, list: $A.getTextImagesInfo(target.outerHTML)})
+                        const list = $A.getTextImagesInfo(el.outerHTML)
+                        const index = list.findIndex(item => item.src == target.currentSrc)
+                        this.$store.dispatch("previewImage", {index, list})
                     }
                     break;
 

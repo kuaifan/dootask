@@ -199,8 +199,8 @@ export default {
             this.dispatch("on-view-reply", data)
         },
 
-        onViewText(el) {
-            this.dispatch("on-view-text", el)
+        onViewText(e, el) {
+            this.dispatch("on-view-text", e, el)
         },
 
         onViewFile(data) {
@@ -227,9 +227,9 @@ export default {
             this.dispatch("on-show-emoji-user", data)
         },
 
-        dispatch(event, arg) {
+        dispatch(event, ...arg) {
             if (this.isReply) {
-                this.$emit(event, arg)
+                this.$emit(event, ...arg)
                 return
             }
 
@@ -244,7 +244,7 @@ export default {
             }
 
             if (parent) {
-                parent.$emit(event, arg)
+                parent.$emit(event, ...arg)
             }
         }
     }

@@ -589,6 +589,11 @@
                             padding: 2px;
                             max-width: 100%;
 
+                            .no-size-image-box {
+                                display: inline-block;
+                                max-width: 220px;
+                            }
+
                             > pre {
                                 display: block;
                                 margin: 0;
