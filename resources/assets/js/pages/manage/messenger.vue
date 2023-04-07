@@ -648,7 +648,7 @@ export default {
         },
 
         filterDialog(dialog) {
-            if ($A.getDialogNum(dialog) > 0 || dialog.id == this.dialogId || dialog.top_at || dialog.todo_num > 0) {
+            if ((dialog.id > 0 && dialog.id == this.dialogId) || dialog.top_at || dialog.todo_num > 0 || $A.getDialogNum(dialog) > 0) {
                 return true
             }
             if (dialog.name === undefined || dialog.dialog_delete === 1) {

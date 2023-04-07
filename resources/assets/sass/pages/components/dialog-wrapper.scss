@@ -661,12 +661,12 @@
 
                                 img {
                                     cursor: pointer;
-                                    max-width: 220px;
+                                    max-width: 100%;
                                     max-height: 220px;
                                     vertical-align: bottom;
 
                                     &.emoticon {
-                                        max-width: 150px;
+                                        max-width: 100%;
                                         max-height: 150px;
                                     }
                                 }
