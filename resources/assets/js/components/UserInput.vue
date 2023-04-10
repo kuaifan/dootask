@@ -37,6 +37,7 @@
                 <div class="user-input-option">
                     <div class="user-input-avatar"><EAvatar class="avatar" :src="item.userimg"/></div>
                     <div v-if="item.bot" class="taskfont user-input-bot">&#xe68c;</div>
+                    <div v-if="item.disable_at" class="user-input-disable">[{{$L('离职')}}]</div>
                     <div class="user-input-nickname">{{ item.nickname }}</div>
                     <div class="user-input-userid">ID: {{ item.userid }}</div>
                 </div>
@@ -102,6 +103,10 @@
                 default: 0
             },
             showBot: {
+                type: Boolean,
+                default: false
+            },
+            showDisable: {
                 type: Boolean,
                 default: false
             },
@@ -190,7 +195,8 @@
                                 project_id: this.projectId,
                                 no_project_id: this.noProjectId,
                                 dialog_id: this.dialogId,
-                                bot: this.showBot ? 2 : 0,
+                                bot: this.showBot && key ? 2 : 0,
+                                disable: this.showDisable && key ? 2 : 0,
                             },
                             take: 50
                         },

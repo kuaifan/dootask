@@ -450,7 +450,7 @@ class UsersController extends AbstractController
      *
      * @apiParam {Object} keys          搜索条件
      * - keys.key                           昵称、拼音、邮箱关键字
-     * - keys.disable                       0-排除禁止（默认），1-仅禁止，2-含禁止
+     * - keys.disable                       0-排除离职（默认），1-仅离职，2-含离职
      * - keys.bot                           0-排除机器人（默认），1-仅机器人，2-含机器人
      * - keys.project_id                    在指定项目ID
      * - keys.no_project_id                 不在指定项目ID
@@ -527,7 +527,12 @@ class UsersController extends AbstractController
         if (in_array($sorts['az'], ['asc', 'desc'])) {
             $builder->orderBy('az', $sorts['az']);
         } else {
-            $builder->orderBy('bot');
+            if (intval($keys['disable']) == 2) {
+                $builder->orderBy('disable_at');
+            }
+            if (intval($keys['bot']) == 2) {
+                $builder->orderBy('bot');
+            }
         }
         //
         if (Request::exists('page')) {
