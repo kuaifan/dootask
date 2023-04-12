@@ -393,6 +393,7 @@ if [ $# -gt 0 ]; then
     elif [[ "$1" == "doc" ]]; then
         shift 1
         run_exec php "php app/Http/Controllers/Api/apidoc.php"
+        run_exec php "php app/Http/Controllers/Api/apiswagger.php"
         docker run -it --rm -v ${cur_path}:/home/node/apidoc kuaifan/apidoc -i app/Http/Controllers/Api -o public/docs
     elif [[ "$1" == "debug" ]]; then
         shift 1

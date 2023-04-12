@@ -108,6 +108,49 @@
     <span style="color:#84c56a">version</span>: 系统版本
 @elseif ($type === 'notice')
     {{$notice}}
+@elseif ($type === 'workflow_reviewer')
+<b>{{$data->nickname}}提交的「{{$data->proc_def_name}}」待你审批</b>
+
+申请人：<span style="color:#84c56a">{{$data->nickname}} {{$data->department}}</span>
+
+<b>审批事由</b>
+假期类型：<span style="color:#84c56a">{{$data->type}}</span>
+开始时间：<span style="color:#84c56a">{{$data->start_time}}</span>
+结束时间：<span style="color:#84c56a">{{$data->end_time}}</span>
+
+    @if ($action === 'pass')
+        <span style="color:#84c56a">已同意</span>
+    @elseif ($action === 'refuse')
+        <span style="color:#84c56a">已拒绝</span>
+    @elseif ($action === 'withdraw')
+        <span style="color:#84c56a">已撤销</span>
+    @else
+        <span style="color:#84c56a">同意</span>
+        <span style="color:#84c56a">拒绝</span>
+    @endif
+
+@elseif ($type === 'workflow_notifier')
+<b>抄送{{$data->nickname}}提交的「{{$data->proc_def_name}}」记录</b>
+
+申请人：<span style="color:#84c56a">{{$data->nickname}} {{$data->department}}</span>
+
+<b>审批事由</b>
+假期类型：<span style="color:#84c56a">{{$data->type}}</span>
+开始时间：<span style="color:#84c56a">{{$data->start_time}}</span>
+结束时间：<span style="color:#84c56a">{{$data->end_time}}</span>
+<span style="color:#84c56a">查看详情</span>
+@elseif ($type === 'workflow_submitter')
+    @if ($action === 'pass')
+        <b>您发起的「{{$data->proc_def_name}}」已通过</b>
+    @else
+        <b>您发起的「{{$data->proc_def_name}}」被{{$data->nickname}}拒绝</b>
+    @endif
+
+<b>审批事由</b>
+假期类型：<span style="color:#84c56a">{{$data->type}}</span>
+开始时间：<span style="color:#84c56a">{{$data->start_time}}</span>
+结束时间：<span style="color:#84c56a">{{$data->end_time}}</span>
+<span style="color:#84c56a">查看详情</span>
 @else
     你好，我是你的机器人助理，你可以发送 <span style="color:#84c56a">/help</span> 查看帮助菜单。
 @endif

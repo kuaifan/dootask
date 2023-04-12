@@ -605,6 +605,9 @@ class User extends AbstractModel
                 case 'anon-msg':
                     $update['nickname'] = '匿名消息';
                     break;
+                case 'approval-alert':
+                    $update['nickname'] = '审批';
+                    break;
                 case 'bot-manager':
                     $update['nickname'] = '机器人管理';
                     break;
