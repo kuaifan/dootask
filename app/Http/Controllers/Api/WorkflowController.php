@@ -22,8 +22,28 @@ class WorkflowController extends AbstractController
     private $flow_url = '';
     public function __construct()
     {
-        // $this->flow_url = 'http://dootask-workflow-'.env('APP_ID');
-        $this->flow_url = 'http://192.168.100.219:8700';
+        $this->flow_url = env('FLOW_URL') ?: 'http://dootask-workflow-'.env('APP_ID');
+    }
+
+    /**
+     * @api {get} api/workflow/verifyToken          01. 验证APi登录
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName verifyToken
+     *
+     * @apiSuccess {String} version
+     * @apiSuccess {String} publish
+     */
+    public function verifyToken()
+    {
+        try {
+            $user = User::auth();
+            $user->checkAdmin();
+            return Base::retSuccess('成功');
+        } catch (\Throwable $th) {
+            return response('身份无效', 400)->header('Content-Type', 'text/plain');
+        }
     }
 
     /**
@@ -601,4 +621,5 @@ class WorkflowController extends AbstractController
         }
         return $user;
     }
+
 }
