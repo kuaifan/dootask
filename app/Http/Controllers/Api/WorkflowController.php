@@ -350,12 +350,12 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/process/FindProcNotify          10. 查询抄送我的流程
+     * @api {post} api/workflow/process/findProcNotify          10. 查询抄送我的流程
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup workflow
-     * @apiName process__FindProcNotify
+     * @apiName process__findProcNotify
      *
      * @apiQuery {Number} userid               用户ID
      * @apiQuery {Number} page                  页码
@@ -365,7 +365,7 @@ class WorkflowController extends AbstractController
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      */
-    public function process__FindProcNotify()
+    public function process__findProcNotify()
     {
         $data['userid'] = Request::input('userid');
         $data['pageIndex'] = intval(Request::input('page'));
