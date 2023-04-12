@@ -546,6 +546,7 @@ export default {
                     {path: 'archivedProject', name: '已归档的项目'},
 
                     {path: 'team', name: '团队管理', divided: true},
+                    {path: 'review', name: '审批中心'},
                 ])
             } else {
                 array.push(...[

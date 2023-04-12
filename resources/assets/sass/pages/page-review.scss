@@ -1,0 +1,231 @@
+.page-review{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    .review-wrapper {
+        flex: 1;
+        height: 0;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        .review-head {
+            display: flex;
+            align-items: center;
+            padding-bottom: 16px;
+            margin: 32px 32px 16px;
+            border-bottom: 1px solid #F4F4F5;
+            .review-nav{
+                flex: 1;
+                display: flex;
+                align-items: center;
+                > h1 {
+                    color: $primary-title-color;
+                    font-size: 28px;
+                    font-weight: 600;
+                }
+            }
+        }
+        .review-main{
+            display: flex;
+            flex: 1 1 auto;
+            margin: 0 32px;
+            position: relative;
+            .review-main-left{
+                display: flex;
+                flex-direction: column;
+                flex: 0 0 auto;
+                width: 360px;
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 12px;
+                .review-main-search{
+                    display: flex;
+                    justify-content: space-between;
+                    > div{
+                        .ivu-dropdown{
+                            margin-right: 8px;
+                        }
+                    }
+                }
+                .review-main-list{
+                    display: flex;
+                    flex-direction: column;
+                    flex: 1 1 auto;
+                    overflow: scroll;
+                    .review-list{
+                        margin-top: 8px;
+                        padding: 12px;
+                        border-radius: 8px;
+                        border: 1px solid #eeeeee;
+                        transition: box-shadow 0.3s;
+                        cursor: pointer;
+                        &:hover{
+                            box-shadow: 0 0 10px #e6ecfa;
+                        }
+                        > h2{
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            > .list-name{
+                                font-size: 16px;
+                                font-weight: bold;
+                            }
+                        }
+                        > p{
+                            font-size: 14px;
+                            margin-top: 8px;
+                            > span{
+                                color: #303133;
+                            }
+                        }
+                        .list-member{
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            margin-top: 8px;
+                            > span {
+                                display: flex;
+                                align-items: center;
+                                font-size: 12px;
+                                .ivu-avatar {
+                                    margin-right: 8px;
+                                }
+                            }
+                        }
+                    }
+                    .review-list-active{
+                        border: 1px solid #8bcf70;
+                    }
+                }
+                .review-main-list::-webkit-scrollbar {
+                    display: none;
+                }
+            }
+            .review-main-right{
+                position: absolute;
+                left: 360px;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                flex: 1 1 auto;
+                display: flex;
+                margin: 0 0 12px 12px;
+                .review-details{
+                    flex: 1 1 auto;
+                    display: flex;
+                    flex-direction: column;
+                    border-radius: 8px;
+                    border: 1px solid #eeeeee;
+                    .review-details-box{
+                        flex: 1 1 auto;
+                        padding: 24px;
+                        overflow-y: scroll;
+                        .review-details-title{
+                            display: flex;
+                            align-items: center;
+                            .ivu-tag{
+                                margin-left: 8px;
+                            }
+                        }
+                        .review-details-subtitle{
+                            margin-top: 16px;
+                            display: flex;
+                            .ivu-avatar{
+                                margin-right: 8px;
+                            }
+                            > span{
+                                font-size: 14px;
+                            }
+                        }
+                        .review-details-text{
+                            margin-bottom: 16px;
+                            > h4{
+                                color: #999;
+                            }
+                            > p{
+                                font-size: 16px;
+                                margin-top: 4px;
+                                font-weight: 500;
+                            }
+                        }
+                        .review-details-text:nth-last-child(1){
+                            margin-bottom: 0;
+                        }
+                        .review-details-process{
+                            display: flex;
+                            flex-direction: column;
+                            margin-top: 16px;
+                            position: relative;
+                            .review-details-line{
+                                position: absolute;
+                                left: 23px;
+                                top: 5px;
+                                bottom: 5px;
+                                width: 3px;
+                                background: #19be6b;
+                                z-index: 1;
+                            }
+                            .review-process{
+                                display: flex;
+                                justify-content: space-between;
+                                position: relative;
+                                z-index: 2;
+                                margin-bottom: 32px;
+                                .review-process-left{
+                                    display: flex;
+                                    align-items: center;
+                                    .review-process-text{
+                                        display: flex;
+                                        flex-direction: column;
+                                        margin-left: 8px;
+                                        .review-process-name{
+                                            margin-bottom: 4px;
+                                        }
+                                        .review-process-state{
+                                            font-size: 16px;
+                                            color: #19be6b;
+                                            font-weight: 500;
+                                        }
+                                    }
+                                }
+                            }
+                            .review-process:nth-last-child(1){
+                                margin-bottom: 0;
+                            }
+                        }
+                        .review-copy{
+                            margin-top: 8px;
+                            padding-left: 56px;
+                            display: flex;
+                            .review-copy-member{
+                                display: flex;
+                                align-items: center;
+                                background: #F4F4F5;
+                                padding:4px 8px;
+                                border-radius: 20px;
+                                .ivu-avatar{
+                                    margin-right: 4px;
+                                }
+                            }
+                        }
+                    }
+                    .review-details-box::-webkit-scrollbar {
+                        display: none;
+                    }
+                    .review-operation{
+                        flex: 0 0 auto;
+                        height: 60px;
+                        padding: 0 24px;
+                        border-top: 1px solid #F4F4F5;
+                        display: flex;
+                        align-items: center;
+                    }
+                }
+
+            }
+        }
+    }
+
+}

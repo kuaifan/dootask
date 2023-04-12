@@ -349,6 +349,54 @@
             .setting-button {
                 margin-left: 8px;
             }
+            .approve-row{
+                padding: 24px 40px;
+                overflow: auto;
+                .ivu-col{
+                    margin-bottom: 8px;
+                    .approve-col-box{
+                        border-radius: 8px;
+                        border: 1px solid #eeeeee;
+                        transition: box-shadow 0.3s;
+                        cursor: pointer;
+                        &:hover{
+                            box-shadow: 0 0 10px #e6ecfa;
+                        }
+                    }
+                    .approve-col-add{
+                        height: 100%;
+                        font-size: 48px;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        color: #ededed;
+                    }
+                    .approve-col-for{
+                        padding:16px;
+                        display: flex;
+                        flex-direction: column;
+                        > p{
+                            display: flex;
+                            align-items: center;
+                        }
+                        .approve-button-box{
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            > p {
+                                display: flex;
+                                align-items: center;
+                                > i {
+                                    font-size: 16px;
+                                    margin-left: 8px;
+                                    color: rgb(96, 98, 102);
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
         }
     }
 }
