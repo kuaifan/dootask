@@ -48,7 +48,7 @@ Route::prefix('api')->middleware(['webapi'])->group(function () {
     // 公开接口
     Route::any('public/{method}',                   PublicController::class);
     Route::any('public/{method}/{action}',          PublicController::class);
-    // 审批
+    // 工作流
     Route::any('workflow/{method}',                 WorkflowController::class);
     Route::any('workflow/{method}/{action}',        WorkflowController::class);
 });
