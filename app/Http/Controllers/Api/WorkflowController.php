@@ -9,8 +9,9 @@ use App\Models\User;
 use App\Module\Base;
 use App\Module\Ihttp;
 use App\Models\WebSocketDialog;
-use App\Models\WebSocketDialogMsg;
 use App\Models\WorkflowProcMsg;
+use App\Exceptions\ApiException;
+use App\Models\WebSocketDialogMsg;
 
 /**
  * @apiDefine workflow
@@ -131,16 +132,16 @@ class WorkflowController extends AbstractController
         $process = $this->getProcessById($process['id']); //获取最新的流程信息
         if ($process['candidate']) {
             $userid = explode(',', $process['candidate']);
-            $toUser = User::whereIn('userid', $userid)->get();
+            $toUser = User::whereIn('userid', $userid)->get()->toArray();
             $botUser = User::botGetOrCreate('approval-alert');
             if (empty($botUser)) {
                 return Base::retError('审批机器人不存在');
             }
             foreach ($toUser as $val) {
-                if ($val->bot) {
+                if ($val['bot']) {
                     continue;
                 }
-                $dialog = WebSocketDialog::checkUserDialog($botUser, $val->userid);
+                $dialog = WebSocketDialog::checkUserDialog($botUser, $val['userid']);
                 if (empty($dialog)) {
                     continue;
                 }
@@ -435,7 +436,7 @@ class WorkflowController extends AbstractController
             $proc_msg = new WorkflowProcMsg();
             $proc_msg->proc_inst_id = $process['id'];
             $proc_msg->msg_id = $msg['data']->id;
-            $proc_msg->userid = $toUser->userid;
+            $proc_msg->userid = $toUser['userid'];
             $proc_msg->save();
         }
         return true;
@@ -448,7 +449,7 @@ class WorkflowController extends AbstractController
         $process = Ihttp::ihttp_get($this->flow_url."/api/v1/workflow/process/findById?".http_build_query($data));
         $process = json_decode($process['ret'] == 1 ? $process['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
-            return Base::retError($process['message'] ?? '查询失败');
+            throw new ApiException($process['message'] ?? '查询失败');
         }
         return Base::arrayKeyToUnderline($process['data']);
     }
@@ -476,7 +477,7 @@ class WorkflowController extends AbstractController
         $process = Ihttp::ihttp_get($this->flow_url."/api/v1/workflow/identitylink/findParticipant?".http_build_query($data));
         $process = json_decode($process['ret'] == 1 ? $process['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
-            return Base::retError($process['message'] ?? '查询失败');
+            throw new ApiException($process['message'] ?? '查询失败');
         }
         return $process;
     }
