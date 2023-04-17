@@ -32,7 +32,7 @@ export default [
             {
                 name: 'manage-review',//审批
                 path: 'review',
-                component: () => import('./pages/manage/review'),
+                component: () => import('./pages/manage/review/index.vue'),
             },
             {
                 name: 'manage-setting',

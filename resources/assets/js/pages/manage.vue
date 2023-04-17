@@ -551,9 +551,9 @@ export default {
             } else {
                 array.push(...[
                     {path: 'personal', name: '个人设置', divided: true},
-
+                    {path: 'review', name: '审批中心'},
                     {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
-
+                
                     {path: 'workReport', name: '工作报告', divided: true},
                     {path: 'archivedProject', name: '已归档的项目'},
                 ])
@@ -750,6 +750,11 @@ export default {
                 case 'goHome':
                     if (this.needStartHome) {
                         this.goForward('index');
+                    }
+                    return;
+               case 'review':
+                    if (this.menu.findIndex((m) => m.path == path) > -1) {
+                        this.goForward({name: 'manage-review'});
                     }
                     return;
                 case 'logout':
