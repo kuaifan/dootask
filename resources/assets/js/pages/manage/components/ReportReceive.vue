@@ -108,16 +108,24 @@ export default {
                             h('Tag', {
                                 props: {   //传递参数
                                     color: "orange",
+                                },
+                                style: {
+                                    flexShrink: 0,
                                 }
                             }, this.$L("未读")),
-                            h('span', row.title)
+                            h('AutoTip', row.title)
                         )
                     } else {
                         arr.push(
-                            h('span', row.title)
+                            h('AutoTip', row.title)
                         )
                     }
-                    return h('div', arr)
+                    return h('div', {
+                        style: {
+                            display: 'flex',
+                            alignItems: 'center',
+                        }
+                    }, arr)
                 }
             }, {
                 title: this.$L("类型"),

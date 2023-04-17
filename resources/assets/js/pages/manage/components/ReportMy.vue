@@ -80,6 +80,9 @@ export default {
                 title: this.$L("名称"),
                 key: 'title',
                 minWidth: 120,
+                render: (h, {row}) => {
+                    return h('AutoTip', row.title);
+                }
             }, {
                 title: this.$L("类型"),
                 key: 'type',

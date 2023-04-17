@@ -12,6 +12,7 @@
                         <div class="more-item">
                             <i class="taskfont" v-html="item.icon"></i>
                             <div class="tabbar-title">{{$L(item.label)}}</div>
+                            <Badge v-if="item.name === 'workReport'" class="tabbar-badge" :overflow-count="999" :count="reportUnreadNumber"/>
                         </div>
                     </li>
                 </ul>
@@ -28,6 +29,9 @@
                 </template>
                 <template v-else-if="item.name === 'dialog'">
                     <Badge class="tabbar-badge" :overflow-count="999" :text="msgUnreadMention"/>
+                </template>
+                <template v-else-if="item.name === 'more'">
+                    <Badge class="tabbar-badge" :overflow-count="999" :count="reportUnreadNumber"/>
                 </template>
             </li>
         </ul>
@@ -77,6 +81,9 @@ export default {
                     {icon: '&#xe7b8;', name: 'addTask', label: '添加任务'},
                     {icon: '&#xe7c1;', name: 'createMeeting', label: '新会议'},
                     {icon: '&#xe794;', name: 'joinMeeting', label: '加入会议'},
+                ],
+                [
+                    {icon: '&#xe7c0;', name: 'workReport', label: '工作报告'},
                 ]
             ],
 
@@ -90,6 +97,9 @@ export default {
         if ($A.isEEUiApp) {
             this.navMore[0].splice(2, 0, {icon: '&#xe602;', name: 'scan', label: '扫一扫'})
         }
+        if (this.userIsAdmin) {
+            this.navMore[2].splice(0, 0, {icon: '&#xe63f;', name: 'allUser', label: '团队管理'})
+        }
     },
 
     mounted() {
@@ -101,7 +111,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs']),
+        ...mapState(['userIsAdmin', 'cacheDialogs', 'reportUnreadNumber']),
         ...mapGetters(['dashboardTask']),
 
         routeName() {
@@ -241,6 +251,8 @@ export default {
 
                 case 'addTask':
                 case 'addProject':
+                case 'allUser':
+                case 'workReport':
                     return;
 
                 case 'createMeeting':

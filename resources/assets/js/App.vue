@@ -227,6 +227,8 @@ export default {
             this.$store.state.windowHeight = $A(window).height()
             this.$store.state.windowLarge = this.$store.state.windowWidth > 768
             this.$store.state.windowSmall = this.$store.state.windowWidth <= 768
+            this.$store.state.formLabelPosition = this.$store.state.windowWidth > 576 ? 'right' : 'top'
+            this.$store.state.formLabelWidth = this.$store.state.windowWidth > 576 ? 'auto' : ''
         },
 
         windowScrollListener() {
