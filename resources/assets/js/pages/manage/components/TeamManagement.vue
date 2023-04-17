@@ -2,11 +2,15 @@
     <div class="team-management">
         <div class="management-title">
             {{$L('团队管理')}}
+            <div class="title-zoom" @click="minBox=!minBox">
+                <i v-if="minBox" class="taskfont">&#xe7d4;</i>
+                <i v-else class="taskfont">&#xe7d3;</i>
+            </div>
             <div class="title-icon">
                 <Loading v-if="loadIng > 0"/>
             </div>
         </div>
-        <div class="management-box">
+        <div class="management-box" :class="{'min-box':minBox}">
             <div class="management-department">
                 <ul>
                     <li :class="[`level-1`, departmentSelect === 0 ? 'active' : '']" @click="onSelectDepartment(0)">
@@ -308,6 +312,7 @@ export default {
     data() {
         return {
             loadIng: 0,
+            minBox: false,
 
             keys: {},
             keyIs: false,
@@ -762,6 +767,12 @@ export default {
         },
         departmentSelect() {
             this.setPage(1)
+        },
+        windowSmall: {
+            handler(v) {
+                this.minBox = v
+            },
+            immediate: true
         }
     },
     computed: {

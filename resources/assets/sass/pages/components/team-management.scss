@@ -18,6 +18,19 @@
         display: flex;
         align-items: center;
 
+        .title-zoom {
+            display: flex;
+            align-items: center;
+            height: 20px;
+            line-height: 20px;
+            margin-left: 6px;
+
+            > i {
+                cursor: pointer;
+                font-size: 24px;
+            }
+        }
+
         .title-icon {
             display: flex;
             align-items: center;
@@ -37,6 +50,14 @@
         display: flex;
         min-width: 500px;
         height: 0;
+        &.min-box {
+            .management-department {
+                display: none;
+            }
+            .management-user {
+                padding-left: 0;
+            }
+        }
         .management-department {
             width: 239px;
             border-right: 1px solid #efefef;
