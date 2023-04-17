@@ -64,9 +64,9 @@ class WorkflowController extends AbstractController
     public function procdef__all()
     {
         $data['name'] = Request::input('name');
-        $procdef = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/procdef/findAll', json_encode($data));
-        $procdef = json_decode($procdef['ret'] == 1 ? $procdef['data'] : '{}', true);
-        if (!$procdef || $procdef['status'] != 200 || $procdef['ret'] == 0) {
+        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/procdef/findAll', json_encode($data));
+        $procdef = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
+        if (!$procdef || $procdef['status'] != 200 || $ret['ret'] == 0) {
             return Base::retError($procdef['message'] ?? '查询失败');
         }
         return Base::retSuccess('success', Base::arrayKeyToUnderline($procdef['data']));
@@ -89,8 +89,8 @@ class WorkflowController extends AbstractController
     public function procdef__del()
     {
         $data['id'] = Request::input('id');
-        $procdef = Ihttp::ihttp_get($this->flow_url.'/api/v1/workflow/procdef/delById?'.http_build_query($data));
-        $procdef = json_decode($procdef['ret'] == 1 ? $procdef['data'] : '{}', true);
+        $ret = Ihttp::ihttp_get($this->flow_url.'/api/v1/workflow/procdef/delById?'.http_build_query($data));
+        $procdef = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$procdef || $procdef['status'] != 200) {
             return Base::retError($procdef['message'] ?? '删除失败');
         }
@@ -122,8 +122,8 @@ class WorkflowController extends AbstractController
         //
         $var = json_decode(Request::input('var'), true);
         $data['var'] = $var;
-        $process = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/start', json_encode(Base::arrayKeyToCamel($data)));
-        $process = json_decode($process['ret'] == 1 ? $process['data'] : '{}', true);
+        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/start', json_encode(Base::arrayKeyToCamel($data)));
+        $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '启动失败');
         }
@@ -183,8 +183,8 @@ class WorkflowController extends AbstractController
         $data['pass'] = Request::input('pass');
         $data['userid'] = Request::input('userid');
         $data['comment'] = Request::input('comment');
-        $task = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/task/complete', json_encode(Base::arrayKeyToCamel($data)));
-        $task = json_decode($task['ret'] == 1 ? $task['data'] : '{}', true);
+        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/task/complete', json_encode(Base::arrayKeyToCamel($data)));
+        $task = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$task || $task['status'] != 200) {
             return Base::retError($task['message'] ?? '审批失败');
         }
@@ -242,8 +242,8 @@ class WorkflowController extends AbstractController
         $data['task_id'] = intval(Request::input('task_id'));
         $data['userid'] = Request::input('userid');
         $data['proc_inst_id'] = intval(Request::input('proc_inst_id'));
-        $task = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/task/withdraw', json_encode(Base::arrayKeyToCamel($data)));
-        $task = json_decode($task['ret'] == 1 ? $task['data'] : '{}', true);
+        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/task/withdraw', json_encode(Base::arrayKeyToCamel($data)));
+        $task = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$task || $task['status'] != 200) {
             return Base::retError($task['message'] ?? '撤回失败');
         }
@@ -287,8 +287,8 @@ class WorkflowController extends AbstractController
         $data['userid'] = Request::input('userid');
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
-        $process = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/findTask', json_encode(Base::arrayKeyToCamel($data)));
-        $process = json_decode($process['ret'] == 1 ? $process['data'] : '{}', true);
+        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/findTask', json_encode(Base::arrayKeyToCamel($data)));
+        $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '查询失败');
         }
@@ -312,8 +312,8 @@ class WorkflowController extends AbstractController
     public function identitylink__findParticipant()
     {
         $proc_inst_id = Request::input('proc_inst_id');
-        $identitylink = Ihttp::ihttp_get($this->flow_url.'/api/v1/workflow/identitylink/findParticipant?procInstId=' . $proc_inst_id);
-        $identitylink = json_decode($identitylink['ret'] == 1 ? $identitylink['data'] : '{}', true);
+        $ret = Ihttp::ihttp_get($this->flow_url.'/api/v1/workflow/identitylink/findParticipant?procInstId=' . $proc_inst_id);
+        $identitylink = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$identitylink || $identitylink['status'] != 200) {
             return Base::retError($identitylink['message'] ?? '查询失败');
         }
@@ -341,9 +341,8 @@ class WorkflowController extends AbstractController
         $data['userid'] = Request::input('userid');
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
-        $process = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/startByMyself', json_encode($data));
-        info($process);
-        $process = json_decode($process['ret'] == 1 ? $process['data'] : '{}', true);
+        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/startByMyself', json_encode($data));
+        $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '查询失败');
         }
@@ -372,9 +371,8 @@ class WorkflowController extends AbstractController
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
 
-        $process = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/findProcNotify', json_encode($data));
-        info($process);
-        $process = json_decode($process['ret'] == 1 ? $process['data'] : '{}', true);
+        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/findProcNotify', json_encode($data));
+        $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '查询失败');
         }
@@ -446,8 +444,8 @@ class WorkflowController extends AbstractController
     public function getProcessById($id)
     {
         $data['id'] = intval($id);
-        $process = Ihttp::ihttp_get($this->flow_url."/api/v1/workflow/process/findById?".http_build_query($data));
-        $process = json_decode($process['ret'] == 1 ? $process['data'] : '{}', true);
+        $ret = Ihttp::ihttp_get($this->flow_url."/api/v1/workflow/process/findById?".http_build_query($data));
+        $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             throw new ApiException($process['message'] ?? '查询失败');
         }
@@ -474,8 +472,8 @@ class WorkflowController extends AbstractController
     public function getUserProcessParticipantById($id)
     {
         $data['id'] = intval($id);
-        $process = Ihttp::ihttp_get($this->flow_url."/api/v1/workflow/identitylink/findParticipant?".http_build_query($data));
-        $process = json_decode($process['ret'] == 1 ? $process['data'] : '{}', true);
+        $ret = Ihttp::ihttp_get($this->flow_url."/api/v1/workflow/identitylink/findParticipant?".http_build_query($data));
+        $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             throw new ApiException($process['message'] ?? '查询失败');
         }
