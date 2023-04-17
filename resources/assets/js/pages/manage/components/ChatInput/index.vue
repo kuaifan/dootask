@@ -946,7 +946,7 @@ export default {
         },
 
         onSend(type) {
-            this.hidePopover()
+            this.hidePopover('send')
             this.rangeIndex = 0
             this.$store.state.messengerSearchKey = {dialog: '', contacts: ''}
             if (type) {
@@ -1014,9 +1014,12 @@ export default {
             }
         },
 
-        hidePopover() {
+        hidePopover(action) {
             this.showMenu = false;
             this.showMore = false;
+            if (action === 'send') {
+                return
+            }
             this.showEmoji = false;
             this.emojiQuickShow = false;
         },
