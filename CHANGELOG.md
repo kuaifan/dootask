@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.25.95]
+
+### Performance
+
+- 优化移动端部门管理
+- 移动端显示工作报告
+- 导出数据支持搜索离职会员
+- 优化md消息图片预览
+
 ## [0.25.84]
 
 ### Bug Fixes
