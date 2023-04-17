@@ -591,7 +591,7 @@ class WorkflowController extends AbstractController
         return Base::retSuccess('success', $workflow);
     }
 
-    // 审批机器人消息-审核人
+    // 审批机器人消息
     public function workflowMsg($type, $dialog, $botUser, $toUser, $process, $action = null)
     {
         $data = [
@@ -641,6 +641,18 @@ class WorkflowController extends AbstractController
         }
         //
         $res = Base::arrayKeyToUnderline($process['data']);
+        foreach ($res['node_infos'] as &$val) {
+            if (isset($val['node_user_list'])) {
+                $node = $val['node_user_list'];
+                foreach ($node as $k => &$item) {
+                    $info = User::whereUserid($item['target_id'])->first();
+                    if (!$info) {
+                        continue;
+                    }
+                    $val['node_user_list'][$k]['userimg'] = User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname);
+                }
+            }
+        }
         $info = User::whereUserid($res['start_user_id'])->first();
         $res['userimg'] = $info ? User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname) : '';
         return $res;
