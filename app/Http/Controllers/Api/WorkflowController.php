@@ -63,6 +63,7 @@ class WorkflowController extends AbstractController
      */
     public function procdef__all()
     {
+        User::auth('admin');
         $data['name'] = Request::input('name');
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/procdef/findAll', json_encode($data));
         $procdef = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
@@ -88,6 +89,7 @@ class WorkflowController extends AbstractController
      */
     public function procdef__del()
     {
+        User::auth('admin');
         $data['id'] = Request::input('id');
         $ret = Ihttp::ihttp_get($this->flow_url.'/api/v1/workflow/procdef/delById?'.http_build_query($data));
         $procdef = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
@@ -106,7 +108,6 @@ class WorkflowController extends AbstractController
      * @apiName process__start
      *
      * @apiQuery {String} proc_name            流程名称
-     * @apiQuery {Number} userid               用户ID
      * @apiQuery {Number} department_id        部门ID
      * @apiQuery {Array} [var]                 启动流程类型信息（格式：[{type,startTime,endTime,description}]）
      *
@@ -116,7 +117,8 @@ class WorkflowController extends AbstractController
      */
     public function process__start()
     {
-        $data['userid'] = Request::input('userid');
+        $user = User::auth();
+        $data['userid'] = $user->userid;
         $data['department_id'] = intval(Request::input('department_id'));
         $data['proc_name'] = Request::input('proc_name');
         //
@@ -170,7 +172,6 @@ class WorkflowController extends AbstractController
      *
      * @apiQuery {Number} task_id               流程ID
      * @apiQuery {String} pass                  标题 [true-通过，false-拒绝]
-     * @apiQuery {Number} userid                用户ID
      * @apiQuery {String} comment               评论
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -179,9 +180,10 @@ class WorkflowController extends AbstractController
      */
     public function task__complete()
     {
+        $user = User::auth();
+        $data['userid'] = $user->userid;
         $data['task_id'] = intval(Request::input('task_id'));
         $data['pass'] = Request::input('pass');
-        $data['userid'] = Request::input('userid');
         $data['comment'] = Request::input('comment');
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/task/complete', json_encode(Base::arrayKeyToCamel($data)));
         $task = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
@@ -230,7 +232,6 @@ class WorkflowController extends AbstractController
      * @apiName task__withdraw
      *
      * @apiQuery {Number} task_id               流程ID
-     * @apiQuery {String} userid                用户ID
      * @apiQuery {Number} proc_inst_id          流程实例ID
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -239,8 +240,9 @@ class WorkflowController extends AbstractController
      */
     public function task__withdraw()
     {
+        $user = User::auth();
+        $data['userid'] = $user->userid;
         $data['task_id'] = intval(Request::input('task_id'));
-        $data['userid'] = Request::input('userid');
         $data['proc_inst_id'] = intval(Request::input('proc_inst_id'));
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/task/withdraw', json_encode(Base::arrayKeyToCamel($data)));
         $task = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
@@ -274,7 +276,6 @@ class WorkflowController extends AbstractController
      * @apiGroup workflow
      * @apiName process__findTask
      *
-     * @apiQuery {Number} userid                用户ID
      * @apiQuery {Number} page                  页码
      * @apiQuery {Number} page_size             每页条数
      *
@@ -284,7 +285,8 @@ class WorkflowController extends AbstractController
      */
     public function process__findTask()
     {
-        $data['userid'] = Request::input('userid');
+        $user = User::auth();
+        $data['userid'] = $user->userid;
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/findTask', json_encode(Base::arrayKeyToCamel($data)));
@@ -303,7 +305,6 @@ class WorkflowController extends AbstractController
      * @apiGroup workflow
      * @apiName process__startByMyself
      *
-     * @apiQuery {Number} userid               用户ID
      * @apiQuery {Number} page                  页码
      * @apiQuery {Number} page_size             每页条数
      *
@@ -313,7 +314,8 @@ class WorkflowController extends AbstractController
      */
     public function process__startByMyself()
     {
-        $data['userid'] = Request::input('userid');
+        $user = User::auth();
+        $data['userid'] = $user->userid;
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/startByMyself', json_encode($data));
@@ -342,7 +344,8 @@ class WorkflowController extends AbstractController
      */
     public function process__findProcNotify()
     {
-        $data['userid'] = Request::input('userid');
+        $user = User::auth();
+        $data['userid'] = $user->userid;
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
 
@@ -370,6 +373,7 @@ class WorkflowController extends AbstractController
      */
     public function identitylink__findParticipant()
     {
+        User::auth();
         $proc_inst_id = Request::input('proc_inst_id');
         $ret = Ihttp::ihttp_get($this->flow_url.'/api/v1/workflow/identitylink/findParticipant?procInstId=' . $proc_inst_id);
         $identitylink = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
@@ -387,7 +391,6 @@ class WorkflowController extends AbstractController
      * @apiGroup workflow
      * @apiName procHistory__findTask
      *
-     * @apiQuery {Number} userid                用户ID
      * @apiQuery {Number} page                  页码
      * @apiQuery {Number} page_size             每页条数
      *
@@ -397,7 +400,8 @@ class WorkflowController extends AbstractController
      */
     public function procHistory__findTask()
     {
-        $data['userid'] = Request::input('userid');
+        $user = User::auth();
+        $data['userid'] = $user->userid;
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/procHistory/findTask', json_encode(Base::arrayKeyToCamel($data)));
@@ -417,7 +421,6 @@ class WorkflowController extends AbstractController
      * @apiGroup workflow
      * @apiName procHistory__startByMyself
      *
-     * @apiQuery {Number} userid               用户ID
      * @apiQuery {Number} page                  页码
      * @apiQuery {Number} page_size             每页条数
      *
@@ -427,7 +430,8 @@ class WorkflowController extends AbstractController
      */
     public function procHistory__startByMyself()
     {
-        $data['userid'] = Request::input('userid');
+        $user = User::auth();
+        $data['userid'] = $user->userid;
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/procHistory/startByMyself', json_encode($data));
@@ -446,7 +450,6 @@ class WorkflowController extends AbstractController
      * @apiGroup workflow
      * @apiName procHistory__findProcNotify
      *
-     * @apiQuery {Number} userid               用户ID
      * @apiQuery {Number} page                  页码
      * @apiQuery {Number} page_size             每页条数
      *
@@ -456,7 +459,8 @@ class WorkflowController extends AbstractController
      */
     public function procHistory__findProcNotify()
     {
-        $data['userid'] = Request::input('userid');
+        $user = User::auth();
+        $data['userid'] = $user->userid;
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
 
@@ -484,10 +488,9 @@ class WorkflowController extends AbstractController
      */
     public function identitylinkHistory__findParticipant()
     {
+        User::auth();
         $proc_inst_id = Request::input('proc_inst_id');
-        info($proc_inst_id);
         $ret = Ihttp::ihttp_get($this->flow_url.'/api/v1/workflow/identitylinkHistory/findParticipant?procInstId=' . $proc_inst_id);
-        info($ret);
         $identitylink = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$identitylink || $identitylink['status'] != 200) {
             return Base::retError($identitylink['message'] ?? '查询失败');
@@ -511,7 +514,7 @@ class WorkflowController extends AbstractController
      */
     public function process__detail()
     {
-        //{"id":"2"}
+        User::auth();
         $data['id'] = intval(Request::input('id'));
         $workflow = $this->getProcessById($data['id']);
         return Base::retSuccess('success', $workflow);
