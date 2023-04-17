@@ -118,7 +118,7 @@ class WorkflowController extends AbstractController
     public function process__start()
     {
         $user = User::auth();
-        $data['userid'] = $user->userid;
+        $data['userid'] = (string)$user->userid;
         $data['department_id'] = intval(Request::input('department_id'));
         $data['proc_name'] = Request::input('proc_name');
         //
@@ -181,7 +181,7 @@ class WorkflowController extends AbstractController
     public function task__complete()
     {
         $user = User::auth();
-        $data['userid'] = $user->userid;
+        $data['userid'] = (string)$user->userid;
         $data['task_id'] = intval(Request::input('task_id'));
         $data['pass'] = Request::input('pass');
         $data['comment'] = Request::input('comment');
@@ -241,7 +241,7 @@ class WorkflowController extends AbstractController
     public function task__withdraw()
     {
         $user = User::auth();
-        $data['userid'] = $user->userid;
+        $data['userid'] = (string)$user->userid;
         $data['task_id'] = intval(Request::input('task_id'));
         $data['proc_inst_id'] = intval(Request::input('proc_inst_id'));
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/task/withdraw', json_encode(Base::arrayKeyToCamel($data)));
@@ -286,7 +286,7 @@ class WorkflowController extends AbstractController
     public function process__findTask()
     {
         $user = User::auth();
-        $data['userid'] = $user->userid;
+        $data['userid'] = (string)$user->userid;
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/findTask', json_encode(Base::arrayKeyToCamel($data)));
@@ -315,9 +315,10 @@ class WorkflowController extends AbstractController
     public function process__startByMyself()
     {
         $user = User::auth();
-        $data['userid'] = $user->userid;
+        $data['userid'] = (string)$user->userid;
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
+        info($data);
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/startByMyself', json_encode($data));
         $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
@@ -345,7 +346,7 @@ class WorkflowController extends AbstractController
     public function process__findProcNotify()
     {
         $user = User::auth();
-        $data['userid'] = $user->userid;
+        $data['userid'] = (string)$user->userid;
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
 
@@ -401,7 +402,7 @@ class WorkflowController extends AbstractController
     public function procHistory__findTask()
     {
         $user = User::auth();
-        $data['userid'] = $user->userid;
+        $data['userid'] = (string)$user->userid;
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/procHistory/findTask', json_encode(Base::arrayKeyToCamel($data)));
@@ -431,7 +432,7 @@ class WorkflowController extends AbstractController
     public function procHistory__startByMyself()
     {
         $user = User::auth();
-        $data['userid'] = $user->userid;
+        $data['userid'] = (string)$user->userid;
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/procHistory/startByMyself', json_encode($data));
@@ -460,7 +461,7 @@ class WorkflowController extends AbstractController
     public function procHistory__findProcNotify()
     {
         $user = User::auth();
-        $data['userid'] = $user->userid;
+        $data['userid'] = (string)$user->userid;
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
 
