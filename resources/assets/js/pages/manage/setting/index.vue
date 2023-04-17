@@ -73,7 +73,6 @@ export default {
             const menu = [
                 {path: 'personal', name: '个人设置'},
                 {path: 'checkin', name: '签到设置', desc: ' (Beta)'},
-                {path: 'approve', name: '审批设置', desc: ' (Beta)'},
                 {path: 'language', name: '语言设置'},
                 {path: 'theme', name: '主题设置'},
                 {path: 'password', name: '密码设置'},
@@ -94,6 +93,7 @@ export default {
             if (this.userIsAdmin) {
                 menu.push(...[
                     {path: 'system', name: '系统设置', divided: true},
+                    {path: 'approve', name: '审批设置', desc: ' (Beta)'},
                     {path: 'license', name: 'License Key'},
                 ])
             }

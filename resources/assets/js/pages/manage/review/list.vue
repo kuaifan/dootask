@@ -1,16 +1,23 @@
 <template>
-    <div class="review-list review-list-active">
-        <h2><span class="list-name">请假类型</span> <Tag color="success">已通过</Tag></h2>
-        <p>{{$L('假期类型：')}}<span>{{$L('事假')}}</span></p>
-        <p>{{$L('开始时间：')}}<span>{{$L('2023年1月1日')}}</span></p>
-        <p>{{$L('结束时间：')}}<span>{{$L('2023年1月2日')}}</span></p>
+    <div class="review-list">
+        <h2>
+            <span class="list-name">{{data.proc_def_name}}</span> 
+            <Tag v-if="data.state == 0" color="cyan">{{$L('待审批')}}</Tag>
+            <Tag v-if="data.state == 1" color="cyan">{{$L('审批中')}}</Tag>
+            <Tag v-if="data.state == 2" color="green">{{$L('已通过')}}</Tag>
+            <Tag v-if="data.state == 3" color="red">{{$L('已拒绝')}}</Tag>
+            <Tag v-if="data.state == 4" color="red">{{$L('已撤回')}}</Tag>
+        </h2>
+        <p>{{$L('假期类型')}}：<span>{{data.var?.type}}</span></p>
+        <p>{{$L('开始时间')}}：<span>{{data.var?.start_time}}</span></p>
+        <p>{{$L('结束时间')}}：<span>{{data.var?.end_time}}</span></p>
         <div class="list-member">
             <span>
-                  <Avatar src="https://i.loli.net/2017/08/21/599a521472424.jpg" size="18"/>
-                请假名字
+                <Avatar :src="data.userimg" size="18"/>
+                {{ data.start_user_name }}
             </span>
             <span>
-                发起时间：2023年1月2日
+                {{$L('发起时间')}}：{{data.start_time}}
             </span>
         </div>
     </div>
@@ -18,7 +25,22 @@
 
 <script>
 export default {
-    name: "list"
+    name: "list",
+    props: {
+        data: {
+            type: Object,
+            default() {
+                return {};
+            }
+        }
+    },
+    data() {
+        return {
+
+        }
+    }
 }
+
+
 </script>
 

@@ -879,6 +879,7 @@
             if (typeof config === "string") config = {title:config};
             let inputId = "modalInput_" + $A.randomString(6);
             let inputProps = {
+                type: config.type || "text",
                 value: config.value,
                 placeholder: $A.L(config.placeholder),
                 elementId: inputId,

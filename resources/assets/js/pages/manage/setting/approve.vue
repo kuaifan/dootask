@@ -12,10 +12,9 @@
                     <Divider style="margin: 12px 0;"/>
                     <div class="approve-button-box" @click.stop="edit(item)">
                         <p>{{$L('是否发布')}}： </p>
-                        <p>
-                            <i-switch v-model="item.issue" :disabled="true" />
-                            <!-- <Icon type="md-create" />
-                            <Icon type="md-trash" /> -->
+                        <p @click.stop="!item.issue ? edit(item) : ''">
+                            <i-switch v-model="item.issue" @on-change="change(item)" :disabled="true" />
+                            <!-- <Icon type="md-trash" /> -->
                         </p>
                     </div>
                 </div>
@@ -45,8 +44,8 @@ export default {
             iframeSrc:"",
             name:"",
             list:[
-                {name:"请假",issue:false},
-                {name:"加班申请",issue:false},
+                {id:0,name:"请假",issue:false,version:''},
+                {id:0,name:"加班申请",issue:false,version:''},
             ]
         }
     },
@@ -57,16 +56,39 @@ export default {
     },
     mounted() {
         window.addEventListener('message', this.saveSuccess)
+        this.getList();
     },
     beforeDestroy() {
         window.removeEventListener("message", this.saveSuccess);
     },
     methods: {
+        // 获取列表数据
+        getList(){
+            this.$store.dispatch("call", {
+                url: 'workflow/procdef/all',
+                method: 'post',
+            }).then(({data}) => {
+                data.rows.forEach((h,index) => {
+                    this.list.forEach((o,index) => {
+                        if(o.name == h.name){
+                            o.issue = true;
+                            o.id = h.id;
+                            o.version = h.version;
+                        }
+                    })
+                })
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            }).finally(_ => {
+                this.loadIng--;
+            });
+        },
         // 保存成功回调
         saveSuccess(e){
             if (typeof e.data === 'string') {
                 let propsBody = JSON.parse(e.data);
                 if( propsBody.method == "saveSuccess" ) {
+                    this.getList();
                     this.list.forEach((h,index) => {
                         if(h.name == this.name){
                             h.issue = true;
@@ -85,12 +107,41 @@ export default {
         },
         // 编辑
         edit(item){
-            console.log(item.issue)
-            if(!item.issue){
-                this.name = item.name
-                this.approvalSettingShow = true;
+            this.name = item.name
+            this.approvalSettingShow = true;
+        },
+        // 变更
+        change(item){
+            this.$nextTick(()=>{
+                item.issue = true;
+                $A.modalConfirm({
+                    title: '取消发布',
+                    content: '将会清空流程数据，确定要取消发布？',
+                    onOk: () => {
+                        this.del(item)
+                    }
+                });
+            });
+        },
+        // 删除数据
+        del(item){
+            if(!item.id){
+                item.issue = false;
+                return true;
             }
-        }
+            this.$store.dispatch("call", {
+                url: 'workflow/procdef/del',
+                data: {id: item.id},
+                method: 'post',
+            }).then(({data}) => {
+                item.issue = false;
+                $A.messageSuccess('成功');
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            }).finally(_ => {
+                this.loadIng--;
+            });
+        },
     }
 }
 </script>
