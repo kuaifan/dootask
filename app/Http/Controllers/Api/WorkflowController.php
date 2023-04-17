@@ -98,7 +98,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/process/start          04. 启动流程
+     * @api {post} api/workflow/process/start          04. 启动流程（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -267,7 +267,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/process/findTask          07. 查询我审批的流程
+     * @api {post} api/workflow/process/findTask          07. 查询需要我审批的流程（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -296,32 +296,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/identitylink/findParticipant          08. 查询流程审批人与评论
-     *
-     * @apiDescription 需要token身份
-     * @apiVersion 1.0.0
-     * @apiGroup workflow
-     * @apiName identitylink__findParticipant
-     *
-     * @apiQuery {Number} proc_inst_id             流程实例ID
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function identitylink__findParticipant()
-    {
-        $proc_inst_id = Request::input('proc_inst_id');
-        $ret = Ihttp::ihttp_get($this->flow_url.'/api/v1/workflow/identitylink/findParticipant?procInstId=' . $proc_inst_id);
-        $identitylink = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
-        if (!$identitylink || $identitylink['status'] != 200) {
-            return Base::retError($identitylink['message'] ?? '查询失败');
-        }
-        return Base::retSuccess('success', Base::arrayKeyToUnderline($identitylink['data']));
-    }
-
-    /**
-     * @api {post} api/workflow/process/startByMyself          09. 查询我发起的流程
+     * @api {post} api/workflow/process/startByMyself          08. 查询我启动的流程（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -350,7 +325,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/process/findProcNotify          10. 查询抄送我的流程
+     * @api {post} api/workflow/process/findProcNotify          09. 查询抄送我的流程（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -380,7 +355,148 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {get} api/workflow/process/detail          11. 根据流程ID查询流程详情
+     * @api {get} api/workflow/identitylink/findParticipant          10. 查询流程实例的参与者（审批中）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup workflow
+     * @apiName identitylink__findParticipant
+     *
+     * @apiQuery {Number} proc_inst_id             流程实例ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function identitylink__findParticipant()
+    {
+        $proc_inst_id = Request::input('proc_inst_id');
+        $ret = Ihttp::ihttp_get($this->flow_url.'/api/v1/workflow/identitylink/findParticipant?procInstId=' . $proc_inst_id);
+        $identitylink = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
+        if (!$identitylink || $identitylink['status'] != 200) {
+            return Base::retError($identitylink['message'] ?? '查询失败');
+        }
+        return Base::retSuccess('success', Base::arrayKeyToUnderline($identitylink['data']));
+    }
+
+    /**
+     * @api {post} api/workflow/procHistory/findTask          11. 查询需要我审批的流程（已结束）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup workflow
+     * @apiName procHistory__findTask
+     *
+     * @apiQuery {Number} userid                用户ID
+     * @apiQuery {Number} page                  页码
+     * @apiQuery {Number} page_size             每页条数
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function procHistory__findTask()
+    {
+        $data['userid'] = Request::input('userid');
+        $data['pageIndex'] = intval(Request::input('page'));
+        $data['pageSize'] = intval(Request::input('page_size'));
+        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/procHistory/findTask', json_encode(Base::arrayKeyToCamel($data)));
+        info($ret);
+        $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
+        if (!$process || $process['status'] != 200) {
+            return Base::retError($process['message'] ?? '查询失败');
+        }
+        return Base::retSuccess('success', Base::arrayKeyToUnderline($process['data']));
+    }
+
+    /**
+     * @api {post} api/workflow/procHistory/startByMyself          12. 查询我启动的流程（已结束）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup workflow
+     * @apiName procHistory__startByMyself
+     *
+     * @apiQuery {Number} userid               用户ID
+     * @apiQuery {Number} page                  页码
+     * @apiQuery {Number} page_size             每页条数
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function procHistory__startByMyself()
+    {
+        $data['userid'] = Request::input('userid');
+        $data['pageIndex'] = intval(Request::input('page'));
+        $data['pageSize'] = intval(Request::input('page_size'));
+        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/procHistory/startByMyself', json_encode($data));
+        $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
+        if (!$process || $process['status'] != 200) {
+            return Base::retError($process['message'] ?? '查询失败');
+        }
+        return Base::retSuccess('success', Base::arrayKeyToUnderline($process['data']));
+    }
+
+    /**
+     * @api {post} api/workflow/procHistory/findProcNotify          13. 查询抄送我的流程（已结束）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup workflow
+     * @apiName procHistory__findProcNotify
+     *
+     * @apiQuery {Number} userid               用户ID
+     * @apiQuery {Number} page                  页码
+     * @apiQuery {Number} page_size             每页条数
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function procHistory__findProcNotify()
+    {
+        $data['userid'] = Request::input('userid');
+        $data['pageIndex'] = intval(Request::input('page'));
+        $data['pageSize'] = intval(Request::input('page_size'));
+
+        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/procHistory/findProcNotify', json_encode($data));
+        $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
+        if (!$process || $process['status'] != 200) {
+            return Base::retError($process['message'] ?? '查询失败');
+        }
+        return Base::retSuccess('success', Base::arrayKeyToUnderline($process['data']));
+    }
+
+    /**
+     * @api {get} api/workflow/identitylinkHistory/findParticipant          14. 查询流程实例的参与者（已结束）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup workflow
+     * @apiName identitylinkHistory__findParticipant
+     *
+     * @apiQuery {Number} proc_inst_id             流程实例ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function identitylinkHistory__findParticipant()
+    {
+        $proc_inst_id = Request::input('proc_inst_id');
+        info($proc_inst_id);
+        $ret = Ihttp::ihttp_get($this->flow_url.'/api/v1/workflow/identitylinkHistory/findParticipant?procInstId=' . $proc_inst_id);
+        info($ret);
+        $identitylink = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
+        if (!$identitylink || $identitylink['status'] != 200) {
+            return Base::retError($identitylink['message'] ?? '查询失败');
+        }
+        return Base::retSuccess('success', Base::arrayKeyToUnderline($identitylink['data']));
+    }
+
+    /**
+     * @api {get} api/workflow/process/detail          15. 根据流程ID查询流程详情
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
