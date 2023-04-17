@@ -294,7 +294,16 @@ class WorkflowController extends AbstractController
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '查询失败');
         }
-        return Base::retSuccess('success', Base::arrayKeyToUnderline($process['data']));
+        //
+        $res = Base::arrayKeyToUnderline($process['data']);
+        foreach ($res['rows'] as &$val) {
+            $info = User::whereUserid($val['start_user_id'])->first();
+            if (!$info) {
+                continue;
+            }
+            $val['userimg'] = User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname);
+        }
+        return Base::retSuccess('success',$res);
     }
 
     /**
@@ -318,13 +327,21 @@ class WorkflowController extends AbstractController
         $data['userid'] = (string)$user->userid;
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
-        info($data);
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/startByMyself', json_encode($data));
         $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '查询失败');
         }
-        return Base::retSuccess('success', Base::arrayKeyToUnderline($process['data']));
+        //
+        $res = Base::arrayKeyToUnderline($process['data']);
+        foreach ($res['rows'] as &$val) {
+            $info = User::whereUserid($val['start_user_id'])->first();
+            if (!$info) {
+                continue;
+            }
+            $val['userimg'] = User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname);
+        }
+        return Base::retSuccess('success', $res);
     }
 
     /**
@@ -355,7 +372,16 @@ class WorkflowController extends AbstractController
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '查询失败');
         }
-        return Base::retSuccess('success', Base::arrayKeyToUnderline($process['data']));
+        //
+        $res = Base::arrayKeyToUnderline($process['data']);
+        foreach ($res['rows'] as &$val) {
+            $info = User::whereUserid($val['start_user_id'])->first();
+            if (!$info) {
+                continue;
+            }
+            $val['userimg'] = User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname);
+        }
+        return Base::retSuccess('success', $res);
     }
 
     /**
@@ -381,7 +407,16 @@ class WorkflowController extends AbstractController
         if (!$identitylink || $identitylink['status'] != 200) {
             return Base::retError($identitylink['message'] ?? '查询失败');
         }
-        return Base::retSuccess('success', Base::arrayKeyToUnderline($identitylink['data']));
+        //
+        $res = Base::arrayKeyToUnderline($identitylink['data']);
+        foreach ($res as &$val) {
+            $info = User::whereUserid($val['userid'])->first();
+            if (!$info) {
+                continue;
+            }
+            $val['userimg'] = User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname);
+        }
+        return Base::retSuccess('success', $res);
     }
 
     /**
@@ -406,12 +441,20 @@ class WorkflowController extends AbstractController
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/procHistory/findTask', json_encode(Base::arrayKeyToCamel($data)));
-        info($ret);
         $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '查询失败');
         }
-        return Base::retSuccess('success', Base::arrayKeyToUnderline($process['data']));
+        //
+        $res = Base::arrayKeyToUnderline($process['data']);
+        foreach ($res['rows'] as &$val) {
+            $info = User::whereUserid($val['start_user_id'])->first();
+            if (!$info) {
+                continue;
+            }
+            $val['userimg'] = User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname);
+        }
+        return Base::retSuccess('success', $res);
     }
 
     /**
@@ -440,7 +483,16 @@ class WorkflowController extends AbstractController
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '查询失败');
         }
-        return Base::retSuccess('success', Base::arrayKeyToUnderline($process['data']));
+        //
+        $res = Base::arrayKeyToUnderline($process['data']);
+        foreach ($res['rows'] as &$val) {
+            $info = User::whereUserid($val['start_user_id'])->first();
+            if (!$info) {
+                continue;
+            }
+            $val['userimg'] = User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname);
+        }
+        return Base::retSuccess('success', $res);
     }
 
     /**
@@ -470,7 +522,16 @@ class WorkflowController extends AbstractController
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '查询失败');
         }
-        return Base::retSuccess('success', Base::arrayKeyToUnderline($process['data']));
+        //
+        $res = Base::arrayKeyToUnderline($process['data']);
+        foreach ($res['rows'] as &$val) {
+            $info = User::whereUserid($val['start_user_id'])->first();
+            if (!$info) {
+                continue;
+            }
+            $val['userimg'] = User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname);
+        }
+        return Base::retSuccess('success', $res);
     }
 
     /**
@@ -496,7 +557,16 @@ class WorkflowController extends AbstractController
         if (!$identitylink || $identitylink['status'] != 200) {
             return Base::retError($identitylink['message'] ?? '查询失败');
         }
-        return Base::retSuccess('success', Base::arrayKeyToUnderline($identitylink['data']));
+        //
+        $res = Base::arrayKeyToUnderline($identitylink['data']);
+        foreach ($res as &$val) {
+            $info = User::whereUserid($val['userid'])->first();
+            if (!$info) {
+                continue;
+            }
+            $val['userimg'] = User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname);
+        }
+        return Base::retSuccess('success', $res);
     }
 
     /**
@@ -569,7 +639,11 @@ class WorkflowController extends AbstractController
         if (!$process || $process['status'] != 200) {
             throw new ApiException($process['message'] ?? '查询失败');
         }
-        return Base::arrayKeyToUnderline($process['data']);
+        //
+        $res = Base::arrayKeyToUnderline($process['data']);
+        $info = User::whereUserid($res['start_user_id'])->first();
+        $res['userimg'] = $info ? User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname) : '';
+        return $res;
     }
 
     // 处理流程节点返回是否有抄送人
