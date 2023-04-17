@@ -30,7 +30,7 @@ export default [
                 component: () => import('./pages/manage/messenger.vue'),
             },
             {
-                name: 'manage-review',
+                name: 'manage-review',//审批
                 path: 'review',
                 component: () => import('./pages/manage/review'),
             },
