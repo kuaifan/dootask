@@ -276,6 +276,8 @@ class WorkflowController extends AbstractController
      * @apiGroup workflow
      * @apiName process__findTask
      *
+     * @apiQuery {String} proc_def_name         流程名称
+     * @apiQuery {String} sort                  排序
      * @apiQuery {Number} page                  页码
      * @apiQuery {Number} page_size             每页条数
      *
@@ -287,6 +289,8 @@ class WorkflowController extends AbstractController
     {
         $user = User::auth();
         $data['userid'] = (string)$user->userid;
+        $data['procName'] = Request::input('proc_def_name');
+        $data['sort'] = Request::input('sort');
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/findTask', json_encode(Base::arrayKeyToCamel($data)));
@@ -307,7 +311,49 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/process/startByMyself          08. 查询我启动的流程（审批中）
+     * @api {post} api/workflow/process/startByMyselfAll          08. 查询我启动的流程（全部）
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup workflow
+     * @apiName process__startByMyselfAll
+     *
+     * @apiQuery {String} proc_def_name         流程分类
+     * @apiQuery {String} state                 流程状态
+     * @apiQuery {Number} page                  页码
+     * @apiQuery {Number} page_size             每页条数
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function process__startByMyselfAll()
+    {
+        $user = User::auth();
+        $data['userid'] = (string)$user->userid;
+        $data['procName'] = Request::input('proc_def_name'); //分类
+        $data['state'] = intval(Request::input('state')); //状态
+        $data['pageIndex'] = intval(Request::input('page'));
+        $data['pageSize'] = intval(Request::input('page_size'));
+        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/startByMyselfAll', json_encode($data));
+        $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
+        if (!$process || $process['status'] != 200) {
+            return Base::retError($process['message'] ?? '查询失败');
+        }
+        //
+        $res = Base::arrayKeyToUnderline($process['data']);
+        foreach ($res['rows'] as &$val) {
+            $info = User::whereUserid($val['start_user_id'])->first();
+            if (!$info) {
+                continue;
+            }
+            $val['userimg'] = User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname);
+        }
+        return Base::retSuccess('success', $res);
+    }
+
+    /**
+     * @api {post} api/workflow/process/startByMyself          09. 查询我启动的流程（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -345,7 +391,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/process/findProcNotify          09. 查询抄送我的流程（审批中）
+     * @api {post} api/workflow/process/findProcNotify          10. 查询抄送我的流程（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -353,6 +399,8 @@ class WorkflowController extends AbstractController
      * @apiName process__findProcNotify
      *
      * @apiQuery {Number} userid               用户ID
+     * @apiQuery {String} proc_def_name        流程分类
+     * @apiQuery {String} sort                 排序
      * @apiQuery {Number} page                  页码
      * @apiQuery {Number} page_size             每页条数
      *
@@ -364,6 +412,8 @@ class WorkflowController extends AbstractController
     {
         $user = User::auth();
         $data['userid'] = (string)$user->userid;
+        $data['procName'] = Request::input('proc_def_name');
+        $data['sort'] = Request::input('sort');
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
 
@@ -385,7 +435,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {get} api/workflow/identitylink/findParticipant          10. 查询流程实例的参与者（审批中）
+     * @api {get} api/workflow/identitylink/findParticipant          11. 查询流程实例的参与者（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -420,13 +470,15 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/procHistory/findTask          11. 查询需要我审批的流程（已结束）
+     * @api {post} api/workflow/procHistory/findTask          12. 查询需要我审批的流程（已结束）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup workflow
      * @apiName procHistory__findTask
      *
+     * @apiQuery {String} proc_def_name        流程分类
+     * @apiQuery {String} sort                 排序
      * @apiQuery {Number} page                  页码
      * @apiQuery {Number} page_size             每页条数
      *
@@ -438,6 +490,8 @@ class WorkflowController extends AbstractController
     {
         $user = User::auth();
         $data['userid'] = (string)$user->userid;
+        $data['procName'] = Request::input('proc_def_name');
+        $data['sort'] = Request::input('sort');
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/procHistory/findTask', json_encode(Base::arrayKeyToCamel($data)));
@@ -458,7 +512,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/procHistory/startByMyself          12. 查询我启动的流程（已结束）
+     * @api {post} api/workflow/procHistory/startByMyself          13. 查询我启动的流程（已结束）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -496,13 +550,15 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/procHistory/findProcNotify          13. 查询抄送我的流程（已结束）
+     * @api {post} api/workflow/procHistory/findProcNotify          14. 查询抄送我的流程（已结束）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup workflow
      * @apiName procHistory__findProcNotify
      *
+     * @apiQuery {String} proc_def_name         流程分类
+     * @apiQuery {String} sort                  排序
      * @apiQuery {Number} page                  页码
      * @apiQuery {Number} page_size             每页条数
      *
@@ -514,6 +570,8 @@ class WorkflowController extends AbstractController
     {
         $user = User::auth();
         $data['userid'] = (string)$user->userid;
+        $data['procName'] = Request::input('proc_def_name');
+        $data['sort'] = Request::input('sort');
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
 
@@ -535,7 +593,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {get} api/workflow/identitylinkHistory/findParticipant          14. 查询流程实例的参与者（已结束）
+     * @api {get} api/workflow/identitylinkHistory/findParticipant          15. 查询流程实例的参与者（已结束）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -570,7 +628,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {get} api/workflow/process/detail          15. 根据流程ID查询流程详情
+     * @api {get} api/workflow/process/detail          16. 根据流程ID查询流程详情
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
