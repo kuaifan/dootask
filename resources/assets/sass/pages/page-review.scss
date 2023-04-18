@@ -51,13 +51,15 @@
                 display: flex;
                 flex-direction: column;
                 flex: 0 0 auto;
-                max-width: 360px;
-                width: 100%;
                 position: absolute;
                 left: 0;
                 top: 0;
                 bottom: 12px;
-                
+                max-width: 360px;
+                width: 100%;
+                @media (max-width: 1010px) {
+                    max-width: 100%;
+                }
                 .review-main-list{
                     display: flex;
                     flex-direction: column;
@@ -121,132 +123,136 @@
                 flex: 1 1 auto;
                 display: flex;
                 margin: 0 0 12px 12px;
-                .review-details{
-                    flex: 1 1 auto;
-                    display: flex;
-                    flex-direction: column;
-                    border-radius: 8px;
-                    border: 1px solid #eeeeee;
-                    .review-details-box{
-                        flex: 1 1 auto;
-                        padding: 24px;
-                        overflow-y: scroll;
-                        .review-details-title{
-                            display: flex;
-                            align-items: center;
-                            .ivu-tag{
-                                margin-left: 8px;
-                            }
-                        }
-                        .review-details-subtitle{
-                            margin-top: 8px;
-                            display: flex;
-                            .ivu-avatar{
-                                margin-right: 8px;
-                            }
-                            > span{
-                                font-size: 14px;
-                            }
-                        }
-
-                        .timeline-title{
-                            font-weight: bold;
-                            padding-bottom: 10px;
-                        }
-
-                        .review-process-name{
-                            margin-bottom: 4px;
-                        }
-                        
-                        .review-process-state{
-                            font-size: 12px;
-                            color: #19be6b;
-                        }
-
-                        .review-process-right{
-                            text-align: right;
-                        }
-
-
-                        .review-details-text{
-                            margin-bottom: 12px;
-                            > h4{
-                                color: #999;
-                            }
-                            > p{
-                                font-size: 14px;
-                                margin-top: 2px;
-                                font-weight: 500;
-                            }
-                        }
-                        .review-details-text:nth-last-child(1){
-                            margin-bottom: 0;
-                        }
-                        .review-details-process{
-                            display: flex;
-                            flex-direction: column;
-                            margin-top: 16px;
-                            position: relative;
-                            .review-details-line{
-                                position: absolute;
-                                left: 23px;
-                                top: 5px;
-                                bottom: 5px;
-                                width: 3px;
-                                background: #19be6b;
-                                z-index: 1;
-                            }
-                            .review-process{
-                                display: flex;
-                                justify-content: space-between;
-                                position: relative;
-                                z-index: 2;
-                                margin-bottom: 32px;
-                                .review-process-left{
-                                    display: flex;
-                                    align-items: center;
-                                    .review-process-text{
-                                        display: flex;
-                                        flex-direction: column;
-                                        margin-left: 8px;
-                                    }
-                                }
-                            }
-                            .review-process:nth-last-child(1){
-                                margin-bottom: 0;
-                            }
-                        }
-                        .review-copy{
-                            margin-top: 8px;
-                            display: flex;
-                            .review-copy-member{
-                                display: flex;
-                                align-items: center;
-                                background: #F4F4F5;
-                                padding:2px 8px;
-                                border-radius: 20px;
-                                .ivu-avatar{
-                                    margin-right: 4px;
-                                }
-                            }
-                        }
-                    }
-                    .review-details-box::-webkit-scrollbar {
-                        display: none;
-                    }
-                    .review-operation{
-                        flex: 0 0 auto;
-                        height: 60px;
-                        padding: 0 24px;
-                        border-top: 1px solid #F4F4F5;
-                        display: flex;
-                        align-items: center;
-                        gap: 10px;
-                    }
+                @media (max-width: 1010px) {
+                    display: none;
                 }
-
             }
         }
     }
+}
 
+
+.review-details{
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    border: 1px solid #eeeeee;
+    background: #fff;
+    .review-details-box{
+        flex: 1 1 auto;
+        padding: 24px;
+        overflow-y: scroll;
+        .review-details-title{
+            display: flex;
+            align-items: center;
+            .ivu-tag{
+                margin-left: 8px;
+            }
+        }
+        .review-details-subtitle{
+            margin-top: 8px;
+            display: flex;
+            .ivu-avatar{
+                margin-right: 8px;
+            }
+            > span{
+                font-size: 14px;
+            }
+        }
+
+        .timeline-title{
+            font-weight: bold;
+            padding-bottom: 10px;
+        }
+
+        // .review-process-name{
+        //     margin-bottom: 4px;
+        // }
+        
+        .review-process-state{
+            font-size: 12px;
+            color: #19be6b;
+        }
+
+        .review-process-right{
+            text-align: right;
+        }
+
+
+        .review-details-text{
+            margin-bottom: 12px;
+            > h4{
+                color: #999;
+            }
+            > p{
+                font-size: 14px;
+                margin-top: 2px;
+                font-weight: 500;
+            }
+        }
+        .review-details-text:nth-last-child(1){
+            margin-bottom: 0;
+        }
+        .review-details-process{
+            display: flex;
+            flex-direction: column;
+            margin-top: 16px;
+            position: relative;
+            .review-details-line{
+                position: absolute;
+                left: 23px;
+                top: 5px;
+                bottom: 5px;
+                width: 3px;
+                background: #19be6b;
+                z-index: 1;
+            }
+            .review-process{
+                display: flex;
+                justify-content: space-between;
+                position: relative;
+                z-index: 2;
+                margin-bottom: 32px;
+                .review-process-left{
+                    display: flex;
+                    align-items: center;
+                    .review-process-text{
+                        display: flex;
+                        flex-direction: column;
+                        margin-left: 8px;
+                    }
+                }
+            }
+            .review-process:nth-last-child(1){
+                margin-bottom: 0;
+            }
+        }
+        .review-copy{
+            margin-top: 8px;
+            display: flex;
+            .review-copy-member{
+                display: flex;
+                align-items: center;
+                background: #F4F4F5;
+                padding:2px 8px;
+                border-radius: 20px;
+                .ivu-avatar{
+                    margin-right: 4px;
+                }
+            }
+        }
+    }
+    .review-details-box::-webkit-scrollbar {
+        display: none;
+    }
+    .review-operation{
+        flex: 0 0 auto;
+        height: 55px;
+        padding: 0 24px;
+        border-top: 1px solid #F4F4F5;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
 }

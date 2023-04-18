@@ -35,6 +35,11 @@ export default [
                 component: () => import('./pages/manage/review/index.vue'),
             },
             {
+                name: 'manage-review-details',
+                path: 'review/details',
+                component: () => import('./pages/manage/review/details.vue'),
+            },
+            {
                 name: 'manage-setting',
                 path: 'setting',
                 component: () => import('./pages/manage/setting/index.vue'),

@@ -63,7 +63,7 @@ class WorkflowController extends AbstractController
      */
     public function procdef__all()
     {
-        User::auth('admin');
+        User::auth();
         $data['name'] = Request::input('name');
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/procdef/findAll', json_encode($data));
         $procdef = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);

@@ -2,35 +2,35 @@
     <div class="review-details">
         <div class="review-details-box">
             <h2 class="review-details-title">
-                <span>{{data.proc_def_name}}</span>
+                <span>{{datas.proc_def_name}}</span>
                 <Tag v-if="datas.state == 0" color="cyan">{{$L('待审批')}}</Tag>
                 <Tag v-if="datas.state == 1" color="cyan">{{$L('审批中')}}</Tag>
                 <Tag v-if="datas.state == 2" color="green">{{$L('已通过')}}</Tag>
                 <Tag v-if="datas.state == 3" color="red">{{$L('已拒绝')}}</Tag>
                 <Tag v-if="datas.state == 4" color="red">{{$L('已撤回')}}</Tag>
             </h2>
-            <h3 class="review-details-subtitle"><Avatar :src="data.userimg" size="24"/><span>请假名字</span></h3>
-            <h3 class="review-details-subtitle"><span>{{$L('提交于')}} {{data.start_time}}</span></h3>
+            <h3 class="review-details-subtitle"><Avatar :src="datas.userimg" size="24"/><span>{{datas.start_user_name}}</span></h3>
+            <h3 class="review-details-subtitle"><span>{{$L('提交于')}} {{datas.start_time}}</span></h3>
             <Divider/>
-            <div class="review-details-text">
+            <div class="review-details-text" v-if="(datas.proc_def_name || '').indexOf('班') == -1">
                 <h4>{{$L('假期类型')}}</h4>
-                <p>{{data.var?.type}}</p>
+                <p>{{datas.var?.type}}</p>
             </div>
             <div class="review-details-text">
                 <h4>{{$L('开始时间')}}</h4>
-                <p>{{data.var?.start_time}}</p>
+                <p>{{datas.var?.start_time}}</p>
             </div>
             <div class="review-details-text">
                 <h4>{{$L('结束时间')}}</h4>
-                <p>{{data.var?.end_time}}</p>
+                <p>{{datas.var?.end_time}}</p>
             </div>
             <div class="review-details-text">
-                <h4>{{ $L('时长') }}（小时）</h4>
-                <p>{{ $L('1天') }}</p>
+                <h4>{{ $L('时长') }}（{{getTimeDifference(datas.var?.start_time,datas.var?.end_time)['unit']}}）</h4>
+                <p>{{ getTimeDifference(datas.var?.start_time,datas.var?.end_time)['time'] }}</p>
             </div>
             <div class="review-details-text">
                 <h4>{{$L('请假事由')}}</h4>
-                <p>{{data.var?.description}}</p>
+                <p>{{datas.var?.description}}</p>
             </div>
             <Divider/>
             <h3 class="review-details-subtitle">{{$L('审批记录')}}</h3>
@@ -39,7 +39,7 @@
                 <TimelineItem v-for="(item,key) in datas.node_infos" :key="key" v-if="item.type == 'starter'" color="green">
                     <p class="timeline-title">{{$L('提交')}}</p>
                     <div style="display: flex;">
-                        <Avatar :src="data.userimg" size="38"/>
+                        <Avatar :src="data.userimg || datas.userimg" size="38"/>
                         <div style="margin-left: 10px;flex: 1;">
                             <p class="review-process-name">{{item.approver}}</p>
                             <p class="review-process-state">{{$L('已提交')}}</p>
@@ -56,7 +56,7 @@
                 >
                     <p class="timeline-title">{{$L('审批')}}</p>
                     <div style="display: flex;">
-                        <Avatar :src="item.node_user_list[0]?.userimg" size="38"/>
+                        <Avatar :src="item.node_user_list && item.node_user_list[0]?.userimg" size="38"/>
                         <div style="margin-left: 10px;flex: 1;">
                             <p class="review-process-name">{{item.approver}}</p>
                             <p class="review-process-state" style="color: #6d6d6d;" v-if="!item.identitylink">待审批</p>
@@ -108,6 +108,7 @@
             </Timeline>
         </div>
         <div class="review-operation" v-if="datas.state<=1">
+            <div style="flex: 1;"></div>
             <Button type="success" v-if="(datas.candidate || '').split(',').indexOf(userId + '') != -1" @click="approve(1)">{{$L('同意')}}</Button>
             <Button type="error" v-if="(datas.candidate || '').split(',').indexOf(userId + '') != -1" @click="approve(2)">{{$L('拒绝')}}</Button>
             <Button type="warning" v-if="userId == datas.start_user_id" @click="revocation">{{$L('撤销')}}</Button>
@@ -144,6 +145,12 @@ export default {
             deep: true
         },
     },
+    mounted() {
+        if(this.$route.query.id){
+            this.data.id = this.$route.query.id;
+            this.getInfo()
+        }
+    },
     methods:{
         // 把时间转成几小时前
         getTimeAgo(time,type) {
@@ -154,13 +161,34 @@ export default {
             } else if (timeDiff < 3600) {
                 const minutes = Math.floor(timeDiff / 60);
                 return type == 2 ? `${minutes}${this.$L('分钟')}` : `${minutes} ${this.$L('分钟前')}`;
-            } else {
+            } else if(timeDiff < 3600 * 24)  {
                 const hours = Math.floor(timeDiff / 3600);
                 return type == 2 ? `${hours}${this.$L('小时')}` : `${hours} ${this.$L('小时前')}`;
+            } else {
+                const days = Math.floor(timeDiff / 3600 / 24);
+                return type == 2 ? `${days}${this.$L('天')}` : `${days} ${this.$L('天')}`;
+            }
+        },
+        // 获取时间差
+        getTimeDifference(startTime,endTime) {
+            const currentTime = new Date(endTime);
+            const timeDiff = (currentTime - new Date(startTime)) / 1000; // convert to seconds
+            if (timeDiff < 60) {
+                return {time:timeDiff,unit:this.$L('秒')};
+            } else if (timeDiff < 3600) {
+                const minutes = Math.floor(timeDiff / 60);
+                return {time:minutes,unit:this.$L('分钟')};
+            } else if(timeDiff < 3600 * 24) {
+                const hours = Math.floor(timeDiff / 3600);
+                return {time:hours,unit:this.$L('小时')};
+            } else {
+                const days = Math.floor(timeDiff / 3600 / 24);
+                return {time:days,unit:this.$L('天')};
             }
         },
         // 获取详情
         getInfo(){
+            this.datas = this.data
             this.$store.dispatch("call", {
                 method: 'get',
                 url: 'workflow/process/detail',
@@ -197,7 +225,7 @@ export default {
                     this.$store.dispatch("call", {
                         url: 'workflow/task/complete',
                         data: {
-                            task_id: this.data.task_id,
+                            task_id: this.datas.task_id,
                             pass: type == 1,
                             comment: desc,
                         }
@@ -221,8 +249,8 @@ export default {
                         this.$store.dispatch("call", {
                             url: 'workflow/task/withdraw',
                             data: {
-                                task_id: this.data.task_id,
-                                proc_inst_id: this.data.id,
+                                task_id: this.datas.task_id,
+                                proc_inst_id: this.datas.id,
                             }
                         }).then(({msg}) => {
                             resolve();
