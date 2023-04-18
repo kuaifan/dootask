@@ -25,8 +25,8 @@
                 <p>{{data.var?.end_time}}</p>
             </div>
             <div class="review-details-text">
-                <h4>{{$L('时长')}}（小时）</h4>
-                <p>{{$L('1天')}}</p>
+                <h4>{{ $L('时长') }}（小时）</h4>
+                <p>{{ $L('1天') }}</p>
             </div>
             <div class="review-details-text">
                 <h4>{{$L('请假事由')}}</h4>

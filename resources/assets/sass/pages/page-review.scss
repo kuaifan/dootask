@@ -13,7 +13,8 @@
             display: flex;
             align-items: center;
             padding-bottom: 16px;
-            margin: 32px 32px 16px;
+            margin: 32px 20px 16px;
+            margin-bottom: 5px;
             border-bottom: 1px solid #F4F4F5;
             .review-nav{
                 flex: 1;
@@ -29,13 +30,17 @@
         .review-main-search{
             display: flex;
             justify-content: space-between;
-            margin: 0 10px;
+            margin:0 5px;
             margin-bottom: 10px;
             > div{
                 .ivu-dropdown{
                     margin-right: 8px;
                 }
             }
+        }
+        .noData{
+            text-align: center;
+            line-height: 150px;
         }
         .review-mains{
             display: flex;
@@ -46,7 +51,8 @@
                 display: flex;
                 flex-direction: column;
                 flex: 0 0 auto;
-                width: 360px;
+                max-width: 360px;
+                width: 100%;
                 position: absolute;
                 left: 0;
                 top: 0;
@@ -78,7 +84,7 @@
                         }
                         > p{
                             font-size: 14px;
-                            margin-top: 8px;
+                            margin-top: 5px;
                             > span{
                                 color: #303133;
                             }
