@@ -277,7 +277,7 @@ class WorkflowController extends AbstractController
      * @apiName process__findTask
      *
      * @apiQuery {String} proc_def_name         流程名称
-     * @apiQuery {String} sort                  排序
+     * @apiQuery {String} sort                  排序[asc升序，desc降序]
      * @apiQuery {Number} page                  页码
      * @apiQuery {Number} page_size             每页条数
      *
@@ -319,7 +319,7 @@ class WorkflowController extends AbstractController
      * @apiName process__startByMyselfAll
      *
      * @apiQuery {String} proc_def_name         流程分类
-     * @apiQuery {String} state                 流程状态
+     * @apiQuery {String} state                 流程状态[0待审批，1审批中，2通过，3拒绝，4撤回]
      * @apiQuery {Number} page                  页码
      * @apiQuery {Number} page_size             每页条数
      *
@@ -400,7 +400,7 @@ class WorkflowController extends AbstractController
      *
      * @apiQuery {Number} userid               用户ID
      * @apiQuery {String} proc_def_name        流程分类
-     * @apiQuery {String} sort                 排序
+     * @apiQuery {String} sort                 排序[asc升序，desc降序]
      * @apiQuery {Number} page                  页码
      * @apiQuery {Number} page_size             每页条数
      *
@@ -478,7 +478,7 @@ class WorkflowController extends AbstractController
      * @apiName procHistory__findTask
      *
      * @apiQuery {String} proc_def_name        流程分类
-     * @apiQuery {String} sort                 排序
+     * @apiQuery {String} sort                 排序[asc升序，desc降序]
      * @apiQuery {Number} page                  页码
      * @apiQuery {Number} page_size             每页条数
      *
@@ -558,7 +558,7 @@ class WorkflowController extends AbstractController
      * @apiName procHistory__findProcNotify
      *
      * @apiQuery {String} proc_def_name         流程分类
-     * @apiQuery {String} sort                  排序
+     * @apiQuery {String} sort                  排序[asc升序，desc降序]
      * @apiQuery {Number} page                  页码
      * @apiQuery {Number} page_size             每页条数
      *
