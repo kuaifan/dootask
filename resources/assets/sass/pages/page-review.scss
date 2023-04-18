@@ -95,7 +95,7 @@
                             display: flex;
                             align-items: center;
                             justify-content: space-between;
-                            margin-top: 8px;
+                            margin-top: 10px;
                             > span {
                                 display: flex;
                                 align-items: center;
@@ -136,7 +136,6 @@
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
-    border-radius: 8px;
     border: 1px solid #eeeeee;
     background: #fff;
     .review-details-box{
@@ -193,40 +192,6 @@
         }
         .review-details-text:nth-last-child(1){
             margin-bottom: 0;
-        }
-        .review-details-process{
-            display: flex;
-            flex-direction: column;
-            margin-top: 16px;
-            position: relative;
-            .review-details-line{
-                position: absolute;
-                left: 23px;
-                top: 5px;
-                bottom: 5px;
-                width: 3px;
-                background: #19be6b;
-                z-index: 1;
-            }
-            .review-process{
-                display: flex;
-                justify-content: space-between;
-                position: relative;
-                z-index: 2;
-                margin-bottom: 32px;
-                .review-process-left{
-                    display: flex;
-                    align-items: center;
-                    .review-process-text{
-                        display: flex;
-                        flex-direction: column;
-                        margin-left: 8px;
-                    }
-                }
-            }
-            .review-process:nth-last-child(1){
-                margin-bottom: 0;
-            }
         }
         .review-copy{
             margin-top: 8px;

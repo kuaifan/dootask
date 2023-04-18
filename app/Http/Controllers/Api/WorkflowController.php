@@ -653,6 +653,7 @@ class WorkflowController extends AbstractController
     public function workflowMsg($type, $dialog, $botUser, $toUser, $process, $action = null)
     {
         $data = [
+            'id' => $process['id'],
             'nickname' => User::userid2nickname($type == 'workflow_submitter' ? $toUser['userid'] : $process['start_user_id']),
             'proc_def_name' => $process['proc_def_name'],
             'department' => $process['department'],

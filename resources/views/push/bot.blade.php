@@ -109,48 +109,50 @@
 @elseif ($type === 'notice')
     {{$notice}}
 @elseif ($type === 'workflow_reviewer')
-<b>{{$data->nickname}}提交的「{{$data->proc_def_name}}」待你审批</b>
-
-申请人：<span style="color:#84c56a">{{$data->nickname}} {{$data->department}}</span>
-
-<b>审批事由</b>
-假期类型：<span style="color:#84c56a">{{$data->type}}</span>
-开始时间：<span style="color:#84c56a">{{$data->start_time}}</span>
-结束时间：<span style="color:#84c56a">{{$data->end_time}}</span>
-
-    @if ($action === 'pass')
-        <span style="color:#84c56a">已同意</span>
-    @elseif ($action === 'refuse')
-        <span style="color:#84c56a">已拒绝</span>
-    @elseif ($action === 'withdraw')
-        <span style="color:#84c56a">已撤销</span>
-    @else
-        <span style="color:#84c56a">同意</span>
-        <span style="color:#84c56a">拒绝</span>
-    @endif
-
+    <span class="open-review-details" data-id="{{$data->id}}"><b style="border-bottom: 1px solid #e3e3e3;padding-bottom: 10px;">{{$data->nickname}}提交的「{{$data->proc_def_name}}」待你审批</b>
+    <div style="border-bottom: 1px solid #e3e3e3;padding: 10px 0;"><span style="display: inline-block;padding:15px 0;">申请人：<span style="color:#84c56a">{{'@'}}{{$data->nickname}}</span> {{$data->department}}</span>
+        <b>审批事由</b>
+        @if ($data->type)
+        <span>假期类型：{{$data->type}}</span>
+        @endif
+        <span>开始时间：{{$data->start_time}}</span>
+        <span>结束时间：{{$data->end_time}}</span>
+    </div><div style="display: flex;text-align: center;gap: 10px;padding: 10px 0 5px 0;">
+        @if ($action === 'pass')
+            <Button type="button" class="ivu-btn ivu-btn-small" style="flex: 1;">已同意</Button>
+        @elseif ($action === 'refuse')
+            <Button type="button" class="ivu-btn ivu-btn-small" style="flex: 1;">已拒绝</Button>
+        @elseif ($action === 'withdraw')
+            <Button type="button" class="ivu-btn ivu-btn-small" style="flex: 1;">已撤销</Button>
+        @else
+            <Button type="button" class="ivu-btn ivu-btn-primary ivu-btn-small" style="flex: 1;">同意</Button>
+            <Button type="button" class="ivu-btn ivu-btn-error ivu-btn-small" style="flex: 1;">拒绝</Button>
+        @endif
+    </div></span>
 @elseif ($type === 'workflow_notifier')
-<b>抄送{{$data->nickname}}提交的「{{$data->proc_def_name}}」记录</b>
-
-申请人：<span style="color:#84c56a">{{$data->nickname}} {{$data->department}}</span>
-
-<b>审批事由</b>
-假期类型：<span style="color:#84c56a">{{$data->type}}</span>
-开始时间：<span style="color:#84c56a">{{$data->start_time}}</span>
-结束时间：<span style="color:#84c56a">{{$data->end_time}}</span>
-<span style="color:#84c56a">查看详情</span>
+    <span class="open-review-details" data-id="{{$data->id}}"><b style="border-bottom: 1px solid #e3e3e3;padding-bottom: 10px;">抄送{{$data->nickname}}提交的「{{$data->proc_def_name}}」记录</b>
+    <div style="border-bottom: 1px solid #e3e3e3;padding: 10px 0;"><span style="display: inline-block;padding:15px 0;">申请人：<span style="color:#84c56a">{{'@'}}{{$data->nickname}}</span> {{$data->department}}</span>
+        <b>审批事由</b>
+        @if ($data->type)
+        <span>假期类型：{{$data->type}}</span>
+        @endif
+        <span>开始时间：{{$data->start_time}}</span>
+        <span>结束时间：{{$data->end_time}}</span>
+    </div><div style="display: flex;text-align: center;gap: 10px;padding: 10px 0 5px 0;">
+        <Button type="button" class="ivu-btn ivu-btn-primary ivu-btn-small" style="flex: 1;">查看详情</Button>
+    </div></span>
 @elseif ($type === 'workflow_submitter')
-    @if ($action === 'pass')
-        <b>您发起的「{{$data->proc_def_name}}」已通过</b>
-    @else
-        <b>您发起的「{{$data->proc_def_name}}」被{{$data->nickname}}拒绝</b>
-    @endif
-
-<b>审批事由</b>
-假期类型：<span style="color:#84c56a">{{$data->type}}</span>
-开始时间：<span style="color:#84c56a">{{$data->start_time}}</span>
-结束时间：<span style="color:#84c56a">{{$data->end_time}}</span>
-<span style="color:#84c56a">查看详情</span>
+    <span class="open-review-details" data-id="{{$data->id}}"><b style="border-bottom: 1px solid #e3e3e3;padding-bottom: 10px;"> @if ($action === 'pass')您发起的「{{$data->proc_def_name}}」已通过 @else您发起的「{{$data->proc_def_name}}」被{{$data->nickname}}拒绝 @endif</b>
+    <div style="border-bottom: 1px solid #e3e3e3;padding: 10px 0;"><span style="display: inline-block;padding:15px 0;">申请人：<span style="color:#84c56a">{{'@'}}{{$data->nickname}}</span> {{$data->department}}</span>
+        <b>审批事由</b>
+        @if ($data->type)
+        <span>假期类型：{{$data->type}}</span>
+        @endif
+        <span>开始时间：{{$data->start_time}}</span>
+        <span>结束时间：{{$data->end_time}}</span>
+    </div><div style="display: flex;text-align: center;gap: 10px;padding: 10px 0 5px 0;">
+        <Button type="button" class="ivu-btn ivu-btn-primary ivu-btn-small" style="flex: 1;">查看详情</Button>
+    </div></span>
 @else
     你好，我是你的机器人助理，你可以发送 <span style="color:#84c56a">/help</span> 查看帮助菜单。
 @endif

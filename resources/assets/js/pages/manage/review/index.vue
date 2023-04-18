@@ -177,7 +177,6 @@ export default {
             searchState:"all",
             searchStateList:[
                 {value:"all",label:"全部状态"},
-                {value:0,label:"待审批"},
                 {value:1,label:"审批中"},
                 {value:2,label:"已通过"},
                 {value:3,label:"已拒绝"},
@@ -206,7 +205,7 @@ export default {
                 endTime:{ type: 'string',required: true, message: this.$L('请选择结束时间！'), trigger: 'change' },
                 description:{ type: 'string',required: true, message: this.$L('请选择结束时间！'), trigger: 'change' },
             },
-            selectTypes:["年假","事假","病假","调休","产假","陪产假","婚假","例假","丧假","哺乳假"]
+            selectTypes:["年假","事假","病假","调休","产假","陪产假","婚假","丧假","哺乳假"]
         }
     },
     mounted() {
@@ -423,5 +422,7 @@ export default {
 </script>
 
 <style scoped>
-
+    .review-details{
+        border-radius: 8px;
+    }
 </style>

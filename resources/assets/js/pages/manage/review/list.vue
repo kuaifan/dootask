@@ -8,12 +8,12 @@
             <Tag v-if="data.state == 3" color="red">{{$L('已拒绝')}}</Tag>
             <Tag v-if="data.state == 4" color="red">{{$L('已撤回')}}</Tag>
         </h2>
-        <p>{{$L('假期类型')}}：<span>{{data.var?.type}}</span></p>
+        <p v-if="data.var?.type">{{$L('假期类型')}}：<span>{{data.var?.type}}</span></p>
         <p>{{$L('开始时间')}}：<span>{{data.var?.start_time}}</span></p>
         <p>{{$L('结束时间')}}：<span>{{data.var?.end_time}}</span></p>
         <div class="list-member">
             <span>
-                <Avatar :src="data.userimg" size="18"/>
+                <Avatar :src="data.userimg" size="20"/>
                 {{ data.start_user_name }}
             </span>
             <span>

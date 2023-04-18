@@ -1,5 +1,5 @@
 <template>
-    <div class="review-details">
+    <div class="review-details" :style="{'z-index':modalTransferIndex}">
         <div class="review-details-box">
             <h2 class="review-details-title">
                 <span>{{datas.proc_def_name}}</span>
@@ -26,7 +26,7 @@
             </div>
             <div class="review-details-text">
                 <h4>{{ $L('时长') }}（{{getTimeDifference(datas.var?.start_time,datas.var?.end_time)['unit']}}）</h4>
-                <p>{{ getTimeDifference(datas.var?.start_time,datas.var?.end_time)['time'] }}</p>
+                <p>{{ datas.var?.start_time ? getTimeDifference(datas.var?.start_time,datas.var?.end_time)['time'] : 0 }}</p>
             </div>
             <div class="review-details-text">
                 <h4>{{$L('请假事由')}}</h4>
@@ -130,14 +130,21 @@ export default {
 
     data() {
         return {
+            modalTransferIndex:window.modalTransferIndex,
             datas:{
 
             }
         }
     },
     watch: {
+        '$route' (to, from) {
+            if(to.name == 'manage-review-details'){
+                this.init()
+            }
+        },
         data: {
             handler(newValue,oldValue) {
+                console.log(newValue)
                 if(newValue.id){
                     this.getInfo()
                 }
@@ -146,12 +153,16 @@ export default {
         },
     },
     mounted() {
-        if(this.$route.query.id){
-            this.data.id = this.$route.query.id;
-            this.getInfo()
-        }
+        this.init()
     },
     methods:{
+        init(){
+            this.modalTransferIndex = window.modalTransferIndex = window.modalTransferIndex + 1
+            if(this.$route.query.id){
+                this.data.id = this.$route.query.id;
+                this.getInfo()
+            }
+        },
         // 把时间转成几小时前
         getTimeAgo(time,type) {
             const currentTime = new Date();
