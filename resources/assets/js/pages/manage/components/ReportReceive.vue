@@ -99,7 +99,7 @@ export default {
                 title: this.$L("标题"),
                 key: 'title',
                 sortable: true,
-                minWidth: 120,
+                minWidth: 180,
                 render: (h, {row}) => {
                     let arr = []
                     const myUser = row.receives_user.find(({userid}) => userid == this.userId)

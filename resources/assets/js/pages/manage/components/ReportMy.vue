@@ -79,7 +79,7 @@ export default {
             columns: [{
                 title: this.$L("名称"),
                 key: 'title',
-                minWidth: 120,
+                minWidth: 180,
                 render: (h, {row}) => {
                     return h('AutoTip', row.title);
                 }
