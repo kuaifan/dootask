@@ -60,7 +60,7 @@
                     <Button type="primary" icon="md-add" @click="onShowDepartment(null)">{{$L('新建部门')}}</Button>
                 </div>
             </div>
-            <div class="management-user">
+            <div class="management-user" :style="userStyle">
                 <div class="search-container lr">
                     <ul>
                         <li>
@@ -313,6 +313,7 @@ export default {
         return {
             loadIng: 0,
             minBox: false,
+            minWidth: 0,
 
             keys: {},
             keyIs: false,
@@ -773,12 +774,29 @@ export default {
                 this.minBox = v
             },
             immediate: true
+        },
+        minBox: {
+            handler() {
+                this.$nextTick(_=> {
+                    if (this.$el && this.$el.clientWidth > 0) {
+                        this.minWidth = this.$el.clientWidth
+                    }
+                });
+            },
+            immediate: true
         }
     },
     computed: {
         departmentParentDisabled() {
             return !!(this.departmentData.id > 0 && this.departmentList.find(({parent_id}) => parent_id == this.departmentData.id));
         },
+        userStyle({minWidth}) {
+            const style = {}
+            if (minWidth > 0) {
+                style.minWidth = (minWidth - 40) + 'px'
+            }
+            return style
+        }
     },
     methods: {
         onSearch() {
@@ -1064,6 +1082,10 @@ export default {
         },
 
         onSelectDepartment(id) {
+            if (this.windowSmall) {
+                this.minBox = true
+            }
+            //
             if (this.departmentSelect === id) {
                 this.departmentSelect = -1
                 return

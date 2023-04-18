@@ -83,7 +83,7 @@ export default {
                     {icon: '&#xe794;', name: 'joinMeeting', label: '加入会议'},
                 ],
                 [
-                    {icon: '&#xe7c0;', name: 'workReport', label: '工作报告'},
+                    {icon: '&#xe7da;', name: 'workReport', label: '工作报告'},
                 ]
             ],
 
