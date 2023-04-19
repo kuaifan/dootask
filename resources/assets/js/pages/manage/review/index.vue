@@ -7,10 +7,10 @@
                 <div class="review-nav">
                     <h1>{{$L('审批中心')}}</h1>
                 </div>
-                <Button v-for="item in procdefList" :loading="loadIng > 0" type="primary" @click="initiate(item)" style="margin-right:10px;">{{item.name}}</Button>
+                <Button v-for="(item,key) in procdefList" :loading="loadIng > 0" :key="key" type="primary" @click="initiate(item)" style="margin-right:10px;">{{item.name}}</Button>
             </div>
 
-            <Tabs :value="tabsValue" @on-click="tabsClick" style="margin: 0 20px;height: 100%;">
+            <Tabs :value="tabsValue" @on-click="tabsClick" style="margin: 0 20px;height: 100%;"  size="small">
                 <TabPane :label="$L('待办') + (backlogTotal > 0 ? ('('+backlogTotal+')') : '')" name="backlog" style="height: 100%;">
                     <div class="review-main-search">
                         <div style="display: flex;gap: 10px;">
@@ -29,7 +29,7 @@
                             </div>
                         </div>
                         <div class="review-main-right">
-                            <listDetails v-if="!detailsShow" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
+                            <listDetails v-if="!detailsShow && tabsValue=='backlog'" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
                         </div>
                     </div>
                 </TabPane>
@@ -51,7 +51,7 @@
                             </div>
                         </div>
                         <div class="review-main-right">
-                            <listDetails v-if="!detailsShow" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
+                            <listDetails v-if="!detailsShow && tabsValue=='done'" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
                         </div>
                     </div>
                 </TabPane>
@@ -75,7 +75,7 @@
                             </div>
                         </div>
                         <div class="review-main-right">
-                            <listDetails v-if="!detailsShow" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
+                            <listDetails v-if="!detailsShow && tabsValue=='notify'" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
                         </div>
                     </div>
                 </TabPane>
@@ -100,7 +100,7 @@
                             </div>
                         </div>
                         <div class="review-main-right">
-                            <listDetails v-if="!detailsShow" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
+                            <listDetails v-if="!detailsShow && tabsValue=='initiated'" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
                         </div>
                     </div>
                 </TabPane>
@@ -116,8 +116,13 @@
         <!--发起-->
         <Modal v-model="addShow"  :title="$L(addTitle)" :mask-closable="false">
             <Form ref="initiateRef" :model="addData" :rules="addRule" label-width="auto" @submit.native.prevent>
+                <FormItem v-if="departmentList.length>1" prop="department_id" :label="$L('选择部门')">
+                    <Select v-model="addData.department_id" :placeholder="$L('请选择部门')">
+                        <Option v-for="(item, index) in departmentList" :value="item.id" :key="index">{{ item.name }}</Option>
+                    </Select>
+                </FormItem>
                 <FormItem v-if="(addTitle || '').indexOf('班') == -1" prop="type" :label="$L('假期类型')">
-                    <Select v-model="addData.type" :placeholder="$L('请选择')">
+                    <Select v-model="addData.type" :placeholder="$L('请选择假期类型')">
                         <Option v-for="(item, index) in selectTypes" :value="item" :key="index">{{ item }}</Option>
                     </Select>
                 </FormItem>
@@ -146,6 +151,7 @@
                 <Button type="primary" :loading="loadIng > 0" @click="onInitiate">{{$L('确认')}}</Button>
             </div>
         </Modal>
+        
     </div>
 </template>
 
@@ -153,6 +159,7 @@
 import list from "./list.vue";
 import listDetails from "./details.vue";
 import DrawerOverlay from "../../../components/DrawerOverlay";
+import { mapState } from 'vuex'
 export default {
     components:{list,listDetails,DrawerOverlay},
     name: "review",
@@ -195,45 +202,78 @@ export default {
             addTitle:'',
             addShow:false,
             addData: {
+                department_id:0,
                 type: '',
                 startTime:"",
                 endTime:"",
             },
             addRule: {
+                department_id:{ type: 'number',required: true, message: this.$L('请选择部门！'), trigger: 'change' },
                 type: { type: 'string',required: true, message: this.$L('请选择假期类型！'), trigger: 'change' },
                 startTime: { type: 'string',required: true, message: this.$L('请选择开始时间！'), trigger: 'change' },
                 endTime:{ type: 'string',required: true, message: this.$L('请选择结束时间！'), trigger: 'change' },
                 description:{ type: 'string',required: true, message: this.$L('请选择结束时间！'), trigger: 'change' },
             },
-            selectTypes:["年假","事假","病假","调休","产假","陪产假","婚假","丧假","哺乳假"]
+            selectTypes:["年假","事假","病假","调休","产假","陪产假","婚假","丧假","哺乳假"],
         }
     },
+    computed: {
+        ...mapState([ 'wsMsg','userInfo','userIsAdmin' ]),
+        departmentList(){
+            let departmentNames = (this.userInfo.department_name || '').split(',');
+            return (this.userInfo.department || []).map((h,index)=>{
+                return {
+                    id:h,
+                    name:departmentNames[index]
+                };
+            })
+        }
+    },
+    watch: {
+        wsMsg: {
+            handler(info) {
+                const {type, action} = info;
+                switch (type) {
+                    case 'workflow':
+                        if (action == 'backlog') {
+                            this.tabsClick()
+                        }
+                        break;
+                }
+            },
+            deep: true,
+        },
+    },
     mounted() {
-        this.tabsValue = "initiated"
+        this.tabsValue = "backlog"
         this.tabsClick()
         this.getProcdef()
         this.getBacklogList()
+        this.addData.department_id = this.userInfo.department[0] || 0;
     },
     methods:{
 
         // tab切换事件
         tabsClick(val){
-            this.tabsValue = val || this.tabsValue
-            if(val!=""){
-                this.approvalType = this.searchState = "all"
-            }
-            if(this.tabsValue == 'backlog'){
-                this.getBacklogList();
-            }
-            if(this.tabsValue == 'done'){
-                this.getDoneList();
-            }
-            if(this.tabsValue == 'notify'){
-                this.getNotifyList();
-            }
-            if(this.tabsValue == 'initiated'){
-                this.getInitiatedList();
-            }
+            this.__tabsClick && clearTimeout(this.__tabsClick)
+            this.__tabsClick = setTimeout(() => { 
+                this.tabsValue = val || this.tabsValue
+                if(val!=""){
+                    this.approvalType = this.searchState = "all"
+                }
+                if(this.tabsValue == 'backlog'){
+                    this.getBacklogList();
+                }
+                if(this.tabsValue == 'done'){
+                    this.getDoneList();
+                }
+                if(this.tabsValue == 'notify'){
+                    this.getNotifyList();
+                }
+                if(this.tabsValue == 'initiated'){
+                    this.getInitiatedList();
+                }
+            }, 200)
         },
 
         // 列表点击事件
@@ -244,7 +284,7 @@ export default {
             this.initiatedList.map(h=>{ h._active = false; })
             item._active = true;
             // 
-            if( window.innerWidth < 425 ){
+            if( window.innerWidth < 426 ){
                 this.goForward({name: 'manage-review-details', query: { id: item.id } });
                 return;
             }
@@ -398,7 +438,7 @@ export default {
                         url: 'workflow/process/start',
                         data: {
                             proc_name:this.addTitle,
-                            department_id:1,
+                            department_id:this.addData.department_id,
                             var: JSON.stringify(this.addData)
                         },
                         method: 'post',
@@ -421,8 +461,21 @@ export default {
 }
 </script>
 
-<style scoped>
-    .review-details{
+<style lang="scss">
+    .page-review .review-details{
         border-radius: 8px;
+    }
+    
+    .page-review .ivu-tabs-nav {
+        display: flex;
+        width: 350px;
+        @media (max-width: 1010px) {
+            width: 100%;
+        }
+        .ivu-tabs-tab{
+            font-size: 15px;
+            flex:1;
+            text-align: center;
+        }
     }
 </style>

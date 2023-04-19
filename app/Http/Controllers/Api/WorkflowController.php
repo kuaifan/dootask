@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Api;
 
-use Cache;
 use Request;
-use Carbon\Carbon;
 use App\Models\User;
 use App\Module\Base;
 use App\Module\Ihttp;
+use App\Tasks\PushTask;
 use App\Models\WebSocketDialog;
 use App\Models\WorkflowProcMsg;
 use App\Exceptions\ApiException;
 use App\Models\WebSocketDialogMsg;
+use Hhxsv5\LaravelS\Swoole\Task\Task;
 
 /**
  * @apiDefine workflow
@@ -45,6 +45,28 @@ class WorkflowController extends AbstractController
         } catch (\Throwable $th) {
             return response('身份无效', 400)->header('Content-Type', 'text/plain');
         }
+    }
+
+    /**
+     * @api {get} api/workflow/user/department          02. 获取当前用户部门
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup workflow
+     * @apiName user__department
+     *
+     * @apiQuery {Number} id               流程ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function user__department()
+    {
+        // User::auth();
+        // $data['id'] = intval(Request::input('id'));
+        // $workflow = $this->getProcessById($data['id']);
+        // return Base::retSuccess('success', $workflow);
     }
 
     /**
@@ -211,7 +233,22 @@ class WorkflowController extends AbstractController
         if($process['is_finished'] == true) {
             $dialog = WebSocketDialog::checkUserDialog($botUser, $process['start_user_id']);
             $this->workflowMsg('workflow_submitter', $dialog, $botUser, ['userid' => $data['userid']], $process, $pass);
+        }else if ($process['candidate']) {
+            // 下个审批人
+            $userid = explode(',', $process['candidate']);
+            $toUser = User::whereIn('userid', $userid)->get()->toArray();
+            foreach ($toUser as $val) {
+                if ($val['bot']) {
+                    continue;
+                }
+                $dialog = WebSocketDialog::checkUserDialog($botUser, $val['userid']);
+                if (empty($dialog)) {
+                    continue;
+                }
+                $this->workflowMsg('workflow_reviewer', $dialog, $botUser, $val, $process,'start');
+            }
         }
+        
         // 抄送人
         $notifier = $this->handleProcessNode($process, $task['step']);
         if ($notifier && $pass == 'pass') {
@@ -686,6 +723,20 @@ class WorkflowController extends AbstractController
             $proc_msg->userid = $toUser['userid'];
             $proc_msg->save();
         }
+
+        // 更新工作报告 未读数量
+        if($type == 'workflow_reviewer' && $toUser['userid']){
+            $params = [
+                'userid' => [ $toUser['userid'], User::auth()->userid() ],
+                'msg' => [
+                    'type' => 'workflow',
+                    'action' => 'backlog',
+                    'userid' => $toUser['userid'],
+                ]
+            ];
+            Task::deliver(new PushTask($params, false));
+        }
+
         return true;
     }
 
@@ -710,6 +761,9 @@ class WorkflowController extends AbstractController
                     }
                     $val['node_user_list'][$k]['userimg'] = User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname);
                 }
+            }else if($val['aprover_id']){
+                $info = User::whereUserid($val['aprover_id'])->first();
+                $val['userimg'] = $info ? User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname) : '';
             }
         }
         $info = User::whereUserid($res['start_user_id'])->first();

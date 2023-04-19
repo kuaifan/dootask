@@ -11,7 +11,7 @@
                         <UserAvatar :userid="userId" :size="36" tooltipDisabled/>
                     </div>
                     <span>{{userInfo.nickname}}</span>
-                    <Badge v-if="reportUnreadNumber > 0" class="manage-box-top-report" :overflow-count="999" :count="reportUnreadNumber"/>
+                    <Badge v-if="(reportUnreadNumber + backlogUnreadNumber) > 0" class="manage-box-top-report" :overflow-count="999" :count="reportUnreadNumber + backlogUnreadNumber"/>
                     <Badge v-else-if="!!clientNewVersion" class="manage-box-top-report" dot/>
                     <div class="manage-box-arrow">
                         <Icon type="ios-arrow-up" />
@@ -90,6 +90,10 @@
                                     v-else-if="item.path === 'workReport' && reportUnreadNumber > 0"
                                     class="manage-menu-report-badge"
                                     :count="reportUnreadNumber"/>
+                                <Badge
+                                    v-else-if="item.path === 'review' && backlogUnreadNumber > 0"
+                                    class="manage-menu-report-badge"
+                                    :count="backlogUnreadNumber"/>
                             </div>
                         </DropdownItem>
                     </template>
@@ -396,6 +400,7 @@ export default {
         this.$store.dispatch("getUserInfo").catch(_ => {})
         this.$store.dispatch("getTaskPriority").catch(_ => {})
         this.$store.dispatch("getReportUnread", 0)
+        this.$store.dispatch("getBacklogUnread", 0)
         //
         this.$store.dispatch("needHome").then(_ => {
             this.needStartHome = true
@@ -441,6 +446,7 @@ export default {
             'dialogIns',
 
             'reportUnreadNumber',
+            'backlogUnreadNumber',
         ]),
 
         ...mapGetters(['dashboardTask']),
@@ -684,6 +690,11 @@ export default {
                     case 'report':
                         if (action == 'unreadUpdate') {
                             this.$store.dispatch("getReportUnread", 1000)
+                        }
+                        break;
+                    case 'workflow':
+                        if (action == 'backlog') {
+                            this.$store.dispatch("getBacklogUnread", 1000)
                         }
                         break;
                 }

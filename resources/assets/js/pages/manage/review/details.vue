@@ -45,7 +45,7 @@
                             <p class="review-process-state">{{$L('已提交')}}</p>
                         </div>
                         <div class="review-process-right">
-                            <p>{{ getTimeAgo(item.claim_time) }}</p>
+                            <p v-if="parseInt(getTimeAgo(item.claim_time)) < showTimeNum">{{ getTimeAgo(item.claim_time) }}</p>
                             <p>{{item.claim_time?.substr(0,16)}}</p>
                         </div>
                     </div>
@@ -56,7 +56,7 @@
                 >
                     <p class="timeline-title">{{$L('审批')}}</p>
                     <div style="display: flex;">
-                        <Avatar :src="item.node_user_list && item.node_user_list[0]?.userimg" size="38"/>
+                        <Avatar :src="(item.node_user_list && item.node_user_list[0]?.userimg) || item.userimg" size="38"/>
                         <div style="margin-left: 10px;flex: 1;">
                             <p class="review-process-name">{{item.approver}}</p>
                             <p class="review-process-state" style="color: #6d6d6d;" v-if="!item.identitylink">待审批</p>
@@ -68,7 +68,7 @@
                             </p>
                         </div>
                         <div class="review-process-right">
-                            <p>
+                            <p v-if="parseInt(getTimeAgo(item.claim_time)) < showTimeNum">
                                 {{ item.identitylink?.state==0 ? 
                                     ($L('已等待') + " " + getTimeAgo( datas.node_infos[key-1].claim_time,2)) : 
                                     (item.claim_time ? getTimeAgo(item.claim_time) : '') 
@@ -77,6 +77,7 @@
                             <p>{{item.claim_time?.substr(0,16)}}</p>
                         </div>
                     </div>
+                    <p class="comment" v-if="item.identitylink?.state==2">“{{ datas.latest_comment  }}”</p>
                 </TimelineItem>
                 <!-- 抄送 -->
                 <TimelineItem v-for="(item,key) in datas.node_infos" :key="key" :color="item.is_finished ? 'green' : '#ccc'" v-if="item.type == 'notifier' && item._show">
@@ -111,7 +112,7 @@
             <div style="flex: 1;"></div>
             <Button type="success" v-if="(datas.candidate || '').split(',').indexOf(userId + '') != -1" @click="approve(1)">{{$L('同意')}}</Button>
             <Button type="error" v-if="(datas.candidate || '').split(',').indexOf(userId + '') != -1" @click="approve(2)">{{$L('拒绝')}}</Button>
-            <Button type="warning" v-if="userId == datas.start_user_id" @click="revocation">{{$L('撤销')}}</Button>
+            <Button type="warning" v-if="isShowWarningBtn" @click="revocation">{{$L('撤销')}}</Button>
         </div>
     </div>
 </template>
@@ -131,9 +132,8 @@ export default {
     data() {
         return {
             modalTransferIndex:window.modalTransferIndex,
-            datas:{
-
-            }
+            datas:{},
+            showTimeNum:24
         }
     },
     watch: {
@@ -144,12 +144,22 @@ export default {
         },
         data: {
             handler(newValue,oldValue) {
-                console.log(newValue)
                 if(newValue.id){
                     this.getInfo()
                 }
             },
             deep: true
+        },
+    },
+    computed: {
+        isShowWarningBtn(){
+            let is = this.userId == this.datas.start_user_id;
+            (this.datas.node_infos || []).map(h=>{
+                if(h.type != 'starter' && h.is_finished == true) {
+                    is = false;
+                }
+            })
+            return is;
         },
     },
     mounted() {
@@ -230,7 +240,7 @@ export default {
                 type:"textarea",
                 okText: type == 1 ? "同意" : "拒绝",
                 onOk: (desc) => {
-                    if (!desc) {
+                    if (type !=1 && !desc) {
                         return `请输入审批意见`
                     }
                     this.$store.dispatch("call", {
@@ -269,7 +279,7 @@ export default {
                             this.$emit('revocation')
                         }).catch(({msg}) => {
                             $A.modalError(msg);
-                            reject(msg);
+                            resolve();
                         });
                         return false
                     })

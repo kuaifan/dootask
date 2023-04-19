@@ -2374,7 +2374,7 @@ export default {
             let domAudits = $(target).parents(".open-review-details")
             if( domAudits.length > 0 ){
                 let dataId = domAudits[0].getAttribute("data-id")
-                if( window.innerWidth < 425 ){
+                if( window.innerWidth < 426 ){
                     this.goForward({name: 'manage-review-details', query: { id: domAudits[0].getAttribute("data-id") } });
                 }else{
                     this.approveDetailsShow = true;

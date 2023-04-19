@@ -179,4 +179,7 @@ export default {
     apiKeyData: {},
     localKeyPair: {},
     localKeyLock: false,
+
+    // 审批待办未读数量
+    backlogUnreadNumber: 0,
 };
