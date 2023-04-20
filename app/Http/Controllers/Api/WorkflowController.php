@@ -3,16 +3,22 @@
 namespace App\Http\Controllers\Api;
 
 use Request;
+use Session;
+use Response;
+use Madzipper;
+use Carbon\Carbon;
 use App\Models\User;
 use App\Module\Base;
 use App\Module\Ihttp;
 use App\Tasks\PushTask;
+use App\Module\BillExport;
 use App\Models\WebSocketDialog;
 use App\Models\WorkflowProcMsg;
 use App\Exceptions\ApiException;
+use App\Models\UserDepartment;
 use App\Models\WebSocketDialogMsg;
+use App\Module\BillMultipleExport;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
-
 /**
  * @apiDefine workflow
  *
@@ -74,7 +80,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {get} api/workflow/procdef/del          03. 删除流程定义
+     * @api {get} api/workflow/procdef/del          04. 删除流程定义
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -100,7 +106,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/process/start          04. 启动流程（审批中）
+     * @api {post} api/workflow/process/start          05. 启动流程（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -163,7 +169,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/task/complete          05. 审批
+     * @api {post} api/workflow/task/complete          06. 审批
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -226,7 +232,7 @@ class WorkflowController extends AbstractController
                 $this->workflowMsg('workflow_reviewer', $dialog, $botUser, $val, $process,'start');
             }
         }
-        
+
         // 抄送人
         $notifier = $this->handleProcessNode($process, $task['step']);
         if ($notifier && $pass == 'pass') {
@@ -239,7 +245,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/task/withdraw          06. 撤回
+     * @api {post} api/workflow/task/withdraw          07. 撤回
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -284,7 +290,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/process/findTask          07. 查询需要我审批的流程（审批中）
+     * @api {post} api/workflow/process/findTask          08. 查询需要我审批的流程（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -326,7 +332,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/process/startByMyselfAll          08. 查询我启动的流程（全部）
+     * @api {post} api/workflow/process/startByMyselfAll          09. 查询我启动的流程（全部）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -334,7 +340,7 @@ class WorkflowController extends AbstractController
      * @apiName process__startByMyselfAll
      *
      * @apiQuery {String} proc_def_name         流程分类
-     * @apiQuery {String} state                 流程状态[0待审批，1审批中，2通过，3拒绝，4撤回]
+     * @apiQuery {String} state                 流程状态[0全部，1审批中，2通过，3拒绝，4撤回]
      * @apiQuery {Number} page                  页码
      * @apiQuery {Number} page_size             每页条数
      *
@@ -368,7 +374,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/process/startByMyself          09. 查询我启动的流程（审批中）
+     * @api {post} api/workflow/process/startByMyself          10. 查询我启动的流程（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -406,7 +412,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/process/findProcNotify          10. 查询抄送我的流程（审批中）
+     * @api {post} api/workflow/process/findProcNotify          11. 查询抄送我的流程（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -450,7 +456,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {get} api/workflow/identitylink/findParticipant          11. 查询流程实例的参与者（审批中）
+     * @api {get} api/workflow/identitylink/findParticipant          12. 查询流程实例的参与者（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -485,7 +491,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/procHistory/findTask          12. 查询需要我审批的流程（已结束）
+     * @api {post} api/workflow/procHistory/findTask          13. 查询需要我审批的流程（已结束）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -527,7 +533,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/procHistory/startByMyself          13. 查询我启动的流程（已结束）
+     * @api {post} api/workflow/procHistory/startByMyself          14. 查询我启动的流程（已结束）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -565,7 +571,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/procHistory/findProcNotify          14. 查询抄送我的流程（已结束）
+     * @api {post} api/workflow/procHistory/findProcNotify          15. 查询抄送我的流程（已结束）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -608,7 +614,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {get} api/workflow/identitylinkHistory/findParticipant          15. 查询流程实例的参与者（已结束）
+     * @api {get} api/workflow/identitylinkHistory/findParticipant          16. 查询流程实例的参与者（已结束）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -643,7 +649,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {get} api/workflow/process/detail          16. 根据流程ID查询流程详情
+     * @api {get} api/workflow/process/detail          17. 根据流程ID查询流程详情
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -663,6 +669,240 @@ class WorkflowController extends AbstractController
         $workflow = $this->getProcessById($data['id']);
         return Base::retSuccess('success', $workflow);
     }
+
+    /**
+     * @api {post} api/workflow/export          18. 导出数据
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup workflow
+     * @apiName export
+     *
+     * @apiQuery {String} proc_def_name         流程分类
+     * @apiQuery {String} state                 流程状态[0全部，1审批中，2通过，3拒绝，4撤回]
+     * @apiQuery {String} is_finished           是否完成
+     * @apiQuery {Array} [date]                 指定日期范围，如：['2020-12-12', '2020-12-30']
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function export()
+    {
+        $user = User::auth('admin');
+        $name = $data['procName'] = Request::input('proc_def_name'); //分类
+        $data['state'] = intval(Request::input('state')); //状态
+        $data['isFinished'] = intval(Request::input('is_finished')); //是否完成
+        $date = Request::input('date');
+        $data['startTime'] = $date[0]; //开始时间
+        $data['endTime'] = $date[1]; //结束时间
+        //
+        if (empty($name) || empty($date)) {
+            return Base::retError('参数错误');
+        }
+        if (!(is_array($date) && Base::isDate($date[0]) && Base::isDate($date[1]))) {
+            return Base::retError('日期选择错误');
+        }
+        if (Carbon::parse($date[1])->timestamp - Carbon::parse($date[0])->timestamp > 35 * 86400) {
+            return Base::retError('日期范围限制最大35天');
+        }
+        //
+        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/findAllProcIns', json_encode($data));
+        $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
+        if (!$process || $process['status'] != 200) {
+            return Base::retError($process['message'] ?? '查询失败');
+        }
+        //
+        $res = Base::arrayKeyToUnderline($process['data']);
+        //
+        $headings = [];
+        $headings[] = '申请编号';
+        $headings[] = '标题';
+        $headings[] = '申请状态';
+        $headings[] = '发起时间';
+        $headings[] = '完成时间';
+        $headings[] = '发起人工号';
+        $headings[] = '发起人User ID';
+        $headings[] = '发起人姓名';
+        $headings[] = '发起人部门';
+        $headings[] = '发起人部门ID';
+        $headings[] = '部门负责人';
+        $headings[] = '历史审批人';
+        $headings[] = '历史办理人';
+        $headings[] = '审批记录';
+        $headings[] = '当前处理人';
+        $headings[] = '审批节点';
+        $headings[] = '审批人数';
+        $headings[] = '审批耗时';
+        $headings[] = '假期类型';
+        $headings[] = '开始时间';
+        $headings[] = '结束时间';
+        $headings[] = '时长';
+        $headings[] = '请假事由';
+        $headings[] = '请假单位';
+        //
+        $sheets = [];
+        $datas = [];
+        foreach ($res as $val) {
+            //
+            $nickname = Base::filterEmoji($val['start_user_name']);
+            $participant = $this->getUserProcessParticipantById($val['id']); // 获取参与人
+            $participant = $this->handleParticipant($participant['data']); // 处理参与人返回数据
+            //
+            $department_leader = User::userid2nickname(UserDepartment::find(1, ['owner_userid'])['owner_userid']); // 部门负责人
+            $historical_approver = $participant['historical_approver'] ?? ''; // 历史审批人
+            $historical_agent = $participant['historical_agent'] ?? ''; // 历史办理人
+            $approval_record = $participant['approval_record'] ?? ''; // 审批记录
+            $current_handler = implode(',', User::whereIn('userid', explode(';', $val['candidate']))->pluck('nickname')->toArray()); // 当前处理人
+            $approved_node = $participant['approved_node'] ?? 0; // 审批节点
+            $approved_num = $participant['approved_num'] ?? 0; // 审批人数
+            // 计算审批耗时
+            $startTime = Carbon::parse($val['start_time'])->timestamp;
+            $endTime = $val['end_time'] ? Carbon::parse($val['end_time'])->timestamp : time();
+            $approval_time = Base::timeDiff($startTime, $endTime); // 审批耗时
+            // 计算时长
+            $varStartTime = Carbon::parse($val['var']['start_time'])->timestamp;
+            $varEndTime = Carbon::parse($val['var']['end_time'])->timestamp;
+            $duration = Base::timeDiff($varStartTime, $varEndTime); // 时长
+            $duration_unit = '小时'; // 时长单位
+            $datas[] = [
+                $val['id'], // 申请编号
+                $val['proc_def_name'], // 标题
+                $this->getStateDescription($val['state']), // 申请状态
+                $val['start_time'], // 发起时间
+                $val['end_time'], // 完成时间
+                $val['start_user_id'], // 发起人工号
+                $val['start_user_id'], // 发起人User ID
+                $nickname, // 发起人姓名
+                $val['department'], // 发起人部门
+                $val['department_id'], // 发起人部门ID
+                $department_leader, // 部门负责人
+                $historical_approver, // 历史审批人
+                $historical_agent, // 历史办理人
+                $approval_record, // 审批记录
+                $current_handler, // 当前处理人
+                $approved_node, // 审批节点
+                $approved_num, // 审批人数
+                $approval_time, // 审批耗时
+                $val['var']['type'], // 假期类型
+                $val['var']['start_time'], // 开始时间
+                $val['var']['end_time'], // 结束时间
+                $duration, // 时长
+                $val['var']['description'], // 请假事由
+                $duration_unit, // 请假单位
+            ];
+        }
+        if (empty($datas)) {
+            return Base::retError('没有任何数据');
+        }
+        //
+        $title = (count($sheets) + 1) . "." . ($nickname ?: $val['start_user_id']);
+        $sheets = [
+            BillExport::create()->setTitle($title)->setHeadings($headings)->setData($datas)->setStyles(["A1:Y1" => ["font" => ["bold" => true]]])
+        ];
+        //
+        $fileName .= '审批记录_' . Base::time() . '.xls';
+        $filePath = "temp/workflow/export/" . date("Ym", Base::time());
+        $export = new BillMultipleExport($sheets);
+        $res = $export->store($filePath . "/" . $fileName);
+        if ($res != 1) {
+            return Base::retError('导出失败，' . $fileName . '！');
+        }
+        $xlsPath = storage_path("app/" . $filePath . "/" . $fileName);
+        $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xls') . ".zip";
+        $zipPath = storage_path($zipFile);
+        if (file_exists($zipPath)) {
+            Base::deleteDirAndFile($zipPath, true);
+        }
+        try {
+            Madzipper::make($zipPath)->add($xlsPath)->close();
+        } catch (\Throwable) {
+        }
+        //
+        if (file_exists($zipPath)) {
+            $base64 = base64_encode(Base::array2string([
+                'file' => $zipFile,
+            ]));
+            Session::put('workflow::export:userid', $user->userid);
+            return Base::retSuccess('success', [
+                'size' => Base::twoFloat(filesize($zipPath) / 1024, true),
+                'url' => Base::fillUrl('api/workflow/down?key=' . urlencode($base64)),
+            ]);
+        } else {
+            return Base::retError('打包失败，请稍后再试...');
+        }
+    }
+
+    function getStateDescription($state) {
+        $state_map = array(
+            0 => '全部',
+            1 => '审批中',
+            2 => '通过',
+            3 => '拒绝',
+            4 => '撤回'
+        );
+        return isset($state_map[$state]) ? $state_map[$state] : '';
+    }
+
+    /**
+     * @api {get} api/workflow/down          19. 下载导出的审批数据
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName down
+     *
+     * @apiParam {String} key               通过export接口得到的下载钥匙
+     *
+     * @apiSuccess {File} data     返回数据（直接下载文件）
+     */
+    public function down()
+    {
+        $userid = Session::get('workflow::export:userid');
+        if (empty($userid)) {
+            return Base::ajaxError("请求已过期，请重新导出！", [], 0, 502);
+        }
+        //
+        $array = Base::string2array(base64_decode(urldecode(Request::input('key'))));
+        $file = $array['file'];
+        if (empty($file) || !file_exists(storage_path($file))) {
+            return Base::ajaxError("文件不存在！", [], 0, 502);
+        }
+        return Response::download(storage_path($file));
+    }
+
+    // 处理参与人返回数据
+    public function handleParticipant($participant)
+    {
+        // 如果空
+        if (empty($participant)) {
+            return [];
+        }
+        $res = [];
+        $approved_node = 0; // 审批节点
+        $approved_num = 0; // 审批人数
+        foreach ($participant as $val) {
+            // 如果是审批人
+            if ($val['type'] == 'participant') {
+                // 审批人累加加到;格式字符串
+                if ($val['step'] != 0) {
+                    $res['historical_approver'] .= $val['username'] . ';';
+                    $approved_node++;
+                    $approved_num++;
+                }
+                // 审批记录用|格式字符串
+                $name = $val['username'] . '|';
+                $call = $val['step'] == 0 ? '发起审批'. '|' : '同意' . '|';
+                $time = date('Y-m-d H:i:s', $val['time']) . '|';
+                $comment = $val['step'] == 0 ? '' : ($val['comment'] ?? '') . '|';
+                $res['approval_record'] .= $name . $call . $time . $comment;
+            }
+        }
+        $res['approved_node'] = $approved_node;
+        $res['approved_num'] = $approved_num;
+        $res['historical_agent'] = $res['historical_approver'];
+        return $res;
+    }
+
 
     // 审批机器人消息
     public function workflowMsg($type, $dialog, $botUser, $toUser, $process, $action = null)
@@ -765,11 +1005,11 @@ class WorkflowController extends AbstractController
         return [];
     }
 
-    // 根据ID查询流程实例的参与者（审批中）
+    // 根据ID查询流程实例的参与者（所有）
     public function getUserProcessParticipantById($id)
     {
-        $data['id'] = intval($id);
-        $ret = Ihttp::ihttp_get($this->flow_url."/api/v1/workflow/identitylink/findParticipant?".http_build_query($data));
+        $data['procInstId'] = intval($id);
+        $ret = Ihttp::ihttp_get($this->flow_url."/api/v1/workflow/identitylink/findParticipantAll?".http_build_query($data));
         $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             throw new ApiException($process['message'] ?? '查询失败');

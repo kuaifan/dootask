@@ -8777,6 +8777,53 @@
                 }
             }
         },
+        "api/workflow/user/department": {
+            "get": {
+                "tags": [
+                    "工作流"
+                ],
+                "consumes": [],
+                "summary": "02. 获取当前用户部门",
+                "description": "需要token身份",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "required": true,
+                        "description": "流程ID",
+                        "type": "number"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "$schema": "http://json-schema.org/draft-04/schema#",
+                            "type": "object",
+                            "properties": {
+                                "ret": {
+                                    "type": "number",
+                                    "description": "返回状态码（1正确、0错误）"
+                                },
+                                "msg": {
+                                    "type": "string",
+                                    "description": "返回信息（错误描述）"
+                                },
+                                "data": {
+                                    "type": "object",
+                                    "description": "返回数据"
+                                }
+                            },
+                            "required": [
+                                "ret",
+                                "msg",
+                                "data"
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "api/workflow/procdef/all": {
             "post": {
                 "tags": [
@@ -8785,7 +8832,7 @@
                 "consumes": [
                     "multipart/form-data"
                 ],
-                "summary": "02. 查询流程定义",
+                "summary": "03. 查询流程定义",
                 "description": "需要token身份",
                 "parameters": [
                     {
@@ -8832,7 +8879,7 @@
                     "工作流"
                 ],
                 "consumes": [],
-                "summary": "03. 删除流程定义",
+                "summary": "04. 删除流程定义",
                 "description": "需要token身份",
                 "parameters": [
                     {
@@ -8881,7 +8928,7 @@
                 "consumes": [
                     "multipart/form-data"
                 ],
-                "summary": "04. 启动流程（审批中）",
+                "summary": "05. 启动流程（审批中）",
                 "description": "需要token身份",
                 "parameters": [
                     {
@@ -8944,7 +8991,7 @@
                 "consumes": [
                     "multipart/form-data"
                 ],
-                "summary": "05. 审批",
+                "summary": "06. 审批",
                 "description": "需要token身份",
                 "parameters": [
                     {
@@ -9007,7 +9054,7 @@
                 "consumes": [
                     "multipart/form-data"
                 ],
-                "summary": "06. 撤回",
+                "summary": "07. 撤回",
                 "description": "需要token身份",
                 "parameters": [
                     {
@@ -9063,7 +9110,7 @@
                 "consumes": [
                     "multipart/form-data"
                 ],
-                "summary": "07. 查询需要我审批的流程（审批中）",
+                "summary": "08. 查询需要我审批的流程（审批中）",
                 "description": "需要token身份",
                 "parameters": [
                     {
@@ -9077,7 +9124,7 @@
                         "name": "sort",
                         "in": "query",
                         "required": true,
-                        "description": "排序",
+                        "description": "排序[asc升序，desc降序]",
                         "type": "string"
                     },
                     {
@@ -9133,7 +9180,7 @@
                 "consumes": [
                     "multipart/form-data"
                 ],
-                "summary": "08. 查询我启动的流程（全部）",
+                "summary": "09. 查询我启动的流程（全部）",
                 "description": "需要token身份",
                 "parameters": [
                     {
@@ -9147,7 +9194,7 @@
                         "name": "state",
                         "in": "query",
                         "required": true,
-                        "description": "流程状态",
+                        "description": "流程状态[0全部，1审批中，2通过，3拒绝，4撤回]",
                         "type": "string"
                     },
                     {
@@ -9203,7 +9250,7 @@
                 "consumes": [
                     "multipart/form-data"
                 ],
-                "summary": "09. 查询我启动的流程（审批中）",
+                "summary": "10. 查询我启动的流程（审批中）",
                 "description": "需要token身份",
                 "parameters": [
                     {
@@ -9259,7 +9306,7 @@
                 "consumes": [
                     "multipart/form-data"
                 ],
-                "summary": "10. 查询抄送我的流程（审批中）",
+                "summary": "11. 查询抄送我的流程（审批中）",
                 "description": "需要token身份",
                 "parameters": [
                     {
@@ -9280,7 +9327,7 @@
                         "name": "sort",
                         "in": "query",
                         "required": true,
-                        "description": "排序",
+                        "description": "排序[asc升序，desc降序]",
                         "type": "string"
                     },
                     {
@@ -9334,7 +9381,7 @@
                     "工作流"
                 ],
                 "consumes": [],
-                "summary": "11. 查询流程实例的参与者（审批中）",
+                "summary": "12. 查询流程实例的参与者（审批中）",
                 "description": "需要token身份",
                 "parameters": [
                     {
@@ -9383,7 +9430,7 @@
                 "consumes": [
                     "multipart/form-data"
                 ],
-                "summary": "12. 查询需要我审批的流程（已结束）",
+                "summary": "13. 查询需要我审批的流程（已结束）",
                 "description": "需要token身份",
                 "parameters": [
                     {
@@ -9397,7 +9444,7 @@
                         "name": "sort",
                         "in": "query",
                         "required": true,
-                        "description": "排序",
+                        "description": "排序[asc升序，desc降序]",
                         "type": "string"
                     },
                     {
@@ -9453,7 +9500,7 @@
                 "consumes": [
                     "multipart/form-data"
                 ],
-                "summary": "13. 查询我启动的流程（已结束）",
+                "summary": "14. 查询我启动的流程（已结束）",
                 "description": "需要token身份",
                 "parameters": [
                     {
@@ -9509,7 +9556,7 @@
                 "consumes": [
                     "multipart/form-data"
                 ],
-                "summary": "14. 查询抄送我的流程（已结束）",
+                "summary": "15. 查询抄送我的流程（已结束）",
                 "description": "需要token身份",
                 "parameters": [
                     {
@@ -9523,7 +9570,7 @@
                         "name": "sort",
                         "in": "query",
                         "required": true,
-                        "description": "排序",
+                        "description": "排序[asc升序，desc降序]",
                         "type": "string"
                     },
                     {
@@ -9577,7 +9624,7 @@
                     "工作流"
                 ],
                 "consumes": [],
-                "summary": "15. 查询流程实例的参与者（已结束）",
+                "summary": "16. 查询流程实例的参与者（已结束）",
                 "description": "需要token身份",
                 "parameters": [
                     {
@@ -9624,7 +9671,7 @@
                     "工作流"
                 ],
                 "consumes": [],
-                "summary": "16. 根据流程ID查询流程详情",
+                "summary": "17. 根据流程ID查询流程详情",
                 "description": "需要token身份",
                 "parameters": [
                     {
@@ -9658,6 +9705,113 @@
                             "required": [
                                 "ret",
                                 "msg",
+                                "data"
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "api/workflow/export": {
+            "post": {
+                "tags": [
+                    "工作流"
+                ],
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "summary": "18. 导出数据",
+                "description": "需要token身份",
+                "parameters": [
+                    {
+                        "name": "proc_def_name",
+                        "in": "query",
+                        "required": true,
+                        "description": "流程分类",
+                        "type": "string"
+                    },
+                    {
+                        "name": "state",
+                        "in": "query",
+                        "required": true,
+                        "description": "流程状态[0全部，1审批中，2通过，3拒绝，4撤回]",
+                        "type": "string"
+                    },
+                    {
+                        "name": "is_finished",
+                        "in": "query",
+                        "required": true,
+                        "description": "是否完成",
+                        "type": "string"
+                    },
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "required": false,
+                        "description": "指定日期范围，如：['2020-12-12', '2020-12-30']",
+                        "type": "array"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "$schema": "http://json-schema.org/draft-04/schema#",
+                            "type": "object",
+                            "properties": {
+                                "ret": {
+                                    "type": "number",
+                                    "description": "返回状态码（1正确、0错误）"
+                                },
+                                "msg": {
+                                    "type": "string",
+                                    "description": "返回信息（错误描述）"
+                                },
+                                "data": {
+                                    "type": "object",
+                                    "description": "返回数据"
+                                }
+                            },
+                            "required": [
+                                "ret",
+                                "msg",
+                                "data"
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "api/workflow/down": {
+            "get": {
+                "tags": [
+                    "系统"
+                ],
+                "consumes": [],
+                "summary": "19. 下载导出的审批数据",
+                "description": "",
+                "parameters": [
+                    {
+                        "name": "key",
+                        "in": "query",
+                        "required": true,
+                        "description": "通过export接口得到的下载钥匙",
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "$schema": "http://json-schema.org/draft-04/schema#",
+                            "type": "object",
+                            "properties": {
+                                "data": {
+                                    "type": "file",
+                                    "description": "返回数据（直接下载文件）"
+                                }
+                            },
+                            "required": [
                                 "data"
                             ]
                         }
