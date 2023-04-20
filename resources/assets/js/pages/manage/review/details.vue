@@ -41,7 +41,7 @@
                     <div style="display: flex;">
                         <Avatar :src="data.userimg || datas.userimg" size="38"/>
                         <div style="margin-left: 10px;flex: 1;">
-                            <p class="review-process-name">{{item.approver}}</p>
+                            <p class="review-process-name">{{data.start_user_name || datas.start_user_name}}</p>
                             <p class="review-process-state">{{$L('已提交')}}</p>
                         </div>
                         <div class="review-process-right">
