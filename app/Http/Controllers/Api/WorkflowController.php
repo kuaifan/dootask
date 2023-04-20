@@ -994,6 +994,21 @@ class WorkflowController extends AbstractController
     {
         // 获取流程节点
         $process_node = $process['node_infos'];
+        // 如果流程开始就直接审核结束，则循环往上找所有推送人
+        if ($process['is_finished'] == true && $step == 0) {
+            $notifier = [];
+            foreach ($process_node as $key => $val) {
+                if ($val['type'] == 'notifier') {
+                    $notifier = array_merge($notifier, $val['node_user_list']);
+                }
+                // 节点到最后时，跳出循环
+                if ($key == count($process_node) - 1) {
+                    break;
+                }
+            }
+            info(array_unique($notifier, SORT_REGULAR));
+            return array_unique($notifier, SORT_REGULAR) ?? [];
+        }
         //判断下一步是否有抄送人
         $step = $step + 1;
         $next_node = $process_node[$step] ?? [];
