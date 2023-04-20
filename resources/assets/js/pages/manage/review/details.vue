@@ -35,77 +35,85 @@
             <Divider/>
             <h3 class="review-details-subtitle">{{$L('审批记录')}}</h3>
             <Timeline style="margin-top: 20px;">
-                <!-- 提交 -->
-                <TimelineItem v-for="(item,key) in datas.node_infos" :key="key" v-if="item.type == 'starter'" color="green">
-                    <p class="timeline-title">{{$L('提交')}}</p>
-                    <div style="display: flex;">
-                        <Avatar :src="data.userimg || datas.userimg" size="38"/>
-                        <div style="margin-left: 10px;flex: 1;">
-                            <p class="review-process-name">{{data.start_user_name || datas.start_user_name}}</p>
-                            <p class="review-process-state">{{$L('已提交')}}</p>
+                <template v-for="(item,key) in datas.node_infos">
+
+                    <!-- 提交 -->
+                    <TimelineItem :key="key" v-if="item.type == 'starter'" color="green">
+                        <p class="timeline-title">{{$L('提交')}}</p>
+                        <div style="display: flex;">
+                            <Avatar :src="data.userimg || datas.userimg" size="38"/>
+                            <div style="margin-left: 10px;flex: 1;">
+                                <p class="review-process-name">{{data.start_user_name || datas.start_user_name}}</p>
+                                <p class="review-process-state">{{$L('已提交')}}</p>
+                            </div>
+                            <div class="review-process-right">
+                                <p v-if="parseInt(getTimeAgo(item.claim_time)) < showTimeNum">{{ getTimeAgo(item.claim_time) }}</p>
+                                <p>{{item.claim_time?.substr(0,16)}}</p>
+                            </div>
                         </div>
-                        <div class="review-process-right">
-                            <p v-if="parseInt(getTimeAgo(item.claim_time)) < showTimeNum">{{ getTimeAgo(item.claim_time) }}</p>
-                            <p>{{item.claim_time?.substr(0,16)}}</p>
+                    </TimelineItem>
+
+                    <!-- 审批 -->
+                    <TimelineItem :key="key" v-if="item.type == 'approver' && item._show"
+                        :color="item.identitylink ? (item.identitylink?.state > 1 ? '#f03f3f' :'green') : '#ccc'"
+                    >
+                        <p class="timeline-title">{{$L('审批')}}</p>
+                        <div style="display: flex;">
+                            <Avatar :src="(item.node_user_list && item.node_user_list[0]?.userimg) || item.userimg" size="38"/>
+                            <div style="margin-left: 10px;flex: 1;">
+                                <p class="review-process-name">{{item.approver}}</p>
+                                <p class="review-process-state" style="color: #6d6d6d;" v-if="!item.identitylink">待审批</p>
+                                <p class="review-process-state" v-if="item.identitylink">
+                                    <span v-if="item.identitylink.state==0" style="color:#496dff;">{{$L('审批中')}}</span>
+                                    <span v-if="item.identitylink.state==1" >{{$L('已通过')}}</span>
+                                    <span v-if="item.identitylink.state==2" style="color:#f03f3f;">{{$L('已拒绝')}}</span>
+                                    <span v-if="item.identitylink.state==3" style="color:#f03f3f;">{{$L('已撤回')}}</span>
+                                </p>
+                            </div>
+                            <div class="review-process-right">
+                                <p v-if="parseInt(getTimeAgo(item.claim_time)) < showTimeNum">
+                                    {{ item.identitylink?.state==0 ? 
+                                        ($L('已等待') + " " + getTimeAgo( datas.node_infos[key-1].claim_time,2)) : 
+                                        (item.claim_time ? getTimeAgo(item.claim_time) : '') 
+                                    }}
+                                </p>
+                                <p>{{item.claim_time?.substr(0,16)}}</p>
+                            </div>
                         </div>
-                    </div>
-                </TimelineItem>
-                <!-- 审批 -->
-                <TimelineItem v-for="(item,key) in datas.node_infos" :key="key" v-if="item.type == 'approver' && item._show"
-                    :color="item.identitylink ? (item.identitylink?.state > 1 ? '#f03f3f' :'green') : '#ccc'"
-                >
-                    <p class="timeline-title">{{$L('审批')}}</p>
-                    <div style="display: flex;">
-                        <Avatar :src="(item.node_user_list && item.node_user_list[0]?.userimg) || item.userimg" size="38"/>
-                        <div style="margin-left: 10px;flex: 1;">
-                            <p class="review-process-name">{{item.approver}}</p>
-                            <p class="review-process-state" style="color: #6d6d6d;" v-if="!item.identitylink">待审批</p>
-                            <p class="review-process-state" v-if="item.identitylink">
-                                <span v-if="item.identitylink.state==0" style="color:#496dff;">{{$L('审批中')}}</span>
-                                <span v-if="item.identitylink.state==1" >{{$L('已通过')}}</span>
-                                <span v-if="item.identitylink.state==2" style="color:#f03f3f;">{{$L('已拒绝')}}</span>
-                                <span v-if="item.identitylink.state==3" style="color:#f03f3f;">{{$L('已撤回')}}</span>
-                            </p>
+                        <p class="comment" v-if="item.identitylink?.comment">“{{ item.identitylink?.comment  }}”</p>
+                    </TimelineItem>
+                    
+                    <!-- 抄送 -->
+                    <TimelineItem :key="key" :color="item.is_finished ? 'green' : '#ccc'" v-if="item.type == 'notifier' && item._show">
+                        <p class="timeline-title">{{$L('抄送')}}</p>
+                        <div style="display: flex;">
+                            <Avatar :src="'/images/avatar/default_bot.png'" size="38"/>
+                            <div style="margin-left: 10px;flex: 1;">
+                                <p class="review-process-name">{{$L('系统')}}</p>
+                                <p style="font-size: 12px;">自动抄送
+                                    <span style="color: #486fed;">
+                                        {{ item.node_user_list?.map(h=>h.name).join(',') }} 
+                                        等{{item.node_user_list?.length}}人
+                                    </span>
+                                </p>
+                            </div>
                         </div>
-                        <div class="review-process-right">
-                            <p v-if="parseInt(getTimeAgo(item.claim_time)) < showTimeNum">
-                                {{ item.identitylink?.state==0 ? 
-                                    ($L('已等待') + " " + getTimeAgo( datas.node_infos[key-1].claim_time,2)) : 
-                                    (item.claim_time ? getTimeAgo(item.claim_time) : '') 
-                                }}
-                            </p>
-                            <p>{{item.claim_time?.substr(0,16)}}</p>
+                    </TimelineItem>
+
+                    <!-- 结束 -->
+                    <TimelineItem :key="key" :color="item.is_finished ? 'green' : '#ccc'" v-if="item.aprover_type == 'end'">
+                        <p class="timeline-title">{{$L('结束')}}</p>
+                        <div style="display: flex;">
+                            <Avatar :src="'/images/avatar/default_bot.png'" size="38"/>
+                            <div style="margin-left: 10px;flex: 1;">
+                                <p class="review-process-name">{{$L('系统')}}</p>
+                                <p style="font-size: 12px;"> {{  datas.is_finished ? $L('已结束') : $L('未结束')  }}</p>
+                            </div>
                         </div>
-                    </div>
-                    <p class="comment" v-if="item.identitylink?.state==2">“{{ datas.latest_comment  }}”</p>
-                </TimelineItem>
-                <!-- 抄送 -->
-                <TimelineItem v-for="(item,key) in datas.node_infos" :key="key" :color="item.is_finished ? 'green' : '#ccc'" v-if="item.type == 'notifier' && item._show">
-                    <p class="timeline-title">{{$L('抄送')}}</p>
-                    <div style="display: flex;">
-                        <Avatar :src="'/images/avatar/default_bot.png'" size="38"/>
-                        <div style="margin-left: 10px;flex: 1;">
-                            <p class="review-process-name">{{$L('系统')}}</p>
-                            <p style="font-size: 12px;">自动抄送
-                                <span style="color: #486fed;">
-                                    {{ item.node_user_list?.map(h=>h.name).join(',') }} 
-                                    等{{item.node_user_list?.length}}人
-                                </span>
-                            </p>
-                        </div>
-                    </div>
-                </TimelineItem>
-                <!-- 结束 -->
-                <TimelineItem v-for="(item,key) in datas.node_infos" :key="key" :color="item.is_finished ? 'green' : '#ccc'" v-if="item.aprover_type == 'end'">
-                    <p class="timeline-title">{{$L('结束')}}</p>
-                    <div style="display: flex;">
-                        <Avatar :src="'/images/avatar/default_bot.png'" size="38"/>
-                        <div style="margin-left: 10px;flex: 1;">
-                            <p class="review-process-name">{{$L('系统')}}</p>
-                            <p style="font-size: 12px;"> {{  datas.is_finished ? $L('已结束') : $L('未结束')  }}</p>
-                        </div>
-                    </div>
-                </TimelineItem>
+                    </TimelineItem>
+                    
+                </template>
+                
             </Timeline>
         </div>
         <div class="review-operation" v-if="datas.state<=1">
@@ -155,7 +163,7 @@ export default {
         isShowWarningBtn(){
             let is = this.userId == this.datas.start_user_id;
             (this.datas.node_infos || []).map(h=>{
-                if(h.type != 'starter' && h.is_finished == true) {
+                if(h.type != 'starter' && h.is_finished == true && h.identitylink.userid != this.userId) {
                     is = false;
                 }
             })
@@ -252,7 +260,7 @@ export default {
                         }
                     }).then(({msg}) => {
                         $A.messageSuccess(msg);
-                        if(this.$route.name=='manage-review-details'){
+                        if(this.$route.name=='manage-review-details' || this.$route.name=='manage-messenger'){
                             this.getInfo()
                         }else{
                             this.$emit('approve')
@@ -280,7 +288,7 @@ export default {
                         }).then(({msg}) => {
                             $A.messageSuccess(msg);
                             resolve();
-                            if(this.$route.name=='manage-review-details'){
+                            if(this.$route.name=='manage-review-details' || this.$route.name=='manage-messenger'){
                                 this.getInfo()
                             }else{
                                 this.$emit('revocation')

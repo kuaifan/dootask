@@ -139,16 +139,7 @@
         <span>开始时间：{{$data->start_time}}</span>
         <span>结束时间：{{$data->end_time}}</span>
     </div><div class="btn-raw">
-    @if ($action === 'pass')
-            <Button type="button" class="ivu-btn ivu-btn-small" style="flex: 1;">已同意</Button>
-        @elseif ($action === 'refuse')
-            <Button type="button" class="ivu-btn ivu-btn-small" style="flex: 1;">已拒绝</Button>
-        @elseif ($action === 'withdraw')
-            <Button type="button" class="ivu-btn ivu-btn-small" style="flex: 1;">已撤销</Button>
-        @else
-            <Button type="button" class="ivu-btn ivu-btn-primary ivu-btn-small" style="flex: 1;">同意</Button>
-            <Button type="button" class="ivu-btn ivu-btn-error ivu-btn-small" style="flex: 1;">拒绝</Button>
-        @endif
+        <Button type="button" class="ivu-btn ivu-btn-small" style="flex: 1;">已同意</Button>
     </div></span>
 @elseif ($type === 'workflow_submitter')
     <span class="open-review-details" data-id="{{$data->id}}"><b> @if ($action === 'pass')您发起的「{{$data->proc_def_name}}」已通过 @else您发起的「{{$data->proc_def_name}}」被{{$data->nickname}}拒绝 @endif</b>
@@ -166,9 +157,6 @@
             <Button type="button" class="ivu-btn ivu-btn-small" style="flex: 1;">已拒绝</Button>
         @elseif ($action === 'withdraw')
             <Button type="button" class="ivu-btn ivu-btn-small" style="flex: 1;">已撤销</Button>
-        @else
-            <Button type="button" class="ivu-btn ivu-btn-primary ivu-btn-small" style="flex: 1;">同意</Button>
-            <Button type="button" class="ivu-btn ivu-btn-error ivu-btn-small" style="flex: 1;">拒绝</Button>
         @endif
     </div></span>
 @else
