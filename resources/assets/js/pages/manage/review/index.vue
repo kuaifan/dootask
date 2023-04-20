@@ -264,6 +264,11 @@ export default {
         }
     },
     watch: {
+        '$route' (to, from) {
+            if(to.name == 'manage-review'){
+                this.tabsClick()
+            }
+        },
         wsMsg: {
             handler(info) {
                 const {type, action} = info;
