@@ -1006,7 +1006,6 @@ class WorkflowController extends AbstractController
                     break;
                 }
             }
-            info(array_unique($notifier, SORT_REGULAR));
             return array_unique($notifier, SORT_REGULAR) ?? [];
         }
         //判断下一步是否有抄送人
