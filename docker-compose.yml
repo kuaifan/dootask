@@ -151,7 +151,7 @@ services:
 
   workflow:
     container_name: "dootask-workflow-${APP_ID}"
-    image: "weifashi/go-workflow:1.0.0"
+    image: "weifashi/go-workflow:1.0.1"
     environment:
       MYSQL_HOST: "${DB_HOST}"
       MYSQL_PORT: "${DB_PORT}"
