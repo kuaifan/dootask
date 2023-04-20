@@ -213,12 +213,14 @@
     }
     .review-operation{
         flex: 0 0 auto;
-        height: 55px;
         padding: 0 24px;
         border-top: 1px solid #F4F4F5;
         display: flex;
         align-items: center;
         gap: 10px;
+        button{
+            margin: 10px 0;
+        }
     }
 
     .comment{

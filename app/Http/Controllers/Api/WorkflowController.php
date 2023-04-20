@@ -48,28 +48,6 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {get} api/workflow/user/department          02. 获取当前用户部门
-     *
-     * @apiDescription 需要token身份
-     * @apiVersion 1.0.0
-     * @apiGroup workflow
-     * @apiName user__department
-     *
-     * @apiQuery {Number} id               流程ID
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function user__department()
-    {
-        // User::auth();
-        // $data['id'] = intval(Request::input('id'));
-        // $workflow = $this->getProcessById($data['id']);
-        // return Base::retSuccess('success', $workflow);
-    }
-
-    /**
      * @api {post} api/workflow/procdef/all          02. 查询流程定义
      *
      * @apiDescription 需要token身份
@@ -181,7 +159,7 @@ class WorkflowController extends AbstractController
             }
         }
 
-        return Base::retSuccess('success', $process);
+        return Base::retSuccess('创建成功', $process);
     }
 
     /**
@@ -257,7 +235,7 @@ class WorkflowController extends AbstractController
                 $this->workflowMsg('workflow_notifier', $dialog, $botUser, $process, $process);
             }
         }
-        return Base::retSuccess('success', $task);
+        return Base::retSuccess( $pass == 'pass' ? '已通过' : '已拒绝', $task);
     }
 
     /**
@@ -302,7 +280,7 @@ class WorkflowController extends AbstractController
             //发送撤回提醒
             $this->workflowMsg('workflow_reviewer', $dialog, $botUser, $val, $process, 'withdraw');
         }
-        return Base::retSuccess('success', Base::arrayKeyToUnderline($task['data']));
+        return Base::retSuccess('已撤回', Base::arrayKeyToUnderline($task['data']));
     }
 
     /**

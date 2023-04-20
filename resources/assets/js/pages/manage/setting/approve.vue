@@ -8,7 +8,7 @@
             </Col> -->
             <Col v-for="(item, key) in list" :xxl="{ span: 6 }" :xl="{ span: 8 }" :lg="{ span: 12 }" :sm="{ span: 24 }" :xs="{ span: 24 }" >
                 <div class="approve-col-box approve-col-for" @click="edit(item)">
-                    <p>{{$L('流程名称：')}}<span style="font-weight: 500;">{{$L(item.name)}}</span></p>
+                    <p>{{$L('流程名称：')}}<span style="font-weight: 500;color: #135de6;">{{$L(item.name)}}</span></p>
                     <Divider style="margin: 12px 0;"/>
                     <div class="approve-button-box" @click.stop="edit(item)">
                         <p>{{$L('是否发布')}}： </p>

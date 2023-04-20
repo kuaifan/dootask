@@ -77,6 +77,9 @@ export default {
                     {icon: '&#xe7b8;', name: 'addTask', label: '添加任务'},
                     {icon: '&#xe7c1;', name: 'createMeeting', label: '新会议'},
                     {icon: '&#xe794;', name: 'joinMeeting', label: '加入会议'},
+                ],
+                [
+                    {icon: '&#xe7b9;', name: 'review', label: '审批中心'},
                 ]
             ],
 

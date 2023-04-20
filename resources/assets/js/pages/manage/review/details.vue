@@ -251,8 +251,12 @@ export default {
                             comment: desc,
                         }
                     }).then(({msg}) => {
-                        this.getInfo()
-                        this.$emit('approve')
+                        $A.messageSuccess(msg);
+                        if(this.$route.name=='manage-review-details'){
+                            this.getInfo()
+                        }else{
+                            this.$emit('approve')
+                        }
                     }).catch(({msg}) => {
                         $A.modalError(msg);
                     });
@@ -274,9 +278,13 @@ export default {
                                 proc_inst_id: this.datas.id,
                             }
                         }).then(({msg}) => {
+                            $A.messageSuccess(msg);
                             resolve();
-                            this.getInfo()
-                            this.$emit('revocation')
+                            if(this.$route.name=='manage-review-details'){
+                                this.getInfo()
+                            }else{
+                                this.$emit('revocation')
+                            }
                         }).catch(({msg}) => {
                             $A.modalError(msg);
                             resolve();

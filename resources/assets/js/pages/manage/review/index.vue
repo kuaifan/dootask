@@ -114,7 +114,7 @@
         </DrawerOverlay>
 
         <!--发起-->
-        <Modal v-model="addShow"  :title="$L(addTitle)" :mask-closable="false">
+        <Modal v-model="addShow" :title="$L(addTitle)" :mask-closable="false" class="page-review-initiate">
             <Form ref="initiateRef" :model="addData" :rules="addRule" label-width="auto" @submit.native.prevent>
                 <FormItem v-if="departmentList.length>1" prop="department_id" :label="$L('选择部门')">
                     <Select v-model="addData.department_id" :placeholder="$L('请选择部门')">
@@ -127,20 +127,40 @@
                     </Select>
                 </FormItem>
                 <FormItem prop="startTime" :label="$L('开始时间')">
-                    <DatePicker type="datetime" format="yyyy-MM-dd HH:mm" 
-                        v-model="addData.startTime" 
-                        :value="addData.startTime" 
-                        @on-change="(e)=>{ addData.startTime = e }" 
-                        :placeholder="$L('请选择开始时间')" style="width: 100%"
-                    ></DatePicker>
+                    <div style="display: flex;gap: 3px;">
+                        <DatePicker type="date" format="yyyy-MM-dd" 
+                            v-model="addData.startTime" 
+                            :editable="false"
+                            @on-change="(e)=>{ addData.startTime = e }" 
+                            :placeholder="$L('请选择开始时间')" 
+                            style="flex: 1;min-width: 122px;"
+                        ></DatePicker>
+                        <Select v-model="addData.startTimeHour" style="max-width: 100px;">
+                            <Option v-for="(item,index) in 24" :value="item-1 < 10 ? '0'+(item-1) : item-1 " :key="index">{{item-1 < 10 ? '0' : ''}}{{item-1}}</Option>
+                        </Select>
+                        <Select v-model="addData.startTimeMinute" style="max-width: 100px;">
+                            <Option value="00">00</Option>
+                            <Option value="30">30</Option>
+                        </Select>
+                    </div>
                 </FormItem>
                 <FormItem prop="endTime" :label="$L('结束时间')">
-                    <DatePicker type="datetime" format="yyyy-MM-dd HH:mm" 
-                        v-model="addData.endTime" 
-                        @on-change="(e)=>{ addData.endTime = e }" 
-                        :placeholder="$L('请选择结束时间')" 
-                        style="width: 100%"
-                    ></DatePicker>
+                    <div style="display: flex;gap: 3px;">
+                        <DatePicker type="date" format="yyyy-MM-dd" 
+                            v-model="addData.endTime" 
+                            :editable="false"
+                            @on-change="(e)=>{ addData.endTime = e }" 
+                            :placeholder="$L('请选择结束时间')" 
+                            style="flex: 1;min-width: 122px;"
+                        ></DatePicker>
+                        <Select v-model="addData.endTimeHour" style="max-width: 100px;">
+                            <Option v-for="(item,index) in 24" :value="item-1 < 10 ? '0'+(item-1) : ((item-1)+'') " :key="index">{{item-1 < 10 ? '0' : ''}}{{item-1}}</Option>
+                        </Select>
+                        <Select v-model="addData.endTimeMinute" style="max-width: 100px;">
+                            <Option value="00">00</Option>
+                            <Option value="30">30</Option>
+                        </Select>
+                    </div>
                 </FormItem>
                 <FormItem prop="description" :label="$L('事由')">
                     <Input type="textarea" v-model="addData.description"></Input>
@@ -160,18 +180,22 @@ import list from "./list.vue";
 import listDetails from "./details.vue";
 import DrawerOverlay from "../../../components/DrawerOverlay";
 import { mapState } from 'vuex'
+
 export default {
     components:{list,listDetails,DrawerOverlay},
     name: "review",
     data(){
         return{
+            minDate: new Date(2020, 0, 1),
+            maxDate: new Date(2025, 10, 1),
+            currentDate: new Date(2021, 0, 17),
+
             procdefList: [],
             page: 1,
             pageSize: 250,
             total: 0,
             noText: '',
             loadIng:false,
-            
 
             tabsValue:"",
             // 
@@ -201,20 +225,30 @@ export default {
             // 
             addTitle:'',
             addShow:false,
+            startTimeOpen:false,
+            endTimeOpen:false,
             addData: {
                 department_id:0,
                 type: '',
-                startTime:"",
-                endTime:"",
+                startTime:"2023-04-20",
+                startTimeHour:"09",
+                startTimeMinute:"00",
+                endTime: "2023-04-20",
+                endTimeHour:"18",
+                endTimeMinute:"00",
+
             },
             addRule: {
                 department_id:{ type: 'number',required: true, message: this.$L('请选择部门！'), trigger: 'change' },
                 type: { type: 'string',required: true, message: this.$L('请选择假期类型！'), trigger: 'change' },
                 startTime: { type: 'string',required: true, message: this.$L('请选择开始时间！'), trigger: 'change' },
                 endTime:{ type: 'string',required: true, message: this.$L('请选择结束时间！'), trigger: 'change' },
-                description:{ type: 'string',required: true, message: this.$L('请选择结束时间！'), trigger: 'change' },
+                description:{ type: 'string',required: true, message: this.$L('请输入事由！'), trigger: 'change' },
             },
             selectTypes:["年假","事假","病假","调休","产假","陪产假","婚假","丧假","哺乳假"],
+
+            // 
+            showDateTime:false
         }
     },
     computed: {
@@ -252,28 +286,44 @@ export default {
         this.addData.department_id = this.userInfo.department[0] || 0;
     },
     methods:{
+        formatter(type, val) {
+            if (type === 'year') {
+                return `${val}月`;
+            }else if (type === 'month') {
+                return `${val}月`;
+            } else if (type === 'day') {
+                return `${val}日`;
+            } else if (type === 'hour') {
+                return `${val}时`;
+            }else if (type === 'minute') {
+                return `${val}分`;
+            }
+            return val;
+        },
 
         // tab切换事件
         tabsClick(val){
-            this.__tabsClick && clearTimeout(this.__tabsClick)
-            this.__tabsClick = setTimeout(() => { 
-                this.tabsValue = val || this.tabsValue
-                if(val!=""){
-                    this.approvalType = this.searchState = "all"
-                }
-                if(this.tabsValue == 'backlog'){
-                    this.getBacklogList();
-                }
-                if(this.tabsValue == 'done'){
-                    this.getDoneList();
-                }
-                if(this.tabsValue == 'notify'){
-                    this.getNotifyList();
-                }
-                if(this.tabsValue == 'initiated'){
-                    this.getInitiatedList();
-                }
-            }, 200)
+            if(!val && this.__tabsClick){
+                return;
+            }
+            this.__tabsClick = setTimeout(() => {  this.__tabsClick =null; },1000)
+
+            this.tabsValue = val || this.tabsValue
+            if(val!=""){
+                this.approvalType = this.searchState = "all"
+            }
+            if(this.tabsValue == 'backlog'){
+                this.getBacklogList();
+            }
+            if(this.tabsValue == 'done'){
+                this.getDoneList();
+            }
+            if(this.tabsValue == 'notify'){
+                this.getNotifyList();
+            }
+            if(this.tabsValue == 'initiated'){
+                this.getInitiatedList();
+            }
         },
 
         // 列表点击事件
@@ -434,12 +484,17 @@ export default {
             this.$refs.initiateRef.validate((valid) => {
                 if (valid) {
                     this.loadIng++;
+                    var obj = JSON.parse(JSON.stringify(this.addData))
+                    // if((addTitle || '').indexOf('班') == -1){
+                        obj.startTime = obj.startTime +" "+ obj.startTimeHour + ":" + obj.startTimeMinute;
+                        obj.endTime = obj.endTime +" "+ obj.endTimeHour + ":" + obj.endTimeMinute;
+                    // }
                     this.$store.dispatch("call", {
                         url: 'workflow/process/start',
                         data: {
                             proc_name:this.addTitle,
-                            department_id:this.addData.department_id,
-                            var: JSON.stringify(this.addData)
+                            department_id: obj.department_id,
+                            var: JSON.stringify(obj)
                         },
                         method: 'post',
                     }).then(({data, msg}) => {
@@ -465,7 +520,6 @@ export default {
     .page-review .review-details{
         border-radius: 8px;
     }
-    
     .page-review .ivu-tabs-nav {
         display: flex;
         width: 350px;
@@ -477,5 +531,8 @@ export default {
             flex:1;
             text-align: center;
         }
+    }
+    .page-review-initiate .ivu-modal-body{
+        padding: 16px 22px 2px !important;
     }
 </style>
