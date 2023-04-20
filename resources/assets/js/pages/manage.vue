@@ -72,6 +72,7 @@
                                 <DropdownItem name="exportTask">{{$L('导出任务统计')}}</DropdownItem>
                                 <DropdownItem name="exportOverdueTask">{{$L('导出超期任务')}}</DropdownItem>
                                 <DropdownItem name="exportCheckin">{{$L('导出签到数据')}}</DropdownItem>
+                                <DropdownItem name="exportWorkflow">{{$L('导出审批数据')}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                         <!-- 其他菜单 -->
@@ -247,6 +248,9 @@
         <!--导出签到数据-->
         <CheckinExport v-model="exportCheckinShow"/>
 
+        <!--导出审批数据-->
+        <WorkflowExport v-model="exportWorkflowShow"/>
+
         <!--任务详情-->
         <TaskModal ref="taskModal"/>
 
@@ -314,6 +318,7 @@ import DialogModal from "./manage/components/DialogModal";
 import TaskModal from "./manage/components/TaskModal";
 import CheckinExport from "./manage/components/CheckinExport";
 import TaskExport from "./manage/components/TaskExport";
+import WorkflowExport from "./manage/components/WorkflowExport";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
 
@@ -321,6 +326,7 @@ export default {
     components: {
         TaskExport,
         CheckinExport,
+        WorkflowExport,
         TaskModal,
         DialogModal,
         MeetingManager,
@@ -358,6 +364,8 @@ export default {
 
             exportTaskShow: false,
             exportCheckinShow: false,
+            exportWorkflowShow: false,
+
 
             dialogMsgSubscribe: null,
 
@@ -559,7 +567,7 @@ export default {
                     {path: 'personal', name: '个人设置', divided: true},
                     {path: 'review', name: '审批中心'},
                     {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
-                
+
                     {path: 'workReport', name: '工作报告', divided: true},
                     {path: 'archivedProject', name: '已归档的项目'},
                 ])
@@ -743,6 +751,9 @@ export default {
                     return;
                 case 'exportCheckin':
                     this.exportCheckinShow = true;
+                    return;
+                case 'exportWorkflow':
+                    this.exportWorkflowShow = true;
                     return;
                 case 'workReport':
                     if (this.reportUnreadNumber > 0) {
