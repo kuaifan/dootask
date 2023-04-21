@@ -2,7 +2,7 @@
     <div class="review-details" :style="{'z-index':modalTransferIndex}">
         <div class="review-details-box">
             <h2 class="review-details-title">
-                <span>{{datas.proc_def_name}}</span>
+                <span>{{$L(datas.proc_def_name)}}</span>
                 <Tag v-if="datas.state == 0" color="cyan">{{$L('待审批')}}</Tag>
                 <Tag v-if="datas.state == 1" color="cyan">{{$L('审批中')}}</Tag>
                 <Tag v-if="datas.state == 2" color="green">{{$L('已通过')}}</Tag>
@@ -14,7 +14,7 @@
             <Divider/>
             <div class="review-details-text" v-if="(datas.proc_def_name || '').indexOf('班') == -1">
                 <h4>{{$L('假期类型')}}</h4>
-                <p>{{datas.var?.type}}</p>
+                <p>{{$L(datas.var?.type)}}</p>
             </div>
             <div class="review-details-text">
                 <h4>{{$L('开始时间')}}</h4>
@@ -90,10 +90,10 @@
                             <Avatar :src="'/images/avatar/default_bot.png'" size="38"/>
                             <div style="margin-left: 10px;flex: 1;">
                                 <p class="review-process-name">{{$L('系统')}}</p>
-                                <p style="font-size: 12px;">自动抄送
+                                <p style="font-size: 12px;">{{$L('自动抄送')}}
                                     <span style="color: #486fed;">
                                         {{ item.node_user_list?.map(h=>h.name).join(',') }} 
-                                        等{{item.node_user_list?.length}}人
+                                        {{$L('等'+item.node_user_list?.length+'人')}}
                                     </span>
                                 </p>
                             </div>

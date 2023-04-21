@@ -1,14 +1,14 @@
 <template>
     <div class="review-list">
         <h2>
-            <span class="list-name">{{data.proc_def_name}}</span> 
+            <span class="list-name">{{$L(data.proc_def_name)}}</span> 
             <Tag v-if="data.state == 0" color="cyan">{{$L('待审批')}}</Tag>
             <Tag v-if="data.state == 1" color="cyan">{{$L('审批中')}}</Tag>
             <Tag v-if="data.state == 2" color="green">{{$L('已通过')}}</Tag>
             <Tag v-if="data.state == 3" color="red">{{$L('已拒绝')}}</Tag>
             <Tag v-if="data.state == 4" color="red">{{$L('已撤回')}}</Tag>
         </h2>
-        <p v-if="data.var?.type">{{$L('假期类型')}}：<span>{{data.var?.type}}</span></p>
+        <p v-if="data.var?.type">{{$L('假期类型')}}：<span>{{$L(data.var?.type)}}</span></p>
         <p>{{$L('开始时间')}}：<span>{{data.var?.start_time}}</span></p>
         <p>{{$L('结束时间')}}：<span>{{data.var?.end_time}}</span></p>
         <div class="list-member">

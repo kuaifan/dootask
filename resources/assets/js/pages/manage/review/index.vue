@@ -7,7 +7,7 @@
                 <div class="review-nav">
                     <h1>{{$L('审批中心')}}</h1>
                 </div>
-                <Button v-for="(item,key) in procdefList" :loading="loadIng > 0" :key="key" type="primary" @click="initiate(item)" style="margin-right:10px;">{{item.name}}</Button>
+                <Button v-for="(item,key) in procdefList" :loading="loadIng > 0" :key="key" type="primary" @click="initiate(item)" style="margin-right:10px;">{{$L(item.name)}}</Button>
             </div>
 
             <Tabs :value="tabsValue" @on-click="tabsClick" style="margin: 0 20px;height: 100%;"  size="small">
@@ -33,7 +33,7 @@
                         </div>
                     </div>
                 </TabPane>
-                <TabPane label="已办" name="done">
+                <TabPane :label="$L('已办')" name="done">
                     <div class="review-main-search">
                         <div style="display: flex;gap: 10px;">
                             <Select v-model="approvalType" @on-change="tabsClick('')" style="width: 150px;">
@@ -55,7 +55,7 @@
                         </div>
                     </div>
                 </TabPane>
-                <TabPane label="抄送我" name="notify">
+                <TabPane :label="$L('抄送我')" name="notify">
                     <div class="review-main-search">
                         <div class="review-main-search">
                             <div style="display: flex;gap: 10px;">
@@ -123,7 +123,7 @@
                 </FormItem>
                 <FormItem v-if="(addTitle || '').indexOf('班') == -1" prop="type" :label="$L('假期类型')">
                     <Select v-model="addData.type" :placeholder="$L('请选择假期类型')">
-                        <Option v-for="(item, index) in selectTypes" :value="item" :key="index">{{ item }}</Option>
+                        <Option v-for="(item, index) in selectTypes" :value="item" :key="index">{{ $L(item) }}</Option>
                     </Select>
                 </FormItem>
                 <FormItem prop="startTime" :label="$L('开始时间')">
@@ -201,17 +201,17 @@ export default {
             // 
             approvalType:"all",
             approvalList:[
-                {value:"all",label:"全部审批"},
-                {value:"请假",label:"请假"},
-                {value:"加班申请",label:"加班申请"},
+                {value:"all",label:this.$L("全部审批")},
+                {value:"请假",label:this.$L("请假")},
+                {value:"加班申请",label:this.$L("加班申请")},
             ],
             searchState:"all",
             searchStateList:[
-                {value:"all",label:"全部状态"},
-                {value:1,label:"审批中"},
-                {value:2,label:"已通过"},
-                {value:3,label:"已拒绝"},
-                {value:4,label:"已撤回"}
+                {value:"all",label:this.$L("全部状态")},
+                {value:1,label:this.$L("审批中")},
+                {value:2,label:this.$L("已通过")},
+                {value:3,label:this.$L("已拒绝")},
+                {value:4,label:this.$L("已撤回")}
             ],
             // 
             backlogTotal:0,
@@ -230,7 +230,7 @@ export default {
             addData: {
                 department_id:0,
                 type: '',
-                startTime:"2023-04-20",
+                startTime: "2023-04-20",
                 startTimeHour:"09",
                 startTimeMinute:"00",
                 endTime: "2023-04-20",
@@ -289,23 +289,16 @@ export default {
         this.getProcdef()
         this.getBacklogList()
         this.addData.department_id = this.userInfo.department[0] || 0;
+        this.addData.startTime = this.addData.endTime = this.getCurrentDate();
     },
     methods:{
-        formatter(type, val) {
-            if (type === 'year') {
-                return `${val}月`;
-            }else if (type === 'month') {
-                return `${val}月`;
-            } else if (type === 'day') {
-                return `${val}日`;
-            } else if (type === 'hour') {
-                return `${val}时`;
-            }else if (type === 'minute') {
-                return `${val}分`;
-            }
-            return val;
+        getCurrentDate() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const date = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${date}`;
         },
-
         // tab切换事件
         tabsClick(val){
             if(!val && this.__tabsClick){
