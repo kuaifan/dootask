@@ -139,7 +139,11 @@
         <span>开始时间：{{$data->start_time}}</span>
         <span>结束时间：{{$data->end_time}}</span>
     </div><div class="btn-raw">
+        @if ($is_finished == 1)
         <Button type="button" class="ivu-btn ivu-btn-small" style="flex: 1;">已同意</Button>
+        @else
+        <Button type="button" class="ivu-btn ivu-btn-small" style="flex: 1;">查看详情</Button>
+        @endif
     </div></span>
 @elseif ($type === 'workflow_submitter')
     <span class="open-review-details" data-id="{{$data->id}}"><b> @if ($action === 'pass')您发起的「{{$data->proc_def_name}}」已通过 @else您发起的「{{$data->proc_def_name}}」被{{$data->nickname}}拒绝 @endif</b>

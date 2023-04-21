@@ -916,7 +916,7 @@ class WorkflowController extends AbstractController
             'start_time' => $process['var']['start_time'],
             'end_time' => $process['var']['end_time'],
         ];
-        $text = view('push.bot', ['type' => $type, 'action' => $action, 'data' => (object)$data])->render();
+        $text = view('push.bot', ['type' => $type, 'action' => $action, 'is_finished' => $process['is_finished'], 'data' => (object)$data])->render();
         $text = preg_replace("/^\x20+/", "", $text);
         $text = preg_replace("/\n\x20+/", "\n", $text);
         $msg_action = null;
