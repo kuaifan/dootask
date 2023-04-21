@@ -747,13 +747,14 @@ class WorkflowController extends AbstractController
             //
             $nickname = Base::filterEmoji($val['start_user_name']);
             $participant = $this->getUserProcessParticipantById($val['id']); // 获取参与人
-            $participant = $this->handleParticipant($participant['data']); // 处理参与人返回数据
+            $participant = $this->handleParticipant($val, $participant['data']); // 处理参与人返回数据
             //
+            $job_number = ''; // 发起人工号
             $department_leader = User::userid2nickname(UserDepartment::find(1, ['owner_userid'])['owner_userid']); // 部门负责人
             $historical_approver = $participant['historical_approver'] ?? ''; // 历史审批人
-            $historical_agent = $participant['historical_agent'] ?? ''; // 历史办理人
+            $historical_agent = ''; // 历史办理人
             $approval_record = $participant['approval_record'] ?? ''; // 审批记录
-            $current_handler = implode(',', User::whereIn('userid', explode(';', $val['candidate']))->pluck('nickname')->toArray()); // 当前处理人
+            $current_handler = !$val['is_finished'] ? implode(',', User::whereIn('userid', explode(';', $val['candidate']))->pluck('nickname')->toArray()) : ''; // 当前处理人
             $approved_node = $participant['approved_node'] ?? 0; // 审批节点
             $approved_num = $participant['approved_num'] ?? 0; // 审批人数
             // 计算审批耗时
@@ -761,9 +762,9 @@ class WorkflowController extends AbstractController
             $endTime = $val['end_time'] ? Carbon::parse($val['end_time'])->timestamp : time();
             $approval_time = Base::timeDiff($startTime, $endTime); // 审批耗时
             // 计算时长
-            $varStartTime = Carbon::parse($val['var']['start_time'])->timestamp;
-            $varEndTime = Carbon::parse($val['var']['end_time'])->timestamp;
-            $duration = Base::timeDiff($varStartTime, $varEndTime); // 时长
+            $varStartTime = Carbon::parse($val['var']['start_time']);
+            $varEndTime = Carbon::parse($val['var']['end_time']);
+            $duration = $varEndTime->diffInHours($varStartTime);
             $duration_unit = '小时'; // 时长单位
             $datas[] = [
                 $val['id'], // 申请编号
@@ -771,7 +772,7 @@ class WorkflowController extends AbstractController
                 $this->getStateDescription($val['state']), // 申请状态
                 $val['start_time'], // 发起时间
                 $val['end_time'], // 完成时间
-                $val['start_user_id'], // 发起人工号
+                $job_number, // 发起人工号
                 $val['start_user_id'], // 发起人User ID
                 $nickname, // 发起人姓名
                 $val['department'], // 发起人部门
@@ -871,13 +872,14 @@ class WorkflowController extends AbstractController
     }
 
     // 处理参与人返回数据
-    public function handleParticipant($participant)
+    public function handleParticipant($process, $participant)
     {
         // 如果空
         if (empty($participant)) {
             return [];
         }
         $res = [];
+        $historical_approver = [];
         $approved_node = 0; // 审批节点
         $approved_num = 0; // 审批人数
         foreach ($participant as $val) {
@@ -885,18 +887,23 @@ class WorkflowController extends AbstractController
             if ($val['type'] == 'participant') {
                 // 审批人累加加到;格式字符串
                 if ($val['step'] != 0) {
-                    $res['historical_approver'] .= $val['username'] . ';';
+                    // 过滤掉空的审批意见
+                    if ($val['comment'] == '' || in_array($val['username'], $historical_approver)) {
+                        continue;
+                    }
+                    $historical_approver = array_unique(array_merge($historical_approver, explode(',', $val['username'])));
                     $approved_node++;
                     $approved_num++;
                 }
                 // 审批记录用|格式字符串
                 $name = $val['username'] . '|';
                 $call = $val['step'] == 0 ? '发起审批'. '|' : '同意' . '|';
-                $time = date('Y-m-d H:i:s', $val['time']) . '|';
+                $time =$val['step'] == 0 ? $process['start_time'] . '|' : '';
                 $comment = $val['step'] == 0 ? '' : ($val['comment'] ?? '') . '|';
                 $res['approval_record'] .= $name . $call . $time . $comment;
             }
         }
+        $res['historical_approver'] =  trim(implode(';', $historical_approver), ';');
         $res['approved_node'] = $approved_node;
         $res['approved_num'] = $approved_num;
         $res['historical_agent'] = $res['historical_approver'];
@@ -990,7 +997,7 @@ class WorkflowController extends AbstractController
     }
 
     // 处理流程节点返回是否有抄送人
-    public function handleProcessNode($process, $step = 0)
+    public function handleProcessNode($process)
     {
         // 获取流程节点
         $process_node = $process['node_infos'];
