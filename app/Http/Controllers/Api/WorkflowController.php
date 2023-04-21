@@ -885,7 +885,6 @@ class WorkflowController extends AbstractController
         foreach ($participant as $val) {
             // 如果是审批人
             if ($val['type'] == 'participant') {
-                // 审批人累加加到;格式字符串
                 if ($val['step'] != 0) {
                     // 过滤掉空的审批意见
                     if ($val['comment'] == '' || in_array($val['username'], $historical_approver)) {
@@ -895,7 +894,7 @@ class WorkflowController extends AbstractController
                     $approved_node++;
                     $approved_num++;
                 }
-                // 审批记录用|格式字符串
+                // 审批记录
                 $name = $val['username'] . '|';
                 $call = $val['step'] == 0 ? '发起审批'. '|' : '同意' . '|';
                 $time =$val['step'] == 0 ? $process['start_time'] . '|' : '';
