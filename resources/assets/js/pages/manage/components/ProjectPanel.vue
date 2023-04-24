@@ -435,7 +435,7 @@
         <DrawerOverlay
             v-model="logShow"
             placement="right"
-            :size="768">
+            :size="720">
             <ProjectLog v-if="logShow" :project-id="projectId"/>
         </DrawerOverlay>
 

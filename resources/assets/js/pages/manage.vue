@@ -1,6 +1,6 @@
 <template>
     <div v-show="userId > 0" class="page-manage" :class="{'show-tabbar': showMobileTabbar}">
-        <div class="manage-box-menu" :class="{'show768-menu': show768Menu}">
+        <div class="manage-box-menu" :class="{'show-mobile-menu': showMobileMenu}">
             <Dropdown
                 class="page-manage-menu-dropdown main-menu"
                 trigger="click"
@@ -363,7 +363,7 @@ export default {
 
             openMenu: {},
             visibleMenu: false,
-            show768Menu: false,
+            showMobileMenu: false,
 
             workReportShow: false,
             allUserShow: false,
@@ -699,7 +699,7 @@ export default {
         },
 
         async toggleRoute(path, params) {
-            this.show768Menu = false;
+            this.showMobileMenu = false;
             let location = {name: 'manage-' + path, params: params || {}};
             let fileFolderId = await $A.IDBInt("fileFolderId");
             if (path === 'file' && fileFolderId > 0) {

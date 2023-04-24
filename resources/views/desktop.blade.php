@@ -100,7 +100,7 @@
             line-height: 26px
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 834px) {
             .mirror {
                 width: 100%;
                 padding: 0 15px 10px

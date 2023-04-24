@@ -11,8 +11,8 @@ export default {
     windowScrollY: 0,
 
     // 浏览器窗口类型
-    windowLarge: $A(window).width() > 768, // 大窗口
-    windowSmall: $A(window).width() <= 768, // 小窗口
+    windowLarge: $A(window).width() > 834, // 大窗口
+    windowSmall: $A(window).width() <= 834, // 小窗口
 
     // 窗口是否激活
     windowActive: true,

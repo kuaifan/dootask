@@ -5,13 +5,13 @@
             <div class="setting-titbox">
                 <div class="setting-title">
                     <h1>{{$L(settingTitleName)}}</h1>
-                    <div v-if="!show768Box" class="setting-more" @click="toggleRoute('index')">
+                    <div v-if="!showMobileBox" class="setting-more" @click="toggleRoute('index')">
                         <Icon type="md-close" />
                     </div>
                 </div>
             </div>
         </div>
-        <div class="setting-box" :class="{'show768-box':show768Box}">
+        <div class="setting-box" :class="{'show-mobile-box':showMobileBox}">
             <div class="setting-menu">
                 <ul>
                     <li
@@ -65,7 +65,7 @@ export default {
             return this.$route.name
         },
 
-        show768Box() {
+        showMobileBox() {
             return this.routeName === 'manage-setting'
         },
 

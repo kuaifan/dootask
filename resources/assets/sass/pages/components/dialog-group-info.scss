@@ -71,7 +71,7 @@
                     }
                 }
 
-                @media (max-width: 768px) {
+                @media (max-width: 834px) {
                     &:hover {
                         background-color: transparent;
                     }
@@ -123,7 +123,7 @@
                     transform: translateX(50%);
                     transition: all 0.2s;
 
-                    @media (max-width: 768px) {
+                    @media (max-width: 834px) {
                         opacity: 1;
                         transform: translateX(0);
                     }

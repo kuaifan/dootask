@@ -314,7 +314,7 @@
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 834px) {
     .file-preview {
         .edit-header {
             .header-hint {
@@ -329,7 +329,7 @@
         overflow: auto;
         .edit-header,
         .content-body {
-            min-width: 768px;
+            min-width: 720px;
             overflow-x: auto;
             .teditor-loadedstyle {
                 .tox-menubar,

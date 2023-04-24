@@ -421,7 +421,7 @@
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 834px) {
     .page-manage {
         &.show-tabbar {
             .manage-box-main {
@@ -436,7 +436,7 @@
             bottom: 0;
             width: 100%;
             transform: translateX(-120%);
-            &.show768-menu {
+            &.show-mobile-menu {
                 transform: translateX(0);
             }
         }

@@ -4,7 +4,7 @@
 <style lang="scss" scoped>
     .component-resize-line {
         cursor: col-resize;
-        @media (max-width: 768px) {
+        @media (max-width: 834px) {
             display: none;
         }
         &.resizing {
