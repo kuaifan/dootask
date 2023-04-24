@@ -151,7 +151,7 @@ services:
 
   workflow:
     container_name: "dootask-workflow-${APP_ID}"
-    image: "weifashi/go-workflow:1.0.1"
+    image: "hitosea2020/go-workflow:1.0.0"
     environment:
       TZ: "Asia/Shanghai"
       MYSQL_HOST: "${DB_HOST}"

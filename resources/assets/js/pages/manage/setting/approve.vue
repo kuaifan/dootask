@@ -51,7 +51,7 @@ export default {
     },
     watch: {
         approvalSettingShow(val) {
-            if (val) this.iframeSrc = `/workflow/#/?name=${this.name}&token=${store.userToken}&en=${languageType}`
+            if (val) this.iframeSrc = `/workflow/#/?name=${this.name}&token=${store.userToken}&lang=${languageType}`
         }
     },
     mounted() {
