@@ -473,6 +473,10 @@ export default {
 
         // 发起
         initiate(item){
+            if( !this.addData.department_id ){
+                $A.modalError("您当前未加入任何部门，不能发起！");
+                return false;
+            }
             this.addTitle = item.name;
             this.addShow = true;
         },

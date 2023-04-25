@@ -16509,5 +16509,16 @@
         "de": "Automatisch durchgeführt, und die person, die damit beauftragt wurde, ist die person, die damit beauftragt wurde",
         "fr": "Passage automatique, approbation et initiateur sont la même personne",
         "id": "Secara otomatis lewat, auditor dan si pendiri adalah orang yang sama"
+    },
+    {
+        "key": "您当前未加入任何部门，不能发起！",
+        "zh": "",
+        "zh-CHT": "您當前未加入任何部門，不能發起！",
+        "en": "You have not joined any department at present, cannot initiate!",
+        "ko": "현재 어떤 부서에 가입되어 있지 않습니다. 시작할 수 없습니다!",
+        "ja": "現在、どの部門にも所属していないので、発議することはできません!",
+        "de": "Sie sind noch nicht aktiv in einer abteilung!",
+        "fr": "Vous n’êtes actuellement affilié à aucun département et ne pouvez pas initier!",
+        "id": "Anda saat ini tidak bergabung dengan divisi manapun, tidak bisa memulai!"
     }
 ]
