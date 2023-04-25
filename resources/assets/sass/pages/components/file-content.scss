@@ -314,16 +314,6 @@
     }
 }
 
-@media (max-width: 834px) {
-    .file-preview {
-        .edit-header {
-            .header-hint {
-                display: none;
-            }
-        }
-    }
-}
-
 @media (max-width: 1200px) {
     .file-content {
         overflow: auto;
@@ -339,6 +329,16 @@
                 .tox-sidebar-wrap {
                     margin: 0;
                 }
+            }
+        }
+    }
+}
+
+body.window-portrait {
+    .file-preview {
+        .edit-header {
+            .header-hint {
+                display: none;
             }
         }
     }

@@ -72,7 +72,7 @@
                                 <i class="taskfont">&#xe71f;</i>
                                 <em>{{item.sub_complete}}/{{item.sub_num}}</em>
                             </div>
-                            <ETooltip v-if="item.end_at" :disabled="windowSmall || $isEEUiApp" :content="item.end_at" placement="right">
+                            <ETooltip v-if="item.end_at" :disabled="$isEEUiApp || windowTouch" :content="item.end_at" placement="right">
                                 <div :class="['item-icon', item.today ? 'today' : '', item.overdue ? 'overdue' : '']">
                                     <i class="taskfont">&#xe71d;</i>
                                     <em>{{expiresFormat(item.end_at)}}</em>

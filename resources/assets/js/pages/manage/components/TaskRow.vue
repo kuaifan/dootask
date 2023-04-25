@@ -86,7 +86,7 @@
                     <ETooltip
                         v-if="!item.complete_at && item.end_at"
                         :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
-                        :disabled="windowSmall || $isEEUiApp"
+                        :disabled="$isEEUiApp || windowTouch"
                         :open-delay="600"
                         :content="item.end_at">
                         <div @click="openTask(item)">{{expiresFormat(item.end_at)}}</div>

@@ -144,7 +144,7 @@
                         :current="page"
                         :page-size="pageSize"
                         :disabled="loadIng > 0"
-                        :simple="windowSmall"
+                        :simple="windowPortrait"
                         :page-size-opts="[10,20,30,50,100]"
                         show-elevator
                         show-sizer
@@ -769,7 +769,7 @@ export default {
         departmentSelect() {
             this.setPage(1)
         },
-        windowSmall: {
+        windowPortrait: {
             handler(v) {
                 this.minBox = v
             },
@@ -1082,7 +1082,7 @@ export default {
         },
 
         onSelectDepartment(id) {
-            if (this.windowSmall) {
+            if (this.windowPortrait) {
                 this.minBox = true
             }
             //

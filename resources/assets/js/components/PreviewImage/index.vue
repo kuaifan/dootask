@@ -108,7 +108,7 @@ export default {
             if (this.mode) {
                 return this.mode
             }
-            return this.$store.state.windowLarge ? 'desktop' : 'mobile'
+            return this.windowTouch ? 'mobile' : 'desktop'
         }
     }
 };

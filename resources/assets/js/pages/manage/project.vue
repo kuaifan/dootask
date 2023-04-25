@@ -4,7 +4,7 @@
             <ProjectPanel/>
             <ProjectDialog/>
         </template>
-        <ProjectList v-if="windowSmall" v-show="projectId === 0"/>
+        <ProjectList v-if="windowPortrait" v-show="projectId === 0"/>
     </div>
 </template>
 

@@ -1,21 +1,32 @@
+const windowWidth = $A(window).width(),
+    windowHeight = $A(window).height(),
+    windowOrientation = $A.strExists(window.screen.orientation.type, 'portrait') ? 'portrait' : 'landscape'
+
 export default {
     // 客户端ID（希望不变的，除非清除浏览器缓存或者卸载应用）
     clientId: "",
 
-    // 是否移动端（支持触摸）
-    supportTouch: "ontouchend" in document,
-
-    // 浏览器尺寸信息
-    windowWidth: $A(window).width(),
-    windowHeight: $A(window).height(),
-    windowScrollY: 0,
-
-    // 浏览器窗口类型
-    windowLarge: $A(window).width() > 834, // 大窗口
-    windowSmall: $A(window).width() <= 834, // 小窗口
-
     // 窗口是否激活
     windowActive: true,
+
+    // 窗口滚动条位置
+    windowScrollY: 0,
+
+    // 浏览器支持触摸事件
+    windowTouch: "ontouchend" in document,
+
+    // 浏览器尺寸信息
+    windowWidth: windowWidth,
+    windowHeight: windowHeight,
+
+    // 浏览器窗口方向
+    windowOrientation: windowOrientation,
+    windowLandscape: windowOrientation === 'landscape', // 横屏
+    windowPortrait: windowOrientation === 'portrait',   // 竖屏
+
+    // 表单布局
+    formLabelPosition: windowWidth > 576 ? 'right' : 'top',
+    formLabelWidth: windowWidth > 576 ? 'auto' : '',
 
     // App通知权限
     appNotificationPermission: true,
@@ -170,10 +181,6 @@ export default {
 
     // 工作报告未读数量
     reportUnreadNumber: 0,
-
-    // 表单布局
-    formLabelPosition: $A(window).width() > 576 ? 'right' : 'top',
-    formLabelWidth: $A(window).width() > 576 ? 'auto' : '',
 
     // 加密相关
     apiKeyData: {},

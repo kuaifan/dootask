@@ -1602,7 +1602,7 @@
     }
 }
 
-body.support-touch {
+body.window-touch {
     .dialog-wrapper {
         .dialog-scroller {
             user-select: none;
@@ -1621,7 +1621,7 @@ body.support-touch {
     }
 }
 
-@media (max-width: 834px) {
+body.window-portrait {
     .dialog-wrapper {
         background-color: #f8f8f8;
         &.drawer-list {
@@ -1851,18 +1851,18 @@ body.support-touch {
             }
         }
     }
-}
 
-@media (max-width: 834px) and (min-width: 390px){
-    .dialog-wrapper-operate {
-        .operate-action {
-            width: 376px;
-        }
-        .operate-emoji {
-            width: 376px;
+    @media (max-width: 768px) and (min-width: 390px){
+        .dialog-wrapper-operate {
+            .operate-action {
+                width: 376px;
+            }
+            .operate-emoji {
+                width: 376px;
 
-            > li {
-                width: 46px;
+                > li {
+                    width: 46px;
+                }
             }
         }
     }

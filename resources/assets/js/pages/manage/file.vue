@@ -813,7 +813,7 @@ export default {
         },
 
         isPreview() {
-            return this.windowSmall || this.fileInfo.permission === 0
+            return this.windowPortrait || this.fileInfo.permission === 0
         },
 
         isParentShare() {
@@ -841,7 +841,7 @@ export default {
         },
 
         tableHeight() {
-            if (this.windowLarge) {
+            if (this.windowLandscape) {
                 return Math.max(300, this.windowHeight - 160)
             } else {
                 return Math.max(300, this.windowHeight - 200)
@@ -871,7 +871,7 @@ export default {
         fileShow(val) {
             if (!val) {
                 this.browseFile(0)
-                if (this.windowSmall) {
+                if (this.windowPortrait) {
                     $A.onBlur(true)
                 }
             }
@@ -978,7 +978,7 @@ export default {
         },
 
         handleContextmenu(event) {
-            if (this.windowLarge) {
+            if (this.windowLandscape) {
                 this.handleRightClick(event)
             }
         },

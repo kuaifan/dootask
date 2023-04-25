@@ -1,0 +1,30 @@
+.component-resize-line {
+    cursor: col-resize;
+
+    &.resizing {
+        &:after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 99999;
+            cursor: col-resize;
+        }
+    }
+
+    &.bottom {
+        cursor: row-resize;
+
+        &:after {
+            cursor: row-resize;
+        }
+    }
+}
+
+body.window-portrait {
+    .component-resize-line {
+        display: none;
+    }
+}

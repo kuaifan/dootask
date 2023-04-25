@@ -106,7 +106,7 @@ export default {
             'month.dayname.borderLeft': '1px solid rgba(0,0,0,0)',
             'month.dayname.height': '50px',
         }
-        if (this.windowLarge) {
+        if (this.windowLandscape) {
             this.calendarTheme = {
                 'common.border': '1px solid #f4f5f5',
                 'month.dayname.fontSize': '14px',

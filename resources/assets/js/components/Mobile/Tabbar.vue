@@ -1,6 +1,6 @@
 <template>
     <div class="mobile-tabbar">
-        <NetworkException v-if="windowSmall" type="alert"/>
+        <NetworkException v-if="windowPortrait" type="alert"/>
         <transition name="mobile-fade">
             <div v-if="isMore" class="more-mask" @click="toggleRoute('more')"></div>
         </transition>

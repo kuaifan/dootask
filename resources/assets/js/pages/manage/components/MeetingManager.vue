@@ -66,7 +66,7 @@
                 <Button type="primary" :loading="videoLoad" @click="onVideo">
                     <i class="taskfont" v-html="localUser.videoTrack ? '&#xe7c1;' : '&#xe7c8;'"></i>
                 </Button>
-                <template v-if="windowSmall">
+                <template v-if="windowPortrait">
                     <Button type="primary" @click="onInvitation('open')">
                         <i class="taskfont">&#xe646;</i>
                     </Button>

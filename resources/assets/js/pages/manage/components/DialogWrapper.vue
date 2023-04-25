@@ -212,7 +212,7 @@
                 ref="input"
                 v-model="msgText"
                 :dialog-id="dialogId"
-                :emoji-bottom="windowSmall"
+                :emoji-bottom="windowPortrait"
                 :maxlength="200000"
                 @on-focus="onEventFocus"
                 @on-blur="onEventBlur"
@@ -1517,7 +1517,7 @@ export default {
         },
 
         onTouchMove(e) {
-            if (this.windowSmall && this.windowScrollY > 0) {
+            if (this.windowPortrait && this.windowScrollY > 0) {
                 if (this.wrapperStart.exclud) {
                     e.preventDefault();
                     return;
@@ -1680,7 +1680,7 @@ export default {
         },
 
         onEventEmojiVisibleChange(val) {
-            if (val && this.windowSmall) {
+            if (val && this.windowPortrait) {
                 this.onToBottom();
             }
         },
@@ -1744,7 +1744,7 @@ export default {
             if (!this.dialogData.group_info) {
                 return;
             }
-            if (this.windowSmall) {
+            if (this.windowPortrait) {
                 this.$store.dispatch("openDialog", 0);
             }
             this.goForward({name: 'manage-project', params: {projectId:this.dialogData.group_info.id}});
@@ -2302,7 +2302,7 @@ export default {
                     break;
 
                 case 'filepos':
-                    if (this.windowSmall) {
+                    if (this.windowPortrait) {
                         this.$store.dispatch("openDialog", 0);
                     }
                     this.goForward({name: 'manage-file', params: value});

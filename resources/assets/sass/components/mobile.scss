@@ -314,13 +314,13 @@
     opacity: 0;
 }
 
-body.support-touch {
+body.window-touch {
     .mobile-back {
         display: block;
     }
 }
 
-@media (max-width: 834px) {
+body.window-portrait {
     .mobile-tabbar {
         display: flex;
     }

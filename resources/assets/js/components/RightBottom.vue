@@ -106,7 +106,7 @@ export default {
         },
 
         showDown() {
-            return !this.$isEEUiApp && this.windowLarge && ['login', 'index', 'manage-dashboard'].includes(this.$route.name)
+            return !this.$isEEUiApp && !this.windowTouch && ['login', 'index', 'manage-dashboard'].includes(this.$route.name)
         },
 
         showPrivacy() {

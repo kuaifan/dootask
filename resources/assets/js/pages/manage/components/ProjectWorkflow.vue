@@ -67,7 +67,7 @@
                                 <Draggable
                                     :list="data.project_flow_item"
                                     :animation="150"
-                                    :disabled="windowSmall || $isEEUiApp"
+                                    :disabled="$isEEUiApp || windowTouch"
                                     class="taskflow-config-table-list-wrapper"
                                     tag="div"
                                     draggable=".column-border"

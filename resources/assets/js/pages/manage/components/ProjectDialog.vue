@@ -41,7 +41,7 @@ export default {
         ...mapGetters(['projectData']),
 
         dialogShow() {
-            return this.windowLarge && this.projectData.dialog_id && this.projectData.cacheParameter.chat
+            return this.windowLandscape && this.projectData.dialog_id && this.projectData.cacheParameter.chat
         }
     },
 

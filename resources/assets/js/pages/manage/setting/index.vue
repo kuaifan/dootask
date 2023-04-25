@@ -116,7 +116,7 @@ export default {
         },
 
         settingTitleName() {
-            if (this.windowSmall) {
+            if (this.windowPortrait) {
                 return this.titleNameRoute
             }
             return '设置'
@@ -126,7 +126,7 @@ export default {
     watch: {
         routeName: {
             handler(name) {
-                if (name === 'manage-setting' && this.windowLarge) {
+                if (name === 'manage-setting' && this.windowLandscape) {
                     this.goForward({name: 'manage-setting-personal'}, true);
                 }
             },
@@ -191,7 +191,7 @@ export default {
 
         classNameRoute(path, divided) {
             return {
-                "active": this.windowLarge && this.routeName === `manage-setting-${path}`,
+                "active": this.windowLandscape && this.routeName === `manage-setting-${path}`,
                 "divided": !!divided
             };
         },

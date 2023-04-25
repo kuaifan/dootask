@@ -1,32 +1,6 @@
 <template>
     <div class="component-resize-line" :class="[resizing ? 'resizing' : '', placement]" @mousedown.left.stop.prevent="resizeDown"></div>
 </template>
-<style lang="scss" scoped>
-    .component-resize-line {
-        cursor: col-resize;
-        @media (max-width: 834px) {
-            display: none;
-        }
-        &.resizing {
-            &:after {
-                content: '';
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                z-index: 99999;
-                cursor: col-resize;
-            }
-        }
-        &.bottom {
-            cursor: row-resize;
-            &:after {
-                cursor: row-resize;
-            }
-        }
-    }
-</style>
 <script>
     export default {
         name: 'ResizeLine',

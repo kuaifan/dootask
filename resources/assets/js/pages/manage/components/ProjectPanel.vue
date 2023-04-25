@@ -20,7 +20,7 @@
                         </li>
                         <template v-if="!(windowWidth <= 980 || projectData.cacheParameter.chat) && projectUser.length > 0" v-for="item in projectUser">
                             <li v-if="item.userid === -1" class="more">
-                                <ETooltip :disabled="windowSmall || $isEEUiApp" :content="$L('共' + (projectData.project_user.length) + '个成员')">
+                                <ETooltip :disabled="$isEEUiApp || windowTouch" :content="$L('共' + (projectData.project_user.length) + '个成员')">
                                     <Icon type="ios-more"/>
                                 </ETooltip>
                             </li>
@@ -31,7 +31,7 @@
                     </ul>
                 </li>
                 <li class="project-icon" @click="addTaskOpen(0)">
-                    <ETooltip :disabled="windowSmall || $isEEUiApp" :content="$L('添加任务')">
+                    <ETooltip :disabled="$isEEUiApp || windowTouch" :content="$L('添加任务')">
                         <Icon class="menu-icon" type="md-add" />
                     </ETooltip>
                 </li>
@@ -43,7 +43,7 @@
                         </div>
                     </Tooltip>
                 </li>
-                <li :class="['project-icon', windowLarge && projectData.cacheParameter.chat ? 'active' : '']" @click="toggleParameter('chat')">
+                <li :class="['project-icon', windowLandscape && projectData.cacheParameter.chat ? 'active' : '']" @click="toggleParameter('chat')">
                     <Icon class="menu-icon" type="ios-chatbubbles" />
                     <Badge class="menu-badge" :overflow-count="999" :count="msgUnread"></Badge>
                 </li>
@@ -95,7 +95,7 @@
             <Draggable
                 :list="columnList"
                 :animation="150"
-                :disabled="sortDisabled || windowSmall || $isEEUiApp"
+                :disabled="sortDisabled || $isEEUiApp || windowTouch"
                 class="column-list"
                 tag="ul"
                 draggable=".column-item"
@@ -150,7 +150,7 @@
                         <Draggable
                             :list="column.tasks"
                             :animation="150"
-                            :disabled="sortDisabled || windowSmall || $isEEUiApp"
+                            :disabled="sortDisabled || $isEEUiApp || windowTouch"
                             class="task-list"
                             draggable=".task-draggable"
                             filter=".complete"
@@ -195,7 +195,7 @@
                                     <ETooltip
                                         v-if="item.end_at"
                                         :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
-                                        :disabled="windowSmall || $isEEUiApp"
+                                        :disabled="$isEEUiApp || windowTouch"
                                         :open-delay="600"
                                         :content="item.end_at">
                                         <div v-if="!item.complete_at"><i class="taskfont">&#xe71d;</i>{{ expiresFormat(item.end_at) }}</div>
@@ -876,7 +876,7 @@ export default {
 
     methods: {
         showName() {
-            if (this.windowLarge) {
+            if (this.windowLandscape) {
                 return;
             }
             $A.modalInfo({
@@ -887,7 +887,7 @@ export default {
         },
 
         showDesc() {
-            if (this.windowLarge) {
+            if (this.windowLandscape) {
                 return;
             }
             $A.modalInfo({
@@ -1477,7 +1477,7 @@ export default {
             if (data === 'completedTask') {
                 this.$store.dispatch("forgetTaskCompleteTemp", true);
             } else if (data === 'chat') {
-                if (this.windowSmall) {
+                if (this.windowPortrait) {
                     this.$store.dispatch('openDialog', this.projectData.dialog_id)
                     return;
                 }
