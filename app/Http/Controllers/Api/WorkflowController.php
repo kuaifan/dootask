@@ -216,7 +216,9 @@ class WorkflowController extends AbstractController
         // 发起人
         if($process['is_finished'] == true) {
             $dialog = WebSocketDialog::checkUserDialog($botUser, $process['start_user_id']);
-            $this->workflowMsg('workflow_submitter', $dialog, $botUser, ['userid' => $data['userid']], $process, $pass);
+            if (!empty($dialog)) {
+                $this->workflowMsg('workflow_submitter', $dialog, $botUser, ['userid' => $data['userid']], $process, $pass);
+            }
         }else if ($process['candidate']) {
             // 下个审批人
             $userid = explode(',', $process['candidate']);
@@ -238,7 +240,9 @@ class WorkflowController extends AbstractController
         if ($notifier && $pass == 'pass') {
             foreach ($notifier as $val) {
                 $dialog = WebSocketDialog::checkUserDialog($botUser, $val['target_id']);
-                $this->workflowMsg('workflow_notifier', $dialog, $botUser, $process, $process);
+                if (!empty($dialog)) {
+                    $this->workflowMsg('workflow_notifier', $dialog, $botUser, $process, $process);
+                }
             }
         }
         return Base::retSuccess( $pass == 'pass' ? '已通过' : '已拒绝', $task);
@@ -802,7 +806,7 @@ class WorkflowController extends AbstractController
             BillExport::create()->setTitle($title)->setHeadings($headings)->setData($datas)->setStyles(["A1:Y1" => ["font" => ["bold" => true]]])
         ];
         //
-        $fileName .= '审批记录_' . Base::time() . '.xls';
+        $fileName = '审批记录_' . Base::time() . '.xls';
         $filePath = "temp/workflow/export/" . date("Ym", Base::time());
         $export = new BillMultipleExport($sheets);
         $res = $export->store($filePath . "/" . $fileName);
@@ -927,10 +931,6 @@ class WorkflowController extends AbstractController
         $text = preg_replace("/\n\x20+/", "\n", $text);
         $msg_action = null;
         if ($action == 'withdraw' || $action == 'pass' || $action == 'refuse') {
-            // 如果任务没有完成，则不需要更新消息
-            if ($process['is_finished'] != true) {
-                return true;
-            }
             // 任务完成，给发起人发送消息
             if($type == 'workflow_submitter' && $action != 'withdraw'){
                 return WebSocketDialogMsg::sendMsg($msg_action, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
@@ -938,29 +938,32 @@ class WorkflowController extends AbstractController
             // 查找最后一条消息msg_id
             $msg_action = 'update-'.$toUser['msg_id'];
         }
-        $msg = WebSocketDialogMsg::sendMsg($msg_action, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
-        // 关联信息
-        if ($action == 'start') {
-            $proc_msg = new WorkflowProcMsg();
-            $proc_msg->proc_inst_id = $process['id'];
-            $proc_msg->msg_id = $msg['data']->id;
-            $proc_msg->userid = $toUser['userid'];
-            $proc_msg->save();
+        // 
+        try {
+            $msg = WebSocketDialogMsg::sendMsg($msg_action, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
+            // 关联信息
+            if ($action == 'start') {
+                $proc_msg = new WorkflowProcMsg();
+                $proc_msg->proc_inst_id = $process['id'];
+                $proc_msg->msg_id = $msg['data']->id;
+                $proc_msg->userid = $toUser['userid'];
+                $proc_msg->save();
+            }
+            // 更新工作报告 未读数量
+            if($type == 'workflow_reviewer' && $toUser['userid']){
+                $params = [
+                    'userid' => [ $toUser['userid'], User::auth()->userid() ],
+                    'msg' => [
+                        'type' => 'workflow',
+                        'action' => 'backlog',
+                        'userid' => $toUser['userid'],
+                    ]
+                ];
+                Task::deliver(new PushTask($params, false));
+            }
+        } catch (\Throwable $th) {
+            //throw $th;
         }
-
-        // 更新工作报告 未读数量
-        if($type == 'workflow_reviewer' && $toUser['userid']){
-            $params = [
-                'userid' => [ $toUser['userid'], User::auth()->userid() ],
-                'msg' => [
-                    'type' => 'workflow',
-                    'action' => 'backlog',
-                    'userid' => $toUser['userid'],
-                ]
-            ];
-            Task::deliver(new PushTask($params, false));
-        }
-
         return true;
     }
 
