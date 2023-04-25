@@ -473,12 +473,25 @@ export default {
 
         // 发起
         initiate(item){
-            if( !this.addData.department_id ){
-                $A.modalError("您当前未加入任何部门，不能发起！");
-                return false;
-            }
-            this.addTitle = item.name;
-            this.addShow = true;
+            this.$store.dispatch("call", {
+                url: 'users/basic',
+                data: {
+                    userid: [ this.userInfo.userid]
+                },
+                skipAuthError: true
+            }).then(({data}) => {
+                this.addData.department_id = data[0]?.department[0] || 0;
+                if( !this.addData.department_id ){
+                    $A.modalError("您当前未加入任何部门，不能发起！");
+                    return false;
+                }
+                this.addTitle = item.name;
+                this.addShow = true;
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            }).finally(_ => {
+                this.loadIng--;
+            });
         },
 
         // 提交发起
