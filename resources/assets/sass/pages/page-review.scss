@@ -224,10 +224,13 @@
     }
 
     .comment{
-        border-radius:5px;
-        background-color: #eaeaea;
-        padding: 3px 10px;
         margin-top: 5px;
         margin-left: 45px;
+        span{
+            background-color: #eaeaea;
+            border-radius: 5px;
+            padding: 3px 10px;
+            display: inline-block;
+        }
     }
 }

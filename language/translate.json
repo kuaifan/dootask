@@ -16520,5 +16520,16 @@
         "de": "Sie sind noch nicht aktiv in einer abteilung!",
         "fr": "Vous n’êtes actuellement affilié à aucun département et ne pouvez pas initier!",
         "id": "Anda saat ini tidak bergabung dengan divisi manapun, tidak bisa memulai!"
+    },
+    {
+        "key": "找不到符合条件的子节点",
+        "zh": "",
+        "zh-CHT": "找不到符合條件的子節點",
+        "en": "No suitable child node could be found",
+        "ko": "일치하는 자식 노드를 찾을 수 없습니다",
+        "ja": "該当する子ノードが見つかりません",
+        "de": "Es kann keine richtige subgruppe gefunden werden",
+        "fr": "Aucun enfant éligible n’a été trouvé",
+        "id": "Tidak dapat menemukan subnode yang sesuai"
     }
 ]

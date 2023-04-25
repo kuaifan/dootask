@@ -498,7 +498,7 @@ export default {
         onInitiate(){
             this.$refs.initiateRef.validate((valid) => {
                 if (valid) {
-                    this.loadIng++;
+                    this.loadIng = 1;
                     var obj = JSON.parse(JSON.stringify(this.addData))
                     // if((addTitle || '').indexOf('班') == -1){
                         obj.startTime = obj.startTime +" "+ obj.startTimeHour + ":" + obj.startTimeMinute;

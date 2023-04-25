@@ -80,7 +80,7 @@
                                 <p>{{item.claim_time?.substr(0,16)}}</p>
                             </div>
                         </div>
-                        <p class="comment" v-if="item.identitylink?.comment">“{{ item.identitylink?.comment  }}”</p>
+                        <p class="comment" v-if="item.identitylink?.comment"><span>“{{ item.identitylink?.comment  }}”</span></p>
                     </TimelineItem>
                     
                     <!-- 抄送 -->
@@ -184,7 +184,7 @@ export default {
         // 把时间转成几小时前
         getTimeAgo(time,type) {
             const currentTime = new Date();
-            const timeDiff = (currentTime - new Date(time)) / 1000; // convert to seconds
+            const timeDiff = (currentTime - new Date((time + '').replace(/-/g,"/"))) / 1000; // convert to seconds
             if (timeDiff < 60) {
                 return  type == 2 ? "0"+this.$L('分钟') : this.$L('刚刚');
             } else if (timeDiff < 3600) {
@@ -195,13 +195,13 @@ export default {
                 return type == 2 ? `${hours}${this.$L('小时')}` : `${hours} ${this.$L('小时前')}`;
             } else {
                 const days = Math.floor(timeDiff / 3600 / 24);
-                return type == 2 ? `${days}${this.$L('天')}` : `${days} ${this.$L('天')}`;
+                return type == 2 ? `${days+1}${this.$L('天')}` : `${days+1} ${this.$L('天')}`;
             }
         },
         // 获取时间差
         getTimeDifference(startTime,endTime) {
-            const currentTime = new Date(endTime);
-            const timeDiff = (currentTime - new Date(startTime)) / 1000; // convert to seconds
+            const currentTime = new Date((endTime + '').replace(/-/g,"/"));
+            const timeDiff = (currentTime - new Date((startTime + '').replace(/-/g,"/"))) / 1000; // convert to seconds
             if (timeDiff < 60) {
                 return {time:timeDiff,unit:this.$L('秒')};
             } else if (timeDiff < 3600) {
@@ -212,7 +212,7 @@ export default {
                 return {time:hours,unit:this.$L('小时')};
             } else {
                 const days = Math.floor(timeDiff / 3600 / 24);
-                return {time:days,unit:this.$L('天')};
+                return {time:days + 1,unit:this.$L('天')};
             }
         },
         // 获取详情

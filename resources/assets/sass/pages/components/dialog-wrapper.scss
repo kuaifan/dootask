@@ -701,6 +701,8 @@
                                 }
 
                                 .open-review-details{
+                                    width: 245px;
+                                    display: inline-block;
                                     .cause{
                                         border-bottom: 1px solid #e3e3e3;
                                         border-top: 1px solid #e3e3e3;
@@ -714,8 +716,10 @@
                                     .btn-raw{
                                         display: flex;
                                         text-align: center;
-                                        gap: 10px;
                                         padding: 10px 0 5px 0;
+                                        >button.ivu-btn-primary{
+                                            margin-right: 12px;
+                                        }
                                     }
                                 }
                             }
