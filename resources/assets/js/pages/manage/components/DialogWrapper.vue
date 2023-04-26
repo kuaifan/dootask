@@ -179,7 +179,7 @@
         </VirtualList>
 
         <!--底部输入-->
-        <div ref="footer" class="dialog-footer" :class="footerClass" @click="onActive">
+        <div ref="footer" class="dialog-footer" :class="footerClass" :style="footerStyle" @click="onActive">
             <div class="dialog-newmsg" @click="onToBottom">{{$L(`有${msgNew}条新消息`)}}</div>
             <div class="dialog-goto" @click="onToBottom"><i class="taskfont">&#xe72b;</i></div>
             <DialogUpload
@@ -661,7 +661,11 @@ export default {
             'dialogIns',
             'cacheUserBasic',
             'fileLinks',
-            'cacheEmojis'
+            'cacheEmojis',
+
+            'keyboardType',
+            'keyboardHeight',
+            'safeAreaBottom'
         ]),
 
         ...mapGetters(['isLoad']),
@@ -826,6 +830,18 @@ export default {
                 return 'goto'
             }
             return null
+        },
+
+        footerStyle() {
+            const {keyboardType, keyboardHeight, safeAreaBottom, windowScrollY} = this
+            const style = {};
+            if (windowScrollY === 0
+                && keyboardType === "show"
+                && keyboardHeight > 0
+                && keyboardHeight < 120) {
+                style.paddingBottom = (keyboardHeight + safeAreaBottom) + 'px';
+            }
+            return style;
         },
 
         msgUnreadOnly() {

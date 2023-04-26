@@ -28,6 +28,11 @@ export default {
     formLabelPosition: windowWidth > 576 ? 'right' : 'top',
     formLabelWidth: windowWidth > 576 ? 'auto' : '',
 
+    // 键盘状态（仅iOS）
+    keyboardType: null, // show|hide
+    keyboardHeight: 0,  // 键盘高度
+    safeAreaBottom: 0,  // 安全区域底部高度
+
     // App通知权限
     appNotificationPermission: true,
 

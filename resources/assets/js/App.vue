@@ -297,6 +297,13 @@ export default {
                     this.$store.dispatch("getBasicData", 600)
                 }
             }
+            // 键盘状态
+            window.__onKeyboardStatus = (data) => {
+                const message = $A.jsonParse(decodeURIComponent(data));
+                this.$store.state.keyboardType = message.keyboardType;
+                this.$store.state.keyboardHeight = message.keyboardHeight;
+                this.$store.state.safeAreaBottom = message.safeAreaBottom;
+            }
             // 通知权限
             window.__onNotificationPermissionStatus = (ret) => {
                 this.$store.state.appNotificationPermission = $A.runNum(ret) == 1;
