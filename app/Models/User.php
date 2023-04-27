@@ -150,6 +150,15 @@ class User extends AbstractModel
     }
 
     /**
+     * 判断是否为部门负责人
+     */
+    public function isDepartmentOwner()
+    {
+        return UserDepartment::where('owner_userid', $this->userid)->exists();
+    }
+
+
+    /**
      * 获取机器人所有者
      * @return int|mixed
      */

@@ -707,7 +707,14 @@ class UsersController extends AbstractController
                         $query->where("department", "")->orWhere("department", ",,");
                     });
                 } else {
-                    $builder->where("department", "like", "%,{$keys['department']},%");
+                    // 关联user_departments表中owner_userid查询出负责人，重新排序，部门负责人始终在前面
+                    $builder->where(function($query) use ($keys) {
+                        $query->where("department", "like", "%,{$keys['department']},%")
+                        ->orWhereIn('userid', function ($query) use ($keys) {
+                            $query->select('owner_userid')->from('user_departments')->where("id", "=", trim($keys['department'], ','))
+                            ->orderByRaw("FIELD(owner_userid,{$keys['department']}) DESC");
+                        });
+                    });
                 }
             }
             if ($getCheckinMac && isset($keys['checkin_mac'])) {
@@ -719,11 +726,16 @@ class UsersController extends AbstractController
             $builder->whereNull('disable_at');
             $builder->where('bot', 0);
         }
-        $list = $builder->orderByDesc('userid')->paginate(Base::getPaginate(50, 20));
+        $builder = $keys['department'] == '0' ? $builder->orderByDesc('userid') : $builder;
+        $list = $builder->paginate(Base::getPaginate(50, 20));
         //
-        if ($getCheckinMac) {
+        if ($getCheckinMac || isset($keys['department'])) {
             $list->transform(function (User $user) {
                 $user->checkin_macs = UserCheckinMac::select(['id', 'mac', 'remark'])->whereUserid($user->userid)->orderBy('id')->get();
+                // 当为部门负责人时，字段identity值为['dm']，表示部门负责人
+                if ($user->isDepartmentOwner()) {
+                    $user->identity = ['dm'];
+                }
                 return $user;
             });
         }

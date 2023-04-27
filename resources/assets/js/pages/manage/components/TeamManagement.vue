@@ -342,6 +342,13 @@ export default {
                                 }
                             }))
                         }
+                        if (identity.includes("dm")) {
+                            arr.push(h('Tag', {
+                                props: {
+                                    color: 'blue'
+                                }
+                            }, this.$L('负责人')))
+                        }
                         if (identity.includes("ldap")) {
                             arr.push(h('Tag', {
                                 props: {
