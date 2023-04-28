@@ -334,7 +334,7 @@ export default {
                     minWidth: 160,
                     render: (h, {row}) => {
                         const arr = [h('AutoTip', row.email)];
-                        const {email_verity, identity, disable_at} = row;
+                        const {email_verity, identity, disable_at, is_principal} = row;
                         if (email_verity) {
                             arr.push(h('Icon', {
                                 props: {
@@ -342,7 +342,7 @@ export default {
                                 }
                             }))
                         }
-                        if (identity.includes("dm")) {
+                        if (is_principal) {
                             arr.push(h('Tag', {
                                 props: {
                                     color: 'blue'
