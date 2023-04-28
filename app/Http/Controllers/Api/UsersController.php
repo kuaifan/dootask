@@ -707,11 +707,10 @@ class UsersController extends AbstractController
                         $query->where("department", "")->orWhere("department", ",,");
                     });
                 } else {
-                    // 关联user_departments表中owner_userid查询出负责人，重新排序，部门负责人始终在前面
                     $builder->where(function($query) use ($keys) {
                         $query->where("department", "like", "%,{$keys['department']},%")
                         ->orWhereIn('userid', function ($query) use ($keys) {
-                            $query->select('owner_userid')->from('user_departments')->where("id", "=", trim($keys['department'], ','))
+                            $query->select(['owner_userid'])->from('user_departments')->where("id", "=", trim($keys['department'], ','))
                             ->orderByRaw("FIELD(owner_userid,{$keys['department']}) DESC");
                         });
                     });
@@ -726,7 +725,7 @@ class UsersController extends AbstractController
             $builder->whereNull('disable_at');
             $builder->where('bot', 0);
         }
-        $builder = $keys['department'] == '0' ? $builder->orderByDesc('userid') : $builder;
+        $builder = $keys['department'] == '1' ?  $builder : $builder->orderByDesc('userid');
         $list = $builder->paginate(Base::getPaginate(50, 20));
         //
         if ($getCheckinMac || isset($keys['department'])) {
