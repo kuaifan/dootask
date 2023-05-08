@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.26.6]
+
+### Bug Fixes
+
+- 移动端无法长按录音的问题
+- 终端用户数提示错误
+
+### Performance
+
+- Windows 10 以下不支持加密
+- 优化图形验证码方式
+- 兼容iPad键盘
+- 优化移动端兼容
+- 优化iPad Pro页面布局
+
 ## [0.25.95]
 
 ### Performance

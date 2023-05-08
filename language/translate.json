@@ -15728,5 +15728,16 @@
         "de": "Die datei (*) ist nicht korrekt. Bitte hochladen sie bilder im (*) format",
         "fr": "Le format du fichier (*) est incorrect. Veuillez télécharger une image au format (*).",
         "id": "Berkas (*) tidak memiliki format yang benar, silakan unggah (*) format gambar."
+    },
+    {
+        "key": "加载失败",
+        "zh": "",
+        "zh-CHT": "加載失敗",
+        "en": "Load failure",
+        "ko": "불러오는 데 실패했습니다",
+        "ja": "ロード失敗です",
+        "de": "Geladen und geschlagen.",
+        "fr": "Échec au chargement",
+        "id": "Gagal memuat"
     }
 ]
