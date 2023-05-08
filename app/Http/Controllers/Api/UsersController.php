@@ -48,6 +48,7 @@ class UsersController extends AbstractController
      * @apiParam {String} email          邮箱
      * @apiParam {String} password       密码
      * @apiParam {String} [code]         登录验证码
+     * @apiParam {String} [code_key]     验证码通过key验证
      * @apiParam {String} [invite]       注册邀请码
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -79,10 +80,16 @@ class UsersController extends AbstractController
             $needCode = !Base::isError(User::needCode($email));
             if ($needCode) {
                 $code = trim(Request::input('code'));
+                $codeKey = trim(Request::input('code_key'));
                 if (empty($code)) {
                     return Base::retError('请输入验证码', ['code' => 'need']);
                 }
-                if (!Captcha::check($code)) {
+                if ($codeKey) {
+                    $check = Captcha::check_api($code, $codeKey);
+                } else {
+                    $check = Captcha::check($code);
+                }
+                if (!$check) {
                     return Base::retError('请输入正确的验证码', ['code' => 'need']);
                 }
             }

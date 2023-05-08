@@ -130,8 +130,23 @@
                         height: 38px;
                         overflow: hidden;
                         cursor: pointer;
+                        .code-load,
+                        .code-error {
+                            height: 100%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            width: 20px;
+                            margin: 0 20px;
+                        }
+                        .code-error {
+                            width: auto;
+                            font-size: 14px;
+                            opacity: 0.8;
+                        }
                         img {
                             height: 100%;
+                            min-width: 60px;
                         }
                     }
                 }

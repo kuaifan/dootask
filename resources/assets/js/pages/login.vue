@@ -88,7 +88,11 @@
                             @on-enter="onLogin"
                             clearable>
                             <Icon type="ios-checkmark-circle-outline" class="login-icon" slot="prepend"></Icon>
-                            <div slot="append" class="login-code-end" @click="reCode"><img :src="codeUrl"/></div>
+                            <div slot="append" class="login-code-end" @click="refreshCode">
+                                <div v-if="codeLoad > 0" class="code-load"><Loading/></div>
+                                <span v-else-if="codeUrl === 'error'" class="code-error">{{$L('加载失败')}}</span>
+                                <img v-else :src="codeUrl"/>
+                            </div>
                         </Input>
 
                         <Button type="primary" :loading="loadIng > 0 || loginJump" size="large" long @click="onLogin">{{$L(loginText)}}</Button>
@@ -178,7 +182,9 @@ export default {
             qrcodeLoad: false,
 
             codeNeed: false,
-            codeUrl: $A.apiUrl('users/login/codeimg?_=' + Math.random()),
+            codeLoad: 0,
+            codeKey: '',
+            codeUrl: '',
 
             loginMode: 'access',
             loginType: 'login',
@@ -398,8 +404,23 @@ export default {
             $A.modalWarning("请联系管理员！");
         },
 
-        reCode() {
-            this.codeUrl = $A.apiUrl('users/login/codeimg?_=' + Math.random())
+        refreshCode() {
+            if (this.codeLoad > 0) {
+                return;
+            }
+            setTimeout(_ => {
+                this.codeLoad++
+            }, 600)
+            this.$store.dispatch("call", {
+                url: 'users/login/codejson',
+            }).then(({data}) => {
+                this.codeKey = data.key
+                this.codeUrl = data.img
+            }).catch(_ => {
+                this.codeUrl = "error"
+            }).finally(_ => {
+                this.codeLoad--
+            });
         },
 
         inputServerUrl() {
@@ -487,12 +508,12 @@ export default {
                     email: this.email,
                 },
             }).then(() => {
-                this.reCode();
-                this.codeNeed = true;
+                this.refreshCode()
+                this.codeNeed = true
             }).catch(_ => {
-                this.codeNeed = false;
+                this.codeNeed = false
             }).finally(_ => {
-                this.loadIng--;
+                this.loadIng--
             });
         },
 
@@ -538,6 +559,7 @@ export default {
                         email: this.email,
                         password: this.password,
                         code: this.code,
+                        code_key: this.codeKey,
                         invite: this.invite,
                     },
                 }).then(({data}) => {
@@ -557,7 +579,7 @@ export default {
                         })
                     }
                     if (data.code === 'need') {
-                        this.reCode()
+                        this.refreshCode()
                         this.codeNeed = true
                     }
                 }).finally(_ => {
