@@ -912,7 +912,7 @@ export default {
                     this.touchLimitX = false;
                     this.touchLimitY = false;
                     this.touchStart = event.type === "touchstart" ? event.touches[0] : event;
-                    if (event.button === 0 && this.startRecord()) {
+                    if ((event.button === undefined || event.button === 0) && this.startRecord()) {
                         return;
                     }
                     break;
