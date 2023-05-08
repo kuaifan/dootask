@@ -137,6 +137,15 @@ export default {
         ], true)) {
             params.encrypt = true
         }
+        if (params.encrypt) {
+            const userAgent = window.navigator.userAgent;
+            if (/Windows NT 5.1|Windows XP/.test(userAgent)
+                || userAgent.indexOf("Windows NT 6.0") !== -1
+                || userAgent.indexOf("Windows NT 6.1") !== -1
+                || userAgent.indexOf("Windows NT 6.2") !== -1) {
+                params.encrypt = false  // 是 Windows Xp, Vista, 7, 8 系统，不支持加密
+            }
+        }
         params.url = $A.apiUrl(params.url)
         params.data = $A.date2string(params.data)
         //
