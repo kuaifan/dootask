@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.26.8]
+
+### Bug Fixes
+
+- IOS16.4之前版本无法进入的问题
+
 ## [0.26.6]
 
 ### Bug Fixes
