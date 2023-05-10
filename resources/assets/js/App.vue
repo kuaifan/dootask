@@ -233,7 +233,7 @@ export default {
         windowSizeListener() {
             const windowWidth = $A(window).width(),
                 windowHeight = $A(window).height(),
-                windowOrientation = $A.strExists(window.screen.orientation.type, 'portrait') ? 'portrait' : 'landscape'
+                windowOrientation = $A.screenOrientation()
 
             this.$store.state.windowTouch = "ontouchend" in document
 

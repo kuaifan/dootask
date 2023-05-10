@@ -1,6 +1,6 @@
 const windowWidth = $A(window).width(),
     windowHeight = $A(window).height(),
-    windowOrientation = $A.strExists(window.screen.orientation.type, 'portrait') ? 'portrait' : 'landscape'
+    windowOrientation = $A.screenOrientation()
 
 export default {
     // 客户端ID（希望不变的，除非清除浏览器缓存或者卸载应用）

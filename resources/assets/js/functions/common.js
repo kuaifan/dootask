@@ -548,6 +548,21 @@ const localforage = require("localforage");
         },
 
         /**
+         * 获取屏幕方向
+         * @returns {string}
+         */
+        screenOrientation() {
+            try {
+                if (typeof window.screen.orientation === "object") {
+                    return $A.strExists(window.screen.orientation.type, 'portrait') ? 'portrait' : 'landscape'
+                }
+            } catch (e) {
+                //
+            }
+            return $A(window).width() > $A(window).height() ? "landscape" : "portrait"
+        },
+
+        /**
          * 是否IOS
          * @returns {boolean|string}
          */
