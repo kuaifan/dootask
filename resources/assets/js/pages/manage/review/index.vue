@@ -7,7 +7,8 @@
                 <div class="review-nav">
                     <h1>{{$L('审批中心')}}</h1>
                 </div>
-                <Button v-for="(item,key) in procdefList" :loading="loadIng > 0" :key="key" type="primary" @click="initiate(item)" style="margin-right:10px;">{{$L(item.name)}}</Button>
+                <Button type="primary" @click="addApply">{{$L("添加申请")}}</Button>
+                <!-- <Button v-for="(item,key) in procdefList" :loading="loadIng > 0" :key="key" type="primary" @click="initiate(item)" style="margin-right:10px;">{{$L(item.name)}}</Button> -->
             </div>
 
             <Tabs :value="tabsValue" @on-click="tabsClick" style="margin: 0 20px;height: 100%;"  size="small">
@@ -121,7 +122,12 @@
                         <Option v-for="(item, index) in departmentList" :value="item.id" :key="index">{{ item.name }}</Option>
                     </Select>
                 </FormItem>
-                <FormItem v-if="(addTitle || '').indexOf('班') == -1" prop="type" :label="$L('假期类型')">
+                <FormItem prop="applyType" :label="$L('申请类型')">
+                    <Select v-model="addData.applyType" :placeholder="$L('请选择申请类型')">
+                        <Option v-for="(item, index) in procdefList" :value="item.name" :key="index">{{ item.name }}</Option>
+                    </Select>
+                </FormItem>
+                <FormItem v-if="(addData.applyType || '').indexOf('请假') !== -1" prop="type" :label="$L('假期类型')">
                     <Select v-model="addData.type" :placeholder="$L('请选择假期类型')">
                         <Option v-for="(item, index) in selectTypes" :value="item" :key="index">{{ $L(item) }}</Option>
                     </Select>
@@ -229,6 +235,7 @@ export default {
             endTimeOpen:false,
             addData: {
                 department_id:0,
+                applyType: '',
                 type: '',
                 startTime: "2023-04-20",
                 startTimeHour:"09",
@@ -240,12 +247,13 @@ export default {
             },
             addRule: {
                 department_id:{ type: 'number',required: true, message: this.$L('请选择部门！'), trigger: 'change' },
+                applyType: { type: 'string',required: true, message: this.$L('请选择申请类型！'), trigger: 'change' },
                 type: { type: 'string',required: true, message: this.$L('请选择假期类型！'), trigger: 'change' },
                 startTime: { type: 'string',required: true, message: this.$L('请选择开始时间！'), trigger: 'change' },
                 endTime:{ type: 'string',required: true, message: this.$L('请选择结束时间！'), trigger: 'change' },
                 description:{ type: 'string',required: true, message: this.$L('请输入事由！'), trigger: 'change' },
             },
-            selectTypes:["年假","事假","病假","调休","产假","陪产假","婚假","丧假","哺乳假"],
+            selectTypes:["年假","事假","病假","调休","产假","陪产假","婚假","丧假","哺乳假","外出"],
 
             // 
             showDateTime:false
@@ -286,7 +294,6 @@ export default {
     mounted() {
         this.tabsValue = "backlog"
         this.tabsClick()
-        this.getProcdef()
         this.getBacklogList()
         this.addData.department_id = this.userInfo.department[0] || 0;
         this.addData.startTime = this.addData.endTime = this.getCurrentDate();
@@ -343,20 +350,6 @@ export default {
             this.$nextTick(()=>{
                 this.details = item
             })
-        },
-
-        // 获取列表数据
-        getProcdef(){
-            this.$store.dispatch("call", {
-                url: 'workflow/procdef/all',
-                method: 'post',
-            }).then(({data}) => {
-                this.procdefList = data.rows || [];
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-            }).finally(_ => {
-                this.loadIng--;
-            });
         },
 
         // 获取待办列表
@@ -471,8 +464,8 @@ export default {
             });
         },
 
-        // 发起
-        initiate(item){
+        // 添加申请
+        addApply(){
             this.$store.dispatch("call", {
                 url: 'users/basic',
                 data: {
@@ -485,8 +478,18 @@ export default {
                     $A.modalError("您当前未加入任何部门，不能发起！");
                     return false;
                 }
-                this.addTitle = item.name;
-                this.addShow = true;
+                this.$store.dispatch("call", {
+                    url: 'workflow/procdef/all',
+                    method: 'post',
+                }).then(({data}) => {
+                    this.procdefList = data.rows || [];
+                    this.addTitle = this.$L("添加申请");
+                    this.addShow = true;
+                }).catch(({msg}) => {
+                    $A.modalError(msg);
+                }).finally(_ => {
+                    this.loadIng--;
+                });
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
@@ -507,7 +510,7 @@ export default {
                     this.$store.dispatch("call", {
                         url: 'workflow/process/start',
                         data: {
-                            proc_name:this.addTitle,
+                            proc_name: obj.applyType,
                             department_id: obj.department_id,
                             var: JSON.stringify(obj)
                         },

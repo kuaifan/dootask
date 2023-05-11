@@ -1,21 +1,24 @@
 <template>
     <div class="setting-item submit">
         <Row class="approve-row" :gutter="8">
-            <!-- <Col :xxl="{ span: 6 }" :xl="{ span: 8 }" :lg="{ span: 12 }" :sm="{ span: 24 }" :xs="{ span: 24 }" >
+            <Col :xxl="{ span: 6 }" :xl="{ span: 8 }" :lg="{ span: 12 }" :sm="{ span: 24 }" :xs="{ span: 24 }" >
                 <div class="approve-col-box approve-col-add" @click="add">
                     <Icon type="md-add" />
                 </div>
-            </Col> -->
+            </Col>
             <Col v-for="(item, key) in list" :xxl="{ span: 6 }" :xl="{ span: 8 }" :lg="{ span: 12 }" :sm="{ span: 24 }" :xs="{ span: 24 }" >
                 <div class="approve-col-box approve-col-for" @click="edit(item)">
                     <p>{{$L('流程名称')}}：<span style="font-weight: 500;color: #135de6;">{{$L(item.name)}}</span></p>
-                    <Divider style="margin: 12px 0;"/>
+                    <Divider style="margin: 12px 0;margin-bottom: 9px;"/>
                     <div class="approve-button-box" @click.stop="edit(item)">
-                        <p>{{$L('是否发布')}}： </p>
+                        <p>{{$L('已发布')}}</p>
+                        <p @click.stop="change(item)" style="position: relative;">
+                            <Icon type="md-trash" size="16" class="delcon"/>
+                        </p>
+                        <!-- <p>{{$L('是否发布')}}： </p>
                         <p @click.stop="!item.issue ? edit(item) : ''">
                             <i-switch v-model="item.issue" @on-change="change(item)" :disabled="true" />
-                            <!-- <Icon type="md-trash" /> -->
-                        </p>
+                        </p> -->
                     </div>
                 </div>
             </Col>
@@ -44,8 +47,8 @@ export default {
             iframeSrc:"",
             name:"",
             list:[
-                {id:0,name:"请假",issue:false,version:''},
-                {id:0,name:"加班申请",issue:false,version:''},
+                // {id:0,name:"请假",issue:false,version:''},
+                // {id:0,name:"加班申请",issue:false,version:''},
             ]
         }
     },
@@ -68,6 +71,7 @@ export default {
                 url: 'workflow/procdef/all',
                 method: 'post',
             }).then(({data}) => {
+                this.list = data.rows;
                 data.rows.forEach((h,index) => {
                     this.list.forEach((o,index) => {
                         if(o.name == h.name){
@@ -102,8 +106,20 @@ export default {
         },
         // 添加
         add(){
-            this.name = "请假"
-            this.approvalSettingShow = true;
+            $A.modalInput({
+                title: `添加`,
+                placeholder: `请输入流程名称`,
+                type:"textarea",
+                okText: "确定",
+                onOk: (desc) => {
+                    if (!desc) {
+                        return `请输入流程名称`
+                    }
+                    this.name = desc
+                    this.approvalSettingShow = true;
+                    return false
+                }
+            });
         },
         // 编辑
         edit(item){
@@ -115,8 +131,8 @@ export default {
             this.$nextTick(()=>{
                 item.issue = true;
                 $A.modalConfirm({
-                    title: '取消发布',
-                    content: '将会清空流程数据，确定要取消发布？',
+                    title: '删除',
+                    content: '将会清空流程数据，此操作不可恢复',
                     onOk: () => {
                         this.del(item)
                     }
@@ -135,6 +151,7 @@ export default {
                 method: 'post',
             }).then(({data}) => {
                 item.issue = false;
+                this.getList();
                 $A.messageSuccess('成功');
             }).catch(({msg}) => {
                 $A.modalError(msg);
@@ -156,5 +173,13 @@ export default {
         float: left;
         border-top-left-radius: 18px;
         border-bottom-left-radius: 18px;
+    }
+    .delcon{
+        position: absolute;
+        right: 0;
+        padding: 5px !important;
+    }
+    .delcon:hover{
+        color: #ed4014 !important;
     }
 </style>

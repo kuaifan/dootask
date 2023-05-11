@@ -703,6 +703,7 @@
                                 .open-review-details{
                                     width: 245px;
                                     display: inline-block;
+                                    max-width: 100%;
                                     .cause{
                                         border-bottom: 1px solid #e3e3e3;
                                         border-top: 1px solid #e3e3e3;
@@ -712,13 +713,24 @@
                                             display: inline-block;
                                             padding: 15px 0;
                                         }
+                                        >b{
+                                            display: inline-block;
+                                            margin-bottom: 5px;
+                                        }
+                                        >span{
+                                            display: inline-block;
+                                            margin-bottom: 3px;
+                                        }
                                     }
                                     .btn-raw{
                                         display: flex;
                                         text-align: center;
-                                        padding: 10px 0 5px 0;
+                                        padding: 12px 0 5px 0;
                                         >button.ivu-btn-primary{
                                             margin-right: 12px;
+                                        }
+                                        >button.ivu-btn-small{
+                                            height: 32px;
                                         }
                                     }
                                 }

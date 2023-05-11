@@ -119,14 +119,14 @@
         <span>结束时间：{{$data->end_time}}</span>
     </div><div class="btn-raw">
         @if ($action === 'pass')
-            <Button type="button" class="ivu-btn ivu-btn-small" style="flex: 1;">已同意</Button>
+            <Button type="button" class="ivu-btn" style="flex: 1;">已同意</Button>
         @elseif ($action === 'refuse')
-            <Button type="button" class="ivu-btn ivu-btn-small" style="flex: 1;">已拒绝</Button>
+            <Button type="button" class="ivu-btn" style="flex: 1;">已拒绝</Button>
         @elseif ($action === 'withdraw')
-            <Button type="button" class="ivu-btn ivu-btn-small" style="flex: 1;">已撤销</Button>
+            <Button type="button" class="ivu-btn" style="flex: 1;">已撤销</Button>
         @else
-            <Button type="button" class="ivu-btn ivu-btn-primary ivu-btn-small" style="flex: 1;">同意</Button>
-            <Button type="button" class="ivu-btn ivu-btn-error ivu-btn-small" style="flex: 1;">拒绝</Button>
+            <Button type="button" class="ivu-btn ivu-btn-primary" style="flex: 1;">同意</Button>
+            <Button type="button" class="ivu-btn ivu-btn-error" style="flex: 1;">拒绝</Button>
         @endif
     </div></span>
 @elseif ($type === 'workflow_notifier')
@@ -140,9 +140,9 @@
         <span>结束时间：{{$data->end_time}}</span>
     </div><div class="btn-raw">
         @if ($is_finished == 1)
-        <Button type="button" class="ivu-btn ivu-btn-small" style="flex: 1;">已同意</Button>
+        <Button type="button" class="ivu-btn" style="flex: 1;">已同意</Button>
         @else
-        <Button type="button" class="ivu-btn ivu-btn-small" style="flex: 1;">查看详情</Button>
+        <Button type="button" class="ivu-btn" style="flex: 1;">查看详情</Button>
         @endif
     </div></span>
 @elseif ($type === 'workflow_submitter')
@@ -156,11 +156,11 @@
         <span>结束时间：{{$data->end_time}}</span>
     </div><div class="btn-raw">
     @if ($action === 'pass')
-            <Button type="button" class="ivu-btn ivu-btn-small" style="flex: 1;">已同意</Button>
+            <Button type="button" class="ivu-btn" style="flex: 1;">已同意</Button>
         @elseif ($action === 'refuse')
-            <Button type="button" class="ivu-btn ivu-btn-small" style="flex: 1;">已拒绝</Button>
+            <Button type="button" class="ivu-btn" style="flex: 1;">已拒绝</Button>
         @elseif ($action === 'withdraw')
-            <Button type="button" class="ivu-btn ivu-btn-small" style="flex: 1;">已撤销</Button>
+            <Button type="button" class="ivu-btn" style="flex: 1;">已撤销</Button>
         @endif
     </div></span>
 @else
