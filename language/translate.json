@@ -16531,5 +16531,82 @@
         "de": "Es kann keine richtige subgruppe gefunden werden",
         "fr": "Aucun enfant éligible n’a été trouvé",
         "id": "Tidak dapat menemukan subnode yang sesuai"
+    },
+    {
+        "key": "外出",
+        "zh": "",
+        "zh-CHT": "外出",
+        "en": "Go out",
+        "ko": "외출",
+        "ja": "外出します",
+        "de": "Justine: aus.",
+        "fr": "À l’extérieur",
+        "id": "Pergi ke luar"
+    },
+    {
+        "key": "已发布",
+        "zh": "",
+        "zh-CHT": "已發佈",
+        "en": "Published",
+        "ko": "발표됨",
+        "ja": "発表されました",
+        "de": "Bereit zu",
+        "fr": "Publié dans",
+        "id": "Telah diterbitkan"
+    },
+    {
+        "key": "请输入流程名称",
+        "zh": "",
+        "zh-CHT": "請輸入流程名稱",
+        "en": "Please enter a process name",
+        "ko": "스트림명을 입력하십시오",
+        "ja": "プロセス名を入力願います。",
+        "de": "Geben sie einen namen für ihren vorgang ein",
+        "fr": "Veuillez entrer le nom du processus",
+        "id": "Nama proses, silakan"
+    },
+    {
+        "key": "将会清空流程数据，此操作不可恢复",
+        "zh": "",
+        "zh-CHT": "將會清空流程數據，此操作不可恢復",
+        "en": "The process data will be cleared. This operation cannot be restored",
+        "ko": "스트림 데이터를 비우게 됩니다. 다시 시작할 수 없습니다",
+        "ja": "プロセスデータをクリアします。この操作は復元できません。",
+        "de": "Die prozessdaten werden dann gelöscht und die vorgang kann nicht wiederhergestellt werden",
+        "fr": "Vider les données du processus. Cette action n’est pas récupérable",
+        "id": "Operasi ini tidak dapat dipulihkan"
+    },
+    {
+        "key": "添加申请",
+        "zh": "",
+        "zh-CHT": "添加申請",
+        "en": "Add application",
+        "ko": "신청 추가",
+        "ja": "申請を追加します。",
+        "de": "Antrag hinzufügen.",
+        "fr": "Ajouter une application",
+        "id": "Tambah aplikasi"
+    },
+    {
+        "key": "请选择申请类型！",
+        "zh": "",
+        "zh-CHT": "請選擇申請類型！",
+        "en": "Please select the application type!",
+        "ko": "신청 종류를 선택하세요!",
+        "ja": "申し込みタイプをお願いします!",
+        "de": "Bitte wählen sie den bewerbungstyp!",
+        "fr": "Veuillez sélectionner le type de demande!",
+        "id": "Silahkan pilih tipe aplikasi!"
+    },
+    {
+        "key": "请选择申请类型",
+        "zh": "",
+        "zh-CHT": "請選擇申請類型",
+        "en": "Please select an application type",
+        "ko": "신청 종류를 선택하세요",
+        "ja": "申し込みの種類を選択します。",
+        "de": "Bitte wählen sie den bewerbungstyp aus",
+        "fr": "Veuillez sélectionner le type de demande",
+        "id": "Silahkan pilih tipe aplikasi"
     }
 ]
