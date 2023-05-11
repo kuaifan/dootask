@@ -107,7 +107,7 @@ export default {
         // 添加
         add(){
             $A.modalInput({
-                title: `添加`,
+                title: `添加流程`,
                 placeholder: `请输入流程名称`,
                 type:"textarea",
                 okText: "确定",

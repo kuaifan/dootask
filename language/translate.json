@@ -16608,5 +16608,27 @@
         "de": "Bitte wählen sie den bewerbungstyp aus",
         "fr": "Veuillez sélectionner le type de demande",
         "id": "Silahkan pilih tipe aplikasi"
+    },
+    {
+        "key": "申请类型",
+        "zh": "",
+        "zh-CHT": "申請類型",
+        "en": "Type of application",
+        "ko": "신청 유형",
+        "ja": "申し込みの種類です",
+        "de": "Art des antrags:",
+        "fr": "Type de demande",
+        "id": "Tipe aplikasi"
+    },
+    {
+        "key": "添加流程",
+        "zh": "",
+        "zh-CHT": "添加流程",
+        "en": "Add process",
+        "ko": "프로세스 추가",
+        "ja": "プロセスを追加します",
+        "de": "Schleifen lassen",
+        "fr": "Ajouter un processus",
+        "id": "Tambahkan alur"
     }
 ]
