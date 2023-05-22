@@ -32,6 +32,14 @@
                 <h4>{{$L('请假事由')}}</h4>
                 <p>{{datas.var?.description}}</p>
             </div>
+            <div class="review-details-text"  v-if="datas.var?.other">
+                <h4>{{$L('图片')}}</h4>
+                <div style="display: flex;gap: 10px;margin-top: 3px;">
+                    <div v-for="(src,key) in (datas.var.other).split(',') " @click="onViewPicture(src)">
+                        <ImgView :src="src" :key="key"  style="max-width: 60px;border-radius: 5px;"/>
+                    </div>
+                </div>
+            </div>
             <Divider/>
             <h3 class="review-details-subtitle">{{$L('审批记录')}}</h3>
             <Timeline style="margin-top: 20px;">
@@ -126,8 +134,12 @@
 </template>
 
 <script>
+
+import ImgView from "../../../components/ImgView";
+
 export default {
     name: "details",
+    components:{ImgView},
     props: {
         data: {
             type: Object,
@@ -301,6 +313,10 @@ export default {
                     })
                 },
             });
+        },
+        // 打开图片
+        onViewPicture(currentUrl) {
+            this.$store.dispatch("previewImage", '/' +currentUrl)
         }
     }
 }

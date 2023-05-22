@@ -15,7 +15,7 @@
                 <TabPane :label="$L('待办') + (backlogTotal > 0 ? ('('+backlogTotal+')') : '')" name="backlog" style="height: 100%;">
                     <div class="review-main-search">
                         <div style="display: flex;gap: 10px;">
-                            <Select v-model="approvalType" @on-change="tabsClick('')" style="width: 150px;">
+                            <Select v-model="approvalType" @on-change="tabsClick('',0)" style="width: 150px;">
                                 <Option v-for="item in approvalList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
                         </div>
@@ -37,7 +37,7 @@
                 <TabPane :label="$L('已办')" name="done">
                     <div class="review-main-search">
                         <div style="display: flex;gap: 10px;">
-                            <Select v-model="approvalType" @on-change="tabsClick('')" style="width: 150px;">
+                            <Select v-model="approvalType" @on-change="tabsClick('',0)" style="width: 150px;">
                                 <Option v-for="item in approvalList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
                         </div>
@@ -60,7 +60,7 @@
                     <div class="review-main-search">
                         <div class="review-main-search">
                             <div style="display: flex;gap: 10px;">
-                                <Select v-model="approvalType" @on-change="tabsClick('')" style="width: 150px;">
+                                <Select v-model="approvalType" @on-change="tabsClick('',0)" style="width: 150px;">
                                     <Option v-for="item in approvalList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                                 </Select>
                             </div>
@@ -83,10 +83,10 @@
                 <TabPane :label="$L('已发起')" name="initiated">
                     <div class="review-main-search">
                         <div style="display: flex;gap: 10px;">
-                            <Select v-model="approvalType" @on-change="tabsClick('')" style="width: 150px;">
+                            <Select v-model="approvalType" @on-change="tabsClick('',0)" style="width: 150px;">
                                 <Option v-for="item in approvalList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
-                            <Select v-model="searchState" @on-change="tabsClick('')" style="width: 150px;">
+                            <Select v-model="searchState" @on-change="tabsClick('',0)" style="width: 150px;">
                                 <Option v-for="item in searchStateList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
                         </div>
@@ -171,6 +171,9 @@
                 <FormItem prop="description" :label="$L('事由')">
                     <Input type="textarea" v-model="addData.description"></Input>
                 </FormItem>
+                <FormItem prop="other" :label="$L('图片')">
+                    <ImgUpload v-model="addData.other" :num="3" :width="512" :height="512" :whcut="1"></ImgUpload>
+                </FormItem>
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="addShow=false">{{$L('取消')}}</Button>
@@ -185,10 +188,11 @@
 import list from "./list.vue";
 import listDetails from "./details.vue";
 import DrawerOverlay from "../../../components/DrawerOverlay";
+import ImgUpload from "../../../components/ImgUpload";
 import { mapState } from 'vuex'
 
 export default {
-    components:{list,listDetails,DrawerOverlay},
+    components:{list,listDetails,DrawerOverlay,ImgUpload},
     name: "review",
     data(){
         return{
@@ -243,7 +247,7 @@ export default {
                 endTime: "2023-04-20",
                 endTimeHour:"18",
                 endTimeMinute:"00",
-
+                other:""
             },
             addRule: {
                 department_id:{ type: 'number',required: true, message: this.$L('请选择部门！'), trigger: 'change' },
@@ -290,6 +294,11 @@ export default {
             },
             deep: true,
         },
+        addShow(val){
+            if(!val){
+                this.addData.other = ""
+            }
+        }
     },
     mounted() {
         this.tabsValue = "backlog"
@@ -307,11 +316,11 @@ export default {
             return `${year}-${month}-${date}`;
         },
         // tab切换事件
-        tabsClick(val){
-            if(!val && this.__tabsClick){
+        tabsClick(val,time= 1000){
+            if(!val && this.__tabsClick && time>0){
                 return;
             }
-            this.__tabsClick = setTimeout(() => {  this.__tabsClick =null; },1000)
+            this.__tabsClick = setTimeout(() => {  this.__tabsClick =null; },time)
 
             this.tabsValue = val || this.tabsValue
             if(val!=""){
@@ -503,16 +512,22 @@ export default {
                 if (valid) {
                     this.loadIng = 1;
                     var obj = JSON.parse(JSON.stringify(this.addData))
-                    // if((addTitle || '').indexOf('班') == -1){
-                        obj.startTime = obj.startTime +" "+ obj.startTimeHour + ":" + obj.startTimeMinute;
-                        obj.endTime = obj.endTime +" "+ obj.endTimeHour + ":" + obj.endTimeMinute;
-                    // }
+                    
+                    obj.startTime = obj.startTime +" "+ obj.startTimeHour + ":" + obj.startTimeMinute;
+                    obj.endTime = obj.endTime +" "+ obj.endTimeHour + ":" + obj.endTimeMinute;
+
+                    if(this.addData.other){
+                        obj.other = this.addData.other.map((o) =>{
+                            return o.path
+                        }).join(',')
+                    }
+
                     this.$store.dispatch("call", {
                         url: 'workflow/process/start',
                         data: {
                             proc_name: obj.applyType,
                             department_id: obj.department_id,
-                            var: JSON.stringify(obj)
+                            var: JSON.stringify(obj),
                         },
                         method: 'post',
                     }).then(({data, msg}) => {
