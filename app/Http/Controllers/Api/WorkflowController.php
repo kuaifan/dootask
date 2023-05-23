@@ -80,7 +80,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {get} api/workflow/procdef/del          04. 删除流程定义
+     * @api {get} api/workflow/procdef/del          03. 删除流程定义
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -106,7 +106,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/process/start          05. 启动流程（审批中）
+     * @api {post} api/workflow/process/start          04. 启动流程（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -166,6 +166,35 @@ class WorkflowController extends AbstractController
         }
 
         return Base::retSuccess('创建成功', $process);
+    }
+
+    /**
+     * @api {post} api/workflow/process/addGlobalComment          05. 添加全局评论
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup workflow
+     * @apiName process__addGlobalComment
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function process__addGlobalComment()
+    {
+        $user = User::auth();
+        $data['proc_inst_id'] = intval(Request::input('proc_inst_id'));
+        $data['userid'] = (string)$user->userid;
+        $data['content'] = Request::input('content');
+        $data['images'] = Request::input('images');
+
+        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/addGlobalComment', json_encode(Base::arrayKeyToCamel($data)));
+        $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
+        if (!$process || $process['status'] != 200) {
+            return Base::retError($process['message'] ?? '添加失败');
+        }
+        //
+        $res = Base::arrayKeyToUnderline($process['data']);
+        return Base::retSuccess('success', $res);
     }
 
     /**
@@ -938,7 +967,7 @@ class WorkflowController extends AbstractController
             // 查找最后一条消息msg_id
             $msg_action = 'update-'.$toUser['msg_id'];
         }
-        // 
+        //
         try {
             $msg = WebSocketDialogMsg::sendMsg($msg_action, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
             // 关联信息
