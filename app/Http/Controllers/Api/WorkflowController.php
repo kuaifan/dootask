@@ -175,6 +175,11 @@ class WorkflowController extends AbstractController
      * @apiVersion 1.0.0
      * @apiGroup workflow
      * @apiName process__addGlobalComment
+     *
+     * @apiQuery {Number} proc_inst_id        流程实例ID
+     * @apiQuery {String} content             评论内容
+     * @apiQuery {Array} [images]             评论图片（格式：[{"images":"xxx"}]）
+     *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
