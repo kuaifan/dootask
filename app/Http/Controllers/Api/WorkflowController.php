@@ -1026,14 +1026,14 @@ class WorkflowController extends AbstractController
             }
         }
         // 全局评论
-        if(isset($res['global_comment_obj'])){
-            foreach ($res['global_comment_obj'] as $k => &$globalComment) {
+        if(isset($res['global_comments'])){
+            foreach ($res['global_comments'] as $k => &$globalComment) {
                 $info = User::whereUserid($globalComment['user_id'])->first();
                 if (!$info) {
                     continue;
                 }
-                $res['global_comment_obj'][$k]['userimg'] = User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname);
-                $res['global_comment_obj'][$k]['nickname'] = $info->nickname;
+                $res['global_comments'][$k]['userimg'] = User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname);
+                $res['global_comments'][$k]['nickname'] = $info->nickname;
             }
         }
         $info = User::whereUserid($res['start_user_id'])->first();
