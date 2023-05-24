@@ -1027,7 +1027,6 @@ class WorkflowController extends AbstractController
         }
         // 全局评论
         if(isset($res['global_comment_obj'])){
-            info(111111);
             foreach ($res['global_comment_obj'] as $k => &$globalComment) {
                 $info = User::whereUserid($globalComment['user_id'])->first();
                 if (!$info) {
