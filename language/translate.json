@@ -16630,5 +16630,60 @@
         "de": "Schleifen lassen",
         "fr": "Ajouter un processus",
         "id": "Tambahkan alur"
+    },
+    {
+        "key": "全文评论",
+        "zh": "",
+        "zh-CHT": "全文評論",
+        "en": "Full text review",
+        "ko": "전문 평론",
+        "ja": "全文コメントです。",
+        "de": "Whistler whistler?",
+        "fr": "Commentaires complets",
+        "id": "Ulasan lengkap"
+    },
+    {
+        "key": "评论",
+        "zh": "",
+        "zh-CHT": "評論",
+        "en": "Comment",
+        "ko": "논평",
+        "ja": "レビューです",
+        "de": "Kommentar.",
+        "fr": "Commentaires",
+        "id": "Komentar"
+    },
+    {
+        "key": "内容",
+        "zh": "",
+        "zh-CHT": "內容",
+        "en": "Content",
+        "ko": "내용",
+        "ja": "中身です",
+        "de": "Inhalt.",
+        "fr": "Le contenu",
+        "id": "Isi"
+    },
+    {
+        "key": "添加评论",
+        "zh": "",
+        "zh-CHT": "添加評論",
+        "en": "Add a comment",
+        "ko": "코멘트 더하기",
+        "ja": "コメントを書きます。",
+        "de": "Geben sie mir ein zitat.",
+        "fr": "Ajouter un commentaire",
+        "id": "Tambahkan komentar"
+    },
+    {
+        "key": "请输入内容！",
+        "zh": "",
+        "zh-CHT": "請輸入內容！",
+        "en": "Please enter the content!",
+        "ko": "내용을 입력하십시오!",
+        "ja": "内容の入力をお願いします!",
+        "de": "Bitte geben sie den inhalt ein!",
+        "fr": "Veuillez entrer le contenu!",
+        "id": "Silahkan isi!"
     }
 ]

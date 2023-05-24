@@ -11,7 +11,9 @@
             </h2>
             <h3 class="review-details-subtitle"><Avatar :src="datas.userimg" size="24"/><span>{{datas.start_user_name}}</span></h3>
             <h3 class="review-details-subtitle"><span>{{$L('提交于')}} {{datas.start_time}}</span></h3>
+
             <Divider/>
+
             <div class="review-details-text" v-if="(datas.proc_def_name || '').indexOf('班') == -1">
                 <h4>{{$L('假期类型')}}</h4>
                 <p>{{$L(datas.var?.type)}}</p>
@@ -34,23 +36,25 @@
             </div>
             <div class="review-details-text"  v-if="datas.var?.other">
                 <h4>{{$L('图片')}}</h4>
-                <div style="display: flex;gap: 10px;margin-top: 3px;">
+                <div class="img-body">
                     <div v-for="(src,key) in (datas.var.other).split(',') " @click="onViewPicture(src)">
-                        <ImgView :src="src" :key="key"  style="max-width: 60px;border-radius: 5px;"/>
+                        <ImgView :src="src" :key="key" class="img-view"/>
                     </div>
                 </div>
             </div>
+
             <Divider/>
+
             <h3 class="review-details-subtitle">{{$L('审批记录')}}</h3>
-            <Timeline style="margin-top: 20px;">
+            <Timeline class="review-record-timeline">
                 <template v-for="(item,key) in datas.node_infos">
 
                     <!-- 提交 -->
                     <TimelineItem :key="key" v-if="item.type == 'starter'" color="green">
                         <p class="timeline-title">{{$L('提交')}}</p>
-                        <div style="display: flex;">
+                        <div class="timeline-body">
                             <Avatar :src="data.userimg || datas.userimg" size="38"/>
-                            <div style="margin-left: 10px;flex: 1;">
+                            <div class="review-process-left">
                                 <p class="review-process-name">{{data.start_user_name || datas.start_user_name}}</p>
                                 <p class="review-process-state">{{$L('已提交')}}</p>
                             </div>
@@ -66,9 +70,9 @@
                         :color="item.identitylink ? (item.identitylink?.state > 1 ? '#f03f3f' :'green') : '#ccc'"
                     >
                         <p class="timeline-title">{{$L('审批')}}</p>
-                        <div style="display: flex;">
+                        <div class="timeline-body">
                             <Avatar :src="(item.node_user_list && item.node_user_list[0]?.userimg) || item.userimg" size="38"/>
-                            <div style="margin-left: 10px;flex: 1;">
+                            <div class="review-process-left">
                                 <p class="review-process-name">{{item.approver}}</p>
                                 <p class="review-process-state" style="color: #6d6d6d;" v-if="!item.identitylink">待审批</p>
                                 <p class="review-process-state" v-if="item.identitylink">
@@ -94,9 +98,9 @@
                     <!-- 抄送 -->
                     <TimelineItem :key="key" :color="item.is_finished ? 'green' : '#ccc'" v-if="item.type == 'notifier' && item._show">
                         <p class="timeline-title">{{$L('抄送')}}</p>
-                        <div style="display: flex;">
+                        <div class="timeline-body">
                             <Avatar :src="'/images/avatar/default_bot.png'" size="38"/>
-                            <div style="margin-left: 10px;flex: 1;">
+                            <div class="review-process-left">
                                 <p class="review-process-name">{{$L('系统')}}</p>
                                 <p style="font-size: 12px;">{{$L('自动抄送')}}
                                     <span style="color: #486fed;">
@@ -111,9 +115,9 @@
                     <!-- 结束 -->
                     <TimelineItem :key="key" :color="item.is_finished ? 'green' : '#ccc'" v-if="item.aprover_type == 'end'">
                         <p class="timeline-title">{{$L('结束')}}</p>
-                        <div style="display: flex;">
+                        <div class="timeline-body">
                             <Avatar :src="'/images/avatar/default_bot.png'" size="38"/>
-                            <div style="margin-left: 10px;flex: 1;">
+                            <div class="review-process-left">
                                 <p class="review-process-name">{{$L('系统')}}</p>
                                 <p style="font-size: 12px;"> {{  datas.is_finished ? $L('已结束') : $L('未结束')  }}</p>
                             </div>
@@ -121,25 +125,72 @@
                     </TimelineItem>
                     
                 </template>
-                
             </Timeline>
+
+            <template v-if="datas.global_comment">
+                <Divider/>
+                <h3 class="review-details-subtitle">{{$L('全文评论')}}</h3>
+                <div class="review-record-comment">
+                    <List :split="false" :border="false">
+                        <ListItem v-for="(item,key) in datas.global_comments" :key="key">
+                           <div>
+                                <div class="top">
+                                    <Avatar :src="item.userimg" size="38"/> 
+                                    <div>
+                                        <p>{{item.nickname}}</p>
+                                        <p class="time">{{item.created_at}}</p>
+                                    </div>
+                                    <span>{{ getTimeAgo(item.created_at ,2) }}</span>
+                                </div>
+                                <div class="content">
+                                    {{ getContent(item.content) }}
+                                </div>
+                                <div class="content" style="display: flex; gap: 10px;">
+                                    <div v-for="(src,k) in getPictures(item.content)" :key="k"  @click="onViewPicture(src)">
+                                        <ImgView :src="src" class="img-view"/>
+                                    </div>
+                                </div>
+                           </div>
+                        </ListItem>
+                    </List>
+                </div>
+            </template>
+
         </div>
-        <div class="review-operation" v-if="datas.state<=1">
+        <div class="review-operation">
             <div style="flex: 1;"></div>
             <Button type="success" v-if="(datas.candidate || '').split(',').indexOf(userId + '') != -1" @click="approve(1)">{{$L('同意')}}</Button>
             <Button type="error" v-if="(datas.candidate || '').split(',').indexOf(userId + '') != -1" @click="approve(2)">{{$L('拒绝')}}</Button>
             <Button type="warning" v-if="isShowWarningBtn" @click="revocation">{{$L('撤销')}}</Button>
+            <Button @click="comment" type="success" ghost>+{{$L('添加评论')}}</Button>
         </div>
+
+        <!--评论-->
+        <Modal v-model="commentShow" :title="$L('评论')" :mask-closable="false" class="page-review-initiate">
+            <Form ref="initiateRef" :model="commentData" :rules="commentRule" label-width="auto" @submit.native.prevent>
+                <FormItem prop="content" :label="$L('内容')">
+                    <Input type="textarea" v-model="commentData.content"></Input>
+                </FormItem>
+                <FormItem prop="pictures" :label="$L('图片')">
+                    <ImgUpload v-model="commentData.pictures" :num="3" :width="512" :height="512" :whcut="1"></ImgUpload>
+                </FormItem>
+            </Form>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="commentShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="loadIng > 0" @click="confirmComment">{{$L('确认')}}</Button>
+            </div>
+        </Modal>
     </div>
 </template>
 
 <script>
 
 import ImgView from "../../../components/ImgView";
+import ImgUpload from "../../../components/ImgUpload";
 
 export default {
     name: "details",
-    components:{ImgView},
+    components:{ImgView,ImgUpload},
     props: {
         data: {
             type: Object,
@@ -153,7 +204,16 @@ export default {
         return {
             modalTransferIndex:window.modalTransferIndex,
             datas:{},
-            showTimeNum:24
+            showTimeNum:24,
+            commentShow:false,
+            loadIng:0,
+            commentData: {
+                content:"",
+                pictures:[]
+            },
+            commentRule: {
+                content: { type: 'string',required: true, message: this.$L('请输入内容！'), trigger: 'change' },
+            }
         }
     },
     watch: {
@@ -173,9 +233,9 @@ export default {
     },
     computed: {
         isShowWarningBtn(){
-            let is = this.userId == this.datas.start_user_id;
+            let is = (this.userId == this.datas.start_user_id);
             (this.datas.node_infos || []).map(h=>{
-                if(h.type != 'starter' && h.is_finished == true && h.identitylink.userid != this.userId) {
+                if(h.type != 'starter' && h.is_finished == true && h.identitylink?.userid != this.userId) {
                     is = false;
                 }
             })
@@ -314,6 +374,53 @@ export default {
                 },
             });
         },
+        // 评论
+        comment(){
+            this.commentShow = true;
+        },
+        // 提交评论
+        confirmComment(){
+            this.loadIng++;
+            this.$store.dispatch("call", {
+                method: 'post',
+                url: 'workflow/process/addGlobalComment',
+                data: {
+                    proc_inst_id:this.data.id,
+                    content:JSON.stringify({
+                        'content': this.commentData.content,
+                        'pictures': this.commentData.pictures.map(h =>{ return h.path; })
+                    })
+                }
+            }).then(({msg}) => {
+                $A.messageSuccess("添加成功");
+                if(this.$route.name=='manage-review-details' || this.$route.name=='manage-messenger'){
+                    this.getInfo()
+                }else{
+                    this.$emit('approve')
+                }
+                this.commentShow = false;
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            }).finally(_ => {
+                this.loadIng--;
+            });
+        },
+        // 获取内容
+        getContent(content){
+            try {
+                return JSON.parse(content).content || ''
+            } catch (error) {
+                return ''
+            }
+        },
+        // 获取内容
+        getPictures(content){
+            try {
+                return JSON.parse(content).pictures || []
+            } catch (error) {
+                return ''
+            }
+        },
         // 打开图片
         onViewPicture(currentUrl) {
             this.$store.dispatch("previewImage", '/' +currentUrl)
@@ -323,5 +430,5 @@ export default {
 </script>
 
 <style scoped>
-
+   
 </style>
