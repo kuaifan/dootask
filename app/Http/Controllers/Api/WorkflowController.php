@@ -178,7 +178,6 @@ class WorkflowController extends AbstractController
      *
      * @apiQuery {Number} proc_inst_id        流程实例ID
      * @apiQuery {String} content             评论内容
-     * @apiQuery {Array} [images]             评论图片（格式：[{"images":"xxx"}]）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -189,8 +188,7 @@ class WorkflowController extends AbstractController
         $user = User::auth();
         $data['proc_inst_id'] = intval(Request::input('proc_inst_id'));
         $data['userid'] = (string)$user->userid;
-        $data['content'] = Request::input('content');
-        $data['images'] = Request::input('images');
+        $data['content'] = Request::input('content'); //内容+图片
 
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/addGlobalComment', json_encode(Base::arrayKeyToCamel($data)));
         $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
@@ -1025,6 +1023,18 @@ class WorkflowController extends AbstractController
             }else if($val['aprover_id']){
                 $info = User::whereUserid($val['aprover_id'])->first();
                 $val['userimg'] = $info ? User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname) : '';
+            }
+        }
+        // 全局评论
+        if(isset($res['global_comment_obj'])){
+            info(111111);
+            foreach ($res['global_comment_obj'] as $k => &$globalComment) {
+                $info = User::whereUserid($globalComment['user_id'])->first();
+                if (!$info) {
+                    continue;
+                }
+                $res['global_comment_obj'][$k]['userimg'] = User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname);
+                $res['global_comment_obj'][$k]['nickname'] = $info->nickname;
             }
         }
         $info = User::whereUserid($res['start_user_id'])->first();
