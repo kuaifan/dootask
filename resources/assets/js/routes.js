@@ -30,6 +30,16 @@ export default [
                 component: () => import('./pages/manage/messenger.vue'),
             },
             {
+                name: 'manage-review',//审批
+                path: 'review',
+                component: () => import('./pages/manage/review/index.vue'),
+            },
+            {
+                name: 'manage-review-details',
+                path: 'review/details',
+                component: () => import('./pages/manage/review/details.vue'),
+            },
+            {
                 name: 'manage-setting',
                 path: 'setting',
                 component: () => import('./pages/manage/setting/index.vue'),
@@ -43,6 +53,11 @@ export default [
                         name: 'manage-setting-checkin',
                         path: 'checkin',
                         component: () => import('./pages/manage/setting/checkin.vue'),
+                    },
+                    {
+                        name: 'manage-setting-approve',
+                        path: 'approve',
+                        component: () => import('./pages/manage/setting/approve.vue'),
                     },
                     {
                         name: 'manage-setting-language',

@@ -93,6 +93,7 @@ export default {
             if (this.userIsAdmin) {
                 menu.push(...[
                     {path: 'system', name: '系统设置', divided: true},
+                    {path: 'approve', name: this.$L('审批设置'), desc: ' (Beta)'},
                     {path: 'license', name: 'License Key'},
                 ])
             }

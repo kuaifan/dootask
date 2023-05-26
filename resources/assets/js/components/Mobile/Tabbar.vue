@@ -84,6 +84,7 @@ export default {
                 ],
                 [
                     {icon: '&#xe7da;', name: 'workReport', label: '工作报告'},
+                    {icon: '&#xe7b9;', name: 'review', label: '审批中心'},
                 ]
             ],
 

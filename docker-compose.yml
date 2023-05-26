@@ -49,6 +49,7 @@ services:
       - drawio-webapp
       - drawio-export
       - minder
+      - workflow
     restart: unless-stopped
 
   redis:
@@ -146,6 +147,24 @@ services:
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.10"
+    restart: unless-stopped
+
+  workflow:
+    container_name: "dootask-workflow-${APP_ID}"
+    image: "hitosea2020/go-workflow:latest"
+    environment:
+      TZ: "Asia/Shanghai"
+      MYSQL_HOST: "${DB_HOST}"
+      MYSQL_PORT: "${DB_PORT}"
+      MYSQL_DBNAME: "${DB_DATABASE}"
+      MYSQL_USERNAME: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_Prefix: "${DB_PREFIX}workflow_"
+    networks:
+      extnetwork:
+        ipv4_address: "${APP_IPPR}.11"
+    depends_on:
+      - mariadb
     restart: unless-stopped
 
 networks:

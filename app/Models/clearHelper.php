@@ -6,6 +6,12 @@
 
 @error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
+// 判断是否通过cmd命令执行的
+if (function_exists('info')){
+    echo "Success \n";
+    return;
+} 
+
 $path = dirname(__FILE__). '/';
 $lists = scandir($path);
 //
