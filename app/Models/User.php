@@ -531,6 +531,8 @@ class User extends AbstractModel
                 return url("images/avatar/default_checkin.png");
             case 'anon-msg@bot.system':
                 return url("images/avatar/default_anon.png");
+            case 'approval-alert@bot.system':
+                return url("images/avatar/default_approval.png");
             case 'bot-manager@bot.system':
                 return url("images/avatar/default_bot.png");
         }

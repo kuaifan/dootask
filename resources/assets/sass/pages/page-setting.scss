@@ -349,21 +349,26 @@
             .setting-button {
                 margin-left: 8px;
             }
-            .approve-row{
+
+            .approve-row {
                 padding: 24px 40px;
                 overflow: auto;
-                .ivu-col{
+
+                .ivu-col {
                     margin-bottom: 8px;
-                    .approve-col-box{
+
+                    .approve-col-box {
                         border-radius: 8px;
                         border: 1px solid #eeeeee;
                         transition: box-shadow 0.3s;
                         cursor: pointer;
-                        &:hover{
+
+                        &:hover {
                             box-shadow: 0 0 10px #e6ecfa;
                         }
                     }
-                    .approve-col-add{
+
+                    .approve-col-add {
                         height: 100%;
                         font-size: 48px;
                         display: flex;
@@ -372,22 +377,27 @@
                         color: #ededed;
                         min-height: 95px;
                     }
-                    .approve-col-for{
-                        padding:16px;
-                        padding-bottom:13px;
+
+                    .approve-col-for {
+                        padding: 16px;
+                        padding-bottom: 13px;
                         display: flex;
                         flex-direction: column;
-                        > p{
+
+                        > p {
                             display: flex;
                             align-items: center;
                         }
-                        .approve-button-box{
+
+                        .approve-button-box {
                             display: flex;
                             justify-content: space-between;
                             align-items: center;
+
                             > p {
                                 display: flex;
                                 align-items: center;
+
                                 > i {
                                     font-size: 16px;
                                     margin-left: 8px;
@@ -397,7 +407,6 @@
                         }
                     }
                 }
-
             }
         }
     }

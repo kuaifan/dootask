@@ -25,7 +25,6 @@ use Arr;
 use Cache;
 use Captcha;
 use Carbon\Carbon;
-use Hedeqiang\UMeng\Facades\Push;
 use Request;
 
 /**
