@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateWorkflowProcMsgs extends Migration
+class CreateApproveProcMsgs extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class CreateWorkflowProcMsgs extends Migration
      */
     public function up()
     {
-        if (!Schema::hasTable('workflow_proc_msgs')) {
-            Schema::create('workflow_proc_msgs', function (Blueprint $table) {
+        if (!Schema::hasTable('approve_proc_msgs')) {
+            Schema::create('approve_proc_msgs', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->bigInteger('proc_inst_id')->nullable()->default(0)->comment('流程实例ID');
                 $table->bigInteger('userid')->nullable()->default(0)->comment('会员ID');
@@ -31,8 +31,8 @@ class CreateWorkflowProcMsgs extends Migration
      */
     public function down()
     {
-        Schema::table('workflow_proc_msgs', function (Blueprint $table) {
-            Schema::dropIfExists('workflow_proc_msgs');
+        Schema::table('approve_proc_msgs', function (Blueprint $table) {
+            Schema::dropIfExists('approve_proc_msgs');
         });
     }
 }

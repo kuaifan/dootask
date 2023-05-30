@@ -13,7 +13,7 @@ use App\Module\Ihttp;
 use App\Tasks\PushTask;
 use App\Module\BillExport;
 use App\Models\WebSocketDialog;
-use App\Models\WorkflowProcMsg;
+use App\Models\ApproveProcMsg;
 use App\Exceptions\ApiException;
 use App\Models\UserDepartment;
 use App\Models\WebSocketDialogMsg;
@@ -206,7 +206,7 @@ class ApproveController extends AbstractController
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup approve
-     * @apiName task__complete
+     * @apiName task__complete 
      *
      * @apiQuery {Number} task_id               流程ID
      * @apiQuery {String} pass                  标题 [true-通过，false-拒绝]
@@ -237,7 +237,7 @@ class ApproveController extends AbstractController
             return Base::retError('审批机器人不存在');
         }
         // 在流程信息关联的用户中查找
-        $toUser = WorkflowProcMsg::where('proc_inst_id', $process['id'])->get()->toArray();
+        $toUser = ApproveProcMsg::where('proc_inst_id', $process['id'])->get()->toArray();
         foreach ($toUser as $val) {
             $dialog = WebSocketDialog::checkUserDialog($botUser, $val['userid']);
             if (empty($dialog)) {
@@ -313,7 +313,7 @@ class ApproveController extends AbstractController
             return Base::retError('审批机器人不存在');
         }
         // 在流程信息关联的用户中查找
-        $toUser = WorkflowProcMsg::where('proc_inst_id', $process['id'])->get()->toArray();
+        $toUser = ApproveProcMsg::where('proc_inst_id', $process['id'])->get()->toArray();
         foreach ($toUser as $val) {
             $dialog = WebSocketDialog::checkUserDialog($botUser, $val['userid']);
             if (empty($dialog)) {
@@ -975,7 +975,7 @@ class ApproveController extends AbstractController
             $msg = WebSocketDialogMsg::sendMsg($msg_action, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
             // 关联信息
             if ($action == 'start') {
-                $proc_msg = new WorkflowProcMsg();
+                $proc_msg = new ApproveProcMsg();
                 $proc_msg->proc_inst_id = $process['id'];
                 $proc_msg->msg_id = $msg['data']->id;
                 $proc_msg->userid = $toUser['userid'];

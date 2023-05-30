@@ -150,7 +150,7 @@ services:
 
   approve:
     container_name: "dootask-approve-${APP_ID}"
-    image: "hitosea2020/go-workflow:latest"
+    image: "hitosea2020/go-approve:latest"
     environment:
       TZ: "Asia/Shanghai"
       MYSQL_HOST: "${DB_HOST}"
@@ -158,7 +158,7 @@ services:
       MYSQL_DBNAME: "${DB_DATABASE}"
       MYSQL_USERNAME: "${DB_USERNAME}"
       MYSQL_PASSWORD: "${DB_PASSWORD}"
-      MYSQL_Prefix: "${DB_PREFIX}workflow_"
+      MYSQL_Prefix: "${DB_PREFIX}approve_"
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.11"
