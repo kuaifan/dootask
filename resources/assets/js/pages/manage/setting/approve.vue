@@ -54,7 +54,7 @@ export default {
     },
     watch: {
         approvalSettingShow(val) {
-            if (val) this.iframeSrc = `/workflow/#/?name=${this.name}&token=${store.userToken}&lang=${languageType}`
+            if (val) this.iframeSrc = `/approve/#/?name=${this.name}&token=${store.userToken}&lang=${languageType}`
         }
     },
     mounted() {
@@ -68,7 +68,7 @@ export default {
         // 获取列表数据
         getList(){
             this.$store.dispatch("call", {
-                url: 'workflow/procdef/all',
+                url: 'approve/procdef/all',
                 method: 'post',
             }).then(({data}) => {
                 this.list = data.rows;
@@ -146,7 +146,7 @@ export default {
                 return true;
             }
             this.$store.dispatch("call", {
-                url: 'workflow/procdef/del',
+                url: 'approve/procdef/del',
                 data: {id: item.id},
                 method: 'post',
             }).then(({data}) => {

@@ -49,7 +49,6 @@ services:
       - drawio-webapp
       - drawio-export
       - minder
-      - workflow
     restart: unless-stopped
 
   redis:
@@ -149,8 +148,8 @@ services:
         ipv4_address: "${APP_IPPR}.10"
     restart: unless-stopped
 
-  workflow:
-    container_name: "dootask-workflow-${APP_ID}"
+  approve:
+    container_name: "dootask-approve-${APP_ID}"
     image: "hitosea2020/go-workflow:latest"
     environment:
       TZ: "Asia/Shanghai"

@@ -1,5 +1,5 @@
 <template>
-    <div class="review-list">
+    <div class="approve-list">
         <h2>
             <span class="list-name">{{$L(data.proc_def_name)}}</span> 
             <Tag v-if="data.state == 0" color="cyan">{{$L('待审批')}}</Tag>

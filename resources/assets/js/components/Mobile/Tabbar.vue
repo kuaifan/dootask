@@ -79,7 +79,7 @@ export default {
                     {icon: '&#xe794;', name: 'joinMeeting', label: '加入会议'},
                 ],
                 [
-                    {icon: '&#xe7b9;', name: 'review', label: '审批中心'},
+                    {icon: '&#xe7b9;', name: 'approve', label: '审批中心'},
                 ]
             ],
 

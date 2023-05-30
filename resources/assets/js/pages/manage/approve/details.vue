@@ -1,7 +1,7 @@
 <template>
-    <div class="review-details" :style="{'z-index':modalTransferIndex}">
-        <div class="review-details-box">
-            <h2 class="review-details-title">
+    <div class="approve-details" :style="{'z-index':modalTransferIndex}">
+        <div class="approve-details-box">
+            <h2 class="approve-details-title">
                 <span>{{$L(datas.proc_def_name)}}</span>
                 <Tag v-if="datas.state == 0" color="cyan">{{$L('待审批')}}</Tag>
                 <Tag v-if="datas.state == 1" color="cyan">{{$L('审批中')}}</Tag>
@@ -9,32 +9,32 @@
                 <Tag v-if="datas.state == 3" color="red">{{$L('已拒绝')}}</Tag>
                 <Tag v-if="datas.state == 4" color="red">{{$L('已撤回')}}</Tag>
             </h2>
-            <h3 class="review-details-subtitle"><Avatar :src="datas.userimg" size="24"/><span>{{datas.start_user_name}}</span></h3>
-            <h3 class="review-details-subtitle"><span>{{$L('提交于')}} {{datas.start_time}}</span></h3>
+            <h3 class="approve-details-subtitle"><Avatar :src="datas.userimg" size="24"/><span>{{datas.start_user_name}}</span></h3>
+            <h3 class="approve-details-subtitle"><span>{{$L('提交于')}} {{datas.start_time}}</span></h3>
 
             <Divider/>
 
-            <div class="review-details-text" v-if="(datas.proc_def_name || '').indexOf('班') == -1">
+            <div class="approve-details-text" v-if="(datas.proc_def_name || '').indexOf('班') == -1">
                 <h4>{{$L('假期类型')}}</h4>
                 <p>{{$L(datas.var?.type)}}</p>
             </div>
-            <div class="review-details-text">
+            <div class="approve-details-text">
                 <h4>{{$L('开始时间')}}</h4>
                 <p>{{datas.var?.start_time}}</p>
             </div>
-            <div class="review-details-text">
+            <div class="approve-details-text">
                 <h4>{{$L('结束时间')}}</h4>
                 <p>{{datas.var?.end_time}}</p>
             </div>
-            <div class="review-details-text">
+            <div class="approve-details-text">
                 <h4>{{ $L('时长') }}（{{getTimeDifference(datas.var?.start_time,datas.var?.end_time)['unit']}}）</h4>
                 <p>{{ datas.var?.start_time ? getTimeDifference(datas.var?.start_time,datas.var?.end_time)['time'] : 0 }}</p>
             </div>
-            <div class="review-details-text">
+            <div class="approve-details-text">
                 <h4>{{$L('请假事由')}}</h4>
                 <p>{{datas.var?.description}}</p>
             </div>
-            <div class="review-details-text"  v-if="datas.var?.other">
+            <div class="approve-details-text"  v-if="datas.var?.other">
                 <h4>{{$L('图片')}}</h4>
                 <div class="img-body">
                     <div v-for="(src,key) in (datas.var.other).split(',') " @click="onViewPicture(src)">
@@ -45,8 +45,8 @@
 
             <Divider/>
 
-            <h3 class="review-details-subtitle">{{$L('审批记录')}}</h3>
-            <Timeline class="review-record-timeline">
+            <h3 class="approve-details-subtitle">{{$L('审批记录')}}</h3>
+            <Timeline class="approve-record-timeline">
                 <template v-for="(item,key) in datas.node_infos">
 
                     <!-- 提交 -->
@@ -54,11 +54,11 @@
                         <p class="timeline-title">{{$L('提交')}}</p>
                         <div class="timeline-body">
                             <Avatar :src="data.userimg || datas.userimg" size="38"/>
-                            <div class="review-process-left">
-                                <p class="review-process-name">{{data.start_user_name || datas.start_user_name}}</p>
-                                <p class="review-process-state">{{$L('已提交')}}</p>
+                            <div class="approve-process-left">
+                                <p class="approve-process-name">{{data.start_user_name || datas.start_user_name}}</p>
+                                <p class="approve-process-state">{{$L('已提交')}}</p>
                             </div>
-                            <div class="review-process-right">
+                            <div class="approve-process-right">
                                 <p v-if="parseInt(getTimeAgo(item.claim_time)) < showTimeNum">{{ getTimeAgo(item.claim_time) }}</p>
                                 <p>{{item.claim_time?.substr(0,16)}}</p>
                             </div>
@@ -72,17 +72,17 @@
                         <p class="timeline-title">{{$L('审批')}}</p>
                         <div class="timeline-body">
                             <Avatar :src="(item.node_user_list && item.node_user_list[0]?.userimg) || item.userimg" size="38"/>
-                            <div class="review-process-left">
-                                <p class="review-process-name">{{item.approver}}</p>
-                                <p class="review-process-state" style="color: #6d6d6d;" v-if="!item.identitylink">待审批</p>
-                                <p class="review-process-state" v-if="item.identitylink">
+                            <div class="approve-process-left">
+                                <p class="approve-process-name">{{item.approver}}</p>
+                                <p class="approve-process-state" style="color: #6d6d6d;" v-if="!item.identitylink">待审批</p>
+                                <p class="approve-process-state" v-if="item.identitylink">
                                     <span v-if="item.identitylink.state==0" style="color:#496dff;">{{$L('审批中')}}</span>
                                     <span v-if="item.identitylink.state==1" >{{$L('已通过')}}</span>
                                     <span v-if="item.identitylink.state==2" style="color:#f03f3f;">{{$L('已拒绝')}}</span>
                                     <span v-if="item.identitylink.state==3" style="color:#f03f3f;">{{$L('已撤回')}}</span>
                                 </p>
                             </div>
-                            <div class="review-process-right">
+                            <div class="approve-process-right">
                                 <p v-if="parseInt(getTimeAgo(item.claim_time)) < showTimeNum">
                                     {{ item.identitylink?.state==0 ? 
                                         ($L('已等待') + " " + getTimeAgo( datas.node_infos[key-1].claim_time,2)) : 
@@ -100,8 +100,8 @@
                         <p class="timeline-title">{{$L('抄送')}}</p>
                         <div class="timeline-body">
                             <Avatar :src="'/images/avatar/default_bot.png'" size="38"/>
-                            <div class="review-process-left">
-                                <p class="review-process-name">{{$L('系统')}}</p>
+                            <div class="approve-process-left">
+                                <p class="approve-process-name">{{$L('系统')}}</p>
                                 <p style="font-size: 12px;">{{$L('自动抄送')}}
                                     <span style="color: #486fed;">
                                         {{ item.node_user_list?.map(h=>h.name).join(',') }} 
@@ -117,8 +117,8 @@
                         <p class="timeline-title">{{$L('结束')}}</p>
                         <div class="timeline-body">
                             <Avatar :src="'/images/avatar/default_bot.png'" size="38"/>
-                            <div class="review-process-left">
-                                <p class="review-process-name">{{$L('系统')}}</p>
+                            <div class="approve-process-left">
+                                <p class="approve-process-name">{{$L('系统')}}</p>
                                 <p style="font-size: 12px;"> {{  datas.is_finished ? $L('已结束') : $L('未结束')  }}</p>
                             </div>
                         </div>
@@ -129,8 +129,8 @@
 
             <template v-if="datas.global_comment">
                 <Divider/>
-                <h3 class="review-details-subtitle">{{$L('全文评论')}}</h3>
-                <div class="review-record-comment">
+                <h3 class="approve-details-subtitle">{{$L('全文评论')}}</h3>
+                <div class="approve-record-comment">
                     <List :split="false" :border="false">
                         <ListItem v-for="(item,key) in datas.global_comments" :key="key">
                            <div>
@@ -157,7 +157,7 @@
             </template>
 
         </div>
-        <div class="review-operation">
+        <div class="approve-operation">
             <div style="flex: 1;"></div>
             <Button type="success" v-if="(datas.candidate || '').split(',').indexOf(userId + '') != -1" @click="approve(1)">{{$L('同意')}}</Button>
             <Button type="error" v-if="(datas.candidate || '').split(',').indexOf(userId + '') != -1" @click="approve(2)">{{$L('拒绝')}}</Button>
@@ -166,7 +166,7 @@
         </div>
 
         <!--评论-->
-        <Modal v-model="commentShow" :title="$L('评论')" :mask-closable="false" class="page-review-initiate">
+        <Modal v-model="commentShow" :title="$L('评论')" :mask-closable="false" class="page-approve-initiate">
             <Form ref="initiateRef" :model="commentData" :rules="commentRule" label-width="auto" @submit.native.prevent>
                 <FormItem prop="content" :label="$L('内容')">
                     <Input type="textarea" v-model="commentData.content"></Input>
@@ -218,7 +218,7 @@ export default {
     },
     watch: {
         '$route' (to, from) {
-            if(to.name == 'manage-review-details'){
+            if(to.name == 'manage-approve-details'){
                 this.init()
             }
         },
@@ -233,9 +233,9 @@ export default {
     },
     computed: {
         isShowWarningBtn(){
-            let is = (this.userId == this.datas.start_user_id);
+            let is = (this.userId == this.datas.start_user_id) && this.datas?.is_finished != true;
             (this.datas.node_infos || []).map(h=>{
-                if(h.type != 'starter' && h.is_finished == true && h.identitylink?.userid != this.userId) {
+                if( h.type != 'starter' && h.is_finished == true && h.identitylink?.userid != this.userId) {
                     is = false;
                 }
             })
@@ -292,7 +292,7 @@ export default {
             this.datas = this.data
             this.$store.dispatch("call", {
                 method: 'get',
-                url: 'workflow/process/detail',
+                url: 'approve/process/detail',
                 data: {
                     id:this.data.id,
                 }
@@ -324,7 +324,7 @@ export default {
                         return `请输入审批意见`
                     }
                     this.$store.dispatch("call", {
-                        url: 'workflow/task/complete',
+                        url: 'approve/task/complete',
                         data: {
                             task_id: this.datas.task_id,
                             pass: type == 1,
@@ -332,7 +332,7 @@ export default {
                         }
                     }).then(({msg}) => {
                         $A.messageSuccess(msg);
-                        if(this.$route.name=='manage-review-details' || this.$route.name=='manage-messenger'){
+                        if(this.$route.name=='manage-approve-details' || this.$route.name=='manage-messenger'){
                             this.getInfo()
                         }else{
                             this.$emit('approve')
@@ -352,7 +352,7 @@ export default {
                 onOk: () => {
                     return new Promise((resolve, reject) => {
                         this.$store.dispatch("call", {
-                            url: 'workflow/task/withdraw',
+                            url: 'approve/task/withdraw',
                             data: {
                                 task_id: this.datas.task_id,
                                 proc_inst_id: this.datas.id,
@@ -360,7 +360,7 @@ export default {
                         }).then(({msg}) => {
                             $A.messageSuccess(msg);
                             resolve();
-                            if(this.$route.name=='manage-review-details' || this.$route.name=='manage-messenger'){
+                            if(this.$route.name=='manage-approve-details' || this.$route.name=='manage-messenger'){
                                 this.getInfo()
                             }else{
                                 this.$emit('revocation')
@@ -383,7 +383,7 @@ export default {
             this.loadIng++;
             this.$store.dispatch("call", {
                 method: 'post',
-                url: 'workflow/process/addGlobalComment',
+                url: 'approve/process/addGlobalComment',
                 data: {
                     proc_inst_id:this.data.id,
                     content:JSON.stringify({
@@ -393,7 +393,7 @@ export default {
                 }
             }).then(({msg}) => {
                 $A.messageSuccess("添加成功");
-                if(this.$route.name=='manage-review-details' || this.$route.name=='manage-messenger'){
+                if(this.$route.name=='manage-approve-details' || this.$route.name=='manage-messenger'){
                     this.getInfo()
                 }else{
                     this.$emit('approve')

@@ -11,7 +11,7 @@
                         <UserAvatar :userid="userId" :size="36" tooltipDisabled/>
                     </div>
                     <span>{{userInfo.nickname}}</span>
-                    <Badge v-if="(reportUnreadNumber + backlogUnreadNumber) > 0" class="manage-box-top-report" :overflow-count="999" :count="reportUnreadNumber + backlogUnreadNumber"/>
+                    <Badge v-if="(reportUnreadNumber + approveUnreadNumber) > 0" class="manage-box-top-report" :overflow-count="999" :count="reportUnreadNumber + approveUnreadNumber"/>
                     <Badge v-else-if="!!clientNewVersion" class="manage-box-top-report" dot/>
                     <div class="manage-box-arrow">
                         <Icon type="ios-arrow-up" />
@@ -72,7 +72,7 @@
                                 <DropdownItem name="exportTask">{{$L('导出任务统计')}}</DropdownItem>
                                 <DropdownItem name="exportOverdueTask">{{$L('导出超期任务')}}</DropdownItem>
                                 <DropdownItem name="exportCheckin">{{$L('导出签到数据')}}</DropdownItem>
-                                <DropdownItem name="exportWorkflow">{{$L('导出审批数据')}}</DropdownItem>
+                                <DropdownItem name="exportApprove">{{$L('导出审批数据')}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                         <!-- 其他菜单 -->
@@ -92,9 +92,9 @@
                                     class="manage-menu-report-badge"
                                     :count="reportUnreadNumber"/>
                                 <Badge
-                                    v-else-if="item.path === 'review' && backlogUnreadNumber > 0"
+                                    v-else-if="item.path === 'approve' && approveUnreadNumber > 0"
                                     class="manage-menu-report-badge"
-                                    :count="backlogUnreadNumber"/>
+                                    :count="approveUnreadNumber"/>
                             </div>
                         </DropdownItem>
                     </template>
@@ -249,7 +249,7 @@
         <CheckinExport v-model="exportCheckinShow"/>
 
         <!--导出审批数据-->
-        <WorkflowExport v-model="exportWorkflowShow"/>
+        <ApproveExport v-model="exportApproveShow"/>
 
         <!--任务详情-->
         <TaskModal ref="taskModal"/>
@@ -318,7 +318,7 @@ import DialogModal from "./manage/components/DialogModal";
 import TaskModal from "./manage/components/TaskModal";
 import CheckinExport from "./manage/components/CheckinExport";
 import TaskExport from "./manage/components/TaskExport";
-import WorkflowExport from "./manage/components/WorkflowExport";
+import ApproveExport from "./manage/components/ApproveExport";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
 
@@ -326,7 +326,7 @@ export default {
     components: {
         TaskExport,
         CheckinExport,
-        WorkflowExport,
+        ApproveExport,
         TaskModal,
         DialogModal,
         MeetingManager,
@@ -364,7 +364,7 @@ export default {
 
             exportTaskShow: false,
             exportCheckinShow: false,
-            exportWorkflowShow: false,
+            exportApproveShow: false,
 
 
             dialogMsgSubscribe: null,
@@ -408,7 +408,7 @@ export default {
         this.$store.dispatch("getUserInfo").catch(_ => {})
         this.$store.dispatch("getTaskPriority").catch(_ => {})
         this.$store.dispatch("getReportUnread", 0)
-        this.$store.dispatch("getBacklogUnread", 0)
+        this.$store.dispatch("getApproveUnread", 0)
         //
         this.$store.dispatch("needHome").then(_ => {
             this.needStartHome = true
@@ -454,7 +454,7 @@ export default {
             'dialogIns',
 
             'reportUnreadNumber',
-            'backlogUnreadNumber',
+            'approveUnreadNumber',
         ]),
 
         ...mapGetters(['dashboardTask']),
@@ -560,12 +560,12 @@ export default {
                     {path: 'archivedProject', name: '已归档的项目'},
 
                     {path: 'team', name: '团队管理', divided: true},
-                    {path: 'review', name: '审批中心'},
+                    {path: 'approve', name: '审批中心'},
                 ])
             } else {
                 array.push(...[
                     {path: 'personal', name: '个人设置', divided: true},
-                    {path: 'review', name: '审批中心'},
+                    {path: 'approve', name: '审批中心'},
                     {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
 
                     {path: 'workReport', name: '工作报告', divided: true},
@@ -700,9 +700,9 @@ export default {
                             this.$store.dispatch("getReportUnread", 1000)
                         }
                         break;
-                    case 'workflow':
-                        if (action == 'backlog') {
-                            this.$store.dispatch("getBacklogUnread", 1000)
+                    case 'approve':
+                        if (action == 'unread') {
+                            this.$store.dispatch("getApproveUnread", 1000)
                         }
                         break;
                 }
@@ -752,8 +752,8 @@ export default {
                 case 'exportCheckin':
                     this.exportCheckinShow = true;
                     return;
-                case 'exportWorkflow':
-                    this.exportWorkflowShow = true;
+                case 'exportApprove':
+                    this.exportApproveShow = true;
                     return;
                 case 'workReport':
                     if (this.reportUnreadNumber > 0) {
@@ -774,9 +774,9 @@ export default {
                         this.goForward('index');
                     }
                     return;
-               case 'review':
+               case 'approve':
                     if (this.menu.findIndex((m) => m.path == path) > -1) {
-                        this.goForward({name: 'manage-review'});
+                        this.goForward({name: 'manage-approve'});
                     }
                     return;
                 case 'logout':

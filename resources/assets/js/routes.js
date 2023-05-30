@@ -30,14 +30,14 @@ export default [
                 component: () => import('./pages/manage/messenger.vue'),
             },
             {
-                name: 'manage-review',//审批
-                path: 'review',
-                component: () => import('./pages/manage/review/index.vue'),
+                name: 'manage-approve',//审批
+                path: 'approve',
+                component: () => import('./pages/manage/approve/index.vue'),
             },
             {
-                name: 'manage-review-details',
-                path: 'review/details',
-                component: () => import('./pages/manage/review/details.vue'),
+                name: 'manage-approve-details',
+                path: 'approve/details',
+                component: () => import('./pages/manage/approve/details.vue'),
             },
             {
                 name: 'manage-setting',

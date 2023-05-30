@@ -1,10 +1,10 @@
 <template>
-    <div class="page-review">
+    <div class="page-approve">
         <PageTitle :title="$L('审批中心')"/>
-        <div class="review-wrapper" ref="fileWrapper">
+        <div class="approve-wrapper" ref="fileWrapper">
 
-            <div class="review-head">
-                <div class="review-nav">
+            <div class="approve-head">
+                <div class="approve-nav">
                     <h1>{{$L('审批中心')}}</h1>
                 </div>
                 <Button type="primary" @click="addApply">{{$L("添加申请")}}</Button>
@@ -12,30 +12,30 @@
             </div>
 
             <Tabs :value="tabsValue" @on-click="tabsClick" style="margin: 0 20px;height: 100%;"  size="small">
-                <TabPane :label="$L('待办') + (backlogTotal > 0 ? ('('+backlogTotal+')') : '')" name="backlog" style="height: 100%;">
-                    <div class="review-main-search">
+                <TabPane :label="$L('待办') + (unreadTotal > 0 ? ('('+unreadTotal+')') : '')" name="unread" style="height: 100%;">
+                    <div class="approve-main-search">
                         <div style="display: flex;gap: 10px;">
                             <Select v-model="approvalType" @on-change="tabsClick('',0)" style="width: 150px;">
                                 <Option v-for="item in approvalList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
                         </div>
                     </div>
-                    <div class="noData" v-if="backlogList.length==0">{{$L('暂无数据')}}</div>
-                    <div v-else class="review-mains">
-                        <div class="review-main-left">
-                            <div class="review-main-list">
-                                <div @click.stop="clickList(item,key)"  v-for="(item,key) in backlogList">
-                                    <list :class="{ 'review-list-active': item._active }" :data="item"></list>
+                    <div class="noData" v-if="unreadList.length==0">{{$L('暂无数据')}}</div>
+                    <div v-else class="approve-mains">
+                        <div class="approve-main-left">
+                            <div class="approve-main-list">
+                                <div @click.stop="clickList(item,key)"  v-for="(item,key) in unreadList">
+                                    <list :class="{ 'approve-list-active': item._active }" :data="item"></list>
                                 </div>
                             </div>
                         </div>
-                        <div class="review-main-right">
-                            <listDetails v-if="!detailsShow && tabsValue=='backlog'" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
+                        <div class="approve-main-right">
+                            <listDetails v-if="!detailsShow && tabsValue=='unread'" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
                         </div>
                     </div>
                 </TabPane>
                 <TabPane :label="$L('已办')" name="done">
-                    <div class="review-main-search">
+                    <div class="approve-main-search">
                         <div style="display: flex;gap: 10px;">
                             <Select v-model="approvalType" @on-change="tabsClick('',0)" style="width: 150px;">
                                 <Option v-for="item in approvalList" :value="item.value" :key="item.value">{{ item.label }}</Option>
@@ -43,22 +43,22 @@
                         </div>
                     </div>
                     <div v-if="doneList.length==0" class="noData">{{$L('暂无数据')}}</div>
-                    <div v-else class="review-mains">
-                        <div class="review-main-left">
-                            <div class="review-main-list">
+                    <div v-else class="approve-mains">
+                        <div class="approve-main-left">
+                            <div class="approve-main-list">
                                 <div @click.stop="clickList(item,key)"  v-for="(item,key) in doneList" >
-                                    <list :class="{ 'review-list-active': item._active }" :data="item"></list>
+                                    <list :class="{ 'approve-list-active': item._active }" :data="item"></list>
                                </div>
                             </div>
                         </div>
-                        <div class="review-main-right">
+                        <div class="approve-main-right">
                             <listDetails v-if="!detailsShow && tabsValue=='done'" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
                         </div>
                     </div>
                 </TabPane>
                 <TabPane :label="$L('抄送我')" name="notify">
-                    <div class="review-main-search">
-                        <div class="review-main-search">
+                    <div class="approve-main-search">
+                        <div class="approve-main-search">
                             <div style="display: flex;gap: 10px;">
                                 <Select v-model="approvalType" @on-change="tabsClick('',0)" style="width: 150px;">
                                     <Option v-for="item in approvalList" :value="item.value" :key="item.value">{{ item.label }}</Option>
@@ -67,21 +67,21 @@
                         </div>
                     </div>
                     <div class="noData" v-if="notifyList.length==0">{{$L('暂无数据')}}</div>
-                    <div v-else class="review-mains">
-                        <div class="review-main-left">
-                            <div class="review-main-list">
+                    <div v-else class="approve-mains">
+                        <div class="approve-main-left">
+                            <div class="approve-main-list">
                                 <div @click.stop="clickList(item,key)"  v-for="(item,key) in notifyList">
-                                    <list :class="{ 'review-list-active': item._active }" :data="item"></list>
+                                    <list :class="{ 'approve-list-active': item._active }" :data="item"></list>
                                </div>
                             </div>
                         </div>
-                        <div class="review-main-right">
+                        <div class="approve-main-right">
                             <listDetails v-if="!detailsShow && tabsValue=='notify'" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
                         </div>
                     </div>
                 </TabPane>
                 <TabPane :label="$L('已发起')" name="initiated">
-                    <div class="review-main-search">
+                    <div class="approve-main-search">
                         <div style="display: flex;gap: 10px;">
                             <Select v-model="approvalType" @on-change="tabsClick('',0)" style="width: 150px;">
                                 <Option v-for="item in approvalList" :value="item.value" :key="item.value">{{ item.label }}</Option>
@@ -92,15 +92,15 @@
                         </div>
                     </div>
                     <div class="noData" v-if="initiatedList.length==0">{{$L('暂无数据')}}</div>
-                    <div v-else class="review-mains">
-                        <div class="review-main-left">
-                            <div class="review-main-list">
+                    <div v-else class="approve-mains">
+                        <div class="approve-main-left">
+                            <div class="approve-main-list">
                                 <div @click.stop="clickList(item,key)"  v-for="(item,key) in initiatedList">
-                                    <list :class="{ 'review-list-active': item._active }" :data="item"></list>
+                                    <list :class="{ 'approve-list-active': item._active }" :data="item"></list>
                                </div>
                             </div>
                         </div>
-                        <div class="review-main-right">
+                        <div class="approve-main-right">
                             <listDetails v-if="!detailsShow && tabsValue=='initiated'" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
                         </div>
                     </div>
@@ -115,7 +115,7 @@
         </DrawerOverlay>
 
         <!--发起-->
-        <Modal v-model="addShow" :title="$L(addTitle)" :mask-closable="false" class="page-review-initiate">
+        <Modal v-model="addShow" :title="$L(addTitle)" :mask-closable="false" class="page-approve-initiate">
             <Form ref="initiateRef" :model="addData" :rules="addRule" label-width="auto" @submit.native.prevent>
                 <FormItem v-if="departmentList.length>1" prop="department_id" :label="$L('选择部门')">
                     <Select v-model="addData.department_id" :placeholder="$L('请选择部门')">
@@ -193,7 +193,7 @@ import { mapState } from 'vuex'
 
 export default {
     components:{list,listDetails,DrawerOverlay,ImgUpload},
-    name: "review",
+    name: "approve",
     data(){
         return{
             minDate: new Date(2020, 0, 1),
@@ -224,8 +224,8 @@ export default {
                 {value:4,label:this.$L("已撤回")}
             ],
             // 
-            backlogTotal:0,
-            backlogList: [],
+            unreadTotal:0,
+            unreadList: [],
             doneList:[],
             notifyList:[],
             initiatedList: [],
@@ -277,7 +277,7 @@ export default {
     },
     watch: {
         '$route' (to, from) {
-            if(to.name == 'manage-review'){
+            if(to.name == 'manage-approve'){
                 this.tabsClick()
             }
         },
@@ -285,8 +285,8 @@ export default {
             handler(info) {
                 const {type, action} = info;
                 switch (type) {
-                    case 'workflow':
-                        if (action == 'backlog') {
+                    case 'approve':
+                        if (action == 'unread') {
                             this.tabsClick()
                         }
                         break;
@@ -301,9 +301,9 @@ export default {
         }
     },
     mounted() {
-        this.tabsValue = "backlog"
+        this.tabsValue = "unread"
         this.tabsClick()
-        this.getBacklogList()
+        this.getUnreadList()
         this.addData.department_id = this.userInfo.department[0] || 0;
         this.addData.startTime = this.addData.endTime = this.getCurrentDate();
     },
@@ -326,8 +326,8 @@ export default {
             if(val!=""){
                 this.approvalType = this.searchState = "all"
             }
-            if(this.tabsValue == 'backlog'){
-                this.getBacklogList();
+            if(this.tabsValue == 'unread'){
+                this.getUnreadList();
             }
             if(this.tabsValue == 'done'){
                 this.getDoneList();
@@ -342,14 +342,14 @@ export default {
 
         // 列表点击事件
         clickList(item){
-            this.backlogList.map(h=>{ h._active = false; })
+            this.unreadList.map(h=>{ h._active = false; })
             this.doneList.map(h=>{ h._active = false; })
             this.notifyList.map(h=>{ h._active = false; })
             this.initiatedList.map(h=>{ h._active = false; })
             item._active = true;
             // 
             if( window.innerWidth < 426 ){
-                this.goForward({name: 'manage-review-details', query: { id: item.id } });
+                this.goForward({name: 'manage-approve-details', query: { id: item.id } });
                 return;
             }
             if( window.innerWidth < 1010 ){
@@ -362,26 +362,26 @@ export default {
         },
 
         // 获取待办列表
-        getBacklogList(){
+        getUnreadList(){
             this.$store.dispatch("call", {
                 method: 'get',
-                url: 'workflow/process/findTask',
+                url: 'approve/process/findTask',
                 data: {
                     page:this.page,
                     page_size: this.pageSize,
                     proc_def_name: this.approvalType == 'all' ? '' : this.approvalType,
                 }
             }).then(({data}) => {
-                this.backlogList =  data.rows.map((h,index)=>{
+                this.unreadList =  data.rows.map((h,index)=>{
                     h._active = index == 0; 
                     return h;
                 })
                 if(this.approvalType == 'all'){
-                    this.backlogTotal = this.backlogList.length
+                    this.unreadTotal = this.unreadList.length
                 }
-                if(this.tabsValue == 'backlog'){
+                if(this.tabsValue == 'unread'){
                     this.$nextTick(()=>{
-                        this.details = this.backlogList[0] || {}
+                        this.details = this.unreadList[0] || {}
                     })
                 }
             }).catch(({msg}) => {
@@ -395,7 +395,7 @@ export default {
         getDoneList(){
             this.$store.dispatch("call", {
                 method: 'get',
-                url: 'workflow/procHistory/findTask',
+                url: 'approve/procHistory/findTask',
                 data: {
                     page:this.page,
                     page_size: this.pageSize,
@@ -422,7 +422,7 @@ export default {
         getNotifyList(){
             this.$store.dispatch("call", {
                 method: 'get',
-                url: 'workflow/procHistory/findProcNotify',
+                url: 'approve/procHistory/findProcNotify',
                 data: {
                     page:this.page,
                     page_size: this.pageSize,
@@ -449,7 +449,7 @@ export default {
         getInitiatedList(){
             this.$store.dispatch("call", {
                 method: 'post',
-                url: 'workflow/process/startByMyselfAll',
+                url: 'approve/process/startByMyselfAll',
                 data: {
                     page: this.page,
                     page_size: this.pageSize,
@@ -488,7 +488,7 @@ export default {
                     return false;
                 }
                 this.$store.dispatch("call", {
-                    url: 'workflow/procdef/all',
+                    url: 'approve/procdef/all',
                     method: 'post',
                 }).then(({data}) => {
                     this.procdefList = data.rows || [];
@@ -523,7 +523,7 @@ export default {
                     }
 
                     this.$store.dispatch("call", {
-                        url: 'workflow/process/start',
+                        url: 'approve/process/start',
                         data: {
                             proc_name: obj.applyType,
                             department_id: obj.department_id,
@@ -550,10 +550,10 @@ export default {
 </script>
 
 <style lang="scss">
-    .page-review .review-details{
+    .page-approve .approve-details{
         border-radius: 8px;
     }
-    .page-review .ivu-tabs-nav {
+    .page-approve .ivu-tabs-nav {
         display: flex;
         width: 350px;
         @media (max-width: 1010px) {
@@ -565,7 +565,7 @@ export default {
             text-align: center;
         }
     }
-    .page-review-initiate .ivu-modal-body{
+    .page-approve-initiate .ivu-modal-body{
         padding: 16px 22px 2px !important;
     }
 </style>
