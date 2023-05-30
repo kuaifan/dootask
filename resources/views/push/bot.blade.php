@@ -108,8 +108,8 @@
     <span style="color:#84c56a">version</span>: 系统版本
 @elseif ($type === 'notice')
     {{$notice}}
-@elseif ($type === 'workflow_reviewer')
-    <span class="open-review-details" data-id="{{$data->id}}"><b>{{$data->nickname}}提交的「{{$data->proc_def_name}}」待你审批</b>
+@elseif ($type === 'approve_reviewer')
+    <span class="open-approve-details" data-id="{{$data->id}}"><b>{{$data->nickname}}提交的「{{$data->proc_def_name}}」待你审批</b>
     <div class="cause"><span>申请人：<span style="color:#84c56a">{{'@'}}{{$data->nickname}}</span> {{$data->department}}</span>
         <b>审批事由</b>
         @if ($data->type)
@@ -129,8 +129,8 @@
             <Button type="button" class="ivu-btn ivu-btn-error" style="flex: 1;">拒绝</Button>
         @endif
     </div></span>
-@elseif ($type === 'workflow_notifier')
-    <span class="open-review-details" data-id="{{$data->id}}"><b>抄送{{$data->nickname}}提交的「{{$data->proc_def_name}}」记录</b>
+@elseif ($type === 'approve_notifier')
+    <span class="open-approve-details" data-id="{{$data->id}}"><b>抄送{{$data->nickname}}提交的「{{$data->proc_def_name}}」记录</b>
     <div class="cause"><span>申请人：<span style="color:#84c56a">{{'@'}}{{$data->nickname}}</span> {{$data->department}}</span>
         <b>审批事由</b>
         @if ($data->type)
@@ -145,8 +145,8 @@
         <Button type="button" class="ivu-btn" style="flex: 1;">查看详情</Button>
         @endif
     </div></span>
-@elseif ($type === 'workflow_submitter')
-    <span class="open-review-details" data-id="{{$data->id}}"><b> @if ($action === 'pass')您发起的「{{$data->proc_def_name}}」已通过 @else您发起的「{{$data->proc_def_name}}」被{{$data->nickname}}拒绝 @endif</b>
+@elseif ($type === 'approve_submitter')
+    <span class="open-approve-details" data-id="{{$data->id}}"><b> @if ($action === 'pass')您发起的「{{$data->proc_def_name}}」已通过 @else您发起的「{{$data->proc_def_name}}」被{{$data->nickname}}拒绝 @endif</b>
     <div class="cause"><span>申请人：<span style="color:#84c56a">{{'@'}}{{$data->nickname}}</span> {{$data->department}}</span>
         <b>审批事由</b>
         @if ($data->type)

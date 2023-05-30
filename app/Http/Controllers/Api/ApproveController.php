@@ -20,20 +20,20 @@ use App\Models\WebSocketDialogMsg;
 use App\Module\BillMultipleExport;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 /**
- * @apiDefine workflow
+ * @apiDefine approve
  *
  * 工作流
  */
-class WorkflowController extends AbstractController
+class ApproveController extends AbstractController
 {
     private $flow_url = '';
     public function __construct()
     {
-        $this->flow_url = env('FLOW_URL') ?: 'http://dootask-workflow-'.env('APP_ID');
+        $this->flow_url = env('FLOW_URL') ?: 'http://dootask-approve-'.env('APP_ID');
     }
 
     /**
-     * @api {get} api/workflow/verifyToken          01. 验证APi登录
+     * @api {get} api/approve/verifyToken          01. 验证APi登录
      *
      * @apiVersion 1.0.0
      * @apiGroup users
@@ -54,11 +54,11 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/procdef/all          02. 查询流程定义
+     * @api {post} api/approve/procdef/all          02. 查询流程定义
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup workflow
+     * @apiGroup approve
      * @apiName procdef__all
      *
      * @apiQuery {String} name               流程名称
@@ -80,11 +80,11 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {get} api/workflow/procdef/del          03. 删除流程定义
+     * @api {get} api/approve/procdef/del          03. 删除流程定义
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup workflow
+     * @apiGroup approve
      * @apiName procdef__del
      *
      * @apiQuery {String} id               流程ID
@@ -106,11 +106,11 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/process/start          04. 启动流程（审批中）
+     * @api {post} api/approve/process/start          04. 启动流程（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup workflow
+     * @apiGroup approve
      * @apiName process__start
      *
      * @apiQuery {String} proc_name            流程名称
@@ -153,14 +153,14 @@ class WorkflowController extends AbstractController
                 if (empty($dialog)) {
                     continue;
                 }
-                $this->workflowMsg('workflow_reviewer', $dialog, $botUser, $val, $process, 'start');
+                $this->approveMsg('approve_reviewer', $dialog, $botUser, $val, $process, 'start');
             }
             // 抄送人
             $notifier = $this->handleProcessNode($process);
             if ($notifier) {
                 foreach ($notifier as $val) {
                     $dialog = WebSocketDialog::checkUserDialog($botUser, $val['target_id']);
-                    $this->workflowMsg('workflow_notifier', $dialog, $botUser, $process, $process);
+                    $this->approveMsg('approve_notifier', $dialog, $botUser, $process, $process);
                 }
             }
         }
@@ -169,11 +169,11 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/process/addGlobalComment          05. 添加全局评论
+     * @api {post} api/approve/process/addGlobalComment          05. 添加全局评论
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup workflow
+     * @apiGroup approve
      * @apiName process__addGlobalComment
      *
      * @apiQuery {Number} proc_inst_id        流程实例ID
@@ -201,11 +201,11 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/task/complete          06. 审批
+     * @api {post} api/approve/task/complete          06. 审批
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup workflow
+     * @apiGroup approve
      * @apiName task__complete
      *
      * @apiQuery {Number} task_id               流程ID
@@ -243,13 +243,13 @@ class WorkflowController extends AbstractController
             if (empty($dialog)) {
                 continue;
             }
-            $this->workflowMsg('workflow_reviewer', $dialog, $botUser, $val, $process, $pass);
+            $this->approveMsg('approve_reviewer', $dialog, $botUser, $val, $process, $pass);
         }
         // 发起人
         if($process['is_finished'] == true) {
             $dialog = WebSocketDialog::checkUserDialog($botUser, $process['start_user_id']);
             if (!empty($dialog)) {
-                $this->workflowMsg('workflow_submitter', $dialog, $botUser, ['userid' => $data['userid']], $process, $pass);
+                $this->approveMsg('approve_submitter', $dialog, $botUser, ['userid' => $data['userid']], $process, $pass);
             }
         }else if ($process['candidate']) {
             // 下个审批人
@@ -263,7 +263,7 @@ class WorkflowController extends AbstractController
                 if (empty($dialog)) {
                     continue;
                 }
-                $this->workflowMsg('workflow_reviewer', $dialog, $botUser, $val, $process,'start');
+                $this->approveMsg('approve_reviewer', $dialog, $botUser, $val, $process,'start');
             }
         }
 
@@ -273,7 +273,7 @@ class WorkflowController extends AbstractController
             foreach ($notifier as $val) {
                 $dialog = WebSocketDialog::checkUserDialog($botUser, $val['target_id']);
                 if (!empty($dialog)) {
-                    $this->workflowMsg('workflow_notifier', $dialog, $botUser, $process, $process);
+                    $this->approveMsg('approve_notifier', $dialog, $botUser, $process, $process);
                 }
             }
         }
@@ -281,11 +281,11 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/task/withdraw          07. 撤回
+     * @api {post} api/approve/task/withdraw          07. 撤回
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup workflow
+     * @apiGroup approve
      * @apiName task__withdraw
      *
      * @apiQuery {Number} task_id               流程ID
@@ -320,17 +320,17 @@ class WorkflowController extends AbstractController
                 continue;
             }
             //发送撤回提醒
-            $this->workflowMsg('workflow_reviewer', $dialog, $botUser, $val, $process, 'withdraw');
+            $this->approveMsg('approve_reviewer', $dialog, $botUser, $val, $process, 'withdraw');
         }
         return Base::retSuccess('已撤回', Base::arrayKeyToUnderline($task['data']));
     }
 
     /**
-     * @api {post} api/workflow/process/findTask          08. 查询需要我审批的流程（审批中）
+     * @api {post} api/approve/process/findTask          08. 查询需要我审批的流程（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup workflow
+     * @apiGroup approve
      * @apiName process__findTask
      *
      * @apiQuery {String} proc_def_name         流程名称
@@ -368,11 +368,11 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/process/startByMyselfAll          09. 查询我启动的流程（全部）
+     * @api {post} api/approve/process/startByMyselfAll          09. 查询我启动的流程（全部）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup workflow
+     * @apiGroup approve
      * @apiName process__startByMyselfAll
      *
      * @apiQuery {String} proc_def_name         流程分类
@@ -410,11 +410,11 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/process/startByMyself          10. 查询我启动的流程（审批中）
+     * @api {post} api/approve/process/startByMyself          10. 查询我启动的流程（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup workflow
+     * @apiGroup approve
      * @apiName process__startByMyself
      *
      * @apiQuery {Number} page                  页码
@@ -448,11 +448,11 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/process/findProcNotify          11. 查询抄送我的流程（审批中）
+     * @api {post} api/approve/process/findProcNotify          11. 查询抄送我的流程（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup workflow
+     * @apiGroup approve
      * @apiName process__findProcNotify
      *
      * @apiQuery {Number} userid               用户ID
@@ -492,11 +492,11 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {get} api/workflow/identitylink/findParticipant          12. 查询流程实例的参与者（审批中）
+     * @api {get} api/approve/identitylink/findParticipant          12. 查询流程实例的参与者（审批中）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup workflow
+     * @apiGroup approve
      * @apiName identitylink__findParticipant
      *
      * @apiQuery {Number} proc_inst_id             流程实例ID
@@ -527,11 +527,11 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/procHistory/findTask          13. 查询需要我审批的流程（已结束）
+     * @api {post} api/approve/procHistory/findTask          13. 查询需要我审批的流程（已结束）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup workflow
+     * @apiGroup approve
      * @apiName procHistory__findTask
      *
      * @apiQuery {String} proc_def_name        流程分类
@@ -569,11 +569,11 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/procHistory/startByMyself          14. 查询我启动的流程（已结束）
+     * @api {post} api/approve/procHistory/startByMyself          14. 查询我启动的流程（已结束）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup workflow
+     * @apiGroup approve
      * @apiName procHistory__startByMyself
      *
      * @apiQuery {Number} page                  页码
@@ -607,11 +607,11 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {post} api/workflow/procHistory/findProcNotify          15. 查询抄送我的流程（已结束）
+     * @api {post} api/approve/procHistory/findProcNotify          15. 查询抄送我的流程（已结束）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup workflow
+     * @apiGroup approve
      * @apiName procHistory__findProcNotify
      *
      * @apiQuery {String} proc_def_name         流程分类
@@ -650,11 +650,11 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {get} api/workflow/identitylinkHistory/findParticipant          16. 查询流程实例的参与者（已结束）
+     * @api {get} api/approve/identitylinkHistory/findParticipant          16. 查询流程实例的参与者（已结束）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup workflow
+     * @apiGroup approve
      * @apiName identitylinkHistory__findParticipant
      *
      * @apiQuery {Number} proc_inst_id             流程实例ID
@@ -685,11 +685,11 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {get} api/workflow/process/detail          17. 根据流程ID查询流程详情
+     * @api {get} api/approve/process/detail          17. 根据流程ID查询流程详情
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup workflow
+     * @apiGroup approve
      * @apiName process__detail
      *
      * @apiQuery {Number} id               流程ID
@@ -702,16 +702,16 @@ class WorkflowController extends AbstractController
     {
         User::auth();
         $data['id'] = intval(Request::input('id'));
-        $workflow = $this->getProcessById($data['id']);
-        return Base::retSuccess('success', $workflow);
+        $approve = $this->getProcessById($data['id']);
+        return Base::retSuccess('success', $approve);
     }
 
     /**
-     * @api {post} api/workflow/export          18. 导出数据
+     * @api {post} api/approve/export          18. 导出数据
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup workflow
+     * @apiGroup approve
      * @apiName export
      *
      * @apiQuery {String} proc_def_name         流程分类
@@ -839,7 +839,7 @@ class WorkflowController extends AbstractController
         ];
         //
         $fileName = '审批记录_' . Base::time() . '.xls';
-        $filePath = "temp/workflow/export/" . date("Ym", Base::time());
+        $filePath = "temp/approve/export/" . date("Ym", Base::time());
         $export = new BillMultipleExport($sheets);
         $res = $export->store($filePath . "/" . $fileName);
         if ($res != 1) {
@@ -860,10 +860,10 @@ class WorkflowController extends AbstractController
             $base64 = base64_encode(Base::array2string([
                 'file' => $zipFile,
             ]));
-            Session::put('workflow::export:userid', $user->userid);
+            Session::put('approve::export:userid', $user->userid);
             return Base::retSuccess('success', [
                 'size' => Base::twoFloat(filesize($zipPath) / 1024, true),
-                'url' => Base::fillUrl('api/workflow/down?key=' . urlencode($base64)),
+                'url' => Base::fillUrl('api/approve/down?key=' . urlencode($base64)),
             ]);
         } else {
             return Base::retError('打包失败，请稍后再试...');
@@ -882,7 +882,7 @@ class WorkflowController extends AbstractController
     }
 
     /**
-     * @api {get} api/workflow/down          19. 下载导出的审批数据
+     * @api {get} api/approve/down          19. 下载导出的审批数据
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -894,7 +894,7 @@ class WorkflowController extends AbstractController
      */
     public function down()
     {
-        $userid = Session::get('workflow::export:userid');
+        $userid = Session::get('approve::export:userid');
         if (empty($userid)) {
             return Base::ajaxError("请求已过期，请重新导出！", [], 0, 502);
         }
@@ -947,11 +947,11 @@ class WorkflowController extends AbstractController
 
 
     // 审批机器人消息
-    public function workflowMsg($type, $dialog, $botUser, $toUser, $process, $action = null)
+    public function approveMsg($type, $dialog, $botUser, $toUser, $process, $action = null)
     {
         $data = [
             'id' => $process['id'],
-            'nickname' => User::userid2nickname($type == 'workflow_submitter' ? $toUser['userid'] : $process['start_user_id']),
+            'nickname' => User::userid2nickname($type == 'approve_submitter' ? $toUser['userid'] : $process['start_user_id']),
             'proc_def_name' => $process['proc_def_name'],
             'department' => $process['department'],
             'type' => $process['var']['type'],
@@ -964,7 +964,7 @@ class WorkflowController extends AbstractController
         $msg_action = null;
         if ($action == 'withdraw' || $action == 'pass' || $action == 'refuse') {
             // 任务完成，给发起人发送消息
-            if($type == 'workflow_submitter' && $action != 'withdraw'){
+            if($type == 'approve_submitter' && $action != 'withdraw'){
                 return WebSocketDialogMsg::sendMsg($msg_action, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
             }
             // 查找最后一条消息msg_id
@@ -982,12 +982,12 @@ class WorkflowController extends AbstractController
                 $proc_msg->save();
             }
             // 更新工作报告 未读数量
-            if($type == 'workflow_reviewer' && $toUser['userid']){
+            if($type == 'approve_reviewer' && $toUser['userid']){
                 $params = [
                     'userid' => [ $toUser['userid'], User::auth()->userid() ],
                     'msg' => [
-                        'type' => 'workflow',
-                        'action' => 'backlog',
+                        'type' => 'approve',
+                        'action' => 'unread',
                         'userid' => $toUser['userid'],
                     ]
                 ];

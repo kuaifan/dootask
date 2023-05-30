@@ -466,7 +466,7 @@ export default {
         dispatch("getProjects").catch(() => {});
         dispatch("getDialogs").catch(() => {});
         dispatch("getReportUnread", 1000);
-        dispatch("getBacklogUnread", 1000);
+        dispatch("getApproveUnread", 1000);
         dispatch("getTaskForDashboard");
         dispatch("dialogMsgRead");
         //
@@ -502,20 +502,20 @@ export default {
      * @param dispatch
      * @param timeout
      */
-     getBacklogUnread({state, dispatch}, timeout) {
-        window.__getBacklogUnread && clearTimeout(window.__getBacklogUnread)
-        window.__getBacklogUnread = setTimeout(() => {
+     getApproveUnread({state, dispatch}, timeout) {
+        window.__getApproveUnread && clearTimeout(window.__getApproveUnread)
+        window.__getApproveUnread = setTimeout(() => {
             if (state.userId === 0) {
-                state.backlogUnreadNumber = 0;
+                state.approveUnreadNumber = 0;
             } else {
                 dispatch("call", {
-                    url: 'workflow/process/findTask',
+                    url: 'approve/process/findTask',
                     data: {
                         page:1,
                         page_size: 500,
                     }
                 }).then(({data}) => {
-                    state.backlogUnreadNumber = data.total || 0;
+                    state.approveUnreadNumber = data.total || 0;
                 }).catch(_ => {});
             }
         }, typeof timeout === "number" ? timeout : 1000)

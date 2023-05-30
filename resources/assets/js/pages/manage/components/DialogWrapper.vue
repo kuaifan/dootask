@@ -500,7 +500,7 @@
 
         <!--审批详情-->
         <DrawerOverlay v-model="approveDetailsShow"  placement="right" :size="600">
-            <ReviewDetails v-if="approveDetailsShow" :data="approveDetails" style="height: 100%;border-radius: 10px;"></ReviewDetails>
+            <ApproveDetails v-if="approveDetailsShow" :data="approveDetails" style="height: 100%;border-radius: 10px;"></ApproveDetails>
         </DrawerOverlay>
     </div>
 </template>
@@ -521,7 +521,7 @@ import DialogSelect from "./DialogSelect";
 import ImgUpload from "../../../components/ImgUpload.vue";
 import {choiceEmojiOne} from "./ChatInput/one";
 
-import ReviewDetails from "../../../pages/manage/review/details.vue";
+import ApproveDetails from "../../../pages/manage/approve/details.vue";
 
 export default {
     name: "DialogWrapper",
@@ -536,7 +536,7 @@ export default {
         DrawerOverlay,
         UserInput,
         DialogUpload,
-        ReviewDetails
+        ApproveDetails
     },
 
     props: {
@@ -2387,11 +2387,11 @@ export default {
             }
 
             // 打开审批详情
-            let domAudits = $(target).parents(".open-review-details")
+            let domAudits = $(target).parents(".open-approve-details")
             if( domAudits.length > 0 ){
                 let dataId = domAudits[0].getAttribute("data-id")
                 if( window.innerWidth < 426 ){
-                    this.goForward({name: 'manage-review-details', query: { id: domAudits[0].getAttribute("data-id") } });
+                    this.goForward({name: 'manage-approve-details', query: { id: domAudits[0].getAttribute("data-id") } });
                 }else{
                     this.approveDetailsShow = true;
                     this.$nextTick(()=>{

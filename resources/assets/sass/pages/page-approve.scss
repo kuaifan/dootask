@@ -1,22 +1,22 @@
-.page-review{
+.page-approve{
     width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
-    .review-wrapper {
+    .approve-wrapper {
         flex: 1;
         height: 0;
         display: flex;
         flex-direction: column;
         position: relative;
-        .review-head {
+        .approve-head {
             display: flex;
             align-items: center;
             padding-bottom: 16px;
             margin: 32px 20px 16px;
             margin-bottom: 5px;
             border-bottom: 1px solid #F4F4F5;
-            .review-nav{
+            .approve-nav{
                 flex: 1;
                 display: flex;
                 align-items: center;
@@ -27,7 +27,7 @@
                 }
             }
         }
-        .review-main-search{
+        .approve-main-search{
             display: flex;
             justify-content: space-between;
             margin:0 5px;
@@ -42,12 +42,12 @@
             text-align: center;
             line-height: 150px;
         }
-        .review-mains{
+        .approve-mains{
             display: flex;
             flex: 1 1 auto;
             height: calc(100vh - 190px);
             position: relative;
-            .review-main-left{
+            .approve-main-left{
                 display: flex;
                 flex-direction: column;
                 flex: 0 0 auto;
@@ -60,12 +60,12 @@
                 @media (max-width: 1010px) {
                     max-width: 100%;
                 }
-                .review-main-list{
+                .approve-main-list{
                     display: flex;
                     flex-direction: column;
                     flex: 1 1 auto;
                     overflow: scroll;
-                    .review-list{
+                    .approve-list{
                         margin-bottom: 8px;
                         padding: 12px;
                         border-radius: 8px;
@@ -106,15 +106,15 @@
                             }
                         }
                     }
-                    .review-list-active{
+                    .approve-list-active{
                         border: 1px solid #8bcf70;
                     }
                 }
-                .review-main-list::-webkit-scrollbar {
+                .approve-main-list::-webkit-scrollbar {
                     display: none;
                 }
             }
-            .review-main-right{
+            .approve-main-right{
                 position: absolute;
                 left: 360px;
                 top: 0;
@@ -132,18 +132,18 @@
 }
 
 
-.review-details{
+.approve-details{
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     border: 1px solid #eeeeee;
     background: #fff;
-    .review-details-box{
+    .approve-details-box{
         flex: 1 1 auto;
         padding: 24px;
         overflow-y: scroll;
 
-        .review-details-title{
+        .approve-details-title{
             display: flex;
             align-items: center;
             .ivu-tag{
@@ -151,7 +151,7 @@
             }
         }
 
-        .review-details-subtitle{
+        .approve-details-subtitle{
             margin-top: 8px;
             display: flex;
             .ivu-avatar{
@@ -167,7 +167,7 @@
             padding-bottom: 10px;
         }
 
-        .review-details-text{
+        .approve-details-text{
             margin-bottom: 12px;
             > h4{
                 color: #999;
@@ -184,29 +184,29 @@
             }
         }
 
-        .review-record-timeline{
+        .approve-record-timeline{
             margin-top: 20px;
             .timeline-body{
                 display: flex;
             }
-            .review-process-state{
+            .approve-process-state{
                 font-size: 12px;
                 color: #19be6b;
             }
             
-            .review-process-left{
+            .approve-process-left{
                 margin-left: 10px;
                 flex: 1;
             }
 
-            .review-process-right{
+            .approve-process-right{
                 text-align: right;
             }
             
         }
         
 
-        .review-record-comment{
+        .approve-record-comment{
             padding: 10px;
             margin-bottom: 30px;
             .top{
@@ -223,7 +223,7 @@
             }
         }
         
-        .review-details-text:nth-last-child(1){
+        .approve-details-text:nth-last-child(1){
             margin-bottom: 0;
         }
 
@@ -232,10 +232,10 @@
             border-radius: 5px;
         }
 
-        .review-copy{
+        .approve-copy{
             margin-top: 8px;
             display: flex;
-            .review-copy-member{
+            .approve-copy-member{
                 display: flex;
                 align-items: center;
                 background: #F4F4F5;
@@ -247,14 +247,14 @@
             }
         }
     }
-    .review-details-box::-webkit-scrollbar {
+    .approve-details-box::-webkit-scrollbar {
         display: none;
     }
 
 
    
 
-    .review-operation{
+    .approve-operation{
         flex: 0 0 auto;
         padding: 0 24px;
         border-top: 1px solid #F4F4F5;

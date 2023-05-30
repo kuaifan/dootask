@@ -55,7 +55,7 @@
 <script>
 import UserInput from "../../../components/UserInput";
 export default {
-    name: "WorkflowExport",
+    name: "ApproveExport",
     components: {UserInput},
     props: {
         value: {
@@ -97,7 +97,7 @@ export default {
         getProcName(){
             this.loadIng++;
             this.$store.dispatch("call", {
-                url: 'workflow/procdef/all',
+                url: 'approve/procdef/all',
                 method: 'post'
             }).then(({data}) => {
                 this.procList = data['rows'];
@@ -115,7 +115,7 @@ export default {
             }
             this.loadIng++;
             this.$store.dispatch("call", {
-                url: 'workflow/export',
+                url: 'approve/export',
                 data: this.formData,
             }).then(({data}) => {
                 this.show = false;
