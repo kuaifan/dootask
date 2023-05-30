@@ -340,13 +340,20 @@ export default {
                     minWidth: 160,
                     render: (h, {row}) => {
                         const arr = [h('AutoTip', row.email)];
-                        const {email_verity, identity, disable_at} = row;
+                        const {email_verity, identity, disable_at, is_principal} = row;
                         if (email_verity) {
                             arr.push(h('Icon', {
                                 props: {
                                     type: 'md-mail'
                                 }
                             }))
+                        }
+                        if (is_principal) {
+                            arr.push(h('Tag', {
+                                props: {
+                                    color: 'blue'
+                                }
+                            }, this.$L('负责人')))
                         }
                         if (identity.includes("ldap")) {
                             arr.push(h('Tag', {

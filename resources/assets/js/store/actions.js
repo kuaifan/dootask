@@ -466,6 +466,7 @@ export default {
         dispatch("getProjects").catch(() => {});
         dispatch("getDialogs").catch(() => {});
         dispatch("getReportUnread", 1000);
+        dispatch("getApproveUnread", 1000);
         dispatch("getTaskForDashboard");
         dispatch("dialogMsgRead");
         //
@@ -489,6 +490,32 @@ export default {
                     url: 'report/unread',
                 }).then(({data}) => {
                     state.reportUnreadNumber = data.total || 0;
+                }).catch(_ => {});
+            }
+        }, typeof timeout === "number" ? timeout : 1000)
+    },
+
+
+     /**
+     * 获取审批待办未读数量
+     * @param state
+     * @param dispatch
+     * @param timeout
+     */
+     getApproveUnread({state, dispatch}, timeout) {
+        window.__getApproveUnread && clearTimeout(window.__getApproveUnread)
+        window.__getApproveUnread = setTimeout(() => {
+            if (state.userId === 0) {
+                state.approveUnreadNumber = 0;
+            } else {
+                dispatch("call", {
+                    url: 'approve/process/findTask',
+                    data: {
+                        page:1,
+                        page_size: 500,
+                    }
+                }).then(({data}) => {
+                    state.approveUnreadNumber = data.total || 0;
                 }).catch(_ => {});
             }
         }, typeof timeout === "number" ? timeout : 1000)

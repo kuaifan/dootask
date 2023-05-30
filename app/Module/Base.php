@@ -2985,4 +2985,43 @@ class Base
         }
         return false;
     }
+
+    /**
+     * 多维数组字母转下划线格式
+     * @param $array
+     * @return array
+     */
+    public static function arrayKeyToUnderline($array)
+    {
+        $newArray = [];
+        foreach ($array as $key => $value) {
+            //如果是数组，递归调用
+            if (is_array($value)) {
+                $value = self::arrayKeyToUnderline($value);
+            }
+            $newKey = strtolower(preg_replace('/(?<=[a-z])([A-Z])/', '_$1', $key));
+            $newArray[$newKey] = $value;
+        }
+        return $newArray;
+    }
+
+    /**
+     * 多维数组字母转驼峰格式
+     *
+     * @param [type] $array
+     * @return array
+     */
+    public static function arrayKeyToCamel($array)
+    {
+        $newArray = [];
+        foreach ($array as $key => $value) {
+            //如果是数组，递归调用
+            if (is_array($value)) {
+                $value = self::arrayKeyToCamel($value);
+            }
+            $newKey = lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $key))));
+            $newArray[$newKey] = $value;
+        }
+        return $newArray;
+    }
 }

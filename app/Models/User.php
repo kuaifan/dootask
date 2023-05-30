@@ -150,6 +150,15 @@ class User extends AbstractModel
     }
 
     /**
+     * 判断是否为部门负责人
+     */
+    public function isDepartmentOwner()
+    {
+        return UserDepartment::where('owner_userid', $this->userid)->exists();
+    }
+
+
+    /**
      * 获取机器人所有者
      * @return int|mixed
      */
@@ -604,6 +613,9 @@ class User extends AbstractModel
                     break;
                 case 'anon-msg':
                     $update['nickname'] = '匿名消息';
+                    break;
+                case 'approval-alert':
+                    $update['nickname'] = '审批';
                     break;
                 case 'bot-manager':
                     $update['nickname'] = '机器人管理';

@@ -1,0 +1,434 @@
+<template>
+    <div class="approve-details" :style="{'z-index':modalTransferIndex}">
+        <div class="approve-details-box">
+            <h2 class="approve-details-title">
+                <span>{{$L(datas.proc_def_name)}}</span>
+                <Tag v-if="datas.state == 0" color="cyan">{{$L('待审批')}}</Tag>
+                <Tag v-if="datas.state == 1" color="cyan">{{$L('审批中')}}</Tag>
+                <Tag v-if="datas.state == 2" color="green">{{$L('已通过')}}</Tag>
+                <Tag v-if="datas.state == 3" color="red">{{$L('已拒绝')}}</Tag>
+                <Tag v-if="datas.state == 4" color="red">{{$L('已撤回')}}</Tag>
+            </h2>
+            <h3 class="approve-details-subtitle"><Avatar :src="datas.userimg" size="24"/><span>{{datas.start_user_name}}</span></h3>
+            <h3 class="approve-details-subtitle"><span>{{$L('提交于')}} {{datas.start_time}}</span></h3>
+
+            <Divider/>
+
+            <div class="approve-details-text" v-if="(datas.proc_def_name || '').indexOf('班') == -1">
+                <h4>{{$L('假期类型')}}</h4>
+                <p>{{$L(datas.var?.type)}}</p>
+            </div>
+            <div class="approve-details-text">
+                <h4>{{$L('开始时间')}}</h4>
+                <p>{{datas.var?.start_time}}</p>
+            </div>
+            <div class="approve-details-text">
+                <h4>{{$L('结束时间')}}</h4>
+                <p>{{datas.var?.end_time}}</p>
+            </div>
+            <div class="approve-details-text">
+                <h4>{{ $L('时长') }}（{{getTimeDifference(datas.var?.start_time,datas.var?.end_time)['unit']}}）</h4>
+                <p>{{ datas.var?.start_time ? getTimeDifference(datas.var?.start_time,datas.var?.end_time)['time'] : 0 }}</p>
+            </div>
+            <div class="approve-details-text">
+                <h4>{{$L('请假事由')}}</h4>
+                <p>{{datas.var?.description}}</p>
+            </div>
+            <div class="approve-details-text"  v-if="datas.var?.other">
+                <h4>{{$L('图片')}}</h4>
+                <div class="img-body">
+                    <div v-for="(src,key) in (datas.var.other).split(',') " @click="onViewPicture(src)">
+                        <ImgView :src="src" :key="key" class="img-view"/>
+                    </div>
+                </div>
+            </div>
+
+            <Divider/>
+
+            <h3 class="approve-details-subtitle">{{$L('审批记录')}}</h3>
+            <Timeline class="approve-record-timeline">
+                <template v-for="(item,key) in datas.node_infos">
+
+                    <!-- 提交 -->
+                    <TimelineItem :key="key" v-if="item.type == 'starter'" color="green">
+                        <p class="timeline-title">{{$L('提交')}}</p>
+                        <div class="timeline-body">
+                            <Avatar :src="data.userimg || datas.userimg" size="38"/>
+                            <div class="approve-process-left">
+                                <p class="approve-process-name">{{data.start_user_name || datas.start_user_name}}</p>
+                                <p class="approve-process-state">{{$L('已提交')}}</p>
+                            </div>
+                            <div class="approve-process-right">
+                                <p v-if="parseInt(getTimeAgo(item.claim_time)) < showTimeNum">{{ getTimeAgo(item.claim_time) }}</p>
+                                <p>{{item.claim_time?.substr(0,16)}}</p>
+                            </div>
+                        </div>
+                    </TimelineItem>
+
+                    <!-- 审批 -->
+                    <TimelineItem :key="key" v-if="item.type == 'approver' && item._show"
+                        :color="item.identitylink ? (item.identitylink?.state > 1 ? '#f03f3f' :'green') : '#ccc'"
+                    >
+                        <p class="timeline-title">{{$L('审批')}}</p>
+                        <div class="timeline-body">
+                            <Avatar :src="(item.node_user_list && item.node_user_list[0]?.userimg) || item.userimg" size="38"/>
+                            <div class="approve-process-left">
+                                <p class="approve-process-name">{{item.approver}}</p>
+                                <p class="approve-process-state" style="color: #6d6d6d;" v-if="!item.identitylink">待审批</p>
+                                <p class="approve-process-state" v-if="item.identitylink">
+                                    <span v-if="item.identitylink.state==0" style="color:#496dff;">{{$L('审批中')}}</span>
+                                    <span v-if="item.identitylink.state==1" >{{$L('已通过')}}</span>
+                                    <span v-if="item.identitylink.state==2" style="color:#f03f3f;">{{$L('已拒绝')}}</span>
+                                    <span v-if="item.identitylink.state==3" style="color:#f03f3f;">{{$L('已撤回')}}</span>
+                                </p>
+                            </div>
+                            <div class="approve-process-right">
+                                <p v-if="parseInt(getTimeAgo(item.claim_time)) < showTimeNum">
+                                    {{ item.identitylink?.state==0 ? 
+                                        ($L('已等待') + " " + getTimeAgo( datas.node_infos[key-1].claim_time,2)) : 
+                                        (item.claim_time ? getTimeAgo(item.claim_time) : '') 
+                                    }}
+                                </p>
+                                <p>{{item.claim_time?.substr(0,16)}}</p>
+                            </div>
+                        </div>
+                        <p class="comment" v-if="item.identitylink?.comment"><span>“{{ item.identitylink?.comment  }}”</span></p>
+                    </TimelineItem>
+                    
+                    <!-- 抄送 -->
+                    <TimelineItem :key="key" :color="item.is_finished ? 'green' : '#ccc'" v-if="item.type == 'notifier' && item._show">
+                        <p class="timeline-title">{{$L('抄送')}}</p>
+                        <div class="timeline-body">
+                            <Avatar :src="'/images/avatar/default_bot.png'" size="38"/>
+                            <div class="approve-process-left">
+                                <p class="approve-process-name">{{$L('系统')}}</p>
+                                <p style="font-size: 12px;">{{$L('自动抄送')}}
+                                    <span style="color: #486fed;">
+                                        {{ item.node_user_list?.map(h=>h.name).join(',') }} 
+                                        {{$L('等'+item.node_user_list?.length+'人')}}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </TimelineItem>
+
+                    <!-- 结束 -->
+                    <TimelineItem :key="key" :color="item.is_finished ? 'green' : '#ccc'" v-if="item.aprover_type == 'end'">
+                        <p class="timeline-title">{{$L('结束')}}</p>
+                        <div class="timeline-body">
+                            <Avatar :src="'/images/avatar/default_bot.png'" size="38"/>
+                            <div class="approve-process-left">
+                                <p class="approve-process-name">{{$L('系统')}}</p>
+                                <p style="font-size: 12px;"> {{  datas.is_finished ? $L('已结束') : $L('未结束')  }}</p>
+                            </div>
+                        </div>
+                    </TimelineItem>
+                    
+                </template>
+            </Timeline>
+
+            <template v-if="datas.global_comment">
+                <Divider/>
+                <h3 class="approve-details-subtitle">{{$L('全文评论')}}</h3>
+                <div class="approve-record-comment">
+                    <List :split="false" :border="false">
+                        <ListItem v-for="(item,key) in datas.global_comments" :key="key">
+                           <div>
+                                <div class="top">
+                                    <Avatar :src="item.userimg" size="38"/> 
+                                    <div>
+                                        <p>{{item.nickname}}</p>
+                                        <p class="time">{{item.created_at}}</p>
+                                    </div>
+                                    <span>{{ getTimeAgo(item.created_at ,2) }}</span>
+                                </div>
+                                <div class="content">
+                                    {{ getContent(item.content) }}
+                                </div>
+                                <div class="content" style="display: flex; gap: 10px;">
+                                    <div v-for="(src,k) in getPictures(item.content)" :key="k"  @click="onViewPicture(src)">
+                                        <ImgView :src="src" class="img-view"/>
+                                    </div>
+                                </div>
+                           </div>
+                        </ListItem>
+                    </List>
+                </div>
+            </template>
+
+        </div>
+        <div class="approve-operation">
+            <div style="flex: 1;"></div>
+            <Button type="success" v-if="(datas.candidate || '').split(',').indexOf(userId + '') != -1" @click="approve(1)">{{$L('同意')}}</Button>
+            <Button type="error" v-if="(datas.candidate || '').split(',').indexOf(userId + '') != -1" @click="approve(2)">{{$L('拒绝')}}</Button>
+            <Button type="warning" v-if="isShowWarningBtn" @click="revocation">{{$L('撤销')}}</Button>
+            <Button @click="comment" type="success" ghost>+{{$L('添加评论')}}</Button>
+        </div>
+
+        <!--评论-->
+        <Modal v-model="commentShow" :title="$L('评论')" :mask-closable="false" class="page-approve-initiate">
+            <Form ref="initiateRef" :model="commentData" :rules="commentRule" label-width="auto" @submit.native.prevent>
+                <FormItem prop="content" :label="$L('内容')">
+                    <Input type="textarea" v-model="commentData.content"></Input>
+                </FormItem>
+                <FormItem prop="pictures" :label="$L('图片')">
+                    <ImgUpload v-model="commentData.pictures" :num="3" :width="512" :height="512" :whcut="1"></ImgUpload>
+                </FormItem>
+            </Form>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="commentShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="loadIng > 0" @click="confirmComment">{{$L('确认')}}</Button>
+            </div>
+        </Modal>
+    </div>
+</template>
+
+<script>
+
+import ImgView from "../../../components/ImgView";
+import ImgUpload from "../../../components/ImgUpload";
+
+export default {
+    name: "details",
+    components:{ImgView,ImgUpload},
+    props: {
+        data: {
+            type: Object,
+            default() {
+                return {};
+            }
+        }
+    },
+
+    data() {
+        return {
+            modalTransferIndex:window.modalTransferIndex,
+            datas:{},
+            showTimeNum:24,
+            commentShow:false,
+            loadIng:0,
+            commentData: {
+                content:"",
+                pictures:[]
+            },
+            commentRule: {
+                content: { type: 'string',required: true, message: this.$L('请输入内容！'), trigger: 'change' },
+            }
+        }
+    },
+    watch: {
+        '$route' (to, from) {
+            if(to.name == 'manage-approve-details'){
+                this.init()
+            }
+        },
+        data: {
+            handler(newValue,oldValue) {
+                if(newValue.id){
+                    this.getInfo()
+                }
+            },
+            deep: true
+        },
+    },
+    computed: {
+        isShowWarningBtn(){
+            let is = (this.userId == this.datas.start_user_id) && this.datas?.is_finished != true;
+            (this.datas.node_infos || []).map(h=>{
+                if( h.type != 'starter' && h.is_finished == true && h.identitylink?.userid != this.userId) {
+                    is = false;
+                }
+            })
+            return is;
+        },
+    },
+    mounted() {
+        this.init()
+    },
+    methods:{
+        init(){
+            this.modalTransferIndex = window.modalTransferIndex = window.modalTransferIndex + 1
+            if(this.$route.query.id){
+                this.data.id = this.$route.query.id;
+                this.getInfo()
+            }
+        },
+        // 把时间转成几小时前
+        getTimeAgo(time,type) {
+            const currentTime = new Date();
+            const timeDiff = (currentTime - new Date((time + '').replace(/-/g,"/"))) / 1000; // convert to seconds
+            if (timeDiff < 60) {
+                return  type == 2 ? "0"+this.$L('分钟') : this.$L('刚刚');
+            } else if (timeDiff < 3600) {
+                const minutes = Math.floor(timeDiff / 60);
+                return type == 2 ? `${minutes}${this.$L('分钟')}` : `${minutes} ${this.$L('分钟前')}`;
+            } else if(timeDiff < 3600 * 24)  {
+                const hours = Math.floor(timeDiff / 3600);
+                return type == 2 ? `${hours}${this.$L('小时')}` : `${hours} ${this.$L('小时前')}`;
+            } else {
+                const days = Math.floor(timeDiff / 3600 / 24);
+                return type == 2 ? `${days+1}${this.$L('天')}` : `${days+1} ${this.$L('天')}`;
+            }
+        },
+        // 获取时间差
+        getTimeDifference(startTime,endTime) {
+            const currentTime = new Date((endTime + '').replace(/-/g,"/"));
+            const timeDiff = (currentTime - new Date((startTime + '').replace(/-/g,"/"))) / 1000; // convert to seconds
+            if (timeDiff < 60) {
+                return {time:timeDiff,unit:this.$L('秒')};
+            } else if (timeDiff < 3600) {
+                const minutes = Math.floor(timeDiff / 60);
+                return {time:minutes,unit:this.$L('分钟')};
+            } else if(timeDiff < 3600 * 24) {
+                const hours = Math.floor(timeDiff / 3600);
+                return {time:hours,unit:this.$L('小时')};
+            } else {
+                const days = Math.floor(timeDiff / 3600 / 24);
+                return {time:days + 1,unit:this.$L('天')};
+            }
+        },
+        // 获取详情
+        getInfo(){
+            this.datas = this.data
+            this.$store.dispatch("call", {
+                method: 'get',
+                url: 'approve/process/detail',
+                data: {
+                    id:this.data.id,
+                }
+            }).then(({data}) => {
+                var show = true;
+                data.node_infos =  data.node_infos.map(item=>{
+                    item._show = show;
+                    if( item.identitylink?.state==2 || item.identitylink?.state==3 ){
+                        show = false;
+                    }
+                    return item;
+                })
+                this.datas = data
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            }).finally(_ => {
+                this.loadIng--;
+            });
+        },
+        // 通过
+        approve(type){
+            $A.modalInput({
+                title: `审批`,
+                placeholder: `请输入审批意见`,
+                type:"textarea",
+                okText: type == 1 ? "同意" : "拒绝",
+                onOk: (desc) => {
+                    if (type !=1 && !desc) {
+                        return `请输入审批意见`
+                    }
+                    this.$store.dispatch("call", {
+                        url: 'approve/task/complete',
+                        data: {
+                            task_id: this.datas.task_id,
+                            pass: type == 1,
+                            comment: desc,
+                        }
+                    }).then(({msg}) => {
+                        $A.messageSuccess(msg);
+                        if(this.$route.name=='manage-approve-details' || this.$route.name=='manage-messenger'){
+                            this.getInfo()
+                        }else{
+                            this.$emit('approve')
+                        }
+                    }).catch(({msg}) => {
+                        $A.modalError(msg);
+                    });
+                    return false
+                }
+            });
+        },
+        // 撤销
+        revocation(){
+            $A.modalConfirm({
+                content: "你确定要撤销吗？",
+                loading: true,
+                onOk: () => {
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("call", {
+                            url: 'approve/task/withdraw',
+                            data: {
+                                task_id: this.datas.task_id,
+                                proc_inst_id: this.datas.id,
+                            }
+                        }).then(({msg}) => {
+                            $A.messageSuccess(msg);
+                            resolve();
+                            if(this.$route.name=='manage-approve-details' || this.$route.name=='manage-messenger'){
+                                this.getInfo()
+                            }else{
+                                this.$emit('revocation')
+                            }
+                        }).catch(({msg}) => {
+                            $A.modalError(msg);
+                            resolve();
+                        });
+                        return false
+                    })
+                },
+            });
+        },
+        // 评论
+        comment(){
+            this.commentShow = true;
+        },
+        // 提交评论
+        confirmComment(){
+            this.loadIng++;
+            this.$store.dispatch("call", {
+                method: 'post',
+                url: 'approve/process/addGlobalComment',
+                data: {
+                    proc_inst_id:this.data.id,
+                    content:JSON.stringify({
+                        'content': this.commentData.content,
+                        'pictures': this.commentData.pictures.map(h =>{ return h.path; })
+                    })
+                }
+            }).then(({msg}) => {
+                $A.messageSuccess("添加成功");
+                if(this.$route.name=='manage-approve-details' || this.$route.name=='manage-messenger'){
+                    this.getInfo()
+                }else{
+                    this.$emit('approve')
+                }
+                this.commentShow = false;
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            }).finally(_ => {
+                this.loadIng--;
+            });
+        },
+        // 获取内容
+        getContent(content){
+            try {
+                return JSON.parse(content).content || ''
+            } catch (error) {
+                return ''
+            }
+        },
+        // 获取内容
+        getPictures(content){
+            try {
+                return JSON.parse(content).pictures || []
+            } catch (error) {
+                return ''
+            }
+        },
+        // 打开图片
+        onViewPicture(currentUrl) {
+            this.$store.dispatch("previewImage", '/' +currentUrl)
+        }
+    }
+}
+</script>
+
+<style scoped>
+   
+</style>

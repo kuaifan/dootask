@@ -497,6 +497,11 @@
                 </div>
             </div>
         </DrawerOverlay>
+
+        <!--审批详情-->
+        <DrawerOverlay v-model="approveDetailsShow"  placement="right" :size="600">
+            <ApproveDetails v-if="approveDetailsShow" :data="approveDetails" style="height: 100%;border-radius: 10px;"></ApproveDetails>
+        </DrawerOverlay>
     </div>
 </template>
 
@@ -516,6 +521,8 @@ import DialogSelect from "./DialogSelect";
 import ImgUpload from "../../../components/ImgUpload.vue";
 import {choiceEmojiOne} from "./ChatInput/one";
 
+import ApproveDetails from "../../../pages/manage/approve/details.vue";
+
 export default {
     name: "DialogWrapper",
     components: {
@@ -528,7 +535,8 @@ export default {
         DialogGroupInfo,
         DrawerOverlay,
         UserInput,
-        DialogUpload
+        DialogUpload,
+        ApproveDetails
     },
 
     props: {
@@ -639,6 +647,9 @@ export default {
             scrollTmp: 0,
 
             positionLoad: 0,
+
+            approveDetails:{id: 0},
+            approveDetailsShow: false
         }
     },
 
@@ -2374,6 +2385,22 @@ export default {
             if (this.operateVisible) {
                 return
             }
+
+            // 打开审批详情
+            let domAudits = $(target).parents(".open-approve-details")
+            if( domAudits.length > 0 ){
+                let dataId = domAudits[0].getAttribute("data-id")
+                if( window.innerWidth < 426 ){
+                    this.goForward({name: 'manage-approve-details', query: { id: domAudits[0].getAttribute("data-id") } });
+                }else{
+                    this.approveDetailsShow = true;
+                    this.$nextTick(()=>{
+                        this.approveDetails = {id:dataId};
+                    })
+                }
+                return;
+            }
+
             switch (target.nodeName) {
                 case "IMG":
                     if (target.classList.contains('browse')) {
@@ -2390,6 +2417,7 @@ export default {
                         this.$store.dispatch("openTask", $A.runNum(target.getAttribute("data-id")));
                     }
                     break;
+                
             }
         },
 
