@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.26.86]
+
+### Bug Fixes
+
+- 打开审批设置页面 -  路由修改
+
 ## [0.26.83]
 
 ### Bug Fixes
