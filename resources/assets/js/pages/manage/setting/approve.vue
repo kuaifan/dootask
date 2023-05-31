@@ -6,7 +6,7 @@
                     <Icon type="md-add" />
                 </div>
             </Col>
-            <Col v-for="(item, key) in list" :xxl="{ span: 6 }" :xl="{ span: 8 }" :lg="{ span: 12 }" :sm="{ span: 24 }" :xs="{ span: 24 }" >
+            <Col v-for="(item, key) in list" :xxl="{ span: 6 }" :xl="{ span: 8 }" :lg="{ span: 12 }" :sm="{ span: 24 }" :xs="{ span: 24 }" :key="key">
                 <div class="approve-col-box approve-col-for" @click="edit(item)">
                     <p>{{$L('流程名称')}}：<span style="font-weight: 500;color: #135de6;">{{$L(item.name)}}</span></p>
                     <Divider style="margin: 12px 0;margin-bottom: 9px;"/>
@@ -15,10 +15,6 @@
                         <p @click.stop="change(item)" style="position: relative;">
                             <Icon type="md-trash" size="16" class="delcon"/>
                         </p>
-                        <!-- <p>{{$L('是否发布')}}： </p>
-                        <p @click.stop="!item.issue ? edit(item) : ''">
-                            <i-switch v-model="item.issue" @on-change="change(item)" :disabled="true" />
-                        </p> -->
                     </div>
                 </div>
             </Col>
@@ -46,15 +42,14 @@ export default {
             approvalSettingShow:false,
             iframeSrc:"",
             name:"",
-            list:[
-                // {id:0,name:"请假",issue:false,version:''},
-                // {id:0,name:"加班申请",issue:false,version:''},
-            ]
+            list:[]
         }
     },
     watch: {
         approvalSettingShow(val) {
-            if (val) this.iframeSrc = `/approve/#/?name=${this.name}&token=${store.userToken}&lang=${languageType}`
+            if (val) {
+                this.iframeSrc = $A.apiUrl(`../approve/#/?name=${this.name}&token=${store.userToken}&lang=${languageType}`)
+            }
         }
     },
     mounted() {
