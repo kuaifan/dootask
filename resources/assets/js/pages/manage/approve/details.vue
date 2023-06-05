@@ -99,7 +99,7 @@
                     <TimelineItem :key="key" :color="item.is_finished ? 'green' : '#ccc'" v-if="item.type == 'notifier' && item._show">
                         <p class="timeline-title">{{$L('抄送')}}</p>
                         <div class="timeline-body">
-                            <Avatar :src="'/images/avatar/default_bot.png'" size="38"/>
+                            <Avatar :src="$A.apiUrl('../images/avatar/default_approval.png')" size="38"/>
                             <div class="approve-process-left">
                                 <p class="approve-process-name">{{$L('系统')}}</p>
                                 <p style="font-size: 12px;">{{$L('自动抄送')}}
@@ -116,7 +116,7 @@
                     <TimelineItem :key="key" :color="item.is_finished ? 'green' : '#ccc'" v-if="item.aprover_type == 'end'">
                         <p class="timeline-title">{{$L('结束')}}</p>
                         <div class="timeline-body">
-                            <Avatar :src="'/images/avatar/default_bot.png'" size="38"/>
+                            <Avatar :src="$A.apiUrl('../images/avatar/default_approval.png')" size="38"/>
                             <div class="approve-process-left">
                                 <p class="approve-process-name">{{$L('系统')}}</p>
                                 <p style="font-size: 12px;"> {{  datas.is_finished ? $L('已结束') : $L('未结束')  }}</p>
