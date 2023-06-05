@@ -2,23 +2,26 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Setting;
-use App\Models\User;
-use App\Models\UserCheckinRecord;
-use App\Module\Base;
-use App\Module\BillExport;
-use App\Module\BillMultipleExport;
-use App\Module\Doo;
-use App\Module\Extranet;
-use Carbon\Carbon;
-use Guanguans\Notify\Factory;
-use Guanguans\Notify\Messages\EmailMessage;
-use LdapRecord\Container;
-use LdapRecord\LdapRecordException;
-use Madzipper;
 use Request;
-use Response;
 use Session;
+use Response;
+use Madzipper;
+use Carbon\Carbon;
+use App\Module\Doo;
+use App\Models\File;
+use App\Models\User;
+use App\Module\Base;
+use App\Models\Setting;
+use App\Module\Extranet;
+use LdapRecord\Container;
+use App\Module\BillExport;
+use Guanguans\Notify\Factory;
+use App\Models\WebSocketDialog;
+use App\Models\UserCheckinRecord;
+use App\Module\BillMultipleExport;
+use Illuminate\Support\Facades\DB;
+use LdapRecord\LdapRecordException;
+use Guanguans\Notify\Messages\EmailMessage;
 
 /**
  * @apiDefine system
@@ -1199,5 +1202,61 @@ class SystemController extends AbstractController
             }
         }
         return $array;
+    }
+
+    /**
+     * @api {get} api/system/getChatAndDirList          25. 获取聊天与用户列表
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName getChatAndDirList
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function getChatAndDirList()
+    {
+        $user = User::auth();
+        $userids = $user->isTemp() ? [$user->userid] : [0, $user->userid];
+        //目录列表
+        $dir = Base::list2Tree(
+            File::select('files.id','files.pid','files.name')
+                ->leftJoin('file_users', 'files.id', '=', 'file_users.file_id')
+                ->where('files.type','folder')
+                ->where(function ($q) use ($userids) {
+                    $q->whereIn('files.userid',$userids);
+                    $q->orWhere(function ($qq) use ($userids) {
+                        $qq->where('file_users.permission',1);
+                        $qq->whereIn('file_users.userid',$userids);
+                    });
+                })
+                ->get()
+                ->toArray()
+        );
+        //聊天列表
+        $chatList = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.silence', 'u.updated_at as user_at'])
+            ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
+            ->where('u.userid', $user->userid)
+            ->orderByDesc('u.top_at')
+            ->orderByDesc('web_socket_dialogs.last_at')
+            ->get()
+            ->transform(function (WebSocketDialog $item) use ($user) {
+                return $item->formatData($user->userid);
+            })
+            ->toArray();
+        // 用户列表
+        $notUserIds = array();    
+        foreach($chatList as $chat){
+            if($chat['type'] == 'user'){
+                $notUserIds[] = $chat['dialog_user']['userid'];
+            }
+        }    
+        $userList = User::select('userid','email','nickname','userimg')
+            ->where('bot',0)
+            ->where('userid','not in',$notUserIds)
+            ->get();
+        // 返回
+        return Base::retSuccess('success', ["dir"=>$dir,"chatList"=>$chatList,"userList"=>$userList]);
     }
 }

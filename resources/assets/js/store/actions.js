@@ -548,6 +548,22 @@ export default {
             state.userToken = userInfo.token;
             state.userIsAdmin = $A.inArray('admin', userInfo.identity);
             await $A.IDBSet("userInfo", state.userInfo);
+
+            // 
+            $A.eeuiAppSendMessage({
+                action: 'userChatList',
+                token: state.userToken,
+                url: $A.apiUrl('../api/system/getChatAndDirList') + `?token=${state.userToken}`
+            });
+
+            // 
+            $A.eeuiAppSendMessage({
+                action:"userUploadUrl",
+                token: state.userToken,
+                dirUrl: $A.apiUrl('../api/file/content/upload') + `?token=${state.userToken}`,
+                chatUrl: $A.apiUrl('../api/dialog/msg/sendfile') + `?token=${state.userToken}`,
+            });
+
             //
             dispatch("getBasicData", null);
             if (state.userId > 0) {
