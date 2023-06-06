@@ -61,7 +61,11 @@ class UsersController extends AbstractController
         $email = trim(Request::input('email'));
         $password = trim(Request::input('password'));
         $isRegVerify = Base::settingFind('emailSetting', 'reg_verify') === 'open';
+
         if ($type == 'reg') {
+            if( mb_strlen($email) > 32 || mb_strlen($password) > 32){
+                return Base::retError('账号密码最多可输入32位数字');
+            }
             $setting = Base::setting('system');
             if ($setting['reg'] == 'close') {
                 return Base::retError('未开放注册');
@@ -77,6 +81,9 @@ class UsersController extends AbstractController
                 return Base::retError('注册成功，请验证邮箱后登录', ['code' => 'email']);
             }
         } else {
+            if( mb_strlen($email) > 32 || mb_strlen($password) > 32){
+                return Base::retError('帐号或密码错误');
+            }
             $needCode = !Base::isError(User::needCode($email));
             if ($needCode) {
                 $code = trim(Request::input('code'));
