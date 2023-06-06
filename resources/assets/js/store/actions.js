@@ -562,7 +562,7 @@ export default {
             $A.eeuiAppSendMessage({
                 action: 'userChatList',
                 token: state.userToken,
-                url: $A.apiUrl('../api/system/getChatAndDirList') + `?token=${state.userToken}`
+                url: $A.apiUrl('../api/users/share/list') + `?token=${state.userToken}`
             });
 
             // 
