@@ -1251,7 +1251,7 @@ class SystemController extends AbstractController
             })
             ->toArray();
         // 用户列表
-        $notUserIds = array();    
+        $notUserIds = [$user->userid];    
         foreach($chatList as $chat){
             if($chat['type'] == 'user'){
                 $notUserIds[] = $chat['dialog_user']['userid'];
@@ -1259,12 +1259,13 @@ class SystemController extends AbstractController
         }    
         $userList = User::select('userid','email','nickname','userimg')
             ->where('bot',0)
-            ->where('userid','not in',$notUserIds)
+            ->where('changepass',0)
+            ->whereNull('disable_at')
+            ->whereNotIn('userid',$notUserIds)
             ->get()
             ->transform(function (User $item) {
-                if(!$item->avatar){
-                    $item->avatar = 'avatar/'.($item->nickname ?: $item->email).'.png';
-                }
+                $item->name = $item->nickname;
+                $item->avatar = $item->userimg;
                 return $item;
             })
             ->toArray();
