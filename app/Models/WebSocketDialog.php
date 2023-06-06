@@ -540,4 +540,82 @@ class WebSocketDialog extends AbstractModel
             return $dialog;
         });
     }
+
+    /**
+     * 发送消息文件
+     *
+     * @param User $user 发起会话的会员
+     * @param array $dialogIds 对话id
+     * @param file $files 文件对象
+     * @param string $image64 base64文件
+     * @param string $fileName 文件名称
+     * @param int $replyId 恢复id
+     * @param int $imageAttachment
+     * @return array
+     */
+    public static function sendMsgFiles($user, $dialogIds, $files, $image64, $fileName, $replyId, $imageAttachment)
+    {
+        $filePath = '';
+        $result = [];
+        foreach ($dialogIds as $dialog_id) {
+            $dialog = WebSocketDialog::checkDialog($dialog_id);
+            //
+            $action = $replyId > 0 ? "reply-$replyId" : "";
+            $path = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
+            if ($image64) {
+                $data = Base::image64save([
+                    "image64" => $image64,
+                    "path" => $path,
+                    "fileName" => $fileName,
+                ]);
+            } else if ($filePath) {
+                Base::makeDir(public_path($path));
+                copy($filePath, public_path($path) . basename($filePath));
+            } else {
+                $data = Base::upload([
+                    "file" => $files,
+                    "type" => 'more',
+                    "path" => $path,
+                    "fileName" => $fileName,
+                ]);
+            }
+            //
+            if (Base::isError($data)) {
+                throw new ApiException($data['msg']);
+            } else {
+                $fileData = $data['data'];
+                $filePath = $fileData['file'];
+                $fileName = $fileData['name'];
+                $fileData['thumb'] = Base::unFillUrl($fileData['thumb']);
+                $fileData['size'] *= 1024;
+                //
+                if ($dialog->type === 'group' && $dialog->group_type === 'task') {                // 任务群组保存文件
+                    if ($imageAttachment || !in_array($fileData['ext'], File::imageExt)) {         // 如果是图片不保存
+                        $task = ProjectTask::whereDialogId($dialog->id)->first();
+                        if ($task) {
+                            $file = ProjectTaskFile::createInstance([
+                                'project_id' => $task->project_id,
+                                'task_id' => $task->id,
+                                'name' => $fileData['name'],
+                                'size' => $fileData['size'],
+                                'ext' => $fileData['ext'],
+                                'path' => $fileData['path'],
+                                'thumb' => $fileData['thumb'],
+                                'userid' => $user->userid,
+                            ]);
+                            $file->save();
+                        }
+                    }
+                }
+                //
+                $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'file', $fileData, $user->userid);
+                if (Base::isSuccess($result)) {
+                    if (isset($task)) {
+                        $result['data']['task_id'] = $task->id;
+                    }
+                }
+            }
+        }
+        return $result;
+    }
 }

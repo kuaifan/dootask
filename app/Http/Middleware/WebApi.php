@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 @error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
-use App\Module\Base;
 use App\Module\Doo;
 use Closure;
 
@@ -52,9 +51,10 @@ class WebApi
 
         // 加密返回内容
         if ($encrypt['client_type'] === 'pgp' && $content = $response->getContent()) {
-            $response->setContent(json_encode([
-                'encrypted' => Doo::pgpEncryptApi($content, $encrypt['client_key'])
-            ]));
+            $content = Doo::pgpEncryptApi($content, $encrypt['client_key']);
+            if ($content) {
+                $response->setContent(json_encode(['encrypted' => $content]));
+            }
         }
 
         return $response;

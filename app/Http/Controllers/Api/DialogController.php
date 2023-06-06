@@ -2,24 +2,22 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\AbstractModel;
-use App\Models\Deleted;
+use DB;
+use Request;
+use Redirect;
+use Carbon\Carbon;
 use App\Models\File;
-use App\Models\FileContent;
-use App\Models\ProjectTask;
-use App\Models\ProjectTaskFile;
 use App\Models\User;
+use App\Module\Base;
+use App\Models\Deleted;
+use App\Module\TimeRange;
+use App\Models\FileContent;
+use App\Models\AbstractModel;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
+use App\Models\WebSocketDialogUser;
 use App\Models\WebSocketDialogMsgRead;
 use App\Models\WebSocketDialogMsgTodo;
-use App\Models\WebSocketDialogUser;
-use App\Module\Base;
-use App\Module\TimeRange;
-use Carbon\Carbon;
-use DB;
-use Redirect;
-use Request;
 
 /**
  * @apiDefine dialog
@@ -824,66 +822,68 @@ class DialogController extends AbstractController
     public function msg__sendfile()
     {
         $user = User::auth();
-        //
-        $dialog_id = intval(Request::input('dialog_id'));
-        $reply_id = intval(Request::input('reply_id'));
-        $image_attachment = intval(Request::input('image_attachment'));
-        //
-        $dialog = WebSocketDialog::checkDialog($dialog_id);
-        //
-        $action = $reply_id > 0 ? "reply-$reply_id" : "";
-        $path = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
+        $dialogIds = [intval(Request::input('dialog_id'))];
+        $replyId = intval(Request::input('reply_id'));
+        $imageAttachment = intval(Request::input('image_attachment'));
+        $files = Request::file('files');
         $image64 = Request::input('image64');
         $fileName = Request::input('filename');
-        if ($image64) {
-            $data = Base::image64save([
-                "image64" => $image64,
-                "path" => $path,
-                "fileName" => $fileName,
-            ]);
+        return WebSocketDialog::sendMsgFiles($user, $dialogIds, $files, $image64, $fileName, $replyId, $imageAttachment);
+    }
+
+    /**
+     * @api {post} api/dialog/msg/sendfiles       38. 群发文件上传
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__sendfile
+     *
+     * @apiParam {String} user_ids              用户ID
+     * @apiParam {String} dialog_ids            对话ID（user_ids 二选一）
+     * @apiParam {Number} [reply_id]            回复ID
+     * @apiParam {Number} [image_attachment]    图片是否也存到附件
+     * @apiParam {String} [filename]            post-文件名称
+     * @apiParam {String} [image64]             post-base64图片（二选一）
+     * @apiParam {File} [files]                 post-文件对象（二选一）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__sendfiles()
+    {
+        $user = User::auth();
+        $files = Request::file('files');
+        $image64 = Request::input('image64');
+        $fileName = Request::input('filename');
+        $replyId = intval(Request::input('reply_id'));
+        $imageAttachment = intval(Request::input('image_attachment'));
+        //
+        $dialogIds = trim(Request::input('dialog_ids'));
+        if ($dialogIds) {
+            $dialogIds = explode(',', $dialogIds);
         } else {
-            $data = Base::upload([
-                "file" => Request::file('files'),
-                "type" => 'more',
-                "path" => $path,
-                "fileName" => $fileName,
-            ]);
+            $dialogIds = [];
+        }
+        // 用户
+        $userIds = trim(Request::input('user_ids'));
+        if ($userIds) {
+            $userIds = explode(',', $userIds);
+            foreach ($userIds as $userId) {
+                $dialog = WebSocketDialog::checkUserDialog($user, $userId);
+                if (empty($dialog)) {
+                    return Base::retError('打开会话失败');
+                }
+                $dialogIds[] = $dialog->id;
+            }
         }
         //
-        if (Base::isError($data)) {
-            return Base::retError($data['msg']);
-        } else {
-            $fileData = $data['data'];
-            $fileData['thumb'] = Base::unFillUrl($fileData['thumb']);
-            $fileData['size'] *= 1024;
-            //
-            if ($dialog->type === 'group' && $dialog->group_type === 'task') {                       // 任务群组保存文件
-                if ($image_attachment || !in_array($fileData['ext'], File::imageExt)) {     // 如果是图片不保存
-                    $task = ProjectTask::whereDialogId($dialog->id)->first();
-                    if ($task) {
-                        $file = ProjectTaskFile::createInstance([
-                            'project_id' => $task->project_id,
-                            'task_id' => $task->id,
-                            'name' => $fileData['name'],
-                            'size' => $fileData['size'],
-                            'ext' => $fileData['ext'],
-                            'path' => $fileData['path'],
-                            'thumb' => $fileData['thumb'],
-                            'userid' => $user->userid,
-                        ]);
-                        $file->save();
-                    }
-                }
-            }
-            //
-            $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'file', $fileData, $user->userid);
-            if (Base::isSuccess($result)) {
-                if (isset($task)) {
-                    $result['data']['task_id'] = $task->id;
-                }
-            }
-            return $result;
+        if (empty($dialogIds)) {
+            return Base::retError('找不到会话');
         }
+        //
+        return WebSocketDialog::sendMsgFiles($user, $dialogIds, $files, $image64, $fileName, $replyId, $imageAttachment);
     }
 
     /**

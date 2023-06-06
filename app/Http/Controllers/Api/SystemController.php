@@ -2,23 +2,23 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\Setting;
-use App\Models\User;
-use App\Models\UserCheckinRecord;
-use App\Module\Base;
-use App\Module\BillExport;
-use App\Module\BillMultipleExport;
-use App\Module\Doo;
-use App\Module\Extranet;
-use Carbon\Carbon;
-use Guanguans\Notify\Factory;
-use Guanguans\Notify\Messages\EmailMessage;
-use LdapRecord\Container;
-use LdapRecord\LdapRecordException;
-use Madzipper;
 use Request;
-use Response;
 use Session;
+use Response;
+use Madzipper;
+use Carbon\Carbon;
+use App\Module\Doo;
+use App\Models\User;
+use App\Module\Base;
+use App\Models\Setting;
+use App\Module\Extranet;
+use LdapRecord\Container;
+use App\Module\BillExport;
+use Guanguans\Notify\Factory;
+use App\Models\UserCheckinRecord;
+use App\Module\BillMultipleExport;
+use LdapRecord\LdapRecordException;
+use Guanguans\Notify\Messages\EmailMessage;
 
 /**
  * @apiDefine system
