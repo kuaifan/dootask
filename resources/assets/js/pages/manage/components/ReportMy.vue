@@ -59,7 +59,7 @@
                 :current="listPage"
                 :page-size="listPageSize"
                 :disabled="loadIng > 0"
-                :simple="windowSmall"
+                :simple="windowPortrait"
                 :page-size-opts="[10,20,30,50,100]"
                 show-elevator
                 show-sizer
@@ -79,7 +79,10 @@ export default {
             columns: [{
                 title: this.$L("名称"),
                 key: 'title',
-                minWidth: 120,
+                minWidth: 180,
+                render: (h, {row}) => {
+                    return h('AutoTip', row.title);
+                }
             }, {
                 title: this.$L("类型"),
                 key: 'type',

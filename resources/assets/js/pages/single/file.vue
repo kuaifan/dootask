@@ -43,7 +43,7 @@ export default {
             return this.$route.query ? $A.runNum(this.$route.query.history_id) : 0;
         },
         isPreview() {
-            return this.windowSmall || this.code || this.historyId > 0 || (this.fileInfo && this.fileInfo.permission === 0)
+            return this.windowPortrait || this.code || this.historyId > 0 || (this.fileInfo && this.fileInfo.permission === 0)
         },
         pageName() {
             let name = this.fileInfo ? this.fileInfo.name : '';

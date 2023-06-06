@@ -18,6 +18,10 @@
             border-top: 0;
             border-top-left-radius: 0;
             border-top-right-radius: 0;
+            padding-right: 14px;
+            > span {
+                cursor: pointer;
+            }
         }
 
         .dashboard-hello,
@@ -282,7 +286,7 @@
     opacity: 0;
 }
 
-@media (max-width: 768px) {
+body.window-portrait {
     .page-dashboard {
         .dashboard-wrapper {
             display: block;

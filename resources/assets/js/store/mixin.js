@@ -7,10 +7,13 @@ export default {
             'windowHeight',
 
             'windowActive',
+
             'windowScrollY',
 
-            'windowLarge',
-            'windowSmall',
+            'windowTouch',
+
+            'windowLandscape',
+            'windowPortrait',
 
             'userId',
             'userToken',

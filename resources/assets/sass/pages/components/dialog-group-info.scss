@@ -71,12 +71,6 @@
                     }
                 }
 
-                @media (max-width: 768px) {
-                    &:hover {
-                        background-color: transparent;
-                    }
-                }
-
                 &.no {
                     &:hover {
                         background-color: transparent;
@@ -123,11 +117,6 @@
                     transform: translateX(50%);
                     transition: all 0.2s;
 
-                    @media (max-width: 768px) {
-                        opacity: 1;
-                        transform: translateX(0);
-                    }
-
                     &:hover {
                         > i {
                             color: $primary-text-color;
@@ -144,6 +133,24 @@
                         color: $primary-desc-color;
                         border: 1px solid #dddddd;
                         border-radius: 50%;
+                    }
+                }
+            }
+        }
+    }
+}
+
+body.window-portrait {
+    .dialog-group-info {
+        .group-info-user {
+            > ul {
+                > li {
+                    &:hover {
+                        background-color: transparent;
+                    }
+                    .user-exit {
+                        opacity: 1;
+                        transform: translateX(0);
                     }
                 }
             }

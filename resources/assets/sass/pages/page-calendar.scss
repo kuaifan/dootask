@@ -191,7 +191,7 @@
     }
 }
 
-@media (max-width: 768px) {
+body.window-portrait {
     .page-calendar {
         .calendar-head {
             .calendar-titbox {
@@ -229,16 +229,17 @@
             }
         }
     }
-}
-
-@media (max-width: 640px) {
-    .page-calendar {
-        .calendar-box {
-            .calendar-wrapper {
-                .tui-full-calendar-popup-arrow {
-                    display: none;
+    @media (max-width: 640px) {
+        .page-calendar {
+            .calendar-box {
+                .calendar-wrapper {
+                    .tui-full-calendar-popup-arrow {
+                        display: none;
+                    }
                 }
             }
         }
     }
 }
+
+

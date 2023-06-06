@@ -1,6 +1,6 @@
 <template>
     <div v-show="userId > 0" class="page-manage" :class="{'show-tabbar': showMobileTabbar}">
-        <div class="manage-box-menu" :class="{'show768-menu': show768Menu}">
+        <div class="manage-box-menu" :class="{'show-mobile-menu': showMobileMenu}">
             <Dropdown
                 class="page-manage-menu-dropdown main-menu"
                 trigger="click"
@@ -157,7 +157,7 @@
             <div class="operate-position" :style="operateStyles" v-show="operateVisible">
                 <Dropdown
                     trigger="custom"
-                    :placement="windowLarge ? 'bottom' : 'top'"
+                    :placement="windowLandscape ? 'bottom' : 'top'"
                     :visible="operateVisible"
                     @on-clickoutside="operateVisible = false"
                     transfer>
@@ -262,7 +262,7 @@
             v-model="workReportShow"
             placement="right"
             :size="1200">
-            <Report v-if="workReportShow" :reportType="reportTabs" @on-read="$store.dispatch('getReportUnread', 1000)" />
+            <Report v-if="workReportShow" v-model="reportTabs" @on-read="$store.dispatch('getReportUnread', 1000)" />
         </DrawerOverlay>
 
         <!--查看所有团队-->
@@ -375,7 +375,7 @@ export default {
 
             openMenu: {},
             visibleMenu: false,
-            show768Menu: false,
+            showMobileMenu: false,
 
             workReportShow: false,
             allUserShow: false,
@@ -719,7 +719,7 @@ export default {
         },
 
         async toggleRoute(path, params) {
-            this.show768Menu = false;
+            this.showMobileMenu = false;
             let location = {name: 'manage-' + path, params: params || {}};
             let fileFolderId = await $A.IDBInt("fileFolderId");
             if (path === 'file' && fileFolderId > 0) {
@@ -1075,6 +1075,10 @@ export default {
                     break;
                 case 'addProject':
                     this.onAddShow()
+                    break;
+                case 'allUser':
+                case 'workReport':
+                    this.settingRoute(act)
                     break;
             }
         },

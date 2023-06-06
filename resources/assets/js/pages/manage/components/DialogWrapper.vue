@@ -179,7 +179,7 @@
         </VirtualList>
 
         <!--底部输入-->
-        <div ref="footer" class="dialog-footer" :class="footerClass" @click="onActive">
+        <div ref="footer" class="dialog-footer" :class="footerClass" :style="footerStyle" @click="onActive">
             <div class="dialog-newmsg" @click="onToBottom">{{$L(`有${msgNew}条新消息`)}}</div>
             <div class="dialog-goto" @click="onToBottom"><i class="taskfont">&#xe72b;</i></div>
             <DialogUpload
@@ -212,7 +212,7 @@
                 ref="input"
                 v-model="msgText"
                 :dialog-id="dialogId"
-                :emoji-bottom="windowSmall"
+                :emoji-bottom="windowPortrait"
                 :maxlength="200000"
                 @on-focus="onEventFocus"
                 @on-blur="onEventBlur"
@@ -672,7 +672,11 @@ export default {
             'dialogIns',
             'cacheUserBasic',
             'fileLinks',
-            'cacheEmojis'
+            'cacheEmojis',
+
+            'keyboardType',
+            'keyboardHeight',
+            'safeAreaBottom'
         ]),
 
         ...mapGetters(['isLoad']),
@@ -837,6 +841,18 @@ export default {
                 return 'goto'
             }
             return null
+        },
+
+        footerStyle() {
+            const {keyboardType, keyboardHeight, safeAreaBottom, windowScrollY} = this
+            const style = {};
+            if (windowScrollY === 0
+                && keyboardType === "show"
+                && keyboardHeight > 0
+                && keyboardHeight < 120) {
+                style.paddingBottom = (keyboardHeight + safeAreaBottom) + 'px';
+            }
+            return style;
         },
 
         msgUnreadOnly() {
@@ -1528,7 +1544,7 @@ export default {
         },
 
         onTouchMove(e) {
-            if (this.windowSmall && this.windowScrollY > 0) {
+            if (this.windowPortrait && this.windowScrollY > 0) {
                 if (this.wrapperStart.exclud) {
                     e.preventDefault();
                     return;
@@ -1691,7 +1707,7 @@ export default {
         },
 
         onEventEmojiVisibleChange(val) {
-            if (val && this.windowSmall) {
+            if (val && this.windowPortrait) {
                 this.onToBottom();
             }
         },
@@ -1755,7 +1771,7 @@ export default {
             if (!this.dialogData.group_info) {
                 return;
             }
-            if (this.windowSmall) {
+            if (this.windowPortrait) {
                 this.$store.dispatch("openDialog", 0);
             }
             this.goForward({name: 'manage-project', params: {projectId:this.dialogData.group_info.id}});
@@ -2313,7 +2329,7 @@ export default {
                     break;
 
                 case 'filepos':
-                    if (this.windowSmall) {
+                    if (this.windowPortrait) {
                         this.$store.dispatch("openDialog", 0);
                     }
                     this.goForward({name: 'manage-file', params: value});
@@ -2365,7 +2381,7 @@ export default {
             this.onPositionId(data.reply_id, data.msg_id)
         },
 
-        onViewText({target}) {
+        onViewText({target}, el) {
             if (this.operateVisible) {
                 return
             }
@@ -2390,7 +2406,9 @@ export default {
                     if (target.classList.contains('browse')) {
                         this.onViewPicture(target.currentSrc);
                     } else {
-                        this.$store.dispatch("previewImage", {index:0, list: $A.getTextImagesInfo(target.outerHTML)})
+                        const list = $A.getTextImagesInfo(el.outerHTML)
+                        const index = list.findIndex(item => item.src == target.currentSrc)
+                        this.$store.dispatch("previewImage", {index, list})
                     }
                     break;
 

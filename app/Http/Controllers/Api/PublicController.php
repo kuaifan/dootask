@@ -158,7 +158,7 @@ class PublicController extends AbstractController
                     if ($suff) {
                         $text = "{$text}<p>----------</p><p>{$suff}</p>";
                     }
-                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid);
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, $type != "up");
                 }
             };
             if ($timeAdvance <= Base::time() && Base::time() < $timeEnd) {

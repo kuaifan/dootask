@@ -73,7 +73,7 @@
                     :current="listPage"
                     :page-size="listPageSize"
                     :disabled="loadIng > 0"
-                    :simple="windowSmall"
+                    :simple="windowPortrait"
                     :page-size-opts="[10,20,30,50,100]"
                     show-elevator
                     show-sizer
@@ -99,7 +99,7 @@ export default {
                 title: this.$L("标题"),
                 key: 'title',
                 sortable: true,
-                minWidth: 120,
+                minWidth: 180,
                 render: (h, {row}) => {
                     let arr = []
                     const myUser = row.receives_user.find(({userid}) => userid == this.userId)
@@ -108,16 +108,24 @@ export default {
                             h('Tag', {
                                 props: {   //传递参数
                                     color: "orange",
+                                },
+                                style: {
+                                    flexShrink: 0,
                                 }
                             }, this.$L("未读")),
-                            h('span', row.title)
+                            h('AutoTip', row.title)
                         )
                     } else {
                         arr.push(
-                            h('span', row.title)
+                            h('AutoTip', row.title)
                         )
                     }
-                    return h('div', arr)
+                    return h('div', {
+                        style: {
+                            display: 'flex',
+                            alignItems: 'center',
+                        }
+                    }, arr)
                 }
             }, {
                 title: this.$L("类型"),

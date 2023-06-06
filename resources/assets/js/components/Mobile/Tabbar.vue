@@ -1,6 +1,6 @@
 <template>
     <div class="mobile-tabbar">
-        <NetworkException v-if="windowSmall" type="alert"/>
+        <NetworkException v-if="windowPortrait" type="alert"/>
         <transition name="mobile-fade">
             <div v-if="isMore" class="more-mask" @click="toggleRoute('more')"></div>
         </transition>
@@ -12,6 +12,7 @@
                         <div class="more-item">
                             <i class="taskfont" v-html="item.icon"></i>
                             <div class="tabbar-title">{{$L(item.label)}}</div>
+                            <Badge v-if="item.name === 'workReport'" class="tabbar-badge" :overflow-count="999" :count="reportUnreadNumber"/>
                         </div>
                     </li>
                 </ul>
@@ -28,6 +29,9 @@
                 </template>
                 <template v-else-if="item.name === 'dialog'">
                     <Badge class="tabbar-badge" :overflow-count="999" :text="msgUnreadMention"/>
+                </template>
+                <template v-else-if="item.name === 'more'">
+                    <Badge class="tabbar-badge" :overflow-count="999" :count="reportUnreadNumber"/>
                 </template>
             </li>
         </ul>
@@ -79,6 +83,7 @@ export default {
                     {icon: '&#xe794;', name: 'joinMeeting', label: '加入会议'},
                 ],
                 [
+                    {icon: '&#xe7da;', name: 'workReport', label: '工作报告'},
                     {icon: '&#xe7b9;', name: 'approve', label: '审批中心'},
                 ]
             ],
@@ -93,6 +98,9 @@ export default {
         if ($A.isEEUiApp) {
             this.navMore[0].splice(2, 0, {icon: '&#xe602;', name: 'scan', label: '扫一扫'})
         }
+        if (this.userIsAdmin) {
+            this.navMore[2].splice(0, 0, {icon: '&#xe63f;', name: 'allUser', label: '团队管理'})
+        }
     },
 
     mounted() {
@@ -104,7 +112,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs']),
+        ...mapState(['userIsAdmin', 'cacheDialogs', 'reportUnreadNumber']),
         ...mapGetters(['dashboardTask']),
 
         routeName() {
@@ -244,6 +252,8 @@ export default {
 
                 case 'addTask':
                 case 'addProject':
+                case 'allUser':
+                case 'workReport':
                     return;
 
                 case 'createMeeting':

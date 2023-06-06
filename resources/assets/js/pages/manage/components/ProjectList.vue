@@ -55,7 +55,7 @@
         <div class="operate-position" :style="operateStyles" v-show="operateVisible">
             <Dropdown
                 trigger="custom"
-                :placement="windowLarge ? 'bottom' : 'top'"
+                :placement="windowLandscape ? 'bottom' : 'top'"
                 :visible="operateVisible"
                 @on-clickoutside="operateVisible = false"
                 transfer>

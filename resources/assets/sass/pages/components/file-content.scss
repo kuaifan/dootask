@@ -314,22 +314,12 @@
     }
 }
 
-@media (max-width: 768px) {
-    .file-preview {
-        .edit-header {
-            .header-hint {
-                display: none;
-            }
-        }
-    }
-}
-
 @media (max-width: 1200px) {
     .file-content {
         overflow: auto;
         .edit-header,
         .content-body {
-            min-width: 768px;
+            min-width: 720px;
             overflow-x: auto;
             .teditor-loadedstyle {
                 .tox-menubar,
@@ -339,6 +329,16 @@
                 .tox-sidebar-wrap {
                     margin: 0;
                 }
+            }
+        }
+    }
+}
+
+body.window-portrait {
+    .file-preview {
+        .edit-header {
+            .header-hint {
+                display: none;
             }
         }
     }

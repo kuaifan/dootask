@@ -1,5 +1,5 @@
 <template>
-    <div class="markdown-body" v-html="html"></div>
+    <div @click="onCLick" class="markdown-body" v-html="html"></div>
 </template>
 
 <script>
@@ -33,7 +33,6 @@ export default {
 
     computed: {
         html() {
-            const {text} = this
             if (this.mdi === null) {
                 const {highlightBlock} = this
                 this.mdi = new MarkdownIt({
@@ -50,13 +49,23 @@ export default {
                 this.mdi.use(mila, {attrs: {target: '_blank', rel: 'noopener'}})
                 this.mdi.use(mdKatex, {blockClass: 'katexmath-block rounded-md p-[10px]', errorColor: ' #cc0000'})
             }
-            return this.mdi.render(text)
+            return this.formatMsg(this.mdi.render(this.text))
         }
     },
 
     methods: {
         highlightBlock(str, lang = '') {
             return `<pre class="code-block-wrapper"><div class="code-block-header"><span class="code-block-header__lang">${lang}</span><span class="code-block-header__copy">${this.$L('复制代码')}</span></div><code class="hljs code-block-body ${lang}">${str}</code></pre>`
+        },
+
+        formatMsg(text) {
+            const array = text.match(/<img\s+[^>]*?>/g);
+            if (array) {
+                array.some(res => {
+                    text = text.replace(res, `<div class="no-size-image-box">${res}</div>`);
+                })
+            }
+            return text
         },
 
         copyCodeBlock() {
@@ -93,6 +102,10 @@ export default {
             if (document.execCommand('copy'))
                 document.execCommand('copy')
             document.body.removeChild(input)
+        },
+
+        onCLick(e) {
+            this.$emit('click', e)
         }
     }
 }

@@ -2,11 +2,15 @@
     <div class="team-management">
         <div class="management-title">
             {{$L('团队管理')}}
+            <div class="title-zoom" @click="minBox=!minBox">
+                <i v-if="minBox" class="taskfont">&#xe7d4;</i>
+                <i v-else class="taskfont">&#xe7d3;</i>
+            </div>
             <div class="title-icon">
                 <Loading v-if="loadIng > 0"/>
             </div>
         </div>
-        <div class="management-box">
+        <div class="management-box" :class="{'min-box':minBox}">
             <div class="management-department">
                 <ul>
                     <li :class="[`level-1`, departmentSelect === 0 ? 'active' : '']" @click="onSelectDepartment(0)">
@@ -56,7 +60,7 @@
                     <Button type="primary" icon="md-add" @click="onShowDepartment(null)">{{$L('新建部门')}}</Button>
                 </div>
             </div>
-            <div class="management-user">
+            <div class="management-user" :style="userStyle">
                 <div class="search-container lr">
                     <ul>
                         <li>
@@ -140,7 +144,7 @@
                         :current="page"
                         :page-size="pageSize"
                         :disabled="loadIng > 0"
-                        :simple="windowSmall"
+                        :simple="windowPortrait"
                         :page-size-opts="[10,20,30,50,100]"
                         show-elevator
                         show-sizer
@@ -308,6 +312,8 @@ export default {
     data() {
         return {
             loadIng: 0,
+            minBox: false,
+            minWidth: 0,
 
             keys: {},
             keyIs: false,
@@ -769,12 +775,35 @@ export default {
         },
         departmentSelect() {
             this.setPage(1)
+        },
+        windowPortrait: {
+            handler(v) {
+                this.minBox = v
+            },
+            immediate: true
+        },
+        minBox: {
+            handler() {
+                this.$nextTick(_=> {
+                    if (this.$el && this.$el.clientWidth > 0) {
+                        this.minWidth = this.$el.clientWidth
+                    }
+                });
+            },
+            immediate: true
         }
     },
     computed: {
         departmentParentDisabled() {
             return !!(this.departmentData.id > 0 && this.departmentList.find(({parent_id}) => parent_id == this.departmentData.id));
         },
+        userStyle({minWidth}) {
+            const style = {}
+            if (minWidth > 0) {
+                style.minWidth = (minWidth - 40) + 'px'
+            }
+            return style
+        }
     },
     methods: {
         onSearch() {
@@ -1060,6 +1089,10 @@ export default {
         },
 
         onSelectDepartment(id) {
+            if (this.windowPortrait) {
+                this.minBox = true
+            }
+            //
             if (this.departmentSelect === id) {
                 this.departmentSelect = -1
                 return

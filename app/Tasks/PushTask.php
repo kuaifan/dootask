@@ -205,10 +205,13 @@ class PushTask extends AbstractTask
     {
         $encrypt = Base::json2array(Cache::get("User::encrypt:" . $fid));
         if ($encrypt['type'] == 'pgp') {
-            $msg = [
-                'type' => 'encrypt',
-                'encrypted' => Doo::pgpEncryptApi($msg, $encrypt['key']),
-            ];
+            if (is_array($msg) && $msg['type'] == 'dialog') {
+                // 仅加密对话消息
+                $msg = [
+                    'type' => 'encrypt',
+                    'encrypted' => Doo::pgpEncryptApi($msg, $encrypt['key']),
+                ];
+            }
         }
         return Base::array2json($msg);
     }

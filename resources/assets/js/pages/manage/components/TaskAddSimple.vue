@@ -17,7 +17,7 @@
                 <div v-if="parentId == 0" class="priority">
                     <ul>
                         <li v-for="(item, key) in taskPriority" :key="key">
-                            <ETooltip v-if="active" :disabled="windowSmall || $isEEUiApp" :content="taskPriorityContent(item)">
+                            <ETooltip v-if="active" :disabled="$isEEUiApp || windowTouch" :content="taskPriorityContent(item)">
                                 <i
                                     class="taskfont"
                                     :style="{color:item.color}"
@@ -57,7 +57,7 @@
         <div class="priority">
             <ul>
                 <li v-for="(item, key) in taskPriority" :key="key">
-                    <ETooltip v-if="active" :disabled="windowSmall || $isEEUiApp" :content="taskPriorityContent(item)">
+                    <ETooltip v-if="active" :disabled="$isEEUiApp || windowTouch" :content="taskPriorityContent(item)">
                         <i
                             class="taskfont"
                             :style="{color:item.color}"

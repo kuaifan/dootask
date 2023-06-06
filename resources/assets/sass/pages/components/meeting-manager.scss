@@ -49,23 +49,6 @@ body {
                                     }
                                 }
                             }
-                            @media (max-width: 768px) {
-                                grid-template-columns: none;
-                                grid-gap: 12px;
-                                display: flex;
-                                flex-wrap: wrap;
-                                justify-content: flex-start;
-                                > li {
-                                    width: calc(50% - 6px);
-                                    max-width: 180px;
-                                    .meeting-player {
-                                        .player {
-                                            width: 100%;
-                                            height: 176px;;
-                                        }
-                                    }
-                                }
-                            }
                         }
                     }
                 }
@@ -76,6 +59,37 @@ body {
         }
     }
 }
+
+body.window-portrait {
+    .ivu-modal-wrap {
+        &.meeting-manager {
+            .ivu-modal {
+                .ivu-modal-content {
+                    .ivu-modal-body {
+                        > ul {
+                            grid-template-columns: none;
+                            grid-gap: 12px;
+                            display: flex;
+                            flex-wrap: wrap;
+                            justify-content: flex-start;
+                            > li {
+                                width: calc(50% - 6px);
+                                max-width: 180px;
+                                .meeting-player {
+                                    .player {
+                                        width: 100%;
+                                        height: 176px;;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 .meeting-drag-ball {
     position: relative;
     background-color: #ffffff;
@@ -97,6 +111,7 @@ body {
         padding-left: 4px;
     }
 }
+
 .meeting-button-group {
     display: flex;
     justify-content: flex-end;

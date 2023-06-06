@@ -58,7 +58,7 @@
       "js/build/cad.2dfbfe73.svg",
       "js/build/code.1a9a4504.svg",
       "js/build/document.624c4d76.svg",
-      "js/build/drawio.a58ab0df.svg",
+      "js/build/flow.a58ab0df.svg",
       "js/build/excel.82abb1cd.svg",
       "js/build/folder.68818161.svg",
       "js/build/folder-share.800b7d36.svg",
@@ -78,9 +78,9 @@
       "js/build/element-icons.ab40a589.woff",
       "js/build/element-icons.a30f5b3b.ttf",
       "js/build/zenicon.4baf444f.woff2",
-      "js/build/iconfont.e94c7089.woff2",
-      "js/build/iconfont.4a5985ea.woff",
-      "js/build/iconfont.408d17ca.ttf",
+      "js/build/iconfont.a27ccbf5.woff2",
+      "js/build/iconfont.7507c100.woff",
+      "js/build/iconfont.ecc7f067.ttf",
       "js/build/logo.060180f3.svg",
       "js/build/logo-index.8ca3b7a6.svg",
       "js/build/bg-bottom.06fd4b4e.svg",
@@ -95,7 +95,7 @@
       "js/build/cad.868e2ca7.svg",
       "js/build/code.1f28156e.svg",
       "js/build/document.7a75f110.svg",
-      "js/build/drawio.0122e3f0.svg",
+      "js/build/flow.0122e3f0.svg",
       "js/build/excel.03422f0b.svg",
       "js/build/folder.f3036060.svg",
       "js/build/folder-share.08f619a2.svg",
@@ -125,6 +125,9 @@
   },
   "_UpdateLog.e03f894b.js": {
     "file": "js/build/UpdateLog.e03f894b.js",
+      "_UpdateLog.7e147135.js"
+    ]
+  },
     "imports": [
       "resources/assets/js/app.js"
     ]
@@ -186,7 +189,7 @@
       "resources/assets/js/app.js"
     ],
     "css": [
-      "js/build/index.4fc2d335.css"
+      "js/build/index.da7adf84.css"
     ]
   },
   "_DialogSelect.3bd58318.js": {
@@ -346,6 +349,7 @@
     ]
   },
   "resources/assets/js/pages/manage/setting/checkin.vue": {
+
     "file": "js/build/checkin.58777ad1.js",
     "src": "resources/assets/js/pages/manage/setting/checkin.vue",
     "isDynamicEntry": true,
@@ -540,7 +544,7 @@
       "_IFrame.1e410b9e.js"
     ],
     "css": [
-      "js/build/file.560ab02c.css"
+      "js/build/file.1cbb23e7.css"
     ]
   },
   "resources/assets/js/pages/manage/components/FileContent.vue": {
@@ -649,6 +653,7 @@
     ]
   },
   "resources/assets/js/pages/login.vue": {
+
     "file": "js/build/login.07314e11.js",
     "src": "resources/assets/js/pages/login.vue",
     "isDynamicEntry": true,
@@ -657,6 +662,7 @@
     ]
   },
   "resources/assets/js/pages/404.vue": {
+
     "file": "js/build/404.a1ff7ca6.js",
     "src": "resources/assets/js/pages/404.vue",
     "isDynamicEntry": true,

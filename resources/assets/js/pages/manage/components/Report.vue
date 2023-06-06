@@ -41,7 +41,7 @@ export default {
     },
 
     props: {
-        reportType: {
+        value: {
             default: "my"
         }
     },
@@ -57,7 +57,7 @@ export default {
     },
 
     mounted() {
-        this.reportTabs = this.reportType;
+        this.reportTabs = this.value;
         //
         if (this.$isMainElectron) {
             this.$Electron.listenerOnly('reportSaveSuccess', ({data, msg}) => {
@@ -71,6 +71,12 @@ export default {
         ...mapState([
             'reportUnreadNumber'
         ])
+    },
+
+    watch: {
+        reportTabs(val) {
+            this.$emit("input", val)
+        }
     },
 
     methods: {

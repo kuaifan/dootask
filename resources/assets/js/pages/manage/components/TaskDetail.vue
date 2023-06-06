@@ -122,7 +122,7 @@
                         </div>
                         <Button slot="reference" :loading="ownerLoad > 0" class="pick" type="primary">{{$L('我要领取任务')}}</Button>
                     </EPopover>
-                    <ETooltip v-if="$Electron" :disabled="windowSmall || $isEEUiApp" :content="$L('新窗口打开')">
+                    <ETooltip v-if="$Electron" :disabled="$isEEUiApp || windowTouch" :content="$L('新窗口打开')">
                         <i class="taskfont open" @click="openNewWin">&#xe776;</i>
                     </ETooltip>
                     <div class="menu">
@@ -287,7 +287,7 @@
                                     trigger="click"
                                     placement="bottom"
                                     @command="updateData('loop', $event)">
-                                    <ETooltip :disabled="windowSmall || $isEEUiApp || !taskDetail.loop_at" :content="`${$L('下个周期')}: ${taskDetail.loop_at}`" placement="right">
+                                    <ETooltip :disabled="$isEEUiApp || windowTouch || !taskDetail.loop_at" :content="`${$L('下个周期')}: ${taskDetail.loop_at}`" placement="right">
                                         <span>{{$L(loopLabel(taskDetail.loop))}}</span>
                                     </ETooltip>
                                     <EDropdownMenu slot="dropdown" class="task-detail-loop">
@@ -665,7 +665,7 @@ export default {
         },
 
         hasOpenDialog() {
-            return this.taskDetail.dialog_id > 0 && this.windowLarge;
+            return this.taskDetail.dialog_id > 0 && this.windowLandscape;
         },
 
         dialogStyle() {
@@ -810,7 +810,7 @@ export default {
                 if (id > 0) {
                     this.ready = true;
                 } else {
-                    if (this.windowSmall) {
+                    if (this.windowPortrait) {
                         $A.onBlur();
                     }
                     this.timeOpen = false;
@@ -1287,7 +1287,7 @@ export default {
                     });
                 } else {
                     this.$nextTick(() => {
-                        if (this.windowSmall) {
+                        if (this.windowPortrait) {
                             $A.onBlur();
                             const transferData = {
                                 time: $A.Time() + 10,

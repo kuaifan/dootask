@@ -3,7 +3,7 @@
         v-if="user"
         class="common-avatar"
         :open-delay="openDelay"
-        :disabled="windowSmall || $isEEUiApp || tooltipDisabled || isBot"
+        :disabled="$isEEUiApp || windowTouch || tooltipDisabled || isBot"
         :placement="tooltipPlacement">
         <div slot="content" class="common-avatar-transfer">
             <slot/>

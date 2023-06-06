@@ -8,7 +8,7 @@
         :beforeClose="onBeforeClose"
         class-name="dialog-modal"
         fullscreen>
-        <DialogWrapper v-if="windowSmall && dialogId > 0" :dialogId="dialogId" :beforeBack="onBeforeClose"/>
+        <DialogWrapper v-if="windowPortrait && dialogId > 0" :dialogId="dialogId" :beforeBack="onBeforeClose"/>
     </Modal>
 </template>
 
@@ -61,7 +61,7 @@ export default {
         ...mapState(['dialogId']),
 
         visible() {
-            return this.dialogId > 0 && this.windowSmall
+            return this.dialogId > 0 && this.windowPortrait
         }
     },
 

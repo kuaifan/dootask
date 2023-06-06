@@ -2,7 +2,9 @@
     <div class="page-dashboard">
         <PageTitle :title="$L('仪表盘')"/>
         <div class="dashboard-wrapper">
-            <Alert v-if="warningMsg" class="dashboard-warning" type="warning" show-icon>{{warningMsg}}</Alert>
+            <Alert v-if="warningMsg" class="dashboard-warning" type="warning" show-icon>
+                <span @click="goForward({name: 'manage-setting-license'})">{{warningMsg}}</span>
+            </Alert>
             <div class="dashboard-hello">{{$L('欢迎您，' + userInfo.nickname)}}</div>
             <div class="dashboard-desc">
                 {{$L('以下是你当前的任务统计数据')}}
@@ -70,7 +72,7 @@
                                 <i class="taskfont">&#xe71f;</i>
                                 <em>{{item.sub_complete}}/{{item.sub_num}}</em>
                             </div>
-                            <ETooltip v-if="item.end_at" :disabled="windowSmall || $isEEUiApp" :content="item.end_at" placement="right">
+                            <ETooltip v-if="item.end_at" :disabled="$isEEUiApp || windowTouch" :content="item.end_at" placement="right">
                                 <div :class="['item-icon', item.today ? 'today' : '', item.overdue ? 'overdue' : '']">
                                     <i class="taskfont">&#xe71d;</i>
                                     <em>{{expiresFormat(item.end_at)}}</em>

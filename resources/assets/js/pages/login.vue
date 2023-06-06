@@ -6,7 +6,7 @@
             <div class="login-box">
                 <div class="login-mode-switch">
                     <div class="login-mode-switch-box">
-                        <ETooltip :disabled="windowSmall || $isEEUiApp" :content="$L(loginMode=='qrcode' ? '帐号登录' : '扫码登录')" placement="left">
+                        <ETooltip :disabled="$isEEUiApp || windowTouch" :content="$L(loginMode=='qrcode' ? '帐号登录' : '扫码登录')" placement="left">
                             <span class="login-mode-switch-icon" @click="switchLoginMode">
                                 <svg v-if="loginMode=='qrcode'" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" data-icon="PcOutlined"><path d="M23 16a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h18a2 2 0 0 1 2 2v12ZM21 4H3v9h18V4ZM3 15v1h18v-1H3Zm3 6a1 1 0 0 1 1-1h10a1 1 0 1 1 0 2H7a1 1 0 0 1-1-1Z" fill="currentColor"></path></svg>
                                 <svg v-else viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" data-icon="QrOutlined"><path d="M6.5 7.5a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1Z" fill="currentColor"></path><path d="M4.5 2.5c-1.1 0-2 .9-2 2v7c0 1.1.9 2 2 2h7c1.1 0 2-.9 2-2v-7c0-1.1-.9-2-2-2h-7Zm0 2h7v7h-7v-7ZM11 16a1 1 0 1 1 2 0 1 1 0 0 1-2 0Zm0 3.5a1 1 0 1 1 2 0v1a1 1 0 1 1-2 0v-1Zm4-7.5a1 1 0 1 1 2 0 1 1 0 0 1-2 0Zm3.5 0a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2h-1a1 1 0 0 1-1-1ZM15 17c0-1.1.9-2 2-2h2.5c1.1 0 2 .9 2 2v2.5c0 1.1-.9 2-2 2H17c-1.1 0-2-.9-2-2V17Zm4.5 0H17v2.5h2.5V17Zm-15-2c-1.1 0-2 .9-2 2v2.5c0 1.1.9 2 2 2H7c1.1 0 2-.9 2-2V17c0-1.1-.9-2-2-2H4.5Zm0 2H7v2.5H4.5V17ZM15 4.5c0-1.1.9-2 2-2h2.5c1.1 0 2 .9 2 2V7c0 1.1-.9 2-2 2H17c-1.1 0-2-.9-2-2V4.5Zm4.5 0H17V7h2.5V4.5Z" fill="currentColor"></path></svg>
@@ -88,7 +88,11 @@
                             @on-enter="onLogin"
                             clearable>
                             <Icon type="ios-checkmark-circle-outline" class="login-icon" slot="prepend"></Icon>
-                            <div slot="append" class="login-code-end" @click="reCode"><img :src="codeUrl"/></div>
+                            <div slot="append" class="login-code-end" @click="refreshCode">
+                                <div v-if="codeLoad > 0" class="code-load"><Loading/></div>
+                                <span v-else-if="codeUrl === 'error'" class="code-error">{{$L('加载失败')}}</span>
+                                <img v-else :src="codeUrl"/>
+                            </div>
                         </Input>
 
                         <Button type="primary" :loading="loadIng > 0 || loginJump" size="large" long @click="onLogin">{{$L(loginText)}}</Button>
@@ -178,7 +182,9 @@ export default {
             qrcodeLoad: false,
 
             codeNeed: false,
-            codeUrl: $A.apiUrl('users/login/codeimg?_=' + Math.random()),
+            codeLoad: 0,
+            codeKey: '',
+            codeUrl: '',
 
             loginMode: 'access',
             loginType: 'login',
@@ -398,8 +404,23 @@ export default {
             $A.modalWarning("请联系管理员！");
         },
 
-        reCode() {
-            this.codeUrl = $A.apiUrl('users/login/codeimg?_=' + Math.random())
+        refreshCode() {
+            if (this.codeLoad > 0) {
+                return;
+            }
+            setTimeout(_ => {
+                this.codeLoad++
+            }, 600)
+            this.$store.dispatch("call", {
+                url: 'users/login/codejson',
+            }).then(({data}) => {
+                this.codeKey = data.key
+                this.codeUrl = data.img
+            }).catch(_ => {
+                this.codeUrl = "error"
+            }).finally(_ => {
+                this.codeLoad--
+            });
         },
 
         inputServerUrl() {
@@ -487,12 +508,12 @@ export default {
                     email: this.email,
                 },
             }).then(() => {
-                this.reCode();
-                this.codeNeed = true;
+                this.refreshCode()
+                this.codeNeed = true
             }).catch(_ => {
-                this.codeNeed = false;
+                this.codeNeed = false
             }).finally(_ => {
-                this.loadIng--;
+                this.loadIng--
             });
         },
 
@@ -538,6 +559,7 @@ export default {
                         email: this.email,
                         password: this.password,
                         code: this.code,
+                        code_key: this.codeKey,
                         invite: this.invite,
                     },
                 }).then(({data}) => {
@@ -557,7 +579,7 @@ export default {
                         })
                     }
                     if (data.code === 'need') {
-                        this.reCode()
+                        this.refreshCode()
                         this.codeNeed = true
                     }
                 }).finally(_ => {

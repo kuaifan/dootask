@@ -1026,7 +1026,7 @@
     }
 }
 
-@media (max-width: 768px) {
+body.window-portrait {
     .project-panel {
         .project-titbox {
             position: sticky;
@@ -1096,7 +1096,7 @@
         .project-table {
             .project-table-head,
             .project-table-body {
-                min-width: 768px;
+                min-width: 720px;
                 margin: 0 24px 12px;
             }
         }

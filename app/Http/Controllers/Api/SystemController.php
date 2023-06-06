@@ -578,12 +578,12 @@ class SystemController extends AbstractController
                     $data['error'][] = '终端MAC与License不匹配';
                 }
             }
-            if ($data['user_count'] > $data['info']['people']) {
-                $data['error'][] = '终端用户数超过License限制';
-            }
-            if ($data['info']['expired_at'] && strtotime($data['info']['expired_at']) <= Base::time()) {
-                $data['error'][] = '终端License已过期';
-            }
+        }
+        if ($data['info']['people'] > 0 && $data['user_count'] > $data['info']['people']) {
+            $data['error'][] = '终端用户数超过License限制';
+        }
+        if ($data['info']['expired_at'] && strtotime($data['info']['expired_at']) <= Base::time()) {
+            $data['error'][] = '终端License已过期';
         }
         //
         return Base::retSuccess('success', $data);

@@ -124,6 +124,7 @@
                     flex-direction: column;
                     align-items: center;
                     justify-content: center;
+                    position: relative;
 
                     .taskfont {
                         display: flex;
@@ -144,6 +145,13 @@
                         overflow: hidden;
                         text-overflow: ellipsis;
                         white-space: nowrap;
+                    }
+
+                    .tabbar-badge {
+                        position: absolute;
+                        top: -6px;
+                        right: 50%;
+                        transform: translateX(36px);
                     }
                 }
             }
@@ -306,13 +314,13 @@
     opacity: 0;
 }
 
-body.support-touch {
+body.window-touch {
     .mobile-back {
         display: block;
     }
 }
 
-@media (max-width: 768px) {
+body.window-portrait {
     .mobile-tabbar {
         display: flex;
     }

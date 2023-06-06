@@ -13,11 +13,11 @@
         <!--右下角客户端-->
         <RightBottom/>
 
-        <!--网络提示-->
-        <NetworkException v-if="windowLarge"/>
-
         <!--图片预览-->
         <PreviewImageState/>
+
+        <!--网络提示-->
+        <NetworkException v-if="windowLandscape"/>
 
         <!--Hidden IFrame-->
         <iframe v-for="item in iframes" :key="item.key" v-if="item.url" v-show="false" :src="item.url"></iframe>
@@ -73,7 +73,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['ws', 'themeMode', 'supportTouch']),
+        ...mapState(['ws', 'themeMode', 'windowOrientation']),
 
         isSoftware() {
             return this.$Electron || this.$isEEUiApp;
@@ -139,13 +139,21 @@ export default {
             immediate: true
         },
 
-        supportTouch: {
+        windowTouch: {
             handler(support) {
                 if (support) {
-                    $A("body").addClass("support-touch")
+                    $A("body").addClass("window-touch")
                 } else {
-                    $A("body").removeClass("support-touch")
+                    $A("body").removeClass("window-touch")
                 }
+            },
+            immediate: true
+        },
+
+        windowOrientation: {
+            handler(direction) {
+                $A("body").removeClass(["window-landscape", "window-portrait"])
+                $A("body").addClass("window-" + direction)
             },
             immediate: true
         },
@@ -223,10 +231,21 @@ export default {
         },
 
         windowSizeListener() {
-            this.$store.state.windowWidth = $A(window).width()
-            this.$store.state.windowHeight = $A(window).height()
-            this.$store.state.windowLarge = this.$store.state.windowWidth > 768
-            this.$store.state.windowSmall = this.$store.state.windowWidth <= 768
+            const windowWidth = $A(window).width(),
+                windowHeight = $A(window).height(),
+                windowOrientation = $A.screenOrientation()
+
+            this.$store.state.windowTouch = "ontouchend" in document
+
+            this.$store.state.windowWidth = windowWidth
+            this.$store.state.windowHeight = windowHeight
+
+            this.$store.state.windowOrientation = windowOrientation
+            this.$store.state.windowLandscape = windowOrientation === 'landscape'
+            this.$store.state.windowPortrait = windowOrientation === 'portrait'
+
+            this.$store.state.formLabelPosition = windowWidth > 576 ? 'right' : 'top'
+            this.$store.state.formLabelWidth = windowWidth > 576 ? 'auto' : ''
         },
 
         windowScrollListener() {
@@ -277,6 +296,13 @@ export default {
                 if (num > 0) {
                     this.$store.dispatch("getBasicData", 600)
                 }
+            }
+            // 键盘状态
+            window.__onKeyboardStatus = (data) => {
+                const message = $A.jsonParse(decodeURIComponent(data));
+                this.$store.state.keyboardType = message.keyboardType;
+                this.$store.state.keyboardHeight = message.keyboardHeight;
+                this.$store.state.safeAreaBottom = message.safeAreaBottom;
             }
             // 通知权限
             window.__onNotificationPermissionStatus = (ret) => {

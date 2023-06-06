@@ -145,7 +145,7 @@
                     <div class="operate-position" :style="operateStyles" v-show="operateVisible">
                         <Dropdown
                             trigger="custom"
-                            :placement="windowLarge ? 'bottom' : 'top'"
+                            :placement="windowLandscape ? 'bottom' : 'top'"
                             :visible="operateVisible"
                             @on-clickoutside="operateVisible = false"
                             transfer>
@@ -180,7 +180,7 @@
                     <div class="msg-dialog-bg-icon"><Icon type="ios-chatbubbles" /></div>
                     <div class="msg-dialog-bg-text">{{$L('选择一个会话开始聊天')}}</div>
                 </div>
-                <DialogWrapper v-if="windowLarge && dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive" :auto-focus="$A.isDesktop()"/>
+                <DialogWrapper v-if="windowLandscape && dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive" :auto-focus="$A.isDesktop()"/>
             </div>
         </div>
     </div>
@@ -624,7 +624,7 @@ export default {
             }
             this.$set(user, 'loading', true);
             this.$store.dispatch("openDialogUserid", user.userid).then(_ => {
-                if (this.windowLarge) {
+                if (this.windowLandscape) {
                     this.tabActive = 'dialog';
                 }
             }).catch(({msg}) => {
@@ -648,7 +648,7 @@ export default {
         },
 
         filterDialog(dialog) {
-            if ($A.getDialogNum(dialog) > 0 || dialog.id == this.dialogId || dialog.top_at || dialog.todo_num > 0) {
+            if ((dialog.id > 0 && dialog.id == this.dialogId) || dialog.top_at || dialog.todo_num > 0 || $A.getDialogNum(dialog) > 0) {
                 return true
             }
             if (dialog.name === undefined || dialog.dialog_delete === 1) {
@@ -831,7 +831,7 @@ export default {
 
         scrollIntoActive() {
             this.$nextTick(() => {
-                if (this.windowLarge && this.$refs.list) {
+                if (this.windowLandscape && this.$refs.list) {
                     const active = this.$refs.list.querySelector(".active")
                     if (active) {
                         $A.scrollIntoViewIfNeeded(active);

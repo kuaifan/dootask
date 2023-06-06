@@ -31,7 +31,7 @@
                     :plugins="taskPlugins"
                     :options="taskOptions"
                     :option-full="taskOptionFull"
-                    :placeholder="$L(windowLarge ? '详细描述，选填...（点击右键使用工具栏）' : '详细描述，选填...')"
+                    :placeholder="$L(windowLandscape ? '详细描述，选填...（点击右键使用工具栏）' : '详细描述，选填...')"
                     :placeholderFull="$L('详细描述...')"
                     inline/>
             </div>
@@ -39,7 +39,7 @@
                 <Button :class="{advanced: advanced}" @click="advanced=!advanced">{{$L('高级选项')}}</Button>
                 <ul class="advanced-priority">
                     <li v-for="(item, key) in taskPriority" :key="key">
-                        <ETooltip :disabled="windowSmall || $isEEUiApp" :content="taskPriorityContent(item)">
+                        <ETooltip :disabled="$isEEUiApp || windowTouch" :content="taskPriorityContent(item)">
                             <i
                                 class="taskfont"
                                 :style="{color:item.color}"
@@ -87,7 +87,7 @@
                     :transfer="false"/>
                 <div v-if="showAddAssist" class="task-add-assist">
                     <Checkbox v-model="addData.add_assist" :true-value="1" :false-value="0">{{$L('加入任务协助人员列表')}}</Checkbox>
-                    <ETooltip :disabled="windowSmall || $isEEUiApp" :content="$L('你不是任务负责人时建议加入任务协助人员列表')">
+                    <ETooltip :disabled="$isEEUiApp || windowTouch" :content="$L('你不是任务负责人时建议加入任务协助人员列表')">
                         <Icon type="ios-alert-outline" />
                     </ETooltip>
                 </div>

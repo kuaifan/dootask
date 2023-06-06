@@ -15,7 +15,7 @@
                 <div class="reply-desc">{{$A.getMsgSimpleDesc(msgData.reply_data)}}</div>
             </div>
             <!--详情-->
-            <div class="dialog-content" :class="contentClass">
+            <div ref="content" class="dialog-content" :class="contentClass">
                 <!--文本-->
                 <div v-if="msgData.type === 'text'" class="content-text no-dark-content">
                     <DialogMarkdown v-if="msgData.msg.type === 'md'" @click="viewText" :text="msgData.msg.text"/>
@@ -452,8 +452,8 @@ export default {
             })
         },
 
-        viewText(el) {
-            this.$emit("on-view-text", el)
+        viewText(e) {
+            this.$emit("on-view-text", e, this.$refs.content)
         },
 
         viewFile() {
