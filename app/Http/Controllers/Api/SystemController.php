@@ -1242,7 +1242,12 @@ class SystemController extends AbstractController
             ->orderByDesc('web_socket_dialogs.last_at')
             ->get()
             ->transform(function (WebSocketDialog $item) use ($user) {
-                return $item->formatData($user->userid);
+                $item = $item->formatData($user->userid);
+                $item->last_msg = [];
+                if(!$item->avatar){
+                    $item->avatar = 'avatar/'.$item->name.'.png';
+                }
+                return $item;
             })
             ->toArray();
         // 用户列表
@@ -1255,7 +1260,14 @@ class SystemController extends AbstractController
         $userList = User::select('userid','email','nickname','userimg')
             ->where('bot',0)
             ->where('userid','not in',$notUserIds)
-            ->get();
+            ->get()
+            ->transform(function (User $item) {
+                if(!$item->avatar){
+                    $item->avatar = 'avatar/'.($item->nickname ?: $item->email).'.png';
+                }
+                return $item;
+            })
+            ->toArray();
         // 返回
         return Base::retSuccess('success', ["dir"=>$dir,"chatList"=>$chatList,"userList"=>$userList]);
     }
