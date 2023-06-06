@@ -561,7 +561,7 @@ export default {
                 action:"userUploadUrl",
                 token: state.userToken,
                 dirUrl: $A.apiUrl('../api/file/content/upload') + `?token=${state.userToken}`,
-                chatUrl: $A.apiUrl('../api/dialog/msg/sendfile') + `?token=${state.userToken}`,
+                chatUrl: $A.apiUrl('../api/dialog/msg/sendfiles') + `?token=${state.userToken}`,
             });
 
             //
