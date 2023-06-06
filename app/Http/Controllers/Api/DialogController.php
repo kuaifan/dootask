@@ -1759,12 +1759,12 @@ class DialogController extends AbstractController
 
 
      /**
-     * @api {post} api/dialog/msg/sendfiles       38. 群发文件上传
+     * @api {post} api/dialog/msg/sendfiles          38. 群发文件上传
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup dialog
-     * @apiName msg__sendfile
+     * @apiName msg__sendfiles
      *
      * @apiParam {String} user_ids              用户ID
      * @apiParam {String} dialog_ids            对话ID（user_ids 二选一）

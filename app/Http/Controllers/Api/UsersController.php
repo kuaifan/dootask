@@ -1803,7 +1803,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/share/list          25. 获取分享列表
+     * @api {get} api/users/share/list          31. 获取分享列表
      *
      * @apiVersion 1.0.0
      * @apiGroup system
