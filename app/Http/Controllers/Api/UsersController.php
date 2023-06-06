@@ -61,10 +61,9 @@ class UsersController extends AbstractController
         $email = trim(Request::input('email'));
         $password = trim(Request::input('password'));
         $isRegVerify = Base::settingFind('emailSetting', 'reg_verify') === 'open';
-
         if ($type == 'reg') {
             if( mb_strlen($email) > 32 || mb_strlen($password) > 32){
-                return Base::retError('账号密码最多可输入32位数字');
+                return Base::retError('账号密码最多可输入32位字符');
             }
             $setting = Base::setting('system');
             if ($setting['reg'] == 'close') {
