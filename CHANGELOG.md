@@ -2,16 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.27.1]
+
+### Bug Fixes
+
+- 修复获取聊天列表的接口
+- 添加密码账号长度限制
+- 添加密码账号长度限制
+- Dootask对接系统分享 - 添加头像返回
+- 兼容加密bug问题处理
+- Dootask对接系统分享
+- 更改默认审核的图片
+
+### Performance
+
+- Scrollbar
+
 ## [0.26.86]
 
 ### Bug Fixes
 
 - 打开审批设置页面 -  路由修改
-
-## [0.26.83]
-
-### Bug Fixes
-
 - 更改审批流数据表名
 - 调整统一命名
 - 添加评论功能 - 100%
