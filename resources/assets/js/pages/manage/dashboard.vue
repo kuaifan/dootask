@@ -35,7 +35,7 @@
                     </div>
                 </li>
             </ul>
-            <div class="dashboard-list scrollbar-overlay">
+            <Scrollbar class="dashboard-list">
                 <template
                     v-for="column in columns"
                     v-if="column.list.length > 0">
@@ -81,7 +81,7 @@
                         </li>
                     </ul>
                 </template>
-            </div>
+            </Scrollbar>
         </div>
     </div>
 </template>

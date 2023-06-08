@@ -14,12 +14,14 @@
                     @click="emojiNavActive=item.type"
                     v-html="item.content"></div>
             </div>
-            <ul class="scrollbar-overlay" :class="[type, 'no-dark-content']">
-                <li v-for="item in list" @click="onSelect($event, item)">
-                    <img v-if="item.type === 'emoticon'" :src="item.src" :title="item.name" :alt="item.name"/>
-                    <span v-else v-html="item.html" :title="item.name"></span>
-                </li>
-            </ul>
+            <Scrollbar>
+                <ul :class="[type, 'no-dark-content']">
+                    <li v-for="item in list" @click="onSelect($event, item)">
+                        <img v-if="item.type === 'emoticon'" :src="item.src" :title="item.name" :alt="item.name"/>
+                        <span v-else v-html="item.html" :title="item.name"></span>
+                    </li>
+                </ul>
+            </Scrollbar>
         </div>
         <ul v-if="!onlyEmoji" class="chat-emoji-menu">
             <li :class="{active: type === 'emosearch'}" @click="type='emosearch'">

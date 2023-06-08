@@ -368,7 +368,6 @@
                     flex: 1;
                     display: flex;
                     flex-direction: column;
-                    overflow-x: hidden;
                     .task-list {
                         > div:last-child {
                             margin-bottom: 16px;
@@ -602,7 +601,6 @@
     .project-table {
         height: 100%;
         margin-top: 18px;
-        overflow-x: auto;
         .task-row {
             background-color: #ffffff;
             border-bottom: 1px solid #F4F4F5;

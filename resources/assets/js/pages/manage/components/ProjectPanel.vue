@@ -137,7 +137,7 @@
                             <Icon class="last" type="md-add" @click="addTopShow(column.id, true)" />
                         </div>
                     </div>
-                    <div :ref="'column_' + column.id" class="column-task scrollbar-overlay">
+                    <Scrollbar class="column-task">
                         <div v-if="!!columnTopShow[column.id]" class="task-item additem">
                             <TaskAddSimple
                                 :column-id="column.id"
@@ -210,7 +210,7 @@
                                     @on-priority="addTaskOpen"/>
                             </div>
                         </Draggable>
-                    </div>
+                    </Scrollbar>
                 </li>
                 <li :class="['add-column', addColumnShow ? 'show-input' : '']">
                     <div class="add-column-text" @click="addColumnOpen">
@@ -229,7 +229,7 @@
                 </li>
             </Draggable>
         </div>
-        <div v-else-if="tabTypeActive === 'table'" class="project-table scrollbar-overlay">
+        <Scrollbar v-else-if="tabTypeActive === 'table'" class="project-table" enable-x>
             <div class="project-table-head">
                 <Row class="task-row">
                     <Col span="12"># {{$L('任务名称')}}</Col>
@@ -315,7 +315,7 @@
                 </Row>
                 <TaskRow v-if="projectData.cacheParameter.showCompleted" :list="completedList" open-key="completed" @on-priority="addTaskOpen" showCompleteAt/>
             </div>
-        </div>
+        </Scrollbar>
         <div v-else-if="tabTypeActive === 'gantt'" class="project-gantt">
             <!--甘特图-->
             <ProjectGantt :projectColumn="columnList" :flowInfo="flowInfo"/>
@@ -981,9 +981,6 @@ export default {
 
         addTopShow(id, show) {
             this.$set(this.columnTopShow, id, show);
-            if (show) {
-                this.$refs['column_' + id][0].scrollTop = 0;
-            }
         },
 
         addTaskOpen(params) {

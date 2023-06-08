@@ -27,7 +27,7 @@
                         <div class="taskflow-config-table">
                             <div class="taskflow-config-table-left-container">
                                 <div class="taskflow-config-table-column-header left-header">{{$L('配置项')}}</div>
-                                <div :ref="`overlay_${data.id}`" class="taskflow-config-table-column-body scrollbar-overlay">
+                                <div :ref="`overlay_${data.id}`" class="taskflow-config-table-column-body">
                                     <div class="taskflow-config-table-block">
                                         <div class="taskflow-config-table-block-title">{{$L('设置状态为')}}</div>
                                         <div class="taskflow-config-table-block-item">
@@ -113,7 +113,7 @@
                                                 </EDropdown>
                                             </div>
                                         </div>
-                                        <div :ref="`overlay_${data.id}`" class="taskflow-config-table-column-body scrollbar-overlay">
+                                        <div :ref="`overlay_${data.id}`" class="taskflow-config-table-column-body">
                                             <div class="taskflow-config-table-block">
                                                 <div class="taskflow-config-table-block-title"></div>
                                                 <RadioGroup v-model="item.status">

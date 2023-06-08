@@ -137,7 +137,7 @@
                     </div>
                 </div>
             </div>
-            <div class="scroller scrollbar-overlay">
+            <Scrollbar class-name="scroller">
                 <div class="title">
                     <Input
                         v-model="taskDetail.name"
@@ -387,7 +387,7 @@
                         </EDropdownMenu>
                     </EDropdown>
                 </div>
-            </div>
+            </Scrollbar>
             <TaskUpload ref="upload" class="upload" @on-select-file="onSelectFile"/>
         </div>
         <div v-show="taskDetail.id > 0" class="task-dialog" :style="dialogStyle">

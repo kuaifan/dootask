@@ -100,29 +100,33 @@
                     </template>
                 </DropdownMenu>
             </Dropdown>
-            <ul :class="listClassName" @scroll="operateVisible = false">
-                <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
-                    <i class="taskfont">&#xe6fb;</i>
-                    <div class="menu-title">{{$L('仪表盘')}}</div>
-                    <Badge v-if="dashboardTask.overdue_count > 0" class="menu-badge" type="error" :overflow-count="999" :count="dashboardTask.overdue_count"/>
-                    <Badge v-else-if="dashboardTask.today_count > 0" class="menu-badge" type="info" :overflow-count="999" :count="dashboardTask.today_count"/>
-                    <Badge v-else-if="dashboardTask.all_count > 0" class="menu-badge" type="primary" :overflow-count="999" :count="dashboardTask.all_count"/>
-                </li>
-                <li @click="toggleRoute('calendar')" :class="classNameRoute('calendar')">
-                    <i class="taskfont">&#xe6f5;</i>
-                    <div class="menu-title">{{$L('日历')}}</div>
-                </li>
-                <li @click="toggleRoute('messenger')" :class="classNameRoute('messenger')">
-                    <i class="taskfont">&#xe6eb;</i>
-                    <div class="menu-title">{{$L('消息')}}</div>
-                    <Badge class="menu-badge" :overflow-count="999" :text="msgUnreadMention"/>
-                </li>
-                <li @click="toggleRoute('file')" :class="classNameRoute('file')">
-                    <i class="taskfont">&#xe6f3;</i>
-                    <div class="menu-title">{{$L('文件')}}</div>
-                </li>
-                <li ref="menuProject" class="menu-project">
-                    <ul :class="listClassName" @scroll="operateVisible = false">
+            <Scrollbar class-name="manage-item" @on-scroll="operateVisible = false">
+                <div class="menu-base">
+                    <ul>
+                        <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
+                            <i class="taskfont">&#xe6fb;</i>
+                            <div class="menu-title">{{$L('仪表盘')}}</div>
+                            <Badge v-if="dashboardTask.overdue_count > 0" class="menu-badge" type="error" :overflow-count="999" :count="dashboardTask.overdue_count"/>
+                            <Badge v-else-if="dashboardTask.today_count > 0" class="menu-badge" type="info" :overflow-count="999" :count="dashboardTask.today_count"/>
+                            <Badge v-else-if="dashboardTask.all_count > 0" class="menu-badge" type="primary" :overflow-count="999" :count="dashboardTask.all_count"/>
+                        </li>
+                        <li @click="toggleRoute('calendar')" :class="classNameRoute('calendar')">
+                            <i class="taskfont">&#xe6f5;</i>
+                            <div class="menu-title">{{$L('日历')}}</div>
+                        </li>
+                        <li @click="toggleRoute('messenger')" :class="classNameRoute('messenger')">
+                            <i class="taskfont">&#xe6eb;</i>
+                            <div class="menu-title">{{$L('消息')}}</div>
+                            <Badge class="menu-badge" :overflow-count="999" :text="msgUnreadMention"/>
+                        </li>
+                        <li @click="toggleRoute('file')" :class="classNameRoute('file')">
+                            <i class="taskfont">&#xe6f3;</i>
+                            <div class="menu-title">{{$L('文件')}}</div>
+                        </li>
+                    </ul>
+                </div>
+                <div ref="menuProject" class="menu-project">
+                    <ul>
                         <li
                             v-for="(item, key) in projectLists"
                             :ref="`project_${item.id}`"
@@ -152,8 +156,8 @@
                         </li>
                         <li v-if="projectKeyLoading > 0" class="loading"><Loading/></li>
                     </ul>
-                </li>
-            </ul>
+                </div>
+            </Scrollbar>
             <div class="operate-position" :style="operateStyles" v-show="operateVisible">
                 <Dropdown
                     trigger="custom"
@@ -608,13 +612,6 @@ export default {
                 return data.filter(item => $A.strExists(`${item.name} ${item.desc}`, projectKeyValue));
             }
             return data;
-        },
-
-        listClassName() {
-            return {
-                'scrollbar-overlay': true,
-                'scrollbar-hidden': this.operateVisible === true,
-            }
         },
 
         taskBrowseLists() {

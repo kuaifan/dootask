@@ -45,16 +45,13 @@
                 <div v-if="$isEEUiApp && !appNotificationPermission" class="messenger-notify-permission" @click="onOpenAppSetting">
                     {{$L('未开启通知权限')}}<i class="taskfont">&#xe733;</i>
                 </div>
-                <ScrollerY
+                <Scrollbar
                     ref="list"
                     class="messenger-list"
-                    :class="listClassName"
+                    :hide-bar="this.operateVisible"
                     @touchstart.native="listTouch"
-                    @on-scroll="listScroll"
-                    static>
-                    <ul
-                        v-if="tabActive==='dialog'"
-                        class="dialog">
+                    @on-scroll="listScroll">
+                    <ul v-if="tabActive==='dialog'" ref="ul" class="dialog">
                         <li
                             v-if="dialogList.length > 0"
                             v-for="(dialog, key) in dialogList"
@@ -163,7 +160,7 @@
                             </DropdownMenu>
                         </Dropdown>
                     </div>
-                </ScrollerY>
+                </Scrollbar>
                 <div class="messenger-menu">
                     <div class="menu-icon">
                         <Icon @click="onActive(null)" :class="{active:tabActive==='dialog'}" type="ios-chatbubbles" />
@@ -189,14 +186,13 @@
 <script>
 import {mapState} from "vuex";
 import DialogWrapper from "./components/DialogWrapper";
-import ScrollerY from "../../components/ScrollerY";
 import longpress from "../../directives/longpress";
 import {Store} from "le5le-store";
 
 const MessengerObject = {menuHistory: []};
 
 export default {
-    components: {ScrollerY, DialogWrapper},
+    components: {DialogWrapper},
     directives: {longpress},
     data() {
         return {
@@ -431,13 +427,6 @@ export default {
                 });
                 return num;
             }
-        },
-
-        listClassName() {
-            return {
-                'scrollbar-overlay': true,
-                'scrollbar-hidden': this.operateVisible === true,
-            }
         }
     },
 
@@ -531,11 +520,19 @@ export default {
             }
         },
 
-        listScroll(res) {
-            if (res.scrollE < 10) {
+        listScroll() {
+            if (this.scrollE() < 10) {
                 this.getContactsNextPage()
             }
             this.operateVisible = false;
+        },
+
+        scrollE() {
+            if (!this.$refs.list) {
+                return 0
+            }
+            const scrollInfo = this.$refs.list.scrollInfo()
+            return scrollInfo.scrollE
         },
 
         onActive(type) {
@@ -767,8 +764,7 @@ export default {
         },
 
         getContactsNextPage() {
-            const {scrollE} = this.$refs.list.scrollInfo();
-            if (scrollE < 10
+            if (this.scrollE() < 10
                 && this.tabActive === 'contacts'
                 && this.contactsLoad === 0
                 && this.contactsHasMorePages) {
@@ -867,7 +863,7 @@ export default {
                 const wrapRect = this.$refs.list.$el.getBoundingClientRect();
                 this.operateStyles = {
                     left: `${event.clientX - wrapRect.left}px`,
-                    top: `${dialogRect.top + this.windowScrollY}px`,
+                    top: `${dialogRect.top - dialogRect.height + this.windowScrollY}px`,
                     height: dialogRect.height + 'px',
                 }
                 this.operateVisible = true;

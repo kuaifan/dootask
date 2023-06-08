@@ -29,7 +29,9 @@
                 </div>
                 <div v-if="$Platform === 'mac'" class="notification-tip">{{$L('离最新版本只有一步之遥了！重新启动应用即可完成更新。')}}</div>
             </div>
-            <MarkdownPreview class="notification-body scrollbar-overlay" :initialValue="updateNote"/>
+            <Scrollbar class-name="notification-body">
+                <MarkdownPreview :initialValue="updateNote"/>
+            </Scrollbar>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="updateShow=false">{{$L('稍后')}}</Button>
                 <Button type="primary" :loading="updateIng" @click="updateQuitAndInstall">{{$L($Platform === 'mac' ? '重新启动' : '立即升级')}}</Button>

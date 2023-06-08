@@ -308,7 +308,9 @@ body.window-portrait {
             }
             .dashboard-list {
                 padding-bottom: 2px;
-                overflow: visible;
+                .scrollbar-content {
+                    overflow: visible;
+                }
                 .dashboard-ul {
                     margin-bottom: 36px;
                     user-select: none;

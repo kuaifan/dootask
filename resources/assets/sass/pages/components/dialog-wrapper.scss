@@ -418,6 +418,12 @@
         position: relative;
         padding: 16px 32px 0;
 
+        &.scrollbar-virtual {
+            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
         .dialog-item {
             display: flex;
             flex-direction: row;
@@ -1441,10 +1447,27 @@
             flex: 1;
             max-height: 300px;
 
-            > li {
+            .read-title,
+            ul > li {
+                padding-bottom: 12px;
+            }
+
+            .read-title {
+                position: sticky;
+                top: 0;
+                z-index: 10;
+                background: #ffffff;
+                > em {
+                    font-size: 18px;
+                    font-weight: 600;
+                    font-style: normal;
+                    padding-right: 6px;
+                }
+            }
+
+            ul > li {
                 min-height: 26px;
                 list-style: none;
-                margin-bottom: 12px;
 
                 .common-avatar {
                     width: 100%;
@@ -1454,7 +1477,7 @@
                 }
 
                 &:last-child {
-                    margin-bottom: 6px;
+                    padding-bottom: 6px;
                 }
 
                 &.read-title {
@@ -1470,7 +1493,8 @@
         }
 
         .unread {
-            > li {
+            .read-title,
+            ul > li {
                 padding-left: 16px;
             }
         }
