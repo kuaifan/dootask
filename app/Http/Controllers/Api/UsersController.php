@@ -1816,23 +1816,23 @@ class UsersController extends AbstractController
     public function share__list()
     {
         $user = User::auth();
-        $pid = intval( Request::input('pid',-1) );
+        $pid = intval(Request::input('pid',-1));
         $uploadFileId = intval(Request::input('upload_file_id',-1));
         // 上传文件
-        if($uploadFileId !== -1 ){
+        if($uploadFileId !== -1){
             if($pid==-1) $pid = 0;
             $webkitRelativePath = Request::input('webkitRelativePath');
             $data = (new File)->contentUpload($user,$pid,$webkitRelativePath);
             return Base::retSuccess('success', $data);
         }
         // 获取数据
+        $lists = [];
         if ($pid !== -1) {
-            $lists = [];
             $fileList = (new File)->getFileList($user,$pid,'dir',false);
             foreach($fileList as $file){
                 if($file['id'] != $pid){
                     $lists[] = [
-                        'type'   => count((new File)->getFileList($user,$file['id'],'dir',false)) > 0 ? 'children' : 'item',
+                        'type'   => 'children',
                         'url'    => Base::fillUrl("api/users/share/list") . "?pid=" . $file['id'], 
                         'icon'   => url("/images/file/light/folder.svg"),
                         'extend' => ['upload_file_id'=>$file['id']],
@@ -1842,13 +1842,13 @@ class UsersController extends AbstractController
             }
         
         }else{
-            $lists = [[
+            $lists[] = [
                 'type'   => 'children',
                 'url'    => Base::fillUrl("api/users/share/list")."?pid=0", 
                 'icon'   => url("/images/file/light/folder.svg"),
                 'extend' => ['upload_file_id'=>0],
                 'name'   => '全部文件',
-            ]];
+            ];
             $dialogList = (new WebSocketDialog)->getDialogList($user->userid);
             foreach($dialogList['data'] as $dialog){
                 if($dialog['type'] == 'user'){
