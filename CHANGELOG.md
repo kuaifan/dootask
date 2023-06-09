@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.27.7]
+
+### Bug Fixes
+
+- Safari 消息输入框焦点溢出的情况
+- 已知bug
+
+### Performance
+
+- 触屏设备实体键盘回车发送
+- 消息输入框支持全屏输入
+- 优化大屏移动端长按菜单
+
 ## [0.27.1]
 
 ### Bug Fixes
