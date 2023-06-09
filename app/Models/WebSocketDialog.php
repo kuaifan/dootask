@@ -68,7 +68,7 @@ class WebSocketDialog extends AbstractModel
 
 
     /**
-     * 格式化对话
+     * 获取对话列表
      * @param int $userid   会员ID
      * @param bool $hasData
      * @return $this
@@ -150,9 +150,9 @@ class WebSocketDialog extends AbstractModel
                 }
                 $basic = User::userid2basic($dialog_user->userid);
                 if ($basic) {
-                    $this->avatar = $basic->userimg;
                     $this->name = $basic->nickname;
                     $this->email = $basic->email;
+                    $this->userimg = $basic->userimg;
                     $this->bot = $basic->getBotOwner();
                     $this->quick_msgs = UserBot::quickMsgs($basic->email);
                 } else {

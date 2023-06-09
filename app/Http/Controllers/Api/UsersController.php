@@ -1819,7 +1819,8 @@ class UsersController extends AbstractController
         $pid = intval( Request::input('pid',-1) );
         $uploadFileId = intval(Request::input('upload_file_id',-1));
         // 上传文件
-        if($uploadFileId !== -1){
+        if($uploadFileId !== -1 ){
+            if($pid==-1) $pid = 0;
             $webkitRelativePath = Request::input('webkitRelativePath');
             $data = (new File)->contentUpload($user,$pid,$webkitRelativePath);
             return Base::retSuccess('success', $data);
@@ -1845,21 +1846,24 @@ class UsersController extends AbstractController
                 'type'   => 'children',
                 'url'    => Base::fillUrl("api/users/share/list")."?pid=0", 
                 'icon'   => url("/images/file/light/folder.svg"),
-                'extend' => ['file'=>true],
+                'extend' => ['upload_file_id'=>0],
                 'name'   => '全部文件',
             ]];
             $dialogList = (new WebSocketDialog)->getDialogList($user->userid);
             foreach($dialogList['data'] as $dialog){
                 if($dialog['type'] == 'user'){
-                    $avatar = User::getAvatar($dialog['dialog_user']['userid'], $dialog['avatar'], $dialog['email'], $dialog['name']);
+                    $avatar = User::getAvatar($dialog['dialog_user']['userid'], $dialog['userimg'], $dialog['email'], $dialog['name']);
                 }else{
                     switch ( $dialog['group_type'] ) {
                         case 'department':
                             $avatar = url("images/avatar/default_department.png");
+                            break;
                         case 'project':
                             $avatar = url("images/avatar/default_project.png");
+                            break;
                         case 'task':
                             $avatar = url("images/avatar/default_task.png");
+                            break;
                         default:
                             $avatar = url("images/avatar/default_people.png");
                             break;
@@ -1870,7 +1874,7 @@ class UsersController extends AbstractController
                     'name'   => $dialog['name'],
                     'icon'   => $avatar,
                     'url'    => Base::fillUrl("api/dialog/msg/sendfiles"), 
-                    'extend' => [ 'dialog_ids' => $dialog['id'] ]
+                    'extend' => ['dialog_ids' => $dialog['id']]
                 ];
             }
         }
