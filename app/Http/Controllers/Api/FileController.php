@@ -12,7 +12,6 @@ use App\Models\User;
 use App\Module\Base;
 use App\Module\Ihttp;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Redirect;
 use Request;
 
