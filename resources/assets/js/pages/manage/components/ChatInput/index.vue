@@ -276,6 +276,8 @@ export default {
             pasteClean: true,
 
             isSpecVersion: this.checkIOSVersion(),
+
+            timer: null,
         };
     },
     mounted() {
@@ -710,14 +712,13 @@ export default {
 
             // Mark model as touched if editor lost focus
             this.quill.on('selection-change', range => {
-                if (!range) {
+                if (!range && document.activeElement) {
                     // 修复光标会超出的问题
-                    if (this.quill.hasFocus()) {
-                        this.quill.setSelection(0)
-                        return
-                    }
-                    if (document.activeElement && document.activeElement.className === 'ql-clipboard') {
-                        this.quill.setSelection(this.quill.getLength())
+                    if (['ql-editor', 'ql-clipboard'].includes(document.activeElement.className)) {
+                        this.timer && clearTimeout(this.timer)
+                        this.timer = setTimeout(_ => {
+                            this.quill.setSelection(document.activeElement.className === 'ql-editor' ? 0 : this.quill.getLength())
+                        }, 100)
                         return
                     }
                 }
