@@ -107,7 +107,7 @@ class File extends AbstractModel
         $permission = 1000;
         $userids = $user->isTemp() ? [$user->userid] : [0, $user->userid];
         $builder = File::wherePid($pid)
-            ->when($type== 'dir',function($q){
+            ->when($type=='dir',function($q){
                 $q->whereType('folder');
             });
         if ($pid > 0) {
@@ -161,7 +161,7 @@ class File extends AbstractModel
                 ->whereIn('file_users.userid', $userids)
                 ->groupBy('files.id')
                 ->take(100)
-                ->when($type== 'dir',function($q){
+                ->when($type=='dir',function($q){
                     $q->where('files.type','folder');
                 })
                 ->get();

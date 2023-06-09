@@ -1834,7 +1834,7 @@ class UsersController extends AbstractController
                     $lists[] = [
                         'type'   => 'children',
                         'url'    => Base::fillUrl("api/users/share/list") . "?pid=" . $file['id'], 
-                        'icon'   => url("/images/file/light/folder.svg"),
+                        'icon'   => $file['share'] == 1 ? url("/images/file/light/folder-share.png") : url("/images/file/light/folder.png"),
                         'extend' => ['upload_file_id'=>$file['id']],
                         'name'   => $file['name'],
                     ];
@@ -1845,7 +1845,7 @@ class UsersController extends AbstractController
             $lists[] = [
                 'type'   => 'children',
                 'url'    => Base::fillUrl("api/users/share/list")."?pid=0", 
-                'icon'   => url("/images/file/light/folder.svg"),
+                'icon'   => url("/images/file/light/folder.png"),
                 'extend' => ['upload_file_id'=>0],
                 'name'   => '全部文件',
             ];
