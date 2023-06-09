@@ -552,6 +552,10 @@ export default {
             type: Boolean,
             default: false
         },
+        isMessenger: {
+            type: Boolean,
+            default: false
+        },
         beforeBack: Function
     },
 
@@ -843,10 +847,10 @@ export default {
             return null
         },
 
-        footerStyle() {
-            const {keyboardType, keyboardHeight, safeAreaBottom, windowScrollY} = this
+        footerStyle({keyboardType, keyboardHeight, safeAreaBottom, windowScrollY, isMessenger}) {
             const style = {};
             if (windowScrollY === 0
+                && isMessenger
                 && keyboardType === "show"
                 && keyboardHeight > 0
                 && keyboardHeight < 120) {

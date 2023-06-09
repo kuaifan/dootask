@@ -73,7 +73,9 @@
             </ul>
         </div>
         <div class="project-subbox">
-            <div class="project-subtitle" @click="showDesc">{{projectData.desc}}</div>
+            <div class="project-subtitle" @click="showDesc">
+                <MarkdownPreviewNostyle :initialValue="projectData.desc"/>
+            </div>
             <div class="project-switch">
                 <div v-if="completedCount > 0" class="project-checkbox">
                     <Checkbox :value="projectData.cacheParameter.completedTask" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
@@ -331,7 +333,7 @@
                     <Input ref="projectName" type="text" v-model="settingData.name" :maxlength="32" :placeholder="$L('必填')"></Input>
                 </FormItem>
                 <FormItem prop="desc" :label="$L('项目介绍')">
-                    <Input ref="projectDesc" type="textarea" :autosize="{ minRows: 3, maxRows: 5 }" v-model="settingData.desc" :maxlength="255" :placeholder="$L('选填')"></Input>
+                    <Input ref="projectDesc" type="textarea" :autosize="{ minRows: 3, maxRows: 5 }" v-model="settingData.desc" :maxlength="255" :placeholder="`${$L('选填')} (${$L('支持 Markdown 格式')})`"></Input>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -472,10 +474,12 @@ import ProjectWorkflow from "./ProjectWorkflow";
 import TaskMenu from "./TaskMenu";
 import TaskDeleted from "./TaskDeleted";
 import ProjectGantt from "./ProjectGantt";
+import MarkdownPreviewNostyle from "../../../components/MDEditor/components/preview/nostyle.vue";
 
 export default {
     name: "ProjectPanel",
     components: {
+        MarkdownPreviewNostyle,
         TaskMenu,
         ProjectWorkflow,
         DrawerOverlay,

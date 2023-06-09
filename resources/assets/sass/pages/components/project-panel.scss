@@ -126,8 +126,10 @@
         .project-subtitle {
             float: left;
             color: $primary-desc-color;
-            line-height: 24px;
-            margin: 6px 0;
+            line-height: 1.5;
+            margin: 8px 0 7px;
+            max-height: 220px;
+            overflow: auto;
         }
         .project-switch {
             float: right;
@@ -493,6 +495,9 @@
                                 align-items: center;
                                 overflow: auto;
                                 margin-right: 24px;
+                                &::-webkit-scrollbar {
+                                    display: none;
+                                }
                                 > li {
                                     list-style: none;
                                     margin-left: -6px;

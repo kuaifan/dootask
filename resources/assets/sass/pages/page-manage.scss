@@ -27,6 +27,8 @@
             position: sticky;
             top: 0;
             z-index: 1;
+            margin: 0 auto;
+            width: 80%;
             background: #F4F5F7;
             ul {
                 flex: 1;
@@ -41,8 +43,7 @@
                     color: #6b6e72;
                     cursor: pointer;
                     position: relative;
-                    width: 80%;
-                    max-width: 100%;
+                    width: 100%;
                     margin: 5px auto;
                     padding: 0 4%;
                     border-radius: 4px;
@@ -77,7 +78,8 @@
             align-items: center;
             padding: 12px 0 0;
             cursor: default;
-            width: 100%;
+            margin: 0 auto;
+            width: 80%;
             > ul {
                 width: 100%;
                 > li {
@@ -85,7 +87,7 @@
                     flex-direction: column;
                     list-style: none;
                     cursor: pointer;
-                    width: 80%;
+                    width: 100%;
                     margin: 2px auto;
                     border: 2px solid transparent;
                     .project-h1 {
