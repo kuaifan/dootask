@@ -2,15 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.27.7]
+## [0.27.10]
 
 ### Bug Fixes
 
+- 打开任务出现空白错误的概率
 - Safari 消息输入框焦点溢出的情况
 - 已知bug
 
 ### Performance
 
+- 网络异常自动重试
 - 触屏设备实体键盘回车发送
 - 消息输入框支持全屏输入
 - 优化大屏移动端长按菜单
