@@ -53,24 +53,7 @@ class DialogController extends AbstractController
         //
         $timerange = TimeRange::parse(Request::input());
         //
-        $builder = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.updated_at as user_at'])
-            ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
-            ->where('u.userid', $user->userid);
-        if ($timerange->updated) {
-            $builder->where('u.updated_at', '>', $timerange->updated);
-        }
-        $list = $builder
-            ->orderByDesc('u.top_at')
-            ->orderByDesc('web_socket_dialogs.last_at')
-            ->paginate(Base::getPaginate(100, 50));
-        $list->transform(function (WebSocketDialog $item) use ($user) {
-            return $item->formatData($user->userid);
-        });
-        //
-        $data = $list->toArray();
-        if ($list->currentPage() === 1) {
-            $data['deleted_id'] = Deleted::ids('dialog', $user->userid, $timerange->deleted);
-        }
+        $data = (new WebSocketDialog)->getDialogList($user->userid,$timerange->updated,$timerange->deleted);
         //
         return Base::retSuccess('success', $data);
     }

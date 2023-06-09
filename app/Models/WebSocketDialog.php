@@ -66,6 +66,38 @@ class WebSocketDialog extends AbstractModel
         return $this->hasMany(WebSocketDialogUser::class, 'dialog_id', 'id');
     }
 
+
+    /**
+     * 格式化对话
+     * @param int $userid   会员ID
+     * @param bool $hasData
+     * @return $this
+     */
+    public function getDialogList($userid, $updated="", $deleted="")
+    {
+        $builder = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.updated_at as user_at'])
+            ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
+            ->where('u.userid', $userid);
+        if ($updated) {
+            $builder->where('u.updated_at', '>', $updated);
+        }
+        $list = $builder
+            ->orderByDesc('u.top_at')
+            ->orderByDesc('web_socket_dialogs.last_at')
+            ->paginate(Base::getPaginate(100, 50));
+        $list->transform(function (WebSocketDialog $item) use ($userid) {
+            return $item->formatData($userid);
+        });
+        //
+        $data = $list->toArray();
+        if ($list->currentPage() === 1) {
+            $data['deleted_id'] = Deleted::ids('dialog', $userid, $deleted);
+        }
+        return $data;
+    }
+
+    
+
     /**
      * 格式化对话
      * @param int $userid   会员ID
@@ -118,7 +150,9 @@ class WebSocketDialog extends AbstractModel
                 }
                 $basic = User::userid2basic($dialog_user->userid);
                 if ($basic) {
+                    $this->avatar = $basic->userimg;
                     $this->name = $basic->nickname;
+                    $this->email = $basic->email;
                     $this->bot = $basic->getBotOwner();
                     $this->quick_msgs = UserBot::quickMsgs($basic->email);
                 } else {

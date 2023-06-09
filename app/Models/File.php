@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
-use App\Exceptions\ApiException;
+use Request;
 use App\Module\Base;
 use App\Tasks\PushTask;
+use App\Exceptions\ApiException;
+use Illuminate\Support\Facades\DB;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Request;
 
 /**
  * App\Models\File
@@ -93,6 +94,233 @@ class File extends AbstractModel
         'mp3', 'wav', 'mp4', 'flv',
         'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm',
     ];
+
+
+    /**
+     * 获取文件列表
+     * @param user $user
+     * @param int $pid
+     * @return array
+     */
+    public function getFileList($user, int $pid, $type = "all", $isGetparent = true)
+    {
+        $permission = 1000;
+        $userids = $user->isTemp() ? [$user->userid] : [0, $user->userid];
+        $builder = File::wherePid($pid)
+            ->when($type== 'dir',function($q){
+                $q->whereType('folder');
+            });
+        if ($pid > 0) {
+            File::permissionFind($pid, $userids, 0, $permission);
+        } else {
+            $builder->whereUserid($user->userid);
+        }
+        //
+        $array = $builder->take(500)->get()->toArray();
+        foreach ($array as &$item) {
+            $item['permission'] = $permission;
+        }
+        //
+        if ($pid > 0) {
+            // 遍历获取父级
+            if($isGetparent){
+                while ($pid > 0) {
+                    $file = File::whereId($pid)->first();
+                    if (empty($file)) {
+                        break;
+                    }
+                    $pid = $file->pid;
+                    $temp = $file->toArray();
+                    $temp['permission'] = $file->getPermission($userids);
+                    $array[] = $temp;
+                }
+            }
+            // 去除没有权限的文件
+            $isUnset = false;
+            foreach ($array as $index1 => $item1) {
+                if ($item1['permission'] === -1) {
+                    foreach ($array as $index2 => $item2) {
+                        if ($item2['pid'] === $item1['id']) {
+                            $array[$index2]['pid'] = 0;
+                        }
+                    }
+                    $isUnset = true;
+                    unset($array[$index1]);
+                }
+            }
+            if ($isUnset) {
+                $array = array_values($array);
+            }
+        } else {
+            // 获取共享相关
+            DB::statement("SET SQL_MODE=''");
+            $pre = DB::connection()->getTablePrefix();
+            $list = File::select(["files.*", DB::raw("MAX({$pre}file_users.permission) as permission")])
+                ->join('file_users', 'files.id', '=', 'file_users.file_id')
+                ->where('files.userid', '!=', $user->userid)
+                ->whereIn('file_users.userid', $userids)
+                ->groupBy('files.id')
+                ->take(100)
+                ->when($type== 'dir',function($q){
+                    $q->where('files.type','folder');
+                })
+                ->get();
+            if ($list->isNotEmpty()) {
+                foreach ($list as $file) {
+                    $temp = $file->toArray();
+                    $temp['pid'] = 0;
+                    $array[] = $temp;
+                }
+            }
+        }
+        // 图片直接返回预览地址
+        foreach ($array as &$item) {
+            $item = File::handleImageUrl($item);
+        }
+        return $array;
+    }
+
+    /**
+     * 保存文件内容（上传文件）
+     * @param user $user
+     * @param int $pid
+     * @param string $webkitRelativePath
+     * @return array
+     */
+    public function contentUpload($user, int $pid, $webkitRelativePath)
+    {
+        $userid = $user->userid;
+        if ($pid > 0) {
+            if (File::wherePid($pid)->count() >= 300) {
+                return Base::retError('每个文件夹里最多只能创建300个文件或文件夹');
+            }
+            $row = File::permissionFind($pid, $user, 1);
+            $userid = $row->userid;
+        } else {
+            if (File::whereUserid($user->userid)->wherePid(0)->count() >= 300) {
+                return Base::retError('每个文件夹里最多只能创建300个文件或文件夹');
+            }
+        }
+        //
+        $dirs = explode("/", $webkitRelativePath);
+        $addItem = [];
+        while (count($dirs) > 1) {
+            $dirName = array_shift($dirs);
+            if ($dirName) {
+                AbstractModel::transaction(function () use ($dirName, $user, $userid, &$pid, &$addItem) {
+                    $dirRow = File::wherePid($pid)->whereType('folder')->whereName($dirName)->lockForUpdate()->first();
+                    if (empty($dirRow)) {
+                        $dirRow = File::createInstance([
+                            'pid' => $pid,
+                            'type' => 'folder',
+                            'name' => $dirName,
+                            'userid' => $userid,
+                            'created_id' => $user->userid,
+                        ]);
+                        $dirRow->handleDuplicateName();
+                        if ($dirRow->saveBeforePP()) {
+                            $addItem[] = File::find($dirRow->id);
+                        }
+                    }
+                    if (empty($dirRow)) {
+                        throw new ApiException('创建文件夹失败');
+                    }
+                    $pid = $dirRow->id;
+                });
+                foreach ($addItem as $tmpRow) {
+                    $tmpRow->pushMsg('add', $tmpRow);
+                }
+            }
+        }
+        //
+        $path = 'uploads/tmp/' . date("Ym") . '/';
+        $data = Base::upload([
+            "file" => Request::file('files'),
+            "type" => 'more',
+            "autoThumb" => false,
+            "path" => $path,
+        ]);
+        if (Base::isError($data)) {
+            return $data;
+        }
+        $data = $data['data'];
+        //
+        $type = match ($data['ext']) {
+            'text', 'md', 'markdown' => 'document',
+            'drawio' => 'drawio',
+            'mind' => 'mind',
+            'doc', 'docx' => "word",
+            'xls', 'xlsx' => "excel",
+            'ppt', 'pptx' => "ppt",
+            'wps' => "wps",
+            'jpg', 'jpeg', 'webp', 'png', 'gif', 'bmp', 'ico', 'raw', 'svg' => "picture",
+            'rar', 'zip', 'jar', '7-zip', 'tar', 'gzip', '7z', 'gz', 'apk', 'dmg' => "archive",
+            'tif', 'tiff' => "tif",
+            'dwg', 'dxf' => "cad",
+            'ofd' => "ofd",
+            'pdf' => "pdf",
+            'txt' => "txt",
+            'htaccess', 'htgroups', 'htpasswd', 'conf', 'bat', 'cmd', 'cpp', 'c', 'cc', 'cxx', 'h', 'hh', 'hpp', 'ino', 'cs', 'css',
+            'dockerfile', 'go', 'golang', 'html', 'htm', 'xhtml', 'vue', 'we', 'wpy', 'java', 'js', 'jsm', 'jsx', 'json', 'jsp', 'less', 'lua', 'makefile', 'gnumakefile',
+            'ocamlmakefile', 'make', 'mysql', 'nginx', 'ini', 'cfg', 'prefs', 'm', 'mm', 'pl', 'pm', 'p6', 'pl6', 'pm6', 'pgsql', 'php',
+            'inc', 'phtml', 'shtml', 'php3', 'php4', 'php5', 'phps', 'phpt', 'aw', 'ctp', 'module', 'ps1', 'py', 'r', 'rb', 'ru', 'gemspec', 'rake', 'guardfile', 'rakefile',
+            'gemfile', 'rs', 'sass', 'scss', 'sh', 'bash', 'bashrc', 'sql', 'sqlserver', 'swift', 'ts', 'typescript', 'str', 'vbs', 'vb', 'v', 'vh', 'sv', 'svh', 'xml',
+            'rdf', 'rss', 'wsdl', 'xslt', 'atom', 'mathml', 'mml', 'xul', 'xbl', 'xaml', 'yaml', 'yml',
+            'asp', 'properties', 'gitignore', 'log', 'bas', 'prg', 'python', 'ftl', 'aspx', 'plist' => "code",
+            'mp3', 'wav', 'mp4', 'flv',
+            'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm' => "media",
+            'xmind' => "xmind",
+            'rp' => "axure",
+            default => "",
+        };
+        if ($data['ext'] == 'markdown') {
+            $data['ext'] = 'md';
+        }
+        $file = File::createInstance([
+            'pid' => $pid,
+            'name' => Base::rightDelete($data['name'], '.' . $data['ext']),
+            'type' => $type,
+            'ext' => $data['ext'],
+            'userid' => $userid,
+            'created_id' => $user->userid,
+        ]);
+        $file->handleDuplicateName();
+        // 开始创建
+        return AbstractModel::transaction(function () use ($addItem, $webkitRelativePath, $type, $user, $data, $file) {
+            $file->size = $data['size'] * 1024;
+            $file->saveBeforePP();
+            //
+            $data = Base::uploadMove($data, "uploads/file/" . $file->type . "/" . date("Ym") . "/" . $file->id . "/");
+            $content = [
+                'from' => '',
+                'type' => $type,
+                'ext' => $data['ext'],
+                'url' => $data['path'],
+            ];
+            if (isset($data['width'])) {
+                $content['width'] = $data['width'];
+                $content['height'] = $data['height'];
+            }
+            $content = FileContent::createInstance([
+                'fid' => $file->id,
+                'content' => $content,
+                'text' => '',
+                'size' => $file->size,
+                'userid' => $user->userid,
+            ]);
+            $content->save();
+            //
+            $tmpRow = File::find($file->id);
+            $tmpRow->pushMsg('add', $tmpRow);
+            //
+            $data = File::handleImageUrl($tmpRow->toArray());
+            $data['full_name'] = $webkitRelativePath ?: $data['name'];
+            //
+            $addItem[] = $data;
+           
+            return ['data'=>$data,'addItem'=>$addItem];
+        });
+    }
 
     /**
      * 是否有访问权限
