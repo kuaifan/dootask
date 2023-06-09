@@ -245,6 +245,14 @@ export default {
             }
             params.error = (xhr, status) => {
                 const networkException = window.navigator.onLine === false || (status === 0 && xhr.readyState === 4)
+                if (networkException && cloneParams.__networkFailureRetry !== true) {
+                    // 网络异常，重试一次
+                    setTimeout(_ => {
+                        cloneParams.__networkFailureRetry = true
+                        dispatch("call", cloneParams).then(resolve).catch(reject)
+                    }, 300)
+                    return
+                }
                 if (params.checkNetwork !== false) {
                     state.ajaxNetworkException = networkException
                 }
