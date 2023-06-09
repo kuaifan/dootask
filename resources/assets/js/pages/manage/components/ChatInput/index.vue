@@ -357,13 +357,27 @@ export default {
         }
     },
     computed: {
-        ...mapState(['cacheProjects', 'cacheTasks', 'cacheUserBasic', 'dialogMsgs', 'cacheDialogs']),
+        ...mapState([
+            'cacheProjects',
+            'cacheTasks',
+            'cacheUserBasic',
 
-        isEnterSend() {
-            if (typeof this.enterSend === "boolean") {
-                return this.enterSend;
+            'cacheDialogs',
+            'dialogMsgs',
+
+            'keyboardType',
+            'keyboardHeight',
+        ]),
+
+        isEnterSend({enterSend, keyboardType, keyboardHeight, windowTouch}) {
+            if (typeof enterSend === "boolean") {
+                return enterSend;
             } else {
-                return !this.windowTouch
+                // 如果是触屏设备而且虚拟键盘高度小于120时，考虑是实体键盘按键所以回车发送
+                if (windowTouch && keyboardType === "show" && keyboardHeight < 120) {
+                    return true;
+                }
+                return !windowTouch
             }
         },
 
