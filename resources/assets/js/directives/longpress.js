@@ -12,17 +12,17 @@ const longpress = {
             throw 'callback must be a function'
         }
 
-        // 不支持touch时使用右键
+        // 菜单键（右键）
+        el.__longpressContextmenu__ = (e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            callback(e, el)
+        }
+        el.addEventListener('contextmenu', el.__longpressContextmenu__);
+        // 不支持touch
         if (!isSupportTouch) {
-            el.__longpressContextmenu__ = (e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                callback(e, el)
-            }
-            el.addEventListener('contextmenu', el.__longpressContextmenu__);
             return
         }
-
         // 定义变量
         let pressTimer = null
         let isCall = false
@@ -64,9 +64,9 @@ const longpress = {
     },
     // 指令与元素解绑的时候，移除事件绑定
     unbind(el) {
+        el.removeEventListener('contextmenu', el.__longpressContextmenu__)
+        delete el.__longpressContextmenu__
         if (!isSupportTouch) {
-            el.removeEventListener('contextmenu', el.__longpressContextmenu__)
-            delete el.__longpressContextmenu__
             return
         }
         el.removeEventListener('touchstart', el.__longpressStart__)

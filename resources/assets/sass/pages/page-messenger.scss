@@ -591,6 +591,18 @@
     }
 }
 
+body.window-touch {
+    .page-messenger {
+        .messenger-wrapper {
+            .messenger-select {
+                .messenger-list {
+                    user-select: none;
+                }
+            }
+        }
+    }
+}
+
 body.window-portrait {
     .page-messenger {
         .messenger-wrapper {
