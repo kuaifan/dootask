@@ -605,6 +605,52 @@
     }
 }
 
+.chat-input-full-input {
+    .ivu-modal {
+        .ivu-modal-content {
+            margin-top: 46px;
+            border-top-left-radius: 18px !important;
+            border-top-right-radius: 18px !important;
+            .ivu-modal-body {
+                overflow: visible;
+                padding: 24px !important;
+            }
+            .ivu-modal-close {
+                > i {
+                    top: 3px;
+                    right: 2px;
+                    font-size: 24px;
+                    width: 34px;
+                    height: 34px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background-color: #ffffff;
+                    border-radius: 50%;
+                    color: #999;
+                }
+            }
+        }
+    }
+
+    .chat-input-box {
+        height: 100%;
+
+        .chat-input-wrapper {
+            height: 100%;
+
+            .ql-container {
+                height: 100%;
+                width: 100%;
+
+                .ql-editor {
+                    max-height: none;
+                }
+            }
+        }
+    }
+}
+
 .ql-mention-list-container {
     width: auto;
     min-width: 220px;
