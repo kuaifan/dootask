@@ -1324,6 +1324,9 @@ export default {
             }
             //
             state.cacheDialogs.some(dialog => {
+                if (dialog.name === undefined || dialog.dialog_delete === 1) {
+                    return false;
+                }
                 if (dialog.type == 'group' && dialog.group_type == 'task' && dialog.group_info.id == data.id) {
                     if (data.name !== undefined) {
                         dialog.name = data.name
