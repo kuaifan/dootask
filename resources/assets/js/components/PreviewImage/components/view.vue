@@ -144,8 +144,8 @@
 </style>
 
 <script>
-import {isFirefox, rafThrottle} from "element-ui/src/utils/util";
-import {off, on} from "element-ui/src/utils/dom";
+import {isFirefox, rafThrottle} from "element-sea/src/utils/util";
+import {off, on} from "element-sea/src/utils/dom";
 
 const Mode = {
     CONTAIN: {

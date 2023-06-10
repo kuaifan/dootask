@@ -7,15 +7,15 @@ $--dropdown-menuItem-hover-color: #606266;
 
 $--font-path: '../css/fonts';
 
-@import "~element-ui/packages/theme-chalk/src/common/transition";
-@import "~element-ui/packages/theme-chalk/src/icon";
-@import "~element-ui/packages/theme-chalk/src/avatar";
-@import "~element-ui/packages/theme-chalk/src/tooltip";
-@import "~element-ui/packages/theme-chalk/src/popover";
-@import "~element-ui/packages/theme-chalk/src/dropdown";
-@import "~element-ui/packages/theme-chalk/src/dropdown-menu";
-@import "~element-ui/packages/theme-chalk/src/dropdown-item";
-@import "~element-ui/packages/theme-chalk/src/notification";
+@import "~element-sea/packages/theme-chalk/src/common/transition";
+@import "~element-sea/packages/theme-chalk/src/icon";
+@import "~element-sea/packages/theme-chalk/src/avatar";
+@import "~element-sea/packages/theme-chalk/src/tooltip";
+@import "~element-sea/packages/theme-chalk/src/popover";
+@import "~element-sea/packages/theme-chalk/src/dropdown";
+@import "~element-sea/packages/theme-chalk/src/dropdown-menu";
+@import "~element-sea/packages/theme-chalk/src/dropdown-item";
+@import "~element-sea/packages/theme-chalk/src/notification";
 
 .el-dropdown-menu {
     user-select: none;

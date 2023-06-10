@@ -59,7 +59,7 @@ import {
     Dropdown,
     DropdownMenu,
     DropdownItem,
-} from 'element-ui';
+} from 'element-sea';
 
 Vue.component('EAvatar', Avatar);
 Vue.component('ETooltip', Tooltip);

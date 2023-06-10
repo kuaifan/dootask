@@ -1,5 +1,5 @@
 import {Store} from 'le5le-store';
-import * as openpgp from 'openpgp/lightweight';
+import * as openpgp from 'openpgp_hi/lightweight';
 import {languageType} from "../language";
 import {$callData, $urlSafe} from './utils'
 
