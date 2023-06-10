@@ -1803,7 +1803,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/share/list          25. 获取分享列表
+     * @api {get} api/users/share/list          31. 获取分享列表
      *
      * @apiVersion 1.0.0
      * @apiGroup users
@@ -1816,58 +1816,69 @@ class UsersController extends AbstractController
     public function share__list()
     {
         $user = User::auth();
-        $userids = $user->isTemp() ? [$user->userid] : [0, $user->userid];
-        //目录列表
-        $dir = Base::list2Tree(
-            File::select(['files.id', 'files.pid', 'files.name'])
-                ->leftJoin('file_users', 'files.id', '=', 'file_users.file_id')
-                ->where('files.type', 'folder')
-                ->where(function ($q) use ($userids) {
-                    $q->whereIn('files.userid', $userids);
-                    $q->orWhere(function ($qq) use ($userids) {
-                        $qq->where('file_users.permission', 1);
-                        $qq->whereIn('file_users.userid', $userids);
-                    });
-                })
-                ->get()
-                ->toArray()
-        );
-        //聊天列表
-        $chatList = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.silence', 'u.updated_at as user_at'])
-            ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
-            ->where('u.userid', $user->userid)
-            ->orderByDesc('u.top_at')
-            ->orderByDesc('web_socket_dialogs.last_at')
-            ->get()
-            ->transform(function (WebSocketDialog $item) use ($user) {
-                $item = $item->formatData($user->userid);
-                $item->last_msg = [];
-                if (!$item->avatar) {
-                    $item->avatar = 'avatar/' . $item->name . '.png';
+        $pid = intval(Request::input('pid',-1));
+        $uploadFileId = intval(Request::input('upload_file_id',-1));
+        // 上传文件
+        if($uploadFileId !== -1){
+            if($pid==-1) $pid = 0;
+            $webkitRelativePath = Request::input('webkitRelativePath');
+            $data = (new File)->contentUpload($user,$pid,$webkitRelativePath);
+            return Base::retSuccess('success', $data);
+        }
+        // 获取数据
+        $lists = [];
+        if ($pid !== -1) {
+            $fileList = (new File)->getFileList($user,$pid,'dir',false);
+            foreach($fileList as $file){
+                if($file['id'] != $pid){
+                    $lists[] = [
+                        'type'   => 'children',
+                        'url'    => Base::fillUrl("api/users/share/list") . "?pid=" . $file['id'], 
+                        'icon'   => $file['share'] == 1 ? url("/images/file/light/folder-share.png") : url("/images/file/light/folder.png"),
+                        'extend' => ['upload_file_id'=>$file['id']],
+                        'name'   => $file['name'],
+                    ];
                 }
-                return $item;
-            })
-            ->toArray();
-        // 用户列表
-        $notUserIds = [$user->userid];
-        foreach ($chatList as $chat) {
-            if ($chat['type'] == 'user') {
-                $notUserIds[] = $chat['dialog_user']['userid'];
+            }
+        
+        }else{
+            $lists[] = [
+                'type'   => 'children',
+                'url'    => Base::fillUrl("api/users/share/list")."?pid=0", 
+                'icon'   => url("/images/file/light/folder.png"),
+                'extend' => ['upload_file_id'=>0],
+                'name'   => '全部文件',
+            ];
+            $dialogList = (new WebSocketDialog)->getDialogList($user->userid);
+            foreach($dialogList['data'] as $dialog){
+                if($dialog['type'] == 'user'){
+                    $avatar = User::getAvatar($dialog['dialog_user']['userid'], $dialog['userimg'], $dialog['email'], $dialog['name']);
+                }else{
+                    switch ( $dialog['group_type'] ) {
+                        case 'department':
+                            $avatar = url("images/avatar/default_department.png");
+                            break;
+                        case 'project':
+                            $avatar = url("images/avatar/default_project.png");
+                            break;
+                        case 'task':
+                            $avatar = url("images/avatar/default_task.png");
+                            break;
+                        default:
+                            $avatar = url("images/avatar/default_people.png");
+                            break;
+                    }
+                }
+                $lists[] = [
+                    'type'   => 'item',
+                    'name'   => $dialog['name'],
+                    'icon'   => $avatar,
+                    'url'    => Base::fillUrl("api/dialog/msg/sendfiles"), 
+                    'extend' => ['dialog_ids' => $dialog['id']]
+                ];
             }
         }
-        $userList = User::select(['userid', 'email', 'nickname', 'userimg'])
-            ->where('bot', 0)
-            ->where('changepass', 0)
-            ->whereNull('disable_at')
-            ->whereNotIn('userid', $notUserIds)
-            ->get()
-            ->transform(function (User $item) {
-                $item->name = $item->nickname;
-                $item->avatar = $item->userimg;
-                return $item;
-            })
-            ->toArray();
         // 返回
-        return Base::retSuccess('success', ["dir" => $dir, "chatList" => $chatList, "userList" => $userList]);
+        return Base::retSuccess('success', $lists);
     }
 }
