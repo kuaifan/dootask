@@ -9,7 +9,9 @@
                 <Tag v-if="updateVer" color="volcano">{{updateVer}}</Tag>
             </div>
         </div>
-        <MarkdownPreview class="uplog-body scrollbar-overlay" :initialValue="updateLog"/>
+        <Scrollbar class-name="uplog-body">
+            <MarkdownPreview :initialValue="updateLog"/>
+        </Scrollbar>
         <div slot="footer" class="adaption">
             <Button type="default" @click="uplogFull=!uplogFull">{{$L(uplogFull ? '缩小查看' : '全屏查看')}}</Button>
         </div>

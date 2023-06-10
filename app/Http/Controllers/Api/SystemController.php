@@ -1200,5 +1200,4 @@ class SystemController extends AbstractController
         }
         return $array;
     }
-
 }

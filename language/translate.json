@@ -16696,5 +16696,27 @@
         "de": "Bitte geben sie den inhalt ein!",
         "fr": "Veuillez entrer le contenu!",
         "id": "Silahkan isi!"
+    },
+    {
+        "key": "支持 Markdown 格式",
+        "zh": "",
+        "zh-CHT": "支持 Markdown 格式",
+        "en": "Supports the Markdown format",
+        "ko": "마크다운 포맷을 지원한다",
+        "ja": "Markdownフォーマットをサポートします。",
+        "de": "Das format in markab zu unterstützen",
+        "fr": "Support du format Markdown",
+        "id": "Markdown format"
+    },
+    {
+        "key": "全屏输入",
+        "zh": "",
+        "zh-CHT": "全屏輸入",
+        "en": "Full screen input",
+        "ko": "전체 화면 입력",
+        "ja": "全画面入力です",
+        "de": "Kamera läuft.",
+        "fr": "Entrée plein écran",
+        "id": "Masukan layar penuh"
     }
 ]

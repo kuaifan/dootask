@@ -286,6 +286,18 @@
     opacity: 0;
 }
 
+body.window-touch {
+    .page-messenger {
+        .messenger-wrapper {
+            .messenger-select {
+                .messenger-list {
+                    user-select: none;
+                }
+            }
+        }
+    }
+}
+
 body.window-portrait {
     .page-dashboard {
         .dashboard-wrapper {
@@ -307,8 +319,11 @@ body.window-portrait {
                 }
             }
             .dashboard-list {
+                height: auto;
                 padding-bottom: 2px;
-                overflow: visible;
+                .scrollbar-content {
+                    overflow: visible;
+                }
                 .dashboard-ul {
                     margin-bottom: 36px;
                     user-select: none;

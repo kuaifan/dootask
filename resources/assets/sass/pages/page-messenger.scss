@@ -126,7 +126,7 @@
                 height: 0;
                 width: 100%;
                 overflow-x: hidden;
-                > ul {
+                ul {
                     &.dialog {
                         > li {
                             display: flex;
@@ -486,6 +486,7 @@
                     left: 0;
                     width: 1px;
                     opacity: 0;
+                    margin-top: -4px;
                     visibility: hidden;
                     pointer-events: none;
                 }
@@ -590,6 +591,18 @@
     }
 }
 
+body.window-touch {
+    .page-messenger {
+        .messenger-wrapper {
+            .messenger-select {
+                .messenger-list {
+                    user-select: none;
+                }
+            }
+        }
+    }
+}
+
 body.window-portrait {
     .page-messenger {
         .messenger-wrapper {
@@ -620,9 +633,9 @@ body.window-portrait {
                     opacity: 0;
                 }
                 .messenger-list {
-                    > ul {
-                        user-select: none;
+                    ul {
                         &.dialog {
+                            user-select: none;
                             > li {
                                 .user-avatar {
                                     .common-avatar {
@@ -646,6 +659,9 @@ body.window-portrait {
                                     }
                                 }
                             }
+                        }
+                        &.contacts {
+                            user-select: none;
                         }
                     }
                 }

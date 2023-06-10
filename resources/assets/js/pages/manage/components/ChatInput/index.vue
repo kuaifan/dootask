@@ -93,6 +93,10 @@
                             <i class="taskfont">&#xe7c0;</i>
                             {{$L('上传文件')}}
                         </div>
+                        <div class="chat-input-popover-item" @click="onToolbar('full')">
+                            <i class="taskfont">&#xe6a7;</i>
+                            {{$L('全屏输入')}}
+                        </div>
                         <div v-if="canAnon" class="chat-input-popover-item" @click="onToolbar('anon')">
                             <i class="taskfont">&#xe690;</i>
                             {{$L('匿名消息')}}
@@ -165,6 +169,22 @@
                 <div class="record-cancel" @click.stop="stopRecord(true)">{{$L(touchLimitY ? '松开取消' : '向上滑动取消')}}</div>
             </div>
         </transition>
+
+        <Modal
+            v-model="fullInput"
+            :value="true"
+            :mask-closable="false"
+            :beforeClose="onFullBeforeClose"
+            class-name="chat-input-full-input"
+            footer-hide
+            fullscreen>
+            <div class="chat-input-box">
+                <div class="chat-input-wrapper">
+                    <div ref="editorFull" class="no-dark-content"></div>
+                </div>
+            </div>
+            <i slot="close" class="taskfont">&#xe6ab;</i>
+        </Modal>
     </div>
 </template>
 
@@ -276,6 +296,11 @@ export default {
             pasteClean: true,
 
             isSpecVersion: this.checkIOSVersion(),
+
+            timer: null,
+
+            fullInput: false,
+            fullQuill: null,
         };
     },
     mounted() {
@@ -332,13 +357,27 @@ export default {
         }
     },
     computed: {
-        ...mapState(['cacheProjects', 'cacheTasks', 'cacheUserBasic', 'dialogMsgs', 'cacheDialogs']),
+        ...mapState([
+            'cacheProjects',
+            'cacheTasks',
+            'cacheUserBasic',
 
-        isEnterSend() {
-            if (typeof this.enterSend === "boolean") {
-                return this.enterSend;
+            'cacheDialogs',
+            'dialogMsgs',
+
+            'keyboardType',
+            'keyboardHeight',
+        ]),
+
+        isEnterSend({enterSend, keyboardType, keyboardHeight, windowTouch}) {
+            if (typeof enterSend === "boolean") {
+                return enterSend;
             } else {
-                return !this.windowTouch
+                // 如果是触屏设备而且虚拟键盘高度小于120时，考虑是实体键盘按键所以回车发送
+                if (windowTouch && keyboardType === "show" && keyboardHeight < 120) {
+                    return true;
+                }
+                return !windowTouch
             }
         },
 
@@ -639,61 +678,7 @@ export default {
                             }
                         }
                     },
-                    mention: {
-                        allowedChars: /^\S*$/,
-                        mentionDenotationChars: ["@", "#", "~"],
-                        defaultMenuOrientation: this.defaultMenuOrientation,
-                        isolateCharacter: true,
-                        positioningStrategy: 'fixed',
-                        renderItem: (data) => {
-                            if (data.disabled === true) {
-                                return `<div class="mention-item-disabled">${data.value}</div>`;
-                            }
-                            if (data.id === 0) {
-                                return `<div class="mention-item-at">@</div><div class="mention-item-name">${data.value}</div><div class="mention-item-tip">${data.tip}</div>`;
-                            }
-                            if (data.avatar) {
-                                const botHtml = data.bot ? `<div class="taskfont mention-item-bot">&#xe68c;</div>` : ''
-                                return `<div class="mention-item-img${data.online ? ' online' : ''}"><img src="${data.avatar}"/><em></em></div>${botHtml}<div class="mention-item-name">${data.value}</div>`;
-                            }
-                            if (data.tip) {
-                                return `<div class="mention-item-name" title="${data.value}">${data.value}</div><div class="mention-item-tip">${data.tip}</div>`;
-                            }
-                            return `<div class="mention-item-name" title="${data.value}">${data.value}</div>`;
-                        },
-                        renderLoading: () => {
-                            return "Loading...";
-                        },
-                        source: (searchTerm, renderList, mentionChar) => {
-                            const mentionName = mentionChar == "@" ? 'user-mention' : (mentionChar == "#" ? 'task-mention' : 'file-mention');
-                            const containers = document.getElementsByClassName("ql-mention-list-container");
-                            for (let i = 0; i < containers.length; i++) {
-                                containers[i].classList.remove("user-mention");
-                                containers[i].classList.remove("task-mention");
-                                containers[i].classList.remove("file-mention");
-                                containers[i].classList.add(mentionName);
-                                $A.scrollPreventThrough(containers[i]);
-                            }
-                            let mentionSourceCache = null;
-                            this.getMentionSource(mentionChar, searchTerm, array => {
-                                const values = [];
-                                array.some(item => {
-                                    let list = item.list;
-                                    if (searchTerm) {
-                                        list = list.filter(({value}) => $A.strExists(value, searchTerm));
-                                    }
-                                    if (list.length > 0) {
-                                        item.label && values.push(...item.label)
-                                        values.push(...list)
-                                    }
-                                })
-                                if ($A.jsonStringify(values.map(({id}) => id)) !== mentionSourceCache) {
-                                    mentionSourceCache = $A.jsonStringify(values.map(({id}) => id))
-                                    renderList(values, searchTerm);
-                                }
-                            })
-                        }
-                    }
+                    mention: this.quillMention()
                 }
             }, this.options)
 
@@ -710,14 +695,13 @@ export default {
 
             // Mark model as touched if editor lost focus
             this.quill.on('selection-change', range => {
-                if (!range) {
+                if (!range && document.activeElement) {
                     // 修复光标会超出的问题
-                    if (this.quill.hasFocus()) {
-                        this.quill.setSelection(0)
-                        return
-                    }
-                    if (document.activeElement && document.activeElement.className === 'ql-clipboard') {
-                        this.quill.setSelection(this.quill.getLength())
+                    if (['ql-editor', 'ql-clipboard'].includes(document.activeElement.className)) {
+                        this.timer && clearTimeout(this.timer)
+                        this.timer = setTimeout(_ => {
+                            this.quill.setSelection(document.activeElement.className === 'ql-editor' ? 0 : this.quill.getLength())
+                        }, 100)
                         return
                     }
                 }
@@ -729,7 +713,7 @@ export default {
                 if (this.maxlength > 0 && this.quill.getLength() > this.maxlength) {
                     this.quill.deleteText(this.maxlength, this.quill.getLength());
                 }
-                let html = this.$refs.editor.children[0].innerHTML
+                let html = this.$refs.editor.firstChild.innerHTML
                 html = html.replace(/^(<p>\s*<\/p>)+|(<p>\s*<\/p>)+$/gi, '')
                 html = html.replace(/^(<p><br\/*><\/p>)+|(<p><br\/*><\/p>)+$/gi, '')
                 this.updateEmojiQuick(html)
@@ -804,6 +788,64 @@ export default {
                         this.recordReady = true;
                     }
                 });
+            }
+        },
+
+        quillMention() {
+            return {
+                allowedChars: /^\S*$/,
+                mentionDenotationChars: ["@", "#", "~"],
+                defaultMenuOrientation: this.defaultMenuOrientation,
+                isolateCharacter: true,
+                positioningStrategy: 'fixed',
+                renderItem: (data) => {
+                    if (data.disabled === true) {
+                        return `<div class="mention-item-disabled">${data.value}</div>`;
+                    }
+                    if (data.id === 0) {
+                        return `<div class="mention-item-at">@</div><div class="mention-item-name">${data.value}</div><div class="mention-item-tip">${data.tip}</div>`;
+                    }
+                    if (data.avatar) {
+                        const botHtml = data.bot ? `<div class="taskfont mention-item-bot">&#xe68c;</div>` : ''
+                        return `<div class="mention-item-img${data.online ? ' online' : ''}"><img src="${data.avatar}"/><em></em></div>${botHtml}<div class="mention-item-name">${data.value}</div>`;
+                    }
+                    if (data.tip) {
+                        return `<div class="mention-item-name" title="${data.value}">${data.value}</div><div class="mention-item-tip">${data.tip}</div>`;
+                    }
+                    return `<div class="mention-item-name" title="${data.value}">${data.value}</div>`;
+                },
+                renderLoading: () => {
+                    return "Loading...";
+                },
+                source: (searchTerm, renderList, mentionChar) => {
+                    const mentionName = mentionChar == "@" ? 'user-mention' : (mentionChar == "#" ? 'task-mention' : 'file-mention');
+                    const containers = document.getElementsByClassName("ql-mention-list-container");
+                    for (let i = 0; i < containers.length; i++) {
+                        containers[i].classList.remove("user-mention");
+                        containers[i].classList.remove("task-mention");
+                        containers[i].classList.remove("file-mention");
+                        containers[i].classList.add(mentionName);
+                        $A.scrollPreventThrough(containers[i]);
+                    }
+                    let mentionSourceCache = null;
+                    this.getMentionSource(mentionChar, searchTerm, array => {
+                        const values = [];
+                        array.some(item => {
+                            let list = item.list;
+                            if (searchTerm) {
+                                list = list.filter(({value}) => $A.strExists(value, searchTerm));
+                            }
+                            if (list.length > 0) {
+                                item.label && values.push(...item.label)
+                                values.push(...list)
+                            }
+                        })
+                        if ($A.jsonStringify(values.map(({id}) => id)) !== mentionSourceCache) {
+                            mentionSourceCache = $A.jsonStringify(values.map(({id}) => id))
+                            renderList(values, searchTerm);
+                        }
+                    })
+                }
             }
         },
 
@@ -1098,6 +1140,10 @@ export default {
                     });
                     break;
 
+                case 'full':
+                    this.onFullInput()
+                    break;
+
                 case 'image':
                 case 'file':
                 case 'call':
@@ -1105,6 +1151,38 @@ export default {
                     this.$emit('on-more', action)
                     break;
             }
+        },
+
+        onFullInput() {
+            if (this.disabled) {
+                return
+            }
+            this.fullInput = !this.fullInput;
+            //
+            if (this.fullInput) {
+                this.$nextTick(_ => {
+                    this.fullQuill = new Quill(this.$refs.editorFull, Object.assign({
+                        theme: 'bubble',
+                        readOnly: false,
+                        placeholder: this.placeholder,
+                        modules: {
+                            toolbar: [
+                                ['bold', 'strike', 'italic', 'underline', {'list': 'ordered'}, {'list': 'bullet'}, 'blockquote', 'code-block']
+                            ],
+                            mention: this.quillMention()
+                        }
+                    }, this.options))
+                    this.fullQuill.enable(true)
+                    this.$refs.editorFull.firstChild.innerHTML = this.$refs.editor.firstChild.innerHTML
+                })
+            }
+        },
+
+        onFullBeforeClose() {
+            return new Promise(resolve => {
+                this.$refs.editor.firstChild.innerHTML = this.$refs.editorFull.firstChild.innerHTML
+                resolve()
+            })
         },
 
         onMoreVisibleChange(v) {

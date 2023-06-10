@@ -1,0 +1,154 @@
+.scrollbar-container {
+    flex: 1;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+
+    /*
+     * 触摸设备隐藏自定义滚动条
+     */
+    &.scrollbar-touch {
+        .scrollbar-track-x,
+        .scrollbar-track-y {
+            display: none;
+        }
+    }
+
+    /*
+     * 桌面设备隐藏系统滚动条
+     */
+    &.scrollbar-desktop,
+    &.scrollbar-hidebar {
+        .scrollbar-content {
+            &::-webkit-scrollbar {
+                display: none;
+                width: 0;
+                height: 0;
+            }
+        }
+    }
+
+    /*
+     * 隐藏滚动条
+     */
+    &.scrollbar-hidebar {
+        .scrollbar-track-x,
+        .scrollbar-track-y {
+            opacity: 0 !important;
+        }
+    }
+
+    /*
+     * 滚动条轨道样式
+     */
+    .scrollbar-track-x,
+    .scrollbar-track-y {
+        position: absolute;
+        z-index: 101;
+        display: block;
+        visibility: hidden;
+        opacity: 0;
+        transition: background-color .2s linear, opacity .2s linear;
+    }
+
+    .scrollbar-track-x {
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 15px;
+    }
+
+    .scrollbar-track-y {
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 15px;
+    }
+
+    &.scrollbar-active-x .scrollbar-track-x,
+    &.scrollbar-active-y .scrollbar-track-y {
+        visibility: visible;
+        background-color: transparent;
+    }
+
+    &:hover > .scrollbar-track-x,
+    &:hover > .scrollbar-track-y,
+    &.scrollbar-scrolling-x .scrollbar-track-x,
+    &.scrollbar-scrolling-y .scrollbar-track-y {
+        opacity: 0.6;
+    }
+
+    .scrollbar-track-x:hover,
+    .scrollbar-track-y:hover,
+    .scrollbar-track-x:focus,
+    .scrollbar-track-y:focus,
+    &.scrollbar-moveing-x .scrollbar-track-x,
+    &.scrollbar-moveing-y .scrollbar-track-y {
+        background-color: #eee;
+        opacity: 0.9;
+    }
+
+    /*
+     * 滚动条样式
+     */
+    .scrollbar-thumb-x,
+    .scrollbar-thumb-y {
+        position: absolute;
+        z-index: 102;
+        background-color: #aaa;
+        border-radius: 6px;
+        transform: translateZ(0);
+    }
+
+    .scrollbar-thumb-x {
+        transition: background-color .2s linear, height .2s ease-in-out;
+        height: 6px;
+        bottom: 2px;
+    }
+
+    .scrollbar-thumb-y {
+        transition: background-color .2s linear, width .2s ease-in-out;
+        width: 6px;
+        right: 2px;
+    }
+
+    .scrollbar-track-x:hover > .scrollbar-thumb-x,
+    .scrollbar-track-x:focus > .scrollbar-thumb-x,
+    &.scrollbar-moveing-x .scrollbar-thumb-x {
+        background-color: #999;
+        height: 11px;
+    }
+
+    .scrollbar-track-y:hover > .scrollbar-thumb-y,
+    .scrollbar-track-y:focus > .scrollbar-thumb-y,
+    &.scrollbar-moveing-y .scrollbar-thumb-y {
+        background-color: #999;
+        width: 11px;
+    }
+
+    /*
+     * 内容区域样式
+     */
+    .scrollbar-content {
+        height: 100%;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+
+        &.scrollbar-disable-x {
+            overflow-x: hidden;
+        }
+
+        &.scrollbar-disable-y {
+            overflow-y: hidden;
+        }
+    }
+}
+
+/*
+ * 隐藏系统滚动条
+ */
+.scrollbar-hidden {
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}

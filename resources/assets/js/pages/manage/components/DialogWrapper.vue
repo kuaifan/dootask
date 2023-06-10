@@ -145,7 +145,7 @@
         <!--消息列表-->
         <VirtualList
             ref="scroller"
-            class="dialog-scroller scrollbar-overlay"
+            class="dialog-scroller scrollbar-virtual"
             :class="scrollerClass"
             :data-key="'id'"
             :data-sources="allMsgs"
@@ -481,7 +481,7 @@
                 <div class="dialog-nav">
                     <div class="drawer-title">{{$L('待办消息')}}</div>
                 </div>
-                <div class="dialog-scroller scrollbar-overlay">
+                <Scrollbar class-name="dialog-scroller">
                     <DialogItem
                         v-if="todoViewMsg"
                         :source="todoViewMsg"
@@ -491,7 +491,7 @@
                         @on-emoji="onEmoji"
                         simpleView/>
                     <Button class="original-button" icon="md-exit" type="text" :loading="todoViewPosLoad" @click="onPosTodo">{{ $L("回到原文") }}</Button>
-                </div>
+                </Scrollbar>
                 <div class="todo-button">
                     <Button type="primary" size="large" icon="md-checkbox-outline" @click="onDoneTodo" :loading="todoViewLoad" long>{{ $L("完成") }}</Button>
                 </div>
@@ -549,6 +549,10 @@ export default {
             default: 0
         },
         autoFocus: {
+            type: Boolean,
+            default: false
+        },
+        isMessenger: {
             type: Boolean,
             default: false
         },
@@ -843,10 +847,10 @@ export default {
             return null
         },
 
-        footerStyle() {
-            const {keyboardType, keyboardHeight, safeAreaBottom, windowScrollY} = this
+        footerStyle({keyboardType, keyboardHeight, safeAreaBottom, windowScrollY, isMessenger}) {
             const style = {};
             if (windowScrollY === 0
+                && isMessenger
                 && keyboardType === "show"
                 && keyboardHeight > 0
                 && keyboardHeight < 120) {
@@ -2417,7 +2421,7 @@ export default {
                         this.$store.dispatch("openTask", $A.runNum(target.getAttribute("data-id")));
                     }
                     break;
-                
+
             }
         },
 

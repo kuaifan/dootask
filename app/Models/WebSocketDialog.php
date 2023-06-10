@@ -578,20 +578,20 @@ class WebSocketDialog extends AbstractModel
     /**
      * 发送消息文件
      *
-     * @param User $user          发起会话的会员
-     * @param array $dialogIds    对话id
-     * @param file $files         文件对象
-     * @param string $image64     base64文件  
-     * @param string $fileName    文件名称
-     * @param int $replyId        恢复id
+     * @param User $user 发起会话的会员
+     * @param array $dialogIds 对话id
+     * @param file $files 文件对象
+     * @param string $image64 base64文件
+     * @param string $fileName 文件名称
+     * @param int $replyId 恢复id
      * @param int $imageAttachment
      * @return array
      */
-    public static function sendMsgFiles($user,$dialogIds,$files,$image64,$fileName,$replyId,$imageAttachment)
+    public static function sendMsgFiles($user, $dialogIds, $files, $image64, $fileName, $replyId, $imageAttachment)
     {
         $filePath = '';
         $result = [];
-        foreach($dialogIds as $dialog_id){
+        foreach ($dialogIds as $dialog_id) {
             $dialog = WebSocketDialog::checkDialog($dialog_id);
             //
             $action = $replyId > 0 ? "reply-$replyId" : "";
@@ -602,9 +602,9 @@ class WebSocketDialog extends AbstractModel
                     "path" => $path,
                     "fileName" => $fileName,
                 ]);
-            }else if($filePath){
+            } else if ($filePath) {
                 Base::makeDir(public_path($path));
-                copy($filePath, public_path($path).basename($filePath));
+                copy($filePath, public_path($path) . basename($filePath));
             } else {
                 $data = Base::upload([
                     "file" => $files,

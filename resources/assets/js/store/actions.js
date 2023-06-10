@@ -245,6 +245,14 @@ export default {
             }
             params.error = (xhr, status) => {
                 const networkException = window.navigator.onLine === false || (status === 0 && xhr.readyState === 4)
+                if (networkException && cloneParams.__networkFailureRetry !== true) {
+                    // 网络异常，重试一次
+                    setTimeout(_ => {
+                        cloneParams.__networkFailureRetry = true
+                        dispatch("call", cloneParams).then(resolve).catch(reject)
+                    }, 300)
+                    return
+                }
                 if (params.checkNetwork !== false) {
                     state.ajaxNetworkException = networkException
                 }
@@ -557,22 +565,18 @@ export default {
             state.userToken = userInfo.token;
             state.userIsAdmin = $A.inArray('admin', userInfo.identity);
             await $A.IDBSet("userInfo", state.userInfo);
-
-            // 
+            //
             $A.eeuiAppSendMessage({
                 action: 'userChatList',
                 token: state.userToken,
                 url: $A.apiUrl('../api/users/share/list') + `?token=${state.userToken}`
             });
-
-            // 
             $A.eeuiAppSendMessage({
                 action:"userUploadUrl",
                 token: state.userToken,
                 dirUrl: $A.apiUrl('../api/file/content/upload') + `?token=${state.userToken}`,
                 chatUrl: $A.apiUrl('../api/dialog/msg/sendfiles') + `?token=${state.userToken}`,
             });
-
             //
             dispatch("getBasicData", null);
             if (state.userId > 0) {
@@ -1320,6 +1324,9 @@ export default {
             }
             //
             state.cacheDialogs.some(dialog => {
+                if (dialog.name === undefined || dialog.dialog_delete === 1) {
+                    return false;
+                }
                 if (dialog.type == 'group' && dialog.group_type == 'task' && dialog.group_info.id == data.id) {
                     if (data.name !== undefined) {
                         dialog.name = data.name

@@ -797,9 +797,9 @@ export default {
         departmentParentDisabled() {
             return !!(this.departmentData.id > 0 && this.departmentList.find(({parent_id}) => parent_id == this.departmentData.id));
         },
-        userStyle({minWidth}) {
+        userStyle({minWidth, windowPortrait}) {
             const style = {}
-            if (minWidth > 0) {
+            if (minWidth > 0 && windowPortrait) {
                 style.minWidth = (minWidth - 40) + 'px'
             }
             return style

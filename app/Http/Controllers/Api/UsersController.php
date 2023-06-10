@@ -63,7 +63,7 @@ class UsersController extends AbstractController
         $password = trim(Request::input('password'));
         $isRegVerify = Base::settingFind('emailSetting', 'reg_verify') === 'open';
         if ($type == 'reg') {
-            if( mb_strlen($email) > 32 || mb_strlen($password) > 32){
+            if (mb_strlen($email) > 32 || mb_strlen($password) > 32) {
                 return Base::retError('账号密码最多可输入32位字符');
             }
             $setting = Base::setting('system');
@@ -81,7 +81,7 @@ class UsersController extends AbstractController
                 return Base::retError('注册成功，请验证邮箱后登录', ['code' => 'email']);
             }
         } else {
-            if( mb_strlen($email) > 32 || mb_strlen($password) > 32){
+            if (mb_strlen($email) > 32 || mb_strlen($password) > 32) {
                 return Base::retError('帐号或密码错误');
             }
             $needCode = !Base::isError(User::needCode($email));
@@ -1806,7 +1806,7 @@ class UsersController extends AbstractController
      * @api {get} api/users/share/list          31. 获取分享列表
      *
      * @apiVersion 1.0.0
-     * @apiGroup system
+     * @apiGroup users
      * @apiName share__list
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）

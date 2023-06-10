@@ -2,11 +2,12 @@ body {
     overflow: hidden;
 
     &.touch-back {
+        .scrollbar-container .scrollbar-content,
         .dialog-wrapper .vue-recycle-scroller.direction-vertical:not(.page-mode),
+        .dialog-wrapper .dialog-scroller.scrollbar-virtual,
         .common-gantt .gantt-left .gantt-item,
         .project-panel .project-column,
         .project-panel .project-table,
-        .scrollbar-overlay,
         .ivu-modal-wrap {
             overflow: hidden;
         }

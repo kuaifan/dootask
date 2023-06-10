@@ -305,7 +305,7 @@
 
     .chat-emoji-wrapper {
         .chat-emoji-box {
-            > ul {
+            ul {
                 width: auto;
                 padding: 8px 2px;
                 &::after {
@@ -414,7 +414,7 @@
         display: flex;
         flex-direction: column;
         height: 280px;
-        > ul {
+        ul {
             flex: 1;
             width: 360px;
             height: 0;
@@ -423,7 +423,6 @@
             grid-template-columns: repeat(auto-fill, 40px);
             padding: 8px;
             flex-wrap: wrap;
-            overflow-x: hidden;
             word-break: break-all;
             box-sizing: content-box;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
@@ -603,6 +602,52 @@
     &.cancel {
         background-color: #ff6565;
         color: #ffffff;
+    }
+}
+
+.chat-input-full-input {
+    .ivu-modal {
+        .ivu-modal-content {
+            margin-top: 46px;
+            border-top-left-radius: 18px !important;
+            border-top-right-radius: 18px !important;
+            .ivu-modal-body {
+                overflow: visible;
+                padding: 24px !important;
+            }
+            .ivu-modal-close {
+                > i {
+                    top: 3px;
+                    right: 2px;
+                    font-size: 24px;
+                    width: 34px;
+                    height: 34px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background-color: #ffffff;
+                    border-radius: 50%;
+                    color: #999;
+                }
+            }
+        }
+    }
+
+    .chat-input-box {
+        height: 100%;
+
+        .chat-input-wrapper {
+            height: 100%;
+
+            .ql-container {
+                height: 100%;
+                width: 100%;
+
+                .ql-editor {
+                    max-height: none;
+                }
+            }
+        }
     }
 }
 
@@ -809,7 +854,7 @@ body.window-portrait {
             background-color: #ffffff;
             .chat-emoji-box {
                 height: 246px;
-                > ul {
+                ul {
                     grid-template-columns: repeat(auto-fill, 50px);
                     > li {
                         width: 50px;

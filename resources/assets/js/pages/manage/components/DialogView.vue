@@ -107,18 +107,22 @@
                     popper-class="dialog-wrapper-read-poptip"
                     :placement="isRightMsg ? 'bottom-end' : 'bottom-start'">
                     <div class="read-poptip-content">
-                        <ul class="read scrollbar-overlay">
-                            <li class="read-title"><em>{{ todoDoneList.length }}</em>{{ $L('完成') }}</li>
-                            <li v-for="item in todoDoneList">
-                                <UserAvatar :userid="item.userid" :size="26" showName tooltipDisabled/>
-                            </li>
-                        </ul>
-                        <ul class="unread scrollbar-overlay">
-                            <li class="read-title"><em>{{ todoUndoneList.length }}</em>{{ $L('待办') }}</li>
-                            <li v-for="item in todoUndoneList">
-                                <UserAvatar :userid="item.userid" :size="26" showName tooltipDisabled/>
-                            </li>
-                        </ul>
+                        <Scrollbar class-name="read">
+                            <div class="read-title"><em>{{ todoDoneList.length }}</em>{{ $L('完成') }}</div>
+                            <ul>
+                                <li v-for="item in todoDoneList">
+                                    <UserAvatar :userid="item.userid" :size="26" showName tooltipDisabled/>
+                                </li>
+                            </ul>
+                        </Scrollbar>
+                        <Scrollbar class-name="unread">
+                            <div class="read-title"><em>{{ todoUndoneList.length }}</em>{{ $L('待办') }}</div>
+                            <ul>
+                                <li v-for="item in todoUndoneList">
+                                    <UserAvatar :userid="item.userid" :size="26" showName tooltipDisabled/>
+                                </li>
+                            </ul>
+                        </Scrollbar>
                     </div>
                     <div slot="reference" class="popover-reference"></div>
                 </EPopover>
@@ -147,18 +151,22 @@
                             popper-class="dialog-wrapper-read-poptip"
                             :placement="isRightMsg ? 'bottom-end' : 'bottom-start'">
                             <div class="read-poptip-content">
-                                <ul class="read scrollbar-overlay">
-                                    <li class="read-title"><em>{{ readList.length }}</em>{{ $L('已读') }}</li>
-                                    <li v-for="item in readList">
-                                        <UserAvatar :userid="item.userid" :size="26" showName tooltipDisabled/>
-                                    </li>
-                                </ul>
-                                <ul class="unread scrollbar-overlay">
-                                    <li class="read-title"><em>{{ unreadList.length }}</em>{{ $L('未读') }}</li>
-                                    <li v-for="item in unreadList">
-                                        <UserAvatar :userid="item.userid" :size="26" showName tooltipDisabled/>
-                                    </li>
-                                </ul>
+                                <Scrollbar class-name="read">
+                                    <div class="read-title"><em>{{ readList.length }}</em>{{ $L('已读') }}</div>
+                                    <ul>
+                                        <li v-for="item in readList">
+                                            <UserAvatar :userid="item.userid" :size="26" showName tooltipDisabled/>
+                                        </li>
+                                    </ul>
+                                </Scrollbar>
+                                <Scrollbar class-name="unread">
+                                    <div class="read-title"><em>{{ unreadList.length }}</em>{{ $L('未读') }}</div>
+                                    <ul>
+                                        <li v-for="item in unreadList">
+                                            <UserAvatar :userid="item.userid" :size="26" showName tooltipDisabled/>
+                                        </li>
+                                    </ul>
+                                </Scrollbar>
                             </div>
                             <div slot="reference" class="popover-reference"></div>
                         </EPopover>

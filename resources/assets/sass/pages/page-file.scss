@@ -753,3 +753,15 @@ body.window-portrait {
         }
     }
 }
+
+body.window-touch {
+    .page-file {
+        .file-wrapper {
+            .file-drag {
+                .file-list {
+                    user-select: none;
+                }
+            }
+        }
+    }
+}
