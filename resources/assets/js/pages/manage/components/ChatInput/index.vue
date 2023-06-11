@@ -1188,7 +1188,9 @@ export default {
 
         onFullBeforeClose() {
             return new Promise(resolve => {
-                this.$refs.editor.firstChild.innerHTML = this.$refs.editorFull.firstChild.innerHTML
+                if (this.$refs.editorFull?.firstChild) {
+                    this.$refs.editor.firstChild.innerHTML = this.$refs.editorFull.firstChild.innerHTML
+                }
                 resolve()
             })
         },

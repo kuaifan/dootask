@@ -1816,64 +1816,58 @@ class UsersController extends AbstractController
     public function share__list()
     {
         $user = User::auth();
-        $pid = intval(Request::input('pid',-1));
-        $uploadFileId = intval(Request::input('upload_file_id',-1));
+        $pid = intval(Request::input('pid', -1));
+        $uploadFileId = intval(Request::input('upload_file_id', -1));
         // 上传文件
-        if($uploadFileId !== -1){
-            if($pid==-1) $pid = 0;
+        if ($uploadFileId !== -1) {
+            if ($pid == -1) $pid = 0;
             $webkitRelativePath = Request::input('webkitRelativePath');
-            $data = (new File)->contentUpload($user,$pid,$webkitRelativePath);
+            $data = (new File)->contentUpload($user, $pid, $webkitRelativePath);
             return Base::retSuccess('success', $data);
         }
         // 获取数据
         $lists = [];
         if ($pid !== -1) {
-            $fileList = (new File)->getFileList($user,$pid,'dir',false);
-            foreach($fileList as $file){
-                if($file['id'] != $pid){
+            $fileList = (new File)->getFileList($user, $pid, 'dir', false);
+            foreach ($fileList as $file) {
+                if ($file['id'] != $pid) {
                     $lists[] = [
-                        'type'   => 'children',
-                        'url'    => Base::fillUrl("api/users/share/list") . "?pid=" . $file['id'], 
-                        'icon'   => $file['share'] == 1 ? url("/images/file/light/folder-share.png") : url("/images/file/light/folder.png"),
-                        'extend' => ['upload_file_id'=>$file['id']],
-                        'name'   => $file['name'],
+                        'type' => 'children',
+                        'url' => Base::fillUrl("api/users/share/list") . "?pid=" . $file['id'],
+                        'icon' => $file['share'] == 1 ? url("images/file/light/folder-share.png") : url("images/file/light/folder.png"),
+                        'extend' => ['upload_file_id' => $file['id']],
+                        'name' => $file['name'],
                     ];
                 }
             }
-        
-        }else{
+
+        } else {
             $lists[] = [
-                'type'   => 'children',
-                'url'    => Base::fillUrl("api/users/share/list")."?pid=0", 
-                'icon'   => url("/images/file/light/folder.png"),
-                'extend' => ['upload_file_id'=>0],
-                'name'   => '全部文件',
+                'type' => 'children',
+                'url' => Base::fillUrl("api/users/share/list") . "?pid=0",
+                'icon' => url("images/file/light/folder.png"),
+                'extend' => ['upload_file_id' => 0],
+                'name' => Doo::translate('文件'),
             ];
             $dialogList = (new WebSocketDialog)->getDialogList($user->userid);
-            foreach($dialogList['data'] as $dialog){
-                if($dialog['type'] == 'user'){
+            foreach ($dialogList['data'] as $dialog) {
+                if ($dialog['avatar']) {
+                    $avatar = url($dialog['avatar']);
+                } else if ($dialog['type'] == 'user') {
                     $avatar = User::getAvatar($dialog['dialog_user']['userid'], $dialog['userimg'], $dialog['email'], $dialog['name']);
-                }else{
-                    switch ( $dialog['group_type'] ) {
-                        case 'department':
-                            $avatar = url("images/avatar/default_department.png");
-                            break;
-                        case 'project':
-                            $avatar = url("images/avatar/default_project.png");
-                            break;
-                        case 'task':
-                            $avatar = url("images/avatar/default_task.png");
-                            break;
-                        default:
-                            $avatar = url("images/avatar/default_people.png");
-                            break;
-                    }
+                } else {
+                    $avatar = match ($dialog['group_type']) {
+                        'department' => url("images/avatar/default_group_department.png"),
+                        'project' => url("images/avatar/default_group_project.png"),
+                        'task' => url("images/avatar/default_group_task.png"),
+                        default => url("images/avatar/default_group_people.png"),
+                    };
                 }
                 $lists[] = [
-                    'type'   => 'item',
-                    'name'   => $dialog['name'],
-                    'icon'   => $avatar,
-                    'url'    => Base::fillUrl("api/dialog/msg/sendfiles"), 
+                    'type' => 'item',
+                    'name' => $dialog['name'],
+                    'icon' => $avatar,
+                    'url' => Base::fillUrl("api/dialog/msg/sendfiles"),
                     'extend' => ['dialog_ids' => $dialog['id']]
                 ];
             }
