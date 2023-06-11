@@ -2,11 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.27.22]
+
+### Performance
+
+- 优化富文本输入框
+- 修改开发依赖
+
 ## [0.27.10]
 
 ### Bug Fixes
 
+- 更换图片为png
 - 打开任务出现空白错误的概率
+- 去除没应用的导入
+- 更该文件类型都为 children
+- 分享接口修改
+- 修改分享逻辑
 - Safari 消息输入框焦点溢出的情况
 - 已知bug
 
