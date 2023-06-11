@@ -148,32 +148,24 @@
                 uploadIng: 0,
                 uploadFormat: ['jpg', 'jpeg', 'webp', 'png', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'esp', 'pdf', 'rar', 'zip', 'gz', 'ai', 'avi', 'bmp', 'cdr', 'eps', 'mov', 'mp3', 'mp4', 'pr', 'psd', 'svg', 'tif'],
                 actionUrl: $A.apiUrl('system/fileupload'),
-                maxSize: 10240
+                maxSize: 10240,
+
+                timer: null,
             };
         },
         mounted() {
             this.content = this.value;
             this.init();
         },
-        beforeDestroy() {
-            if (this.editor !== null) {
-                this.editor.destroy()
-                this.editor = null
-            }
-            this.spinShow = true;
-            $A(this.$refs.myTextarea).show();
-        },
         activated() {
             this.content = this.value;
             this.init();
         },
         deactivated() {
-            if (this.editor !== null) {
-                this.editor.destroy()
-                this.editor = null
-            }
-            this.spinShow = true;
-            $A(this.$refs.myTextarea).show();
+            this.destroy();
+        },
+        destroyed() {
+            this.destroy();
         },
         computed: {
             ...mapState(['themeIsDark']),
@@ -206,6 +198,7 @@
         },
         methods: {
             init() {
+                this.timer && clearTimeout(this.timer);
                 this.$nextTick(() => {
                     tinymce.init(this.concatAssciativeArrays(this.option(false), this.options));
                 });
@@ -215,6 +208,22 @@
                 this.$nextTick(() => {
                     tinymce.init(this.concatAssciativeArrays(this.option(true), this.optionFull));
                 });
+            },
+
+            destroy() {
+                this.timer && clearTimeout(this.timer);
+                this.timer = setTimeout(_ => {
+                    if (this.editor !== null) {
+                        this.editor.destroy()
+                        this.editor = null
+                    }
+                    if (this.editorT !== null) {
+                        this.editorT.destroy();
+                        this.editorT = null;
+                    }
+                    this.spinShow = true;
+                    $A(this.$refs.myTextarea).show();
+                }, 500);
             },
 
             plugin(isFull) {

@@ -93,13 +93,13 @@
                             <i class="taskfont">&#xe7c0;</i>
                             {{$L('上传文件')}}
                         </div>
-                        <div class="chat-input-popover-item" @click="onToolbar('full')">
-                            <i class="taskfont">&#xe6a7;</i>
-                            {{$L('全屏输入')}}
-                        </div>
                         <div v-if="canAnon" class="chat-input-popover-item" @click="onToolbar('anon')">
                             <i class="taskfont">&#xe690;</i>
                             {{$L('匿名消息')}}
+                        </div>
+                        <div class="chat-input-popover-item" @click="onToolbar('full')">
+                            <i class="taskfont">&#xe6a7;</i>
+                            {{$L('全屏输入')}}
                         </div>
                     </EPopover>
                 </li>
@@ -628,6 +628,10 @@ export default {
 
         wrapperHeight(newVal, oldVal) {
             this.$emit('on-height-change', {newVal, oldVal})
+        },
+
+        fullInput(val) {
+            this.quill?.enable(!val)
         }
     },
     methods: {
@@ -1174,6 +1178,10 @@ export default {
                     }, this.options))
                     this.fullQuill.enable(true)
                     this.$refs.editorFull.firstChild.innerHTML = this.$refs.editor.firstChild.innerHTML
+                    this.$nextTick(_ => {
+                        this.fullQuill.setSelection(this.fullQuill.getLength())
+                        this.fullQuill.focus()
+                    })
                 })
             }
         },

@@ -74,7 +74,7 @@
         </div>
         <div class="project-subbox">
             <div class="project-subtitle" @click="showDesc">
-                <MarkdownPreviewNostyle :initialValue="projectData.desc"/>
+                <MarkdownPreviewNostyle ref="descPreview" :initialValue="projectData.desc"/>
             </div>
             <div class="project-switch">
                 <div v-if="completedCount > 0" class="project-checkbox">
@@ -897,7 +897,7 @@ export default {
             $A.modalInfo({
                 language: false,
                 title: this.$L('项目描述'),
-                content: this.projectData.desc
+                content: this.$refs.descPreview.$el.innerHTML
             })
         },
 
