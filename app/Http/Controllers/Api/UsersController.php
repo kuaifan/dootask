@@ -1851,7 +1851,9 @@ class UsersController extends AbstractController
             ];
             $dialogList = (new WebSocketDialog)->getDialogList($user->userid);
             foreach($dialogList['data'] as $dialog){
-                if($dialog['type'] == 'user'){
+                if($dialog['avatar']){
+                    $avatar = url($dialog['avatar']);
+                }else if($dialog['type'] == 'user'){
                     $avatar = User::getAvatar($dialog['dialog_user']['userid'], $dialog['userimg'], $dialog['email'], $dialog['name']);
                 }else{
                     switch ( $dialog['group_type'] ) {
