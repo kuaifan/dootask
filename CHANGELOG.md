@@ -2,14 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.27.22]
-
-### Performance
-
-- 优化富文本输入框
-- 修改开发依赖
-
-## [0.27.10]
+## [0.27.26]
 
 ### Bug Fixes
 
@@ -24,6 +17,8 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
+- 优化富文本输入框
+- 修改开发依赖
 - 网络异常自动重试
 - 触屏设备实体键盘回车发送
 - 消息输入框支持全屏输入

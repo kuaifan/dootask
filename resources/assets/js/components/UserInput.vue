@@ -17,6 +17,8 @@
             @on-open-change="openChange"
             multiple
             filterable
+            search-in-option
+            :search-placeholder="$L('输入关键词搜索')"
             transfer-class-name="common-user-transfer">
             <div v-if="multipleMax" slot="drop-prepend" class="user-drop-prepend">
                 <div class="user-drop-text">
