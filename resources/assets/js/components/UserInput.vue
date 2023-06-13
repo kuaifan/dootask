@@ -17,14 +17,11 @@
             @on-open-change="openChange"
             multiple
             filterable
-            search-in-option
+            :search-in-option="windowTouch"
             :search-placeholder="$L('输入关键词搜索')"
             transfer-class-name="common-user-transfer">
             <div v-if="multipleMax" slot="drop-prepend" class="user-drop-prepend">
-                <div class="user-drop-text">
-                    {{$L('最多只能选择' + multipleMax + '个')}}
-                    <em v-if="selects.length">({{$L(`已选${selects.length}个`)}})</em>
-                </div>
+                <div class="user-drop-text">{{selects.length}} / {{multipleMax}}</div>
                 <Checkbox class="user-drop-check" v-model="multipleCheck" @on-change="onMultipleChange"></Checkbox>
             </div>
             <slot name="option-prepend"></slot>
