@@ -30,11 +30,7 @@
         </FormItem>
         <FormItem :label="$L('汇报对象')">
             <div class="report-users">
-                <UserInput
-                    v-model="reportData.receive"
-                    :disabledChoice="[userId]"
-                    :placeholder="$L('选择接收人')"
-                    :transfer="false"/>
+                <UserSelect v-model="reportData.receive" :disabledChoice="[userId]" :title="$L('选择接收人')"/>
                 <a class="report-user-link" href="javascript:void(0);" @click="getLastSubmitter">
                     <Icon v-if="receiveLoad > 0" type="ios-loading" class="icon-loading"/>
                     <Icon v-else type="ios-share-outline" />
@@ -52,14 +48,14 @@
 </template>
 
 <script>
-import UserInput from "../../../components/UserInput"
-import {mapState} from "vuex";
+import UserSelect from "../../../components/UserSelect.vue";
 
 const TEditor = () => import('../../../components/TEditor');
 export default {
     name: "ReportEdit",
     components: {
-        TEditor, UserInput
+        UserSelect,
+        TEditor
     },
     props: {
         id: {

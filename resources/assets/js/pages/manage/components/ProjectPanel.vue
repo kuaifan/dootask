@@ -349,7 +349,7 @@
             :mask-closable="false">
             <Form :model="userData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="userids" :label="$L('项目成员')">
-                    <UserInput v-model="userData.userids" :uncancelable="userData.uncancelable" :multiple-max="100" :placeholder="$L('选择项目成员')"/>
+                    <UserSelect v-model="userData.userids" :uncancelable="userData.uncancelable" :multiple-max="100" :title="$L('选择项目成员')"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -414,8 +414,8 @@
             :title="$L('移交项目')"
             :mask-closable="false">
             <Form :model="transferData" label-width="auto" @submit.native.prevent>
-                <FormItem prop="owner_userid" :label="$L('项目负责人')">
-                    <UserInput v-model="transferData.owner_userid" :multiple-max="1" max-hidden-select :placeholder="$L('选择项目负责人')"/>
+                <FormItem prop="owner_userid" :label="$L('新项目负责人')">
+                    <UserSelect v-model="transferData.owner_userid" :multiple-max="1" :title="$L('选择项目负责人')"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -464,7 +464,6 @@ import Draggable from 'vuedraggable'
 import TaskPriority from "./TaskPriority";
 import {mapGetters, mapState} from "vuex";
 import {Store} from 'le5le-store';
-import UserInput from "../../../components/UserInput";
 import TaskAddSimple from "./TaskAddSimple";
 import TaskRow from "./TaskRow";
 import TaskArchived from "./TaskArchived";
@@ -475,15 +474,17 @@ import TaskMenu from "./TaskMenu";
 import TaskDeleted from "./TaskDeleted";
 import ProjectGantt from "./ProjectGantt";
 import MarkdownPreviewNostyle from "../../../components/MDEditor/components/preview/nostyle.vue";
+import UserSelect from "../../../components/UserSelect.vue";
 
 export default {
     name: "ProjectPanel",
     components: {
+        UserSelect,
         MarkdownPreviewNostyle,
         TaskMenu,
         ProjectWorkflow,
         DrawerOverlay,
-        ProjectLog, TaskArchived, TaskRow, Draggable, TaskAddSimple, UserInput, TaskPriority, TaskDeleted, ProjectGantt},
+        ProjectLog, TaskArchived, TaskRow, Draggable, TaskAddSimple, TaskPriority, TaskDeleted, ProjectGantt},
     data() {
         return {
             loading: false,
@@ -1265,7 +1266,7 @@ export default {
                     break;
 
                 case "transfer":
-                    this.$set(this.transferData, 'owner_userid', [this.projectData.owner_userid]);
+                    this.$set(this.transferData, 'owner_userid', []);
                     this.transferShow = true;
                     break;
 

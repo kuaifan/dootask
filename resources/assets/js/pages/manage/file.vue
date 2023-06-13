@@ -278,19 +278,19 @@
             footer-hide>
             <Form class="page-file-share-form" :model="shareInfo" @submit.native.prevent inline>
                 <FormItem prop="userids" class="share-userid">
-                    <UserInput
+                    <RadioGroup v-model="shareInfo.type">
+                        <Radio label="all">{{$L('所有人')}}</Radio>
+                        <Radio label="custom">{{$L('指定成员')}}</Radio>
+                    </RadioGroup>
+                    <UserSelect
+                        v-if="shareInfo.type === 'custom'"
                         v-model="shareInfo.userids"
                         :disabledChoice="shareAlready"
                         :multiple-max="100"
-                        :placeholder="$L('选择共享成员')">
-                        <Option slot="option-prepend" :value="0" :label="$L('所有人')" :disabled="shareAlready.includes(0)">
-                            <div class="user-input-option">
-                                <div class="user-input-avatar"><EAvatar class="avatar" icon="el-icon-s-custom"/></div>
-                                <div class="user-input-nickname">{{ $L('所有人') }}</div>
-                                <div class="user-input-userid">All</div>
-                            </div>
-                        </Option>
-                    </UserInput>
+                        :placeholder="$L('选择共享成员')"
+                        :avatar-size="24"
+                        border>
+                    </UserSelect>
                 </FormItem>
                 <FormItem>
                     <Select v-model="shareInfo.permission" :placeholder="$L('权限')">
@@ -302,7 +302,7 @@
                     <Button type="primary" :loading="shareLoad > 0" @click="onShare">{{$L('共享')}}</Button>
                 </FormItem>
             </Form>
-            <div v-if="shareList.length > 0">
+            <div v-if="shareList.length > 0" class="page-file-share-items">
                 <div class="page-file-share-title">{{ $L('已共享成员') }}:</div>
                 <ul class="page-file-share-list">
                     <li v-for="item in shareList">
@@ -398,18 +398,18 @@
 <script>
 import {mapState} from "vuex";
 import {sortBy} from "lodash";
-import UserInput from "../../components/UserInput";
 import DrawerOverlay from "../../components/DrawerOverlay";
 import PreviewImage from "../../components/PreviewImage";
 import longpress from "../../directives/longpress";
 import DialogSelect from "./components/DialogSelect";
+import UserSelect from "../../components/UserSelect.vue";
 
 const FilePreview = () => import('./components/FilePreview');
 const FileContent = () => import('./components/FileContent');
 const FileObject = {sort: null, mode: null, shared: null};
 
 export default {
-    components: {DialogSelect, PreviewImage, FilePreview, DrawerOverlay, UserInput, FileContent},
+    components: {UserSelect, DialogSelect, PreviewImage, FilePreview, DrawerOverlay, FileContent},
     directives: {longpress},
     data() {
         return {
@@ -473,7 +473,7 @@ export default {
             columns: [],
 
             shareShow: false,
-            shareInfo: {id: 0, userid: 0, permission: 1},
+            shareInfo: {id: 0, type: 'all', userid: 0, permission: 1},
             shareList: [],
             shareLoad: 0,
 
@@ -1208,6 +1208,7 @@ export default {
                 case 'share':
                     this.shareInfo = {
                         id: item.id,
+                        type: 'all',
                         userid: item.userid,
                         permission: 1,
                     };
@@ -1538,6 +1539,9 @@ export default {
         },
 
         onShare(force = false) {
+            if (this.shareInfo.type === 'all') {
+                this.shareInfo.userids = [0];
+            }
             if (this.shareInfo.userids.length == 0) {
                 $A.messageWarning("请选择共享成员")
                 return;

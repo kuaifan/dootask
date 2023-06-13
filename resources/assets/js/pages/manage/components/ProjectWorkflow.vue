@@ -151,7 +151,7 @@
             :mask-closable="false">
             <Form :model="userData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="userids" :label="$L('状态负责人')">
-                    <UserInput v-model="userData.userids" :project-id="projectId" :multiple-max="5" :placeholder="$L('选择状态负责人')"/>
+                    <UserSelect v-model="userData.userids" :project-id="projectId" :multiple-max="5" :title="$L('选择状态负责人')"/>
                 </FormItem>
                 <FormItem prop="usertype" :label="$L('流转模式')">
                     <RadioGroup v-model="userData.usertype">
@@ -179,12 +179,11 @@
 
 <script>
 import Draggable from "vuedraggable";
-import UserInput from "../../../components/UserInput";
-import {mapState} from "vuex";
+import UserSelect from "../../../components/UserSelect.vue";
 
 export default {
     name: "ProjectWorkflow",
-    components: {UserInput, Draggable},
+    components: {UserSelect, Draggable},
     props: {
         projectId: {
             type: Number,

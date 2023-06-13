@@ -41,33 +41,15 @@
             </div>
             <Icon v-else class="clock" type="ios-clock-outline" @click="openTime" />
         </DatePicker>
-        <Poptip
-            ref="owner"
+        <UserSelect
             class="subtask-avatar"
-            popper-class="task-detail-user-popper"
+            v-model="ownerData.owner_userid"
+            :multiple-max="10"
+            :avatar-size="20"
             :title="$L('修改负责人')"
-            :width="240"
-            placement="bottom"
-            @on-popper-show="openOwner"
-            @on-ok="onOwner"
-            transfer>
-            <div slot="content">
-                <UserInput
-                    v-model="ownerData.owner_userid"
-                    :multiple-max="10"
-                    :project-id="taskDetail.project_id"
-                    :placeholder="$L('选择任务负责人')"
-                    :transfer="false"
-                    max-hidden-select/>
-                <div class="task-detail-avatar-buttons">
-                    <Button size="small" type="primary" @click="$refs.owner.ok()">{{$L('确定')}}</Button>
-                </div>
-            </div>
-            <template v-if="getOwner.length > 0">
-                <UserAvatar v-for="item in getOwner" :key="item.userid" :userid="item.userid" :size="20" tooltipDisabled/>
-            </template>
-            <div v-else>--</div>
-        </Poptip>
+            :add-icon="false"
+            :project-id="taskDetail.project_id"
+            :before-submit="onOwner"/>
     </li>
     <!--主任务-->
     <div
@@ -191,63 +173,29 @@
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe6e4;</i>{{$L('负责人')}}
                         </div>
-                        <Poptip
-                            ref="owner"
-                            :title="$L('修改负责人')"
-                            :width="240"
+                        <UserSelect
                             class="item-content user"
-                            popper-class="task-detail-user-popper"
-                            placement="bottom"
-                            @on-popper-show="openOwner"
-                            @on-ok="onOwner"
-                            transfer>
-                            <div slot="content">
-                                <UserInput
-                                    v-model="ownerData.owner_userid"
-                                    :multiple-max="10"
-                                    :project-id="taskDetail.project_id"
-                                    :placeholder="$L('选择任务负责人')"
-                                    :transfer="false"/>
-                                <div class="task-detail-avatar-buttons">
-                                    <Button size="small" type="primary" @click="$refs.owner.ok()">{{$L('确定')}}</Button>
-                                </div>
-                            </div>
-                            <div class="user-list">
-                                <UserAvatar v-for="item in getOwner" :key="item.userid" :userid="item.userid" :size="28" :showName="getOwner.length === 1" tooltipDisabled/>
-                            </div>
-                        </Poptip>
+                            v-model="ownerData.owner_userid"
+                            :multiple-max="10"
+                            :avatar-size="28"
+                            :title="$L('修改负责人')"
+                            :project-id="taskDetail.project_id"
+                            :before-submit="onOwner"/>
                     </FormItem>
                     <FormItem v-if="getAssist.length > 0 || assistForce">
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe63f;</i>{{$L('协助人员')}}
                         </div>
-                        <Poptip
+                        <UserSelect
                             ref="assist"
-                            :title="$L(getAssist.length > 0 ? '修改协助人员' : '添加协助人员')"
-                            :width="280"
                             class="item-content user"
-                            popper-class="task-detail-user-popper"
-                            placement="bottom"
-                            @on-popper-show="openAssist"
-                            @on-ok="onAssist"
-                            transfer>
-                            <div slot="content">
-                                <UserInput
-                                    v-model="assistData.assist_userid"
-                                    :multiple-max="10"
-                                    :project-id="taskDetail.project_id"
-                                    :disabled-choice="assistData.disabled"
-                                    :placeholder="$L('选择任务协助人员')"
-                                    :transfer="false"/>
-                                <div class="task-detail-avatar-buttons">
-                                    <Button size="small" type="primary" @click="$refs.assist.ok()">{{$L('确定')}}</Button>
-                                </div>
-                            </div>
-                            <div v-if="getAssist.length > 0" class="user-list">
-                                <UserAvatar v-for="item in getAssist" :key="item.userid" :userid="item.userid" :size="28" :showName="getAssist.length === 1" tooltipDisabled/>
-                            </div>
-                            <div v-else>--</div>
-                        </Poptip>
+                            v-model="assistData.assist_userid"
+                            :multiple-max="10"
+                            :avatar-size="28"
+                            :title="$L(getAssist.length > 0 ? '修改协助人员' : '添加协助人员')"
+                            :project-id="taskDetail.project_id"
+                            :disabled-choice="assistData.disabled"
+                            :before-submit="onAssist"/>
                     </FormItem>
                     <FormItem v-if="taskDetail.end_at || timeForce">
                         <div class="item-label" slot="label">
@@ -460,17 +408,19 @@
 import {mapState} from "vuex";
 import TEditor from "../../../components/TEditor";
 import TaskPriority from "./TaskPriority";
-import UserInput from "../../../components/UserInput";
 import TaskUpload from "./TaskUpload";
 import DialogWrapper from "./DialogWrapper";
 import ProjectLog from "./ProjectLog";
 import {Store} from "le5le-store";
 import TaskMenu from "./TaskMenu";
 import ChatInput from "./ChatInput";
+import UserSelect from "../../../components/UserSelect.vue";
 
 export default {
     name: "TaskDetail",
-    components: {ChatInput, TaskMenu, ProjectLog, DialogWrapper, TaskUpload, UserInput, TaskPriority, TEditor},
+    components: {
+        UserSelect,
+        ChatInput, TaskMenu, ProjectLog, DialogWrapper, TaskUpload, TaskPriority, TEditor},
     props: {
         taskId: {
             type: Number,
@@ -819,10 +769,25 @@ export default {
                     this.assistForce = false;
                     this.addsubForce = false;
                     this.receiveShow = false;
-                    this.$refs.owner && this.$refs.owner.handleClose();
-                    this.$refs.assist && this.$refs.assist.handleClose();
                     this.$refs.chatInput && this.$refs.chatInput.hidePopover();
                 }
+            },
+            immediate: true
+        },
+        getOwner: {
+            handler(arr) {
+                const list = arr.map(({userid}) => userid)
+                this.$set(this.taskDetail, 'owner_userid', list)
+                this.$set(this.ownerData, 'owner_userid', list)
+                this.$set(this.assistData, 'disabled', arr.map(({userid}) => userid).filter(userid => userid != this.userId))
+            },
+            immediate: true
+        },
+        getAssist: {
+            handler(arr) {
+                const list = arr.map(({userid}) => userid)
+                this.$set(this.taskDetail, 'assist_userid', list)
+                this.$set(this.assistData, 'assist_userid', list);
             },
             immediate: true
         },
@@ -1026,12 +991,6 @@ export default {
             });
         },
 
-        openOwner() {
-            const list = this.getOwner.map(({userid}) => userid)
-            this.$set(this.taskDetail, 'owner_userid', list)
-            this.$set(this.ownerData, 'owner_userid', list)
-        },
-
         onOwner(pick) {
             let data = {
                 task_id: this.taskDetail.id,
@@ -1059,60 +1018,68 @@ export default {
             if ($A.jsonStringify(this.taskDetail.owner_userid) === $A.jsonStringify(this.ownerData.owner_userid)) {
                 return;
             }
+            if ($A.count(data.owner) == 0) {
+                data.owner = '';
+            }
             //
-            if ($A.count(data.owner) == 0) data.owner = '';
             this.ownerLoad++;
-            this.$store.dispatch("taskUpdate", data).then(({msg}) => {
-                $A.messageSuccess(msg);
-                this.ownerLoad--;
-                this.receiveShow = false;
-                this.$store.dispatch("getTaskOne", this.taskDetail.id).catch(() => {})
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-                this.ownerLoad--;
-                this.receiveShow = false;
+            return new Promise((resolve, reject) => {
+                this.$store.dispatch("taskUpdate", data).then(({msg}) => {
+                    $A.messageSuccess(msg);
+                    this.ownerLoad--;
+                    this.receiveShow = false;
+                    this.$store.dispatch("getTaskOne", this.taskDetail.id).catch(() => {})
+                    resolve()
+                }).catch(({msg}) => {
+                    $A.modalError(msg);
+                    this.ownerLoad--;
+                    this.receiveShow = false;
+                    reject()
+                })
             })
-        },
-
-        openAssist() {
-            const list = this.getAssist.map(({userid}) => userid)
-            this.$set(this.taskDetail, 'assist_userid', list)
-            this.$set(this.assistData, 'assist_userid', list);
-            this.$set(this.assistData, 'disabled', this.getOwner.map(({userid}) => userid).filter(userid => userid != this.userId))
         },
 
         onAssist() {
             if ($A.jsonStringify(this.taskDetail.assist_userid) === $A.jsonStringify(this.assistData.assist_userid)) {
                 return;
             }
-            if (this.getOwner.find(({userid}) => userid === this.userId) && this.assistData.assist_userid.find(userid => userid === this.userId)) {
-                $A.modalConfirm({
-                    content: '你当前是负责人，确定要转为协助人员吗？',
-                    cancelText: '取消',
-                    okText: '确定',
-                    onOk: () => {
-                        this.onAssistConfirm()
-                    }
-                })
-                return
-            }
-            this.onAssistConfirm()
+            return new Promise((resolve, reject) => {
+                if (this.getOwner.find(({userid}) => userid === this.userId) && this.assistData.assist_userid.find(userid => userid === this.userId)) {
+                    $A.modalConfirm({
+                        content: '你当前是负责人，确定要转为协助人员吗？',
+                        cancelText: '取消',
+                        okText: '确定',
+                        onOk: () => {
+                            this.onAssistConfirm().then(resolve).catch(reject)
+                        },
+                        onCancel: () => {
+                            reject()
+                        }
+                    })
+                } else {
+                    this.onAssistConfirm().then(resolve).catch(reject)
+                }
+            })
         },
 
         onAssistConfirm() {
-            let assist = this.assistData.assist_userid;
-            if (assist.length === 0) assist = false;
-            this.assistLoad++;
-            this.$store.dispatch("taskUpdate", {
-                task_id: this.taskDetail.id,
-                assist,
-            }).then(({msg}) => {
-                $A.messageSuccess(msg);
-                this.assistLoad--;
-                this.$store.dispatch("getTaskOne", this.taskDetail.id).catch(() => {})
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-                this.assistLoad--;
+            return new Promise((resolve, reject) => {
+                let assist = this.assistData.assist_userid;
+                if (assist.length === 0) assist = false;
+                this.assistLoad++;
+                this.$store.dispatch("taskUpdate", {
+                    task_id: this.taskDetail.id,
+                    assist,
+                }).then(({msg}) => {
+                    $A.messageSuccess(msg);
+                    this.assistLoad--;
+                    this.$store.dispatch("getTaskOne", this.taskDetail.id).catch(() => {})
+                    resolve()
+                }).catch(({msg}) => {
+                    $A.modalError(msg);
+                    this.assistLoad--;
+                    reject()
+                })
             })
         },
 
@@ -1215,9 +1182,8 @@ export default {
 
                 case 'assist':
                     this.assistForce = true;
-                    this.openAssist();
                     this.$nextTick(() => {
-                        this.$refs.assist.handleClick();
+                        this.$refs.assist.onSelect();
                     });
                     break;
 

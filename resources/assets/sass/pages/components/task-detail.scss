@@ -245,13 +245,6 @@
                     &.user {
                         margin-top: 1px;
                         cursor: pointer;
-                        .user-list {
-                            display: flex;
-                            align-items: center;
-                            > div {
-                                margin-right: 6px;
-                            }
-                        }
                     }
                     &.file {
                         margin-bottom: -3px;
@@ -420,15 +413,6 @@
                                     transition: all 0.2s;
                                     transform: translateX(50%);
                                     opacity: 0;
-                                }
-                            }
-                            .subtask-avatar {
-                                cursor: pointer;
-                                display: flex;
-                                flex-direction: column;
-                                .avatar-wrapper {
-                                    margin-top: 3px;
-                                    margin-bottom: -2px;
                                 }
                             }
                             .ivu-icon-ios-loading {
@@ -829,25 +813,6 @@
         .ivu-btn-small {
             font-size: 12px
         }
-    }
-}
-
-.task-detail-user-popper {
-    .ivu-poptip-body-content {
-        overflow: visible;
-    }
-}
-
-.task-detail-avatar-buttons {
-    margin-top: 12px;
-    margin-bottom: 4px;
-    text-align: right;
-    position: absolute;
-    top: 5px;
-    right: 14px;
-    > button {
-        font-size: 12px;
-        transform: scale(0.9);
     }
 }
 

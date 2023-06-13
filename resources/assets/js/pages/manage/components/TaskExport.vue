@@ -5,7 +5,7 @@
         :mask-closable="false">
         <Form ref="exportTask" :model="formData" label-width="auto" @submit.native.prevent>
             <FormItem :label="$L('导出成员')">
-                <UserInput v-model="formData.userid" :multiple-max="100" show-disable :placeholder="$L('请选择成员')"/>
+                <UserSelect v-model="formData.userid" :multiple-max="100" avatar-name show-disable :title="$L('请选择成员')"/>
                 <div class="form-tip">{{$L('每次最多选择导出100个成员')}}</div>
             </FormItem>
             <FormItem :label="$L('时间范围')">
@@ -52,10 +52,10 @@
 }
 </style>
 <script>
-import UserInput from "../../../components/UserInput";
+import UserSelect from "../../../components/UserSelect.vue";
 export default {
     name: "TaskExport",
-    components: {UserInput},
+    components: {UserSelect},
     props: {
         value: {
             type: Boolean,

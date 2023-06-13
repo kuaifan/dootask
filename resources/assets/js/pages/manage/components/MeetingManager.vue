@@ -21,7 +21,7 @@
                         <Input v-model="addData.name" :maxlength="50" :placeholder="$L('选填')"/>
                     </FormItem>
                     <FormItem prop="userids" :label="$L('邀请成员')">
-                        <UserInput v-model="addData.userids" :uncancelable="[userId]" :multiple-max="20" :placeholder="$L('选择邀请成员')"/>
+                        <UserSelect v-model="addData.userids" :uncancelable="[userId]" :multiple-max="20" :title="$L('选择邀请成员')"/>
                     </FormItem>
                 </template>
                 <FormItem prop="tracks">
@@ -103,7 +103,7 @@
             :mask-closable="false">
             <Form ref="invitationForm" :model="invitationData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="userids" :label="$L('邀请成员')">
-                    <UserInput v-model="invitationData.userids" :multiple-max="20" :placeholder="$L('选择邀请成员')"/>
+                    <UserSelect v-model="invitationData.userids" :multiple-max="20" :title="$L('选择邀请成员')"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -115,14 +115,14 @@
 </template>
 
 <script>
-import UserInput from "../../../components/UserInput";
 import {Store} from "le5le-store";
 import MeetingPlayer from "./MeetingPlayer";
 import DragBallComponent from "../../../components/DragBallComponent";
+import UserSelect from "../../../components/UserSelect.vue";
 
 export default {
     name: "MeetingManager",
-    components: {DragBallComponent, MeetingPlayer, UserInput},
+    components: {UserSelect, DragBallComponent, MeetingPlayer},
     data() {
         return {
             loadIng: 0,

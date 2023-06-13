@@ -634,9 +634,13 @@
 
 .page-file-share-form {
     display: flex;
+    align-items: flex-end;
     margin-bottom: 12px;
     .share-userid {
         flex: 1;
+        .common-user-select {
+            margin-top: 10px;
+        }
     }
     > div {
         flex-shrink: 0;
@@ -644,6 +648,12 @@
             margin-right: 0;
         }
     }
+}
+
+.page-file-share-items {
+    border-top: 1px solid #eee;
+    margin-top: -12px;
+    padding-top: 24px;
 }
 
 .page-file-share-title {

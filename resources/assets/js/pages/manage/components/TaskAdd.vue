@@ -79,12 +79,13 @@
                     @on-change="taskTimeChange(addData.times)"/>
             </FormItem>
             <FormItem :label="$L('任务负责人')">
-                <UserInput
+                <UserSelect
                     v-model="addData.owner"
                     :multiple-max="10"
-                    :placeholder="$L('选择任务负责人')"
+                    :title="$L('选择任务负责人')"
                     :project-id="addData.project_id"
-                    :transfer="false"/>
+                    :avatar-size="24"
+                    border/>
                 <div v-if="showAddAssist" class="task-add-assist">
                     <Checkbox v-model="addData.add_assist" :true-value="1" :false-value="0">{{$L('加入任务协助人员列表')}}</Checkbox>
                     <ETooltip :disabled="$isEEUiApp || windowTouch" :content="$L('你不是任务负责人时建议加入任务协助人员列表')">
@@ -96,8 +97,8 @@
                 <div v-if="addData.subtasks.length > 0" class="sublist">
                     <Row>
                         <Col span="12">{{$L('任务描述')}}</Col>
-                        <Col span="6">{{$L('计划时间')}}</Col>
-                        <Col span="6">{{$L('负责人')}}</Col>
+                        <Col span="8">{{$L('计划时间')}}</Col>
+                        <Col span="4">{{$L('负责人')}}</Col>
                     </Row>
                     <Row v-for="(item, key) in addData.subtasks" :key="key">
                         <Col span="12">
@@ -107,7 +108,7 @@
                                 clearable
                                 @on-clear="addData.subtasks.splice(key, 1)"/>
                         </Col>
-                        <Col span="6">
+                        <Col span="8">
                             <DatePicker
                                 v-model="item.times"
                                 :options="timeOptions"
@@ -117,14 +118,14 @@
                                 type="datetimerange"
                                 @on-change="taskTimeChange(item.times)"/>
                         </Col>
-                        <Col span="6">
-                            <UserInput
+                        <Col span="4">
+                            <UserSelect
                                 v-model="item.owner"
                                 :multiple-max="1"
-                                :placeholder="$L('选择负责人')"
+                                :title="$L('选择负责人')"
                                 :project-id="addData.project_id"
-                                :transfer="false"
-                                max-hidden-select/>
+                                :avatar-size="24"
+                                border/>
                         </Col>
                     </Row>
                 </div>
@@ -158,12 +159,12 @@
 
 <script>
 import TEditor from "../../../components/TEditor";
-import UserInput from "../../../components/UserInput";
 import {mapState} from "vuex";
+import UserSelect from "../../../components/UserSelect.vue";
 
 export default {
     name: "TaskAdd",
-    components: {UserInput, TEditor},
+    components: {UserSelect, TEditor},
     props: {
         value: {
             type: Boolean,

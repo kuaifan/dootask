@@ -71,8 +71,8 @@
                                 </DropdownItem>
                                 <DropdownItem name="exportTask">{{$L('导出任务统计')}}</DropdownItem>
                                 <DropdownItem name="exportOverdueTask">{{$L('导出超期任务')}}</DropdownItem>
-                                <DropdownItem name="exportCheckin">{{$L('导出签到数据')}}</DropdownItem>
                                 <DropdownItem name="exportApprove">{{$L('导出审批数据')}}</DropdownItem>
+                                <DropdownItem name="exportCheckin">{{$L('导出签到数据')}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                         <!-- 其他菜单 -->

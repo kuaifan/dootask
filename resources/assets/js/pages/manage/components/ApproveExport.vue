@@ -53,10 +53,8 @@
 }
 </style>
 <script>
-import UserInput from "../../../components/UserInput";
 export default {
     name: "ApproveExport",
-    components: {UserInput},
     props: {
         value: {
             type: Boolean,

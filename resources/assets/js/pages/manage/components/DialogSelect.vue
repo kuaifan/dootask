@@ -32,20 +32,20 @@
                 </Option>
             </Select>
         </FormItem>
-        <FormItem prop="userids" :label="$L('指定成员')">
-            <UserInput v-model="value.userids" :multiple-max="20" :placeholder="`(${$L('或')}) ${$L('选择转发指定成员')}`"/>
+        <FormItem prop="userids" :label="`(${$L('或')}) ${$L('指定成员')}`">
+            <UserSelect v-model="value.userids" :multiple-max="20" :avatar-size="24" :title="$L('选择转发指定成员')" border/>
         </FormItem>
     </Form>
 </template>
 
 <script>
 
-import UserInput from "../../../components/UserInput";
 import {mapState} from "vuex";
+import UserSelect from "../../../components/UserSelect.vue";
 
 export default {
     name: "DialogSelect",
-    components: {UserInput},
+    components: {UserSelect},
     props: {
         value: {
             type: Object,

@@ -335,11 +335,11 @@
                 <FormItem prop="avatar" :label="$L('群头像')">
                     <ImgUpload v-model="createGroupData.avatar" :num="1" :width="512" :height="512" :whcut="1"/>
                 </FormItem>
+                <FormItem prop="userids" :label="$L('群成员')">
+                    <UserSelect v-model="createGroupData.userids" :uncancelable="createGroupData.uncancelable" :multiple-max="100" show-bot :title="$L('选择项目成员')"/>
+                </FormItem>
                 <FormItem prop="chat_name" :label="$L('群名称')">
                     <Input v-model="createGroupData.chat_name" :placeholder="$L('输入群名称（选填）')"/>
-                </FormItem>
-                <FormItem prop="userids" :label="$L('群成员')">
-                    <UserInput v-model="createGroupData.userids" :uncancelable="createGroupData.uncancelable" :multiple-max="100" show-bot :placeholder="$L('选择项目成员')"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -397,6 +397,7 @@
                     <RadioGroup v-model="todoSettingData.type">
                         <Radio label="all">{{$L('所有成员')}}</Radio>
                         <Radio label="user">{{$L('指定成员')}}</Radio>
+                        <br/>
                         <Radio v-if="todoSettingData.my_id" label="my">
                             <div class="dialog-wrapper-todo">
                                 <div>
@@ -414,8 +415,8 @@
                         </Radio>
                     </RadioGroup>
                 </FormItem>
-                <FormItem v-if="todoSettingData.type === 'user'" prop="userids">
-                    <UserInput v-model="todoSettingData.userids" :dialog-id="dialogId" :placeholder="$L('选择指定成员')"/>
+                <FormItem prop="userids" :label="$L('指定成员')" v-if="todoSettingData.type === 'user'">
+                    <UserSelect v-model="todoSettingData.userids" :dialog-id="dialogId" :title="$L('选择指定成员')"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -439,7 +440,7 @@
             :mask-closable="false">
             <Form :model="groupTransferData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="userid" :label="$L('新的群主')">
-                    <UserInput v-model="groupTransferData.userid" :disabledChoice="groupTransferData.disabledChoice" :multiple-max="1" max-hidden-select :placeholder="$L('选择新的群主')"/>
+                    <UserSelect v-model="groupTransferData.userid" :disabledChoice="groupTransferData.disabledChoice" :multiple-max="1" :title="$L('选择新的群主')"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -509,7 +510,6 @@
 import {mapGetters, mapState} from "vuex";
 import DialogItem from "./DialogItem";
 import DialogUpload from "./DialogUpload";
-import UserInput from "../../../components/UserInput";
 import DrawerOverlay from "../../../components/DrawerOverlay";
 import DialogGroupInfo from "./DialogGroupInfo";
 import DialogRespond from "./DialogRespond";
@@ -522,10 +522,12 @@ import ImgUpload from "../../../components/ImgUpload.vue";
 import {choiceEmojiOne} from "./ChatInput/one";
 
 import ApproveDetails from "../../../pages/manage/approve/details.vue";
+import UserSelect from "../../../components/UserSelect.vue";
 
 export default {
     name: "DialogWrapper",
     components: {
+        UserSelect,
         ImgUpload,
         DialogSelect,
         DialogRespond,
@@ -534,7 +536,6 @@ export default {
         ChatInput,
         DialogGroupInfo,
         DrawerOverlay,
-        UserInput,
         DialogUpload,
         ApproveDetails
     },
