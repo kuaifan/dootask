@@ -172,7 +172,6 @@
 
         <Modal
             v-model="fullInput"
-            :value="true"
             :mask-closable="false"
             :beforeClose="onFullBeforeClose"
             class-name="chat-input-full-input"
