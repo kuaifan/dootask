@@ -2509,17 +2509,24 @@ class Base
 
         $src = $createfun($src_img);
         $dst = imagecreatetruecolor($width ?: $dst_w, $height ?: $dst_h);
-        try {
-            $white = imagecolorallocate($dst, 255, 255, 255);
-            imagefill($dst, 0, 0, $white);
-        } catch (\Throwable) {
-
-        }
         if (function_exists('imagecopyresampled')) {
             imagecopyresampled($dst, $src, $x, $y, 0, 0, $dst_w, $dst_h, $src_w, $src_h);
         } else {
             imagecopyresized($dst, $src, $x, $y, 0, 0, $dst_w, $dst_h, $src_w, $src_h);
         }
+        try {
+            if ($type == 'png') {
+                imagesavealpha($dst, true);
+                $transparent = imagecolorallocatealpha($dst, 0, 0, 0, 127);
+                imagefill($dst, 0, 0, $transparent);
+            } else {
+                $white = imagecolorallocate($dst, 255, 255, 255);
+                imagefill($dst, 0, 0, $white);
+            }
+        } catch (\Throwable) {
+
+        }
+
         $otfunc($dst, $dst_img);
         imagedestroy($dst);
         imagedestroy($src);
