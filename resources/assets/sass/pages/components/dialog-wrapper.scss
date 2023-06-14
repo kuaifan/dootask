@@ -553,6 +553,10 @@
                             display: -webkit-box;
                             -webkit-line-clamp: 2;
                             -webkit-box-orient: vertical;
+                            .image-preview {
+                                max-width: 48px;
+                                max-height: 48px;
+                            }
                         }
                     }
 

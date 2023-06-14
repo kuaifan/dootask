@@ -12,7 +12,7 @@
             <!--回复-->
             <div v-if="!hideReply && msgData.reply_data" class="dialog-reply no-dark-content" @click="viewReply">
                 <UserAvatar :userid="msgData.reply_data.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
-                <div class="reply-desc">{{$A.getMsgSimpleDesc(msgData.reply_data)}}</div>
+                <div class="reply-desc" v-html="$A.getMsgSimpleDesc(msgData.reply_data, 'image-preview')"></div>
             </div>
             <!--详情-->
             <div ref="content" class="dialog-content" :class="contentClass">

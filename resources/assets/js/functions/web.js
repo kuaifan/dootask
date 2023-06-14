@@ -668,18 +668,27 @@
         /**
          * 返回文本信息预览格式
          * @param text
+         * @param imgClassName
          * @returns {*}
          */
-        getMsgTextPreview(text) {
+        getMsgTextPreview(text, imgClassName = null) {
             if (!text) return '';
             text = text.replace(/<img\s+class="emoticon"[^>]*?alt="(\S+)"[^>]*?>/g, "[$1]")
             text = text.replace(/<img\s+class="emoticon"[^>]*?>/g, `[${$A.L('动画表情')}]`)
-            text = text.replace(/<img\s+class="browse"[^>]*?>/g, `[${$A.L('图片')}]`)
+            if (imgClassName) {
+                text = text.replace(/<img\s+class="browse"[^>]*?src="(\S+)"[^>]*?>/g, `[image:$1]`)
+            } else {
+                text = text.replace(/<img\s+class="browse"[^>]*?>/g, `[${$A.L('图片')}]`)
+            }
             text = text.replace(/<[^>]+>/g,"")
             text = text.replace(/&nbsp;/g," ")
             text = text.replace(/&amp;/g,"&")
             text = text.replace(/&lt;/g,"<")
             text = text.replace(/&gt;/g,">")
+            if (imgClassName) {
+                text = text.replace(/\[image:(.*?)\]/g, `<img class="${imgClassName}" src="$1">`)
+                text = text.replace(/\{\{RemoteURL\}\}/g, this.apiUrl('../'))
+            }
             return text
         },
 
@@ -788,20 +797,25 @@
         /**
          * 消息简单描述
          * @param data
+         * @param imgClassName
          * @returns {string|*}
          */
-        getMsgSimpleDesc(data) {
+        getMsgSimpleDesc(data, imgClassName = null) {
             if ($A.isJson(data)) {
                 switch (data.type) {
                     case 'text':
-                        return $A.getMsgTextPreview(data.msg.text)
+                        return $A.getMsgTextPreview(data.msg.text, imgClassName)
                     case 'record':
                         return `[${$A.L('语音')}]`
                     case 'meeting':
                         return `[${$A.L('会议')}] ${data.msg.name}`
                     case 'file':
                         if (data.msg.type == 'img') {
-                            return `[${$A.L('图片')}]`
+                            if (imgClassName) {
+                                return `<img class="${imgClassName}" src="${data.msg.thumb}">`
+                            } else {
+                                return `[${$A.L('图片')}]`
+                            }
                         }
                         return `[${$A.L('文件')}] ${data.msg.name}`
                     case 'tag':
