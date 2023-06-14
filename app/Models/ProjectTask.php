@@ -1456,7 +1456,8 @@ class ProjectTask extends AbstractModel
             return;
         }
 
-        $taskHtml = "<span class=\"mention task\" data-id=\"{$this->id}\">#{$this->name}</span>";
+        $dataId = $this->parent_id ?: $this->id;
+        $taskHtml = "<span class=\"mention task\" data-id=\"{$dataId}\">#{$this->name}</span>";
         $text = match ($type) {
             1 => "您的任务 {$taskHtml} 即将超时。",
             2 => "您的任务 {$taskHtml} 已经超时。",
