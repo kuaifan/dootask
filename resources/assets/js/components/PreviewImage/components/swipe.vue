@@ -60,7 +60,7 @@ export default {
                 const dataSource = array.map(item => {
                     if ($A.isJson(item)) {
                         if (item.src) {
-                            item.src = $A.rightDelete(item.src, "_thumb.jpg");
+                            item.src = $A.thumbRestore(item.src);
                         }
                         if (parseInt(item.width) > 0 && parseInt(item.height) > 0) {
                             return item
@@ -69,7 +69,7 @@ export default {
                     }
                     htmlZoom = true;
                     return {
-                        html: `<div class="preview-image-swipe"><img src="${$A.rightDelete(item, "_thumb.jpg")}"/></div>`,
+                        html: `<div class="preview-image-swipe"><img src="${$A.thumbRestore(item)}"/></div>`,
                     }
                 })
                 this.lightbox = new PhotoSwipeLightbox({

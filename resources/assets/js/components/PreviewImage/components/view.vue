@@ -216,7 +216,7 @@ export default {
             if ($A.isJson(item)) {
                 item = item.src;
             }
-            return $A.rightDelete(item, "_thumb.jpg");
+            return $A.thumbRestore(item);
         },
         imgStyle() {
             const {scale, deg, offsetX, offsetY, enableTransition} = this.transform;

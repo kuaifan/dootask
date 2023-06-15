@@ -35,9 +35,9 @@ export default {
                     const position = Math.min(Math.max(this.$store.state.previewImageIndex, 0), this.$store.state.previewImageList.length - 1)
                     const paths = l.map(item => {
                         if ($A.isJson(item)) {
-                            return $A.rightDelete(item.src, "_thumb.jpg");
+                            return $A.thumbRestore(item.src);
                         }
-                        return $A.rightDelete(item, "_thumb.jpg")
+                        return $A.thumbRestore(item)
                     })
                     $A.eeuiAppSendMessage({
                         action: 'picturePreview',

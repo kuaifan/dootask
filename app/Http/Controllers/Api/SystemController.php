@@ -799,7 +799,7 @@ class SystemController extends AbstractController
                     'thumb' => Base::fillUrl('images/other/dir.png'),
                     'inode' => filemtime($v),
                 ];
-            } elseif (!str_ends_with($filename, "_thumb.jpg")) {
+            } elseif (!Base::isThumb($filename)) {
                 $array = [
                     'type' => 'file',
                     'title' => $filename,
@@ -811,10 +811,11 @@ class SystemController extends AbstractController
                 //
                 $extension = pathinfo($dirPath . $filename, PATHINFO_EXTENSION);
                 if (in_array($extension, array('gif', 'jpg', 'jpeg', 'webp', 'png', 'bmp'))) {
-                    if (file_exists($dirPath . $filename . '_thumb.jpg')) {
-                        $array['thumb'] .= '_thumb.jpg';
+                    if ($extension = Base::getThumbExt($dirPath . $filename)) {
+                        $array['thumb'] .= "_thumb.{$extension}";
+                    } else {
+                        $array['thumb'] = Base::fillUrl($array['thumb']);
                     }
-                    $array['thumb'] = Base::fillUrl($array['thumb']);
                     $files[] = $array;
                 }
             }

@@ -857,6 +857,17 @@
                 || /^(10)\./.test(u)
                 || /^(172)\.(1[6-9]|2[0-9]|3[0-1])\./.test(u)
                 || /^(192)\.(168)\./.test(u);
+        },
+
+        /**
+         * 缩略图还原
+         * @param url
+         * @returns {*|string}
+         */
+        thumbRestore(url) {
+            url = $A.rightDelete(url, '_thumb.jpg')
+            url = $A.rightDelete(url, '_thumb.png')
+            return url
         }
     });
 

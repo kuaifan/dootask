@@ -2177,7 +2177,7 @@ export default {
                     type: 'image',
                     icon: '&#xe7cd;',
                     label: '复制图片',
-                    value: $A.rightDelete(event.target.currentSrc, '_thumb.jpg'),
+                    value: $A.thumbRestore(event.target.currentSrc),
                 })
             } else if (event.target.nodeName === 'A') {
                 if (event.target.classList.contains("mention") && event.target.classList.contains("file")) {
@@ -2196,7 +2196,7 @@ export default {
                         type: 'imagedown',
                         icon: '&#xe7a8;',
                         label: '下载图片',
-                        value: $A.rightDelete(event.target.currentSrc, '_thumb.jpg'),
+                        value: $A.thumbRestore(event.target.currentSrc),
                     })
                 }
                 if (msgData.msg.text.replace(/<[^>]+>/g,"").length > 0) {

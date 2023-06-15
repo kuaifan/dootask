@@ -15,6 +15,7 @@
         "ext-libxml": "*",
         "ext-openssl": "*",
         "ext-simplexml": "*",
+        "ext-imagick": "*",
         "directorytree/ldaprecord-laravel": "^2.7",
         "fideloper/proxy": "^4.4.1",
         "fruitcake/laravel-cors": "^2.0.4",

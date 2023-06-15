@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use App\Module\Base;
+use App\Module\Image;
 use App\Tasks\PushTask;
 use App\Exceptions\ApiException;
 use App\Tasks\WebSocketDialogMsgTask;
@@ -587,8 +588,8 @@ class WebSocketDialogMsg extends AbstractModel
             $imagePath .= md5s($base64) . "." . $matchs[1][$key];
             if (Base::saveContentImage(public_path($imagePath), base64_decode($base64))) {
                 $imageSize = getimagesize(public_path($imagePath));
-                if (Base::imgThumb(public_path($imagePath), public_path($imagePath) . "_thumb.jpg", 320, 0)) {
-                    $imagePath .= "_thumb.jpg";
+                if ($extension = Image::thumbImage(public_path($imagePath), public_path($imagePath) . "_thumb.{*}", 320, 0)) {
+                    $imagePath .= "_thumb.{$extension}";
                 }
                 $text = str_replace($matchs[0][$key], "[:IMAGE:browse:{$imageSize[0]}:{$imageSize[1]}:{$imagePath}::]", $text);
             }
@@ -653,7 +654,7 @@ class WebSocketDialogMsg extends AbstractModel
             }
             if (str_starts_with($str, "{{RemoteURL}}")) {
                 $imagePath = Base::leftDelete($str, "{{RemoteURL}}");
-                $imagePath = Base::rightDelete($imagePath, "_thumb.jpg");
+                $imagePath = Base::thumbRestore($imagePath);
             } else {
                 $imagePath = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
                 Base::makeDir(public_path($imagePath));
@@ -661,8 +662,8 @@ class WebSocketDialogMsg extends AbstractModel
             }
             if (file_exists(public_path($imagePath))) {
                 $imageSize = getimagesize(public_path($imagePath));
-                if (Base::imgThumb(public_path($imagePath), public_path($imagePath) . "_thumb.jpg", 320, 0)) {
-                    $imagePath .= "_thumb.jpg";
+                if ($extension = Image::thumbImage(public_path($imagePath), public_path($imagePath) . "_thumb.{*}", 320, 0)) {
+                    $imagePath .= "_thumb.{$extension}";
                 }
                 $text = str_replace($matchs[0][$key], "[:IMAGE:browse:{$imageSize[0]}:{$imageSize[1]}:{$imagePath}::]", $text);
             } else {
@@ -671,8 +672,8 @@ class WebSocketDialogMsg extends AbstractModel
                     $text = str_replace($matchs[0][$key], "[:IMAGE:browse:90:90:images/other/imgerr.jpg::]", $text);
                 } else if (Base::saveContentImage(public_path($imagePath), $image)) {
                     $imageSize = getimagesize(public_path($imagePath));
-                    if (Base::imgThumb(public_path($imagePath), public_path($imagePath) . "_thumb.jpg", 320, 0)) {
-                        $imagePath .= "_thumb.jpg";
+                    if ($extension = Image::thumbImage(public_path($imagePath), public_path($imagePath) . "_thumb.{*}", 320, 0)) {
+                        $imagePath .= "_thumb.{$extension}";
                     }
                     $text = str_replace($matchs[0][$key], "[:IMAGE:browse:{$imageSize[0]}:{$imageSize[1]}:{$imagePath}::]", $text);
                 }
