@@ -2,10 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.27.35]
+## [0.27.37]
 
 ### Bug Fixes
 
+- 修复已知bug
 - 打开会话面板报错
 - 子任务通知无法打开
 

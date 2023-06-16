@@ -426,7 +426,7 @@ export default {
                     return 'ios-checkmark-circle';
                 }
                 if (len > 0) {
-                    return 'ios-radio-button-on';
+                    return 'ios-remove-circle';
                 }
             }
             return 'ios-radio-button-off';
@@ -436,7 +436,7 @@ export default {
             switch (this.selectIcon(value)) {
                 case 'ios-checkmark-circle':
                     return 'selected';
-                case 'ios-radio-button-on':
+                case 'ios-remove-circle':
                     return 'somed';
             }
             return '';

@@ -87,7 +87,7 @@
         }
 
         .ivu-modal-body {
-            padding: 0 24px !important;
+            padding: 0 !important;
             display: flex;
             flex-direction: column;
 
@@ -95,6 +95,7 @@
                 flex-shrink: 0;
                 display: flex;
                 align-items: center;
+                margin: 0 24px;
 
                 .search-selected {
                     flex: none;
@@ -177,7 +178,7 @@
                 display: flex;
                 flex-direction: row;
                 align-items: center;
-                margin-top: 12px;
+                margin: 12px 24px 0;
                 border-radius: 4px;
                 background: #F4F5F7;
 
@@ -209,7 +210,7 @@
                 max-height: 400px;
 
                 ul {
-                    padding: 16px 0;
+                    padding: 16px 24px;
 
                     &.user-modal-project {
                         > li {
