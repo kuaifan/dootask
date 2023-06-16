@@ -43,7 +43,7 @@ class FileController extends AbstractController
         $data = Request::all();
         $pid = intval($data['pid']);
         //
-        return Base::retSuccess('success', (new File)->getFileList($user,$pid) );
+        return Base::retSuccess('success', (new File)->getFileList($user, $pid));
     }
 
     /**
@@ -679,7 +679,7 @@ class FileController extends AbstractController
         $user = User::auth();
         $pid = intval(Request::input('pid'));
         $webkitRelativePath = Request::input('webkitRelativePath');
-        $data = (new File)->contentUpload($user,$pid,$webkitRelativePath);
+        $data = (new File)->contentUpload($user, $pid, $webkitRelativePath);
         return Base::retSuccess($data['data']['name'] . ' 上传成功', $data['addItem']);
     }
 

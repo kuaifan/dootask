@@ -592,21 +592,16 @@ export default {
                 this.selects = $A.cloneJSON(this.uncancelable)
                 return
             }
-            let optional = this.multipleMax - this.selects.length
             this.lists.some(item => {
-                if (this.isUncancelable(item.userid)) {
-                    return false
-                }
                 if (this.isDisabled(item.userid)) {
                     return false
                 }
-                if (optional <= 0) {
+                if (this.multipleMax && this.selects.length >= this.multipleMax) {
                     $A.messageWarning("已超过最大选择数量")
                     return true
                 }
                 if (!this.selects.includes(item.userid)) {
                     this.selects.push(item.userid)
-                    optional--
                 }
             })
         },
@@ -626,6 +621,7 @@ export default {
                     return
                 }
                 this.selects.push(userid)
+                // 滚动到选中的位置
                 this.$nextTick(() => {
                     $A.scrollIntoViewIfNeeded(this.$refs.selected.querySelector(`li[data-id="${userid}"]`))
                 })
@@ -649,6 +645,11 @@ export default {
                         $A.messageWarning("部分成员禁止选择")
                     }
                     this.selects = this.selects.concat(addList.filter(userid => !this.selects.includes(userid)))
+                    // 超过最大数量
+                    if (this.multipleMax && this.selects.length > this.multipleMax) {
+                        $A.messageWarning("已超过最大选择数量")
+                        this.selects = this.selects.slice(0, this.multipleMax)
+                    }
                     break;
             }
         },

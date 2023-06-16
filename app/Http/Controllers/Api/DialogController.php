@@ -50,7 +50,7 @@ class DialogController extends AbstractController
         //
         $timerange = TimeRange::parse(Request::input());
         //
-        $data = (new WebSocketDialog)->getDialogList($user->userid,$timerange->updated,$timerange->deleted);
+        $data = (new WebSocketDialog)->getDialogList($user->userid, $timerange->updated, $timerange->deleted);
         //
         return Base::retSuccess('success', $data);
     }

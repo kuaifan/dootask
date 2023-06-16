@@ -167,9 +167,9 @@ class User extends AbstractModel
         if (!$this->bot) {
             return 0;
         }
-        $key = "BotOwner::" . $this->userid;
+        $key = "getBotOwner::" . $this->userid;
         return Cache::remember($key, now()->addMonth(), function() {
-            return intval(UserBot::whereBotId($this->userid)->value('userid'));
+            return intval(UserBot::whereBotId($this->userid)->value('userid')) ?: $this->userid;
         });
     }
 

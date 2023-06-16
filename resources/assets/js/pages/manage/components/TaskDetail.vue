@@ -180,6 +180,7 @@
                             :avatar-size="28"
                             :title="$L('修改负责人')"
                             :project-id="taskDetail.project_id"
+                            :add-icon="false"
                             :before-submit="onOwner"/>
                     </FormItem>
                     <FormItem v-if="getAssist.length > 0 || assistForce">
@@ -195,6 +196,7 @@
                             :title="$L(getAssist.length > 0 ? '修改协助人员' : '添加协助人员')"
                             :project-id="taskDetail.project_id"
                             :disabled-choice="assistData.disabled"
+                            :add-icon="false"
                             :before-submit="onAssist"/>
                     </FormItem>
                     <FormItem v-if="taskDetail.end_at || timeForce">
@@ -1183,7 +1185,7 @@ export default {
                 case 'assist':
                     this.assistForce = true;
                     this.$nextTick(() => {
-                        this.$refs.assist.onSelect();
+                        this.$refs.assist.onSelection();
                     });
                     break;
 

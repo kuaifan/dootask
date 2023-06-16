@@ -69,11 +69,12 @@ class WebSocketDialog extends AbstractModel
 
     /**
      * 获取对话列表
-     * @param int $userid   会员ID
-     * @param bool $hasData
-     * @return $this
+     * @param int $userid 会员ID
+     * @param $updated
+     * @param $deleted
+     * @return array
      */
-    public function getDialogList($userid, $updated="", $deleted="")
+    public function getDialogList($userid, $updated = "", $deleted = "")
     {
         $builder = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.updated_at as user_at'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
@@ -95,8 +96,6 @@ class WebSocketDialog extends AbstractModel
         }
         return $data;
     }
-
-    
 
     /**
      * 格式化对话
