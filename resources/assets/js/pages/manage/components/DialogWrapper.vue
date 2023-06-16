@@ -376,16 +376,15 @@
         </Modal>
 
         <!-- 转发 -->
-        <Modal
-            v-model="forwardShow"
+        <UserSelect
+            ref="forwardSelect"
+            v-model="forwardData"
+            :multiple-max="50"
             :title="$L('转发')"
-            :mask-closable="false">
-            <DialogSelect v-model="forwardData"/>
-            <div slot="footer" class="adaption">
-                <Button type="default" @click="forwardShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="forwardLoad" @click="onForward('submit')">{{$L('转发')}}</Button>
-            </div>
-        </Modal>
+            :before-submit="onForward"
+            :show-select-all="false"
+            show-dialog
+            module/>
 
         <!-- 设置待办 -->
         <Modal
@@ -517,7 +516,6 @@ import ChatInput from "./ChatInput";
 
 import VirtualList from 'vue-virtual-scroll-list-hi'
 import {Store} from "le5le-store";
-import DialogSelect from "./DialogSelect";
 import ImgUpload from "../../../components/ImgUpload.vue";
 import {choiceEmojiOne} from "./ChatInput/one";
 
@@ -529,7 +527,6 @@ export default {
     components: {
         UserSelect,
         ImgUpload,
-        DialogSelect,
         DialogRespond,
         DialogItem,
         VirtualList,
@@ -592,12 +589,7 @@ export default {
             modifyData: {},
             modifyLoad: 0,
 
-            forwardShow: false,
-            forwardLoad: false,
-            forwardData: {
-                dialogids: [],
-                userids: [],
-            },
+            forwardData: [],
 
             openId: 0,
             dialogDrag: false,
@@ -2045,34 +2037,32 @@ export default {
             }
         },
 
-        onForward(type) {
-            if (type === 'open') {
-                this.forwardData = {
-                    dialogids: [],
-                    userids: [],
-                    msg_id: this.operateItem.id
-                };
-                this.forwardShow = true;
-            } else if (type === 'submit') {
-                if ($A.arrayLength(this.forwardData.dialogids) === 0 && $A.arrayLength(this.forwardData.userids) === 0) {
-                    $A.messageWarning("请选择转发对话或成员");
+        onForward() {
+            return new Promise((resolve, reject) => {
+                if (this.forwardData.length === 0) {
+                    $A.messageError("请选择转发对话或成员");
+                    reject();
                     return
                 }
-                this.forwardLoad = true;
+                const dialogids = this.forwardData.filter(value => $A.leftExists(value, 'd:')).map(value => value.replace('d:', ''));
+                const userids = this.forwardData.filter(value => !$A.leftExists(value, 'd:'));
                 this.$store.dispatch("call", {
                     url: 'dialog/msg/forward',
-                    data: this.forwardData
+                    data: {
+                        dialogids,
+                        userids,
+                        msg_id: this.operateItem.id
+                    }
                 }).then(({data, msg}) => {
-                    this.forwardShow = false;
                     this.$store.dispatch("saveDialogMsg", data.msgs);
                     this.$store.dispatch("updateDialogLastMsg", data.msgs);
                     $A.messageSuccess(msg);
+                    resolve();
                 }).catch(({msg}) => {
                     $A.modalError(msg);
-                }).finally(_ => {
-                    this.forwardLoad = false;
+                    reject();
                 });
-            }
+            })
         },
 
         onScroll(event) {
@@ -2237,7 +2227,8 @@ export default {
                         break;
 
                     case "forward":
-                        this.onForward('open')
+                        this.forwardData = [];
+                        this.$refs.forwardSelect.onSelection()
                         break;
 
                     case "withdraw":

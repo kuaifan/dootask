@@ -53,6 +53,7 @@ body.dark-mode-reverse {
             .overlay-close {
                 > a {
                     color: #323232;
+
                     &:hover {
                         color: #000;
                     }
@@ -69,6 +70,7 @@ body.dark-mode-reverse {
                     background-color: #000;
                 }
             }
+
             .teditor-loadedstyle {
                 .tox-sidebar-wrap {
                     box-shadow: none
@@ -96,6 +98,7 @@ body.dark-mode-reverse {
                 }
             }
         }
+
         .project-column {
             > ul {
                 > li {
@@ -107,6 +110,7 @@ body.dark-mode-reverse {
                                         color: #ed4014;
                                         background-color: transparent;
                                     }
+
                                     &.today {
                                         color: #ff9900;
                                         background-color: transparent;
@@ -118,6 +122,7 @@ body.dark-mode-reverse {
                 }
             }
         }
+
         .project-table {
             .project-table-body {
                 .task-row {
@@ -128,6 +133,7 @@ body.dark-mode-reverse {
                                     color: #ed4014;
                                     background-color: transparent;
                                 }
+
                                 &.today {
                                     color: #ff9900;
                                     background-color: transparent;
@@ -149,6 +155,7 @@ body.dark-mode-reverse {
                             color: #1c1917;
                         }
                     }
+
                     .dialog-title {
                         .main-title {
                             > h2 {
@@ -159,22 +166,26 @@ body.dark-mode-reverse {
                 }
             }
         }
+
         .dialog-scroller {
             .dialog-item {
                 .dialog-view {
                     .dialog-head {
                         background-color: #e1e1e1;
+
                         .dialog-reply {
                             .reply-desc {
                                 color: #ffffff;
                             }
                         }
+
                         .dialog-content {
                             .content-text,
                             .content-record,
                             .content-meeting {
                                 color: #ffffff;
                             }
+
                             .open-approve-details {
                                 .cause {
                                     border-bottom: 1px solid #7f7f7f;
@@ -182,9 +193,11 @@ body.dark-mode-reverse {
                                 }
                             }
                         }
+
                         .dialog-emoji {
                             > li {
                                 background-color: rgba(#f3f3f3, 0.5);
+
                                 &.hasme {
                                     background-color: #f3f3f3;
                                 }
@@ -192,18 +205,22 @@ body.dark-mode-reverse {
                         }
                     }
                 }
+
                 &.self {
                     .dialog-view {
                         .dialog-head {
                             background-color: $primary-color;
+
                             .dialog-content {
                                 .content-text {
                                     > pre {
                                         a {
                                             color: #0027a1;
                                         }
+
                                         .mention {
                                             color: #000000;
+
                                             &.file,
                                             &[data-denotation-char="~"] {
                                                 color: #0027a1 !important;
@@ -212,16 +229,20 @@ body.dark-mode-reverse {
                                     }
                                 }
                             }
+
                             .dialog-emoji {
                                 > li {
                                     background-color: rgba(#b2ff93, 0.5);
+
                                     &.hasme {
                                         background-color: #b2ff93;
                                     }
+
                                     .emoji-users {
                                         &:before {
                                             background-color: rgba(#000000, 0.7);
                                         }
+
                                         > ul {
                                             > li {
                                                 color: #000000;
@@ -253,73 +274,95 @@ body.dark-mode-reverse {
         &:before {
             background-image: url("../images/file/dark/other.svg");
         }
+
         &.archive:before {
             background-image: url("../images/file/dark/archive.svg");
         }
+
         &.cad:before {
             background-image: url("../images/file/dark/cad.svg");
         }
+
         &.code:before {
             background-image: url("../images/file/dark/code.svg");
         }
+
         &.document:before {
             background-image: url("../images/file/dark/document.svg");
         }
+
         &.drawio:before {
             background-image: url("../images/file/dark/drawio.svg");
         }
+
         &.excel:before {
             background-image: url("../images/file/dark/excel.svg");
         }
+
         &.flow:before {
             background-image: url("../images/file/dark/flow.svg");
         }
+
         &.folder {
             &:before {
                 background-image: url("../images/file/dark/folder.svg");
             }
+
             &.share {
                 &:before {
                     background-image: url("../images/file/dark/folder-share.svg");
                 }
             }
         }
+
         &.media:before {
             background-image: url("../images/file/dark/media.svg");
         }
+
         &.mind:before {
             background-image: url("../images/file/dark/mind.svg");
         }
+
         &.ofd:before {
             background-image: url("../images/file/dark/ofd.svg");
         }
+
         &.pdf:before {
             background-image: url("../images/file/dark/pdf.svg");
         }
+
         &.picture:before {
             background-image: url("../images/file/dark/picture.svg");
         }
+
         &.ppt:before {
             background-image: url("../images/file/dark/ppt.svg");
         }
+
         &.sheet:before {
             background-image: url("../images/file/dark/sheet.svg");
         }
+
         &.tif:before {
             background-image: url("../images/file/dark/tif.svg");
         }
+
         &.txt:before {
             background-image: url("../images/file/dark/txt.svg");
         }
+
         &.updir:before {
             background-image: url("../images/file/dark/updir.svg");
         }
+
         &.upload:before {
             background-image: url("../images/file/dark/upload.svg");
         }
+
         &.word:before {
             background-image: url("../images/file/dark/word.svg");
         }
+
         &.wps:before {
             background-image: url("../images/file/dark/wps.svg");
         }
@@ -353,10 +396,12 @@ body.dark-mode-reverse {
                         color: rgba(0, 0, 0, 0.6);
                         font-size: 12px;
                     }
+
                     .block-data {
                         .block-num {
                             color: #000;
                         }
+
                         .taskfont {
                             color: rgba(0, 0, 0, 0.7);
                         }
@@ -376,6 +421,7 @@ body.dark-mode-reverse {
                                 .icon-avatar {
                                     color: #1c1917;
                                 }
+
                                 .dialog-box {
                                     .dialog-text {
                                         color: #555;
@@ -402,6 +448,7 @@ body.dark-mode-reverse {
     .page-index {
         .page-warp {
             background-color: #efefef;
+
             .page-header {
                 .header-nav {
                     .header-nav-box {
@@ -409,28 +456,33 @@ body.dark-mode-reverse {
                         .header-right-uplog {
                             color: #000000;
                         }
+
                         .header-right-1 {
                             .header-right-1-dropdown {
                                 color: #000000;
                             }
                         }
+
                         .header-right-2 {
                             .header-right-2-dropdown {
                                 color: #000000;
                             }
                         }
+
                         .header-right-3 {
                             color: #000000;
                         }
                     }
                 }
+
                 .header-content {
                     .header-title, .header-tips {
                         color: #000000;
                     }
                 }
             }
-            .page-header-bottom{
+
+            .page-header-bottom {
                 background-color: #efefef;
             }
         }
@@ -441,21 +493,54 @@ body.dark-mode-reverse {
             .ql-container {
                 .ql-editor {
                     color: #ccc;
+
                     &.ql-blank {
                         &::before {
                             color: #333;
                         }
                     }
+
                     .mention {
                         color: #333;
                     }
                 }
             }
+
             .chat-toolbar {
                 > li {
                     &.chat-send {
                         .taskfont {
                             color: #000000;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .common-user-select-modal {
+        .ivu-modal {
+            .ivu-modal-body {
+                .user-modal-search {
+                    .search-selected {
+                        ul {
+                            > li {
+                                .icon-avatar {
+                                    color: #1c1917;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                .user-modal-list {
+                    ul {
+                        > li {
+                            .user-modal-avatar {
+                                .icon-avatar {
+                                    color: #1c1917;
+                                }
+                            }
                         }
                     }
                 }

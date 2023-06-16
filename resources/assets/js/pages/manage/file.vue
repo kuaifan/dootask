@@ -322,16 +322,15 @@
         </Modal>
 
         <!-- 文件发送 -->
-        <Modal
-            v-model="sendShow"
+        <UserSelect
+            ref="sendFile"
+            v-model="sendData"
+            :multiple-max="50"
             :title="$L('发送文件')"
-            :mask-closable="false">
-            <DialogSelect v-model="sendData"/>
-            <div slot="footer" class="adaption">
-                <Button type="default" @click="sendShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="sendLoad" @click="onSendFile">{{$L('发送文件')}}</Button>
-            </div>
-        </Modal>
+            :before-submit="onSendFile"
+            :show-select-all="false"
+            show-dialog
+            module/>
 
         <!--文件链接-->
         <Modal
@@ -401,7 +400,6 @@ import {sortBy} from "lodash";
 import DrawerOverlay from "../../components/DrawerOverlay";
 import PreviewImage from "../../components/PreviewImage";
 import longpress from "../../directives/longpress";
-import DialogSelect from "./components/DialogSelect";
 import UserSelect from "../../components/UserSelect.vue";
 
 const FilePreview = () => import('./components/FilePreview');
@@ -409,7 +407,7 @@ const FileContent = () => import('./components/FileContent');
 const FileObject = {sort: null, mode: null, shared: null};
 
 export default {
-    components: {UserSelect, DialogSelect, PreviewImage, FilePreview, DrawerOverlay, FileContent},
+    components: {UserSelect, PreviewImage, FilePreview, DrawerOverlay, FileContent},
     directives: {longpress},
     data() {
         return {
@@ -477,12 +475,8 @@ export default {
             shareList: [],
             shareLoad: 0,
 
-            sendShow: false,
-            sendLoad: false,
-            sendData: {
-                dialogids: [],
-                userids: [],
-            },
+            sendFileId: 0,
+            sendData: [],
 
             linkShow: false,
             linkData: {},
@@ -1197,12 +1191,9 @@ export default {
                     break;
 
                 case 'send':
-                    this.sendData = {
-                        dialogids: [],
-                        userids: [],
-                        file_id: item.id
-                    };
-                    this.sendShow = true;
+                    this.sendFileId = item.id;
+                    this.sendData = [];
+                    this.$refs.sendFile.onSelection()
                     break;
 
                 case 'share':
@@ -1269,24 +1260,31 @@ export default {
         },
 
         onSendFile() {
-            if ($A.arrayLength(this.sendData.dialogids) === 0 && $A.arrayLength(this.sendData.userids) === 0) {
-                $A.messageWarning("请选择转发对话或成员");
-                return
-            }
-            this.sendLoad = true;
-            this.$store.dispatch("call", {
-                url: 'dialog/msg/sendfileid',
-                data: this.sendData
-            }).then(({data, msg}) => {
-                this.sendShow = false;
-                this.$store.dispatch("saveDialogMsg", data.msgs);
-                this.$store.dispatch("updateDialogLastMsg", data.msgs);
-                $A.messageSuccess(msg);
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-            }).finally(_ => {
-                this.sendLoad = false;
-            });
+            return new Promise((resolve, reject) => {
+                if (this.sendData.length === 0) {
+                    $A.messageError("请选择转发对话或成员");
+                    reject();
+                    return
+                }
+                const dialogids = this.sendData.filter(value => $A.leftExists(value, 'd:')).map(value => value.replace('d:', ''));
+                const userids = this.sendData.filter(value => !$A.leftExists(value, 'd:'));
+                this.$store.dispatch("call", {
+                    url: 'dialog/msg/sendfileid',
+                    data: {
+                        dialogids,
+                        userids,
+                        file_id: this.sendFileId
+                    }
+                }).then(({data, msg}) => {
+                    this.$store.dispatch("saveDialogMsg", data.msgs);
+                    this.$store.dispatch("updateDialogLastMsg", data.msgs);
+                    $A.messageSuccess(msg);
+                    resolve();
+                }).catch(({msg}) => {
+                    $A.modalError(msg);
+                    reject();
+                });
+            })
         },
 
         linkGet(refresh) {

@@ -56,9 +56,15 @@ class ProjectController extends AbstractController
      * - all：全部
      * - no：未归档（默认）
      * - yes：已归档
-     * @apiParam {String} [getcolumn]        同时取项目列表
+     * @apiParam {String} [getcolumn]        同时取列表
      * - no：不取（默认）
      * - yes：取列表
+     * @apiParam {String} [getuserid]        同时取成员ID
+     * - no：不取（默认）
+     * - yes：取列表
+     * @apiParam {String} [getstatistics]    同时取任务统计
+     * - no：不取
+     * - yes：取统计（默认）
      * @apiParam {Object} [keys]             搜索条件
      * - keys.name: 项目名称
      * @apiParam {String} [timerange]        时间范围（如：1678248944,1678248944）
@@ -110,6 +116,8 @@ class ProjectController extends AbstractController
         $type = Request::input('type', 'all');
         $archived = Request::input('archived', 'no');
         $getcolumn = Request::input('getcolumn', 'no');
+        $getuserid = Request::input('getuserid', 'no');
+        $getstatistics = Request::input('getstatistics', 'yes');
         $keys = Request::input('keys');
         $timerange = TimeRange::parse(Request::input('timerange'));
         //
@@ -151,8 +159,15 @@ class ProjectController extends AbstractController
         }
         //
         $list = $builder->orderByDesc('projects.id')->paginate(Base::getPaginate(100, 50));
-        $list->transform(function (Project $project) use ($user) {
-            return array_merge($project->toArray(), $project->getTaskStatistics($user->userid));
+        $list->transform(function (Project $project) use ($getstatistics, $getuserid, $user) {
+            $array = $project->toArray();
+            if ($getuserid == 'yes') {
+                $array['userid_list'] = ProjectUser::whereProjectId($project->id)->pluck('userid')->toArray();
+            }
+            if ($getstatistics == 'yes') {
+                $array = array_merge($array, $project->getTaskStatistics($user->userid));
+            }
+            return $array;
         });
         //
         $data = $list->toArray();

@@ -2,14 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.27.31]
+## [0.27.36]
 
 ### Bug Fixes
 
+- 打开会话面板报错
 - 子任务通知无法打开
 
 ### Performance
 
+- 优化会员选择器
+- 优化会员选择器
+- 优化图片压缩
 - 回复图片显示图片搜略图
 - 优化会员选择器
 - 会员选择下拉框提示
