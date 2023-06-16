@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.27.36]
+## [0.27.35]
 
 ### Bug Fixes
 
@@ -11,7 +11,6 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
-- 优化会员选择器
 - 优化会员选择器
 - 优化图片压缩
 - 回复图片显示图片搜略图

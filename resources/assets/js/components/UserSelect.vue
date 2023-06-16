@@ -20,7 +20,7 @@
             <template #header>
                 <div v-if="isFullscreen" class="user-modal-header">
                     <div class="user-modal-close" @click="showModal=false">{{$L('关闭')}}</div>
-                    <div class="user-modal-title">{{localTitle}}</div>
+                    <div class="user-modal-title"><span>{{localTitle}}</span></div>
                     <div class="user-modal-submit" @click="onSubmit">
                         <div v-if="loadIng > 0" class="submit-loading"><Loading /></div>
                         {{$L('确定')}}
@@ -654,6 +654,9 @@ export default {
         },
 
         onRemoveItem(userid) {
+            if (this.isUncancelable(userid)) {
+                return
+            }
             this.selects = this.selects.filter(value => value != userid)
         },
 

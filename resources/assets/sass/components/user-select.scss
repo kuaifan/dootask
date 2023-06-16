@@ -42,26 +42,38 @@
         max-width: 90%;
 
         .user-modal-header {
+            height: 100%;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
+            position: relative;
             font-weight: 500;
 
             .user-modal-close {
-                flex-shrink: 0;
+                padding: 0 24px;
                 color: $primary-text-color;
             }
 
             .user-modal-title {
-                flex: 1;
-                text-align: center;
-                font-size: 16px;
-                padding: 0 16px;
-                color: $primary-title-color;
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 100px;
+                right: 100px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                > span {
+                    font-size: 16px;
+                    color: $primary-title-color;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
             }
 
             .user-modal-submit {
-                flex-shrink: 0;
+                padding: 0 24px;
                 color: $primary-color;
                 display: flex;
                 align-items: center;
@@ -422,6 +434,8 @@
 
             .ivu-modal-header {
                 border-bottom: 1px solid #f2f2f2;
+                padding: 0;
+                height: 56px;
             }
 
             .ivu-modal-body {
@@ -435,6 +449,8 @@
                     max-height: none;
 
                     ul {
+                        padding-bottom: 0;
+
                         > li {
                             &:last-child {
                                 padding-bottom: 16px;

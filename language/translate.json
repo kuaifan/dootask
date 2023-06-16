@@ -16718,5 +16718,38 @@
         "de": "Kamera läuft.",
         "fr": "Entrée plein écran",
         "id": "Masukan layar penuh"
+    },
+    {
+        "key": "部分成员禁止取消",
+        "zh": "",
+        "zh-CHT": "部分成員禁止取消",
+        "en": "Some members forbid cancellation",
+        "ko": "일부 멤버는 취소를 금지한다",
+        "ja": "一部のメンバーはキャンセル禁止です",
+        "de": "Eine absage ist Von einigen mitgliedern verboten",
+        "fr": "Annulation interdite par certains membres",
+        "id": "Anggota suku cadang dilarang untuk dibatalkan"
+    },
+    {
+        "key": "部分成员禁止选择",
+        "zh": "",
+        "zh-CHT": "部分成員禁止選擇",
+        "en": "Some members cannot be selected",
+        "ko": "일부 멤버는 선택을 금지한다",
+        "ja": "一部のメンバーは選択を禁止しています",
+        "de": "Manche mitglieder dürfen keine wahl haben",
+        "fr": "Sélection interdite par certains membres",
+        "id": "Beberapa anggota melarang untuk memilih"
+    },
+    {
+        "key": "已超过最大选择数量",
+        "zh": "",
+        "zh-CHT": "已超過最大選擇數量",
+        "en": "The maximum number of selections has been exceeded",
+        "ko": "최대 선택 개수를 초과했습니다",
+        "ja": "選択肢の最大数を超えました",
+        "de": "Doppelte anzahl Von menschen auszuwählen",
+        "fr": "Le nombre maximum de sélections a été dépassé",
+        "id": "Jumlah pilihan maksimum sudah melebihi"
     }
 ]
