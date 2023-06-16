@@ -2152,6 +2152,7 @@ export default {
                 dispatch("saveDialog", dialog)
             });
         } else if ($A.isJson(data)) {
+            data.id = parseInt(data.id)
             const index = state.cacheDialogs.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 const original = state.cacheDialogs[index]
