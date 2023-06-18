@@ -271,7 +271,6 @@ export default {
             showEmoji: false,
 
             emojiQuickShow: false,
-            emojiQuickTimer: null,
             emojiQuickKey: '',
             emojiQuickItems: [],
 
@@ -296,7 +295,12 @@ export default {
 
             isSpecVersion: this.checkIOSVersion(),
 
-            timer: null,
+            emojiTimer: null,
+            scrollTimer: null,
+            selectTimer: null,
+            textTimer: null,
+            fileTimer: null,
+            moreTimer: null,
 
             fullInput: false,
             fullQuill: null,
@@ -363,20 +367,13 @@ export default {
 
             'cacheDialogs',
             'dialogMsgs',
-
-            'keyboardType',
-            'keyboardHeight',
         ]),
 
-        isEnterSend({enterSend, keyboardType, keyboardHeight, windowTouch}) {
+        isEnterSend({enterSend}) {
             if (typeof enterSend === "boolean") {
                 return enterSend;
             } else {
-                // 如果是触屏设备而且虚拟键盘高度小于120时，考虑是实体键盘按键所以回车发送
-                if (windowTouch && keyboardType === "show" && keyboardHeight < 120) {
-                    return true;
-                }
-                return !windowTouch
+                return true;
             }
         },
 
@@ -586,8 +583,8 @@ export default {
         },
 
         isFocus(val) {
-            if (this.timerScroll) {
-                clearInterval(this.timerScroll);
+            if (this.scrollTimer) {
+                clearInterval(this.scrollTimer);
             }
             if (val) {
                 this.$emit('on-focus')
@@ -596,11 +593,11 @@ export default {
                     // ios11.0-11.3 对scrollTop及scrolIntoView解释有bug
                     // 直接执行会导致输入框滚到底部被遮挡
                 } else if (this.windowPortrait) {
-                    this.timerScroll = setInterval(() => {
+                    this.scrollTimer = setInterval(() => {
                         if (this.quill?.hasFocus()) {
                             this.windowScrollY > 0 && $A.scrollIntoViewIfNeeded(this.$refs.editor);
                         } else {
-                            clearInterval(this.timerScroll);
+                            clearInterval(this.scrollTimer);
                         }
                     }, 200);
                 }
@@ -701,8 +698,8 @@ export default {
                 if (!range && document.activeElement) {
                     // 修复光标会超出的问题
                     if (['ql-editor', 'ql-clipboard'].includes(document.activeElement.className)) {
-                        this.timer && clearTimeout(this.timer)
-                        this.timer = setTimeout(_ => {
+                        this.selectTimer && clearTimeout(this.selectTimer)
+                        this.selectTimer = setTimeout(_ => {
                             this.quill.setSelection(document.activeElement.className === 'ql-editor' ? 0 : this.quill.getLength())
                         }, 100)
                         return
@@ -713,22 +710,26 @@ export default {
 
             // Update model if text changes
             this.quill.on('text-change', _ => {
-                if (this.maxlength > 0 && this.quill.getLength() > this.maxlength) {
-                    this.quill.deleteText(this.maxlength, this.quill.getLength());
-                }
-                let html = this.$refs.editor.firstChild.innerHTML
-                html = html.replace(/^(<p>\s*<\/p>)+|(<p>\s*<\/p>)+$/gi, '')
-                html = html.replace(/^(<p><br\/*><\/p>)+|(<p><br\/*><\/p>)+$/gi, '')
-                this.updateEmojiQuick(html)
-                this._content = html
-                this.$emit('input', this._content)
-                this.$nextTick(_ => {
-                    const range = this.quill.getSelection();
-                    if (range) {
-                        const endText = this.quill.getText(range.index);
-                        /^\n\n$/.test(endText) && this.quill.deleteText(range.index, 1);
+                this.textTimer && clearTimeout(this.textTimer)
+                this.textTimer = setTimeout(_ => {
+                    console.log(11);
+                    if (this.maxlength > 0 && this.quill.getLength() > this.maxlength) {
+                        this.quill.deleteText(this.maxlength, this.quill.getLength());
                     }
-                })
+                    let html = this.$refs.editor.firstChild.innerHTML
+                    html = html.replace(/^(<p>\s*<\/p>)+|(<p>\s*<\/p>)+$/gi, '')
+                    html = html.replace(/^(<p><br\/*><\/p>)+|(<p><br\/*><\/p>)+$/gi, '')
+                    this.updateEmojiQuick(html)
+                    this._content = html
+                    this.$emit('input', this._content)
+                    this.$nextTick(_ => {
+                        const range = this.quill.getSelection();
+                        if (range) {
+                            const endText = this.quill.getText(range.index);
+                            /^\n\n$/.test(endText) && this.quill.deleteText(range.index, 1);
+                        }
+                    })
+                }, 100)
             })
 
             // Clipboard Matcher (保留图片跟空格，清除其余所以样式)
@@ -759,6 +760,17 @@ export default {
                     return obj
                 })
                 return delta
+            })
+
+            // Set enterkeyhint
+            this.$nextTick(_ => {
+                this.quill.root.addEventListener('keydown', e => {
+                    if (e.key === '\r\r' && e.keyCode === 229) {
+                        const length = this.quill.getSelection(true).index;
+                        this.quill.insertText(length, "\r\n");
+                    }
+                });
+                this.quill.root.setAttribute('enterkeyhint', 'send')
             })
 
             // Ready event
@@ -857,8 +869,8 @@ export default {
                 this.emojiQuickShow = false
                 return
             }
-            this.emojiQuickTimer && clearTimeout(this.emojiQuickTimer)
-            this.emojiQuickTimer = setTimeout(_ => {
+            this.emojiTimer && clearTimeout(this.emojiTimer)
+            this.emojiTimer = setTimeout(_ => {
                 text = text.replace(/&nbsp;/g," ")
                 text = text.replace(/<[^>]+>/g, "")
                 if (text
@@ -1481,8 +1493,8 @@ export default {
                 const {owner_id, type} = this.dialogData
                 const permission = type === 'group' && [0, this.userId].includes(owner_id)
                 if (this.taskId > 0 || permission) {
-                    this.__getMoreTimer && clearTimeout(this.__getMoreTimer)
-                    this.__getMoreTimer = setTimeout(_ => {
+                    this.moreTimer && clearTimeout(this.moreTimer)
+                    this.moreTimer = setTimeout(_ => {
                         this.$store.dispatch("call", {
                             url: 'users/search',
                             data: {
