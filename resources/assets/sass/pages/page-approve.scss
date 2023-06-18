@@ -234,6 +234,9 @@
                 text-align: right;
             }
 
+            > li:last-child {
+                padding-bottom: 0;
+            }
         }
 
 

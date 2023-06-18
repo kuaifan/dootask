@@ -423,7 +423,7 @@ export default {
         },
         // 打开图片
         onViewPicture(currentUrl) {
-            this.$store.dispatch("previewImage", '/' +currentUrl)
+            this.$store.dispatch("previewImage", $A.apiUrl('../'+currentUrl) )
         }
     }
 }
