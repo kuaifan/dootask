@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.27.37]
+## [0.27.39]
 
 ### Bug Fixes
 
@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
+- 移动端键盘发送
 - 优化会员选择器
 - 优化图片压缩
 - 回复图片显示图片搜略图

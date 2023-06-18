@@ -1,6 +1,6 @@
 {
   "resources/assets/js/app.js": {
-    "file": "js/build/app.e0472c7e.js",
+    "file": "js/build/app.c4f6de42.js",
     "src": "resources/assets/js/app.js",
     "isEntry": true,
     "dynamicImports": [
@@ -46,7 +46,7 @@
       "node_modules/openpgp_hi/dist/lightweight/elliptic.min.mjs"
     ],
     "css": [
-      "js/build/app.f7997e7c.css"
+      "js/build/app.27255783.css"
     ],
     "assets": [
       "js/build/iconfont.01196938.eot",
@@ -115,27 +115,27 @@
     ]
   },
   "resources/assets/js/pages/index.vue": {
-    "file": "js/build/index.7c19cc87.js",
+    "file": "js/build/index.b126ae92.js",
     "src": "resources/assets/js/pages/index.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/assets/js/app.js",
-      "_UpdateLog.b60c550d.js"
+      "_UpdateLog.af429b19.js"
     ]
   },
-  "_UpdateLog.b60c550d.js": {
-    "file": "js/build/UpdateLog.b60c550d.js",
+  "_UpdateLog.af429b19.js": {
+    "file": "js/build/UpdateLog.af429b19.js",
     "imports": [
       "resources/assets/js/app.js"
     ]
   },
   "resources/assets/js/pages/pro.vue": {
-    "file": "js/build/pro.4203a353.js",
+    "file": "js/build/pro.079d1fae.js",
     "src": "resources/assets/js/pages/pro.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/assets/js/app.js",
-      "_UpdateLog.b60c550d.js"
+      "_UpdateLog.af429b19.js"
     ],
     "css": [
       "js/build/pro.26bf0cbb.css"
@@ -147,41 +147,41 @@
     ]
   },
   "resources/assets/js/pages/manage.vue": {
-    "file": "js/build/manage.ff6b6074.js",
+    "file": "js/build/manage.cfd7a0fb.js",
     "src": "resources/assets/js/pages/manage.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/assets/js/app.js",
-      "_CheckinExport.f1cbafae.js",
-      "_index.7dec7bba.js",
+      "_CheckinExport.f5523fff.js",
+      "_index.9fb61a85.js",
       "resources/assets/js/components/TEditor.vue",
-      "_UserSelect.8d078ba1.js",
-      "_ReportEdit.eb980440.js",
-      "_ReportDetail.dfd12bf8.js",
+      "_UserSelect.bef9be27.js",
+      "_ReportEdit.c2cc827b.js",
+      "_ReportDetail.e068bbf7.js",
       "_longpress.43ca7fd9.js",
-      "_DialogWrapper.aeeaad17.js",
-      "_TaskDetail.c17d099d.js",
-      "_ImgUpload.c7d6009a.js",
+      "_DialogWrapper.e40774de.js",
+      "_TaskDetail.19e8c92c.js",
+      "_ImgUpload.75b1d804.js",
       "resources/assets/js/pages/manage/approve/details.vue",
-      "_ProjectLog.0273832a.js",
-      "_TaskMenu.5c63c5ff.js"
+      "_ProjectLog.932685c0.js",
+      "_TaskMenu.4e9114a9.js"
     ],
     "css": [
       "js/build/manage.a77f99dc.css"
     ]
   },
-  "_CheckinExport.f1cbafae.js": {
-    "file": "js/build/CheckinExport.f1cbafae.js",
+  "_CheckinExport.f5523fff.js": {
+    "file": "js/build/CheckinExport.f5523fff.js",
     "imports": [
-      "_UserSelect.8d078ba1.js",
+      "_UserSelect.bef9be27.js",
       "resources/assets/js/app.js"
     ],
     "css": [
       "js/build/CheckinExport.68b4950e.css"
     ]
   },
-  "_index.7dec7bba.js": {
-    "file": "js/build/index.7dec7bba.js",
+  "_index.9fb61a85.js": {
+    "file": "js/build/index.9fb61a85.js",
     "imports": [
       "resources/assets/js/app.js"
     ],
@@ -192,140 +192,140 @@
   "_longpress.43ca7fd9.js": {
     "file": "js/build/longpress.43ca7fd9.js"
   },
-  "_UserSelect.8d078ba1.js": {
-    "file": "js/build/UserSelect.8d078ba1.js",
+  "_UserSelect.bef9be27.js": {
+    "file": "js/build/UserSelect.bef9be27.js",
     "imports": [
       "resources/assets/js/app.js"
     ]
   },
   "resources/assets/js/components/TEditor.vue": {
-    "file": "js/build/TEditor.dea589b0.js",
+    "file": "js/build/TEditor.ae9ca211.js",
     "src": "resources/assets/js/components/TEditor.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/assets/js/app.js",
-      "_ImgUpload.c7d6009a.js"
+      "_ImgUpload.75b1d804.js"
     ]
   },
-  "_ReportEdit.eb980440.js": {
-    "file": "js/build/ReportEdit.eb980440.js",
+  "_ReportEdit.c2cc827b.js": {
+    "file": "js/build/ReportEdit.c2cc827b.js",
     "imports": [
       "resources/assets/js/app.js",
-      "_UserSelect.8d078ba1.js"
+      "_UserSelect.bef9be27.js"
     ],
     "dynamicImports": [
       "resources/assets/js/components/TEditor.vue"
     ]
   },
-  "_ReportDetail.dfd12bf8.js": {
-    "file": "js/build/ReportDetail.dfd12bf8.js",
+  "_ReportDetail.e068bbf7.js": {
+    "file": "js/build/ReportDetail.e068bbf7.js",
     "imports": [
       "resources/assets/js/app.js"
     ]
   },
-  "_DialogWrapper.aeeaad17.js": {
-    "file": "js/build/DialogWrapper.aeeaad17.js",
+  "_DialogWrapper.e40774de.js": {
+    "file": "js/build/DialogWrapper.e40774de.js",
     "imports": [
       "resources/assets/js/app.js",
       "_longpress.43ca7fd9.js",
-      "_index.7dec7bba.js",
-      "_UserSelect.8d078ba1.js",
-      "_ImgUpload.c7d6009a.js",
+      "_index.9fb61a85.js",
+      "_UserSelect.bef9be27.js",
+      "_ImgUpload.75b1d804.js",
       "resources/assets/js/pages/manage/approve/details.vue"
     ],
     "css": [
       "js/build/DialogWrapper.f63c0b9e.css"
     ]
   },
-  "_TaskDetail.c17d099d.js": {
-    "file": "js/build/TaskDetail.c17d099d.js",
+  "_TaskDetail.19e8c92c.js": {
+    "file": "js/build/TaskDetail.19e8c92c.js",
     "imports": [
       "resources/assets/js/app.js",
       "resources/assets/js/components/TEditor.vue",
-      "_ProjectLog.0273832a.js",
-      "_DialogWrapper.aeeaad17.js",
-      "_TaskMenu.5c63c5ff.js",
-      "_UserSelect.8d078ba1.js"
+      "_ProjectLog.932685c0.js",
+      "_DialogWrapper.e40774de.js",
+      "_TaskMenu.4e9114a9.js",
+      "_UserSelect.bef9be27.js"
     ]
   },
-  "_ImgUpload.c7d6009a.js": {
-    "file": "js/build/ImgUpload.c7d6009a.js",
+  "_ImgUpload.75b1d804.js": {
+    "file": "js/build/ImgUpload.75b1d804.js",
     "imports": [
       "resources/assets/js/app.js"
     ]
   },
   "resources/assets/js/pages/manage/approve/details.vue": {
-    "file": "js/build/details.753251a2.js",
+    "file": "js/build/details.4b088429.js",
     "src": "resources/assets/js/pages/manage/approve/details.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/assets/js/app.js",
-      "_ImgUpload.c7d6009a.js"
+      "_ImgUpload.75b1d804.js"
     ]
   },
-  "_ProjectLog.0273832a.js": {
-    "file": "js/build/ProjectLog.0273832a.js",
+  "_ProjectLog.932685c0.js": {
+    "file": "js/build/ProjectLog.932685c0.js",
     "imports": [
       "resources/assets/js/app.js"
     ]
   },
-  "_TaskMenu.5c63c5ff.js": {
-    "file": "js/build/TaskMenu.5c63c5ff.js",
+  "_TaskMenu.4e9114a9.js": {
+    "file": "js/build/TaskMenu.4e9114a9.js",
     "imports": [
       "resources/assets/js/app.js"
     ]
   },
   "resources/assets/js/pages/manage/dashboard.vue": {
-    "file": "js/build/dashboard.607d751c.js",
+    "file": "js/build/dashboard.637a07c1.js",
     "src": "resources/assets/js/pages/manage/dashboard.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/assets/js/app.js",
-      "_TaskMenu.5c63c5ff.js"
+      "_TaskMenu.4e9114a9.js"
     ]
   },
   "resources/assets/js/pages/manage/calendar.vue": {
-    "file": "js/build/calendar.736a6239.js",
+    "file": "js/build/calendar.2ea5e421.js",
     "src": "resources/assets/js/pages/manage/calendar.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/assets/js/app.js",
-      "_TaskMenu.5c63c5ff.js"
+      "_TaskMenu.4e9114a9.js"
     ],
     "css": [
       "js/build/calendar.323d515a.css"
     ]
   },
   "resources/assets/js/pages/manage/messenger.vue": {
-    "file": "js/build/messenger.23e0123c.js",
+    "file": "js/build/messenger.53ce04e7.js",
     "src": "resources/assets/js/pages/manage/messenger.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/assets/js/app.js",
-      "_DialogWrapper.aeeaad17.js",
+      "_DialogWrapper.e40774de.js",
       "_longpress.43ca7fd9.js",
-      "_index.7dec7bba.js",
-      "_UserSelect.8d078ba1.js",
-      "_ImgUpload.c7d6009a.js",
+      "_index.9fb61a85.js",
+      "_UserSelect.bef9be27.js",
+      "_ImgUpload.75b1d804.js",
       "resources/assets/js/pages/manage/approve/details.vue"
     ]
   },
   "resources/assets/js/pages/manage/approve/index.vue": {
-    "file": "js/build/index.e98b1018.js",
+    "file": "js/build/index.b06ae982.js",
     "src": "resources/assets/js/pages/manage/approve/index.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/assets/js/app.js",
       "resources/assets/js/pages/manage/approve/details.vue",
-      "_index.7dec7bba.js",
-      "_ImgUpload.c7d6009a.js"
+      "_index.9fb61a85.js",
+      "_ImgUpload.75b1d804.js"
     ],
     "css": [
       "js/build/index.9d0cdd21.css"
     ]
   },
   "resources/assets/js/pages/manage/setting/index.vue": {
-    "file": "js/build/index.fc4a9f2c.js",
+    "file": "js/build/index.452ab67b.js",
     "src": "resources/assets/js/pages/manage/setting/index.vue",
     "isDynamicEntry": true,
     "imports": [
@@ -333,16 +333,16 @@
     ]
   },
   "resources/assets/js/pages/manage/setting/personal.vue": {
-    "file": "js/build/personal.41f3f454.js",
+    "file": "js/build/personal.4f598313.js",
     "src": "resources/assets/js/pages/manage/setting/personal.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_ImgUpload.c7d6009a.js",
+      "_ImgUpload.75b1d804.js",
       "resources/assets/js/app.js"
     ]
   },
   "resources/assets/js/pages/manage/setting/checkin.vue": {
-    "file": "js/build/checkin.f5a3eeae.js",
+    "file": "js/build/checkin.029333ac.js",
     "src": "resources/assets/js/pages/manage/setting/checkin.vue",
     "isDynamicEntry": true,
     "imports": [
@@ -353,11 +353,11 @@
     ]
   },
   "resources/assets/js/pages/manage/setting/approve.vue": {
-    "file": "js/build/approve.47426446.js",
+    "file": "js/build/approve.3d21903d.js",
     "src": "resources/assets/js/pages/manage/setting/approve.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_index.7dec7bba.js",
+      "_index.9fb61a85.js",
       "resources/assets/js/app.js"
     ],
     "css": [
@@ -365,7 +365,7 @@
     ]
   },
   "resources/assets/js/pages/manage/setting/language.vue": {
-    "file": "js/build/language.fad3eacd.js",
+    "file": "js/build/language.a3c66996.js",
     "src": "resources/assets/js/pages/manage/setting/language.vue",
     "isDynamicEntry": true,
     "imports": [
@@ -373,7 +373,7 @@
     ]
   },
   "resources/assets/js/pages/manage/setting/theme.vue": {
-    "file": "js/build/theme.0a551f80.js",
+    "file": "js/build/theme.fd610ccb.js",
     "src": "resources/assets/js/pages/manage/setting/theme.vue",
     "isDynamicEntry": true,
     "imports": [
@@ -381,7 +381,7 @@
     ]
   },
   "resources/assets/js/pages/manage/setting/keyboard.vue": {
-    "file": "js/build/keyboard.94e92b88.js",
+    "file": "js/build/keyboard.07f3c4e7.js",
     "src": "resources/assets/js/pages/manage/setting/keyboard.vue",
     "isDynamicEntry": true,
     "imports": [
@@ -392,7 +392,7 @@
     ]
   },
   "resources/assets/js/pages/manage/setting/license.vue": {
-    "file": "js/build/license.3d60d6ce.js",
+    "file": "js/build/license.3bd7173f.js",
     "src": "resources/assets/js/pages/manage/setting/license.vue",
     "isDynamicEntry": true,
     "imports": [
@@ -403,7 +403,7 @@
     ]
   },
   "resources/assets/js/pages/manage/setting/password.vue": {
-    "file": "js/build/password.907fe453.js",
+    "file": "js/build/password.9e154f8b.js",
     "src": "resources/assets/js/pages/manage/setting/password.vue",
     "isDynamicEntry": true,
     "imports": [
@@ -411,7 +411,7 @@
     ]
   },
   "resources/assets/js/pages/manage/setting/email.vue": {
-    "file": "js/build/email.21b53c72.js",
+    "file": "js/build/email.4b7f47d5.js",
     "src": "resources/assets/js/pages/manage/setting/email.vue",
     "isDynamicEntry": true,
     "imports": [
@@ -419,18 +419,18 @@
     ]
   },
   "resources/assets/js/pages/manage/setting/system.vue": {
-    "file": "js/build/system.29beaffc.js",
+    "file": "js/build/system.65e8150e.js",
     "src": "resources/assets/js/pages/manage/setting/system.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/assets/js/app.js",
-      "_index.7dec7bba.js",
-      "_CheckinExport.f1cbafae.js",
-      "_UserSelect.8d078ba1.js"
+      "_index.9fb61a85.js",
+      "_CheckinExport.f5523fff.js",
+      "_UserSelect.bef9be27.js"
     ]
   },
   "resources/assets/js/pages/manage/setting/delete.vue": {
-    "file": "js/build/delete.2c06277e.js",
+    "file": "js/build/delete.1b900c1a.js",
     "src": "resources/assets/js/pages/manage/setting/delete.vue",
     "isDynamicEntry": true,
     "imports": [
@@ -438,7 +438,7 @@
     ]
   },
   "resources/assets/js/pages/manage/projectInvite.vue": {
-    "file": "js/build/projectInvite.71cf6ce1.js",
+    "file": "js/build/projectInvite.8ecaf0a0.js",
     "src": "resources/assets/js/pages/manage/projectInvite.vue",
     "isDynamicEntry": true,
     "imports": [
@@ -449,30 +449,30 @@
     ]
   },
   "resources/assets/js/pages/manage/project.vue": {
-    "file": "js/build/project.a8429d1a.js",
+    "file": "js/build/project.97cd3109.js",
     "src": "resources/assets/js/pages/manage/project.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/assets/js/app.js",
-      "_ProjectLog.0273832a.js",
-      "_TaskMenu.5c63c5ff.js",
-      "_index.7dec7bba.js",
-      "_UserSelect.8d078ba1.js",
-      "_DialogWrapper.aeeaad17.js",
+      "_ProjectLog.932685c0.js",
+      "_TaskMenu.4e9114a9.js",
+      "_index.9fb61a85.js",
+      "_UserSelect.bef9be27.js",
+      "_DialogWrapper.e40774de.js",
       "_longpress.43ca7fd9.js",
-      "_ImgUpload.c7d6009a.js",
+      "_ImgUpload.75b1d804.js",
       "resources/assets/js/pages/manage/approve/details.vue"
     ]
   },
   "resources/assets/js/pages/manage/file.vue": {
-    "file": "js/build/file.96a7b7ae.js",
+    "file": "js/build/file.0565fcee.js",
     "src": "resources/assets/js/pages/manage/file.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/assets/js/app.js",
-      "_index.7dec7bba.js",
+      "_index.9fb61a85.js",
       "_longpress.43ca7fd9.js",
-      "_UserSelect.8d078ba1.js"
+      "_UserSelect.bef9be27.js"
     ],
     "dynamicImports": [
       "resources/assets/js/pages/manage/components/FilePreview.vue",
@@ -480,12 +480,12 @@
     ]
   },
   "resources/assets/js/pages/single/fileMsg.vue": {
-    "file": "js/build/fileMsg.10a18ce1.js",
+    "file": "js/build/fileMsg.b4db122e.js",
     "src": "resources/assets/js/pages/single/fileMsg.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/assets/js/app.js",
-      "_IFrame.83249e10.js"
+      "_IFrame.8e22cd56.js"
     ],
     "dynamicImports": [
       "resources/assets/js/components/MDEditor/preview.js",
@@ -499,19 +499,19 @@
       "js/build/fileMsg.1a0b76dd.css"
     ]
   },
-  "_IFrame.83249e10.js": {
-    "file": "js/build/IFrame.83249e10.js",
+  "_IFrame.8e22cd56.js": {
+    "file": "js/build/IFrame.8e22cd56.js",
     "imports": [
       "resources/assets/js/app.js"
     ]
   },
   "resources/assets/js/pages/single/fileTask.vue": {
-    "file": "js/build/fileTask.deae3cce.js",
+    "file": "js/build/fileTask.841434a6.js",
     "src": "resources/assets/js/pages/single/fileTask.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/assets/js/app.js",
-      "_IFrame.83249e10.js"
+      "_IFrame.8e22cd56.js"
     ],
     "dynamicImports": [
       "resources/assets/js/components/MDEditor/preview.js",
@@ -526,26 +526,26 @@
     ]
   },
   "resources/assets/js/pages/single/file.vue": {
-    "file": "js/build/file.25a1ed50.js",
+    "file": "js/build/file.be2fc871.js",
     "src": "resources/assets/js/pages/single/file.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/assets/js/pages/manage/components/FileContent.vue",
       "resources/assets/js/pages/manage/components/FilePreview.vue",
       "resources/assets/js/app.js",
-      "_IFrame.83249e10.js"
+      "_IFrame.8e22cd56.js"
     ],
     "css": [
       "js/build/file.1cbb23e7.css"
     ]
   },
   "resources/assets/js/pages/manage/components/FileContent.vue": {
-    "file": "js/build/FileContent.1661d355.js",
+    "file": "js/build/FileContent.a05cc8ab.js",
     "src": "resources/assets/js/pages/manage/components/FileContent.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/assets/js/app.js",
-      "_IFrame.83249e10.js"
+      "_IFrame.8e22cd56.js"
     ],
     "dynamicImports": [
       "resources/assets/js/components/MDEditor/index.vue",
@@ -560,12 +560,12 @@
     ]
   },
   "resources/assets/js/pages/manage/components/FilePreview.vue": {
-    "file": "js/build/FilePreview.06a6ea84.js",
+    "file": "js/build/FilePreview.0fb65efe.js",
     "src": "resources/assets/js/pages/manage/components/FilePreview.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/assets/js/app.js",
-      "_IFrame.83249e10.js"
+      "_IFrame.8e22cd56.js"
     ],
     "dynamicImports": [
       "resources/assets/js/components/MDEditor/preview.js",
@@ -577,28 +577,28 @@
     ]
   },
   "resources/assets/js/pages/single/task.vue": {
-    "file": "js/build/task.b6f29def.js",
+    "file": "js/build/task.caa540e3.js",
     "src": "resources/assets/js/pages/single/task.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_TaskDetail.c17d099d.js",
+      "_TaskDetail.19e8c92c.js",
       "resources/assets/js/app.js",
       "resources/assets/js/components/TEditor.vue",
-      "_ImgUpload.c7d6009a.js",
-      "_ProjectLog.0273832a.js",
-      "_DialogWrapper.aeeaad17.js",
+      "_ImgUpload.75b1d804.js",
+      "_ProjectLog.932685c0.js",
+      "_DialogWrapper.e40774de.js",
       "_longpress.43ca7fd9.js",
-      "_index.7dec7bba.js",
-      "_UserSelect.8d078ba1.js",
+      "_index.9fb61a85.js",
+      "_UserSelect.bef9be27.js",
       "resources/assets/js/pages/manage/approve/details.vue",
-      "_TaskMenu.5c63c5ff.js"
+      "_TaskMenu.4e9114a9.js"
     ],
     "css": [
       "js/build/task.0d7ca2d3.css"
     ]
   },
   "resources/assets/js/pages/single/validEmail.vue": {
-    "file": "js/build/validEmail.1c590c1d.js",
+    "file": "js/build/validEmail.079b0f10.js",
     "src": "resources/assets/js/pages/single/validEmail.vue",
     "isDynamicEntry": true,
     "imports": [
@@ -609,24 +609,24 @@
     ]
   },
   "resources/assets/js/pages/single/reportEdit.vue": {
-    "file": "js/build/reportEdit.bb7860be.js",
+    "file": "js/build/reportEdit.8a914257.js",
     "src": "resources/assets/js/pages/single/reportEdit.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_ReportEdit.eb980440.js",
+      "_ReportEdit.c2cc827b.js",
       "resources/assets/js/app.js",
-      "_UserSelect.8d078ba1.js"
+      "_UserSelect.bef9be27.js"
     ],
     "css": [
       "js/build/reportEdit.5c397123.css"
     ]
   },
   "resources/assets/js/pages/single/reportDetail.vue": {
-    "file": "js/build/reportDetail.5a1beb83.js",
+    "file": "js/build/reportDetail.73754de7.js",
     "src": "resources/assets/js/pages/single/reportDetail.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_ReportDetail.dfd12bf8.js",
+      "_ReportDetail.e068bbf7.js",
       "resources/assets/js/app.js"
     ],
     "css": [
@@ -634,7 +634,7 @@
     ]
   },
   "resources/assets/js/pages/token.vue": {
-    "file": "js/build/token.d6060c16.js",
+    "file": "js/build/token.a6a95cd9.js",
     "src": "resources/assets/js/pages/token.vue",
     "isDynamicEntry": true,
     "imports": [
@@ -645,7 +645,7 @@
     ]
   },
   "resources/assets/js/pages/login.vue": {
-    "file": "js/build/login.f507041f.js",
+    "file": "js/build/login.4b4d732e.js",
     "src": "resources/assets/js/pages/login.vue",
     "isDynamicEntry": true,
     "imports": [
@@ -653,7 +653,7 @@
     ]
   },
   "resources/assets/js/pages/404.vue": {
-    "file": "js/build/404.f5c0b107.js",
+    "file": "js/build/404.aea71296.js",
     "src": "resources/assets/js/pages/404.vue",
     "isDynamicEntry": true,
     "imports": [
@@ -664,7 +664,7 @@
     ]
   },
   "resources/assets/js/components/PreviewImage/components/view.vue": {
-    "file": "js/build/view.2ec08748.js",
+    "file": "js/build/view.aea37008.js",
     "src": "resources/assets/js/components/PreviewImage/components/view.vue",
     "isDynamicEntry": true,
     "imports": [
@@ -675,7 +675,7 @@
     ]
   },
   "resources/assets/js/components/PreviewImage/components/swipe.vue": {
-    "file": "js/build/swipe.c37d2e12.js",
+    "file": "js/build/swipe.5671e3ea.js",
     "src": "resources/assets/js/components/PreviewImage/components/swipe.vue",
     "isDynamicEntry": true,
     "imports": [
@@ -699,7 +699,7 @@
     "isDynamicEntry": true
   },
   "node_modules/openpgp_hi/dist/lightweight/bn.interface.min.mjs": {
-    "file": "js/build/bn.interface.min.8814fc7c.js",
+    "file": "js/build/bn.interface.min.b4b78c0c.js",
     "src": "node_modules/openpgp_hi/dist/lightweight/bn.interface.min.mjs",
     "isDynamicEntry": true,
     "imports": [
@@ -708,7 +708,7 @@
     ]
   },
   "node_modules/openpgp_hi/dist/lightweight/bn.min.mjs": {
-    "file": "js/build/bn.min.b1b4799c.js",
+    "file": "js/build/bn.min.7784a54e.js",
     "src": "node_modules/openpgp_hi/dist/lightweight/bn.min.mjs",
     "isDynamicEntry": true,
     "imports": [
@@ -716,7 +716,7 @@
     ]
   },
   "node_modules/openpgp_hi/dist/lightweight/elliptic.min.mjs": {
-    "file": "js/build/elliptic.min.b9e8917f.js",
+    "file": "js/build/elliptic.min.33e163e6.js",
     "src": "node_modules/openpgp_hi/dist/lightweight/elliptic.min.mjs",
     "isDynamicEntry": true,
     "imports": [
@@ -725,7 +725,7 @@
     ]
   },
   "resources/assets/js/components/MDEditor/preview.js": {
-    "file": "js/build/preview.61c4a20d.js",
+    "file": "js/build/preview.9d27e0ca.js",
     "src": "resources/assets/js/components/MDEditor/preview.js",
     "isDynamicEntry": true,
     "imports": [
@@ -733,7 +733,7 @@
     ]
   },
   "resources/assets/js/components/AceEditor.vue": {
-    "file": "js/build/AceEditor.d04cb310.js",
+    "file": "js/build/AceEditor.bedc7c6d.js",
     "src": "resources/assets/js/components/AceEditor.vue",
     "isDynamicEntry": true,
     "imports": [
@@ -741,35 +741,35 @@
     ]
   },
   "resources/assets/js/components/OnlyOffice.vue": {
-    "file": "js/build/OnlyOffice.c7a5da75.js",
+    "file": "js/build/OnlyOffice.51aa461b.js",
     "src": "resources/assets/js/components/OnlyOffice.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/assets/js/app.js",
-      "_IFrame.83249e10.js"
+      "_IFrame.8e22cd56.js"
     ],
     "css": [
       "js/build/OnlyOffice.a5dfbde1.css"
     ]
   },
   "resources/assets/js/components/Drawio.vue": {
-    "file": "js/build/Drawio.99f9e729.js",
+    "file": "js/build/Drawio.9ea40c16.js",
     "src": "resources/assets/js/components/Drawio.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/assets/js/app.js",
-      "_IFrame.83249e10.js"
+      "_IFrame.8e22cd56.js"
     ],
     "css": [
       "js/build/Drawio.fc5c6326.css"
     ]
   },
   "resources/assets/js/components/Minder.vue": {
-    "file": "js/build/Minder.6a65d087.js",
+    "file": "js/build/Minder.499aea2e.js",
     "src": "resources/assets/js/components/Minder.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_IFrame.83249e10.js",
+      "_IFrame.8e22cd56.js",
       "resources/assets/js/app.js"
     ],
     "css": [
@@ -777,12 +777,12 @@
     ]
   },
   "resources/assets/js/components/MDEditor/index.vue": {
-    "file": "js/build/index.62b8e8dd.js",
+    "file": "js/build/index.1e061e00.js",
     "src": "resources/assets/js/components/MDEditor/index.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/assets/js/app.js",
-      "_ImgUpload.c7d6009a.js"
+      "_ImgUpload.75b1d804.js"
     ],
     "css": [
       "js/build/index.4dae4044.css"
