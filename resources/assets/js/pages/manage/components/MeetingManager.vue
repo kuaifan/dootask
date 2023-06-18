@@ -45,6 +45,7 @@
         <Modal
             v-model="meetingShow"
             :title="addData.name"
+            ref="meetingModal"
             :mask="false"
             :mask-closable="false"
             :closable="false"
@@ -173,6 +174,11 @@ export default {
             } else {
                 $A.eeuiAppKeepScreenOff()
             }
+        },
+        meetingMini(val) {
+            if (!val) {
+                this.$refs.meetingModal.modalIndex = this.$refs.meetingModal.handleGetModalIndex()
+            }
         }
     },
 
@@ -211,6 +217,10 @@ export default {
         },
 
         onSubmit() {
+            if (this.meetingShow) {
+                $A.modalWarning("正在会议中，无法进入其他会议室");
+                return;
+            }
             this.$refs.addForm.validate((valid) => {
                 if (valid) {
                     this.loadIng++;
