@@ -386,16 +386,17 @@ export default {
         },
 
         editorStyle() {
-            const {wrapperWidth, editorHeight} = this;
+            const {wrapperWidth, editorHeight, value} = this;
+            const style = {};
+            if (value.length < 10) {
+                style.height = '30px';
+            }
             if (wrapperWidth > 0
                 && editorHeight > 0
                 && (wrapperWidth < 280 || editorHeight > 40)) {
-                return {
-                    width: '100%'
-                };
-            } else {
-                return {};
+                style.width = '100%';
             }
+            return style;
         },
 
         recordTransferStyle() {
