@@ -1074,7 +1074,16 @@ export default {
 
         allMsgList(newList, oldList) {
             const {tail} = this.scrollInfo();
-            this.allMsgs = newList;
+            if ($A.isIos() && newList.length !== oldList.length) {
+                // 隐藏区域，让iOS断触
+                this.$refs.scroller.$el.style.visibility = 'hidden'
+                this.allMsgs = newList;
+                this.$nextTick(_ => {
+                    this.$refs.scroller.$el.style.visibility = 'visible'
+                })
+            } else {
+                this.allMsgs = newList;
+            }
             //
             if (!this.windowActive || (tail > 10 && oldList.length > 0)) {
                 const lastId = oldList[oldList.length - 1] ? oldList[oldList.length - 1].id : 0
