@@ -1,5 +1,5 @@
 <template>
-    <div class="teditor-wrapper">
+    <div class="teditor-wrapper" @click="onClickWrap" @touchstart="onTouchstart">
         <div class="teditor-box" :class="[!inline && spinShow ? 'teditor-loadstyle' : 'teditor-loadedstyle']">
             <template v-if="inline">
                 <div ref="myTextarea" :id="id" v-html="spinShow ? '' : content"></div>
@@ -35,6 +35,20 @@
                 :on-format-error="handleFormatError"
                 :on-exceeded-size="handleMaxSize"
                 :before-upload="handleBeforeUpload"/>
+            <div class="teditor-operate" :style="operateStyles" v-show="operateVisible">
+                <Dropdown
+                    trigger="custom"
+                    :visible="operateVisible"
+                    @on-clickoutside="operateVisible = false"
+                    transfer>
+                    <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
+                    <DropdownMenu slot="list">
+                        <DropdownItem @click.native="onFull">{{ $L('编辑') }}</DropdownItem>
+                        <DropdownItem v-if="operateLink" @click.native="onLinkPreview">{{ $L('打开链接') }}</DropdownItem>
+                        <DropdownItem v-if="operateImg" @click.native="onImagePreview">{{ $L('查看图片') }}</DropdownItem>
+                    </DropdownMenu>
+                </Dropdown>
+            </div>
         </div>
         <Spin fix v-if="uploadIng > 0">
             <Icon type="ios-loading" class="icon-loading"></Icon>
@@ -118,7 +132,7 @@
             },
             readOnly: {
                 type: Boolean,
-                default: false
+                default: false  // windowTouch 为 true 时，非全屏模式下，readOnly 为 true
             },
             autoSize: {
                 type: Boolean,
@@ -131,6 +145,9 @@
             placeholderFull: {
                 type: String,
                 default: ''
+            },
+            scrollHideOperateClassName: {   // 触发隐藏操作菜单的滚动区域class
+                type: String,
             },
         },
         data() {
@@ -150,12 +167,30 @@
                 actionUrl: $A.apiUrl('system/fileupload'),
                 maxSize: 10240,
 
+                operateStyles: {},
+                operateVisible: false,
+                operateLink: null,
+                operateImg: null,
+
                 timer: null,
+                listener: null,
             };
         },
         mounted() {
             this.content = this.value;
             this.init();
+            //
+            if (this.scrollHideOperateClassName) {
+                let parent = this.$parent.$el.parentNode;
+                while (parent) {
+                    if (parent.classList.contains(this.scrollHideOperateClassName)) {
+                        this.listener = parent;
+                        parent.addEventListener("scroll", this.onTouchstart);
+                        break;
+                    }
+                    parent = parent.parentNode;
+                }
+            }
         },
         activated() {
             this.content = this.value;
@@ -163,6 +198,9 @@
         },
         deactivated() {
             this.destroy();
+        },
+        beforeDestroy() {
+            this.listener?.removeEventListener("scroll", this.onTouchstart);
         },
         destroyed() {
             this.destroy();
@@ -188,6 +226,9 @@
             },
             readOnly(value) {
                 if (this.editor !== null) {
+                    if (this.windowTouch) {
+                        return;
+                    }
                     if (value) {
                         this.editor.setMode('readonly');
                     } else {
@@ -222,6 +263,7 @@
                         this.editorT = null;
                     }
                     this.spinShow = true;
+                    this.operateVisible = false;
                     $A(this.$refs.myTextarea).show();
                 }, 500);
             },
@@ -332,17 +374,16 @@
                         editor.ui.registry.addMenuItem('imagePreview', {
                             text: this.$L('预览图片'),
                             onAction: () => {
-                                const array = this.getValueImages();
-                                if (array.length === 0) {
-                                    $A.messageWarning("没有可预览的图片")
-                                    return;
-                                }
-                                let index = 0;
+                                this.operateImg = null
                                 const imgElm = editor.selection.getNode();
                                 if (imgElm && imgElm.nodeName === "IMG") {
-                                    index = array.findIndex(item => item.src === imgElm.getAttribute("src"));
+                                    this.operateImg = imgElm.getAttribute("src")
                                 }
-                                this.$store.dispatch("previewImage", {index, list: array})
+                                this.onImagePreview()
+                            },
+                            onSetup: (api) => {
+                                const imgElm = editor.selection.getNode();
+                                api.setDisabled(!(imgElm && imgElm.nodeName === "IMG"));
                             }
                         });
                         editor.ui.registry.addButton('uploadFiles', {
@@ -390,25 +431,22 @@
                                 icon: 'fullscreen',
                                 tooltip: this.$L('全屏'),
                                 onAction: () => {
-                                    this.content = editor.getContent();
-                                    this.transfer = true;
-                                    this.initTransfer();
+                                    this.onFull();
                                 }
                             });
                             editor.ui.registry.addMenuItem('screenload', {
                                 text: this.$L('全屏'),
                                 onAction: () => {
-                                    this.content = editor.getContent();
-                                    this.transfer = true;
-                                    this.initTransfer();
+                                    this.onFull();
                                 }
                             });
                             editor.on('Init', (e) => {
                                 this.spinShow = false;
                                 this.editor = editor;
                                 this.editor.setContent(this.content);
-                                if (this.readOnly) {
+                                if (this.readOnly || this.windowTouch) {
                                     this.editor.setMode('readonly');
+                                    this.updateTouchContent();
                                 } else {
                                     this.editor.setMode('design');
                                 }
@@ -453,6 +491,12 @@
                 return optionInfo;
             },
 
+            onFull() {
+                this.content = this.getContent();
+                this.transfer = true;
+                this.initTransfer();
+            },
+
             closeFull() {
                 this.content = this.getContent();
                 this.$emit('input', this.content);
@@ -470,6 +514,13 @@
                     this.$emit('input', this.content);
                     this.editorT.destroy();
                     this.editorT = null;
+                    //
+                    if (this.windowTouch) {
+                        this.$nextTick(() => {
+                            this.updateTouchContent();
+                            this.$emit('on-blur');
+                        });
+                    }
                 }
             },
 
@@ -570,6 +621,90 @@
                     }
                 }
                 return imgs;
+            },
+
+            onLinkPreview() {
+                if (this.operateLink) {
+                    window.open(this.operateLink);
+                }
+            },
+
+            onImagePreview() {
+                const array = this.getValueImages();
+                if (array.length === 0) {
+                    $A.messageWarning("没有可预览的图片")
+                    return;
+                }
+                let index = Math.max(0, array.findIndex(item => item.src === this.operateImg));
+                this.$store.dispatch("previewImage", {index, list: array})
+            },
+
+            onClickWrap(event) {
+                if (!this.windowTouch) {
+                    return
+                }
+                event.stopPropagation()
+                this.operateVisible = false;
+                this.operateLink = event.target.tagName === "A" ? event.target.href : null;
+                this.operateImg = event.target.tagName === "IMG" ? event.target.src : null;
+                this.$nextTick(() => {
+                    const rect = this.$el.getBoundingClientRect();
+                    this.operateStyles = {
+                        left: `${event.clientX - rect.left}px`,
+                        top: `${event.clientY - rect.top}px`,
+                    }
+                    this.operateVisible = true;
+                })
+            },
+
+            onTouchstart() {
+                if (!this.windowTouch) {
+                    return
+                }
+                this.operateVisible = false;
+            },
+
+            updateTouchContent() {
+                if (!this.windowTouch) {
+                    return
+                }
+                this.$nextTick(_ => {
+                    if (!this.editor) {
+                        return;
+                    }
+                    if (!this.placeholder || this.content) {
+                        this.editor.bodyElement.removeAttribute("data-mce-placeholder");
+                        this.editor.bodyElement.removeAttribute("aria-placeholder");
+                    } else {
+                        this.editor.bodyElement.setAttribute("data-mce-placeholder", this.placeholder);
+                        this.editor.bodyElement.setAttribute("aria-placeholder", this.placeholder);
+                    }
+                    this.updateTouchLink(0);
+                })
+            },
+
+            updateTouchLink(timeout) {
+                if (!this.windowTouch) {
+                    return
+                }
+                setTimeout(_ => {
+                    if (!this.editor) {
+                        return;
+                    }
+                    this.editor.bodyElement.querySelectorAll("a").forEach(item => {
+                        if (item.__dataMceClick !== true) {
+                            item.__dataMceClick = true;
+                            item.addEventListener("click", event => {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                this.onClickWrap(event);
+                            })
+                        }
+                    })
+                    if (timeout < 300) {
+                        this.updateTouchLink(timeout + 100);
+                    }
+                }, timeout)
             },
 
             /********************文件上传部分************************/

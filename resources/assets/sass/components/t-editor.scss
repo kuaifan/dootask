@@ -106,6 +106,16 @@
     position: relative;
 }
 
+.teditor-operate {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
 .upload-control {
     display: none;
     width: 0;
