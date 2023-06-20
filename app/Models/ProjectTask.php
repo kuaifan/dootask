@@ -1474,7 +1474,7 @@ class ProjectTask extends AbstractModel
         foreach ($array as $item) {
             $params = [
                 'ignoreFd' => Request::header('fd'),
-                'userid' => array_values($item),
+                'userid' => $item['userid'],
                 'msg' => [
                     'type' => 'projectTask',
                     'action' => $action,

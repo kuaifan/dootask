@@ -149,7 +149,7 @@ class PushTask extends AbstractTask
                 if (!is_array($userid)) {
                     $userid = [$userid];
                 }
-                foreach ($userid[0] as $uid) {
+                foreach ($userid as $uid) {
                     $row = WebSocket::select(['fd'])->whereUserid($uid)->pluck('fd');
                     if ($row->isNotEmpty()) {
                         $array = array_merge($array, $row->toArray());
