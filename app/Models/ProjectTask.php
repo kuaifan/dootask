@@ -1537,32 +1537,30 @@ class ProjectTask extends AbstractModel
 
     /**
      * 删除可见性任务 推送
-     * @param string $action
-     * @param array|self $data      发送内容，默认为[id, parent_id, project_id, column_id, dialog_id]
+     * @param array $userids
+     * @return void
      */
-    public function pushMsgVisibleRemove($data = null)
+    public function pushMsgVisibleRemove(array $userids = [])
     {
         if (!$this->project) {
             return;
         }
-        if ($data === null) {
-            $data = [
-                'id' => $this->id,
-                'parent_id' => $this->parent_id,
-                'project_id' => $this->project_id,
-                'column_id' => $this->column_id,
-                'dialog_id' => $this->dialog_id,
-            ];
-        } elseif ($data instanceof self) {
-            $data = $data->toArray();
-        }
+        $data = [
+            'id' => $this->id,
+            'parent_id' => $this->parent_id,
+            'project_id' => $this->project_id,
+            'column_id' => $this->column_id,
+            'dialog_id' => $this->dialog_id,
+        ];
         //
         $array = [];
-        // 项目成员 与 项目负责人，任务负责人、协助人的差集
-        $projectUserids = ProjectUser::whereProjectId($this->project_id)->pluck('userid')->toArray();  // 项目成员
-        $projectOwner = Project::whereId($this->project_id)->pluck('userid')->toArray();  // 项目负责人
-        $taskOwnerAndAssists = ProjectTaskUser::select(['userid', 'owner'])->whereIn('owner', [0, 1])->whereTaskId($this->id)->pluck('userid')->toArray();
-        $userids = array_diff($projectUserids, $projectOwner, $taskOwnerAndAssists);
+        if (empty($userids)) {
+            // 默认 项目成员 与 项目负责人，任务负责人、协助人的差集
+            $projectUserids = ProjectUser::whereProjectId($this->project_id)->pluck('userid')->toArray();  // 项目成员
+            $projectOwner = Project::whereId($this->project_id)->pluck('userid')->toArray();  // 项目负责人
+            $taskOwnerAndAssists = ProjectTaskUser::select(['userid', 'owner'])->whereIn('owner', [0, 1])->whereTaskId($this->id)->pluck('userid')->toArray();
+            $userids = array_diff($projectUserids, $projectOwner, $taskOwnerAndAssists);
+        }
         //
         $array[] = [
             'userid' => array_values($userids),
