@@ -162,8 +162,6 @@ class PushTask extends AbstractTask
                 $ignoreFd = is_array($ignoreFd) ? $ignoreFd : [$ignoreFd];
             }
             // 开始发送
-            \Log::info('fd');
-            \Log::info($array);
             foreach ($array as $fid) {
                 if ($ignoreFd) {
                     if (in_array($fid, $ignoreFd)) continue;
