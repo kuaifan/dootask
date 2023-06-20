@@ -16,7 +16,7 @@ class AddProjectTasksIsAllVisible extends Migration
         //
         Schema::table('project_tasks', function (Blueprint $table) {
             if (!Schema::hasColumn('project_tasks', 'is_all_visible')) {
-                $table->tinyInteger('is_all_visible')->nullable()->default(1)->after('is_default')->comment('是否所有人可见');
+                $table->tinyInteger('is_all_visible')->nullable()->default(1)->after('userid')->comment('是否所有人可见');
             }
         });
     }
