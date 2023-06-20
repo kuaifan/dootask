@@ -98,7 +98,7 @@
                 <Checkbox v-model="addData.visibility_appoint" :true-value="1" :false-value="0">{{$L('指定人员')}}</Checkbox>
                 <UserInput
                     v-show="addData.visibility_appoint"
-                    v-model="addData.visibility_appointor"
+                    v-model="addData.appointor"
                     :placeholder="$L('选择指定人员')"
                     :project-id="addData.project_id"
                     :transfer="false">
@@ -209,6 +209,7 @@ export default {
                 visibility_assist: 1,
                 visibility_appoint: 1,
                 visibility_appointor: [0],
+                appointor: [0]
             },
 
             cascaderShow: false,

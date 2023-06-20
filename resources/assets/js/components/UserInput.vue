@@ -255,7 +255,7 @@
                     this.selects = [];
                 }
                 this.selects.some(userid => {
-                    if (!this.list.find(item => item.userid == userid)) {
+                    if (!this.list.find(item => item.userid == userid) && userid) {
                         this.list.push({userid, nickname: userid})
                         this.calcMultipleSelect()
                         this.$store.dispatch("getUserBasic", {userid})
