@@ -1583,8 +1583,6 @@ export default {
         },
 
         updateVisible() {
-            console.log('bbb')
-            console.log(this.taskDetail.visibility_appointor)
             this.updateData('visibility_appointor')
         }
     }
