@@ -92,6 +92,25 @@
                     </ETooltip>
                 </div>
             </FormItem>
+            <FormItem :label="$L('可见性')">
+                <Checkbox disabled v-model="addData.visibility_principal" :true-value="1" :false-value="0">{{$L('项目负责人')}}</Checkbox>
+                <Checkbox disabled v-model="addData.visibility_assist" :true-value="1" :false-value="0">{{$L('项目协助人')}}</Checkbox>
+                <Checkbox v-model="addData.visibility_appoint" :true-value="1" :false-value="0">{{$L('指定人员')}}</Checkbox>
+                <UserInput
+                    v-show="addData.visibility_appoint"
+                    v-model="addData.visibility_appointor"
+                    :placeholder="$L('选择指定人员')"
+                    :project-id="addData.project_id"
+                    :transfer="false">
+                    <Option slot="option-prepend" :value="0" :label="$L('所有人')" >
+                        <div class="user-input-option">
+                            <div class="user-input-avatar"><EAvatar class="avatar" icon="el-icon-s-custom"/></div>
+                            <div class="user-input-nickname">{{ $L('所有人') }}</div>
+                            <div class="user-input-userid">All</div>
+                        </div>
+                    </Option>
+                </UserInput>
+            </FormItem>
             <div class="subtasks">
                 <div v-if="addData.subtasks.length > 0" class="sublist">
                     <Row>
@@ -185,6 +204,11 @@ export default {
                 p_level: 0,
                 p_name: '',
                 p_color: '',
+                // 可见性
+                visibility_principal: 1,
+                visibility_assist: 1,
+                visibility_appoint: 1,
+                visibility_appointor: [0],
             },
 
             cascaderShow: false,

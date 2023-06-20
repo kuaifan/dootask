@@ -149,7 +149,7 @@ class PushTask extends AbstractTask
                 if (!is_array($userid)) {
                     $userid = [$userid];
                 }
-                foreach ($userid as $uid) {
+                foreach ($userid[0] as $uid) {
                     $row = WebSocket::select(['fd'])->whereUserid($uid)->pluck('fd');
                     if ($row->isNotEmpty()) {
                         $array = array_merge($array, $row->toArray());
@@ -162,6 +162,8 @@ class PushTask extends AbstractTask
                 $ignoreFd = is_array($ignoreFd) ? $ignoreFd : [$ignoreFd];
             }
             // 开始发送
+            \Log::info('fd');
+            \Log::info($array);
             foreach ($array as $fid) {
                 if ($ignoreFd) {
                     if (in_array($fid, $ignoreFd)) continue;

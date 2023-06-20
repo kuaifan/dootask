@@ -1819,7 +1819,9 @@ export default {
                 data: post,
                 method: 'post',
             }).then(result => {
-                dispatch("addTaskSuccess", result.data)
+                if (result.data.is_visible === 1) {
+                    dispatch("addTaskSuccess", result.data)
+                }
                 resolve(result)
             }).catch(e => {
                 console.warn(e);
