@@ -233,7 +233,7 @@ export default {
     },
     computed: {
         isShowAgreeBtn(){
-            return (datas.candidate || '').split(',').indexOf(userId + '') != -1 && !datas.is_finished
+            return (this.datas.candidate || '').split(',').indexOf(this.userId + '') != -1 && !this.datas.is_finished
         },
         isShowWarningBtn(){
             let is = (this.userId == this.datas.start_user_id) && this.datas?.is_finished != true;
