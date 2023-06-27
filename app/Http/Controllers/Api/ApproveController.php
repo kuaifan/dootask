@@ -952,6 +952,7 @@ class ApproveController extends AbstractController
         $data = [
             'id' => $process['id'],
             'nickname' => User::userid2nickname($type == 'approve_submitter' ? $toUser['userid'] : $process['start_user_id']),
+            'start_nickname' => User::userid2nickname($process['start_user_id']),
             'proc_def_name' => $process['proc_def_name'],
             'department' => $process['department'],
             'type' => $process['var']['type'],

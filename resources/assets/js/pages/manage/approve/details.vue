@@ -159,8 +159,8 @@
         </div>
         <div class="approve-operation">
             <div style="flex: 1;"></div>
-            <Button type="success" v-if="(datas.candidate || '').split(',').indexOf(userId + '') != -1" @click="approve(1)">{{$L('同意')}}</Button>
-            <Button type="error" v-if="(datas.candidate || '').split(',').indexOf(userId + '') != -1" @click="approve(2)">{{$L('拒绝')}}</Button>
+            <Button type="success" v-if="isShowAgreeBtn" @click="approve(1)">{{$L('同意')}}</Button>
+            <Button type="error" v-if="isShowAgreeBtn" @click="approve(2)">{{$L('拒绝')}}</Button>
             <Button type="warning" v-if="isShowWarningBtn" @click="revocation">{{$L('撤销')}}</Button>
             <Button @click="comment" type="success" ghost>+{{$L('添加评论')}}</Button>
         </div>
@@ -232,6 +232,9 @@ export default {
         },
     },
     computed: {
+        isShowAgreeBtn(){
+            return (this.datas.candidate || '').split(',').indexOf(this.userId + '') != -1 && !this.datas.is_finished
+        },
         isShowWarningBtn(){
             let is = (this.userId == this.datas.start_user_id) && this.datas?.is_finished != true;
             (this.datas.node_infos || []).map(h=>{
