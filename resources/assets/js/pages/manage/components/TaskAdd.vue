@@ -93,6 +93,21 @@
                     </ETooltip>
                 </div>
             </FormItem>
+            <FormItem :label="$L('可见性')">
+                <Checkbox disabled v-model="addData.visibility_principal" :true-value="1" :false-value="0">{{$L('任务负责人')}}</Checkbox>
+                <Checkbox disabled v-model="addData.visibility_assist" :true-value="1" :false-value="0">{{$L('任务协助人')}}</Checkbox>
+                <RadioGroup v-model="addData.is_all_visible">
+                    <Radio :label=1>{{$L('所有人员')}}</Radio>
+                    <Radio :label=0>{{$L('指定成员')}}</Radio>
+                </RadioGroup>
+                <UserSelect
+                    class="item-content user"
+                    v-show="!addData.is_all_visible"
+                    v-model="addData.visibility_appointor"
+                    :avatar-size="28"
+                    :title="$L('选择指定人员')"
+                    :project-id="addData.project_id"/>
+            </FormItem>
             <div class="subtasks">
                 <div v-if="addData.subtasks.length > 0" class="sublist">
                     <Row>
@@ -186,6 +201,12 @@ export default {
                 p_level: 0,
                 p_name: '',
                 p_color: '',
+                // 可见性
+                visibility_principal: 1,
+                visibility_assist: 1,
+                visibility_appoint: 1,
+                is_all_visible: 1,
+                visibility_appointor: [],
             },
 
             cascaderShow: false,

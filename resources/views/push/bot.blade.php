@@ -147,7 +147,7 @@
     </div></span>
 @elseif ($type === 'approve_submitter')
     <span class="open-approve-details" data-id="{{$data->id}}"><b> @if ($action === 'pass')您发起的「{{$data->proc_def_name}}」已通过 @else您发起的「{{$data->proc_def_name}}」被{{$data->nickname}}拒绝 @endif</b>
-    <div class="cause"><span>申请人：<span style="color:#84c56a">{{'@'}}{{$data->nickname}}</span> {{$data->department}}</span>
+    <div class="cause"><span>申请人：<span style="color:#84c56a">{{'@'}}{{$data->start_nickname}}</span> {{$data->department}}</span>
         <b>审批事由</b>
         @if ($data->type)
         <span>假期类型：{{$data->type}}</span>

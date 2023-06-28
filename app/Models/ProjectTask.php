@@ -370,6 +370,18 @@ class ProjectTask extends AbstractModel
         $p_color    = $data['p_color'];
         $top        = intval($data['top']);
         $userid     = User::userid();
+        $visibility_appoint = $data['visibility_appoint'];
+        $visibility_appointor = $data['visibility_appointor'];
+        // 可见性
+        $visibility_userids = [];
+        $is_all_visible = 0;
+        if ($visibility_appoint) {
+            if (in_array(0, $visibility_appointor)) {
+                $is_all_visible = 1;
+            } else {
+                $visibility_userids = $visibility_appointor;
+            }
+        }
         //
         if (ProjectTask::whereProjectId($project_id)
                 ->whereNull('project_tasks.complete_at')
@@ -398,6 +410,7 @@ class ProjectTask extends AbstractModel
             'p_level' => $p_level,
             'p_name' => $p_name,
             'p_color' => $p_color,
+            'is_all_visible' => $is_all_visible
         ]);
         if ($content) {
             $task->desc = Base::getHtml($content, 100);
@@ -462,7 +475,7 @@ class ProjectTask extends AbstractModel
             }
         }
         //
-        return AbstractModel::transaction(function() use ($assist, $times, $subtasks, $content, $owner, $task) {
+        return AbstractModel::transaction(function() use ($assist, $times, $subtasks, $content, $owner, $task, $visibility_userids) {
             $task->save();
             $owner = array_values(array_unique($owner));
             foreach ($owner as $uid) {
@@ -484,6 +497,17 @@ class ProjectTask extends AbstractModel
                     'owner' => 0,
                 ])->save();
             }
+
+            foreach ($visibility_userids as $uid) {
+                ProjectTaskUser::createInstance([
+                    'project_id' => $task->project_id,
+                    'task_id' => $task->id,
+                    'task_pid' => $task->parent_id ?: $task->id,
+                    'userid' => $uid,
+                    'owner' => 2,
+                ])->save();
+            }
+
             if ($content) {
                 ProjectTaskContent::createInstance([
                     'project_id' => $task->project_id,
@@ -690,6 +714,27 @@ class ProjectTask extends AbstractModel
                 }
                 $updateMarking['is_update_project'] = true;
                 $this->syncDialogUser();
+            }
+            // 可见性
+            if (Arr::exists($data, 'visibility_appointor') || Arr::exists($data, 'is_all_visible')) {
+                if ($data['is_all_visible'] == 1) {
+                    ProjectTask::whereId($data['task_id'])->update(['is_all_visible' => 1]);
+                    ProjectTaskUser::whereTaskId($data['task_id'])->whereOwner(2)->delete();
+                } elseif ( isset($data['visibility_appointor']) || $data['is_all_visible'] == 0) {
+                    ProjectTask::whereId($data['task_id'])->update(['is_all_visible' => 0]);
+                    // 覆盖
+                    ProjectTaskUser::whereTaskId($data['task_id'])->whereOwner(2)->delete();
+                    foreach ($data['visibility_appointor'] as $uid) {
+                        ProjectTaskUser::createInstance([
+                            'project_id' => $this->project_id,
+                            'task_id' => $this->id,
+                            'task_pid' => $this->parent_id ?: $this->id,
+                            'userid' => $uid,
+                            'owner' => 2,
+                        ])->save();
+                    }
+
+                }
             }
             // 计划时间（原则：子任务时间在主任务时间内）
             if (Arr::exists($data, 'times')) {
@@ -1372,6 +1417,8 @@ class ProjectTask extends AbstractModel
             $userids = $this->project->relationUserids();
         } elseif (!is_array($userid)) {
             $userids = [$userid];
+        } elseif (is_array($userid)) {
+            $userids = $userid;
         }
         //
         $array = [];
@@ -1391,8 +1438,8 @@ class ProjectTask extends AbstractModel
                     ];
                 }
                 // 协助人
-                $assists = $taskUser->pluck('userid')->toArray();
-                $assists = array_intersect($userids, array_diff($assists, $owners));
+                $assists = $taskUser->where('owner', 0)->pluck('userid')->toArray();
+                $assists = array_intersect($userids, $assists);
                 if ($assists) {
                     $array[] = [
                         'userid' => array_values($assists),
@@ -1403,13 +1450,20 @@ class ProjectTask extends AbstractModel
                     ];
                 }
                 // 项目成员（其他人）
-                $userids = array_diff($userids, $owners, $assists);
+                if ($data['is_all_visible'] == 1) {
+                    // 全部可见
+                    $userids = array_diff($userids, $owners, $assists);
+                } else {
+                    // 指定可见
+                    $userids = $taskUser->where('owner', 2)->pluck('userid')->toArray();
+                }
                 $data = array_merge($data, [
                     'owner' => 0,
                     'assist' => 0,
                 ]);
             }
         }
+        //
         $array[] = [
             'userid' => array_values($userids),
             'data' => $data
@@ -1418,7 +1472,7 @@ class ProjectTask extends AbstractModel
         foreach ($array as $item) {
             $params = [
                 'ignoreFd' => Request::header('fd'),
-                'userid' => array_values($item),
+                'userid' => $item['userid'],
                 'msg' => [
                     'type' => 'projectTask',
                     'action' => $action,
@@ -1428,6 +1482,112 @@ class ProjectTask extends AbstractModel
             $task = new PushTask($params, false);
             Task::deliver($task);
         }
+    }
+
+    /**
+     * 添加可见性任务 推送
+     * @param array|self $data      发送内容，默认为[id, parent_id, project_id, column_id, dialog_id]
+     */
+    public function pushMsgVisibleAdd($data = null)
+    {
+        if (!$this->project) {
+            return;
+        }
+        if ($data === null) {
+            $data = [
+                'id' => $this->id,
+                'parent_id' => $this->parent_id,
+                'project_id' => $this->project_id,
+                'column_id' => $this->column_id,
+                'dialog_id' => $this->dialog_id,
+            ];
+        } elseif ($data instanceof self) {
+            $data = $data->toArray();
+        }
+        //
+        $array = [];
+        if ($this->is_all_visible == 0) {
+            $userids = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($this->id)->orWhere('task_pid' , '=', $this->id)->pluck('userid')->toArray();
+        } else {
+            $userids = ProjectUser::whereProjectId($this->project_id)->pluck('userid')->toArray();  // 项目成员
+        }
+        //
+        $array[] = [
+            'userid' => array_values($userids),
+            'data' => $data
+        ];
+        //
+        foreach ($array as $item) {
+            $params = [
+                'ignoreFd' => '0',
+                'userid' => $item['userid'],
+                'msg' => [
+                    'type' => 'projectTask',
+                    'action' => 'add',
+                    'data' => $item['data'],
+                ]
+            ];
+            $task = new PushTask($params, false);
+            Task::deliver($task);
+        }
+    }
+
+    /**
+     * 删除可见性任务 推送
+     * @param array $userids
+     * @return void
+     */
+    public function pushMsgVisibleRemove(array $userids = [])
+    {
+        if (!$this->project) {
+            return;
+        }
+        $data = [
+            'id' => $this->id,
+            'parent_id' => $this->parent_id,
+            'project_id' => $this->project_id,
+            'column_id' => $this->column_id,
+            'dialog_id' => $this->dialog_id,
+        ];
+        //
+        $array = [];
+        if (empty($userids)) {
+            // 默认 项目成员 与 项目负责人，任务负责人、协助人的差集
+            $projectUserids = ProjectUser::whereProjectId($this->project_id)->pluck('userid')->toArray();  // 项目成员
+            $projectOwner = Project::whereId($this->project_id)->pluck('userid')->toArray();  // 项目负责人
+            $taskOwnerAndAssists = ProjectTaskUser::select(['userid', 'owner'])->whereIn('owner', [0, 1])->whereTaskId($this->id)->pluck('userid')->toArray();
+            $userids = array_diff($projectUserids, $projectOwner, $taskOwnerAndAssists);
+        }
+        //
+        $array[] = [
+            'userid' => array_values($userids),
+            'data' => $data
+        ];
+        //
+        foreach ($array as $item) {
+            $params = [
+                'ignoreFd' => '0',
+                'userid' => $item['userid'],
+                'msg' => [
+                    'type' => 'projectTask',
+                    'action' => 'delete',
+                    'data' => $item['data'],
+                ]
+            ];
+            $task = new PushTask($params, false);
+            Task::deliver($task);
+        }
+    }
+
+    /**
+     * 更新可见性任务 推送
+     * @param array|self $data      发送内容，默认为[id, parent_id, project_id, column_id, dialog_id]
+     */
+    public function pushMsgVisibleUpdate($data)
+    {
+        $this->pushMsgVisibleRemove();
+        usleep(300);
+        $this->pushMsgVisibleAdd($data);
     }
 
     /**
@@ -1558,5 +1718,28 @@ class ProjectTask extends AbstractModel
         }
         //
         return $task;
+    }
+
+    /**
+     * 获取用户任务可见性
+     * @param $userid
+     * @param $project_id
+     * @return array
+     */
+    public static function getVisibleUserids($userid, $project_id = 0)
+    {
+        return (new ProjectTask)->setTable('pt')->from('project_tasks as pt')
+            ->leftJoin('project_task_users as b', 'b.task_id', '=', 'pt.id')
+            ->Join('projects as p', 'p.id', '=', 'pt.project_id')
+            ->when($project_id, function ($q) use ($project_id) {
+                $q->where('pt.project_id', '=', $project_id);   // 负责人项目ids
+            })
+            ->where(function ($q) use ($userid){
+                $q->where("pt.is_all_visible", '=', 1);
+                $q->OrWhere("p.userid", '=', $userid);
+                $q->OrWhere("b.userid", '=', $userid);
+            })
+            ->pluck("pt.id")
+            ->toArray();
     }
 }

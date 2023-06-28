@@ -16,6 +16,7 @@ use App\Models\ProjectLog;
 use App\Models\ProjectTask;
 use App\Models\ProjectTaskFile;
 use App\Models\ProjectTaskFlowChange;
+use App\Models\ProjectTaskUser;
 use App\Models\ProjectUser;
 use App\Models\User;
 use App\Models\WebSocketDialog;
@@ -895,8 +896,7 @@ class ProjectController extends AbstractController
     public function task__lists()
     {
         $user = User::auth();
-        //
-        $builder = ProjectTask::with(['taskUser', 'taskTag']);
+        $userid = $user->userid;
         //
         $parent_id = intval(Request::input('parent_id'));
         $project_id = intval(Request::input('project_id'));
@@ -909,6 +909,12 @@ class ProjectController extends AbstractController
         $sorts = Request::input('sorts');
         $keys = is_array($keys) ? $keys : [];
         $sorts = is_array($sorts) ? $sorts : [];
+
+        // 任务可见性
+        $visibility_task_ids =  ProjectTask::getVisibleUserids($userid, $project_id);
+
+        $builder = ProjectTask::with(['taskUser', 'taskTag']);
+        $builder->whereIn("project_tasks.id", $visibility_task_ids);
         //
         if ($keys['name']) {
             if (Base::isNumber($keys['name'])) {
@@ -1341,17 +1347,27 @@ class ProjectController extends AbstractController
      */
     public function task__one()
     {
-        User::auth();
+        $user = User::auth();
         //
         $task_id = intval(Request::input('task_id'));
         $archived = Request::input('archived', 'no');
         //
         $isArchived = str_replace(['all', 'yes', 'no'], [null, false, true], $archived);
         $task = ProjectTask::userTask($task_id, $isArchived, true, false, ['taskUser', 'taskTag']);
+        // 项目可见性
+        $project_userid = Project::whereId($task->project_id)->value('userid');     // 项目负责人
+        if ($task->is_all_visible != 1 && $user->userid != $project_userid) {
+            $visibleUserids = ProjectTaskUser::whereTaskId($task_id)->pluck('userid')->toArray();       // 是否任务负责人、协助人、可见人
+            $subVisibleUserids = ProjectTaskUser::whereTaskPid($task_id)->pluck('userid')->toArray();   // 是否子任务负责人、协助人
+            if (!in_array($user->userid, $visibleUserids) && !in_array($user->userid, $subVisibleUserids)) {
+                return Base::retError('无任务权限');
+            }
+        }
         //
         $data = $task->toArray();
         $data['project_name'] = $task->project?->name;
         $data['column_name'] = $task->projectColumn?->name;
+        $data['visibility_appointor'] = $task->is_all_visible==1 ? [0] : ProjectTaskUser::whereTaskId($task_id)->whereOwner(2)->pluck('userid');
         return Base::retSuccess('success', $data);
     }
 
@@ -1557,7 +1573,7 @@ class ProjectController extends AbstractController
      */
     public function task__add()
     {
-        User::auth();
+        $user = User::auth();
         //
         $data = Request::input();
         $project_id = intval($data['project_id']);
@@ -1602,6 +1618,17 @@ class ProjectController extends AbstractController
             $data = $data->toArray();
             $data['new_column'] = $newColumn;
         }
+
+
+        if ($data['is_all_visible'] == 1) {
+            $data['is_visible'] = 1;
+        } else {
+            $projectOwner = Project::whereId($data['project_id'])->pluck('userid')->toArray();  // 项目负责人
+            $taskOwnerAndAssists = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($data['id'])->pluck('userid')->toArray();
+            $visibleIds = array_merge($projectOwner, $taskOwnerAndAssists);
+            $data['is_visible'] = in_array($user->userid, $visibleIds) ? 1 : 0;
+        }
+
         $task->pushMsg('add', $data);
         $task->taskPush(null, 0);
         return Base::retSuccess('添加成功', $data);
@@ -1640,10 +1667,16 @@ class ProjectController extends AbstractController
             'project_id' => $task->project_id,
             'column_id' => $task->column_id,
             'times' => [$task->start_at, $task->end_at],
-            'owner' => [User::userid()]
+            'owner' => [User::userid()],
+            'is_all_visible' => 0,
         ]);
         $data = ProjectTask::oneTask($task->id);
-        $task->pushMsg('add', $data);
+        $projectUserid = Project::whereId($data->project_id)->value('userid');
+        $pushUserIds = ProjectTaskUser::whereTaskId($task->id)->pluck('userid')->toArray();
+        $pushUserIds[] =  $projectUserid;
+        foreach ($pushUserIds as $userId) {
+            $task->pushMsg('add', $data, $userId);
+        }
         return Base::retSuccess('添加成功', $data);
     }
 
@@ -1663,6 +1696,7 @@ class ProjectController extends AbstractController
      * @apiParam {String} [content]             任务详情（子任务不支持）
      * @apiParam {String} [color]               背景色（子任务不支持）
      * @apiParam {Array} [assist]               修改协助人员（子任务不支持）
+     * @apiParam {Array} [visibility_appointor] 修改可见性人员
      *
      * @apiParam {Number} [p_level]             优先级相关（子任务不支持）
      * @apiParam {String} [p_name]              优先级相关（子任务不支持）
@@ -1679,17 +1713,54 @@ class ProjectController extends AbstractController
     {
         User::auth();
         //
-        $data = Request::input();
-        $task_id = intval($data['task_id']);
+        $param = Request::input();
+        $task_id = intval($param['task_id']);
         //
         $task = ProjectTask::userTask($task_id, true, true, 2);
+        $taskUser = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($task_id)->whereIn('owner', [0, 1])->get();
+        $owners = $taskUser->where('owner', 1)->pluck('userid')->toArray();         // 负责人
+        $assist = $taskUser->where('owner', 0)->pluck('userid')->toArray();         // 协助人
+
         // 更新任务
         $updateMarking = [];
-        $task->updateTask($data, $updateMarking);
+        $task->updateTask($param, $updateMarking);
         //
         $data = ProjectTask::oneTask($task->id)->toArray();
         $data['update_marking'] = $updateMarking ?: json_decode('{}');
+        $data['visibility_appointor'] = $data['is_all_visible'] == 1 ? [0] : ProjectTaskUser::whereTaskId($task->id)->whereOwner(2)->pluck('userid');
         $task->pushMsg('update', $data);
+        // 可见性推送
+        if (Arr::exists($param, 'is_all_visible')) {
+            if ($data['is_all_visible'] == 1) {
+                $task->pushMsgVisibleAdd($data);
+            }
+            if ($data['is_all_visible'] == 0) {
+                if ($param['visibility_appointor']) {
+                    $task->pushMsgVisibleUpdate($data);
+                } else {
+                    $task->pushMsgVisibleRemove();
+                }
+            }
+        } elseif (Arr::exists($param, 'visibility_appointor')) {
+            if ($param['visibility_appointor']) {
+                $task->pushMsgVisibleUpdate($data);
+            } else {
+                $task->pushMsgVisibleRemove();
+            }
+        }
+        if (Arr::exists($param, 'owner') && $data['is_all_visible'] == 0) {
+            $subUserids = ProjectTaskUser::whereTaskPid($data['id'])->pluck('userid')->toArray();
+            $diff = array_diff($owners, $param['owner'], $subUserids);
+            if ($diff) {
+                $task->pushMsgVisibleRemove($diff);
+            }
+        }
+        if (Arr::exists($param, 'assist') && $data['is_all_visible'] == 0) {
+            $diff = array_diff($owners, $param['assist']);
+            if ($diff) {
+                $task->pushMsgVisibleRemove($diff);
+            }
+        }
         //
         return Base::retSuccess('修改成功', $data);
     }
