@@ -716,10 +716,11 @@ class ProjectTask extends AbstractModel
                 $this->syncDialogUser();
             }
             // 可见性
-            if (Arr::exists($data, 'visibility_appointor')) {
-                if (in_array(0, $data['visibility_appointor'])) {
+            if (Arr::exists($data, 'visibility_appointor') || Arr::exists($data, 'is_all_visible')) {
+                if ($data['is_all_visible'] == 1) {
                     ProjectTask::whereId($data['task_id'])->update(['is_all_visible' => 1]);
-                } else {
+                    ProjectTaskUser::whereTaskId($data['task_id'])->whereOwner(2)->delete();
+                } elseif ( isset($data['visibility_appointor']) || $data['is_all_visible'] == 0) {
                     ProjectTask::whereId($data['task_id'])->update(['is_all_visible' => 0]);
                     // 覆盖
                     ProjectTaskUser::whereTaskId($data['task_id'])->whereOwner(2)->delete();
@@ -1437,8 +1438,6 @@ class ProjectTask extends AbstractModel
                     ];
                 }
                 // 协助人
-//                $assists = $taskUser->pluck('userid')->toArray();
-//                $assists = array_intersect($userids, array_diff($assists, $owners));
                 $assists = $taskUser->where('owner', 0)->pluck('userid')->toArray();
                 $assists = array_intersect($userids, $assists);
                 if ($assists) {
@@ -1456,8 +1455,7 @@ class ProjectTask extends AbstractModel
                     $userids = array_diff($userids, $owners, $assists);
                 } else {
                     // 指定可见
-                    $visible = $taskUser->where('owner', 2)->pluck('userid')->toArray();
-                    $userids = $visible;
+                    $userids = $taskUser->where('owner', 2)->pluck('userid')->toArray();
                 }
                 $data = array_merge($data, [
                     'owner' => 0,
@@ -1492,6 +1490,7 @@ class ProjectTask extends AbstractModel
      */
     public function pushMsgVisibleAdd($data = null)
     {
+        \Log::info('222222');
         if (!$this->project) {
             return;
         }
@@ -1509,7 +1508,8 @@ class ProjectTask extends AbstractModel
         //
         $array = [];
         if ($this->is_all_visible == 0) {
-            $userids = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($this->id)->pluck('userid')->toArray();
+            $userids = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($this->id)->orWhere('task_pid' , '=', $this->id)->pluck('userid')->toArray();
+            \Log::info($userids);
         } else {
             $userids = ProjectUser::whereProjectId($this->project_id)->pluck('userid')->toArray();  // 项目成员
         }
@@ -1521,9 +1521,8 @@ class ProjectTask extends AbstractModel
         //
         foreach ($array as $item) {
             $params = [
-//                'ignoreFd' => Request::header('fd'),
                 'ignoreFd' => '0',
-                'userid' => array_values($item),
+                'userid' => $item['userid'],
                 'msg' => [
                     'type' => 'projectTask',
                     'action' => 'add',
@@ -1569,9 +1568,8 @@ class ProjectTask extends AbstractModel
         //
         foreach ($array as $item) {
             $params = [
-//                'ignoreFd' => Request::header('fd'),
                 'ignoreFd' => '0',
-                'userid' => array_values($item),
+                'userid' => $item['userid'],
                 'msg' => [
                     'type' => 'projectTask',
                     'action' => 'delete',
@@ -1722,5 +1720,28 @@ class ProjectTask extends AbstractModel
         }
         //
         return $task;
+    }
+
+    /**
+     * 获取用户任务可见性
+     * @param $userid
+     * @param $project_id
+     * @return array
+     */
+    public static function getVisibleUserids($userid, $project_id = 0)
+    {
+        return (new ProjectTask)->setTable('pt')->from('project_tasks as pt')
+            ->leftJoin('project_task_users as b', 'b.task_id', '=', 'pt.id')
+            ->Join('projects as p', 'p.id', '=', 'pt.project_id')
+            ->when($project_id, function ($q) use ($project_id) {
+                $q->where('pt.project_id', '=', $project_id);   // 负责人项目ids
+            })
+            ->where(function ($q) use ($userid){
+                $q->where("pt.is_all_visible", '=', 1);
+                $q->OrWhere("p.userid", '=', $userid);
+                $q->OrWhere("b.userid", '=', $userid);
+            })
+            ->pluck("pt.id")
+            ->toArray();
     }
 }
