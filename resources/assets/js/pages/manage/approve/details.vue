@@ -276,14 +276,15 @@ export default {
         // 获取时间差
         getTimeDifference(startTime,endTime) {
             const currentTime = new Date((endTime + '').replace(/-/g,"/"));
-            const timeDiff = (currentTime - new Date((startTime + '').replace(/-/g,"/"))) / 1000; // convert to seconds
+            const endTimes = new Date((startTime + '').replace(/-/g,"/"));
+            const timeDiff = (currentTime - endTimes) / 1000; // convert to seconds
             if (timeDiff < 60) {
                 return {time:timeDiff,unit:this.$L('秒')};
             } else if (timeDiff < 3600) {
                 const minutes = Math.floor(timeDiff / 60);
                 return {time:minutes,unit:this.$L('分钟')};
             } else if(timeDiff < 3600 * 24) {
-                const hours = Math.floor(timeDiff / 3600);
+                const hours = (currentTime - endTimes) / (1000 * 60 * 60);
                 return {time:hours,unit:this.$L('小时')};
             } else {
                 const days = Math.floor(timeDiff / 3600 / 24);
@@ -292,7 +293,6 @@ export default {
         },
         // 获取详情
         getInfo(){
-            this.datas = this.data
             this.$store.dispatch("call", {
                 method: 'get',
                 url: 'approve/process/detail',
@@ -308,7 +308,9 @@ export default {
                     }
                     return item;
                 })
-                this.datas = data
+                this.$nextTick(()=>{
+                    this.datas = data
+                })
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
@@ -379,6 +381,8 @@ export default {
         },
         // 评论
         comment(){
+            this.commentData.content = ""
+            this.commentData.pictures = []
             this.commentShow = true;
         },
         // 提交评论

@@ -10,9 +10,9 @@
                     :load-status="taskDetail.loading === true"
                     @on-update="getLogLists"/>
             </div>
-            <!--        <div v-if="taskDetail.flow_item_name" class="subtask-flow">-->
-            <!--            <span :class="taskDetail.flow_item_status" @click.stop="openMenu($event, taskDetail)">{{taskDetail.flow_item_name}}</span>-->
-            <!--        </div>-->
+            <div v-if="taskDetail.flow_item_name" class="subtask-flow">
+                <span :class="taskDetail.flow_item_status" @click.stop="openMenu($event, taskDetail)">{{taskDetail.flow_item_name}}</span>
+            </div>
             <div class="subtask-name">
                 <Input
                     v-model="taskDetail.name"
@@ -220,20 +220,24 @@
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe63f;</i>{{$L('可见性')}}
                         </div>
-                        <Checkbox disabled v-model="visibility_principal" :true-value="1" :false-value="0">{{$L('任务负责人')}}</Checkbox>
-                        <Checkbox disabled v-model="visibility_assist" :true-value="1" :false-value="0">{{$L('任务协助人')}}</Checkbox>
-                        <RadioGroup v-model="taskDetail.is_all_visible">
-                            <Radio :label=1>{{$L('所有人员')}}</Radio>
-                            <Radio :label=0>{{$L('指定成员')}}</Radio>
-                        </RadioGroup>
-                        <UserSelect
-                            class="item-content user"
-                            v-show="!taskDetail.is_all_visible"
-                            v-model="taskDetail.visibility_appointor"
-                            :avatar-size="28"
-                            :title="$L('选择指定人员')"
-                            :project-id="taskDetail.project_id"/>
-                        <Button size="small" type="primary" @click="updateVisible">{{$L('提交修改')}}</Button>
+                        <div class="item-content user">
+                            <RadioGroup >
+                                <Checkbox disabled v-model="visibility_principal" :true-value="1" :false-value="0">{{$L('任务负责人')}}</Checkbox>
+                                <Checkbox disabled v-model="visibility_assist" :true-value="1" :false-value="0">{{$L('任务协助人')}}</Checkbox>
+                            </RadioGroup>
+                            <RadioGroup v-model="taskDetail.is_all_visible">
+                                <Radio :label=1>{{$L('所有人员')}}</Radio>
+                                <Radio :label=0>{{$L('指定成员')}}</Radio>
+                            </RadioGroup>
+                            <UserSelect 
+                                v-show="!taskDetail.is_all_visible"
+                                v-model="taskDetail.visibility_appointor"
+                                :avatar-size="28"
+                                :title="$L('选择指定人员')"
+                                :project-id="taskDetail.project_id"
+                                />
+                            <Button size="small" type="primary" @click="updateVisible">{{$L('提交修改')}}</Button>
+                        </div>
                     </FormItem>
                     <FormItem v-if="taskDetail.end_at || timeForce">
                         <div class="item-label" slot="label">

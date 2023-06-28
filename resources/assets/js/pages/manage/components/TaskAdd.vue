@@ -78,7 +78,7 @@
                     type="datetimerange"
                     @on-change="taskTimeChange(addData.times)"/>
             </FormItem>
-            <FormItem :label="$L('任务负责人')">
+            <FormItem :label="$L('任务负责人')" >
                 <UserSelect
                     v-model="addData.owner"
                     :multiple-max="10"
@@ -94,8 +94,10 @@
                 </div>
             </FormItem>
             <FormItem :label="$L('可见性')">
-                <Checkbox disabled v-model="addData.visibility_principal" :true-value="1" :false-value="0">{{$L('任务负责人')}}</Checkbox>
-                <Checkbox disabled v-model="addData.visibility_assist" :true-value="1" :false-value="0">{{$L('任务协助人')}}</Checkbox>
+                <RadioGroup>
+                    <Checkbox disabled v-model="addData.visibility_principal" :true-value="1" :false-value="0">{{$L('任务负责人')}}</Checkbox>
+                    <Checkbox disabled v-model="addData.visibility_assist" :true-value="1" :false-value="0">{{$L('任务协助人')}}</Checkbox>
+                </RadioGroup>
                 <RadioGroup v-model="addData.is_all_visible">
                     <Radio :label=1>{{$L('所有人员')}}</Radio>
                     <Radio :label=0>{{$L('指定成员')}}</Radio>
@@ -104,10 +106,11 @@
                     class="item-content user"
                     v-show="!addData.is_all_visible"
                     v-model="addData.visibility_appointor"
-                    :avatar-size="28"
+                    :avatar-size="24"
                     :title="$L('选择指定人员')"
-                    :project-id="addData.project_id"/>
-<!--                <Button size="small" type="primary" @click="updateVisible">{{$L('提交修改')}}</Button>-->
+                    :project-id="addData.project_id"
+                    border
+                    />
             </FormItem>
             <div class="subtasks">
                 <div v-if="addData.subtasks.length > 0" class="sublist">
