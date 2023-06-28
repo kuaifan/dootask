@@ -1719,7 +1719,6 @@ class ProjectController extends AbstractController
         $task = ProjectTask::userTask($task_id, true, true, 2);
         $taskUser = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($task_id)->whereIn('owner', [0, 1])->get();
         $owners = $taskUser->where('owner', 1)->pluck('userid')->toArray();         // 负责人
-        $assist = $taskUser->where('owner', 0)->pluck('userid')->toArray();         // 协助人
 
         // 更新任务
         $updateMarking = [];

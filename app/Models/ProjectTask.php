@@ -1490,7 +1490,6 @@ class ProjectTask extends AbstractModel
      */
     public function pushMsgVisibleAdd($data = null)
     {
-        \Log::info('222222');
         if (!$this->project) {
             return;
         }
@@ -1509,7 +1508,6 @@ class ProjectTask extends AbstractModel
         $array = [];
         if ($this->is_all_visible == 0) {
             $userids = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($this->id)->orWhere('task_pid' , '=', $this->id)->pluck('userid')->toArray();
-            \Log::info($userids);
         } else {
             $userids = ProjectUser::whereProjectId($this->project_id)->pluck('userid')->toArray();  // 项目成员
         }
