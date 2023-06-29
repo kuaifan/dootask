@@ -676,15 +676,24 @@ class ProjectTask extends AbstractModel
                 foreach ($owner as $uid) {
                     if (intval($uid) == 0) continue;
                     if (!$this->project->useridInTheProject($uid)) continue;
-                    // DOTO
-                    ProjectTaskUser::updateInsert([
-                        'task_id' => $this->id,
-                        'userid' => $uid,
-                    ], [
-                        'project_id' => $this->project_id,
-                        'task_pid' => $this->parent_id ?: $this->id,
-                        'owner' => 1,
-                    ]);
+                    $row = ProjectTaskUser::where("task_id",$this->id)
+                        ->where("userid",$uid)
+                        ->where("owner",'!=', 2)
+                        ->first();
+                    if(empty($row)){
+                        ProjectTaskUser::createInstance([
+                            'task_id' => $this->id,
+                            'userid' => $uid,
+                            'project_id' => $this->project_id,
+                            'task_pid' => $this->parent_id ?: $this->id,
+                            'owner' => 1,
+                        ])->save();
+                    }else{
+                        $row->project_id = $this->project_id;
+                        $row->task_pid = $this->parent_id ?: $this->id;
+                        $row->owner = 1;
+                        $row->save();
+                    }
                     $array[] = $uid;
                 }
                 if ($array) {
@@ -711,15 +720,17 @@ class ProjectTask extends AbstractModel
                     ProjectTask::whereId($data['task_id'])->update(['is_all_visible' => $data["is_all_visible"]]);
                 }
                 ProjectTaskUser::whereTaskId($data['task_id'])->whereOwner(2)->delete();
-                foreach ($data['visibility_appointor'] as $uid) {
-                    if($uid){
-                        ProjectTaskUser::createInstance([
-                            'project_id' => $this->project_id,
-                            'task_id' => $this->id,
-                            'task_pid' => $this->parent_id ?: $this->id,
-                            'userid' => $uid,
-                            'owner' => 2,
-                        ])->save();
+                if(Arr::exists($data, 'visibility_appointor')){
+                    foreach ($data['visibility_appointor'] as $uid) {
+                        if($uid){
+                            ProjectTaskUser::createInstance([
+                                'project_id' => $this->project_id,
+                                'task_id' => $this->id,
+                                'task_pid' => $this->parent_id ?: $this->id,
+                                'userid' => $uid,
+                                'owner' => 2,
+                            ])->save();
+                        }
                     }
                 }
             }
@@ -1442,7 +1453,7 @@ class ProjectTask extends AbstractModel
                     $userids = array_diff($userids, $owners, $assists);
                 } else {
                     // 指定可见
-                    $userids = $taskUser->where('owner', 2)->pluck('userid')->toArray();
+                    $userids = $taskUser->pluck('userid')->toArray();
                 }
                 $data = array_merge($data, [
                     'owner' => 0,
@@ -1545,7 +1556,8 @@ class ProjectTask extends AbstractModel
             $projectUserids = ProjectUser::whereProjectId($this->project_id)->pluck('userid')->toArray();  // 项目成员
             $projectOwner = Project::whereId($this->project_id)->pluck('userid')->toArray();  // 项目负责人
             $taskOwnerAndAssists = ProjectTaskUser::select(['userid', 'owner'])->whereIn('owner', [0, 1])->whereTaskId($this->id)->pluck('userid')->toArray();
-            $userids = array_diff($projectUserids, $projectOwner, $taskOwnerAndAssists);
+            $subUserids = ProjectTaskUser::whereTaskPid($this->id)->pluck('userid')->toArray();
+            $userids = array_diff($projectUserids, $projectOwner, $taskOwnerAndAssists,$subUserids);
         }
         //
         $array[] = [

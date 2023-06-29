@@ -743,7 +743,7 @@ export default {
                     name: '优先级',
                 });
             }
-            if (!($A.isArray(taskDetail.task_user) && taskDetail.task_user.find(({owner}) => owner !== 1))) {
+            if (!($A.isArray(taskDetail.task_user) && taskDetail.task_user.find(({owner}) => owner === 0 ))) {
                 list.push({
                     command: 'assist',
                     icon: '&#xe63f;',

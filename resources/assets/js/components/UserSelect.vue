@@ -669,6 +669,7 @@ export default {
             const clone = $A.cloneJSON(this.values)
             this.values = $A.cloneJSON(this.selects)
             this.$emit('input', this.values)
+            this.$emit('submit', this.values)
 
             if (!this.beforeSubmit) {
                 this.showModal = false
