@@ -1488,7 +1488,7 @@ class ProjectTask extends AbstractModel
      * 添加可见性任务 推送
      * @param array|self $data      发送内容，默认为[id, parent_id, project_id, column_id, dialog_id]
      */
-    public function pushMsgVisibleAdd($data = null)
+    public function pushMsgVisibleAdd($data = null, array $pushUserIds = [])
     {
         if (!$this->project) {
             return;
@@ -1506,7 +1506,9 @@ class ProjectTask extends AbstractModel
         }
         //
         $array = [];
-        if ($this->is_all_visible == 0) {
+        if ($pushUserIds) {
+            $userids = $pushUserIds;
+        }elseif ($this->is_all_visible == 0) {
             $userids = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($this->id)->orWhere('task_pid' , '=', $this->id)->pluck('userid')->toArray();
         } else {
             $userids = ProjectUser::whereProjectId($this->project_id)->pluck('userid')->toArray();  // 项目成员
@@ -1583,11 +1585,14 @@ class ProjectTask extends AbstractModel
      * 更新可见性任务 推送
      * @param array|self $data      发送内容，默认为[id, parent_id, project_id, column_id, dialog_id]
      */
-    public function pushMsgVisibleUpdate($data)
+    public function pushMsgVisibleUpdate($data, array $deleteUserIds = [], array $addUserIds = [])
     {
-        $this->pushMsgVisibleRemove();
-        usleep(300);
-        $this->pushMsgVisibleAdd($data);
+        if ($deleteUserIds) {
+            $this->pushMsgVisibleRemove($deleteUserIds);
+        }
+        if ($addUserIds) {
+            $this->pushMsgVisibleAdd($data, $addUserIds);
+        }
     }
 
     /**

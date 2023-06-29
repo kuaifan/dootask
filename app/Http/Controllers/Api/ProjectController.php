@@ -1717,7 +1717,7 @@ class ProjectController extends AbstractController
         $task_id = intval($param['task_id']);
         //
         $task = ProjectTask::userTask($task_id, true, true, 2);
-        $taskUser = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($task_id)->whereIn('owner', [0, 1])->get();
+        $taskUser = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($task_id)->get();
         $owners = $taskUser->where('owner', 1)->pluck('userid')->toArray();         // 负责人
 
         // 更新任务
@@ -1729,21 +1729,18 @@ class ProjectController extends AbstractController
         $data['visibility_appointor'] = $data['is_all_visible'] == 1 ? [0] : ProjectTaskUser::whereTaskId($task->id)->whereOwner(2)->pluck('userid');
         $task->pushMsg('update', $data);
         // 可见性推送
-        if (Arr::exists($param, 'is_all_visible')) {
+        if (Arr::exists($param, 'is_all_visible') || Arr::exists($param, 'visibility_appointor')) {
             if ($data['is_all_visible'] == 1) {
                 $task->pushMsgVisibleAdd($data);
             }
-            if ($data['is_all_visible'] == 0) {
-                if ($param['visibility_appointor']) {
-                    $task->pushMsgVisibleUpdate($data);
-                } else {
-                    $task->pushMsgVisibleRemove();
-                }
-            }
-        } elseif (Arr::exists($param, 'visibility_appointor')) {
             if ($param['visibility_appointor']) {
-                $task->pushMsgVisibleUpdate($data);
-            } else {
+                $oldVisibleUserIds = $taskUser->where('owner', 2)->pluck('userid')->toArray()??[];
+                $newVisibleUserIds = $param['visibility_appointor'] ?? [];
+                $deleteUserIds = array_diff($oldVisibleUserIds, $newVisibleUserIds);
+                $addUserIds = array_diff($newVisibleUserIds, $oldVisibleUserIds);
+                $task->pushMsgVisibleUpdate($data, $deleteUserIds, $addUserIds);
+            }
+            if ($data['is_all_visible'] == 0 && empty($param['visibility_appointor'])) {
                 $task->pushMsgVisibleRemove();
             }
         }
