@@ -1,71 +1,56 @@
 <template>
     <!--子任务-->
-    <li style="display: block;margin-bottom: 16px;" v-if="ready && taskDetail.parent_id > 0">
-        <div style="display: flex; margin-left: 6px;">
-            <div class="subtask-icon">
-                <TaskMenu
-                    :ref="`taskMenu_${taskDetail.id}`"
-                    :disabled="taskId === 0"
-                    :task="taskDetail"
-                    :load-status="taskDetail.loading === true"
-                    @on-update="getLogLists"/>
-            </div>
-            <div v-if="taskDetail.flow_item_name" class="subtask-flow">
-                <span :class="taskDetail.flow_item_status" @click.stop="openMenu($event, taskDetail)">{{taskDetail.flow_item_name}}</span>
-            </div>
-            <div class="subtask-name">
-                <Input
-                    v-model="taskDetail.name"
-                    ref="name"
-                    type="textarea"
-                    :rows="1"
-                    :autosize="{ minRows: 1, maxRows: 8 }"
-                    :maxlength="255"
-                    enterkeyhint="done"
-                    @on-blur="updateBlur('name')"
-                    @on-keydown="onNameKeydown"/>
-            </div>
+    <li v-if="ready && taskDetail.parent_id > 0">
+        <div class="subtask-icon">
+            <TaskMenu
+                :ref="`taskMenu_${taskDetail.id}`"
+                :disabled="taskId === 0"
+                :task="taskDetail"
+                :load-status="taskDetail.loading === true"
+                @on-update="getLogLists"/>
         </div>
-        <div style="display: flex;justify-content: space-between;">
-            <div style="display: flex;">
-                <div style="margin-left: 28px;" class="item-label" slot="label">
-                    <i class="taskfont">&#xe6e8;</i>
-                </div>
-                <DatePicker
-                    v-model="timeValue"
-                    :open="timeOpen"
-                    :options="timeOptions"
-                    format="yyyy/MM/dd HH:mm"
-                    type="datetimerange"
-                    class="subtask-time"
-                    placement="bottom-end"
-                    @on-open-change="timeChange"
-                    @on-clear="timeClear"
-                    @on-ok="timeOk"
-                    transfer>
-                    <!--                    <div v-if="!taskDetail.complete_at && taskDetail.end_at && taskDetail.end_at != mainEndAt" @click="openTime" :class="['time', taskDetail.today ? 'today' : '', taskDetail.overdue ? 'overdue' : '']">-->
-                    <!--                        {{expiresFormat(taskDetail.end_at)}}-->
-                    <!--                    </div>-->
-                    <!--                    <Icon v-else class="clock" type="ios-clock-outline" @click="openTime" />-->
-                    <div class="picker-time">
-                        <div @click="openTime" class="time sub-time">{{taskDetail.end_at ? cutTime : '--'}}</div>
-<!--                        <template v-if="!taskDetail.complete_at && taskDetail.end_at">-->
-<!--                            <Tag v-if="within24Hours(taskDetail.end_at)" color="blue"><i class="taskfont">&#xe71d;</i>{{expiresFormat(taskDetail.end_at)}}</Tag>-->
-<!--                            <Tag v-if="isOverdue(taskDetail)" color="red">{{$L('超期未完成')}}</Tag>-->
-<!--                        </template>-->
-                    </div>
-                </DatePicker>
-            </div>
-            <UserSelect
-                class="subtask-avatar"
-                v-model="ownerData.owner_userid"
-                :multiple-max="10"
-                :avatar-size="20"
-                :title="$L('修改负责人')"
-                :add-icon="false"
-                :project-id="taskDetail.project_id"
-                :before-submit="onOwner"/>
+        <div v-if="taskDetail.flow_item_name" class="subtask-flow">
+            <span :class="taskDetail.flow_item_status" @click.stop="openMenu($event, taskDetail)">{{taskDetail.flow_item_name}}</span>
         </div>
+        <div class="subtask-name">
+            <Input style="min-width: 80px;"
+                v-model="taskDetail.name"
+                ref="name"
+                type="textarea"
+                :rows="1"
+                :autosize="{ minRows: 1, maxRows: 8 }"
+                :maxlength="255"
+                enterkeyhint="done"
+                @on-blur="updateBlur('name')"
+                @on-keydown="onNameKeydown"
+            />
+        </div>
+        <DatePicker
+            v-model="timeValue"
+            :open="timeOpen"
+            :options="timeOptions"
+            format="yyyy/MM/dd HH:mm"
+            type="datetimerange"
+            class="subtask-time"
+            placement="bottom-end"
+            @on-open-change="timeChange"
+            @on-clear="timeClear"
+            @on-ok="timeOk"
+            transfer>
+            <div v-if="!taskDetail.complete_at && taskDetail.end_at && taskDetail.end_at != mainEndAt" @click="openTime" :class="['time', taskDetail.today ? 'today' : '', taskDetail.overdue ? 'overdue' : '']">
+                {{expiresFormat(taskDetail.end_at)}}
+            </div>
+            <Icon v-else class="clock" type="ios-clock-outline" @click="openTime" />
+        </DatePicker>
+        <UserSelect
+            class="subtask-avatar"
+            v-model="ownerData.owner_userid"
+            :multiple-max="10"
+            :avatar-size="20"
+            :title="$L('修改负责人')"
+            :add-icon="false"
+            :project-id="taskDetail.project_id"
+            :before-submit="onOwner"/>
     </li>
     <!--主任务-->
     <div
@@ -218,25 +203,47 @@
                     </FormItem>
                     <FormItem>
                         <div class="item-label" slot="label">
-                            <i class="taskfont">&#xe63f;</i>{{$L('可见性')}}
+                            <i class="taskfont">&#xe77b;</i>
+                            <EDropdown ref="eDropdownRef" trigger="click" placement="bottom" @command="dropVisible">
+                                <span cclass="dashed-text" style="color: #bbbbbb; ">{{$L('可见性')}}
+                                    <i class="taskfont" style="font-size: 10px;margin-right: 0;">&#xe740;</i>
+                                </span>
+                                <EDropdownMenu slot="dropdown">
+                                    <EDropdownItem :command="1">
+                                        <div class="task-menu-icon" >
+                                            <Icon v-if="taskDetail.is_all_visible == 1" class="completed" :type="'md-checkmark-circle'"/>
+                                            <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
+                                            {{$L('项目人员')}}
+                                        </div>
+                                    </EDropdownItem>
+                                    <EDropdownItem :command="2">
+                                        <div class="task-menu-icon" >
+                                            <Icon v-if="taskDetail.is_all_visible == 2" class="completed" :type="'md-checkmark-circle'"/>
+                                            <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
+                                            {{$L('任务人员')}}
+                                        </div>
+                                    </EDropdownItem>
+                                    <EDropdownItem :command="3">
+                                        <div class="task-menu-icon" >
+                                            <Icon v-if="taskDetail.is_all_visible == 3" class="completed" :type="'md-checkmark-circle'"/>
+                                            <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
+                                            {{$L('指定成员')}}
+                                        </div>
+                                    </EDropdownItem>
+                                </EDropdownMenu>
+                            </EDropdown>
                         </div>
                         <div class="item-content user">
-                            <RadioGroup >
-                                <Checkbox disabled v-model="visibility_principal" :true-value="1" :false-value="0">{{$L('任务负责人')}}</Checkbox>
-                                <Checkbox disabled v-model="visibility_assist" :true-value="1" :false-value="0">{{$L('任务协助人')}}</Checkbox>
-                            </RadioGroup>
-                            <RadioGroup v-model="taskDetail.is_all_visible">
-                                <Radio :label=1>{{$L('所有人员')}}</Radio>
-                                <Radio :label=0>{{$L('指定成员')}}</Radio>
-                            </RadioGroup>
-                            <UserSelect 
-                                v-show="!taskDetail.is_all_visible"
+                            <span @click="showCisibleDropdown" v-if="taskDetail.is_all_visible == 1"  class="dashed-text">{{$L('项目人员可见')}}</span>
+                            <span @click="showCisibleDropdown" v-else-if="taskDetail.is_all_visible == 2"  class="dashed-text">{{$L('任务人员可见')}}</span>
+                            <UserSelect v-else
+                                ref="visibleUserSelectRef"
                                 v-model="taskDetail.visibility_appointor"
                                 :avatar-size="28"
                                 :title="$L('选择指定人员')"
                                 :project-id="taskDetail.project_id"
-                                />
-                            <Button size="small" type="primary" @click="updateVisible">{{$L('提交修改')}}</Button>
+                                @showUpdate="visibleUserSelectShowUpdate"
+                            />
                         </div>
                     </FormItem>
                     <FormItem v-if="taskDetail.end_at || timeForce">
@@ -324,11 +331,11 @@
                             </li>
                         </ul>
                     </FormItem>
-                    <div v-if="subList.length > 0 || addsubForce">
+                    <FormItem v-if="subList.length > 0 || addsubForce">
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe6f0;</i>{{$L('子任务')}}
                         </div>
-                        <ul style="overflow: hidden;" class="item-content subtask">
+                        <ul class="item-content subtask">
                             <TaskDetail
                                 v-for="(task, key) in subList"
                                 :ref="`subTask_${task.id}`"
@@ -356,7 +363,7 @@
                                 </div>
                             </li>
                         </ul>
-                    </div>
+                    </FormItem>
                 </Form>
                 <div v-if="menuList.length > 0" class="add">
                     <EDropdown
@@ -566,11 +573,6 @@ export default {
                 {key: 'year', label: '每年'},
                 {key: 'custom', label: '自定义'},
             ],
-
-            // 可见性
-            visibility_principal: 1,
-            visibility_assist: 1,
-            visibility_appoint: 1,
         }
     },
 
@@ -844,6 +846,15 @@ export default {
             if (val) {
                 this.timeValue = this.taskDetail.end_at ? [this.taskDetail.start_at, this.taskDetail.end_at] : [];
             }
+        },
+        "taskDetail.visibility_appointor": {
+            handler(arr) {
+                if(arr?.length > 0 && arr[0]) {
+                    this.taskDetail.is_all_visible = 3
+                    this.updateVisible()
+                }
+            },
+            immediate: true
         },
     },
 
@@ -1535,6 +1546,37 @@ export default {
             });
         },
 
+        showCisibleDropdown(){
+            this.$refs.eDropdownRef.show()
+        },
+
+        visibleUserSelectShowUpdate(isShow){
+            if(!isShow && (this.taskDetail.visibility_appointor.length == 0 || !this.taskDetail.visibility_appointor[0])){
+                let old = this.taskDetail.old_is_all_visible;
+                this.taskDetail.is_all_visible = old > 2 ? 1 : (old || 1);
+                if(this.taskDetail.is_all_visible < 3 ){
+                    this.updateVisible();
+                }
+            }
+        },
+
+        dropVisible(command) {
+            switch (command) {
+                case 1:
+                case 2:
+                    this.taskDetail.is_all_visible = command
+                    this.updateVisible();
+                    break;
+                case 3:
+                    this.taskDetail.old_is_all_visible = this.taskDetail.is_all_visible
+                    this.taskDetail.is_all_visible = command
+                    this.$nextTick(() => {
+                        this.$refs.visibleUserSelectRef.onSelection()
+                    });
+                    break;
+            }
+        },
+
         updateVisible() {
             this.updateData(['is_all_visible', 'visibility_appointor'])
         }
@@ -1547,5 +1589,13 @@ export default {
 }
 ::v-deep .sub-time {
     color: #BBBBBB;
+}
+.dashed-text{
+    cursor: pointer; 
+    border-bottom: 1px dashed #acacac;
+}
+.dashed-text .taskfont{
+    font-size: 10px;
+    margin-right: 0;
 }
 </style>

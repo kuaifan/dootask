@@ -312,6 +312,7 @@ export default {
             } else {
                 this.searchKey = ""
             }
+            this.$emit("showUpdate",value)
         },
 
         searchKey() {

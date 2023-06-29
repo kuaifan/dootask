@@ -340,6 +340,7 @@
                             }
                             .subtask-flow {
                                 > span {
+                                    white-space: nowrap;
                                     font-size: 12px;
                                     height: 18px;
                                     min-width: 20px;

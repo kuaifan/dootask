@@ -370,18 +370,8 @@ class ProjectTask extends AbstractModel
         $p_color    = $data['p_color'];
         $top        = intval($data['top']);
         $userid     = User::userid();
-        $visibility_appoint = $data['visibility_appoint'];
-        $visibility_appointor = $data['visibility_appointor'];
-        // 可见性
-        $visibility_userids = [];
-        $is_all_visible = 0;
-        if ($visibility_appoint) {
-            if (in_array(0, $visibility_appointor)) {
-                $is_all_visible = 1;
-            } else {
-                $visibility_userids = $visibility_appointor;
-            }
-        }
+        $is_all_visible = $data['visibility_appoint'];
+        $visibility_userids = $data['visibility_appointor'];
         //
         if (ProjectTask::whereProjectId($project_id)
                 ->whereNull('project_tasks.complete_at')
@@ -686,7 +676,7 @@ class ProjectTask extends AbstractModel
                 foreach ($owner as $uid) {
                     if (intval($uid) == 0) continue;
                     if (!$this->project->useridInTheProject($uid)) continue;
-                    //
+                    // DOTO
                     ProjectTaskUser::updateInsert([
                         'task_id' => $this->id,
                         'userid' => $uid,
@@ -716,15 +706,13 @@ class ProjectTask extends AbstractModel
                 $this->syncDialogUser();
             }
             // 可见性
-            if (Arr::exists($data, 'visibility_appointor') || Arr::exists($data, 'is_all_visible')) {
-                if ($data['is_all_visible'] == 1) {
-                    ProjectTask::whereId($data['task_id'])->update(['is_all_visible' => 1]);
-                    ProjectTaskUser::whereTaskId($data['task_id'])->whereOwner(2)->delete();
-                } elseif ( isset($data['visibility_appointor']) || $data['is_all_visible'] == 0) {
-                    ProjectTask::whereId($data['task_id'])->update(['is_all_visible' => 0]);
-                    // 覆盖
-                    ProjectTaskUser::whereTaskId($data['task_id'])->whereOwner(2)->delete();
-                    foreach ($data['visibility_appointor'] as $uid) {
+            if (Arr::exists($data, 'is_all_visible') || Arr::exists($data, 'visibility_appointor')) {
+                if(Arr::exists($data, 'is_all_visible')){
+                    ProjectTask::whereId($data['task_id'])->update(['is_all_visible' => $data["is_all_visible"]]);
+                }
+                ProjectTaskUser::whereTaskId($data['task_id'])->whereOwner(2)->delete();
+                foreach ($data['visibility_appointor'] as $uid) {
+                    if($uid){
                         ProjectTaskUser::createInstance([
                             'project_id' => $this->project_id,
                             'task_id' => $this->id,
@@ -733,7 +721,6 @@ class ProjectTask extends AbstractModel
                             'owner' => 2,
                         ])->save();
                     }
-
                 }
             }
             // 计划时间（原则：子任务时间在主任务时间内）
@@ -1508,7 +1495,7 @@ class ProjectTask extends AbstractModel
         $array = [];
         if ($pushUserIds) {
             $userids = $pushUserIds;
-        }elseif ($this->is_all_visible == 0) {
+        }elseif ($this->is_all_visible != 1) {
             $userids = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($this->id)->orWhere('task_pid' , '=', $this->id)->pluck('userid')->toArray();
         } else {
             $userids = ProjectUser::whereProjectId($this->project_id)->pluck('userid')->toArray();  // 项目成员
