@@ -19,7 +19,6 @@
             &:before {
                 content: "";
                 position: absolute;
-                //left: 36px;
                 left: 0;
                 right: 0;
                 bottom: 0;
@@ -150,9 +149,6 @@
             }
         }
         .scroller {
-            //margin-left: 28px;
-            //padding-left: 8px;
-            //padding-right: 36px;
             .title {
                 margin-top: 18px;
                 .ivu-input {
