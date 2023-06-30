@@ -346,7 +346,7 @@
                                 :can-update-blur="canUpdateBlur"/>
                         </ul>
                         <ul :class="['item-content', subList.length === 0 ? 'nosub' : '']">
-                            <li style="margin-left: 8px;">
+                            <li>
                                 <Input
                                     v-if="addsubShow"
                                     v-model="addsubName"
