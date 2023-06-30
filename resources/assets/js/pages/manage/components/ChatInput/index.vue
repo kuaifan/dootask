@@ -713,7 +713,6 @@ export default {
             this.quill.on('text-change', _ => {
                 this.textTimer && clearTimeout(this.textTimer)
                 this.textTimer = setTimeout(_ => {
-                    console.log(11);
                     if (this.maxlength > 0 && this.quill.getLength() > this.maxlength) {
                         this.quill.deleteText(this.maxlength, this.quill.getLength());
                     }
