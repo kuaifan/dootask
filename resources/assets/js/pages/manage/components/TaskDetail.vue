@@ -13,7 +13,7 @@
             <span :class="taskDetail.flow_item_status" @click.stop="openMenu($event, taskDetail)">{{taskDetail.flow_item_name}}</span>
         </div>
         <div class="subtask-name">
-            <Input style="min-width: 80px;"
+            <Input
                 v-model="taskDetail.name"
                 ref="name"
                 type="textarea"
@@ -205,8 +205,8 @@
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe77b;</i>
                             <EDropdown ref="eDropdownRef" trigger="click" placement="bottom" @command="dropVisible">
-                                <span class="dashed-text" style="color: #bbbbbb; ">{{$L('可见性')}}
-                                    <i class="taskfont" style="font-size: 10px;margin-right: 0;">&#xe740;</i>
+                                <span class="visibility-text color">{{$L('可见性')}}
+                                    <i class="taskfont">&#xe740;</i>
                                 </span>
                                 <EDropdownMenu slot="dropdown">
                                     <EDropdownItem :command="1">
@@ -234,8 +234,8 @@
                             </EDropdown>
                         </div>
                         <div class="item-content user">
-                            <span @click="showCisibleDropdown" v-if="taskDetail.is_all_visible == 1"  class="dashed-text">{{$L('项目人员可见')}}</span>
-                            <span @click="showCisibleDropdown" v-else-if="taskDetail.is_all_visible == 2"  class="dashed-text">{{$L('任务人员可见')}}</span>
+                            <span @click="showCisibleDropdown" v-if="taskDetail.is_all_visible == 1"  class="visibility-text">{{$L('项目人员可见')}}</span>
+                            <span @click="showCisibleDropdown" v-else-if="taskDetail.is_all_visible == 2"  class="visibility-text">{{$L('任务人员可见')}}</span>
                             <UserSelect v-else
                                 ref="visibleUserSelectRef"
                                 v-model="taskDetail.visibility_appointor"
@@ -346,7 +346,7 @@
                                 :can-update-blur="canUpdateBlur"/>
                         </ul>
                         <ul :class="['item-content', subList.length === 0 ? 'nosub' : '']">
-                            <li style="margin-left: 8px;">
+                            <li>
                                 <Input
                                     v-if="addsubShow"
                                     v-model="addsubName"
@@ -1583,19 +1583,3 @@ export default {
     }
 }
 </script>
-<style scoped>
-::v-deep .ivu-poptip-rel {
-    display: flex;
-}
-::v-deep .sub-time {
-    color: #BBBBBB;
-}
-.dashed-text{
-    cursor: pointer; 
-    border-bottom: 1px dashed #acacac;
-}
-.dashed-text .taskfont{
-    font-size: 10px;
-    margin-right: 0;
-}
-</style>

@@ -376,6 +376,7 @@
                                 margin-right: 8px;
                                 display: flex;
                                 .ivu-input {
+                                    min-width: 80px;
                                     margin: -2px 0;
                                     padding: 4px 0;
                                     resize: none;
@@ -426,6 +427,16 @@
                                 margin-top: -2px;
                             }
                         }
+                    }
+                }
+                .visibility-text{
+                    cursor: pointer; 
+                    &.color{
+                        color: #bbbbbb;
+                    }
+                    .taskfont{
+                        font-size: 10px;
+                        margin-right: 0;
                     }
                 }
             }
