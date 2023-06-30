@@ -2,10 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.27.82]
+## [0.27.85]
 
 ### Bug Fixes
 
+- 发送消息失败再次编辑格式丢失的问题
 - 修正初始化可见性人员异常问题
 - 修复审批通过人员姓名显示不正确
 
