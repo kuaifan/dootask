@@ -236,14 +236,15 @@
                         <div class="item-content user">
                             <span @click="showCisibleDropdown" v-if="taskDetail.is_all_visible == 1"  class="visibility-text">{{$L('项目人员可见')}}</span>
                             <span @click="showCisibleDropdown" v-else-if="taskDetail.is_all_visible == 2"  class="visibility-text">{{$L('任务人员可见')}}</span>
-                            <UserSelect v-else
+                            <UserSelect
+                                v-else
                                 ref="visibleUserSelectRef"
                                 v-model="taskDetail.visibility_appointor"
                                 :avatar-size="28"
                                 :title="$L('选择指定人员')"
                                 :project-id="taskDetail.project_id"
-                                @showUpdate="visibleUserSelectShowUpdate"
-                            />
+                                :add-icon="false"
+                                @on-show-change="visibleUserSelectShowChange"/>
                         </div>
                     </FormItem>
                     <FormItem v-if="taskDetail.end_at || timeForce">
@@ -1550,7 +1551,7 @@ export default {
             this.$refs.eDropdownRef.show()
         },
 
-        visibleUserSelectShowUpdate(isShow){
+        visibleUserSelectShowChange(isShow){
             if(!isShow && (this.taskDetail.visibility_appointor.length == 0 || !this.taskDetail.visibility_appointor[0])){
                 let old = this.taskDetail.old_is_all_visible;
                 this.taskDetail.is_all_visible = old > 2 ? 1 : (old || 1);

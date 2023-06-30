@@ -152,15 +152,25 @@
                 }
             }
         }
-        .visibility-text{
-            cursor: pointer; 
-            &.color{
+
+        .visibility-text {
+            cursor: pointer;
+
+            &.color {
                 color: #bbbbbb;
             }
-            .taskfont{
-                font-size: 10px;
+
+            .taskfont {
+                display: inline-block;
+                transform: scale(0.9);
+                font-size: 12px;
                 margin-right: 0;
             }
+        }
+
+        .task-add-visibility {
+            cursor: pointer;
+            color: rgba($primary-desc-color, 0.7);
         }
     }
     .task-add-advanced {
@@ -236,13 +246,18 @@ body.window-portrait {
                     margin-left: 4px;
                 }
             }
-            .visibility-text{
-                cursor: pointer; 
-                &.color{
+
+            .visibility-text {
+                cursor: pointer;
+
+                &.color {
                     color: #bbbbbb;
                 }
-                .taskfont{
-                    font-size: 10px;
+
+                .taskfont {
+                    display: inline-block;
+                    transform: scale(0.9);
+                    font-size: 12px;
                     margin-right: 0;
                 }
             }

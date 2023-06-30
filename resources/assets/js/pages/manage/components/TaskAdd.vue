@@ -94,7 +94,7 @@
                 </div>
             </FormItem>
             <FormItem>
-                <div class="item-label" slot="label">
+                <div slot="label">
                     <EDropdown ref="eDropdownRef" trigger="click" placement="bottom" @command="dropVisible">
                         <span class="visibility-text">{{$L('可见性')}}
                             <i class="taskfont">&#xe740;</i>
@@ -124,7 +124,7 @@
                         </EDropdownMenu>
                     </EDropdown>
                 </div>
-                <div class="item-content user ivu-input ivu-input-default ivu-input-with-suffix" v-if="addData.visibility_appoint < 3" @click="showCisibleDropdown">
+                <div class="ivu-input task-add-visibility" v-if="addData.visibility_appoint < 3" @click="showCisibleDropdown">
                     <span v-if="addData.visibility_appoint == 1">{{$L('项目人员可见')}}</span>
                     <span v-else-if="addData.visibility_appoint == 2">{{$L('任务人员可见')}}</span>
                 </div>
@@ -134,7 +134,7 @@
                     :avatar-size="24"
                     :title="$L('选择指定人员')"
                     :project-id="addData.project_id"
-                    @showUpdate="visibleUserSelectShowUpdate"
+                    @on-show-change="visibleUserSelectShowChange"
                     border
                 />
             </FormItem>
@@ -561,7 +561,7 @@ export default {
             this.$refs.eDropdownRef.show()
         },
 
-        visibleUserSelectShowUpdate(isShow){
+        visibleUserSelectShowChange(isShow){
             if(!isShow && (this.addData.visibility_appointor.length == 0 || !this.addData.visibility_appointor[0])){
                 let old = this.addData.old_visibility_appoint;
                 this.addData.visibility_appoint = old > 2 ? 1 : (old || 1);

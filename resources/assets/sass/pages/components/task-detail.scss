@@ -429,13 +429,18 @@
                         }
                     }
                 }
-                .visibility-text{
-                    cursor: pointer; 
-                    &.color{
+
+                .visibility-text {
+                    cursor: pointer;
+
+                    &.color {
                         color: #bbbbbb;
                     }
-                    .taskfont{
-                        font-size: 10px;
+
+                    .taskfont {
+                        display: inline-block;
+                        transform: scale(0.9);
+                        font-size: 12px;
                         margin-right: 0;
                     }
                 }
@@ -514,7 +519,7 @@
             &:before {
                 content: "";
                 position: absolute;
-                left: 36px;
+                left: 0;
                 right: 0;
                 bottom: 0;
                 height: 1px;
@@ -594,11 +599,11 @@
             .no-tip {
                 flex: 1;
                 display: none;
-                margin-left: 36px;
+                margin-left: 0;
             }
             .no-input {
                 position: relative;
-                margin: 22px 0 0 36px;
+                margin: 22px 0 0 0;
                 background-color: #F4F5F7;
                 padding: 10px 4px 10px 6px;
                 border-radius: 10px;
@@ -634,7 +639,7 @@
                     content: "";
                     position: absolute;
                     top: 0;
-                    left: 36px;
+                    left: 0;
                     right: 0;
                     bottom: 0;
                     border: 2px dashed #7b7b7b;
@@ -648,7 +653,7 @@
             }
         }
         .project-log {
-            margin-left: 36px;
+            margin-left: 0;
             .logs-activity {
                 padding: 22px 0 0;
                 > li {

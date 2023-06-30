@@ -1,7 +1,7 @@
 <template>
     <div class="common-user-select" :class="warpClass">
         <ul v-if="!module" @click="onSelection">
-            <li v-for="userid in values"  v-if="userid" >
+            <li v-for="userid in values" v-if="userid">
                 <UserAvatar :userid="userid" :size="avatarSize" :show-icon="avatarIcon" :show-name="avatarName" tooltip-disabled/>
             </li>
             <li v-if="addIcon || values.length === 0" class="add-icon" :style="addStyle" @click.stop="onSelection"></li>
@@ -312,7 +312,7 @@ export default {
             } else {
                 this.searchKey = ""
             }
-            this.$emit("showUpdate",value)
+            this.$emit("onShowChange",value)
         },
 
         searchKey() {
@@ -669,7 +669,7 @@ export default {
             const clone = $A.cloneJSON(this.values)
             this.values = $A.cloneJSON(this.selects)
             this.$emit('input', this.values)
-            this.$emit('submit', this.values)
+            this.$emit('onSubmit', this.values)
 
             if (!this.beforeSubmit) {
                 this.showModal = false
