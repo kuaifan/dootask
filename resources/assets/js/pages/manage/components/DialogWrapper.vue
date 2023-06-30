@@ -840,14 +840,21 @@ export default {
             return null
         },
 
-        footerStyle({keyboardType, keyboardHeight, safeAreaBottom, windowScrollY, isMessenger}) {
-            const style = {};
+        footerPaddingBottom({keyboardType, keyboardHeight, safeAreaBottom, windowScrollY, isMessenger}) {
             if (windowScrollY === 0
                 && isMessenger
                 && keyboardType === "show"
                 && keyboardHeight > 0
                 && keyboardHeight < 120) {
-                style.paddingBottom = (keyboardHeight + safeAreaBottom) + 'px';
+                return keyboardHeight + safeAreaBottom;
+            }
+            return 0;
+        },
+
+        footerStyle({footerPaddingBottom}) {
+            const style = {};
+            if (footerPaddingBottom) {
+                style.paddingBottom = `${footerPaddingBottom}px`;
             }
             return style;
         },
@@ -1085,7 +1092,7 @@ export default {
                 this.allMsgs = newList;
             }
             //
-            if (!this.windowActive || (tail > 10 && oldList.length > 0)) {
+            if (!this.windowActive || (tail > 45 && oldList.length > 0)) {
                 const lastId = oldList[oldList.length - 1] ? oldList[oldList.length - 1].id : 0
                 const tmpList = newList.filter(item => item.id && item.id > lastId)
                 this.msgNew += tmpList.length
@@ -1102,7 +1109,7 @@ export default {
                 this.navStyle = {
                     marginTop: val + 'px'
                 }
-                if (tail <= 10) {
+                if (tail <= 45) {
                     requestAnimationFrame(this.onToBottom)
                 }
                 if (this.$refs.input.isFocus) {
@@ -1129,6 +1136,15 @@ export default {
         msgActiveIndex(index) {
             if (index > -1) {
                 setTimeout(_ => this.msgActiveIndex = -1, 800)
+            }
+        },
+
+        footerPaddingBottom(val) {
+            if (val) {
+                const {tail} = this.scrollInfo();
+                if (tail <= 45) {
+                    requestAnimationFrame(this.onToBottom)
+                }
             }
         }
     },
@@ -2080,7 +2096,7 @@ export default {
             const {offset, tail} = this.scrollInfo();
             this.scrollOffset = offset;
             this.scrollTail = tail;
-            if (this.scrollTail <= 10) {
+            if (this.scrollTail <= 45) {
                 this.msgNew = 0;
             }
             //
@@ -2285,7 +2301,7 @@ export default {
             const {tail} = this.scrollInfo()
             this.setQuote(this.operateItem.id, type)
             this.inputFocus()
-            if (tail <= 10) {
+            if (tail <= 45) {
                 requestAnimationFrame(this.onToBottom)
             }
         },
@@ -2546,8 +2562,10 @@ export default {
                 config.okText = '再次编辑'
                 config.onOk = () => {
                     this.tempMsgs = this.tempMsgs.filter(({id}) => id != data.id)
+                    this.$refs.input.setPasteMode(false)
                     this.msgText = msg
                     this.inputFocus()
+                    this.$nextTick(_ => this.$refs.input.setPasteMode(true))
                 }
             } else if (type === 'record') {
                 config.okText = '重新发送'
