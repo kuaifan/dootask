@@ -97,7 +97,7 @@
                 <div class="item-label" slot="label">
                     <EDropdown ref="eDropdownRef" trigger="click" placement="bottom" @command="dropVisible">
                         <span cclass="dashed-text">{{$L('可见性')}}
-                            <i class="taskfont" style="font-size: 10px;margin-right: 0;">&#xe740;</i>
+                            <i class="taskfont">&#xe740;</i>
                         </span>
                         <EDropdownMenu slot="dropdown">
                             <EDropdownItem :command="1">

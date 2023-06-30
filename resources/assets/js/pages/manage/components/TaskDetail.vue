@@ -13,7 +13,7 @@
             <span :class="taskDetail.flow_item_status" @click.stop="openMenu($event, taskDetail)">{{taskDetail.flow_item_name}}</span>
         </div>
         <div class="subtask-name">
-            <Input style="min-width: 80px;"
+            <Input
                 v-model="taskDetail.name"
                 ref="name"
                 type="textarea"
@@ -205,8 +205,8 @@
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe77b;</i>
                             <EDropdown ref="eDropdownRef" trigger="click" placement="bottom" @command="dropVisible">
-                                <span class="dashed-text" style="color: #bbbbbb; ">{{$L('可见性')}}
-                                    <i class="taskfont" style="font-size: 10px;margin-right: 0;">&#xe740;</i>
+                                <span class="dashed-text color">{{$L('可见性')}}
+                                    <i class="taskfont">&#xe740;</i>
                                 </span>
                                 <EDropdownMenu slot="dropdown">
                                     <EDropdownItem :command="1">
@@ -1583,19 +1583,3 @@ export default {
     }
 }
 </script>
-<style scoped>
-::v-deep .ivu-poptip-rel {
-    display: flex;
-}
-::v-deep .sub-time {
-    color: #BBBBBB;
-}
-.dashed-text{
-    cursor: pointer; 
-    border-bottom: 1px dashed #acacac;
-}
-.dashed-text .taskfont{
-    font-size: 10px;
-    margin-right: 0;
-}
-</style>

@@ -376,6 +376,7 @@
                                 margin-right: 8px;
                                 display: flex;
                                 .ivu-input {
+                                    min-width: 80px;
                                     margin: -2px 0;
                                     padding: 4px 0;
                                     resize: none;
@@ -427,6 +428,17 @@
                             }
                         }
                     }
+                }
+                .dashed-text{
+                    cursor: pointer; 
+                    border-bottom: 1px dashed #acacac;
+                    &.color{
+                        color: #bbbbbb;
+                    }
+                }
+                .dashed-text .taskfont{
+                    font-size: 10px;
+                    margin-right: 0;
                 }
             }
             .add {
