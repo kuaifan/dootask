@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.27.82]
+
+### Bug Fixes
+
+- 修正初始化可见性人员异常问题
+- 修复审批通过人员姓名显示不正确
+
+### Features
+
+- 优化子任务可见性
+- 负责人、协助人更改可见性推送收回
+- 新增任务可见性操作模块、任务详情子任务样式优化
+
+### Performance
+
+- 修改可见性推送优化
+- 代码优化
+- 冗余代码去除
+- 调整
+
 ## [0.27.46]
 
 ### Bug Fixes
