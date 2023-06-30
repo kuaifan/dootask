@@ -205,7 +205,7 @@
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe77b;</i>
                             <EDropdown ref="eDropdownRef" trigger="click" placement="bottom" @command="dropVisible">
-                                <span cclass="dashed-text" style="color: #bbbbbb; ">{{$L('可见性')}}
+                                <span class="dashed-text" style="color: #bbbbbb; ">{{$L('可见性')}}
                                     <i class="taskfont" style="font-size: 10px;margin-right: 0;">&#xe740;</i>
                                 </span>
                                 <EDropdownMenu slot="dropdown">
