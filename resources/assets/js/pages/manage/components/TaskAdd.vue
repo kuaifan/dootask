@@ -96,7 +96,7 @@
             <FormItem>
                 <div class="item-label" slot="label">
                     <EDropdown ref="eDropdownRef" trigger="click" placement="bottom" @command="dropVisible">
-                        <span cclass="dashed-text">{{$L('可见性')}}
+                        <span class="visibility-text">{{$L('可见性')}}
                             <i class="taskfont">&#xe740;</i>
                         </span>
                         <EDropdownMenu slot="dropdown">
@@ -125,8 +125,8 @@
                     </EDropdown>
                 </div>
                 <div class="item-content user ivu-input ivu-input-default ivu-input-with-suffix" v-if="addData.visibility_appoint < 3" @click="showCisibleDropdown">
-                    <span v-if="addData.visibility_appoint == 1"  class="dashed-text">{{$L('项目人员可见')}}</span>
-                    <span v-else-if="addData.visibility_appoint == 2"  class="dashed-text">{{$L('任务人员可见')}}</span>
+                    <span v-if="addData.visibility_appoint == 1">{{$L('项目人员可见')}}</span>
+                    <span v-else-if="addData.visibility_appoint == 2">{{$L('任务人员可见')}}</span>
                 </div>
                 <UserSelect v-else
                     ref="visibleUserSelectRef"

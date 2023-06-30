@@ -152,6 +152,16 @@
                 }
             }
         }
+        .visibility-text{
+            cursor: pointer; 
+            &.color{
+                color: #bbbbbb;
+            }
+            .taskfont{
+                font-size: 10px;
+                margin-right: 0;
+            }
+        }
     }
     .task-add-advanced {
         margin: -16px 0 0;
@@ -224,6 +234,16 @@ body.window-portrait {
                 }
                 .advanced-time {
                     margin-left: 4px;
+                }
+            }
+            .visibility-text{
+                cursor: pointer; 
+                &.color{
+                    color: #bbbbbb;
+                }
+                .taskfont{
+                    font-size: 10px;
+                    margin-right: 0;
                 }
             }
         }

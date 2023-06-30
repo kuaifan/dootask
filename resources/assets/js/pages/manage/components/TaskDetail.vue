@@ -205,7 +205,7 @@
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe77b;</i>
                             <EDropdown ref="eDropdownRef" trigger="click" placement="bottom" @command="dropVisible">
-                                <span class="dashed-text color">{{$L('可见性')}}
+                                <span class="visibility-text color">{{$L('可见性')}}
                                     <i class="taskfont">&#xe740;</i>
                                 </span>
                                 <EDropdownMenu slot="dropdown">
@@ -234,8 +234,8 @@
                             </EDropdown>
                         </div>
                         <div class="item-content user">
-                            <span @click="showCisibleDropdown" v-if="taskDetail.is_all_visible == 1"  class="dashed-text">{{$L('项目人员可见')}}</span>
-                            <span @click="showCisibleDropdown" v-else-if="taskDetail.is_all_visible == 2"  class="dashed-text">{{$L('任务人员可见')}}</span>
+                            <span @click="showCisibleDropdown" v-if="taskDetail.is_all_visible == 1"  class="visibility-text">{{$L('项目人员可见')}}</span>
+                            <span @click="showCisibleDropdown" v-else-if="taskDetail.is_all_visible == 2"  class="visibility-text">{{$L('任务人员可见')}}</span>
                             <UserSelect v-else
                                 ref="visibleUserSelectRef"
                                 v-model="taskDetail.visibility_appointor"

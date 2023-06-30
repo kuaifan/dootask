@@ -429,16 +429,15 @@
                         }
                     }
                 }
-                .dashed-text{
+                .visibility-text{
                     cursor: pointer; 
-                    border-bottom: 1px dashed #acacac;
                     &.color{
                         color: #bbbbbb;
                     }
-                }
-                .dashed-text .taskfont{
-                    font-size: 10px;
-                    margin-right: 0;
+                    .taskfont{
+                        font-size: 10px;
+                        margin-right: 0;
+                    }
                 }
             }
             .add {

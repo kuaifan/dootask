@@ -1413,11 +1413,9 @@ class ProjectTask extends AbstractModel
         $userids = [];
         if ($userid === null) {
             $userids = $this->project->relationUserids();
-        } elseif (!is_array($userid)) {
-            $userids = [$userid];
-        } elseif (is_array($userid)) {
-            $userids = $userid;
-        }
+        } else {
+            $userids = is_array($userid) ? $userid : [$userid];
+        } 
         //
         $array = [];
         if (empty($data['parent_id'])) {
