@@ -16751,5 +16751,82 @@
         "de": "Doppelte anzahl Von menschen auszuwählen",
         "fr": "Le nombre maximum de sélections a été dépassé",
         "id": "Jumlah pilihan maksimum sudah melebihi"
+    },
+    {
+        "key": "可见性",
+        "zh": "",
+        "zh-CHT": "可見性",
+        "en": "Visibility",
+        "ko": "표시 가능성",
+        "ja": "可視性です",
+        "de": "Sichtbare wahrnehmung.",
+        "fr": "Visibilité et visibilité",
+        "id": "Visibilitas"
+    },
+    {
+        "key": "项目人员",
+        "zh": "",
+        "zh-CHT": "項目人員",
+        "en": "Project personnel",
+        "ko": "프로젝트 인원",
+        "ja": "プロジェクトスタッフです",
+        "de": "Die projektkontrolleure?",
+        "fr": "Personnel du projet",
+        "id": "Kru proyek"
+    },
+    {
+        "key": "任务人员",
+        "zh": "",
+        "zh-CHT": "任務人員",
+        "en": "Mission personnel",
+        "ko": "임무 인원",
+        "ja": "任務要員です",
+        "de": "Die crew.",
+        "fr": "Personnel en mission",
+        "id": "Tugas orang"
+    },
+    {
+        "key": "项目人员可见",
+        "zh": "",
+        "zh-CHT": "項目人員可見",
+        "en": "Project personnel visible",
+        "ko": "프로젝트 사용자 표시",
+        "ja": "プロジェクトメンバーが見ています",
+        "de": "Alle die mit projekten zusammengearbeitet haben.",
+        "fr": "Personnel du projet visible",
+        "id": "Kru proyek terlihat"
+    },
+    {
+        "key": "任务人员可见",
+        "zh": "",
+        "zh-CHT": "任務人員可見",
+        "en": "Mission personnel visibility",
+        "ko": "작업자 보이기",
+        "ja": "任務者は見ています",
+        "de": "Die agenten müssen alle sichtbar sein.",
+        "fr": "Personnel de mission visible",
+        "id": "Misi terlihat"
+    },
+    {
+        "key": "选择指定人员",
+        "zh": "",
+        "zh-CHT": "選擇指定人員",
+        "en": "Select a designated person",
+        "ko": "지정한 사람 선택",
+        "ja": "指定人員を選びます",
+        "de": "Ausgewählte beamte festlegen",
+        "fr": "Sélection des personnes désignées",
+        "id": "Pilih orang yang ditunjuk"
+    },
+    {
+        "key": "全选",
+        "zh": "",
+        "zh-CHT": "全選",
+        "en": "Select all",
+        "ko": "모두 선택",
+        "ja": "全選です",
+        "de": "Eine reine wahl.",
+        "fr": "Aléatoire!",
+        "id": "Memilih semua"
     }
 ]
