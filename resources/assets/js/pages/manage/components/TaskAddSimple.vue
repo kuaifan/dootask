@@ -114,10 +114,8 @@ export default {
                 p_name: '',
                 p_color: '',
                 // 可见性
-                visibility_principal: 1,
-                visibility_assist: 1,
                 visibility_appoint: 1,
-                visibility_appointor: [0],
+                visibility_appointor: [],
             },
             active: false,
 
@@ -223,10 +221,8 @@ export default {
                     p_name: '',
                     p_color: '',
                     // 可见性
-                    visibility_principal: 1,
-                    visibility_assist: 1,
                     visibility_appoint: 1,
-                    visibility_appointor: [0],
+                    visibility_appointor: [],
                 }
             }).catch(({msg}) => {
                 $A.modalError(msg);

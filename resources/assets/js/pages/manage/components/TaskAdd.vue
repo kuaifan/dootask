@@ -78,7 +78,7 @@
                     type="datetimerange"
                     @on-change="taskTimeChange(addData.times)"/>
             </FormItem>
-            <FormItem :label="$L('任务负责人')">
+            <FormItem :label="$L('任务负责人')" >
                 <UserSelect
                     v-model="addData.owner"
                     :multiple-max="10"
@@ -93,20 +93,50 @@
                     </ETooltip>
                 </div>
             </FormItem>
-            <FormItem :label="$L('可见性')">
-                <Checkbox disabled v-model="addData.visibility_principal" :true-value="1" :false-value="0">{{$L('任务负责人')}}</Checkbox>
-                <Checkbox disabled v-model="addData.visibility_assist" :true-value="1" :false-value="0">{{$L('任务协助人')}}</Checkbox>
-                <RadioGroup v-model="addData.is_all_visible">
-                    <Radio :label=1>{{$L('所有人员')}}</Radio>
-                    <Radio :label=0>{{$L('指定成员')}}</Radio>
-                </RadioGroup>
-                <UserSelect
-                    class="item-content user"
-                    v-show="!addData.is_all_visible"
+            <FormItem>
+                <div class="item-label" slot="label">
+                    <EDropdown ref="eDropdownRef" trigger="click" placement="bottom" @command="dropVisible">
+                        <span cclass="dashed-text">{{$L('可见性')}}
+                            <i class="taskfont" style="font-size: 10px;margin-right: 0;">&#xe740;</i>
+                        </span>
+                        <EDropdownMenu slot="dropdown">
+                            <EDropdownItem :command="1">
+                                <div class="task-menu-icon" >
+                                    <Icon v-if="addData.visibility_appoint == 1" class="completed" :type="'md-checkmark-circle'"/>
+                                    <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
+                                    {{$L('项目人员')}}
+                                </div>
+                            </EDropdownItem>
+                            <EDropdownItem :command="2">
+                                <div class="task-menu-icon" >
+                                    <Icon v-if="addData.visibility_appoint == 2" class="completed" :type="'md-checkmark-circle'"/>
+                                    <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
+                                    {{$L('任务人员')}}
+                                </div>
+                            </EDropdownItem>
+                            <EDropdownItem :command="3">
+                                <div class="task-menu-icon" >
+                                    <Icon v-if="addData.visibility_appoint == 3" class="completed" :type="'md-checkmark-circle'"/>
+                                    <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
+                                    {{$L('指定成员')}}
+                                </div>
+                            </EDropdownItem>
+                        </EDropdownMenu>
+                    </EDropdown>
+                </div>
+                <div class="item-content user ivu-input ivu-input-default ivu-input-with-suffix" v-if="addData.visibility_appoint < 3" @click="showCisibleDropdown">
+                    <span v-if="addData.visibility_appoint == 1"  class="dashed-text">{{$L('项目人员可见')}}</span>
+                    <span v-else-if="addData.visibility_appoint == 2"  class="dashed-text">{{$L('任务人员可见')}}</span>
+                </div>
+                <UserSelect v-else
+                    ref="visibleUserSelectRef"
                     v-model="addData.visibility_appointor"
-                    :avatar-size="28"
+                    :avatar-size="24"
                     :title="$L('选择指定人员')"
-                    :project-id="addData.project_id"/>
+                    :project-id="addData.project_id"
+                    @showUpdate="visibleUserSelectShowUpdate"
+                    border
+                />
             </FormItem>
             <div class="subtasks">
                 <div v-if="addData.subtasks.length > 0" class="sublist">
@@ -202,10 +232,7 @@ export default {
                 p_name: '',
                 p_color: '',
                 // 可见性
-                visibility_principal: 1,
-                visibility_assist: 1,
                 visibility_appoint: 1,
-                is_all_visible: 1,
                 visibility_appointor: [],
             },
 
@@ -528,6 +555,35 @@ export default {
 
         close() {
             this.$emit("input", !this.value)
+        },
+
+        showCisibleDropdown(){
+            this.$refs.eDropdownRef.show()
+        },
+
+        visibleUserSelectShowUpdate(isShow){
+            if(!isShow && (this.addData.visibility_appointor.length == 0 || !this.addData.visibility_appointor[0])){
+                let old = this.addData.old_visibility_appoint;
+                this.addData.visibility_appoint = old > 2 ? 1 : (old || 1);
+                if(this.addData.visibility_appoint < 3 ){
+                }
+            }
+        },
+
+        dropVisible(command) {
+            switch (command) {
+                case 1:
+                case 2:
+                    this.addData.visibility_appoint = command
+                    break;
+                case 3:
+                    this.addData.old_visibility_appoint = this.addData.visibility_appoint
+                    this.addData.visibility_appoint = command
+                    this.$nextTick(() => {
+                        this.$refs.visibleUserSelectRef.onSelection()
+                    });
+                    break;
+            }
         },
     }
 }

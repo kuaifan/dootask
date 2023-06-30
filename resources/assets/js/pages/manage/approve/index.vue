@@ -372,8 +372,14 @@ export default {
                     proc_def_name: this.approvalType == 'all' ? '' : this.approvalType,
                 }
             }).then(({data}) => {
-                this.unreadList =  data.rows.map((h,index)=>{
-                    h._active = index == 0; 
+                let activeId = 0;
+                let activeIndex = 0;
+                if( this.unreadList.length == 0 || this.unreadList.length == data.rows.length){
+                    this.unreadList?.map((res)=>{ if(res._active)  activeId = res.id  })
+                }
+                this.unreadList = data.rows.map((h,index)=>{
+                    h._active = activeId > 0 ? h.id == activeId : index == 0; 
+                    if(h._active) activeIndex = index
                     return h;
                 })
                 if(this.approvalType == 'all'){
@@ -381,7 +387,7 @@ export default {
                 }
                 if(this.tabsValue == 'unread'){
                     this.$nextTick(()=>{
-                        this.details = this.unreadList[0] || {}
+                        this.details = this.unreadList[activeIndex] || {}
                     })
                 }
             }).catch(({msg}) => {
@@ -402,13 +408,19 @@ export default {
                     proc_def_name: this.approvalType == 'all' ? '' : this.approvalType,
                 }
             }).then(({data}) => {
-                this.doneList =  data.rows.map((h,index)=>{
-                    h._active = index == 0; 
+                let activeId = 0;
+                let activeIndex = 0;
+                if( this.doneList.length == 0 || this.doneList.length == data.rows.length){
+                    this.doneList?.map((res)=>{ if(res._active)  activeId = res.id  })
+                }
+                this.doneList = data.rows.map((h,index)=>{
+                    h._active = activeId > 0 ? h.id == activeId : index == 0; 
+                    if(h._active) activeIndex = index
                     return h;
                 })
                 if(this.tabsValue == 'done'){
                     this.$nextTick(()=>{
-                        this.details = this.doneList[0] || {}
+                        this.details = this.doneList[activeIndex] || {}
                     })
                 }
             }).catch(({msg}) => {
@@ -429,13 +441,19 @@ export default {
                     proc_def_name: this.approvalType == 'all' ? '' : this.approvalType,
                 }
             }).then(({data}) => {
-                this.notifyList =  data.rows.map((h,index)=>{
-                    h._active = index == 0; 
+                let activeId = 0;
+                let activeIndex = 0;
+                if( this.notifyList.length == 0 || this.notifyList.length == data.rows.length){
+                    this.notifyList?.map((res)=>{ if(res._active)  activeId = res.id  })
+                }
+                this.notifyList = data.rows.map((h,index)=>{
+                    h._active = activeId > 0 ? h.id == activeId : index == 0; 
+                    if(h._active) activeIndex = index
                     return h;
                 })
                 if(this.tabsValue == 'notify'){
                     this.$nextTick(()=>{
-                        this.details = this.notifyList[0] || {}
+                        this.details = this.notifyList[activeIndex] || {}
                     })
                 }
             }).catch(({msg}) => {
@@ -457,13 +475,19 @@ export default {
                     state: this.searchState == 'all' ? '' : this.searchState
                 }
             }).then(({data}) => {
+                let activeId = 0;
+                let activeIndex = 0;
+                if( this.initiatedList.length == 0 || this.initiatedList.length == data.rows.length){
+                    this.initiatedList?.map((res)=>{ if(res._active)  activeId = res.id  })
+                }
                 this.initiatedList = data.rows.map((h,index)=>{
-                    h._active = index == 0; 
+                    h._active = activeId > 0 ? h.id == activeId : index == 0; 
+                    if(h._active) activeIndex = index
                     return h;
                 })
                 if(this.tabsValue == 'initiated'){
                     this.$nextTick(()=>{
-                        this.details = this.initiatedList[0] || {}
+                        this.details = this.initiatedList[activeIndex] || {}
                     })
                 }
             }).catch(({msg}) => {
