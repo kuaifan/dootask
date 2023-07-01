@@ -2,36 +2,36 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Exceptions\ApiException;
-use App\Models\AbstractModel;
-use App\Models\Deleted;
-use App\Models\File;
-use App\Models\FileContent;
-use App\Models\Project;
-use App\Models\ProjectColumn;
-use App\Models\ProjectFlow;
-use App\Models\ProjectFlowItem;
-use App\Models\ProjectInvite;
-use App\Models\ProjectLog;
-use App\Models\ProjectTask;
-use App\Models\ProjectTaskFile;
-use App\Models\ProjectTaskFlowChange;
-use App\Models\ProjectTaskUser;
-use App\Models\ProjectUser;
-use App\Models\User;
-use App\Models\WebSocketDialog;
-use App\Module\Base;
-use App\Module\BillExport;
-use App\Module\BillMultipleExport;
-use App\Module\Doo;
-use App\Module\TimeRange;
-use Carbon\Carbon;
-use Illuminate\Support\Arr;
-use Madzipper;
-use Redirect;
 use Request;
-use Response;
 use Session;
+use Redirect;
+use Response;
+use Madzipper;
+use Carbon\Carbon;
+use App\Module\Doo;
+use App\Models\File;
+use App\Models\User;
+use App\Module\Base;
+use App\Models\Deleted;
+use App\Models\Project;
+use App\Module\TimeRange;
+use App\Models\ProjectLog;
+use App\Module\BillExport;
+use App\Models\FileContent;
+use App\Models\ProjectFlow;
+use App\Models\ProjectTask;
+use App\Models\ProjectUser;
+use Illuminate\Support\Arr;
+use App\Models\AbstractModel;
+use App\Models\ProjectColumn;
+use App\Models\ProjectInvite;
+use App\Models\ProjectFlowItem;
+use App\Models\ProjectTaskFile;
+use App\Models\ProjectTaskUser;
+use App\Models\WebSocketDialog;
+use App\Exceptions\ApiException;
+use App\Module\BillMultipleExport;
+use App\Models\ProjectTaskFlowChange;
 
 /**
  * @apiDefine project
@@ -909,12 +909,16 @@ class ProjectController extends AbstractController
         $sorts = Request::input('sorts');
         $keys = is_array($keys) ? $keys : [];
         $sorts = is_array($sorts) ? $sorts : [];
-
-        // 任务可见性
-        $visibility_task_ids = ProjectTask::getVisibleUserids($userid, $project_id);
-
+        
         $builder = ProjectTask::with(['taskUser', 'taskTag']);
-        $builder->whereIn("project_tasks.id", $visibility_task_ids);
+        // 任务可见性
+        $builder->leftJoin('projects as projects', 'project_tasks.project_id', '=', 'projects.id');
+        $builder->leftJoin('project_task_users as task_users', 'project_tasks.id', '=', 'task_users.task_id');
+        $builder->where(function ($q) use ($userid) {
+            $q->where("project_tasks.is_all_visible", 1);
+            $q->orWhere("projects.userid", $userid);
+            $q->orWhere("task_users.userid", $userid);
+        });
         //
         if ($keys['name']) {
             if (Base::isNumber($keys['name'])) {
