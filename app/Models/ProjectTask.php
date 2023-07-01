@@ -1551,7 +1551,7 @@ class ProjectTask extends AbstractModel
         if (empty($userids)) {
             // 默认 项目成员 与 项目负责人，任务负责人、协助人的差集
             $projectUserids = ProjectUser::whereProjectId($this->project_id)->pluck('userid')->toArray();  // 项目成员
-            $projectOwner = Project::whereId($this->project_id)->pluck('userid')->toArray();  // 项目负责人
+            $projectOwner = ProjectUser::whereProjectId($this->project_id)->whereOwner(1)->pluck('userid')->toArray();  // 项目负责人
             $taskOwnerAndAssists = ProjectTaskUser::select(['userid', 'owner'])->whereIn('owner', [0, 1])->whereTaskId($this->id)->pluck('userid')->toArray();
             $subUserids = ProjectTaskUser::whereTaskPid($this->id)->pluck('userid')->toArray();
             $userids = array_diff($projectUserids, $projectOwner, $taskOwnerAndAssists, $subUserids);
@@ -1719,28 +1719,5 @@ class ProjectTask extends AbstractModel
         }
         //
         return $task;
-    }
-
-    /**
-     * 获取用户任务可见性
-     * @param $userid
-     * @param $project_id
-     * @return array
-     */
-    public static function getVisibleUserids($userid, $project_id = 0)
-    {
-        return (new ProjectTask)->setTable('pt')->from('project_tasks as pt')
-            ->leftJoin('project_task_users as b', 'b.task_id', '=', 'pt.id')
-            ->Join('projects as p', 'p.id', '=', 'pt.project_id')
-            ->when($project_id, function ($q) use ($project_id) {
-                $q->where('pt.project_id', '=', $project_id);   // 负责人项目ids
-            })
-            ->where(function ($q) use ($userid) {
-                $q->where("pt.is_all_visible", '=', 1);
-                $q->OrWhere("p.userid", '=', $userid);
-                $q->OrWhere("b.userid", '=', $userid);
-            })
-            ->pluck("pt.id")
-            ->toArray();
     }
 }
