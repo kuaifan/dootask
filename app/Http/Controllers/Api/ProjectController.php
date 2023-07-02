@@ -1678,7 +1678,7 @@ class ProjectController extends AbstractController
         ]);
         $data = ProjectTask::oneTask($task->id);
         $pushUserIds = ProjectTaskUser::whereTaskId($task->id)->pluck('userid')->toArray();
-        $pushUserIds[] = ProjectUser::whereProjectId($this->project_id)->whereOwner(1)->value('userid');  
+        $pushUserIds[] = ProjectUser::whereProjectId($task->project_id)->whereOwner(1)->value('userid');  
         foreach ($pushUserIds as $userId) {
             $task->pushMsg('add', $data, $userId);
         }
