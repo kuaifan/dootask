@@ -120,7 +120,7 @@
                     </div>
                 </div>
             </div>
-            <Scrollbar class-name="scroller">
+            <Scrollbar class="scroller">
                 <div class="title">
                     <Input
                         v-model="taskDetail.name"

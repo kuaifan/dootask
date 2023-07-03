@@ -15,12 +15,12 @@
         flex-wrap: wrap;
         justify-content: flex-start;
         align-items: flex-start;
-        cursor: pointer;
 
         > li {
             list-style: none;
             padding: 0;
             margin: 3px 6px 3px 0;
+            cursor: pointer;
 
             &:last-child {
                 margin-right: 0;

@@ -1,8 +1,8 @@
 .task-detail {
     display: flex;
     flex-direction: column;
-    margin: 0 -32px 12px -10px;
-    padding: 0 22px 12px 0;
+    margin: 0 -32px 12px -15px;
+    padding: 0 22px 10px 0;
     min-height: 120px;
     .task-info {
         flex: 3;
@@ -13,6 +13,7 @@
             display: flex;
             align-items: center;
             height: 42px;
+            margin-left: 5px;
             padding-bottom: 10px;
             color: #888888;
             position: relative;
@@ -149,6 +150,10 @@
             }
         }
         .scroller {
+            margin-right: -5px;
+            .scrollbar-content {
+                padding: 0 5px;
+            }
             .title {
                 margin-top: 18px;
                 .ivu-input {
@@ -241,7 +246,6 @@
                     }
                     &.user {
                         margin-top: 1px;
-                        cursor: pointer;
                     }
                     &.file {
                         margin-bottom: -3px;
@@ -512,6 +516,7 @@
             display: flex;
             align-items: center;
             height: 42px;
+            margin-left: 5px;
             padding-bottom: 10px;
             color: #888888;
             position: relative;
@@ -598,11 +603,11 @@
             .no-tip {
                 flex: 1;
                 display: none;
-                margin-left: 0;
+                margin-left: 5px;
             }
             .no-input {
                 position: relative;
-                margin: 22px 0 0 0;
+                margin: 22px 0 0 5px;
                 background-color: #F4F5F7;
                 padding: 10px 4px 10px 6px;
                 border-radius: 10px;
@@ -638,7 +643,7 @@
                     content: "";
                     position: absolute;
                     top: 0;
-                    left: 0;
+                    left: 5px;
                     right: 0;
                     bottom: 0;
                     border: 2px dashed #7b7b7b;
@@ -652,7 +657,7 @@
             }
         }
         .project-log {
-            margin-left: 0;
+            margin-left: 5px;
             .logs-activity {
                 padding: 22px 0 0;
                 > li {
@@ -707,7 +712,6 @@
     &.open-dialog {
         flex-direction: row;
         .task-info {
-            overflow: auto;
             .head {
                 .function {
                     margin-right: 2px;
@@ -839,7 +843,9 @@ body.window-portrait {
     .task-detail {
         .task-info {
             .scroller {
-                overflow-x: auto;
+                .scrollbar-content {
+                    overflow-x: auto;
+                }
             }
         }
     }
