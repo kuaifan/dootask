@@ -29,6 +29,9 @@ All notable changes to this project will be documented in this file.
 
 - 会议窗口恢复不显示的情况
 - 修复已知bug
+- 打开会话面板报错
+- 子任务通知无法打开
+- 修复审批的图片无法查看
 
 ### Performance
 
@@ -36,17 +39,6 @@ All notable changes to this project will be documented in this file.
 - 聊天输入框iOS输入第一个字母出现抖动的情况
 - 优化iOS出现连续加载消息列表的情况
 - 移动端键盘发送
-
-## [0.27.35]
-
-### Bug Fixes
-
-- 打开会话面板报错
-- 子任务通知无法打开
-- 修复审批的图片无法查看
-
-### Performance
-
 - 优化会员选择器
 - 优化图片压缩
 - 回复图片显示图片搜略图
