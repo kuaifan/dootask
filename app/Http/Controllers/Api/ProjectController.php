@@ -31,6 +31,7 @@ use App\Models\ProjectTaskUser;
 use App\Models\WebSocketDialog;
 use App\Exceptions\ApiException;
 use App\Module\BillMultipleExport;
+use Illuminate\Support\Facades\DB;
 use App\Models\ProjectTaskFlowChange;
 
 /**
@@ -911,16 +912,6 @@ class ProjectController extends AbstractController
         $sorts = is_array($sorts) ? $sorts : [];
         
         $builder = ProjectTask::with(['taskUser', 'taskTag']);
-        // 任务可见性
-        $builder->leftJoin('project_users', function ($q) {
-            $q->on('project_tasks.project_id', '=', 'project_users.project_id')->where('project_users.owner', 1);
-        });
-        $builder->leftJoin('project_task_users as task_users', 'project_tasks.id', '=', 'task_users.task_id');
-        $builder->where(function ($q) use ($userid) {
-            $q->where("project_tasks.is_all_visible", 1);
-            $q->orWhere("project_users.userid", $userid);
-            $q->orWhere("task_users.userid", $userid);
-        });
         //
         if ($keys['name']) {
             if (Base::isNumber($keys['name'])) {
@@ -984,10 +975,67 @@ class ProjectController extends AbstractController
             if (!in_array($direction, ['asc', 'desc'])) continue;
             $builder->orderBy('project_tasks.' . $column, $direction);
         }
+        // 任务可见性条件
+        $builder->leftJoin('project_users', function ($query) {
+            $query->on('project_tasks.project_id', '=', 'project_users.project_id')->where('project_users.owner', 1);
+        });
+        $builder->where(function ($query) use ($userid) {
+            $query->where("project_tasks.is_all_visible", 1);
+            $query->orWhere("project_users.userid", $userid);
+            $query->orWhere("project_task_users.userid", $userid);
+        });
+        // 优化子查询汇总 
+        $builder->leftJoinSub(function ($query) {
+            $query->select('task_id', DB::raw('count(*) as file_num'))
+                ->from('project_task_files')
+                ->groupBy('task_id');
+        }, 'task_files', 'task_files.task_id', '=', 'project_tasks.id');
+        $builder->leftJoinSub(function ($query) {
+            $query->select('id', DB::raw('count(*) as msg_num'))
+                ->from('web_socket_dialogs')
+                ->groupBy('id');
+        }, 'socket_dialogs', 'socket_dialogs.id', '=', 'project_tasks.id');
+        $builder->leftJoinSub(function ($query) {
+            $query->select('parent_id', DB::raw('count(*) as sub_num, sum(CASE WHEN complete_at IS NOT NULL THEN 1 ELSE 0 END) sub_complete') )
+                ->from('project_tasks')
+                ->groupBy('parent_id');
+        }, 'sub_task', 'sub_task.parent_id', '=', 'project_tasks.id');
+        // 给前缀“_”是为了不触发获取器
+        $prefix = DB::getTablePrefix();
+        $builder->selectRaw("{$prefix}task_files.file_num as _file_num");
+        $builder->selectRaw("{$prefix}socket_dialogs.msg_num as _msg_num");
+        $builder->selectRaw("{$prefix}sub_task.sub_num as _sub_num");
+        $builder->selectRaw("{$prefix}sub_task.sub_complete as _sub_complete");
+        $builder->selectRaw("
+            CAST(CASE 
+                WHEN {$prefix}project_tasks.complete_at IS NOT NULL THEN 100 
+                WHEN {$prefix}sub_task.sub_complete = 0 OR {$prefix}sub_task.sub_complete IS NULL THEN 0 
+                ELSE ({$prefix}sub_task.sub_complete / {$prefix}sub_task.sub_num * 100) 
+            END AS SIGNED) as _percent
+        ");
         //
         $list = $builder->orderByDesc('project_tasks.id')->paginate(Base::getPaginate(200, 100));
-        //
+        // 去除模型上的子汇总获取器
+        $list->transform(function ($customer) {
+            $customer->setAppends(["today","overdue"]);
+            return $customer;
+        });
+        // 
         $data = $list->toArray();
+        // 还原字段
+        foreach($data['data'] as &$item){
+            $item['file_num'] = $item['_file_num'] ?: 0;
+            $item['msg_num'] = $item['_msg_num'] ?: 0;
+            $item['sub_num'] = $item['_sub_num'] ?: 0;
+            $item['sub_complete'] = $item['_sub_complete'] ?: 0;
+            $item['percent'] = $item['_percent'];
+            unset($item['_file_num']);
+            unset($item['_msg_num']);
+            unset($item['_sub_num']);
+            unset($item['_sub_complete']);
+            unset($item['_percent']);
+        }
+        //
         if ($list->currentPage() === 1) {
             $data['deleted_id'] = Deleted::ids('projectTask', $user->userid, $timerange->deleted);
         }
