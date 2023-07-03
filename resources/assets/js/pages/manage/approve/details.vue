@@ -14,7 +14,7 @@
 
             <Divider/>
 
-            <div class="approve-details-text" v-if="(datas.proc_def_name || '').indexOf('班') == -1">
+            <div class="approve-details-text" v-if="(datas.proc_def_name || '').indexOf('请假') !== -1 && datas.var?.type">
                 <h4>{{$L('假期类型')}}</h4>
                 <p>{{$L(datas.var?.type)}}</p>
             </div>
@@ -31,7 +31,7 @@
                 <p>{{ datas.var?.start_time ? getTimeDifference(datas.var?.start_time,datas.var?.end_time)['time'] : 0 }}</p>
             </div>
             <div class="approve-details-text">
-                <h4>{{$L('请假事由')}}</h4>
+                <h4>{{$L('事由')}}</h4>
                 <p>{{datas.var?.description}}</p>
             </div>
             <div class="approve-details-text"  v-if="datas.var?.other">
