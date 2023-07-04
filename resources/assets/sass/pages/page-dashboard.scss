@@ -19,6 +19,8 @@
             border-top-left-radius: 0;
             border-top-right-radius: 0;
             padding-right: 14px;
+            position: sticky;
+            top: 0;
             > span {
                 cursor: pointer;
             }
@@ -327,6 +329,9 @@ body.window-portrait {
                     margin-bottom: 36px;
                     user-select: none;
                 }
+            }
+            .dashboard-warning {
+                border-radius: 0;
             }
         }
     }
