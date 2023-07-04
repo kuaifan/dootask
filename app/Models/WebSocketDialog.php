@@ -389,7 +389,7 @@ class WebSocketDialog extends AbstractModel
                 case 'all':
                     throw new ApiException('当前会话全员禁言');
                 case 'user':
-                    if (!User::find($userid)?->checkAdmin()) {
+                    if (!User::find($userid)?->isAdmin()) {
                         throw new ApiException('当前会话禁言');
                     }
             }
