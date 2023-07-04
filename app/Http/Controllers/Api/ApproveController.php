@@ -833,7 +833,7 @@ class ApproveController extends AbstractController
             return Base::retError('没有任何数据');
         }
         //
-        $title = (count($sheets) + 1) . "." . ($nickname ?: $val['start_user_id']);
+        $title = "Sheet1";
         $sheets = [
             BillExport::create()->setTitle($title)->setHeadings($headings)->setData($datas)->setStyles(["A1:Y1" => ["font" => ["bold" => true]]])
         ];
