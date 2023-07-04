@@ -774,14 +774,14 @@ class WebSocketDialogMsg extends AbstractModel
      * @param int $dialog_id            会话ID（即 聊天室ID）
      * @param string $type              消息类型
      * @param array $msg                发送的消息
-     * @param int $sender               发送的会员ID（默认自己，0为系统）
+     * @param int|null $sender          发送的会员ID（默认自己，0为系统）
      * @param bool $push_self           推送-是否推给自己
      * @param bool $push_retry          推送-失败后重试1次（有时候在事务里执行，数据还没生成时会出现找不到消息的情况）
      * @param bool|null $push_silence   推送-静默
      * - type = [text|file|record|meeting]  默认为：false
      * @return array
      */
-    public static function sendMsg($action, $dialog_id, $type, $msg, $sender = 0, $push_self = false, $push_retry = false, $push_silence = null)
+    public static function sendMsg($action, $dialog_id, $type, $msg, $sender = null, $push_self = false, $push_retry = false, $push_silence = null)
     {
         $link = 0;
         $mtype = $type;
@@ -810,13 +810,15 @@ class WebSocketDialogMsg extends AbstractModel
         //
         $update_id = preg_match("/^update-(\d+)$/", $action, $match) ? $match[1] : 0;
         $reply_id = preg_match("/^reply-(\d+)$/", $action, $match) ? $match[1] : 0;
-        $sender = $sender ?: User::userid();
+        $sender = $sender === null ? User::userid() : $sender;
         //
         $dialog = WebSocketDialog::find($dialog_id);
         if (empty($dialog)) {
             throw new ApiException('获取会话失败');
         }
-        $dialog->checkMute($sender);
+        if ($sender > 0) {
+            $dialog->checkMute($sender);
+        }
         //
         if ($update_id) {
             // 修改
