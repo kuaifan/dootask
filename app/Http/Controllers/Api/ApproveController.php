@@ -731,7 +731,7 @@ class ApproveController extends AbstractController
         $data['isFinished'] = intval(Request::input('is_finished')); //是否完成
         $date = Request::input('date');
         $data['startTime'] = $date[0]; //开始时间
-        $data['endTime'] = $date[1]; //结束时间
+        $data['endTime'] =Carbon::parse($date[1])->addDay()->toDateString(); //结束时间 + 1天
         //
         if (empty($name) || empty($date)) {
             return Base::retError('参数错误');
@@ -800,7 +800,7 @@ class ApproveController extends AbstractController
             // 计算时长
             $varStartTime = Carbon::parse($val['var']['start_time']);
             $varEndTime = Carbon::parse($val['var']['end_time']);
-            $duration = $varEndTime->diffInHours($varStartTime);
+            $duration = $varEndTime->floatDiffInHours($varStartTime);
             $duration_unit = '小时'; // 时长单位
             $datas[] = [
                 $val['id'], // 申请编号
