@@ -16828,5 +16828,16 @@
         "de": "Eine reine wahl.",
         "fr": "Aléatoire!",
         "id": "Memilih semua"
+    },
+    {
+        "key": "加入会议失败",
+        "zh": "",
+        "zh-CHT": "加入會議失敗",
+        "en": "Failed to join a meeting",
+        "ko": "회의에 참여할 수 없습니다.",
+        "ja": "参加に失敗しました",
+        "de": "Ich wurde nicht gewählt.",
+        "fr": "Échec de la Réunion d’adhésion",
+        "id": "Bergabung dengan konferensi gagal"
     }
 ]

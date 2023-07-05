@@ -117,6 +117,7 @@
 
 <script>
 import {Store} from "le5le-store";
+import { mapState } from 'vuex'
 import MeetingPlayer from "./MeetingPlayer";
 import DragBallComponent from "../../../components/DragBallComponent";
 import UserSelect from "../../../components/UserSelect.vue";
@@ -156,6 +157,10 @@ export default {
         }
     },
 
+    computed: {
+        ...mapState(['meetingWindow']),
+    },
+
     mounted() {
         this.subscribe = Store.subscribe('addMeeting', this.onAdd);
     },
@@ -179,6 +184,28 @@ export default {
             if (!val) {
                 this.$refs.meetingModal.modalIndex = this.$refs.meetingModal.handleGetModalIndex()
             }
+        },
+        meetingWindow : {
+            handler(val) {
+                switch (val.type) {
+                    case 'add':
+                        this.addShow = val.show
+                        this.loadIng = 0;
+                        break;
+                    case 'invitation':
+                        this.invitationShow = val.show
+                        this.invitationLoad = 0;
+                        break;
+                    case 'error':
+                        this.addShow = val.show
+                        this.loadIng = 0;
+                        this.invitationShow = val.show
+                        this.invitationLoad = 0;
+                        $A.modalError('加入会议失败');
+                        break;
+                }
+            },
+            immediate: true,
         }
     },
 
@@ -235,13 +262,30 @@ export default {
                         delete data.name;
                         delete data.msgs;
                         //
-                        $A.loadScript('js/AgoraRTC_N-4.17.0.js').then(_ => {
-                            this.join(data)
-                        }).catch(_ => {
-                            $A.modalError("会议组件加载失败！");
-                        }).finally(_ => {
+                        if ($A.isEEUiApp) {
+                            $A.eeuiAppSendMessage({
+                                action: 'startMeeting',
+                                meetingParams: {
+                                    token: data.token,
+                                    channel: data.channel,
+                                    uuid: data.uid,
+                                    appid: data.appid,
+                                    avatar: data.userimg,
+                                    username: data.nickname,
+                                    video: this.addData.tracks.includes("video"),
+                                    audio: this.addData.tracks.includes("audio"),
+                                }
+                            });
                             this.loadIng--;
-                        })
+                        }else{
+                            $A.loadScript('js/AgoraRTC_N-4.17.0.js').then(_ => {
+                                this.join(data)
+                            }).catch(_ => {
+                                $A.modalError("会议组件加载失败！");
+                            }).finally(_ => {
+                                this.loadIng--;
+                            })
+                        }
                     }).catch(({msg}) => {
                         this.loadIng--;
                         $A.modalError(msg);

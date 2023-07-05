@@ -1154,7 +1154,7 @@ class UsersController extends AbstractController
         if (empty($meetingSetting['appid']) || empty($meetingSetting['app_certificate'])) {
             return Base::retError('会议功能配置错误，请联系管理员');
         }
-        $uid = $user->userid . '_' . Request::header('fd');
+        $uid = intval(str_pad( Request::header('fd'), 6, 9, STR_PAD_LEFT) . $user->userid);
         try {
             $service = new AgoraTokenGenerator($meetingSetting['appid'], $meetingSetting['app_certificate'], $meeting->channel, $uid);
         } catch (\Exception $e) {
@@ -1183,6 +1183,8 @@ class UsersController extends AbstractController
         //
         $data['appid'] = $meetingSetting['appid'];
         $data['uid'] = $uid;
+        $data['userimg'] = $user->userimg;
+        $data['nickname'] = $user->nickname;
         $data['token'] = $token;
         $data['msgs'] = $msgs;
         return Base::retSuccess('success', $data);

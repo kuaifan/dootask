@@ -297,6 +297,51 @@ export default {
                     this.$store.dispatch("getBasicData", 600)
                 }
             }
+            // 会议事件
+            window.__onMeetingEvent = ({act,uuid}) => {
+                switch (act) {
+                    // 获取用户信息
+                    case "getInfo":   
+                        this.$store.dispatch("call", {
+                            url: 'users/basic',
+                            data: {
+                                userid: [ (uuid+"").substring(6) ]
+                            }
+                        }).then(({data}) => {
+                            $A.eeuiAppSendMessage({
+                                action: 'updateMeetingInfo',
+                                infos: {
+                                    uuid: uuid,
+                                    avatar: data[0]?.userimg,
+                                    username: data[0]?.nickname,
+                                }
+                            });
+                        }).catch(({msg}) => {
+                            $A.modalError(msg);
+                        });
+                        break;
+                    //加入成功
+                    case "success":     
+                        // 关闭添加会议窗口
+                        this.$store.dispatch("closeMeetingWindow","add")
+                        break;
+                    // 邀请
+                    case "invent":      
+                        // 关闭邀请会议窗口
+                        this.$store.dispatch("closeMeetingWindow","invitation")
+                        break;
+                    //结束会议
+                    case "endMeeting":  
+                        
+                        break;
+                    //加入失败
+                    case "error":       
+                        this.$store.dispatch("closeMeetingWindow","error")
+                        break;
+                    default:
+                        break;
+                }
+            }
             // 键盘状态
             window.__onKeyboardStatus = (data) => {
                 const message = $A.jsonParse(decodeURIComponent(data));
