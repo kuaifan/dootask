@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DooTask</title>
+  <meta name="google" value="notranslate">
+  <meta name="description" content="Lightweight open source online project task management tool to help teams efficiently advance their projects and make work easier."">
+  <meta name="keywords" content="China Dootask Task management Lightweight Hitosea Teamwork">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <link rel="stylesheet" type="text/css" href="../../css/common.css">
+  <link rel="stylesheet" type="text/css" href="../../css/rem.css">
+  <link rel="stylesheet" type="text/css" href="../../css/home.css">
+</head>
+<body>
+  <div id="layout">
+    <!-- 页头区域 -->
+    <header class="head">
+      <div class="nav">
+        <div class="nav-layout">
+          <a href="../en/index.html" class="logo">
+            <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+            <i class="dootask txt-7002027">DooTask</i>
+          </a>
+          <ul class="nav-ul">
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-product" href="../en/product.html">Product</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-solutions" href="../en/solutions.html">Solutions</a>
+            </li>
+            <li class="nav-ul-item">
+              <i class="txt-4001620 txt nav-support" id="support-txt" onclick="showMenuPopHandle()">
+                Support
+                <img src="../../img/vector.svg" alt="Support" class="nav-vector" id="drop-down-svg">
+              </i>
+              <ol class="submenu-pop" id="submenu-pop">
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../en/download.html">Download Center</a>
+                </li>
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../en/help.html">Help Center</a>
+                </li>
+              </ol>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-price" href="../en/price.html">Pricing</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-about" href="../en/about.html">About Us</a>
+            </li>
+          </ul>
+          <div class="nav-r">
+            <div class="lang" id="lang-img">
+              <img src="../../img/lang-select.svg" alt="Language switch" onclick="shouLangPopHandle()">
+              <ul class="lang-pop" id="lang-pop">
+                <li class="lang-pop-item" onclick="changeLanguage('zh')">
+                  <i class="lang-txt">简体中文</i>
+                </li>
+                <li class="lang-pop-item" onclick="changeLanguage('en')">
+                  <i class="lang-txt" >English</i>
+                </li>
+              </ul>
+            </div>
+            <i class="nav-r-icon theme_dark" onclick="setTheme('light')">
+              <img src="../../img/light.svg" alt="Brighter theme">
+            </i>
+            <i class="nav-r-icon theme_light" onclick="setTheme('dark')">
+              <img src="../../img/drak.svg" alt="Dark theme">
+            </i>
+            <a href="https://github.com/kuaifan/dootask" target="_blank">
+              <i class="nav-r-icon">
+                <img src="../../img/github.svg" alt="github">
+              </i>
+            </a>
+            <i class="line-1"></i>
+            <span class="get-started">
+              <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
+                <button class="btn btn-primary" >Get Started</button>
+              </a>
+            </span>
+          </div>
+          <div class="menuBtn">
+            <img id="menuBtn" src="../../img/menu.svg" alt="Menu">
+          </div>
+        </div>
+      </div>
+      <div class="topics">
+        <div class="topics-con">
+          <div class="topics-layout">
+            <div class="topics-tit mb-32">
+              <span class="txt-6007290 topics-h1-green">
+                DooTask
+                <i class="topics-h1">,</i>
+                <svg class="arcs" width="312" height="23" viewBox="0 0 312 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path id="arc" opacity="0.5" d="M3 20C47.4822 7.1714 170.957 -10.7886 309 20" stroke="#8BCF70" stroke-width="6" stroke-linecap="round" stroke-dasharray="600, 600" stroke-dashoffset="0"/>
+                </svg>
+              </span>
+              <span class="txt-6007290 topics-h1">Lightweight task management tool</span>
+            </div>
+            <h4 class="txt-4001830 topics-h4 mb-32">Lightweight open source online project task management tool to help teams efficiently advance their projects and make work easier.</h4>
+            <div class="topics-btn flex-cc">
+              <span class="mr-24 get-started">
+                <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
+                  <button class="btn btn-primary mr-20">Get Started</button>
+                </a>
+              </span>
+            </div>
+          </div>
+          <div class="ten_img">
+            <img class="home-pic" id="home_pic" src="../../img/light/zh_home_pic1.png" alt="DooTask,Lightweight open source online project task management tool to help teams efficiently advance their projects and make work easier.">
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- 菜单抽屉 -->
+    <div class="drawer">
+      <div class="drawer-t mb-36">
+        <a href="../en/index.html" class="logo">
+          <img id="logo" src="../../img/light/logo.svg" alt="DooTaskLogo">
+          <i class="dootask txt-7002027">DooTask</i>
+        </a>
+        <i class="close-drawer" onclick="closeDraweHandle()">✕</i>
+      </div>
+      <ul class="drawer-ul">
+        <li class="drawer-item-t mb-16">
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/product.html">Product</a>
+          </div>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/solutions.html">Solutions</a>
+          </div>
+          <div class="drawer-item" onclick="expandMenuHandle('support')">
+            <i class="txt-4001620 txt">
+              Support
+              <img src="../../img/vector.svg" class="nav-vector" alt="Support" id="drawer-down-support-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="support" style="display: none;">
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../en/download.html">Download Center</a>
+            </li>
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../en/help.html">Help Center</a>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/price.html">Pricing</a>
+          </div>
+          <div class="drawer-item mb-16" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/about.html">About Us</a>
+          </div>
+        </li>
+        <li class="drawer-item-c">
+          <div class="drawer-item" onclick="expandMenuHandle('theme')">
+            <i class="txt-4001620 txt">
+              Theme
+              <img src="../../img/vector.svg" alt="Theme" class="nav-vector" id="drawer-down-theme-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="theme" style="display: none;">
+            <li class="drawer-item"  onclick="setTheme('light')">
+              <i class="txt-4001620 txt">Light</i>
+            </li>
+            <li class="drawer-item"  onclick="setTheme('dark')">
+              <i class="txt-4001620 txt">Dark</i>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="expandMenuHandle('language')">
+            <i class="txt-4001620 txt">
+              Language
+              <img src="../../img/vector.svg" alt="Language" class="nav-vector" id="drawer-down-language-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="language" style="display: none;">
+            <li class="drawer-item"  onclick="changeLanguage('zh')">
+              <i class="txt-4001620 txt">简体中文</i>
+            </li>
+            <li class="drawer-item"  onclick="changeLanguage('en')">
+              <i class="txt-4001620 txt">English</i>
+            </li>
+          </ol>
+        </li>
+        <li class="drawer-item-b">
+          <li class="drawer-item">
+            <a class="txt-4001620 txt" href="https://demo.dootask.com">Log In</a>
+          </li>
+        </li>
+      </ul>
+    </div>
+    <!-- 内容区域 -->
+    <main>
+      <!-- 主要区域划分 -->
+      <section>
+        <!-- 合作公司区域 -->
+        <article class="companies">
+          <div class="companies-con">
+            <h1 class="companies-h1 txt-4003645">Trusted by many companies</h1>
+            <ul class="companies-ul">
+              <li class="companies-ul-item">
+                <img id="home_icon1" src="../../img/light/home_icon1.png" alt="陕建集团">
+              </li>
+              <li class="companies-ul-item">
+                <img id="home_icon2" src="../../img/light/home_icon2.png" alt="艾特科">
+              </li>
+              <li class="companies-ul-item">
+                <img id="home_icon3" src="../../img/light/home_icon3.png" alt="中国联通">
+              </li>
+              <li class="companies-ul-item">
+                <img id="home_icon4" src="../../img/light/home_icon4.png" alt="旗雲科技">
+              </li>
+            </ul>
+          </div>
+        </article> 
+        <!-- 功能卡片区域 -->
+        <article class="card">
+          <div class="card-con">
+            <h1 class="txt-5004455 card-h1 mb-80">Our Features you cab get</h1>
+            <div class="card-con-layout">
+              <ul class="card-ul">
+                <li class="card-ul-item active">
+                  <img class="icon" src="../../img/home_icon1.svg" alt="Project Management">
+                  <div class="card-ul-item-unfolded">
+                    <h3 class="txt-5002025 card-ul-item-h3">Project Management</h3>
+                    <img class="arrows" src="../../img/vector.svg" alt="Project Management">
+                  </div>
+                  <div class="card-ul-item-expand" >
+                    <div class="card-ul-item-expand-tit">
+                      <h3 class="txt-5002025 card-ul-item-h3">Project Management</h3>
+                      <img class="arrows" src="../../img/vector.svg" alt="Support a variety of project management modes, suitable for all sizes and types of project management, real-time control of project progress, optimize work.">
+                    </div>
+                    <i class="txt-4001624 card-ul-item-txt" style="--delay: 0.3s;">Support a variety of project management modes, suitable for all sizes and types of project management, real-time control of project progress, optimize work.</i> 
+                  </div>
+                </li>
+                <li class="card-ul-item">
+                  <img class="icon" src="../../img/home_icon2.svg" alt="Teamwork">
+                  <div class="card-ul-item-unfolded">
+                    <h3 class="txt-5002025 card-ul-item-h3">Teamwork</h3>
+                    <img class="arrows" src="../../img/vector.svg" alt="Teamwork">
+                  </div>
+                  <div class="card-ul-item-expand">
+                    <div class="card-ul-item-expand-tit">
+                      <h3 class="txt-5002025 card-ul-item-h3">Teamwork</h3>
+                      <img class="arrows" src="../../img/vector.svg" alt="Provide rich and practical online document collaboration tools to facilitate communication and collaboration among team members and improve work efficiency.">
+                    </div>
+                    <i class="txt-4001624 card-ul-item-txt" style="--delay: 0.3s;">Provide rich and practical online document collaboration tools to facilitate communication and collaboration among team members and improve work efficiency.</i> 
+                  </div>
+                </li>
+                <li class="card-ul-item">
+                  <img class="icon" src="../../img/home_icon3.svg" alt="Task Synergy">
+                  <div class="card-ul-item-unfolded">
+                    <h3 class="txt-5002025 card-ul-item-h3">Task Synergy</h3>
+                    <img class="arrows" src="../../img/vector.svg" alt="Task Synergy">
+                  </div>
+                  <div class="card-ul-item-expand">
+                    <div class="card-ul-item-expand-tit">
+                      <h3 class="txt-5002025 card-ul-item-h3">Task Synergy</h3>
+                      <img class="arrows" src="../../img/vector.svg" alt="A task-oriented approach keeps the team's work organized and ensures efficient teamwork and a clear division of tasks.">
+                    </div>
+                    <i class="txt-4001624 card-ul-item-txt" style="--delay: 0.3s;">A task-oriented approach keeps the team's work organized and ensures efficient teamwork and a clear division of tasks.</i> 
+                  </div>
+                </li>
+                <li class="card-ul-item">
+                  <img class="icon" src="../../img/home_icon4.svg" alt="Performance Measurement">
+                  <div class="card-ul-item-unfolded">
+                    <h3 class="txt-5002025 card-ul-item-h3">Performance Measurement</h3>
+                    <img class="arrows" src="../../img/vector.svg" alt="Performance Measurement">
+                  </div>
+                  <div class="card-ul-item-expand">
+                    <div class="card-ul-item-expand-tit">
+                      <h3 class="txt-5002025 card-ul-item-h3">Performance Measurement</h3>
+                      <img class="arrows" src="../../img/vector.svg" alt="Establishing quantifiable evaluation standards, data presentation of work effectiveness, and cohesion of core talents.">
+                    </div>
+                    <i class="txt-4001624 card-ul-item-txt" style="--delay: 0.3s;">Establishing quantifiable evaluation standards, data presentation of work effectiveness, and cohesion of core talents.</i> 
+                  </div>
+                </li>
+                <li class="card-ul-item">
+                  <img class="icon" src="../../img/home_icon5.svg" alt="Communication Report">
+                  <div class="card-ul-item-unfolded">
+                    <h3 class="txt-5002025 card-ul-item-h3">Communication Report</h3>
+                    <img class="arrows" src="../../img/vector.svg" alt="Communication Report">
+                  </div>
+                  <div class="card-ul-item-expand">
+                    <div class="card-ul-item-expand-tit">
+                      <h3 class="txt-5002025 card-ul-item-h3">Communication Report</h3>
+                      <img class="arrows" src="../../img/vector.svg" alt="Instant messaging and sharing based on work scenarios for better team communication.">
+                    </div>
+                    <i class="txt-4001624 card-ul-item-txt" style="--delay: 0.3s;">Instant messaging and sharing based on work scenarios for better team communication.</i> 
+                  </div>
+                </li>
+              </ul>
+              <img class="card-pic" id="home_pic2" src="../../img/light/zh_home_pic2.png" alt="Support a variety of project management modes, suitable for all sizes and types of project management, real-time control of project progress, optimize work.">
+            </div>
+          </div>
+          <div class="card-con-768">
+            <h1 class="txt-5002228 card-h1 mb-32">Our Features you cab get</h1>
+            <div class="card-con-layout">
+              <ul class="card-768-ul">
+                <li style="width: 100%;">
+                  <img class="icon" src="../../img/home_icon1.svg" alt="Project Management">
+                  <h3 class="txt-5001822 card-ul-item-h3 mb-12">Project Management</h3>
+                  <i class="txt-4001524 card-ul-item-txt mb-16">Support a variety of project management modes, suitable for all sizes and types of project management, real-time control of project progress, optimize work.</i> 
+                  <img class="card-pic mb-40" id="home_pic2" src="../../img/light/zh_home_pic2.png" alt="Support a variety of project management modes, suitable for all sizes and types of project management, real-time control of project progress, optimize work.">
+                </li>
+                <li style="width: 100%;">
+                  <img class="icon" src="../../img/home_icon2.svg" alt="Teamwork">
+                  <h3 class="txt-5001822 card-ul-item-h3 mb-12">Teamwork</h3>
+                  <i class="txt-4001524 card-ul-item-txt mb-16">Provide rich and practical online document collaboration tools to facilitate communication and collaboration among team members and improve work efficiency.</i> 
+                  <img class="card-pic mb-40" id="home_pic3" src="../../img/light/zh_home_pic3.png" alt="Provide rich and practical online document collaboration tools to facilitate communication and collaboration among team members and improve work efficiency.">
+                </li>
+                <li style="width: 100%;">
+                  <img class="icon" src="../../img/home_icon3.svg" alt="Task Synergy">
+                  <h3 class="txt-5001822 card-ul-item-h3 mb-12">Task Synergy</h3>
+                  <i class="txt-4001524 card-ul-item-txt mb-16">A task-oriented approach keeps the team's work organized and ensures efficient teamwork and a clear division of tasks.</i> 
+                  <img class="card-pic mb-40" id="home_pic4" src="../../img/light/zh_home_pic4.png" alt="A task-oriented approach keeps the team's work organized and ensures efficient teamwork and a clear division of tasks.">
+                </li>
+                <li style="width: 100%;">
+                  <img class="icon" src="../../img/home_icon4.svg" alt="Performance Measurement">
+                  <h3 class="txt-5001822 card-ul-item-h3 mb-12">Performance Measurement</h3>
+                  <i class="txt-4001524 card-ul-item-txt mb-16">Establishing quantifiable evaluation standards, data presentation of work effectiveness, and cohesion of core talents.</i> 
+                  <img class="card-pic mb-40" id="home_pic5" src="../../img/light/zh_home_pic5.png" alt="Establishing quantifiable evaluation standards, data presentation of work effectiveness, and cohesion of core talents.">
+                </li>
+                <li style="width: 100%;">
+                  <img class="icon" src="../../img/home_icon5.svg" alt="Communication Report">
+                  <h3 class="txt-5001822 card-ul-item-h3 mb-12">Communication Report</h3>
+                  <i class="txt-4001524 card-ul-item-txt mb-16">Instant messaging and sharing based on work scenarios for better team communication.</i> 
+                  <img class="card-pic" id="home_pic6" src="../../img/light/zh_home_pic6.png" alt="Instant messaging and sharing based on work scenarios for better team communication.">
+                </li>
+              </ul>
+            </div>
+          </div>
+        </article> 
+        <!-- 为什么选择我们区域 -->
+        <article class="choose">
+          <div class="choose-con">
+            <ul class="choose-con-ul mb-32">
+              <li class="choose-con-item">
+                <h1 class="txt-5004455 choose-con-tit">
+                  Why Choose Us
+                  <svg class="arcs2" width="312" height="23" viewBox="0 0 312 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path class="home_arc" opacity="0.5" d="M3 20C47.4822 7.1714 170.957 -10.7886 309 20" stroke="#8BCF70" stroke-width="6" stroke-linecap="round" stroke-dasharray="600, 600" stroke-dashoffset="0"/>
+                  </svg>
+                </h1>
+              </li>
+              <li class="choose-con-item hover home-animate-box" style="--delay: 0s;">
+                <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">Efficient and convenient team communication tools</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">Establish groups for projects and tasks, work issues can be communicated in a timely manner to promote rapid teamwork and improve team efficiency.</h6>
+              </li>
+              <li class="choose-con-item hover home-animate-box" style="--delay: 0.1s;">
+                <h1 class="txt-7003645 serial-number mb-24">02</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">Powerful and easy-to-use collaborative document creation</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">It brings together a variety of online tools such as documents, spreadsheets, thinking notes, etc., bringing together corporate knowledge resources in one place and supporting real-time collaborative editing by multiple people, making teamwork more convenient.</h6>
+              </li>
+            </ul>
+            <ul class="choose-con-ul">
+              <li class="choose-con-item hover home-animate-box" style="--delay: 0.2s;">
+                <h1 class="txt-7003645 serial-number mb-24">03</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">Convenient and diverse project management templates</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">Template to meet a variety of team collaboration scenarios, while supporting custom templates to meet the team's personalized scenario management needs, you can intuitively view the progress of the project, team collaboration more convenient.</h6>
+              </li>
+              <li class="choose-con-item hover home-animate-box" style="--delay: 0.3s;">
+                <h1 class="txt-7003645 serial-number mb-24">04</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">Clear and intuitive task calendar</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">Easily schedule each day with a flexible task calendar that breaks down tasks to each day, allowing for clearer work goals and more reasonable time allocation.</h6>
+              </li>
+              <li class="choose-con-item hover home-animate-box" style="--delay: 0.4s;">
+                <h1 class="txt-7003645 serial-number mb-24">05</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">Support for multi-platform applications</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">With multi-platform application support, you can track the progress of your project anytime, anywhere while having a more efficient and enjoyable experience at every step of your work.</h6>
+              </li>
+            </ul>
+          </div>
+          <div class="choose-con-768">
+            <h1 class="txt-5004455 choose-con-tit">Why Choose Us<img class="arcs2" src="../../img/arcs.svg" alt=""></h1>
+            <div class="choose-con-768-box">
+              <ul class="choose-con-768-ul">
+                <li class="choose-con-768-item active">
+                  <h1 class="txt-7003240 serial-number mb-24">01</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Efficient and convenient team communication tools</h5>
+                  <h6 class="txt-4001524 choose-con-item-h6">Establish groups for projects and tasks, work issues can be communicated in a timely manner to promote rapid teamwork and improve team efficiency.</h6>
+                </li>
+                <li class="choose-con-768-item">
+                  <h1 class="txt-7003240 serial-number mb-24">02</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Powerful and easy-to-use collaborative document creation</h5>
+                  <h6 class="txt-4001524 choose-con-item-h6">It brings together a variety of online tools such as documents, spreadsheets, thinking notes, etc., bringing together corporate knowledge resources in one place and supporting real-time collaborative editing by multiple people, making teamwork more convenient.</h6>
+                </li>
+                <li class="choose-con-768-item">
+                  <h1 class="txt-7003240 serial-number mb-24">03</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Convenient and diverse project management templates</h5>
+                  <h6 class="txt-4001524 choose-con-item-h6">Template to meet a variety of team collaboration scenarios, while supporting custom templates to meet the team's personalized scenario management needs, you can intuitively view the progress of the project, team collaboration more convenient.</h6>
+                </li>
+                <li class="choose-con-768-item">
+                  <h1 class="txt-7003240 serial-number mb-24">04</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Clear and intuitive task calendar</h5>
+                  <h6 class="txt-4001524 choose-con-item-h6">Easily schedule each day with a flexible task calendar that breaks down tasks to each day, allowing for clearer work goals and more reasonable time allocation.</h6>
+                </li>
+                <li class="choose-con-768-item">
+                  <h1 class="txt-7003240 serial-number mb-24">05</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Support for multi-platform applications</h5>
+                  <h6 class="txt-4001524 choose-con-item-h6">With multi-platform application support, you can track the progress of your project anytime, anywhere while having a more efficient and enjoyable experience at every step of your work.</h6>
+                </li>
+              </ul>
+            </div>
+            <ul id="card-indicators">
+              <li class="card-indicators-item active"></li>
+              <li class="card-indicators-item"></li>
+              <li class="card-indicators-item"></li>
+              <li class="card-indicators-item"></li>
+              <li class="card-indicators-item"></li>
+            </ul>
+          </div>
+        </article> 
+        <article class="collaboration">
+          <img id="home_pic7" class="home_pic7" src="../../img/light/home_pic7.svg" alt="Turn on your Dootask team collaboration">
+          <img id="home_pic7_768" class="home_pic7_768" src="../../img/light/home_pic7_768.svg" alt="Turn on your Dootask team collaboration">
+          <div class="collaboration-content collaboration-content-en">
+            <h1 class="collaboration-txt txt-5002835 mb-32">Turn on your Dootask team collaboration</h1>
+            <div style="display: flex;">
+              <span class="mr-24" style="width: 123px; display: inline-block;">
+                <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
+                  <button class="btn btn-gw mr-20">Get Started</button>
+                </a>
+              </span>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+    <!-- 页脚区域 -->
+    <footer>
+      <div class="footer-con">
+        <div class="footer-layut">
+          <div class="footer-l">
+            <a href="../en/index.html" class="logo">
+              <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+              <i class="dootask txt-7002027">DooTask</i>
+            </a>
+            <i class="txt txt-4001624">Helps teams move projects forward efficiently and makes work easier.</i>
+          </div>
+          <div class="footer-r">
+            <ul class="footer-r-ul">
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Links</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/product.html">Product</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/solutions.html">Solutions</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/price.html">Pricing</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../en/solutions.html">About Us</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Support</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/download.html">Download Center</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../en/help.html">Help Center</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Community</li>
+                  <li class="footer-ol-item">
+                    <li class="footer-ol-item mb-16">
+                      <i class="txt-4001624 txt" onclick="openInNewTab('https://github.com/kuaifan/dootask')">Github</i>
+                    </li>
+                    <li class="footer-ol-item mb-16">
+                      <i class="txt-4001624 txt" onclick="openInNewTab('https://gitee.com/aipaw/dootask')">Gitee</i>
+                    </li>
+                    <li class="footer-ol-item" id="qq_group">
+                      <i class="txt-4001624 txt">QQ group</i>
+                      <div class="group_code">
+                        <img class="code-svg" id="home_code" src="../../img/light/home_code.svg" alt="Group：546574618">
+                        <i class="group_num">Group：546574618</i>
+                        <i class="lower_triangle"></i>
+                      </div>
+                    </li>
+                  </li>
+                </ol>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="txt-4001624 filings">
+          Copyright © 2022-2023 Dootask. All rights reserved.
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+<script src="../../js/common.js"></script>
+<script>
+  /* 功能卡片切换函数 */ 
+  const tabs = document.querySelector('.card-ul');
+  const funImg = document.querySelector('#home_pic2');
+  const tabItems = tabs.querySelectorAll('.card-ul-item');
+  const lang = localStorage.getItem('lang')
+  tabs.addEventListener('click', function (event) {
+    const theme = localStorage.getItem('theme')
+    const clickedItem = event.target.closest('.card-ul-item');
+    if (clickedItem && !clickedItem.classList.contains('active')) {
+      // 切换激活状态
+      for (let [index,value] of tabItems.entries()) {
+        if(value === clickedItem){
+          funImg.setAttribute('src', `../../img/${theme?theme:'light'}/${lang}_home_pic${index+2}.png`)
+        }
+        value.classList.toggle('active', value === clickedItem);
+      }
+    }
+  });
+/* 为什么选择我们卡片切换函数 */ 
+const cardCarousel = document.querySelector('.choose-con-768');
+const targetDiv = document.querySelector('.choose-con-768-ul')
+const cardItems = cardCarousel.querySelectorAll('.choose-con-768-item');
+const indicators = cardCarousel.querySelectorAll('.card-indicators-item');
+const choose768box  = document.querySelector('.choose-con-768-box')
+let innerWidth = window.innerWidth
+let activeIndex = 0;
+let intervalId;
+let timerId2;
+choose768box.style.minHeight = targetDiv.clientHeight + 20  + 'px'
+for (let i = 0; i < indicators.length; i++) {
+  indicators[i].addEventListener('click', () => {
+    indicators[activeIndex].classList.remove('active');
+    activeIndex = i
+    targetDiv.style.left = -innerWidth * i  + 'px'
+    indicators[i].classList.add('active');
+    stopInterval()
+    timerId2 = setTimeout(()=>{
+      startInterval()
+      clearTimeout(timerId2)
+    },1500)
+  });
+}
+const intervalFunc1 = () => {
+  activeIndex -= 1
+  targetDiv.style.left = -innerWidth * activeIndex  + 'px'
+  indicators[activeIndex].classList.add('active');
+  indicators[activeIndex+1].classList.remove('active');
+};
+const intervalFunc2 = () => {
+  activeIndex += 1
+  targetDiv.style.left = -activeIndex * innerWidth + 'px'
+  indicators[activeIndex].classList.add('active');
+  indicators[activeIndex-1].classList.remove('active');
+};
+const positioning = ()=>{
+  activeIndex = 0
+  targetDiv.style.left = 0 + 'px'
+  targetDiv.style.transition = 'none';
+  indicators[0].classList.add('active');
+  indicators[4].classList.remove('active');
+}
+const swapFormat = ()=> {
+  if(activeIndex >= 4){
+    positioning()
+  }else{
+    targetDiv.style.transition = 'all cubic-bezier(0, -0.26, 0.13, 1.04) .8s';
+    intervalFunc2()
+  }
+}
+const startInterval = ()=> {
+  intervalId = setInterval(swapFormat, 3000)
+}
+startInterval()
+const stopInterval = ()=> {
+  clearInterval(intervalId);
+}
+let startX = 0;
+let startY = 0;
+let isSwipe = false; // 添加一个状态标志
+targetDiv.addEventListener('touchstart', function(event) {
+  startX = event.touches[0].pageX;
+  startY = event.touches[0].pageY;
+  isSwipe = false; // 每次按下时重置状态标志
+});
+targetDiv.addEventListener('touchmove', function(event) {
+  if (!isSwipe) { // 如果没有有效的滑动操作，则执行滑动逻辑
+    let endX = event.targetTouches[0].pageX;
+    let endY = event.targetTouches[0].pageY;
+    let distanceX = endX - startX;
+    let distanceY = endY - startY;
+    if (Math.abs(distanceX) > Math.abs(distanceY)) {
+      if (distanceX > 0) {
+        if(activeIndex != 0){
+          intervalFunc1()
+        }
+      } else {
+        if(activeIndex < 4){
+          intervalFunc2()
+        }
+      }
+      isSwipe = true; // 标记当前有一个有效的滑动操作
+      stopInterval()
+    }
+    startX = endX;
+    startY = endY;
+  }
+});
+targetDiv.addEventListener('touchend', function(event) {
+  isSwipe = false; // 松开时重置状态标志
+  startInterval()
+});
+/* 滑动到可视区域执行动画 */ 
+const boxes = document.querySelectorAll('.home-animate-box');
+const arcs = document.querySelector('.home_arc');
+  let timerId = null
+  const animateBoxes = ()=> {
+    boxes.forEach(box => {
+      const boxTop = box.getBoundingClientRect().top;
+      const boxBottom = box.getBoundingClientRect().bottom;
+      if (boxTop < window.innerHeight && boxBottom > 0) {
+        box.classList.add('animate');
+        arcs.classList.add('arc-animate');
+        timerId = setTimeout(()=>{
+          box.classList.remove('home-animate-box');
+          timerId = null
+        },1300)
+      }
+    });
+  }
+  window.addEventListener('scroll', animateBoxes);
+  animateBoxes();
+</script>
+</html>

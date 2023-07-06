@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DooTask</title>
+  <meta name="google" value="notranslate">
+  <meta name="description" content="Lightweight open source online project task management tool to help teams efficiently advance their projects and make work easier."">
+  <meta name="keywords" content="China Dootask Task management Lightweight Hitosea Teamwork">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" type="text/css" href="../../css/rem.css">
+  <link rel="stylesheet" href="../../css/download.css">
+</head>
+<body>
+  <div id="layout">
+    <!-- 页头区域 -->
+    <header class="head dow">
+      <div class="nav">
+        <div class="nav-layout">
+          <a href="../en/index.html" class="logo">
+            <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+            <i class="dootask txt-7002027">DooTask</i>
+          </a>
+          <ul class="nav-ul">
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-product" href="../en/product.html">Product</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-solutions" href="../en/solutions.html">Solutions</a>
+            </li>
+            <li class="nav-ul-item">
+              <i class="txt-4001620 txt nav-support" id="support-txt" onclick="showMenuPopHandle()">
+                Support
+                <img src="../../img/vector.svg" alt="Support" class="nav-vector" id="drop-down-svg">
+              </i>
+              <ol class="submenu-pop" id="submenu-pop">
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../en/download.html">Download Center</a>
+                </li>
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../en/help.html">Help Center</a>
+                </li>
+              </ol>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-price" href="../en/price.html">Pricing</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-about" href="../en/about.html">About Us</a>
+            </li>
+          </ul>
+          <div class="nav-r">
+            <div class="lang" id="lang-img">
+              <img src="../../img/lang-select.svg" alt="Language switch" onclick="shouLangPopHandle()">
+              <ul class="lang-pop" id="lang-pop">
+                <li class="lang-pop-item" onclick="changeLanguage('zh')">
+                  <i class="lang-txt">简体中文</i>
+                </li>
+                <li class="lang-pop-item" onclick="changeLanguage('en')">
+                  <i class="lang-txt" >English</i>
+                </li>
+              </ul>
+            </div>
+            <i class="nav-r-icon theme_dark" onclick="setTheme('light')">
+              <img src="../../img/light.svg" alt="Brighter themes">
+            </i>
+            <i class="nav-r-icon theme_light" onclick="setTheme('dark')">
+              <img src="../../img/drak.svg" alt="Dark theme">
+            </i>
+            <a href="https://github.com/kuaifan/dootask" target="_blank">
+              <i class="nav-r-icon">
+                <img src="../../img/github.svg" alt="github">
+              </i>
+            </a>
+            <i class="line-1"></i>
+            <span class="get-started">
+              <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
+                <button class="btn btn-primary" >Get Started</button>
+              </a>
+            </span>
+          </div>
+          <div class="menuBtn">
+            <img id="menuBtn" src="../../img/menu.svg" alt="Menu">
+          </div>
+        </div>
+      </div>
+      <div class="topics">
+        <div class="topics-con">
+          <div class="topics-layout">
+            <div class="topics-tit mb-32 topics-tit-en">
+              <span class="txt-6005670 topics-h1">Download DooTask client</span>
+            </div>
+            <h4 class="txt-4001830 topics-h4 mb-64 topics-h4-en">Also supports iOS, Android, macOS, Windows versions</h4>
+            <ul class="download-ul">
+              <li class="download-ul-item dow-animate-box" style="--delay: 0s;" onmouseover='handleMouseover(0)' onmouseout='handleMouseout(0)'>
+                <a class="normal" href="https://apps.apple.com/cn/app/dootask/id1624855111">
+                  <img class="icon mb-8" src="../../img/dow_ios.svg" alt="ios">
+                  <i class="txt-4001624 txt">ios</i>
+                </a>
+                <div class="hover">
+                  <img class="qr-code mb-8" src="../../img/ios_code.png" alt="Scan download,ios">
+                  <i class="txt-4001624 txt">Scan download</i>
+                </div>
+              </li>
+              <li class="download-ul-item dow-animate-box" style="--delay: 0.1s;" onmouseover='handleMouseover(1)' onmouseout='handleMouseout(1)'>
+                <a class="normal" href="https://www.dootask.com/desktop/publish/latest?platform=android">
+                  <img class="icon mb-8" src="../../img/dow_android.svg" alt="Android">
+                  <i class="txt-4001624 txt">Android</i>
+                </a>
+                <div class="hover">
+                  <div class="mb-12" id="qrcode" style="width: 100px;height: 100px;"></div>
+                  <i class="txt-4001624 txt">Scan download</i>
+                </div>
+              </li>
+              <li class="download-ul-item dow-animate-box" style="--delay: 0.2s;" onmouseover='handleMouseover(2)' onmouseout='handleMouseout(2)'>
+                <div class="normal">
+                  <img class="icon mb-8" src="../../img/dow_mac.svg" alt="macOS">
+                  <i class="txt-4001624 txt">macOS</i>
+                </div>
+                <div class="hover radius">
+                  <button class="btn btn-green mb-12" style="width: 70%;">
+                    <a class="chips-txt txt-4001418" id="arm64Link" href="https://www.dootask.com/uploads/desktop/0.27.46/DooTask-v0.27.46-mac-arm64.dmg">Apple Chips</a>
+                  </button>
+                  <button class="btn btn-green" style="width: 70%;">
+                    <a class="chips-txt txt-4001418" id="x64Link" href="https://www.dootask.com/uploads/desktop/0.27.46/DooTask-v0.27.46-mac-x64.dmg">Intel Chips</a>
+                  </button>
+                </div>
+              </li>
+              <li class="download-ul-item dow-animate-box" style="--delay: 0.3s;" onmouseover='handleMouseover(3)' onmouseout='handleMouseout(3)'>
+                <div class="normal">
+                  <img class="icon mb-8" src="../../img/dow_window.svg" alt="Windows">
+                  <i class="txt-4001624 txt">Windows</i>
+                </div>
+                <a class="hover radius" id="winx64Link" href="https://www.dootask.com/uploads/desktop/0.27.46/DooTask-v0.27.46-win-x64.exe">
+                  <img class="icon mb-8" src="../../img/dow_icon.svg" alt="Windows,download">
+                  <i class="txt-4001624 txt">download</i>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- 菜单抽屉 -->
+    <div class="drawer">
+      <div class="drawer-t mb-36">
+        <a href="../en/index.html" class="logo">
+          <img id="logo" src="../../img/light/logo.svg" alt="DooTaskLogo">
+          <i class="dootask txt-7002027">DooTask</i>
+        </a>
+        <i class="close-drawer" onclick="closeDraweHandle()">✕</i>
+      </div>
+      <ul class="drawer-ul">
+        <li class="drawer-item-t mb-16">
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/product.html">Product</a>
+          </div>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/solutions.html">Solutions</a>
+          </div>
+          <div class="drawer-item" onclick="expandMenuHandle('support')">
+            <i class="txt-4001620 txt">
+              Support
+              <img src="../../img/vector.svg" class="nav-vector" alt="Support" id="drawer-down-support-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="support" style="display: none;">
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../en/download.html">Download Center</a>
+            </li>
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../en/help.html">Help Center</a>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/price.html">Pricing</a>
+          </div>
+          <div class="drawer-item mb-16" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/about.html">About Us</a>
+          </div>
+        </li>
+        <li class="drawer-item-c">
+          <div class="drawer-item" onclick="expandMenuHandle('theme')">
+            <i class="txt-4001620 txt">
+              Theme
+              <img src="../../img/vector.svg" alt="Theme" class="nav-vector" id="drawer-down-theme-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="theme" style="display: none;">
+            <li class="drawer-item"  onclick="setTheme('light')">
+              <i class="txt-4001620 txt">Light</i>
+            </li>
+            <li class="drawer-item"  onclick="setTheme('dark')">
+              <i class="txt-4001620 txt">Dark</i>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="expandMenuHandle('language')">
+            <i class="txt-4001620 txt">
+              Language
+              <img src="../../img/vector.svg" alt="Language" class="nav-vector" id="drawer-down-language-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="language" style="display: none;">
+            <li class="drawer-item"  onclick="changeLanguage('zh')">
+              <i class="txt-4001620 txt">简体中文</i>
+            </li>
+            <li class="drawer-item"  onclick="changeLanguage('en')">
+              <i class="txt-4001620 txt">English</i>
+            </li>
+          </ol>
+        </li>
+        <li class="drawer-item-b">
+          <li class="drawer-item">
+            <a class="txt-4001620 txt" href="https://demo.dootask.com">Log In</a>
+          </li>
+        </li>
+      </ul>
+    </div>
+    <!-- 内容区域 -->
+    <main>
+      <!-- 主要区域划分 -->
+      <section>
+        <article class="update">
+          <div class="update-bg-svg">
+            <div class="update-con">
+              <div class="update-layout">
+                <div class="update-l">
+                  <h1 class="txt-4003645 update-h1 mb-36">Update Log</h1>
+                  <ul class="update-ul">
+                    <div id="releases"></div>
+                    <li>
+                      <a class="more-item" href="../en/log.html">
+                        <h5 class="txt-4001624 more">More Logs</h5>
+                        <img class="icon" src="../../img/dow_arrow.svg" alt="More Logs">
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+                <div class="update-r">
+                  <img class="update-r-svg" id="dow_pic1" src="../../img/light/zh_dow_pic1.png" alt="Download Centre">
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+    <!-- 页脚区域 -->
+    <footer>
+      <div class="footer-con">
+        <div class="footer-layut">
+          <div class="footer-l">
+            <a href="../en/index.html" class="logo">
+              <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+              <i class="dootask txt-7002027">DooTask</i>
+            </a>
+            <i class="txt txt-4001624">Helps teams move projects forward efficiently and makes work easier.</i>
+          </div>
+          <div class="footer-r">
+            <ul class="footer-r-ul">
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Links</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/product.html">Product</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/solutions.html">Solutions</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/price.html">Pricing</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../en/solutions.html">About Us</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Support</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/download.html">Download Center</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../en/help.html">Help Center</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Community</li>
+                  <li class="footer-ol-item">
+                    <li class="footer-ol-item mb-16">
+                      <i class="txt-4001624 txt" onclick="openInNewTab('https://github.com/kuaifan/dootask')">Github</i>
+                    </li>
+                    <li class="footer-ol-item mb-16">
+                      <i class="txt-4001624 txt" onclick="openInNewTab('https://gitee.com/aipaw/dootask')">Gitee</i>
+                    </li>
+                    <li class="footer-ol-item" id="qq_group">
+                      <i class="txt-4001624 txt">QQ group</i>
+                      <div class="group_code">
+                        <img class="code-svg" id="home_code" src="../../img/light/home_code.svg" alt="Group：546574618">
+                        <i class="group_num">Group：546574618</i>
+                        <i class="lower_triangle"></i>
+                      </div>
+                    </li>
+                  </li>
+                </ol>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="txt-4001624 filings">
+          Copyright © 2022-2023 Dootask. All rights reserved.
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+<script src="https://cdn.bootcdn.net/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="../../js/common.js"></script>
+<script>
+  /* 下载应用的hover处理函数 */ 
+const download = document.querySelector('.download-ul');
+const downloadItems = download.querySelectorAll('.download-ul-item');
+const handleMouseover = (val)=>{
+  downloadItems[val].children[0].style.display = 'none'
+  downloadItems[val].children[1].style.display = 'flex'
+}
+const handleMouseout = (val)=>{
+  downloadItems[val].children[0].style.display = 'flex'
+  downloadItems[val].children[1].style.display = 'none'
+}
+const localStorageHandle = (val)=>{
+  localStorage.setItem('update_log_num',val)
+  window.location.href = '../en/log.html'
+}
+const getItem = (key)=> {
+  var record = JSON.parse(localStorage.getItem(key));
+  if (!record) return null;
+  if (new Date().getTime() > record.expired) {
+    localStorage.removeItem(key);
+    return null;
+  }
+  return record.value;
+}
+/* 获取仓库的更新信息处理函数 */ 
+const setHrefUrl = (data,name,dom)=>{
+  const url = data[0].assets.find(file => file.name.includes(name));
+  const link = document.getElementById(dom);
+  link.href = url.browser_download_url;
+}
+const logsItem =  getItem('logs_dowmload_en')
+const updates = document.getElementById('releases');
+if(!logsItem) {
+  fetch('https://api.github.com/repos/kuaifan/dootask/releases')
+  .then(response => response.json())
+  .then(data => {
+    setHrefUrl(data,'arm64.dmg','arm64Link')
+    setHrefUrl(data,'x64.dmg','x64Link')
+    setHrefUrl(data,'arm64.exe','winx64Link')
+    const releases = data.slice(0, 5).map((item,index) => {
+      const { tag_name, created_at } = item;
+      const date = created_at.split('T')[0];
+      return `
+        <li class="update-item" onclick="localStorageHandle(${index+1})">
+          <h5 class="txt-4001624 update-h5">DooTask ${tag_name} update</h5>
+          <i class="txt-4001624 time">${date}</i>
+        </li>
+      `;
+    }).join('');
+    let record = {value: releases, expired: new Date().getTime() + 30 * 60 * 1000};
+    localStorage.setItem('logs_dowmload_en', JSON.stringify(record))
+    updates.innerHTML = releases;
+  })
+  .catch(error => {
+    console.error(error);
+  });
+}else{
+  updates.innerHTML = logsItem;
+}
+/* 滑动到可视区域执行动画 */ 
+const boxes = document.querySelectorAll('.dow-animate-box');
+const animateBoxes = ()=> {
+  boxes.forEach(box => {
+    const boxTop = box.getBoundingClientRect().top;
+    const boxBottom = box.getBoundingClientRect().bottom;
+    if (boxTop < window.innerHeight && boxBottom > 0) {
+      box.classList.add('animate');
+    }
+  });
+}
+window.addEventListener('scroll', animateBoxes);
+animateBoxes();
+/* 生成网页二维码二维码 */ 
+if(window.location.host !== ''){
+  const url = window.location.href;
+  const matchResult = url.match(/^(.*?)(?=\/site)/);
+  const result = matchResult[1];
+  new QRCode(document.getElementById('qrcode'), `${result}/site/en/distribute.html`); // 测试
+}
+</script>
+</html>

@@ -1,0 +1,116 @@
+/* 头部样式 */
+.head{
+  text-align: center;
+  background: var(--bg-5-url) top center no-repeat;
+  background-size: cover;
+}
+.app{
+  position: relative;
+  z-index: 2;
+  background-color: var(--bg-fa-color);
+}
+.bg-style{
+  background: var(--bg-6-url) top left no-repeat;
+}
+.app-con{
+  padding: 120px 0px;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+.app-tit{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.app-h1{
+  color: var(--text-color);
+}
+.app-h4{
+  color: var(--txt-191a15-color);
+}
+.app-ul{
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.app-ul-item{
+  width: 624px;
+}
+.app-bg-box{
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  border-radius: 16px;
+  margin-bottom: 32px;
+}
+.app-bg{
+  display: block;
+  height: auto;
+  transform: scale(1);
+  transition: all 2s;
+}
+.app-bg:hover{
+  transform: scale(1.15);
+}
+.app-h5{
+  color: var(--txt-gray-color);
+}
+.app-h6{
+  color: var(--txt-gray-color);
+}
+.team{
+  background: var(--bg-7-url) top right no-repeat;
+  background-size: contain;
+}
+.team-con{
+  padding: 120px 0px;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+.team-tit{
+  text-align: center;
+  color: var(--text-color);
+}
+.team-ul{
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.team-ul-item{
+  padding: 24px;
+  width: 357px;
+  transition: all .3s ease-in-out;
+  background-color: var(--choose-bg-hover-color);
+  box-shadow: 0px 2px 8px 4px rgba(0, 0, 0, 0.05);
+  border-radius: 12px;
+  z-index: 2;
+}
+.team-ul-item:hover{
+  transform: translateY(-16px);
+}
+.team-ul-item-en{
+  height: 358px;
+}
+.team-ul-item-zh{
+  height: 234px;
+}
+.team-icon{
+  display: block;
+  width: 48px;
+}
+/* 底部样式 */
+footer{
+  width: 100%;
+  z-index: 2;
+  position: relative;
+  background-color: var(--bg-color);
+}
+.footer-layut{
+  border-top: var(--border-color) solid 1px;
+}

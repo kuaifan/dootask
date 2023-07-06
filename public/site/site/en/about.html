@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DooTask</title>
+  <meta name="google" value="notranslate">
+  <meta name="description" content="Lightweight open source online project task management tool to help teams efficiently advance their projects and make work easier."">
+  <meta name="keywords" content="China Dootask Task management Lightweight Hitosea Teamwork">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" type="text/css" href="../../css/rem.css">
+  <link rel="stylesheet" href="../../css/about.css">
+</head>
+<body>
+  <div class="BulletBox"></div>
+  <div id="layout" class="about_green_bg">
+    <header class="head">
+      <div class="nav">
+        <div class="nav-layout">
+          <a href="../en/index.html" class="logo">
+            <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+            <i class="dootask txt-7002027">DooTask</i>
+          </a>
+          <ul class="nav-ul">
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-product" href="../en/product.html">Product</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-solutions" href="../en/solutions.html">Solutions</a>
+            </li>
+            <li class="nav-ul-item">
+              <i class="txt-4001620 txt nav-support" id="support-txt" onclick="showMenuPopHandle()">
+                Support
+                <img src="../../img/vector.svg" alt="Support" class="nav-vector" id="drop-down-svg">
+              </i>
+              <ol class="submenu-pop" id="submenu-pop">
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../en/download.html">Download Center</a>
+                </li>
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../en/help.html">Help Center</a>
+                </li>
+              </ol>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-price" href="../en/price.html">Pricing</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-about" href="../en/about.html">About Us</a>
+            </li>
+          </ul>
+          <div class="nav-r">
+            <div class="lang" id="lang-img">
+              <img src="../../img/lang-select.svg" alt="Language switch" onclick="shouLangPopHandle()">
+              <ul class="lang-pop" id="lang-pop">
+                <li class="lang-pop-item" onclick="changeLanguage('zh')">
+                  <i class="lang-txt">简体中文</i>
+                </li>
+                <li class="lang-pop-item" onclick="changeLanguage('en')">
+                  <i class="lang-txt" >English</i>
+                </li>
+              </ul>
+            </div>
+            <i class="nav-r-icon theme_dark" onclick="setTheme('light')">
+              <img src="../../img/light.svg" alt="Light theme">
+            </i>
+            <i class="nav-r-icon theme_light" onclick="setTheme('dark')">
+              <img src="../../img/drak.svg" alt="Dark theme">
+            </i>
+            <a href="https://github.com/kuaifan/dootask" target="_blank">
+              <i class="nav-r-icon">
+                <img src="../../img/github.svg" alt="github">
+              </i>
+            </a>
+            <i class="line-1"></i>
+            <span class="get-started">
+              <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
+                <button class="btn btn-primary" >Get Started</button>
+              </a>
+            </span>
+          </div>
+          <div class="menuBtn">
+            <img id="menuBtn" src="../../img/menu.svg" alt="Menu">
+          </div>
+        </div>
+      </div>
+      <div class="topics">
+        <div class="topics-con">
+          <div class="topics-layout">
+            <div class="topics-tit mb-32 topics-tit-en">
+              <span class="txt-6007290 topics-h1">About our company</span>
+            </div>
+            <h4 class="txt-4001830 topics-h4 mb-32 topics-h4-en">Focusing on the field of network security, we are committed to providing users with a full range of network security solutions.</h4>
+            <ul class="company-ul">
+              <li class="company-ul-item">
+                <h2 class="txt-5003636 company-h2 mb-8 company-year">2020</h2>
+                <h6 class="txt-4001624 company-h6">Company founded</h6>
+              </li>
+              <li class="company-ul-item">
+                <div class="flex-sc">
+                  <h2 class="txt-5003636 company-h2 mb-8 company-area">10</h2>
+                  <i class="company-sup">+</i>
+                </div>
+                <h6 class="txt-4001624 company-h6">Team experience</h6>
+              </li>
+              <li class="company-ul-item">
+                <div class="flex-sc">
+                  <h2 class="txt-5003636 company-h2 mb-8 company-size">99</h2>
+                  <i class="company-sup">%</i>
+                </div>
+                <h6 class="txt-4001624 company-h6">Customer staisfaction</h6>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <article class="company-profile">
+        <div class="company-profile-con">
+          <div class="company-profile-layout">
+            <img class="company-profile-l" id="about_pic1" src="../../img/light/about_pic1.png" alt="广西海豚有海信息科技公司,HITOSEA,海豚有海,广西海豚有海">
+            <div class="company-profile-r">
+              <h1 class="txt-5004455 company-profile-h1 mb-80">
+                Company profile
+                <svg  class="company-profile-arcs" width="312" height="23" viewBox="0 0 312 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path id="arc" opacity="0.5" d="M3 20C47.4822 7.1714 170.957 -10.7886 309 20" stroke="#8BCF70" stroke-width="6" stroke-linecap="round" stroke-dasharray="600, 600" stroke-dashoffset="0"/>
+                </svg>
+              </h1>
+              <h6 class="txt-4001830 company-profile-h6">Since its establishment, HITOSEA has been focusing on the innovation of cutting-edge technologies in the field of network security, providing network security products and services including border security, cloud security, data security, intranet security, and is committed to providing users with comprehensive, smarter, and zero-disturbance network security solutions, and is a dynamic technology company with a young and energetic team.</h6>
+            </div>
+          </div>
+        </div>
+      </article>
+    </header>
+    <!-- 菜单抽屉 -->
+    <div class="drawer">
+      <div class="drawer-t mb-36">
+        <a href="../en/index.html" class="logo">
+          <img id="logo" src="../../img/light/logo.svg" alt="DooTaskLogo">
+          <i class="dootask txt-7002027">DooTask</i>
+        </a>
+        <i class="close-drawer" onclick="closeDraweHandle()">✕</i>
+      </div>
+      <ul class="drawer-ul">
+        <li class="drawer-item-t mb-16">
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/product.html">Product</a>
+          </div>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/solutions.html">Solutions</a>
+          </div>
+          <div class="drawer-item" onclick="expandMenuHandle('support')">
+            <i class="txt-4001620 txt">
+              Support
+              <img src="../../img/vector.svg" class="nav-vector" alt="Support" id="drawer-down-support-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="support" style="display: none;">
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../en/download.html">Download Center</a>
+            </li>
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../en/help.html">Help Center</a>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/price.html">Pricing</a>
+          </div>
+          <div class="drawer-item mb-16" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/about.html">About Us</a>
+          </div>
+        </li>
+        <li class="drawer-item-c">
+          <div class="drawer-item" onclick="expandMenuHandle('theme')">
+            <i class="txt-4001620 txt">
+              Theme
+              <img src="../../img/vector.svg" alt="Theme" class="nav-vector" id="drawer-down-theme-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="theme" style="display: none;">
+            <li class="drawer-item"  onclick="setTheme('light')">
+              <i class="txt-4001620 txt">Light</i>
+            </li>
+            <li class="drawer-item"  onclick="setTheme('dark')">
+              <i class="txt-4001620 txt">Dark</i>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="expandMenuHandle('language')">
+            <i class="txt-4001620 txt">
+              Language
+              <img src="../../img/vector.svg" alt="Language" class="nav-vector" id="drawer-down-language-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="language" style="display: none;">
+            <li class="drawer-item"  onclick="changeLanguage('zh')">
+              <i class="txt-4001620 txt">简体中文</i>
+            </li>
+            <li class="drawer-item"  onclick="changeLanguage('en')">
+              <i class="txt-4001620 txt">English</i>
+            </li>
+          </ol>
+        </li>
+        <li class="drawer-item-b">
+          <li class="drawer-item">
+            <a class="txt-4001620 txt" href="https://demo.dootask.com">Log In</a>
+          </li>
+        </li>
+      </ul>
+    </div>
+    <!-- 内容区域 -->
+    <main>
+      <!-- 主要区域划分 -->
+      <section>
+        <article class="scenario-app">
+          <div class="scenario-app-con">
+            <div class="scenario-app-layout">
+              <h1 class="txt-5004455 scenario-app-h1 mb-16">Scenario Application</h1>
+              <h6 class="txt-4001824 scenario-app-h6 mb-80" style="text-align: center;">The product supports a variety of application scenarios to help team collaboration</h6>
+              <ul class="scenario-app-ul">
+                <li class="scenario-app-ul-item mb-32 about-animate-box" style="--delay: 0s;">
+                  <i class="scenario-app-icon-bg mb-24">
+                    <img class="scenario-app-icon" src="../../img/about_icon7.svg" alt="Edge Security">
+                  </i>
+                  <h5 class="txt-5002025 scenario-app-h5 mb-16">Edge Security</h5>
+                  <h6 class="txt-4001624 scenario-app-h6">HITOSEA next-generation firewall, intrusion prevention/intrusion detection system, cloud sandbox and other products provide users with comprehensive intelligent security protection such as access control to network boundaries, deep attack detection and APT attack detection.</h6>
+                  <img class="scenario-app-ul-item-svg" src="../../img/01.svg" alt="">
+                </li>
+                <li class="scenario-app-ul-item mb-32 about-animate-box" style="--delay: 0.1s;">
+                  <i class="scenario-app-icon-bg mb-24">
+                    <img class="scenario-app-icon" src="../../img/about_icon8.svg" alt="Cloud Security">
+                  </i>
+                  <h5 class="txt-5002025 scenario-app-h5 mb-16">Cloud Security</h5>
+                  <h6 class="txt-4001624 scenario-app-h6">We provide safe and reliable high-proof cloud servers to solve the primary network security risks faced by servers, alleviate the risk of business interruption due to flooding attacks, and meet the needs of regular security operations.</h6>
+                  <img class="scenario-app-ul-item-svg" src="../../img/02.svg" alt="">
+                </li>
+                <li class="scenario-app-ul-item about-animate-box" style="--delay: 0.3s;">
+                  <i class="scenario-app-ul-item-icon-num"></i>
+                  <i class="scenario-app-icon-bg mb-24">
+                    <img class="scenario-app-icon" src="../../img/about_icon9.svg" alt="Data Security">
+                  </i>
+                  <h5 class="txt-5002025 scenario-app-h5 mb-16">Data Security</h5>
+                  <h6 class="txt-4001624 scenario-app-h6">Database audit and data leakage protection system can protect sensitive data and documents, identify data and monitor operations, and block data theft by internal and external personnel through the network, e-mail and other channels.</h6>
+                  <img class="scenario-app-ul-item-svg" src="../../img/03.svg" alt="">
+                </li>
+                <li class="scenario-app-ul-item about-animate-box" style="--delay: 0.4s;">
+                  <i class="scenario-app-ul-item-icon-num"></i>
+                  <i class="scenario-app-icon-bg mb-24">
+                    <img class="scenario-app-icon" src="../../img/about_icon10.svg" alt="Intranet Security">
+                  </i>
+                  <h5 class="txt-5002025 scenario-app-h5 mb-16">Intranet Security</h5>
+                  <h6 class="txt-4001624 scenario-app-h6">Web application firewall and web anti-tampering system provide overall security protection for the application system, effectively blocking malicious behaviors such as web tampering and attacks.</h6>
+                  <img class="scenario-app-ul-item-svg" src="../../img/04.svg" alt="">
+                </li>
+              </ul>
+            </div>
+          </div>
+        </article>
+        <article class="footer-t">
+          <div class="footer-t-con">
+            <div class="footer-t-layout">
+              <div class="footer-t-l">
+                <h1 class="footer-t-h1 mb-56">We'd love to hear from you</h1>
+                <h6 class="footer-t-h6 mb-56">Have questions about pricing, plans or products? Please fill out the form and we will contact you.</h6>
+                <div class="footer-t-contact mb-24">
+                  <img class="footer-t-contact-icon mr-12" src="../../img/about_icon1.svg" alt="Contact telephone number,13471168831">
+                  <h6 class="footer-t-contact-h6">13471168831</h6>
+                </div>
+                <div class="footer-t-contact">
+                  <img class="footer-t-contact-icon mr-12" src="../../img/about_icon2.svg" alt="E-mail,hitosea@gmail.com">
+                  <h6 class="footer-t-contact-h6">hitosea@gmail.com</h6>
+                </div>
+              </div>
+              <form class="from">
+                <ul class="from-ul">
+                  <li class="from-ul-item mb-16">
+                    <i class="from-ul-tags mb-8">Name</i>
+                    <input id="username" class="input" type="text" placeholder="Please enter a nickname">
+                  </li>
+                  <li class="from-ul-item mb-16">
+                    <i class="from-ul-tags mb-8">Email</i>
+                    <input id="email"  class="input" type="text" placeholder="Please enter your email address">
+                  </li>
+                  <li class="from-ul-item mb-16">
+                    <i class="from-ul-tags mb-8">Message</i>
+                    <textarea id="desc" class="textarea" cols="3" rows="8" placeholder="Optional"></textarea>
+                  </li>
+                  <li>
+                    <span class="from-submit">
+                      <button class="btn btn-primary " type="button" onclick="sendFormRequest()">Submit</button>
+                    </span>
+                  </li>
+                </ul>
+              </form>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+    <!-- 页脚区域 -->
+    <footer>
+      <div class="footer-con">
+        <div class="footer-layut">
+          <div class="footer-l">
+            <a href="../en/index.html" class="logo">
+              <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+              <i class="dootask txt-7002027">DooTask</i>
+            </a>
+            <i class="txt txt-4001624">Helps teams move projects forward efficiently and makes work easier.</i>
+          </div>
+          <div class="footer-r">
+            <ul class="footer-r-ul">
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Links</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/product.html">Product</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/solutions.html">Solutions</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/price.html">Pricing</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../en/solutions.html">About Us</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Support</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/download.html">Download Center</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../en/help.html">Help Center</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Community</li>
+                  <li class="footer-ol-item">
+                    <li class="footer-ol-item mb-16">
+                      <i class="txt-4001624 txt" onclick="openInNewTab('https://github.com/kuaifan/dootask')">Github</i>
+                    </li>
+                    <li class="footer-ol-item mb-16">
+                      <i class="txt-4001624 txt" onclick="openInNewTab('https://gitee.com/aipaw/dootask')">Gitee</i>
+                    </li>
+                    <li class="footer-ol-item" id="qq_group">
+                      <i class="txt-4001624 txt">QQ group</i>
+                      <div class="group_code">
+                        <img class="code-svg" id="home_code" src="../../img/light/home_code.svg" alt="Group：546574618">
+                        <i class="group_num">Group：546574618</i>
+                        <i class="lower_triangle"></i>
+                      </div>
+                    </li>
+                  </li>
+                </ol>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="txt-4001624 filings">
+          Copyright © 2022-2023 Dootask. All rights reserved.
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+<script src="https://cdn.bootcdn.net/ajax/libs/axios/1.3.6/axios.js"></script>
+<script src="../../js/common.js"></script>
+<script>
+  /* 数字滚动动画 */ 
+  const companyYearEl = document.querySelector('.company-year');
+  const companyAreaEl = document.querySelector('.company-area');
+  const companySizeEl = document.querySelector('.company-size');
+  let yearTimerId;
+  let areaTimerId;
+  let sizeTimerId;
+  let curYearNumber = 999
+  let curAreaNumber = 0
+  let curSizeNumber = 0
+  function updateYearNumber() {
+    const increment = Math.ceil((2020 - curYearNumber) / 50); // 使用缓动函数计算增量
+    curYearNumber += increment; // 更新当前数字
+    if (curYearNumber >= 2020) { // 数字已经达到目标值
+      clearInterval(yearTimerId); // 停止定时器
+      curYearNumber = 2020; // 将当前数字设置为目标值
+    }
+    companyYearEl.innerText = curYearNumber.toString(); // 更新数字显示
+  }
+  function updateAreaNumber() {
+    curAreaNumber += 0.05; // 更新当前数字
+    if (curAreaNumber >= 10) { // 数字已经达到目标值
+      clearInterval(areaTimerId); // 停止定时器
+      curAreaNumber = 10; // 将当前数字设置为目标值
+    }
+    companyAreaEl.innerText = Number(curAreaNumber.toFixed(1)).toString(); // 更新数字显示
+  }
+  function updateSizeNumber() {
+    curSizeNumber += 0.5; // 更新当前数字
+    if (curSizeNumber >= 99) { // 数字已经达到目标值
+      clearInterval(sizeTimerId); // 停止定时器
+      curSizeNumber = 99; // 将当前数字设置为目标值
+    }
+    companySizeEl.innerText = curSizeNumber.toString(); // 更新数字显示
+  }
+  yearTimerId = setInterval(updateYearNumber, 1);
+  areaTimerId = setInterval(updateAreaNumber, 1);
+  sizeTimerId = setInterval(updateSizeNumber, 1);
+
+  /* 滑动到可视区域执行动画 */ 
+  const boxes = document.querySelectorAll('.about-animate-box');
+  let timerId = null
+  const animateBoxes = ()=> {
+    boxes.forEach(box => {
+      const boxTop = box.getBoundingClientRect().top;
+      const boxBottom = box.getBoundingClientRect().bottom;
+      if (boxTop < window.innerHeight && boxBottom > 0) {
+        box.classList.add('animate');
+        timerId = setTimeout(()=>{
+          box.classList.remove('about-animate-box');
+          timerId = null
+        },1300)
+      }
+    });
+  }
+  /* 显示/隐藏提示弹框 */
+  function showBox(text){
+    const box = document.querySelector('.BulletBox')
+    box.style.display = 'block'
+    box.innerHTML = text
+    setTimeout(()=>{
+      box.style.display = 'none'
+    },1000)
+  }
+  /* 表单发送请求 */
+  function sendFormRequest(){
+    const username = document.getElementById("username").value
+    const form = document.querySelector('.from')
+    const email = document.getElementById("email").value
+    const desc = document.getElementById("desc").value
+    const pattern = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/
+    if(!username&&!email){
+      return showBox('Nickname cannot be empty! Email cannot be empty！')
+    }else if(!username){
+      return showBox('Nickname cannot be empty!')
+    }else if(!email){
+      return showBox('Email cannot be empty!')
+    }else if(email){
+      if(!pattern.test(email)){
+        return showBox('Email input error!')
+      }else{
+        const url = 'https://t.hitosea.com/api/dialog/msg/sendtext';
+        const headers = {
+          'version': '0.22.0',
+          'token': 'YIG8ANC8q2SAXWxKu7L4Nf5VLWDxBixpIl_OSDnaVTug7P_DVHq--HV_7QKl2rNYlmCs-xsQuj0NAfktdsbyxNqCU9efF2ggFOQCYoE7l-np9ltT-LOGj3LGU422lVRC',
+          'content-type': 'application/json'
+        };
+        const data = {
+          "dialog_id": 10466,
+          "text": `[nickName]:${username}\n[email]:${email}\n[message]:${desc}
+                    `,
+          "silence": "no"
+        };
+
+        axios.post(url, data, { headers })
+          .then(response => {
+            form.reset()
+            showBox('Submitted successfully！')
+          })
+          .catch(error => {
+            form.reset()
+            showBox(error.message)
+          });
+      }
+    }
+    
+  }
+  window.addEventListener('scroll', animateBoxes);
+  animateBoxes();
+</script>
+</html>

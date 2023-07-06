@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>DooTask</title>
+  <meta name="google" value="notranslate">
+  <meta name="description" content="DooTask是一款轻量级的开源在线项目任务管理工具，提供各类文档协作工具、在线思维导图、在线流程图、项目管理、任务分发、即时IM，文件管理等工具。助力团队高效推进项目，让工作更简单。">
+  <meta name="keywords" content="中国 Dootask 开源在线项目 任务管理工具 任务管理 轻量级 海豚有海 团队协作">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" type="text/css" href="../../css/rem.css">
+  <link rel="stylesheet" href="../../css/price.css">
+</head>
+<body>
+  <div id="layout">
+    <!-- 页头区域 -->
+    <header class="head price">
+      <div class="nav">
+        <div class="nav-layout">
+          <a href="../zh/index.html" class="logo">
+            <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+            <i class="dootask txt-7002027">DooTask</i>
+          </a>
+          <ul class="nav-ul">
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-product" href="../zh/product.html">产品</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-solutions" href="../zh/solutions.html">解决方案</a>
+            </li>
+            <li class="nav-ul-item">
+              <i class="txt-4001620 txt nav-support" id="support-txt" onclick="showMenuPopHandle()">
+                支持
+                <img src="../../img/vector.svg" alt="支持" class="nav-vector" id="drop-down-svg">
+              </i>
+              <ol class="submenu-pop" id="submenu-pop">
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../zh/download.html">下载中心</a>
+                </li>
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../zh/help.html">帮助中心</a>
+                </li>
+              </ol>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-price" href="../zh/price.html">服务价格</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-about" href="../zh/about.html">关于我们</a>
+            </li>
+          </ul>
+          <div class="nav-r">
+            <div class="lang" id="lang-img">
+              <img src="../../img/lang-select.svg" alt="语言切换" onclick="shouLangPopHandle()">
+              <ul class="lang-pop" id="lang-pop">
+                <li class="lang-pop-item" onclick="changeLanguage('zh')">
+                  <i class="lang-txt">简体中文</i>
+                </li>
+                <li class="lang-pop-item" onclick="changeLanguage('en')">
+                  <i class="lang-txt" >English</i>
+                </li>
+              </ul>
+            </div>
+            <i class="nav-r-icon theme_dark" onclick="setTheme('light')">
+              <img src="../../img/light.svg" alt="明亮主题">
+            </i>
+            <i class="nav-r-icon theme_light" onclick="setTheme('dark')">
+              <img src="../../img/drak.svg" alt="暗黑主题">
+            </i>
+            <a href="https://github.com/kuaifan/dootask" target="_blank">
+              <i class="nav-r-icon">
+                <img src="../../img/github.svg" alt="github">
+              </i>
+            </a>
+            <i class="line-1"></i>
+            <span class="get-started">
+              <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
+                <button class="btn btn-primary" >开始使用</button>
+              </a>
+            </span>
+          </div>
+          <div class="menuBtn">
+            <img id="menuBtn" src="../../img/menu.svg" alt="菜单">
+          </div>
+        </div>
+      </div>
+      <div class="topics">
+        <div class="topics-con">
+          <div class="topics-layout">
+            <div class="topics-tit mb-32">
+              <span class="txt-6007290 topics-h1">选择你的方案</span>
+            </div>
+            <h4 class="txt-4001830 topics-h4 mb-64">根据你的企业的规模和需求，有不同的版本可供选择</h4>
+            <ul class="price-card">
+              <li class="price-card-item price-animate-box" style="--delay: 0s;">
+                <h4 class="txt-5002025 price-card-h4 mb-24">免费</h4>
+                <div class="price-card-money mb-12">
+                  <h2 class="txt-6003645 price-card-h2">¥0</h2>
+                  <i class="txt-5001628 price-card-unit">/月</i>
+                </div>
+                <h6 class="txt-4001624 price-card-h6 mb-24" style="height: 48px;">最多3人</h6>
+                <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-green mb-24">开始使用</button> </a>
+                <ol class="price-card-ol">
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="支持私有化部署">
+                    <h6 class="txt-4001624 price-card-h6">支持私有化部署</h6>
+                  </li>
+                </ol>
+              </li>
+              <li class="price-card-item price-animate-box" style="--delay: 0.1s;">
+                <h4 class="txt-5002025 price-card-h4 mb-24">年度</h4>
+                <div class="price-card-money mb-12">
+                  <h2 class="txt-6003645 price-card-h2">¥3,000</h2>
+                  <i class="txt-5001628 price-card-unit">/年</i>
+                </div>
+                <h6 class="txt-4001624 price-card-h6 mb-24" style="height: 48px;">人数无限制</h6>
+                <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-green mb-24">开始使用</button> </a>
+                <ol class="price-card-ol">
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="支持私有化部署">
+                    <h6 class="txt-4001624 price-card-h6">支持私有化部署</h6>
+                  </li>
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="技术咨询服务">
+                    <h6 class="txt-4001624 price-card-h6">技术咨询服务</h6>
+                  </li>
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="24小时服务响应">
+                    <h6 class="txt-4001624 price-card-h6">24小时服务响应</h6>
+                  </li>
+                </ol>
+              </li>
+              <li class="price-card-item price-animate-box active" style="--delay: 0.2s;">
+                <h4 class="txt-5002025 price-card-h4 mb-24">终身<i class="rec-icon">Rec.</i></h4>
+                <div class="price-card-money mb-12">
+                  <h2 class="txt-6003645 price-card-h2">¥18,888</h2>
+                </div>
+                <h6 class="txt-4001624 price-card-h6 mb-24" style="height: 48px;">人数无限制</h6>
+                <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-green mb-24">开始使用</button> </a>
+                <ol class="price-card-ol">
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="支持私有化部署">
+                    <h6 class="txt-4001624 price-card-h6">支持私有化部署</h6>
+                  </li>
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="技术咨询服务">
+                    <h6 class="txt-4001624 price-card-h6">技术咨询服务</h6>
+                  </li>
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="Logo定制">
+                    <h6 class="txt-4001624 price-card-h6">Logo定制</h6>
+                  </li>
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="专属客户经理">
+                    <h6 class="txt-4001624 price-card-h6">专属客户经理</h6>
+                  </li>
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="12小时服务响应">
+                    <h6 class="txt-4001624 price-card-h6">12小时服务响应</h6>
+                  </li>
+                </ol>
+              </li>
+              <li class="price-card-item price-animate-box" style="--delay: 0.3s;">
+                <h4 class="txt-5002025 price-card-h4 mb-24">定制版</h4>
+                <div class="price-card-money mb-12">
+                  <h2 class="txt-6003645 price-card-h2">定制</h2>
+                </div>
+                <h6 class="txt-4001624 price-card-h6 mb-24" style="height: 48px;">人数无限制</h6>
+                <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-green mb-24">开始使用</button></a>
+                <ol class="price-card-ol">
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="支持私有化部署">
+                    <h6 class="txt-4001624 price-card-h6">支持私有化部署</h6>
+                  </li>
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="技术咨询服务">
+                    <h6 class="txt-4001624 price-card-h6">技术咨询服务</h6>
+                  </li>
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="Logo定制">
+                    <h6 class="txt-4001624 price-card-h6">Logo定制</h6>
+                  </li>
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="专属客户经理">
+                    <h6 class="txt-4001624 price-card-h6">专属客户经理</h6>
+                  </li>
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="12小时服务响应">
+                    <h6 class="txt-4001624 price-card-h6">12小时服务响应</h6>
+                  </li>
+                </ol>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- 菜单抽屉 -->
+    <div class="drawer">
+      <div class="drawer-t mb-36">
+        <a href="../zh/index.html" class="logo">
+          <img id="logo" src="../../img/light/logo.svg" alt="DooTaskLogo">
+          <i class="dootask txt-7002027">DooTask</i>
+        </a>
+        <i class="close-drawer" onclick="closeDraweHandle()">✕</i>
+      </div>
+      <ul class="drawer-ul">
+        <li class="drawer-item-t mb-16">
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../zh/product.html">产品</a>
+          </div>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../zh/solutions.html">解决方案</a>
+          </div>
+          <div class="drawer-item" onclick="expandMenuHandle('support')">
+            <i class="txt-4001620 txt">
+              支持
+              <img src="../../img/vector.svg" class="nav-vector" alt="支持" id="drawer-down-support-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="support" style="display: none;">
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../zh/download.html">下载中心</a>
+            </li>
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../zh/help.html">帮助中心</a>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../zh/price.html">服务价格</a>
+          </div>
+          <div class="drawer-item mb-16" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../zh/about.html">关于我们</a>
+          </div>
+        </li>
+        <li class="drawer-item-c">
+          <div class="drawer-item" onclick="expandMenuHandle('theme')">
+            <i class="txt-4001620 txt">
+              主题
+              <img src="../../img/vector.svg" alt="主题" class="nav-vector" id="drawer-down-theme-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="theme" style="display: none;">
+            <li class="drawer-item"  onclick="setTheme('light')">
+              <i class="txt-4001620 txt">Light</i>
+            </li>
+            <li class="drawer-item"  onclick="setTheme('dark')">
+              <i class="txt-4001620 txt">Dark</i>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="expandMenuHandle('language')">
+            <i class="txt-4001620 txt">
+              语言
+              <img src="../../img/vector.svg" alt="语言" class="nav-vector" id="drawer-down-language-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="language" style="display: none;">
+            <li class="drawer-item"  onclick="changeLanguage('zh')">
+              <i class="txt-4001620 txt">简体中文</i>
+            </li>
+            <li class="drawer-item"  onclick="changeLanguage('en')">
+              <i class="txt-4001620 txt">English</i>
+            </li>
+          </ol>
+        </li>
+        <li class="drawer-item-b">
+          <li class="drawer-item">
+            <a class="txt-4001620 txt" href="https://demo.dootask.com">登录</a>
+          </li>
+        </li>
+      </ul>
+    </div>
+    <!-- 内容区域 -->
+    <main>
+      <!-- 主要区域划分 -->
+      <section>
+        <article class="plans">
+          <div class="plans-con">
+            <div class="plans-layout">
+              <h2 class="txt-5004455 plans-tit-h2 mb-16">对比所有计划</h2>
+              <h5 class="txt-4001830 plans-tit-h5 mb-80">该产品支持各种应用场景，帮助团队协作</h5>
+              <ul class="plans-ul-t">
+                <li class="plans-ul-t-item grid-4" style="padding: 20px 24px;">
+                  <h4 class="txt-5002024 plans-ul-t-item-h4">特点</h4>
+                  <h4 class="txt-5002024 plans-ul-t-item-h4">免费</h4>
+                  <h4 class="txt-5002024 plans-ul-t-item-h4">年度</h4>
+                  <h4 class="txt-5002024 plans-ul-t-item-h4">终身</h4>
+                </li>
+                <li class="plans-ul-t-item grid-4" style="padding: 32px 24px;">
+                  <h4 class="txt-5001616 plans-ul-t-item-h4">定价</h4>
+                  <div class="plans-ul-t-item-h4">
+                    <div class="price-card-money mb-24">
+                      <h2 class="txt-6003645 price-card-h2">¥0</h2>
+                      <i class="txt-5001628 price-card-unit">/月</i>
+                    </div>
+                    <span class="plans-ul-b-item-btn">
+                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">开始使用</button> </a>
+                    </span>
+                  </div>
+                  <div class="plans-ul-t-item-h4">
+                    <div class="price-card-money mb-24">
+                      <h2 class="txt-6003645 price-card-h2">¥3,000</h2>
+                      <i class="txt-5001628 price-card-unit">/年</i>
+                    </div>
+                    <span class="plans-ul-b-item-btn">
+                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">开始使用</button> </a>
+                    </span>
+                  </div>
+                  <div class="plans-ul-t-item-h4">
+                    <div class="price-card-money mb-24">
+                      <h2 class="txt-6003645 price-card-h2">¥18,888</h2>
+                    </div>
+                    <span class="plans-ul-b-item-btn">
+                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">开始使用</button> </a>
+                    </span>
+                  </div>
+                </li>
+                <li class="plans-ul-t-item">
+                  <ol class="plans-ol">
+                    <li class="plans-ol-item">
+                      <h6 class="txt-5001616 plans-ul-t-item-h4">系统使用</h6>
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">用户数量</h6>
+                      <h6 class="txt-4001616 plans-ol-item-h6">≤3</h6>
+                      <h6 class="txt-4001616 plans-ol-item-h6">无限制</h6>
+                      <h6 class="txt-4001616 plans-ol-item-h6">无限制</h6>
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">项目数量</h6>
+                      <h6 class="txt-4001616 plans-ol-item-h6">无限制</h6>
+                      <h6 class="txt-4001616 plans-ol-item-h6">无限制</h6>
+                      <h6 class="txt-4001616 plans-ol-item-h6">无限制</h6>
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">任务数量</h6>
+                      <h6 class="txt-4001616 plans-ol-item-h6">无限制</h6>
+                      <h6 class="txt-4001616 plans-ol-item-h6">无限制</h6>
+                      <h6 class="txt-4001616 plans-ol-item-h6">无限制</h6>
+                    </li>
+                  </ol>
+                </li>
+                <li class="plans-ul-t-item">
+                  <ol class="plans-ol">
+                    <li class="plans-ol-item">
+                      <h6 class="txt-5001616 plans-ul-t-item-h4">任务协作</h6>
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">多视图展示（看板/日历/列表）</h6>
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="多视图展示（看板/日历/列表）">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="多视图展示（看板/日历/列表）">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="多视图展示（看板/日历/列表）">
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">任务自定义字段</h6>
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务自定义字段">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务自定义字段">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务自定义字段">
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">任务循环</h6>
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务循环">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务循环">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务循环">
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">任务映射</h6>
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务映射">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务映射">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务映射">
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">任务依赖性</h6>
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务依赖性">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务依赖性">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务依赖性">
+                    </li>
+                  </ol>
+                </li>
+                <li class="plans-ul-t-item">
+                  <ol class="plans-ol">
+                    <li class="plans-ol-item">
+                      <h6 class="txt-5001616 plans-ul-t-item-h4">项目管理</h6>
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">项目进展</h6>
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="项目进展">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="项目进展">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="项目进展">
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">项目模板</h6>
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="项目模板">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="项目模板">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="项目模板">
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">项目自定义视图</h6>
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="项目自定义视图">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="项目自定义视图">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="项目自定义视图">
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">时间轴视图（甘特图）</h6>
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="时间轴视图（甘特图）">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="时间轴视图（甘特图）">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="时间轴视图（甘特图）">
+                    </li>
+                  </ol>
+                </li>
+                <li class="plans-ul-t-item grid-4" style="padding: 24px;">
+                  <h4 class="plans-ul-t-item-h4"></h4>
+                  <div class="plans-ul-t-item-h4">
+                    <span class="plans-ul-b-item-btn">
+                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">开始使用</button> </a>
+                    </span>
+                  </div>
+                  <div class="plans-ul-t-item-h4">
+                    <span class="plans-ul-b-item-btn">
+                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">开始使用</button> </a>
+                    </span>
+                  </div>
+                  <div class="plans-ul-t-item-h4">
+                    <span class="plans-ul-b-item-btn">
+                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">开始使用</button></a>
+                    </span>
+                  </div>
+                </li>
+              </ul>
+              <ul class="plans-ul-768">
+                <li class="plans-ul-768-item mb-36">
+                  <h5 class="txt-5001822 help-h5 mb-16">免费</h5>
+                  <ol class="plans-ol-768">
+                    <li class="plans-ol-768-item">
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-5001616 plans-ol-item-h4">系统使用情况</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">用户数量</h6>
+                        <h6 class="txt-4001516 plans-ol-item-h6">≤3</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">项目数量</h6>
+                        <h6 class="txt-4001516 plans-ol-item-h6">无限制</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">任务数量</h6>
+                        <h6 class="txt-4001516 plans-ol-item-h6">无限制</h6>
+                      </div>
+                    </li>
+                    <li class="plans-ol-768-item">
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-5001616 plans-ol-item-h4">任务协作</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">多视图展示（看板/日历/列表）</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="多视图展示（看板/日历/列表）">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">任务自定义字段</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务自定义字段">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">任务循环</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务循环">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">任务映射</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务映射">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">任务依赖性</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务依赖性">
+                      </div>
+                    </li>
+                    <li class="plans-ol-768-item">
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-5001616 plans-ol-item-h4">项目管理</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">项目进展</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="项目进展">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">项目模板</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="项目模板">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">项目自定义视图</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="项目自定义视图">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">时间轴视图（甘特图）</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="时间轴视图（甘特图）">
+                      </div>
+                    </li>
+                    <div class="price-card-money mb-16">
+                      <h2 class="txt-6002430 price-card-h2">¥0</h2>
+                      <i class="txt-5001528 price-card-unit">/月</i>
+                    </div>
+                    <span style="display: inline-block; width: 100%;">
+                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">开始使用</button> </a>
+                    </span>
+                  </ol>
+                </li>
+                <li class="plans-ul-768-item mb-36">
+                  <h5 class="txt-5001822 help-h5 mb-16">年度</h5>
+                  <ol class="plans-ol-768">
+                    <li class="plans-ol-768-item">
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-5001616 plans-ol-item-h4">系统使用情况</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">用户数量</h6>
+                        <h6 class="txt-4001516 plans-ol-item-h6">无限制</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">项目数量</h6>
+                        <h6 class="txt-4001516 plans-ol-item-h6">无限制</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">任务数量</h6>
+                        <h6 class="txt-4001516 plans-ol-item-h6">无限制</h6>
+                      </div>
+                    </li>
+                    <li class="plans-ol-768-item">
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-5001616 plans-ol-item-h4">任务协作</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">多视图展示（看板/日历/列表）</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="多视图展示（看板/日历/列表）">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">任务自定义字段</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务自定义字段">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">任务循环</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务循环">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">任务映射</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务映射">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">任务依赖性</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务依赖性">
+                      </div>
+                    </li>
+                    <li class="plans-ol-768-item">
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-5001616 plans-ol-item-h4">项目管理</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">项目进展</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="项目进展">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">项目模板</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="项目模板">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">项目自定义视图</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="项目自定义视图">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">时间轴视图（甘特图）</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="时间轴视图（甘特图）">
+                      </div>
+                    </li>
+                    <div class="price-card-money mb-16">
+                      <h2 class="txt-6002430 price-card-h2">¥3,000</h2>
+                      <i class="txt-5001528 price-card-unit">/年</i>
+                    </div>
+                    <span style="display: inline-block; width: 100%;">
+                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">开始使用</button> </a>
+                    </span>
+                  </ol>
+                </li>
+                <li class="plans-ul-768-item mb-24">
+                  <h4 class="txt-5001822 plans-ul-t-item-h4 flex-s-c mb-16">终身<i class="rec-icon">Rec.</i></h4>
+                  <ol class="plans-ol-768">
+                    <li class="plans-ol-768-item">
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-5001616 plans-ol-item-h4">系统使用情况</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">用户数量</h6>
+                        <h6 class="txt-4001516 plans-ol-item-h6">无限制</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">项目数量</h6>
+                        <h6 class="txt-4001516 plans-ol-item-h6">无限制</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">任务数量</h6>
+                        <h6 class="txt-4001516 plans-ol-item-h6">无限制</h6>
+                      </div>
+                    </li>
+                    <li class="plans-ol-768-item">
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-5001616 plans-ol-item-h4">任务协作</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">多视图展示（看板/日历/列表）</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="多视图展示（看板/日历/列表）">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">任务自定义字段</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务自定义字段">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">任务循环</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务循环">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">任务映射</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务映射">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">任务依赖性</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="任务依赖性">
+                      </div>
+                    </li>
+                    <li class="plans-ol-768-item">
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-5001616 plans-ol-item-h4">项目管理</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">项目进展</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="项目进展">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">项目模板</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="项目模板">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">项目自定义视图</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="项目自定义视图">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">时间轴视图（甘特图）</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="时间轴视图（甘特图）">
+                      </div>
+                    </li>
+                    <div class="price-card-money mb-16">
+                      <h2 class="txt-6002430 price-card-h2">¥18,888</h2>
+                    </div>
+                    <span style="display: inline-block; width: 100%;">
+                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">开始使用</button> </a>
+                    </span>
+                  </ol>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+    <!-- 页脚区域 -->
+    <footer>
+      <div class="footer-con">
+        <div class="footer-layut">
+          <div class="footer-l">
+            <a href="../zh/index.html" class="logo">
+              <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+              <i class="dootask txt-7002027">DooTask</i>
+            </a>
+            <i class="txt txt-4001624">帮助团队有效地推进项目，使工作更轻松。</i>
+          </div>
+          <div class="footer-r">
+            <ul class="footer-r-ul">
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">链接</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/product.html">产品</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/solutions.html">解决方案</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/price.html">服务价格</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../zh/about.html">关于我们</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">支持</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/download.html">下载中心</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../zh/about.html">帮助中心</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">社区</li>
+                  <li class="footer-ol-item">
+                    <li class="footer-ol-item mb-16">
+                      <i class="txt-4001624 txt" onclick="openInNewTab('https://github.com/kuaifan/dootask')">Github</i>
+                    </li>
+                    <li class="footer-ol-item mb-16">
+                      <i class="txt-4001624 txt" onclick="openInNewTab('https://gitee.com/aipaw/dootask')">Gitee</i>
+                    </li>
+                    <li class="footer-ol-item" id="qq_group">
+                      <i class="txt-4001624 txt">QQ 群</i>
+                      <div class="group_code">
+                        <img class="code-svg" id="home_code" src="../../img/light/home_code.svg" alt="群号：546574618">
+                        <i class="group_num">群号：546574618</i>
+                        <i class="lower_triangle"></i>
+                      </div>
+                    </li>
+                  </li>
+                </ol>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="txt-4001624 filings">
+          Copyright © 2022-2023 Dootask. All rights reserved.
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+<script src="../../js/common.js"></script>
+<script>
+  /* 价格卡片切换函数 */ 
+  const tabs = document.querySelector('.price-card');
+  const tabItems = tabs.querySelectorAll('.price-card-item');
+  tabs.addEventListener('click', function (event) {
+    const theme = localStorage.getItem('theme')
+    const clickedItem = event.target.closest('.price-card-item');
+    if (clickedItem && !clickedItem.classList.contains('active')) {
+      // 切换激活状态
+      for (let value of tabItems) {
+        value.classList.toggle('active', value === clickedItem);
+      }
+    }
+  });
+  let timerId = null
+  timerId = setTimeout(() => {
+      tabItems.forEach(item=>{
+        item.classList.remove('price-animate-box')
+      })
+      timerId = null; // 执行完后将定时器置空
+    }, 1200);
+</script>
+</html>

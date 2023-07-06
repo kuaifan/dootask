@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DooTask</title>
+  <meta name="google" value="notranslate">
+  <meta name="description" content="Lightweight open source online project task management tool to help teams efficiently advance their projects and make work easier."">
+  <meta name="keywords" content="China Dootask Task management Lightweight Hitosea Teamwork">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" type="text/css" href="../../css/rem.css">
+  <link rel="stylesheet" href="../../css/product.css">
+</head>
+<body>
+  <div id="layout">
+    <!-- 页头区域 -->
+    <header class="head product">
+      <div class="nav">
+        <div class="nav-layout">
+          <a href="../en/index.html" class="logo">
+            <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+            <i class="dootask txt-7002027">DooTask</i>
+          </a>
+          <ul class="nav-ul">
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-product" href="../en/product.html">Product</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-solutions" href="../en/solutions.html">Solutions</a>
+            </li>
+            <li class="nav-ul-item">
+              <i class="txt-4001620 txt nav-support" id="support-txt" onclick="showMenuPopHandle()">
+                Support
+                <img src="../../img/vector.svg" alt="Support" class="nav-vector" id="drop-down-svg">
+              </i>
+              <ol class="submenu-pop" id="submenu-pop">
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../en/download.html">Download Center</a>
+                </li>
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../en/help.html">Help Center</a>
+                </li>
+              </ol>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-price" href="../en/price.html">Pricing</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-about" href="../en/about.html">About Us</a>
+            </li>
+          </ul>
+          <div class="nav-r">
+            <div class="lang" id="lang-img">
+              <img src="../../img/lang-select.svg" alt="Language switch" onclick="shouLangPopHandle()">
+              <ul class="lang-pop" id="lang-pop">
+                <li class="lang-pop-item" onclick="changeLanguage('zh')">
+                  <i class="lang-txt">简体中文</i>
+                </li>
+                <li class="lang-pop-item" onclick="changeLanguage('en')">
+                  <i class="lang-txt" >English</i>
+                </li>
+              </ul>
+            </div>
+            <i class="nav-r-icon theme_dark" onclick="setTheme('light')">
+              <img src="../../img/light.svg" alt="Light theme">
+            </i>
+            <i class="nav-r-icon theme_light" onclick="setTheme('dark')">
+              <img src="../../img/drak.svg" alt="Dark theme">
+            </i>
+            <a href="https://github.com/kuaifan/dootask" target="_blank">
+              <i class="nav-r-icon">
+                <img src="../../img/github.svg" alt="github">
+              </i>
+            </a>
+            <i class="line-1"></i>
+            <span class="get-started">
+              <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
+                <button class="btn btn-primary" >Get Started</button>
+              </a>
+            </span>
+          </div>
+          <div class="menuBtn">
+            <img id="menuBtn" src="../../img/menu.svg" alt="Menu">
+          </div>
+        </div>
+      </div>
+      <div class="topics">
+        <div class="topics-con">
+          <div class="topics-layout">
+            <div class="topics-tit mb-32 topics-tit-en">
+              <span class="txt-6007290 topics-h1">One product, multiple powerful tools</span>
+            </div>
+            <h4 class="txt-4001830 topics-h4 mb-32 topics-h4-en">The product brings together various document collaboration, online mind mapping, online flowcharting, project management, task distribution, instant IM, document management and other functions</h4>
+            <div class="topics-btn flex-cc">
+              <span class="mr-24 get-started">
+                <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
+                  <button class="btn btn-primary mr-20">Get Started</button>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="prooduct-con">
+        <ul class="prooduct-list">
+          <i class="prev" onclick="prevHandle()">
+            <img src="../../img/prev.svg" alt="One product, many powerful tools">
+          </i>
+          <!-- 2个item -->
+          <li class="prooduct-list-item top active" style="--delay: 0s;">
+            <img class="icon first-icon" src="../../img/product_icons0_h.svg" alt="Co-creation">
+            <h3 class="txt-4002025 txt first-txt">Co-creation</h3>
+          </li>
+          <!-- 4个item -->
+          <li class="prooduct-list-item top" style="--delay: 0.1s;">
+            <img class="icon" src="../../img/product_icons1.svg" alt="Instant Messaging">
+            <h3 class="txt-4002025 txt">Instant Messaging</h3>
+          </li>
+          <!-- 4个item -->
+          <li class="prooduct-list-item top" style="--delay: 0.2s;">
+            <img class="icon" src="../../img/product_icons2.svg" alt="Project Mgmt">
+            <h3 class="txt-4002025 txt">Project Mgmt</h3>
+          </li>
+          <!-- 1个item -->
+          <li class="prooduct-list-item top" style="--delay: 0.3s;">
+            <img class="icon" src="../../img/product_icons3.svg" alt="Task Dashboard">
+            <h3 class="txt-4002025 txt">Task Dashboard</h3>
+          </li>
+          <!-- 2个item -->
+          <li class="prooduct-list-item top" style="--delay: 0.4s;">
+            <img class="icon" src="../../img/product_icons4.svg" alt="Task Calendar">
+            <h3 class="txt-4002025 txt">Task Calendar</h3>
+          </li>
+          <!-- 2个item -->
+          <li class="prooduct-list-item bot" style="--delay: 0.5s;">
+            <img class="icon" src="../../img/product_icons5.svg" alt="Bot Assistant">
+            <h3 class="txt-4002025 txt">Bot Assistant</h3>
+          </li>
+          <!-- 2个item -->
+          <li class="prooduct-list-item bot" style="--delay: 0.6s;">
+            <img class="icon" src="../../img/product_icons6.svg" alt="Team Mgmt">
+            <h3 class="txt-4002025 txt">Team Mgmt</h3>
+          </li>
+          <!-- 2个item -->
+          <li class="prooduct-list-item bot" style="--delay: 0.7s;">
+            <img class="icon" src="../../img/product_icons7.svg" alt="End-to-End Encryption">
+            <h3 class="txt-4002025 txt">End-to-End Encryption</h3>
+          </li>
+          <!-- 1个item -->
+          <li class="prooduct-list-item bot" style="--delay: 0.8s;">
+            <img class="icon" src="../../img/product_icons8.svg" alt="Multi-platform">
+            <h3 class="txt-4002025 txt">Multi-platform</h3>
+          </li>
+          <i class="next" onclick="nextHandle()">
+            <img src="../../img/next.svg" alt="One product, many powerful tools">
+          </i>
+        </ul>
+        <ul class="prooduct-ul">
+          <li class="details active">
+            <div class="details-con">
+              <img class="pic theme_light" src="../../img/light/product_pic1.svg" alt="Teamwork without boundaries,No more document silos">
+              <img class="pic theme_dark" src="../../img/dark/product_pic1.svg" alt="Teamwork without boundaries,No more document silos">
+              <ul class="details-ul">
+                <li class="details-ul-item mb-36">
+                  <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Teamwork without boundaries</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">Bring together a variety of online tools such as documents, spreadsheets, thinking notes, etc., bringing together enterprise knowledge resources in one place and supporting real-time collaborative editing by multiple people, making teamwork more convenient.</h6>
+                </li>
+                <li class="details-ul-item">
+                  <h1 class="txt-7003645 serial-number mb-24">02</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">No more document silos</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">Multiple file formats support, internal team file sharing, controllable file permissions, historical version tracking, etc. to facilitate file collaboration and discussion among team members and improve work efficiency.</h6>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li class="details">
+            <div class="details-con details-con-item4">
+              <img class="pic theme_light" src="../../img/light/product_pic2.svg" alt="Focused communication, efficient communication,Messages must reach communication without hindrance">
+              <img class="pic theme_dark" src="../../img/dark/product_pic2.svg" alt="Cloud synchronization for unrestricted access to historical information,Attend meetings anytime, anywhere">
+              <ul class="details-ul item4">
+                <li class="details-ul-item mb-36">
+                  <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Focused communication, efficient communication</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">Establishing groups for projects and tasks, the instant IM function can help team members communicate with each other in real time, add comments, attachments, reminders, etc. in task cards to promote fast team collaboration and improve team work efficiency.</h6>
+                </li>
+                <li class="details-ul-item mb-36">
+                  <h1 class="txt-7003645 serial-number mb-24">02</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Messages must reach communication without hindrance</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">Messages support checking read and unread, and unread messages are notified to each other through official emails for efficient communication.</h6>
+                </li>
+                <li class="details-ul-item">
+                  <h1 class="txt-7003645 serial-number mb-24">03</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Cloud synchronization for unrestricted access to historical information</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">Information is synchronized at multiple ends without loss. New employees join the organization, support to view chat history messages, seamless integration into the team.</h6>
+                </li>
+                <li class="details-ul-item">
+                  <h1 class="txt-7003645 serial-number mb-24">04</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Attend meetings anytime, anywhere</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">Using communication group video conferencing, project staff can participate in meetings anytime and anywhere to enhance the convenience of online meetings and ensure that the entire meeting is secure and controlled and orderly.</h6>
+                </li>
+              </ul>
+            </div>
+            <ul class="details-ul-1280 item4-1280">
+              <li class="details-ul-item mb-40">
+                <img class="pic theme_light" src="../../img/light/product_pic2.svg" alt="Focused communication, efficient communication,Messages must reach communication without hindrance">
+                <img class="pic theme_dark" src="../../img/dark/product_pic2.svg" alt="Cloud synchronization for unrestricted access to historical information,Attend meetings anytime, anywhere">
+              </li>
+              <li class="details-ul-item mb-36">
+                <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">Focused communication, efficient communication</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">Establishing groups for projects and tasks, the instant IM function can help team members communicate with each other in real time, add comments, attachments, reminders, etc. in task cards to promote fast team collaboration and improve team work efficiency.</h6>
+              </li>
+              <li class="details-ul-item mb-36">
+                <h1 class="txt-7003645 serial-number mb-24">02</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">Messages must reach communication without hindrance</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">Messages support checking read and unread, and unread messages are notified to each other through official emails for efficient communication.</h6>
+              </li>
+              <li class="details-ul-item">
+                <h1 class="txt-7003645 serial-number mb-24">03</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">Cloud synchronization for unrestricted access to historical information</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">Information is synchronized at multiple ends without loss. New employees join the organization, support to view chat history messages, seamless integration into the team.</h6>
+              </li>
+              <li class="details-ul-item">
+                <h1 class="txt-7003645 serial-number mb-24">04</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">Attend meetings anytime, anywhere</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">Using communication group video conferencing, project staff can participate in meetings anytime and anywhere to enhance the convenience of online meetings and ensure that the entire meeting is secure and controlled and orderly.</h6>
+              </li>
+            </ul>
+          </li>
+          <li class="details">
+            <div class="details-con details-con-item4">
+              <img class="pic theme_light" src="../../img/light/product_pic3.svg" alt="Multi-style management templates,Project-based office, action visualization">
+              <img class="pic theme_dark" src="../../img/dark/product_pic3.svg" alt="Dynamic management, real-time monitoring,One-click archiving of associated documents">
+              <ul class="details-ul item4">
+                <li class="details-ul-item mb-36">
+                  <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Multi-style management templates</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">Templates to meet a variety of team collaboration scenarios, while supporting custom templates to meet the team's personalized scenario management needs, you can intuitively view the progress of the project, team collaboration more convenient.</h6>
+                </li>
+                <li class="details-ul-item mb-36">
+                  <h1 class="txt-7003645 serial-number mb-24">02</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Project-based office, action visualization</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">Use multiple views such as Kanban boards, tables, and lists to make the overall project visible at a glance; members can filter, sort, and group tasks flexibly to give priority to what's important and stay focused.</h6>
+                </li>
+                <li class="details-ul-item">
+                  <h1 class="txt-7003645 serial-number mb-24">03</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Dynamic management, real-time monitoring</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">Real-time changes to project dynamics, specific task changes are recorded and reminded so that the team can control the overall project process and make corresponding plans.</h6>
+                </li>
+                <li class="details-ul-item">
+                  <h1 class="txt-7003645 serial-number mb-24">04</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">One-click archiving of associated documents</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">Project and related task files are automatically archived and stored for easy access later.</h6>
+                </li>
+              </ul>
+            </div>
+            <ul class="details-ul-1280 item4-1280">
+              <li class="details-ul-item mb-40">
+                <img class="pic theme_light" src="../../img/light/product_pic3.svg" alt="Multi-style management templates,Project-based office, action visualization">
+              <img class="pic theme_dark" src="../../img/dark/product_pic3.svg" alt="Dynamic management, real-time monitoring,One-click archiving of associated documents">
+              </li>
+              <li class="details-ul-item mb-36">
+                <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">Multi-style management templates</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">Templates to meet a variety of team collaboration scenarios, while supporting custom templates to meet the team's personalized scenario management needs, you can intuitively view the progress of the project, team collaboration more convenient.</h6>
+              </li>
+              <li class="details-ul-item mb-36">
+                <h1 class="txt-7003645 serial-number mb-24">02</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">Project-based office, action visualization</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">Use multiple views such as Kanban boards, tables, and lists to make the overall project visible at a glance; members can filter, sort, and group tasks flexibly to give priority to what's important and stay focused.</h6>
+              </li>
+              <li class="details-ul-item">
+                <h1 class="txt-7003645 serial-number mb-24">03</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">Dynamic management, real-time monitoring</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">Real-time changes to project dynamics, specific task changes are recorded and reminded so that the team can control the overall project process and make corresponding plans.</h6>
+              </li>
+              <li class="details-ul-item">
+                <h1 class="txt-7003645 serial-number mb-24">04</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">One-click archiving of associated documents</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">Project and related task files are automatically archived and stored for easy access later.</h6>
+              </li>
+            </ul>
+          </li>
+          <li class="details">
+            <div class="details-con">
+              <img class="pic theme_light" src="../../img/light/product_pic4.svg" alt="Comprehensive insight into task data">
+              <img class="pic theme_dark" src="../../img/dark/product_pic4.svg" alt="Comprehensive insight into task data">
+              <ul class="details-ul">
+                <li class="details-ul-item" style="margin-bottom: 36px;">
+                  <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Comprehensive insight into task data</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">The task dashboard shows task status classification statistics, which makes it easy for individuals to grasp task progress, rationalize and plan work, and improve work efficiency.</h6>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li class="details">
+            <div class="details-con">
+              <img class="pic theme_light" src="../../img/light/product_pic5.svg" alt="Accurate Timeline,Multiple calendar views">
+              <img class="pic theme_dark" src="../../img/dark/product_pic5.svg" alt="Accurate Timeline,Multiple calendar views">
+              <ul class="details-ul">
+                <li class="details-ul-item mb-36">
+                  <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Accurate Timeline</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">Show the schedule scheduling of each task, so that you can see the work tasks at a glance and better balance work and life.</h6>
+                </li>
+                <li class="details-ul-item">
+                  <h1 class="txt-7003645 serial-number mb-24">02</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Multiple calendar views</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">Provide multiple calendar views such as month/week/day, easy to switch; support to create multiple calendars by purpose of use, customize the visible range and color markers, let the schedule classified display.</h6>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li class="details">
+            <div class="details-con">
+              <img class="pic theme_light" src="../../img/light/product_pic6.svg" alt="Smart tips to bring technology closer to life">
+              <img class="pic theme_dark" src="../../img/dark/product_pic6.svg" alt="Artificial intelligence, realizing real-time communication with AI">
+              <ul class="details-ul">
+                <li class="details-ul-item mb-36">
+                  <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Smart tips to bring technology closer to life</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">Intelligent robots can serve employees' daily check-in and clock-in, task reminders, and pushing the latest consultation messages, helping users achieve effective work progress management and time planning.</h6>
+                </li>
+                <li class="details-ul-item">
+                  <h1 class="txt-7003645 serial-number mb-24">02</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Artificial intelligence, realizing real-time communication with AI</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">The smart little dolphin, a language processing tool based on artificial intelligence technology, is able to carry out dialogues and real-time communication by learning and understanding human language, and comprehensively grasp all kinds of text information, greatly improving the convenience of work.</h6>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li class="details">
+            <div class="details-con">
+              <img class="pic theme_light" src="../../img/light/product_pic7.svg" alt="Fully enhance hierarchical organizational effectiveness">
+              <img class="pic theme_dark" src="../../img/dark/product_pic7.svg" alt="Multi-functional assistance for enterprise management teams">
+              <ul class="details-ul">
+                <li class="details-ul-item mb-36">
+                  <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Fully enhance hierarchical organizational effectiveness</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">Managers can set the company personnel structure in the background to form a complete team form, which facilitates hierarchical and collaborative management of projects and related tasks.</h6>
+                </li>
+                <li class="details-ul-item">
+                  <h1 class="txt-7003645 serial-number mb-24">02</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Multi-functional assistance for enterprise management teams</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">Provide daily work report editing summary, project and task data summary statistics, a variety of functions to assist enterprises to manage teams and projects, improve the company's management efficiency and management level.</h6>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li class="details">
+            <div class="details-con">
+              <img class="pic theme_light" src="../../img/light/product_pic8.svg" alt="Control encryption keys for security and safety">
+              <img class="pic theme_dark" src="../../img/dark/product_pic8.svg" alt="Data classification encryption for secure synchronization">
+              <ul class="details-ul">
+                <li class="details-ul-item mb-36">
+                  <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Control encryption keys for security and safety</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">Using end-to-end encryption ensures that users' data can only be decrypted by them. This means that even if hackers break into DooTask's servers, they cannot access users' data.</h6>
+                </li>
+                <li class="details-ul-item">
+                  <h1 class="txt-7003645 serial-number mb-24">02</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Data classification encryption for secure synchronization</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">Using categorical encryption, users can synchronize their tasks and files across multiple devices without fear of data theft or tampering.</h6>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li class="details">
+            <div class="details-con">
+              <img class="pic theme_light" src="../../img/light/product_pic9.svg" alt="Multi-Platform Applications">
+              <img class="pic theme_dark" src="../../img/dark/product_pic9.svg" alt="Multi-Platform Applications">
+              <ul class="details-ul">
+                <li class="details-ul-item">
+                  <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">Multi-Platform Applications</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">Multi-platform application support allows you to track project progress anytime, anywhere, while making every step of your work a more efficient and enjoyable experience.</h6>
+                </li>
+              </ul>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </header>
+    <!-- 菜单抽屉 -->
+    <div class="drawer">
+      <div class="drawer-t mb-36">
+        <a href="../en/index.html" class="logo">
+          <img id="logo" src="../../img/light/logo.svg" alt="DooTaskLogo">
+          <i class="dootask txt-7002027">DooTask</i>
+        </a>
+        <i class="close-drawer" onclick="closeDraweHandle()">✕</i>
+      </div>
+      <ul class="drawer-ul">
+        <li class="drawer-item-t mb-16">
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/product.html">Product</a>
+          </div>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/solutions.html">Solutions</a>
+          </div>
+          <div class="drawer-item" onclick="expandMenuHandle('support')">
+            <i class="txt-4001620 txt">
+              Support
+              <img src="../../img/vector.svg" class="nav-vector" alt="Support" id="drawer-down-support-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="support" style="display: none;">
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../en/download.html">Download Center</a>
+            </li>
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../en/help.html">Help Center</a>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/price.html">Pricing</a>
+          </div>
+          <div class="drawer-item mb-16" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/about.html">About Us</a>
+          </div>
+        </li>
+        <li class="drawer-item-c">
+          <div class="drawer-item" onclick="expandMenuHandle('theme')">
+            <i class="txt-4001620 txt">
+              Theme
+              <img src="../../img/vector.svg" alt="Theme" class="nav-vector" id="drawer-down-theme-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="theme" style="display: none;">
+            <li class="drawer-item"  onclick="setTheme('light')">
+              <i class="txt-4001620 txt">Light</i>
+            </li>
+            <li class="drawer-item"  onclick="setTheme('dark')">
+              <i class="txt-4001620 txt">Dark</i>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="expandMenuHandle('language')">
+            <i class="txt-4001620 txt">
+              Language
+              <img src="../../img/vector.svg" alt="Language" class="nav-vector" id="drawer-down-language-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="language" style="display: none;">
+            <li class="drawer-item"  onclick="changeLanguage('zh')">
+              <i class="txt-4001620 txt">简体中文</i>
+            </li>
+            <li class="drawer-item"  onclick="changeLanguage('en')">
+              <i class="txt-4001620 txt">English</i>
+            </li>
+          </ol>
+        </li>
+        <li class="drawer-item-b">
+          <li class="drawer-item">
+            <a class="txt-4001620 txt" href="https://demo.dootask.com">Log In</a>
+          </li>
+        </li>
+      </ul>
+    </div>
+    <!-- 内容区域 -->
+    <main>
+      <!-- 主要区域划分 -->
+      <section>
+        <article class="manage">
+          <div class="manage-con">
+            <div class="manage-t">
+              <h1 class="txt-5004455 manage-h1 mb-16">Organizational Management</h1>
+              <h5 class="txt-4001830 manage-h5 manage-h5-1920">Unified management of internal and external work, real-time view statistics,</h5>
+              <h5 class="txt-4001830 manage-h5 manage-h5-1920">transparent goals, visible progress, controllable performance</h5>
+              <h5 class="txt-4001830 manage-h5 manage-h5-768">Unified management of internal and external work, real-time view statistics, transparent goals, visible progress, controllable performance</h5>
+            </div>
+            <div class="manage-b mt-80">
+              <ul class="manage-ul">
+                <li class="manage-ul-item mb-32 product-animate-box" style="--delay: 0s;">
+                  <img class="manage-icon mr-16" src="../../img/product_subtract.svg" alt="Real-time view of attendance statistics">
+                  <div class="manage-tit">
+                    <h3 class="txt-5002025 manage-h3 mb-16">Real-time view of attendance statistics</h3>
+                    <h6 class="txt-4001624 manage-h6">View attendance data anytime and anywhere, record the working hours of each team member, including starting time, finishing time, overtime, etc., to achieve goal management and performance management within the enterprise</h6>
+                  </div>
+                </li>
+                <li class="manage-ul-item product-animate-box" style="--delay: 0.1s;">
+                  <img class="manage-icon mr-16" src="../../img/product_subtract.svg" alt="The ultimate experience in speed clocking">
+                  <div class="manage-tit">
+                    <h3 class="txt-5002025 manage-h3 mb-16">The ultimate experience in speed clocking</h3>
+                    <h6 class="txt-4001624 manage-h6">The system recognizes and connects to the company's wifi to automatically punch in and out, saying goodbye to queuing and opening cell phone operations, employees no longer forget to punch in and out</h6>
+                  </div>
+                </li>
+              </ul>
+              <div class="manage-ul-item product-animate-box" style="--delay: 0.2s;">
+                <img class="manage-icon mr-16" src="../../img/product_subtract.svg" alt="Attendance data visualization and analysis">
+                <div class="manage-tit">
+                  <h3 class="txt-5002025 manage-h3 mb-16">Attendance data visualization and analysis</h3>
+                  <h6 class="txt-4001624 manage-h6">Statistics on attendance, tardiness, early departure, overtime hours and other related data of each team member are generated and visualized in statistical charts. Through these data and charts, enterprise management can gain an in-depth understanding of team members' working conditions and efficiency, and provide a reference basis for subsequent personnel arrangement and performance assessment.</h6>
+                </div>
+              </div>
+              <div class="manage-svg product-animate-box" style="--delay: 0.3s;">
+                <img class="manage-bg theme_light"  src="../../img/light/product_pic10.svg" alt="Clocking in to work successfully">
+                <img class="manage-bg theme_dark"  src="../../img/dark/product_pic10.svg" alt="Clocking in to work successfully">
+                <div class="manage-tips">
+                  <img src="../../img/product_icon1.svg" alt="Attendance Check-in">
+                  <i class="manage-tips-txt txt-4001822">Clocking in to work successfully</i>
+                </div>
+                <h2 class="manage-svg-h2 txt-6003652">Attendance Check-in</h2>
+              </div>
+            </div>
+          </div>
+        </article> 
+        <article class="performance">
+          <div class="performance-con">
+            <h1 class="txt-5003645 performance-h1">Digital Performance</h1>
+            <img class="pic mt-80 theme_light"  src="../../img/light/en_product_pic11.png" alt="Digital Performance">
+            <img class="pic mt-80 theme_dark"  src="../../img/dark/en_product_pic11.png" alt="Digital Performance">
+            <ul class="performance-ul">
+              <li class="performance-ul-item product-animate-box2" style="--delay: 0s;">
+                <i class="icon mb-24"></i>
+                <h5 class="txt-5002025 performance-h5 mb-16">Goal setting and tracking, more focused team</h5>
+                <h6 class="performance-h6">Help team members set work goals and KPIs, and track and manage them to keep an eye on the progress of tasks in a timely manner.</h6>
+              </li>
+              <li class="performance-ul-item product-animate-box2" style="--delay: 0.1s;">
+                <i class="icon mb-24"></i>
+                <h5 class="txt-5002025 performance-h5 mb-16">Performance evaluation and feedback for more effortless management</h5>
+                <h6 class="txt-4001624 performance-h6">Support evaluation and feedback of team members' performance, and automatically generate performance reports and statistical charts according to task completion, providing reference basis for subsequent personnel management and performance assessment.</h6>
+              </li>
+              <li class="performance-ul-item product-animate-box2" style="--delay: 0.2s;">
+                <i class="icon mb-24"></i>
+                <h5 class="txt-5002025 performance-h5 mb-16">Visual analysis of data, more intuitive results</h5>
+                <h6 class="txt-4001624 performance-h6">Data such as task completion, teamwork efficiency and individual performance are transformed into intuitive and easy-to-understand charts and data analysis to better understand team members' performance and performance status, and to provide targeted training and guidance.</h6>
+              </li>
+              <li class="performance-ul-item product-animate-box2" style="--delay: 0.3s;">
+                <i class="icon mb-24"></i>
+                <h5 class="txt-5002025 performance-h5 mb-16">Personalized service</h5>
+                <h6 class="txt-4001624 performance-h6">Users can customize performance appraisal indicators and report content and analysis according to their own needs and business processes to better match the actual work needs of team members and the specific business situation of the company.</h6>
+              </li>
+            </ul>
+          </div>
+        </article>
+      </section>
+    </main>
+    <!-- 页脚区域 -->
+    <footer>
+      <div class="footer-con">
+        <div class="footer-layut">
+          <div class="footer-l">
+            <a href="../en/index.html" class="logo">
+              <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+              <i class="dootask txt-7002027">DooTask</i>
+            </a>
+            <i class="txt txt-4001624">Helps teams move projects forward efficiently and makes work easier.</i>
+          </div>
+          <div class="footer-r">
+            <ul class="footer-r-ul">
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Links</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/product.html">Product</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/solutions.html">Solutions</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/price.html">Pricing</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../en/solutions.html">About Us</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Support</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/download.html">Download Center</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../en/help.html">Help Center</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Community</li>
+                  <li class="footer-ol-item">
+                    <li class="footer-ol-item mb-16">
+                      <i class="txt-4001624 txt" onclick="openInNewTab('https://github.com/kuaifan/dootask')">Github</i>
+                    </li>
+                    <li class="footer-ol-item mb-16">
+                      <i class="txt-4001624 txt" onclick="openInNewTab('https://gitee.com/aipaw/dootask')">Gitee</i>
+                    </li>
+                    <li class="footer-ol-item" id="qq_group">
+                      <i class="txt-4001624 txt">QQ group</i>
+                      <div class="group_code">
+                        <img class="code-svg" id="home_code" src="../../img/light/home_code.svg" alt="Group：546574618">
+                        <i class="group_num">Group：546574618</i>
+                        <i class="lower_triangle"></i>
+                      </div>
+                    </li>
+                  </li>
+                </ol>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="txt-4001624 filings">
+          Copyright © 2022-2023 Dootask. All rights reserved.
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+<script src="../../js/common.js"></script>
+<script>
+  /* 产品卡片切换函数 */ 
+  const tabs = document.querySelector('.prooduct-con');
+  const tabItems = tabs.querySelectorAll('.prooduct-list-item');
+  const cardItems = tabs.querySelectorAll('.details');
+  const icons = tabs.querySelectorAll('.icon');
+  const content = document.querySelector('.content');
+  const firstIcon = tabs.querySelector('.first-icon');
+  const firstTxt = tabs.querySelector('.first-txt');
+  let currentIndex = 0;
+  tabs.addEventListener('click', function (event) {
+    const clickedItem = event.target.closest('.prooduct-list-item');
+    if (clickedItem && !clickedItem.classList.contains('active')) {
+      // 切换激活状态
+      for (let [index,value] of tabItems.entries()) {
+        if(value === clickedItem){
+          icons[index].setAttribute('src', `../../img/product_icons${index}_h.svg`)
+          setActiveIndicator(index)
+        }else{
+          icons[index].setAttribute('src', `../../img/product_icons${index}.svg`)
+        }
+        value.classList.toggle('active', value === clickedItem);
+      }
+    }
+  });
+  const setActiveIndicator = (index)=> {
+    cardItems[currentIndex].classList.remove('active');
+    cardItems[index].classList.add('active');
+    currentIndex = index;
+  }
+  /* 768px下产品卡片切换函数 */ 
+  let productNameObj = {
+    0: 'Co-creation',
+    1: 'Instant Messaging',
+    2: 'Project Mgmt',
+    3: 'Task Dashboard',
+    4: 'Task Calendar',
+    5: 'Bot Assistant',
+    6: 'Team Mgmt',
+    7: 'End-to-End Encryp...',
+    8: 'Multi-platform',
+  }
+  const prevHandle  = ()=>{
+    if(currentIndex != 0) {
+      currentIndex =  currentIndex - 1
+      cardItems[currentIndex + 1].classList.remove('active');
+      firstIcon.setAttribute('src', `../../img/product_icons${currentIndex + 1}_h.svg`)
+      firstTxt.innerHTML = productNameObj[currentIndex]
+      cardItems[currentIndex].classList.add('active');
+    }
+  }
+  const nextHandle  = ()=>{
+    if(currentIndex != 8){
+      currentIndex =  currentIndex + 1
+      cardItems[currentIndex - 1].classList.remove('active');
+      firstIcon.setAttribute('src', `../../img/product_icons${currentIndex - 1}_h.svg`)
+      firstTxt.innerHTML = productNameObj[currentIndex]
+      cardItems[currentIndex].classList.add('active');
+    }
+  }
+  /* 滑动到可视区域执行动画 */ 
+  const boxes = document.querySelectorAll('.product-animate-box');
+  const boxes2 = document.querySelectorAll('.product-animate-box2');
+  const animateBoxes = ()=> {
+    boxes.forEach(box => {
+      const boxTop = box.getBoundingClientRect().top;
+      const boxBottom = box.getBoundingClientRect().bottom;
+      if (boxTop < window.innerHeight && boxBottom > 0) {
+        box.classList.add('animate');
+      }
+    });
+    boxes2.forEach(box1 => {
+      const boxTop2 = box1.getBoundingClientRect().top;
+      const boxBottom2 = box1.getBoundingClientRect().bottom;
+      if (boxTop2 < window.innerHeight && boxBottom2 > 0) {
+        box1.classList.add('animate');
+      }
+    });
+  }
+  window.addEventListener('scroll', animateBoxes);
+  animateBoxes();
+</script>
+</html>

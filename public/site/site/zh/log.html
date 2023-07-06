@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>DooTask</title>
+  <meta name="google" value="notranslate">
+  <meta name="description" content="DooTask是一款轻量级的开源在线项目任务管理工具，提供各类文档协作工具、在线思维导图、在线流程图、项目管理、任务分发、即时IM，文件管理等工具。助力团队高效推进项目，让工作更简单。">
+  <meta name="keywords" content="中国 Dootask 开源在线项目 任务管理工具 任务管理 轻量级 海豚有海 团队协作">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" type="text/css" href="../../css/rem.css">
+  <link rel="stylesheet" href="../../css/log.css">
+</head>
+<body>
+  <div id="layout">
+    <!-- 页头区域 -->
+    <header>
+      <div class="nav">
+        <div class="nav-layout">
+          <a href="../zh/index.html" class="logo">
+            <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+            <i class="dootask txt-7002027">DooTask</i>
+          </a>
+          <ul class="nav-ul">
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-product" href="../zh/product.html">产品</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-solutions" href="../zh/solutions.html">解决方案</a>
+            </li>
+            <li class="nav-ul-item">
+              <i class="txt-4001620 txt nav-support" id="support-txt" onclick="showMenuPopHandle()">
+                支持
+                <img src="../../img/vector.svg" alt="" class="nav-vector" id="drop-down-svg">
+              </i>
+              <ol class="submenu-pop" id="submenu-pop">
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../zh/download.html">下载中心</a>
+                </li>
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../zh/help.html">帮助中心</a>
+                </li>
+              </ol>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-price" href="../zh/price.html">服务价格</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-about" href="../zh/about.html">关于我们</a>
+            </li>
+          </ul>
+          <div class="nav-r">
+            <div class="lang" id="lang-img">
+              <img src="../../img/lang-select.svg" alt="语言切换" onclick="shouLangPopHandle()">
+              <ul class="lang-pop" id="lang-pop">
+                <li class="lang-pop-item" onclick="changeLanguage('zh')">
+                  <i class="lang-txt">简体中文</i>
+                </li>
+                <li class="lang-pop-item" onclick="changeLanguage('en')">
+                  <i class="lang-txt" >English</i>
+                </li>
+              </ul>
+            </div>
+            <i class="nav-r-icon theme_dark" onclick="setTheme('light')">
+              <img src="../../img/light.svg" alt="明亮主题">
+            </i>
+            <i class="nav-r-icon theme_light" onclick="setTheme('dark')">
+              <img src="../../img/drak.svg" alt="暗黑主题">
+            </i>
+            <a href="https://github.com/kuaifan/dootask" target="_blank">
+              <i class="nav-r-icon">
+                <img src="../../img/github.svg" alt="github">
+              </i>
+            </a>
+            <i class="line-1"></i>
+            <span class="get-started">
+              <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
+                <button class="btn btn-primary" >开始使用</button>
+              </a>
+            </span>
+          </div>
+          <div class="menuBtn">
+            <img id="menuBtn" src="../../img/menu.svg" alt="菜单">
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- logs抽屉 -->
+    <div class="logs-drawer">
+      <div class="drawer-t mb-36">
+        <a href="../zh/index.html" class="logo">
+          <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+          <i class="dootask txt-7002027">DooTask</i>
+        </a>
+        <i class="close-drawer" onclick="closeLogsDraweHandle()">✕</i>
+      </div>
+      <h5 class="logs-h5 mb-16" style="font-weight: 500;">更新日志</h5>
+      <ul class="logs-l-ul logs-l-768"></ul>
+    </div>
+    <!-- 菜单抽屉 -->
+    <div class="drawer">
+      <div class="drawer-t mb-36">
+        <a href="../zh/index.html" class="logo">
+          <img id="logo" src="../../img/light/logo.svg" alt="DooTaskLogo">
+          <i class="dootask txt-7002027">DooTask</i>
+        </a>
+        <i class="close-drawer" onclick="closeDraweHandle()">✕</i>
+      </div>
+      <ul class="drawer-ul">
+        <li class="drawer-item-t mb-16">
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../zh/product.html">产品</a>
+          </div>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../zh/solutions.html">解决方案</a>
+          </div>
+          <div class="drawer-item" onclick="expandMenuHandle('support')">
+            <i class="txt-4001620 txt">
+              支持
+              <img src="../../img/vector.svg" class="nav-vector" alt="支持" id="drawer-down-support-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="support" style="display: none;">
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../zh/download.html">下载中心</a>
+            </li>
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../zh/help.html">帮助中心</a>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../zh/price.html">服务价格</a>
+          </div>
+          <div class="drawer-item mb-16" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../zh/about.html">关于我们</a>
+          </div>
+        </li>
+        <li class="drawer-item-c">
+          <div class="drawer-item" onclick="expandMenuHandle('theme')">
+            <i class="txt-4001620 txt">
+              主题
+              <img src="../../img/vector.svg" alt="主题" class="nav-vector" id="drawer-down-theme-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="theme" style="display: none;">
+            <li class="drawer-item"  onclick="setTheme('light')">
+              <i class="txt-4001620 txt">Light</i>
+            </li>
+            <li class="drawer-item"  onclick="setTheme('dark')">
+              <i class="txt-4001620 txt">Dark</i>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="expandMenuHandle('language')">
+            <i class="txt-4001620 txt">
+              语言
+              <img src="../../img/vector.svg" alt="语言" class="nav-vector" id="drawer-down-language-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="language" style="display: none;">
+            <li class="drawer-item"  onclick="changeLanguage('zh')">
+              <i class="txt-4001620 txt">简体中文</i>
+            </li>
+            <li class="drawer-item"  onclick="changeLanguage('en')">
+              <i class="txt-4001620 txt">English</i>
+            </li>
+          </ol>
+        </li>
+        <li class="drawer-item-b">
+          <li class="drawer-item">
+            <a class="txt-4001620 txt" href="https://demo.dootask.com">登录</a>
+          </li>
+        </li>
+      </ul>
+    </div>
+    <!-- 内容区域 -->
+    <main>
+      <!-- 主要区域划分 -->
+      <section>
+        <article class="logs">
+          <div class="logs-con">
+            <div class="logs-t-768" id="menuBtn-logs">
+              <img class="logs-t-prev" src="../../img/prev.svg" alt="更新日志">
+              <i class="logs-t-tit">更新日志</i>
+            </div>
+            <div class="logs-layout">
+              <div class="logs-l">
+                <h5 class="logs-h5 mb-16" style="font-weight: 500;">更新日志</h5>
+                <ul class="logs-l-ul logs-l-1920"></ul>
+              </div>
+              <div class="logs-r">
+                <h1 class="txt-6003645 logs-h1 mb-36">DooTask更新日志</h1>
+                <ul class="logs-r-ul"></ul>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+    <!-- 页脚区域 -->
+    <footer>
+      <div class="footer-con">
+        <div class="filings">
+          Copyright © 2022-2023 Dootask. All rights reserved.
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+<script src="../../js/common.js"></script>
+<script>
+const getItem = (key)=> {
+  var record = JSON.parse(localStorage.getItem(key));
+  if (!record) return null;
+  if (new Date().getTime() > record.expired) {
+    localStorage.removeItem(key);
+    return null;
+  }
+  return record.value;
+}
+function getUpdatesFromHtml(html,li) {
+  html.map(item=>{
+    const liItem = document.createElement('li');
+    liItem.className = 'txt-4001624 r-ol-item mb-12 pl-26';
+    liItem.innerHTML = `
+      <i class="dots"></i>${item};
+    `;
+    const ol = li.querySelector('.logs-r-ol')
+    ol.appendChild(liItem)
+  })
+}
+const logsDrawer = document.querySelector('.logs-drawer');
+const closeLogsDraweHandle = ()=>{
+  logsDrawer.classList.remove('open-logs-drawer');
+}
+const domHandle = (html)=>{
+  const changelog = document.querySelector('.logs-r-ul');
+  const rlog = document.querySelector('.logs-l-1920');
+  const rlog2 = document.querySelector('.logs-l-768');
+  const versions = html.match(/<h2>(.*?)<\/h2>/g).slice(0, 10);
+  
+  const versionsNumbers = versions.map(str => str.split('<h2>[')[1].split(']</h2>')[0]);
+  for (let i = 0; i < versionsNumbers.length; i++) {
+    const updatesHtml = html.split(versionsNumbers[i])[1].split('<h2>')[0].match(/<li>(.*?)<\/li>/g);
+    const updatesHtmlText = updatesHtml.map(str => str.split('<li>')[1].split('</li>')[0]);
+    const rLi = document.createElement('li');
+    rLi.className = `l-ul-item ${i==0?'active':''}`;
+    rLi.innerHTML = `
+      <a class="txt-4001620 txt" href="#section-${i+1}">v${versionsNumbers[i]} 更新</a>
+    `;
+    const rLi2 = document.createElement('li');
+    rLi2.className = `l-ul-item`;
+    rLi2.addEventListener('click', function() {
+      const logsDrawer = document.querySelector('.logs-drawer');
+      logsDrawer.classList.remove('open-logs-drawer');
+    });
+    rLi2.innerHTML = `
+      <a class="txt-4001620 txt" href="#section-${i+1}">v${versionsNumbers[i]} 更新</a>
+    `;
+    rlog.appendChild(rLi);
+    rlog2.appendChild(rLi2);
+    
+    const li = document.createElement('li');
+    li.className = 'r-ul-item mb-36';
+    li.innerHTML = `
+    <ol class="logs-r-ol">
+      <li class="txt-4001624 r-ol-item mb-24"><h4 class="logs-h4" id="section-${i+1}">v${versionsNumbers[i]} 更新</h4></li>
+    </ol>
+    `;
+    changelog.appendChild(li);
+    getUpdatesFromHtml(updatesHtmlText,li)
+  }
+  let updateLogNum = localStorage.getItem('update_log_num')
+  /* logs点击激活函数 */ 
+  let isThrottled = false;
+  let timerId;
+  const logs_tabs = document.querySelector('.logs-l-1920');
+  const logs_tabItems = logs_tabs.querySelectorAll('.l-ul-item');
+  const contentContainer = document.querySelector('.logs-r');
+  const contentContainer_Items = contentContainer.querySelectorAll('.r-ul-item');
+  const sections = Array.from(document.querySelectorAll('h4'));
+  logs_tabs.addEventListener('click', function (event) {
+    const clickedItem = event.target.closest('.l-ul-item');
+    clearTimeout(timerId);
+    if (clickedItem && !clickedItem.classList.contains('active')) {
+      // 切换激活状态
+      for (let value of logs_tabItems) {
+        value.classList.toggle('active', value === clickedItem);
+      }
+    }
+  });
+  const handleScroll = ()=> {
+    if (!isThrottled) {
+      isThrottled = true;
+      // 在下一个滴答钟时重置isThrottled标志位
+      timerId = setTimeout(() => {
+        isThrottled = false;
+      }, 0);
+      // 处理滚动事件
+      const currentScrollPosition = contentContainer.scrollTop;
+      // 获取当前滚动位置并遍历所有标题元素
+      sections.map((item,index)=>{
+        const section = sections[index];
+        if(section.offsetParent.offsetTop <= currentScrollPosition){
+          // 将对应的菜单项设置为激活状态
+          const activeMenuItem = logs_tabItems[index];
+          if (activeMenuItem) {
+            Array.from(logs_tabItems).forEach(titem => titem.classList.remove('active'));
+            activeMenuItem.classList.add('active');
+          }
+        }
+      })
+    }
+  }
+  contentContainer.addEventListener('scroll', handleScroll);
+  /* 当屏幕宽度低于768px时显示logs的抽屉的相关操作逻辑 */
+  const logsMenuBtn = document.getElementById('menuBtn-logs');
+  const logsDrawer = document.querySelector('.logs-drawer');
+  logsMenuBtn.addEventListener('click', () => {
+    logsDrawer.classList.add('open-logs-drawer');
+  });
+  /* 从下载页跳转过来执行的函数 */
+  const handleMou = ()=>{
+    const clickedItem = logs_tabItems[updateLogNum];
+    if (clickedItem && !clickedItem.classList.contains('active')) {
+      // 切换激活状态
+      for (let value of logs_tabItems) {
+        value.classList.toggle('active', value === clickedItem);
+      }
+    }
+    window.location.hash = '#section-'+updateLogNum
+  }
+  handleMou()
+  localStorage.removeItem('update_log_num')
+}
+const logs =  getItem('logs')
+if(!logs) {
+  fetch('https://raw.githubusercontent.com/kuaifan/dootask/pro/CHANGELOG.md')
+  .then(response => response.text())
+  .then(data => {
+    const md = new markdownit();
+    const html = md.render(data);
+    let record = {value: html, expired: new Date().getTime() + 30 * 60 * 1000};
+    localStorage.setItem('logs',JSON.stringify(record))
+    domHandle(html)
+  })
+}else{
+  domHandle(logs)
+}
+</script>
+</html>

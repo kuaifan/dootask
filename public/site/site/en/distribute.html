@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+  <title>DooTask</title>
+  <meta name="google" value="notranslate">
+  <meta name="description" content="Lightweight open source online project task management tool to help teams efficiently advance their projects and make work easier."">
+  <meta name="keywords" content="China Dootask Task management Lightweight Hitosea Teamwork">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+	<link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../css/distribution.css">
+</head>
+<body>
+	<main class="distrbution">
+		<img class="bg_fpic1" src="../../img/bg_fpic1.svg" alt="广西海豚有海信息科技公司,HITOSEA,海豚有海,广西海豚有海">
+		<img class="bg_fpic2" src="../../img/bg_fpic2.svg" alt="广西海豚有海信息科技公司,HITOSEA,海豚有海,广西海豚有海">
+		<section>
+			<div class="content">
+				<div class="layout" id="target">
+					<img class="icon1" src="../../img/logo_y.svg" alt="DooTask">
+					<div class="qr_code">
+						<i id="qrcode" style="width: 130px; height: 130px;display: inline-block;"></i>
+					</div>
+					<div class="name">
+						<img class="icon2" src="../../img/android_y.svg" alt="安卓,abdroid">
+						<i class="">DooTask</i>
+					</div>
+					<div class="scan">
+						<i class="scan-txt" style="margin-bottom: 4px;">Scan the QR code to download</i>
+						<span class="scan-txt" style="margin-bottom: 18px;">
+							Or type in this URL using your mobile browser: 
+							<i class="scan-txt-b">http://dootask.com/</i>
+						</span>
+					</div>
+					<div class="line-con">
+						<i class="line1"></i>
+						<i class="line2">App cannot be downloaded from within WeChat/QQ</i>
+					</div>
+					<div class="info-btn">
+						<button class="info-dow" onclick="dowHandle()">Download & Install</button>
+						<i class="info-tip">Android devices only</i>
+					</div>
+					<div class="info">
+						<span class="info-t">
+							<i>v0.27.46 - </i>
+							<i>64.86 MB</i>
+						</span>
+						<span class="info-b">2023-06-19Update</span>
+					</div>
+				</div>
+				<div class="operat-tips">
+					<div class="operat-con">
+						<i class="lower_triangle"></i>
+						<div class="group_num">
+							<p>Please click on the top right corner</p>
+							<p>Select "Open in browser"</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+	</main>
+</body>
+<script src="https://cdn.bootcdn.net/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+	const dowBtnDom = document.querySelector('.info-dow')
+	const line1Dom = document.querySelector('.line1')
+	const line2Dom = document.querySelector('.line2')
+	const tipDom = document.querySelector('.info-tip')
+	const infoDom = document.querySelector('.info')
+	const operatDom = document.querySelector('.operat-tips')
+	const ua = window.navigator.userAgent.toLowerCase();
+	const isWechat = /micromessenger/.test(ua);	
+	const isAndroid = /android/.test(ua);	
+	let timer;
+	if(!isAndroid){
+		dowBtnDom.style.display = 'none'
+		infoDom.style.display = 'none'
+		tipDom.style.display = 'inline-block'
+	}else{
+		if(isWechat){
+			// 在微信中，显示下载按钮
+			dowBtnDom.style.display = 'block'
+			tipDom.style.display = 'none'
+		}else{
+			// 不在微信中，直接下载 app
+			window.location.href = "https://www.dootask.com/uploads/android/DooTask-v0.27.46-android.apk";
+		}
+	}
+	const dowHandle = ()=>{
+		if(isWechat){
+			operatDom.style.display = 'block'
+			line2Dom.style.display = 'block'
+			line1Dom.style.display = 'none'
+			dowBtnDom.style.display = 'none'
+			infoDom.style.display = 'none'
+		}else{
+			dowBtnDom.style.color = '#b3e19d'
+			dowBtnDom.style.backgroundColor = '#f0f9eb'
+			dowBtnDom.style.borderColor = '#e1f3d8'
+			dowBtnDom.disabled = true;
+			timer = setTimeout(()=>{
+				dowBtnDom.style.color = '#fff'
+				dowBtnDom.style.backgroundColor = '#8BCF70'
+				dowBtnDom.style.borderColor = 'transparent'
+				dowBtnDom.disabled = false;
+				clearTimeout(timer)
+			},5000)
+		}
+		window.location.href = "https://www.dootask.com/uploads/android/DooTask-v0.27.46-android.apk";
+	}
+	/* 生成网页二维码二维码 */ 
+if(window.location.host !== ''){
+  const url = window.location.href;
+  const matchResult = url.match(/^(.*?)(?=\/site)/);
+  const result = matchResult[1];
+  new QRCode(document.getElementById('qrcode'), `${result}/site/en/distribute.html`); // 测试
+}
+</script>
+</html>

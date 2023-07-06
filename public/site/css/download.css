@@ -1,0 +1,146 @@
+/* 头部样式 */
+.head{
+  text-align: center;
+  background: var(--bg-8-url) top left no-repeat;
+  background-size: contain;
+}
+.nav{
+  background-color: var(--pop-bg-color);
+  box-shadow: 0px 4px 9px var(--box-shadow-color);
+}
+
+.download-ul{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 70%;
+  padding-bottom: 120px;
+}
+.download-ul-item{
+  cursor: pointer;
+}
+.download-ul-item .normal{
+  display: flex;
+  background-color: var(--bg-fa-color);
+  border-radius: 80px;
+  width: 160px;
+  height: 160px;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.download-ul-item .icon{
+  display: block;
+  height: 48px;
+}
+.download-ul-item .hover{
+  display: none;
+  width: 160px;
+  height: 160px;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.download-ul-item .hover.radius{
+  background-color: var(--bg-fa-color);
+  border-radius: 80px;
+  width: 160px;
+  height: 160px;
+}
+.download-ul-item .qr-code{
+  display: block;
+  height: 100px;
+}
+.download-ul-item .txt{
+  color: var(--txt-gray-color);
+}
+.download-ul-item .hover.radius .txt{
+  color: var(--txt-theme-color);
+}
+.chips-txt{
+  color: var(--txt-theme-color);
+}
+.download-ul-item .btn:hover .chips-txt{
+  color: #fff;
+}
+.update{
+  position: relative;
+  background-color: var(--bg-fa-color);
+}
+.update-con{
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 120px 0px;
+  z-index: 2;
+  position: relative;
+}
+.update-layout{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+.update-h1{
+  color: var(--text-color);
+}
+.update-ul{
+  width: 515px;
+}
+.update-item{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding: 16px 0;
+  cursor: pointer;
+}
+.update-item:hover .update-h5{
+  color: var(--txt-theme-color);
+}
+.update-item:hover .time{
+  color: var(--txt-theme-color);
+}
+.update-h5{
+  color: var(--txt-gray-color);
+}
+.update-item .time{
+  color: var(--txt-gray-color);
+}
+.update-ul .more-item{
+  display: flex;
+  align-items: center;
+}
+.more-item .more{
+  color: var(--txt-theme-color);
+  margin-right: 8px;
+  cursor: pointer;
+  padding: 16px 0;
+}
+.more-item .icon{
+  display: inline-block;
+  width: 8px;
+  height: 12px;
+  line-height: 24px;
+}
+.update-bg-svg{
+  background: var(--bg-9-url) no-repeat top right;
+  background-size: contain;
+}
+.update-r{
+  max-width: 622px;
+  margin-left: 123px;
+  box-shadow: 0px 2px 8px 4px rgba(0, 0, 0, 0.05);
+  border-radius: 45px;
+}
+.update-r-svg{
+  display: block;
+  background: var(--bg-pic1-url) no-repeat;
+  background-size: cover;
+  width: 100%;
+  height: 100%;
+}
+/* 底部布局 */
+.footer-layut{
+  padding-top: 120px;
+}

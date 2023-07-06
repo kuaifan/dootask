@@ -1,0 +1,791 @@
+@media screen and (max-width: 1280px){
+  .head-con,.companies-con,.card,.choose,.footer-con,.prooduct-con,.manage-con,.performance-con,.app-con,.nav-layout,.update-con,.logs-con,.help-con,.plans-con,.company-profile-con,.scenario-app-con,.footer-t-con,.topics-con,.collaboration{
+    width: calc(100vw - 72px) !important;
+    padding-left: 36px !important;
+    padding-right: 36px !important;
+  }
+  .nav-r{
+    width: 27%;
+  }
+  .nav-ul{
+    width: 42%;
+  }
+  .card-pic{
+    max-width: 50% !important;
+    margin-bottom: 36px !important;
+  }
+  .manage-b,.scenario-app-ul {
+    flex-wrap: wrap;
+    justify-content: center !important;
+  }
+  .update-layout{
+    justify-content: center !important;
+  }
+  .update-l{
+    margin-right: 36px;
+  }
+  .manage-b{
+    display: block !important;
+  }
+  .details,.manage-tit,.company-profile-l{
+    width: calc(100vw - 72px) !important;
+  }
+  .topics-tit{
+    width: calc(100vw - 72px) !important;
+    text-align: center;
+  }
+  .prooduct-list .prooduct-list-item{
+    width: auto !important;
+    max-width: 100% !important;
+    margin-right: 0 !important;
+    margin-bottom: 0 !important;
+  }
+  .prooduct-ul{
+    margin-top: 36px !important;
+  }
+  .manage-ul-item{
+    margin-bottom: 32px !important;
+  }
+  .details-con-item4{
+    display: none !important;
+  }
+  .details-ul-1280{
+    display: flex !important;
+  }
+  .app-ul{
+    justify-content: center !important;
+  }
+  .team-ul,.price-card{
+    flex-wrap: wrap !important;
+    justify-content: space-between!important;
+  }
+  .plans-ul-b{
+    flex-wrap: wrap !important;
+    justify-content: flex-start !important;
+  }
+  .team-ul-item,.price-card-item,.plans-ul-b-item{
+    margin-bottom: 32px;
+  }
+  .team-con{
+    width: calc(100vw - 72px) !important;
+    padding: 120px 20px 88px 20px !important;
+  }
+  .download-ul{
+    width: 100% !important;
+    padding-bottom: 120px !important;
+  }
+  .update-r{
+    margin-left: 0 !important;
+  }
+  .grid-4{
+    grid-template-columns: 32vw 18vw 18vw 18vw !important;
+  }
+  .plans-ul-b{
+    grid-template-columns: calc(34vw + 4px) 18vw 18vw 18vw !important;
+  }
+  .scenario-app-ul-item:nth-of-type(3),.app-ul-item:nth-of-type(3){
+    margin-bottom: 32px !important;
+  }
+  .company-profile-layout{
+    flex-wrap: wrap;
+    justify-content: center !important;
+  }
+  .company-profile-r{
+    margin-top: 48px !important;
+    width: auto !important;
+  }
+  .team-ul-item{
+    width: auto !important;
+    height: auto !important;
+  }
+  .help-pic1{
+    height: auto !important;
+  }
+  .help-pic1-tips-h2{
+    margin-bottom: 0 !important;
+  }
+  .help-pic1-tips{
+    position: relative;
+    padding: 12px 0 !important;
+    z-index: 10;
+    max-width: calc(100% - 123px) !important;
+  }
+  .help-pic1-tips-h2{
+    font-weight: 500 !important;
+    font-size: 16px !important;
+    line-height: 24px !important;
+    margin-bottom: 8px !important;
+  }
+  .help-pic1-tips-h6{
+    font-weight: 400 !important;
+    font-size: 12px !important;
+    line-height: 16px !important;
+  }
+  .choose-con-ul{
+    justify-content: flex-start !important;
+  }
+  .choose-con-item,.app-ul-item,.scenario-app-ul-item{
+    width: 100% !important;
+  }
+  .choose-con{
+    padding: 120px 0 56px 0 !important;
+  }
+  .collaboration{
+    /* padding-bottom: 56px !important; */
+  }
+  .price-card-item{
+    width: 22% !important;
+    min-width: 200px !important;
+  }
+  .performance-ul-item {
+    margin-right: 24px !important;
+    width: 100% !important;
+  }
+  .performance-ul-item:last-child {
+    margin-right: 0 !important;
+  }
+  .prooduct-list{
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    grid-gap: 24px 32px;
+  }
+  .plans-ul-b-item-btn{
+    width: auto !important;
+  }
+  .app-bg-box{
+    max-height: 100% !important;
+  }
+}
+
+@media screen and (max-width: 1050px){
+  .nav-ul,.nav-r{
+    display: none;
+  }
+  .menuBtn{
+    display: block;
+  }
+  .footer-t-layout{
+    flex-direction: column !important;
+  }
+  .footer-t-l{
+    margin-bottom: 32px;
+  }
+  .price-card-item{
+    width: 358px !important;
+  }
+  .price-card-h2{
+    font-size: 24px !important;
+  }
+  .plans-ul-t-item-h4{
+    font-size: 16px !important;
+  }
+  .price-card-unit{
+    font-size: 14px !important;
+  }
+  .update-layout{
+    flex-wrap: wrap;
+    justify-content: center !important;
+  }
+  .update-l{
+    margin-right: 0 !important;
+  }
+  .from-ul{
+    width: calc(100vw - 72px) !important;
+    margin-top: 40px !important;
+  }
+  .update-ul{
+    width: calc(100vw - 72px) !important;
+  }
+  .update-r{
+    max-width: 100% !important;
+  }
+  .topics-h1-green,.topics-h1{
+    font-size: 56px !important;
+  }
+  .collaboration-txt{
+    font-size: 24px !important;
+    margin-bottom: 8px !important;
+  }
+  .logs-l-ul,.help-l-ul,.search-input{
+    width: 220px !important;
+  }
+  .update-bg-svg{
+    background-size: 62% !important;
+  }
+  .card-ul-item.active{
+    max-height: 307px !important;
+  }
+}
+
+@media screen and (max-width: 768px){
+  img{
+    max-width: 100% !important;
+  }
+  .filings{
+    font-size: 14px !important;
+  }
+  .nav-layout{
+    height: 64px !important;
+  }
+  section{
+    background: transparent !important;
+  }
+  #logo{
+    height: 28px !important;
+  }
+  .btn{
+    font-size: 15px !important;
+    line-height: 18px !important;
+  }
+  .companies-ul .companies-ul-item{
+    height: 36px !important;
+  }
+  .topics-con{
+    width: calc(100vw - 40px) !important;
+    padding-top: 100px !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  } 
+  .details, .manage-tit, .company-profile-l{
+    width: calc(100vw - 40px) !important;
+  }
+  .nav{
+    height: 60px !important;
+  }
+  .head-con,.card,.choose,.footer-con,.companies-con,.manage-con,.performance-con,.app-con,.team-con,.update-con,.logs-con,.help-con,.plans-con,.prooduct-con,.scenario-app-con,.footer-t-con,.nav-layout,.company-profile-con,.collaboration{
+    width: calc(100vw - 40px) !important;
+    padding: 0 20px !important;
+  }
+  .company-profile-r{
+    width: 100% !important;
+    margin-top: 0 !important;
+  }
+  .details,.manage-b,.performance-con .pic{
+    width: calc(100vw - 40px) !important;
+  }
+  .manage-b{
+    justify-content: center !important;
+    padding-bottom: 56px;
+  }
+  .topics-h1,.topics-h1-green{
+    font-weight: 600;
+    font-size: 28px !important;
+    line-height: 35px !important;
+    text-align: center;
+  }
+  .topics-tit,.topics-h4{
+    width: 340px !important;
+    margin-bottom: 20px !important;
+    text-align: center;
+  }
+  .solutions .topics-btn{
+    margin-bottom: 56px !important;
+  }
+  .topics-btn{
+    margin-bottom: 32px !important;
+  }
+  .arcs{
+    top: 26px !important;
+    width: 120px !important;
+  }
+  .companies-h1{
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 22px;
+  }
+  .companies-con{
+    padding: 32px 0!important;
+  }
+  .companies-ul{
+    margin-top: 24px !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 50%) !important;
+    grid-template-rows: repeat(2, 50%) !important;
+    justify-items: center !important;
+  }
+  .companies-ul .companies-ul-item:nth-of-type(1),.companies-ul .companies-ul-item:nth-of-type(2){
+    margin-bottom: 20px !important;
+  }
+  .card-con,.collaboration-bg,.choose-con,.footer-l,.footer-r,.manage-h5-1920,.download-ul-item .hover,.home_pic7{
+    display: none !important;
+  }
+  .card-con-768,.performance-ul,.help-t-768,.prooduct-list .prev,.prooduct-list .next,.manage-ul-item,.logs-t-768,.plans-ul-768,.manage-h5-768,.home_pic7_768{
+    display: block !important;
+  }
+  .choose-con-768{
+    display: flex !important;
+  }
+  .manage-h5-768{
+    width: 320px !important;
+  }
+  .card-pic{
+    max-width: 100% !important;
+  }
+  .choose-con-768-item,.r-ul-item-pic1{
+    height: auto !important;
+  }
+  .choose-con-tit{
+    padding-top: 20px !important;
+    font-weight: 500;
+    font-size: 22px;
+    line-height: 30px;
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .manage-h1,.performance-h1,.app-h1,.team-tit,.update-h1{
+    padding-top: 56px !important;
+    font-weight: 500;
+    font-size: 22px;
+    line-height: 28px;
+    text-align: center;
+    margin-bottom: 12px !important;
+  }
+  .manage-b,.app-ul,.team-ul{
+    margin-top: 40px !important;
+  }
+  .manage-icon{
+    margin-bottom: 16px;
+  }
+  .manage-h5,.app-h5,.topics-h4,.scenario-app-h6,.footer-t-h6{
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    text-align: center;
+  }
+  .app-h5{
+    width: 320px !important;
+  }
+  .footer-t-h6{
+    text-align: start !important;
+    margin-bottom: 32px !important;
+  }
+  .plans-tit-h5{
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 24px;
+    text-align: center;
+    margin-bottom: 48px !important;
+  }
+  .manage-h3{
+    margin-bottom: 12px !important;
+    font-size: 18px !important;
+  }
+  .performance-h5,.help-h4,.price-card-h4{
+    font-size: 18px !important;
+  }
+  .price-card-h4{
+    margin-bottom: 20px !important;
+  }
+  .price-card-h2{
+    font-size: 24px !important;
+  }
+  .price-card-h2{
+    margin-right: 4px;
+  }
+  .manage-ul-item{
+    margin-bottom: 36px !important;
+  }
+  .performance-ul{
+    margin-top: 36px !important;
+  }
+  .arcs2{
+    width: 170px !important;
+    left: 4px !important;
+    bottom: -12px !important;
+  }
+  .collaboration-txt{
+    font-size: 20px !important;
+    max-width: 280px !important;
+  }
+  .collaboration{
+    margin-bottom: 56px !important;
+  }
+  .footer-layut{
+    border-bottom: none !important;
+    padding: 0 !important;
+  }
+  .prooduct-list{
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    margin-bottom: 24px !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    grid-gap: 0 !important;
+  }
+  .prooduct-list .active{
+    display: flex !important;
+    align-items: center;
+  }
+  .prooduct-list .prooduct-list-item.top{
+    width: 100% !important;
+  }
+  .prooduct-list .prooduct-list-item{
+    display: none;
+    padding: 16px !important;
+    margin: 0 !important;
+  }
+  .prooduct-list .prooduct-list-item .icon{
+    width: 28px !important;
+    margin-bottom: 0 !important;
+    margin-right: 12px !important;
+  }
+  .prooduct-list .prooduct-list-item .txt{
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 20px;
+  }
+  .prooduct-ul{
+    margin: 0 0 56px 0 !important;
+  }
+  .performance{
+    background: var(--bg-768-4-url) top left no-repeat !important;
+  }
+  .about_green_bg{
+    background: var(--bg-768-9-url) top right no-repeat !important;
+  }
+  .head.product{
+    background: var(--bg-768-3-url) top left no-repeat !important;
+  }
+  .head.price{
+    background: var(--bg-768-8-url) top left no-repeat !important;
+  }
+  .head.dow{
+    background: var(--bg-768-7-url) top left no-repeat !important;
+  }
+  .head.solutions{
+    background: var(--bg-768-5-url) top right no-repeat !important;
+  }
+  .team.solutions{
+    background: var(--bg-768-6-url) top right no-repeat !important;
+  }
+  .details-con .pic{
+    margin-bottom: 36px;
+  }
+  .choose-con-item-h5,.app-h4,.scenario-app-h5{
+    font-size: 18px !important;
+  }
+  .choose-con-item-h6,.app-h6,.company-profile-h6,.scenario-app-h6,.footer-t-contact-h6,.update-h5,.performance-h6,.manage-h6,.download-ul-item .txt,.update-item .time,.price-card-unit,.price-card-h6{
+    font-size: 15px !important;
+  }
+  .details-ul-item{
+    margin-bottom: 32px !important;
+  }
+  .details-ul-item:last-child{
+    margin-bottom: 0 !important;
+  }
+  .serial-number{
+    font-size: 32px !important;
+  }
+  .details-ul-1280,.details-con{
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 30px 24px !important;
+  }
+  .details-ul-1280 .details-ul-item,.update-ul,.update-l{
+    width: 100% !important;
+  }
+  .details-con .details-ul{
+    margin-left: 0 !important;
+  }
+  .performance-con .pic{
+    margin-top: 40px !important;
+  }
+  .performance-ul-item{
+    width: auto !important;
+    margin-bottom: 40px;
+  }
+  .app-bg{
+    margin-bottom: 16px !important;
+  }
+  .app-h4{
+    margin-bottom: 12px !important;
+  }
+  .app-ul-item{
+    width: auto !important;
+    margin-bottom: 36px !important;
+  }
+  .team-ul-item{
+    padding: 30px 24px !important;
+  }
+  .download-ul{
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    padding-bottom: 32px !important;
+    padding-top: 12px !important;
+  }
+  .download-ul-item{
+    margin-bottom: 24px;
+  }
+  .download-ul-item .normal,.download-ul-item .hover.radius,.download-ul-item .hover{
+    width: 120px !important;
+    height: 120px !important;
+  }
+  .download-ul-item .icon{
+    height: 36px !important;
+  }
+  .download-ul-item:nth-of-type(odd){
+    margin-right: 24px;
+  }
+  .update-bg-svg{
+    background: none !important;
+  }
+  .update-r{
+    margin-bottom: 56px;
+    margin-top: 28px;
+  }
+  .logs-l,.help-l,.plans-ul-t,.plans-ul-b{
+    display: none !important;
+  }
+  .logs-r,.help-r{
+    border: none !important;
+    padding-left: 0 !important;
+  }
+  .logs-h1,.plans-tit-h2{
+    font-weight: 600;
+    font-size: 22px !important;
+    line-height: 28px !important;
+  }
+  .company-profile-h1{
+    margin-bottom: 34px !important;
+    margin-top: 40px !important;
+    font-weight: 500 !important;
+    font-size: 22px !important;
+    line-height: 28px !important;
+  }
+  .logs-h4{
+    font-size: 18px !important;
+    line-height: 22px !important;
+  }
+  .r-ol-item,.help-h6,.l-ul-item .txt{
+    font-weight: 400;
+    font-size: 15px !important;
+    line-height: 24px !important;
+  }
+  .logs{
+    margin: 0 !important;
+    padding-bottom: 56px !important;
+  }
+  .help{
+    margin: 0 !important;
+    padding-bottom: 20px !important;
+  }
+  .l-ul-item{
+    padding: 12px 0 !important;
+  }
+  .logs-h5{
+    margin-top: 10px;
+    font-weight: 400 !important;
+    font-size: 18px !important;
+    line-height: 20px !important;
+  }
+  .help-pic1{
+    height: calc(50vw/2 + 10px) !important;
+    padding-left: 14px !important;
+  }
+  .help-pic1-tips-h2{
+    font-weight: 500 !important;
+    font-size: 16px !important;
+    line-height: 24px !important;
+    margin-bottom: 8px !important;
+  }
+  .help-pic1-tips-h6{
+    font-weight: 400 !important;
+    font-size: 12px !important;
+    line-height: 16px !important;
+  }
+  .help-pic1-tips{
+    max-width: 160px !important;
+  }
+  #help_pic2{
+    height: calc(60vw - 40px) !important;
+  }
+  #help_pic3{
+    height: calc(80vw - 60px) !important;
+  }
+  .price-card{
+    flex-direction: column !important;
+  }
+  .price-card-item{
+    width: 100% !important;
+    height: 100% !important;
+  }
+  .price-card-item:last-of-type{
+    margin-bottom: 0 !important;
+  }
+  .plans-layout{
+    padding: 56px 0 !important;
+  }
+  .company-profile{
+    width: 100% !important;
+    margin-top: 56px;
+    padding-top: 0 !important;
+  }
+  .company-profile-layout,.footer-t-layout{
+    flex-direction: column !important;
+  }
+  .company-profile-arcs{
+    bottom: -20px !important;
+    left: 0 !important;
+  }
+  .company-h2{
+    font-weight: 500 !important;
+    font-size: 20px !important;
+    line-height: 30px !important;
+  }
+  .company-h6{
+    font-weight: 400 !important;
+    font-size: 12px !important;
+    line-height: 15px !important;
+  }
+  .company-ul{
+    width: 100% !important;
+    padding: 24px 0 !important;
+    margin-top: 12px !important;
+  }
+  .company-ul-item{
+    padding: 0 24px !important;
+  }
+  .scenario-app,.footer-t{
+    padding: 56px 0 !important ;
+  }
+  .scenario-app-h1,.footer-t-h1{
+    font-weight: 500 !important;
+    font-size: 22px !important;
+    line-height: 28px !important;
+  }
+  .scenario-app-ul-item .scenario-app-h6{
+    text-align: start !important;
+  }
+  .scenario-app-ul-item,.footer-t-l{
+    width: 100% !important;
+  }
+  .from-ul{
+    width: calc(100vw - 40px) !important;
+    margin-top: 8px !important;
+  }
+  .app-con,.team-con{
+    padding-top: 0 !important;
+    padding-bottom: 24px !important;
+  }
+  .card-ul-item-txt,.prooduct-list .prooduct-list-item,.details-con{
+    opacity: 1 !important;
+    animation: normal !important;
+  }
+  .details-con{
+    transform: translateY(0) !important;
+  }
+  .company-profile-layout{
+    padding-bottom: 56px !important;
+  }
+  .footer-t-h1{
+    margin-bottom: 32px !important;
+  }
+  .logs-layout,.team-ul-item,.scenario-app-ul-item{
+    height: auto !important;
+  }
+  .logs-r{
+    height: auto !important;
+    overflow: auto !important;
+  }
+  .manage-svg{
+    width: 100% !important;
+  }
+  .manage-bg{
+    width: 100% !important;
+    margin-top: 0 !important;
+  }
+  .manage-tips{
+    top: 42px !important;
+    right: 0 !important;
+    width: auto !important;
+  }
+  .manage-tips-txt{
+    font-size: 16px !important;
+    line-height: 20px !important;
+  }
+  .manage-svg-h2{
+    bottom: 52px;
+    right: 22px;
+    width: 45% !important;
+    font-size: 28px !important;
+    line-height: 40px !important;
+  }
+  .prooduct-list .prooduct-list-item.bot{
+    width: auto !important;
+  }
+  .head.product{
+    background-size: contain !important;
+  }
+  .details-ul-item:nth-of-type(4){
+    margin-bottom: 32px !important;
+  }
+  .card-h1{
+    margin-bottom: 40px !important;
+  }
+  .card-con-layout{
+    margin-top: 0 !important;
+  }
+  .bg-style{
+    background: transparent !important;
+  }
+  .logo{
+    width: 32px !important;
+  }
+  .dootask{
+    margin-left: 12px !important;
+  }
+  .price-card-item>.price-card-h6{
+    height: auto !important;
+    margin-bottom: 20px !important;
+  }
+  .scenario-app-layout>.scenario-app-h6{
+    margin-bottom: 48px !important;
+  }
+  .update-h1{
+    margin-bottom: 28px !important;
+  }
+  .logs-t-768{
+    margin-top: 96px !important;
+  }
+  #help-pic1-svg{
+    width: 44%;
+  }
+  .en_choose_768{
+    min-height: 378px !important;
+  }
+  .plans-ol-768-content .plans-ol-item-h6:first-child{
+    color: var(--txt-gray-color) !important;
+  }
+  .plans-ol-768-content .plans-ol-item-h6:last-child{
+    color: var(--txt-4ca5) !important;
+  }
+  .scenario-app-ul-item-svg{
+    width: 140px !important;
+  }
+  .scenario-app-ul-item:hover,.price-card-item:hover,.team-ul-item:hover{
+    transform: none !important;
+  }
+  .topics-tit, .topics-btn,.topics-h4,.ten_img,.details,.price-animate-box{
+    opacity: 1 !important;
+    animation: normal !important;
+    transform: none !important;
+  }
+  .about-animate-box,.solutions-animate-box,.home-animate-box,.dow-animate-box,.product-animate-box, .product-animate-box2{
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .about-animate-box.animate,.price-animate-box.animate,.solutions-animate-box.animate,.home-animate-box.animate,.dow-animate-box.animate,#arc {
+    animation: normal !important;
+  }
+  .drawer-ul{
+    overflow: auto;
+    height: 82vh;
+  }
+  .home_pic7_768{
+    width: 100%;
+  }
+  .help-l-ul{
+    width: auto !important;
+  }
+}

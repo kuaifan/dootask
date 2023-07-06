@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DooTask</title>
+  <meta name="google" value="notranslate">
+  <meta name="description" content="Lightweight open source online project task management tool to help teams efficiently advance their projects and make work easier."">
+  <meta name="keywords" content="China Dootask Task management Lightweight Hitosea Teamwork">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" type="text/css" href="../../css/rem.css">
+  <link rel="stylesheet" href="../../css/price.css">
+</head>
+<body>
+  <div id="layout">
+    <!-- 页头区域 -->
+    <header class="head price">
+      <div class="nav">
+        <div class="nav-layout">
+          <a href="../en/index.html" class="logo">
+            <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+            <i class="dootask txt-7002027">DooTask</i>
+          </a>
+          <ul class="nav-ul">
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-product" href="../en/product.html">Product</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-solutions" href="../en/solutions.html">Solutions</a>
+            </li>
+            <li class="nav-ul-item">
+              <i class="txt-4001620 txt nav-support" id="support-txt" onclick="showMenuPopHandle()">
+                Support
+                <img src="../../img/vector.svg" alt="Support" class="nav-vector" id="drop-down-svg">
+              </i>
+              <ol class="submenu-pop" id="submenu-pop">
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../en/download.html">Download Center</a>
+                </li>
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../en/help.html">Help Center</a>
+                </li>
+              </ol>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-price" href="../en/price.html">Pricing</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-about" href="../en/about.html">About Us</a>
+            </li>
+          </ul>
+          <div class="nav-r">
+            <div class="lang" id="lang-img">
+              <img src="../../img/lang-select.svg" alt="Language switch" onclick="shouLangPopHandle()">
+              <ul class="lang-pop" id="lang-pop">
+                <li class="lang-pop-item" onclick="changeLanguage('zh')">
+                  <i class="lang-txt">简体中文</i>
+                </li>
+                <li class="lang-pop-item" onclick="changeLanguage('en')">
+                  <i class="lang-txt" >English</i>
+                </li>
+              </ul>
+            </div>
+            <i class="nav-r-icon theme_dark" onclick="setTheme('light')">
+              <img src="../../img/light.svg" alt="Light theme">
+            </i>
+            <i class="nav-r-icon theme_light" onclick="setTheme('dark')">
+              <img src="../../img/drak.svg" alt="Dark theme">
+            </i>
+            <a href="https://github.com/kuaifan/dootask" target="_blank">
+              <i class="nav-r-icon">
+                <img src="../../img/github.svg" alt="github">
+              </i>
+            </a>
+            <i class="line-1"></i>
+            <span class="get-started">
+              <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
+                <button class="btn btn-primary" >Get Started</button>
+              </a>
+            </span>
+          </div>
+          <div class="menuBtn">
+            <img id="menuBtn" src="../../img/menu.svg" alt="Menu">
+          </div>
+        </div>
+      </div>
+      <div class="topics">
+        <div class="topics-con">
+          <div class="topics-layout">
+            <div class="topics-tit mb-32 topics-tit-en">
+              <span class="txt-6007290 topics-h1">Choose your plan</span>
+            </div>
+            <h4 class="txt-4001830 topics-h4 mb-64 topics-h4-en">Different versions are available depending on the size and needs of your business</h4>
+            <ul class="price-card">
+              <li class="price-card-item price-animate-box" style="--delay: 0s;">
+                <h4 class="txt-5002025 price-card-h4 mb-24">Free</h4>
+                <div class="price-card-money mb-12">
+                  <h2 class="txt-6003645 price-card-h2">¥0</h2>
+                  <i class="txt-5001628 price-card-unit">/month</i>
+                </div>
+                <h6 class="txt-4001624 price-card-h6 mb-24" style="height: 48px;">Up to 3 persons</h6>
+                <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-green mb-24">Get Started</button> </a>
+                <ol class="price-card-ol">
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="Support for private deployment">
+                    <h6 class="txt-4001624 price-card-h6">Support for private deployment</h6>
+                  </li>
+                </ol>
+              </li>
+              <li class="price-card-item price-animate-box" style="--delay: 0.1s;">
+                <h4 class="txt-5002025 price-card-h4 mb-24">Annual</h4>
+                <div class="price-card-money mb-12">
+                  <h2 class="txt-6003645 price-card-h2">¥3,000</h2>
+                  <i class="txt-5001628 price-card-unit">/year</i>
+                </div>
+                <h6 class="txt-4001624 price-card-h6 mb-24" style="height: 48px;">No limit to the number of people</h6>
+                <a href="https://www.dootask.com/manage/dashboard"  target="_blank">  <button class="btn btn-green mb-24">Get Started</button> </a>
+                <ol class="price-card-ol">
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="Support for private deployment">
+                    <h6 class="txt-4001624 price-card-h6">Support for private deployment</h6>
+                  </li>
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="Technical advisory services">
+                    <h6 class="txt-4001624 price-card-h6">Technical advisory services</h6>
+                  </li>
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="24-hour service response">
+                    <h6 class="txt-4001624 price-card-h6">24-hour service response</h6>
+                  </li>
+                </ol>
+              </li>
+              <li class="price-card-item active price-animate-box" style="--delay: 0.2s;">
+                <h4 class="txt-5002025 price-card-h4 mb-24">Lifetime<i class="rec-icon">Rec.</i></h4>
+                <div class="price-card-money mb-12">
+                  <h2 class="txt-6003645 price-card-h2">¥18,888</h2>
+                </div>
+                <h6 class="txt-4001624 price-card-h6 mb-24" style="height: 48px;">No limit to the number of people</h6>
+                <a href="https://www.dootask.com/manage/dashboard"  target="_blank">  <button class="btn btn-green mb-24">Get Started</button> </a>
+                <ol class="price-card-ol">
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="Support for private deployment">
+                    <h6 class="txt-4001624 price-card-h6">Support for private deployment</h6>
+                  </li>
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="Technical advisory services">
+                    <h6 class="txt-4001624 price-card-h6">Technical advisory services</h6>
+                  </li>
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="Logo customisation">
+                    <h6 class="txt-4001624 price-card-h6">Logo customisation</h6>
+                  </li>
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="Dedicated Account Manager">
+                    <h6 class="txt-4001624 price-card-h6">Dedicated Account Manager</h6>
+                  </li>
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="12-hour service response">
+                    <h6 class="txt-4001624 price-card-h6">12-hour service response</h6>
+                  </li>
+                </ol>
+              </li>
+              <li class="price-card-item price-animate-box" style="--delay: 0.3s;">
+                <h4 class="txt-5002025 price-card-h4 mb-24">Customized Versions</h4>
+                <div class="price-card-money mb-12">
+                  <h2 class="txt-6003645 price-card-h2">Custom</h2>
+                </div>
+                <h6 class="txt-4001624 price-card-h6 mb-24" style="height: 48px;">No limit to the number of people</h6>
+                <a href="https://www.dootask.com/manage/dashboard"  target="_blank">  <button class="btn btn-green mb-24">Get Started</button></a>
+                <ol class="price-card-ol">
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="Support for private deployment">
+                    <h6 class="txt-4001624 price-card-h6">Support for private deployment</h6>
+                  </li>
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="Technical advisory services">
+                    <h6 class="txt-4001624 price-card-h6">Technical advisory services</h6>
+                  </li>
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="Logo customisation">
+                    <h6 class="txt-4001624 price-card-h6">Logo customisation</h6>
+                  </li>
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="Dedicated Account Manager">
+                    <h6 class="txt-4001624 price-card-h6">Dedicated Account Manager</h6>
+                  </li>
+                  <li class="price-card-ol-item mb-12">
+                    <img class="icon mr-12" src="../../img/price_icon1.svg" alt="12-hour service response">
+                    <h6 class="txt-4001624 price-card-h6">12-hour service response</h6>
+                  </li>
+                </ol>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- 菜单抽屉 -->
+    <div class="drawer">
+      <div class="drawer-t mb-36">
+        <a href="../en/index.html" class="logo">
+          <img id="logo" src="../../img/light/logo.svg" alt="DooTaskLogo">
+          <i class="dootask txt-7002027">DooTask</i>
+        </a>
+        <i class="close-drawer" onclick="closeDraweHandle()">✕</i>
+      </div>
+      <ul class="drawer-ul">
+        <li class="drawer-item-t mb-16">
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/product.html">Product</a>
+          </div>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/solutions.html">Solutions</a>
+          </div>
+          <div class="drawer-item" onclick="expandMenuHandle('support')">
+            <i class="txt-4001620 txt">
+              Support
+              <img src="../../img/vector.svg" class="nav-vector" alt="Support" id="drawer-down-support-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="support" style="display: none;">
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../en/download.html">Download Center</a>
+            </li>
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../en/help.html">Help Center</a>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/price.html">Pricing</a>
+          </div>
+          <div class="drawer-item mb-16" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/about.html">About Us</a>
+          </div>
+        </li>
+        <li class="drawer-item-c">
+          <div class="drawer-item" onclick="expandMenuHandle('theme')">
+            <i class="txt-4001620 txt">
+              Theme
+              <img src="../../img/vector.svg" alt="Theme" class="nav-vector" id="drawer-down-theme-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="theme" style="display: none;">
+            <li class="drawer-item"  onclick="setTheme('light')">
+              <i class="txt-4001620 txt">Light</i>
+            </li>
+            <li class="drawer-item"  onclick="setTheme('dark')">
+              <i class="txt-4001620 txt">Dark</i>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="expandMenuHandle('language')">
+            <i class="txt-4001620 txt">
+              Language
+              <img src="../../img/vector.svg" alt="Language" class="nav-vector" id="drawer-down-language-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="language" style="display: none;">
+            <li class="drawer-item"  onclick="changeLanguage('zh')">
+              <i class="txt-4001620 txt">简体中文</i>
+            </li>
+            <li class="drawer-item"  onclick="changeLanguage('en')">
+              <i class="txt-4001620 txt">English</i>
+            </li>
+          </ol>
+        </li>
+        <li class="drawer-item-b">
+          <li class="drawer-item">
+            <a class="txt-4001620 txt" href="https://demo.dootask.com">Log In</a>
+          </li>
+        </li>
+      </ul>
+    </div>
+    <!-- 内容区域 -->
+    <main>
+      <!-- 主要区域划分 -->
+      <section>
+        <article class="plans">
+          <div class="plans-con">
+            <div class="plans-layout">
+              <h2 class="txt-5004455 plans-tit-h2 mb-16">Compare all plans</h2>
+              <h5 class="txt-4001830 plans-tit-h5 mb-80">The product supports a variety of application scenarios to help team collaboration</h5>
+              <ul class="plans-ul-t">
+                <li class="plans-ul-t-item grid-4" style="padding: 20px 24px;">
+                  <h4 class="txt-5002024 plans-ul-t-item-h4">Feature</h4>
+                  <h4 class="txt-5002024 plans-ul-t-item-h4">Free</h4>
+                  <h4 class="txt-5002024 plans-ul-t-item-h4">Annual</h4>
+                  <h4 class="txt-5002024 plans-ul-t-item-h4">Lifetime</h4>
+                </li>
+                <li class="plans-ul-t-item grid-4" style="padding: 32px 24px;">
+                  <h4 class="txt-5001616 plans-ul-t-item-h4">Pricing</h4>
+                  <div class="plans-ul-t-item-h4">
+                    <div class="price-card-money mb-24">
+                      <h2 class="txt-6003645 price-card-h2">¥0</h2>
+                      <i class="txt-5001628 price-card-unit">/month</i>
+                    </div>
+                    <span class="plans-ul-b-item-btn">
+                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">Get Started</button></a>
+                    </span>
+                  </div>
+                  <div class="plans-ul-t-item-h4">
+                    <div class="price-card-money mb-24">
+                      <h2 class="txt-6003645 price-card-h2">¥3,000</h2>
+                      <i class="txt-5001628 price-card-unit">/year</i>
+                    </div>
+                    <span class="plans-ul-b-item-btn">
+                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">Get Started</button></a>
+                    </span>
+                  </div>
+                  <div class="plans-ul-t-item-h4">
+                    <div class="price-card-money mb-24">
+                      <h2 class="txt-6003645 price-card-h2">¥18,888</h2>
+                    </div>
+                    <span class="plans-ul-b-item-btn">
+                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">Get Started</button></a>
+                    </span>
+                  </div>
+                </li>
+                <li class="plans-ul-t-item">
+                  <ol class="plans-ol">
+                    <li class="plans-ol-item">
+                      <h6 class="txt-4001616 plans-ul-t-item-h4">System usage</h6>
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">Number of users</h6>
+                      <h6 class="txt-4001616 plans-ol-item-h6">≤3</h6>
+                      <h6 class="txt-4001616 plans-ol-item-h6">Unlimited</h6>
+                      <h6 class="txt-4001616 plans-ol-item-h6">Unlimited</h6>
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">Number of projects</h6>
+                      <h6 class="txt-4001616 plans-ol-item-h6">Unlimited</h6>
+                      <h6 class="txt-4001616 plans-ol-item-h6">Unlimited</h6>
+                      <h6 class="txt-4001616 plans-ol-item-h6">Unlimited</h6>
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">Number of tasks</h6>
+                      <h6 class="txt-4001616 plans-ol-item-h6">Unlimited</h6>
+                      <h6 class="txt-4001616 plans-ol-item-h6">Unlimited</h6>
+                      <h6 class="txt-4001616 plans-ol-item-h6">Unlimited</h6>
+                    </li>
+                  </ol>
+                </li>
+                <li class="plans-ul-t-item">
+                  <ol class="plans-ol">
+                    <li class="plans-ol-item">
+                      <h6 class="txt-4001616 plans-ul-t-item-h4">Task Collaboration</h6>
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">Multi-view presentation (Kanban/calendar/list)</h6>
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Multi-view presentation (Kanban/calendar/list)">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Multi-view presentation (Kanban/calendar/list)">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Multi-view presentation (Kanban/calendar/list)">
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">Task custom Fields</h6>
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task custom Fields">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task custom Fields">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task custom Fields">
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">Task loop</h6>
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task loop">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task loop">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task loop">
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">Task mapping</h6>
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task mapping">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task mapping">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task mapping">
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">Task dependencies</h6>
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task dependencies">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task dependencies">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task dependencies">
+                    </li>
+                  </ol>
+                </li>
+                <li class="plans-ul-t-item">
+                  <ol class="plans-ol">
+                    <li class="plans-ol-item">
+                      <h6 class="txt-4001616 plans-ul-t-item-h4">Project management</h6>
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">Project progress</h6>
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Project progress">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Project progress">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Project progress">
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">Project templates</h6>
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Project templates">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Project templates">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Project templates">
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">Project custom Views</h6>
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Project custom Views">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Project custom Views">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Project custom Views">
+                    </li>
+                    <li class="plans-ol-item grid-4">
+                      <h6 class="txt-4001616 plans-ol-item-h6">Timeline view (Gantt chart)</h6>
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Timeline view (Gantt chart)">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Timeline view (Gantt chart)">
+                      <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Timeline view (Gantt chart)">
+                    </li>
+                  </ol>
+                </li>
+                <li class="plans-ul-t-item grid-4" style="padding: 24px;">
+                  <h4 class="plans-ul-t-item-h4"></h4>
+                  <div class="plans-ul-t-item-h4">
+                    <span class="plans-ul-b-item-btn">
+                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">Get Started</button></a>
+                    </span>
+                  </div>
+                  <div class="plans-ul-t-item-h4">
+                    <span class="plans-ul-b-item-btn">
+                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">Get Started</button></a>
+                    </span>
+                  </div>
+                  <div class="plans-ul-t-item-h4">
+                    <span class="plans-ul-b-item-btn">
+                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">Get Started</button></a>
+                    </span>
+                  </div>
+                </li>
+              </ul>
+              <ul class="plans-ul-768">
+                <li class="plans-ul-768-item mb-36">
+                  <h5 class="txt-5001822 help-h5 mb-16">Free</h5>
+                  <ol class="plans-ol-768">
+                    <li class="plans-ol-768-item">
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-5001616 plans-ol-item-h4">System usage</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Number of users</h6>
+                        <h6 class="txt-4001516 plans-ol-item-h6">≤3</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Number of projects</h6>
+                        <h6 class="txt-4001516 plans-ol-item-h6">Unlimited</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Number of tasks</h6>
+                        <h6 class="txt-4001516 plans-ol-item-h6">Unlimited</h6>
+                      </div>
+                    </li>
+                    <li class="plans-ol-768-item">
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-5001616 plans-ol-item-h4">Task Collaboration</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Multi-view presentation (Kanban/calendar/list)</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Multi-view presentation (Kanban/calendar/list)">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Task custom Fields</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task custom Fields">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Task loop</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task loop">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Task mapping</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task mapping">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Task dependencies</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task dependencies">
+                      </div>
+                    </li>
+                    <li class="plans-ol-768-item">
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-5001616 plans-ol-item-h4">Project management</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Project progress</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Project progress">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Project templates</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Project templates">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Project custom Views</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Project custom Views">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Timeline view (Gantt chart)</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Timeline view (Gantt chart)">
+                      </div>
+                    </li>
+                    <div class="price-card-money mb-16">
+                      <h2 class="txt-6002430 price-card-h2">¥0</h2>
+                      <i class="txt-5001528 price-card-unit">/month</i>
+                    </div>
+                    <span style="display: inline-block; width: 100%;">
+                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">Get Started</button></a>
+                    </span>
+                  </ol>
+                </li>
+                <li class="plans-ul-768-item mb-36">
+                  <h5 class="txt-5001822 help-h5 mb-16">Annual</h5>
+                  <ol class="plans-ol-768">
+                    <li class="plans-ol-768-item">
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-5001616 plans-ol-item-h4">System usage</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Number of users</h6>
+                        <h6 class="txt-4001516 plans-ol-item-h6">Unlimited</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Number of projects</h6>
+                        <h6 class="txt-4001516 plans-ol-item-h6">Unlimited</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Number of tasks</h6>
+                        <h6 class="txt-4001516 plans-ol-item-h6">Unlimited</h6>
+                      </div>
+                    </li>
+                    <li class="plans-ol-768-item">
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-5001616 plans-ol-item-h4">Task Collaboration</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Multi-view presentation (Kanban/calendar/list)</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Multi-view presentation (Kanban/calendar/list)">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Task custom Fields</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task custom Fields">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Task loop</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task loop">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Task mapping</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task mapping">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Task dependencies</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task dependencies">
+                      </div>
+                    </li>
+                    <li class="plans-ol-768-item">
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-5001616 plans-ol-item-h4">Project management</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Project progress</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Project progress">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Project templates</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Project templates">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Project custom Views</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Project custom Views">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Timeline view (Gantt chart)</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Timeline view (Gantt chart)">
+                      </div>
+                    </li>
+                    <div class="price-card-money mb-16">
+                      <h2 class="txt-6002430 price-card-h2">¥3,000</h2>
+                      <i class="txt-5001528 price-card-unit">/year</i>
+                    </div>
+                    <span style="display: inline-block; width: 100%;">
+                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">Get Started</button></a>
+                    </span>
+                  </ol>
+                </li>
+                <li class="plans-ul-768-item mb-24">
+                  <h4 class="txt-5001822 plans-ul-t-item-h4 flex-s-c mb-16">Lifetime<i class="rec-icon">Rec.</i></h4>
+                  <ol class="plans-ol-768">
+                    <li class="plans-ol-768-item">
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-5001616 plans-ol-item-h4">System usage</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Number of users</h6>
+                        <h6 class="txt-4001516 plans-ol-item-h6">Unlimited</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Number of projects</h6>
+                        <h6 class="txt-4001516 plans-ol-item-h6">Unlimited</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Number of tasks</h6>
+                        <h6 class="txt-4001516 plans-ol-item-h6">Unlimited</h6>
+                      </div>
+                    </li>
+                    <li class="plans-ol-768-item">
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-5001616 plans-ol-item-h4">Task Collaboration</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Multi-view presentation (Kanban/calendar/list)</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Multi-view presentation (Kanban/calendar/list)">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Task custom Fields</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task custom Fields">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Task loop</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task loop">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Task mapping</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task mapping">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Task dependencies</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Task dependencies">
+                      </div>
+                    </li>
+                    <li class="plans-ol-768-item">
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-5001616 plans-ol-item-h4">Project management</h6>
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Project progress</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Project progress">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Project templates</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Project templates">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Project custom Views</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Project custom Views">
+                      </div>
+                      <div class="plans-ol-768-content">
+                        <h6 class="txt-4001516 plans-ol-item-h6">Timeline view (Gantt chart)</h6>
+                        <img class="plans-ol-item-icon" src="../../img/price_icon1.svg" alt="Timeline view (Gantt chart)">
+                      </div>
+                    </li>
+                    <div class="price-card-money mb-16">
+                      <h2 class="txt-6002430 price-card-h2">¥18,888</h2>
+                    </div>
+                    <span style="display: inline-block; width: 100%;">
+                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">Get Started</button></a>
+                    </span>
+                  </ol>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+    <!-- 页脚区域 -->
+    <footer>
+      <div class="footer-con">
+        <div class="footer-layut">
+          <div class="footer-l">
+            <a href="#" class="logo">
+              <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+              <i class="dootask txt-7002027">DooTask</i>
+            </a>
+            <i class="txt txt-4001624">Helps teams move projects forward efficiently and makes work easier.</i>
+          </div>
+          <div class="footer-r">
+            <ul class="footer-r-ul">
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Links</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/product.html">Product</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/solutions.html">Solutions</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/price.html">Pricing</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../en/solutions.html">About Us</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Support</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/download.html">Download Center</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../en/help.html">Help Center</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Community</li>
+                  <li class="footer-ol-item">
+                    <li class="footer-ol-item mb-16">
+                      <i class="txt-4001624 txt" onclick="openInNewTab('https://github.com/kuaifan/dootask')">Github</i>
+                    </li>
+                    <li class="footer-ol-item mb-16">
+                      <i class="txt-4001624 txt" onclick="openInNewTab('https://gitee.com/aipaw/dootask')">Gitee</i>
+                    </li>
+                    <li class="footer-ol-item" id="qq_group">
+                      <i class="txt-4001624 txt">QQ Group</i>
+                      <div class="group_code">
+                        <img class="code-svg" id="home_code" src="../../img/light/home_code.svg" alt="Group：546574618">
+                        <i class="group_num">Group：546574618</i>
+                        <i class="lower_triangle"></i>
+                      </div>
+                    </li>
+                  </li>
+                </ol>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="txt-4001624 filings">
+          Copyright © 2022-2023 Dootask. All rights reserved.
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+<script src="../../js/common.js">
+</script>
+<script>
+  /* 价格卡片切换函数 */ 
+  const tabs = document.querySelector('.price-card');
+  const tabItems = tabs.querySelectorAll('.price-card-item');
+  tabs.addEventListener('click', function (event) {
+    const theme = localStorage.getItem('theme')
+    const clickedItem = event.target.closest('.price-card-item');
+    if (clickedItem && !clickedItem.classList.contains('active')) {
+      // 切换激活状态
+      for (let value of tabItems) {
+        value.classList.toggle('active', value === clickedItem);
+      }
+    }
+  });
+  let timerId = null
+  timerId = setTimeout(() => {
+      tabItems.forEach(item=>{
+        item.classList.remove('price-animate-box')
+      })
+      timerId = null; // 执行完后将定时器置空
+    }, 1200);
+</script>
+</html>

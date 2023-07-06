@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>DooTask</title>
+  <meta name="google" value="notranslate">
+  <meta name="description" content="DooTask是一款轻量级的开源在线项目任务管理工具，提供各类文档协作工具、在线思维导图、在线流程图、项目管理、任务分发、即时IM，文件管理等工具。助力团队高效推进项目，让工作更简单。">
+  <meta name="keywords" content="中国 Dootask 开源在线项目 任务管理工具 任务管理 轻量级 海豚有海 团队协作">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" type="text/css" href="../../css/rem.css">
+  <link rel="stylesheet" href="../../css/product.css">
+</head>
+<body>
+  <div id="layout">
+    <!-- 页头区域 -->
+    <header class="head product">
+      <div class="nav">
+        <div class="nav-layout">
+          <a href="../zh/index.html" class="logo">
+            <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+            <i class="dootask txt-7002027">DooTask</i>
+          </a>
+          <ul class="nav-ul">
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-product" href="../zh/product.html">产品</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-solutions" href="../zh/solutions.html">解决方案</a>
+            </li>
+            <li class="nav-ul-item">
+              <i class="txt-4001620 txt nav-support" id="support-txt" onclick="showMenuPopHandle()">
+                支持
+                <img src="../../img/vector.svg" alt="支持" class="nav-vector" id="drop-down-svg">
+              </i>
+              <ol class="submenu-pop" id="submenu-pop">
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../zh/download.html">下载中心</a>
+                </li>
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../zh/help.html">帮助中心</a>
+                </li>
+              </ol>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-price" href="../zh/price.html">服务价格</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-about" href="../zh/about.html">关于我们</a>
+            </li>
+          </ul>
+          <div class="nav-r">
+            <div class="lang" id="lang-img">
+              <img src="../../img/lang-select.svg" alt="语言切换" onclick="shouLangPopHandle()">
+              <ul class="lang-pop" id="lang-pop">
+                <li class="lang-pop-item" onclick="changeLanguage('zh')">
+                  <i class="lang-txt">简体中文</i>
+                </li>
+                <li class="lang-pop-item" onclick="changeLanguage('en')">
+                  <i class="lang-txt" >English</i>
+                </li>
+              </ul>
+            </div>
+            <i class="nav-r-icon theme_dark" onclick="setTheme('light')">
+              <img src="../../img/light.svg" alt="明亮主题">
+            </i>
+            <i class="nav-r-icon theme_light" onclick="setTheme('dark')">
+              <img src="../../img/drak.svg" alt="暗黑主题">
+            </i>
+            <a href="https://github.com/kuaifan/dootask" target="_blank">
+              <i class="nav-r-icon">
+                <img src="../../img/github.svg" alt="github">
+              </i>
+            </a>
+            <i class="line-1"></i>
+            <span class="get-started">
+              <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
+                <button class="btn btn-primary" >开始使用</button>
+              </a>
+            </span>
+          </div>
+          <div class="menuBtn">
+            <img id="menuBtn" src="../../img/menu.svg" alt="菜单">
+          </div>
+        </div>
+      </div>
+      <div class="topics">
+        <div class="topics-con">
+          <div class="topics-layout">
+            <div class="topics-tit mb-32">
+              <span class="txt-6007290 topics-h1">一个产品，多种强大的工具</span>
+            </div>
+            <h4 class="txt-4001830 topics-h4 mb-32" style="width: auto !important;">该产品汇集了各种文档协作、在线思维导图、在线流程图、项目管理、任务分配、即时IM、文档管理等功能。</h4>
+            <div class="flex-cc topics-btn">
+              <span class="mr-24 get-started">
+                <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
+                  <button class="btn btn-primary mr-20">开始使用</button>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="prooduct-con">
+        <ul class="prooduct-list">
+          <i class="prev" onclick="prevHandle()">
+            <img src="../../img/prev.svg" alt="一个产品，多种强大的工具">
+          </i>
+          <!-- 2个item -->
+          <li class="prooduct-list-item active top" style="--delay: 0s;">
+            <img class="icon first-icon" src="../../img/product_icons0_h.svg" alt="协同创作">
+            <h3 class="txt-4002025 txt first-txt">协同创作</h3>
+          </li>
+          <!-- 4个item -->
+          <li class="prooduct-list-item top"style="--delay: 0.1s;">
+            <img class="icon" src="../../img/product_icons1.svg" alt="即时沟通">
+            <h3 class="txt-4002025 txt">即时沟通</h3>
+          </li>
+          <!-- 4个item -->
+          <li class="prooduct-list-item top"style="--delay: 0.2s;">
+            <img class="icon" src="../../img/product_icons2.svg" alt="项目管理">
+            <h3 class="txt-4002025 txt">项目管理</h3>
+          </li>
+          <!-- 1个item -->
+          <li class="prooduct-list-item top"style="--delay: 0.3s;">
+            <img class="icon" src="../../img/product_icons3.svg" alt="任务仪表盘">
+            <h3 class="txt-4002025 txt">任务仪表盘</h3>
+          </li>
+          <!-- 2个item -->
+          <li class="prooduct-list-item top"style="--delay: 0.4s;">
+            <img class="icon" src="../../img/product_icons4.svg" alt="任务日历">
+            <h3 class="txt-4002025 txt">任务日历</h3>
+          </li>
+          <!-- 2个item -->
+          <li class="prooduct-list-item bot"style="--delay: 0.5s;">
+            <img class="icon" src="../../img/product_icons5.svg" alt="机器人助手">
+            <h3 class="txt-4002025 txt">机器人助手</h3>
+          </li>
+          <!-- 2个item -->
+          <li class="prooduct-list-item bot"style="--delay: 0.6s;">
+            <img class="icon" src="../../img/product_icons6.svg" alt="团队管理">
+            <h3 class="txt-4002025 txt">团队管理</h3>
+          </li>
+          <!-- 2个item -->
+          <li class="prooduct-list-item bot"style="--delay: 0.7s;">
+            <img class="icon" src="../../img/product_icons7.svg" alt="端到端加密">
+            <h3 class="txt-4002025 txt">端到端加密</h3>
+          </li>
+          <!-- 1个item -->
+          <li class="prooduct-list-item bot"style="--delay: 0.8s;">
+            <img class="icon" src="../../img/product_icons8.svg" alt="多平台应用">
+            <h3 class="txt-4002025 txt">多平台应用</h3>
+          </li>
+          <i class="next" onclick="nextHandle()">
+            <img src="../../img/next.svg" alt="一个产品，多种强大的工具">
+          </i>
+        </ul>
+        <ul class="prooduct-ul">
+          <li class="details active">
+            <div class="details-con">
+              <img class="pic theme_light" src="../../img/light/product_pic1.svg" alt="团队协作无界限,不再是文件孤岛">
+              <img class="pic theme_dark" src="../../img/dark/product_pic1.svg" alt="团队协作无界限,不再是文件孤岛">
+              <ul class="details-ul">
+                <li class="details-ul-item mb-36">
+                  <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">团队协作无界限</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">汇集文档、电子表格、思维笔记等多种在线工具，汇聚企业知识资源于一处，支持多人实时协同编辑，让团队协作更便捷。</h6>
+                </li>
+                <li class="details-ul-item">
+                  <h1 class="txt-7003645 serial-number mb-24">02</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">不再是文件孤岛</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">具有多种文件格式支持，团队内部文件共享，可控制的文件权限、历史版本追踪等，方便团队成员之间进行文件协作和讨论，提高工作效率。</h6>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li class="details">
+            <div class="details-con details-con-item4">
+              <img class="pic theme_light" src="../../img/light/product_pic2.svg" alt="聚焦沟通高效交流,消息必达沟通无阻碍,云端同步查阅历史信息不受限,随时随地参会">
+              <img class="pic theme_dark" src="../../img/dark/product_pic2.svg" alt="聚焦沟通高效交流,消息必达沟通无阻碍,云端同步查阅历史信息不受限,随时随地参会">
+              <ul class="details-ul item4">
+                <li class="details-ul-item mb-36">
+                  <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">聚焦沟通，高效交流</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">针对项目和任务建立群组，即时IM功能可以帮助团队成员之间实时沟通，在任务卡片中添加评论、附件、提醒等，促进团队快速协作，提高团队工作效率。</h6>
+                </li>
+                <li class="details-ul-item mb-36">
+                  <h1 class="txt-7003645 serial-number mb-24">02</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">消息必达沟通无阻碍</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">消息支持查看已读未读，未读消息通过官方邮件通知对方，高效传达。</h6>
+                </li>
+                <li class="details-ul-item">
+                  <h1 class="txt-7003645 serial-number mb-24">03</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">云端同步查阅历史信息不受限</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">信息多端同步，不丢失。新员工加入组织，支持查看聊天历史消息，无缝融入团队。</h6>
+                </li>
+                <li class="details-ul-item">
+                  <h1 class="txt-7003645 serial-number mb-24">04</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">随时随地参会</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">使用沟通群组视频会议，项目人员随时随地参会，提升线上会议便捷性，保证会议全程安全可控，有序进行。</h6>
+                </li>
+              </ul>
+            </div>
+            <ul class="details-ul-1280 item4-1280">
+              <li class="details-ul-item mb-40">
+                <img class="pic theme_light" src="../../img/light/product_pic2.svg" alt="聚焦沟通高效交流,消息必达沟通无阻碍,云端同步查阅历史信息不受限,随时随地参会">
+                <img class="pic theme_dark" src="../../img/dark/product_pic2.svg" alt="聚焦沟通高效交流,消息必达沟通无阻碍,云端同步查阅历史信息不受限,随时随地参会">
+              </li>
+              <li class="details-ul-item mb-36">
+                <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">聚焦沟通，高效交流</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">针对项目和任务建立群组，即时IM功能可以帮助团队成员之间实时沟通，在任务卡片中添加评论、附件、提醒等，促进团队快速协作，提高团队工作效率。</h6>
+              </li>
+              <li class="details-ul-item mb-36">
+                <h1 class="txt-7003645 serial-number mb-24">02</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">消息必达沟通无阻碍</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">消息支持查看已读未读，未读消息通过官方邮件通知对方，高效传达。</h6>
+              </li>
+              <li class="details-ul-item">
+                <h1 class="txt-7003645 serial-number mb-24">03</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">云端同步查阅历史信息不受限</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">信息多端同步，不丢失。新员工加入组织，支持查看聊天历史消息，无缝融入团队。</h6>
+              </li>
+              <li class="details-ul-item">
+                <h1 class="txt-7003645 serial-number mb-24">04</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">随时随地参会</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">使用沟通群组视频会议，项目人员随时随地参会，提升线上会议便捷性，保证会议全程安全可控，有序进行。</h6>
+              </li>
+            </ul>
+          </li>
+          <li class="details">
+            <div class="details-con details-con-item4">
+              <img class="pic theme_light" src="../../img/light/product_pic3.svg" alt="多样式管理模版,关联文件一键归档,项目化办公，行动可视化,动态管理，实时监控">
+              <img class="pic theme_dark" src="../../img/dark/product_pic3.svg" alt="多样式管理模版,关联文件一键归档,项目化办公，行动可视化,动态管理，实时监控">
+              <ul class="details-ul item4">
+                <li class="details-ul-item mb-36">
+                  <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">多样式管理模版</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">模版满足多种团队协作场景，同时支持自定义模版，满足团队个性化场景管理需求，可直观的查看项目的进展情况，团队协作更方便。</h6>
+                </li>
+                <li class="details-ul-item mb-36">
+                  <h1 class="txt-7003645 serial-number mb-24">02</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">项目化办公，行动可视化</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">使用看板、表格、列表等多种视图让整体项目一目了然；成员可对任务灵活筛选、排序和分组，让要事优先，并保持专注。</h6>
+                </li>
+                <li class="details-ul-item">
+                  <h1 class="txt-7003645 serial-number mb-24">03</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">动态管理，实时监控</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">实时变更项目动态，具体任务变更情况记录提醒，以便团队把控项目整体进程，制定相应计划。</h6>
+                </li>
+                <li class="details-ul-item">
+                  <h1 class="txt-7003645 serial-number mb-24">04</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">关联文件一键归档</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">项目及相关任务文件自动归档储存，便于之后查阅使用。</h6>
+                </li>
+              </ul>
+            </div>
+            <ul class="details-ul-1280 item4-1280">
+              <li class="details-ul-item mb-40">
+                <img class="pic theme_light" src="../../img/light/product_pic3.svg" alt="多样式管理模版,关联文件一键归档,项目化办公，行动可视化,动态管理，实时监控">
+                <img class="pic theme_dark" src="../../img/dark/product_pic3.svg" alt="多样式管理模版,关联文件一键归档,项目化办公，行动可视化,动态管理，实时监控">
+              </li>
+              <li class="details-ul-item mb-36">
+                <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">多样式管理模版</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">模版满足多种团队协作场景，同时支持自定义模版，满足团队个性化场景管理需求，可直观的查看项目的进展情况，团队协作更方便。</h6>
+              </li>
+              <li class="details-ul-item mb-36">
+                <h1 class="txt-7003645 serial-number mb-24">02</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">项目化办公，行动可视化</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">使用看板、表格、列表等多种视图让整体项目一目了然；成员可对任务灵活筛选、排序和分组，让要事优先，并保持专注。</h6>
+              </li>
+              <li class="details-ul-item">
+                <h1 class="txt-7003645 serial-number mb-24">03</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">动态管理，实时监控</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">实时变更项目动态，具体任务变更情况记录提醒，以便团队把控项目整体进程，制定相应计划。</h6>
+              </li>
+              <li class="details-ul-item">
+                <h1 class="txt-7003645 serial-number mb-24">04</h1>
+                <h5 class="txt-5002025 mb-16 choose-con-item-h5">关联文件一键归档</h5>
+                <h6 class="txt-4001624 choose-con-item-h6">项目及相关任务文件自动归档储存，便于之后查阅使用。</h6>
+              </li>
+            </ul>
+          </li>
+          <li class="details">
+            <div class="details-con">
+              <img class="pic theme_light" src="../../img/light/product_pic4.svg" alt="全面洞悉任务数据">
+              <img class="pic theme_dark" src="../../img/dark/product_pic4.svg" alt="全面洞悉任务数据">
+              <ul class="details-ul">
+                <li class="details-ul-item" style="margin-bottom: 36px;">
+                  <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">全面洞悉任务数据</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">任务仪表盘内展示任务状态分类统计，便于个人掌握任务进度，合理安排和规划工作，提高工作效率。</h6>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li class="details">
+            <div class="details-con">
+              <img class="pic theme_light" src="../../img/light/product_pic5.svg" alt="精准掌握时间进度,多款日历视图">
+              <img class="pic theme_dark" src="../../img/dark/product_pic5.svg" alt="精准掌握时间进度,多款日历视图">
+              <ul class="details-ul">
+                <li class="details-ul-item mb-36">
+                  <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">精准掌握时间进度</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">展现各项工作的日程排期，让工作任务一目了然，更好的平衡工作和生活。</h6>
+                </li>
+                <li class="details-ul-item">
+                  <h1 class="txt-7003645 serial-number mb-24">02</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">多款日历视图</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">提供月/周/日等多款日历视图，便捷切换；支持按使用目的创建多个日历，自定义可见范围和颜色标识，让日程分类展示。</h6>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li class="details">
+            <div class="details-con">
+              <img class="pic theme_light" src="../../img/light/product_pic6.svg" alt="智能提示，让科技贴近生活">
+              <img class="pic theme_dark" src="../../img/dark/product_pic6.svg" alt="智能提示，让科技贴近生活">
+              <ul class="details-ul">
+                <li class="details-ul-item mb-36">
+                  <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">智能提示，让科技贴近生活</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">智能机器人可对员工日常签到打卡、任务提醒、推送最新咨询消息等进行服务，帮用户实现有效的工作进度管理及时间规划。</h6>
+                </li>
+                <li class="details-ul-item">
+                  <h1 class="txt-7003645 serial-number mb-24">02</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">人工智能，实现与AI实时交流</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">聪明的小海豚，基于人工智能技术的语言处理工具，能够通过学习和理解人类的语言来进行对话，实时交流，全面掌握各种文字信息，极大提高工作的便捷性。</h6>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li class="details">
+            <div class="details-con">
+              <img class="pic theme_light" src="../../img/light/product_pic7.svg" alt="全面提升层级化组织效能,多功能协助企业管理团队">
+              <img class="pic theme_dark" src="../../img/dark/product_pic7.svg" alt="全面提升层级化组织效能,多功能协助企业管理团队">
+              <ul class="details-ul">
+                <li class="details-ul-item mb-36">
+                  <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">全面提升层级化组织效能</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">管理人员可在后台设置公司人员架构，形成完整团队形态，便于对项目和相关任务进行分级协同管理。</h6>
+                </li>
+                <li class="details-ul-item">
+                  <h1 class="txt-7003645 serial-number mb-24">02</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">多功能协助企业管理团队</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">提供日常工作报告编辑汇总，项目及任务数据汇总统计，多种功能协助企业管理团队和项目，提高公司管理效率和管理水平。</h6>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li class="details">
+            <div class="details-con">
+              <img class="pic theme_light" src="../../img/light/product_pic8.svg" alt="掌控加密密钥，保障安全可靠">
+              <img class="pic theme_dark" src="../../img/dark/product_pic8.svg" alt="数据分类加密，实现安全同步">
+              <ul class="details-ul">
+                <li class="details-ul-item mb-36">
+                  <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">掌控加密密钥，保障安全可靠</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">使用端到端加密技术，确保用户的数据只能由他们自己解密。这意味着即使黑客入侵了DooTask的服务器，也无法访问用户的数据。</h6>
+                </li>
+                <li class="details-ul-item">
+                  <h1 class="txt-7003645 serial-number mb-24">02</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">数据分类加密，实现安全同步</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">使用分类加密技术，用户可以在多个设备间同步其任务和文件，不必担心数据被窃取或篡改。</h6>
+                </li>
+              </ul>
+            </div>
+          </li>
+          <li class="details">
+            <div class="details-con">
+              <img class="pic theme_light" src="../../img/light/product_pic9.svg" alt="多平台应用">
+              <img class="pic theme_dark" src="../../img/dark/product_pic9.svg" alt="多平台应用">
+              <ul class="details-ul">
+                <li class="details-ul-item">
+                  <h1 class="txt-7003645 serial-number mb-24">01</h1>
+                  <h5 class="txt-5002025 mb-16 choose-con-item-h5">多平台应用</h5>
+                  <h6 class="txt-4001624 choose-con-item-h6">多平台应用支持，随时随地追踪项目进度，同时让你在工作中每一个步骤都能拥有更高效愉悦的体验。</h6>
+                </li>
+              </ul>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </header>
+    <!-- 菜单抽屉 -->
+    <div class="drawer">
+      <div class="drawer-t mb-36">
+        <a href="../zh/index.html" class="logo">
+          <img id="logo" src="../../img/light/logo.svg" alt="DooTaskLogo">
+          <i class="dootask txt-7002027">DooTask</i>
+        </a>
+        <i class="close-drawer" onclick="closeDraweHandle()">✕</i>
+      </div>
+      <ul class="drawer-ul">
+        <li class="drawer-item-t mb-16">
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../zh/product.html">产品</a>
+          </div>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../zh/solutions.html">解决方案</a>
+          </div>
+          <div class="drawer-item" onclick="expandMenuHandle('support')">
+            <i class="txt-4001620 txt">
+              支持
+              <img src="../../img/vector.svg" class="nav-vector" alt="支持" id="drawer-down-support-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="support" style="display: none;">
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../zh/download.html">下载中心</a>
+            </li>
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../zh/help.html">帮助中心</a>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../zh/price.html">服务价格</a>
+          </div>
+          <div class="drawer-item mb-16" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../zh/about.html">关于我们</a>
+          </div>
+        </li>
+        <li class="drawer-item-c">
+          <div class="drawer-item" onclick="expandMenuHandle('theme')">
+            <i class="txt-4001620 txt">
+              主题
+              <img src="../../img/vector.svg" alt="主题" class="nav-vector" id="drawer-down-theme-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="theme" style="display: none;">
+            <li class="drawer-item"  onclick="setTheme('light')">
+              <i class="txt-4001620 txt">Light</i>
+            </li>
+            <li class="drawer-item"  onclick="setTheme('dark')">
+              <i class="txt-4001620 txt">Dark</i>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="expandMenuHandle('language')">
+            <i class="txt-4001620 txt">
+              语言
+              <img src="../../img/vector.svg" alt="语言" class="nav-vector" id="drawer-down-language-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="language" style="display: none;">
+            <li class="drawer-item"  onclick="changeLanguage('zh')">
+              <i class="txt-4001620 txt">简体中文</i>
+            </li>
+            <li class="drawer-item"  onclick="changeLanguage('en')">
+              <i class="txt-4001620 txt">English</i>
+            </li>
+          </ol>
+        </li>
+        <li class="drawer-item-b">
+          <li class="drawer-item">
+            <a class="txt-4001620 txt" href="https://demo.dootask.com">登录</a>
+          </li>
+        </li>
+      </ul>
+    </div>
+    <!-- 内容区域 -->
+    <main>
+      <!-- 主要区域划分 -->
+      <section>
+        <article class="manage">
+          <div class="manage-con">
+            <div class="manage-t">
+              <h1 class="txt-5004455 manage-h1 mb-16">组织管理</h1>
+              <h5 class="txt-4001830 manage-h5">统一管理内部和外部工作，实时查看统计数据，透明的目标，可见的进展，可控的绩效</h5>
+            </div>
+            <div class="manage-b mt-80">
+              <ul class="manage-ul product-animate-box" style="--delay: 0s;">
+                <li class="manage-ul-item mb-32">
+                  <img class="manage-icon mr-16" src="../../img/product_subtract.svg" alt="考勤统计实时查看">
+                  <div class="manage-tit">
+                    <h3 class="txt-5002025 manage-h3 mb-16">考勤统计实时查看</h3>
+                    <h6 class="txt-4001624 manage-h6">随时随地查看出勤数据，记录每个团队成员的工作时间，包括上班时间、下班时间、加班时间等，在企业内部实现目标管理以及绩效管理；</h6>
+                  </div>
+                </li>
+                <li class="manage-ul-item">
+                  <img class="manage-icon mr-16" src="../../img/product_subtract.svg" alt="极速打卡极致体验">
+                  <div class="manage-tit">
+                    <h3 class="txt-5002025 manage-h3 mb-16">极速打卡极致体验</h3>
+                    <h6 class="txt-4001624 manage-h6">系统识别并连接公司wifi自动打卡，告别排队以及打开手机操作，员工不再忘记打卡；</h6>
+                  </div>
+                </li>
+              </ul>
+              <div class="manage-ul-item product-animate-box" style="--delay: 0.1s;">
+                <img class="manage-icon mr-16" src="../../img/product_subtract.svg" alt="考勤数据可视化分析">
+                <div class="manage-tit">
+                  <h3 class="txt-5002025 manage-h3 mb-16">考勤数据可视化分析</h3>
+                  <h6 class="txt-4001624 manage-h6">统计每个团队成员的出勤率、迟到次数、早退次数、加班时长等相关数据，并生成可视化的统计图表。通过这些数据和图表，企业管理层可以深入了解团队成员的工作状况和工作效率，为后续的人事安排和绩效考核提供参考依据。</h6>
+                </div>
+              </div>
+              <div class="manage-svg product-animate-box" style="--delay: 0.2s;">
+                <img class="manage-bg theme_light" src="../../img/light/product_pic10.svg" alt="顺利打卡上班">
+                <img class="manage-bg theme_dark" src="../../img/dark/product_pic10.svg" alt="顺利打卡上班">
+                <div class="manage-tips">
+                  <img src="../../img/product_icon1.svg" alt="出勤签到">
+                  <i class="manage-tips-txt txt-4001822">顺利打卡上班</i>
+                </div>
+                <h2 class="manage-svg-h2 txt-6003652">出勤签到</h2>
+              </div>
+            </div>
+          </div>
+        </article> 
+        <article class="performance">
+          <div class="performance-con">
+            <h1 class="txt-5003645 performance-h1">数字化绩效</h1>
+            <img class="pic mt-80 theme_light"  src="../../img/light/zh_product_pic11.png" alt="数字化绩效">
+            <img class="pic mt-80 theme_dark"  src="../../img/dark/zh_product_pic11.png" alt="数字化绩效">
+            <ul class="performance-ul">
+              <li class="performance-ul-item product-animate-box2" style="--delay: 0s;">
+                <i class="icon mb-24"></i>
+                <h5 class="txt-5002025 performance-h5 mb-4">目标设定和跟踪，</h5>
+                <h5 class="txt-5002025 performance-h5 mb-16">团队更聚焦</h5>
+                <h6 class="performance-h6">帮助团队成员设定工作目标和KPI，并进行跟踪和管理，以便及时关注任务进展情况。</h6>
+              </li>
+              <li class="performance-ul-item product-animate-box2" style="--delay: 0.1s;">
+                <i class="icon mb-24"></i>
+                <h5 class="txt-5002025 performance-h5 mb-4">绩效评估和反馈，</h5>
+                <h5 class="txt-5002025 performance-h5 mb-16">管理更省心</h5>
+                <h6 class="txt-4001624 performance-h6">支持对团队成员的绩效进行评估和反馈，根据任务完成情况，自动生成绩效报告和统计图表，为后续的人事管理和绩效考核提供参考依据。</h6>
+              </li>
+              <li class="performance-ul-item product-animate-box2" style="--delay: 0.2s;">
+                <i class="icon mb-24"></i>
+                <h5 class="txt-5002025 performance-h5 mb-4">数据可视化分析，</h5>
+                <h5 class="txt-5002025 performance-h5 mb-16">结果更直观</h5>
+                <h6 class="txt-4001624 performance-h6">将任务完成情况、团队合作效率和个人绩效等数据转化为直观和易于理解的图表和数据分析，更好地了解团队成员的工作表现和绩效状况，并进行针对性的培训和指导。</h6>
+              </li>
+              <li class="performance-ul-item product-animate-box2" style="--delay: 0.3s;">
+                <i class="icon mb-24"></i>
+                <h5 class="txt-5002025 performance-h5 mb-4">自定义报告和分析，</h5>
+                <h5 class="txt-5002025 performance-h5 mb-16">服务更个性化</h5>
+                <h6 class="txt-4001624 performance-h6">用户可以根据自己的需求和业务流程，自定义绩效考核指标和报告内容，并进行分析，更好地符合团队成员的实际工作需求，以及企业的具体业务情况。</h6>
+              </li>
+            </ul>
+          </div>
+        </article>
+      </section>
+    </main>
+    <!-- 页脚区域 -->
+    <footer>
+      <div class="footer-con">
+        <div class="footer-layut">
+          <div class="footer-l">
+            <a href="../zh/index.html" class="logo">
+              <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+              <i class="dootask txt-7002027">DooTask</i>
+            </a>
+            <i class="txt txt-4001624">帮助团队有效地推进项目，使工作更轻松。</i>
+          </div>
+          <div class="footer-r">
+            <ul class="footer-r-ul">
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">链接</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/product.html">产品</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/solutions.html">解决方案</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/price.html">服务价格</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../zh/about.html">关于我们</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">支持</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/download.html">下载中心</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../zh/about.html">帮助中心</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">社区</li>
+                  <li class="footer-ol-item">
+                    <li class="footer-ol-item mb-16">
+                      <i class="txt-4001624 txt" onclick="openInNewTab('https://github.com/kuaifan/dootask')">Github</i>
+                    </li>
+                    <li class="footer-ol-item mb-16">
+                      <i class="txt-4001624 txt" onclick="openInNewTab('https://gitee.com/aipaw/dootask')">Gitee</i>
+                    </li>
+                    <li class="footer-ol-item" id="qq_group">
+                      <i class="txt-4001624 txt">QQ 群</i>
+                      <div class="group_code">
+                        <img class="code-svg" id="home_code" src="../../img/light/home_code.svg" alt="群号：546574618">
+                        <i class="group_num">群号：546574618</i>
+                        <i class="lower_triangle"></i>
+                      </div>
+                    </li>
+                  </li>
+                </ol>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="txt-4001624 filings">
+          Copyright © 2022-2023 Dootask. All rights reserved.
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+<script src="../../js/common.js"></script>
+<script>
+  /* 产品卡片切换函数 */ 
+  const tabs = document.querySelector('.prooduct-con');
+  const tabItems = tabs.querySelectorAll('.prooduct-list-item');
+  const cardItems = tabs.querySelectorAll('.details');
+  const icons = tabs.querySelectorAll('.icon');
+  const content = document.querySelector('.content');
+  const firstIcon = tabs.querySelector('.first-icon');
+  const firstTxt = tabs.querySelector('.first-txt');
+  let currentIndex = 0;
+  tabs.addEventListener('click', function (event) {
+    const clickedItem = event.target.closest('.prooduct-list-item');
+    if (clickedItem && !clickedItem.classList.contains('active')) {
+      // 切换激活状态
+      for (let [index,value] of tabItems.entries()) {
+        if(value === clickedItem){
+          icons[index].setAttribute('src', `../../img/product_icons${index}_h.svg`)
+          cardItems[index].classList.add('active');
+          if(index != 0 || index != 8){
+            cardItems[currentIndex].classList.remove('active');
+          }
+          currentIndex = index
+        }else{
+          icons[index].setAttribute('src', `../../img/product_icons${index}.svg`)
+        }
+        value.classList.toggle('active', value === clickedItem);
+      }
+    }
+  });
+  /* 768px下产品卡片切换函数 */ 
+  let productNameObj = {
+    0: '共同创造',
+    1: '即时通讯',
+    2: '项目管理',
+    3: '任务仪表板',
+    4: '任务日历',
+    5: '机器人助理',
+    6: '团队管理',
+    7: '端到端加密',
+    8: '多平台',
+  }
+  const prevHandle  = ()=>{
+    if(currentIndex != 0) {
+      currentIndex =  currentIndex - 1
+      cardItems[currentIndex + 1].classList.remove('active');
+      firstIcon.setAttribute('src', `../../img/product_icons${currentIndex + 1}_h.svg`)
+      firstTxt.innerHTML = productNameObj[currentIndex]
+      cardItems[currentIndex].classList.add('active');
+    }
+  }
+  const nextHandle  = ()=>{
+    if(currentIndex != 8){
+      currentIndex =  currentIndex + 1
+      cardItems[currentIndex - 1].classList.remove('active');
+      firstIcon.setAttribute('src', `../../img/product_icons${currentIndex - 1}_h.svg`)
+      firstTxt.innerHTML = productNameObj[currentIndex]
+      cardItems[currentIndex].classList.add('active');
+    }
+  }
+  /* 滑动到可视区域执行动画 */ 
+  const boxes = document.querySelectorAll('.product-animate-box');
+  const boxes2 = document.querySelectorAll('.product-animate-box2');
+  const animateBoxes = ()=> {
+    boxes.forEach(box => {
+      const boxTop = box.getBoundingClientRect().top;
+      const boxBottom = box.getBoundingClientRect().bottom;
+      if (boxTop < window.innerHeight && boxBottom > 0) {
+        box.classList.add('animate');
+      }
+    });
+    boxes2.forEach(box1 => {
+      const boxTop2 = box1.getBoundingClientRect().top;
+      const boxBottom2 = box1.getBoundingClientRect().bottom;
+      if (boxTop2 < window.innerHeight && boxBottom2 > 0) {
+        box1.classList.add('animate');
+      }
+    });
+  }
+  window.addEventListener('scroll', animateBoxes);
+  animateBoxes();
+</script>
+</html>

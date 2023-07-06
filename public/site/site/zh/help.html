@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>DooTask</title>
+  <meta name="google" value="notranslate">
+  <meta name="description" content="DooTask是一款轻量级的开源在线项目任务管理工具，提供各类文档协作工具、在线思维导图、在线流程图、项目管理、任务分发、即时IM，文件管理等工具。助力团队高效推进项目，让工作更简单。">
+  <meta name="keywords" content="中国 Dootask 开源在线项目 任务管理工具 任务管理 轻量级 海豚有海 团队协作">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" type="text/css" href="../../css/rem.css">
+  <link rel="stylesheet" href="../../css/help.css">
+</head>
+<body>
+  <div id="layout">
+    <!-- 页头区域 -->
+    <header>
+      <div class="nav">
+        <div class="nav-layout">
+          <a href="../zh/index.html" class="logo">
+            <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+            <i class="dootask txt-7002027">DooTask</i>
+          </a>
+          <ul class="nav-ul">
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-product" href="../zh/product.html">产品</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-solutions" href="../zh/solutions.html">解决方案</a>
+            </li>
+            <li class="nav-ul-item">
+              <i class="txt-4001620 txt nav-support" id="support-txt" onclick="showMenuPopHandle()">
+                支持
+                <img src="../../img/vector.svg" alt="支持" class="nav-vector" id="drop-down-svg">
+              </i>
+              <ol class="submenu-pop" id="submenu-pop">
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../zh/download.html">下载中心</a>
+                </li>
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../zh/help.html">帮助中心</a>
+                </li>
+              </ol>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-price" href="../zh/price.html">服务价格</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-about" href="../zh/about.html">关于我们</a>
+            </li>
+          </ul>
+          <div class="nav-r">
+            <div class="lang" id="lang-img">
+              <img src="../../img/lang-select.svg" alt="语言切换" onclick="shouLangPopHandle()">
+              <ul class="lang-pop" id="lang-pop">
+                <li class="lang-pop-item" onclick="changeLanguage('zh')">
+                  <i class="lang-txt">简体中文</i>
+                </li>
+                <li class="lang-pop-item" onclick="changeLanguage('en')">
+                  <i class="lang-txt" >English</i>
+                </li>
+              </ul>
+            </div>
+            <i class="nav-r-icon theme_dark" onclick="setTheme('light')">
+              <img src="../../img/light.svg" alt="明亮主题">
+            </i>
+            <i class="nav-r-icon theme_light" onclick="setTheme('dark')">
+              <img src="../../img/drak.svg" alt="暗黑主题">
+            </i>
+            <a href="https://github.com/kuaifan/dootask" target="_blank">
+              <i class="nav-r-icon">
+                <img src="../../img/github.svg" alt="github">
+              </i>
+            </a>
+            <i class="line-1"></i>
+            <span class="get-started">
+              <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
+                <button class="btn btn-primary" >开始使用</button>
+              </a>
+            </span>
+          </div>
+          <div class="menuBtn">
+            <img id="menuBtn" src="../../img/menu.svg" alt="菜单">
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- help抽屉 -->
+    <div class="help-drawer">
+      <div class="drawer-t mb-36">
+        <a href="../zh/index.html" class="logo">
+          <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+          <i class="dootask txt-7002027">DooTask</i>
+        </a>
+        <i class="close-drawer" onclick="closeHelpDraweHandle()">✕</i>
+      </div>
+      <ul class="help-l-ul">
+        <li class="help-l-ul-item mb-24">
+          <h5 class="txt-4001620 help-h5 mb-16" style="font-weight: 500;">基本</h5>
+          <ol class="help-l-ol">
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-1">了解DooTask</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-2">注册和登录</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-3">通知公告</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-4">帐户设置</a>
+            </li>
+          </ol>
+        </li>
+        <li class="help-l-ul-item mb-24">
+          <h5 class="txt-4001620 help-h5 mb-16" style="font-weight: 500;">项目</h5>
+          <ol class="help-l-ol">
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-1">了解项目</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-2">创建项目</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-3">任务列表</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-4">项目进展</a>
+            </li>
+          </ol>
+        </li>
+        <li class="help-l-ul-item mb-24">
+          <h5 class="txt-4001620 help-h5 mb-16" style="font-weight: 500;">任务</h5>
+          <ol class="help-l-ol">
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-1">任务的使用</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-2">任务优先级</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-3">评论与新闻</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-4">次要任务</a>
+            </li>
+          </ol>
+        </li>
+        <li class="help-l-ul-item mb-24">
+          <h5 class="txt-4001620 help-h5 mb-16" style="font-weight: 500;">团队</h5>
+          <ol class="help-l-ol">
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-1">团队和成员</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-2">成员分组</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-3">团队管理</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-4">团队设置</a>
+            </li>
+          </ol>
+        </li>
+        <li class="help-l-ul-item mb-24">
+          <h5 class="txt-4001620 help-h5 mb-16" style="font-weight: 500;">文件</h5>
+          <ol class="help-l-ol">
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-1">文件类型</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-2">共享的文件</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-3">访问权限</a>
+            </li>
+          </ol>
+        </li>
+      </ul>
+    </div>
+    <!-- 菜单抽屉 -->
+    <div class="drawer">
+      <div class="drawer-t mb-36">
+        <a href="../zh/index.html" class="logo">
+          <img id="logo" src="../../img/light/logo.svg" alt="DooTaskLogo">
+          <i class="dootask txt-7002027">DooTask</i>
+        </a>
+        <i class="close-drawer" onclick="closeDraweHandle()">✕</i>
+      </div>
+      <ul class="drawer-ul">
+        <li class="drawer-item-t mb-16">
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../zh/product.html">产品</a>
+          </div>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../zh/solutions.html">解决方案</a>
+          </div>
+          <div class="drawer-item" onclick="expandMenuHandle('support')">
+            <i class="txt-4001620 txt">
+              支持
+              <img src="../../img/vector.svg" class="nav-vector" alt="支持" id="drawer-down-support-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="support" style="display: none;">
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../zh/download.html">下载中心</a>
+            </li>
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../zh/help.html">帮助中心</a>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../zh/price.html">服务价格</a>
+          </div>
+          <div class="drawer-item mb-16" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../zh/about.html">关于我们</a>
+          </div>
+        </li>
+        <li class="drawer-item-c">
+          <div class="drawer-item" onclick="expandMenuHandle('theme')">
+            <i class="txt-4001620 txt">
+              主题
+              <img src="../../img/vector.svg" alt="主题" class="nav-vector" id="drawer-down-theme-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="theme" style="display: none;">
+            <li class="drawer-item"  onclick="setTheme('light')">
+              <i class="txt-4001620 txt">Light</i>
+            </li>
+            <li class="drawer-item"  onclick="setTheme('dark')">
+              <i class="txt-4001620 txt">Dark</i>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="expandMenuHandle('language')">
+            <i class="txt-4001620 txt">
+              语言
+              <img src="../../img/vector.svg" alt="语言" class="nav-vector" id="drawer-down-language-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="language" style="display: none;">
+            <li class="drawer-item"  onclick="changeLanguage('zh')">
+              <i class="txt-4001620 txt">简体中文</i>
+            </li>
+            <li class="drawer-item"  onclick="changeLanguage('en')">
+              <i class="txt-4001620 txt">English</i>
+            </li>
+          </ol>
+        </li>
+        <li class="drawer-item-b">
+          <li class="drawer-item">
+            <a class="txt-4001620 txt" href="https://demo.dootask.com">登录</a>
+          </li>
+        </li>
+      </ul>
+    </div>
+    <!-- 内容区域 -->
+    <main>
+      <!-- 主要区域划分 -->
+      <section>
+        <article class="help">
+          <div class="help-con">
+            <div class="help-t-768" id="help-menu-btn">
+              <img class="help-t-prev" src="../../img/prev.svg" alt="帮助中心">
+              <i class="help-t-tit">帮助中心</i>
+            </div>
+            <div class="help-layout">
+              <div class="help-l">
+                <form role="search" class="search-form">
+                  <i class="search-icon"></i>
+                  <input class="search-input mb-24" placeholder="Search" type="text">
+                </form>
+                <ul class="help-l-ul help-l-1920">
+                  <li class="help-l-ul-item mb-24">
+                    <h5 class="txt-4001620 help-h5 mb-16" style="font-weight: 500;">基本</h5>
+                    <ol class="help-l-ol">
+                      <li class="l-ul-item active">
+                        <a class="txt-4001620 txt" href="#section-1">了解DooTask</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-2">注册和登录</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-3">通知公告</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-4">帐户设置</a>
+                      </li>
+                    </ol>
+                  </li>
+                  <li class="help-l-ul-item mb-24">
+                    <h5 class="txt-4001620 help-h5 mb-16" style="font-weight: 500;">项目</h5>
+                    <ol class="help-l-ol">
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-1">了解项目</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-2">创建项目</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-3">任务列表</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-4">项目进展</a>
+                      </li>
+                    </ol>
+                  </li>
+                  <li class="help-l-ul-item mb-24">
+                    <h5 class="txt-4001620 help-h5 mb-16" style="font-weight: 500;">任务</h5>
+                    <ol class="help-l-ol">
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-1">任务的使用</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-2">任务优先级</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-3">评论与新闻</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-4">次要任务</a>
+                      </li>
+                    </ol>
+                  </li>
+                  <li class="help-l-ul-item mb-24">
+                    <h5 class="txt-4001620 help-h5 mb-16" style="font-weight: 500;">团队</h5>
+                    <ol class="help-l-ol">
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-1">团队和成员</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-2">成员分组</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-3">团队管理</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-4">团队设置</a>
+                      </li>
+                    </ol>
+                  </li>
+                  <li class="help-l-ul-item mb-24">
+                    <h5 class="txt-4001620 help-h5 mb-16" style="font-weight: 500;">文件</h5>
+                    <ol class="help-l-ol">
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-1">文件类型</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-2">共享的文件</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-3">访问权限</a>
+                      </li>
+                    </ol>
+                  </li>
+                </ul>
+              </div>
+              <div class="help-r">
+                <div class="help-pic1 mb-36">
+                  <img id="help-pic1-svg" class="theme_light" src="../../img/light/help_pic11.svg" alt="刚开始使用DooTask？没问题，这本入门书是为你准备的!">
+                  <img id="help-pic1-svg" class="theme_dark" src="../../img/dark/help_pic11.svg" alt="刚开始使用DooTask？没问题，这本入门书是为你准备的!">
+                  <div class="help-pic1-tips">
+                    <h2 class="help-pic1-tips-h2 txt-6003652">用户手册</h2>
+                    <h6 class="help-pic1-tips-h6 txt-4001624">刚开始使用DooTask？没问题，这本入门书是为你准备的!</h6>
+                  </div>
+                </div>
+                <ul class="help-r-ul">
+                  <li class="r-ul-item mb-36">
+                    <h4 class="txt-5002430 help-h4 mb-24">什么是DooTask？</h4>
+                    <h6 class="txt-4001624 help-h6">DooTask是一个轻量级的开源在线项目任务管理工具，提供各种文档协作工具、在线思维导图、在线流程图、项目管理、任务分配、即时IM、文件管理和其他工具。它可以帮助团队有效地推进项目，使工作更轻松。</h6>
+                  </li>
+                  <li class="r-ul-item mb-36">
+                    <h4 class="txt-5002430 help-h4 mb-24">什么是任务管理？</h4>
+                    <h6 class="txt-4001624 help-h6 mb-16">任务管理是对你的项目任务从开始到结束的各个阶段进行监控的过程。这涉及到为你的任务积极做出决定，以适应可能实时发生的变化，你的最终目标是成功完成你的任务。项目任务管理也意味着有效地管理任务的各个方面，如预算、时间、范围、资源、复现等。</h6>
+                    <img class="r-ul-item-pic1" id="help_pic2" src="../../img/light/help_pic2.png" alt="什么是任务管理？">
+                  </li>
+                  <li class="r-ul-item mb-36">
+                    <h4 class="txt-5002430 help-h4 mb-24">如何管理任务？</h4>
+                    <h6 class="txt-4001624 help-h6 mb-12">以下是任务管理中涉及的一些关键步骤：</h6>
+                    <h6 class="txt-4001624 help-h6 mb-12"><i class="help-h6-bold">确定优先次序： </i>无论你用什么工具来管理你的任务，无论是简单的待办事项清单还是全面的项目任务管理工具，任务管理最重要的方面是确定优先次序。这有助于有效地完成所有涉及的任务，同时保持计划的约束。</h6>
+                    <h6 class="txt-4001624 help-h6 mb-12"><i class="help-h6-bold">里程碑跟踪：</i>这项研究的结果还表明，建立明确的目标对于成功完成一个项目至关重要。虽然对于任务管理来说，最终的目标不是必须的，但定义里程碑有助于激励团队成功执行任务。</h6>
+                    <h6 class="txt-4001624 help-h6 mb-16"><i class="help-h6-bold">日程管理：</i>确保你的任务能按时完成是对整个项目健康有影响的事情。通过估计所涉及的努力来分配正确的时间框架是这里的关键。</h6>
+                    <img class="r-ul-item-pic1" id="help_pic3" src="../../img/light/help_pic3.png" alt="如何管理任务？">
+                  </li>
+                  <li class="r-ul-item mb-36">
+                    <h4 class="txt-5002430 help-h4 mb-24">如何选择正确的任务管理软件？</h4>
+                    <h6 class="txt-4001624 help-h6">根据你的目的、价格范围、现有的工作环境和首选平台，有几种项目和任务管理工具可供选择。从可能甚至不需要互联网连接的简单核对表到成熟的项目任务管理软件，功能多种多样。也有适合特定行业的软件选择，如建筑、IT或教育，或特定功能，如crm任务管理。</h6>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+    <!-- 页脚区域 -->
+    <footer>
+      <div class="footer-con">
+        <div class="footer-layut">
+          <div class="footer-l">
+            <a href="../zh/index.html" class="logo">
+              <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+              <i class="dootask txt-7002027">DooTask</i>
+            </a>
+            <i class="txt txt-4001624">帮助团队有效地推进项目，使工作更轻松。</i>
+          </div>
+          <div class="footer-r">
+            <ul class="footer-r-ul">
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">链接</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/product.html">产品</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/solutions.html">解决方案</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/price.html">服务价格</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../zh/about.html">关于我们</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">支持</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/download.html">下载中心</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../zh/about.html">帮助中心</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">社区</li>
+                  <li class="footer-ol-item">
+                  <li class="footer-ol-item mb-16">
+                    <i class="txt-4001624 txt" onclick="openInNewTab('https://github.com/kuaifan/dootask')">Github</i>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <i class="txt-4001624 txt" onclick="openInNewTab('https://gitee.com/aipaw/dootask')">Gitee</i>
+                  </li>
+                  <li class="footer-ol-item" id="qq_group">
+                    <i class="txt-4001624 txt">QQ 群</i>
+                    <div class="group_code">
+                      <img class="code-svg" id="home_code" src="../../img/light/home_code.svg" alt="群号：546574618">
+                      <i class="group_num">群号：546574618</i>
+                      <i class="lower_triangle"></i>
+                    </div>
+                  </li>
+                  </li>
+                </ol>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="txt-4001624 filings">
+          Copyright © 2022-2023 Dootask. All rights reserved.
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+<script src="../../js/common.js"></script>
+<script>
+const tabs = document.querySelector('.help-l-1920');
+const tabItems = tabs.querySelectorAll('.l-ul-item');
+tabs.addEventListener('click', function (event) {
+  const clickedItem = event.target.closest('.l-ul-item');
+  if (clickedItem && !clickedItem.classList.contains('active')) {
+    // 切换激活状态
+    for (let [index,value] of tabItems.entries()) {
+      value.classList.toggle('active', value === clickedItem);
+    }
+  }
+});
+/* 当屏幕宽度低于768px时显示logs的抽屉的相关操作逻辑 */
+const helpMenuBtn = document.getElementById('help-menu-btn');
+const helpDrawer = document.querySelector('.help-drawer');
+helpMenuBtn.addEventListener('click', () => {
+  helpDrawer.classList.add('open-help-drawer');
+});
+const closeHelpDraweHandle = ()=>{
+  helpDrawer.classList.remove('open-help-drawer');
+}
+</script>
+</html>

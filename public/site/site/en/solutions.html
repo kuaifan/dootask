@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DooTask</title>
+  <meta name="google" value="notranslate">
+  <meta name="description" content="Lightweight open source online project task management tool to help teams efficiently advance their projects and make work easier."">
+  <meta name="keywords" content="China Dootask Task management Lightweight Hitosea Teamwork">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" type="text/css" href="../../css/rem.css">
+  <link rel="stylesheet" href="../../css/solution.css">
+</head>
+<body>
+  <div id="layout">
+    <!-- 页头区域 -->
+    <header class="head solutions">
+      <div class="nav">
+        <div class="nav-layout">
+          <a href="../en/index.html" class="logo">
+            <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+            <i class="dootask txt-7002027">DooTask</i>
+          </a>
+          <ul class="nav-ul">
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-product" href="../en/product.html">Product</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-solutions" href="../en/solutions.html">Solutions</a>
+            </li>
+            <li class="nav-ul-item">
+              <i class="txt-4001620 txt nav-support" id="support-txt" onclick="showMenuPopHandle()">
+                Support
+                <img src="../../img/vector.svg" alt="Support" class="nav-vector" id="drop-down-svg">
+              </i>
+              <ol class="submenu-pop" id="submenu-pop">
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../en/download.html">Download Center</a>
+                </li>
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../en/help.html">Help Center</a>
+                </li>
+              </ol>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-price" href="../en/price.html">Pricing</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-about" href="../en/about.html">About Us</a>
+            </li>
+          </ul>
+          <div class="nav-r">
+            <div class="lang" id="lang-img">
+              <img src="../../img/lang-select.svg" alt="Language switch" onclick="shouLangPopHandle()">
+              <ul class="lang-pop" id="lang-pop">
+                <li class="lang-pop-item" onclick="changeLanguage('zh')">
+                  <i class="lang-txt">简体中文</i>
+                </li>
+                <li class="lang-pop-item" onclick="changeLanguage('en')">
+                  <i class="lang-txt" >English</i>
+                </li>
+              </ul>
+            </div>
+            <i class="nav-r-icon theme_dark" onclick="setTheme('light')">
+              <img src="../../img/light.svg" alt="Light theme">
+            </i>
+            <i class="nav-r-icon theme_light" onclick="setTheme('dark')">
+              <img src="../../img/drak.svg" alt="Dark theme">
+            </i>
+            <a href="https://github.com/kuaifan/dootask" target="_blank">
+              <i class="nav-r-icon">
+                <img src="../../img/github.svg" alt="github">
+              </i>
+            </a>
+            <i class="line-1"></i>
+            <span class="get-started">
+              <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
+                <button class="btn btn-primary" >Get Started</button>
+              </a>
+            </span>
+          </div>
+          <div class="menuBtn">
+            <img id="menuBtn" src="../../img/menu.svg" alt="Menu">
+          </div>
+        </div>
+      </div>
+      <div class="topics">
+        <div class="topics-con">
+          <div class="topics-layout">
+            <div class="topics-tit mb-32 topics-tit-en">
+              <span class="txt-6007290 topics-h1">Helping you collaborate better</span>
+            </div>
+            <h4 class="txt-4001830 topics-h4 mb-32 topics-h4-en">Dootask offers a range of solutions based on different scenarios so that you can quickly start collaborating with your team or department</h4>
+            <div class="flex-cc topics-btn">
+              <span class="mr-24 get-started">
+                <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
+                  <button class="btn btn-primary mr-20">Get Started</button>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- 菜单抽屉 -->
+    <div class="drawer">
+      <div class="drawer-t mb-36">
+        <a href="../en/index.html" class="logo">
+          <img id="logo" src="../../img/light/logo.svg" alt="DooTaskLogo">
+          <i class="dootask txt-7002027">DooTask</i>
+        </a>
+        <i class="close-drawer" onclick="closeDraweHandle()">✕</i>
+      </div>
+      <ul class="drawer-ul">
+        <li class="drawer-item-t mb-16">
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/product.html">Product</a>
+          </div>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/solutions.html">Solutions</a>
+          </div>
+          <div class="drawer-item" onclick="expandMenuHandle('support')">
+            <i class="txt-4001620 txt">
+              Support
+              <img src="../../img/vector.svg" class="nav-vector" alt="Support" id="drawer-down-support-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="support" style="display: none;">
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../en/download.html">Download Center</a>
+            </li>
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../en/help.html">Help Center</a>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/price.html">Pricing</a>
+          </div>
+          <div class="drawer-item mb-16" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/about.html">About Us</a>
+          </div>
+        </li>
+        <li class="drawer-item-c">
+          <div class="drawer-item" onclick="expandMenuHandle('theme')">
+            <i class="txt-4001620 txt">
+              Theme
+              <img src="../../img/vector.svg" alt="Theme" class="nav-vector" id="drawer-down-theme-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="theme" style="display: none;">
+            <li class="drawer-item"  onclick="setTheme('light')">
+              <i class="txt-4001620 txt">Light</i>
+            </li>
+            <li class="drawer-item"  onclick="setTheme('dark')">
+              <i class="txt-4001620 txt">Dark</i>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="expandMenuHandle('language')">
+            <i class="txt-4001620 txt">
+              Language
+              <img src="../../img/vector.svg" alt="Language" class="nav-vector" id="drawer-down-language-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="language" style="display: none;">
+            <li class="drawer-item"  onclick="changeLanguage('zh')">
+              <i class="txt-4001620 txt">简体中文</i>
+            </li>
+            <li class="drawer-item"  onclick="changeLanguage('en')">
+              <i class="txt-4001620 txt">English</i>
+            </li>
+          </ol>
+        </li>
+        <li class="drawer-item-b">
+          <li class="drawer-item">
+            <a class="txt-4001620 txt" href="https://demo.dootask.com">Log In</a>
+          </li>
+        </li>
+      </ul>
+    </div>
+    <!-- 内容区域 -->
+    <main>
+      <!-- 主要区域划分 -->
+      <section>
+        <article class="app">
+          <div class="bg-style">
+            <div class="app-con">
+              <div class="app-tit">
+                <h1 class="txt-5004455 app-h1 mb-16">Scenario Application</h1>
+                <div style="text-align: center;">
+                  <h6 class="txt-4001830 app-h5" style="width: 600px;">The product supports a variety of application scenarios to help team collaboration</h6>
+                </div>
+              </div>
+              <ul class="app-ul mt-80">
+                <li class="app-ul-item mb-48">
+                  <div class="app-bg-box">
+                    <img class="app-bg" id="solution_pic1" src="../../img/light/zh_solution_pic1.png" alt="Project Management">
+                  </div>
+                  <h4 class="txt-5002025 app-h4 mb-16">Project Management</h4>
+                  <h6 class="txt-4001624 app-h6">Support a variety of project management models, such as Agile Development, Crystal Planning, Kanban, etc., for all sizes and types of project management. Users can use the project management tools in DooTask, such as task assignment, progress tracking, resource allocation, etc. to manage the whole project.</h6>
+                </li>
+                <li class="app-ul-item mb-48">
+                  <div class="app-bg-box">
+                    <img class="app-bg" id="solution_pic2" src="../../img/light/zh_solution_pic2.png" alt="Team Collaboration">
+                  </div>
+                  <h4 class="txt-5002025 app-h4 mb-16">Team Collaboration</h4>
+                  <h6 class="txt-4001624 app-h6">DooTask's rich and useful tools can facilitate communication and collaboration among team members and improve work efficiency. For example, team members can use the document collaboration tools, online mind maps, flowcharts and other tools in DooTask to collaborate.</h6>
+                </li>
+                <li class="app-ul-item">
+                  <div class="app-bg-box">
+                    <img class="app-bg" id="solution_pic3" src="../../img/light/zh_solution_pic3.png" alt="Data Security Protection">
+                  </div>
+                  <h4 class="txt-5002025 app-h4 mb-16">Data Security Protection</h4>
+                  <h6 class="txt-4001624 app-h6">DooTask uses asymmetric encryption technology in its messaging function to ensure maximum protection of users' information. In addition, it also provides a powerful permission management system that enables flexible setting of permissions and scope of operations for different users in project management according to their roles and responsibilities.</h6>
+                </li>
+                <li class="app-ul-item">
+                  <div class="app-bg-box">
+                    <img class="app-bg" id="solution_pic4" src="../../img/light/solution_pic4.png" alt="Free Customization">
+                  </div>
+                  <h4 class="txt-5002025 app-h4 mb-16">Free Customization</h4>
+                  <h6 class="txt-4001624 app-h6">DooTask is a completely open source tool that allows users to freely modify and customize it, avoiding the extra costs associated with commercial software subscription fees.</h6>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </article>
+        <article class="team solutions">
+          <div class="team-con">
+            <h1 class="txt-5004455 team-tit">Team Operations</h1>
+            <ul class="team-ul mt-80">
+              <li class="team-ul-item team-ul-item-en solutions-animate-box" style="--delay: 0s;">
+                <img class="team-icon mb-24" src="../../img/solution_icon1.svg" alt="Corporate Management">
+                <h4 class="txt-5002025 app-h4 mb-16">Corporate Management</h4>
+                <h6 class="txt-4001624 app-h6">Helping enterprises to their corporate goals, connecting goals, key results and individual work, and jointly promoting strategy implementation and goal achievement;Through co-creation, share the progress, completion status, and schedule of all corporate work, promote information flow, allow all staff to access key information of projects, follow up in time, and promote cross-departmental collaboration.Translated with DeepL</h6>
+              </li>
+              <li class="team-ul-item team-ul-item-en solutions-animate-box" style="--delay: 0.1s;">
+                <img class="team-icon mb-24" src="../../img/solution_icon2.svg" alt="Product Management">
+                <h4 class="txt-5002025 app-h4 mb-16">Product Management</h4>
+                <h6 class="txt-4001624 app-h6">Customize the workflow of the product development process, assign tasks to different roles at different stages, and promote the product development process;
+                  Uniform archiving of each completed project and task history data, which is convenient to recall or discuss at any time, forming a closed loop of knowledge precipitation to reuse.</h6>
+              </li>
+              <li class="team-ul-item team-ul-item-en solutions-animate-box" style="--delay: 0.2s;">
+                <img class="team-icon mb-24" src="../../img/solution_icon3.svg" alt="Corporate Management">
+                <h4 class="txt-5002025 app-h4 mb-16">Corporate Management</h4>
+                <h6 class="txt-4001624 app-h6">Get multi-dimensional corporate data through data visualization statistical reports to get a comprehensive understanding of employee performance and make performance evaluation more objective and fair; use announcements to release notices, arrange company activities, convey corporate decisions, facilitate the shaping of corporate culture, and make employees more engaged.</h6>
+              </li>
+            </ul>
+          </div>
+        </article>
+      </section>
+    </main>
+    <!-- 页脚区域 -->
+    <footer>
+      <div class="footer-con">
+        <div class="footer-layut">
+          <div class="footer-l">
+            <a href="../en/index.html" class="logo">
+              <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+              <i class="dootask txt-7002027">DooTask</i>
+            </a>
+            <i class="txt txt-4001624">Helps teams move projects forward efficiently and makes work easier.</i>
+          </div>
+          <div class="footer-r">
+            <ul class="footer-r-ul">
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Links</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/product.html">Product</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/solutions.html">Solutions</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/price.html">Pricing</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../en/solutions.html">About Us</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Support</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/download.html">Download Center</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../en/help.html">Help Center</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Community</li>
+                  <li class="footer-ol-item">
+                    <li class="footer-ol-item mb-16">
+                      <i class="txt-4001624 txt" onclick="openInNewTab('https://github.com/kuaifan/dootask')">Github</i>
+                    </li>
+                    <li class="footer-ol-item mb-16">
+                      <i class="txt-4001624 txt" onclick="openInNewTab('https://gitee.com/aipaw/dootask')">Gitee</i>
+                    </li>
+                    <li class="footer-ol-item" id="qq_group">
+                      <i class="txt-4001624 txt">QQ group</i>
+                      <div class="group_code">
+                        <img class="code-svg" id="home_code" src="../../img/light/home_code.svg" alt="Group：546574618">
+                        <i class="group_num">Group：546574618</i>
+                        <i class="lower_triangle"></i>
+                      </div>
+                    </li>
+                  </li>
+                </ol>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="txt-4001624 filings">
+          Copyright © 2022-2023 Dootask. All rights reserved.
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+<script src="../../js/common.js"></script>
+<script>
+  /* 滑动到可视区域执行动画 */ 
+  const boxes = document.querySelectorAll('.solutions-animate-box');
+  let timerId = null
+  const animateBoxes = ()=> {
+    boxes.forEach(box => {
+      const boxTop = box.getBoundingClientRect().top;
+      const boxBottom = box.getBoundingClientRect().bottom;
+      if (boxTop < window.innerHeight && boxBottom > 0) {
+        box.classList.add('animate');
+        timerId = setTimeout(()=>{
+          box.classList.remove('solutions-animate-box');
+          timerId = null
+        },1200)
+      }
+    });
+  }
+  window.addEventListener('scroll', animateBoxes);
+  animateBoxes();
+</script>
+</html>

@@ -1,0 +1,132 @@
+/* 头部样式 */
+.nav{
+  background-color: var(--pop-bg-color);
+  box-shadow: 0px 4px 9px var(--box-shadow-color);
+}
+.logs{
+  position: relative;
+  margin: 136px 0 96px 0;
+}
+.logs-con{
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+.logs-layout{
+  display: flex;
+  align-items: flex-start;
+  height: 929px;
+}
+.logs-l{
+  padding: 24px;
+  background-color: var(--bg-fa-color);
+  border-radius: 8px;
+  margin-right: 32px;
+  height: 95%;
+}
+.logs-h5{
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  color: var(--text-color);
+}
+.logs-l-ul{
+  width: 240px;
+}
+.l-ul-item{
+  padding: 9px 16px;
+  cursor: pointer;
+  height: 22px;
+}
+.l-ul-item.active .txt{
+  color: var(--txt-theme-color);
+}
+.l-ul-item.active{
+  background-color: var(--bg-hover-color);
+  border-radius: 8px;
+}
+.l-ul-item:hover{
+  background-color: var(--bg-hover-color);
+  border-radius: 8px;
+}
+.txt{
+  /* display: inline-block; */
+  color: var(--txt-gray-color);
+}
+.logs-r{
+  border-left: 1px solid var(--border-color);
+  padding-left: 32px;
+  height: 929px;
+  overflow-y:scroll;
+}
+.logs-r::-webkit-scrollbar{
+  width: 0 !important 
+}
+.logs-h1{
+  color: var(--text-color);
+}
+.logs-h4{
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 30px;
+  color: var(--text-color);
+}
+.r-ol-item{
+  color: var(--txt-gray-color);
+  position: relative;
+}
+.r-ul-item:last-child{
+  margin-bottom: 0 !important;
+}
+.dots{
+  background: url(../img/dots.svg) no-repeat;
+  width: 4px;
+  height: 4px;
+  display: inline-block;
+  position: absolute;
+  left: 10px;
+  top: 10px;
+}
+.logs-t-768{
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--bg-fa-color);
+  border-radius: 8px;
+  margin-top: 16px;
+  cursor: pointer;
+  margin-bottom: 40px;
+}
+.logs-t-prev{
+  display: inline-block;
+  width: 14px;
+  margin-right: 8px;
+}
+.logs-t-tit{
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 20px;
+  color: var(--txt-theme-color);
+}
+.logs-drawer{
+  position: fixed;
+  top: 0;
+  left: -90vw;
+  width: 75vw;
+  height: 100%;
+  padding: 22px 24px;
+  background-color: var(--pop-bg-color);
+  border: 1px solid var(--box-shadow-color);
+  box-shadow: var(--pop-box-shadow);
+  transition: all 0.5s ease-in-out;
+  z-index: 999;
+}
+.open-logs-drawer{
+  left: 0;
+}
+.logs-t-768{
+  display: none;
+}
+.filings{
+  border-top: 1px solid var(--border-color);
+}

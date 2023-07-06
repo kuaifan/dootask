@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DooTask</title>
+  <meta name="google" value="notranslate">
+  <meta name="description" content="Lightweight open source online project task management tool to help teams efficiently advance their projects and make work easier."">
+  <meta name="keywords" content="China Dootask Task management Lightweight Hitosea Teamwork">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" type="text/css" href="../../css/rem.css">
+  <link rel="stylesheet" href="../../css/help.css">
+</head>
+<body>
+  <div id="layout">
+    <!-- 页头区域 -->
+    <header>
+      <div class="nav">
+        <div class="nav-layout">
+          <a href="../en/index.html" class="logo">
+            <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+            <i class="dootask txt-7002027">DooTask</i>
+          </a>
+          <ul class="nav-ul">
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-product" href="../en/product.html">Product</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-solutions" href="../en/solutions.html">Solutions</a>
+            </li>
+            <li class="nav-ul-item">
+              <i class="txt-4001620 txt nav-support" id="support-txt" onclick="showMenuPopHandle()">
+                Support
+                <img src="../../img/vector.svg" alt="Support" class="nav-vector" id="drop-down-svg">
+              </i>
+              <ol class="submenu-pop" id="submenu-pop">
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../en/download.html">Download Center</a>
+                </li>
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../en/help.html">Help Center</a>
+                </li>
+              </ol>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-price" href="../en/price.html">Pricing</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-about" href="../en/about.html">About Us</a>
+            </li>
+          </ul>
+          <div class="nav-r">
+            <div class="lang" id="lang-img">
+              <img src="../../img/lang-select.svg" alt="Language switch" onclick="shouLangPopHandle()">
+              <ul class="lang-pop" id="lang-pop">
+                <li class="lang-pop-item" onclick="changeLanguage('zh')">
+                  <i class="lang-txt">简体中文</i>
+                </li>
+                <li class="lang-pop-item" onclick="changeLanguage('en')">
+                  <i class="lang-txt" >English</i>
+                </li>
+              </ul>
+            </div>
+            <i class="nav-r-icon theme_dark" onclick="setTheme('light')">
+              <img src="../../img/light.svg" alt="Brighter themes">
+            </i>
+            <i class="nav-r-icon theme_light" onclick="setTheme('dark')">
+              <img src="../../img/drak.svg" alt="Dark theme">
+            </i>
+            <a href="https://github.com/kuaifan/dootask" target="_blank">
+              <i class="nav-r-icon">
+                <img src="../../img/github.svg" alt="github">
+              </i>
+            </a>
+            <i class="line-1"></i>
+            <span class="get-started">
+              <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
+                <button class="btn btn-primary" >Get Started</button>
+              </a>
+            </span>
+          </div>
+          <div class="menuBtn">
+            <img id="menuBtn" src="../../img/menu.svg" alt="Menu">
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- help抽屉 -->
+    <div class="help-drawer">
+      <div class="drawer-t mb-36">
+        <a href="../en/index.html" class="logo">
+          <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+          <i class="dootask txt-7002027">DooTask</i>
+        </a>
+        <i class="close-drawer" onclick="closeHelpDraweHandle()">✕</i>
+      </div>
+      <ul class="help-l-ul">
+        <li class="help-l-ul-item mb-24">
+          <h5 class="txt-4001620 help-h5 mb-16">Basic</h5>
+          <ol class="help-l-ol">
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-1">Understanding DooTask</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-2">Registration and Login</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-3">Notification</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-4">Account Settings</a>
+            </li>
+          </ol>
+        </li>
+        <li class="help-l-ul-item mb-24">
+          <h5 class="txt-4001620 help-h5 mb-16">Projects</h5>
+          <ol class="help-l-ol">
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-1">Understand Project</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-2">Create project</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-3">Task List</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-4">Project Progress</a>
+            </li>
+          </ol>
+        </li>
+        <li class="help-l-ul-item mb-24">
+          <h5 class="txt-4001620 help-h5 mb-16">Mission</h5>
+          <ol class="help-l-ol">
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-1">Use of tasks</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-2">Task Priority</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-3">Comments & News</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-4">Subtasks</a>
+            </li>
+          </ol>
+        </li>
+        <li class="help-l-ul-item mb-24">
+          <h5 class="txt-4001620 help-h5 mb-16">Team</h5>
+          <ol class="help-l-ol">
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-1">Team and Members</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-2">Member Grouping</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-3">Team Management</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-4">Team Setup</a>
+            </li>
+          </ol>
+        </li>
+        <li class="help-l-ul-item mb-24">
+          <h5 class="txt-4001620 help-h5 mb-16">Files</h5>
+          <ol class="help-l-ol">
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-1">File Type</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-2">Shared Files</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-3">Access Permissions</a>
+            </li>
+          </ol>
+        </li>
+      </ul>
+    </div>
+    <!-- 菜单抽屉 -->
+    <div class="drawer">
+      <div class="drawer-t mb-36">
+        <a href="../en/index.html" class="logo">
+          <img id="logo" src="../../img/light/logo.svg" alt="DooTaskLogo">
+          <i class="dootask txt-7002027">DooTask</i>
+        </a>
+        <i class="close-drawer" onclick="closeDraweHandle()">✕</i>
+      </div>
+      <ul class="drawer-ul">
+        <li class="drawer-item-t mb-16">
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/product.html">Product</a>
+          </div>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/solutions.html">Solutions</a>
+          </div>
+          <div class="drawer-item" onclick="expandMenuHandle('support')">
+            <i class="txt-4001620 txt">
+              Support
+              <img src="../../img/vector.svg" class="nav-vector" alt="Support" id="drawer-down-support-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="support" style="display: none;">
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../en/download.html">Download Center</a>
+            </li>
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../en/help.html">Help Center</a>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/price.html">Pricing</a>
+          </div>
+          <div class="drawer-item mb-16" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../en/about.html">About Us</a>
+          </div>
+        </li>
+        <li class="drawer-item-c">
+          <div class="drawer-item" onclick="expandMenuHandle('theme')">
+            <i class="txt-4001620 txt">
+              Theme
+              <img src="../../img/vector.svg" alt="Theme" class="nav-vector" id="drawer-down-theme-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="theme" style="display: none;">
+            <li class="drawer-item"  onclick="setTheme('light')">
+              <i class="txt-4001620 txt">Light</i>
+            </li>
+            <li class="drawer-item"  onclick="setTheme('dark')">
+              <i class="txt-4001620 txt">Dark</i>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="expandMenuHandle('language')">
+            <i class="txt-4001620 txt">
+              Language
+              <img src="../../img/vector.svg" alt="Language" class="nav-vector" id="drawer-down-language-svg">
+            </i>
+          </div>
+          <ol class="drawer-active" id="language" style="display: none;">
+            <li class="drawer-item"  onclick="changeLanguage('zh')">
+              <i class="txt-4001620 txt">简体中文</i>
+            </li>
+            <li class="drawer-item"  onclick="changeLanguage('en')">
+              <i class="txt-4001620 txt">English</i>
+            </li>
+          </ol>
+        </li>
+        <li class="drawer-item-b">
+          <li class="drawer-item">
+            <a class="txt-4001620 txt" href="https://demo.dootask.com">Log In</a>
+          </li>
+        </li>
+      </ul>
+    </div>
+    <!-- 内容区域 -->
+    <main>
+      <!-- 主要区域划分 -->
+      <section>
+        <article class="help">
+          <div class="help-con">
+            <div class="help-t-768" id="help-menu-btn">
+              <img class="help-t-prev" src="../../img/prev.svg" alt="Help Center">
+              <i class="help-t-tit">Help Center</i>
+            </div>
+            <div class="help-layout">
+              <div class="help-l">
+                <form role="search" class="search-form">
+                  <i class="search-icon"></i>
+                  <input class="search-input mb-24" placeholder="Search" type="text">
+                </form>
+                <ul class="help-l-ul help-l-1920">
+                  <li class="help-l-ul-item mb-24">
+                    <h5 class="txt-4001620 help-h5 mb-16">Basic</h5>
+                    <ol class="help-l-ol">
+                      <li class="l-ul-item active">
+                        <a class="txt-4001620 txt" href="#section-1">Understanding DooTask</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-2">Registration and Login</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-3">Notification</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-4">Account Settings</a>
+                      </li>
+                    </ol>
+                  </li>
+                  <li class="help-l-ul-item mb-24">
+                    <h5 class="txt-4001620 help-h5 mb-16">Projects</h5>
+                    <ol class="help-l-ol">
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-1">Understand Project</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-2">Create project</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-3">Task List</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-4">Project Progress</a>
+                      </li>
+                    </ol>
+                  </li>
+                  <li class="help-l-ul-item mb-24">
+                    <h5 class="txt-4001620 help-h5 mb-16">Mission</h5>
+                    <ol class="help-l-ol">
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-1">Use of tasks</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-2">Task Priority</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-3">Comments & News</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-4">Subtasks</a>
+                      </li>
+                    </ol>
+                  </li>
+                  <li class="help-l-ul-item mb-24">
+                    <h5 class="txt-4001620 help-h5 mb-16">Team</h5>
+                    <ol class="help-l-ol">
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-1">Team and Members</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-2">Member Grouping</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-3">Team Management</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-4">Team Setup</a>
+                      </li>
+                    </ol>
+                  </li>
+                  <li class="help-l-ul-item mb-24">
+                    <h5 class="txt-4001620 help-h5 mb-16">Files</h5>
+                    <ol class="help-l-ol">
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-1">File Type</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-2">Shared Files</a>
+                      </li>
+                      <li class="l-ul-item">
+                        <a class="txt-4001620 txt" href="#section-3">Access Permissions</a>
+                      </li>
+                    </ol>
+                  </li>
+                </ul>
+              </div>
+              <div class="help-r">
+                <div class="help-pic1 mb-36">
+                  <img id="help-pic1-svg" class="theme_light" src="../../img/light/help_pic11.svg" alt="Just starting out with DooTask? No problem, this primer is for you!">
+                  <img id="help-pic1-svg" class="theme_dark" src="../../img/dark/help_pic11.svg" alt="Just starting out with DooTask? No problem, this primer is for you!">
+                  <div class="help-pic1-tips">
+                    <h2 class="help-pic1-tips-h2 txt-6003652">User Manual</h2>
+                    <h6 class="help-pic1-tips-h6 txt-4001624">Just starting out with DooTask? No problem, this primer is for you!</h6>
+                  </div>
+                </div>
+                <ul class="help-r-ul">
+                  <li class="r-ul-item mb-36">
+                    <h4 class="txt-5002430 help-h4 mb-24">What is DooTask?</h4>
+                    <h6 class="txt-4001624 help-h6">DooTask is a lightweight open source online project task management tool that provides various document collaboration tools, online mind mapping, online flowcharting, project management, task distribution, instant IM, file management and other tools. It helps teams to advance their projects efficiently and makes work easier.</h6>
+                  </li>
+                  <li class="r-ul-item mb-36">
+                    <h4 class="txt-5002430 help-h4 mb-24">What is task management?</h4>
+                    <h6 class="txt-4001624 help-h6 mb-16">Task management is the process of monitoring your project's tasks through their various stages from start to finish. This involves actively making decisions for your tasks to accommodate changes that can occur real-time, with your end goal being the successful completion of your tasks. Project task management also means managing all aspects of a task like budget, time, scope, resources, recurrence and so on effectively.</h6>
+                    <img class="r-ul-item-pic1" id="help_pic2" src="../../img/light/help_pic2.png" alt="What is task management?">
+                  </li>
+                  <li class="r-ul-item mb-36">
+                    <h4 class="txt-5002430 help-h4 mb-24">How to manage tasks?</h4>
+                    <h6 class="txt-4001624 help-h6 mb-12">Here are some key steps involved in task management:</h6>
+                    <h6 class="txt-4001624 help-h6 mb-12"><i class="help-h6-bold">Prioritization: </i>Whatever tool you use to manage your tasks, whether a simple to-do list or a comprehensive project task management tool, the most important aspect of task management is prioritization. This helps in efficiently completing all the tasks involved while maintaining the planned constraints.</h6>
+                    <h6 class="txt-4001624 help-h6 mb-12"><i class="help-h6-bold">Milestone tracking: </i>The findings of this study also show that establishing clear goals is essential to the successful completion of a project. Although for task management an end goal isn't necessary, defining milestones helps motivate teams to execute tasks successfully.</h6>
+                    <h6 class="txt-4001624 help-h6 mb-16"><i class="help-h6-bold">Schedule management: </i>Making sure your task gets completed on time is something that has an impact on the overall project health. Attributing the right time frame by estimating the effort involved is key here.</h6>
+                    <img class="r-ul-item-pic1" id="help_pic3" src="../../img/light/help_pic3.png" alt="How to manage tasks?">
+                  </li>
+                  <li class="r-ul-item mb-36">
+                    <h4 class="txt-5002430 help-h4 mb-24">How to choose the right task management software?</h4>
+                    <h6 class="txt-4001624 help-h6">Depending on your purpose, price range, existing work environment and preferred platform, there are several project and task management tools available. From simple checklists which may not even require an internet connection to a full-fledged project task management software, the capabilities are varied. There are also software options that fit specific industries like construction, IT or education or specific functions like crm task management.</h6>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+    <!-- 页脚区域 -->
+    <footer>
+      <div class="footer-con">
+        <div class="footer-layut">
+          <div class="footer-l">
+            <a href="../en/index.html" class="logo">
+              <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+              <i class="dootask txt-7002027">DooTask</i>
+            </a>
+            <i class="txt txt-4001624">Helps teams move projects forward efficiently and makes work easier.</i>
+          </div>
+          <div class="footer-r">
+            <ul class="footer-r-ul">
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Links</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/product.html">Product</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/solutions.html">Solutions</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/price.html">Pricing</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../en/solutions.html">About Us</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Support</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../en/download.html">Download Center</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../en/help.html">Help Center</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">Community</li>
+                  <li class="footer-ol-item">
+                  <li class="footer-ol-item mb-16">
+                    <i class="txt-4001624 txt" onclick="openInNewTab('https://github.com/kuaifan/dootask')">Github</i>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <i class="txt-4001624 txt" onclick="openInNewTab('https://gitee.com/aipaw/dootask')">Gitee</i>
+                  </li>
+                  <li class="footer-ol-item" id="qq_group">
+                    <i class="txt-4001624 txt">QQ group</i>
+                    <div class="group_code">
+                      <img class="code-svg" id="home_code" src="../../img/light/home_code.svg" alt="Group：546574618">
+                      <i class="group_num">Group：546574618</i>
+                      <i class="lower_triangle"></i>
+                    </div>
+                  </li>
+                  </li>
+                </ol>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="txt-4001624 filings">
+          Copyright © 2022-2023 Dootask. All rights reserved.
+        </div>
+      </div>
+    </footer>
+  </div>
+</body>
+<script src="../../js/common.js"></script>
+<script>
+/* 菜单点击激活函数 */ 
+const tabs = document.querySelector('.help-l-1920');
+const tabItems = tabs.querySelectorAll('.l-ul-item');
+tabs.addEventListener('click', function (event) {
+  const clickedItem = event.target.closest('.l-ul-item');
+  if (clickedItem && !clickedItem.classList.contains('active')) {
+    // 切换激活状态
+    for (let [index,value] of tabItems.entries()) {
+      value.classList.toggle('active', value === clickedItem);
+    }
+  }
+});
+/* 当屏幕宽度低于768px时显示logs的抽屉的相关操作逻辑 */
+const helpMenuBtn = document.getElementById('help-menu-btn');
+const helpDrawer = document.querySelector('.help-drawer');
+helpMenuBtn.addEventListener('click', () => {
+  helpDrawer.classList.add('open-help-drawer');
+});
+const closeHelpDraweHandle = ()=>{
+  helpDrawer.classList.remove('open-help-drawer');
+}
+</script>
+</html>
