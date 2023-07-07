@@ -298,7 +298,7 @@ export default {
                 }
             }
             // 会议事件
-            window.__onMeetingEvent = ({act,uuid,channelID}) => {
+            window.__onMeetingEvent = ({act,uuid,meetingid}) => {
                 switch (act) {
                     // 获取用户信息
                     case "getInfo":   
@@ -328,7 +328,7 @@ export default {
                     case "invent":      
                         this.$store.dispatch("showMeetingWindow",{
                             type: "invitation",
-                            meetingid: channelID
+                            meetingid: meetingid
                         })
                         break;
                     //结束会议

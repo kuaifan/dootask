@@ -275,7 +275,7 @@ export default {
                                     username: data.nickname,
                                     video: this.addData.tracks.includes("video"),
                                     audio: this.addData.tracks.includes("audio"),
-                                    channelID: data.meetingid,
+                                    meetingid: data.meetingid
                                 }
                             });
                             this.loadIng--;
