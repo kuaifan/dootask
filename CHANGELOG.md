@@ -2,17 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.27.94]
+## [0.28.0]
 
 ### Bug Fixes
 
 - 全员群禁言仅管理员可发言无效的问题
 - 发送消息失败再次编辑格式丢失的问题
+- 1.修复审核导出缺少 2.修复审核导出小时计算误差
+- 请假表格导出sheeft里名称显示人名
 - 修正初始化可见性人员异常问题
 - 修复审批通过人员姓名显示不正确
 
 ### Features
 
+- 官网页面首版提交
 - 优化子任务可见性
 - 负责人、协助人更改可见性推送收回
 - 新增任务可见性操作模块、任务详情子任务样式优化
@@ -31,6 +34,9 @@ All notable changes to this project will be documented in this file.
 
 - 会议窗口恢复不显示的情况
 - 修复已知bug
+- 打开会话面板报错
+- 子任务通知无法打开
+- 修复审批的图片无法查看
 
 ### Performance
 
@@ -38,17 +44,6 @@ All notable changes to this project will be documented in this file.
 - 聊天输入框iOS输入第一个字母出现抖动的情况
 - 优化iOS出现连续加载消息列表的情况
 - 移动端键盘发送
-
-## [0.27.35]
-
-### Bug Fixes
-
-- 打开会话面板报错
-- 子任务通知无法打开
-- 修复审批的图片无法查看
-
-### Performance
-
 - 优化会员选择器
 - 优化图片压缩
 - 回复图片显示图片搜略图
