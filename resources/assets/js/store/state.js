@@ -199,5 +199,6 @@ export default {
     meetingWindow: {
         show: false,
         type: "",
+        meetingid: 0
     }
 };

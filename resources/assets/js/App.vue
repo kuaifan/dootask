@@ -298,7 +298,7 @@ export default {
                 }
             }
             // 会议事件
-            window.__onMeetingEvent = ({act,uuid}) => {
+            window.__onMeetingEvent = ({act,uuid,channelID}) => {
                 switch (act) {
                     // 获取用户信息
                     case "getInfo":   
@@ -322,13 +322,14 @@ export default {
                         break;
                     //加入成功
                     case "success":     
-                        // 关闭添加会议窗口
                         this.$store.dispatch("closeMeetingWindow","add")
                         break;
                     // 邀请
                     case "invent":      
-                        // 关闭邀请会议窗口
-                        this.$store.dispatch("closeMeetingWindow","invitation")
+                        this.$store.dispatch("showMeetingWindow",{
+                            type: "invitation",
+                            meetingid: channelID
+                        })
                         break;
                     //结束会议
                     case "endMeeting":  

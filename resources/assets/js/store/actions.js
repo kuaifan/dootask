@@ -3403,18 +3403,33 @@ export default {
 
 
     /** *****************************************************************************************/
-    /** *************************************** pgp *********************************************/
+    /** *************************************** meeting *********************************************/
     /** *****************************************************************************************/
 
     /**
     * 关闭会议窗口
     * @param state
-    * @param data
+    * @param type
     */
     closeMeetingWindow({state}, type) {
         state.meetingWindow = {
             show: false,
-            type: type
+            type: type,
+            meetingid: 0
+        };
+    },
+
+    /**
+    * 显示会议窗口
+    * @param state
+    * @param type
+    * @param meetingid
+    */
+    showMeetingWindow({state}, {type, meetingid}) {
+        state.meetingWindow = {
+            show: true,
+            type: type,
+            meetingid: meetingid
         };
     },
 }
