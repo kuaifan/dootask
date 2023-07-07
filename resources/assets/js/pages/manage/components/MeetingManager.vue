@@ -267,7 +267,7 @@ export default {
                             $A.eeuiAppSendMessage({
                                 action: 'startMeeting',
                                 meetingParams: {
-                                    name: data.name,
+                                    name: this.addData.name,
                                     token: data.token,
                                     channel: data.channel,
                                     uuid: data.uid,
