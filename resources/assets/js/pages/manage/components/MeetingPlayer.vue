@@ -52,7 +52,7 @@ export default {
         ...mapState(['cacheUserBasic']),
         userid() {
             if (this.player.uid) {
-                return parseInt($A.getMiddle(this.player.uid, null, '-'))
+                return parseInt( (this.player.uid+"").substring(6) )
             }
             return 0
         },
