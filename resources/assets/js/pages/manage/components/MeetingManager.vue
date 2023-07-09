@@ -189,18 +189,19 @@ export default {
             handler(val) {
                 switch (val.type) {
                     case 'add':
-                        this.addShow = val.show
+                        this.addShow = val.show;
                         this.loadIng = 0;
                         break;
                     case 'invitation':
-                        this.invitationShow = val.show
-                        this.invitationLoad = 0;
+                        this.invitationShow = val.show;
+                        this.invitationLoad = false;
+                        this.invitationData.meetingid = val.meetingid;
                         break;
                     case 'error':
-                        this.addShow = val.show
+                        this.addShow = val.show;
                         this.loadIng = 0;
-                        this.invitationShow = val.show
-                        this.invitationLoad = 0;
+                        this.invitationShow = val.show;
+                        this.invitationLoad = false;
                         $A.modalError('加入会议失败');
                         break;
                 }
@@ -266,6 +267,7 @@ export default {
                             $A.eeuiAppSendMessage({
                                 action: 'startMeeting',
                                 meetingParams: {
+                                    name: this.addData.name,
                                     token: data.token,
                                     channel: data.channel,
                                     uuid: data.uid,
@@ -274,6 +276,7 @@ export default {
                                     username: data.nickname,
                                     video: this.addData.tracks.includes("video"),
                                     audio: this.addData.tracks.includes("audio"),
+                                    meetingid: data.meetingid
                                 }
                             });
                             this.loadIng--;

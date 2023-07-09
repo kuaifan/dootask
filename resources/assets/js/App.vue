@@ -298,14 +298,14 @@ export default {
                 }
             }
             // 会议事件
-            window.__onMeetingEvent = ({act, uuid}) => {
+            window.__onMeetingEvent = ({act,uuid,meetingid}) => {
                 switch (act) {
                     // 获取用户信息
-                    case "getInfo":
+                    case "getInfo":   
                         this.$store.dispatch("call", {
                             url: 'users/basic',
                             data: {
-                                userid: [(uuid + "").substring(6)]
+                                userid: [ (uuid+"").substring(6) ]
                             }
                         }).then(({data}) => {
                             $A.eeuiAppSendMessage({
@@ -321,22 +321,23 @@ export default {
                         });
                         break;
                     //加入成功
-                    case "success":
-                        // 关闭添加会议窗口
-                        this.$store.dispatch("closeMeetingWindow", "add")
+                    case "success":     
+                        this.$store.dispatch("closeMeetingWindow","add")
                         break;
                     // 邀请
-                    case "invent":
-                        // 关闭邀请会议窗口
-                        this.$store.dispatch("closeMeetingWindow", "invitation")
+                    case "invent":      
+                        this.$store.dispatch("showMeetingWindow",{
+                            type: "invitation",
+                            meetingid: meetingid
+                        })
                         break;
                     //结束会议
-                    case "endMeeting":
-
+                    case "endMeeting":  
+                        
                         break;
                     //加入失败
-                    case "error":
-                        this.$store.dispatch("closeMeetingWindow", "error")
+                    case "error":       
+                        this.$store.dispatch("closeMeetingWindow","error")
                         break;
                     default:
                         break;
