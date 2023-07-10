@@ -276,7 +276,13 @@ export default {
                                     username: data.nickname,
                                     video: this.addData.tracks.includes("video"),
                                     audio: this.addData.tracks.includes("audio"),
-                                    meetingid: data.meetingid
+                                    meetingid: data.meetingid,
+                                    alert: {
+                                        title: this.$L('温馨提示'),
+                                        message: this.$L('确定要离开会议吗？'),
+                                        cancel: this.$L('继续'),
+                                        confirm: this.$L('退出'),
+                                    }
                                 }
                             });
                             this.loadIng--;
@@ -391,21 +397,26 @@ export default {
             this.agoraClient.on("user-unpublished", this.handleUserUnpublished);
             // 加入频道、开启音视频
             const localTracks = [];
-            this.localUser.uid = await this.agoraClient.join(options.appid, options.channel, options.token, options.uid)
-            if (this.addData.tracks.includes("audio")) {
-                localTracks.push(this.localUser.audioTrack = await AgoraRTC.createMicrophoneAudioTrack())
+            try {
+                this.localUser.uid = await this.agoraClient.join(options.appid, options.channel, options.token, options.uid)
+                if (this.addData.tracks.includes("audio")) {
+                    localTracks.push(this.localUser.audioTrack = await AgoraRTC.createMicrophoneAudioTrack())
+                }
+                if (this.addData.tracks.includes("video")) {
+                    localTracks.push(this.localUser.videoTrack = await AgoraRTC.createCameraVideoTrack())
+                }
+                // 将本地视频曲目播放到本地浏览器、将本地音频和视频发布到频道。
+                if (localTracks.length > 0) {
+                    await this.agoraClient.publish(localTracks);
+                }
+                //
+                this.meetingShow = true;
+            } catch (error) {
+                console.error(error)
+                $A.modalError("会议组件加载失败！");
             }
-            if (this.addData.tracks.includes("video")) {
-                localTracks.push(this.localUser.videoTrack = await AgoraRTC.createCameraVideoTrack())
-            }
-            // 将本地视频曲目播放到本地浏览器、将本地音频和视频发布到频道。
-            if (localTracks.length > 0) {
-                await this.agoraClient.publish(localTracks);
-            }
-            //
             this.loadIng--;
             this.addShow = false;
-            this.meetingShow = true;
         },
 
         async leave() {
