@@ -285,7 +285,6 @@ export default {
                                     }
                                 }
                             });
-                            this.loadIng--;
                         }else{
                             $A.loadScript('js/AgoraRTC_N-4.17.0.js').then(_ => {
                                 this.join(data)
