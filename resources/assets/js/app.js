@@ -1,6 +1,9 @@
 const isElectron = !!(window && window.process && window.process.type);
 const isEEUiApp = window && window.navigator && /eeui/i.test(window.navigator.userAgent);
 
+import microappInit from "./microapp"
+microappInit()
+
 import {switchLanguage as $L} from "./language";
 
 import './functions/common'

@@ -168,4 +168,9 @@ export default [
         path: '*',
         component: () => import('./pages/404.vue')
     },
+    {
+        path: '/microapp/*',
+        name: 'microapp',
+        component: () => import('./pages/microapp.vue')
+    },
 ]
