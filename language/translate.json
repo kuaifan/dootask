@@ -16839,5 +16839,49 @@
         "de": "Ich wurde nicht gewählt.",
         "fr": "Échec de la Réunion d’adhésion",
         "id": "Bergabung dengan konferensi gagal"
+    },
+    {
+        "key": "确定要离开会议吗？",
+        "zh": "",
+        "zh-CHT": "確定要離開會議嗎？",
+        "en": "Are you sure you want to leave the meeting?",
+        "ko": "회의를 정말 나가시겠습니까?",
+        "ja": "会議を離れることは確実ですか?",
+        "de": "Wollen sie das Treffen verlassen?",
+        "fr": "Sûr de vouloir quitter la Réunion?",
+        "id": "Yakin ingin meninggalkan pertemuan?"
+    },
+    {
+        "key": "继续",
+        "zh": "",
+        "zh-CHT": "繼續",
+        "en": "Resume",
+        "ko": "계속",
+        "ja": "続きます",
+        "de": "Machen sie weiter.",
+        "fr": "Continue",
+        "id": "Terus"
+    },
+    {
+        "key": "退出",
+        "zh": "",
+        "zh-CHT": "退出",
+        "en": "Quit",
+        "ko": "출구",
+        "ja": "脱退します",
+        "de": "\"Die sache\"?",
+        "fr": "Le retrait",
+        "id": "Keluar"
+    },
+    {
+        "key": "会议组件加载失败！",
+        "zh": "",
+        "zh-CHT": "會議組件加載失敗！",
+        "en": "Meeting component loading failed!",
+        "ko": "회의 구성 요소 불러오기 실패!",
+        "ja": "会議コンポーネントのロードに失敗しました!",
+        "de": "Geladen mit fallender fracht des meetings!",
+        "fr": "Échec du chargement du composant conférence!",
+        "id": "Perakitan perakitan gagal!"
     }
 ]
