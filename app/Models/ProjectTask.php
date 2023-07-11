@@ -363,7 +363,8 @@ class ProjectTask extends AbstractModel
         $content    = $data['content'];
         $times      = $data['times'];
         $owner      = $data['owner'];
-        $add_assist = intval($data['add_assist']);
+        $add_assist = intval($data['add_assist']);  // 将自己添加到参与者
+        $assist     = $data['assist'];              // 参与者，此项设置时 add_assist 无效
         $subtasks   = $data['subtasks'];
         $p_level    = intval($data['p_level']);
         $p_name     = $data['p_name'];
@@ -438,9 +439,12 @@ class ProjectTask extends AbstractModel
         }
         $owner = $tmpArray;
         // 协助人员
-        $assist = [];
-        if (!in_array($userid, $owner) && $add_assist) {
-            $assist = [$userid];
+        $assist = is_array($assist) ? $assist : [];
+        if (empty($assist)) {
+            // 添加自己
+            if (!in_array($userid, $owner) && $add_assist) {
+                $assist = [$userid];
+            }
         }
         // 创建人
         $task->userid = $userid;

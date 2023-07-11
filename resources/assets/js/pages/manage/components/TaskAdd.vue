@@ -78,7 +78,7 @@
                     type="datetimerange"
                     @on-change="taskTimeChange(addData.times)"/>
             </FormItem>
-            <FormItem :label="$L('任务负责人')" >
+            <FormItem :label="$L('负责人')" >
                 <UserSelect
                     v-model="addData.owner"
                     :multiple-max="10"
@@ -86,12 +86,16 @@
                     :project-id="addData.project_id"
                     :avatar-size="24"
                     border/>
-                <div v-if="showAddAssist" class="task-add-assist">
-                    <Checkbox v-model="addData.add_assist" :true-value="1" :false-value="0">{{$L('加入任务协助人员列表')}}</Checkbox>
-                    <ETooltip :disabled="$isEEUiApp || windowTouch" :content="$L('你不是任务负责人时建议加入任务协助人员列表')">
-                        <Icon type="ios-alert-outline" />
-                    </ETooltip>
-                </div>
+            </FormItem>
+            <FormItem :label="$L('协助人员')" >
+                <UserSelect
+                    v-model="addData.assist"
+                    :multiple-max="10"
+                    :title="$L('选择任务协助人员')"
+                    :project-id="addData.project_id"
+                    :disabled-choice="addData.owner"
+                    :avatar-size="24"
+                    border/>
             </FormItem>
             <FormItem>
                 <div slot="label">
@@ -223,7 +227,7 @@ export default {
                 name: "",
                 content: "",
                 owner: [],
-                add_assist: 1,
+                assist: [],
                 project_id: 0,
                 column_id: 0,
                 times: [],
@@ -306,14 +310,18 @@ export default {
                 }
             }
             return 0;
-        },
-
-        showAddAssist() {
-            return !this.addData.owner.includes(this.userId);
         }
     },
 
     watch: {
+        'addData.owner'(owner) {
+            this.addData.assist = this.addData.assist.filter(item => {
+                return owner.indexOf(item) === -1;
+            })
+            if (owner.length === 0 && this.addData.assist.length === 0) {
+                this.addData.assist = [this.userId];
+            }
+        },
         'addData.project_id'(projectId) {
             if (projectId > 0) {
                 $A.IDBSave("cacheAddTaskProjectId", projectId);
@@ -537,7 +545,7 @@ export default {
                         name: "",
                         content: "",
                         owner: [],
-                        add_assist: 1,
+                        assist: [],
                         column_id: 0,
                         times: [],
                         subtasks: [],
