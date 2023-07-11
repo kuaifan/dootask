@@ -17,7 +17,7 @@ const changeImageSrc = (img, src) => {
   const url = window.location.href   // 获取当前浏览器 URL
   if (imgDom.length > 0) {
     imgDom.forEach(item=>{
-      item.src = url.includes('site') ? `../../img/${src}` : `img/${src}`;
+      item.src = url.includes('site/i') ? `./img/${src}` : `../img/${src}`;
     })
   }
 };
