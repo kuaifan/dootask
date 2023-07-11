@@ -38,7 +38,7 @@ class SystemController extends AbstractController
      * @apiParam {String} type
      * - get: 获取（默认）
      * - all: 获取所有（需要管理员权限）
-     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'auto_archived', 'archived_day', 'all_group_mute', 'all_group_autoin', 'image_compress', 'image_save_local', 'start_home', 'home_footer']）
+     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'auto_archived', 'archived_day', 'task_visible', 'all_group_mute', 'all_group_autoin', 'image_compress', 'image_save_local', 'start_home', 'home_footer']）
 
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -65,6 +65,7 @@ class SystemController extends AbstractController
                     'anon_message',
                     'auto_archived',
                     'archived_day',
+                    'task_visible',
                     'all_group_mute',
                     'all_group_autoin',
                     'image_compress',
@@ -104,6 +105,7 @@ class SystemController extends AbstractController
         $setting['anon_message'] = $setting['anon_message'] ?: 'open';
         $setting['auto_archived'] = $setting['auto_archived'] ?: 'close';
         $setting['archived_day'] = floatval($setting['archived_day']) ?: 7;
+        $setting['task_visible'] = $setting['task_visible'] ?: 'close';
         $setting['all_group_mute'] = $setting['all_group_mute'] ?: 'open';
         $setting['all_group_autoin'] = $setting['all_group_autoin'] ?: 'yes';
         $setting['image_compress'] = $setting['image_compress'] ?: 'open';

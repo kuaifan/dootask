@@ -78,6 +78,14 @@
                             <div slot="content">{{$L('任务完成 (*) 天后自动归档。', formDatum.archived_day)}}</div>
                         </ETooltip>
                     </FormItem>
+                    <FormItem :label="$L('可见性选项')" prop="taskVisible">
+                        <RadioGroup v-model="formDatum.task_visible">
+                            <Radio label="open">{{$L('保持')}}</Radio>
+                            <Radio label="close">{{$L('自动')}}</Radio>
+                        </RadioGroup>
+                        <div v-if="formDatum.task_visible == 'open'" class="form-tip">{{$L('保持：任务详情页可见性选项保持显示。')}}</div>
+                        <div v-else-if="formDatum.task_visible == 'close'" class="form-tip">{{$L('自动：默认值情况下显示在合并项目，设置时保持显示。')}}</div>
+                    </FormItem>
                 </div>
             </div>
             <div class="block-setting-box">

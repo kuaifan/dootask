@@ -201,7 +201,7 @@
                             :add-icon="false"
                             :before-submit="onAssist"/>
                     </FormItem>
-                    <FormItem>
+                    <FormItem v-if="taskDetail.is_all_visible > 1 || visibleForce || visibleKeep">
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe77b;</i>
                             <EDropdown ref="eDropdownRef" trigger="click" placement="bottom" @command="dropVisible">
@@ -511,6 +511,8 @@ export default {
             assistData: {},
             assistLoad: 0,
 
+            visibleForce: false,
+
             addsubForce: false,
             addsubShow: false,
             addsubName: "",
@@ -605,12 +607,16 @@ export default {
 
     computed: {
         ...mapState([
+            'systemConfig',
+
             'cacheProjects',
             'cacheColumns',
             'cacheTasks',
+
             'taskContents',
             'taskFiles',
             'taskPriority',
+            
             'dialogId',
         ]),
 
@@ -751,6 +757,13 @@ export default {
                     name: '协助人员',
                 });
             }
+            if (taskDetail.is_all_visible <= 1 && !this.visibleKeep) {
+                list.push({
+                    command: 'visible',
+                    icon: '&#xe77b;',
+                    name: '可见性',
+                });
+            }
             if (!taskDetail.end_at) {
                 list.push({
                     command: 'times',
@@ -794,7 +807,11 @@ export default {
                 })
             }
             return text
-        }
+        },
+
+        visibleKeep() {
+            return this.systemConfig.task_visible === 'open'    // 可见性保持显示
+        },
     },
 
     watch: {
@@ -819,6 +836,7 @@ export default {
                     this.timeForce = false;
                     this.loopForce = false;
                     this.assistForce = false;
+                    this.visibleForce = false;
                     this.addsubForce = false;
                     this.receiveShow = false;
                     this.$refs.chatInput && this.$refs.chatInput.hidePopover();
@@ -1246,6 +1264,13 @@ export default {
                     this.assistForce = true;
                     this.$nextTick(() => {
                         this.$refs.assist.onSelection();
+                    });
+                    break;
+
+                case 'visible':
+                    this.visibleForce = true;
+                    this.$nextTick(() => {
+                        this.showCisibleDropdown();
                     });
                     break;
 

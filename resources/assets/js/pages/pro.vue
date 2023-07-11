@@ -897,6 +897,7 @@
 <script>
 import {languageList, languageType, setLanguage, addLanguage} from "../language";
 import UpdateLog from "./manage/components/UpdateLog";
+import {mapState} from "vuex";
 
 export default {
     components: {UpdateLog},
@@ -911,7 +912,6 @@ export default {
             body2: true,
 
             contactShow: false,
-            systemConfig: {},
 
             showItem: {
                 pro: false,
@@ -1070,11 +1070,11 @@ export default {
     },
 
     mounted() {
-        this.getSetting();
         this.getShowItem();
     },
 
     computed: {
+        ...mapState(['systemConfig']),
         appTitle() {
             return `${this.$L('选择适合你的')} ${window.systemInfo.title || "DooTask"}`;
         },
@@ -1087,14 +1087,6 @@ export default {
 
         goHome() {
             this.goForward({name: 'index', query: {action: 'index'}});
-        },
-
-        getSetting() {
-            this.$store.dispatch("call", {
-                url: 'system/setting',
-            }).then(({data}) => {
-                this.systemConfig = data;
-            })
         },
 
         getShowItem() {

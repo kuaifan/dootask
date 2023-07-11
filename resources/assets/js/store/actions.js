@@ -94,6 +94,13 @@ export default {
                 state.apiKeyData = data;
             })
 
+            // 系统设置
+            dispatch("call", {
+                url: 'system/setting',
+            }).then(({data}) => {
+                state.systemConfig = data;
+            })
+
             // 加载语言包
             await $A.loadScriptS([
                 `language/web/key.js`,
