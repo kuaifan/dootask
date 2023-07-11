@@ -760,7 +760,6 @@ img {
   color: var(--text-color);
 }
 .get-started{
-  width: 123px; 
   display: inline-block;
 }
 .login-btn{

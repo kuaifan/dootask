@@ -13,6 +13,20 @@
   <link rel="stylesheet" href="../css/price.css">
 </head>
 <body>
+  <div class="BulletBox1">
+    <div class="top">
+      <div class="name BulletBox1Name"></div>
+      <div class="close"></div>
+    </div>
+    <div class="content">
+      <p>If you have any questions, please feel free to contact us using the following methods.</p>
+      <p>landline telephone:0771-3164099</p>
+      <p>Email Address:service@hitosea.com</p>
+    </div>
+    <div class="bottom">
+      <div class="BulletBox1Btn">make certain</div>
+    </div>
+  </div>
   <div id="layout">
     <!-- 页头区域 -->
     <header class="head price">
@@ -76,7 +90,7 @@
             <i class="line-1"></i>
             <span class="get-started">
               <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
-                <button class="btn btn-primary" >Get Started</button>
+                <button class="btn btn-primary" >Experience it now</button>
               </a>
             </span>
           </div>
@@ -94,13 +108,13 @@
             <h4 class="txt-4001830 topics-h4 mb-64 topics-h4-en">Different versions are available depending on the size and needs of your business</h4>
             <ul class="price-card">
               <li class="price-card-item price-animate-box" style="--delay: 0s;">
-                <h4 class="txt-5002025 price-card-h4 mb-24">Free</h4>
+                <h4 class="txt-5002025 price-card-h4 mb-24">Regular version</h4>
                 <div class="price-card-money mb-12">
                   <h2 class="txt-6003645 price-card-h2">¥0</h2>
                   <i class="txt-5001628 price-card-unit">/month</i>
                 </div>
-                <h6 class="txt-4001624 price-card-h6 mb-24" style="height: 48px;">Up to 3 persons</h6>
-                <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-green mb-24">Get Started</button> </a>
+                <h6 class="txt-4001624 price-card-h6 mb-24" style="height: 48px;">No limit to the number of people</h6>
+                <a href="https://github.com/kuaifan/dootask/tree/v0.13.0"  target="_blank"> <button class="btn btn-green mb-24">Get Started</button> </a>
                 <ol class="price-card-ol">
                   <li class="price-card-ol-item mb-12">
                     <img class="icon mr-12" src="../img/price_icon1.svg" alt="Support for private deployment">
@@ -109,13 +123,13 @@
                 </ol>
               </li>
               <li class="price-card-item price-animate-box" style="--delay: 0.1s;">
-                <h4 class="txt-5002025 price-card-h4 mb-24">Annual</h4>
+                <h4 class="txt-5002025 price-card-h4 mb-24">Professional Edition</h4>
                 <div class="price-card-money mb-12">
-                  <h2 class="txt-6003645 price-card-h2">¥3,000</h2>
-                  <i class="txt-5001628 price-card-unit">/year</i>
+                  <h2 class="txt-6003645 price-card-h2">¥0</h2>
+                  <i class="txt-5001628 price-card-unit">/month</i>
                 </div>
-                <h6 class="txt-4001624 price-card-h6 mb-24" style="height: 48px;">No limit to the number of people</h6>
-                <a href="https://www.dootask.com/manage/dashboard"  target="_blank">  <button class="btn btn-green mb-24">Get Started</button> </a>
+                <h6 class="txt-4001624 price-card-h6 mb-24" style="height: 48px;">Up to 3 persons</h6>
+                <a href="https://github.com/kuaifan/dootask/tree/pro"  target="_blank">  <button class="btn btn-green mb-24">Get Started</button> </a>
                 <ol class="price-card-ol">
                   <li class="price-card-ol-item mb-12">
                     <img class="icon mr-12" src="../img/price_icon1.svg" alt="Support for private deployment">
@@ -132,12 +146,12 @@
                 </ol>
               </li>
               <li class="price-card-item active price-animate-box" style="--delay: 0.2s;">
-                <h4 class="txt-5002025 price-card-h4 mb-24">Lifetime<i class="rec-icon">Rec.</i></h4>
+                <h4 class="txt-5002025 price-card-h4 mb-24">Professional Edition<i class="rec-icon">Rec.</i></h4>
                 <div class="price-card-money mb-12">
                   <h2 class="txt-6003645 price-card-h2">¥18,888</h2>
                 </div>
                 <h6 class="txt-4001624 price-card-h6 mb-24" style="height: 48px;">No limit to the number of people</h6>
-                <a href="https://www.dootask.com/manage/dashboard"  target="_blank">  <button class="btn btn-green mb-24">Get Started</button> </a>
+                <button class="btn btn-green mb-24" onclick="showBox('Contact Us')">Contact Us</button>
                 <ol class="price-card-ol">
                   <li class="price-card-ol-item mb-12">
                     <img class="icon mr-12" src="../img/price_icon1.svg" alt="Support for private deployment">
@@ -162,12 +176,12 @@
                 </ol>
               </li>
               <li class="price-card-item price-animate-box" style="--delay: 0.3s;">
-                <h4 class="txt-5002025 price-card-h4 mb-24">Customized Versions</h4>
+                <h4 class="txt-5002025 price-card-h4 mb-24">customised version</h4>
                 <div class="price-card-money mb-12">
                   <h2 class="txt-6003645 price-card-h2">Custom</h2>
                 </div>
                 <h6 class="txt-4001624 price-card-h6 mb-24" style="height: 48px;">No limit to the number of people</h6>
-                <a href="https://www.dootask.com/manage/dashboard"  target="_blank">  <button class="btn btn-green mb-24">Get Started</button></a>
+                <button class="btn btn-green mb-24" onclick="showBox('Customised consultancy')">Customised consultancy</button>
                 <ol class="price-card-ol">
                   <li class="price-card-ol-item mb-12">
                     <img class="icon mr-12" src="../img/price_icon1.svg" alt="Support for private deployment">
@@ -283,9 +297,9 @@
               <ul class="plans-ul-t">
                 <li class="plans-ul-t-item grid-4" style="padding: 20px 24px;">
                   <h4 class="txt-5002024 plans-ul-t-item-h4">Feature</h4>
-                  <h4 class="txt-5002024 plans-ul-t-item-h4">Free</h4>
-                  <h4 class="txt-5002024 plans-ul-t-item-h4">Annual</h4>
-                  <h4 class="txt-5002024 plans-ul-t-item-h4">Lifetime</h4>
+                  <h4 class="txt-5002024 plans-ul-t-item-h4">Professional Edition</h4>
+                  <h4 class="txt-5002024 plans-ul-t-item-h4">Professional Edition</h4>
+                  <h4 class="txt-5002024 plans-ul-t-item-h4">customised version</h4>
                 </li>
                 <li class="plans-ul-t-item grid-4" style="padding: 32px 24px;">
                   <h4 class="txt-5001616 plans-ul-t-item-h4">Pricing</h4>
@@ -295,16 +309,7 @@
                       <i class="txt-5001628 price-card-unit">/month</i>
                     </div>
                     <span class="plans-ul-b-item-btn">
-                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">Get Started</button></a>
-                    </span>
-                  </div>
-                  <div class="plans-ul-t-item-h4">
-                    <div class="price-card-money mb-24">
-                      <h2 class="txt-6003645 price-card-h2">¥3,000</h2>
-                      <i class="txt-5001628 price-card-unit">/year</i>
-                    </div>
-                    <span class="plans-ul-b-item-btn">
-                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">Get Started</button></a>
+                      <a href="https://github.com/kuaifan/dootask/tree/pro"  target="_blank"> <button class="btn btn-primary">Get Started</button></a>
                     </span>
                   </div>
                   <div class="plans-ul-t-item-h4">
@@ -312,7 +317,15 @@
                       <h2 class="txt-6003645 price-card-h2">¥18,888</h2>
                     </div>
                     <span class="plans-ul-b-item-btn">
-                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">Get Started</button></a>
+                      <button class="btn btn-primary" onclick="showBox('Contact Us')">Contact Us</button>
+                    </span>
+                  </div>
+                  <div class="plans-ul-t-item-h4">
+                    <div class="price-card-money mb-24">
+                      <h2 class="txt-6003645 price-card-h2">Custom</h2>
+                    </div>
+                    <span class="plans-ul-b-item-btn">
+                      <button class="btn btn-primary" onclick="showBox('Customised consultancy')">Customised consultancy</button>
                     </span>
                   </div>
                 </li>
@@ -413,17 +426,17 @@
                   <h4 class="plans-ul-t-item-h4"></h4>
                   <div class="plans-ul-t-item-h4">
                     <span class="plans-ul-b-item-btn">
-                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">Get Started</button></a>
+                      <a href="https://github.com/kuaifan/dootask/tree/pro"  target="_blank"> <button class="btn btn-primary">Get Started</button></a>
                     </span>
                   </div>
                   <div class="plans-ul-t-item-h4">
                     <span class="plans-ul-b-item-btn">
-                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">Get Started</button></a>
+                      <button class="btn btn-primary" onclick="showBox('Contact Us')">Contact Us</button>
                     </span>
                   </div>
                   <div class="plans-ul-t-item-h4">
                     <span class="plans-ul-b-item-btn">
-                      <a href="https://www.dootask.com/manage/dashboard"  target="_blank"> <button class="btn btn-primary">Get Started</button></a>
+                      <button class="btn btn-primary" onclick="showBox('Customised consultancy')">Customised consultancy</button>
                     </span>
                   </div>
                 </li>
@@ -754,5 +767,17 @@
       })
       timerId = null; // 执行完后将定时器置空
     }, 1200);
+      // 联系我们和定制咨询弹框
+  function showBox(text){
+    const box = document.querySelector('.BulletBox1')
+    box.style.display = 'block'
+    const name = document.querySelector('.BulletBox1Name')
+    name.innerHTML = text
+  }
+  document.querySelector('.BulletBox1Btn').addEventListener('click',function(){
+    console.log("aaaaa");
+    const box = document.querySelector('.BulletBox1')
+    box.style.display = 'none'
+  })
 </script>
 </html>
