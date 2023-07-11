@@ -94,12 +94,8 @@ export default {
                 state.apiKeyData = data;
             })
 
-            // 系统设置
-            dispatch("call", {
-                url: 'system/setting',
-            }).then(({data}) => {
-                state.systemConfig = data;
-            })
+            // 获取系统设置
+            dispatch("systemSetting")
 
             // 加载语言包
             await $A.loadScriptS([
@@ -329,6 +325,43 @@ export default {
     },
 
     /**
+     * 获取系统设置
+     * @param dispatch
+     * @param state
+     * @returns {Promise<unknown>}
+     */
+    systemSetting({dispatch, state}) {
+        return new Promise((resolve, reject) => {
+            switch (state.systemConfig.__state) {
+                case "success":
+                    resolve(state.systemConfig)
+                    break
+
+                case "loading":
+                    setTimeout(_ => {
+                        dispatch("systemSetting").then(resolve).catch(reject)
+                    }, 100)
+                    break
+
+                default:
+                    state.systemConfig.__state = "loading"
+                    dispatch("call", {
+                        url: "system/setting",
+                    }).then(({data}) => {
+                        state.systemConfig = Object.assign(data, {
+                            __state: "success",
+                        })
+                        resolve(state.systemConfig)
+                    }).catch(_ => {
+                        state.systemConfig.__state = "error"
+                        reject()
+                    });
+                    break
+            }
+        })
+    },
+
+    /**
      * 是否启用首页
      * @param dispatch
      * @param state
@@ -336,11 +369,9 @@ export default {
      */
     needHome({dispatch, state}) {
         return new Promise((resolve, reject) => {
-            dispatch("call", {
-                url: "system/get/starthome",
-            }).then(({data}) => {
-                if (!!data.need_start) {
-                    resolve(data)
+            dispatch("systemSetting").then(data => {
+                if (data.start_home === 'open') {
+                    resolve()
                 } else {
                     reject()
                 }

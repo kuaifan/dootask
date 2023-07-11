@@ -150,14 +150,6 @@
                             <Radio label="close">{{$L('关闭')}}</Radio>
                         </RadioGroup>
                         <div class="form-tip">{{$L('仅支持网页版。')}}</div>
-                        <Input
-                            v-if="formDatum.start_home == 'open'"
-                            v-model="formDatum.home_footer"
-                            type="textarea"
-                            style="margin:8px 0 -8px"
-                            :rows="2"
-                            :autosize="{ minRows: 2, maxRows: 8 }"
-                            :placeholder="$L('首页底部：首页底部网站备案号等信息')"/>
                     </FormItem>
                 </div>
             </div>

@@ -38,7 +38,7 @@ class SystemController extends AbstractController
      * @apiParam {String} type
      * - get: 获取（默认）
      * - all: 获取所有（需要管理员权限）
-     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'auto_archived', 'archived_day', 'task_visible', 'all_group_mute', 'all_group_autoin', 'image_compress', 'image_save_local', 'start_home', 'home_footer']）
+     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'auto_archived', 'archived_day', 'task_visible', 'all_group_mute', 'all_group_autoin', 'image_compress', 'image_save_local', 'start_home']）
 
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -71,7 +71,6 @@ class SystemController extends AbstractController
                     'image_compress',
                     'image_save_local',
                     'start_home',
-                    'home_footer'
                 ])) {
                     unset($all[$key]);
                 }
@@ -880,58 +879,6 @@ class SystemController extends AbstractController
         }
         //
         return $data;
-    }
-
-    /**
-     * @api {get} api/system/get/showitem          19. 首页显示ITEM
-     *
-     * @apiDescription 用于判断首页是否显示：pro、github、更新日志...
-     * @apiVersion 1.0.0
-     * @apiGroup system
-     * @apiName get__showitem
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function get__showitem()
-    {
-        $logPath = base_path('CHANGELOG.md');
-        $logContent = "";
-        $logVersion = "";
-        if (file_exists($logPath)) {
-            $logContent = file_get_contents($logPath);
-            preg_match("/## \[(.*?)\]/", $logContent, $matchs);
-            if ($matchs) {
-                $logVersion = $matchs[1] === "Unreleased" ? $matchs[1] : "v{$matchs[1]}";
-            }
-        }
-        return Base::retSuccess('success', [
-            'pro' => str_contains(Request::getHost(), "dootask.com") || str_contains(Request::getHost(), "127.0.0.1"),
-            'github' => env('GITHUB_URL') ?: false,
-            'updateLog' => $logContent ?: false,
-            'updateVer' => $logVersion,
-        ]);
-    }
-
-    /**
-     * @api {get} api/system/get/starthome          20. 启动首页设置信息
-     *
-     * @apiDescription 用于判断注册是否需要启动首页
-     * @apiVersion 1.0.0
-     * @apiGroup system
-     * @apiName get__starthome
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function get__starthome()
-    {
-        return Base::retSuccess('success', [
-            'need_start' => Base::settingFind('system', 'start_home') == 'open',
-            'home_footer' => Base::settingFind('system', 'home_footer')
-        ]);
     }
 
     /**
