@@ -1,4 +1,5 @@
 import microApp from '@micro-zoe/micro-app'
+import DialogWrapper from "./pages/manage/components/DialogWrapper.vue";
 
 export default function() {
     let urls  = "";
@@ -28,6 +29,7 @@ export default function() {
     // 微应用
     microApp.start({
         plugins: {
+            global: [DialogWrapper],
             modules: modules
         }
     })

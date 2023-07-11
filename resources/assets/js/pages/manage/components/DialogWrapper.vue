@@ -540,7 +540,7 @@ export default {
     props: {
         dialogId: {
             type: Number,
-            default: 0
+            default: 1
         },
         msgId: {
             type: Number,
@@ -559,6 +559,9 @@ export default {
 
     data() {
         return {
+
+            dialogId:1,
+
             msgItem: DialogItem,
             msgText: '',
             msgNew: 0,
@@ -651,6 +654,7 @@ export default {
     },
 
     beforeDestroy() {
+        console.log(21123123123123123123)
         this.$store.dispatch('forgetInDialog', this._uid)
         this.$store.dispatch('closeDialog', this.dialogId)
     },

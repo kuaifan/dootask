@@ -40,6 +40,11 @@ export default [
                 component: () => import('./pages/manage/approve/details.vue'),
             },
             {
+                name: 'manage-microapp',
+                path: 'microapp/*',
+                component: () => import('./pages/manage/microapp.vue')
+            },
+            {
                 name: 'manage-setting',
                 path: 'setting',
                 component: () => import('./pages/manage/setting/index.vue'),
@@ -167,10 +172,5 @@ export default [
         name: '404',
         path: '*',
         component: () => import('./pages/404.vue')
-    },
-    {
-        path: '/microapp/*',
-        name: 'microapp',
-        component: () => import('./pages/microapp.vue')
-    },
+    }
 ]

@@ -565,11 +565,15 @@ export default {
 
                     {path: 'team', name: '团队管理', divided: true},
                     {path: 'approve', name: '审批中心'},
+                    {path: 'okrManage', name: 'OkR管理'},
+                    {path: 'okrAnalyze', name: 'OkR结果分析'},
                 ])
             } else {
                 array.push(...[
                     {path: 'personal', name: '个人设置', divided: true},
                     {path: 'approve', name: '审批中心'},
+                    {path: 'okrManage', name: 'OkR管理'},
+                    {path: 'okrAnalyze', name: 'OkR结果分析'},
                     {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
 
                     {path: 'workReport', name: '工作报告', divided: true},
@@ -771,9 +775,15 @@ export default {
                         this.goForward('index');
                     }
                     return;
-               case 'approve':
+                case 'approve':
                     if (this.menu.findIndex((m) => m.path == path) > -1) {
                         this.goForward({name: 'manage-approve'});
+                    }
+                    return;
+                case 'okrManage':
+                case 'okrAnalyze':
+                    if (this.menu.findIndex((m) => m.path == path) > -1) {
+                        this.goForward({path: '/manage/microapp/'});
                     }
                     return;
                 case 'logout':
