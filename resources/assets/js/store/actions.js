@@ -1779,8 +1779,10 @@ export default {
             } else {
                 task_id = task.id;
             }
+            state.taskArchiveView = task.deleted_at === null && task.archived_at !== null ? task_id : 0;
+        } else {
+            state.taskArchiveView = 0;
         }
-        state.taskArchiveView = task_id;
         state.taskId = task_id;
         if (task_id > 0) {
             dispatch("getTaskOne", {
