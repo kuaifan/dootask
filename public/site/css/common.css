@@ -18,7 +18,7 @@ i{
 }
 a{
   color: var(--text-color);
-  text-decoration: none; 
+  text-decoration: none;
   cursor: pointer;
 }
 img {
@@ -585,7 +585,7 @@ img {
   box-shadow: var(--pop-box-shadow);
   transition: all 0.5s ease-in-out;
   z-index: 999;
-} 
+}
 .drawer-t{
   display: flex;
   justify-content: space-between;
@@ -763,7 +763,7 @@ img {
   display: inline-block;
 }
 .login-btn{
-  width: 84px; 
+  width: 84px;
   display: inline-block;
 }
 /* 底部样式 */
@@ -781,7 +781,7 @@ footer{
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding-top: 46px; 
+  padding-top: 46px;
   border-bottom: var(--border-color) solid 1px;
 }
 #qq_group{
@@ -976,4 +976,7 @@ footer{
   to {
     stroke-dashoffset: 0;
   }
+}
+.start_a{
+    width: 100%;
 }
