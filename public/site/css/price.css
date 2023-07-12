@@ -187,3 +187,59 @@
 .footer-layut{
   border-top: var(--border-color) solid 1px;
 }
+.BulletBox1{
+  position: fixed;
+  display: none;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  background-color: #fff;
+  width: 430px;
+  text-align: center;
+  z-index: 9999;
+  border: 1px solid transparent;
+  border-radius: 18px;
+  box-sizing: border-box;
+  box-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
+.BulletBox1 .top{
+  width: 382px;
+  line-height: 20px;
+  padding: 22px 24px 20px 24px;
+  font-size: 18px;
+  color: #303133;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: flex;
+    justify-content: space-between;
+}
+.BulletBox1 .content{
+  width: 100%;
+  box-sizing: border-box;
+  line-height: 1.5;
+  font-size: 14px;
+  padding:16px 32px 2px 32px;
+  text-align: left;
+  color: rgb(96, 98, 102);
+}
+.BulletBox1 .bottom{
+  width: 370px;
+  height: 34px;
+  padding: 20px 30px 22px 30px;
+  position: relative;
+}
+.BulletBox1 .bottom .BulletBox1Btn{
+  position: absolute;
+  min-width: 100px;
+  right: 20px;
+  height: 34px;
+  line-height: 32px;
+  color: #fff;
+  background-color: #8bcf70;
+  border-color: #8bcf70;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 5px;
+}

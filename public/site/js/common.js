@@ -17,7 +17,7 @@ const changeImageSrc = (img, src) => {
   const url = window.location.href   // 获取当前浏览器 URL
   if (imgDom.length > 0) {
     imgDom.forEach(item=>{
-      item.src = url.includes('site') ? `../../img/${src}` : `img/${src}`;
+      item.src = url.includes('site/i') ? `./img/${src}` : `../img/${src}`;
     })
   }
 };
@@ -55,7 +55,6 @@ function setTheme(theme) {
   changeImageSrc('#home_icon2', `${theme}/home_icon2.png`)
   changeImageSrc('#home_icon3', `${theme}/home_icon3.png`)
   changeImageSrc('#home_icon4', `${theme}/home_icon4.png`)
-  changeImageSrc('#home_code', `${theme}/home_code.svg`)
   changeImageSrc('#home_pic7', `${theme}/home_pic7.svg`)
   changeImageSrc('#home_pic7_768', `${theme}/home_pic7_768.svg`)
   changeImageSrc('#help_pic2', `${theme}/help_pic2.png`)

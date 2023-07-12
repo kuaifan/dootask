@@ -5,12 +5,12 @@
   <title>DooTask</title>
   <meta name="google" value="notranslate">
   <meta name="description" content="DooTask是一款轻量级的开源在线项目任务管理工具，提供各类文档协作工具、在线思维导图、在线流程图、项目管理、任务分发、即时IM，文件管理等工具。助力团队高效推进项目，让工作更简单。">
-  <meta name="keywords" content="中国 Dootask 开源在线项目 任务管理工具 任务管理 轻量级 海豚有海 团队协作">
+  <meta name="keywords" content="中国 DooTask 开源在线项目 任务管理工具 任务管理 轻量级 海豚有海 团队协作">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="shortcut icon" href="../../img/favicon.ico">
-  <link rel="stylesheet" href="../../css/common.css">
-  <link rel="stylesheet" type="text/css" href="../../css/rem.css">
-  <link rel="stylesheet" href="../../css/log.css">
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" type="text/css" href="../css/rem.css">
+  <link rel="stylesheet" href="../css/log.css">
 </head>
 <body>
   <div id="layout">
@@ -19,7 +19,7 @@
       <div class="nav">
         <div class="nav-layout">
           <a href="../zh/index.html" class="logo">
-            <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+            <img id="logo" src="../img/light/logo.svg" alt="DooTask,Logo">
             <i class="dootask txt-7002027">DooTask</i>
           </a>
           <ul class="nav-ul">
@@ -32,7 +32,7 @@
             <li class="nav-ul-item">
               <i class="txt-4001620 txt nav-support" id="support-txt" onclick="showMenuPopHandle()">
                 支持
-                <img src="../../img/vector.svg" alt="" class="nav-vector" id="drop-down-svg">
+                <img src="../img/vector.svg" alt="" class="nav-vector" id="drop-down-svg">
               </i>
               <ol class="submenu-pop" id="submenu-pop">
                 <li class="submenu-pop-item" onclick="changeMenu()">
@@ -52,7 +52,7 @@
           </ul>
           <div class="nav-r">
             <div class="lang" id="lang-img">
-              <img src="../../img/lang-select.svg" alt="语言切换" onclick="shouLangPopHandle()">
+              <img src="../img/lang-select.svg" alt="语言切换" onclick="shouLangPopHandle()">
               <ul class="lang-pop" id="lang-pop">
                 <li class="lang-pop-item" onclick="changeLanguage('zh')">
                   <i class="lang-txt">简体中文</i>
@@ -63,25 +63,25 @@
               </ul>
             </div>
             <i class="nav-r-icon theme_dark" onclick="setTheme('light')">
-              <img src="../../img/light.svg" alt="明亮主题">
+              <img src="../img/light.svg" alt="明亮主题">
             </i>
             <i class="nav-r-icon theme_light" onclick="setTheme('dark')">
-              <img src="../../img/drak.svg" alt="暗黑主题">
+              <img src="../img/drak.svg" alt="暗黑主题">
             </i>
             <a href="https://github.com/kuaifan/dootask" target="_blank">
               <i class="nav-r-icon">
-                <img src="../../img/github.svg" alt="github">
+                <img src="../img/github.svg" alt="github">
               </i>
             </a>
             <i class="line-1"></i>
             <span class="get-started">
               <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
-                <button class="btn btn-primary" >开始使用</button>
+                <button class="btn btn-primary" >立即体验</button>
               </a>
             </span>
           </div>
           <div class="menuBtn">
-            <img id="menuBtn" src="../../img/menu.svg" alt="菜单">
+            <img id="menuBtn" src="../img/menu.svg" alt="菜单">
           </div>
         </div>
       </div>
@@ -90,7 +90,7 @@
     <div class="logs-drawer">
       <div class="drawer-t mb-36">
         <a href="../zh/index.html" class="logo">
-          <img id="logo" src="../../img/light/logo.svg" alt="DooTask,Logo">
+          <img id="logo" src="../img/light/logo.svg" alt="DooTask,Logo">
           <i class="dootask txt-7002027">DooTask</i>
         </a>
         <i class="close-drawer" onclick="closeLogsDraweHandle()">✕</i>
@@ -102,7 +102,7 @@
     <div class="drawer">
       <div class="drawer-t mb-36">
         <a href="../zh/index.html" class="logo">
-          <img id="logo" src="../../img/light/logo.svg" alt="DooTaskLogo">
+          <img id="logo" src="../img/light/logo.svg" alt="DooTaskLogo">
           <i class="dootask txt-7002027">DooTask</i>
         </a>
         <i class="close-drawer" onclick="closeDraweHandle()">✕</i>
@@ -118,7 +118,7 @@
           <div class="drawer-item" onclick="expandMenuHandle('support')">
             <i class="txt-4001620 txt">
               支持
-              <img src="../../img/vector.svg" class="nav-vector" alt="支持" id="drawer-down-support-svg">
+              <img src="../img/vector.svg" class="nav-vector" alt="支持" id="drawer-down-support-svg">
             </i>
           </div>
           <ol class="drawer-active" id="support" style="display: none;">
@@ -140,7 +140,7 @@
           <div class="drawer-item" onclick="expandMenuHandle('theme')">
             <i class="txt-4001620 txt">
               主题
-              <img src="../../img/vector.svg" alt="主题" class="nav-vector" id="drawer-down-theme-svg">
+              <img src="../img/vector.svg" alt="主题" class="nav-vector" id="drawer-down-theme-svg">
             </i>
           </div>
           <ol class="drawer-active" id="theme" style="display: none;">
@@ -154,7 +154,7 @@
           <div class="drawer-item" onclick="expandMenuHandle('language')">
             <i class="txt-4001620 txt">
               语言
-              <img src="../../img/vector.svg" alt="语言" class="nav-vector" id="drawer-down-language-svg">
+              <img src="../img/vector.svg" alt="语言" class="nav-vector" id="drawer-down-language-svg">
             </i>
           </div>
           <ol class="drawer-active" id="language" style="display: none;">
@@ -180,7 +180,7 @@
         <article class="logs">
           <div class="logs-con">
             <div class="logs-t-768" id="menuBtn-logs">
-              <img class="logs-t-prev" src="../../img/prev.svg" alt="更新日志">
+              <img class="logs-t-prev" src="../img/prev.svg" alt="更新日志">
               <i class="logs-t-tit">更新日志</i>
             </div>
             <div class="logs-layout">
@@ -201,14 +201,14 @@
     <footer>
       <div class="footer-con">
         <div class="filings">
-          Copyright © 2022-2023 Dootask. All rights reserved.
+          Copyright © 2022-2023 DooTask. All rights reserved.
         </div>
       </div>
     </footer>
   </div>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
-<script src="../../js/common.js"></script>
+<script src="../js/common.js"></script>
 <script>
 const getItem = (key)=> {
   var record = JSON.parse(localStorage.getItem(key));
