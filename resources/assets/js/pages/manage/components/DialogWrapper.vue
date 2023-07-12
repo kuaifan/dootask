@@ -540,7 +540,7 @@ export default {
     props: {
         dialogId: {
             type: Number,
-            default: 1
+            default: 0
         },
         msgId: {
             type: Number,
@@ -559,9 +559,6 @@ export default {
 
     data() {
         return {
-
-            dialogId:1,
-
             msgItem: DialogItem,
             msgText: '',
             msgNew: 0,

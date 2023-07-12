@@ -573,7 +573,6 @@ export default {
                     {path: 'personal', name: '个人设置', divided: true},
                     {path: 'approve', name: '审批中心'},
                     {path: 'okrManage', name: 'OkR管理'},
-                    {path: 'okrAnalyze', name: 'OkR结果分析'},
                     {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
 
                     {path: 'workReport', name: '工作报告', divided: true},
@@ -782,8 +781,10 @@ export default {
                     return;
                 case 'okrManage':
                 case 'okrAnalyze':
-                    if (this.menu.findIndex((m) => m.path == path) > -1) {
-                        this.goForward({path: '/manage/microapp/'});
+                    if(path=='okrManage'){
+                        this.goForward({path: '/manage/microapp/' });
+                    }else{
+                        this.goForward({path: '/manage/microapp/#/main' });
                     }
                     return;
                 case 'logout':

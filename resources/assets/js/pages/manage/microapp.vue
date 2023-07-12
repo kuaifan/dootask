@@ -5,13 +5,11 @@
                 <Loading/>
             </div>
         </transition>
-        <!-- <div class="messenger-msg" style="width: 500px;position: relative;height: 100%;">
-           <DialogWrapper :dialogId="1"  is-messenger/>
-        </div> -->
         <micro-app name='micro-app' v-if="microAppUrl && !loading"
             :url='microAppUrl' 
-            baseRoute="/" 
+            baseRoute="/main" 
             inline 
+            destroy
             disableSandbox 
             :data='microAppData'
             @created='handleCreate'
@@ -26,23 +24,18 @@
 
 <script>
 import Vue from 'vue'
+import store from '../../store/index'
+import {mapState} from "vuex";
 import { EventCenterForMicroApp } from '@micro-zoe/micro-app'
-import ProjectDialog from "./components/ProjectDialog.vue";
-import DialogWrapper from "./components/DialogWrapper.vue";
-
-window.DialogWrapper = DialogWrapper;
-// Vue.component('MyComponent', {
-//   // 组件的配置和代码...
-// })
-window.Vue = Vue;
+import DialogWrapper from './components/DialogWrapper'
+import {languageList, languageType} from "../../language";
 
 export default {
-    components: { ProjectDialog, DialogWrapper },
     data() {
         return {
             loading: false,
-            microAppUrl: 'http://localhost:5567/',
-            microAppData: { }
+            microAppUrl: 'http://localhost:5567/manage/microapp/#/main',
+            microAppData: {}
         }
     },
 
@@ -54,12 +47,22 @@ export default {
         '$route': {
             handler(to) {
                 if( to.name == 'manage-microapp' ){
-                    this.loading = false;
-                    window.eventCenterForAppNameVite = new EventCenterForMicroApp("micro-app")
+                    this.loading = true;
+                    this.$nextTick(()=>{
+                        this.loading = false;
+                        window.eventCenterForAppNameVite = new EventCenterForMicroApp("micro-app")
+                    })
                 }
             },
             immediate: true,
         },
+    },
+
+    computed: {
+        ...mapState([
+            'userInfo',
+            'themeMode',
+        ])
     },
 
     methods: {
@@ -70,9 +73,21 @@ export default {
             console.log("子应用即将被渲染",e)
         },
         handleMount(e) {
-            console.log("子应用已经渲染完成",e)
-            this.microAppData =  { 
-                msg: '来自基座的数据' 
+            this.microAppData = { 
+                type: 'init',
+                vues:{
+                    Vue,
+                    store,
+                    components:{
+                        DialogWrapper
+                    }
+                },
+                theme: this.themeMode,
+                languages: {
+                    languageList,
+                    languageType,
+                },
+                userInfo: this.userInfo,
             }
         },
         handleUnmount(e) {
