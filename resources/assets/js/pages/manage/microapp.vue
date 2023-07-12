@@ -7,7 +7,6 @@
         </transition>
         <micro-app name='micro-app' v-if="microAppUrl && !loading"
             :url='microAppUrl' 
-            baseRoute="/main" 
             inline 
             destroy
             disableSandbox 
@@ -34,7 +33,7 @@ export default {
     data() {
         return {
             loading: false,
-            microAppUrl: 'http://localhost:5567/manage/microapp/#/main',
+            microAppUrl: '',
             microAppData: {}
         }
     },
@@ -50,6 +49,7 @@ export default {
                     this.loading = true;
                     this.$nextTick(()=>{
                         this.loading = false;
+                        this.microAppUrl = this.$route.query.url
                         window.eventCenterForAppNameVite = new EventCenterForMicroApp("micro-app")
                     })
                 }

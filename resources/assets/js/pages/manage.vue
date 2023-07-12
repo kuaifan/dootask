@@ -781,10 +781,11 @@ export default {
                     return;
                 case 'okrManage':
                 case 'okrAnalyze':
+                    let query = { url: import.meta.env.VITE_OKR_WEB_URL || "/manage/microapp/okr/" } 
                     if(path=='okrManage'){
-                        this.goForward({path: '/manage/microapp/' });
+                        this.goForward({  path: '/manage/microapp/', query });
                     }else{
-                        this.goForward({path: '/manage/microapp/#/main' });
+                        this.goForward({ path: '/manage/microapp/#/main', query });
                     }
                     return;
                 case 'logout':
