@@ -7,9 +7,8 @@
         </transition>
         <micro-app name='micro-app' v-if="microAppUrl && !loading"
             :url='microAppUrl' 
-            inline 
+            inline
             destroy
-            disableSandbox 
             :data='microAppData'
             @created='handleCreate'
             @beforemount='handleBeforeMount'
@@ -49,7 +48,11 @@ export default {
                     this.loading = true;
                     this.$nextTick(()=>{
                         this.loading = false;
-                        this.microAppUrl = this.$route.query.url
+                        let url = $A.apiUrl(this.$route.query.url)
+                        if( url.indexOf('http') == -1 ){
+                            url = window.location.origin + url
+                        }
+                        this.microAppUrl =url
                         window.eventCenterForAppNameVite = new EventCenterForMicroApp("micro-app")
                     })
                 }
