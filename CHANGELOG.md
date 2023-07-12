@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.28.26]
+
+### Bug Fixes
+
+- 前端取消会议屏幕常亮
+
+### Features
+
+- 链接调整和价格页面调整
+- 立即体验按钮、价格页面等样式调整
+
+### Performance
+
+- 整理官网页面
+- 任务详情页可见性选项默认不显示
+- 避免删除后不关闭任务窗口
+- 添加任务支持自定义协助人
+
 ## [0.28.6]
 
 ### Bug Fixes
