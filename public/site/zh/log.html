@@ -239,7 +239,7 @@ const domHandle = (html)=>{
   const rlog = document.querySelector('.logs-l-1920');
   const rlog2 = document.querySelector('.logs-l-768');
   const versions = html.match(/<h2>(.*?)<\/h2>/g).slice(0, 10);
-  
+
   const versionsNumbers = versions.map(str => str.split('<h2>[')[1].split(']</h2>')[0]);
   for (let i = 0; i < versionsNumbers.length; i++) {
     const updatesHtml = html.split(versionsNumbers[i])[1].split('<h2>')[0].match(/<li>(.*?)<\/li>/g);
@@ -247,7 +247,7 @@ const domHandle = (html)=>{
     const rLi = document.createElement('li');
     rLi.className = `l-ul-item ${i==0?'active':''}`;
     rLi.innerHTML = `
-      <a class="txt-4001620 txt" href="#section-${i+1}">v${versionsNumbers[i]} 更新</a>
+      <a class="txt-4001620 txt log-a" href="#section-${i+1}">v${versionsNumbers[i]} 更新</a>
     `;
     const rLi2 = document.createElement('li');
     rLi2.className = `l-ul-item`;
@@ -256,7 +256,7 @@ const domHandle = (html)=>{
       logsDrawer.classList.remove('open-logs-drawer');
     });
     rLi2.innerHTML = `
-      <a class="txt-4001620 txt" href="#section-${i+1}" >v${versionsNumbers[i]} 更新</a>
+      <a class="txt-4001620 txt log-a" href="#section-${i+1}" >v${versionsNumbers[i]} 更新</a>
     `;
     rlog.appendChild(rLi);
     rlog2.appendChild(rLi2);
@@ -271,7 +271,7 @@ const domHandle = (html)=>{
     getUpdatesFromHtml(updatesHtmlText,li)
   }
   let updateLogNum = localStorage.getItem('update_log_num')
-  /* logs点击激活函数 */ 
+  /* logs点击激活函数 */
   let isThrottled = false;
   let timerId;
   const logs_tabs = document.querySelector('.logs-l-1920');
