@@ -47,7 +47,7 @@ section{
   align-items: center;
   justify-content: center;
   padding-bottom: 20px;
-  
+
 }
 .name >i{
   color: #000;
@@ -160,7 +160,7 @@ section{
 }
 .operat-con .group_num{
   background-color: #8BCF70;
-  
+
   padding: 6px 12px;;
   border-radius: 6px;
 }
@@ -174,7 +174,7 @@ section{
   width: 160px;
   height: 160px;
   background-color: #F2F3F1;
-  border-radius: 12px;  
+  border-radius: 12px;
   margin-bottom: 36px;
   display: flex;
   justify-content: center;
@@ -215,4 +215,9 @@ section{
     height: 24px;
     margin-right: 8px;
   }
+}
+.qrcode_box{
+    width: 130px;
+    height: 130px;
+    display: inline-block;
 }
