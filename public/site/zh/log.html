@@ -68,14 +68,14 @@
             <i class="nav-r-icon theme_light" onclick="setTheme('dark')">
               <img src="../img/drak.svg" alt="暗黑主题">
             </i>
-            <a href="https://github.com/kuaifan/dootask" target="_blank">
+            <a href="https://github.com/kuaifan/dootask">
               <i class="nav-r-icon">
                 <img src="../img/github.svg" alt="github">
               </i>
             </a>
             <i class="line-1"></i>
             <span class="get-started">
-              <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
+              <a href="https://www.dootask.com/manage/dashboard">
                 <button class="btn btn-primary" >立即体验</button>
               </a>
             </span>
@@ -167,9 +167,9 @@
           </ol>
         </li>
         <li class="drawer-item-b">
-          <li class="drawer-item">
-            <a class="txt-4001620 txt" href="https://demo.dootask.com">登录</a>
-          </li>
+          <div class="drawer-item">
+            <a class="txt-4001620 txt" href="https://demo.dootask.com">立即体验</a>
+          </div>
         </li>
       </ul>
     </div>
@@ -239,7 +239,7 @@ const domHandle = (html)=>{
   const rlog = document.querySelector('.logs-l-1920');
   const rlog2 = document.querySelector('.logs-l-768');
   const versions = html.match(/<h2>(.*?)<\/h2>/g).slice(0, 10);
-  
+
   const versionsNumbers = versions.map(str => str.split('<h2>[')[1].split(']</h2>')[0]);
   for (let i = 0; i < versionsNumbers.length; i++) {
     const updatesHtml = html.split(versionsNumbers[i])[1].split('<h2>')[0].match(/<li>(.*?)<\/li>/g);
@@ -247,7 +247,7 @@ const domHandle = (html)=>{
     const rLi = document.createElement('li');
     rLi.className = `l-ul-item ${i==0?'active':''}`;
     rLi.innerHTML = `
-      <a class="txt-4001620 txt" href="#section-${i+1}">v${versionsNumbers[i]} 更新</a>
+      <a class="txt-4001620 txt log-a" href="#section-${i+1}">v${versionsNumbers[i]} 更新</a>
     `;
     const rLi2 = document.createElement('li');
     rLi2.className = `l-ul-item`;
@@ -256,23 +256,22 @@ const domHandle = (html)=>{
       logsDrawer.classList.remove('open-logs-drawer');
     });
     rLi2.innerHTML = `
-      <a class="txt-4001620 txt" href="#section-${i+1}">v${versionsNumbers[i]} 更新</a>
+      <a class="txt-4001620 txt log-a" href="#section-${i+1}" >v${versionsNumbers[i]} 更新</a>
     `;
     rlog.appendChild(rLi);
     rlog2.appendChild(rLi2);
-    
     const li = document.createElement('li');
     li.className = 'r-ul-item mb-36';
     li.innerHTML = `
     <ol class="logs-r-ol">
       <li class="txt-4001624 r-ol-item mb-24"><h4 class="logs-h4" id="section-${i+1}">v${versionsNumbers[i]} 更新</h4></li>
     </ol>
-    `;
+    `
     changelog.appendChild(li);
     getUpdatesFromHtml(updatesHtmlText,li)
   }
   let updateLogNum = localStorage.getItem('update_log_num')
-  /* logs点击激活函数 */ 
+  /* logs点击激活函数 */
   let isThrottled = false;
   let timerId;
   const logs_tabs = document.querySelector('.logs-l-1920');

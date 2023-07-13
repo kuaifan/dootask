@@ -68,14 +68,14 @@
             <i class="nav-r-icon theme_light" onclick="setTheme('dark')">
               <img src="../img/drak.svg" alt="暗黑主题">
             </i>
-            <a href="https://github.com/kuaifan/dootask" target="_blank">
+            <a href="https://github.com/kuaifan/dootask">
               <i class="nav-r-icon">
                 <img src="../img/github.svg" alt="github">
               </i>
             </a>
             <i class="line-1"></i>
             <span class="get-started">
-              <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
+              <a href="https://www.dootask.com/manage/dashboard">
                 <button class="btn btn-primary" >立即体验</button>
               </a>
             </span>
@@ -201,9 +201,9 @@
           </ol>
         </li>
         <li class="drawer-item-b">
-          <li class="drawer-item">
-            <a class="txt-4001620 txt" href="https://demo.dootask.com">登录</a>
-          </li>
+          <div class="drawer-item">
+            <a class="txt-4001620 txt" href="https://demo.dootask.com">立即体验</a>
+          </div>
         </li>
       </ul>
     </div>
@@ -265,7 +265,7 @@
                 </div>
                 <div class="footer-t-contact">
                   <img class="footer-t-contact-icon mr-12" src="../img/about_icon2.svg" alt="邮箱,service@hitosea.com">
-                  <h6 class="footer-t-contact-h6">hservice@hitosea.com</h6>
+                  <h6 class="footer-t-contact-h6">service@hitosea.com</h6>
                 </div>
               </div>
               <form class="from">
@@ -278,13 +278,14 @@
                     <i class="from-ul-tags mb-8">邮箱</i>
                     <input id="email" class="input" type="text" placeholder="请输入邮箱">
                   </li>
-                  <li class="from-ul-item mb-16">
+                  <li class="from-ul-item mb-16" id="desc_wrap">
                     <i class="from-ul-tags mb-8">留言</i>
-                    <textarea id="desc" class="textarea" cols="3" rows="8" placeholder="选填"></textarea>
+                    <textarea id="desc" class="textarea" cols="3" rows="8" placeholder="选填" oninput="limitCharacters( 255)"></textarea>
+                    <p id="characterCount">0/255</p>
                   </li>
                   <li>
                     <span class="from-submit">
-                      <button class="btn btn-primary" type="button" onclick="sendFormRequest()">提交</button>
+                      <button id="loadingWrap"  class="btn btn-primary" type="button" onclick="sendFormRequest()"><img id="submitLoading" alt="" src="../img/loading.png" />提交</button>
                     </span>
                   </li>
                 </ul>
@@ -336,25 +337,25 @@
                 </ol>
               </li>
               <li class="footer-r-item">
-                <ol class="footer-r-ol">
+                <ul class="footer-r-ol">
                   <li class="footer-ol-item txt-5001624 mb-24">社区</li>
                   <li class="footer-ol-item">
-                    <li class="footer-ol-item mb-16">
+                    <div class="footer-ol-item mb-16">
                       <i class="txt-4001624 txt" onclick="openInNewTab('https://github.com/kuaifan/dootask')">Github</i>
-                    </li>
-                    <li class="footer-ol-item mb-16">
+                    </div>
+                    <div class="footer-ol-item mb-16">
                       <i class="txt-4001624 txt" onclick="openInNewTab('https://gitee.com/aipaw/dootask')">Gitee</i>
-                    </li>
-                    <li class="footer-ol-item" id="qq_group">
+                    </div>
+                    <div class="footer-ol-item" id="qq_group">
                       <i class="txt-4001624 txt">QQ 群</i>
                       <div class="group_code">
                         <img class="code-svg" id="home_code" src="../img/qq_code.jpg" alt="群号：546574618">
                         <i class="group_num">群号：546574618</i>
                         <i class="lower_triangle"></i>
                       </div>
-                    </li>
+                    </div>
                   </li>
-                </ol>
+                </ul>
               </li>
             </ul>
           </div>
@@ -369,7 +370,7 @@
 <script src="https://cdn.bootcdn.net/ajax/libs/axios/1.3.6/axios.js"></script>
 <script src="../js/common.js"></script>
 <script>
-  /* 数字滚动动画 */ 
+  /* 数字滚动动画 */
   const companyYearEl = document.querySelector('.company-year');
   const companyAreaEl = document.querySelector('.company-area');
   const companySizeEl = document.querySelector('.company-size');
@@ -410,7 +411,7 @@
     areaTimerId = setInterval(updateAreaNumber, 1);
     sizeTimerId = setInterval(updateSizeNumber, 1);
   }
-  /* 滑动到可视区域执行动画 */ 
+  /* 滑动到可视区域执行动画 */
   const boxes = document.querySelectorAll('.about-animate-box');
   let timerId = null
   const animateBoxes = ()=> {
@@ -425,6 +426,16 @@
         },1200)
       }
     });
+  }
+  /* 限制表单textarea字符数 */
+  function limitCharacters( maxCharacters) {
+    const textarea = document.getElementById("desc")
+    let text = textarea.value;
+    if (text.length > maxCharacters) {
+        textarea.value = text.slice(0, maxCharacters); // 截断文本
+      text = textarea.value;
+    }
+    document.getElementById('characterCount').textContent = `${text.length}/${maxCharacters}`;
   }
   /* 显示/隐藏提示弹框 */
   function showBox(text){
@@ -464,19 +475,23 @@
                     `,
           "silence": "no"
         };
-
+        document.getElementById("submitLoading").style.display = "block"
         axios.post(url, data, { headers })
           .then(response => {
             form.reset()
+            document.getElementById("submitLoading").style.display = "none"
+            limitCharacters(255)
             showBox('提交成功！')
           })
           .catch(error => {
             form.reset()
+            document.getElementById("submitLoading").style.display = "none"
+            limitCharacters(255)
             showBox(error.message)
           });
       }
     }
-    
+
   }
   window.addEventListener('scroll', animateBoxes);
   animateBoxes();

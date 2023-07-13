@@ -980,3 +980,6 @@ footer{
 .start_a{
     width: 100%;
 }
+.hide{
+    display: none;
+}

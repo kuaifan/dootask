@@ -173,3 +173,33 @@
   border-radius: 8px;
   color: #fff;
 }
+#desc_wrap{
+  position: relative;
+}
+#characterCount{
+  position: absolute;
+  right: 20px;
+  bottom: 7px;
+  z-index:999;
+  color: #ccc;
+}
+#loadingWrap{
+  position: relative;
+}
+#submitLoading{
+  position: absolute;
+  display: none;
+  left: 42%;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  animation: spin 3s infinite linear;
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>DooTask</title>
   <meta name="google" value="notranslate">
-  <meta name="description" content="Lightweight open source online project task management tool to help teams efficiently advance their projects and make work easier."">
+  <meta name="description" content="Lightweight open source online project task management tool to help teams efficiently advance their projects and make work easier.">
   <meta name="keywords" content="China DooTask Task management Lightweight Hitosea Teamwork">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="shortcut icon" href="../img/favicon.ico">
@@ -68,15 +68,15 @@
             <i class="nav-r-icon theme_light" onclick="setTheme('dark')">
               <img src="../img/drak.svg" alt="Dark theme">
             </i>
-            <a href="https://github.com/kuaifan/dootask" target="_blank">
+            <a href="https://github.com/kuaifan/dootask">
               <i class="nav-r-icon">
                 <img src="../img/github.svg" alt="github">
               </i>
             </a>
             <i class="line-1"></i>
             <span class="get-started">
-              <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
-                <button class="btn btn-primary" >Experience it now</button>
+              <a href="https://www.dootask.com/manage/dashboard">
+                <button class="btn btn-primary" >Try Now</button>
               </a>
             </span>
           </div>
@@ -100,7 +100,7 @@
                 </a>
                 <div class="hover">
                   <img class="qr-code mb-8" src="../img/ios_code.png" alt="Scan download,ios">
-                  <i class="txt-4001624 txt">Scan download</i>
+                  <i class="txt-4001624 txt"> Download</i>
                 </div>
               </li>
               <li class="download-ul-item dow-animate-box" style="--delay: 0.1s;" onmouseover='handleMouseover(1)' onmouseout='handleMouseout(1)'>
@@ -108,10 +108,10 @@
                   <img class="icon mb-8" src="../img/dow_android.svg" alt="Android">
                   <i class="txt-4001624 txt">Android</i>
                 </a>
-                <div class="hover">
-                  <div class="mb-12" id="qrcode" style="width: 100px;height: 100px;"></div>
-                  <i class="txt-4001624 txt">Scan download</i>
-                </div>
+                <a class="hover radius" id="winx64Link" href="https://www.dootask.com/desktop/publish/latest?platform=android" target="_blank">
+                  <img class="icon mb-8" src="../img/dow_icon.svg" alt="Windows,download">
+                  <i class="txt-4001624 txt">Download</i>
+                </a>
               </li>
               <li class="download-ul-item dow-animate-box" style="--delay: 0.2s;" onmouseover='handleMouseover(2)' onmouseout='handleMouseout(2)'>
                 <div class="normal">
@@ -120,10 +120,10 @@
                 </div>
                 <div class="hover radius">
                   <button class="btn btn-green mb-12" style="width: 70%;">
-                    <a class="chips-txt txt-4001418" id="arm64Link" href="https://www.dootask.com/uploads/desktop/0.27.46/DooTask-v0.27.46-mac-arm64.dmg">Apple Chips</a>
+                    <a class="chips-txt txt-4001418" id="arm64Link" href="https://www.dootask.com/desktop/publish/latest?platform=mac&arch=arm64" target="_blank">Apple Chips</a>
                   </button>
                   <button class="btn btn-green" style="width: 70%;">
-                    <a class="chips-txt txt-4001418" id="x64Link" href="https://www.dootask.com/uploads/desktop/0.27.46/DooTask-v0.27.46-mac-x64.dmg">Intel Chips</a>
+                    <a class="chips-txt txt-4001418" id="x64Link" href="https://www.dootask.com/desktop/publish/latest?platform=mac&arch=x64"  target="_blank">Intel Chips</a>
                   </button>
                 </div>
               </li>
@@ -132,9 +132,9 @@
                   <img class="icon mb-8" src="../img/dow_window.svg" alt="Windows">
                   <i class="txt-4001624 txt">Windows</i>
                 </div>
-                <a class="hover radius" id="winx64Link" href="https://www.dootask.com/uploads/desktop/0.27.46/DooTask-v0.27.46-win-x64.exe">
+                <a class="hover radius" id="winx64Link" href="https://www.dootask.com/desktop/publish/latest?platform=windows&arch=x64" target="_blank">
                   <img class="icon mb-8" src="../img/dow_icon.svg" alt="Windows,download">
-                  <i class="txt-4001624 txt">download</i>
+                  <i class="txt-4001624 txt">Download</i>
                 </a>
               </li>
             </ul>
@@ -165,7 +165,7 @@
               <img src="../img/vector.svg" class="nav-vector" alt="Support" id="drawer-down-support-svg">
             </i>
           </div>
-          <ol class="drawer-active" id="support" style="display: none;">
+          <ol class="drawer-active hide" id="support">
             <li class="drawer-item" onclick="changeMenu()">
               <a class="txt-4001620 txt" href="../en/download.html">Download Center</a>
             </li>
@@ -187,7 +187,7 @@
               <img src="../img/vector.svg" alt="Theme" class="nav-vector" id="drawer-down-theme-svg">
             </i>
           </div>
-          <ol class="drawer-active" id="theme" style="display: none;">
+          <ol class="drawer-active hide" >
             <li class="drawer-item"  onclick="setTheme('light')">
               <i class="txt-4001620 txt">Light</i>
             </li>
@@ -201,7 +201,7 @@
               <img src="../img/vector.svg" alt="Language" class="nav-vector" id="drawer-down-language-svg">
             </i>
           </div>
-          <ol class="drawer-active" id="language" style="display: none;">
+          <ol class="drawer-active hide" id="language" >
             <li class="drawer-item"  onclick="changeLanguage('zh')">
               <i class="txt-4001620 txt">简体中文</i>
             </li>
@@ -211,9 +211,9 @@
           </ol>
         </li>
         <li class="drawer-item-b">
-          <li class="drawer-item">
-            <a class="txt-4001620 txt" href="https://demo.dootask.com">Log In</a>
-          </li>
+          <div class="drawer-item">
+            <a class="txt-4001620 txt" href="https://demo.dootask.com">Try Now</a>
+          </div>
         </li>
       </ul>
     </div>
@@ -228,7 +228,7 @@
                 <div class="update-l">
                   <h1 class="txt-4003645 update-h1 mb-36">Update Log</h1>
                   <ul class="update-ul">
-                    <div id="releases"></div>
+                    <li id="releases"></li>
                     <li>
                       <a class="more-item" href="../en/log.html">
                         <h5 class="txt-4001624 more">More Logs</h5>
@@ -291,20 +291,20 @@
                 <ol class="footer-r-ol">
                   <li class="footer-ol-item txt-5001624 mb-24">Community</li>
                   <li class="footer-ol-item">
-                    <li class="footer-ol-item mb-16">
+                    <div class="footer-ol-item mb-16">
                       <i class="txt-4001624 txt" onclick="openInNewTab('https://github.com/kuaifan/dootask')">Github</i>
-                    </li>
-                    <li class="footer-ol-item mb-16">
+                    </div>
+                    <div class="footer-ol-item mb-16">
                       <i class="txt-4001624 txt" onclick="openInNewTab('https://gitee.com/aipaw/dootask')">Gitee</i>
-                    </li>
-                    <li class="footer-ol-item" id="qq_group">
+                    </div>
+                    <div class="footer-ol-item" id="qq_group">
                       <i class="txt-4001624 txt">QQ group</i>
                       <div class="group_code">
                         <img class="code-svg" id="home_code" src="../img/light/home_code.svg" alt="Group：546574618">
                         <i class="group_num">Group：546574618</i>
                         <i class="lower_triangle"></i>
                       </div>
-                    </li>
+                    </div>
                   </li>
                 </ol>
               </li>
@@ -321,7 +321,7 @@
 <script src="https://cdn.bootcdn.net/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="../js/common.js"></script>
 <script>
-  /* 下载应用的hover处理函数 */ 
+  /* 下载应用的hover处理函数 */
 const download = document.querySelector('.download-ul');
 const downloadItems = download.querySelectorAll('.download-ul-item');
 const handleMouseover = (val)=>{
@@ -345,7 +345,7 @@ const getItem = (key)=> {
   }
   return record.value;
 }
-/* 获取仓库的更新信息处理函数 */ 
+/* 获取仓库的更新信息处理函数 */
 const setHrefUrl = (data,name,dom)=>{
   const url = data[0].assets.find(file => file.name.includes(name));
   const link = document.getElementById(dom);
@@ -380,7 +380,7 @@ if(!logsItem) {
 }else{
   updates.innerHTML = logsItem;
 }
-/* 滑动到可视区域执行动画 */ 
+/* 滑动到可视区域执行动画 */
 const boxes = document.querySelectorAll('.dow-animate-box');
 const animateBoxes = ()=> {
   boxes.forEach(box => {
@@ -393,7 +393,7 @@ const animateBoxes = ()=> {
 }
 window.addEventListener('scroll', animateBoxes);
 animateBoxes();
-/* 生成网页二维码二维码 */ 
+/* 生成网页二维码二维码 */
 if(window.location.host !== ''){
   const url = window.location.href;
   const matchResult = url.match(/^(.*?)(?=\/site)/);
