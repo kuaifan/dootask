@@ -247,7 +247,7 @@ const domHandle = (html)=>{
     const rLi = document.createElement('li');
     rLi.className = `l-ul-item ${i==0?'active':''}`;
     rLi.innerHTML = `
-      <a class="txt-4001620 txt" href="#section-${i+1}">v${versionsNumbers[i]} update</a>
+      <a class="txt-4001620 txt log-a" href="#section-${i+1}">v${versionsNumbers[i]} update</a>
     `;
     const rLi2 = document.createElement('li');
     rLi2.className = `l-ul-item`;
@@ -256,7 +256,7 @@ const domHandle = (html)=>{
       logsDrawer.classList.remove('open-logs-drawer');
     });
     rLi2.innerHTML = `
-      <a class="txt-4001620 txt" href="#section-${i+1}">v${versionsNumbers[i]} update</a>
+      <a class="txt-4001620 txt log-a" href="#section-${i+1}">v${versionsNumbers[i]} update</a>
     `;
     rlog.appendChild(rLi);
     rlog2.appendChild(rLi2);
