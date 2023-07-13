@@ -64,6 +64,9 @@ img {
   line-height: 16px;
 }
 .txt-4001620{
+  display: block;
+  width: 100%;
+  height: 100%;
   font-weight: 400;
   font-size: 16px;
   line-height: 20px;

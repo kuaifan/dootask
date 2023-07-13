@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>DooTask</title>
   <meta name="google" value="notranslate">
-  <meta name="description" content="Lightweight open source online project task management tool to help teams efficiently advance their projects and make work easier."">
+  <meta name="description" content="Lightweight open source online project task management tool to help teams efficiently advance their projects and make work easier.">
   <meta name="keywords" content="China DooTask Task management Lightweight Hitosea Teamwork">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="shortcut icon" href="../img/favicon.ico">
@@ -68,15 +68,15 @@
             <i class="nav-r-icon theme_light" onclick="setTheme('dark')">
               <img src="../img/drak.svg" alt="Dark theme">
             </i>
-            <a href="https://github.com/kuaifan/dootask" target="_blank">
+            <a href="https://github.com/kuaifan/dootask">
               <i class="nav-r-icon">
                 <img src="../img/github.svg" alt="github">
               </i>
             </a>
             <i class="line-1"></i>
             <span class="get-started">
-              <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
-                <button class="btn btn-primary" >Experience it now</button>
+              <a href="https://www.dootask.com/manage/dashboard">
+                <button class="btn btn-primary" >Try Now</button>
               </a>
             </span>
           </div>
@@ -167,9 +167,9 @@
           </ol>
         </li>
         <li class="drawer-item-b">
-          <li class="drawer-item">
-            <a class="txt-4001620 txt" href="https://demo.dootask.com">Log In</a>
-          </li>
+          <div class="drawer-item">
+            <a class="txt-4001620 txt" href="https://demo.dootask.com">Try Now</a>
+          </div>
         </li>
       </ul>
     </div>
@@ -191,6 +191,7 @@
               <div class="logs-r">
                 <h1 class="txt-6003645 logs-h1 mb-36">DooTask Update Log </h1>
                 <ul class="logs-r-ul"></ul>
+                </div>
             </div>
           </div>
         </article>
@@ -238,7 +239,7 @@ const domHandle = (html)=>{
   const rlog = document.querySelector('.logs-l-1920');
   const rlog2 = document.querySelector('.logs-l-768');
   const versions = html.match(/<h2>(.*?)<\/h2>/g).slice(0, 10);
-  
+
   const versionsNumbers = versions.map(str => str.split('<h2>[')[1].split(']</h2>')[0]);
   for (let i = 0; i < versionsNumbers.length; i++) {
     const updatesHtml = html.split(versionsNumbers[i])[1].split('<h2>')[0].match(/<li>(.*?)<\/li>/g);
@@ -259,7 +260,7 @@ const domHandle = (html)=>{
     `;
     rlog.appendChild(rLi);
     rlog2.appendChild(rLi2);
-    
+
     const li = document.createElement('li');
     li.className = 'r-ul-item mb-36';
     li.innerHTML = `
@@ -271,7 +272,7 @@ const domHandle = (html)=>{
     getUpdatesFromHtml(updatesHtmlText,li)
   }
   let updateLogNum = localStorage.getItem('update_log_num')
-  /* logs点击激活函数 */ 
+  /* logs点击激活函数 */
   let isThrottled = false;
   let timerId;
   const logs_tabs = document.querySelector('.logs-l-1920');

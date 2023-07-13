@@ -70,6 +70,8 @@
   font-size: 24px;
   line-height: 30px;
   color: var(--text-color);
+  padding-top: 15px;
+  box-sizing: border-box;
 }
 .r-ol-item{
   color: var(--txt-gray-color);

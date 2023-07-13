@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>DooTask</title>
   <meta name="google" value="notranslate">
-  <meta name="description" content="Lightweight open source online project task management tool to help teams efficiently advance their projects and make work easier."">
+  <meta name="description" content="Lightweight open source online project task management tool to help teams efficiently advance their projects and make work easier.">
   <meta name="keywords" content="China DooTask Task management Lightweight Hitosea Teamwork">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="shortcut icon" href="../img/favicon.ico">
@@ -68,15 +68,15 @@
             <i class="nav-r-icon theme_light" onclick="setTheme('dark')">
               <img src="../img/drak.svg" alt="Dark theme">
             </i>
-            <a href="https://github.com/kuaifan/dootask" target="_blank">
+            <a href="https://github.com/kuaifan/dootask">
               <i class="nav-r-icon">
                 <img src="../img/github.svg" alt="github">
               </i>
             </a>
             <i class="line-1"></i>
             <span class="get-started">
-              <a href="https://www.dootask.com/manage/dashboard"  target="_blank">
-                <button class="btn btn-primary" >Experience it now</button>
+              <a href="https://www.dootask.com/manage/dashboard">
+                <button class="btn btn-primary" >Try Now</button>
               </a>
             </span>
           </div>
@@ -201,9 +201,9 @@
           </ol>
         </li>
         <li class="drawer-item-b">
-          <li class="drawer-item">
-            <a class="txt-4001620 txt" href="https://demo.dootask.com">Log In</a>
-          </li>
+          <div class="drawer-item">
+            <a class="txt-4001620 txt" href="https://demo.dootask.com">Try Now</a>
+          </div>
         </li>
       </ul>
     </div>
@@ -282,11 +282,12 @@
                   </li>
                   <li class="from-ul-item mb-16">
                     <i class="from-ul-tags mb-8">Message</i>
-                    <textarea id="desc" class="textarea" cols="3" rows="8" placeholder="Optional"></textarea>
+                    <textarea id="desc" class="textarea" cols="3" rows="8" placeholder="Optional" oninput="limitCharacters(event, 255)"></textarea>
+                    <p id="characterCount">Messages cannot exceed 255 characters!</p>
                   </li>
                   <li>
                     <span class="from-submit">
-                      <button class="btn btn-primary " type="button" onclick="sendFormRequest()">Submit</button>
+                      <button class="btn btn-primary" id="loadingWrap" type="button" onclick="sendFormRequest()"><img id="submitLoading" alt="" src="../img/loading.png" />Submit</button>
                     </span>
                   </li>
                 </ul>
@@ -341,20 +342,20 @@
                 <ol class="footer-r-ol">
                   <li class="footer-ol-item txt-5001624 mb-24">Community</li>
                   <li class="footer-ol-item">
-                    <li class="footer-ol-item mb-16">
+                    <div class="footer-ol-item mb-16">
                       <i class="txt-4001624 txt" onclick="openInNewTab('https://github.com/kuaifan/dootask')">Github</i>
-                    </li>
-                    <li class="footer-ol-item mb-16">
+                    </div>
+                    <div class="footer-ol-item mb-16">
                       <i class="txt-4001624 txt" onclick="openInNewTab('https://gitee.com/aipaw/dootask')">Gitee</i>
-                    </li>
-                    <li class="footer-ol-item" id="qq_group">
+                    </div>
+                    <div class="footer-ol-item" id="qq_group">
                       <i class="txt-4001624 txt">QQ group</i>
                       <div class="group_code">
                         <img class="code-svg" id="home_code" src="../img/light/home_code.svg" alt="Group：546574618">
                         <i class="group_num">Group：546574618</i>
                         <i class="lower_triangle"></i>
                       </div>
-                    </li>
+                    </div>
                   </li>
                 </ol>
               </li>
@@ -371,7 +372,7 @@
 <script src="https://cdn.bootcdn.net/ajax/libs/axios/1.3.6/axios.js"></script>
 <script src="../js/common.js"></script>
 <script>
-  /* 数字滚动动画 */ 
+  /* 数字滚动动画 */
   const companyYearEl = document.querySelector('.company-year');
   const companyAreaEl = document.querySelector('.company-area');
   const companySizeEl = document.querySelector('.company-size');
@@ -410,7 +411,7 @@
   areaTimerId = setInterval(updateAreaNumber, 1);
   sizeTimerId = setInterval(updateSizeNumber, 1);
 
-  /* 滑动到可视区域执行动画 */ 
+  /* 滑动到可视区域执行动画 */
   const boxes = document.querySelectorAll('.about-animate-box');
   let timerId = null
   const animateBoxes = ()=> {
@@ -425,6 +426,17 @@
         },1300)
       }
     });
+  }
+  /* 限制表单textarea字符数 */
+  function limitCharacters(event, maxCharacters) {
+    const textarea = event.target;
+    const text = textarea.value;
+    if (text.length > maxCharacters) {
+      textarea.value = text.slice(0, maxCharacters); // 截断文本
+      document.getElementById('characterCount').style.display = "block";
+    }else{
+      document.getElementById('characterCount').style.display = "none";
+    }
   }
   /* 显示/隐藏提示弹框 */
   function showBox(text){
@@ -464,10 +476,11 @@
                     `,
           "silence": "no"
         };
-
+        document.getElementById("submitLoading").style.display = "block"
         axios.post(url, data, { headers })
           .then(response => {
             form.reset()
+            document.getElementById("submitLoading").style.display = "none"
             showBox('Submitted successfully！')
           })
           .catch(error => {
@@ -476,7 +489,7 @@
           });
       }
     }
-    
+
   }
   window.addEventListener('scroll', animateBoxes);
   animateBoxes();
