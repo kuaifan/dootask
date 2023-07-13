@@ -2,14 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.28.26]
+## [0.28.36]
 
 ### Bug Fixes
 
+- 修改英文页面
+- 导航按钮英文修改
+- 修复导航按钮
 - 前端取消会议屏幕常亮
 
 ### Features
 
+- 修改英文的下载单次手写字母大写
 - 链接调整和价格页面调整
 - 立即体验按钮、价格页面等样式调整
 
