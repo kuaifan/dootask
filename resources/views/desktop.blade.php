@@ -196,5 +196,38 @@
     </table>
 </div>
 </body>
-
+<script>
+    function getUrlParam(name, url) {
+        let qs = arguments[1] || window.location.href,
+            reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)"),
+            r = qs.substring(qs.indexOf("?") + 1).match(reg);
+        if (r !== null) {
+            let i = decodeURI(r[2]).indexOf('#');
+            if (i !== -1) {
+                return decodeURI(r[2]).substring(0, i);
+            } else {
+                return decodeURI(r[2]);
+            }
+        } else {
+            return '';
+        }
+    }
+    let platform = getUrlParam('platform');
+    if (platform) {
+        let arch = getUrlParam('arch');
+        if (arch) {
+            platform = platform + '-' + arch;
+        }
+        let reg = new RegExp(`-${platform.toLowerCase()}\.(apk|dmg|exe)$`)
+        document.querySelectorAll("tr").forEach(function (item) {
+            let e = item.querySelector("a")
+            if (e && reg.test(e.href)) {
+                item.style.fontWeight = 'bold'
+                e.click()
+            } else {
+                item.style.fontWeight = 'normal'
+            }
+        });
+    }
+</script>
 </html>

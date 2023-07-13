@@ -29,7 +29,7 @@
 					<div class="scan">
 						<i class="scan-txt" style="margin-bottom: 4px;">扫描二维码下载</i>
 						<span class="scan-txt" style="margin-bottom: 18px;">
-							或用手机浏览器输入这个网址: 
+							或用手机浏览器输入这个网址:
 							<i class="scan-txt-b">http://dootask.com/</i>
 						</span>
 					</div>
@@ -62,7 +62,7 @@
 		</section>
 	</main>
 </body>
-<script src="https://cdn.bootcdn.net/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="//cdn.bootcdn.net/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 	// 处理分发页面的逻辑
 	const dowBtnDom = document.querySelector('.info-dow')
@@ -72,8 +72,8 @@
 	const infoDom = document.querySelector('.info')
 	const operatDom = document.querySelector('.operat-tips')
 	const ua = window.navigator.userAgent.toLowerCase();
-	const isWechat = /micromessenger/.test(ua);	
-	const isAndroid = /android/.test(ua);	
+	const isWechat = /micromessenger/.test(ua);
+	const isAndroid = /android/.test(ua);
 	let timer;
 	if(!isAndroid){
 		dowBtnDom.style.display = 'none'
@@ -111,7 +111,7 @@
 		}
 		window.location.href = "https://www.dootask.com/uploads/android/DooTask-v0.27.46-android.apk";
 	}
-	/* 生成分发页面的二维码 */ 
+	/* 生成分发页面的二维码 */
 	if(window.location.host !== ''){
 		const url = window.location.href;
 		const matchResult = url.match(/^(.*?)(?=\/site)/);
