@@ -280,10 +280,10 @@
                     <i class="from-ul-tags mb-8">Email</i>
                     <input id="email"  class="input" type="text" placeholder="Please enter your email address">
                   </li>
-                  <li class="from-ul-item mb-16">
+                  <li class="from-ul-item mb-16" id="desc_wrap">
                     <i class="from-ul-tags mb-8">Message</i>
-                    <textarea id="desc" class="textarea" cols="3" rows="8" placeholder="Optional" oninput="limitCharacters(event, 255)"></textarea>
-                    <p id="characterCount">Messages cannot exceed 255 characters!</p>
+                    <textarea id="desc" class="textarea" cols="3" rows="8" placeholder="Optional" oninput="limitCharacters(255)"></textarea>
+                    <p id="characterCount">0/255</p>
                   </li>
                   <li>
                     <span class="from-submit">
@@ -428,15 +428,14 @@
     });
   }
   /* 限制表单textarea字符数 */
-  function limitCharacters(event, maxCharacters) {
-    const textarea = event.target;
-    const text = textarea.value;
+  function limitCharacters( maxCharacters) {
+    const textarea = document.getElementById("desc")
+    let text = textarea.value;
     if (text.length > maxCharacters) {
-      textarea.value = text.slice(0, maxCharacters); // 截断文本
-      document.getElementById('characterCount').style.display = "block";
-    }else{
-      document.getElementById('characterCount').style.display = "none";
+        textarea.value = text.slice(0, maxCharacters); // 截断文本
+      text = textarea.value;
     }
+    document.getElementById('characterCount').textContent = `${text.length}/${maxCharacters}`;
   }
   /* 显示/隐藏提示弹框 */
   function showBox(text){
@@ -481,10 +480,13 @@
           .then(response => {
             form.reset()
             document.getElementById("submitLoading").style.display = "none"
+            limitCharacters(255)
             showBox('Submitted successfully！')
           })
           .catch(error => {
             form.reset()
+            document.getElementById("submitLoading").style.display = "none"
+            limitCharacters(255)
             showBox(error.message)
           });
       }
