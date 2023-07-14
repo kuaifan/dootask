@@ -345,41 +345,6 @@ const getItem = (key)=> {
   }
   return record.value;
 }
-/* 获取仓库的更新信息处理函数 */
-const setHrefUrl = (data,name,dom)=>{
-  const url = data[0].assets.find(file => file.name.includes(name));
-  const link = document.getElementById(dom);
-  link.href = url.browser_download_url;
-}
-const logsItem =  getItem('logs_dowmload_en')
-const updates = document.getElementById('releases');
-if(!logsItem) {
-  fetch('https://api.github.com/repos/kuaifan/dootask/releases')
-  .then(response => response.json())
-  .then(data => {
-    setHrefUrl(data,'arm64.dmg','arm64Link')
-    setHrefUrl(data,'x64.dmg','x64Link')
-    setHrefUrl(data,'arm64.exe','winx64Link')
-    const releases = data.slice(0, 5).map((item,index) => {
-      const { tag_name, created_at } = item;
-      const date = created_at.split('T')[0];
-      return `
-        <li class="update-item" onclick="localStorageHandle(${index+1})">
-          <h5 class="txt-4001624 update-h5">DooTask ${tag_name} update</h5>
-          <i class="txt-4001624 time">${date}</i>
-        </li>
-      `;
-    }).join('');
-    let record = {value: releases, expired: new Date().getTime() + 30 * 60 * 1000};
-    localStorage.setItem('logs_dowmload_en', JSON.stringify(record))
-    updates.innerHTML = releases;
-  })
-  .catch(error => {
-    console.error(error);
-  });
-}else{
-  updates.innerHTML = logsItem;
-}
 /* 滑动到可视区域执行动画 */
 const boxes = document.querySelectorAll('.dow-animate-box');
 const animateBoxes = ()=> {
