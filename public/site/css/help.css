@@ -22,7 +22,7 @@
 }
 
 .help-l {
-    display: none;
+    display: block;
     padding: 24px;
     background: var(--bg-fa-color);
     border-radius: 8px;
