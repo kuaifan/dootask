@@ -350,7 +350,7 @@ const domHandle = (html)=>{
 }
 const logs =  getItem('logs')
 if(!logs) {
-  const url = "http://192.168.100.122:2222/api/system/get/showitem"
+  const url = "https://www.dootask.com/api/system/get/updatelog"
   axios.get(url).then(res=>{
     const changelog=res.data.data.updateLog
     const md = new markdownit();

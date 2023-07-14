@@ -881,18 +881,18 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/showitem          19. 首页显示ITEM
+     * @api {get} api/system/get/updatelog          19. 获取更新日志
      *
-     * @apiDescription 用于判断首页是否显示：pro、github、更新日志...
+     * @apiDescription 获取更新日志
      * @apiVersion 1.0.0
      * @apiGroup system
-     * @apiName get__showitem
+     * @apiName get__updatelog
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      */
-    public function get__showitem()
+    public function get__updatelog()
     {
         $logPath = base_path('CHANGELOG.md');
         $logContent = "";
@@ -905,10 +905,7 @@ class SystemController extends AbstractController
             }
         }
         return Base::retSuccess('success', [
-            'pro' => str_contains(Request::getHost(), "dootask.com") || str_contains(Request::getHost(), "127.0.0.1"),
-            'github' => env('GITHUB_URL') ?: false,
             'updateLog' => $logContent ?: false,
-            'updateVer' => $logVersion,
         ]);
     }
 
