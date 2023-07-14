@@ -187,3 +187,12 @@
 .filings {
     border-top: 1px solid var(--border-color);
 }
+.help-fiexd{
+    position: sticky;
+    top: 80px;
+}
+.help-a{
+    display: block;
+    width: 100%;
+    height: 100%;
+}

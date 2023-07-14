@@ -212,7 +212,7 @@
         </li>
         <li class="drawer-item-b">
           <div class="drawer-item">
-            <a class="txt-4001620 txt" href="https://demo.dootask.com">立即体验</a>
+            <a class="txt-4001620 txt" href="https://www.dootask.com/manage/dashboard">立即体验</a>
           </div>
         </li>
       </ul>
@@ -317,8 +317,46 @@
   </div>
 </body>
 <script src="https://cdn.bootcdn.net/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/axios/1.3.6/axios.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/markdown-it@12"></script>
 <script src="../js/common.js"></script>
 <script>
+window.onload = function(){
+  // 获取日志
+const logsItem =  getItem('logs_dowmload_zh')
+const updates = document.getElementById('releases');
+if(!logsItem) {
+  const url = "http://192.168.100.122:2222/api/system/get/showitem"
+  axios.get(url).then(res=>{
+    const changelog=res.data.data.updateLog
+    const regex = /## \[(.*?)\]\n([\s\S]*?)(?=\n\n## \[|$)/g;
+    let match;
+    const Versions = []
+    while ((match = regex.exec(changelog)) !== null) {
+      Versions.push(match[1])
+    }
+    const releases = Versions.slice(0,3).map((item,index)=>{
+      return `
+        <li class="update-item" onclick="localStorageHandle(${index+1})">
+          <h5 class="txt-4001624 update-h5">DooTask ${item} 更新</h5>
+        </li>
+      `;
+    }).join('')
+    let record = {value: releases, expired: new Date().getTime() + 30 * 60 * 1000};
+    localStorage.setItem('logs_dowmload_zh', JSON.stringify(record))
+    updates.innerHTML = releases;
+    const md = new markdownit();
+    const html = md.render(changelog);
+    console.log(html,"html");
+    let record1 = {value: html, expired: new Date().getTime() + 30 * 60 * 1000};
+    localStorage.setItem('logs',JSON.stringify(record1))
+  }).catch(err=>{
+    console.log(err,"err");
+  })
+}else{
+  updates.innerHTML = logsItem;
+}
+}
   /* 下载应用的hover处理函数 */
 const download = document.querySelector('.download-ul');
 const downloadItems = download.querySelectorAll('.download-ul-item');
@@ -356,6 +394,40 @@ const animateBoxes = ()=> {
 }
 window.addEventListener('scroll', animateBoxes);
 animateBoxes();
+
+// 获取日志
+const logsItem =  getItem('logs_dowmload_zh')
+const updates = document.getElementById('releases');
+if(!logsItem) {
+  const url = "http://192.168.100.122:2222/api/system/get/showitem"
+  axios.get(url).then(res=>{
+    const changelog=res.data.data.updateLog
+    const regex = /## \[(.*?)\]\n([\s\S]*?)(?=\n\n## \[|$)/g;
+    let match;
+    const Versions = []
+    while ((match = regex.exec(changelog)) !== null) {
+      Versions.push(match[1])
+    }
+    const releases = Versions.slice(0,3).map((item,index)=>{
+      return `
+        <li class="update-item" onclick="localStorageHandle(${index+1})">
+          <h5 class="txt-4001624 update-h5">DooTask ${item} 更新</h5>
+        </li>
+      `;
+    }).join('')
+    let record = {value: releases, expired: new Date().getTime() + 30 * 60 * 1000};
+    localStorage.setItem('logs_dowmload_zh', JSON.stringify(record))
+    updates.innerHTML = releases;
+    const md = new markdownit();
+    const html = md.render(changelog);
+    let record1 = {value: html, expired: new Date().getTime() + 30 * 60 * 1000};
+    localStorage.setItem('logs',JSON.stringify(record1))
+  }).catch(err=>{
+    console.log(err,"err");
+  })
+}else{
+  updates.innerHTML = logsItem;
+}
 
 /* 生成网页二维码二维码 */
 if(window.location.host !== ''){

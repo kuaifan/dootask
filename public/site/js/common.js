@@ -198,7 +198,7 @@ window.addEventListener('scroll', () => {
 });
 /* 去登录函数 */
 const goToLoginHandle = ()=>{
-  window.location.href = `https://demo.dootask.com`
+  window.location.href = `https://www.dootask.com/manage/dashboard`
 }
 const openInNewTab = (url)=> {
   const win = window.open(url, '_blank');
