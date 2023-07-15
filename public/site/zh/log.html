@@ -41,6 +41,9 @@
                 <li class="submenu-pop-item" onclick="changeMenu()">
                   <a class="txt-4001418 txt-sub" href="../zh/help.html">帮助中心</a>
                 </li>
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../../docs/index.html" target="_blank">API 文档</a>
+                </li>
               </ol>
             </li>
             <li class="nav-ul-item">
@@ -68,7 +71,7 @@
             <i class="nav-r-icon theme_light" onclick="setTheme('dark')">
               <img src="../img/drak.svg" alt="暗黑主题">
             </i>
-            <a href="https://github.com/kuaifan/dootask">
+            <a href="https://github.com/kuaifan/dootask" target="_blank">
               <i class="nav-r-icon">
                 <img src="../img/github.svg" alt="github">
               </i>
@@ -127,6 +130,9 @@
             </li>
             <li class="drawer-item" onclick="changeMenu()">
               <a class="txt-4001620 txt" href="../zh/help.html">帮助中心</a>
+            </li>
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../../docs/index.html" target="_blank">API 文档</a>
             </li>
           </ol>
           <div class="drawer-item" onclick="closeDraweHandle()">
@@ -200,7 +206,72 @@
     <!-- 页脚区域 -->
     <footer>
       <div class="footer-con">
-        <div class="filings">
+        <div class="footer-layut">
+          <div class="footer-l">
+            <a href="../zh/index.html" class="logo">
+              <img id="logo" src="../img/light/logo.svg" alt="DooTask,Logo">
+              <i class="dootask txt-7002027">DooTask</i>
+            </a>
+            <i class="txt txt-4001624">帮助团队有效地推进项目，使工作更轻松。</i>
+          </div>
+          <div class="footer-r">
+            <ul class="footer-r-ul">
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">链接</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/product.html">产品</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/solutions.html">解决方案</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/price.html">服务价格</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../zh/about.html">关于我们</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">支持</li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/download.html">下载中心</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/help.html">帮助中心</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../../docs/index.html" target="_blank">API 文档</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ul class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">社区</li>
+                  <li class="footer-ol-item">
+                    <div class="footer-ol-item mb-16">
+                      <i class="txt-4001624 txt" onclick="openInNewTab('https://github.com/kuaifan/dootask')">Github</i>
+                    </div>
+                    <div class="footer-ol-item mb-16">
+                      <i class="txt-4001624 txt" onclick="openInNewTab('https://gitee.com/aipaw/dootask')">Gitee</i>
+                    </div>
+                    <div class="footer-ol-item" id="qq_group">
+                      <i class="txt-4001624 txt">QQ 群</i>
+                      <div class="group_code">
+                        <img class="code-svg" id="home_code" src="../img/qq_code.jpg" alt="群号：546574618">
+                        <i class="group_num">群号：546574618</i>
+                        <i class="lower_triangle"></i>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="txt-4001624 filings">
           Copyright © 2022-2023 DooTask. All rights reserved.
         </div>
       </div>
