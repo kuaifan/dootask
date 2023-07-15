@@ -15,7 +15,7 @@
 .logs-layout{
   display: flex;
   align-items: flex-start;
-  height: 929px;
+  /* height: 929px; */
 }
 .logs-l{
   padding: 24px;
@@ -56,8 +56,8 @@
 .logs-r{
   border-left: 1px solid var(--border-color);
   padding-left: 32px;
-  height: 929px;
-  overflow-y:scroll;
+  /* height: 929px; */
+  /* overflow-y:scroll; */
 }
 .logs-r::-webkit-scrollbar{
   width: 0 !important
@@ -133,7 +133,11 @@
   border-top: 1px solid var(--border-color);
 }
 .log-a{
-    display: block;
-    width: 100%;
-    height: 100%;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.logs-sticky{
+  position: sticky;
+  top: 80px;
 }

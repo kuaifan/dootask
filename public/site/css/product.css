@@ -39,7 +39,7 @@
 .prooduct-list .prooduct-list-item.top{
   max-width: 180px;
 }
-.prooduct-list .prooduct-list-item:nth-of-type(5),.prooduct-list .prooduct-list-item:nth-of-type(9){
+.prooduct-list .prooduct-list-item:nth-of-type(6),.prooduct-list .prooduct-list-item:nth-of-type(10){
   margin-right: 0 !important;
 }
 .prooduct-list .prooduct-list-item.bot{

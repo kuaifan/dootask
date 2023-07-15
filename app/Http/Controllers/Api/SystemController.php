@@ -38,7 +38,7 @@ class SystemController extends AbstractController
      * @apiParam {String} type
      * - get: 获取（默认）
      * - all: 获取所有（需要管理员权限）
-     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'auto_archived', 'archived_day', 'task_visible', 'all_group_mute', 'all_group_autoin', 'image_compress', 'image_save_local', 'start_home']）
+     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'auto_archived', 'archived_day', 'all_group_mute', 'all_group_autoin', 'image_compress', 'image_save_local', 'start_home', 'home_footer']）
 
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -65,12 +65,12 @@ class SystemController extends AbstractController
                     'anon_message',
                     'auto_archived',
                     'archived_day',
-                    'task_visible',
                     'all_group_mute',
                     'all_group_autoin',
                     'image_compress',
                     'image_save_local',
                     'start_home',
+                    'home_footer'
                 ])) {
                     unset($all[$key]);
                 }
@@ -104,7 +104,6 @@ class SystemController extends AbstractController
         $setting['anon_message'] = $setting['anon_message'] ?: 'open';
         $setting['auto_archived'] = $setting['auto_archived'] ?: 'close';
         $setting['archived_day'] = floatval($setting['archived_day']) ?: 7;
-        $setting['task_visible'] = $setting['task_visible'] ?: 'close';
         $setting['all_group_mute'] = $setting['all_group_mute'] ?: 'open';
         $setting['all_group_autoin'] = $setting['all_group_autoin'] ?: 'yes';
         $setting['image_compress'] = $setting['image_compress'] ?: 'open';
@@ -879,6 +878,55 @@ class SystemController extends AbstractController
         }
         //
         return $data;
+    }
+
+    /**
+     * @api {get} api/system/get/updatelog          19. 获取更新日志
+     *
+     * @apiDescription 获取更新日志
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName get__updatelog
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function get__updatelog()
+    {
+        $logPath = base_path('CHANGELOG.md');
+        $logContent = "";
+        $logVersion = "";
+        if (file_exists($logPath)) {
+            $logContent = file_get_contents($logPath);
+            preg_match("/## \[(.*?)\]/", $logContent, $matchs);
+            if ($matchs) {
+                $logVersion = $matchs[1] === "Unreleased" ? $matchs[1] : "v{$matchs[1]}";
+            }
+        }
+        return Base::retSuccess('success', [
+            'updateLog' => $logContent ?: false,
+        ]);
+    }
+
+    /**
+     * @api {get} api/system/get/starthome          20. 启动首页设置信息
+     *
+     * @apiDescription 用于判断注册是否需要启动首页
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName get__starthome
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function get__starthome()
+    {
+        return Base::retSuccess('success', [
+            'need_start' => Base::settingFind('system', 'start_home') == 'open',
+            'home_footer' => Base::settingFind('system', 'home_footer')
+        ]);
     }
 
     /**

@@ -168,7 +168,7 @@
         </li>
         <li class="drawer-item-b">
           <div class="drawer-item">
-            <a class="txt-4001620 txt" href="https://demo.dootask.com">Try Now</a>
+            <a class="txt-4001620 txt" href="https://www.dootask.com/manage/dashboard">Try Now</a>
           </div>
         </li>
       </ul>
@@ -184,14 +184,14 @@
               <i class="logs-t-tit">Logs</i>
             </div>
             <div class="logs-layout">
-              <div class="logs-l">
+              <div class="logs-l logs-sticky">
                 <h5 class="logs-h5 mb-16">Logs</h5>
                 <ul class="logs-l-ul logs-l-1920"></ul>
               </div>
-              <div class="logs-r">
+              <div class="logs-r" id="google_translate_element">
                 <h1 class="txt-6003645 logs-h1 mb-36">DooTask Update Log </h1>
                 <ul class="logs-r-ul"></ul>
-                </div>
+              </div>
             </div>
           </div>
         </article>
@@ -209,7 +209,21 @@
 </body>
 <script src="//cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
 <script src="../js/common.js"></script>
+<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 <script>
+window.onload = function() {
+  const targetId = window.location.hash.substring(1); // 获取 URL 中的锚点 id
+  const targetElement = document.getElementById(targetId); // 获取目标锚点元素
+  if (targetElement) {
+    const offset = 80; // 上偏移量（可以根据需要进行调整）
+    const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset; // 目标位置相对于视口的位置
+    // 滚动到目标位置，并考虑上偏移量
+    window.scrollTo({
+      top: targetPosition - offset,
+      behavior: "smooth"
+    });
+  }
+};
 const getItem = (key)=> {
   var record = JSON.parse(localStorage.getItem(key));
   if (!record) return null;
@@ -234,12 +248,11 @@ const logsDrawer = document.querySelector('.logs-drawer');
 const closeLogsDraweHandle = ()=>{
   logsDrawer.classList.remove('open-logs-drawer');
 }
-const domHandle = (html)=>{
+function domHandle (html){
   const changelog = document.querySelector('.logs-r-ul');
   const rlog = document.querySelector('.logs-l-1920');
   const rlog2 = document.querySelector('.logs-l-768');
   const versions = html.match(/<h2>(.*?)<\/h2>/g).slice(0, 10);
-
   const versionsNumbers = versions.map(str => str.split('<h2>[')[1].split(']</h2>')[0]);
   for (let i = 0; i < versionsNumbers.length; i++) {
     const updatesHtml = html.split(versionsNumbers[i])[1].split('<h2>')[0].match(/<li>(.*?)<\/li>/g);
@@ -270,6 +283,7 @@ const domHandle = (html)=>{
     `;
     changelog.appendChild(li);
     getUpdatesFromHtml(updatesHtmlText,li)
+    // translateAllText()
   }
   let updateLogNum = localStorage.getItem('update_log_num')
   /* logs点击激活函数 */
@@ -322,7 +336,7 @@ const domHandle = (html)=>{
   });
   /* 从下载页跳转过来执行的函数 */
   const handleMou = ()=>{
-    const clickedItem = logs_tabItems[updateLogNum];
+    const clickedItem = logs_tabItems[updateLogNum-1];
     if (clickedItem && !clickedItem.classList.contains('active')) {
       // 切换激活状态
       for (let value of logs_tabItems) {
@@ -336,17 +350,42 @@ const domHandle = (html)=>{
 }
 const logs =  getItem('logs')
 if(!logs) {
-  fetch('https://raw.githubusercontent.com/kuaifan/dootask/pro/CHANGELOG.md')
-  .then(response => response.text())
-  .then(data => {
+  const url = "https://www.dootask.com/api/system/get/updatelog"
+  axios.get(url).then(res=>{
+    const changelog=res.data.data.updateLog
     const md = new markdownit();
-    const html = md.render(data);
+    const html = md.render(changelog);
     let record = {value: html, expired: new Date().getTime() + 30 * 60 * 1000};
     localStorage.setItem('logs',JSON.stringify(record))
     domHandle(html)
+  }).catch(err=>{
+    console.log(err,"err");
   })
 }else{
   domHandle(logs)
 }
+
+
+document.addEventListener("DOMContentLoaded", function() {
+  const anchors = document.querySelectorAll("a[href^='#section-']");
+  // 遍历所有锚点链接
+  for (const anchor of anchors) {
+    anchor.addEventListener("click", function(event) {
+      event.preventDefault(); // 阻止默认的跳转行为
+      const targetId = anchor.getAttribute("href").substring(1); // 获取目标锚点的 id
+      const targetElement = document.getElementById(targetId); // 获取目标锚点元素
+      if (targetElement) {
+        const offset = 80; // 上偏移量（可以根据需要进行调整）
+        const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset; // 目标位置相对于视口的位置
+        // 滚动到目标位置，并考虑上偏移量
+        window.scrollTo({
+          top: targetPosition-offset,
+          behavior: "smooth"
+        });
+      }
+    });
+  }
+
+});
 </script>
 </html>
