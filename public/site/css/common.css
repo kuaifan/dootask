@@ -315,6 +315,7 @@ img {
   border: 1px solid var(--txt-theme-color);
 }
 .search-form{
+  display: none;
   position: relative;
 }
 .search-input{

@@ -168,7 +168,7 @@
         </li>
         <li class="drawer-item-b">
           <div class="drawer-item">
-            <a class="txt-4001620 txt" href="https://www.dootask.com/manage/dashboard">Try Now</a>
+            <a class="txt-4001620 txt" href="../../manage/dashboard">Try Now</a>
           </div>
         </li>
       </ul>
@@ -208,8 +208,8 @@
   </div>
 </body>
 <script src="//cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+<script src="//cdn.bootcdn.net/ajax/libs/axios/1.3.6/axios.js"></script>
 <script src="../js/common.js"></script>
-<script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 <script>
 window.onload = function() {
   const targetId = window.location.hash.substring(1); // 获取 URL 中的锚点 id
@@ -350,7 +350,7 @@ function domHandle (html){
 }
 const logs =  getItem('logs')
 if(!logs) {
-  const url = "https://www.dootask.com/api/system/get/updatelog"
+  const url = "../../api/system/get/updatelog"
   axios.get(url).then(res=>{
     const changelog=res.data.data.updateLog
     const md = new markdownit();

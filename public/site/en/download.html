@@ -75,7 +75,7 @@
             </a>
             <i class="line-1"></i>
             <span class="get-started">
-              <a href="https://www.dootask.com/manage/dashboard">
+              <a href="../../manage/dashboard">
                 <button class="btn btn-primary" >Try Now</button>
               </a>
             </span>
@@ -132,7 +132,7 @@
                   <img class="icon mb-8" src="../img/dow_window.svg" alt="Windows">
                   <i class="txt-4001624 txt">Windows</i>
                 </div>
-                <a class="hover radius" id="winx64Link" href="https://www.dootask.com/desktop/publish/latest?platform=windows&arch=x64" target="_blank">
+                <a class="hover radius" id="winx64Link" href="https://www.dootask.com/desktop/publish/latest?platform=win&arch=x64" target="_blank">
                   <img class="icon mb-8" src="../img/dow_icon.svg" alt="Windows,download">
                   <i class="txt-4001624 txt">Download</i>
                 </a>
@@ -212,7 +212,7 @@
         </li>
         <li class="drawer-item-b">
           <div class="drawer-item">
-            <a class="txt-4001620 txt" href="https://www.dootask.com/manage/dashboard">Try Now</a>
+            <a class="txt-4001620 txt" href="../../manage/dashboard">Try Now</a>
           </div>
         </li>
       </ul>
@@ -318,9 +318,7 @@
     </footer>
   </div>
 </body>
-<script src="https://cdn.bootcdn.net/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdn.bootcdn.net/ajax/libs/axios/1.3.6/axios.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/markdown-it@12"></script>
+<script src="//cdn.bootcdn.net/ajax/libs/axios/1.3.6/axios.js"></script>
 <script src="../js/common.js"></script>
 <script>
   /* 下载应用的hover处理函数 */
@@ -365,7 +363,7 @@ animateBoxes();
 const logsItem =  getItem('logs_dowmload_en')
 const updates = document.getElementById('releases');
 if(!logsItem) {
-  const url = "https://www.dootask.com/api/system/get/updatelog"
+  const url = "../../api/system/get/updatelog"
   axios.get(url).then(res=>{
     const changelog=res.data.data.updateLog
     const regex = /## \[(.*?)\]\n([\s\S]*?)(?=\n\n## \[|$)/g;
@@ -374,7 +372,7 @@ if(!logsItem) {
     while ((match = regex.exec(changelog)) !== null) {
       Versions.push(match[1])
     }
-    const releases = Versions.slice(0,3).map((item,index)=>{
+    const releases = Versions.slice(0,5).map((item,index)=>{
       return `
         <li class="update-item" onclick="localStorageHandle(${index+1})">
           <h5 class="txt-4001624 update-h5">DooTask ${item} update</h5>
@@ -389,14 +387,6 @@ if(!logsItem) {
   })
 }else{
   updates.innerHTML = logsItem;
-}
-
-/* 生成网页二维码二维码 */
-if(window.location.host !== ''){
-  const url = window.location.href;
-  const matchResult = url.match(/^(.*?)(?=\/site)/);
-  const result = matchResult[1];
-  new QRCode(document.getElementById('qrcode'), `${result}/site/en/distribute.html`); // 测试
 }
 </script>
 </html>
