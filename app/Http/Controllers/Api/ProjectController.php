@@ -1070,7 +1070,7 @@ class ProjectController extends AbstractController
             ->leftJoin('project_task_users', function ($query) {
                 $query->on('project_tasks.id', '=', 'project_task_users.task_id');
             })
-            ->whereIn("project_task_users.userid", explode(',', $userid) )
+            ->whereIn('project_task_users.userid', explode(',', $userid) )
             ->when(!empty($timerange),function ($query) use($timerange) {
                 if (!is_array($timerange)) {
                     $timerange =  explode(',', $timerange);
@@ -1079,6 +1079,7 @@ class ProjectController extends AbstractController
                     $query->whereBetween('project_tasks.created_at',[Carbon::parse($timerange[0])->startOfDay(),Carbon::parse($timerange[1])->endOfDay()] );
                 }
             })
+            ->whereNull('complete_at')
             ->orderByDesc('project_tasks.id')
             ->paginate(Base::getPaginate(200, 100));
         // 
