@@ -1066,17 +1066,17 @@ class ProjectController extends AbstractController
         $timerange = Request::input('timerange');
         // 
         $list = ProjectTask::query()
-            ->select('project_tasks.id','project_tasks.name','project_tasks.created_at','project_tasks.updated_at')
+            ->select('project_tasks.id', 'project_tasks.name', 'project_tasks.created_at', 'project_tasks.updated_at')
             ->leftJoin('project_task_users', function ($query) {
                 $query->on('project_tasks.id', '=', 'project_task_users.task_id');
             })
-            ->whereIn('project_task_users.userid', explode(',', $userid) )
-            ->when(!empty($timerange),function ($query) use($timerange) {
+            ->whereIn('project_task_users.userid', explode(',', $userid))
+            ->when(!empty($timerange), function ($query) use ($timerange) {
                 if (!is_array($timerange)) {
                     $timerange =  explode(',', $timerange);
                 }
                 if (Base::isDateOrTime($timerange[0]) && Base::isDateOrTime($timerange[1])) {
-                    $query->whereBetween('project_tasks.created_at',[Carbon::parse($timerange[0])->startOfDay(),Carbon::parse($timerange[1])->endOfDay()] );
+                    $query->whereBetween('project_tasks.created_at', [Carbon::parse($timerange[0])->startOfDay(), Carbon::parse($timerange[1])->endOfDay()]);
                 }
             })
             ->whereNull('complete_at')
