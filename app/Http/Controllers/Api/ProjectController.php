@@ -1076,7 +1076,7 @@ class ProjectController extends AbstractController
                     $timerange =  explode(',', $timerange);
                 }
                 if (Base::isDateOrTime($timerange[0]) && Base::isDateOrTime($timerange[1])) {
-                    $query->betweenTime(Carbon::parse($timerange[0])->startOfDay(), Carbon::parse($timerange[1])->endOfDay());
+                    $query->whereBetween('project_tasks.created_at',[Carbon::parse($timerange[0])->startOfDay(),Carbon::parse($timerange[1])->endOfDay()] );
                 }
             })
             ->orderByDesc('project_tasks.id')
