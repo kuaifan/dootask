@@ -1044,6 +1044,53 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * @api {get} api/project/task/easylists          18. 任务列表-简单的
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__easylists
+
+     * @apiParam {String} [userid]         用户ID（如：1,2）
+     * @apiParam {String} [timerange]      时间范围（如：2022-03-01 12:12:12,2022-05-01 12:12:12）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__easylists()
+    {
+        User::auth();
+        //
+        $userid = trim(Request::input('userid'));
+        $timerange = Request::input('timerange');
+        // 
+        $list = ProjectTask::query()
+            ->select('project_tasks.id','project_tasks.name','project_tasks.created_at','project_tasks.updated_at')
+            ->leftJoin('project_task_users', function ($query) {
+                $query->on('project_tasks.id', '=', 'project_task_users.task_id');
+            })
+            ->whereIn("project_task_users.userid", explode(',', $userid) )
+            ->when(!empty($timerange),function ($query) use($timerange) {
+                if (!is_array($timerange)) {
+                    $timerange =  explode(',', $timerange);
+                }
+                if (Base::isDateOrTime($timerange[0]) && Base::isDateOrTime($timerange[1])) {
+                    $query->betweenTime(Carbon::parse($timerange[0])->startOfDay(), Carbon::parse($timerange[1])->endOfDay());
+                }
+            })
+            ->orderByDesc('project_tasks.id')
+            ->paginate(Base::getPaginate(200, 100));
+        // 
+        $list->transform(function ($customer) {
+            $customer->setAppends([]);
+            return $customer;
+        });
+        //
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
      * @api {get} api/project/task/export          19. 导出任务（限管理员）
      *
      * @apiDescription 导出指定范围任务（已完成、未完成、已归档），返回下载地址，需要token身份
