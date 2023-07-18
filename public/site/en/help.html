@@ -765,5 +765,32 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   }
 });
+//获取导航链接元素
+const anchorLinks = document.querySelectorAll(".help-a");
+// 监听页面滚动事件
+window.addEventListener('scroll', () => {
+  // 遍历导航链接元素
+  anchorLinks.forEach((link,index) => {
+    const sectionId = link.getAttribute('href'); // 获取锚点ID
+    const section = document.querySelector(sectionId); // 获取对应的锚点元素
+    if (
+      section &&
+      section.getBoundingClientRect().top>=110&&section.getBoundingClientRect().top<=150
+    ) {
+        rm()
+        link.parentNode.classList.add('active');
+    }
+    if(section &&index===0&&section.getBoundingClientRect().top>150){
+        rm()
+        link.parentNode.classList.add('active')
+      }
+  });
+});
+
+const rm = () => {
+  anchorLinks.forEach(link1=>{
+    link1.parentNode.classList.remove('active')
+  })
+}
 </script>
 </html>
