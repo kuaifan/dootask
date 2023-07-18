@@ -454,26 +454,7 @@
             <div v-if="!taskDetail.id" class="task-load"><Loading/></div>
         </div>
         <!-- 提示  -->
-        <Modal v-model="showTips" title="提示" >
-            <p>以下人员时间段【】中已存在任务</p>
-            <List :split="false" size="small">
-                <ListItem v-for="(item, key) in tipsTaskList" :key="key">
-                    <UserAvatar v-for="(user, index) in item.task_user" 
-                        v-if="(taskDetail.owner_userid || []).indexOf(user.userid) !== -1"
-                        :userid="user.userid" 
-                        :size="28" 
-                        :show-icon="true" 
-                        :show-name="false" 
-                        :key="index" 
-                    />
-                    <p style="margin-left: 10px;"> 项目：{{item.project_name}} ｜ 任务：{{item.name}}</p>
-                </ListItem>
-            </List>
-            <div slot="footer">
-                <Button type="default" @click="showTips=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="loadIng > 0" @click="onAdd()">{{$L('确认添加')}}</Button>
-            </div>
-        </Modal>
+        <TaskExistTips ref="taskExistTipsRef" @onAdd="updateData('times', updateParams)"/>
     </div>
 </template>
 
@@ -488,12 +469,21 @@ import {Store} from "le5le-store";
 import TaskMenu from "./TaskMenu";
 import ChatInput from "./ChatInput";
 import UserSelect from "../../../components/UserSelect.vue";
+import TaskExistTips from "./TaskExistTips.vue";
 
 export default {
     name: "TaskDetail",
     components: {
         UserSelect,
-        ChatInput, TaskMenu, ProjectLog, DialogWrapper, TaskUpload, TaskPriority, TEditor},
+        TaskExistTips,
+        ChatInput, 
+        TaskMenu,
+        ProjectLog,
+        DialogWrapper,
+        TaskUpload,
+        TaskPriority,
+        TEditor
+    },
     props: {
         taskId: {
             type: Number,
@@ -598,9 +588,7 @@ export default {
                 {key: 'custom', label: '自定义'},
             ],
 
-            showTips: false,
-            tipsTaskList: [],
-            loadIng: 0,
+            updateParams: {},
         }
     },
 
@@ -729,8 +717,6 @@ export default {
             let start_at = $A.Date(taskDetail.start_at, true);
             let end_at = $A.Date(taskDetail.end_at, true);
             let string = "";
-            console.log(start_at)
-            console.log(end_at)
             if ($A.formatDate('Y/m/d', start_at) == $A.formatDate('Y/m/d', end_at)) {
                 string = $A.formatDate('Y/m/d H:i', start_at) + " ~ " + $A.formatDate('H:i', end_at)
             } else if ($A.formatDate('Y', start_at) == $A.formatDate('Y', end_at)) {
@@ -964,26 +950,6 @@ export default {
             }
         },
 
-        async onUpdateDataBefore(params){
-            let isExistTask = false;
-            this.$store.dispatch("call", {
-                url: 'project/task/easylists',
-                data: {
-                    taskid: this.taskDetail.id,
-                    userid: this.taskDetail.owner_userid,
-                    timerange: [params.start_at,params.end_at]
-                },
-                method: 'get',
-            }).then(({data}) => {
-                if(data.data.length > 0) {
-                    this.showTips = true;
-                    this.tipsTaskList = data.data
-                    isExistTask = true;
-                }
-            });
-            return isExistTask
-        },
-
         updateData(action, params) {
             let successCallback = null;
             switch (action) {
@@ -1006,16 +972,16 @@ export default {
                                 if (!desc) {
                                     return `请输入修改备注`
                                 }
-                                
-                                console.log( this.onUpdateDataBefore(params) )
-
-                                if(this.taskDetail.owner_userid.length>0 && this.onUpdateDataBefore(params)){
-                                    this.again = again;
-                                    console.log(11111)
-                                    return false;
-                                }
-                                console.log(22222)
-                                // this.updateData("times", Object.assign(params, {desc}))
+                                this.updateParams = Object.assign(params, {desc})    
+                                this.$refs['taskExistTipsRef'].isExistTask({
+                                    taskid: this.taskDetail.id,
+                                    userids: this.taskDetail.owner_userid,
+                                    timerange: [params.start_at,params.end_at]
+                                }).then(res=>{
+                                    if(!res){
+                                        this.updateData("times", this.updateParams)
+                                    }
+                                });
                                 return false
                             },
                         });
