@@ -26,7 +26,7 @@ import TEditor from "../../../components/TEditor";
 import UserSelect from "../../../components/UserSelect.vue";
 
 export default {
-    name: "TaskAdd",
+    name: "TaskExistTips",
     components: { UserSelect, TEditor },
     props: {
         value: {
