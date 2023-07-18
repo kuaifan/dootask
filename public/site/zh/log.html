@@ -186,7 +186,7 @@
             <div class="logs-layout">
               <div class="logs-l logs-sticky">
                 <h5 class="logs-h5 mb-16" style="font-weight: 500;">更新日志</h5>
-                <ul class="logs-l-ul logs-l-1920"></ul>
+                <ul class="logs-l-ul logs-l-1920" id="help-l-ul"></ul>
               </div>
               <div class="logs-r">
                 <h1 class="txt-6003645 logs-h1 mb-36">DooTask更新日志</h1>
@@ -212,19 +212,6 @@
 <script src="https://cdn.jsdelivr.net/npm/markdown-it@12"></script>
 <script src="../js/common.js"></script>
 <script>
-window.onload = function() {
-  const targetId = window.location.hash.substring(1); // 获取 URL 中的锚点 id
-  const targetElement = document.getElementById(targetId); // 获取目标锚点元素
-  if (targetElement) {
-    const offset = 80; // 上偏移量（可以根据需要进行调整）
-    const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset; // 目标位置相对于视口的位置
-    // 滚动到目标位置，并考虑上偏移量
-    window.scrollTo({
-      top: targetPosition - offset,
-      behavior: "smooth"
-    });
-  }
-};
 const getItem = (key)=> {
   var record = JSON.parse(localStorage.getItem(key));
   if (!record) return null;
@@ -260,17 +247,19 @@ const domHandle = (html)=>{
     const updatesHtmlText = updatesHtml.map(str => str.split('<li>')[1].split('</li>')[0]);
     const rLi = document.createElement('li');
     rLi.className = `l-ul-item ${i==0?'active':''}`;
+    rLi.setAttribute('data-id',`section-${i+1}`)
     rLi.innerHTML = `
-      <a class="txt-4001620 txt log-a" href="#section-${i+1}">v${versionsNumbers[i]} 更新</a>
+      <a class="txt-4001620 txt">v${versionsNumbers[i]} 更新</a>
     `;
     const rLi2 = document.createElement('li');
     rLi2.className = `l-ul-item`;
+    rLi2.setAttribute('data-id',`section-${i+1}`)
     rLi2.addEventListener('click', function() {
       const logsDrawer = document.querySelector('.logs-drawer');
       logsDrawer.classList.remove('open-logs-drawer');
     });
     rLi2.innerHTML = `
-      <a class="txt-4001620 txt log-a" href="#section-${i+1}" >v${versionsNumbers[i]} 更新</a>
+      <a class="txt-4001620 txt">v${versionsNumbers[i]} 更新</a>
     `;
     rlog.appendChild(rLi);
     rlog2.appendChild(rLi2);
@@ -278,7 +267,7 @@ const domHandle = (html)=>{
     li.className = 'r-ul-item mb-36';
     li.innerHTML = `
     <ol class="logs-r-ol">
-      <li class="txt-4001624 r-ol-item mb-24"><h4 class="logs-h4" id="section-${i+1}">v${versionsNumbers[i]} 更新</h4></li>
+      <li class="txt-4001624 r-ol-item mb-24" id="section-${i+1}"><h4 class="logs-h4">v${versionsNumbers[i]} 更新</h4></li>
     </ol>
     `
     changelog.appendChild(li);
@@ -318,7 +307,6 @@ const domHandle = (html)=>{
         if(section.offsetParent.offsetTop <= currentScrollPosition){
           // 将对应的菜单项设置为激活状态
           const activeMenuItem = logs_tabItems[index];
-          console.log(activeMenuItem,"activeMenuItem");
           if (activeMenuItem) {
             Array.from(logs_tabItems).forEach(titem => titem.classList.remove('active'));
             activeMenuItem.classList.add('active');
@@ -350,7 +338,7 @@ const domHandle = (html)=>{
 }
 const logs =  getItem('logs')
 if(!logs) {
-  const url = "https://www.dootask.com/api/system/get/updatelog"
+  const url = "http://192.168.100.122:2222/api/system/get/updatelog"
   axios.get(url).then(res=>{
     const changelog=res.data.data.updateLog
     const md = new markdownit();
@@ -358,32 +346,80 @@ if(!logs) {
     let record = {value: html, expired: new Date().getTime() + 30 * 60 * 1000};
     localStorage.setItem('logs',JSON.stringify(record))
     domHandle(html)
+    logsHandler()
   }).catch(err=>{
     console.log(err,"err");
   })
 }else{
   domHandle(logs)
+  logsHandler()
 }
-
-document.addEventListener("DOMContentLoaded", function() {
-  const anchors = document.querySelectorAll("a[href^='#section-']");
-  // 遍历所有锚点链接
-  for (const anchor of anchors) {
-    anchor.addEventListener("click", function(event) {
-      event.preventDefault(); // 阻止默认的跳转行为
-      const targetId = anchor.getAttribute("href").substring(1); // 获取目标锚点的 id
-      const targetElement = document.getElementById(targetId); // 获取目标锚点元素
-      if (targetElement) {
-        const offset = 80; // 上偏移量（可以根据需要进行调整）
-        const targetPosition = targetElement.getBoundingClientRect().top + window.pageYOffset; // 目标位置相对于视口的位置
-        // 滚动到目标位置，并考虑上偏移量
-        window.scrollTo({
-          top: targetPosition-offset,
-          behavior: "smooth"
-        });
-      }
-    });
+let tabItems1 = document.querySelectorAll('.l-ul-item');
+function rm(){
+  tabItems1.forEach(link1=>{
+    link1.classList.remove('active')
+  })
+}
+function logsHandler(){
+  let tabItems = document.querySelectorAll('.l-ul-item');
+  function rm(){
+    tabItems.forEach(link1=>{
+      link1.classList.remove('active')
+    })
   }
-});
+  tabItems.forEach(item=>{
+    item.addEventListener('click',function(event){
+      event.preventDefault()
+      const id = event.currentTarget.getAttribute('data-id')
+      const content = document.getElementById(`${id}`)
+      if (content) {
+          const offset = 90; // 上偏移量（可以根据需要进行调整）
+          const targetPosition = content.getBoundingClientRect().top + window.pageYOffset; // 目标位置相对于视口的位置
+          // 滚动到目标位置，并考虑上偏移量
+          window.scrollTo({
+            top: targetPosition-offset,
+            behavior: "smooth"
+          });
+        }
+    })
+  })
+}
+function getAllDataIds(parentId) {
+    let parentElement = document.getElementById(parentId);
+    if (parentElement) {
+        let elementsWithDataId = parentElement.querySelectorAll("[data-id]");
+        let dataIds = [];
+        for (let i = 0; i < elementsWithDataId.length; i++) {
+            let dataId = elementsWithDataId[i].getAttribute("data-id");
+            dataIds.push(dataId);
+        }
+        return dataIds;
+    }
+    return [];
+}
+let allDataIds = getAllDataIds("help-l-ul");
+let arrOffsetTop = []
+allDataIds.map(item=>{
+    let id = document.getElementById(`${item}`);
+    arrOffsetTop.push(id.offsetTop)
+})
+// 监听页面滚动事件
+window.addEventListener('scroll',scrollHandler)
+function scrollHandler(){
+    for (let i = 0; i < arrOffsetTop.length; i++) {
+      if(window.scrollY<=arrOffsetTop[0]){
+        rm()
+        let elementsWithDataId = document.querySelectorAll("[data-id='" + `section-${1}` + "']");
+        elementsWithDataId[1]?.classList?.add("active");
+        return;
+      }
+        if (arrOffsetTop[i] > window.scrollY || window.scrollY<=arrOffsetTop[0]){
+            rm()
+            let elementsWithDataId = document.querySelectorAll("[data-id='" + `section-${i}` + "']");
+                elementsWithDataId[1]?.classList?.add("active");
+            return;
+        }
+    }
+}
 </script>
 </html>
