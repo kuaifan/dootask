@@ -73,7 +73,8 @@ export default {
                     url: 'project/task/easylists',
                     data: {
                         userid: userids,
-                        timerange: timerange
+                        timerange: timerange,
+                        taskid: taskid
                     },
                     method: 'get',
                 }).then(({ data }) => {
