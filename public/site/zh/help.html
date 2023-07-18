@@ -271,7 +271,7 @@
                   <i class="search-icon"></i>
                   <input class="search-input mb-24" placeholder="Search" type="text">
                 </form>
-                <ul class="help-l-ul help-l-1920">
+                <ul class="help-l-ul help-l-1920" id="help-l-ul">
                   <li class="help-l-ul-item mb-24">
                     <h5 class="txt-4001620 help-h5 mb-16" style="font-weight: 500;">基本</h5>
                     <ol class="help-l-ol">
@@ -778,23 +778,57 @@ const closeHelpDraweHandle = ()=>{
 // const anchorLinks = document.querySelectorAll(".help-a");
 // // 监听页面滚动事件
 window.addEventListener('scroll',scrollHandler)
+
+function getAllDataIds(parentId) {
+    let parentElement = document.getElementById(parentId);
+    if (parentElement) {
+        let elementsWithDataId = parentElement.querySelectorAll("[data-id]");
+        let dataIds = [];
+        for (let i = 0; i < elementsWithDataId.length; i++) {
+            let dataId = elementsWithDataId[i].getAttribute("data-id");
+            dataIds.push(dataId);
+        }
+        return dataIds;
+    }
+    return [];
+}
+
+let allDataIds = getAllDataIds("help-l-ul");
+let arrOffsetTop = []
+allDataIds.map(item=>{
+    let id = document.getElementById(`${item}`);
+    arrOffsetTop.push(id.offsetTop)
+})
+
 function scrollHandler(){
   // 遍历导航链接元素
-  tabItems.forEach((link,index) => {
-    const sectionId = link.getAttribute('data-id'); // 获取锚点ID
-    const section = document.querySelector(`#${sectionId}`); // 获取对应的锚点元素
-    if (
-      section &&
-      section.getBoundingClientRect().top>=110&&section.getBoundingClientRect().top<=150
-    ) {
-        rm()
-        link.classList.add('active');
+    allDataIds.map(item=>{
+        let elements = document.querySelectorAll("[data-id='" + item + "']");
+        elements[0].classList.remove("active");
+    })
+    for (let i = 0; i < arrOffsetTop.length; i++) {
+        if (arrOffsetTop[i] > window.scrollY){
+            let elementsWithDataId = document.querySelectorAll("[data-id='" + `section-${i}` + "']");
+                elementsWithDataId[0].classList.add("active");
+            return;
+        }
     }
-    if(section &&index===0&&section.getBoundingClientRect().top>150){
-        rm()
-        link.classList.add('active')
-      }
-  });
+  // tabItems.forEach((link,index) => {
+  //
+  //     let sectionId = link.getAttribute('data-id'); // 获取锚点ID
+  //     let section = document.querySelector(`#${sectionId}`); // 获取对应的锚点元素
+  //   if (
+  //     section &&
+  //     section.offsetTop>=110&&section.offsetTop<=150
+  //   ) {
+  //       rm()
+  //       link.classList.add('active');
+  //   }
+  //   if( section &&index===0 && section.offsetTop>150){
+  //       rm()
+  //       link.classList.add('active')
+  //     }
+  // });
 }
 </script>
 </html>
