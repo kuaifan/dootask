@@ -804,12 +804,12 @@ function scrollHandler(){
   // 遍历导航链接元素
     allDataIds.map(item=>{
         let elements = document.querySelectorAll("[data-id='" + item + "']");
-        elements[0].classList.remove("active");
+        elements[0]?.classList?.remove("active");
     })
     for (let i = 0; i < arrOffsetTop.length; i++) {
         if (arrOffsetTop[i] > window.scrollY){
             let elementsWithDataId = document.querySelectorAll("[data-id='" + `section-${i}` + "']");
-                elementsWithDataId[0].classList.add("active");
+                elementsWithDataId[0]?.classList?.add("active");
             return;
         }
     }
