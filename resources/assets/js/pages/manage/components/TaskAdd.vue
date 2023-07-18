@@ -199,6 +199,28 @@
                 </ButtonGroup>
             </div>
         </div>
+
+        <Modal v-model="showTips" :title="$L('以下人员已存在任务')" >
+            <List :split="false" size="small">
+                <ListItem v-for="(items, userid) in tipsTask" :key="userid" >
+                    <div style="flex: 1;width: 100%;">
+                        <UserAvatar :userid="userid" :size="28" :show-icon="true" :show-name="true" tooltipDisabled/>
+                        <div style="margin-left: 35px;margin-top: 10px;width: calc(100% - 35px);"  v-for="(item, key) in items" :key="key" >
+                            <div style="min-width: 135px; flex: 1; white-space: nowrap; text-overflow: ellipsis;overflow: hidden;">
+                                <span style="color: #A7ABB5;">【{{item.project_name}}】</span>
+                                <span>{{item.name}}</span>
+                            </div>
+                            <div style="min-width: 135px;text-align: left;">{{getCutTime(item)}}</div>
+                        </div>
+                    </div>
+                </ListItem>
+            </List>
+            <div slot="footer">
+                <Button type="default" @click="showTips=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="loadIng > 0" @click="onAdd(again,true)">{{$L('确认添加')}}</Button>
+            </div>
+        </Modal>
+
     </div>
 </template>
 
@@ -276,6 +298,10 @@ export default {
             isMounted: false,
 
             beforeClose: [],
+
+            again: false,
+            showTips: false,
+            tipsTask: [],
         }
     },
 
@@ -515,12 +541,67 @@ export default {
             this.addData = Object.assign({}, this.addData, data);
         },
 
-        onAdd(again) {
+        getCutTime(item) {
+            let start_at = $A.Date(item.start_at, true);
+            let end_at = $A.Date(item.end_at, true);
+            let string = "";
+            console.log(start_at)
+            if ($A.formatDate('Y/m/d', start_at) == $A.formatDate('Y/m/d', end_at)) {
+                string = $A.formatDate('Y/m/d H:i', start_at) + " ~ " + $A.formatDate('H:i', end_at)
+            } else if ($A.formatDate('Y', start_at) == $A.formatDate('Y', end_at)) {
+                string = $A.formatDate('Y/m/d', start_at) + " ~ " + $A.formatDate('m/d', end_at)
+                string = string.replace(/( 00:00| 23:59)/g, "")
+            } else {
+                string = $A.formatDate('Y/m/d H:i', start_at) + " ~ " + $A.formatDate('Y/m/d H:i', end_at)
+                string = string.replace(/( 00:00| 23:59)/g, "")
+            }
+            return string
+        },
+
+        async onAddBefore(){
+            let isExistTask = false;
+            await this.$store.dispatch("call", {
+                url: 'project/task/easylists',
+                data: {
+                    userid: this.addData.owner,
+                    timerange: this.addData.times
+                },
+                method: 'get',
+            }).then(({data}) => {
+                if(data.data.length > 0) {
+                    this.showTips = true;
+                    let taskObj = {}
+                    this.addData.owner.map(userid=>{
+                        data.data.map(h=>{
+                            if( (h.task_user || []).map(k=>k.owner ? k.userid : 0).indexOf(userid) !== -1 ){
+                                if( !taskObj[userid] ){
+                                    taskObj[userid] = [];
+                                }
+                                taskObj[userid].push(h);
+                            }
+                        });
+                    });
+                    this.tipsTask = taskObj
+                    isExistTask = true;
+                }
+            });
+            return isExistTask
+        },
+
+        async onAdd(again,affirm=false) {
             if (!this.addData.name) {
                 $A.messageError("任务描述不能为空");
                 return;
             }
-            this.loadIng++;
+            
+            // 存在任务提示
+            this.showTips = false;
+            this.again = false;
+            if(!affirm && this.addData.owner.length>0 && await this.onAddBefore()){
+               this.again = again;
+               return;
+            }
+
             this.$store.dispatch("taskAdd", this.addData).then(({msg}) => {
                 this.loadIng--;
                 $A.messageSuccess(msg);
