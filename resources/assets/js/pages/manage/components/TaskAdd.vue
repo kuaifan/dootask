@@ -529,14 +529,14 @@ export default {
             this.loadIng++;
 
             // 存在任务提示
-            if(!affirm && this.addData.owner.length>0){
+            if (!affirm && this.addData.owner.length > 0) {
                 this.$refs['taskExistTipsRef'].isExistTask({
                     userids: this.addData.owner,
                     timerange: this.addData.times
-                }).then(res=>{
-                    if(!res){
-                        this.onAdd(again,true)
-                    }else{
+                }).then(res => {
+                    if (!res) {
+                        this.onAdd(again, true)
+                    } else {
                         this.loadIng--;
                         this.again = again
                     }
