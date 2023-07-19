@@ -1,8 +1,15 @@
 <template>
     <div class="common-tag-input" :class="{focus:isFocus}" @paste="pasteText($event)" @click="focus">
-        <div class="tags-item" v-for="(text, index) in disSource">
-            <span class="tags-content" @click.stop="">{{text}}</span><span class="tags-del" @click.stop="delTag(index)">&times;</span>
-        </div>
+        <Draggable
+            :list="disSource"
+            :animation="150"
+            tag="ul"
+            draggable=".column-item"
+        >
+            <div class="tags-item column-item"  v-for="(text, index) in disSource">
+                <span class="tags-content" @click.stop="edit(disSource,index)">{{text}}</span><span class="tags-del" @click.stop="delTag(index)">&times;</span>
+            </div>
+        </Draggable>
         <textarea
             ref="myTextarea"
             class="tags-input"
@@ -22,8 +29,10 @@
 </template>
 
 <script>
+    import Draggable from 'vuedraggable'
     export default {
         name: 'TagInput',
+        components: {Draggable},
         props: {
             value: {
                 default: ''
@@ -52,11 +61,13 @@
         },
         data() {
             const disSource = [];
-            this.value?.split(",").forEach(item => {
-                if (item) {
-                    disSource.push(item)
-                }
-            });
+            if( this.value ){
+                this.value?.split(",").forEach(item => {
+                    if (item) {
+                        disSource.push(item)
+                    }
+                });
+            }
             return {
                 minWidth: 80,
 
@@ -69,7 +80,19 @@
 
                 disSource,
 
-                isFocus: false
+                isFocus: false,
+
+                editShow: false,
+                editData:{
+                    index:0,
+                    disSource:[],
+                    name:""
+                },
+                addRule: {
+                    name: [
+                        { required: true, message: this.$L('请填写名称！'), trigger: 'change' },
+                    ]
+                },
             }
         },
         mounted() {
@@ -80,13 +103,15 @@
                 this.wayMinWidth();
             },
             value(val) {
-                let disSource = [];
-                val?.split(",").forEach(item => {
-                    if (item) {
-                        disSource.push(item)
-                    }
-                });
-                this.disSource = disSource;
+                if( val && typeof val == 'string' ){
+                    let disSource = [];
+                    val?.split(",").forEach(item => {
+                        if (item) {
+                            disSource.push(item)
+                        }
+                    });
+                    this.disSource = disSource;
+                }
             },
             disSource(val) {
                 let temp = '';
@@ -109,6 +134,26 @@
             }
         },
         methods: {
+            edit(disSource,index){
+                this.editData.disSource = disSource
+                this.editData.index = index
+                this.editData.name = disSource[index] + ''
+                $A.modalInput({
+                    title: `编辑`,
+                    placeholder: `请输入名称`,
+                    okText: "确定",
+                    value: disSource[index] + '',
+                    onOk: (desc) => {
+                        if (!desc) {
+                            return `请输入名称`
+                        }
+                        this.editData.name = desc
+                        this.editData.disSource[this.editData.index] = desc
+                        this.$set(this.disSource,this.editData.index,desc)
+                        return false
+                    },
+                });
+            },
             focus(option) {
                 const $el = this.$refs.myTextarea;
                 $el.focus(option);

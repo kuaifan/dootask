@@ -1051,6 +1051,7 @@ class ProjectController extends AbstractController
      * @apiGroup project
      * @apiName task__easylists
 
+     * @apiParam {String} [taskid]         排除的任务ID
      * @apiParam {String} [userid]         用户ID（如：1,2）
      * @apiParam {String} [timerange]      时间范围（如：2022-03-01 12:12:12,2022-05-01 12:12:12）
      *
@@ -1062,24 +1063,31 @@ class ProjectController extends AbstractController
     {
         User::auth();
         //
-        $userid = trim(Request::input('userid'));
+        $taskid = trim(Request::input('taskid'));
+        $userid = Request::input('userid');
         $timerange = Request::input('timerange');
         // 
-        $list = ProjectTask::query()
-            ->select('project_tasks.id', 'project_tasks.name', 'project_tasks.created_at', 'project_tasks.updated_at')
+        $list = ProjectTask::with(['taskUser'])
+            ->select('projects.name as project_name', 'project_tasks.id', 'project_tasks.name', 'project_tasks.start_at', 'project_tasks.end_at')
+            ->join('projects','project_tasks.project_id','=','projects.id')
             ->leftJoin('project_task_users', function ($query) {
-                $query->on('project_tasks.id', '=', 'project_task_users.task_id');
+                $query->on('project_tasks.id', '=', 'project_task_users.task_id')->where('project_task_users.owner', '=', 1);
             })
-            ->whereIn('project_task_users.userid', explode(',', $userid))
+            ->whereIn('project_task_users.userid', is_array($userid) ? $userid : explode(',', $userid) )
             ->when(!empty($timerange), function ($query) use ($timerange) {
                 if (!is_array($timerange)) {
                     $timerange = explode(',', $timerange);
                 }
                 if (Base::isDateOrTime($timerange[0]) && Base::isDateOrTime($timerange[1])) {
-                    $query->whereBetween('project_tasks.created_at', [Carbon::parse($timerange[0])->startOfDay(), Carbon::parse($timerange[1])->endOfDay()]);
+                    $query->where('project_tasks.start_at', '>=', Carbon::parse($timerange[0])->startOfDay());
+                    $query->where('project_tasks.end_at', '<=', Carbon::parse($timerange[1])->endOfDay());
                 }
             })
+            ->when(!empty($taskid), function ($query) use ($taskid) {
+                $query->where('project_tasks.id', "!=", $taskid);
+            })
             ->whereNull('complete_at')
+            ->distinct()
             ->orderByDesc('project_tasks.id')
             ->paginate(Base::getPaginate(200, 100));
         // 

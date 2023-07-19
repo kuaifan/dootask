@@ -199,6 +199,8 @@
                 </ButtonGroup>
             </div>
         </div>
+
+        <TaskExistTips ref="taskExistTipsRef" @onAdd="onAdd(again,true)"/>
     </div>
 </template>
 
@@ -206,10 +208,11 @@
 import TEditor from "../../../components/TEditor";
 import {mapState} from "vuex";
 import UserSelect from "../../../components/UserSelect.vue";
+import TaskExistTips from "./TaskExistTips.vue";
 
 export default {
     name: "TaskAdd",
-    components: {UserSelect, TEditor},
+    components: {UserSelect, TEditor, TaskExistTips},
     props: {
         value: {
             type: Boolean,
@@ -276,6 +279,8 @@ export default {
             isMounted: false,
 
             beforeClose: [],
+
+            again: false
         }
     },
 
@@ -515,12 +520,30 @@ export default {
             this.addData = Object.assign({}, this.addData, data);
         },
 
-        onAdd(again) {
+        async onAdd(again,affirm=false) {
             if (!this.addData.name) {
                 $A.messageError("任务描述不能为空");
                 return;
             }
+            
             this.loadIng++;
+
+            // 存在任务提示
+            if(!affirm && this.addData.owner.length>0){
+                this.$refs['taskExistTipsRef'].isExistTask({
+                    userids: this.addData.owner,
+                    timerange: this.addData.times
+                }).then(res=>{
+                    if(!res){
+                        this.onAdd(again,true)
+                    }else{
+                        this.loadIng--;
+                        this.again = again
+                    }
+                });
+                return;
+            }
+
             this.$store.dispatch("taskAdd", this.addData).then(({msg}) => {
                 this.loadIng--;
                 $A.messageSuccess(msg);

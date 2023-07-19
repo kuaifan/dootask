@@ -1,397 +1,413 @@
 <template>
-    <!--子任务-->
-    <li v-if="ready && taskDetail.parent_id > 0">
-        <div class="subtask-icon">
-            <TaskMenu
-                :ref="`taskMenu_${taskDetail.id}`"
-                :disabled="taskId === 0"
-                :task="taskDetail"
-                :load-status="taskDetail.loading === true"
-                @on-update="getLogLists"/>
-        </div>
-        <div v-if="taskDetail.flow_item_name" class="subtask-flow">
-            <span :class="taskDetail.flow_item_status" @click.stop="openMenu($event, taskDetail)">{{taskDetail.flow_item_name}}</span>
-        </div>
-        <div class="subtask-name">
-            <Input
-                v-model="taskDetail.name"
-                ref="name"
-                type="textarea"
-                :rows="1"
-                :autosize="{ minRows: 1, maxRows: 8 }"
-                :maxlength="255"
-                enterkeyhint="done"
-                @on-blur="updateBlur('name')"
-                @on-keydown="onNameKeydown"
-            />
-        </div>
-        <DatePicker
-            v-model="timeValue"
-            :open="timeOpen"
-            :options="timeOptions"
-            format="yyyy/MM/dd HH:mm"
-            type="datetimerange"
-            class="subtask-time"
-            placement="bottom-end"
-            @on-open-change="timeChange"
-            @on-clear="timeClear"
-            @on-ok="timeOk"
-            transfer>
-            <div v-if="!taskDetail.complete_at && taskDetail.end_at && taskDetail.end_at != mainEndAt" @click="openTime" :class="['time', taskDetail.today ? 'today' : '', taskDetail.overdue ? 'overdue' : '']">
-                {{expiresFormat(taskDetail.end_at)}}
-            </div>
-            <Icon v-else class="clock" type="ios-clock-outline" @click="openTime" />
-        </DatePicker>
-        <UserSelect
-            class="subtask-avatar"
-            v-model="ownerData.owner_userid"
-            :multiple-max="10"
-            :avatar-size="20"
-            :title="$L('修改负责人')"
-            :add-icon="false"
-            :project-id="taskDetail.project_id"
-            :before-submit="onOwner"/>
-    </li>
-    <!--主任务-->
-    <div
-        v-else-if="ready"
-        :class="{'task-detail':true, 'open-dialog': hasOpenDialog, 'completed': taskDetail.complete_at}"
-        :style="taskDetailStyle">
-        <div v-show="taskDetail.id > 0" class="task-info">
-            <div class="head">
+    <div>
+        <!--子任务-->
+        <li v-if="ready && taskDetail.parent_id > 0">
+            <div class="subtask-icon">
                 <TaskMenu
                     :ref="`taskMenu_${taskDetail.id}`"
                     :disabled="taskId === 0"
                     :task="taskDetail"
-                    class="icon"
-                    size="medium"
-                    :color-show="false"
+                    :load-status="taskDetail.loading === true"
                     @on-update="getLogLists"/>
-                <div v-if="taskDetail.flow_item_name" class="flow">
-                    <span :class="taskDetail.flow_item_status" @click.stop="openMenu($event, taskDetail)">{{taskDetail.flow_item_name}}</span>
+            </div>
+            <div v-if="taskDetail.flow_item_name" class="subtask-flow">
+                <span :class="taskDetail.flow_item_status" @click.stop="openMenu($event, taskDetail)">{{taskDetail.flow_item_name}}</span>
+            </div>
+            <div class="subtask-name">
+                <Input
+                    v-model="taskDetail.name"
+                    ref="name"
+                    type="textarea"
+                    :rows="1"
+                    :autosize="{ minRows: 1, maxRows: 8 }"
+                    :maxlength="255"
+                    enterkeyhint="done"
+                    @on-blur="updateBlur('name')"
+                    @on-keydown="onNameKeydown"
+                />
+            </div>
+            <DatePicker
+                v-model="timeValue"
+                :open="timeOpen"
+                :options="timeOptions"
+                format="yyyy/MM/dd HH:mm"
+                type="datetimerange"
+                class="subtask-time"
+                placement="bottom-end"
+                @on-open-change="timeChange"
+                @on-clear="timeClear"
+                @on-ok="timeOk"
+                transfer>
+                <div v-if="!taskDetail.complete_at && taskDetail.end_at && taskDetail.end_at != mainEndAt" @click="openTime" :class="['time', taskDetail.today ? 'today' : '', taskDetail.overdue ? 'overdue' : '']">
+                    {{expiresFormat(taskDetail.end_at)}}
                 </div>
-                <div v-if="taskDetail.archived_at" class="flow">
-                    <span class="archived" @click.stop="openMenu($event, taskDetail)">{{$L('已归档')}}</span>
-                </div>
-                <div class="nav">
-                    <p v-if="projectName"><span>{{projectName}}</span></p>
-                    <p v-if="columnName"><span>{{columnName}}</span></p>
-                    <p v-if="taskDetail.id"><span>{{taskDetail.id}}</span></p>
-                </div>
-                <div class="function">
-                    <EPopover
-                        v-if="getOwner.length === 0"
-                        v-model="receiveShow"
-                        placement="bottom">
-                        <div class="task-detail-receive">
-                            <div class="receive-title">
-                                <Icon type="ios-help-circle"/>
-                                {{$L('确认计划时间领取任务')}}
+                <Icon v-else class="clock" type="ios-clock-outline" @click="openTime" />
+            </DatePicker>
+            <UserSelect
+                class="subtask-avatar"
+                v-model="ownerData.owner_userid"
+                :multiple-max="10"
+                :avatar-size="20"
+                :title="$L('修改负责人')"
+                :add-icon="false"
+                :project-id="taskDetail.project_id"
+                :before-submit="onOwner"/>
+        </li>
+        <!--主任务-->
+        <div
+            v-else-if="ready"
+            :class="{'task-detail':true, 'open-dialog': hasOpenDialog, 'completed': taskDetail.complete_at}"
+            :style="taskDetailStyle">
+            <div v-show="taskDetail.id > 0" class="task-info">
+                <div class="head">
+                    <TaskMenu
+                        :ref="`taskMenu_${taskDetail.id}`"
+                        :disabled="taskId === 0"
+                        :task="taskDetail"
+                        class="icon"
+                        size="medium"
+                        :color-show="false"
+                        @on-update="getLogLists"/>
+                    <div v-if="taskDetail.flow_item_name" class="flow">
+                        <span :class="taskDetail.flow_item_status" @click.stop="openMenu($event, taskDetail)">{{taskDetail.flow_item_name}}</span>
+                    </div>
+                    <div v-if="taskDetail.archived_at" class="flow">
+                        <span class="archived" @click.stop="openMenu($event, taskDetail)">{{$L('已归档')}}</span>
+                    </div>
+                    <div class="nav">
+                        <p v-if="projectName"><span>{{projectName}}</span></p>
+                        <p v-if="columnName"><span>{{columnName}}</span></p>
+                        <p v-if="taskDetail.id"><span>{{taskDetail.id}}</span></p>
+                    </div>
+                    <div class="function">
+                        <EPopover
+                            v-if="getOwner.length === 0"
+                            v-model="receiveShow"
+                            placement="bottom">
+                            <div class="task-detail-receive">
+                                <div class="receive-title">
+                                    <Icon type="ios-help-circle"/>
+                                    {{$L('确认计划时间领取任务')}}
+                                </div>
+                                <div class="receive-time">
+                                    <DatePicker
+                                        v-model="timeValue"
+                                        :options="timeOptions"
+                                        format="yyyy/MM/dd HH:mm"
+                                        type="datetimerange"
+                                        :placeholder="$L('请设置计划时间')"
+                                        :clearable="false"
+                                        :editable="false"/>
+                                </div>
+                                <div class="receive-bottom">
+                                    <Button size="small" type="text" @click="receiveShow=false">取消</Button>
+                                    <Button :loading="ownerLoad > 0" size="small" type="primary" @click="onOwner(true)">确定</Button>
+                                </div>
                             </div>
-                            <div class="receive-time">
-                                <DatePicker
-                                    v-model="timeValue"
-                                    :options="timeOptions"
-                                    format="yyyy/MM/dd HH:mm"
-                                    type="datetimerange"
-                                    :placeholder="$L('请设置计划时间')"
-                                    :clearable="false"
-                                    :editable="false"/>
-                            </div>
-                            <div class="receive-bottom">
-                                <Button size="small" type="text" @click="receiveShow=false">取消</Button>
-                                <Button :loading="ownerLoad > 0" size="small" type="primary" @click="onOwner(true)">确定</Button>
-                            </div>
+                            <Button slot="reference" :loading="ownerLoad > 0" class="pick" type="primary">{{$L('我要领取任务')}}</Button>
+                        </EPopover>
+                        <ETooltip v-if="$Electron" :disabled="$isEEUiApp || windowTouch" :content="$L('新窗口打开')">
+                            <i class="taskfont open" @click="openNewWin">&#xe776;</i>
+                        </ETooltip>
+                        <div class="menu">
+                            <TaskMenu
+                                :disabled="taskId === 0"
+                                :task="taskDetail"
+                                icon="ios-more"
+                                completed-icon="ios-more"
+                                size="medium"
+                                :color-show="false"
+                                @on-update="getLogLists"/>
                         </div>
-                        <Button slot="reference" :loading="ownerLoad > 0" class="pick" type="primary">{{$L('我要领取任务')}}</Button>
-                    </EPopover>
-                    <ETooltip v-if="$Electron" :disabled="$isEEUiApp || windowTouch" :content="$L('新窗口打开')">
-                        <i class="taskfont open" @click="openNewWin">&#xe776;</i>
-                    </ETooltip>
-                    <div class="menu">
-                        <TaskMenu
-                            :disabled="taskId === 0"
-                            :task="taskDetail"
-                            icon="ios-more"
-                            completed-icon="ios-more"
-                            size="medium"
-                            :color-show="false"
-                            @on-update="getLogLists"/>
                     </div>
                 </div>
-            </div>
-            <Scrollbar class-name="scroller">
-                <div class="title">
-                    <Input
-                        v-model="taskDetail.name"
-                        ref="name"
-                        type="textarea"
-                        :rows="1"
-                        :autosize="{ minRows: 1, maxRows: 8 }"
-                        :maxlength="255"
-                        enterkeyhint="done"
-                        @on-blur="updateBlur('name')"
-                        @on-keydown="onNameKeydown"/>
-                </div>
-                <div class="desc">
-                    <TEditor
-                        ref="desc"
-                        :value="taskContent"
-                        :plugins="taskPlugins"
-                        :options="taskOptions"
-                        :option-full="taskOptionFull"
-                        :placeholder="$L('详细描述...')"
-                        scroll-hide-operate-class-name="task-modal"
-                        @on-blur="updateBlur('content')"
-                        inline/>
-                </div>
-                <Form class="items" label-position="left" label-width="auto" @submit.native.prevent>
-                    <FormItem v-if="taskDetail.p_name">
-                        <div class="item-label" slot="label">
-                            <i class="taskfont">&#xe6ec;</i>{{$L('优先级')}}
-                        </div>
-                        <ul class="item-content">
-                            <li>
-                                <EDropdown
-                                    ref="priority"
-                                    trigger="click"
-                                    placement="bottom"
-                                    @command="updateData('priority', $event)">
-                                    <TaskPriority :backgroundColor="taskDetail.p_color">{{taskDetail.p_name}}</TaskPriority>
-                                    <EDropdownMenu slot="dropdown">
-                                        <EDropdownItem v-for="(item, key) in taskPriority" :key="key" :command="item">
-                                            <i
-                                                class="taskfont"
-                                                :style="{color:item.color}"
-                                                v-html="taskDetail.p_name == item.name ? '&#xe61d;' : '&#xe61c;'"></i>
-                                            {{item.name}}
-                                        </EDropdownItem>
-                                    </EDropdownMenu>
-                                </EDropdown>
-                            </li>
-                        </ul>
-                    </FormItem>
-                    <FormItem v-if="getOwner.length > 0">
-                        <div class="item-label" slot="label">
-                            <i class="taskfont">&#xe6e4;</i>{{$L('负责人')}}
-                        </div>
-                        <UserSelect
-                            class="item-content user"
-                            v-model="ownerData.owner_userid"
-                            :multiple-max="10"
-                            :avatar-size="28"
-                            :title="$L('修改负责人')"
-                            :project-id="taskDetail.project_id"
-                            :add-icon="false"
-                            :before-submit="onOwner"/>
-                    </FormItem>
-                    <FormItem v-if="getAssist.length > 0 || assistForce">
-                        <div class="item-label" slot="label">
-                            <i class="taskfont">&#xe63f;</i>{{$L('协助人员')}}
-                        </div>
-                        <UserSelect
-                            ref="assist"
-                            class="item-content user"
-                            v-model="assistData.assist_userid"
-                            :multiple-max="10"
-                            :avatar-size="28"
-                            :title="$L(getAssist.length > 0 ? '修改协助人员' : '添加协助人员')"
-                            :project-id="taskDetail.project_id"
-                            :disabled-choice="assistData.disabled"
-                            :add-icon="false"
-                            :before-submit="onAssist"/>
-                    </FormItem>
-                    <FormItem>
-                        <div class="item-label" slot="label">
-                            <i class="taskfont">&#xe77b;</i>
-                            <EDropdown ref="eDropdownRef" trigger="click" placement="bottom" @command="dropVisible">
-                                <span class="visibility-text color">{{$L('可见性')}}
-                                    <i class="taskfont">&#xe740;</i>
-                                </span>
-                                <EDropdownMenu slot="dropdown">
-                                    <EDropdownItem :command="1">
-                                        <div class="task-menu-icon" >
-                                            <Icon v-if="taskDetail.is_all_visible == 1" class="completed" :type="'md-checkmark-circle'"/>
-                                            <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
-                                            {{$L('项目人员')}}
-                                        </div>
-                                    </EDropdownItem>
-                                    <EDropdownItem :command="2">
-                                        <div class="task-menu-icon" >
-                                            <Icon v-if="taskDetail.is_all_visible == 2" class="completed" :type="'md-checkmark-circle'"/>
-                                            <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
-                                            {{$L('任务人员')}}
-                                        </div>
-                                    </EDropdownItem>
-                                    <EDropdownItem :command="3">
-                                        <div class="task-menu-icon" >
-                                            <Icon v-if="taskDetail.is_all_visible == 3" class="completed" :type="'md-checkmark-circle'"/>
-                                            <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
-                                            {{$L('指定成员')}}
-                                        </div>
-                                    </EDropdownItem>
-                                </EDropdownMenu>
-                            </EDropdown>
-                        </div>
-                        <div class="item-content user">
-                            <span @click="showCisibleDropdown" v-if="taskDetail.is_all_visible == 1"  class="visibility-text">{{$L('项目人员可见')}}</span>
-                            <span @click="showCisibleDropdown" v-else-if="taskDetail.is_all_visible == 2"  class="visibility-text">{{$L('任务人员可见')}}</span>
+                <Scrollbar class-name="scroller">
+                    <div class="title">
+                        <Input
+                            v-model="taskDetail.name"
+                            ref="name"
+                            type="textarea"
+                            :rows="1"
+                            :autosize="{ minRows: 1, maxRows: 8 }"
+                            :maxlength="255"
+                            enterkeyhint="done"
+                            @on-blur="updateBlur('name')"
+                            @on-keydown="onNameKeydown"/>
+                    </div>
+                    <div class="desc">
+                        <TEditor
+                            ref="desc"
+                            :value="taskContent"
+                            :plugins="taskPlugins"
+                            :options="taskOptions"
+                            :option-full="taskOptionFull"
+                            :placeholder="$L('详细描述...')"
+                            scroll-hide-operate-class-name="task-modal"
+                            @on-blur="updateBlur('content')"
+                            inline/>
+                    </div>
+                    <Form class="items" label-position="left" label-width="auto" @submit.native.prevent>
+                        <FormItem v-if="taskDetail.p_name">
+                            <div class="item-label" slot="label">
+                                <i class="taskfont">&#xe6ec;</i>{{$L('优先级')}}
+                            </div>
+                            <ul class="item-content">
+                                <li>
+                                    <EDropdown
+                                        ref="priority"
+                                        trigger="click"
+                                        placement="bottom"
+                                        @command="updateData('priority', $event)">
+                                        <TaskPriority :backgroundColor="taskDetail.p_color">{{taskDetail.p_name}}</TaskPriority>
+                                        <EDropdownMenu slot="dropdown">
+                                            <EDropdownItem v-for="(item, key) in taskPriority" :key="key" :command="item">
+                                                <i
+                                                    class="taskfont"
+                                                    :style="{color:item.color}"
+                                                    v-html="taskDetail.p_name == item.name ? '&#xe61d;' : '&#xe61c;'"></i>
+                                                {{item.name}}
+                                            </EDropdownItem>
+                                        </EDropdownMenu>
+                                    </EDropdown>
+                                </li>
+                            </ul>
+                        </FormItem>
+                        <FormItem v-if="getOwner.length > 0">
+                            <div class="item-label" slot="label">
+                                <i class="taskfont">&#xe6e4;</i>{{$L('负责人')}}
+                            </div>
                             <UserSelect
-                                v-else
-                                ref="visibleUserSelectRef"
-                                v-model="taskDetail.visibility_appointor"
+                                class="item-content user"
+                                v-model="ownerData.owner_userid"
+                                :multiple-max="10"
                                 :avatar-size="28"
-                                :title="$L('选择指定人员')"
+                                :title="$L('修改负责人')"
                                 :project-id="taskDetail.project_id"
                                 :add-icon="false"
-                                @on-show-change="visibleUserSelectShowChange"/>
-                        </div>
-                    </FormItem>
-                    <FormItem v-if="taskDetail.end_at || timeForce">
-                        <div class="item-label" slot="label">
-                            <i class="taskfont">&#xe6e8;</i>{{$L('截止时间')}}
-                        </div>
-                        <ul class="item-content">
-                            <li>
-                                <DatePicker
-                                    v-model="timeValue"
-                                    :open="timeOpen"
-                                    :options="timeOptions"
-                                    format="yyyy/MM/dd HH:mm"
-                                    type="datetimerange"
-                                    @on-open-change="timeChange"
-                                    @on-clear="timeClear"
-                                    @on-ok="timeOk"
-                                    transfer>
-                                    <div class="picker-time">
-                                        <div @click="openTime" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
-                                        <template v-if="!taskDetail.complete_at && taskDetail.end_at">
-                                            <Tag v-if="within24Hours(taskDetail.end_at)" color="blue"><i class="taskfont">&#xe71d;</i>{{expiresFormat(taskDetail.end_at)}}</Tag>
-                                            <Tag v-if="isOverdue(taskDetail)" color="red">{{$L('超期未完成')}}</Tag>
-                                        </template>
-                                    </div>
-                                </DatePicker>
-                            </li>
-                        </ul>
-                    </FormItem>
-                    <FormItem v-if="(taskDetail.loop && taskDetail.loop != 'never') || loopForce">
-                        <div class="item-label" slot="label">
-                            <i class="taskfont">&#xe93f;</i>{{$L('重复周期')}}
-                        </div>
-                        <ul class="item-content">
-                            <li>
-                                <EDropdown
-                                    ref="loop"
-                                    trigger="click"
-                                    placement="bottom"
-                                    @command="updateData('loop', $event)">
-                                    <ETooltip :disabled="$isEEUiApp || windowTouch || !taskDetail.loop_at" :content="`${$L('下个周期')}: ${taskDetail.loop_at}`" placement="right">
-                                        <span>{{$L(loopLabel(taskDetail.loop))}}</span>
-                                    </ETooltip>
-                                    <EDropdownMenu slot="dropdown" class="task-detail-loop">
-                                        <EDropdownItem v-for="item in loops" :key="item.key" :command="item.key">
-                                            {{$L(item.label)}}
+                                :before-submit="onOwner"/>
+                        </FormItem>
+                        <FormItem v-if="getAssist.length > 0 || assistForce">
+                            <div class="item-label" slot="label">
+                                <i class="taskfont">&#xe63f;</i>{{$L('协助人员')}}
+                            </div>
+                            <UserSelect
+                                ref="assist"
+                                class="item-content user"
+                                v-model="assistData.assist_userid"
+                                :multiple-max="10"
+                                :avatar-size="28"
+                                :title="$L(getAssist.length > 0 ? '修改协助人员' : '添加协助人员')"
+                                :project-id="taskDetail.project_id"
+                                :disabled-choice="assistData.disabled"
+                                :add-icon="false"
+                                :before-submit="onAssist"/>
+                        </FormItem>
+                        <FormItem>
+                            <div class="item-label" slot="label">
+                                <i class="taskfont">&#xe77b;</i>
+                                <EDropdown ref="eDropdownRef" trigger="click" placement="bottom" @command="dropVisible">
+                                    <span class="visibility-text color">{{$L('可见性')}}
+                                        <i class="taskfont">&#xe740;</i>
+                                    </span>
+                                    <EDropdownMenu slot="dropdown">
+                                        <EDropdownItem :command="1">
+                                            <div class="task-menu-icon" >
+                                                <Icon v-if="taskDetail.is_all_visible == 1" class="completed" :type="'md-checkmark-circle'"/>
+                                                <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
+                                                {{$L('项目人员')}}
+                                            </div>
+                                        </EDropdownItem>
+                                        <EDropdownItem :command="2">
+                                            <div class="task-menu-icon" >
+                                                <Icon v-if="taskDetail.is_all_visible == 2" class="completed" :type="'md-checkmark-circle'"/>
+                                                <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
+                                                {{$L('任务人员')}}
+                                            </div>
+                                        </EDropdownItem>
+                                        <EDropdownItem :command="3">
+                                            <div class="task-menu-icon" >
+                                                <Icon v-if="taskDetail.is_all_visible == 3" class="completed" :type="'md-checkmark-circle'"/>
+                                                <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
+                                                {{$L('指定成员')}}
+                                            </div>
                                         </EDropdownItem>
                                     </EDropdownMenu>
                                 </EDropdown>
-                            </li>
-                        </ul>
-                    </FormItem>
-                    <FormItem v-if="fileList.length > 0">
-                        <div class="item-label" slot="label">
-                            <i class="taskfont">&#xe6e6;</i>{{$L('附件')}}
-                        </div>
-                        <ul class="item-content file">
-                            <li v-if="taskDetail.file_num > 50" class="tip">{{$L(`共${taskDetail.file_num}个文件，仅显示最新50个`)}}</li>
-                            <li v-for="file in fileList">
-                                <img v-if="file.id" class="file-ext" :src="file.thumb"/>
-                                <Loading v-else class="file-load"/>
-                                <div class="file-name">{{file.name}}</div>
-                                <div class="file-size">{{$A.bytesToSize(file.size)}}</div>
-                                <div class="file-menu" :class="{show:file._show_menu}">
-                                    <Icon @click="viewFile(file)" type="md-eye" />
-                                    <Icon @click="downFile(file)" type="md-arrow-round-down" />
-                                    <EPopover v-model="file._show_menu" class="file-delete">
-                                        <div class="task-detail-delete-file-popover">
-                                            <p>{{$L('你确定要删除这个文件吗？')}}</p>
-                                            <div class="buttons">
-                                                <Button size="small" type="text" @click="file._show_menu=false">{{$L('取消')}}</Button>
-                                                <Button size="small" type="primary" @click="deleteFile(file)">{{$L('确定')}}</Button>
-                                            </div>
+                            </div>
+                            <div class="item-content user">
+                                <span @click="showCisibleDropdown" v-if="taskDetail.is_all_visible == 1"  class="visibility-text">{{$L('项目人员可见')}}</span>
+                                <span @click="showCisibleDropdown" v-else-if="taskDetail.is_all_visible == 2"  class="visibility-text">{{$L('任务人员可见')}}</span>
+                                <UserSelect
+                                    v-else
+                                    ref="visibleUserSelectRef"
+                                    v-model="taskDetail.visibility_appointor"
+                                    :avatar-size="28"
+                                    :title="$L('选择指定人员')"
+                                    :project-id="taskDetail.project_id"
+                                    :add-icon="false"
+                                    @on-show-change="visibleUserSelectShowChange"/>
+                            </div>
+                        </FormItem>
+                        <FormItem v-if="taskDetail.end_at || timeForce">
+                            <div class="item-label" slot="label">
+                                <i class="taskfont">&#xe6e8;</i>{{$L('截止时间')}}
+                            </div>
+                            <ul class="item-content">
+                                <li>
+                                    <DatePicker
+                                        v-model="timeValue"
+                                        :open="timeOpen"
+                                        :options="timeOptions"
+                                        format="yyyy/MM/dd HH:mm"
+                                        type="datetimerange"
+                                        @on-open-change="timeChange"
+                                        @on-clear="timeClear"
+                                        @on-ok="timeOk"
+                                        transfer>
+                                        <div class="picker-time">
+                                            <div @click="openTime" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
+                                            <template v-if="!taskDetail.complete_at && taskDetail.end_at">
+                                                <Tag v-if="within24Hours(taskDetail.end_at)" color="blue"><i class="taskfont">&#xe71d;</i>{{expiresFormat(taskDetail.end_at)}}</Tag>
+                                                <Tag v-if="isOverdue(taskDetail)" color="red">{{$L('超期未完成')}}</Tag>
+                                            </template>
                                         </div>
-                                        <i slot="reference" class="taskfont del">&#xe6ea;</i>
-                                    </EPopover>
+                                    </DatePicker>
+                                </li>
+                            </ul>
+                        </FormItem>
+                        <FormItem v-if="(taskDetail.loop && taskDetail.loop != 'never') || loopForce">
+                            <div class="item-label" slot="label">
+                                <i class="taskfont">&#xe93f;</i>{{$L('重复周期')}}
+                            </div>
+                            <ul class="item-content">
+                                <li>
+                                    <EDropdown
+                                        ref="loop"
+                                        trigger="click"
+                                        placement="bottom"
+                                        @command="updateData('loop', $event)">
+                                        <ETooltip :disabled="$isEEUiApp || windowTouch || !taskDetail.loop_at" :content="`${$L('下个周期')}: ${taskDetail.loop_at}`" placement="right">
+                                            <span>{{$L(loopLabel(taskDetail.loop))}}</span>
+                                        </ETooltip>
+                                        <EDropdownMenu slot="dropdown" class="task-detail-loop">
+                                            <EDropdownItem v-for="item in loops" :key="item.key" :command="item.key">
+                                                {{$L(item.label)}}
+                                            </EDropdownItem>
+                                        </EDropdownMenu>
+                                    </EDropdown>
+                                </li>
+                            </ul>
+                        </FormItem>
+                        <FormItem v-if="fileList.length > 0">
+                            <div class="item-label" slot="label">
+                                <i class="taskfont">&#xe6e6;</i>{{$L('附件')}}
+                            </div>
+                            <ul class="item-content file">
+                                <li v-if="taskDetail.file_num > 50" class="tip">{{$L(`共${taskDetail.file_num}个文件，仅显示最新50个`)}}</li>
+                                <li v-for="file in fileList">
+                                    <img v-if="file.id" class="file-ext" :src="file.thumb"/>
+                                    <Loading v-else class="file-load"/>
+                                    <div class="file-name">{{file.name}}</div>
+                                    <div class="file-size">{{$A.bytesToSize(file.size)}}</div>
+                                    <div class="file-menu" :class="{show:file._show_menu}">
+                                        <Icon @click="viewFile(file)" type="md-eye" />
+                                        <Icon @click="downFile(file)" type="md-arrow-round-down" />
+                                        <EPopover v-model="file._show_menu" class="file-delete">
+                                            <div class="task-detail-delete-file-popover">
+                                                <p>{{$L('你确定要删除这个文件吗？')}}</p>
+                                                <div class="buttons">
+                                                    <Button size="small" type="text" @click="file._show_menu=false">{{$L('取消')}}</Button>
+                                                    <Button size="small" type="primary" @click="deleteFile(file)">{{$L('确定')}}</Button>
+                                                </div>
+                                            </div>
+                                            <i slot="reference" class="taskfont del">&#xe6ea;</i>
+                                        </EPopover>
+                                    </div>
+                                </li>
+                            </ul>
+                            <ul class="item-content">
+                                <li>
+                                    <div class="add-button" @click="onUploadClick(true)">
+                                        <i class="taskfont">&#xe6f2;</i>{{$L('添加附件')}}
+                                    </div>
+                                </li>
+                            </ul>
+                        </FormItem>
+                        <FormItem v-if="subList.length > 0 || addsubForce">
+                            <div class="item-label" slot="label">
+                                <i class="taskfont">&#xe6f0;</i>{{$L('子任务')}}
+                            </div>
+                            <ul class="item-content subtask">
+                                <TaskDetail
+                                    v-for="(task, key) in subList"
+                                    :ref="`subTask_${task.id}`"
+                                    :key="key"
+                                    :task-id="task.id"
+                                    :open-task="task"
+                                    :main-end-at="taskDetail.end_at"
+                                    :can-update-blur="canUpdateBlur"/>
+                            </ul>
+                            <ul :class="['item-content', subList.length === 0 ? 'nosub' : '']">
+                                <li>
+                                    <Input
+                                        v-if="addsubShow"
+                                        v-model="addsubName"
+                                        ref="addsub"
+                                        class="add-input"
+                                        :placeholder="$L('+ 输入子任务，回车添加子任务')"
+                                        :icon="addsubLoad > 0 ? 'ios-loading' : ''"
+                                        :class="{loading: addsubLoad > 0}"
+                                        enterkeyhint="done"
+                                        @on-blur="addsubChackClose"
+                                        @on-keydown="addsubKeydown"/>
+                                    <div v-else class="add-button" @click="addsubOpen">
+                                        <i class="taskfont">&#xe6f2;</i>{{$L('添加子任务')}}
+                                    </div>
+                                </li>
+                            </ul>
+                        </FormItem>
+                    </Form>
+                    <div v-if="menuList.length > 0" class="add">
+                        <EDropdown
+                            trigger="click"
+                            placement="bottom"
+                            @command="dropAdd">
+                            <div class="add-button">
+                                <i class="taskfont">&#xe6f2;</i>
+                                {{$L('添加')}}
+                                <em>{{menuText}}</em>
+                            </div>
+                            <EDropdownMenu slot="dropdown">
+                                <EDropdownItem v-for="(item, key) in menuList" :key="key" :command="item.command">
+                                    <div class="item">
+                                        <i class="taskfont" v-html="item.icon"></i>{{$L(item.name)}}
+                                    </div>
+                                </EDropdownItem>
+                            </EDropdownMenu>
+                        </EDropdown>
+                    </div>
+                </Scrollbar>
+                <TaskUpload ref="upload" class="upload" @on-select-file="onSelectFile"/>
+            </div>
+            <div v-show="taskDetail.id > 0" class="task-dialog" :style="dialogStyle">
+                <template v-if="hasOpenDialog">
+                    <DialogWrapper v-if="taskId > 0" ref="dialog" :dialog-id="taskDetail.dialog_id">
+                        <div slot="head" class="head">
+                            <Icon class="icon" type="ios-chatbubbles-outline" />
+                            <div class="nav">
+                                <p :class="{active:navActive=='dialog'}" @click="navActive='dialog'">{{$L('聊天')}}</p>
+                                <p :class="{active:navActive=='log'}" @click="navActive='log'">{{$L('动态')}}</p>
+                                <div v-if="navActive=='log'" class="refresh">
+                                    <Loading v-if="logLoadIng"/>
+                                    <Icon v-else type="ios-refresh" @click="getLogLists"></Icon>
                                 </div>
-                            </li>
-                        </ul>
-                        <ul class="item-content">
-                            <li>
-                                <div class="add-button" @click="onUploadClick(true)">
-                                    <i class="taskfont">&#xe6f2;</i>{{$L('添加附件')}}
-                                </div>
-                            </li>
-                        </ul>
-                    </FormItem>
-                    <FormItem v-if="subList.length > 0 || addsubForce">
-                        <div class="item-label" slot="label">
-                            <i class="taskfont">&#xe6f0;</i>{{$L('子任务')}}
+                            </div>
                         </div>
-                        <ul class="item-content subtask">
-                            <TaskDetail
-                                v-for="(task, key) in subList"
-                                :ref="`subTask_${task.id}`"
-                                :key="key"
-                                :task-id="task.id"
-                                :open-task="task"
-                                :main-end-at="taskDetail.end_at"
-                                :can-update-blur="canUpdateBlur"/>
-                        </ul>
-                        <ul :class="['item-content', subList.length === 0 ? 'nosub' : '']">
-                            <li>
-                                <Input
-                                    v-if="addsubShow"
-                                    v-model="addsubName"
-                                    ref="addsub"
-                                    class="add-input"
-                                    :placeholder="$L('+ 输入子任务，回车添加子任务')"
-                                    :icon="addsubLoad > 0 ? 'ios-loading' : ''"
-                                    :class="{loading: addsubLoad > 0}"
-                                    enterkeyhint="done"
-                                    @on-blur="addsubChackClose"
-                                    @on-keydown="addsubKeydown"/>
-                                <div v-else class="add-button" @click="addsubOpen">
-                                    <i class="taskfont">&#xe6f2;</i>{{$L('添加子任务')}}
-                                </div>
-                            </li>
-                        </ul>
-                    </FormItem>
-                </Form>
-                <div v-if="menuList.length > 0" class="add">
-                    <EDropdown
-                        trigger="click"
-                        placement="bottom"
-                        @command="dropAdd">
-                        <div class="add-button">
-                            <i class="taskfont">&#xe6f2;</i>
-                            {{$L('添加')}}
-                            <em>{{menuText}}</em>
-                        </div>
-                        <EDropdownMenu slot="dropdown">
-                            <EDropdownItem v-for="(item, key) in menuList" :key="key" :command="item.command">
-                                <div class="item">
-                                    <i class="taskfont" v-html="item.icon"></i>{{$L(item.name)}}
-                                </div>
-                            </EDropdownItem>
-                        </EDropdownMenu>
-                    </EDropdown>
-                </div>
-            </Scrollbar>
-            <TaskUpload ref="upload" class="upload" @on-select-file="onSelectFile"/>
-        </div>
-        <div v-show="taskDetail.id > 0" class="task-dialog" :style="dialogStyle">
-            <template v-if="hasOpenDialog">
-                <DialogWrapper v-if="taskId > 0" ref="dialog" :dialog-id="taskDetail.dialog_id">
-                    <div slot="head" class="head">
+                    </DialogWrapper>
+                    <ProjectLog v-if="navActive=='log' && taskId > 0" ref="log" :task-id="taskDetail.id" @on-load-change="logLoadChange"/>
+                </template>
+                <div v-else>
+                    <div class="head">
                         <Icon class="icon" type="ios-chatbubbles-outline" />
                         <div class="nav">
                             <p :class="{active:navActive=='dialog'}" @click="navActive='dialog'">{{$L('聊天')}}</p>
@@ -401,56 +417,44 @@
                                 <Icon v-else type="ios-refresh" @click="getLogLists"></Icon>
                             </div>
                         </div>
-                    </div>
-                </DialogWrapper>
-                <ProjectLog v-if="navActive=='log' && taskId > 0" ref="log" :task-id="taskDetail.id" @on-load-change="logLoadChange"/>
-            </template>
-            <div v-else>
-                <div class="head">
-                    <Icon class="icon" type="ios-chatbubbles-outline" />
-                    <div class="nav">
-                        <p :class="{active:navActive=='dialog'}" @click="navActive='dialog'">{{$L('聊天')}}</p>
-                        <p :class="{active:navActive=='log'}" @click="navActive='log'">{{$L('动态')}}</p>
-                        <div v-if="navActive=='log'" class="refresh">
-                            <Loading v-if="logLoadIng"/>
-                            <Icon v-else type="ios-refresh" @click="getLogLists"></Icon>
+                        <div class="menu">
+                            <div v-if="navActive=='dialog' && taskDetail.msg_num > 0" class="menu-item" @click.stop="onSend('open')">
+                                <div v-if="openLoad > 0" class="menu-load"><Loading/></div>
+                                {{$L('任务聊天')}}
+                                <em>({{taskDetail.msg_num > 999 ? '999+' : taskDetail.msg_num}})</em>
+                                <i class="taskfont">&#xe703;</i>
+                            </div>
                         </div>
                     </div>
-                    <div class="menu">
-                        <div v-if="navActive=='dialog' && taskDetail.msg_num > 0" class="menu-item" @click.stop="onSend('open')">
-                            <div v-if="openLoad > 0" class="menu-load"><Loading/></div>
-                            {{$L('任务聊天')}}
-                            <em>({{taskDetail.msg_num > 999 ? '999+' : taskDetail.msg_num}})</em>
-                            <i class="taskfont">&#xe703;</i>
+                    <ProjectLog v-if="navActive=='log' && taskId > 0" ref="log" :task-id="taskDetail.id" :show-load="false" @on-load-change="logLoadChange"/>
+                    <div v-else class="no-dialog"
+                        @drop.prevent="taskPasteDrag($event, 'drag')"
+                        @dragover.prevent="taskDragOver(true, $event)"
+                        @dragleave.prevent="taskDragOver(false, $event)">
+                        <div class="no-tip">{{$L('暂无消息')}}</div>
+                        <div class="no-input">
+                            <ChatInput
+                                ref="chatInput"
+                                :task-id="taskId"
+                                v-model="msgText"
+                                :loading="sendLoad > 0"
+                                :maxlength="200000"
+                                :placeholder="$L('输入消息...')"
+                                @on-more="onEventMore"
+                                @on-file="onSelectFile"
+                                @on-record="onRecord"
+                                @on-send="onSend"/>
                         </div>
-                    </div>
-                </div>
-                <ProjectLog v-if="navActive=='log' && taskId > 0" ref="log" :task-id="taskDetail.id" :show-load="false" @on-load-change="logLoadChange"/>
-                <div v-else class="no-dialog"
-                     @drop.prevent="taskPasteDrag($event, 'drag')"
-                     @dragover.prevent="taskDragOver(true, $event)"
-                     @dragleave.prevent="taskDragOver(false, $event)">
-                    <div class="no-tip">{{$L('暂无消息')}}</div>
-                    <div class="no-input">
-                        <ChatInput
-                            ref="chatInput"
-                            :task-id="taskId"
-                            v-model="msgText"
-                            :loading="sendLoad > 0"
-                            :maxlength="200000"
-                            :placeholder="$L('输入消息...')"
-                            @on-more="onEventMore"
-                            @on-file="onSelectFile"
-                            @on-record="onRecord"
-                            @on-send="onSend"/>
-                    </div>
-                    <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
-                        <div class="drag-text">{{$L('拖动到这里发送')}}</div>
+                        <div v-if="dialogDrag" class="drag-over" @click="dialogDrag=false">
+                            <div class="drag-text">{{$L('拖动到这里发送')}}</div>
+                        </div>
                     </div>
                 </div>
             </div>
+            <div v-if="!taskDetail.id" class="task-load"><Loading/></div>
         </div>
-        <div v-if="!taskDetail.id" class="task-load"><Loading/></div>
+        <!-- 提示  -->
+        <TaskExistTips ref="taskExistTipsRef" @onAdd="updateData('times', updateParams)"/>
     </div>
 </template>
 
@@ -465,12 +469,21 @@ import {Store} from "le5le-store";
 import TaskMenu from "./TaskMenu";
 import ChatInput from "./ChatInput";
 import UserSelect from "../../../components/UserSelect.vue";
+import TaskExistTips from "./TaskExistTips.vue";
 
 export default {
     name: "TaskDetail",
     components: {
         UserSelect,
-        ChatInput, TaskMenu, ProjectLog, DialogWrapper, TaskUpload, TaskPriority, TEditor},
+        TaskExistTips,
+        ChatInput, 
+        TaskMenu,
+        ProjectLog,
+        DialogWrapper,
+        TaskUpload,
+        TaskPriority,
+        TEditor
+    },
     props: {
         taskId: {
             type: Number,
@@ -574,6 +587,8 @@ export default {
                 {key: 'year', label: '每年'},
                 {key: 'custom', label: '自定义'},
             ],
+
+            updateParams: {},
         }
     },
 
@@ -957,7 +972,16 @@ export default {
                                 if (!desc) {
                                     return `请输入修改备注`
                                 }
-                                this.updateData("times", Object.assign(params, {desc}))
+                                this.updateParams = Object.assign(params, {desc})    
+                                this.$refs['taskExistTipsRef'].isExistTask({
+                                    taskid: this.taskDetail.id,
+                                    userids: this.taskDetail.owner_userid,
+                                    timerange: [params.start_at,params.end_at]
+                                }).then(res=>{
+                                    if(!res){
+                                        this.updateData("times", this.updateParams)
+                                    }
+                                });
                                 return false
                             },
                         });

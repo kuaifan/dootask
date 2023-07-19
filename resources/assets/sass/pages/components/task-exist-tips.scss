@@ -1,0 +1,40 @@
+.task-exist-tips {
+
+    .ivu-modal-body {
+        padding: 0px 26px 16px 26px !important;
+        max-height: 500px;
+        overflow: auto;
+    }
+
+    .list-content {
+        flex: 1;
+        width: 100%;
+    }
+
+    .list-task {
+        @media (min-width: 450px) {
+            display: flex;
+        }
+
+        margin-left: 34px;
+        margin-top: 10px;
+        width: calc(100% - 34px);
+    }
+
+    .list-task-info {
+        min-width: 135px;
+        flex: 1;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+
+        span:first-child {
+            color: #A7ABB5;
+        }
+    }
+
+    .list-task-date {
+        min-width: 135px;
+        text-align: left;
+    }
+}
