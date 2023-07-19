@@ -99,6 +99,7 @@ export default {
             if (group_type === 'task') return '任务群组'
             if (group_type === 'user') return '个人群组'
             if (group_type === 'all') return '全员群组'
+            if (group_type === 'okr') return 'OKR群组'
             return '未知'
         },
 
