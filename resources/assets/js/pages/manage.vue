@@ -785,7 +785,7 @@ export default {
                     if(path=='okrManage'){
                         this.goForward({  path: '/manage/microapp/', query });
                     }else{
-                        this.goForward({ path: '/manage/microapp/#/main', query });
+                        this.goForward({ path: '/manage/microapp/#/analysis', query });
                     }
                     return;
                 case 'logout':
