@@ -451,6 +451,8 @@
             </div>
         </div>
         <div v-if="!taskDetail.id" class="task-load"><Loading/></div>
+        <!-- 提示  -->
+        <TaskExistTips ref="taskExistTipsRef" @onAdd="updateData('times', updateParams)"/>
     </div>
 </template>
 
@@ -465,12 +467,21 @@ import {Store} from "le5le-store";
 import TaskMenu from "./TaskMenu";
 import ChatInput from "./ChatInput";
 import UserSelect from "../../../components/UserSelect.vue";
+import TaskExistTips from "./TaskExistTips.vue";
 
 export default {
     name: "TaskDetail",
     components: {
         UserSelect,
-        ChatInput, TaskMenu, ProjectLog, DialogWrapper, TaskUpload, TaskPriority, TEditor},
+        TaskExistTips,
+        ChatInput, 
+        TaskMenu,
+        ProjectLog,
+        DialogWrapper,
+        TaskUpload,
+        TaskPriority,
+        TEditor
+    },
     props: {
         taskId: {
             type: Number,
@@ -576,6 +587,8 @@ export default {
                 {key: 'year', label: '每年'},
                 {key: 'custom', label: '自定义'},
             ],
+
+            updateParams: {},
         }
     },
 
@@ -975,7 +988,20 @@ export default {
                                 if (!desc) {
                                     return `请输入修改备注`
                                 }
-                                this.updateData("times", Object.assign(params, {desc}))
+                                this.updateParams = Object.assign(params, { desc })
+                                if (params.start_at && params.end_at) {
+                                    this.$refs['taskExistTipsRef'].isExistTask({
+                                        taskid: this.taskDetail.id,
+                                        userids: this.taskDetail.owner_userid,
+                                        timerange: [params.start_at, params.end_at]
+                                    }).then(res => {
+                                        if (!res) {
+                                            this.updateData("times", this.updateParams)
+                                        }
+                                    });
+                                } else {
+                                    this.updateData("times", this.updateParams)
+                                }
                                 return false
                             },
                         });

@@ -1044,6 +1044,62 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * @api {get} api/project/task/easylists          18. 任务列表-简单的
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__easylists
+
+     * @apiParam {String} [taskid]         排除的任务ID
+     * @apiParam {String} [userid]         用户ID（如：1,2）
+     * @apiParam {String} [timerange]      时间范围（如：2022-03-01 12:12:12,2022-05-01 12:12:12）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__easylists()
+    {
+        User::auth();
+        //
+        $taskid = trim(Request::input('taskid'));
+        $userid = Request::input('userid');
+        $timerange = Request::input('timerange');
+        // 
+        $list = ProjectTask::with(['taskUser'])
+            ->select('projects.name as project_name', 'project_tasks.id', 'project_tasks.name', 'project_tasks.start_at', 'project_tasks.end_at')
+            ->join('projects','project_tasks.project_id','=','projects.id')
+            ->leftJoin('project_task_users', function ($query) {
+                $query->on('project_tasks.id', '=', 'project_task_users.task_id')->where('project_task_users.owner', '=', 1);
+            })
+            ->whereIn('project_task_users.userid', is_array($userid) ? $userid : explode(',', $userid) )
+            ->when(!empty($timerange), function ($query) use ($timerange) {
+                if (!is_array($timerange)) {
+                    $timerange = explode(',', $timerange);
+                }
+                if (Base::isDateOrTime($timerange[0]) && Base::isDateOrTime($timerange[1])) {
+                    $query->where('project_tasks.start_at', '>=', Carbon::parse($timerange[0])->startOfDay());
+                    $query->where('project_tasks.end_at', '<=', Carbon::parse($timerange[1])->endOfDay());
+                }
+            })
+            ->when(!empty($taskid), function ($query) use ($taskid) {
+                $query->where('project_tasks.id', "!=", $taskid);
+            })
+            ->whereNull('complete_at')
+            ->distinct()
+            ->orderByDesc('project_tasks.id')
+            ->paginate(Base::getPaginate(200, 100));
+        // 
+        $list->transform(function ($customer) {
+            $customer->setAppends([]);
+            return $customer;
+        });
+        //
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
      * @api {get} api/project/task/export          19. 导出任务（限管理员）
      *
      * @apiDescription 导出指定范围任务（已完成、未完成、已归档），返回下载地址，需要token身份

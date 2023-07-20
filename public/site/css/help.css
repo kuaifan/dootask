@@ -114,7 +114,8 @@
 
 .r-ul-item-pic1 {
     display: block;
-    height: 316px;
+    max-width: 90%;
+    margin: 12px 0;
 }
 
 .r-ul-item-pic2 {
