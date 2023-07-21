@@ -55,19 +55,7 @@ export default {
             }
 
             // 主题皮肤
-            switch (state.themeMode) {
-                case 'dark':
-                    $A.dark.enableDarkMode()
-                    break;
-                case 'light':
-                    $A.dark.disableDarkMode()
-                    break;
-                default:
-                    state.themeMode = "auto"
-                    $A.dark.autoDarkMode()
-                    break;
-            }
-            state.themeIsDark = $A.dark.isDarkEnabled()
+            await dispatch("synchTheme")
 
             // 客户端ID
             if (!state.clientId) {
@@ -486,6 +474,26 @@ export default {
             window.localStorage.setItem("__theme:mode__", mode);
             resolve(true)
         });
+    },
+
+    /**
+     * 同步主题
+     * @param state
+     */
+    synchTheme({state}) {
+        switch (state.themeMode) {
+            case 'dark':
+                $A.dark.enableDarkMode()
+                break;
+            case 'light':
+                $A.dark.disableDarkMode()
+                break;
+            default:
+                state.themeMode = "auto"
+                $A.dark.autoDarkMode()
+                break;
+        }
+        state.themeIsDark = $A.dark.isDarkEnabled()
     },
 
     /**
