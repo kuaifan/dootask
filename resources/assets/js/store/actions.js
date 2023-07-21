@@ -461,7 +461,7 @@ export default {
                 resolve(false)
                 return;
             }
-            if (!$A.isChrome()) {
+            if (!$A.dark.utils.supportMode()) {
                 if ($A.isEEUiApp) {
                     $A.modalWarning("仅Android设置支持主题功能");
                 } else {

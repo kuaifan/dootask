@@ -1140,9 +1140,36 @@
     $.extend({
         dark: {
             utils: {
-                filter: '-webkit-filter: url(#dark-mode-filter) !important; filter: url(#dark-mode-filter) !important;',
-                reverseFilter: '-webkit-filter: url(#dark-mode-reverse-filter) !important; filter: url(#dark-mode-reverse-filter) !important;',
-                noneFilter: '-webkit-filter: none !important; filter: none !important;',
+                supportMode() {
+                    let ua = typeof window !== 'undefined' && window.navigator.userAgent.toLowerCase();
+                    if (`${ua.match(/Chrome/i)}` === 'chrome') {
+                        return 'chrome';
+                    }
+                    if (`${ua.match(/Safari/i)}` === 'safari') {
+                        return 'safari';
+                    }
+                    return null;
+                },
+
+                defaultFilter() {
+                    if (this.supportMode() === 'chrome') {
+                        return '-webkit-filter: url(#dark-mode-filter) !important; filter: url(#dark-mode-filter) !important;';
+                    } else if (this.supportMode() === 'safari') {
+                        return '-webkit-filter: invert(0.92) hue-rotate(180deg) !important; filter: invert(0.92) hue-rotate(180deg) !important;';
+                    }
+                },
+
+                reverseFilter() {
+                    if (this.supportMode() === 'chrome') {
+                        return '-webkit-filter: url(#dark-mode-reverse-filter) !important; filter: url(#dark-mode-reverse-filter) !important;';
+                    } else if (this.supportMode() === 'safari') {
+                        return '-webkit-filter: invert(0.92) hue-rotate(180deg) !important; filter: invert(0.92) hue-rotate(180deg) !important;';
+                    }
+                },
+
+                noneFilter() {
+                    return '-webkit-filter: none !important; filter: none !important;';
+                },
 
                 addExtraStyle() {
                     try {
@@ -1206,7 +1233,7 @@
                 this.utils.addStyle('dark-mode-style', 'style', `
                 @media screen {
                     html {
-                        ${this.utils.filter}
+                        ${this.utils.defaultFilter()}
                     }
 
                     /* Default Reverse rule */
@@ -1225,7 +1252,7 @@
                     .no-dark-mode,
                     .no-dark-content,
                     .no-dark-before:before {
-                        ${this.utils.reverseFilter}
+                        ${this.utils.reverseFilter()}
                     }
 
                     [style*="background:url"] *,
@@ -1237,7 +1264,7 @@
                     .no-dark-content img,
                     .no-dark-content canvas,
                     .no-dark-content svg image {
-                        ${this.utils.noneFilter}
+                        ${this.utils.noneFilter()}
                     }
 
                     /* Text contrast */
@@ -1253,7 +1280,7 @@
                     :-moz-full-screen *,
                     :fullscreen,
                     :fullscreen * {
-                        ${this.utils.noneFilter}
+                        ${this.utils.noneFilter()}
                     }
 
                     /* Page background */
@@ -1273,7 +1300,7 @@
             },
 
             enableDarkMode() {
-                if (!$A.isChrome()) {
+                if (!this.utils.supportMode()) {
                     return;
                 }
                 if (this.isDarkEnabled()) {
