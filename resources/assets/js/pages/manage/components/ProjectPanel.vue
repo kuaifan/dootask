@@ -1413,7 +1413,7 @@ export default {
                     return false;
                 }
             }
-            return task.owner;
+            return task.owner == 1;
         },
 
         helpFilter(task, chackCompleted = true) {

@@ -1,6 +1,6 @@
 <template>
     <div class="approve-details" :style="{'z-index':modalTransferIndex}">
-        <div class="approve-details-box">
+        <div class="approve-details-box" ref="approveDetailsBox">
             <h2 class="approve-details-title">
                 <span>{{$L(datas.proc_def_name)}}</span>
                 <Tag v-if="datas.state == 0" color="cyan">{{$L('待审批')}}</Tag>
@@ -292,7 +292,7 @@ export default {
             }
         },
         // 获取详情
-        getInfo(){
+        getInfo(isScrollToBottom = false) {
             this.$store.dispatch("call", {
                 method: 'get',
                 url: 'approve/process/detail',
@@ -308,8 +308,9 @@ export default {
                     }
                     return item;
                 })
-                this.$nextTick(()=>{
+                this.$nextTick(() => {
                     this.datas = data
+                    isScrollToBottom && this.scrollToBottom();
                 })
             }).catch(({msg}) => {
                 $A.modalError(msg);
@@ -401,15 +402,26 @@ export default {
             }).then(({msg}) => {
                 $A.messageSuccess("添加成功");
                 if(this.$route.name=='manage-approve-details' || this.$route.name=='manage-messenger'){
-                    this.getInfo()
+                    this.getInfo(true)
                 }else{
                     this.$emit('approve')
+                    setTimeout(() => {
+                        this.scrollToBottom()
+                    }, 500);
                 }
                 this.commentShow = false;
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
                 this.loadIng--;
+            });
+        },
+        // 滚动到容器底部
+        scrollToBottom() {
+            const container = this.$refs.approveDetailsBox
+            container.scrollTo({
+                top: container.scrollHeight + 1000,
+                behavior: 'smooth' 
             });
         },
         // 获取内容
@@ -420,7 +432,7 @@ export default {
                 return ''
             }
         },
-        // 获取内容
+        // 获取图片
         getPictures(content){
             try {
                 return JSON.parse(content).pictures || []
