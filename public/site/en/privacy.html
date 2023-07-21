@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>DooTask</title>
+  <title>Privacy</title>
   <meta name="google" value="notranslate">
   <meta name="description" content="DooTask是一款轻量级的开源在线项目任务管理工具，提供各类文档协作工具、在线思维导图、在线流程图、项目管理、任务分发、即时IM，文件管理等工具。助力团队高效推进项目，让工作更简单。">
   <meta name="keywords" content="中国 DooTask 开源在线项目 任务管理工具 任务管理 轻量级 海豚有海 团队协作">
@@ -12,76 +12,29 @@
   <link rel="stylesheet" href="../css/common.css">
 </head>
 <body>
-  <header class="head">
-    <div class="nav">
-      <div class="nav-layout">
-        <a href="../en/index.html" class="logo">
-          <img id="logo" src="../img/light/logo.svg" alt="DooTask,Logo">
-          <i class="dootask txt-7002027">DooTask</i>
-        </a>
-        <ul class="nav-ul">
-          <li class="nav-ul-item">
-            <a class="txt-4001620 txt nav-product" href="../en/product.html">Product</a>
-          </li>
-          <li class="nav-ul-item">
-            <a class="txt-4001620 txt nav-solutions" href="../en/solutions.html">Solutions</a>
-          </li>
-          <li class="nav-ul-item">
-            <i class="txt-4001620 txt nav-support" id="support-txt" onclick="showMenuPopHandle()">
-              Support
-              <img src="../img/vector.svg" alt="Support" class="nav-vector" id="drop-down-svg">
-            </i>
-            <ol class="submenu-pop" id="submenu-pop">
-              <li class="submenu-pop-item" onclick="changeMenu()">
-                <a class="txt-4001418 txt-sub" href="../en/download.html">Download Center</a>
-              </li>
-              <li class="submenu-pop-item" onclick="changeMenu()">
-                <a class="txt-4001418 txt-sub" href="../en/help.html">Help Center</a>
-              </li>
-            </ol>
-          </li>
-          <li class="nav-ul-item">
-            <a class="txt-4001620 txt nav-price" href="../en/price.html">Pricing</a>
-          </li>
-          <li class="nav-ul-item">
-            <a class="txt-4001620 txt nav-about" href="../en/about.html">About Us</a>
-          </li>
-        </ul>
-        <div class="nav-r">
-          <div class="lang" id="lang-img">
-            <img src="../img/lang-select.svg" alt="Language switch" onclick="shouLangPopHandle()">
-            <ul class="lang-pop" id="lang-pop">
-              <li class="lang-pop-item" onclick="changeLanguage('zh')">
-                <i class="lang-txt">简体中文</i>
-              </li>
-              <li class="lang-pop-item" onclick="changeLanguage('en')">
-                <i class="lang-txt" >English</i>
-              </li>
-            </ul>
-          </div>
-          <i class="nav-r-icon theme_dark" onclick="setTheme('light')">
-            <img src="../img/light.svg" alt="Brighter theme">
-          </i>
-          <i class="nav-r-icon theme_light" onclick="setTheme('dark')">
-            <img src="../img/drak.svg" alt="Dark theme">
-          </i>
-          <a href="https://github.com/kuaifan/dootask">
-            <i class="nav-r-icon">
-              <img src="../img/github.svg" alt="github">
-            </i>
-          </a>
-          <i class="line-1"></i>
-          <span class="get-started">
-            <a href="https://www.dootask.com/manage/dashboard">
-              <button class="btn btn-primary" >Try Now</button>
-            </a>
-          </span>
-        </div>
-        <div class="menuBtn">
-          <img id="menuBtn" src="../img/menu.svg" alt="Menu">
-        </div>
-      </div>
-    </div>
-  </header>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+  </style>
+  <div id="markdown-content"></div>
+
+  <script src="https://unpkg.com/markdown-it/dist/markdown-it.min.js"></script>
+  <script>
+    // 创建 markdown-it 实例
+    const md = new window.markdownit();
+
+    // 获取 Markdown 文件内容并渲染为 HTML
+    fetch('./privacy.md')
+      .then(response => response.text())
+      .then(markdownText => {
+        const htmlText = md.render(markdownText);
+        document.getElementById('markdown-content').innerHTML = htmlText;
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+  </script>
 </body>
 </html>
