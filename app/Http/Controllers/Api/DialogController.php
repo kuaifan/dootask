@@ -1822,7 +1822,6 @@ class DialogController extends AbstractController
         if (empty($dialog)) {
             return Base::retError('创建群组失败');
         }
-        WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "test"], $user->userid);
         return Base::retSuccess('创建成功', $dialog);
     }
 
