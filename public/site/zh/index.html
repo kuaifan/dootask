@@ -14,6 +14,11 @@
 </head>
 <body>
   <div id="layout">
+    <!-- 同意cookie弹框 -->
+    <div id="cookieConsent">
+      <p>为使我们的网站可以正常向您提供服务、提高安全性，并更高效地运作以给您带来更好的网站使用体验，我们将使用Cookie（包括第三方Cookie），以作为安全、技术、分析与营销之用。继续浏览本网站即表示您同意使用cookie。更多有关我们如何使用 Cookie的信息，请参阅我们的 <a href="../zh/privacy.html" id="cookie_a">《隐私政策》</a>。</p>
+      <button id="agreeButton" class="btn btn-primary" >同意</button>
+    </div>
     <!-- 页头区域 -->
     <header class="head">
       <div class="nav">
@@ -144,6 +149,9 @@
             </li>
             <li class="drawer-item" onclick="changeMenu()">
               <a class="txt-4001620 txt" href="../zh/help.html">帮助中心</a>
+            </li>
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../zh/privacy.html">隐私政策</a>
             </li>
           </ol>
           <div class="drawer-item" onclick="closeDraweHandle()">
@@ -465,8 +473,11 @@
                   <li class="footer-ol-item mb-16">
                     <a class="txt-4001624 txt" href="../zh/download.html">下载中心</a>
                   </li>
-                  <li class="footer-ol-item">
+                  <li class="footer-ol-item mb-16">
                     <a class="txt-4001624 txt" href="../zh/help.html">帮助中心</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../zh/privacy.html">隐私政策</a>
                   </li>
                 </ol>
               </li>
@@ -503,6 +514,27 @@
 </body>
 <script src="../js/common.js"></script>
 <script>
+// cookie弹框
+document.addEventListener('DOMContentLoaded', function() {
+  console.log("aaa");
+  let cookieConsent = document.getElementById('cookieConsent');
+  let agreeButton = document.getElementById('agreeButton');
+  // 检查localStorage中的同意状态
+  let hasConsented = sessionStorage.getItem('cookieConsent');
+  if (!hasConsented) {
+    cookieConsent.style.display = 'block';
+  }
+  agreeButton.addEventListener('click', handleAgreeButtonClick);
+  function hideCookieConsent() {
+    cookieConsent.style.display = 'none';
+  }
+
+  function handleAgreeButtonClick() {
+    // 存储同意状态到localStorage
+    sessionStorage.setItem('cookieConsent', 'true');
+    hideCookieConsent();
+  }
+});
 /* 功能卡片切换函数 */
 const tabs = document.querySelector('.card-ul');
 const funImg = document.querySelector('#home_pic2');
