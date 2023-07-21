@@ -16894,5 +16894,49 @@
         "de": "Die folgenden personen haben den auftrag erledigt",
         "fr": "Les personnes suivantes ont déjà une mission",
         "id": "Yang berikut ini ada tugas"
+    },
+    {
+        "key": "你确定要登出系统吗？",
+        "zh": "",
+        "zh-CHT": "你確定要登出系統嗎？",
+        "en": "You sure you want to log out of the system?",
+        "ko": "시스템에서 로그아웃하시겠습니까?",
+        "ja": "システムをログアウトするのは確かですか?",
+        "de": "Willst du dich sicher ins system einloggen?",
+        "fr": "Êtes-vous sûr de vouloir vous déconnecter du système?",
+        "id": "Kau yakin ingin keluar dari sistem?"
+    },
+    {
+        "key": "计划时间冲突提示",
+        "zh": "",
+        "zh-CHT": "計劃時間衝突提示",
+        "en": "Schedule time conflict prompt",
+        "ko": "예약된 시간 알림 알림",
+        "ja": "予定時間の衝突のヒントです",
+        "de": "Geplante zeitkollisionen sind unvermeidlich",
+        "fr": "Conseils de conflit de temps de planification",
+        "id": "Merencanakan benturan waktu"
+    },
+    {
+        "key": "忽略并继续",
+        "zh": "",
+        "zh-CHT": "忽略並繼續",
+        "en": "Ignore and continue",
+        "ko": "무시하고 계속 진행",
+        "ja": "無視し続けます",
+        "de": "Ignorieren und weitermachen.",
+        "fr": "Ignorer et continuer",
+        "id": "Abaikan dan lanjutkan"
+    },
+    {
+        "key": "你确定要清除缓存吗？",
+        "zh": "",
+        "zh-CHT": "你確定要清除緩存嗎？",
+        "en": "Are you sure you want to clear the cache?",
+        "ko": "정말로 캐시를 지우시겠습니까?",
+        "ja": "確かにキャッシュを消去しますか?",
+        "de": "Bist du dir sicher, dass du es löschen willst?",
+        "fr": "Êtes-vous sûr de vouloir effacer votre cache?",
+        "id": "Apakah anda yakin ingin menghapus cache?"
     }
 ]

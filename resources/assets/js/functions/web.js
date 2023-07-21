@@ -1145,8 +1145,8 @@
                     if (`${ua.match(/Chrome/i)}` === 'chrome') {
                         return 'chrome';
                     }
-                    if (`${ua.match(/Safari/i)}` === 'safari') {
-                        return 'safari';
+                    if (`${ua.match(/Webkit/i)}` === 'webkit') {
+                        return 'webkit';
                     }
                     return null;
                 },
@@ -1154,7 +1154,7 @@
                 defaultFilter() {
                     if (this.supportMode() === 'chrome') {
                         return '-webkit-filter: url(#dark-mode-filter) !important; filter: url(#dark-mode-filter) !important;';
-                    } else if (this.supportMode() === 'safari') {
+                    } else if (this.supportMode() === 'webkit') {
                         return '-webkit-filter: invert(0.92) hue-rotate(180deg) !important; filter: invert(0.92) hue-rotate(180deg) !important;';
                     }
                 },
@@ -1162,7 +1162,7 @@
                 reverseFilter() {
                     if (this.supportMode() === 'chrome') {
                         return '-webkit-filter: url(#dark-mode-reverse-filter) !important; filter: url(#dark-mode-reverse-filter) !important;';
-                    } else if (this.supportMode() === 'safari') {
+                    } else if (this.supportMode() === 'webkit') {
                         return '-webkit-filter: invert(0.92) hue-rotate(180deg) !important; filter: invert(0.92) hue-rotate(180deg) !important;';
                     }
                 },

@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.28.68]
+
+### Bug Fixes
+
+- 按照dootask启动原始尺寸截取使用说明的图
+- 修改边栏目录滚动效果
+- 修改边栏目录滚动效果
+- 官网使用说明的图重新截取更换
+- 优化官网布局与样式
+- 修复下载英文页面跳转
+
+### Features
+
+- 增加获取更新日志接口，更改前端页面默认请求地址
+- 使用说明提交
+
+### Performance
+
+- Safari支持暗黑模式
+- 优化任务时间冲突提示
+- IOS部分点击事件存在阻塞的情况
+
 ## [0.28.36]
 
 ### Bug Fixes
