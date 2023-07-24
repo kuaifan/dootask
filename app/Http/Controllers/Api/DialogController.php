@@ -1801,7 +1801,7 @@ class DialogController extends AbstractController
      * @apiName okr__add
      *
      * @apiParam {String} name                   标题
-     * @apiParam {number} link_id                关联id
+     * @apiParam {Number} link_id                关联id
      * @apiParam {Array}  userids                群成员，格式: [userid1, userid2, userid3]
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
