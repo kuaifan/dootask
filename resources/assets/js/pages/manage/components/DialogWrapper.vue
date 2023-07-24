@@ -651,7 +651,6 @@ export default {
     },
 
     beforeDestroy() {
-        console.log(21123123123123123123)
         this.$store.dispatch('forgetInDialog', this._uid)
         this.$store.dispatch('closeDialog', this.dialogId)
     },
@@ -1798,6 +1797,17 @@ export default {
             this.$store.dispatch("openTask", this.dialogData.group_info.id);
         },
 
+        openOkr() {
+            if (!this.dialogData.link_id) {
+                return;
+            }
+            if (this.taskId > 0) {
+                // 如果当前打开着任务窗口则关闭对话窗口
+                this.$store.dispatch("openDialog", 0);
+            }
+            this.$store.dispatch("openTask", this.dialogData.link_id);
+        },
+
         onPrevPage() {
             if (this.prevId === 0) {
                 return
@@ -2148,6 +2158,10 @@ export default {
 
                 case 'task':
                     this.openTask()
+                    break;
+
+                case 'okr':
+                    this.openOkr()
                     break;
 
                 default:

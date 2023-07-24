@@ -10,6 +10,7 @@
             inline
             destroy
             disableSandbox
+            keep-alive
             :data='appData'
             @created='handleCreate'
             @beforemount='handleBeforeMount'
@@ -71,7 +72,7 @@ export default {
 
     methods: {
         handleCreate(e) {
-            // console.log("子应用创建了",e)
+            console.log("子应用创建了",e)
         },
         handleBeforeMount(e) {
             // console.log("子应用即将被渲染",e)
@@ -96,7 +97,7 @@ export default {
         },
         handleUnmount(e) {
             this.loading = true;
-            // console.log("子应用卸载了",e)
+            console.log("子应用卸载了",e)
         },
         handleError(e) {
             // console.log("子应用加载出错了",e.detail.error)
