@@ -1792,7 +1792,7 @@ class DialogController extends AbstractController
         ]);
     }
 
-     /**
+    /**
      * @api {post} api/dialog/okr/add          39. 创建OKR评论会话
      *
      * @apiDescription  需要token身份
@@ -1800,7 +1800,8 @@ class DialogController extends AbstractController
      * @apiGroup dialog
      * @apiName okr__add
      *
-     * @apiParam {String} name                  标题
+     * @apiParam {String} name                   标题
+     * @apiParam {number} link_id                关联id
      * @apiParam {Array}  userids                群成员，格式: [userid1, userid2, userid3]
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -1812,6 +1813,7 @@ class DialogController extends AbstractController
         $user = User::auth();
         //
         $name = trim(Request::input('name'));
+        $link_id = intval(Request::input('link_id'));        
         $userids = Request::input('userids');
         //
         if (empty($name)) {
@@ -1822,11 +1824,12 @@ class DialogController extends AbstractController
         if (empty($dialog)) {
             return Base::retError('创建群组失败');
         }
+        if ($link_id) {
+            $dialog->link_id = $link_id;
+            $dialog->save();
+        }
         return Base::retSuccess('创建成功', $dialog);
     }
-
-
-     
 
     /**
      * @api {post} api/dialog/okr/push          40. 推送OKR相关信息
