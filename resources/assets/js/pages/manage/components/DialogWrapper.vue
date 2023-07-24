@@ -785,6 +785,9 @@ export default {
             if (this.dialogData.group_type === 'task') {
                 array.push({type: 'task', label: '打开任务'})
             }
+            if (this.dialogData.group_type === 'okr') {
+                array.push({type: 'okr', label: '打开OKR'})
+            }
             return array
         },
 
