@@ -33,11 +33,6 @@
 .logs-l-ul{
   width: 240px;
 }
-.l-ul-item{
-  padding: 9px 16px;
-  cursor: pointer;
-  height: 22px;
-}
 .l-ul-item.active .txt{
   color: var(--txt-theme-color);
 }
@@ -130,14 +125,19 @@
   display: none;
 }
 .filings{
-  border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--border-color);
 }
 .log-a{
-  display: block;
-  width: 100%;
-  height: 100%;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 9px 16px;
+    line-height: normal;
 }
 .logs-sticky{
   position: sticky;
   top: 80px;
+}
+.footer-layut{
+    border-top: var(--border-color) solid 1px;
 }

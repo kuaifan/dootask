@@ -120,7 +120,8 @@
 
 .r-ul-item-pic1 {
     display: block;
-    height: 316px;
+    max-width: 90%;
+    margin: 12px 0;
 }
 
 .r-ul-item-pic2 {
@@ -190,4 +191,11 @@
 .help-fiexd{
     position: sticky;
     top: 80px;
+}
+.help-a{
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 9px 16px;
+    line-height: normal;
 }

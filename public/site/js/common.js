@@ -2,7 +2,7 @@ const menuBtn = document.getElementById('menuBtn'); // 768模式下的菜单按�
 const drawer = document.querySelector('.drawer'); // 768模式下的菜单
 const theme_light = document.querySelectorAll('.theme_light');
 const theme_dark = document.querySelectorAll('.theme_dark');
-/* 主题切换更换图片 */ 
+/* 主题切换更换图片 */
 const themeSwitch = (val1,val2)=>{
   theme_light.forEach(item=>{
     item.style.display = val1
@@ -11,7 +11,7 @@ const themeSwitch = (val1,val2)=>{
     item.style.display = val2
   })
 }
-/* 更换图片 */ 
+/* 更换图片 */
 const changeImageSrc = (img, src) => {
   const imgDom = document.querySelectorAll(img);
   const url = window.location.href   // 获取当前浏览器 URL
@@ -21,20 +21,20 @@ const changeImageSrc = (img, src) => {
     })
   }
 };
-/* 设置默认语言 */ 
+/* 设置默认语言 */
 if(!localStorage.getItem('lang')){
   localStorage.setItem('lang','zh')
 }
-/* 设置默认主题 */ 
+/* 设置默认主题 */
 const localStorageTheme = localStorage.getItem('theme')
-if(!localStorageTheme){ 
-  setTheme('light') 
+if(!localStorageTheme){
+  setTheme('light')
   localStorage.setItem('theme', 'light')
 }else{
-  setTheme(localStorageTheme) 
+  setTheme(localStorageTheme)
 }
 
-/* 切换主题函数 */ 
+/* 切换主题函数 */
 function setTheme(theme) {
   const root = document.documentElement;
   const lang = localStorage.getItem('lang')
@@ -102,12 +102,12 @@ function setTheme(theme) {
   localStorage.setItem('theme', theme)
   drawer.classList.remove('open-drawer');
 }
-/* 导航选中激活 */ 
+/* 导航选中激活 */
 const url = window.location.pathname;
 const currentTabName = url.split('/')[url.split('/').length - 1].split('.')[0]
-if(currentTabName 
-  && currentTabName != 'index' 
-  && currentTabName != 'help' 
+if(currentTabName
+  && currentTabName != 'index'
+  && currentTabName != 'help'
   && currentTabName != 'download'
   && currentTabName != 'log'){
   const currentTab = document.querySelector(`.nav-${currentTabName}`)
@@ -115,7 +115,7 @@ if(currentTabName
   currentTab.style.color = 'var(--text-color)';
   currentTab.style.borderRadius = '6px';
 }
-/* 导航下拉菜单函数 */ 
+/* 导航下拉菜单函数 */
 const submenuPopDom = document.querySelector('#submenu-pop');
 const dropDownSvgDom = document.querySelector('#drop-down-svg');
 const showMenuPopHandle = ()=>{
@@ -196,10 +196,6 @@ window.addEventListener('scroll', () => {
     navbar.classList.remove('navbar-white');
   }
 });
-/* 去登录函数 */
-const goToLoginHandle = ()=>{
-  window.location.href = `https://www.dootask.com/manage/dashboard`
-}
 const openInNewTab = (url)=> {
   const win = window.open(url, '_blank');
   win.focus();
