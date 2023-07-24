@@ -40,9 +40,9 @@ export default [
                 component: () => import('./pages/manage/approve/details.vue'),
             },
             {
-                name: 'manage-microapp',
-                path: 'microapp/*',
-                component: () => import('./pages/manage/microapp.vue')
+                name: 'manage-apps',
+                path: 'apps/*',
+                component: () => import('./pages/manage/apps.vue')
             },
             {
                 name: 'manage-setting',

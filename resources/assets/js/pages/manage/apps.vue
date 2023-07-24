@@ -5,11 +5,12 @@
                 <Loading/>
             </div>
         </transition>
-        <micro-app name='micro-app' v-if="microAppUrl && !loading"
-            :url='microAppUrl' 
+        <micro-app name='micro-app' v-if="appUrl && !loading"
+            :url='appUrl' 
             inline
             destroy
-            :data='microAppData'
+            disableSandbox
+            :data='appData'
             @created='handleCreate'
             @beforemount='handleBeforeMount'
             @mounted='handleMount'
@@ -32,8 +33,8 @@ export default {
     data() {
         return {
             loading: false,
-            microAppUrl: '',
-            microAppData: {}
+            appUrl: '',
+            appData: {}
         }
     },
 
@@ -44,7 +45,7 @@ export default {
     watch: {
         '$route': {
             handler(to) {
-                if( to.name == 'manage-microapp' ){
+                if( to.name == 'manage-apps' ){
                     this.loading = true;
                     this.$nextTick(()=>{
                         this.loading = false;
@@ -52,7 +53,7 @@ export default {
                         if( url.indexOf('http') == -1 ){
                             url = window.location.origin + url
                         }
-                        this.microAppUrl =url
+                        this.appUrl = url
                         window.eventCenterForAppNameVite = new EventCenterForMicroApp("micro-app")
                     })
                 }
@@ -70,13 +71,13 @@ export default {
 
     methods: {
         handleCreate(e) {
-            console.log("子应用创建了",e)
+            // console.log("子应用创建了",e)
         },
         handleBeforeMount(e) {
-            console.log("子应用即将被渲染",e)
+            // console.log("子应用即将被渲染",e)
         },
         handleMount(e) {
-            this.microAppData = { 
+            this.appData = { 
                 type: 'init',
                 vues:{
                     Vue,
@@ -95,13 +96,13 @@ export default {
         },
         handleUnmount(e) {
             this.loading = true;
-            console.log("子应用卸载了",e)
+            // console.log("子应用卸载了",e)
         },
         handleError(e) {
-            console.log("子应用加载出错了",e.detail.error)
+            // console.log("子应用加载出错了",e.detail.error)
         },
         handleDataChange(e) {
-            console.log('来自子应用 child-vite 的数据:', e.detail.data)
+            // console.log('来自子应用 child-vite 的数据:', e.detail.data)
         }
     }
 }
