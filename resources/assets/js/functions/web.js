@@ -540,51 +540,52 @@
          * @returns {(*)[]|[{text, value(): [Date,*]},{text, value(): [Date,*]},{text, value(): [*,*]},{text, value(): [*,*]},{text, value(): [Date,*]},null,null]|(Date|*)[]}
          */
         timeOptionShortcuts() {
+            const startSecond = $A.Date($A.formatDate("Y-m-d 00:00:00", Math.round(new Date().getTime() / 1000)));
             const lastSecond = (e) => {
-                return $A.Date($A.formatDate("Y-m-d 23:59:29", Math.round(e / 1000)))
+                return $A.Date($A.formatDate("Y-m-d 00:00:00", Math.round(e / 1000)))
             };
             return [{
                 text: $A.L('今天'),
                 value() {
-                    return [new Date(), lastSecond(new Date().getTime())];
+                    return [startSecond, lastSecond(new Date().getTime())];
                 }
             }, {
                 text: $A.L('明天'),
                 value() {
                     let e = new Date();
                     e.setDate(e.getDate() + 1);
-                    return [new Date(), lastSecond(e.getTime())];
+                    return [startSecond, lastSecond(e.getTime())];
                 }
             }, {
                 text: $A.L('本周'),
                 value() {
-                    return [new Date(), lastSecond($A.getSpecifyDate('本周结束', true).getTime())];
+                    return [startSecond, lastSecond($A.getSpecifyDate('本周结束', true).getTime())];
                 }
             }, {
                 text: $A.L('本月'),
                 value() {
-                    return [new Date(), lastSecond($A.getSpecifyDate('本月结束', true).getTime())];
+                    return [startSecond, lastSecond($A.getSpecifyDate('本月结束', true).getTime())];
                 }
             }, {
                 text: $A.L('3天'),
                 value() {
                     let e = new Date();
                     e.setDate(e.getDate() + 2);
-                    return [new Date(), lastSecond(e.getTime())];
+                    return [startSecond, lastSecond(e.getTime())];
                 }
             }, {
                 text: $A.L('5天'),
                 value() {
                     let e = new Date();
                     e.setDate(e.getDate() + 4);
-                    return [new Date(), lastSecond(e.getTime())];
+                    return [startSecond, lastSecond(e.getTime())];
                 }
             }, {
                 text: $A.L('7天'),
                 value() {
                     let e = new Date();
                     e.setDate(e.getDate() + 6);
-                    return [new Date(), lastSecond(e.getTime())];
+                    return [startSecond, lastSecond(e.getTime())];
                 }
             }];
         },

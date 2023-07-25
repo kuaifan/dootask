@@ -78,6 +78,11 @@
                             <div slot="content">{{$L('任务完成 (*) 天后自动归档。', formDatum.archived_day)}}</div>
                         </ETooltip>
                     </FormItem>
+                </div>
+            </div>
+            <div class="block-setting-box">
+                <h3>{{ $L('任务相关') }}</h3>
+                <div class="form-box">
                     <FormItem :label="$L('可见性选项')" prop="taskVisible">
                         <RadioGroup v-model="formDatum.task_visible">
                             <Radio label="open">{{$L('保持')}}</Radio>
@@ -85,6 +90,15 @@
                         </RadioGroup>
                         <div v-if="formDatum.task_visible == 'open'" class="form-tip">{{$L('保持：任务详情页可见性选项保持显示。')}}</div>
                         <div v-else-if="formDatum.task_visible == 'close'" class="form-tip">{{$L('自动：默认值情况下显示在合并项目，设置时保持显示。')}}</div>
+                    </FormItem>
+                    <FormItem :label="$L('任务默认时间')" prop="taskDefaultTime">
+                        <TimePicker
+                            v-model="formDatum.task_default_time"
+                            type="timerange"
+                            format="HH:mm"
+                            :placeholder="$L('请选择默认时间')"
+                            transfer/>
+                        <div class="form-tip">{{$L('添加任务计划时间默认时分。')}}</div>
                     </FormItem>
                 </div>
             </div>

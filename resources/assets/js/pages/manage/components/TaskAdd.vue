@@ -57,7 +57,7 @@
                     format="yyyy/MM/dd HH:mm"
                     type="datetimerange"
                     placement="bottom"
-                    @on-change="taskTimeChange(addData.times)"
+                    @on-change="taskTimeChange(addData)"
                     @on-open-change="taskTimeOpenChange">
                     <div class="advanced-time" @click="taskTimeOpenChange(!taskTimeOpen)">
                         <Icon type="ios-clock-outline" />
@@ -76,7 +76,7 @@
                     :placeholder="$L('选择计划范围')"
                     format="yyyy/MM/dd HH:mm"
                     type="datetimerange"
-                    @on-change="taskTimeChange(addData.times)"/>
+                    @on-change="taskTimeChange(addData)"/>
             </FormItem>
             <FormItem :label="$L('负责人')" >
                 <UserSelect
@@ -157,7 +157,7 @@
                                 clearable
                                 @on-clear="addData.subtasks.splice(key, 1)"/>
                         </Col>
-                        <Col span="8">
+                        <Col span="8" :title="formatDate(item.times)">
                             <DatePicker
                                 v-model="item.times"
                                 :options="timeOptions"
@@ -165,7 +165,7 @@
                                 :placeholder="$L('选择时间')"
                                 format="yyyy/MM/dd HH:mm"
                                 type="datetimerange"
-                                @on-change="taskTimeChange(item.times)"/>
+                                @on-change="taskTimeChange(item)"/>
                         </Col>
                         <Col span="4">
                             <UserSelect
@@ -277,7 +277,7 @@ export default {
 
             taskTimeOpen: false,
 
-            timeOptions: {shortcuts:$A.timeOptionShortcuts()},
+            timeOptions: {shortcuts: $A.timeOptionShortcuts()},
 
             loadIng: 0,
             isMounted: false,
@@ -404,24 +404,23 @@ export default {
             }
             // 优先级
             if (this.taskPriority.length > 0) {
-                this.choosePriority(this.taskPriority[0]);
+                await this.choosePriority(this.taskPriority[0]);
             }
         },
 
-        taskTimeChange(times) {
-            let tempc = $A.date2string(times, "Y-m-d H:i");
-            if (tempc[0] && tempc[1]) {
-                if ($A.rightExists(tempc[0], '00:00') && $A.rightExists(tempc[1], '00:00')) {
-                    this.$set(this.addData, 'times', [
-                        tempc[0],
-                        tempc[1].replace("00:00", "23:59")
-                    ])
-                }
+        async taskTimeChange(data) {
+            const times = $A.date2string(data.times, "Y-m-d H:i");
+            if ($A.rightExists(times[0], '00:00') && $A.rightExists(times[1], '00:00')) {
+                this.$set(data, 'times', await this.$store.dispatch("taskDefaultTime", times))
             }
         },
 
         taskTimeOpenChange(val) {
             this.taskTimeOpen = val;
+        },
+
+        formatDate(value) {
+            return value ? $A.date2string(value) : null
         },
 
         onKeydown(e) {
@@ -446,19 +445,19 @@ export default {
         },
 
         taskPriorityContent(item) {
-            let days = $A.runNum(item.days);
+            const days = $A.runNum(item.days);
             if (days <= 0) {
                 return item.name + ' (' + this.$L('无时间限制') + ')';
             }
             return item.name + ' (' + days + this.$L('天') + ')';
         },
 
-        choosePriority(item) {
-            let start = new Date();
-            let days = $A.runNum(item.days);
+        async choosePriority(item) {
+            const start = new Date();
+            const days = $A.runNum(item.days);
             if (days > 0) {
-                let end = new Date(new Date().setDate(start.getDate() + days));
-                this.$set(this.addData, 'times', $A.date2string([start, end]))
+                const end = new Date(new Date().setDate(start.getDate() + days));
+                this.$set(this.addData, 'times', await this.$store.dispatch("taskDefaultTime", $A.date2string([start, end])))
             } else {
                 this.$set(this.addData, 'times', [])
             }
@@ -533,7 +532,7 @@ export default {
                 $A.messageError("任务描述不能为空");
                 return;
             }
-            
+
             this.loadIng++;
 
             // 存在任务提示

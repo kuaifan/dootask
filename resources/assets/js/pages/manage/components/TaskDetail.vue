@@ -34,6 +34,7 @@
             class="subtask-time"
             placement="bottom-end"
             @on-open-change="timeChange"
+            @on-change="taskTimeChange"
             @on-clear="timeClear"
             @on-ok="timeOk"
             transfer>
@@ -96,7 +97,8 @@
                                     type="datetimerange"
                                     :placeholder="$L('请设置计划时间')"
                                     :clearable="false"
-                                    :editable="false"/>
+                                    :editable="false"
+                                    @on-change="taskTimeChange"/>
                             </div>
                             <div class="receive-bottom">
                                 <Button size="small" type="text" @click="receiveShow=false">取消</Button>
@@ -260,6 +262,7 @@
                                     format="yyyy/MM/dd HH:mm"
                                     type="datetimerange"
                                     @on-open-change="timeChange"
+                                    @on-change="taskTimeChange"
                                     @on-clear="timeClear"
                                     @on-ok="timeOk"
                                     transfer>
@@ -532,7 +535,7 @@ export default {
             timeForce: false,
             timeOpen: false,
             timeValue: [],
-            timeOptions: {shortcuts:$A.timeOptionShortcuts()},
+            timeOptions: {shortcuts: $A.timeOptionShortcuts()},
 
             loopForce: false,
 
@@ -1097,7 +1100,14 @@ export default {
             });
         },
 
-        onOwner(pick) {
+        async taskTimeChange() {
+            const times = $A.date2string(this.timeValue, "Y-m-d H:i");
+            if ($A.rightExists(times[0], '00:00') && $A.rightExists(times[1], '00:00')) {
+                this.timeValue = await this.$store.dispatch("taskDefaultTime", times)
+            }
+        },
+
+        async onOwner(pick) {
             let data = {
                 task_id: this.taskDetail.id,
                 owner: this.ownerData.owner_userid
@@ -1109,12 +1119,8 @@ export default {
                     $A.messageError("任务已被领取");
                     return;
                 }
-                let times = $A.date2string(this.timeValue, "Y-m-d H:i");
-                if (times[0] && times[1]) {
-                    if ($A.rightExists(times[0], '00:00') && $A.rightExists(times[1], '00:00')) {
-                        times[1] = times[1].replace("00:00", "23:59");
-                    }
-                } else {
+                const times = $A.date2string(this.timeValue, "Y-m-d H:i");
+                if (!(times[0] && times[1])) {
                     $A.messageError("请设置计划时间");
                     return;
                 }
@@ -1211,12 +1217,7 @@ export default {
         },
 
         timeOk() {
-            let times = $A.date2string(this.timeValue, "Y-m-d H:i");
-            if (times[0] && times[1]) {
-                if ($A.rightExists(times[0], '00:00') && $A.rightExists(times[1], '00:00')) {
-                    times[1] = times[1].replace("00:00", "23:59");
-                }
-            }
+            const times = $A.date2string(this.timeValue, "Y-m-d H:i");
             this.updateData('times', {
                 start_at: times[0],
                 end_at: times[1],

@@ -2184,6 +2184,53 @@ export default {
         $A.IDBSave("cacheTaskBrowse", state.cacheTaskBrowse);
     },
 
+    /**
+     * 任务默认时间
+     * @param state
+     * @param dispatch
+     * @param array
+     * @returns {Promise<unknown>}
+     */
+    taskDefaultTime({state, dispatch}, array) {
+        return new Promise(async resolve => {
+            if ($A.isArray(array)) {
+                array[0] = await dispatch("taskDefaultStartTime", array[0])
+                array[1] = await dispatch("taskDefaultEndTime", array[1])
+            }
+            resolve(array)
+        });
+    },
+
+    /**
+     * 任务默认开始时间
+     * @param state
+     * @param value
+     * @returns {Promise<unknown>}
+     */
+    taskDefaultStartTime({state}, value) {
+        return new Promise(resolve => {
+            if (/(\s|^)([0-2]\d):([0-5]\d)(:\d{1,2})*$/.test(value)) {
+                value = value.replace(/(\s|^)([0-2]\d):([0-5]\d)(:\d{1,2})*$/, "$1" + state.systemConfig.task_default_time[0])
+            }
+            resolve(value)
+        });
+    },
+
+    /**
+     * 任务默认结束时间
+     * @param state
+     * @param value
+     * @returns {Promise<unknown>}
+     */
+    taskDefaultEndTime({state}, value) {
+        return new Promise(resolve => {
+            if (/(\s|^)([0-2]\d):([0-5]\d)(:\d{1,2})*$/.test(value)) {
+                value = value.replace(/(\s|^)([0-2]\d):([0-5]\d)(:\d{1,2})*$/, "$1" + state.systemConfig.task_default_time[1])
+            }
+            resolve(value)
+        });
+    },
+
     /** *****************************************************************************************/
     /** ************************************** 会话 **********************************************/
     /** *****************************************************************************************/
