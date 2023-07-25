@@ -83,6 +83,11 @@
                 }
             });
         },
+
+        eeuiAppGetThemeName() {
+            if (!$A.isEEUiApp) return;
+            return requireModuleJs("eeui").getThemeName();
+        },
     });
 
     window.$A = $;

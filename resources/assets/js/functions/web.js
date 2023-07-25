@@ -1152,19 +1152,11 @@
                 },
 
                 defaultFilter() {
-                    if (this.supportMode() === 'chrome') {
-                        return '-webkit-filter: url(#dark-mode-filter) !important; filter: url(#dark-mode-filter) !important;';
-                    } else if (this.supportMode() === 'webkit') {
-                        return '-webkit-filter: invert(0.92) hue-rotate(180deg) !important; filter: invert(0.92) hue-rotate(180deg) !important;';
-                    }
+                    return '-webkit-filter: invert(0.92) hue-rotate(180deg) !important; filter: invert(0.92) hue-rotate(180deg) !important;';
                 },
 
                 reverseFilter() {
-                    if (this.supportMode() === 'chrome') {
-                        return '-webkit-filter: url(#dark-mode-reverse-filter) !important; filter: url(#dark-mode-reverse-filter) !important;';
-                    } else if (this.supportMode() === 'webkit') {
-                        return '-webkit-filter: invert(0.92) hue-rotate(180deg) !important; filter: invert(0.92) hue-rotate(180deg) !important;';
-                    }
+                    return '-webkit-filter: invert(0.92) hue-rotate(180deg) !important; filter: invert(0.92) hue-rotate(180deg) !important;';
                 },
 
                 noneFilter() {
@@ -1322,6 +1314,9 @@
 
             autoDarkMode() {
                 let darkScheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+                if ($A.isEEUiApp) {
+                    darkScheme = $A.eeuiAppGetThemeName() === "dark"
+                }
                 if (darkScheme) {
                     this.enableDarkMode()
                 } else {

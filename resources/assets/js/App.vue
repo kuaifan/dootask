@@ -161,6 +161,7 @@ export default {
 
         windowActive(active) {
             if (active) {
+                this.autoTheme()
                 this.__windowTimer && clearTimeout(this.__windowTimer)
                 this.__windowTimer = setTimeout(_ => {
                     this.$store.dispatch("call", {
@@ -174,9 +175,6 @@ export default {
                     }).catch(_ => {
                         this.$store.dispatch("websocketConnection")
                     })
-                    if (this.themeMode === "auto") {
-                        this.$store.dispatch("synchTheme")
-                    }
                 }, 600)
             } else {
                 this.$store.dispatch("audioStop", true)
@@ -219,6 +217,12 @@ export default {
                     }
                 }
             });
+        },
+
+        autoTheme() {
+            if (this.themeMode === "auto") {
+                this.$store.dispatch("synchTheme")
+            }
         },
 
         synchThemeLanguage() {
@@ -298,9 +302,7 @@ export default {
             }
             // APP进入前台
             window.__onAppActive = () => {
-                if (this.themeMode === "auto") {
-                    this.$store.dispatch("synchTheme")
-                }
+                this.autoTheme()
             }
             // 页面失活
             window.__onPagePause = () => {
@@ -312,6 +314,8 @@ export default {
                 this.$store.state.windowActive = true;
                 if (num > 0) {
                     this.$store.dispatch("getBasicData", 600)
+                } else {
+                    this.autoTheme()
                 }
             }
             // 会议事件

@@ -474,7 +474,7 @@ export default {
     components: {
         UserSelect,
         TaskExistTips,
-        ChatInput, 
+        ChatInput,
         TaskMenu,
         ProjectLog,
         DialogWrapper,
@@ -629,7 +629,7 @@ export default {
             'taskContents',
             'taskFiles',
             'taskPriority',
-            
+
             'dialogId',
         ]),
 
@@ -981,7 +981,7 @@ export default {
                         && (Math.abs($A.Time(this.taskDetail.start_at) - $A.Time(params.start_at)) > 60 || Math.abs($A.Time(this.taskDetail.end_at) - $A.Time(params.end_at)) > 60)
                         && typeof params.desc === "undefined") {
                         $A.modalInput({
-                            title: `修改任务时间`,
+                            title: `修改${this.taskDetail.parent_id > 0 ? '子任务' : '任务'}时间`,
                             placeholder: `请输入修改备注`,
                             okText: "确定",
                             onOk: (desc) => {
@@ -989,8 +989,8 @@ export default {
                                     return `请输入修改备注`
                                 }
                                 this.updateParams = Object.assign(params, { desc })
-                                if (params.start_at && params.end_at) {
-                                    this.$refs['taskExistTipsRef'].isExistTask({
+                                if (params.start_at && params.end_at && this.$refs.taskExistTipsRef) {
+                                    this.$refs.taskExistTipsRef.isExistTask({
                                         taskid: this.taskDetail.id,
                                         userids: this.taskDetail.owner_userid,
                                         timerange: [params.start_at, params.end_at]
