@@ -747,12 +747,16 @@
                                         text-align: center;
                                         padding: 12px 0 5px 0;
 
-                                        > button.ivu-btn-primary {
-                                            margin-right: 12px;
-                                        }
-
-                                        > button.ivu-btn-small {
-                                            height: 32px;
+                                        > button {
+                                            &.ivu-btn {
+                                                flex: 1;
+                                            }
+                                            &.ivu-btn-primary {
+                                                margin-right: 12px;
+                                            }
+                                            &.ivu-btn-small {
+                                                height: 32px;
+                                            }
                                         }
                                     }
                                 }
