@@ -317,6 +317,8 @@
             :cancel-text="$L('取消')"
             :ok-text="$L('发送')"
             :enter-ok="true"
+            :closable="false"
+            :mask-closable="false"
             @on-ok="pasteSend">
             <ul class="dialog-wrapper-paste" :class="pasteWrapperClass">
                 <li v-for="item in pasteItem">
