@@ -94,11 +94,13 @@
             z-index: 1;
             display: flex;
             align-items: center;
-            > button {
-                transition: margin 0.2s;
-                &.advanced {
+            &.advanced-open {
+                > button {
                     margin-left: 24px;
                 }
+            }
+            > button {
+                transition: margin 0.2s;
                 &:focus {
                     box-shadow: none;
                 }
@@ -128,6 +130,7 @@
                 margin-left: 20px;
                 position: relative;
                 cursor: pointer;
+                transition: margin 0.2s;
                 .ivu-icon {
                     font-size: 32px;
                 }
@@ -224,9 +227,12 @@ body.window-portrait {
                 width: calc(100% + 8px);
                 padding-right: 8px;
                 justify-content: space-between;
-                > button {
-                    &.advanced {
-                        margin-left: 0;
+                &.advanced-open {
+                    > button {
+                        margin-left: 8px;
+                    }
+                    .advanced-time {
+                        margin-right: 4px;
                     }
                 }
                 .advanced-priority {

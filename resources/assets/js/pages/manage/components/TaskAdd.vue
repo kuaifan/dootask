@@ -35,8 +35,8 @@
                     :placeholderFull="$L('详细描述...')"
                     inline/>
             </div>
-            <div class="advanced-option">
-                <Button :class="{advanced: advanced}" @click="advanced=!advanced">{{$L('高级选项')}}</Button>
+            <div class="advanced-option" :class="{'advanced-open': advanced}">
+                <Button @click="advanced=!advanced">{{$L('高级选项')}}</Button>
                 <ul class="advanced-priority">
                     <li v-for="(item, key) in taskPriority" :key="key">
                         <ETooltip :disabled="$isEEUiApp || windowTouch" :content="taskPriorityContent(item)">
