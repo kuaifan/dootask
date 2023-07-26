@@ -2843,6 +2843,25 @@ export default {
         })
     },
 
+    /**
+     * 消息流
+     * @param state
+     * @param dispatch
+     * @param streamUrl
+     */
+    streamDialogMsg({state, dispatch}, streamUrl) {
+        const sse = new EventSource(streamUrl)
+        sse.addEventListener("update", e => {
+            const item = state.dialogMsgs.find(({type, id}) => type == "text" && id == e.lastEventId)
+            if (item) {
+                item.msg.text = e.data
+            }
+        })
+        sse.addEventListener("done", e => {
+            sse.close()
+        })
+    },
+
     /** *****************************************************************************************/
     /** ************************************* loads *********************************************/
     /** *****************************************************************************************/
@@ -3055,6 +3074,10 @@ export default {
 
                 case "line":
                     dispatch("saveUserOnlineStatus", msgDetail.data);
+                    break
+
+                case "msgStream":
+                    dispatch("streamDialogMsg", msgDetail.stream_url);
                     break
 
                 default:

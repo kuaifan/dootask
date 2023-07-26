@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Tasks\PushTask;
 use DB;
+use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Request;
 use Redirect;
 use Carbon\Carbon;
@@ -635,6 +637,45 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {post} api/dialog/msg/stream          14. 通知成员监听消息
+     *
+     * @apiDescription 通知指定会员EventSource监听流动消息
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__stream
+     *
+     * @apiParam {Number} dialog_id      对话ID
+     * @apiParam {Number} userid         通知会员ID
+     * @apiParam {String} stream_url     流动消息地址
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__stream()
+    {
+        // $dialog_id = intval(Request::input('dialog_id'));
+        $userid = intval(Request::input('userid'));
+        $stream_url = trim(Request::input('stream_url'));
+        //
+        if ($userid < 1 || !str_starts_with($stream_url, 'http')) {
+            return Base::retError('参数错误');
+        }
+        //
+        $params = [
+            'userid' => $userid,
+            'msg' => [
+                'type' => 'msgStream',
+                'stream_url' => $stream_url,
+            ]
+        ];
+        $task = new PushTask($params, false);
+        Task::deliver($task);
+        //
+        return Base::retSuccess('success');
+    }
+
+    /**
      * @api {post} api/dialog/msg/sendtext          14. 发送消息
      *
      * @apiDescription 需要token身份
@@ -648,6 +689,9 @@ class DialogController extends AbstractController
      * - html: HTML（默认）
      * - md: MARKDOWN
      * @apiParam {Number} [update_id]       更新消息ID（优先大于 reply_id）
+     * @apiParam {String} [update_mark]     是否更新标记
+     * - no: 不标记（仅机器人支持）
+     * - yes: 标记（默认）
      * @apiParam {Number} [reply_id]        回复ID
      * @apiParam {String} [silence]         是否静默发送
      * - no: 正常发送（默认）
@@ -675,6 +719,7 @@ class DialogController extends AbstractController
         //
         $dialog_id = intval(Request::input('dialog_id'));
         $update_id = intval(Request::input('update_id'));
+        $update_mark = !($user->bot && in_array(strtolower(trim(Request::input('update_mark'))), ['no', 'false', '0']));
         $reply_id = intval(Request::input('reply_id'));
         $text = trim(Request::input('text'));
         $text_type = strtolower(trim(Request::input('text_type')));
@@ -684,7 +729,7 @@ class DialogController extends AbstractController
         WebSocketDialog::checkDialog($dialog_id);
         //
         if ($update_id > 0) {
-            $action = "update-$update_id";
+            $action = $update_mark ? "update-$update_id" : "change-$update_id";
         } elseif ($reply_id > 0) {
             $action = "reply-$reply_id";
         } else {

@@ -770,7 +770,8 @@ class WebSocketDialogMsg extends AbstractModel
      * 发送消息、修改消息
      * @param string $action            动作
      * - reply-98：回复消息ID=98
-     * - update-99：更新消息ID=99
+     * - update-99：更新消息ID=99（标记修改）
+     * - change-99：更新消息ID=99（不标记修改）
      * @param int $dialog_id            会话ID（即 聊天室ID）
      * @param string $type              消息类型
      * @param array $msg                发送的消息
@@ -809,6 +810,7 @@ class WebSocketDialogMsg extends AbstractModel
         }
         //
         $update_id = preg_match("/^update-(\d+)$/", $action, $match) ? $match[1] : 0;
+        $change_id = preg_match("/^change-(\d+)$/", $action, $match) ? $match[1] : 0;
         $reply_id = preg_match("/^reply-(\d+)$/", $action, $match) ? $match[1] : 0;
         $sender = $sender === null ? User::userid() : $sender;
         //
@@ -820,6 +822,11 @@ class WebSocketDialogMsg extends AbstractModel
             $dialog->checkMute($sender);
         }
         //
+        $modify = 1;
+        if ($change_id) {
+            $modify = 0;
+            $update_id = $change_id;
+        }
         if ($update_id) {
             // 修改
             $dialogMsg = self::whereId($update_id)->whereDialogId($dialog_id)->first();
@@ -837,7 +844,7 @@ class WebSocketDialogMsg extends AbstractModel
                 'mtype' => $mtype,
                 'link' => $link,
                 'msg' => $msg,
-                'modify' => 1,
+                'modify' => $modify,
             ];
             $dialogMsg->updateInstance($updateData);
             $dialogMsg->key = $dialogMsg->generateMsgKey();
