@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.28.78]
+## [0.28.88]
 
 ### Bug Fixes
 
