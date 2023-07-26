@@ -652,9 +652,18 @@ export default {
         }
     },
 
+    mounted() {
+        this.msgSubscribe = Store.subscribe('dialogMsgUpdate', this.updateMsg);
+    },
+
     beforeDestroy() {
         this.$store.dispatch('forgetInDialog', this._uid)
         this.$store.dispatch('closeDialog', this.dialogId)
+        //
+        if (this.msgSubscribe) {
+            this.msgSubscribe.unsubscribe();
+            this.msgSubscribe = null;
+        }
     },
 
     computed: {
@@ -1332,6 +1341,17 @@ export default {
          */
         sendQuick(item) {
             this.sendMsg(`<p><span data-quick-key="${item.key}">${item.label}</span></p>`)
+        },
+
+        updateMsg(data) {
+            const item = this.allMsgs.find(({type, id}) => type == "text" && id == data.id)
+            if (item) {
+                const {tail} = this.scrollInfo()
+                item.msg.text = data.text
+                if (tail <= 45) {
+                    this.onToBottom()
+                }
+            }
         },
 
         getTempId() {

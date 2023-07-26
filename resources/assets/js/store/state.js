@@ -110,6 +110,7 @@ export default {
     dialogHistory: [],
     dialogDraftTimer: {},
     dialogMsgTransfer: {time: 0},
+    dialogSseList: [],
 
     // 搜索关键词（主要用于移动端判断滑动返回）
     messengerSearchKey: {dialog: '', contacts: ''},

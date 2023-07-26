@@ -2852,14 +2852,22 @@ export default {
     streamDialogMsg({state, dispatch}, streamUrl) {
         const sse = new EventSource(streamUrl)
         sse.addEventListener("update", e => {
-            const item = state.dialogMsgs.find(({type, id}) => type == "text" && id == e.lastEventId)
-            if (item) {
-                item.msg.text = e.data
-            }
+            Store.set('dialogMsgUpdate', {
+                id: e.lastEventId,
+                text: e.data
+            });
         })
-        sse.addEventListener("done", e => {
+        sse.addEventListener("done", _ => {
+            const index = state.dialogSseList.findIndex(item => sse === item.sse)
+            if (index > -1) {
+                state.dialogSseList.splice(index, 1)
+            }
             sse.close()
         })
+        state.dialogSseList.push({sse, time: $A.Time()})
+        if (state.dialogSseList.length > 10) {
+            state.dialogSseList.shift().sse.close()
+        }
     },
 
     /** *****************************************************************************************/
