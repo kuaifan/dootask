@@ -312,7 +312,7 @@ export default {
             } else {
                 this.searchKey = ""
             }
-            this.$emit("on-show-change",value)
+            this.$emit("on-show-change",value,this.values)
         },
 
         searchKey() {

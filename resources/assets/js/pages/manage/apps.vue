@@ -27,6 +27,7 @@ import store from '../../store/index'
 import {mapState} from "vuex";
 import { EventCenterForMicroApp } from '@micro-zoe/micro-app'
 import DialogWrapper from './components/DialogWrapper'
+import UserSelect from "../../components/UserSelect.vue";
 import {languageList, languageType} from "../../language";
 
 export default {
@@ -80,7 +81,8 @@ export default {
                     Vue,
                     store,
                     components:{
-                        DialogWrapper
+                        DialogWrapper,
+                        UserSelect
                     }
                 },
                 theme: this.themeMode,
