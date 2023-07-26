@@ -2,10 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.28.68]
+## [0.28.78]
 
 ### Bug Fixes
 
+- 修复无法从任务消息对话中打开任务详情的情况
 - 按照dootask启动原始尺寸截取使用说明的图
 - 修改边栏目录滚动效果
 - 修改边栏目录滚动效果
@@ -20,6 +21,13 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
+- 优化审批机器人模板消息样式
+- 优化添加任务样式
+- 优化任务默认时间
+- 优化深色模式
+- 任务详情发送文件时防止按esc关闭发送窗口
+- 深色模式下无法扫描登录二维码的情况
+- 优化iOS深色模式
 - Safari支持暗黑模式
 - 优化任务时间冲突提示
 - IOS部分点击事件存在阻塞的情况

@@ -1044,7 +1044,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/easylists          18. 任务列表-简单的
+     * @api {get} api/project/task/easylists          19. 任务列表-简单的
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1100,7 +1100,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/export          19. 导出任务（限管理员）
+     * @api {get} api/project/task/export          20. 导出任务（限管理员）
      *
      * @apiDescription 导出指定范围任务（已完成、未完成、已归档），返回下载地址，需要token身份
      * @apiVersion 1.0.0
@@ -1303,7 +1303,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/exportoverdue          20. 导出超期任务（限管理员）
+     * @api {get} api/project/task/exportoverdue          21. 导出超期任务（限管理员）
      *
      * @apiDescription 导出指定范围任务（已完成、未完成、已归档），返回下载地址，需要token身份
      * @apiVersion 1.0.0
@@ -1412,7 +1412,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/down          21. 下载导出的任务
+     * @api {get} api/project/task/down          22. 下载导出的任务
      *
      * @apiVersion 1.0.0
      * @apiGroup project
@@ -1438,7 +1438,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/one          22. 获取单个任务信息
+     * @api {get} api/project/task/one          23. 获取单个任务信息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1482,7 +1482,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/content          23. 获取任务详细描述
+     * @api {get} api/project/task/content          24. 获取任务详细描述
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1510,7 +1510,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/files          24. 获取任务文件列表
+     * @api {get} api/project/task/files          25. 获取任务文件列表
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1535,7 +1535,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/filedelete          25. 删除任务文件
+     * @api {get} api/project/task/filedelete          26. 删除任务文件
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1568,7 +1568,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/filedetail          26. 获取任务文件详情
+     * @api {get} api/project/task/filedetail          27. 获取任务文件详情
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1612,7 +1612,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/filedown          27. 下载任务文件
+     * @api {get} api/project/task/filedown          28. 下载任务文件
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1661,7 +1661,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/task/add          28. 添加任务
+     * @api {post} api/project/task/add          29. 添加任务
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1745,7 +1745,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/addsub          29. 添加子任务
+     * @api {get} api/project/task/addsub          30. 添加子任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1790,7 +1790,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/task/update          30. 修改任务、子任务
+     * @api {post} api/project/task/update          31. 修改任务、子任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1889,7 +1889,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/dialog          31. 创建/获取聊天室
+     * @api {get} api/project/task/dialog          32. 创建/获取聊天室
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1938,7 +1938,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/archived          32. 归档任务
+     * @api {get} api/project/task/archived          33. 归档任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1980,7 +1980,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/remove          33. 删除任务
+     * @api {get} api/project/task/remove          34. 删除任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -2014,7 +2014,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/resetfromlog          34. 根据日志重置任务
+     * @api {get} api/project/task/resetfromlog          35. 根据日志重置任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -2073,7 +2073,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/flow          35. 任务工作流信息
+     * @api {get} api/project/task/flow          36. 任务工作流信息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2155,7 +2155,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/flow/list          36. 工作流列表
+     * @api {get} api/project/flow/list          37. 工作流列表
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2181,7 +2181,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/flow/save          37. 保存工作流
+     * @api {post} api/project/flow/save          38. 保存工作流
      *
      * @apiDescription 需要token身份（限：项目负责人）
      * @apiVersion 1.0.0
@@ -2215,7 +2215,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/flow/delete          38. 删除工作流
+     * @api {get} api/project/flow/delete          39. 删除工作流
      *
      * @apiDescription 需要token身份（限：项目负责人）
      * @apiVersion 1.0.0
@@ -2247,7 +2247,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/log/lists          39. 获取项目、任务日志
+     * @api {get} api/project/log/lists          40. 获取项目、任务日志
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2300,7 +2300,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/top          40. 项目置顶
+     * @api {get} api/project/top          41. 项目置顶
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
