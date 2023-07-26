@@ -124,7 +124,7 @@ export default {
             if (task.complete_at && chackCompleted === true) {
                 return false;
             }
-            return task.owner;
+            return task.owner == 1;
         }
         let array = state.cacheTasks.filter(task => filterTask(task));
         let tmpCount = 0;
@@ -174,7 +174,7 @@ export default {
             if (task.complete_at && chackCompleted === true) {
                 return false;
             }
-            return task.assist && !task.owner;
+            return task.assist && task.owner === 0;
         }
         let array = state.cacheTasks.filter(task => filterTask(task));
         if (state.taskCompleteTemps.length > 0) {

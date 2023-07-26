@@ -124,6 +124,9 @@
 .logs-t-768{
   display: none;
 }
+.filings{
+    border-top: 1px solid var(--border-color);
+}
 .log-a{
     display: block;
     width: 100%;

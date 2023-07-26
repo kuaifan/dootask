@@ -8,7 +8,6 @@
                     <h1>{{$L('审批中心')}}</h1>
                 </div>
                 <Button type="primary" @click="addApply">{{$L("添加申请")}}</Button>
-                <!-- <Button v-for="(item,key) in procdefList" :loading="loadIng > 0" :key="key" type="primary" @click="initiate(item)" style="margin-right:10px;">{{$L(item.name)}}</Button> -->
             </div>
 
             <Tabs :value="tabsValue" @on-click="tabsClick" style="margin: 0 20px;height: 100%;"  size="small">

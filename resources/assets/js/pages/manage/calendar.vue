@@ -156,7 +156,7 @@ export default {
                 if (!task.end_at) {
                     return false;
                 }
-                return task.owner;
+                return task.owner == 1;
             }
             let array = cacheTasks.filter(task => filterTask(task));
             if (taskCompleteTemps.length > 0) {

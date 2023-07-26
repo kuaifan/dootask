@@ -1079,8 +1079,8 @@ class ProjectController extends AbstractController
                     $timerange = explode(',', $timerange);
                 }
                 if (Base::isDateOrTime($timerange[0]) && Base::isDateOrTime($timerange[1])) {
-                    $query->where('project_tasks.start_at', '>=', Carbon::parse($timerange[0])->startOfDay());
-                    $query->where('project_tasks.end_at', '<=', Carbon::parse($timerange[1])->endOfDay());
+                    $query->where('project_tasks.start_at', '<=', Carbon::parse($timerange[1])->endOfDay());
+                    $query->where('project_tasks.end_at', '>=', Carbon::parse($timerange[0])->startOfDay());
                 }
             })
             ->when(!empty($taskid), function ($query) use ($taskid) {
