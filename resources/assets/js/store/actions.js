@@ -2851,9 +2851,17 @@ export default {
      */
     streamDialogMsg({state, dispatch}, streamUrl) {
         const sse = new EventSource(streamUrl)
-        sse.addEventListener("update", e => {
-            Store.set('dialogMsgUpdate', {
+        sse.addEventListener("append", e => {
+            Store.set('dialogMsgChange', {
                 id: e.lastEventId,
+                type: 'append',
+                text: e.data
+            });
+        })
+        sse.addEventListener("replace", e => {
+            Store.set('dialogMsgChange', {
+                id: e.lastEventId,
+                type: 'replace',
                 text: e.data
             });
         })

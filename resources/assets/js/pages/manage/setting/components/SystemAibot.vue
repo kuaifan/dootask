@@ -2,24 +2,28 @@
     <div class="setting-component-item">
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
             <div class="block-setting-box">
-                <h3>{{ $L('ChatGTP') }}</h3>
+                <h3>ChatGTP</h3>
                 <div class="form-box">
-                    <FormItem label="Key" prop="openai_key">
-                        <Input :maxlength="255" v-model="formData.openai_key"/>
+                    <FormItem label="API Key" prop="openai_key">
+                        <Input :maxlength="255" v-model="formData.openai_key" placeholder="OpenAI API Key"/>
+                        <div class="form-tip">{{$L('访问OpenAI网站查看：')}}<a href="https://platform.openai.com/account/api-keys" target="_blank">https://platform.openai.com/account/api-keys</a></div>
                     </FormItem>
                     <FormItem :label="$L('使用代理')" prop="openai_agency">
                         <Input :maxlength="500" v-model="formData.openai_agency" :placeholder="$L('支持 http 或 socks 代理')"/>
+                        <div class="form-tip">{{$L('例如：http://proxy.com 或 socks5://proxy.com')}}</div>
                     </FormItem>
                 </div>
             </div>
             <div class="block-setting-box">
-                <h3>{{ $L('Claude') }}</h3>
+                <h3>Claude</h3>
                 <div class="form-box">
                     <FormItem label="Token" prop="claude_token">
-                        <Input :maxlength="255" v-model="formData.claude_token"/>
+                        <Input :maxlength="255" v-model="formData.claude_token" placeholder="Claude Token"/>
+                        <div class="form-tip">{{$L('登录')}} <a href="https://claude.ai" target="_blank">https://claude.ai</a> {{$L('查看 Cookie 中的 sessionKey 便是')}}</div>
                     </FormItem>
                     <FormItem :label="$L('使用代理')" prop="claude_agency">
                         <Input :maxlength="500" v-model="formData.claude_agency" :placeholder="$L('支持 http 或 socks 代理')"/>
+                        <div class="form-tip">{{$L('例如：http://proxy.com 或 socks5://proxy.com')}}</div>
                     </FormItem>
                 </div>
             </div>

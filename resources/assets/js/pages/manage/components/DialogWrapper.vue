@@ -653,7 +653,7 @@ export default {
     },
 
     mounted() {
-        this.msgSubscribe = Store.subscribe('dialogMsgUpdate', this.updateMsg);
+        this.msgSubscribe = Store.subscribe('dialogMsgChange', this.onMsgChange);
     },
 
     beforeDestroy() {
@@ -1343,11 +1343,15 @@ export default {
             this.sendMsg(`<p><span data-quick-key="${item.key}">${item.label}</span></p>`)
         },
 
-        updateMsg(data) {
+        onMsgChange(data) {
             const item = this.allMsgs.find(({type, id}) => type == "text" && id == data.id)
             if (item) {
                 const {tail} = this.scrollInfo()
-                item.msg.text = data.text
+                if (data.type === 'append') {
+                    item.msg.text += data.text
+                } else if (data.type === 'replace') {
+                    item.msg.text = data.text
+                }
                 if (tail <= 45) {
                     this.onToBottom()
                 }
