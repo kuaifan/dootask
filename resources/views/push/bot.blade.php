@@ -150,11 +150,11 @@
     <div class="cause"><span>申请人：<span style="color:#84c56a">{{'@'}}{{$data->nickname}}</span> {{$data->department}}</span>
         <b>评论内容</b>
         <span>{{$data->comment_content}}</span>
-    </div><div class="btn-raw">
+    </div><div class="btn-raw no-dark-content">
         @if ($is_finished == 1)
-        <Button type="button" class="ivu-btn" style="flex: 1;">已同意</Button>
+        <Button class="ivu-btn">已同意</Button>
         @else
-        <Button type="button" class="ivu-btn" style="flex: 1;">查看详情</Button>
+        <Button class="ivu-btn">查看详情</Button>
         @endif
     </div></span>
 @elseif ($type === 'approve_submitter')

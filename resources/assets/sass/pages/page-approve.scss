@@ -228,6 +228,9 @@
             .approve-process-left {
                 margin-left: 10px;
                 flex: 1;
+                .approve-process-desc{
+                    font-size: 12px;
+                }
             }
 
             .approve-process-right {
@@ -236,6 +239,13 @@
 
             > li:last-child {
                 padding-bottom: 0;
+            }
+
+            .finish{
+                .ivu-timeline-item-content{
+                    padding-bottom: 0;
+                }
+
             }
         }
 
@@ -265,6 +275,10 @@
             .content {
                 margin-top: 3px;
                 padding-left: 45px;
+            }
+
+            .ivu-list-items>li:last-child{
+                padding-bottom: 0;
             }
         }
 
@@ -316,7 +330,7 @@
     .comment {
         margin-top: 5px;
         margin-left: 45px;
-
+        font-size: 12px;
         span {
             background-color: #eaeaea;
             border-radius: 5px;
