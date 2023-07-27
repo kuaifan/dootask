@@ -555,7 +555,7 @@ class WebSocketDialog extends AbstractModel
             return $dialogUser;
         }
         if ($receiver > 0 && $user->isTemp()) {
-            throw new ApiException('无法发起会话');
+            throw new ApiException('无法发起会话，请联系管理员。');
         }
         return AbstractModel::transaction(function () use ($receiver, $user) {
             $dialog = self::createInstance([
