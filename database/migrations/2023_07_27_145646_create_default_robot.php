@@ -14,8 +14,10 @@ class CreateDefaultRobot extends Migration
      */
     public function up()
     {
-        User::botGetOrCreate('ai-openai');
-        User::botGetOrCreate('ai-claude');
+        if (WebSocketDialog::count() > 0) {
+            User::botGetOrCreate('ai-openai');
+            User::botGetOrCreate('ai-claude');
+        }
     }
 
     /**
