@@ -23,12 +23,14 @@ class BotReceiveMsgTask extends AbstractTask
 {
     protected $userid;
     protected $msgId;
+    protected $mention;
 
-    public function __construct($userid, $msgId)
+    public function __construct($userid, $msgId, $mention)
     {
         parent::__construct(...func_get_args());
         $this->userid = $userid;
         $this->msgId = $msgId;
+        $this->mention = $mention;
     }
 
     public function start()
@@ -42,14 +44,6 @@ class BotReceiveMsgTask extends AbstractTask
             return;
         }
         $msg->readSuccess($botUser->userid);
-        //
-        $dialog = WebSocketDialog::find($msg->dialog_id);
-        if (empty($dialog)) {
-            return;
-        }
-        if ($dialog->type !== 'user') {
-            return;
-        }
         $this->botManagerReceive($msg, $botUser);
     }
 
@@ -70,10 +64,42 @@ class BotReceiveMsgTask extends AbstractTask
             return;
         }
         $original = $msg->msg['text'];
+        if ($this->mention) {
+            $original = preg_replace("/<span class=\"mention user\" data-id=\"(\d+)\">(.*?)<\/span>/", "", $original);
+        }
         if (preg_match("/<span[^>]*?data-quick-key=([\"'])(.*?)\\1[^>]*?>(.*?)<\/span>/is", $original, $match)) {
             $command = $match[2];
         } else {
             $command = trim(strip_tags($original));
+        }
+        //
+        $dialog = WebSocketDialog::find($msg->dialog_id);
+        if (empty($dialog)) {
+            return;
+        }
+        // 推送Webhook
+        if ($command
+            && !str_starts_with($command, '/')
+            && ($dialog->type === 'user' || $this->mention)) {
+            $userBot = UserBot::whereBotId($botUser->userid)->first();
+            if ($userBot && preg_match("/^https*:\/\//", $userBot->webhook_url)) {
+                Ihttp::ihttp_post($userBot->webhook_url, [
+                    'text' => $command,
+                    'token' => User::generateToken($botUser),
+                    'dialog_id' => $dialog->id,
+                    'dialog_type' => $dialog->type,
+                    'msg_id' => $msg->id,
+                    'msg_uid' => $msg->userid,
+                    'mention' => $this->mention ? 1 : 0,
+                    'bot_uid' => $botUser->userid,
+                    'version' => Base::getVersion(),
+                ], 10);
+                $userBot->webhook_num++;
+                $userBot->save();
+            }
+        }
+        if ($dialog->type !== 'user') {
+            return;
         }
         // 签到机器人
         if ($botUser->email === 'check-in@bot.system') {
@@ -337,24 +363,6 @@ class BotReceiveMsgTask extends AbstractTask
             $text = preg_replace("/^\x20+/", "", $text);
             $text = preg_replace("/\n\x20+/", "\n", $text);
             WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $text], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
-            return;
-        }
-        // 推送Webhook
-        if ($command) {
-            $userBot = UserBot::whereBotId($botUser->userid)->first();
-            if ($userBot && preg_match("/^https*:\/\//", $userBot->webhook_url)) {
-                Ihttp::ihttp_post($userBot->webhook_url, [
-                    'text' => $command,
-                    'token' => User::generateToken($botUser),
-                    'dialog_id' => $msg->dialog_id,
-                    'msg_id' => $msg->id,
-                    'msg_uid' => $msg->userid,
-                    'bot_uid' => $botUser->userid,
-                    'version' => Base::getVersion(),
-                ], 10);
-                $userBot->webhook_num++;
-                $userBot->save();
-            }
         }
     }
 
