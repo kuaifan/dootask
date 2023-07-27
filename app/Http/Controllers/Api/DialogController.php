@@ -658,7 +658,7 @@ class DialogController extends AbstractController
         $userid = intval(Request::input('userid'));
         $stream_url = trim(Request::input('stream_url'));
         //
-        if ($userid < 1 || !str_starts_with($stream_url, 'http')) {
+        if ($userid <= 0) {
             return Base::retError('参数错误');
         }
         //

@@ -533,6 +533,10 @@ class User extends AbstractModel
                 return url("images/avatar/default_anon.png");
             case 'approval-alert@bot.system':
                 return url("images/avatar/default_approval.png");
+            case 'ai-openai@bot.system':
+                return url("images/avatar/default_openai.png");
+            case 'ai-claude@bot.system':
+                return url("images/avatar/default_claude.png");
             case 'bot-manager@bot.system':
                 return url("images/avatar/default_bot.png");
         }
@@ -618,6 +622,12 @@ class User extends AbstractModel
                     break;
                 case 'approval-alert':
                     $update['nickname'] = '审批';
+                    break;
+                case 'ai-openai':
+                    $update['nickname'] = 'ChatGPT';
+                    break;
+                case 'ai-claude':
+                    $update['nickname'] = 'Claude';
                     break;
                 case 'bot-manager':
                     $update['nickname'] = '机器人管理';

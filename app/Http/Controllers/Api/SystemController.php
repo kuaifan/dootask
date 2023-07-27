@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\WebSocketDialog;
+use App\Models\WebSocketDialogMsg;
 use Request;
 use Session;
 use Response;
@@ -223,6 +225,72 @@ class SystemController extends AbstractController
         if (env("SYSTEM_SETTING") == 'disabled') {
             $setting['appid'] = substr($setting['appid'], 0, 4) . str_repeat('*', strlen($setting['appid']) - 8) . substr($setting['appid'], -4);
             $setting['app_certificate'] = substr($setting['app_certificate'], 0, 4) . str_repeat('*', strlen($setting['app_certificate']) - 8) . substr($setting['app_certificate'], -4);
+        }
+        //
+        return Base::retSuccess('success', $setting ?: json_decode('{}'));
+    }
+
+    /**
+     * @api {get} api/system/setting/aibot          03. 获取会议设置、保存AI机器人设置（限管理员）
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName setting__aibot
+     *
+     * @apiParam {String} type
+     * - get: 获取（默认）
+     * - save: 保存设置（参数：['openai_key', 'openai_agency', 'claude_token', 'claude_agency']）
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function setting__aibot()
+    {
+        $user = User::auth('admin');
+        //
+        $type = trim(Request::input('type'));
+        $setting = Base::setting('aibotSetting');
+        if ($type == 'save') {
+            if (env("SYSTEM_SETTING") == 'disabled') {
+                return Base::retError('当前环境禁止修改');
+            }
+            $all = Request::input();
+            foreach ($all as $key => $value) {
+                if (!in_array($key, [
+                    'openai_key',
+                    'openai_agency',
+                    'claude_token',
+                    'claude_agency',
+                ])) {
+                    unset($all[$key]);
+                }
+            }
+            $backup = $setting;
+            $setting = Base::setting('aibotSetting', Base::newTrim($all));
+            //
+            if ($backup['openai_key'] != $setting['openai_key']) {
+                $botUser = User::botGetOrCreate('ai-openai');
+                if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "设置成功"], $botUser->userid, true, false, true);
+                }
+            }
+            if ($backup['claude_token'] != $setting['claude_token']) {
+                $botUser = User::botGetOrCreate('ai-claude');
+                if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "设置成功"], $botUser->userid, true, false, true);
+                }
+            }
+        }
+        //
+        if (env("SYSTEM_SETTING") == 'disabled') {
+            foreach ([
+                         'openai_key',
+                         'openai_agency',
+                         'claude_token',
+                         'claude_agency',
+                     ] as $item) {
+                $setting[$item] = substr($setting[$item], 0, 4) . str_repeat('*', strlen($setting[$item]) - 8) . substr($setting[$item], -4);
+            }
         }
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));

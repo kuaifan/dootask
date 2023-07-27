@@ -10,6 +10,9 @@
             <TabPane :label="$L('项目模板')" name="columnTemplate">
                 <SystemColumnTemplate/>
             </TabPane>
+            <TabPane :label="$L('AI机器人')" name="aibot">
+                <SystemAibot/>
+            </TabPane>
             <TabPane :label="$L('会议功能')" name="meeting">
                 <SystemMeeting/>
             </TabPane>
@@ -38,9 +41,11 @@ import SystemAppPush from "./components/SystemAppPush";
 import SystemMeeting from "./components/SystemMeeting";
 import SystemCheckin from "./components/SystemCheckin";
 import SystemThirdAccess from "./components/SystemThirdAccess";
+import SystemAibot from "./components/SystemAibot.vue";
 
 export default {
     components: {
+        SystemAibot,
         SystemThirdAccess,
         SystemCheckin,
         SystemMeeting,

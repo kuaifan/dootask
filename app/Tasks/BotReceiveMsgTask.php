@@ -81,22 +81,7 @@ class BotReceiveMsgTask extends AbstractTask
         if ($command
             && !str_starts_with($command, '/')
             && ($dialog->type === 'user' || $this->mention)) {
-            $userBot = UserBot::whereBotId($botUser->userid)->first();
-            if ($userBot && preg_match("/^https*:\/\//", $userBot->webhook_url)) {
-                Ihttp::ihttp_post($userBot->webhook_url, [
-                    'text' => $command,
-                    'token' => User::generateToken($botUser),
-                    'dialog_id' => $dialog->id,
-                    'dialog_type' => $dialog->type,
-                    'msg_id' => $msg->id,
-                    'msg_uid' => $msg->userid,
-                    'mention' => $this->mention ? 1 : 0,
-                    'bot_uid' => $botUser->userid,
-                    'version' => Base::getVersion(),
-                ], 10);
-                $userBot->webhook_num++;
-                $userBot->save();
-            }
+            $this->botManagerWebhook($command, $msg, $botUser, $dialog);
         }
         if ($dialog->type !== 'user') {
             return;
@@ -363,6 +348,76 @@ class BotReceiveMsgTask extends AbstractTask
             $text = preg_replace("/^\x20+/", "", $text);
             $text = preg_replace("/\n\x20+/", "\n", $text);
             WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $text], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
+        }
+    }
+
+    /**
+     * 机器人处理 Webhook
+     * @param string $command
+     * @param WebSocketDialogMsg $msg
+     * @param User $botUser
+     * @param WebSocketDialog $dialog
+     * @return void
+     */
+    private function botManagerWebhook(string $command, WebSocketDialogMsg $msg, User $botUser, WebSocketDialog $dialog)
+    {
+        $serverUrl = 'http://' . env('APP_IPPR') . '.3';
+        $userBot = null;
+        $extras = [];
+        switch ($botUser->email) {
+            // ChatGPT 机器人
+            case 'ai-openai@bot.system':
+                $setting = Base::setting('aibotSetting');
+                $webhookUrl = "{$serverUrl}/ai/openai/send";
+                $extras = [
+                    'openai_key' => $setting['openai_key'],
+                    'openai_agency' => $setting['openai_agency'],
+                    'server_url' => $serverUrl,
+                ];
+                if (empty($extras['openai_key'])) {
+                    WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => 'Robot disabled'], $botUser->userid, false, false, true); // todo 未能在任务end事件来发送任务
+                    return;
+                }
+                break;
+            // Claude 机器人
+            case 'ai-claude@bot.system':
+                $setting = Base::setting('aibotSetting');
+                $webhookUrl = "{$serverUrl}/ai/claude/send";
+                $extras = [
+                    'claude_token' => $setting['claude_token'],
+                    'claude_agency' => $setting['claude_agency'],
+                    'server_url' => $serverUrl,
+                ];
+                if (empty($extras['claude_token'])) {
+                    WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => 'Robot disabled'], $botUser->userid, false, false, true); // todo 未能在任务end事件来发送任务
+                    return;
+                }
+                break;
+            // 其他机器人
+            default:
+                $userBot = UserBot::whereBotId($botUser->userid)->first();
+                $webhookUrl = $userBot?->webhook_url;
+                break;
+        }
+        if (!preg_match("/^https*:\/\//", $webhookUrl)) {
+            return;
+        }
+        //
+        Ihttp::ihttp_post($webhookUrl, [
+            'text' => $command,
+            'token' => User::generateToken($botUser),
+            'dialog_id' => $dialog->id,
+            'dialog_type' => $dialog->type,
+            'msg_id' => $msg->id,
+            'msg_uid' => $msg->userid,
+            'mention' => $this->mention ? 1 : 0,
+            'bot_uid' => $botUser->userid,
+            'version' => Base::getVersion(),
+            'extras' => Base::array2json($extras)
+        ], 10);
+        if ($userBot) {
+            $userBot->webhook_num++;
+            $userBot->save();
         }
     }
 
