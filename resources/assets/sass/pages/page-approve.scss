@@ -243,9 +243,18 @@
         .approve-record-comment {
             padding: 10px;
             padding-bottom: 0;
+
+            .ivu-list-item>div:first-child{
+                width: 100%;
+            }
+
             .top {
                 display: flex;
                 gap: 8px;
+                width: 100%;
+                >div{
+                    flex:1;
+                }
             }
 
             .time {
