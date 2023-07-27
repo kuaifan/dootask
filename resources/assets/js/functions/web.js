@@ -1280,7 +1280,10 @@
                     html {
                         min-width: 100%;
                         min-height: 100%;
-                        background: #fff !important;
+                        background: #000;
+                    }
+                    .child-view {
+                        background-color: #fff;
                     }
                     ${this.utils.addExtraStyle()}
                 }
