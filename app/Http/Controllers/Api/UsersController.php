@@ -538,6 +538,16 @@ class UsersController extends AbstractController
                 $query->select('userid')->from('web_socket_dialog_users')->where('dialog_id', $keys['dialog_id']);
             });
         }
+        if ($keys['departments']) {
+            if (!is_array($keys['departments'])) {
+                $keys['departments'] = explode(",", $keys['departments']);
+            }
+            $builder->where(function($query) use ($keys) {
+                foreach ($keys['departments'] AS $department) {
+                    $query->orWhereRaw("FIND_IN_SET('{$department}', department)");
+                }
+            });            
+        }
         if (in_array($sorts['az'], ['asc', 'desc'])) {
             $builder->orderBy('az', $sorts['az']);
         } else {
