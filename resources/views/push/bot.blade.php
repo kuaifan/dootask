@@ -146,19 +146,19 @@
         @endif
     </div></span>
 @elseif ($type === 'approve_comment_notifier')
-    <span class="open-approve-details" data-id="{{$data->id}}">{{$data->comment_nickname}}评论了此审批</b>
+    <span class="open-approve-details" data-id="{{$data->id}}"><b>{{$data->comment_nickname}}评论了此审批</b>
     <div class="cause"><span>申请人：<span style="color:#84c56a">{{'@'}}{{$data->nickname}}</span> {{$data->department}}</span>
         <b>评论内容</b>
         <span>{{$data->comment_content}}</span>
-    </div><div class="btn-raw">
+    </div><div class="btn-raw no-dark-content">
         @if ($is_finished == 1)
-        <Button type="button" class="ivu-btn" style="flex: 1;">已同意</Button>
+        <button class="ivu-btn">已同意</button>
         @else
-        <Button type="button" class="ivu-btn" style="flex: 1;">查看详情</Button>
+        <button class="ivu-btn">查看详情</button>
         @endif
     </div></span>
 @elseif ($type === 'approve_submitter')
-    <span class="open-approve-details" data-id="{{$data->id}}"><b> @if ($action === 'pass')您发起的「{{$data->proc_def_name}}」已通过 @else您发起的「{{$data->proc_def_name}}」被{{$data->nickname}}拒绝 @endif</b>
+    <span class="open-approve-details" data-id="{{$data->id}}"><b>@if ($action === 'pass')您发起的「{{$data->proc_def_name}}」已通过 @else您发起的「{{$data->proc_def_name}}」被{{$data->nickname}}拒绝 @endif</b>
     <div class="cause"><span>申请人：<span style="color:#84c56a">{{'@'}}{{$data->start_nickname}}</span> {{$data->department}}</span>
         <b>审批事由</b>
         @if ($data->type)
