@@ -104,7 +104,6 @@ export default {
             $A.modalInput({
                 title: `添加流程`,
                 placeholder: `请输入流程名称`,
-                type:"textarea",
                 okText: "确定",
                 onOk: (desc) => {
                     if (!desc) {

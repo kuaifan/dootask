@@ -540,51 +540,52 @@
          * @returns {(*)[]|[{text, value(): [Date,*]},{text, value(): [Date,*]},{text, value(): [*,*]},{text, value(): [*,*]},{text, value(): [Date,*]},null,null]|(Date|*)[]}
          */
         timeOptionShortcuts() {
+            const startSecond = $A.Date($A.formatDate("Y-m-d 00:00:00", Math.round(new Date().getTime() / 1000)));
             const lastSecond = (e) => {
-                return $A.Date($A.formatDate("Y-m-d 23:59:29", Math.round(e / 1000)))
+                return $A.Date($A.formatDate("Y-m-d 00:00:00", Math.round(e / 1000)))
             };
             return [{
                 text: $A.L('今天'),
                 value() {
-                    return [new Date(), lastSecond(new Date().getTime())];
+                    return [startSecond, lastSecond(new Date().getTime())];
                 }
             }, {
                 text: $A.L('明天'),
                 value() {
                     let e = new Date();
                     e.setDate(e.getDate() + 1);
-                    return [new Date(), lastSecond(e.getTime())];
+                    return [startSecond, lastSecond(e.getTime())];
                 }
             }, {
                 text: $A.L('本周'),
                 value() {
-                    return [new Date(), lastSecond($A.getSpecifyDate('本周结束', true).getTime())];
+                    return [startSecond, lastSecond($A.getSpecifyDate('本周结束', true).getTime())];
                 }
             }, {
                 text: $A.L('本月'),
                 value() {
-                    return [new Date(), lastSecond($A.getSpecifyDate('本月结束', true).getTime())];
+                    return [startSecond, lastSecond($A.getSpecifyDate('本月结束', true).getTime())];
                 }
             }, {
                 text: $A.L('3天'),
                 value() {
                     let e = new Date();
                     e.setDate(e.getDate() + 2);
-                    return [new Date(), lastSecond(e.getTime())];
+                    return [startSecond, lastSecond(e.getTime())];
                 }
             }, {
                 text: $A.L('5天'),
                 value() {
                     let e = new Date();
                     e.setDate(e.getDate() + 4);
-                    return [new Date(), lastSecond(e.getTime())];
+                    return [startSecond, lastSecond(e.getTime())];
                 }
             }, {
                 text: $A.L('7天'),
                 value() {
                     let e = new Date();
                     e.setDate(e.getDate() + 6);
-                    return [new Date(), lastSecond(e.getTime())];
+                    return [startSecond, lastSecond(e.getTime())];
                 }
             }];
         },
@@ -1140,9 +1141,28 @@
     $.extend({
         dark: {
             utils: {
-                filter: '-webkit-filter: url(#dark-mode-filter) !important; filter: url(#dark-mode-filter) !important;',
-                reverseFilter: '-webkit-filter: url(#dark-mode-reverse-filter) !important; filter: url(#dark-mode-reverse-filter) !important;',
-                noneFilter: '-webkit-filter: none !important; filter: none !important;',
+                supportMode() {
+                    let ua = typeof window !== 'undefined' && window.navigator.userAgent.toLowerCase();
+                    if (`${ua.match(/Chrome/i)}` === 'chrome') {
+                        return 'chrome';
+                    }
+                    if (`${ua.match(/Webkit/i)}` === 'webkit') {
+                        return 'webkit';
+                    }
+                    return null;
+                },
+
+                defaultFilter() {
+                    return '-webkit-filter: invert(0.92) hue-rotate(180deg) !important; filter: invert(0.92) hue-rotate(180deg) !important;';
+                },
+
+                reverseFilter() {
+                    return '-webkit-filter: invert(0.92) hue-rotate(180deg) !important; filter: invert(0.92) hue-rotate(180deg) !important;';
+                },
+
+                noneFilter() {
+                    return '-webkit-filter: none !important; filter: none !important;';
+                },
 
                 addExtraStyle() {
                     try {
@@ -1206,7 +1226,7 @@
                 this.utils.addStyle('dark-mode-style', 'style', `
                 @media screen {
                     html {
-                        ${this.utils.filter}
+                        ${this.utils.defaultFilter()}
                     }
 
                     /* Default Reverse rule */
@@ -1225,7 +1245,7 @@
                     .no-dark-mode,
                     .no-dark-content,
                     .no-dark-before:before {
-                        ${this.utils.reverseFilter}
+                        ${this.utils.reverseFilter()}
                     }
 
                     [style*="background:url"] *,
@@ -1237,7 +1257,7 @@
                     .no-dark-content img,
                     .no-dark-content canvas,
                     .no-dark-content svg image {
-                        ${this.utils.noneFilter}
+                        ${this.utils.noneFilter()}
                     }
 
                     /* Text contrast */
@@ -1253,7 +1273,7 @@
                     :-moz-full-screen *,
                     :fullscreen,
                     :fullscreen * {
-                        ${this.utils.noneFilter}
+                        ${this.utils.noneFilter()}
                     }
 
                     /* Page background */
@@ -1273,7 +1293,7 @@
             },
 
             enableDarkMode() {
-                if (!$A.isChrome()) {
+                if (!this.utils.supportMode()) {
                     return;
                 }
                 if (this.isDarkEnabled()) {
@@ -1295,6 +1315,9 @@
 
             autoDarkMode() {
                 let darkScheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+                if ($A.isEEUiApp) {
+                    darkScheme = $A.eeuiAppGetThemeName() === "dark"
+                }
                 if (darkScheme) {
                     this.enableDarkMode()
                 } else {

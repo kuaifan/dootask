@@ -641,7 +641,7 @@ export default {
         allTask() {
             const {cacheTasks, projectId} = this;
             return cacheTasks.filter(task => {
-                if (task.archived_at) {
+                if (task.archived_at || !task.created_at) {
                     return false;
                 }
                 return task.project_id == projectId

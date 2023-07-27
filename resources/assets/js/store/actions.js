@@ -55,19 +55,7 @@ export default {
             }
 
             // 主题皮肤
-            switch (state.themeMode) {
-                case 'dark':
-                    $A.dark.enableDarkMode()
-                    break;
-                case 'light':
-                    $A.dark.disableDarkMode()
-                    break;
-                default:
-                    state.themeMode = "auto"
-                    $A.dark.autoDarkMode()
-                    break;
-            }
-            state.themeIsDark = $A.dark.isDarkEnabled()
+            await dispatch("synchTheme")
 
             // 客户端ID
             if (!state.clientId) {
@@ -93,6 +81,9 @@ export default {
             }).then(({data}) => {
                 state.apiKeyData = data;
             })
+
+            // 获取系统设置
+            dispatch("systemSetting")
 
             // 加载语言包
             await $A.loadScriptS([
@@ -322,6 +313,43 @@ export default {
     },
 
     /**
+     * 获取系统设置
+     * @param dispatch
+     * @param state
+     * @returns {Promise<unknown>}
+     */
+    systemSetting({dispatch, state}) {
+        return new Promise((resolve, reject) => {
+            switch (state.systemConfig.__state) {
+                case "success":
+                    resolve(state.systemConfig)
+                    break
+
+                case "loading":
+                    setTimeout(_ => {
+                        dispatch("systemSetting").then(resolve).catch(reject)
+                    }, 100)
+                    break
+
+                default:
+                    state.systemConfig.__state = "loading"
+                    dispatch("call", {
+                        url: "system/setting",
+                    }).then(({data}) => {
+                        state.systemConfig = Object.assign(data, {
+                            __state: "success",
+                        })
+                        resolve(state.systemConfig)
+                    }).catch(_ => {
+                        state.systemConfig.__state = "error"
+                        reject()
+                    });
+                    break
+            }
+        })
+    },
+
+    /**
      * 是否启用首页
      * @param dispatch
      * @param state
@@ -329,11 +357,9 @@ export default {
      */
     needHome({dispatch, state}) {
         return new Promise((resolve, reject) => {
-            dispatch("call", {
-                url: "system/get/starthome",
-            }).then(({data}) => {
-                if (!!data.need_start) {
-                    resolve(data)
+            dispatch("systemSetting").then(data => {
+                if (data.start_home === 'open') {
+                    resolve()
                 } else {
                     reject()
                 }
@@ -423,7 +449,7 @@ export default {
                 resolve(false)
                 return;
             }
-            if (!$A.isChrome()) {
+            if (!$A.dark.utils.supportMode()) {
                 if ($A.isEEUiApp) {
                     $A.modalWarning("仅Android设置支持主题功能");
                 } else {
@@ -448,6 +474,26 @@ export default {
             window.localStorage.setItem("__theme:mode__", mode);
             resolve(true)
         });
+    },
+
+    /**
+     * 同步主题
+     * @param state
+     */
+    synchTheme({state}) {
+        switch (state.themeMode) {
+            case 'dark':
+                $A.dark.enableDarkMode()
+                break;
+            case 'light':
+                $A.dark.disableDarkMode()
+                break;
+            default:
+                state.themeMode = "auto"
+                $A.dark.autoDarkMode()
+                break;
+        }
+        state.themeIsDark = $A.dark.isDarkEnabled()
     },
 
     /**
@@ -1779,8 +1825,10 @@ export default {
             } else {
                 task_id = task.id;
             }
+            state.taskArchiveView = task.deleted_at === null && task.archived_at !== null ? task_id : 0;
+        } else {
+            state.taskArchiveView = 0;
         }
-        state.taskArchiveView = task_id;
         state.taskId = task_id;
         if (task_id > 0) {
             dispatch("getTaskOne", {
@@ -2134,6 +2182,53 @@ export default {
         }
         //
         $A.IDBSave("cacheTaskBrowse", state.cacheTaskBrowse);
+    },
+
+    /**
+     * 任务默认时间
+     * @param state
+     * @param dispatch
+     * @param array
+     * @returns {Promise<unknown>}
+     */
+    taskDefaultTime({state, dispatch}, array) {
+        return new Promise(async resolve => {
+            if ($A.isArray(array)) {
+                array[0] = await dispatch("taskDefaultStartTime", array[0])
+                array[1] = await dispatch("taskDefaultEndTime", array[1])
+            }
+            resolve(array)
+        });
+    },
+
+    /**
+     * 任务默认开始时间
+     * @param state
+     * @param value
+     * @returns {Promise<unknown>}
+     */
+    taskDefaultStartTime({state}, value) {
+        return new Promise(resolve => {
+            if (/(\s|^)([0-2]\d):([0-5]\d)(:\d{1,2})*$/.test(value)) {
+                value = value.replace(/(\s|^)([0-2]\d):([0-5]\d)(:\d{1,2})*$/, "$1" + state.systemConfig.task_default_time[0])
+            }
+            resolve(value)
+        });
+    },
+
+    /**
+     * 任务默认结束时间
+     * @param state
+     * @param value
+     * @returns {Promise<unknown>}
+     */
+    taskDefaultEndTime({state}, value) {
+        return new Promise(resolve => {
+            if (/(\s|^)([0-2]\d):([0-5]\d)(:\d{1,2})*$/.test(value)) {
+                value = value.replace(/(\s|^)([0-2]\d):([0-5]\d)(:\d{1,2})*$/, "$1" + state.systemConfig.task_default_time[1])
+            }
+            resolve(value)
+        });
     },
 
     /** *****************************************************************************************/
@@ -2748,6 +2843,33 @@ export default {
         })
     },
 
+    /**
+     * 消息流
+     * @param state
+     * @param dispatch
+     * @param streamUrl
+     */
+    streamDialogMsg({state, dispatch}, streamUrl) {
+        const sse = new EventSource(streamUrl)
+        sse.addEventListener("update", e => {
+            Store.set('dialogMsgUpdate', {
+                id: e.lastEventId,
+                text: e.data
+            });
+        })
+        sse.addEventListener("done", _ => {
+            const index = state.dialogSseList.findIndex(item => sse === item.sse)
+            if (index > -1) {
+                state.dialogSseList.splice(index, 1)
+            }
+            sse.close()
+        })
+        state.dialogSseList.push({sse, time: $A.Time()})
+        if (state.dialogSseList.length > 10) {
+            state.dialogSseList.shift().sse.close()
+        }
+    },
+
     /** *****************************************************************************************/
     /** ************************************* loads *********************************************/
     /** *****************************************************************************************/
@@ -2960,6 +3082,10 @@ export default {
 
                 case "line":
                     dispatch("saveUserOnlineStatus", msgDetail.data);
+                    break
+
+                case "msgStream":
+                    dispatch("streamDialogMsg", msgDetail.stream_url);
                     break
 
                 default:

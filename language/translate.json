@@ -12004,11 +12004,11 @@
         "key": "待办",
         "zh": "",
         "zh-CHT": "待辦",
-        "en": "To be done",
+        "en": "Todo",
         "ko": "할 일",
         "ja": "待办",
-        "de": "Unbesiegbar",
-        "fr": "Le pense-bête",
+        "de": "Todo",
+        "fr": "Todo",
         "id": "Harus"
     },
     {
@@ -12018,7 +12018,7 @@
         "en": "Required",
         "ko": "필수",
         "ja": "必ず埋め",
-        "de": "Sie müssen sie füllen.",
+        "de": "Required",
         "fr": "Qu’il remplit",
         "id": "Akan mengisi"
     },
@@ -16894,5 +16894,137 @@
         "de": "Die folgenden personen haben den auftrag erledigt",
         "fr": "Les personnes suivantes ont déjà une mission",
         "id": "Yang berikut ini ada tugas"
+    },
+    {
+        "key": "你确定要登出系统吗？",
+        "zh": "",
+        "zh-CHT": "你確定要登出系統嗎？",
+        "en": "You sure you want to log out of the system?",
+        "ko": "시스템에서 로그아웃하시겠습니까?",
+        "ja": "システムをログアウトするのは確かですか?",
+        "de": "Willst du dich sicher ins system einloggen?",
+        "fr": "Êtes-vous sûr de vouloir vous déconnecter du système?",
+        "id": "Kau yakin ingin keluar dari sistem?"
+    },
+    {
+        "key": "计划时间冲突提示",
+        "zh": "",
+        "zh-CHT": "計劃時間衝突提示",
+        "en": "Schedule time conflict prompt",
+        "ko": "예약된 시간 알림 알림",
+        "ja": "予定時間の衝突のヒントです",
+        "de": "Geplante zeitkollisionen sind unvermeidlich",
+        "fr": "Conseils de conflit de temps de planification",
+        "id": "Merencanakan benturan waktu"
+    },
+    {
+        "key": "忽略并继续",
+        "zh": "",
+        "zh-CHT": "忽略並繼續",
+        "en": "Ignore and continue",
+        "ko": "무시하고 계속 진행",
+        "ja": "無視し続けます",
+        "de": "Ignorieren und weitermachen.",
+        "fr": "Ignorer et continuer",
+        "id": "Abaikan dan lanjutkan"
+    },
+    {
+        "key": "你确定要清除缓存吗？",
+        "zh": "",
+        "zh-CHT": "你確定要清除緩存嗎？",
+        "en": "Are you sure you want to clear the cache?",
+        "ko": "정말로 캐시를 지우시겠습니까?",
+        "ja": "確かにキャッシュを消去しますか?",
+        "de": "Bist du dir sicher, dass du es löschen willst?",
+        "fr": "Êtes-vous sûr de vouloir effacer votre cache?",
+        "id": "Apakah anda yakin ingin menghapus cache?"
+    },
+    {
+        "key": "可见性选项",
+        "zh": "",
+        "zh-CHT": "可見性選項",
+        "en": "Visibility option",
+        "ko": "표시 옵션",
+        "ja": "可視的選択肢です",
+        "de": "Sichtbaren optionen.",
+        "fr": "Options de visibilité",
+        "id": "Pilihan yang terlihat"
+    },
+    {
+        "key": "保持",
+        "zh": "",
+        "zh-CHT": "保持",
+        "en": "Hold",
+        "ko": "유지",
+        "ja": "保持します。",
+        "de": "Halten! Und halten!",
+        "fr": "Maintenir",
+        "id": "Tetap"
+    },
+    {
+        "key": "保持：任务详情页可见性选项保持显示。",
+        "zh": "",
+        "zh-CHT": "保持：任務詳情頁可見性選項保持顯示。",
+        "en": "Hold: The task details page visibility option remains displayed.",
+        "ko": "유지:작업 정보 페이지 표시 옵션은 계속 표시됩니다.",
+        "ja": "維持:タスク詳細ページの可視性オプションを表示したままにします。",
+        "de": "Beibehaltung: die option sollte im detail beschrieben werden. Die folgenden optionen werden angezeigt",
+        "fr": "Garder: l’option de visibilité de la page de détails de la tâche reste affichée.",
+        "id": "Menjaga: detail misi halaman visibilitas pilihan tetap ditampilkan."
+    },
+    {
+        "key": "自动：默认值情况下显示在合并项目，设置时保持显示。",
+        "zh": "",
+        "zh-CHT": "自動：默認值情況下顯示在合併項目，設置時保持顯示。",
+        "en": "Automatic: The default value is displayed when merging items, and the setting remains displayed.",
+        "ko": "자동:합칠 때 기본값으로 표시되며, 설정하는 동안 표시되지 않습니다.",
+        "ja": "自働:デフォルトの場合はマージ項目を表示し、設定時は表示のままにします。",
+        "de": "Automatische anzeige (standard) zeigt die einstellungen im verlauf einer fusion an",
+        "fr": "Automatique: par défaut, les éléments fusionnés sont affichés.",
+        "id": "Otomatis: standar ditampilkan pada item penggabungan ketika anda mengatur."
+    },
+    {
+        "key": "请输入修改备注",
+        "zh": "",
+        "zh-CHT": "請輸入修改備註",
+        "en": "Please enter modification remarks",
+        "ko": "수정 비고를 입력하십시오",
+        "ja": "修正注記をお願いします。",
+        "de": "Bitte geben sie die anmerkung ein",
+        "fr": "Veuillez entrer une remarque modifiée",
+        "id": "Masukkan komentar revisi"
+    },
+    {
+        "key": "任务默认时间",
+        "zh": "",
+        "zh-CHT": "任務默認時間",
+        "en": "Task default time",
+        "ko": "작업 기본 시간",
+        "ja": "タスクデフォルト時間です",
+        "de": "Standard-zeit für mission:",
+        "fr": "Tâche temps par défaut",
+        "id": "Waktu standar tugas"
+    },
+    {
+        "key": "请选择默认时间",
+        "zh": "",
+        "zh-CHT": "請選擇默認時間",
+        "en": "Please select the default time",
+        "ko": "기본 시간을 선택하십시오",
+        "ja": "デフォルト時間をお願いします。",
+        "de": "Bitte wählen sie die standard-zeit",
+        "fr": "Veuillez sélectionner l’heure par défaut",
+        "id": "Silahkan pilih waktu standar"
+    },
+    {
+        "key": "添加任务计划时间默认时分。",
+        "zh": "",
+        "zh-CHT": "添加任務計劃時間默認時分。",
+        "en": "Add task schedule Time The default time.",
+        "ko": "기본 작업 스케줄 시간을 추가합니다.",
+        "ja": "タスクスケジュールのデフォルト時間を追加します。",
+        "de": "Festlegung der zielzeit standard-zeit hinzufügen",
+        "fr": "Ajouter le temps de planification des tâches par défaut.",
+        "id": "Tambahkan waktu perencanaan tugas ke default."
     }
 ]

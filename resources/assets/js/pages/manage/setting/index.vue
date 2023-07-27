@@ -139,15 +139,21 @@ export default {
         toggleRoute(path) {
             switch (path) {
                 case 'clearCache':
-                    $A.IDBSet("clearCache", "handle").then(_ => {
-                        $A.reloadUrl()
+                    $A.modalConfirm({
+                        title: '清除缓存',
+                        content: '你确定要清除缓存吗？',
+                        onOk: () => {
+                            $A.IDBSet("clearCache", "handle").then(_ => {
+                                $A.reloadUrl()
+                            });
+                        }
                     });
                     break;
 
                 case 'logout':
                     $A.modalConfirm({
                         title: '退出登录',
-                        content: '你确定要登出系统？',
+                        content: '你确定要登出系统吗？',
                         onOk: () => {
                             this.$store.dispatch("logout", false)
                         }

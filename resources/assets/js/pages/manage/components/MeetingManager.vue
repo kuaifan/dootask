@@ -117,7 +117,7 @@
 
 <script>
 import {Store} from "le5le-store";
-import { mapState } from 'vuex'
+import {mapState} from 'vuex'
 import MeetingPlayer from "./MeetingPlayer";
 import DragBallComponent from "../../../components/DragBallComponent";
 import UserSelect from "../../../components/UserSelect.vue";
@@ -173,19 +173,12 @@ export default {
     },
 
     watch: {
-        meetingShow(val) {
-            if (val) {
-                $A.eeuiAppKeepScreenOn()
-            } else {
-                $A.eeuiAppKeepScreenOff()
-            }
-        },
         meetingMini(val) {
             if (!val) {
                 this.$refs.meetingModal.modalIndex = this.$refs.meetingModal.handleGetModalIndex()
             }
         },
-        meetingWindow : {
+        meetingWindow: {
             handler(val) {
                 switch (val.type) {
                     case 'add':
@@ -285,7 +278,7 @@ export default {
                                     }
                                 }
                             });
-                        }else{
+                        } else {
                             $A.loadScript('js/AgoraRTC_N-4.17.0.js').then(_ => {
                                 this.join(data)
                             }).catch(_ => {

@@ -215,7 +215,7 @@
                 cursor: pointer;
                 .taskfont {
                     display: inline-block;
-                    font-size: 20px;
+                    font-size: 22px;
                     line-height: 30px;
                     &.disabled {
                         opacity: 0.5;
@@ -249,6 +249,7 @@
                         transform: translate(-50%, -50%) scale(1);
                         transition: all 0.3s ease;
                         color: #ffffff;
+                        font-size: 20px;
                     }
                     .chat-load {
                         position: absolute;

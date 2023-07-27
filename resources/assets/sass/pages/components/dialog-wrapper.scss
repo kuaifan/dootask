@@ -747,12 +747,16 @@
                                         text-align: center;
                                         padding: 12px 0 5px 0;
 
-                                        > button.ivu-btn-primary {
-                                            margin-right: 12px;
-                                        }
-
-                                        > button.ivu-btn-small {
-                                            height: 32px;
+                                        > button {
+                                            &.ivu-btn {
+                                                flex: 1;
+                                            }
+                                            &.ivu-btn-primary {
+                                                margin-right: 12px;
+                                            }
+                                            &.ivu-btn-small {
+                                                height: 32px;
+                                            }
                                         }
                                     }
                                 }
@@ -1678,6 +1682,27 @@ body.window-touch {
             user-select: none;
             .dialog-item {
                 .dialog-view {
+                    .dialog-head {
+                        .dialog-content {
+                            .content-file {
+                                &.file {
+                                    .file-box {
+                                        position: relative;
+                                        &:before {
+                                            content: "";
+                                            position: absolute;
+                                            top: 0;
+                                            left: 0;
+                                            width: 60px;
+                                            height: 100%;
+                                            z-index: 1;
+                                            user-select: none;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                     &.operate-enter {
                         .dialog-head {
                             .dialog-content {

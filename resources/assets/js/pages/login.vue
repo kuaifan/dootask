@@ -21,7 +21,7 @@
 
                 <transition name="login-mode">
                     <div v-if="loginMode=='qrcode'" class="login-qrcode" @click="qrcodeRefresh">
-                        <VueQrcode :value="qrcodeUrl" :options="{width:200,margin:0}"></VueQrcode>
+                        <VueQrcode :value="qrcodeUrl" :options="{width:200,margin:2}"></VueQrcode>
                     </div>
                 </transition>
                 <transition name="login-mode">

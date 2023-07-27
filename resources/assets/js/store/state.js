@@ -110,6 +110,7 @@ export default {
     dialogHistory: [],
     dialogDraftTimer: {},
     dialogMsgTransfer: {time: 0},
+    dialogSseList: [],
 
     // 搜索关键词（主要用于移动端判断滑动返回）
     messengerSearchKey: {dialog: '', contacts: ''},
@@ -191,6 +192,9 @@ export default {
     apiKeyData: {},
     localKeyPair: {},
     localKeyLock: false,
+
+    // 系统设置
+    systemConfig: {},
 
     // 审批待办未读数量
     approveUnreadNumber: 0,

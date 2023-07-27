@@ -58,6 +58,7 @@ export default {
         this.eeuiEvents();
         this.otherEvents();
         this.synchThemeLanguage();
+        this.synchAppTheme();
     },
 
     mounted() {
@@ -73,7 +74,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['ws', 'themeMode', 'windowOrientation']),
+        ...mapState(['ws', 'themeMode', 'themeIsDark', 'windowOrientation']),
 
         isSoftware() {
             return this.$Electron || this.$isEEUiApp;
@@ -160,6 +161,7 @@ export default {
 
         windowActive(active) {
             if (active) {
+                this.autoTheme()
                 this.__windowTimer && clearTimeout(this.__windowTimer)
                 this.__windowTimer = setTimeout(_ => {
                     this.$store.dispatch("call", {
@@ -173,16 +175,13 @@ export default {
                     }).catch(_ => {
                         this.$store.dispatch("websocketConnection")
                     })
-                    if (this.themeMode === "auto") {
-                        $A.dark.autoDarkMode()
-                    }
                 }, 600)
             } else {
                 this.$store.dispatch("audioStop", true)
             }
         },
 
-        themeMode() {
+        themeIsDark() {
             this.synchThemeLanguage();
         }
     },
@@ -220,13 +219,29 @@ export default {
             });
         },
 
+        autoTheme() {
+            if (this.themeMode === "auto") {
+                this.$store.dispatch("synchTheme")
+            }
+        },
+
         synchThemeLanguage() {
             if (this.isSoftware) {
                 this.iframes = this.iframes.filter(({key}) => key != 'synchThemeLanguage')
                 this.iframes.push({
                     key: 'synchThemeLanguage',
-                    url: $A.apiUrl(`../setting/theme_language?theme=${this.themeMode}&language=${languageType}`)
+                    url: $A.apiUrl(`../setting/theme_language?theme=${this.themeIsDark ? 'dark' : 'light'}&language=${languageType}`)
                 })
+            }
+            this.synchAppTheme()
+        },
+
+        synchAppTheme() {
+            if (this.$isEEUiApp) {
+                $A.eeuiAppSendMessage({
+                    action: 'updateTheme',
+                    themeName: this.themeIsDark ? 'dark' : 'light',
+                });
             }
         },
 
@@ -285,6 +300,10 @@ export default {
             if (!this.$isEEUiApp) {
                 return;
             }
+            // APP进入前台
+            window.__onAppActive = () => {
+                this.autoTheme()
+            }
             // 页面失活
             window.__onPagePause = () => {
                 this.$store.state.windowActive = false;
@@ -295,13 +314,15 @@ export default {
                 this.$store.state.windowActive = true;
                 if (num > 0) {
                     this.$store.dispatch("getBasicData", 600)
+                } else {
+                    this.autoTheme()
                 }
             }
             // 会议事件
             window.__onMeetingEvent = ({act,uuid,meetingid}) => {
                 switch (act) {
                     // 获取用户信息
-                    case "getInfo":   
+                    case "getInfo":
                         this.$store.dispatch("call", {
                             url: 'users/basic',
                             data: {
@@ -321,22 +342,21 @@ export default {
                         });
                         break;
                     //加入成功
-                    case "success":     
+                    case "success":
                         this.$store.dispatch("closeMeetingWindow","add")
                         break;
                     // 邀请
-                    case "invent":      
+                    case "invent":
                         this.$store.dispatch("showMeetingWindow",{
                             type: "invitation",
                             meetingid: meetingid
                         })
                         break;
                     //结束会议
-                    case "endMeeting":  
-                        
+                    case "endMeeting":
                         break;
                     //加入失败
-                    case "error":       
+                    case "error":
                         this.$store.dispatch("closeMeetingWindow","error")
                         break;
                     default:

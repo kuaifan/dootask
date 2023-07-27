@@ -94,11 +94,13 @@
             z-index: 1;
             display: flex;
             align-items: center;
-            > button {
-                transition: margin 0.2s;
-                &.advanced {
+            &.advanced-open {
+                > button {
                     margin-left: 24px;
                 }
+            }
+            > button {
+                transition: margin 0.2s;
                 &:focus {
                     box-shadow: none;
                 }
@@ -128,6 +130,7 @@
                 margin-left: 20px;
                 position: relative;
                 cursor: pointer;
+                transition: margin 0.2s;
                 .ivu-icon {
                     font-size: 32px;
                 }
@@ -162,6 +165,7 @@
             .taskfont {
                 display: inline-block;
                 transform: scale(0.9);
+                opacity: 0.8;
                 font-size: 12px;
                 margin-right: 0;
             }
@@ -210,16 +214,6 @@
             width: 100%;
         }
     }
-    .task-add-assist {
-        margin-top: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        .ivu-icon {
-            font-size: 16px;
-            color: $primary-desc-color;
-        }
-    }
     .ivu-modal-footer {
         padding: 26px 0 22px !important;
     }
@@ -233,9 +227,12 @@ body.window-portrait {
                 width: calc(100% + 8px);
                 padding-right: 8px;
                 justify-content: space-between;
-                > button {
-                    &.advanced {
-                        margin-left: 0;
+                &.advanced-open {
+                    > button {
+                        margin-left: 8px;
+                    }
+                    .advanced-time {
+                        margin-right: 4px;
                     }
                 }
                 .advanced-priority {

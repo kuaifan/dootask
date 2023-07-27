@@ -231,6 +231,9 @@ export default {
          * 鼠标移入事件（单次）
          */
         onContainerMouseMove() {
+            if (this.windowTouch) {
+                return;
+            }
             setTimeout(() => {
                 if (this.isReady) {
                     return

@@ -1,10 +1,10 @@
 <template>
-    <Modal v-model="show" :title="$L('以下人员已存在任务')" class="task-exist-tips" width="640">
+    <Modal v-model="show" :title="$L('计划时间冲突提示')" class="task-exist-tips">
         <List :split="false" size="small">
             <ListItem v-for="(items, userid) in tipsTask" :key="userid">
                 <div class="list-content">
                     <UserAvatar :userid="userid" :size="28" :show-icon="true" :show-name="true" tooltipDisabled />
-                    <div class="list-task" v-for="(item, key) in items" :key="key">
+                    <div class="list-task clearfix" v-for="(item, key) in items" :key="key">
                         <div class="list-task-info">
                             <span>[{{ item.project_name }}] </span>
                             <span>{{ item.name }}</span>
@@ -16,18 +16,14 @@
         </List>
         <div slot="footer">
             <Button type="default" @click="show = false">{{ $L('取消') }}</Button>
-            <Button type="primary" @click="onAdd()">{{ $L('确定') }}</Button>
+            <Button type="primary" @click="onAdd">{{ $L('忽略并继续') }}</Button>
         </div>
     </Modal>
 </template>
 
 <script>
-import TEditor from "../../../components/TEditor";
-import UserSelect from "../../../components/UserSelect.vue";
-
 export default {
     name: "TaskExistTips",
-    components: { UserSelect, TEditor },
     props: {
         value: {
             type: Boolean,
@@ -57,7 +53,7 @@ export default {
             if ($A.formatDate('Y/m/d', start_at) == $A.formatDate('Y/m/d', end_at)) {
                 string = $A.formatDate('Y/m/d H:i', start_at) + " ~ " + $A.formatDate('H:i', end_at)
             } else if ($A.formatDate('Y', start_at) == $A.formatDate('Y', end_at)) {
-                string = $A.formatDate('Y/m/d', start_at) + " ~ " + $A.formatDate('m/d', end_at)
+                string = $A.formatDate('Y/m/d H:i', start_at) + " ~ " + $A.formatDate('m/d H:i', end_at)
                 string = string.replace(/( 00:00| 23:59)/g, "")
             } else {
                 string = $A.formatDate('Y/m/d H:i', start_at) + " ~ " + $A.formatDate('Y/m/d H:i', end_at)

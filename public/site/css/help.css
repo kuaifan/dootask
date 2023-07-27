@@ -40,12 +40,6 @@
     height: 82vh;
 }
 
-.l-ul-item {
-    padding: 9px 16px;
-    cursor: pointer;
-    height: 22px;
-}
-
 .l-ul-item.active .txt {
     color: var(--txt-theme-color);
 }

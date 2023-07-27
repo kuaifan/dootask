@@ -133,11 +133,11 @@
                 </FormItem>
                 <FormItem prop="startTime" :label="$L('开始时间')">
                     <div style="display: flex;gap: 3px;">
-                        <DatePicker type="date" format="yyyy-MM-dd" 
-                            v-model="addData.startTime" 
+                        <DatePicker type="date" format="yyyy-MM-dd"
+                            v-model="addData.startTime"
                             :editable="false"
-                            @on-change="(e)=>{ addData.startTime = e }" 
-                            :placeholder="$L('请选择开始时间')" 
+                            @on-change="(e)=>{ addData.startTime = e }"
+                            :placeholder="$L('请选择开始时间')"
                             style="flex: 1;min-width: 122px;"
                         ></DatePicker>
                         <Select v-model="addData.startTimeHour" style="max-width: 100px;">
@@ -151,11 +151,11 @@
                 </FormItem>
                 <FormItem prop="endTime" :label="$L('结束时间')">
                     <div style="display: flex;gap: 3px;">
-                        <DatePicker type="date" format="yyyy-MM-dd" 
-                            v-model="addData.endTime" 
+                        <DatePicker type="date" format="yyyy-MM-dd"
+                            v-model="addData.endTime"
                             :editable="false"
-                            @on-change="(e)=>{ addData.endTime = e }" 
-                            :placeholder="$L('请选择结束时间')" 
+                            @on-change="(e)=>{ addData.endTime = e }"
+                            :placeholder="$L('请选择结束时间')"
                             style="flex: 1;min-width: 122px;"
                         ></DatePicker>
                         <Select v-model="addData.endTimeHour" style="max-width: 100px;">
@@ -179,7 +179,7 @@
                 <Button type="primary" :loading="loadIng > 0" @click="onInitiate">{{$L('确认')}}</Button>
             </div>
         </Modal>
-        
+
     </div>
 </template>
 
@@ -188,7 +188,7 @@ import list from "./list.vue";
 import listDetails from "./details.vue";
 import DrawerOverlay from "../../../components/DrawerOverlay";
 import ImgUpload from "../../../components/ImgUpload";
-import { mapState } from 'vuex'
+import {mapState} from 'vuex'
 
 export default {
     components:{list,listDetails,DrawerOverlay,ImgUpload},
@@ -207,7 +207,7 @@ export default {
             loadIng:false,
 
             tabsValue:"",
-            // 
+            //
             approvalType:"all",
             approvalList:[
                 {value:"all",label:this.$L("全部审批")},
@@ -222,16 +222,16 @@ export default {
                 {value:3,label:this.$L("已拒绝")},
                 {value:4,label:this.$L("已撤回")}
             ],
-            // 
+            //
             unreadTotal:0,
             unreadList: [],
             doneList:[],
             notifyList:[],
             initiatedList: [],
-            // 
+            //
             details:{},
             detailsShow:false,
-            // 
+            //
             addTitle:'',
             addShow:false,
             startTimeOpen:false,
@@ -258,7 +258,7 @@ export default {
             },
             selectTypes:["年假","事假","病假","调休","产假","陪产假","婚假","丧假","哺乳假"],
 
-            // 
+            //
             showDateTime:false
         }
     },
@@ -346,7 +346,7 @@ export default {
             this.notifyList.map(h=>{ h._active = false; })
             this.initiatedList.map(h=>{ h._active = false; })
             item._active = true;
-            // 
+            //
             if( window.innerWidth < 426 ){
                 this.goForward({name: 'manage-approve-details', query: { id: item.id } });
                 return;
@@ -377,7 +377,7 @@ export default {
                     this.unreadList?.map((res)=>{ if(res._active)  activeId = res.id  })
                 }
                 this.unreadList = data.rows.map((h,index)=>{
-                    h._active = activeId > 0 ? h.id == activeId : index == 0; 
+                    h._active = activeId > 0 ? h.id == activeId : index == 0;
                     if(h._active) activeIndex = index
                     return h;
                 })
@@ -413,7 +413,7 @@ export default {
                     this.doneList?.map((res)=>{ if(res._active)  activeId = res.id  })
                 }
                 this.doneList = data.rows.map((h,index)=>{
-                    h._active = activeId > 0 ? h.id == activeId : index == 0; 
+                    h._active = activeId > 0 ? h.id == activeId : index == 0;
                     if(h._active) activeIndex = index
                     return h;
                 })
@@ -446,7 +446,7 @@ export default {
                     this.notifyList?.map((res)=>{ if(res._active)  activeId = res.id  })
                 }
                 this.notifyList = data.rows.map((h,index)=>{
-                    h._active = activeId > 0 ? h.id == activeId : index == 0; 
+                    h._active = activeId > 0 ? h.id == activeId : index == 0;
                     if(h._active) activeIndex = index
                     return h;
                 })
@@ -480,7 +480,7 @@ export default {
                     this.initiatedList?.map((res)=>{ if(res._active)  activeId = res.id  })
                 }
                 this.initiatedList = data.rows.map((h,index)=>{
-                    h._active = activeId > 0 ? h.id == activeId : index == 0; 
+                    h._active = activeId > 0 ? h.id == activeId : index == 0;
                     if(h._active) activeIndex = index
                     return h;
                 })
@@ -535,7 +535,7 @@ export default {
                 if (valid) {
                     this.loadIng = 1;
                     var obj = JSON.parse(JSON.stringify(this.addData))
-                    
+
                     obj.startTime = obj.startTime +" "+ obj.startTimeHour + ":" + obj.startTimeMinute;
                     obj.endTime = obj.endTime +" "+ obj.endTimeHour + ":" + obj.endTimeMinute;
 
@@ -567,7 +567,7 @@ export default {
             });
         }
 
-        
+
     },
 }
 </script>

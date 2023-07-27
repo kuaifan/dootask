@@ -14,11 +14,6 @@
 </head>
 <body>
   <div id="layout">
-    <!-- 同意cookie弹框 -->
-    <div id="cookieConsent">
-      <p>为使我们的网站可以正常向您提供服务、提高安全性，并更高效地运作以给您带来更好的网站使用体验，我们将使用Cookie（包括第三方Cookie），以作为安全、技术、分析与营销之用。继续浏览本网站即表示您同意使用cookie。更多有关我们如何使用 Cookie的信息，请参阅我们的 <a href="../zh/privacy.html" id="cookie_a">《隐私政策》</a>。</p>
-      <button id="agreeButton" class="btn btn-primary" >同意</button>
-    </div>
     <!-- 页头区域 -->
     <header class="head">
       <div class="nav">
@@ -47,7 +42,7 @@
                   <a class="txt-4001418 txt-sub" href="../zh/help.html">帮助中心</a>
                 </li>
                 <li class="submenu-pop-item" onclick="changeMenu()">
-                  <a class="txt-4001418 txt-sub" href="../zh/privacy.html">隐私政策</a>
+                  <a class="txt-4001418 txt-sub" href="../zh/privacy.html" target="_blank">隐私政策</a>
                 </li>
                 <li class="submenu-pop-item" onclick="changeMenu()">
                   <a class="txt-4001418 txt-sub" href="../../docs/index.html" target="_blank">API 文档</a>
@@ -111,11 +106,11 @@
             <h4 class="txt-4001830 topics-h4 mb-32">DooTask是一款轻量级的开源在线项目任务管理工具，提供各类文档协作工具、在线思维导图、在线流程图、项目管理、任务分发、即时IM，文件管理等工具。助力团队高效推进项目，让工作更简单。</h4>
             <div class="flex-cc topics-btn">
               <span class="mr-24 get-started">
-                <a href="../zh/price.html" >
+                <a href="./price.html" >
                 <button class="btn btn-primary mr-20">开始使用</button>
                 </a>
               </span>
-              <a href="https://github.com/kuaifan/dootask/tree/pro" >
+              <a href="https://github.com/kuaifan/dootask/tree/pro" target="_blank" >
                 <button class="btn btn-default" >私有化部署</button>
               </a>
             </div>
@@ -157,7 +152,7 @@
               <a class="txt-4001620 txt" href="../zh/help.html">帮助中心</a>
             </li>
             <li class="drawer-item" onclick="changeMenu()">
-              <a class="txt-4001620 txt" href="../zh/privacy.html">隐私政策</a>
+              <a class="txt-4001620 txt" href="../zh/privacy.html" target="_blank">隐私政策</a>
             </li>
             <li class="drawer-item" onclick="changeMenu()">
               <a class="txt-4001620 txt" href="../../docs/index.html" target="_blank">API 文档</a>
@@ -486,7 +481,7 @@
                     <a class="txt-4001624 txt" href="../zh/help.html">帮助中心</a>
                   </li>
                   <li class="footer-ol-item mb-16">
-                    <a class="txt-4001624 txt" href="../zh/privacy.html">隐私政策</a>
+                    <a class="txt-4001624 txt" href="../zh/privacy.html" target="_blank">隐私政策</a>
                   </li>
                   <li class="footer-ol-item">
                     <a class="txt-4001624 txt" href="../../docs/index.html" target="_blank">API 文档</a>
@@ -526,27 +521,6 @@
 </body>
 <script src="../js/common.js"></script>
 <script>
-// cookie弹框
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("aaa");
-    let cookieConsent = document.getElementById('cookieConsent');
-    let agreeButton = document.getElementById('agreeButton');
-    // 检查localStorage中的同意状态
-    let hasConsented = sessionStorage.getItem('cookieConsent');
-    if (!hasConsented) {
-        cookieConsent.style.display = 'block';
-    }
-    agreeButton.addEventListener('click', handleAgreeButtonClick);
-    function hideCookieConsent() {
-        cookieConsent.style.display = 'none';
-    }
-
-    function handleAgreeButtonClick() {
-        // 存储同意状态到localStorage
-        sessionStorage.setItem('cookieConsent', 'true');
-        hideCookieConsent();
-    }
-});
 /* 功能卡片切换函数 */
 const tabs = document.querySelector('.card-ul');
 const funImg = document.querySelector('#home_pic2');
