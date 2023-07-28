@@ -941,8 +941,17 @@ export default {
         },
 
         onClickEditor() {
-            this.$store.state.messengerSearchKey = {dialog: '', contacts: ''}
+            this.clearSearchKey()
             this.updateEmojiQuick(this.value)
+        },
+
+        clearSearchKey() {
+            if (this.$parent.$options.name === 'DialogWrapper' && (this.$store.state.messengerSearchKey.dialog != '' || this.$store.state.messengerSearchKey.contacts != '')) {
+                setTimeout(_ => {
+                    this.$parent.onActive();
+                }, 10)
+            }
+            this.$store.state.messengerSearchKey = {dialog: '', contacts: ''}
         },
 
         focus() {
@@ -1005,7 +1014,7 @@ export default {
         onSend(type) {
             this.hidePopover('send')
             this.rangeIndex = 0
-            this.$store.state.messengerSearchKey = {dialog: '', contacts: ''}
+            this.clearSearchKey()
             if (type) {
                 this.$emit('on-send', null, type)
             } else {

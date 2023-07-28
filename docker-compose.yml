@@ -3,7 +3,7 @@ version: '3'
 services:
   php:
     container_name: "dootask-php-${APP_ID}"
-    image: "kuaifan/php:swoole-8.0.rc12"
+    image: "kuaifan/php:swoole-8.0.rc13"
     shm_size: "2gb"
     ulimits:
       core:
