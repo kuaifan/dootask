@@ -102,7 +102,7 @@
                             <Avatar :src="$A.apiUrl('../images/avatar/default_approval.png')" size="38"/>
                             <div class="approve-process-left">
                                 <p class="approve-process-name">{{$L('系统')}}</p>
-                                <p style="font-size: 12px;">{{$L('自动抄送')}}
+                                <p class="approve-process-desc">{{$L('自动抄送')}}
                                     <span style="color: #486fed;">
                                         {{ item.node_user_list?.map(h=>h.name).join(',') }} 
                                         {{$L('等'+item.node_user_list?.length+'人')}}
@@ -113,13 +113,13 @@
                     </TimelineItem>
 
                     <!-- 结束 -->
-                    <TimelineItem :key="key" :color="item.is_finished ? 'green' : '#ccc'" v-if="item.aprover_type == 'end'">
+                    <TimelineItem class="finish" :key="key" :color="item.is_finished ? 'green' : '#ccc'" v-if="item.aprover_type == 'end'">
                         <p class="timeline-title">{{$L('结束')}}</p>
                         <div class="timeline-body">
                             <Avatar :src="$A.apiUrl('../images/avatar/default_approval.png')" size="38"/>
                             <div class="approve-process-left">
                                 <p class="approve-process-name">{{$L('系统')}}</p>
-                                <p style="font-size: 12px;"> {{  datas.is_finished ? $L('已结束') : $L('未结束')  }}</p>
+                                <p class="approve-process-desc"> {{  datas.is_finished ? $L('已结束') : $L('未结束')  }}</p>
                             </div>
                         </div>
                     </TimelineItem>
@@ -140,7 +140,7 @@
                                         <p>{{item.nickname}}</p>
                                         <p class="time">{{item.created_at}}</p>
                                     </div>
-                                    <span>{{ getTimeAgo(item.created_at ,2) }}</span>
+                                    <span>{{ getTimeAgo(item.created_at) }}</span>
                                 </div>
                                 <div class="content">
                                     {{ getContent(item.content) }}
