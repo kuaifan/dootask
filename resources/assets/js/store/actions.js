@@ -3442,13 +3442,18 @@ export default {
      * @param dispatch
      * @param link_id
      */
-    openOkr({state, dispatch}, link_id) {
+    openOkr({state}, link_id) {
         if (link_id > 0) {
             state.okrWindow = {
                 type: 'okrDetails',
                 show: true,
                 id: link_id
             };
+            setTimeout(()=>{
+                state.okrWindow.show = false;
+                state.okrWindow.id = 0;
+            },10)
         }
+
     },
 }
