@@ -747,8 +747,7 @@ class UsersController extends AbstractController
             $builder->whereNull('disable_at');
             $builder->where('bot', 0);
         }
-        $builder = $keys['department'] == '0' ? $builder->orderByDesc('userid') : $builder;
-        $list = $builder->paginate(Base::getPaginate(50, 20));
+        $list = $builder->orderByDesc('userid')->paginate(Base::getPaginate(50, 20));
         //
         if ($getCheckinMac) {
             $list->transform(function (User $user) use ($getCheckinMac) {

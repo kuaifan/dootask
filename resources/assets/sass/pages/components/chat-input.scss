@@ -128,6 +128,12 @@
             min-width: calc(100% - 170px);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
 
+            &.ql-bubble:not(.ql-disabled) {
+                a {
+                    white-space: normal;
+                }
+            }
+
             .ql-editor {
                 font-size: 14px;
                 max-height: 200px;

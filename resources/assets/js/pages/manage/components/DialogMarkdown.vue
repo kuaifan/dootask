@@ -32,7 +32,10 @@ export default {
     },
 
     computed: {
-        html() {
+        html({text}) {
+            if (text === '...') {
+                return '<p class="input-blink">&nbsp;</p>'
+            }
             if (this.mdi === null) {
                 const {highlightBlock} = this
                 this.mdi = new MarkdownIt({
@@ -49,7 +52,7 @@ export default {
                 this.mdi.use(mila, {attrs: {target: '_blank', rel: 'noopener'}})
                 this.mdi.use(mdKatex, {blockClass: 'katexmath-block rounded-md p-[10px]', errorColor: ' #cc0000'})
             }
-            return this.formatMsg(this.mdi.render(this.text))
+            return this.formatMsg(this.mdi.render(text))
         }
     },
 
