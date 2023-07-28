@@ -1218,6 +1218,7 @@
                 @media screen {
                     html {
                         ${this.utils.defaultFilter()}
+                        transform: translateZ(0);
                     }
 
                     /* Default Reverse rule */

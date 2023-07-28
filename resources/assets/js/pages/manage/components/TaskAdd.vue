@@ -323,7 +323,7 @@ export default {
             this.addData.assist = this.addData.assist.filter(item => {
                 return owner.indexOf(item) === -1;
             })
-            if (owner.length === 0 && this.addData.assist.length === 0) {
+            if (this.addData.assist.length === 0 && owner.indexOf(this.userId) === -1) {
                 this.addData.assist = [this.userId];
             }
         },

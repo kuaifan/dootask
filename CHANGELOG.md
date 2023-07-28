@@ -2,7 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.28.88]
+## [0.29.11]
+
+### Bug Fixes
+
+- 修复用户列表默认排序
+- 1.  审批通知模版 - 按钮白色修复 2.  审批详情样式相等 3.  审批评论 - 0分钟换成刚刚 4.  没有加入部门也能发起 审批申请  5.  审批流程设置页 - 样式调整
+
+### Performance
+
+- 管理员可以修改系统机器人基本资料
+- 优化深色模式
+- 添加ChatGPT、Claude智能机器人
+- 机器人群聊消息被@到时发送到webhook
+
+## [0.28.91]
 
 ### Bug Fixes
 
