@@ -1153,11 +1153,13 @@
                 },
 
                 defaultFilter() {
-                    return '-webkit-filter: invert(0.92) hue-rotate(180deg) !important; filter: invert(0.92) hue-rotate(180deg) !important;';
+                    return '-webkit-filter: invert(100%) hue-rotate(180deg) contrast(90%) !important; ' +
+                        'filter: invert(100%) hue-rotate(180deg) contrast(90%) !important;';
                 },
 
                 reverseFilter() {
-                    return '-webkit-filter: invert(0.92) hue-rotate(180deg) !important; filter: invert(0.92) hue-rotate(180deg) !important;';
+                    return '-webkit-filter: invert(100%) hue-rotate(180deg) contrast(110%) !important; ' +
+                        'filter: invert(100%) hue-rotate(180deg) contrast(110%) !important;';
                 },
 
                 noneFilter() {
@@ -1209,17 +1211,6 @@
                     let ele = document.getElementById(eleId);
                     ele && ele.parentNode.removeChild(ele);
                 },
-            },
-
-            createDarkFilter() {
-                if (this.utils.hasElementById('dark-mode-svg')) return;
-                let svgDom = '<svg id="dark-mode-svg" style="height: 0; width: 0;"><filter id="dark-mode-filter" x="0" y="0" width="99999" height="99999"><feColorMatrix type="matrix" values="0.283 -0.567 -0.567 0.000 0.925 -0.567 0.283 -0.567 0.000 0.925 -0.567 -0.567 0.283 0.000 0.925 0.000 0.000 0.000 1.000 0.000"></feColorMatrix></filter><filter id="dark-mode-reverse-filter" x="0" y="0" width="99999" height="99999"><feColorMatrix type="matrix" values="0.333 -0.667 -0.667 0.000 1.000 -0.667 0.333 -0.667 0.000 1.000 -0.667 -0.667 0.333 0.000 1.000 0.000 0.000 0.000 1.000 0.000"></feColorMatrix></filter></svg>';
-                let div = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
-                div.innerHTML = svgDom;
-                let frag = document.createDocumentFragment();
-                while (div.firstChild)
-                    frag.appendChild(div.firstChild);
-                document.head.appendChild(frag);
             },
 
             createDarkStyle() {
@@ -1302,7 +1293,6 @@
                 if (this.isDarkEnabled()) {
                     return
                 }
-                this.createDarkFilter();
                 this.createDarkStyle();
                 this.utils.addClass(document.body, "dark-mode-reverse")
             },
@@ -1311,7 +1301,6 @@
                 if (!this.isDarkEnabled()) {
                     return
                 }
-                this.utils.removeElementById('dark-mode-svg');
                 this.utils.removeElementById('dark-mode-style');
                 this.utils.removeClass(document.body, "dark-mode-reverse")
             },

@@ -612,7 +612,7 @@ export default {
             operateItem: {},
 
             recordState: '',
-            wrapperStart: {},
+            wrapperStart: null,
 
             scrollOffset: 0,
             scrollTail: 0,
@@ -1585,15 +1585,32 @@ export default {
         },
 
         onTouchStart(e) {
-            this.wrapperStart = Object.assign(this.scrollInfo(), {
-                clientY: e.touches[0].clientY,
-                exclud: !this.$refs.scroller.$el.contains(e.target),
-            });
+            this.wrapperStart = null;
+            if (this.$refs.scroller.$el.contains(e.target)) {
+                // 聊天内容区域
+                this.wrapperStart = Object.assign(this.scrollInfo(), {
+                    clientY: e.touches[0].clientY,
+                });
+            } else if (this.$refs.input.$refs.editor.contains(e.target)) {
+                // 输入内容区域
+                const editor = this.$refs.input.$refs.editor.querySelector(".ql-editor");
+                if (editor) {
+                    const clientSize = editor.clientHeight;
+                    const offset = editor.scrollTop;
+                    const scrollSize = editor.scrollHeight;
+                    this.wrapperStart = {
+                        offset, // 滚动的距离
+                        scale: offset / (scrollSize - clientSize), // 已滚动比例
+                        tail: scrollSize - clientSize - offset, // 与底部距离
+                        clientY: e.touches[0].clientY,
+                    }
+                }
+            }
         },
 
         onTouchMove(e) {
-            if (this.windowPortrait && this.windowScrollY > 0) {
-                if (this.wrapperStart.exclud) {
+            if (this.footerPaddingBottom > 0 || (this.windowPortrait && this.windowScrollY > 0)) {
+                if (this.wrapperStart === null) {
                     e.preventDefault();
                     return;
                 }
