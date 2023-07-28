@@ -88,6 +88,11 @@
             if (!$A.isEEUiApp) return;
             return requireModuleJs("eeui").getThemeName();
         },
+
+        eeuiAppKeyboardStatus() {
+            if (!$A.isEEUiApp) return;
+            return requireModuleJs("eeui").keyboardStatus();
+        },
     });
 
     window.$A = $;

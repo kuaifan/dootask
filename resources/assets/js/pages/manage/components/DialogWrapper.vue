@@ -1117,7 +1117,7 @@ export default {
                 this.allMsgs = newList;
             }
             //
-            if (!this.windowActive || (tail > 45 && oldList.length > 0)) {
+            if (!this.windowActive || (tail > 55 && oldList.length > 0)) {
                 const lastId = oldList[oldList.length - 1] ? oldList[oldList.length - 1].id : 0
                 const tmpList = newList.filter(item => item.id && item.id > lastId)
                 this.msgNew += tmpList.length
@@ -1134,7 +1134,7 @@ export default {
                 this.navStyle = {
                     marginTop: val + 'px'
                 }
-                if (tail <= 45) {
+                if (tail <= 55) {
                     requestAnimationFrame(this.onToBottom)
                 }
                 if (this.$refs.input.isFocus) {
@@ -1148,6 +1148,18 @@ export default {
                 const lastDialog = $A.last(this.dialogIns)
                 if (lastDialog && lastDialog.uid === this._uid) {
                     this.inputFocus()
+                }
+            }
+        },
+
+        windowHeight(current, before) {
+            if (current < before
+                && $A.isEEUiApp
+                && $A.isAndroid()
+                && this.$refs.input.isFocus) {
+                const {tail} = this.scrollInfo();
+                if (tail <= 55 + (before - current)) {
+                    requestAnimationFrame(this.onToBottom)
                 }
             }
         },
@@ -1167,7 +1179,7 @@ export default {
         footerPaddingBottom(val) {
             if (val) {
                 const {tail} = this.scrollInfo();
-                if (tail <= 45) {
+                if (tail <= 55) {
                     requestAnimationFrame(this.onToBottom)
                 }
             }
@@ -1366,7 +1378,7 @@ export default {
                 } else if (data.type === 'replace') {
                     item.msg.text = data.text
                 }
-                if (tail <= 45) {
+                if (tail <= 55) {
                     this.onToBottom()
                 }
             }
@@ -2159,7 +2171,7 @@ export default {
             const {offset, tail} = this.scrollInfo();
             this.scrollOffset = offset;
             this.scrollTail = tail;
-            if (this.scrollTail <= 45) {
+            if (this.scrollTail <= 55) {
                 this.msgNew = 0;
             }
             //
@@ -2364,7 +2376,7 @@ export default {
             const {tail} = this.scrollInfo()
             this.setQuote(this.operateItem.id, type)
             this.inputFocus()
-            if (tail <= 45) {
+            if (tail <= 55) {
                 requestAnimationFrame(this.onToBottom)
             }
         },
