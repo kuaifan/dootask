@@ -25,6 +25,7 @@ class WebSocketDialogMsgTask extends AbstractTask
     protected $ignoreFd;
     protected $msgNotExistRetry = false;    // 推送失败后重试
     protected $silence = false;             // 静默推送（前端不通知、App不推送，如果会话设置了免打扰则强制静默）
+    protected $client = [];                 // 客户端信息（版本、语言、平台）
     protected $endPush = [];
     protected $endArray = [];
 
@@ -38,6 +39,11 @@ class WebSocketDialogMsgTask extends AbstractTask
         parent::__construct(...func_get_args());
         $this->id = $id;
         $this->ignoreFd = $ignoreFd === null ? Request::header('fd') : $ignoreFd;
+        $this->client = [
+            'version' => Base::headerOrInput('version'),
+            'language' => Base::headerOrInput('language'),
+            'platform' => Base::headerOrInput('platform'),
+        ];
     }
 
     /**
@@ -144,7 +150,7 @@ class WebSocketDialogMsgTask extends AbstractTask
                 // 机器人收到消处理
                 $botUser = User::whereUserid($userid)->whereBot(1)->first();
                 if ($botUser) {
-                    $this->endArray[] = new BotReceiveMsgTask($botUser->userid, $msg->id, $mention);
+                    $this->endArray[] = new BotReceiveMsgTask($botUser->userid, $msg->id, $mention, $this->client);
                 }
             }
         }

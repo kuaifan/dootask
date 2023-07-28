@@ -24,13 +24,15 @@ class BotReceiveMsgTask extends AbstractTask
     protected $userid;
     protected $msgId;
     protected $mention;
+    protected $client = [];
 
-    public function __construct($userid, $msgId, $mention)
+    public function __construct($userid, $msgId, $mention, $client = [])
     {
         parent::__construct(...func_get_args());
         $this->userid = $userid;
         $this->msgId = $msgId;
         $this->mention = $mention;
+        $this->client = is_array($client) ? $client : [];
     }
 
     public function start()
@@ -364,6 +366,7 @@ class BotReceiveMsgTask extends AbstractTask
         $serverUrl = 'http://' . env('APP_IPPR') . '.3';
         $userBot = null;
         $extras = [];
+        $error = null;
         switch ($botUser->email) {
             // ChatGPT 机器人
             case 'ai-openai@bot.system':
@@ -375,8 +378,10 @@ class BotReceiveMsgTask extends AbstractTask
                     'server_url' => $serverUrl,
                 ];
                 if (empty($extras['openai_key'])) {
-                    WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => 'Robot disabled'], $botUser->userid, false, false, true); // todo 未能在任务end事件来发送任务
-                    return;
+                    $error = 'Robot disabled.';
+                } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
+                    && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
+                    $error = 'The client version is low (required version ≥ v0.29.11).';
                 }
                 break;
             // Claude 机器人
@@ -389,8 +394,10 @@ class BotReceiveMsgTask extends AbstractTask
                     'server_url' => $serverUrl,
                 ];
                 if (empty($extras['claude_token'])) {
-                    WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => 'Robot disabled'], $botUser->userid, false, false, true); // todo 未能在任务end事件来发送任务
-                    return;
+                    $error = 'Robot disabled.';
+                } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
+                    && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
+                    $error = 'The client version is low (required version ≥ v0.29.11).';
                 }
                 break;
             // 其他机器人
@@ -398,6 +405,10 @@ class BotReceiveMsgTask extends AbstractTask
                 $userBot = UserBot::whereBotId($botUser->userid)->first();
                 $webhookUrl = $userBot?->webhook_url;
                 break;
+        }
+        if ($error) {
+            WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $error], $botUser->userid, false, false, true); // todo 未能在任务end事件来发送任务
+            return;
         }
         if (!preg_match("/^https*:\/\//", $webhookUrl)) {
             return;
