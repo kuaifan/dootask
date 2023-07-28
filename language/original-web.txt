@@ -1264,3 +1264,16 @@ Markdown 格式发送
 任务默认时间
 请选择默认时间
 添加任务计划时间默认时分。
+
+导出审批数据
+审批类型
+导出类型
+未完成
+AI机器人
+任务相关
+请填写名称！
+访问OpenAI网站查看：
+使用代理
+支持 http 或 socks 代理
+例如：http://proxy.com 或 socks5://proxy.com
+查看 Cookie 中的 sessionKey 便是

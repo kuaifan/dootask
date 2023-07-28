@@ -17026,5 +17026,148 @@
         "de": "Festlegung der zielzeit standard-zeit hinzufügen",
         "fr": "Ajouter le temps de planification des tâches par défaut.",
         "id": "Tambahkan waktu perencanaan tugas ke default."
+    },
+    {
+        "key": "无法发起会话，请联系管理员。",
+        "zh": "",
+        "zh-CHT": "無法發起會話，請聯繫管理員。",
+        "en": "Unable to initiate a session. Please contact the administrator.",
+        "ko": "세션을 시작할 수 없습니다. 관리자에게 문의하십시오.",
+        "ja": "セッションが開始できませんので、管理人に連絡してください。",
+        "de": "Die sitzung kann nicht gestartet werden. Bitte sprechen sie mit dem systemadministrator",
+        "fr": "Impossible d’initier la session. Veuillez contacter l’administrateur.",
+        "id": "Tak dapat memulai sesi, hubungi administrator."
+    },
+    {
+        "key": "未完成",
+        "zh": "",
+        "zh-CHT": "未完成",
+        "en": "Uncompleted",
+        "ko": "완료하지 않음",
+        "ja": "未完成です",
+        "de": "Noch nicht ganz perfekt.",
+        "fr": "Non terminé non terminé",
+        "id": "Tidak lengkap"
+    },
+    {
+        "key": "导出审批数据",
+        "zh": "",
+        "zh-CHT": "導出審批數據",
+        "en": "Export approval data",
+        "ko": "승인 데이터 내보내기",
+        "ja": "決裁データを導き出します",
+        "de": "Exportiert die lizenzdaten",
+        "fr": "Exportation des données d’approbation",
+        "id": "Mengirimkan data persetujuan"
+    },
+    {
+        "key": "审批类型",
+        "zh": "",
+        "zh-CHT": "審批類型",
+        "en": "Approval type",
+        "ko": "승인 형식",
+        "ja": "承認タイプです",
+        "de": "Art des LKW?",
+        "fr": "Type d’agrément",
+        "id": "Tipe persetujuan"
+    },
+    {
+        "key": "导出类型",
+        "zh": "",
+        "zh-CHT": "導出類型",
+        "en": "Derived type",
+        "ko": "형식 내보내기",
+        "ja": "導出型です",
+        "de": "Art des exportieren",
+        "fr": "Types d’export",
+        "id": "Tipe ekspor"
+    },
+    {
+        "key": "AI机器人",
+        "zh": "",
+        "zh-CHT": "AI機器人",
+        "en": "AI robot",
+        "ko": "Ai 로봇",
+        "ja": "AIロボットです",
+        "de": "AI roboter",
+        "fr": "Le robot AI",
+        "id": "Robot al"
+    },
+    {
+        "key": "任务相关",
+        "zh": "",
+        "zh-CHT": "任務相關",
+        "en": "Task correlation",
+        "ko": "작업 관련",
+        "ja": "任務関連です",
+        "de": "Es ist eine relevante aufgabe.",
+        "fr": "Lié à la tâche",
+        "id": "Tugas terkait"
+    },
+    {
+        "key": "请填写名称！",
+        "zh": "",
+        "zh-CHT": "請填寫名稱！",
+        "en": "Please fill in the name!",
+        "ko": "이름을 기입해 주세요!",
+        "ja": "名称をお願いします!",
+        "de": "Bitte geben sie einen namen ein!",
+        "fr": "Veuillez remplir le nom!",
+        "id": "Nama, silakan!"
+    },
+    {
+        "key": "访问OpenAI网站查看：",
+        "zh": "",
+        "zh-CHT": "訪問OpenAI網站查看：",
+        "en": "Visit the OpenAI website to see:",
+        "ko": "Openai 사이트를 방문하십시오:",
+        "ja": "OpenAIのウェブサイトをご覧ください。",
+        "de": "Besuch der website OpenAI:",
+        "fr": "Visitez le site OpenAI pour voir:",
+        "id": "Kunjungi tampilan situs OpenAI:"
+    },
+    {
+        "key": "使用代理",
+        "zh": "",
+        "zh-CHT": "使用代理",
+        "en": "Use agent",
+        "ko": "에이전트 사용하기",
+        "ja": "エージェントを使います",
+        "de": "Verwendung eines agenten",
+        "fr": "Utiliser un proxy",
+        "id": "Gunakan agen"
+    },
+    {
+        "key": "支持 http 或 socks 代理",
+        "zh": "",
+        "zh-CHT": "支持 http 或 socks 代理",
+        "en": "Supports http or socks proxy",
+        "ko": "Http 또는 socks 프록시를 지원한다",
+        "ja": "Httpやsocksエージェントをサポートしています",
+        "de": "Kauft die vertreter vom typ HTTP Oder würmchen",
+        "fr": "Support du proxy HTTP ou socks",
+        "id": "Yang mendukung HTTP atau agen socks"
+    },
+    {
+        "key": "例如：http:\/\/proxy.com 或 socks5:\/\/proxy.com",
+        "zh": "",
+        "zh-CHT": "例如：http:\/\/proxy.com 或 socks5:\/\/proxy.com",
+        "en": "For example, http:\/\/proxy.com or socks5:\/\/proxy.com",
+        "ko": "례를 들면 http:\/\/proxy.com 혹은 socks5\/\/proxy.com이다",
+        "ja": "<s:1>またはsocks5:\/\/proxy.comです",
+        "de": "Ein beispiel: http:\/\/proxyproxy.com, Oder socks5.com proxy.com",
+        "fr": "Par exemple: http:\/\/proxy.com ou socks5:\/\/proxy.com",
+        "id": "Sebagai contoh: http:\/\/proxycom. Atau socks5:\/proxycom"
+    },
+    {
+        "key": "查看 Cookie 中的 sessionKey 便是",
+        "zh": "",
+        "zh-CHT": "查看 Cookie 中的 sessionKey 便是",
+        "en": "Look at the sessionKey in the Cookie",
+        "ko": "쿠키의 sessionkey를 볼 수 있습니다",
+        "ja": "クッキーのsessionKeyを見るのです",
+        "de": "Ja, guck dir ein date in cookies arsch an",
+        "fr": "Voir la sessionKey dans les cookies est",
+        "id": "Periksa kunci sesi pada Cookie"
     }
 ]

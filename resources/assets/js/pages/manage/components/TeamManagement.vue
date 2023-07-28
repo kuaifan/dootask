@@ -360,7 +360,7 @@ export default {
                                 props: {
                                     color: 'orange'
                                 }
-                            }, this.$L('LDAP')))
+                            }, 'LDAP'))
                         }
                         if (identity.includes("admin")) {
                             arr.push(h('Tag', {
