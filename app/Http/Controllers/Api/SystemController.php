@@ -231,7 +231,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/setting/aibot          03. 获取会议设置、保存AI机器人设置（限管理员）
+     * @api {get} api/system/setting/aibot          04. 获取会议设置、保存AI机器人设置（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -297,7 +297,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/setting/checkin          04. 获取签到设置、保存签到设置（限管理员）
+     * @api {get} api/system/setting/checkin          05. 获取签到设置、保存签到设置（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -360,7 +360,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/setting/apppush          05. 获取APP推送设置、保存APP推送设置（限管理员）
+     * @api {get} api/system/setting/apppush          06. 获取APP推送设置、保存APP推送设置（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -405,7 +405,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/setting/thirdaccess          06. 第三方帐号（限管理员）
+     * @api {get} api/system/setting/thirdaccess          07. 第三方帐号（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -475,7 +475,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/demo          07. 获取演示帐号
+     * @api {get} api/system/demo          08. 获取演示帐号
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -499,7 +499,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/priority          08. 任务优先级
+     * @api {post} api/system/priority          09. 任务优先级
      *
      * @apiDescription 获取任务优先级、保存任务优先级
      * @apiVersion 1.0.0
@@ -548,7 +548,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/column/template          09. 创建项目模板
+     * @api {post} api/system/column/template          10. 创建项目模板
      *
      * @apiDescription 获取创建项目模板、保存创建项目模板
      * @apiVersion 1.0.0
@@ -595,7 +595,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/license          10. License
+     * @api {post} api/system/license          11. License
      *
      * @apiDescription 获取License信息、保存License（限管理员）
      * @apiVersion 1.0.0
@@ -658,7 +658,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/info          11. 获取终端详细信息
+     * @api {get} api/system/get/info          12. 获取终端详细信息
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -687,7 +687,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/ip          12. 获取IP地址
+     * @api {get} api/system/get/ip          13. 获取IP地址
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -702,7 +702,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/cnip          13. 是否中国IP地址
+     * @api {get} api/system/get/cnip          14. 是否中国IP地址
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -719,7 +719,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/ipgcj02          14. 获取IP地址经纬度
+     * @api {get} api/system/get/ipgcj02          15. 获取IP地址经纬度
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -736,7 +736,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/ipinfo          15. 获取IP地址详细信息
+     * @api {get} api/system/get/ipinfo          16. 获取IP地址详细信息
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -753,7 +753,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/imgupload          16. 上传图片
+     * @api {post} api/system/imgupload          17. 上传图片
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -813,7 +813,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/imgview          17. 浏览图片空间
+     * @api {get} api/system/get/imgview          18. 浏览图片空间
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -910,7 +910,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/fileupload          18. 上传文件
+     * @api {post} api/system/fileupload          19. 上传文件
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -952,7 +952,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/updatelog          19. 获取更新日志
+     * @api {get} api/system/get/updatelog          20. 获取更新日志
      *
      * @apiDescription 获取更新日志
      * @apiVersion 1.0.0
@@ -981,7 +981,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/email/check          20. 邮件发送测试（限管理员）
+     * @api {get} api/system/email/check          21. 邮件发送测试（限管理员）
      *
      * @apiDescription 测试配置邮箱是否能发送邮件
      * @apiVersion 1.0.0
@@ -1027,7 +1027,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/checkin/export          21. 导出签到数据（限管理员）
+     * @api {get} api/system/checkin/export          22. 导出签到数据（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -1194,7 +1194,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/checkin/down          22. 下载导出的签到数据
+     * @api {get} api/system/checkin/down          23. 下载导出的签到数据
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -1220,7 +1220,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/version          23. 获取版本号
+     * @api {get} api/system/version          24. 获取版本号
      *
      * @apiVersion 1.0.0
      * @apiGroup system
