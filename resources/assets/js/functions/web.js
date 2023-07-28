@@ -1277,6 +1277,9 @@
                     .child-view {
                         background-color: #fff;
                     }
+                    .page-login {
+                        background-color: #f8f8f8;
+                    }
                     ${this.utils.addExtraStyle()}
                 }
 

@@ -1,7 +1,7 @@
 import {Store} from 'le5le-store';
 import * as openpgp from 'openpgp_hi/lightweight';
 import {languageType} from "../language";
-import {$callData, $urlSafe} from './utils'
+import {$callData, $urlSafe, SSEClient} from './utils'
 
 export default {
     /**
@@ -2850,27 +2850,36 @@ export default {
      * @param streamUrl
      */
     streamDialogMsg({state, dispatch}, streamUrl) {
-        const sse = new EventSource(streamUrl)
-        sse.addEventListener("append", e => {
-            Store.set('dialogMsgChange', {
-                id: e.lastEventId,
-                type: 'append',
-                text: e.data
-            });
-        })
-        sse.addEventListener("replace", e => {
-            Store.set('dialogMsgChange', {
-                id: e.lastEventId,
-                type: 'replace',
-                text: e.data
-            });
-        })
-        sse.addEventListener("done", _ => {
-            const index = state.dialogSseList.findIndex(item => sse === item.sse)
-            if (index > -1) {
-                state.dialogSseList.splice(index, 1)
+        if (!/^https*:\/\//i.test(streamUrl)) {
+            streamUrl = $A.apiUrl(`..${streamUrl}`)
+        }
+        const sse = new SSEClient(streamUrl)
+        sse.subscribe(['append', 'replace', 'done'], (type, e) => {
+            switch (type) {
+                case 'append':
+                    Store.set('dialogMsgChange', {
+                        id: e.lastEventId,
+                        type: 'append',
+                        text: e.data
+                    });
+                    break;
+
+                case 'replace':
+                    Store.set('dialogMsgChange', {
+                        id: e.lastEventId,
+                        type: 'replace',
+                        text: e.data
+                    });
+                    break;
+
+                case 'done':
+                    const index = state.dialogSseList.findIndex(item => sse === item.sse)
+                    if (index > -1) {
+                        state.dialogSseList.splice(index, 1)
+                    }
+                    sse.unsunscribe()
+                    break;
             }
-            sse.close()
         })
         state.dialogSseList.push({sse, time: $A.Time()})
         if (state.dialogSseList.length > 10) {

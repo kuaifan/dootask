@@ -84,3 +84,88 @@ export function $urlSafe(value, encode = true) {
     }
     return value
 }
+
+const SSEDefaultOptions = {
+    retry: 5,
+    interval: 3 * 1000,
+};
+
+/**
+ * EventSource
+ */
+export class SSEClient {
+    constructor(url, options = SSEDefaultOptions) {
+        this.url = url;
+        this.es = null;
+        this.options = options;
+        this.retry = options.retry;
+        this.timer = null;
+    }
+
+    _onOpen() {
+        if (window.systemInfo.debug === "yes") {
+            console.log("SSE open: " + this.url);
+        }
+    }
+
+    _onMessage(type, handler) {
+        return (event) => {
+            this.retry = this.options.retry;
+            if (typeof handler === "function") {
+                handler(type, event);
+            }
+        };
+    }
+
+    _onError(type, handler) {
+        return () => {
+            if (window.systemInfo.debug === "yes") {
+                console.log("SSE retry: " + this.url);
+            }
+            if (this.es) {
+                this._removeAllEvent(type, handler);
+                this.unsunscribe();
+            }
+
+            if (this.retry > 0) {
+                this.timer = setTimeout(() => {
+                    this.subscribe(type, handler);
+                }, this.options.interval);
+            } else {
+                this.retry--;
+            }
+        };
+    }
+
+    _removeAllEvent(type, handler) {
+        type = $A.isArray(type) ? type : [type]
+        this.es.removeEventListener("open", this._onOpen);
+        type.some(item => {
+            this.es.removeEventListener(item, this._onMessage(item, handler));
+        })
+        this.es.removeEventListener("error", this._onError(type, handler));
+    }
+
+    subscribe(type, handler) {
+        type = $A.isArray(type) ? type : [type]
+        this.es = new EventSource(this.url);
+        this.es.addEventListener("open", this._onOpen);
+        type.some(item => {
+            this.es.addEventListener(item, this._onMessage(item, handler));
+        })
+        this.es.addEventListener("error", this._onError(type, handler));
+    }
+
+    unsunscribe() {
+        if (this.es) {
+            this.es.close();
+            this.es = null;
+        }
+        if (this.timer) {
+            clearTimeout(this.timer);
+        }
+        if (window.systemInfo.debug === "yes") {
+            console.log("SSE cancel: " + this.url);
+        }
+    }
+}
