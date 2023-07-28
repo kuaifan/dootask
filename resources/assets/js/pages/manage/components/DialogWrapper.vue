@@ -78,7 +78,7 @@
                                 <div>{{$L('搜索消息')}}</div>
                             </EDropdownItem>
                             <template v-if="dialogData.type === 'user'">
-                                <EDropdownItem v-if="dialogData.bot == userId" command="modifyNormal">
+                                <EDropdownItem v-if="isManageBot" command="modifyNormal">
                                     <div>{{$L('修改资料')}}</div>
                                 </EDropdownItem>
                                 <EDropdownItem command="openCreate">
@@ -356,20 +356,23 @@
             :title="$L('修改资料')"
             :mask-closable="false">
             <Form :model="modifyData" label-width="auto" @submit.native.prevent>
+                <Alert v-if="modifyData.system_name" type="error" style="margin-bottom:18px">{{$L(`正在修改系统机器人：${modifyData.system_name}`)}}</Alert>
                 <FormItem prop="avatar" :label="$L('头像')">
                     <ImgUpload v-model="modifyData.avatar" :num="1" :width="512" :height="512" :whcut="1"/>
                 </FormItem>
                 <FormItem v-if="typeof modifyData.name !== 'undefined'" prop="name" :label="$L('名称')">
                     <Input v-model="modifyData.name" :maxlength="20" />
                 </FormItem>
-                <FormItem v-if="typeof modifyData.clear_day !== 'undefined'" prop="clear_day" :label="$L('消息保留')">
-                    <Input v-model="modifyData.clear_day" :maxlength="3" type="number">
-                        <div slot="append">{{$L('天')}}</div>
-                    </Input>
-                </FormItem>
-                <FormItem v-if="typeof modifyData.webhook_url !== 'undefined'" prop="webhook_url" label="Webhook">
-                    <Input v-model="modifyData.webhook_url" :maxlength="255" />
-                </FormItem>
+                <template v-if="dialogData.bot == userId">
+                    <FormItem v-if="typeof modifyData.clear_day !== 'undefined'" prop="clear_day" :label="$L('消息保留')">
+                        <Input v-model="modifyData.clear_day" :maxlength="3" type="number">
+                            <div slot="append">{{$L('天')}}</div>
+                        </Input>
+                    </FormItem>
+                    <FormItem v-if="typeof modifyData.webhook_url !== 'undefined'" prop="webhook_url" label="Webhook">
+                        <Input v-model="modifyData.webhook_url" :maxlength="255" />
+                    </FormItem>
+                </template>
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="modifyShow=false">{{$L('取消')}}</Button>
@@ -887,6 +890,17 @@ export default {
         isMyDialog() {
             const {dialogData, userId} = this;
             return dialogData.dialog_user && dialogData.dialog_user.userid == userId
+        },
+
+        isManageBot() {
+            const {dialogData, userId, userIsAdmin} = this;
+            if (!dialogData.bot) {
+                return false
+            }
+            if (dialogData.bot == userId) {
+                return true
+            }
+            return dialogData.dialog_user && dialogData.dialog_user.userid == dialogData.bot && userIsAdmin
         },
 
         isMute() {
@@ -1917,6 +1931,7 @@ export default {
                             avatar: this.cacheUserBasic.find(item => item.userid === this.dialogData.dialog_user.userid)?.userimg,
                             clear_day: 0,
                             webhook_url: '',
+                            system_name: '',
                         })
                         this.modifyLoad++;
                         this.$store.dispatch("call", {
@@ -1927,6 +1942,7 @@ export default {
                         }).then(({data}) => {
                             this.modifyData.clear_day = data.clear_day
                             this.modifyData.webhook_url = data.webhook_url
+                            this.modifyData.system_name = data.system_name
                         }).finally(() => {
                             this.modifyLoad--;
                         })

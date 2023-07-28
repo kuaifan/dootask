@@ -607,32 +607,7 @@ class User extends AbstractModel
                 ])->save();
             }
             //
-            switch ($key) {
-                case 'system-msg':
-                    $update['nickname'] = '系统消息';
-                    break;
-                case 'task-alert':
-                    $update['nickname'] = '任务提醒';
-                    break;
-                case 'check-in':
-                    $update['nickname'] = '签到打卡';
-                    break;
-                case 'anon-msg':
-                    $update['nickname'] = '匿名消息';
-                    break;
-                case 'approval-alert':
-                    $update['nickname'] = '审批';
-                    break;
-                case 'ai-openai':
-                    $update['nickname'] = 'ChatGPT';
-                    break;
-                case 'ai-claude':
-                    $update['nickname'] = 'Claude';
-                    break;
-                case 'bot-manager':
-                    $update['nickname'] = '机器人管理';
-                    break;
-            }
+            $update['nickname'] = UserBot::systemBotName($email);
         }
         if ($update) {
             $botUser->updateInstance($update);

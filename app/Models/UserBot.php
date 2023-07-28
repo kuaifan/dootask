@@ -37,6 +37,29 @@ class UserBot extends AbstractModel
 {
 
     /**
+     * 系统机器人名称
+     * @param $name string 邮箱 或 邮箱前缀
+     * @return string
+     */
+    public static function systemBotName($name)
+    {
+        if (str_contains($name, "@")) {
+            $name = explode("@", $name)[0];
+        }
+        return match ($name) {
+            'system-msg' => '系统消息',
+            'task-alert' => '任务提醒',
+            'check-in' => '签到打卡',
+            'anon-msg' => '匿名消息',
+            'approval-alert' => '审批',
+            'ai-openai' => 'ChatGPT',
+            'ai-claude' => 'Claude',
+            'bot-manager' => '机器人管理',
+            default => '',  // 不是系统机器人时返回空（也可以拿来判断是否是系统机器人）
+        };
+    }
+
+    /**
      * 机器人菜单
      * @param $email
      * @return array|array[]

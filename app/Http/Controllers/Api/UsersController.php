@@ -1720,21 +1720,36 @@ class UsersController extends AbstractController
         }
         $userBot = UserBot::whereBotId($botUser->userid)->whereUserid($user->userid)->first();
         if (empty($userBot)) {
-            return Base::retError('不是你的机器人');
+            if (UserBot::systemBotName($botUser->email)) {
+                // 系统机器人（仅限管理员）
+                if (!$user->isAdmin()) {
+                    return Base::retError('权限不足');
+                }
+            } else {
+                // 其他用户的机器人（仅限主人）
+                return Base::retError('不是你的机器人');
+            }
         }
-        return Base::retSuccess('success', [
+        //
+        $data = [
             'id' => $botUser->userid,
             'name' => $botUser->nickname,
             'avatar' => $botUser->userimg,
-            'clear_day' => $userBot->clear_day,
-            'webhook_url' => $userBot->webhook_url,
-        ]);
+            'clear_day' => 0,
+            'webhook_url' => '',
+            'system_name' => UserBot::systemBotName($botUser->email),
+        ];
+        if ($userBot) {
+            $data['clear_day'] = $userBot->clear_day;
+            $data['webhook_url'] = $userBot->webhook_url;
+        }
+        return Base::retSuccess('success', $data);
     }
 
     /**
      * @api {post} api/users/bot/edit          30. 编辑机器人
      *
-     * @apiDescription 需要token身份，编辑我的机器人信息
+     * @apiDescription 需要token身份，编辑 我的机器人 或 管理员修改系统机器人 信息
      * @apiVersion 1.0.0
      * @apiGroup users
      * @apiName bot__edit
@@ -1742,8 +1757,8 @@ class UsersController extends AbstractController
      * @apiParam {Number} id            机器人ID
      * @apiParam {String} [name]        机器人名称
      * @apiParam {String} [avatar]      机器人头像
-     * @apiParam {Number} [clear_day]   清理天数
-     * @apiParam {String} [webhook_url] Webhook地址
+     * @apiParam {Number} [clear_day]   清理天数（仅 我的机器人）
+     * @apiParam {String} [webhook_url] Webhook地址（仅 我的机器人）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1760,7 +1775,15 @@ class UsersController extends AbstractController
         }
         $userBot = UserBot::whereBotId($botUser->userid)->whereUserid($user->userid)->first();
         if (empty($userBot)) {
-            return Base::retError('不是你的机器人');
+            if (UserBot::systemBotName($botUser->email)) {
+                // 系统机器人（仅限管理员）
+                if (!$user->isAdmin()) {
+                    return Base::retError('权限不足');
+                }
+            } else {
+                // 其他用户的机器人（仅限主人）
+                return Base::retError('不是你的机器人');
+            }
         }
         //
         $data = Request::input();
@@ -1789,18 +1812,24 @@ class UsersController extends AbstractController
             $botUser->updateInstance($upUser);
             $botUser->save();
         }
-        if ($upBot) {
+        if ($upBot && $userBot) {
             $userBot->updateInstance($upBot);
             $userBot->save();
         }
         //
-        return Base::retSuccess('修改成功', [
+        $data = [
             'id' => $botUser->userid,
             'name' => $botUser->nickname,
             'avatar' => $botUser->userimg,
-            'clear_day' => $userBot->clear_day,
-            'webhook_url' => $userBot->webhook_url,
-        ]);
+            'clear_day' => 0,
+            'webhook_url' => '',
+            'system_name' => UserBot::systemBotName($botUser->email),
+        ];
+        if ($userBot) {
+            $data['clear_day'] = $userBot->clear_day;
+            $data['webhook_url'] = $userBot->webhook_url;
+        }
+        return Base::retSuccess('修改成功', $data);
     }
 
     /**
