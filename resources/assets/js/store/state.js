@@ -200,5 +200,12 @@ export default {
         show: false,
         type: "",
         meetingid: 0
+    },
+
+    // okr窗口
+    okrWindow: {
+        type: 'okrDetails',
+        id: 0,
+        show: false
     }
 };

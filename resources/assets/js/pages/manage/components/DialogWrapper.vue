@@ -1801,11 +1801,7 @@ export default {
             if (!this.dialogData.link_id) {
                 return;
             }
-            if (this.taskId > 0) {
-                // 如果当前打开着任务窗口则关闭对话窗口
-                this.$store.dispatch("openDialog", 0);
-            }
-            this.$store.dispatch("openTask", this.dialogData.link_id);
+            this.$store.dispatch("openOkr", this.dialogData.link_id);
         },
 
         onPrevPage() {
@@ -2438,6 +2434,9 @@ export default {
                 case "SPAN":
                     if (target.classList.contains('mention') && target.classList.contains('task')) {
                         this.$store.dispatch("openTask", $A.runNum(target.getAttribute("data-id")));
+                    }
+                    if (target.classList.contains('mention') && target.classList.contains('okr')) {
+                        this.$store.dispatch("openOkr", $A.runNum(target.getAttribute("data-id")));
                     }
                     break;
 

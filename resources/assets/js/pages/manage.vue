@@ -302,6 +302,9 @@
         </transition>
         <MobileBack :showTabbar="showMobileTabbar"/>
         <MobileNotification ref="mobileNotification"/>
+
+        <!-- okr明细 -->
+        <MicroApps v-show="false" v-if="$route.name != 'manage-apps'" name="okr-details" :url="okrUrl" :data="okrWindow"/>
     </div>
 </template>
 
@@ -325,6 +328,7 @@ import TaskExport from "./manage/components/TaskExport";
 import ApproveExport from "./manage/components/ApproveExport";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
+import MicroApps from "../components/MicroApps.vue";
 
 export default {
     components: {
@@ -342,7 +346,9 @@ export default {
         DrawerOverlay,
         ProjectManagement,
         TeamManagement,
-        ProjectArchived},
+        ProjectArchived,
+        MicroApps
+    },
     directives: {longpress},
     data() {
         return {
@@ -396,6 +402,8 @@ export default {
             operateItem: {},
 
             needStartHome: false,
+
+            okrUrl: import.meta.env.VITE_OKR_WEB_URL || "/apps/okr/"
         }
     },
 
@@ -459,6 +467,8 @@ export default {
 
             'reportUnreadNumber',
             'approveUnreadNumber',
+
+            'okrWindow'
         ]),
 
         ...mapGetters(['dashboardTask']),
@@ -781,12 +791,12 @@ export default {
                     return;
                 case 'okrManage':
                 case 'okrAnalyze':
-                    let query = { url: import.meta.env.VITE_OKR_WEB_URL || "/apps/okr/" } 
-                    if(path=='okrManage'){
-                        this.goForward({  path: '/manage/apps/', query });
-                    }else{
-                        this.goForward({ path: '/manage/apps/#/analysis', query });
-                    }
+                    this.goForward({ 
+                        path:'/manage/apps/' + ( path == 'okrManage' ? '/#/list' : '/#/analysis') , 
+                        query: {
+                            baseUrl: this.okrUrl
+                        } 
+                    });
                     return;
                 case 'logout':
                     $A.modalConfirm({

@@ -1,11 +1,9 @@
 import microApp from '@micro-zoe/micro-app'
-import DialogWrapper from "./pages/manage/components/DialogWrapper.vue";
 
 export default function() {
     let urls  = "";
-    let route  = "/microapp/";
+    let route  = "/";
     let modules = {};
-
     let obj = {
         loader(code,url) {
             if (process.env.NODE_ENV === 'development') {
@@ -25,11 +23,11 @@ export default function() {
     
     // 微应用名称
     modules["micro-app"] = [obj]
-
+    modules["okr-details"] = [obj]
+    
     // 微应用
     microApp.start({
         plugins: {
-            global: [DialogWrapper],
             modules: modules
         }
     })
