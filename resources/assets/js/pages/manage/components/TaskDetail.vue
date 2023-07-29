@@ -1421,6 +1421,11 @@ export default {
 
         taskPasteDrag(e, type) {
             this.dialogDrag = false;
+            if ($A.dataHasFolder(type === 'drag' ? e.dataTransfer : e.clipboardData)) {
+                e.preventDefault();
+                $A.modalWarning(`暂不支持${type === 'drag' ? '拖拽' : '粘贴'}文件夹。`)
+                return;
+            }
             const files = type === 'drag' ? e.dataTransfer.files : e.clipboardData.files;
             this.msgFile = Array.prototype.slice.call(files);
             if (this.msgFile.length > 0) {

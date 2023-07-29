@@ -1686,6 +1686,11 @@ export default {
 
         filePasteDrag(e, type) {
             this.dialogDrag = false;
+            if ($A.dataHasFolder(type === 'drag' ? e.dataTransfer : e.clipboardData)) {
+                e.preventDefault();
+                $A.modalWarning(`暂不支持${type === 'drag' ? '拖拽' : '粘贴'}文件夹，请手动上传文件夹。`)
+                return;
+            }
             this.pasteDragNext(e, type);
         },
 

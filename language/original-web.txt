@@ -1277,3 +1277,8 @@ AI机器人
 支持 http 或 socks 代理
 例如：http://proxy.com 或 socks5://proxy.com
 查看 Cookie 中的 sessionKey 便是
+
+暂不支持拖拽文件夹。
+暂不支持粘贴文件夹。
+暂不支持拖拽文件夹，请手动上传文件夹。
+暂不支持粘贴文件夹，请手动上传文件夹。

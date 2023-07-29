@@ -869,6 +869,23 @@
             url = $A.rightDelete(url, '_thumb.jpg')
             url = $A.rightDelete(url, '_thumb.png')
             return url
+        },
+
+        /**
+         * 拖拽或粘贴的数据是否包含文件夹
+         * @param data
+         * @returns {boolean}
+         */
+        dataHasFolder(data) {
+            const {items} = data;
+            if (items) {
+                for (const item of items) {
+                    if (!(item.kind === "file" && item.webkitGetAsEntry().isFile)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
     });
 
