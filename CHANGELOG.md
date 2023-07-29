@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.29.21]
+
+### Performance
+
+- 会话消息没有接收人时已读进度优化
+- 优化拖拽文件夹上传提示
+- 深色模式硬件加速
+- 优化Android弹出键盘后聊天内容被覆盖的问题
+
 ## [0.29.11]
 
 ### Bug Fixes
