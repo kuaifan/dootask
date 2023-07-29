@@ -1218,7 +1218,7 @@
                 @media screen {
                     html {
                         ${this.utils.defaultFilter()}
-                        transform: translateZ(0);
+                        will-change: transform;
                     }
 
                     /* Default Reverse rule */
@@ -1238,6 +1238,7 @@
                     .no-dark-content,
                     .no-dark-before:before {
                         ${this.utils.reverseFilter()}
+                        will-change: transform;
                     }
 
                     [style*="background:url"] *,
