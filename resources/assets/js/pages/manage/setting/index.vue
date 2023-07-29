@@ -1,10 +1,10 @@
 <template>
     <div class="page-setting">
-        <PageTitle :title="$L(titleNameRoute)"/>
+        <PageTitle :title="titleNameRoute"/>
         <div class="setting-head">
             <div class="setting-titbox">
                 <div class="setting-title">
-                    <h1>{{$L(settingTitleName)}}</h1>
+                    <h1>{{settingTitleName}}</h1>
                     <div v-if="!showMobileBox" class="setting-more" @click="toggleRoute('index')">
                         <Icon type="md-close" />
                     </div>
@@ -33,7 +33,7 @@
                 </ul>
             </div>
             <div class="setting-content">
-                <div class="setting-content-title">{{$L(titleNameRoute)}}</div>
+                <div class="setting-content-title">{{titleNameRoute}}</div>
                 <div class="setting-content-view">
                     <router-view class="setting-router-view"></router-view>
                 </div>
@@ -72,15 +72,15 @@ export default {
         menu() {
             const menu = [
                 {path: 'personal', name: '个人设置'},
-                {path: 'checkin', name: '签到设置', desc: ' (Beta)'},
-                {path: 'language', name: '语言设置'},
-                {path: 'theme', name: '主题设置'},
                 {path: 'password', name: '密码设置'},
                 {path: 'email', name: '修改邮箱'},
+                {path: 'checkin', name: '签到设置', desc: ' (Beta)'},
+                {path: 'language', name: '语言设置', divided: true},
+                {path: 'theme', name: '主题设置'},
             ]
 
             if (this.$Electron) {
-                menu.splice(2, 0, {path: 'keyboard', name: '快捷键', desc: ' (Beta)'})
+                menu.push({path: 'keyboard', name: '键盘设置', desc: ' (Beta)'})
             }
 
             if ($A.isDooServer() && this.$isEEUiApp) {
@@ -93,7 +93,7 @@ export default {
             if (this.userIsAdmin) {
                 menu.push(...[
                     {path: 'system', name: '系统设置', divided: true},
-                    {path: 'approve', name: this.$L('审批设置'), desc: ' (Beta)'},
+                    {path: 'approve', name: '审批设置', desc: ' (Beta)'},
                     {path: 'license', name: 'License Key'},
                 ])
             }
@@ -109,18 +109,18 @@ export default {
             let name = '';
             menu.some((item) => {
                 if (routeName === `manage-setting-${item.path}`) {
-                    name = `${item.name}${item.desc||''}`;
+                    name = `${this.$L(item.name)}${item.desc||''}`;
                     return true;
                 }
             })
-            return name || '设置';
+            return name || this.$L('设置');
         },
 
         settingTitleName() {
             if (this.windowPortrait) {
                 return this.titleNameRoute
             }
-            return '设置'
+            return this.$L('设置')
         },
     },
 

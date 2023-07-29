@@ -1129,7 +1129,7 @@ export default {
         },
 
         windowScrollY(val) {
-            if ($A.isIos()) {
+            if ($A.isIos() && !this.$slots.head) {
                 const {tail} = this.scrollInfo();
                 this.navStyle = {
                     marginTop: val + 'px'

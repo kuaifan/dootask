@@ -7,7 +7,7 @@
             @touchstart="onTouchstart"
             @touchmove="onTouchmove">
             <UserAvatar :userid="userid" :size="40" show-name :name-text="title"/>
-            <div class="notification-desc">{{desc}}</div>
+            <div class="notification-desc no-dark-content">{{desc}}</div>
         </div>
     </transition>
 </template>

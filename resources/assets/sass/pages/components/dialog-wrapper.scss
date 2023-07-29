@@ -951,8 +951,8 @@
                         > li {
                             list-style: none;
                             display: flex;
-                            align-items: center;
-                            padding: 2px 7px;
+                            align-items: flex-start;
+                            padding: 2px 8px;
                             margin-top: 6px;
                             margin-right: 8px;
                             border-radius: 14px;
@@ -971,17 +971,7 @@
                             }
                             .emoji-users {
                                 position: relative;
-                                padding-left: 14px;
-                                &:before {
-                                    position: absolute;
-                                    content: "";
-                                    left: 7px;
-                                    top: 5px;
-                                    bottom: 5px;
-                                    width: 1px;
-                                    transform: scaleX(0.5);
-                                    background-color: rgba(#818181, 0.5);
-                                }
+                                padding-left: 6px;
                                 > ul {
                                     display: flex;
                                     flex-wrap: wrap;
@@ -992,6 +982,8 @@
                                         list-style: none;
                                         color: #818181;
                                         font-size: 12px;
+                                        height: 22px;
+                                        line-height: 22px;
                                         &.bold {
                                             font-weight: 600;
                                         }

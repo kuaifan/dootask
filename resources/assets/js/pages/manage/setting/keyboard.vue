@@ -1,19 +1,34 @@
 <template>
     <div class="setting-item submit">
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
-            <FormItem :label="$L('截图快捷键')" prop="screenshot">
+            <FormItem :label="$L('截图快捷键')" prop="screenshot_key">
                 <div class="input-box">
-                    <Checkbox v-model="formData.screenshot_mate">{{mateName}}</Checkbox>
-                    <div class="input-box-push">+</div>
-                    <Checkbox v-model="formData.screenshot_shift">Shift</Checkbox>
-                    <div class="input-box-push">+</div>
-                    <Input class="input-box-key" :disabled="screenshotDisabled" :value="formData.screenshot_key" @on-keydown="onKeydown" :maxlength="1"/>
+                    {{mateName}}<div class="input-box-push">+</div>Shift<div class="input-box-push">+</div><Input class="input-box-key" v-model="formData.screenshot_key" :maxlength="2"/>
                 </div>
-                <div v-if="screenshotDisabled" class="form-tip red">{{$L('至少选择一个功能键！')}}</div>
+            </FormItem>
+            <FormItem :label="$L('新建项目')">
+                <div class="input-box">
+                    {{mateName}}<div class="input-box-push">+</div>B
+                </div>
+            </FormItem>
+            <FormItem :label="$L('新建任务')">
+                <div class="input-box">
+                    {{mateName}}<div class="input-box-push">+</div>N (K)
+                </div>
+            </FormItem>
+            <FormItem :label="$L('新会议')">
+                <div class="input-box">
+                    {{mateName}}<div class="input-box-push">+</div>J
+                </div>
+            </FormItem>
+            <FormItem :label="$L('设置')">
+                <div class="input-box">
+                    {{mateName}}<div class="input-box-push">+</div>,
+                </div>
             </FormItem>
         </Form>
         <div class="setting-footer">
-            <Button :loading="loadIng > 0" :disabled="screenshotDisabled" type="primary" @click="submitForm">{{$L('保存')}}</Button>
+            <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('保存')}}</Button>
             <Button :loading="loadIng > 0" @click="resetForm" style="margin-left: 8px">{{$L('重置')}}</Button>
         </div>
     </div>
@@ -28,7 +43,7 @@
         padding: 0 12px 0 8px;
     }
     .input-box-key {
-        width: 80px;
+        width: 60px;
     }
 }
 </style>
@@ -42,12 +57,28 @@ export default {
 
 
             formData: {
-                screenshot_mate: true,
-                screenshot_shift: true,
                 screenshot_key: '',
             },
 
-            ruleData: { },
+            ruleData: {
+                screenshot_key: [
+                    {
+                        validator: (rule, value, callback) => {
+                            value = value.trim();
+                            value = value.substring(value.length - 1)
+                            if (value && !/^[A-Za-z0-9]?$/.test(value)) {
+                                callback(new Error(this.$L('只能输入字母或数字')));
+                            } else {
+                                callback();
+                            }
+                            this.$nextTick(_ => {
+                                this.$set(this.formData, rule.field, value.toUpperCase())
+                            })
+                        },
+                        trigger: 'change'
+                    },
+                ],
+            },
         }
     },
 
@@ -55,17 +86,9 @@ export default {
         this.initData();
     },
 
-    computed: {
-        screenshotDisabled() {
-            return !this.formData.screenshot_mate && !this.formData.screenshot_shift;
-        }
-    },
-
     methods: {
         initData() {
             this.formData = Object.assign({
-                screenshot_mate: true,
-                screenshot_shift: true,
                 screenshot_key: '',
             }, $A.jsonParse(window.localStorage.getItem("__keyboard:data__")) || {});
             //
@@ -84,6 +107,7 @@ export default {
         submitForm() {
             this.$refs.formData.validate((valid) => {
                 if (valid) {
+                    console.log(this.formData);
                     window.localStorage.setItem("__keyboard:data__", $A.jsonStringify(this.formData));
                     $A.bindScreenshotKey(this.formData);
                     $A.messageSuccess('保存成功');

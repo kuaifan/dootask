@@ -17169,5 +17169,203 @@
         "de": "Ja, guck dir ein date in cookies arsch an",
         "fr": "Voir la sessionKey dans les cookies est",
         "id": "Periksa kunci sesi pada Cookie"
+    },
+    {
+        "key": "暂不支持拖拽文件夹。",
+        "zh": "",
+        "zh-CHT": "暫不支持拖拽文件夾。",
+        "en": "Drag-and-drop folders are not supported.",
+        "ko": "폴더 끌기는 지원되지 않습니다.",
+        "ja": "フォルダのドラッグ・ドロップには対応していません。",
+        "de": "Es wird niemandem helfen, den ordner zu ziehen",
+        "fr": "Les dossiers de glisser-déposer ne sont pas pris en charge.",
+        "id": "Tak akan menarik folder."
+    },
+    {
+        "key": "暂不支持粘贴文件夹。",
+        "zh": "",
+        "zh-CHT": "暫不支持粘貼文件夾。",
+        "en": "It does not support pasting folders.",
+        "ko": "폴더 붙여넣기는 지원되지 않습니다.",
+        "ja": "フォルダの貼り付けには対応していません。",
+        "de": "Tragt den ordner nicht ein",
+        "fr": "Les dossiers coller ne sont pas supportés pour le moment.",
+        "id": "Tak akan meminta penundaan folder."
+    },
+    {
+        "key": "暂不支持拖拽文件夹，请手动上传文件夹。",
+        "zh": "",
+        "zh-CHT": "暫不支持拖拽文件夾，請手動上傳文件夾。",
+        "en": "Dragging and dropping folders is not supported, please upload folders manually.",
+        "ko": "폴더를 끌어 올리는 것은 지원되지 않습니다. 폴더를 업로드하십시오.",
+        "ja": "フォルダをドラッグ&ドロップに対応していませんので、手動でフォルダをアップロードしてください。",
+        "de": "Ordner abschleppen unterstützt nicht; bitte diesen ordner manuell hochladen",
+        "fr": "Les dossiers de glisser-déposer ne sont pas pris en charge pour le moment. Veuillez télécharger les dossiers manuellement.",
+        "id": "Tak ada dukungan pada folder penarik, upload secara manual."
+    },
+    {
+        "key": "暂不支持粘贴文件夹，请手动上传文件夹。",
+        "zh": "",
+        "zh-CHT": "暫不支持粘貼文件夾，請手動上傳文件夾。",
+        "en": "It does not support pasting folders. Please upload folders manually.",
+        "ko": "폴더 붙여넣기는 지원되지 않습니다. 폴더 업로드하십시오.",
+        "ja": "フォルダの貼り付けには対応していませんので、手動でフォルダをアップロードしてください。",
+        "de": "Den ordner zum einfügen nicht unterstützen; bitte diesen manuell hochladen",
+        "fr": "Le dossier coller n’est pas pris en charge pour le moment. Veuillez télécharger le dossier manuellement.",
+        "id": "Tak ada folder tempel yang didukung, unggah secara manual."
+    },
+    {
+        "key": "最近",
+        "zh": "",
+        "zh-CHT": "最近",
+        "en": "Lately",
+        "ko": "최근",
+        "ja": "最近です",
+        "de": "Erst kürzlich",
+        "fr": "La récente",
+        "id": "Baru-baru ini"
+    },
+    {
+        "key": "暂无结果",
+        "zh": "",
+        "zh-CHT": "暫無結果",
+        "en": "No result yet",
+        "ko": "아직 결과가 없다.",
+        "ja": "まだ結果はありません",
+        "de": "Vom tisch.",
+        "fr": "Pas encore de résultats",
+        "id": "Tidak ada hasil."
+    },
+    {
+        "key": "新项目负责人",
+        "zh": "",
+        "zh-CHT": "新項目負責人",
+        "en": "New project leader",
+        "ko": "새 프로젝트 책임자",
+        "ja": "新しいプロジェクトリーダーです",
+        "de": "Neuer projektleiter.",
+        "fr": "Nouveau chef de projet",
+        "id": "Direktur proyek baru"
+    },
+    {
+        "key": "恢复帐号（已离职）",
+        "zh": "",
+        "zh-CHT": "恢復帳號（已離職）",
+        "en": "Restore Account (Retired)",
+        "ko": "계정 복원 (이미 종료됨)",
+        "ja": "アカウント復旧(退職しました)",
+        "de": "Reaktivieren sie den account wieder",
+        "fr": "Récupération de compte (quittée)",
+        "id": "Kembalikan akun (tidak aktif)"
+    },
+    {
+        "key": "你确定恢复已离职帐号【(*)】吗？（注：此操作仅恢复帐号状态，无法恢复操作离职时移交的数据）",
+        "zh": "",
+        "zh-CHT": "你確定恢復已離職帳號【(*)】嗎？（注：此操作僅恢復帳號狀態，無法恢復操作離職時移交的數據）",
+        "en": "Are you sure to restore the departed account [(*)]? (Note: This operation only restores the account status and cannot restore the data transferred when the operation is terminated.)",
+        "ko": "이직한 계정 [(*)]을 복원하시겠습니까?(주:이 작업은 계정 상태만 복구할 수 있습니다. 작업이 중단되었을 때 전송된 데이터는 복구할 수 없습니다)",
+        "ja": "退職したアカウント【(*)】の復旧は確実ですか?(注:この作業はアカウントの復旧のみであり、作業終了時に移管したデータの復旧はできません)",
+        "de": "Sind sie sicher, dass sie alles wieder eingestellt haben? Dies stellt nur die rufnummer wieder ein; keine wiederherstellung der im gang befindlichen daten",
+        "fr": "Êtes-vous sûr de récupérer un compte sortant [(*)]? (remarque: cette opération ne permet que de restaurer l’état du compte, les données transférées lors du départ de l’opération ne peuvent pas être récupérées)",
+        "id": "Apakah anda yakin telah kembali akun yang tidak aktif ((*)? (catatan: operasi ini hanya mengembalikan status akun dan tidak dapat mengembalikan data yang diserahkan saat operasi meninggalkan)"
+    },
+    {
+        "key": "流转到【(*)】时改变任务负责人为状态负责人（并保留操作状态的人员），原本的任务负责人移至协助人员。",
+        "zh": "",
+        "zh-CHT": "流轉到【(*)】時改變任務負責人爲狀態負責人（並保留操作狀態的人員），原本的任務負責人移至協助人員。",
+        "en": "When transferring to [(*)], the task leader is changed to the status leader (and the operational status person is retained), and the original task leader is moved to the assistance person.",
+        "ko": "【(*)】로 이전할 때 임무책임자는 상태책임자 (동시에 조작상태를 보류한 인원)로 변경되며 원래의 임무책임자는 협조인원으로 이전된다.",
+        "ja": "【(*)】に流れた時点でタスクの責任者を状態責任者(作業状態を保持している人)に変更し、元のタスクの責任者をサポートスタッフに移します。",
+        "de": "Nach der umleitung zu [*] ändert sich der dienstleiter zum dienstleiter (der auch diesen bereitschaftsstatus behalten hat), so dass der ursprüngliche controller zu einem helfer umgeleitet wird.",
+        "fr": "Lorsque le flux passe à [(*)], le chef de mission devient le chef d’état (et la personne qui conserve le statut opérationnel), le chef de mission d’origine passe à l’assistant.",
+        "id": "Ubah direktur misi menjadi pemimpin negara (dan tetap memegang status operasional) ketika petugas yang bertugas dipindahkan ke asisten."
+    },
+    {
+        "key": "删除文件夹",
+        "zh": "",
+        "zh-CHT": "刪除文件夾",
+        "en": "Delete folder",
+        "ko": "폴더 지우기",
+        "ja": "フォルダを削除します",
+        "de": "Ordner löschen",
+        "fr": "Supprimer un dossier",
+        "id": "Hapus folder"
+    },
+    {
+        "key": "你确定要删除【(*)】文件夹吗？",
+        "zh": "",
+        "zh-CHT": "你確定要刪除【(*)】文件夾嗎？",
+        "en": "Are you sure you want to delete the [(*)] folder?",
+        "ko": "[(*)] 폴더를 정말로 삭제하시겠습니까?",
+        "ja": "【(*)】フォルダを削除しますか?",
+        "de": "Möchten sie wirklich (*) den ordner löschen?",
+        "fr": "Êtes-vous sûr de vouloir supprimer le dossier [(*)]?",
+        "id": "Apakah anda yakin ingin menghapus folder [*]?"
+    },
+    {
+        "key": "请输入新的密码",
+        "zh": "",
+        "zh-CHT": "請輸入新的密碼",
+        "en": "Please enter a new password",
+        "ko": "새 비밀번호를 입력하십시오",
+        "ja": "新しいパスワードをお願いします。",
+        "de": "Bitte geben sie ein neues passwort ein",
+        "fr": "Veuillez entrer un nouveau mot de passe",
+        "id": "Password baru, silakan"
+    },
+    {
+        "key": "请输入新的邮箱（(*)）",
+        "zh": "",
+        "zh-CHT": "請輸入新的郵箱（(*)）",
+        "en": "Please enter a new email ((*))",
+        "ko": "새 편지함을 입력하십시오 (*)",
+        "ja": "新しいメールアドレス((*))をお願いします。",
+        "de": "Bitte geben sie einen neuen briefkasten ein",
+        "fr": "Veuillez entrer un nouvel email ((*))",
+        "id": "Silahkan masukkan email baru (*)"
+    },
+    {
+        "key": "截图快捷键",
+        "zh": "",
+        "zh-CHT": "截圖快捷鍵",
+        "en": "Screenshot shortcut",
+        "ko": "스크린샷 단축키",
+        "ja": "スクリーンショットショートカットキーです",
+        "de": "Fahre den kurzbefehl ab",
+        "fr": "Raccourcis pour captures d’écran",
+        "id": "Shortcut screenshot"
+    },
+    {
+        "key": "加班",
+        "zh": "",
+        "zh-CHT": "加班",
+        "en": "Overtime",
+        "ko": "초과 근무",
+        "ja": "残業",
+        "de": "Überstunden.",
+        "fr": "Les heures supplémentaires",
+        "id": "Kerja lembur."
+    },
+    {
+        "key": "离职申请",
+        "zh": "",
+        "zh-CHT": "離職申請",
+        "en": "Resignation application",
+        "ko": "이직 신청",
+        "ja": "退職願いです",
+        "de": "Eine freistellung beantragen.",
+        "fr": "Demande de départ",
+        "id": "Tinggalkan aplikasi"
+    },
+    {
+        "key": "录用申请",
+        "zh": "",
+        "zh-CHT": "錄用申請",
+        "en": "Application for employment",
+        "ko": "채용 지원서",
+        "ja": "採用申し込みです",
+        "de": "Wir nehmen die bewerbung an.",
+        "fr": "Demande d’offre",
+        "id": "Aplikasi untuk diterima"
     }
 ]

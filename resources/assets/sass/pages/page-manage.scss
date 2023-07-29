@@ -5,6 +5,14 @@
     right: 0;
     bottom: 0;
     display: flex;
+    &.not-logged {
+        .manage-box-menu {
+            display: none;
+        }
+        .manage-box-main {
+            display: none;
+        }
+    }
     .manage-box-menu {
         position: relative;
         flex-grow: 0;

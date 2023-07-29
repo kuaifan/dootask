@@ -650,7 +650,7 @@ export default {
             disableOptions: {
                 shortcuts: [
                     {
-                        text: this.$L('12:00'),
+                        text: '12:00',
                         value () {
                             return $A.Date($A.formatDate("Y-m-d 12:00:00"));
                         },
@@ -659,7 +659,7 @@ export default {
                         }
                     },
                     {
-                        text: this.$L('17:00'),
+                        text: '17:00',
                         value () {
                             return $A.Date($A.formatDate("Y-m-d 17:00:00"));
                         },
@@ -668,7 +668,7 @@ export default {
                         }
                     },
                     {
-                        text: this.$L('18:00'),
+                        text: '18:00',
                         value () {
                             return $A.Date($A.formatDate("Y-m-d 18:00:00"));
                         },
@@ -677,7 +677,7 @@ export default {
                         }
                     },
                     {
-                        text: this.$L('19:00'),
+                        text: '19:00',
                         value () {
                             return $A.Date($A.formatDate("Y-m-d 19:00:00"));
                         },

@@ -1,5 +1,5 @@
 <template>
-    <div v-show="userId > 0" class="page-manage" :class="{'show-tabbar': showMobileTabbar}">
+    <div class="page-manage" :class="{'show-tabbar': showMobileTabbar, 'not-logged': userId <= 0}">
         <div class="manage-box-menu" :class="{'show-mobile-menu': showMobileMenu}">
             <Dropdown
                 class="page-manage-menu-dropdown main-menu"
@@ -903,14 +903,33 @@ export default {
 
         shortcutEvent(e) {
             if (e.metaKey || e.ctrlKey) {
-                if (e.keyCode === 74) {
-                    e.preventDefault();
-                    this.onAddMenu('createMeeting')
-                } else if (e.keyCode === 75 || e.keyCode === 78) {
-                    e.preventDefault();
-                    this.onAddMenu('task')
-                } else if (e.keyCode === 83 && this.$refs.taskModal.checkUpdate()) {
-                    e.preventDefault();
+                switch (e.keyCode) {
+                    case 66: // B - 新建项目
+                        e.preventDefault();
+                        this.onAddShow()
+                        break;
+
+                    case 74: // J - 新会议
+                        e.preventDefault();
+                        this.onAddMenu('createMeeting')
+                        break;
+
+                    case 75:
+                    case 78: // K/N - 加入会议
+                        e.preventDefault();
+                        this.onAddMenu('task')
+                        break;
+
+                    case 83: // S - 保存任务
+                        if (this.$refs.taskModal.checkUpdate()) {
+                            e.preventDefault();
+                        }
+                        break;
+
+                    case 188: // , - 进入设置
+                        e.preventDefault();
+                        this.toggleRoute('setting')
+                        break;
                 }
             }
         },
