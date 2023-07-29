@@ -157,6 +157,21 @@ class WebSocketDialogMsgTask extends AbstractTask
         // 更新已发送数量
         $msg->send = WebSocketDialogMsgRead::whereMsgId($msg->id)->count();
         $msg->save();
+        // 没有接收人时通知发送人已读
+        if ($msg->send === 0) {
+            PushTask::push([
+                'userid' => $msg->userid,
+                'msg' => [
+                    'type' => 'dialog',
+                    'mode' => 'readed',
+                    'data' => [
+                        'id' => $msg->id,
+                        'read' => $msg->read,
+                        'percentage' => $msg->percentage,
+                    ],
+                ]
+            ]);
+        }
         // 开始推送消息
         $umengUserid = [];
         foreach ($array as $item) {
