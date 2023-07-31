@@ -252,6 +252,12 @@ export default {
             default: false
         },
 
+        // 是否禁用
+        disable: {
+            type: Boolean,
+            default: false
+        },
+
         // 提交前的回调
         beforeSubmit: Function
     },
@@ -582,6 +588,9 @@ export default {
         },
 
         onSelection() {
+            if(this.disable){
+                return
+            }
             this.$nextTick(_ => {
                 this.selects = $A.cloneJSON(this.values)
                 this.showModal = true
