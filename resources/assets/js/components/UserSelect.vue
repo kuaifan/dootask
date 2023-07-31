@@ -45,6 +45,7 @@
                                 <i v-else-if="item.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
                                 <i v-else-if="item.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
                                 <i v-else-if="item.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
+                                <i v-else-if="item.group_type=='okr'" class="taskfont icon-avatar task">&#xe6f4;</i>
                                 <Icon v-else class="icon-avatar" type="ios-people" />
                             </template>
                             <UserAvatar v-else :userid="item.userid" tooltip-disabled/>
@@ -112,6 +113,7 @@
                             <i v-else-if="item.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
                             <i v-else-if="item.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
                             <i v-else-if="item.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
+                            <i v-else-if="item.group_type=='okr'" class="taskfont icon-avatar task">&#xe6f4;</i>
                             <Icon v-else class="icon-avatar" type="ios-people" />
                             <div class="avatar-name">
                                 <span>{{item.name}}</span>
