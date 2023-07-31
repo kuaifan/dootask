@@ -3,7 +3,7 @@ version: '3'
 services:
   php:
     container_name: "dootask-php-${APP_ID}"
-    image: "kuaifan/php:swoole-8.0.rc13"
+    image: "kuaifan/php:swoole-8.0.rc14"
     shm_size: "2gb"
     ulimits:
       core:
@@ -12,7 +12,6 @@ services:
     volumes:
       - ./docker/crontab/crontab.conf:/etc/supervisor/conf.d/crontab.conf
       - ./docker/php/php.conf:/etc/supervisor/conf.d/php.conf
-      - ./docker/ai/ai.conf:/etc/supervisor/conf.d/ai.conf
       - ./docker/php/php.ini:/usr/local/etc/php/php.ini
       - ./docker/log/supervisor:/var/log/supervisor
       - ./:/var/www
@@ -50,6 +49,7 @@ services:
       - drawio-webapp
       - drawio-export
       - minder
+      - ai
     restart: unless-stopped
 
   redis:
@@ -153,7 +153,6 @@ services:
     container_name: "dootask-approve-${APP_ID}"
     image: "hitosea2020/go-approve:0.1.3"
     environment:
-      TZ: "Asia/Shanghai"
       MYSQL_HOST: "${DB_HOST}"
       MYSQL_PORT: "${DB_PORT}"
       MYSQL_DBNAME: "${DB_DATABASE}"
@@ -165,6 +164,14 @@ services:
         ipv4_address: "${APP_IPPR}.11"
     depends_on:
       - mariadb
+    restart: unless-stopped
+
+  ai:
+    container_name: "dootask-ai-${APP_ID}"
+    image: "kuaifan/dooai:0.0.1"
+    networks:
+      extnetwork:
+        ipv4_address: "${APP_IPPR}.12"
     restart: unless-stopped
 
 networks:
