@@ -142,6 +142,11 @@ export default {
         //
         const cloneParams = $A.cloneJSON(params)
         return new Promise(async (resolve, reject) => {
+            // 判断服务器地址
+            if (/^https*:\/\/public\//.test(params.url)) {
+                reject({ret: -1, data: {}, msg: "No server address"})
+                return
+            }
             // 加密传输
             const encrypt = []
             if (params.encrypt === true) {
