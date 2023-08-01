@@ -2858,6 +2858,9 @@ export default {
         if (!/^https*:\/\//i.test(streamUrl)) {
             streamUrl = $A.apiUrl(`..${streamUrl}`)
         }
+        if (state.dialogSseList.find(item => item.streamUrl == streamUrl)) {
+            return
+        }
         const sse = new SSEClient(streamUrl)
         sse.subscribe(['append', 'replace', 'done'], (type, e) => {
             switch (type) {
@@ -2886,7 +2889,7 @@ export default {
                     break;
             }
         })
-        state.dialogSseList.push({sse, time: $A.Time()})
+        state.dialogSseList.push({sse, streamUrl, time: $A.Time()})
         if (state.dialogSseList.length > 10) {
             state.dialogSseList.shift().sse.close()
         }
