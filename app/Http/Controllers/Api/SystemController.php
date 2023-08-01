@@ -250,18 +250,24 @@ class SystemController extends AbstractController
         //
         $type = trim(Request::input('type'));
         $setting = Base::setting('aibotSetting');
+
+        $keys = [
+            'openai_key',
+            'openai_agency',
+            'claude_token',
+            'claude_agency',
+            'wenxin_key',
+            'wenxin_secret',
+            'wenxin_model'
+        ];
+
         if ($type == 'save') {
             if (env("SYSTEM_SETTING") == 'disabled') {
                 return Base::retError('当前环境禁止修改');
             }
             $all = Request::input();
             foreach ($all as $key => $value) {
-                if (!in_array($key, [
-                    'openai_key',
-                    'openai_agency',
-                    'claude_token',
-                    'claude_agency',
-                ])) {
+                if (!in_array($key, $keys)) {
                     unset($all[$key]);
                 }
             }
@@ -280,15 +286,16 @@ class SystemController extends AbstractController
                     WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "设置成功"], $botUser->userid, true, false, true);
                 }
             }
+            if ($backup['wenxin_token'] != $setting['wenxin_token']) {
+                $botUser = User::botGetOrCreate('ai-wenxin');
+                if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "设置成功"], $botUser->userid, true, false, true);
+                }
+            }
         }
         //
         if (env("SYSTEM_SETTING") == 'disabled') {
-            foreach ([
-                         'openai_key',
-                         'openai_agency',
-                         'claude_token',
-                         'claude_agency',
-                     ] as $item) {
+            foreach ($keys as $item) {
                 $setting[$item] = substr($setting[$item], 0, 4) . str_repeat('*', strlen($setting[$item]) - 8) . substr($setting[$item], -4);
             }
         }

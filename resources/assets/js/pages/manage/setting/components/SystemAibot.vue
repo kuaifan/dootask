@@ -27,6 +27,24 @@
                     </FormItem>
                 </div>
             </div>
+            <div class="block-setting-box">
+                <h3>Wenxin</h3>
+                <div class="form-box">
+                    <FormItem label="API Key" prop="wenxin_key">
+                        <Input :maxlength="255" v-model="formData.wenxin_key" type="password" placeholder="API Key"/>
+                        <div class="form-tip">{{$L('登录')}} <a href="https://console.bce.baidu.com/qianfan/ais/console/onlineTest" target="_blank">https://console.bce.baidu.com/qianfan/ais/console/onlineTest</a> {{$L('查看')}}</div>
+                    </FormItem>
+                    <FormItem label="API Secret" prop="wenxin_secret">
+                        <Input :maxlength="500" v-model="formData.wenxin_secret" :placeholder="$L('支持 http 或 socks 代理')"/>
+                    </FormItem>
+                    <FormItem label="模型" prop="wenxin_model">
+                        <Select v-model="formData.wenxin_model"  placement="top">
+                            <Option value="ERNIE-Bot">ERNIE-Bot</Option>
+                            <Option value="ERNIE-Bot-turbo">ERNIE-Bot-turbo</Option>
+                        </Select>
+                    </FormItem>
+                </div>
+            </div>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{ $L('提交') }}</Button>
