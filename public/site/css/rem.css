@@ -788,4 +788,7 @@
   .help-l-ul{
     width: auto !important;
   }
+  .footer_copyright{
+    flex-direction: column;
+  }
 }
