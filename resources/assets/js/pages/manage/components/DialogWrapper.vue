@@ -610,6 +610,7 @@ export default {
             navStyle: {},
 
             operateVisible: false,
+            operatePreventScroll: 0,
             operateCopys: [],
             operateStyles: {},
             operateItem: {},
@@ -1379,7 +1380,11 @@ export default {
                     item.msg.text = data.text
                 }
                 if (tail <= 55) {
-                    this.onToBottom()
+                    this.operatePreventScroll++
+                    this.$refs.scroller.scrollToBottom();
+                    setTimeout(_ => {
+                        this.operatePreventScroll--
+                    }, 50)
                 }
             }
         },
@@ -2171,7 +2176,9 @@ export default {
         },
 
         onScroll(event) {
-            this.operateVisible = false;
+            if (this.operatePreventScroll === 0) {
+                this.operateVisible = false;
+            }
             //
             const {offset, tail} = this.scrollInfo();
             this.scrollOffset = offset;
@@ -2294,11 +2301,24 @@ export default {
                         value: $A.thumbRestore(event.target.currentSrc),
                     })
                 }
+                const selectText = this.getSelectedTextInElement(el)
+                if (selectText.length > 0) {
+                    this.operateCopys.push({
+                        type: 'selected',
+                        icon: '&#xe77f;',
+                        label: '复制选择',
+                        value: selectText,
+                    })
+                }
                 if (msgData.msg.text.replace(/<[^>]+>/g,"").length > 0) {
+                    let label = this.operateCopys.length > 0 ? '复制文本' : '复制'
+                    if (selectText.length > 0) {
+                        label = '复制全部'
+                    }
                     this.operateCopys.push({
                         type: 'text',
                         icon: '&#xe77f;',
-                        label: this.operateCopys.length > 0 ? '复制文本' : '复制',
+                        label,
                         value: '',
                     })
                 }
@@ -2437,6 +2457,10 @@ export default {
                     break;
 
                 case 'link':
+                    this.$copyText(value).then(_ => $A.messageSuccess('复制成功')).catch(_ => $A.messageError('复制失败'))
+                    break;
+
+                case 'selected':
                     this.$copyText(value).then(_ => $A.messageSuccess('复制成功')).catch(_ => $A.messageError('复制失败'))
                     break;
 
@@ -2919,6 +2943,20 @@ export default {
                 };
                 img.src = url;
             })
+        },
+
+        getSelectedTextInElement(element) {
+            let selectedText = "";
+            if (window.getSelection) {
+                let selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    if (element.contains(range.commonAncestorContainer)) {
+                        selectedText = range.toString();
+                    }
+                }
+            }
+            return selectedText;
         },
 
         onViewAvatar(e) {
