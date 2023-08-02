@@ -27,6 +27,26 @@
                     </FormItem>
                 </div>
             </div>
+            <div class="block-setting-box">
+                <h3>{{$L('文心一言')}} (Wenxin)</h3>
+                <div class="form-box">
+                    <FormItem label="API Key" prop="wenxin_key">
+                        <Input :maxlength="255" v-model="formData.wenxin_key" type="password" placeholder="API Key"/>
+                        <div class="form-tip">{{$L('获取方式')}} <a href="https://ai.baidu.com/ai-doc/REFERENCE/Ck3dwjgn3#3-%E8%8E%B7%E5%8F%96%E5%AF%86%E9%92%A5" target="_blank">https://ai.baidu.com/ai-doc/REFERENCE/Ck3dwjgn3</a></div>
+                    </FormItem>
+                    <FormItem label="API Secret" prop="wenxin_secret">
+                        <Input :maxlength="500" v-model="formData.wenxin_secret"  type="password" placeholder="API Secret"/>
+                        <div class="form-tip">{{$L('获取方式')}} <a href="https://ai.baidu.com/ai-doc/REFERENCE/Ck3dwjgn3#3-%E8%8E%B7%E5%8F%96%E5%AF%86%E9%92%A5" target="_blank">https://ai.baidu.com/ai-doc/REFERENCE/Ck3dwjgn3</a></div>
+                    </FormItem>
+                    <FormItem label="模型" prop="wenxin_model">
+                        <Select v-model="formData.wenxin_model"  placement="top">
+                            <Option value="ERNIE-Bot-turbo">ERNIE-Bot-turbo</Option>
+                            <Option value="ERNIE-Bot">ERNIE-Bot</Option>
+                        </Select>
+                        <div class="form-tip">{{$L('查看说明')}} <a href="https://cloud.baidu.com/doc/WENXINWORKSHOP/s/vliu6vq7u" target="_blank">https://cloud.baidu.com/doc/WENXINWORKSHOP/s/vliu6vq7u</a></div>
+                    </FormItem>
+                </div>
+            </div>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{ $L('提交') }}</Button>

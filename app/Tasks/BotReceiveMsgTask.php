@@ -400,6 +400,23 @@ class BotReceiveMsgTask extends AbstractTask
                     $error = 'The client version is low (required version ≥ v0.29.11).';
                 }
                 break;
+            // Wenxin 机器人
+            case 'ai-wenxin@bot.system':
+                $setting = Base::setting('aibotSetting');
+                $webhookUrl = "{$serverUrl}/ai/wenxin/send";
+                $extras = [
+                    'wenxin_key' => $setting['wenxin_key'],
+                    'wenxin_secret' => $setting['wenxin_secret'],
+                    'wenxin_model' => $setting['wenxin_model'],
+                    'server_url' => $serverUrl,
+                ];
+                if (empty($extras['wenxin_key'])) {
+                    $error = 'Robot disabled.';
+                } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
+                    && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
+                    $error = 'The client version is low (required version ≥ v0.29.12).';
+                }
+                break;
             // 其他机器人
             default:
                 $userBot = UserBot::whereBotId($botUser->userid)->first();
@@ -414,21 +431,30 @@ class BotReceiveMsgTask extends AbstractTask
             return;
         }
         //
-        Ihttp::ihttp_post($webhookUrl, [
-            'text' => $command,
-            'token' => User::generateToken($botUser),
-            'dialog_id' => $dialog->id,
-            'dialog_type' => $dialog->type,
-            'msg_id' => $msg->id,
-            'msg_uid' => $msg->userid,
-            'mention' => $this->mention ? 1 : 0,
-            'bot_uid' => $botUser->userid,
-            'version' => Base::getVersion(),
-            'extras' => Base::array2json($extras)
-        ], 10);
-        if ($userBot) {
-            $userBot->webhook_num++;
-            $userBot->save();
+        try {
+            $res = Ihttp::ihttp_post($webhookUrl, [
+                'text' => $command,
+                'token' => User::generateToken($botUser),
+                'dialog_id' => $dialog->id,
+                'dialog_type' => $dialog->type,
+                'msg_id' => $msg->id,
+                'msg_uid' => $msg->userid,
+                'mention' => $this->mention ? 1 : 0,
+                'bot_uid' => $botUser->userid,
+                'version' => Base::getVersion(),
+                'extras' => Base::array2json($extras)
+            ], 10);
+            if ($userBot) {
+                $userBot->webhook_num++;
+                $userBot->save();
+            }
+            if($res['data'] && $data = json_decode($res['data'])){
+                if($data['code'] != 200 && $data['message']){
+                    WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $res['data']['message']], $botUser->userid, false, false, true); 
+                }
+            }
+        } catch (\Throwable $th) {
+            //throw $th;
         }
     }
 
