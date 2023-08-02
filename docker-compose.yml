@@ -166,6 +166,26 @@ services:
       - mariadb
     restart: unless-stopped
 
+  okr:
+    container_name: "dootask-okr-${APP_ID}"
+    image: "hitosea2020/okr:0.0.1"
+    environment:
+      TZ: "Asia/Shanghai"
+      MYSQL_HOST: "${DB_HOST}"
+      MYSQL_PORT: "${DB_PORT}"
+      MYSQL_DBNAME: "${DB_DATABASE}"
+      MYSQL_USERNAME: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      DOO_TASK_URL: "http://${APP_IPPR}.3"
+      
+    networks:
+      extnetwork:
+        ipv4_address: "${APP_IPPR}.13"
+    depends_on:
+      - mariadb
+    restart: unless-stopped
+
+
 networks:
   extnetwork:
     name: "dootask-networks-${APP_ID}"
