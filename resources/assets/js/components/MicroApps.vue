@@ -9,7 +9,6 @@
             :name='name' 
             :url='url' 
             inline 
-            destroy 
             keep-alive
             disableSandbox 
             :data='appData'
@@ -68,7 +67,11 @@ export default {
             this.loading = true;
             this.$nextTick(() => {
                 this.loading = false;
-                this.appUrl = val
+                let url = $A.apiUrl(val)
+                if (url.indexOf('http') == -1) {
+                    url = window.location.origin + url
+                }
+                this.appUrl =  import.meta.env.VITE_OKR_WEB_URL || url
             })
         },
         path(val) {
@@ -79,6 +82,16 @@ export default {
                 this.appData = info
             },
             deep: true,
+        },
+        '$route': {
+            handler(to) {
+                if(to.name == 'manage-apps'){
+                    this.appData = {
+                        path: to.hash
+                    }
+                }
+            },
+            immediate: true,
         },
     },
     computed: {

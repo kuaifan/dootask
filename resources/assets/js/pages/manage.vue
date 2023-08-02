@@ -402,8 +402,6 @@ export default {
             operateItem: {},
 
             needStartHome: false,
-
-            okrUrl:  import.meta.env.VITE_OKR_WEB_URL ||  $.apiUrl(location.origin + "/apps/okr")
         }
     },
 
@@ -475,6 +473,15 @@ export default {
 
         routeName() {
             return this.$route.name
+        },
+
+        // okr路由
+        okrUrl() {
+            let url = $A.apiUrl("/apps/okr")
+            if (url.indexOf('http') == -1) {
+                url = window.location.origin + url
+            }
+            return import.meta.env.VITE_OKR_WEB_URL ||   url
         },
 
         /**
@@ -575,14 +582,14 @@ export default {
 
                     {path: 'team', name: '团队管理', divided: true},
                     {path: 'approve', name: '审批中心'},
-                    {path: 'okrManage', name: 'OkR管理'},
-                    {path: 'okrAnalyze', name: 'OkR结果分析'},
+                    {path: 'okrManage', name: 'OKR管理'},
+                    {path: 'okrAnalyze', name: 'OKR结果分析'},
                 ])
             } else {
                 array.push(...[
                     {path: 'personal', name: '个人设置', divided: true},
                     {path: 'approve', name: '审批中心'},
-                    {path: 'okrManage', name: 'OkR管理'},
+                    {path: 'okrManage', name: 'OKR管理'},
                     {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
 
                     {path: 'workReport', name: '工作报告', divided: true},
@@ -792,10 +799,7 @@ export default {
                 case 'okrManage':
                 case 'okrAnalyze':
                     this.goForward({ 
-                        path:'/manage/apps/' + ( path == 'okrManage' ? '/#/list' : '/#/analysis') , 
-                        query: {
-                            baseUrl: this.okrUrl
-                        } 
+                        path:'/manage/apps/' + ( path == 'okrManage' ? '/#/list' : '/#/analysis'), 
                     });
                     return;
                 case 'logout':

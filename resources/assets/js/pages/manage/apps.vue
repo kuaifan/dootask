@@ -26,11 +26,11 @@ export default {
                     this.loading = true;
                     this.$nextTick(() => {
                         this.loading = false;
-                        let url = $A.apiUrl(this.$route.query.baseUrl)
+                        let url = $A.apiUrl("/apps/okr")
                         if (url.indexOf('http') == -1) {
                             url = window.location.origin + url
                         }
-                        this.appUrl = url
+                        this.appUrl = import.meta.env.VITE_OKR_WEB_URL || url
                         this.path = this.$route.query.path || '';
                     })
                 }
