@@ -35,7 +35,7 @@
                         <div class="form-tip">{{$L('登录')}} <a href="https://console.bce.baidu.com/qianfan/ais/console/onlineTest" target="_blank">https://console.bce.baidu.com/qianfan/ais/console/onlineTest</a> {{$L('查看')}}</div>
                     </FormItem>
                     <FormItem label="API Secret" prop="wenxin_secret">
-                        <Input :maxlength="500" v-model="formData.wenxin_secret" :placeholder="$L('支持 http 或 socks 代理')"/>
+                        <Input :maxlength="500" v-model="formData.wenxin_secret"  type="password" placeholder="API Secret"/>
                     </FormItem>
                     <FormItem label="模型" prop="wenxin_model">
                         <Select v-model="formData.wenxin_model"  placement="top">
