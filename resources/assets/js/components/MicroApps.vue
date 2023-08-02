@@ -10,6 +10,7 @@
             :url='url' 
             inline 
             destroy 
+            keep-alive
             disableSandbox 
             :data='appData'
             @created='handleCreate' 

@@ -403,7 +403,7 @@ export default {
 
             needStartHome: false,
 
-            okrUrl: import.meta.env.VITE_OKR_WEB_URL || "/apps/okr/"
+            okrUrl:  import.meta.env.VITE_OKR_WEB_URL ||  $.apiUrl(location.origin + "/apps/okr")
         }
     },
 
