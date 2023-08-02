@@ -23,7 +23,7 @@ git checkout -b pro origin/pro
 
 ## 安装程序
 
-- 必须安装：`Docker` 和 `Docker Compose v2.0+`
+- 必须安装：`Docker v20.10+` 和 `Docker Compose v2.0+`
 - 支持环境：`Centos/Debian/Ubuntu/macOS`
 - 硬件建议：2核4G以上
 
