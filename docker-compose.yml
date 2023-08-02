@@ -168,7 +168,7 @@ services:
 
   okr:
     container_name: "dootask-okr-${APP_ID}"
-    image: "hitosea2020/okr:0.0.2"
+    image: "hitosea2020/okr:0.0.3"
     environment:
       TZ: "Asia/Shanghai"
       MYSQL_HOST: "${DB_HOST}"
