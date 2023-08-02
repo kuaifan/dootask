@@ -7,9 +7,9 @@
                 <div class="approve-nav">
                     <h1>{{$L('审批中心')}}</h1>
                 </div>
-                <Button type="primary" @click="addApply">{{$L("添加申请")}}</Button>
+                <Button :loading="addLoadIng" type="primary" @click="addApply">{{$L("添加申请")}}</Button>
             </div>
-
+           
             <Tabs :value="tabsValue" @on-click="tabsClick" style="margin: 0 20px;height: 100%;"  size="small">
                 <TabPane :label="$L('待办') + (unreadTotal > 0 ? ('('+unreadTotal+')') : '')" name="unread" style="height: 100%;">
                     <div class="approve-main-search">
@@ -19,7 +19,7 @@
                             </Select>
                         </div>
                     </div>
-                    <div class="noData" v-if="unreadList.length==0">{{$L('暂无数据')}}</div>
+                    <div v-if="unreadList.length==0" class="noData" >{{$L('暂无数据')}}</div>
                     <div v-else class="approve-mains">
                         <div class="approve-main-left">
                             <div class="approve-main-list">
@@ -65,7 +65,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="noData" v-if="notifyList.length==0">{{$L('暂无数据')}}</div>
+                    <div v-if="notifyList.length==0" class="noData">{{$L('暂无数据')}}</div>
                     <div v-else class="approve-mains">
                         <div class="approve-main-left">
                             <div class="approve-main-list">
@@ -90,7 +90,7 @@
                             </Select>
                         </div>
                     </div>
-                    <div class="noData" v-if="initiatedList.length==0">{{$L('暂无数据')}}</div>
+                    <div v-if="notifyList.length==0" class="noData">{{$L('暂无数据')}}</div>
                     <div v-else class="approve-mains">
                         <div class="approve-main-left">
                             <div class="approve-main-list">
@@ -105,7 +105,7 @@
                     </div>
                 </TabPane>
             </Tabs>
-
+            
         </div>
 
         <!--详情-->
@@ -193,8 +193,8 @@ import {mapState} from 'vuex'
 export default {
     components:{list,listDetails,DrawerOverlay,ImgUpload},
     name: "approve",
-    data(){
-        return{
+    data() {
+        return {
             minDate: new Date(2020, 0, 1),
             maxDate: new Date(2025, 10, 1),
             currentDate: new Date(2021, 0, 17),
@@ -204,62 +204,63 @@ export default {
             pageSize: 250,
             total: 0,
             noText: '',
-            loadIng:false,
+            loadIng: false,
+            addLoadIng: false,
 
-            tabsValue:"",
+            tabsValue: "",
             //
-            approvalType:"all",
-            approvalList:[
-                {value:"all",label:this.$L("全部审批")},
-                {value:"请假",label:this.$L("请假")},
-                {value:"加班申请",label:this.$L("加班申请")},
+            approvalType: "all",
+            approvalList: [
+                { value: "all", label: this.$L("全部审批") },
+                { value: "请假", label: this.$L("请假") },
+                { value: "加班申请", label: this.$L("加班申请") },
             ],
-            searchState:"all",
-            searchStateList:[
-                {value:"all",label:this.$L("全部状态")},
-                {value:1,label:this.$L("审批中")},
-                {value:2,label:this.$L("已通过")},
-                {value:3,label:this.$L("已拒绝")},
-                {value:4,label:this.$L("已撤回")}
+            searchState: "all",
+            searchStateList: [
+                { value: "all", label: this.$L("全部状态") },
+                { value: 1, label: this.$L("审批中") },
+                { value: 2, label: this.$L("已通过") },
+                { value: 3, label: this.$L("已拒绝") },
+                { value: 4, label: this.$L("已撤回") }
             ],
             //
-            unreadTotal:0,
+            unreadTotal: 0,
             unreadList: [],
-            doneList:[],
-            notifyList:[],
+            doneList: [],
+            notifyList: [],
             initiatedList: [],
             //
-            details:{},
-            detailsShow:false,
+            details: {},
+            detailsShow: false,
             //
-            addTitle:'',
-            addShow:false,
-            startTimeOpen:false,
-            endTimeOpen:false,
+            addTitle: '',
+            addShow: false,
+            startTimeOpen: false,
+            endTimeOpen: false,
             addData: {
-                department_id:0,
+                department_id: 0,
                 applyType: '',
                 type: '',
                 startTime: "2023-04-20",
-                startTimeHour:"09",
-                startTimeMinute:"00",
+                startTimeHour: "09",
+                startTimeMinute: "00",
                 endTime: "2023-04-20",
-                endTimeHour:"18",
-                endTimeMinute:"00",
-                other:""
+                endTimeHour: "18",
+                endTimeMinute: "00",
+                other: ""
             },
             addRule: {
-                department_id:{ type: 'number',required: true, message: this.$L('请选择部门！'), trigger: 'change' },
-                applyType: { type: 'string',required: true, message: this.$L('请选择申请类型！'), trigger: 'change' },
-                type: { type: 'string',required: true, message: this.$L('请选择假期类型！'), trigger: 'change' },
-                startTime: { type: 'string',required: true, message: this.$L('请选择开始时间！'), trigger: 'change' },
-                endTime:{ type: 'string',required: true, message: this.$L('请选择结束时间！'), trigger: 'change' },
-                description:{ type: 'string',required: true, message: this.$L('请输入事由！'), trigger: 'change' },
+                department_id: { type: 'number', required: true, message: this.$L('请选择部门！'), trigger: 'change' },
+                applyType: { type: 'string', required: true, message: this.$L('请选择申请类型！'), trigger: 'change' },
+                type: { type: 'string', required: true, message: this.$L('请选择假期类型！'), trigger: 'change' },
+                startTime: { type: 'string', required: true, message: this.$L('请选择开始时间！'), trigger: 'change' },
+                endTime: { type: 'string', required: true, message: this.$L('请选择结束时间！'), trigger: 'change' },
+                description: { type: 'string', required: true, message: this.$L('请输入事由！'), trigger: 'change' },
             },
-            selectTypes:["年假","事假","病假","调休","产假","陪产假","婚假","丧假","哺乳假"],
+            selectTypes: ["年假", "事假", "病假", "调休", "产假", "陪产假", "婚假", "丧假", "哺乳假"],
 
             //
-            showDateTime:false
+            showDateTime: false
         }
     },
     computed: {
@@ -320,7 +321,9 @@ export default {
                 return;
             }
             this.__tabsClick = setTimeout(() => {  this.__tabsClick =null; },time)
-
+            if(time == 0){
+                this.loadIng = true;
+            }
             this.tabsValue = val || this.tabsValue
             if(val!=""){
                 this.approvalType = this.searchState = "all"
@@ -392,7 +395,7 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
-                this.loadIng--;
+                this.loadIng = false;
             });
         },
 
@@ -425,7 +428,7 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
-                this.loadIng--;
+                this.loadIng = false;
             });
         },
 
@@ -458,7 +461,7 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
-                this.loadIng--;
+                this.loadIng = false;
             });
         },
 
@@ -492,12 +495,13 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
-                this.loadIng--;
+                this.loadIng = false;
             });
         },
 
         // 添加申请
         addApply(){
+            this.addLoadIng = true;
             this.$store.dispatch("call", {
                 url: 'users/basic',
                 data: {
@@ -516,12 +520,11 @@ export default {
                 }).catch(({msg}) => {
                     $A.modalError(msg);
                 }).finally(_ => {
-                    this.loadIng--;
+                    this.addLoadIng = false;
                 });
             }).catch(({msg}) => {
+                this.addLoadIng = false;
                 $A.modalError(msg);
-            }).finally(_ => {
-                this.loadIng--;
             });
         },
 
@@ -529,7 +532,7 @@ export default {
         onInitiate(){
             this.$refs.initiateRef.validate((valid) => {
                 if (valid) {
-                    this.loadIng = 1;
+                    this.loadIng = true;
                     var obj = JSON.parse(JSON.stringify(this.addData))
 
                     obj.startTime = obj.startTime +" "+ obj.startTimeHour + ":" + obj.startTimeMinute;
@@ -557,14 +560,12 @@ export default {
                     }).catch(({msg}) => {
                         $A.modalError(msg);
                     }).finally(_ => {
-                        this.loadIng--;
+                        this.loadIng = false;
                     });
                 }
             });
         }
-
-
-    },
+    }
 }
 </script>
 
