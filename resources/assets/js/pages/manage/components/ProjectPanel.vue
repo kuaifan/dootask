@@ -1035,7 +1035,9 @@ export default {
             else if (command.name) {
                 this.updateColumn(column, {
                     color: command.color
-                }).catch($A.modalError);
+                }).catch(e => {
+                    $A.modalError(e)
+                });
             }
         },
 

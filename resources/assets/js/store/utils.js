@@ -20,7 +20,8 @@ function __callData(key, requestData, state) {
         callData.updated = 0
         callData.deleted = 0
         state.callAt.push(callData)
-        $A.IDBSet("callAt", state.callAt).then(_ => {})
+        $A.IDBSet("callAt", state.callAt).then(_ => {
+        })
     }
 
     /**
@@ -85,14 +86,14 @@ export function $urlSafe(value, encode = true) {
     return value
 }
 
-const SSEDefaultOptions = {
-    retry: 5,
-    interval: 3 * 1000,
-};
-
 /**
  * EventSource
  */
+const SSEDefaultOptions = {
+    retry: 5,
+    interval: 3 * 1000,
+}
+
 export class SSEClient {
     constructor(url, options = SSEDefaultOptions) {
         this.url = url;

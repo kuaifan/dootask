@@ -20,17 +20,17 @@ import mixin from "./store/mixin"
 import "../sass/app.scss";
 
 Vue.use(Vuex);
-Vue.use(ViewUI, {
-    modal: {
-        checkEscClose: true
-    }
-});
+Vue.use(VueRouter);
 Vue.use(VueClipboard, {
     config: {
         autoSetContainer: true
     }
 });
-Vue.use(VueRouter);
+Vue.use(ViewUI, {
+    modal: {
+        checkEscClose: true
+    }
+});
 
 import PageTitle from './components/PageTitle.vue'
 import Loading from './components/Loading.vue'

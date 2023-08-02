@@ -2744,7 +2744,9 @@ export default {
                 this.onTodoSubmit(todoData).then(msg => {
                     $A.messageSuccess(msg)
                     this.todoSettingShow = false
-                }).catch($A.messageError).finally(_ => {
+                }).catch(e => {
+                    $A.messageError(e)
+                }).finally(_ => {
                     this.todoSettingLoad--
                 })
             } else {
