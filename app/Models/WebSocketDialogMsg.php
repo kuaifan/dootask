@@ -641,7 +641,7 @@ class WebSocketDialogMsg extends AbstractModel
         }
         // 其他网络图片
         $imageSaveLocal = Base::settingFind("system", "image_save_local");
-        preg_match_all("/<img[^>]*?src=([\"'])(.*?\.(png|jpg|jpeg|webp|gif))\\1[^>]*?>/is", $text, $matchs);
+        preg_match_all("/<img[^>]*?src=([\"'])(.*?(png|jpg|jpeg|webp|gif).*?)\\1[^>]*?>/is", $text, $matchs);
         foreach ($matchs[2] as $key => $str) {
             if ($imageSaveLocal === 'close') {
                 $imageSize = getimagesize($str);

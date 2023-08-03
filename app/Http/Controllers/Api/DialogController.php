@@ -728,7 +728,7 @@ class DialogController extends AbstractController
         $markdown = in_array($text_type, ['md', 'markdown']);
         // 
         $result = [];
-        $dialogIds = $dialog_ids ? explode(',', $dialog_ids) : [$dialog_id];
+        $dialogIds = $dialog_ids ? explode(',', $dialog_ids) : [$dialog_id ?: 0];
         foreach($dialogIds as $dialog_id) {
             //
             WebSocketDialog::checkDialog($dialog_id);
