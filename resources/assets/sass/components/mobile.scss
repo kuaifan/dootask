@@ -242,76 +242,161 @@
 
 // 渐见
 .mobile-fade-enter-active {
-    transition: all 0.2s ease;
+    animation: mobile-fade-enter-animation 0.2s forwards;
 }
 
 .mobile-fade-leave-active {
-    transition: all 0.2s ease;
+    animation: mobile-fade-leave-animation 0.2s backwards;
 }
 
-.mobile-fade-enter,
-.mobile-fade-leave-to {
-    opacity: 0;
+@keyframes mobile-fade-enter-animation {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes mobile-fade-leave-animation {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0;
+    }
 }
 
 // 底部划上
 .mobile-slide-enter-active {
-    transition: all 0.2s ease;
+    animation: mobile-slide-enter-animation 0.2s forwards;
 }
 
 .mobile-slide-leave-active {
-    transition: all 0.2s ease;
+    animation: mobile-slide-leave-animation 0.2s backwards;
 }
 
-.mobile-slide-enter,
-.mobile-slide-leave-to {
-    transform: translate(0, 15%);
-    opacity: 0;
+@keyframes mobile-slide-enter-animation {
+    from {
+        transform: translate(0, 15%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translate(0, 0);
+        opacity: 1;
+    }
+}
+
+@keyframes mobile-slide-leave-animation {
+    from {
+        transform: translate(0, 0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translate(0, 15%);
+        opacity: 0;
+    }
 }
 
 // 通知（顶部划入）
 .mobile-notify-enter-active {
-    transition: all 0.3s ease;
+    animation: mobile-notify-enter-animation 0.3s forwards;
 }
 
 .mobile-notify-leave-active {
-    transition: all 0.3s ease;
+    animation: mobile-notify-leave-animation 0.3s backwards;
 }
 
-.mobile-notify-enter,
-.mobile-notify-leave-to {
-    transform: translate(-50%, -100%);
-    opacity: 0;
+@keyframes mobile-notify-enter-animation {
+    from {
+        transform: translate3d(-50%, -100%, 0);
+        opacity: 0;
+    }
+
+    to {
+        transform: translate3d(-50%, 0, 0);
+        opacity: 1;
+    }
+}
+
+@keyframes mobile-notify-leave-animation {
+    from {
+        transform: translate3d(-50%, 0, 0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translate3d(-50%, -100%, 0);
+        opacity: 0;
+    }
 }
 
 // 对话框（右侧划入）
 .mobile-dialog-enter-active {
-    transition: all 0.3s ease;
+    animation: mobile-dialog-enter-animation 0.3s forwards;
 }
 
 .mobile-dialog-leave-active {
-    transition: all 0.3s ease;
+    animation: mobile-dialog-leave-animation 0.3s backwards;
 }
 
-.mobile-dialog-enter,
-.mobile-dialog-leave-to {
-    transform: translate(100%, 0);
-    opacity: 0;
+@keyframes mobile-dialog-enter-animation {
+    from {
+        transform: translate3d(100%, 0, 0);
+        opacity: 0;
+    }
+    to {
+        transform: translate3d(0%, 0, 0);
+        opacity: 1;
+    }
+}
+
+@keyframes mobile-dialog-leave-animation {
+    from {
+        transform: translate3d(0%, 0, 0);
+        opacity: 1;
+    }
+    to {
+        transform: translate3d(100%, 0, 0);
+        opacity: 0;
+    }
 }
 
 // 录音发送（缩放）
 .mobile-send-enter-active {
-    transition: all 0.3s ease;
+    animation: mobile-send-enter-animation 0.3s forwards;
 }
 
 .mobile-send-leave-active {
-    transition: all 0.3s ease;
+    animation: mobile-send-leave-animation 0.3s backwards;
 }
 
-.mobile-send-enter,
-.mobile-send-leave-to {
-    transform: translate(-50%, -50%) scale(0) !important;
-    opacity: 0;
+@keyframes mobile-send-enter-animation {
+    from {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+    }
+
+    to {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes mobile-send-leave-animation {
+    from {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+
+    to {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+    }
 }
 
 body.window-touch {

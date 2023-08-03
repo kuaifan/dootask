@@ -67,8 +67,8 @@ export default {
 
     methods: {
         onBeforeClose() {
-            return new Promise(resolve => {
-                resolve(this.$store.dispatch("openDialog", 0))
+            return new Promise(_ => {
+                this.$store.dispatch("openDialog", 0)
             })
         },
     }
