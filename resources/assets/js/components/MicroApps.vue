@@ -61,6 +61,7 @@ export default {
     deactivated() {
     },
     mounted() {
+        this.appData = this.getAppData
     },
     watch: {
         url(val) {
@@ -92,20 +93,15 @@ export default {
                 }
             },
             immediate: true,
-        },
+        }
     },
     computed: {
         ...mapState([
             'userInfo',
             'themeMode',
-        ])
-    },
-    methods: {
-        handleCreate(e) {
-            window.eventCenterForAppNameVite = new EventCenterForMicroApp(this.name)
-        },
-        handleBeforeMount(e) {
-            this.appData = {
+        ]),
+        getAppData(){
+            return {
                 type: 'init',
                 vues: {
                     Vue,
@@ -123,14 +119,26 @@ export default {
                 userInfo: this.userInfo,
                 path: this.path
             }
+        }
+    },
+    methods: {
+        handleCreate(e) {
+            // 创建前
+            window.eventCenterForAppNameVite = new EventCenterForMicroApp(this.name)
+            this.appData = this.getAppData
+        },
+        handleBeforeMount(e) {
+            // 加载前
         },
         handleMount(e) {
+            // 加载完成
             this.appData = this.data;
             if(this.path){
                 this.appData.path = this.path
             }
         },
         handleUnmount(e) {
+            // 卸载
             window.dispatchEvent(new Event('apps-unmount'));
         },
         handleError(e) {
