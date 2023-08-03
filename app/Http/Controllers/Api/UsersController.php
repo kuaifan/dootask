@@ -1839,6 +1839,10 @@ class UsersController extends AbstractController
      * @apiGroup users
      * @apiName share__list
      *
+     * @apiParam {String} [type]            分享类型：file-文件，text-列表 默认file
+     * @apiParam {Number} [pid]             父级文件id，用于获取子目录和上传到指定目录的id
+     * @apiParam {Number} [upload_file_id]  上传文件id
+     * 
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
@@ -1846,6 +1850,7 @@ class UsersController extends AbstractController
     public function share__list()
     {
         $user = User::auth();
+        $type = Request::input('type', 'file');
         $pid = intval(Request::input('pid', -1));
         $uploadFileId = intval(Request::input('upload_file_id', -1));
         // 上传文件
@@ -1857,7 +1862,7 @@ class UsersController extends AbstractController
         }
         // 获取数据
         $lists = [];
-        if ($pid !== -1) {
+        if ($type == 'file' && $pid !== -1) {
             $fileList = (new File)->getFileList($user, $pid, 'dir', false);
             foreach ($fileList as $file) {
                 if ($file['id'] != $pid) {
@@ -1870,15 +1875,16 @@ class UsersController extends AbstractController
                     ];
                 }
             }
-
         } else {
-            $lists[] = [
-                'type' => 'children',
-                'url' => Base::fillUrl("api/users/share/list") . "?pid=0",
-                'icon' => url("images/file/light/folder.png"),
-                'extend' => ['upload_file_id' => 0],
-                'name' => Doo::translate('文件'),
-            ];
+            if($type == 'file'){
+                $lists[] = [
+                    'type' => 'children',
+                    'url' => Base::fillUrl("api/users/share/list") . "?pid=0",
+                    'icon' => url("images/file/light/folder.png"),
+                    'extend' => ['upload_file_id' => 0],
+                    'name' => Doo::translate('文件'),
+                ];
+            }
             $dialogList = (new WebSocketDialog)->getDialogList($user->userid);
             foreach ($dialogList['data'] as $dialog) {
                 if ($dialog['avatar']) {
@@ -1897,8 +1903,13 @@ class UsersController extends AbstractController
                     'type' => 'item',
                     'name' => $dialog['name'],
                     'icon' => $avatar,
-                    'url' => Base::fillUrl("api/dialog/msg/sendfiles"),
-                    'extend' => ['dialog_ids' => $dialog['id']]
+                    'url' => $type == "file" ? Base::fillUrl("api/dialog/msg/sendfiles") : Base::fillUrl("api/dialog/msg/sendtext"),
+                    'extend' => [
+                        'dialog_ids' => $dialog['id'], 
+                        'text_type' => 'text', 
+                        'reply_id' => 0, 
+                        'silence' => 'no'
+                    ]
                 ];
             }
         }
