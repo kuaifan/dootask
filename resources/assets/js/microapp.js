@@ -1,5 +1,13 @@
 import microApp from '@micro-zoe/micro-app'
 
+const getUrl = (s) => {
+    let url = $A.apiUrl(s)
+    if (url.indexOf('http') == -1) {
+        url =  window.location.origin + url
+    }
+    return import.meta.env.VITE_OKR_WEB_URL || url;
+}
+
 export default function() {
     let urls  = "";
     let route  = "/";
@@ -31,5 +39,13 @@ export default function() {
             modules: modules
         }
     })
-    
+   
+    //预加载 
+    microApp.preFetch([
+        { 
+            name: 'micro-app', 
+            url: getUrl("/apps/okr"),
+            disableSandbox: true
+        }
+    ])
 }
