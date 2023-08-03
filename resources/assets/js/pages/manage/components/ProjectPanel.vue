@@ -387,24 +387,26 @@
             <Form :model="inviteData" label-width="auto" @submit.native.prevent>
                 <FormItem :label="$L('链接地址')">
                     <Input ref="inviteInput" v-model="inviteData.url" type="textarea" :rows="3" @on-focus="inviteFocus" readonly/>
-                    <div class="form-tip">{{$L('可通过此链接直接加入项目。')}}</div>
+                    <div class="form-tip">
+                        {{$L('可通过此链接直接加入项目。')}}
+                        <Poptip
+                            confirm
+                            placement="bottom"
+                            :ok-text="$L('确定')"
+                            :cancel-text="$L('取消')"
+                            @on-ok="inviteGet(true)"
+                            transfer>
+                            <div slot="title">
+                                <p><strong>{{$L('注意：刷新将导致原来的邀请链接失效！')}}</strong></p>
+                            </div>
+                            <a href="javascript:void(0)">{{$L('刷新链接')}}</a>
+                        </Poptip>
+                    </div>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="inviteShow=false">{{$L('取消')}}</Button>
-                <Poptip
-                    confirm
-                    placement="bottom"
-                    style="margin-left:8px"
-                    :ok-text="$L('确定')"
-                    :cancel-text="$L('取消')"
-                    @on-ok="inviteGet(true)"
-                    transfer>
-                    <div slot="title">
-                        <p><strong>{{$L('注意：刷新将导致原来的邀请链接失效！')}}</strong></p>
-                    </div>
-                    <Button type="primary" :loading="inviteLoad > 0">{{$L('刷新')}}</Button>
-                </Poptip>
+                <Button type="primary" :loading="inviteLoad > 0" @click="inviteCopy">{{$L('复制')}}</Button>
             </div>
         </Modal>
 
@@ -1369,6 +1371,7 @@ export default {
             if (!this.inviteData.url) {
                 return;
             }
+            this.inviteFocus();
             this.$copyText(this.inviteData.url).then(_ => {
                 $A.messageSuccess('复制成功');
             }).catch(_ => {
@@ -1377,7 +1380,9 @@ export default {
         },
 
         inviteFocus() {
-            this.$refs.inviteInput.focus({cursor:'all'});
+            this.$nextTick(_ => {
+                this.$refs.inviteInput.focus({cursor:'all'});
+            });
         },
 
         toggleCompleted() {
