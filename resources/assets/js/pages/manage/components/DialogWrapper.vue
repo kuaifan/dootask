@@ -146,6 +146,7 @@
         <VirtualList
             ref="scroller"
             class="dialog-scroller scrollbar-virtual"
+            item-inactive-class="inactive"
             :class="scrollerClass"
             :data-key="'id'"
             :data-sources="allMsgs"
