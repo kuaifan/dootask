@@ -425,7 +425,9 @@
         }
 
         .inactive {
-            visibility: hidden;
+            pre, code {
+                visibility: hidden;
+            }
         }
 
         .dialog-item {
