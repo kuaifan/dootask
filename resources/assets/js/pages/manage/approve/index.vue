@@ -13,41 +13,55 @@
             <Tabs :value="tabsValue" @on-click="tabsClick" style="margin: 0 20px;height: 100%;"  size="small">
                 <TabPane :label="$L('待办') + (unreadTotal > 0 ? ('('+unreadTotal+')') : '')" name="unread" style="height: 100%;">
                     <div class="approve-main-search">
-                        <div style="display: flex;gap: 10px;">
-                            <Select v-model="approvalType" @on-change="tabsClick('',0)" style="width: 150px;">
+                        <div>
+                            <Select v-model="approvalType" @on-change="tabsClick(false,0)">
                                 <Option v-for="item in approvalList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
-                        </div>
-                    </div>
-                    <div v-if="unreadList.length==0" class="noData" >{{$L('暂无数据')}}</div>
-                    <div v-else class="approve-mains">
-                        <div class="approve-main-left">
-                            <div class="approve-main-list">
-                                <div @click.stop="clickList(item,key)"  v-for="(item,key) in unreadList">
-                                    <list :class="{ 'approve-list-active': item._active }" :data="item"></list>
-                                </div>
+                            <div v-if="this.loadIng" class="load">
+                                <Loading/>
                             </div>
                         </div>
-                        <div class="approve-main-right">
-                            <listDetails v-if="!detailsShow && tabsValue=='unread'" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
+                    </div>
+                    <div>
+                        <div v-if="unreadList.length==0" class="noData" >{{$L('暂无数据')}}</div>
+                        <div v-else class="approve-mains">
+                            <div class="approve-main-left">
+                                <div class="approve-main-list" @scroll="handleScroll">
+                                    <div @click.stop="clickList(item,key)"  v-for="(item,key) in unreadList">
+                                        <list :class="{ 'approve-list-active': item._active }" :data="item"></list>
+                                    </div>
+                                    <div class="load" v-if="unreadList.length < unreadTotal">
+                                        <Loading/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="approve-main-right">
+                                <listDetails v-if="!detailsShow && tabsValue=='unread'" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
+                            </div>
                         </div>
                     </div>
                 </TabPane>
                 <TabPane :label="$L('已办')" name="done">
                     <div class="approve-main-search">
-                        <div style="display: flex;gap: 10px;">
-                            <Select v-model="approvalType" @on-change="tabsClick('',0)" style="width: 150px;">
+                        <div>
+                            <Select v-model="approvalType" @on-change="tabsClick(false,0)">
                                 <Option v-for="item in approvalList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
+                            <div v-if="this.loadIng" class="load">
+                                <Loading/>
+                            </div>
                         </div>
                     </div>
                     <div v-if="doneList.length==0" class="noData">{{$L('暂无数据')}}</div>
                     <div v-else class="approve-mains">
                         <div class="approve-main-left">
-                            <div class="approve-main-list">
+                            <div class="approve-main-list" @scroll="handleScroll">
                                 <div @click.stop="clickList(item,key)"  v-for="(item,key) in doneList" >
                                     <list :class="{ 'approve-list-active': item._active }" :data="item"></list>
-                               </div>
+                                </div>
+                                <div class="load" v-if="doneList.length < doneTotal">
+                                    <Loading/>
+                                </div>
                             </div>
                         </div>
                         <div class="approve-main-right">
@@ -58,20 +72,26 @@
                 <TabPane :label="$L('抄送我')" name="notify">
                     <div class="approve-main-search">
                         <div class="approve-main-search">
-                            <div style="display: flex;gap: 10px;">
-                                <Select v-model="approvalType" @on-change="tabsClick('',0)" style="width: 150px;">
+                            <div>
+                                <Select v-model="approvalType" @on-change="tabsClick(false,0)">
                                     <Option v-for="item in approvalList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                                 </Select>
+                                <div v-if="this.loadIng" class="load">
+                                    <Loading/>
+                                </div>
                             </div>
                         </div>
                     </div>
                     <div v-if="notifyList.length==0" class="noData">{{$L('暂无数据')}}</div>
                     <div v-else class="approve-mains">
                         <div class="approve-main-left">
-                            <div class="approve-main-list">
+                            <div class="approve-main-list" @scroll="handleScroll">
                                 <div @click.stop="clickList(item,key)"  v-for="(item,key) in notifyList">
                                     <list :class="{ 'approve-list-active': item._active }" :data="item"></list>
-                               </div>
+                                </div>
+                                <div class="load" v-if="notifyList.length < notifyTotal">
+                                    <Loading/>
+                                </div>
                             </div>
                         </div>
                         <div class="approve-main-right">
@@ -81,22 +101,28 @@
                 </TabPane>
                 <TabPane :label="$L('已发起')" name="initiated">
                     <div class="approve-main-search">
-                        <div style="display: flex;gap: 10px;">
-                            <Select v-model="approvalType" @on-change="tabsClick('',0)" style="width: 150px;">
+                        <div>
+                            <Select v-model="approvalType" @on-change="tabsClick(false,0)">
                                 <Option v-for="item in approvalList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
-                            <Select v-model="searchState" @on-change="tabsClick('',0)" style="width: 150px;">
+                            <Select v-model="searchState" @on-change="tabsClick(false,0)">
                                 <Option v-for="item in searchStateList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
+                            <div v-if="this.loadIng" class="load">
+                                <Loading/>
+                            </div>
                         </div>
                     </div>
-                    <div v-if="notifyList.length==0" class="noData">{{$L('暂无数据')}}</div>
+                    <div v-if="initiatedList.length==0" class="noData">{{$L('暂无数据')}}</div>
                     <div v-else class="approve-mains">
                         <div class="approve-main-left">
-                            <div class="approve-main-list">
+                            <div class="approve-main-list" @scroll="handleScroll">
                                 <div @click.stop="clickList(item,key)"  v-for="(item,key) in initiatedList">
                                     <list :class="{ 'approve-list-active': item._active }" :data="item"></list>
-                               </div>
+                                </div>
+                                <div class="load" v-if="initiatedList.length < initiatedTotal">
+                                    <Loading/>
+                                </div>
                             </div>
                         </div>
                         <div class="approve-main-right">
@@ -195,13 +221,15 @@ export default {
     name: "approve",
     data() {
         return {
+            modalTransferIndex: window.modalTransferIndex,
+
             minDate: new Date(2020, 0, 1),
             maxDate: new Date(2025, 10, 1),
             currentDate: new Date(2021, 0, 17),
 
             procdefList: [],
             page: 1,
-            pageSize: 250,
+            pageSize: 10,
             total: 0,
             noText: '',
             loadIng: false,
@@ -224,11 +252,25 @@ export default {
                 { value: 4, label: this.$L("已撤回") }
             ],
             //
-            unreadTotal: 0,
             unreadList: [],
+            unreadPage: 1,
+            unreadTotal: 0,
+            unreadLoad: false,
+            // 
             doneList: [],
+            donePage: 1,
+            doneLoad: false,
+            doneTotal: 0,
+            // 
             notifyList: [],
+            notifyPage: 1,
+            notifyLoad: false,
+            notifyTotal: 0,
+            // 
             initiatedList: [],
+            initiatedPage: 1,
+            initiatedLoad: false,
+            initiatedTotal: 0,
             //
             details: {},
             detailsShow: false,
@@ -276,7 +318,7 @@ export default {
         }
     },
     watch: {
-        '$route' (to, from) {
+        '$route' (to) {
             if(to.name == 'manage-approve'){
                 this.tabsClick()
             }
@@ -308,6 +350,7 @@ export default {
         this.addData.startTime = this.addData.endTime = this.getCurrentDate();
     },
     methods:{
+        // 获取当前时间
         getCurrentDate() {
             const today = new Date();
             const year = today.getFullYear();
@@ -315,6 +358,7 @@ export default {
             const date = String(today.getDate()).padStart(2, '0');
             return `${year}-${month}-${date}`;
         },
+
         // tab切换事件
         tabsClick(val,time= 1000){
             if(!val && this.__tabsClick && time>0){
@@ -325,19 +369,35 @@ export default {
                 this.loadIng = true;
             }
             this.tabsValue = val || this.tabsValue
-            if(val!=""){
+            if(val){
                 this.approvalType = this.searchState = "all"
             }
             if(this.tabsValue == 'unread'){
+                if(val === false){
+                    this.unreadPage = 1;
+                    this.unreadList = [];
+                }
                 this.getUnreadList();
             }
             if(this.tabsValue == 'done'){
+                if(val === false){
+                    this.donePage = 1;
+                    this.doneList = [];
+                }
                 this.getDoneList();
             }
             if(this.tabsValue == 'notify'){
+                if(val === false){
+                    this.notifyPage = 1;
+                    this.notifyList = [];
+                }
                 this.getNotifyList();
             }
             if(this.tabsValue == 'initiated'){
+                if(val === false){
+                    this.initiatedPage = 1;
+                    this.initiatedList = [];
+                }
                 this.getInitiatedList();
             }
         },
@@ -363,29 +423,59 @@ export default {
             })
         },
 
+        // 下拉加载 
+        handleScroll(e){
+            if (e.target.scrollTop + e.target.clientHeight >= e.target.scrollHeight) {
+                if(this.tabsValue == 'unread' && !this.unreadLoad && this.unreadList.length < this.unreadTotal){
+                    this.unreadLoad = true;
+                    this.unreadPage = this.unreadPage + 1;
+                    this.getUnreadList('scroll');
+                }
+                if(this.tabsValue == 'done' && !this.doneLoad && this.doneList.length < this.doneTotal){
+                    this.doneLoad = true;
+                    this.donePage = this.donePage + 1;
+                    this.getDoneList('scroll');
+                }
+                if(this.tabsValue == 'notify' && !this.notifyLoad && this.notifyList.length < this.notifyTotal){
+                    this.notifyLoad = true;
+                    this.notifyPage = this.notifyPage + 1;
+                    this.getNotifyList('scroll');
+                }
+                if(this.tabsValue == 'initiated' && !this.initiatedLoad && this.initiatedList.length < this.initiatedTotal){
+                    this.initiatedLoad = true;
+                    this.initiatedPage = this.initiatedPage + 1;
+                    this.getInitiatedList('scroll');
+                }
+            }
+        },
+
         // 获取待办列表
-        getUnreadList(){
+        getUnreadList(type='init'){
             this.$store.dispatch("call", {
                 method: 'get',
                 url: 'approve/process/findTask',
                 data: {
-                    page:this.page,
-                    page_size: this.pageSize,
+                    page: type == 'scroll' ? this.unreadPage : 1,
+                    page_size: type == 'scroll' ? this.pageSize : this.unreadPage * this.pageSize,
                     proc_def_name: this.approvalType == 'all' ? '' : this.approvalType,
                 }
             }).then(({data}) => {
                 let activeId = 0;
                 let activeIndex = 0;
+                this.unreadTotal = data.total;
                 if( this.unreadList.length == 0 || this.unreadList.length == data.rows.length){
                     this.unreadList?.map((res)=>{ if(res._active)  activeId = res.id  })
                 }
-                this.unreadList = data.rows.map((h,index)=>{
+                let lists = data.rows.map((h,index)=>{
                     h._active = activeId > 0 ? h.id == activeId : index == 0;
                     if(h._active) activeIndex = index
+                    if(type == 'scroll' && this.unreadList.map(item=>{return item.id}).indexOf(h.id) == -1 ){
+                        this.unreadList.push(h)
+                    }
                     return h;
                 })
-                if(this.approvalType == 'all'){
-                    this.unreadTotal = this.unreadList.length
+                if(type != 'scroll'){
+                    this.unreadList = lists;
                 }
                 if(this.tabsValue == 'unread'){
                     this.$nextTick(()=>{
@@ -396,30 +486,38 @@ export default {
                 $A.modalError(msg);
             }).finally(_ => {
                 this.loadIng = false;
+                this.unreadLoad = false;
             });
         },
 
         // 获取已办列表
-        getDoneList(){
+        getDoneList(type='init'){
             this.$store.dispatch("call", {
                 method: 'get',
                 url: 'approve/procHistory/findTask',
                 data: {
-                    page:this.page,
-                    page_size: this.pageSize,
+                    page: type == 'scroll' ? this.donePage : 1,
+                    page_size: type == 'scroll' ? this.pageSize : this.donePage * this.pageSize,
                     proc_def_name: this.approvalType == 'all' ? '' : this.approvalType,
                 }
             }).then(({data}) => {
                 let activeId = 0;
-                let activeIndex = 0;
-                if( this.doneList.length == 0 || this.doneList.length == data.rows.length){
-                    this.doneList?.map((res)=>{ if(res._active)  activeId = res.id  })
+                let activeIndex = 0;    
+                this.doneTotal = data.total;
+                if( this.doneList.length == 0 || this.doneList.length == data.total){
+                    this.doneList?.map((res)=>{  if(res._active) activeId = res.id })
                 }
-                this.doneList = data.rows.map((h,index)=>{
+                let lists = data.rows.map((h,index)=>{
                     h._active = activeId > 0 ? h.id == activeId : index == 0;
                     if(h._active) activeIndex = index
+                    if(type == 'scroll' && this.doneList.map(item=>{return item.id}).indexOf(h.id) == -1 ){
+                        this.doneList.push(h)
+                    }
                     return h;
                 })
+                if(type != 'scroll'){
+                    this.doneList = lists;
+                }
                 if(this.tabsValue == 'done'){
                     this.$nextTick(()=>{
                         this.details = this.doneList[activeIndex] || {}
@@ -429,30 +527,38 @@ export default {
                 $A.modalError(msg);
             }).finally(_ => {
                 this.loadIng = false;
+                this.doneLoad = false;
             });
         },
 
         // 获取抄送列表
-        getNotifyList(){
+        getNotifyList(type){
             this.$store.dispatch("call", {
                 method: 'get',
                 url: 'approve/procHistory/findProcNotify',
                 data: {
-                    page:this.page,
-                    page_size: this.pageSize,
+                    page: type == 'scroll' ? this.notifyPage : 1,
+                    page_size: type == 'scroll' ? this.pageSize : this.notifyPage * this.pageSize,
                     proc_def_name: this.approvalType == 'all' ? '' : this.approvalType,
                 }
             }).then(({data}) => {
                 let activeId = 0;
                 let activeIndex = 0;
+                this.notifyTotal = data.total;
                 if( this.notifyList.length == 0 || this.notifyList.length == data.rows.length){
                     this.notifyList?.map((res)=>{ if(res._active)  activeId = res.id  })
                 }
-                this.notifyList = data.rows.map((h,index)=>{
+                let lists = data.rows.map((h,index)=>{
                     h._active = activeId > 0 ? h.id == activeId : index == 0;
                     if(h._active) activeIndex = index
+                    if(type == 'scroll' && this.notifyList.map(item=>{return item.id}).indexOf(h.id) == -1 ){
+                       this.notifyList.push(h)
+                    }
                     return h;
                 })
+                if(type != 'scroll'){
+                    this.notifyList = lists;
+                }
                 if(this.tabsValue == 'notify'){
                     this.$nextTick(()=>{
                         this.details = this.notifyList[activeIndex] || {}
@@ -462,31 +568,39 @@ export default {
                 $A.modalError(msg);
             }).finally(_ => {
                 this.loadIng = false;
+                this.notifyLoad = false;
             });
         },
 
         // 获取我发起的
-        getInitiatedList(){
+        getInitiatedList(type){
             this.$store.dispatch("call", {
                 method: 'post',
                 url: 'approve/process/startByMyselfAll',
                 data: {
-                    page: this.page,
-                    page_size: this.pageSize,
+                    page: type == 'scroll' ? this.initiatedPage : 1,
+                    page_size: type == 'scroll' ? this.pageSize : this.initiatedPage * this.pageSize,
                     proc_def_name: this.approvalType == 'all' ? '' : this.approvalType,
                     state: this.searchState == 'all' ? '' : this.searchState
                 }
             }).then(({data}) => {
                 let activeId = 0;
                 let activeIndex = 0;
+                this.initiatedTotal = data.total;
                 if( this.initiatedList.length == 0 || this.initiatedList.length == data.rows.length){
                     this.initiatedList?.map((res)=>{ if(res._active)  activeId = res.id  })
                 }
-                this.initiatedList = data.rows.map((h,index)=>{
+                let lists = data.rows.map((h,index)=>{
                     h._active = activeId > 0 ? h.id == activeId : index == 0;
                     if(h._active) activeIndex = index
+                    if(type == 'scroll' && this.initiatedList.map(item=>{return item.id}).indexOf(h.id) == -1 ){
+                       this.initiatedList.push(h)
+                    }
                     return h;
                 })
+                if(type != 'scroll'){
+                    this.initiatedList = lists;
+                }
                 if(this.tabsValue == 'initiated'){
                     this.$nextTick(()=>{
                         this.details = this.initiatedList[activeIndex] || {}
@@ -496,6 +610,7 @@ export default {
                 $A.modalError(msg);
             }).finally(_ => {
                 this.loadIng = false;
+                this.initiatedLoad = false;
             });
         },
 
@@ -556,7 +671,10 @@ export default {
                         $A.messageSuccess(msg);
                         this.addShow = false;
                         this.$refs.initiateRef.resetFields();
-                        this.tabsClick();
+                        this.tabsValue = 'initiated';
+                        this.$nextTick(()=>{
+                            this.tabsClick();
+                        })
                     }).catch(({msg}) => {
                         $A.modalError(msg);
                     }).finally(_ => {
