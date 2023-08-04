@@ -2306,7 +2306,7 @@ export default {
                 if (selectText.length > 0) {
                     this.operateCopys.push({
                         type: 'selected',
-                        icon: '&#xe77f;',
+                        icon: '&#xe7df;',
                         label: '复制选择',
                         value: selectText,
                     })
