@@ -55,6 +55,7 @@ class UserBot extends AbstractModel
             'ai-openai' => 'ChatGPT',
             'ai-claude' => 'Claude',
             'ai-wenxin' => 'Wenxin',
+            'ai-qianwen' => 'QianWen',
             'bot-manager' => '机器人管理',
             default => '',  // 不是系统机器人时返回空（也可以拿来判断是否是系统机器人）
         };

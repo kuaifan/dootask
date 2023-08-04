@@ -258,7 +258,9 @@ class SystemController extends AbstractController
             'claude_agency',
             'wenxin_key',
             'wenxin_secret',
-            'wenxin_model'
+            'wenxin_model',
+            'qianwen_key',
+            'qianwen_model'
         ];
 
         if ($type == 'save') {
@@ -292,9 +294,23 @@ class SystemController extends AbstractController
                     WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "设置成功"], $botUser->userid, true, false, true);
                 }
             }
+            if ($backup['qianwen_key'] != $setting['qianwen_key']) {
+                $botUser = User::botGetOrCreate('ai-qianwen');
+                if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "设置成功"], $botUser->userid, true, false, true);
+                }
+            }
         }
         //
         $setting['wenxin_model'] = $setting['wenxin_model'] ?: 'ERNIE-Bot-turbo';
+        if (env("SYSTEM_SETTING") == 'disabled') {
+            foreach ($keys as $item) {
+                if (strlen($setting[$item]) > 12) {
+                    $setting[$item] = substr($setting[$item], 0, 4) . str_repeat('*', strlen($setting[$item]) - 8) . substr($setting[$item], -4);
+                }
+            }
+        }
+        $setting['qianwen_model'] = $setting['qianwen_model'] ?: 'qwen-v1';
         if (env("SYSTEM_SETTING") == 'disabled') {
             foreach ($keys as $item) {
                 if (strlen($setting[$item]) > 12) {

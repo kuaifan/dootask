@@ -417,6 +417,22 @@ class BotReceiveMsgTask extends AbstractTask
                     $error = 'The client version is low (required version ≥ v0.29.12).';
                 }
                 break;
+            // QianWen 机器人
+            case 'ai-qianwen@bot.system':
+                $setting = Base::setting('aibotSetting');
+                $webhookUrl = "{$serverUrl}/ai/qianwen/send";
+                $extras = [
+                    'qianwen_key' => $setting['qianwen_key'],
+                    'qianwen_model' => $setting['qianwen_model'],
+                    'server_url' => $serverUrl,
+                ];
+                if (empty($extras['qianwen_key'])) {
+                    $error = 'Robot disabled.';
+                } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
+                    && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
+                    $error = 'The client version is low (required version ≥ v0.29.12).';
+                }
+                break;
             // 其他机器人
             default:
                 $userBot = UserBot::whereBotId($botUser->userid)->first();
