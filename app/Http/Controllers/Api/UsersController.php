@@ -328,6 +328,8 @@ class UsersController extends AbstractController
         $data = $user->toArray();
         $data['nickname_original'] = $user->getRawOriginal('nickname');
         $data['department_name'] = $user->getDepartmentName();
+        // 适用默认部门下第1级负责人才能添加部门OKR
+        $data['department_owner'] = UserDepartment::where('parent_id',0)->where('owner_userid', $user->userid())->exists();
         return Base::retSuccess('success', $data);
     }
 
