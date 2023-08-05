@@ -871,18 +871,29 @@ export default {
             }
             this.emojiTimer && clearTimeout(this.emojiTimer)
             this.emojiTimer = setTimeout(_ => {
-                text = text.replace(/&nbsp;/g," ")
-                text = text.replace(/<[^>]+>/g, "")
+                if (/<img/i.test(text)) {
+                    this.emojiQuickShow = false
+                    return
+                }
+                text = text
+                    .replace(/&nbsp;/g," ")
+                    .replace(/<[^>]+>/g, "")
                 if (text
                     && text.indexOf(" ") === -1
                     && text.length >= 1
-                    && text.length <= 4
+                    && text.length <= 8
                     && $A.isArray(window.emoticonData)) {
                     // 显示快捷选择表情窗口
                     this.emojiQuickItems = [];
-                    let baseUrl = $A.apiUrl("../images/emoticon")
+                    const baseUrl = $A.apiUrl("../images/emoticon")
                     window.emoticonData.some(data => {
-                        let item = data.list.find(d => $A.strExists(d.name + (d.key ? ` ${d.key}` : ''), text))
+                        const item = data.list.find(d => {
+                            const ks = [d.name]
+                            if (d.key) {
+                                ks.push(...(`${d.key}`).split(" "))
+                            }
+                            return ks.includes(text)
+                        })
                         if (item) {
                             this.emojiQuickItems.push(Object.assign(item, {
                                 type: `emoticon`,
