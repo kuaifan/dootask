@@ -1391,6 +1391,10 @@ export default {
 
         workflowBeforeClose() {
             return new Promise(resolve => {
+                if (!this.$refs.workflow) {
+                    resolve();
+                    return;
+                }
                 if (!this.$refs.workflow.existDiff()) {
                     resolve()
                     return
