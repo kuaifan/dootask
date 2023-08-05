@@ -505,7 +505,7 @@
         </DrawerOverlay>
 
         <!--审批详情-->
-        <DrawerOverlay v-model="approveDetailsShow"  placement="right" :size="600">
+        <DrawerOverlay v-model="approveDetailsShow" placement="right" :size="600">
             <ApproveDetails v-if="approveDetailsShow" :data="approveDetails" style="height: 100%;border-radius: 10px;"></ApproveDetails>
         </DrawerOverlay>
     </div>
@@ -1380,13 +1380,16 @@ export default {
                 } else if (data.type === 'replace') {
                     item.msg.text = data.text
                 }
-                if (tail <= 55) {
-                    this.operatePreventScroll++
-                    this.$refs.scroller.scrollToBottom();
-                    setTimeout(_ => {
-                        this.operatePreventScroll--
-                    }, 50)
-                }
+                this.$nextTick(_ => {
+                    const {tail: newTail} = this.scrollInfo()
+                    if (tail <= 10 && newTail != tail) {
+                        this.operatePreventScroll++
+                        this.$refs.scroller.scrollToBottom();
+                        setTimeout(_ => {
+                            this.operatePreventScroll--
+                        }, 50)
+                    }
+                })
             }
         },
 
@@ -2513,18 +2516,24 @@ export default {
             }
 
             // 打开审批详情
-            let domAudits = $(target).parents(".open-approve-details")
-            if( domAudits.length > 0 ){
-                let dataId = domAudits[0].getAttribute("data-id")
-                if( window.innerWidth < 426 ){
-                    this.goForward({name: 'manage-approve-details', query: { id: domAudits[0].getAttribute("data-id") } });
-                }else{
-                    this.approveDetailsShow = true;
-                    this.$nextTick(()=>{
-                        this.approveDetails = {id:dataId};
-                    })
+            let approveElement = target;
+            while (approveElement) {
+                if (approveElement.classList.contains('open-approve-details')) {
+                    const dataId = approveElement.getAttribute("data-id")
+                    if (window.innerWidth < 426) {
+                        this.goForward({name: 'manage-approve-details', query: {id: approveElement.getAttribute("data-id")}});
+                    } else {
+                        this.approveDetailsShow = true;
+                        this.$nextTick(() => {
+                            this.approveDetails = {id: dataId};
+                        })
+                    }
+                    break;
                 }
-                return;
+                if (approveElement.classList.contains('dialog-item')) {
+                    break;
+                }
+                approveElement = approveElement.parentElement;
             }
 
             switch (target.nodeName) {
