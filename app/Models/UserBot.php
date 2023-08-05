@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Module\Base;
 use App\Module\Doo;
 use App\Module\Extranet;
 use Cache;
@@ -71,7 +72,7 @@ class UserBot extends AbstractModel
             'check-in@bot.system' => [
                 [
                     'key' => 'checkin',
-                    'label' => Doo::translate('我要签到')
+                    'label' => Doo::translate('我要打卡')
                 ], [
                     'key' => 'it',
                     'label' => Doo::translate('IT资讯')
@@ -128,11 +129,139 @@ class UserBot extends AbstractModel
         }
         Cache::put("UserBot::checkinBotQuickMsg:{$userid}", "yes", Carbon::now()->addSecond());
         //
-        $text = match ($command) {
-            "checkin" => "暂未开放手动签到。",
-            default => Extranet::checkinBotQuickMsg($command),
-        };
-        return $text ?: '维护中...';
+        if ($command === 'checkin') {
+            $setting = Base::setting('checkinSetting');
+            if ($setting['open'] !== 'open') {
+                return '暂未开启签到功能。';
+            }
+            if (!in_array('manual', $setting['modes'])) {
+                return '暂未开放手动签到。';
+            }
+            if ($error = UserBot::checkinBotCheckin($userid, Base::time(), true)) {
+                return $error;
+            }
+            return null;
+        } else {
+            return Extranet::checkinBotQuickMsg($command);
+        }
+    }
+
+    /**
+     * 签到机器人签到
+     * @param $mac
+     * @param $time
+     * @param bool $alreadyTip  签到过是否提示
+     * @return string|null 返回string表示错误信息，返回null表示签到成功
+     */
+    public static function checkinBotCheckin($mac, $time, $alreadyTip = false)
+    {
+        $setting = Base::setting('checkinSetting');
+        $times = $setting['time'] ? Base::json2array($setting['time']) : ['09:00', '18:00'];
+        $advance = (intval($setting['advance']) ?: 120) * 60;
+        $delay = (intval($setting['delay']) ?: 120) * 60;
+        //
+        $nowDate = date("Y-m-d");
+        $nowTime = date("H:i:s");
+        //
+        $timeStart = strtotime("{$nowDate} {$times[0]}");
+        $timeEnd = strtotime("{$nowDate} {$times[1]}");
+        $timeAdvance = max($timeStart - $advance, strtotime($nowDate));
+        $timeDelay = min($timeEnd + $delay, strtotime("{$nowDate} 23:59:59"));
+        if (Base::time() < $timeAdvance || $timeDelay < Base::time()) {
+            return "不在有效时间内，有效时间为：" . date("H:i", $timeAdvance) . "-" . date("H:i", $timeDelay);
+        }
+        //
+        $macs = explode(",", $mac);
+        $checkins = [];
+        foreach ($macs as $mac) {
+            $mac = strtoupper($mac);
+            $array = [];
+            if (Base::isMac($mac)) {
+                if ($UserCheckinMac = UserCheckinMac::whereMac($mac)->first()) {
+                    $array = [
+                        'userid' => $UserCheckinMac->userid,
+                        'mac' => $UserCheckinMac->mac,
+                        'date' => $nowDate,
+                    ];
+                    $checkins[] = [
+                        'userid' => $UserCheckinMac->userid,
+                        'remark' => $UserCheckinMac->remark,
+                    ];
+                }
+            } elseif (Base::isNumber($mac)) {
+                if ($UserInfo = User::whereUserid($mac)->whereBot(0)->first()) {
+                    $array = [
+                        'userid' => $UserInfo->userid,
+                        'mac' => '00:00:00:00:00:00',
+                        'date' => $nowDate,
+                    ];
+                    $checkins[] = [
+                        'userid' => $UserInfo->userid,
+                        'remark' => '手动签到',
+                    ];
+                }
+            }
+            if ($array) {
+                $record = UserCheckinRecord::where($array)->first();
+                if (empty($record)) {
+                    $record = UserCheckinRecord::createInstance($array);
+                }
+                $record->times = Base::array2json(array_merge($record->times, [$nowTime]));
+                $record->report_time = $time;
+                $record->save();
+            }
+        }
+        //
+        if ($checkins && $botUser = User::botGetOrCreate('check-in')) {
+            $getJokeSoup = function($type) {
+                $pre = $type == "up" ? "每日开心：" : "心灵鸡汤：";
+                $key = $type == "up" ? "JokeSoupTask:jokes" : "JokeSoupTask:soups";
+                $array = Base::json2array(Cache::get($key));
+                if ($array) {
+                    $item = $array[array_rand($array)];
+                    if ($item) {
+                        return $pre . $item;
+                    }
+                }
+                return null;
+            };
+            $sendMsg = function($type, $checkin) use ($alreadyTip, $getJokeSoup, $botUser, $nowDate) {
+                $cacheKey = "Checkin::sendMsg-{$nowDate}-{$type}:" . $checkin['userid'];
+                $typeDesc = $type == "up" ? "上班" : "下班";
+                if (Cache::get($cacheKey) === "yes") {
+                    if ($alreadyTip && $dialog = WebSocketDialog::checkUserDialog($botUser, $checkin['userid'])) {
+                        $text = "<p>今日已{$typeDesc}打卡，无需重复打卡。</p>";
+                        WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, $type != "up");
+                    }
+                    return;
+                }
+                Cache::put($cacheKey, "yes", Carbon::now()->addDay());
+                //
+                if ($dialog = WebSocketDialog::checkUserDialog($botUser, $checkin['userid'])) {
+                    $hi = date("H:i");
+                    $remark = $checkin['remark'] ? " ({$checkin['remark']})": "";
+                    $text = "<p>{$typeDesc}打卡成功，打卡时间: {$hi}{$remark}</p>";
+                    $suff = $getJokeSoup($type);
+                    if ($suff) {
+                        $text = "{$text}<p>----------</p><p>{$suff}</p>";
+                    }
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, $type != "up");
+                }
+            };
+            if ($timeAdvance <= Base::time() && Base::time() < $timeEnd) {
+                // 上班打卡通知（从最早打卡时间 到 下班打卡时间）
+                foreach ($checkins as $checkin) {
+                    $sendMsg('up', $checkin);
+                }
+            }
+            if ($timeEnd <= Base::time() && Base::time() <= $timeDelay) {
+                // 下班打卡通知（下班打卡时间 到 最晚打卡时间）
+                foreach ($checkins as $checkin) {
+                    $sendMsg('down', $checkin);
+                }
+            }
+        }
+        return null;
     }
 
     /**

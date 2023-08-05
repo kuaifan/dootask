@@ -315,7 +315,7 @@ class SystemController extends AbstractController
      *
      * @apiParam {String} type
      * - get: 获取（默认）
-     * - save: 保存设置（参数：['open', 'time', 'advance', 'delay', 'remindin', 'remindexceed', 'edit', 'key']）
+     * - save: 保存设置（参数：['open', 'time', 'advance', 'delay', 'remindin', 'remindexceed', 'edit', 'modes', 'key']）
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
@@ -339,6 +339,7 @@ class SystemController extends AbstractController
                     'remindin',
                     'remindexceed',
                     'edit',
+                    'modes',
                     'key',
                 ])) {
                     unset($all[$key]);
@@ -347,6 +348,7 @@ class SystemController extends AbstractController
             if ($all['open'] === 'close') {
                 $all['key'] = md5(Base::generatePassword(32));
             }
+            $all['modes'] = array_intersect($all['modes'], ['auto', 'manual', 'location']);
             $setting = Base::setting('checkinSetting', Base::newTrim($all));
         } else {
             $setting = Base::setting('checkinSetting');
@@ -364,6 +366,7 @@ class SystemController extends AbstractController
         $setting['remindin'] = intval($setting['remindin']) ?: 5;
         $setting['remindexceed'] = intval($setting['remindexceed']) ?: 10;
         $setting['edit'] = $setting['edit'] ?: 'close';
+        $setting['modes'] = is_array($setting['modes']) ? $setting['modes'] : [];
         $setting['cmd'] = "curl -sSL '" . Base::fillUrl("api/public/checkin/install?key={$setting['key']}") . "' | sh";
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
