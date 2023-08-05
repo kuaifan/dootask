@@ -618,6 +618,9 @@ class ProjectTask extends AbstractModel
                         $data['assist'] = array_values(array_unique(array_diff($data['assist'], $data['owner'])));
                     }
                 }
+                if ($newFlowItem->columnid && ProjectColumn::whereProjectId($this->project_id)->whereId($newFlowItem->columnid)->exists()) {
+                    $data['column_id'] = $newFlowItem->columnid;
+                }
                 $this->flow_item_id = $newFlowItem->id;
                 $this->flow_item_name = $newFlowItem->status . "|" . $newFlowItem->name;
                 $this->addLog("修改{任务}状态", [
