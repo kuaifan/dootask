@@ -47,6 +47,22 @@
                     </FormItem>
                 </div>
             </div>
+            <div class="block-setting-box">
+                <h3>{{$L('通义千问')}} (Qianwen)</h3>
+                <div class="form-box">
+                    <FormItem label="API Key" prop="qianwen_key">
+                        <Input :maxlength="255" v-model="formData.qianwen_key" type="password" placeholder="API Key"/>
+                        <div class="form-tip">{{$L('获取方式')}} <a href="https://help.aliyun.com/document_detail/611472.html?spm=a2c4g.2399481.0.0.648f47feHXVgVP" target="_blank">https://help.aliyun.com/document_detail/611472.html?spm=a2c4g.2399481.0.0.648f47feHXVgVP</a></div>
+                    </FormItem>
+                    <FormItem label="模型" prop="qianwen_model">
+                        <Select v-model="formData.qianwen_model"  placement="top">
+                            <Option value="qwen-v1">qwen-v1</Option>
+                            <Option value="qwen-plus-v1">qwen-plus-v1</Option>
+                        </Select>
+                        <div class="form-tip">{{$L('查看说明')}} <a href="https://help.aliyun.com/document_detail/2399481.html?spm=a2c4g.2399480.0.0.6a086e16ihOhbr#90ebe270f8rte" target="_blank">https://help.aliyun.com/document_detail/2399481.html?spm=a2c4g.2399480.0.0.6a086e16ihOhbr#90ebe270f8rte</a></div>
+                    </FormItem>
+                </div>
+            </div>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{ $L('提交') }}</Button>

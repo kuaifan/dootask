@@ -39,8 +39,20 @@
             margin-bottom: 10px;
 
             > div {
+                display: flex;
+                gap: 10px;
+                overflow: hidden;
+                .ivu-select {
+                    width: 150px;
+                }
                 .ivu-dropdown {
                     margin-right: 8px;
+                }
+                .load{
+                    font-size: 12px;
+                    width: 20px;
+                    height: 32px;
+                    overflow: hidden;
                 }
             }
         }
@@ -68,6 +80,10 @@
                 width: 100%;
                 @media (max-width: 1010px) {
                     max-width: 100%;
+                }
+
+                .load{
+                    text-align: center;
                 }
 
                 .approve-main-list {

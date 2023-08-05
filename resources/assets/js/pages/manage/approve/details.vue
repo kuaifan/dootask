@@ -293,6 +293,7 @@ export default {
         },
         // 获取详情
         getInfo(isScrollToBottom = false) {
+            this.loadIng++;
             this.$store.dispatch("call", {
                 method: 'get',
                 url: 'approve/process/detail',
@@ -388,7 +389,7 @@ export default {
         },
         // 提交评论
         confirmComment(){
-            this.loadIng++;
+            this.loadIng = 1;
             this.$store.dispatch("call", {
                 method: 'post',
                 url: 'approve/process/addGlobalComment',

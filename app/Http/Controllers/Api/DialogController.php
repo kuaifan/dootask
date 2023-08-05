@@ -718,6 +718,7 @@ class DialogController extends AbstractController
         }
         //
         $dialog_id = intval(Request::input('dialog_id'));
+        $dialog_ids = trim(Request::input('dialog_ids'));
         $update_id = intval(Request::input('update_id'));
         $update_mark = !($user->bot && in_array(strtolower(trim(Request::input('update_mark'))), ['no', 'false', '0']));
         $reply_id = intval(Request::input('reply_id'));
@@ -725,59 +726,65 @@ class DialogController extends AbstractController
         $text_type = strtolower(trim(Request::input('text_type')));
         $silence = in_array(strtolower(trim(Request::input('silence'))), ['yes', 'true', '1']);
         $markdown = in_array($text_type, ['md', 'markdown']);
-        //
-        WebSocketDialog::checkDialog($dialog_id);
-        //
-        if ($update_id > 0) {
-            $action = $update_mark ? "update-$update_id" : "change-$update_id";
-        } elseif ($reply_id > 0) {
-            $action = "reply-$reply_id";
-        } else {
-            $action = "";
-        }
-        //
-        if (!$markdown) {
-            $text = WebSocketDialogMsg::formatMsg($text, $dialog_id);
-        }
-        $strlen = mb_strlen($text);
-        $noimglen = mb_strlen(preg_replace("/<img[^>]*?>/i", "", $text));
-        if ($strlen < 1) {
-            return Base::retError('消息内容不能为空');
-        }
-        if ($noimglen > 200000) {
-            return Base::retError('消息内容最大不能超过200000字');
-        }
-        if ($noimglen > 5000) {
-            // 内容过长转成文件发送
-            $path = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
-            Base::makeDir(public_path($path));
-            $path = $path . md5($text) . ".htm";
-            $file = public_path($path);
-            file_put_contents($file, $text);
-            $size = filesize(public_path($path));
-            if (empty($size)) {
-                return Base::retError('消息发送保存失败');
+        // 
+        $result = [];
+        $dialogIds = $dialog_ids ? explode(',', $dialog_ids) : [$dialog_id ?: 0];
+        foreach($dialogIds as $dialog_id) {
+            //
+            WebSocketDialog::checkDialog($dialog_id);
+            //
+            if ($update_id > 0) {
+                $action = $update_mark ? "update-$update_id" : "change-$update_id";
+            } elseif ($reply_id > 0) {
+                $action = "reply-$reply_id";
+            } else {
+                $action = "";
             }
-            $ext = $markdown ? 'md' : 'htm';
-            $fileData = [
-                'name' => "LongText-{$strlen}.{$ext}",
-                'size' => $size,
-                'file' => $file,
-                'path' => $path,
-                'url' => Base::fillUrl($path),
-                'thumb' => '',
-                'width' => -1,
-                'height' => -1,
-                'ext' => $ext,
-            ];
-            return WebSocketDialogMsg::sendMsg($action, $dialog_id, 'file', $fileData, $user->userid, false, false, $silence);
+            //
+            if (!$markdown) {
+                $text = WebSocketDialogMsg::formatMsg($text, $dialog_id);
+            }
+            $strlen = mb_strlen($text);
+            $noimglen = mb_strlen(preg_replace("/<img[^>]*?>/i", "", $text));
+            if ($strlen < 1) {
+                return Base::retError('消息内容不能为空');
+            }
+            if ($noimglen > 200000) {
+                return Base::retError('消息内容最大不能超过200000字');
+            }
+            if ($noimglen > 5000) {
+                // 内容过长转成文件发送
+                $path = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
+                Base::makeDir(public_path($path));
+                $path = $path . md5($text) . ".htm";
+                $file = public_path($path);
+                file_put_contents($file, $text);
+                $size = filesize(public_path($path));
+                if (empty($size)) {
+                    return Base::retError('消息发送保存失败');
+                }
+                $ext = $markdown ? 'md' : 'htm';
+                $fileData = [
+                    'name' => "LongText-{$strlen}.{$ext}",
+                    'size' => $size,
+                    'file' => $file,
+                    'path' => $path,
+                    'url' => Base::fillUrl($path),
+                    'thumb' => '',
+                    'width' => -1,
+                    'height' => -1,
+                    'ext' => $ext,
+                ];
+                $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'file', $fileData, $user->userid, false, false, $silence);
+            }
+            //
+            $msgData = ['text' => $text];
+            if ($markdown) {
+                $msgData['type'] = 'md';
+            }
+            $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'text', $msgData, $user->userid, false, false, $silence);
         }
-        //
-        $msgData = ['text' => $text];
-        if ($markdown) {
-            $msgData['type'] = 'md';
-        }
-        return WebSocketDialogMsg::sendMsg($action, $dialog_id, 'text', $msgData, $user->userid, false, false, $silence);
+        return $result;
     }
 
     /**
