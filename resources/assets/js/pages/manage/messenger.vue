@@ -557,6 +557,9 @@ export default {
         shakeUnread() {
             let index = this.dialogList.findIndex(dialog => $A.getDialogNum(dialog) > 0)
             if (index === -1) {
+                index = this.dialogList.findIndex(dialog => dialog.todo_num > 0)
+            }
+            if (index === -1) {
                 index = this.dialogList.findIndex(dialog => $A.getDialogUnread(dialog, true) > 0)
             }
             if (index > -1) {
