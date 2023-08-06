@@ -343,6 +343,8 @@ export default {
                 }
             }
         }
+        //
+        $A.loadScript('js/emoticon.all.js')
     },
     beforeDestroy() {
         if (this.quill) {
@@ -549,12 +551,13 @@ export default {
                 }
             }
             if (val) {
-                let text = this.value.replace(/&nbsp;/g," ")
-                text = text.replace(/<[^>]+>/g, "")
+                let text = this.value
+                    .replace(/&nbsp;/g," ")
+                    .replace(/<[^>]+>/g, "")
                 if (text
                     && text.indexOf(" ") === -1
                     && text.length >= 1
-                    && text.length <= 4) {
+                    && text.length <= 8) {
                     this.emojiQuickKey = text;
                 } else {
                     this.emojiQuickKey = "";
