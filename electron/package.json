@@ -67,6 +67,7 @@
         },
         "files": [
             "public/**/*",
+            "electron-menu.js",
             "electron-preload.js",
             "electron.js",
             "utils.js"
