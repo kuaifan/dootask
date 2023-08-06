@@ -610,6 +610,7 @@ export default {
 
             navStyle: {},
 
+            operateClient: {x: 0, y: 0},
             operateVisible: false,
             operatePreventScroll: 0,
             operateCopys: [],
@@ -2335,6 +2336,7 @@ export default {
                     top: `${projectRect.top + this.windowScrollY}px`,
                     height: projectRect.height + 'px',
                 }
+                this.operateClient = {x: event.clientX, y: event.clientY};
                 this.operateVisible = true;
             })
         },
@@ -2440,9 +2442,7 @@ export default {
             switch (type) {
                 case 'image':
                     if (this.$Electron) {
-                        this.getBase64Image(value).then(base64 => {
-                            this.$Electron.sendMessage('copyBase64Image', {base64});
-                        })
+                        this.$Electron.sendMessage('copyImageAt', this.operateClient);
                     }
                     break;
 

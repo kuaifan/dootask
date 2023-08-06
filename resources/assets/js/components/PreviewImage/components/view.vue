@@ -138,6 +138,7 @@
             height: 100%;
             justify-content: center;
             width: 100%;
+            user-select: none;
         }
     }
 }

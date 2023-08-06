@@ -11,6 +11,7 @@ const crc = require('crc');
 const zlib = require('zlib');
 const utils = require('./utils');
 const config = require('./package.json');
+const electronMenu = require("./electron-menu");
 const spawn = require("child_process").spawn;
 
 const isMac = process.platform === 'darwin'
@@ -58,6 +59,7 @@ function createMainWindow() {
         openExternal(url)
         return {action: 'deny'}
     })
+    electronMenu.webContentsMenu(mainWindow.webContents)
 
     if (devloadUrl) {
         mainWindow.loadURL(devloadUrl).then(_ => {
@@ -158,6 +160,7 @@ function createSubWindow(args) {
         openExternal(url)
         return {action: 'deny'}
     })
+    electronMenu.webContentsMenu(browser.webContents)
 
     if (devloadUrl) {
         browser.loadURL(devloadUrl + '#' + (args.hash || args.path)).then(_ => {
@@ -255,6 +258,17 @@ app.on('browser-window-focus', () => {
     if (mainWindow) {
         mainWindow.webContents.send("browserWindowFocus", {})
     }
+})
+
+/**
+ * 设置菜单语言包
+ * @param args {path}
+ */
+ipcMain.on('setMenuLanguage', (event, args) => {
+    if (utils.isJson(args)) {
+        electronMenu.setLanguage(args)
+    }
+    event.returnValue = "ok"
 })
 
 /**
@@ -472,6 +486,28 @@ ipcMain.on('copyBase64Image', (event, args) => {
         const img = nativeImage.createFromDataURL(base64)
         clipboard.writeImage(img)
     }
+    event.returnValue = "ok"
+})
+
+/**
+ * 复制图片根据坐标
+ * @param args
+ */
+ipcMain.on('copyImageAt', (event, args) => {
+    try {
+        event.sender.copyImageAt(args.x, args.y);
+    } catch (e) {
+        // log.error(e)
+    }
+    event.returnValue = "ok"
+})
+
+/**
+ * 保存图片
+ * @param args
+ */
+ipcMain.on('saveImageAt', async (event, args) => {
+    await electronMenu.saveImageAs(args.url, args.params)
     event.returnValue = "ok"
 })
 
