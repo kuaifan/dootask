@@ -308,6 +308,10 @@
                                 background-image: url("../images/dialog/tag.svg");
                             }
 
+                            &.todo i {
+                                background-image: url("../images/dialog/todo.svg");
+                            }
+
                             &.project i {
                                 background-image: url("../images/dialog/project.svg");
                             }

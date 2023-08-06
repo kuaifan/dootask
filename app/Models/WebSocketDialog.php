@@ -193,6 +193,7 @@ class WebSocketDialog extends AbstractModel
             $this->has_image = $msgBuilder->clone()->whereMtype('image')->exists();
             $this->has_file = $msgBuilder->clone()->whereMtype('file')->exists();
             $this->has_link = $msgBuilder->clone()->whereLink(1)->exists();
+            $this->has_todo = $msgBuilder->clone()->where('todo', '>', 0)->exists();
         }
         return $this;
     }

@@ -405,6 +405,8 @@ class DialogController extends AbstractController
         if ($msg_type) {
             if ($msg_type === 'tag') {
                 $builder->where('tag', '>', 0);
+            } elseif ($msg_type === 'todo') {
+                $builder->where('todo', '>', 0);
             } elseif ($msg_type === 'link') {
                 $builder->whereLink(1);
             } elseif (in_array($msg_type, ['text', 'image', 'file', 'record', 'meeting'])) {
