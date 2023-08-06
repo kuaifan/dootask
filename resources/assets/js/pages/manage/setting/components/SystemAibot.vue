@@ -28,7 +28,7 @@
                 </div>
             </div>
             <div class="block-setting-box">
-                <h3>{{$L('文心一言')}} (Wenxin)</h3>
+                <h3>文心一言 (Wenxin)</h3>
                 <div class="form-box">
                     <FormItem label="API Key" prop="wenxin_key">
                         <Input :maxlength="255" v-model="formData.wenxin_key" type="password" placeholder="API Key"/>
@@ -48,7 +48,7 @@
                 </div>
             </div>
             <div class="block-setting-box">
-                <h3>{{$L('通义千问')}} (Qianwen)</h3>
+                <h3>通义千问 (Qianwen)</h3>
                 <div class="form-box">
                     <FormItem label="API Key" prop="qianwen_key">
                         <Input :maxlength="255" v-model="formData.qianwen_key" type="password" placeholder="API Key"/>
