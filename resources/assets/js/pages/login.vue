@@ -565,7 +565,13 @@ export default {
                 }).then(({data}) => {
                     $A.IDBSave("cacheLoginEmail", this.email)
                     this.codeNeed = false
-                    this.$store.dispatch("handleClearCache", data).then(this.goNext)
+                    //
+                    this.loadIng++
+                    this.$store.dispatch("handleClearCache", data)
+                        .then(this.goNext)
+                        .finally(_ => {
+                            this.loadIng--
+                        })
                 }).catch(({data, msg}) => {
                     if (data.code === 'email') {
                         this.loginType = 'login'

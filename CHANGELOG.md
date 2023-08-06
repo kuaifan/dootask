@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
+- 优化桌面端邮件图片菜单
 - 优化表情关键词匹配
 - 工作流支持关联任务列表自动移动
 - 支持手动打卡

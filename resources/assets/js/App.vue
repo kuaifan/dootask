@@ -294,6 +294,17 @@ export default {
                 url: $A.apiUrl("../manifest")
             })
             $A.bindScreenshotKey($A.jsonParse(window.localStorage.getItem("__keyboard:data__")) || {});
+            //
+            this.$Electron.sendMessage('setMenuLanguage', {
+                openInBrowser: this.$L("在浏览器中打开"),
+                saveImageAs: this.$L("图片存储为..."),
+                copyImage: this.$L("复制图片"),
+                copyEmailAddress: this.$L("复制电子邮件地址"),
+                copyLinkAddress: this.$L("复制链接地址"),
+                copyImageAddress: this.$L("复制图片地址"),
+                failedToSaveImage: this.$L("图片保存失败"),
+                theImageFailedToSave: this.$L("图片无法保存"),
+            });
         },
 
         eeuiEvents() {

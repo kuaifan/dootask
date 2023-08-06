@@ -17609,5 +17609,82 @@
         "de": "Bei einem wechsel zu [*] wird die aufgabe automatisch zu einer liste Von zufälligen verbindungen verschoben.",
         "fr": "Déplacez automatiquement la tâche à la liste associée lorsque le flux va à [(*)].",
         "id": "Pindahkan tugas ke senarai terkait ketika ((*)."
+    },
+    {
+        "key": "在浏览器中打开",
+        "zh": "",
+        "zh-CHT": "在瀏覽器中打開",
+        "en": "Open in your browser",
+        "ko": "브라우저에서 열기",
+        "ja": "ブラウザで開きます",
+        "de": "Und öffnet sich im browser",
+        "fr": "Ouvrir dans votre navigateur",
+        "id": "Buka di browser anda"
+    },
+    {
+        "key": "图片存储为...",
+        "zh": "",
+        "zh-CHT": "圖片存儲爲...",
+        "en": "Image stored as...",
+        "ko": "그림 저장...",
+        "ja": "画像は…です",
+        "de": "Die bilder sind als",
+        "fr": "Images stockées pour...",
+        "id": "Simpan gambar sebagai …"
+    },
+    {
+        "key": "复制电子邮件地址",
+        "zh": "",
+        "zh-CHT": "複製電子郵件地址",
+        "en": "Copy the email address",
+        "ko": "전자 우편 주소를 복사합니다",
+        "ja": "メールアドレスをコピーします",
+        "de": "Die e-mail-adresse wird kopiert",
+        "fr": "Copiez l’adresse e-mail",
+        "id": "Salin alamat email"
+    },
+    {
+        "key": "复制链接地址",
+        "zh": "",
+        "zh-CHT": "複製鏈接地址",
+        "en": "Copy link address",
+        "ko": "링크 주소 복사",
+        "ja": "リンク先をコピーします",
+        "de": "Die adresse des link kopieren",
+        "fr": "Copier l’adresse du lien",
+        "id": "Salin alamat tautan"
+    },
+    {
+        "key": "复制图片地址",
+        "zh": "",
+        "zh-CHT": "複製圖片地址",
+        "en": "Copy image address",
+        "ko": "그림 주소 복사",
+        "ja": "コピー画像アドレスです",
+        "de": "Kopien der adresse.",
+        "fr": "Copiez l’adresse de l’image",
+        "id": "Salin alamat gambar"
+    },
+    {
+        "key": "图片无法保存",
+        "zh": "",
+        "zh-CHT": "圖片無法保存",
+        "en": "Image cannot be saved",
+        "ko": "그림을 저장할 수 없음",
+        "ja": "画像は保存できません。",
+        "de": "Bild kann nicht mehr gerettet werden",
+        "fr": "L’image ne peut pas être sauvegardée",
+        "id": "Gambar tidak bisa disimpan"
+    },
+    {
+        "key": "键盘设置",
+        "zh": "",
+        "zh-CHT": "鍵盤設置",
+        "en": "Keyboard Settings",
+        "ko": "키보드 설정",
+        "ja": "キーボードの設定です",
+        "de": "Die tastatureinstellung",
+        "fr": "Réglage du clavier",
+        "id": "Pengaturan papan ketik"
     }
 ]
