@@ -2,7 +2,7 @@
     <div class="setting-component-item">
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
             <div class="block-setting-box">
-                <h3>ChatGTP</h3>
+                <h3>ChatGPT</h3>
                 <div class="form-box">
                     <FormItem label="API Key" prop="openai_key">
                         <Input :maxlength="255" v-model="formData.openai_key" type="password" placeholder="OpenAI API Key"/>
