@@ -8,7 +8,7 @@ const {
 } = require('electron')
 const fs = require('fs')
 const url = require('url')
-const {pipeline} = require('stream')
+const request = require("request");
 
 const MAILTO_PREFIX = "mailto:";
 
@@ -39,6 +39,18 @@ const electronMenu = {
         }
     },
 
+    isBlob(url) {
+        return url.startsWith("blob:");
+    },
+
+    isDataUrl(url) {
+        return url.startsWith("data:");
+    },
+
+    isBlobOrDataUrl(url) {
+        return electronMenu.isBlob(url) || electronMenu.isDataUrl(url);
+    },
+
     async saveImageAs(url, params) {
         const targetFileName = params.suggestedFilename || params.altText || "image.png";
         const {filePath} = await dialog.showSaveDialog({
@@ -48,13 +60,15 @@ const electronMenu = {
         if (!filePath) return; // user cancelled dialog
 
         try {
-            if (url.startsWith("data:")) {
+            if (electronMenu.isBlobOrDataUrl(url)) {
                 await electronMenu.writeNativeImage(filePath, nativeImage.createFromDataURL(url));
             } else {
-                const resp = await fetch(url);
-                if (!resp.ok) throw new Error(`unexpected response ${resp.statusText}`);
-                if (!resp.body) throw new Error(`unexpected response has no body ${resp.statusText}`);
-                pipeline(resp.body, fs.createWriteStream(filePath));
+                const writeStream = fs.createWriteStream(filePath)
+                const readStream = request(url)
+                readStream.pipe(writeStream);
+                readStream.on('end', function (response) {
+                    writeStream.end();
+                });
             }
         } catch (err) {
             await dialog.showMessageBox({
@@ -84,7 +98,7 @@ const electronMenu = {
                 const url = params.linkURL || params.srcURL;
                 const popupMenu = new Menu();
 
-                if (!url.startsWith("blob:")) {
+                if (!electronMenu.isBlobOrDataUrl(url)) {
                     popupMenu.append(
                         new MenuItem({
                             label: electronMenu.language.openInBrowser,
@@ -94,7 +108,10 @@ const electronMenu = {
                             },
                         }),
                     );
-                    if (params.hasImageContents) {
+                }
+
+                if (params.hasImageContents) {
+                    if (!electronMenu.isBlob(url)) {
                         popupMenu.append(
                             new MenuItem({
                                 label: electronMenu.language.saveImageAs,
@@ -105,9 +122,6 @@ const electronMenu = {
                             }),
                         );
                     }
-                }
-
-                if (params.hasImageContents) {
                     popupMenu.append(
                         new MenuItem({
                             label: electronMenu.language.copyImage,
@@ -119,7 +133,7 @@ const electronMenu = {
                     );
                 }
 
-                if (!url.startsWith("blob:")) {
+                if (!electronMenu.isBlobOrDataUrl(url)) {
                     if (url.startsWith(MAILTO_PREFIX)) {
                         popupMenu.append(
                             new MenuItem({
