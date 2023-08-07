@@ -2447,10 +2447,17 @@ export default {
                     break;
 
                 case 'imagedown':
-                    this.$store.dispatch('downUrl', {
-                        url: value,
-                        token: false
-                    })
+                    if (this.$Electron) {
+                        this.$Electron.sendMessage('saveImageAt', {
+                            params: { },
+                            url: value,
+                        })
+                    } else {
+                        this.$store.dispatch('downUrl', {
+                            url: value,
+                            token: false
+                        })
+                    }
                     break;
 
                 case 'filepos':

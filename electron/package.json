@@ -36,6 +36,7 @@
         "electron-builder": "^23.6.0",
         "electron-notarize": "^1.2.2",
         "form-data": "^4.0.0",
+        "request": "^2.88.2",
         "ora": "^4.1.1"
     },
     "dependencies": {
