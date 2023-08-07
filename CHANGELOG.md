@@ -2,12 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.29.66]
+## [0.29.68]
 
 ### Bug Fixes
 
-- 桌面客户端缺失文件
+- 桌面客户端提示request错误
 - 客户端无法保存网络文件的情况
+- 桌面客户端缺失文件
 - 打开工作流设置后无法关闭桌面客户端的问题
 - 打不开已归档任务的情况
 
