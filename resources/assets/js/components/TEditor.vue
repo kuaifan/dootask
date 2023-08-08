@@ -43,7 +43,7 @@
                     transfer>
                     <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
                     <DropdownMenu slot="list">
-                        <DropdownItem @click.native="onFull">{{ $L('编辑') }}</DropdownItem>
+                        <DropdownItem @click.native="onFull">{{ editTitle || $L('编辑') }}</DropdownItem>
                         <DropdownItem v-if="operateLink" @click.native="onLinkPreview">{{ $L('打开链接') }}</DropdownItem>
                         <DropdownItem v-if="operateImg" @click.native="onImagePreview">{{ $L('查看图片') }}</DropdownItem>
                     </DropdownMenu>
@@ -137,6 +137,10 @@
             autoSize: {
                 type: Boolean,
                 default: false
+            },
+            editTitle: {
+                type: String,
+                default: ''
             },
             placeholder: {
                 type: String,
@@ -516,10 +520,10 @@
                     this.editorT = null;
                     //
                     if (this.windowTouch) {
-                        this.$nextTick(() => {
+                        setTimeout(() => {
                             this.updateTouchContent();
                             this.$emit('on-blur');
-                        });
+                        }, 100);
                     }
                 }
             },

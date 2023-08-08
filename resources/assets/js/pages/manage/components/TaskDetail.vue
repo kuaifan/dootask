@@ -142,6 +142,7 @@
                         :plugins="taskPlugins"
                         :options="taskOptions"
                         :option-full="taskOptionFull"
+                        :edit-title="$L('编辑描述')"
                         :placeholder="$L('详细描述...')"
                         scroll-hide-operate-class-name="task-modal"
                         @on-blur="updateBlur('content')"
@@ -573,7 +574,7 @@ export default {
                 menubar: 'file edit view',
                 valid_elements : 'a[href|title|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|witdh|height],pre[class],code',
                 extended_valid_elements : 'a[href|title|target=_blank]',
-                toolbar: 'uploadImages | bold italic underline forecolor backcolor | codesample | preview screenload'
+                toolbar: 'uploadImages | bold italic underline | forecolor backcolor'
             },
 
             dialogDrag: false,
