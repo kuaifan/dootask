@@ -922,7 +922,7 @@ export default {
 
         getText() {
             if (this.quill) {
-                return this.quill.getText()
+                return `${this.quill.getText()}`.replace(/^\s+|\s+$/g, "")
             }
             return "";
         },
