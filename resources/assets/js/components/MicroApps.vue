@@ -26,7 +26,7 @@
 import Vue from 'vue'
 import store from '../store/index'
 import { mapState } from "vuex";
-import { EventCenterForMicroApp } from '@micro-zoe/micro-app'
+import { EventCenterForMicroApp, unmountAllApps } from '@micro-zoe/micro-app'
 import DialogWrapper from '../pages/manage/components/DialogWrapper.vue'
 import UserSelect from "./UserSelect.vue";
 import { languageList, languageType } from "../language";
@@ -93,7 +93,16 @@ export default {
                 }
             },
             immediate: true,
-        }
+        },
+        userToken(val) {
+            this.appData = this.getAppData;
+            if(!val){
+                unmountAllApps({ destroy: true })
+                this.loading = true;
+            }else{
+                this.loading = false;
+            }
+        },
     },
     computed: {
         ...mapState([
