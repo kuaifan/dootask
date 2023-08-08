@@ -371,8 +371,8 @@ class ProjectTask extends AbstractModel
         $p_color    = $data['p_color'];
         $top        = intval($data['top']);
         $userid     = User::userid();
-        $is_all_visible = $data['visibility_appoint'];
-        $visibility_userids = $data['visibility_appointor'];
+        $is_all_visible = isset($data['visibility_appoint']) ? $data['visibility_appoint'] : $data['is_all_visible'];
+        $visibility_userids = $data['visibility_appointor'] ?: [];
         //
         if (ProjectTask::whereProjectId($project_id)
                 ->whereNull('project_tasks.complete_at')
@@ -401,7 +401,7 @@ class ProjectTask extends AbstractModel
             'p_level' => $p_level,
             'p_name' => $p_name,
             'p_color' => $p_color,
-            'is_all_visible' => $is_all_visible
+            'is_all_visible' => $is_all_visible ?: 1
         ]);
         if ($content) {
             $task->desc = Base::getHtml($content, 100);
@@ -725,6 +725,7 @@ class ProjectTask extends AbstractModel
             if (Arr::exists($data, 'is_all_visible') || Arr::exists($data, 'visibility_appointor')) {
                 if (Arr::exists($data, 'is_all_visible')) {
                     ProjectTask::whereId($data['task_id'])->update(['is_all_visible' => $data["is_all_visible"]]);
+                    ProjectTask::whereParentId($data['task_id'])->update(['is_all_visible' => $data["is_all_visible"]]);
                 }
                 ProjectTaskUser::whereTaskId($data['task_id'])->whereOwner(2)->delete();
                 if (Arr::exists($data, 'visibility_appointor')) {
