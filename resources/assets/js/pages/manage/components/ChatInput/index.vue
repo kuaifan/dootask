@@ -10,7 +10,7 @@
                 placement="top-end"
                 popperClass="chat-quick-emoji-popover">
                 <div slot="reference"></div>
-                <ul class="chat-quick-emoji-wrapper">
+                <ul ref="emojiWrapper" class="chat-quick-emoji-wrapper scrollbar-hidden">
                     <li v-for="item in emojiQuickItems" @click="onEmojiQuick(item)">
                         <img :title="item.name" :alt="item.name" :src="item.src"/>
                     </li>
@@ -18,7 +18,7 @@
             </EPopover>
         </div>
 
-        <div class="chat-input-wrapper" @click.stop="focus">
+        <div ref="inputWrapper" class="chat-input-wrapper" @click.stop="focus">
             <!-- 回复、修改 -->
             <div v-if="quoteData" class="chat-quote">
                 <div v-if="quoteUpdate" class="quote-label">{{$L('编辑消息')}}</div>
@@ -894,25 +894,30 @@ export default {
                     this.emojiQuickItems = [];
                     const baseUrl = $A.apiUrl("../images/emoticon")
                     window.emoticonData.some(data => {
-                        const item = data.list.find(d => {
-                            const ks = [d.name]
-                            if (d.key) {
-                                ks.push(...(`${d.key}`).split(" "))
+                        let j = 0
+                        data.list.some(item => {
+                            const arr = [item.name]
+                            if (item.key) {
+                                arr.push(...(`${item.key}`).split(" "))
                             }
-                            return ks.includes(text)
+                            if (arr.includes(text)) {
+                                this.emojiQuickItems.push(Object.assign(item, {
+                                    type: `emoticon`,
+                                    asset: `images/emoticon/${data.path}/${item.path}`,
+                                    name: item.name,
+                                    src: `${baseUrl}/${data.path}/${item.path}`
+                                }))
+                                if (++j >= 2) {
+                                    return true
+                                }
+                            }
                         })
-                        if (item) {
-                            this.emojiQuickItems.push(Object.assign(item, {
-                                type: `emoticon`,
-                                asset: `images/emoticon/${data.path}/${item.path}`,
-                                src: `${baseUrl}/${data.path}/${item.path}`
-                            }))
-                            if (this.emojiQuickItems.length >= 3) {
-                                return true
-                            }
+                        if (this.emojiQuickItems.length >= 20) {
+                            return true
                         }
                     });
                     if (this.emojiQuickItems.length > 0) {
+                        this.$refs.emojiWrapper.style.maxWidth = `${this.$refs.inputWrapper.clientWidth}px`
                         this.$nextTick(_ => {
                             this.emojiQuickShow = true
                             this.$refs.emojiQuickRef.updatePopper()

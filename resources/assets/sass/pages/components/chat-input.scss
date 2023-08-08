@@ -203,6 +203,10 @@
         .ql-bubble {
             .ql-tooltip {
                 z-index: 1;
+                .ql-formats {
+                    display: flex;
+                    align-items: center;
+                }
             }
         }
 
@@ -534,7 +538,10 @@
 }
 .chat-quick-emoji-wrapper {
     display: flex;
+    overflow-y: hidden;
+    overflow-x: auto;
     > li {
+        flex-shrink: 0;
         width: 90px;
         height: 90px;
         display: flex;
