@@ -443,6 +443,7 @@
                             :loading="sendLoad > 0"
                             :maxlength="200000"
                             :placeholder="$L('输入消息...')"
+                            :send-menu="false"
                             @on-more="onEventMore"
                             @on-file="onSelectFile"
                             @on-record="onRecord"

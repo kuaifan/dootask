@@ -166,7 +166,7 @@ services:
 
   ai:
     container_name: "dootask-ai-${APP_ID}"
-    image: "kuaifan/dooai:0.0.2"
+    image: "kuaifan/dooai:0.0.3"
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.12"

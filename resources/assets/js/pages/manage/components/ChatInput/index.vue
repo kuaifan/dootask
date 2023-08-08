@@ -239,6 +239,10 @@ export default {
             type: Boolean,
             default: false
         },
+        sendMenu: {
+            type: Boolean,
+            default: true
+        },
         options: {
             type: Object,
             default: () => ({})
@@ -1019,7 +1023,7 @@ export default {
         },
 
         longSend() {
-            if (this.sendClass === 'recorder') {
+            if (this.sendClass === 'recorder' || !this.sendMenu) {
                 return;
             }
             this.showMenu = true;
