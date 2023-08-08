@@ -266,9 +266,12 @@
                             .file-name {
                                 color: $primary-text-color;
                                 padding-left: 8px;
-                                overflow: hidden;
+                                word-break: break-all;
                                 text-overflow: ellipsis;
-                                white-space: nowrap;
+                                overflow: hidden;
+                                display: -webkit-box;
+                                -webkit-line-clamp: 1;
+                                -webkit-box-orient: vertical;
                             }
                             .file-size {
                                 flex-shrink: 0;
@@ -454,10 +457,14 @@
                 .el-dropdown {
                     max-width: 100%;
                     .add-button {
+                        white-space: normal;
                         > em {
-                            overflow: hidden;
+                            word-break: break-all;
                             text-overflow: ellipsis;
-                            white-space: nowrap;
+                            overflow: hidden;
+                            display: -webkit-box;
+                            -webkit-line-clamp: 1;
+                            -webkit-box-orient: vertical;
                         }
                     }
                 }

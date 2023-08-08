@@ -17686,5 +17686,16 @@
         "de": "Die tastatureinstellung",
         "fr": "Réglage du clavier",
         "id": "Pengaturan papan ketik"
+    },
+    {
+        "key": "事项",
+        "zh": "",
+        "zh-CHT": "事項",
+        "en": "Todo",
+        "ko": "사항",
+        "ja": "事項です",
+        "de": "Todo",
+        "fr": "Todo",
+        "id": "Todo"
     }
 ]

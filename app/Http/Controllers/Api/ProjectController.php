@@ -979,10 +979,14 @@ class ProjectController extends AbstractController
         $builder->leftJoin('project_users', function ($query) {
             $query->on('project_tasks.project_id', '=', 'project_users.project_id')->where('project_users.owner', 1);
         });
+        $builder->leftJoin('project_task_users as project_p_task_users', function ($query) {
+            $query->on('project_p_task_users.task_pid', '=', 'project_tasks.parent_id');
+        });
         $builder->where(function ($query) use ($userid) {
             $query->where("project_tasks.is_all_visible", 1);
             $query->orWhere("project_users.userid", $userid);
             $query->orWhere("project_task_users.userid", $userid);
+            $query->orWhere("project_p_task_users.userid", $userid);
         });
         // 优化子查询汇总 
         $builder->leftJoinSub(function ($query) {
@@ -1778,7 +1782,7 @@ class ProjectController extends AbstractController
             'column_id' => $task->column_id,
             'times' => [$task->start_at, $task->end_at],
             'owner' => [User::userid()],
-            'is_all_visible' => 2,
+            'is_all_visible' => $task->is_all_visible,
         ]);
         $data = ProjectTask::oneTask($task->id);
         $pushUserIds = ProjectTaskUser::whereTaskId($task->id)->pluck('userid')->toArray();

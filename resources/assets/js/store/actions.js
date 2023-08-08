@@ -2297,6 +2297,9 @@ export default {
                 if (data.mtype == 'tag') {
                     updateData.has_tag = true;
                 }
+                if (data.mtype == 'todo') {
+                    updateData.has_todo = true;
+                }
                 if (data.mtype == 'image') {
                     updateData.has_image = true;
                 }

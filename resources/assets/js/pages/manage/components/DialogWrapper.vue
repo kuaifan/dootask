@@ -786,6 +786,9 @@ export default {
             if (this.dialogData.has_tag) {
                 array.push({type: 'tag', label: '标注'})
             }
+            if (this.dialogData.has_todo) {
+                array.push({type: 'todo', label: '事项'})
+            }
             if (this.dialogData.has_image) {
                 array.push({type: 'image', label: '图片'})
             }
@@ -1414,6 +1417,10 @@ export default {
             if (this.msgType) {
                 if (this.msgType === 'tag') {
                     if (!item.tag) {
+                        return false
+                    }
+                } else if (this.msgType === 'todo') {
+                    if (!item.todo) {
                         return false
                     }
                 } else if (this.msgType === 'link') {
