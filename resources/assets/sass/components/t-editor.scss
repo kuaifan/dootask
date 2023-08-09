@@ -37,6 +37,12 @@
             }
         }
 
+        .tox-tbtn__select-label {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
         .tox-tbtn--bespoke {
             .tox-tbtn__select-label {
                 width: auto;
@@ -88,6 +94,18 @@
                     }
                 }
             }
+
+            .tox-tbtn__select-label {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .tox-tbtn--bespoke {
+                .tox-tbtn__select-label {
+                    width: auto;
+                }
+            }
         }
     }
 }
@@ -104,16 +122,6 @@
     max-height: inherit;
     overflow: inherit;
     position: relative;
-}
-
-.teditor-operate {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 1px;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
 }
 
 .upload-control {

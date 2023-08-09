@@ -690,6 +690,24 @@ body {
             }
         }
     }
+
+    @media (max-width: 576px) {
+        &.lr,
+        &.auto {
+            > ul {
+                > li:not(.search-button) {
+
+                    .search-content {
+
+                        .ivu-input-wrapper,
+                        .ivu-select {
+                            width: auto;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 .search-expand {

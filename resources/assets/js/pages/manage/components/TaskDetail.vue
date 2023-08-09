@@ -135,19 +135,12 @@
                         @on-blur="updateBlur('name')"
                         @on-keydown="onNameKeydown"/>
                 </div>
-                <div class="desc">
-                    <TEditor
-                        ref="desc"
-                        :value="taskContent"
-                        :plugins="taskPlugins"
-                        :options="taskOptions"
-                        :option-full="taskOptionFull"
-                        :edit-title="$L('编辑描述')"
-                        :placeholder="$L('详细描述...')"
-                        scroll-hide-operate-class-name="task-modal"
-                        @on-blur="updateBlur('content')"
-                        inline/>
-                </div>
+                <TEditorTask
+                    ref="desc"
+                    class="desc"
+                    :value="taskContent"
+                    :placeholder="$L('详细描述...')"
+                    @on-blur="updateBlur('content')"/>
                 <Form class="items" label-position="left" label-width="auto" @submit.native.prevent>
                     <FormItem v-if="taskDetail.p_name">
                         <div class="item-label" slot="label">
@@ -463,7 +456,6 @@
 
 <script>
 import {mapState} from "vuex";
-import TEditor from "../../../components/TEditor";
 import TaskPriority from "./TaskPriority";
 import TaskUpload from "./TaskUpload";
 import DialogWrapper from "./DialogWrapper";
@@ -473,10 +465,12 @@ import TaskMenu from "./TaskMenu";
 import ChatInput from "./ChatInput";
 import UserSelect from "../../../components/UserSelect.vue";
 import TaskExistTips from "./TaskExistTips.vue";
+import TEditorTask from "../../../components/TEditorTask.vue";
 
 export default {
     name: "TaskDetail",
     components: {
+        TEditorTask,
         UserSelect,
         TaskExistTips,
         ChatInput,
@@ -485,7 +479,6 @@ export default {
         DialogWrapper,
         TaskUpload,
         TaskPriority,
-        TEditor
     },
     props: {
         taskId: {
@@ -552,31 +545,6 @@ export default {
 
             sendLoad: 0,
             openLoad: 0,
-
-            taskPlugins: [
-                'advlist autolink lists link image charmap print preview hr anchor pagebreak',
-                'searchreplace visualblocks visualchars code',
-                'insertdatetime media nonbreaking save table directionality',
-                'emoticons paste codesample',
-                'autoresize'
-            ],
-            taskOptions: {
-                statusbar: false,
-                menubar: false,
-                autoresize_bottom_margin: 2,
-                min_height: 200,
-                max_height: 380,
-                contextmenu: 'bold italic underline forecolor backcolor | link | codesample | uploadImages imagePreview | preview screenload',
-                valid_elements : 'a[href|title|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|witdh|height],pre[class],code',
-                extended_valid_elements : 'a[href|title|target=_blank]',
-                toolbar: false
-            },
-            taskOptionFull: {
-                menubar: 'file edit view',
-                valid_elements : 'a[href|title|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|witdh|height],pre[class],code',
-                extended_valid_elements : 'a[href|title|target=_blank]',
-                toolbar: 'uploadImages | bold italic underline | forecolor backcolor'
-            },
 
             dialogDrag: false,
             imageAttachment: true,

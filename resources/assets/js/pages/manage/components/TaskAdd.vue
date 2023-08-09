@@ -25,16 +25,11 @@
                     enterkeyhint="done"
                     @on-keydown="onKeydown"/>
             </div>
-            <div class="desc">
-                <TEditor
-                    v-model="addData.content"
-                    :plugins="taskPlugins"
-                    :options="taskOptions"
-                    :option-full="taskOptionFull"
-                    :placeholder="$L(windowLandscape ? '详细描述，选填...（点击右键使用工具栏）' : '详细描述，选填...')"
-                    :placeholderFull="$L('详细描述...')"
-                    inline/>
-            </div>
+            <TEditorTask
+                class="desc"
+                v-model="addData.content"
+                :placeholder="$L(windowLandscape ? '详细描述，选填...（点击右键使用工具栏）' : '详细描述，选填...')"
+                :placeholderFull="$L('详细描述...')"/>
             <div class="advanced-option" :class="{'advanced-open': advanced}">
                 <Button @click="advanced=!advanced">{{$L('高级选项')}}</Button>
                 <ul class="advanced-priority">
@@ -209,14 +204,14 @@
 </template>
 
 <script>
-import TEditor from "../../../components/TEditor";
 import {mapState} from "vuex";
 import UserSelect from "../../../components/UserSelect.vue";
 import TaskExistTips from "./TaskExistTips.vue";
+import TEditorTask from "../../../components/TEditorTask.vue";
 
 export default {
     name: "TaskAdd",
-    components: {UserSelect, TEditor, TaskExistTips},
+    components: {TEditorTask, UserSelect, TaskExistTips},
     props: {
         value: {
             type: Boolean,
@@ -251,29 +246,6 @@ export default {
 
             advanced: false,
             subName: '',
-
-            taskPlugins: [
-                'advlist autolink lists link image charmap print preview hr anchor pagebreak',
-                'searchreplace visualblocks visualchars code',
-                'insertdatetime media nonbreaking save table directionality',
-                'emoticons paste codesample',
-                'autoresize'
-            ],
-            taskOptions: {
-                statusbar: false,
-                menubar: false,
-                autoresize_bottom_margin: 2,
-                min_height: 200,
-                max_height: 380,
-                contextmenu: 'bold italic underline forecolor backcolor | codesample | uploadImages imagePreview | preview screenload',
-                valid_elements : 'a[href|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|witdh|height],pre[class],code',
-                toolbar: false
-            },
-            taskOptionFull: {
-                menubar: 'file edit view',
-                valid_elements : 'a[href|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|witdh|height],pre[class],code',
-                toolbar: 'uploadImages | bold italic underline forecolor backcolor | codesample | preview screenload'
-            },
 
             taskTimeOpen: false,
 
