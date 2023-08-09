@@ -12,19 +12,24 @@
     }
 
     .list-task {
-        margin-left: 22px;
+        display: flex;
+        margin-left: 34px;
+        margin-right: 6px;
         margin-top: 10px;
     }
 
     .list-task-info {
-        float: left;
-        padding: 0 12px;
+        flex: 1;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        padding-right: 12px;
         span:first-child {
             color: #A7ABB5;
         }
     }
 
     .list-task-date {
-        float: right;
+        //float: right;
     }
 }
