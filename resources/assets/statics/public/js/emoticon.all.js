@@ -16,7 +16,7 @@
                 {"name": "给你个眼神", "key": "眼神 真的 质疑 疑问 不确定 给你个眼神", "path": "9.gif"},
                 {"name": "恭喜发财", "key": "恭喜发财 新年好 新年 拜年", "path": "10.gif"},
                 {"name": "跪谢", "key": "谢谢 感动 跪 多谢 THANKS THANK YOU 谢了", "path": "11.gif"},
-                {"name": "Hi", "key": "Hi 打招呼 欢迎 招呼 你好 好 哈喽 哈啰 hello 大家好", "path": "12.gif"},
+                {"name": "Hi", "key": "Hi 打招呼 欢迎 招呼 你好 哈喽 哈啰 hello 大家好", "path": "12.gif"},
                 {"name": "欢迎欢迎", "key": "欢迎 新人 兴奋 开心 庆祝 喝彩 气氛组", "path": "13.gif"},
                 {"name": "加油", "key": "加油 喝彩 气氛组", "path": "14.gif"},
                 {"name": "静静看着你", "key": "静静 看着 不说话 沉默 静静看着你 无语 看你表演", "path": "15.gif"},

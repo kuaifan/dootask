@@ -10,11 +10,16 @@
                 placement="top-end"
                 popperClass="chat-quick-emoji-popover">
                 <div slot="reference"></div>
-                <ul ref="emojiWrapper" class="chat-quick-emoji-wrapper scrollbar-hidden">
+                <Scrollbar
+                    tag="ul"
+                    ref="emojiWrapper"
+                    :enable-x="true"
+                    :enable-y="false"
+                    class-name="chat-quick-emoji-wrapper scrollbar-hidden">
                     <li v-for="item in emojiQuickItems" @click="onEmojiQuick(item)">
                         <img :title="item.name" :alt="item.name" :src="item.src"/>
                     </li>
-                </ul>
+                </Scrollbar>
             </EPopover>
         </div>
 
@@ -296,6 +301,8 @@ export default {
             touchLimitY: false,
 
             pasteClean: true,
+
+            changeLoad: 0,
 
             isSpecVersion: this.checkIOSVersion(),
 
@@ -718,8 +725,10 @@ export default {
 
             // Update model if text changes
             this.quill.on('text-change', _ => {
+                this.changeLoad++
                 this.textTimer && clearTimeout(this.textTimer)
                 this.textTimer = setTimeout(_ => {
+                    this.changeLoad--
                     if (this.maxlength > 0 && this.quill.getLength() > this.maxlength) {
                         this.quill.deleteText(this.maxlength, this.quill.getLength());
                     }
@@ -917,7 +926,7 @@ export default {
                         }
                     });
                     if (this.emojiQuickItems.length > 0) {
-                        this.$refs.emojiWrapper.style.maxWidth = `${this.$refs.inputWrapper.clientWidth}px`
+                        this.$refs.emojiWrapper.$el.style.maxWidth = `${Math.min(500, this.$refs.inputWrapper.clientWidth)}px`
                         this.$nextTick(_ => {
                             this.emojiQuickShow = true
                             this.$refs.emojiQuickRef.updatePopper()
@@ -1035,14 +1044,16 @@ export default {
         },
 
         onSend(type) {
-            this.hidePopover('send')
-            this.rangeIndex = 0
-            this.clearSearchKey()
-            if (type) {
-                this.$emit('on-send', null, type)
-            } else {
-                this.$emit('on-send')
-            }
+            setTimeout(_ => {
+                this.hidePopover('send')
+                this.rangeIndex = 0
+                this.clearSearchKey()
+                if (type) {
+                    this.$emit('on-send', null, type)
+                } else {
+                    this.$emit('on-send')
+                }
+            }, this.changeLoad > 0 ? 100 : 0)
         },
 
         startRecord() {
