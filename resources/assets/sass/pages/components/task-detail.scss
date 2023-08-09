@@ -457,7 +457,6 @@
                 .el-dropdown {
                     max-width: 100%;
                     .add-button {
-                        white-space: normal;
                         > em {
                             word-break: break-all;
                             text-overflow: ellipsis;
@@ -484,10 +483,12 @@
                 align-items: center;
                 margin-top: 6px;
                 height: 32px;
-                white-space: nowrap;
                 > i {
                     font-size: 14px;
                     padding-right: 8px;
+                }
+                > span {
+                    white-space: nowrap;
                 }
                 > em {
                     font-style: normal;

@@ -104,7 +104,7 @@ export default {
     mounted() {
         let parent = this.$parent.$el.parentNode;
         while (parent) {
-            if (parent.classList.contains(".ivu-modal-wrap")) {
+            if (parent.classList?.contains(".ivu-modal-wrap")) {
                 this.listener = parent;
                 parent.addEventListener("scroll", this.onTouchstart);
                 break;

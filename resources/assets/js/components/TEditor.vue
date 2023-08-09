@@ -145,10 +145,6 @@
                 type: Boolean,
                 default: false
             },
-            editTitle: {
-                type: String,
-                default: ''
-            },
             placeholder: {
                 type: String,
                 default: ''

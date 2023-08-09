@@ -324,7 +324,8 @@
                         <ul class="item-content">
                             <li>
                                 <div class="add-button" @click="onUploadClick(true)">
-                                    <i class="taskfont">&#xe6f2;</i>{{$L('添加附件')}}
+                                    <i class="taskfont">&#xe6f2;</i>
+                                    <span>{{$L('添加附件')}}</span>
                                 </div>
                             </li>
                         </ul>
@@ -357,7 +358,8 @@
                                     @on-blur="addsubChackClose"
                                     @on-keydown="addsubKeydown"/>
                                 <div v-else class="add-button" @click="addsubOpen">
-                                    <i class="taskfont">&#xe6f2;</i>{{$L('添加子任务')}}
+                                    <i class="taskfont">&#xe6f2;</i>
+                                    <span>{{$L('添加子任务')}}</span>
                                 </div>
                             </li>
                         </ul>
@@ -370,7 +372,7 @@
                         @command="dropAdd">
                         <div class="add-button">
                             <i class="taskfont">&#xe6f2;</i>
-                            {{$L('添加')}}
+                            <span>{{$L('添加')}}</span>
                             <em>{{menuText}}</em>
                         </div>
                         <EDropdownMenu slot="dropdown">
