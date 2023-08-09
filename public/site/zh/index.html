@@ -14,6 +14,16 @@
 </head>
 <body>
   <div id="layout">
+    <!-- 同意cookie弹框 -->
+    <div id="cookieConsent">
+      <div>
+        我们使用第一方 cookie 来改善您在我们网站上的浏览体验、分析我们的网站流量并了解我们的访问者来自哪里。如果您选择退出，则只会使用绝对必要的 cookie。<a href="../zh/privacy.html" id="cookie_a">我们的 cookie 政策</a>
+      </div>
+      <div id="buttonBox">
+        <button id="rejectButton" class="btn btn-primary" >我拒绝</button>
+        <button id="agreeButton" class="btn btn-primary" >允许cookies</button>
+      </div>
+    </div>
     <!-- 页头区域 -->
     <header class="head">
       <div class="nav">
@@ -525,6 +535,83 @@
 </body>
 <script src="../js/common.js"></script>
 <script>
+  // cookie弹框
+  document.addEventListener('DOMContentLoaded', function() {
+    let cookieConsent = document.getElementById('cookieConsent');
+    let cookieA = document.getElementById('cookie_a');
+    let buttonBox = document.getElementById('buttonBox');
+    let rejectButton = document.getElementById('rejectButton');
+    let agreeButton = document.getElementById('agreeButton');
+    // 检查localStorage中的同意状态
+    let hasConsented = sessionStorage.getItem('cookieConsent');
+    if (!hasConsented) {
+      cookieConsent.style.display = 'block';
+      cookieConsent.style.maxWidth = '24em';
+      cookieConsent.style.height = 'auto';
+      cookieConsent.style.flexDirection = 'column';
+      cookieConsent.style.backgroundColor = 'rgb(249,250,251)';
+      cookieConsent.style.color = 'rgb(30,30,30)';
+      cookieConsent.style.padding = '1.2em';
+      cookieConsent.style.borderRadius = '5px';
+      cookieConsent.style.bottom = '1em';
+      cookieConsent.style.right = '1em';
+      cookieConsent.style.position = 'fixed';
+      cookieConsent.style.overflow = 'hidden'
+      cookieConsent.style.boxSizing = 'border-box'
+      cookieConsent.style.fontFamily = 'Helvetica,Calibri,Arial,sans-serif'
+      cookieConsent.style.zIndex = '9999';
+      cookieConsent.style.textAlign = 'left';
+      cookieConsent.style.fontSize = '16px';
+      cookieConsent.style.lineHeight = '1.5em';
+
+      cookieA.style.padding = '0.2em'
+      cookieA.style.display = 'inline-block';
+      cookieA.style.color = 'rgb(30,30,30)';
+      cookieA.style.textDecoration = 'underline';
+
+      buttonBox.style.textAlign = 'right';
+      buttonBox.style.flex = '1 0 auto';
+      buttonBox.style.alignItems = 'center';
+      buttonBox.style.alignContent = 'space-between'
+      buttonBox.style.flexDirection = 'row';
+      buttonBox.style.display = 'flex';
+      buttonBox.style.fontSize = '16px';
+      buttonBox.style.margin = '1em 0 0';
+
+      agreeButton.style.position = 'static'
+      agreeButton.style.display = 'block'
+      agreeButton.style.padding = '0.7em 0.4em'
+      agreeButton.style.fontSize = '.9em';
+      agreeButton.style.fontWeight = '700';
+      agreeButton.style.textAlign = 'center';
+      agreeButton.style.width = '100%';
+      agreeButton.style.borderRadius = '5px';
+      agreeButton.style.marginLeft = '0.5em';
+
+      rejectButton.style.backgroundColor = 'transparent';
+      rejectButton.style.borderColor = 'transparent';
+      rejectButton.style.color = 'rgb(30,30,30)';
+      rejectButton.style.display = 'block'
+      rejectButton.style.padding = '0.7em 0.4em'
+      rejectButton.style.fontSize = '.9em';
+      rejectButton.style.fontWeight = '700';
+    }
+    agreeButton.addEventListener('click', handleAgreeButtonClick);
+    rejectButton.addEventListener('click', handleRejectButtonClick);
+    function hideCookieConsent() {
+      cookieConsent.style.display = 'none';
+    }
+    function handleAgreeButtonClick() {
+      // 存储同意状态到localStorage
+      sessionStorage.setItem('cookieConsent', 'true');
+      hideCookieConsent();
+    }
+    function handleRejectButtonClick() {
+      // 存储拒绝状态到localStorage
+      sessionStorage.setItem('cookieConsent', 'false');
+      hideCookieConsent();
+    }
+  });
 /* 功能卡片切换函数 */
 const tabs = document.querySelector('.card-ul');
 const funImg = document.querySelector('#home_pic2');
