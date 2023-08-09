@@ -151,6 +151,7 @@ services:
     container_name: "dootask-approve-${APP_ID}"
     image: "hitosea2020/go-approve:0.1.3"
     environment:
+      TZ: "Asia/Shanghai"
       MYSQL_HOST: "${DB_HOST}"
       MYSQL_PORT: "${DB_PORT}"
       MYSQL_DBNAME: "${DB_DATABASE}"
