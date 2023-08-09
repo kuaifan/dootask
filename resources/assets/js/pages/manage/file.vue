@@ -1098,6 +1098,10 @@ export default {
         },
 
         clickRow(row, column) {
+            if (this.contextMenuVisible) {
+                this.handleClickContextMenuOutside();
+                return;
+            }
             if (column.type == "selection") {
                 this.dropFile(row, 'select');
             } else {
