@@ -50,7 +50,7 @@
                 <div v-if="browseList.length <= 0">{{$L('无内容')}}</div>
                 <div v-else class="browse-item" v-for="item in browseList" @click="browseItem(item)">
                     <Icon v-if="item.active" class="browse-icon" type="ios-checkmark-circle"></Icon>
-                    <div class="browse-img" v-bind:style="{ 'background-image': 'url(' + item.thumb + ')' }"></div>
+                    <div class="browse-img" v-bind:style="browseStyle(item.thumb)"></div>
                     <div class="browse-title">{{item.title}}</div>
                 </div>
             </div>
@@ -363,6 +363,15 @@
                         this.uploadList = this.$refs.upload.fileList;
                     }
                     this.$emit('input', this.$refs.upload.fileList);
+                }
+            },
+
+            browseStyle(thumb) {
+                if (!/https*:\/\//.test(thumb) && !/^\//.test(thumb)) {
+                    thumb = $A.apiUrl(`../${thumb}`);
+                }
+                return {
+                    'background-image': `url("${thumb}")`
                 }
             },
 
