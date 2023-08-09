@@ -20,11 +20,17 @@
             </div>
             <div class="approve-details-text">
                 <h4>{{$L('开始时间')}}</h4>
-                <p>{{datas.var?.start_time}}</p>
+                <div>
+                    <span>{{datas.var?.start_time}}</span>
+                    <span>&nbsp;&nbsp;&nbsp;({{getWeekday(datas.var?.start_time)}})</span>
+                </div>
             </div>
             <div class="approve-details-text">
                 <h4>{{$L('结束时间')}}</h4>
-                <p>{{datas.var?.end_time}}</p>
+                <div>
+                    <span>{{datas.var?.end_time}}</span>
+                    <span>&nbsp;&nbsp;&nbsp;({{getWeekday(datas.var?.end_time)}})</span>
+                </div>
             </div>
             <div class="approve-details-text">
                 <h4>{{ $L('时长') }}（{{getTimeDifference(datas.var?.start_time,datas.var?.end_time)['unit']}}）</h4>
@@ -272,6 +278,10 @@ export default {
                 const days = Math.floor(timeDiff / 3600 / 24);
                 return type == 2 ? `${days+1}${this.$L('天')}` : `${days+1} ${this.$L('天')}`;
             }
+        },
+        // 时间转为周几
+        getWeekday(dateString) {
+            return ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][new Date(dateString).getDay()];
         },
         // 获取时间差
         getTimeDifference(startTime,endTime) {

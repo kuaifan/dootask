@@ -1297,6 +1297,20 @@ export default {
                     this.mentionMode = "user-mention";
                     const atCallback = (list) => {
                         this.getMoreUser(searchTerm, list.map(item => item.id)).then(moreUser => {
+                            // 会话以外成员 排序 -> 前5名为最近联系的人
+                            let cacheDialogs = this.cacheDialogs.filter((h, index) => h.type == "user" && h.bot == 0 && h.last_at)
+                            cacheDialogs.sort((a, b) => a.last_at > b.last_at ? -1 : (a.last_at < b.last_at ? 1 : 0));
+                            cacheDialogs = cacheDialogs.filter((h, index) => index < 5)
+                            moreUser.forEach(user => {
+                                user.last_at = "1990-01-01 00:00:00";
+                                cacheDialogs.forEach(dialog => {
+                                    if (dialog.dialog_user?.userid == user.id) {
+                                        user.last_at = dialog.last_at;
+                                    }
+                                })
+                            })
+                            moreUser.sort((a, b) => a.last_at > b.last_at ? -1 : (a.last_at < b.last_at ? 1 : 0));
+                            // 
                             this.userList = list
                             this.userCache = [];
                             if (moreUser.length > 0) {
