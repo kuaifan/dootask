@@ -175,10 +175,13 @@ export default {
         },
 
         scrollTo(type) {
-            $A.scrollToView(this.$refs[`type_${type}`][0], {
-                behavior: 'smooth',
-                inline: 'end',
-            });
+            let refs = this.$refs[`type_${type}`]
+            if (refs) {
+                $A.scrollToView(refs[0], {
+                    behavior: 'smooth',
+                    inline: 'end',
+                });
+            }
         },
 
         openTask(task) {
