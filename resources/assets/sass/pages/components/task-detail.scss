@@ -9,7 +9,6 @@
         display: flex;
         flex-direction: column;
         position: relative;
-        z-index: 1;
         .head {
             display: flex;
             align-items: center;
@@ -151,6 +150,7 @@
             }
         }
         .scroller {
+            z-index: 1;
             margin-right: -5px;
             .scrollbar-content {
                 padding: 0 5px;
@@ -521,7 +521,6 @@
         justify-content: flex-end;
         margin-top: 22px;
         position: relative;
-        z-index: 1;
         .head {
             display: flex;
             align-items: center;
@@ -711,7 +710,6 @@
         position: absolute;
         top: 50%;
         left: 50%;
-        z-index: 2;
         transform: translate(-50%, -50%);
         display: flex;
         .common-loading {
