@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Privacy</title>
+  <meta name="google" value="notranslate">
+  <meta name="description" content="DooTask是一款轻量级的开源在线项目任务管理工具，提供各类文档协作工具、在线思维导图、在线流程图、项目管理、任务分发、即时IM，文件管理等工具。助力团队高效推进项目，让工作更简单。">
+  <meta name="keywords" content="中国 DooTask 开源在线项目 任务管理工具 任务管理 轻量级 海豚有海 团队协作">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <link rel="stylesheet" href="../css/privacy.css">
+</head>
+<body>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+  </style>
+  <div id="markdown-content"></div>
+
+  <script src="https://unpkg.com/markdown-it/dist/markdown-it.min.js"></script>
+  <script>
+    // 创建 markdown-it 实例
+    const md = new window.markdownit();
+
+    // 获取 Markdown 文件内容并渲染为 HTML
+    fetch('./cookie.md')
+      .then(response => response.text())
+      .then(markdownText => {
+        const htmlText = md.render(markdownText);
+        document.getElementById('markdown-content').innerHTML = htmlText;
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+  </script>
+</body>
+</html>
