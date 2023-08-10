@@ -162,16 +162,53 @@ function createSubWindow(args) {
     })
     electronMenu.webContentsMenu(browser.webContents)
 
+    const hash = args.hash || args.path;
     if (devloadUrl) {
-        browser.loadURL(devloadUrl + '#' + (args.hash || args.path)).then(_ => {
+        browser.loadURL(devloadUrl + '#' + hash).then(_ => {
 
         })
     } else {
         browser.loadFile('./public/index.html', {
-            hash: args.hash || args.path
+            hash
         }).then(_ => {
 
         })
+    }
+}
+
+/**
+ * 更新子窗口
+ * @param browser
+ * @param args
+ */
+function updateSubWindow(browser, args) {
+    if (!args) {
+        return;
+    }
+
+    if (!utils.isJson(args)) {
+        args = {path: args, name: null}
+    }
+
+    const hash = args.hash || args.path;
+    if (hash) {
+        if (devloadUrl) {
+            browser.loadURL(devloadUrl + '#' + hash).then(_ => {
+
+            })
+        } else {
+            browser.loadFile('./public/index.html', {
+                hash
+            }).then(_ => {
+
+            })
+        }
+    }
+    if (args.name) {
+        const er = subWindow.find(item => item.browser == browser);
+        if (er) {
+            er.name = args.name;
+        }
     }
 }
 
@@ -294,6 +331,16 @@ ipcMain.on('windowQuit', (event) => {
  */
 ipcMain.on('windowRouter', (event, args) => {
     createSubWindow(args)
+    event.returnValue = "ok"
+})
+
+/**
+ * 更新路由窗口
+ * @param args {?name, ?path} // name: 不是要更改的窗口名，是要把窗口名改成什么， path: 地址
+ */
+ipcMain.on('updateRouter', (event, args) => {
+    const browser = BrowserWindow.fromWebContents(event.sender);
+    updateSubWindow(browser, args)
     event.returnValue = "ok"
 })
 

@@ -1852,6 +1852,17 @@ export default {
                 task_id = task.id;
             }
         }
+        if ($A.isSubElectron) {
+            if (task_id > 0) {
+                $A.Electron.sendMessage('updateRouter', {
+                    name: `task-${task_id}`,
+                    path: `/single/task/${task_id}`,
+                });
+            } else {
+                $A.Electron.sendMessage('windowClose');
+            }
+            return
+        }
         state.taskArchiveView = task_id;
         state.taskId = task_id;
         if (task_id > 0) {
