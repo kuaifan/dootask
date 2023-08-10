@@ -171,13 +171,13 @@ services:
     image: "hitosea2020/okr:0.0.3"
     environment:
       TZ: "Asia/Shanghai"
+      DOO_TASK_URL: "http://${APP_IPPR}.3"
       MYSQL_HOST: "${DB_HOST}"
       MYSQL_PORT: "${DB_PORT}"
       MYSQL_DBNAME: "${DB_DATABASE}"
       MYSQL_USERNAME: "${DB_USERNAME}"
       MYSQL_PASSWORD: "${DB_PASSWORD}"
-      DOO_TASK_URL: "http://${APP_IPPR}.3"
-      
+      MYSQL_EnableSqlLog: true 
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.13"
