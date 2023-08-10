@@ -17697,5 +17697,71 @@
         "de": "Todo",
         "fr": "Todo",
         "id": "Todo"
+    },
+    {
+        "key": "编辑描述",
+        "zh": "",
+        "zh-CHT": "編輯描述",
+        "en": "Edit description",
+        "ko": "설명 편집",
+        "ja": "記述を編集します。",
+        "de": "Bearbeiten sie die beschreibung",
+        "fr": "Editer la description",
+        "id": "Deskripsi pengeditan"
+    },
+    {
+        "key": "没有任何修改！",
+        "zh": "",
+        "zh-CHT": "沒有任何修改！",
+        "en": "No modifications!",
+        "ko": "변경된 것은 없습니다!",
+        "ja": "何の修正もありません!",
+        "de": "Es gibt keine änderungen!",
+        "fr": "Sans aucune modification!",
+        "id": "Tak ada yang perlu diubah!"
+    },
+    {
+        "key": "项目类型",
+        "zh": "",
+        "zh-CHT": "項目類型",
+        "en": "Item type",
+        "ko": "항목 형식",
+        "ja": "プロジェクトタイプです",
+        "de": "Typ eins?",
+        "fr": "Type de projet",
+        "id": "Jenis item"
+    },
+    {
+        "key": "团队项目",
+        "zh": "",
+        "zh-CHT": "團隊項目",
+        "en": "Team project",
+        "ko": "팀 프로젝트",
+        "ja": "チームプロジェクトです",
+        "de": "Ein teamprojekt.",
+        "fr": "Projets par équipe",
+        "id": "Proyek tim"
+    },
+    {
+        "key": "全部项目",
+        "zh": "",
+        "zh-CHT": "全部項目",
+        "en": "All items",
+        "ko": "모든 항목",
+        "ja": "全項目です",
+        "de": "Gesamte projekte.",
+        "fr": "Tous les projets",
+        "id": "Semua item"
+    },
+    {
+        "key": "打开链接",
+        "zh": "",
+        "zh-CHT": "打開鏈接",
+        "en": "Open the link",
+        "ko": "링크 열기",
+        "ja": "リンクを開きます",
+        "de": "Link öffnen.",
+        "fr": "Ouvrir le lien",
+        "id": "Buka tautan"
     }
 ]

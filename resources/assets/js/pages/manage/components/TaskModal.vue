@@ -16,6 +16,9 @@ body {
         &.task-modal {
             display: flex;
             flex-direction: column;
+            .ivu-modal-close {
+                z-index: 2;
+            }
         }
     }
 }
