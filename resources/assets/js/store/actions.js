@@ -257,6 +257,7 @@ export default {
                 } else {
                     reject({ret: -1, data: {}, msg: "System error"})
                 }
+                console.error(xhr, status);
             }
             // WebSocket
             if (params.websocket === true) {
@@ -408,6 +409,25 @@ export default {
         } else {
             window.open(url)
         }
+    },
+
+    /**
+     * 显示文件（打开文件所在位置）
+     * @param state
+     * @param dispatch
+     * @param params
+     */
+    filePos({state, dispatch}, params) {
+        if ($A.isSubElectron) {
+            $A.execMainDispatch("filePos", params)
+            $A.Electron.sendMessage('mainWindowActive');
+            return
+        }
+        dispatch('openTask', 0)
+        if (state.windowPortrait) {
+            dispatch("openDialog", 0);
+        }
+        $A.goForward({name: 'manage-file', params});
     },
 
     /**
