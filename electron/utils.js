@@ -291,12 +291,11 @@ module.exports = {
      */
     onBeforeUnload(event, app) {
         return new Promise(resolve => {
-            const sender = event.sender
-            const contents = sender.webContents
+            const contents = app.webContents
             if (contents != null) {
                 contents.executeJavaScript('if(typeof window.__onBeforeUnload === \'function\'){window.__onBeforeUnload()}', true).then(options => {
                     if (this.isJson(options)) {
-                        let choice = dialog.showMessageBoxSync(sender, options)
+                        let choice = dialog.showMessageBoxSync(app, options)
                         if (choice === 1) {
                             contents.executeJavaScript('if(typeof window.__removeBeforeUnload === \'function\'){window.__removeBeforeUnload()}', true).catch(() => {});
                             resolve()

@@ -79,7 +79,7 @@ function createMainWindow() {
 
     mainWindow.on('close', event => {
         if (!willQuitApp) {
-            utils.onBeforeUnload(event).then(() => {
+            utils.onBeforeUnload(event, mainWindow).then(() => {
                 if (process.platform === 'win32') {
                     mainWindow.hide()
                 } else if (process.platform === 'darwin') {
@@ -139,8 +139,8 @@ function createSubWindow(args) {
 
         browser.on('close', event => {
             if (!willQuitApp) {
-                utils.onBeforeUnload(event).then(() => {
-                    event.sender.destroy()
+                utils.onBeforeUnload(event, browser).then(() => {
+                    browser.destroy()
                 })
             }
         })

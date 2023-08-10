@@ -26,14 +26,14 @@
         "url": "https://github.com/kuaifan/dootask.git"
     },
     "devDependencies": {
-        "@electron-forge/cli": "^6.1.1",
-        "@electron-forge/maker-deb": "^6.1.1",
-        "@electron-forge/maker-rpm": "^6.1.1",
-        "@electron-forge/maker-squirrel": "^6.1.1",
-        "@electron-forge/maker-zip": "^6.1.1",
+        "@electron-forge/cli": "^6.3.0",
+        "@electron-forge/maker-deb": "^6.3.0",
+        "@electron-forge/maker-rpm": "^6.3.0",
+        "@electron-forge/maker-squirrel": "^6.3.0",
+        "@electron-forge/maker-zip": "^6.3.0",
         "dotenv": "^16.0.3",
-        "electron": "^24.5.0",
-        "electron-builder": "^23.6.0",
+        "electron": "^25.5.0",
+        "electron-builder": "^24.6.3",
         "electron-notarize": "^1.2.2",
         "form-data": "^4.0.0",
         "ora": "^4.1.1"
@@ -44,7 +44,7 @@
         "electron-log": "^4.4.8",
         "electron-screenshots-tool": "^1.0.4",
         "electron-squirrel-startup": "^1.0.0",
-        "electron-updater": "^5.3.0",
+        "electron-updater": "^6.1.1",
         "fs-extra": "^10.1.0",
         "pdf-lib": "^1.17.1",
         "request": "^2.88.2"
