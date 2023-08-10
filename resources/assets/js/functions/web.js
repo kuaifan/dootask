@@ -990,6 +990,8 @@
                 loading: true,
                 okText: $A.L(config.okText || '确定'),
                 cancelText: $A.L(config.cancelText || '取消'),
+                okType: config.okType || 'primary',
+                cancelType: config.cancelType || 'text',
             });
             setTimeout(() => {
                 document.getElementById(inputId) && document.getElementById(inputId).focus();

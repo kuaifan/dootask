@@ -326,6 +326,7 @@ export default {
                 placeholder: `请输入审批意见`,
                 type:"textarea",
                 okText: type == 1 ? "同意" : "拒绝",
+                okType: type == 1 ? "primary" : "error",
                 onOk: (desc) => {
                     if (type !=1 && !desc) {
                         return `请输入审批意见`
@@ -356,6 +357,7 @@ export default {
             $A.modalConfirm({
                 content: "你确定要撤销吗？",
                 loading: true,
+                okType: "warning",
                 onOk: () => {
                     return new Promise((resolve, reject) => {
                         this.$store.dispatch("call", {
