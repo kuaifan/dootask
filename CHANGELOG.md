@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.30.11]
+
+### Bug Fixes
+
+- 消息列表过大导致无法查看图片
+- 桌面端drawio版本错误
+
 ## [0.30.6]
 
 ### Bug Fixes
