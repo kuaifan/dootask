@@ -29,7 +29,7 @@ class ApproveController extends AbstractController
     private $flow_url = '';
     public function __construct()
     {
-        $this->flow_url = env('FLOW_URL') ?: 'http://dootask-approve-'.env('APP_ID');
+        $this->flow_url = env('FLOW_URL') ?: 'http://approve';
     }
 
     /**
@@ -74,6 +74,7 @@ class ApproveController extends AbstractController
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/procdef/findAll', json_encode($data));
         $procdef = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$procdef || $procdef['status'] != 200 || $ret['ret'] == 0) {
+            info($ret);
             return Base::retError($procdef['message'] ?? '查询失败');
         }
         return Base::retSuccess('success', Base::arrayKeyToUnderline($procdef['data']));

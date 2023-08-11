@@ -76,7 +76,7 @@ class WebSocketDialog extends AbstractModel
      */
     public function getDialogList($userid, $updated = "", $deleted = "")
     {
-        $builder = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.updated_at as user_at'])
+        $builder = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.color', 'u.updated_at as user_at'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('u.userid', $userid);
         if ($updated) {

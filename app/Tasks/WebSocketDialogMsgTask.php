@@ -91,33 +91,13 @@ class WebSocketDialogMsgTask extends AbstractTask
         if (empty($dialog)) {
             return;
         }
-        $updateds = [];
-        $silences = [];
-        foreach ($dialog->dialogUser as $dialogUser) {
-            $updateds[$dialogUser->userid] = $dialogUser->updated_at;
-            $silences[$dialogUser->userid] = $dialogUser->silence;
-        }
-        $userids = array_keys($silences);
-
-        // 提及会员
-        $mentions = [];
-        if ($msg->type === 'text') {
-            preg_match_all("/<span class=\"mention user\" data-id=\"(\d+)\">/", $msg->msg['text'], $matchs);
-            if ($matchs) {
-                $mentions = array_values(array_filter(array_unique($matchs[1])));
-            }
-        }
 
         // 将会话以外的成员加入会话内
-        $diffids = array_values(array_diff($mentions, $userids));
-        if ($diffids) {
-            // 仅(群聊)且(是群主或没有群主)才可以@成员以外的人
-            if ($dialog->type === 'group' && in_array($dialog->owner_id, [0, $msg->userid])) {
-                $dialog->joinGroup($diffids, $msg->userid);
-                $dialog->pushMsg("groupJoin", null, $diffids);
-                $userids = array_values(array_unique(array_merge($mentions, $userids)));
-            }
-        }
+        $msgJoinGroupResult = $msg->msgJoinGroup($dialog, $msg);
+        $updateds = $msgJoinGroupResult['updateds'];
+        $silences = $msgJoinGroupResult['silences'];
+        $userids = $msgJoinGroupResult['userids'];
+        $mentions = $msgJoinGroupResult['mentions'];
 
         // 推送目标①：会话成员/群成员
         $array = [];

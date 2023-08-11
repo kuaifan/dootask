@@ -995,10 +995,10 @@ class ProjectController extends AbstractController
                 ->groupBy('task_id');
         }, 'task_files', 'task_files.task_id', '=', 'project_tasks.id');
         $builder->leftJoinSub(function ($query) {
-            $query->select('id', DB::raw('count(*) as msg_num'))
-                ->from('web_socket_dialogs')
-                ->groupBy('id');
-        }, 'socket_dialogs', 'socket_dialogs.id', '=', 'project_tasks.id');
+            $query->select('dialog_id', DB::raw('count(*) as msg_num'))
+                ->from('web_socket_dialog_msgs')
+                ->groupBy('dialog_id');
+        }, 'socket_dialog_msgs', 'socket_dialog_msgs.dialog_id', '=', 'project_tasks.dialog_id');
         $builder->leftJoinSub(function ($query) {
             $query->select('parent_id', DB::raw('count(*) as sub_num, sum(CASE WHEN complete_at IS NOT NULL THEN 1 ELSE 0 END) sub_complete') )
                 ->from('project_tasks')
@@ -1007,7 +1007,7 @@ class ProjectController extends AbstractController
         // 给前缀“_”是为了不触发获取器
         $prefix = DB::getTablePrefix();
         $builder->selectRaw("{$prefix}task_files.file_num as _file_num");
-        $builder->selectRaw("{$prefix}socket_dialogs.msg_num as _msg_num");
+        $builder->selectRaw("{$prefix}socket_dialog_msgs.msg_num as _msg_num");
         $builder->selectRaw("{$prefix}sub_task.sub_num as _sub_num");
         $builder->selectRaw("{$prefix}sub_task.sub_complete as _sub_complete");
         $builder->selectRaw("

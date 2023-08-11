@@ -63,7 +63,8 @@
                                 dialog_id: dialog.id,
                                 search_msg_id: dialog.search_msg_id
                             })"
-                            v-longpress="handleLongpress">
+                            v-longpress="handleLongpress"
+                            :style="{'background-color':dialog.color}">
                             <template v-if="dialog.type=='group'">
                                 <EAvatar v-if="dialog.avatar" class="img-avatar" :src="dialog.avatar" :size="42"></EAvatar>
                                 <i v-else-if="dialog.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
@@ -156,6 +157,11 @@
                                 </DropdownItem>
                                 <DropdownItem @click.native="handleSilenceClick" :disabled="silenceDisabled(operateItem)">
                                     {{ $L(operateItem.silence ? '允许消息通知' : '消息免打扰') }}
+                                </DropdownItem>
+                                <DropdownItem @click.native="handleColorClick(c.color)" v-for="(c, k) in taskColorList" :key="'c_' + k" :divided="k==0"  v-if="k<6" >
+                                    <div class="item">
+                                        <i class="taskfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == operateItem.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
+                                    </div>
                                 </DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
@@ -267,7 +273,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs', 'loadDialogs', 'dialogId', 'messengerSearchKey', 'appNotificationPermission']),
+        ...mapState(['cacheDialogs', 'loadDialogs', 'dialogId', 'messengerSearchKey', 'appNotificationPermission', 'taskColorList']),
 
         routeName() {
             return this.$route.name
@@ -909,6 +915,20 @@ export default {
                 data: {
                     dialog_id: this.operateItem.id,
                     type: this.operateItem.silence ? 'cancel' : 'set'
+                },
+            }).then(({data}) => {
+                this.$store.dispatch("saveDialog", data);
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            });
+        },
+
+        handleColorClick(color) {
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/color',
+                data: {
+                    dialog_id: this.operateItem.id,
+                    color: color
                 },
             }).then(({data}) => {
                 this.$store.dispatch("saveDialog", data);
