@@ -17763,5 +17763,27 @@
         "de": "Link öffnen.",
         "fr": "Ouvrir le lien",
         "id": "Buka tautan"
+    },
+    {
+        "key": "汇报人",
+        "zh": "",
+        "zh-CHT": "彙報人",
+        "en": "Informant",
+        "ko": "접수인",
+        "ja": "発信者です",
+        "de": "Das telegramm.",
+        "fr": "Consignataire",
+        "id": "Pembawa berita"
+    },
+    {
+        "key": "提交时间",
+        "zh": "",
+        "zh-CHT": "提交時間",
+        "en": "Submission time",
+        "ko": "제출 날짜",
+        "ja": "提出時期です",
+        "de": "Zeit bis zur abgabe",
+        "fr": "Heure de soumission",
+        "id": "Waktu pengiriman"
     }
 ]

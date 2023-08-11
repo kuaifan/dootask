@@ -2,19 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.29.92]
+## [0.30.6]
 
 ### Bug Fixes
 
 - 无法在任务新窗口打开引用的任务
 - 在任务新窗口使用显示文件窗口错误的情况
 - 部分iOS系统按录音时页面闪烁的情况
+- 修改cookie协议页面的标题及点击cookie协议链接跳转新页面
 - Claude 机器人返回内容错误的情况
 - 在文件页面编辑文本时选择已传图片缩列图不显示的情况
 - 桌面客户端提示request错误
 - 客户端无法保存网络文件的情况
 - 可以发送空白md消息的情况
 - 桌面客户端缺失文件
+- 打开工作流设置后无法关闭桌面客户端的问题
+- 打不开已归档任务的情况
 
 ### Performance
 
@@ -26,16 +29,6 @@ All notable changes to this project will be documented in this file.
 - 优化任务描述编辑器
 - 优化表情快捷提示框
 - 优化移动端编辑任务详情
-
-## [0.29.61]
-
-### Bug Fixes
-
-- 打开工作流设置后无法关闭桌面客户端的问题
-- 打不开已归档任务的情况
-
-### Performance
-
 - 优化桌面端邮件图片菜单
 - 优化表情关键词匹配
 - 工作流支持关联任务列表自动移动
