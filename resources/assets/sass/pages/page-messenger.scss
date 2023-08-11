@@ -591,6 +591,28 @@
     }
 }
 
+.messenger-dialog-operation {
+    .item {
+        display: flex;
+        align-items: center;
+
+        > i {
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            line-height: 18px;
+            font-size: 18px;
+            margin-right: 8px;
+            padding: 0;
+            color: #bbbbbb;
+
+            &.ivu-icon {
+                font-size: 16px;
+            }
+        }
+    }
+}
+
 body.window-touch {
     .page-messenger {
         .messenger-wrapper {

@@ -849,8 +849,8 @@ class WebSocketDialogMsg extends AbstractModel
             $dialogMsg->updateInstance($updateData);
             $dialogMsg->key = $dialogMsg->generateMsgKey();
             $dialogMsg->save();
-            // 
-            $dialogMsg->msgJoinGroup($dialog, $dialogMsg);
+            //
+            $dialogMsg->msgJoinGroup($dialog);
             //
             $dialog->pushMsg('update', array_merge($updateData, [
                 'id' => $dialogMsg->id
@@ -901,11 +901,10 @@ class WebSocketDialogMsg extends AbstractModel
 
     /**
      * 将被@的人加入群
-     * @param $dialogMsg            发送的消息
-     * @param $dialog               对话
+     * @param WebSocketDialog $dialog 对话
      * @return array
      */
-    public static function msgJoinGroup($dialog, $dialogMsg)
+    public function msgJoinGroup(WebSocketDialog $dialog)
     {
         $updateds = [];
         $silences = [];
@@ -914,20 +913,22 @@ class WebSocketDialogMsg extends AbstractModel
             $silences[$dialogUser->userid] = $dialogUser->silence;
         }
         $userids = array_keys($silences);
+
         // 提及会员
         $mentions = [];
-        if ($dialogMsg->type === 'text') {
-            preg_match_all("/<span class=\"mention user\" data-id=\"(\d+)\">/", $dialogMsg->msg['text'], $matchs);
+        if ($this->type === 'text') {
+            preg_match_all("/<span class=\"mention user\" data-id=\"(\d+)\">/", $this->msg['text'], $matchs);
             if ($matchs) {
                 $mentions = array_values(array_filter(array_unique($matchs[1])));
             }
         }
+
         // 将会话以外的成员加入会话内
         $diffids = array_values(array_diff($mentions, $userids));
         if ($diffids) {
             // 仅(群聊)且(是群主或没有群主)才可以@成员以外的人
-            if ($dialog->type === 'group' && in_array($dialog->owner_id, [0, $dialogMsg->userid])) {
-                $dialog->joinGroup($diffids, $dialogMsg->userid);
+            if ($dialog->type === 'group' && in_array($dialog->owner_id, [0, $this->userid])) {
+                $dialog->joinGroup($diffids, $this->userid);
                 $dialog->pushMsg("groupJoin", null, $diffids);
                 $userids = array_values(array_unique(array_merge($mentions, $userids)));
             }

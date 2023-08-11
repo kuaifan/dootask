@@ -93,7 +93,7 @@ class WebSocketDialogMsgTask extends AbstractTask
         }
 
         // 将会话以外的成员加入会话内
-        $msgJoinGroupResult = $msg->msgJoinGroup($dialog, $msg);
+        $msgJoinGroupResult = $msg->msgJoinGroup($dialog);
         $updateds = $msgJoinGroupResult['updateds'];
         $silences = $msgJoinGroupResult['silences'];
         $userids = $msgJoinGroupResult['userids'];

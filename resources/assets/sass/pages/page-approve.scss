@@ -227,6 +227,12 @@
                 gap: 10px;
                 margin-top: 3px;
             }
+
+            .time-text {
+                > span + span {
+                    padding-left: 4px;
+                }
+            }
         }
 
         .approve-record-timeline {
@@ -337,11 +343,23 @@
         border-top: 1px solid #F4F4F5;
         display: flex;
         align-items: center;
+        justify-content: flex-end;
 
         button {
             margin: 10px 0;
             margin-left: 10px;
         }
+    }
+
+    .approve-load {
+        position: absolute;
+        top: 0;
+        left: 24px;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        z-index: 9;
+        background: #ffffff;
     }
 
     .comment {

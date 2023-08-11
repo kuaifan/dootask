@@ -1,5 +1,6 @@
 <template>
     <div class="approve-details" :style="{'z-index':modalTransferIndex}">
+        <!-- 审批详情 -->
         <div class="approve-details-box" ref="approveDetailsBox">
             <h2 class="approve-details-title">
                 <span>{{$L(datas.proc_def_name)}}</span>
@@ -20,16 +21,16 @@
             </div>
             <div class="approve-details-text">
                 <h4>{{$L('开始时间')}}</h4>
-                <div>
+                <div class="time-text">
                     <span>{{datas.var?.start_time}}</span>
-                    <span>&nbsp;&nbsp;&nbsp;({{getWeekday(datas.var?.start_time)}})</span>
+                    <span>({{getWeekday(datas.var?.start_time)}})</span>
                 </div>
             </div>
             <div class="approve-details-text">
                 <h4>{{$L('结束时间')}}</h4>
-                <div>
+                <div class="time-text">
                     <span>{{datas.var?.end_time}}</span>
-                    <span>&nbsp;&nbsp;&nbsp;({{getWeekday(datas.var?.end_time)}})</span>
+                    <span>({{getWeekday(datas.var?.end_time)}})</span>
                 </div>
             </div>
             <div class="approve-details-text">
@@ -72,9 +73,10 @@
                     </TimelineItem>
 
                     <!-- 审批 -->
-                    <TimelineItem :key="key" v-if="item.type == 'approver' && item._show"
-                        :color="item.identitylink ? (item.identitylink?.state > 1 ? '#f03f3f' :'green') : '#ccc'"
-                    >
+                    <TimelineItem
+                        v-if="item.type == 'approver' && item._show"
+                        :key="key"
+                        :color="item.identitylink ? (item.identitylink?.state > 1 ? '#f03f3f' :'green') : '#ccc'">
                         <p class="timeline-title">{{$L('审批')}}</p>
                         <div class="timeline-body">
                             <Avatar :src="(item.node_user_list && item.node_user_list[0]?.userimg) || item.userimg" size="38"/>
@@ -90,9 +92,9 @@
                             </div>
                             <div class="approve-process-right">
                                 <p v-if="parseInt(getTimeAgo(item.claim_time)) < showTimeNum">
-                                    {{ item.identitylink?.state==0 ? 
-                                        ($L('已等待') + " " + getTimeAgo( datas.node_infos[key-1].claim_time,2)) : 
-                                        (item.claim_time ? getTimeAgo(item.claim_time) : '') 
+                                    {{ item.identitylink?.state==0 ?
+                                        ($L('已等待') + " " + getTimeAgo( datas.node_infos[key-1].claim_time,2)) :
+                                        (item.claim_time ? getTimeAgo(item.claim_time) : '')
                                     }}
                                 </p>
                                 <p>{{item.claim_time?.substr(0,16)}}</p>
@@ -100,7 +102,7 @@
                         </div>
                         <p class="comment" v-if="item.identitylink?.comment"><span>“{{ item.identitylink?.comment  }}”</span></p>
                     </TimelineItem>
-                    
+
                     <!-- 抄送 -->
                     <TimelineItem :key="key" :color="item.is_finished ? 'green' : '#ccc'" v-if="item.type == 'notifier' && item._show">
                         <p class="timeline-title">{{$L('抄送')}}</p>
@@ -110,9 +112,9 @@
                                 <p class="approve-process-name">{{$L('系统')}}</p>
                                 <p class="approve-process-desc">{{$L('自动抄送')}}
                                     <span style="color: #486fed;">
-                                        {{ item.node_user_list?.map(h=>h.name).join(',') }} 
-                                        {{$L('等'+item.node_user_list?.length+'人')}}
-                                    </span>
+                                            {{ item.node_user_list?.map(h=>h.name).join(',') }}
+                                            {{$L('等'+item.node_user_list?.length+'人')}}
+                                        </span>
                                 </p>
                             </div>
                         </div>
@@ -129,7 +131,7 @@
                             </div>
                         </div>
                     </TimelineItem>
-                    
+
                 </template>
             </Timeline>
 
@@ -139,9 +141,9 @@
                 <div class="approve-record-comment">
                     <List :split="false" :border="false">
                         <ListItem v-for="(item,key) in datas.global_comments" :key="key">
-                           <div>
+                            <div>
                                 <div class="top">
-                                    <Avatar :src="item.userimg" size="38"/> 
+                                    <Avatar :src="item.userimg" size="38"/>
                                     <div>
                                         <p>{{item.nickname}}</p>
                                         <p class="time">{{item.created_at}}</p>
@@ -156,19 +158,24 @@
                                         <ImgView :src="src" class="img-view"/>
                                     </div>
                                 </div>
-                           </div>
+                            </div>
                         </ListItem>
                     </List>
                 </div>
             </template>
-
         </div>
+
+        <!--审批操作-->
         <div class="approve-operation">
-            <div style="flex: 1;"></div>
             <Button type="success" v-if="isShowAgreeBtn" @click="approve(1)">{{$L('同意')}}</Button>
             <Button type="error" v-if="isShowAgreeBtn" @click="approve(2)">{{$L('拒绝')}}</Button>
             <Button type="warning" v-if="isShowWarningBtn" @click="revocation">{{$L('撤销')}}</Button>
             <Button @click="comment" type="success" ghost>+{{$L('添加评论')}}</Button>
+        </div>
+
+        <!--加载中-->
+        <div v-if="loadIng > 0" class="approve-load">
+            <Loading/>
         </div>
 
         <!--评论-->
@@ -183,20 +190,19 @@
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="commentShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="loadIng > 0" @click="confirmComment">{{$L('确认')}}</Button>
+                <Button type="primary" :loading="commentLoad > 0" @click="confirmComment">{{$L('确认')}}</Button>
             </div>
         </Modal>
     </div>
 </template>
 
 <script>
-
 import ImgView from "../../../components/ImgView";
 import ImgUpload from "../../../components/ImgUpload";
 
 export default {
-    name: "details",
-    components:{ImgView,ImgUpload},
+    name: "ApproveDetails",
+    components: {ImgView, ImgUpload},
     props: {
         data: {
             type: Object,
@@ -208,29 +214,31 @@ export default {
 
     data() {
         return {
-            modalTransferIndex:window.modalTransferIndex,
-            datas:{},
-            showTimeNum:24,
-            commentShow:false,
-            loadIng:0,
+            datas: {},
+            loadIng: 0,
+            showTimeNum: 24,
+            modalTransferIndex: window.modalTransferIndex,
+
+            commentLoad: 0,
+            commentShow: false,
             commentData: {
-                content:"",
-                pictures:[]
+                content: "",
+                pictures: []
             },
             commentRule: {
-                content: { type: 'string',required: true, message: this.$L('请输入内容！'), trigger: 'change' },
+                content: {type: 'string', required: true, message: this.$L('请输入内容！'), trigger: 'change'},
             }
         }
     },
     watch: {
-        '$route' (to, from) {
-            if(to.name == 'manage-approve-details'){
+        '$route'(to, from) {
+            if (to.name == 'manage-approve-details') {
                 this.init()
             }
         },
         data: {
-            handler(newValue,oldValue) {
-                if(newValue.id){
+            handler(newValue, oldValue) {
+                if (newValue.id) {
                     this.getInfo()
                 }
             },
@@ -238,13 +246,13 @@ export default {
         },
     },
     computed: {
-        isShowAgreeBtn(){
+        isShowAgreeBtn() {
             return (this.datas.candidate || '').split(',').indexOf(this.userId + '') != -1 && !this.datas.is_finished
         },
-        isShowWarningBtn(){
+        isShowWarningBtn() {
             let is = (this.userId == this.datas.start_user_id) && this.datas?.is_finished != true;
-            (this.datas.node_infos || []).map(h=>{
-                if( h.type != 'starter' && h.is_finished == true && h.identitylink?.userid != this.userId) {
+            (this.datas.node_infos || []).map(h => {
+                if (h.type != 'starter' && h.is_finished == true && h.identitylink?.userid != this.userId) {
                     is = false;
                 }
             })
@@ -254,29 +262,29 @@ export default {
     mounted() {
         this.init()
     },
-    methods:{
-        init(){
+    methods: {
+        init() {
             this.modalTransferIndex = window.modalTransferIndex = window.modalTransferIndex + 1
-            if(this.$route.query.id){
+            if (this.$route.query.id) {
                 this.data.id = this.$route.query.id;
                 this.getInfo()
             }
         },
         // 把时间转成几小时前
-        getTimeAgo(time,type) {
+        getTimeAgo(time, type) {
             const currentTime = new Date();
-            const timeDiff = (currentTime - new Date((time + '').replace(/-/g,"/"))) / 1000; // convert to seconds
+            const timeDiff = (currentTime - new Date((time + '').replace(/-/g, "/"))) / 1000; // convert to seconds
             if (timeDiff < 60) {
-                return  type == 2 ? "0"+this.$L('分钟') : this.$L('刚刚');
+                return type == 2 ? "0" + this.$L('分钟') : this.$L('刚刚');
             } else if (timeDiff < 3600) {
                 const minutes = Math.floor(timeDiff / 60);
                 return type == 2 ? `${minutes}${this.$L('分钟')}` : `${minutes} ${this.$L('分钟前')}`;
-            } else if(timeDiff < 3600 * 24)  {
+            } else if (timeDiff < 3600 * 24) {
                 const hours = Math.floor(timeDiff / 3600);
                 return type == 2 ? `${hours}${this.$L('小时')}` : `${hours} ${this.$L('小时前')}`;
             } else {
                 const days = Math.floor(timeDiff / 3600 / 24);
-                return type == 2 ? `${days+1}${this.$L('天')}` : `${days+1} ${this.$L('天')}`;
+                return type == 2 ? `${days + 1}${this.$L('天')}` : `${days + 1} ${this.$L('天')}`;
             }
         },
         // 时间转为周几
@@ -284,21 +292,21 @@ export default {
             return ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][new Date(dateString).getDay()];
         },
         // 获取时间差
-        getTimeDifference(startTime,endTime) {
-            const currentTime = new Date((endTime + '').replace(/-/g,"/"));
-            const endTimes = new Date((startTime + '').replace(/-/g,"/"));
+        getTimeDifference(startTime, endTime) {
+            const currentTime = new Date((endTime + '').replace(/-/g, "/"));
+            const endTimes = new Date((startTime + '').replace(/-/g, "/"));
             const timeDiff = (currentTime - endTimes) / 1000; // convert to seconds
             if (timeDiff < 60) {
-                return {time:timeDiff,unit:this.$L('秒')};
+                return {time: timeDiff, unit: this.$L('秒')};
             } else if (timeDiff < 3600) {
                 const minutes = Math.floor(timeDiff / 60);
-                return {time:minutes,unit:this.$L('分钟')};
-            } else if(timeDiff < 3600 * 24) {
+                return {time: minutes, unit: this.$L('分钟')};
+            } else if (timeDiff < 3600 * 24) {
                 const hours = (currentTime - endTimes) / (1000 * 60 * 60);
-                return {time:hours,unit:this.$L('小时')};
+                return {time: hours, unit: this.$L('小时')};
             } else {
                 const days = Math.floor(timeDiff / 3600 / 24);
-                return {time:days + 1,unit:this.$L('天')};
+                return {time: days + 1, unit: this.$L('天')};
             }
         },
         // 获取详情
@@ -308,13 +316,13 @@ export default {
                 method: 'get',
                 url: 'approve/process/detail',
                 data: {
-                    id:this.data.id,
+                    id: this.data.id,
                 }
             }).then(({data}) => {
                 var show = true;
-                data.node_infos =  data.node_infos.map(item=>{
+                data.node_infos = data.node_infos.map(item => {
                     item._show = show;
-                    if( item.identitylink?.state==2 || item.identitylink?.state==3 ){
+                    if (item.identitylink?.state == 2 || item.identitylink?.state == 3) {
                         show = false;
                     }
                     return item;
@@ -330,15 +338,15 @@ export default {
             });
         },
         // 通过
-        approve(type){
+        approve(type) {
             $A.modalInput({
                 title: `审批`,
                 placeholder: `请输入审批意见`,
-                type:"textarea",
+                type: "textarea",
                 okText: type == 1 ? "同意" : "拒绝",
                 okType: type == 1 ? "primary" : "error",
                 onOk: (desc) => {
-                    if (type !=1 && !desc) {
+                    if (type != 1 && !desc) {
                         return `请输入审批意见`
                     }
                     this.$store.dispatch("call", {
@@ -350,9 +358,9 @@ export default {
                         }
                     }).then(({msg}) => {
                         $A.messageSuccess(msg);
-                        if(this.$route.name=='manage-approve-details' || this.$route.name=='manage-messenger'){
+                        if (this.$route.name == 'manage-approve-details' || this.$route.name == 'manage-messenger') {
                             this.getInfo()
-                        }else{
+                        } else {
                             this.$emit('approve')
                         }
                     }).catch(({msg}) => {
@@ -363,7 +371,7 @@ export default {
             });
         },
         // 撤销
-        revocation(){
+        revocation() {
             $A.modalConfirm({
                 content: "你确定要撤销吗？",
                 loading: true,
@@ -379,9 +387,9 @@ export default {
                         }).then(({msg}) => {
                             $A.messageSuccess(msg);
                             resolve();
-                            if(this.$route.name=='manage-approve-details' || this.$route.name=='manage-messenger'){
+                            if (this.$route.name == 'manage-approve-details' || this.$route.name == 'manage-messenger') {
                                 this.getInfo()
-                            }else{
+                            } else {
                                 this.$emit('revocation')
                             }
                         }).catch(({msg}) => {
@@ -394,29 +402,31 @@ export default {
             });
         },
         // 评论
-        comment(){
+        comment() {
             this.commentData.content = ""
             this.commentData.pictures = []
             this.commentShow = true;
         },
         // 提交评论
-        confirmComment(){
-            this.loadIng = 1;
+        confirmComment() {
+            this.commentLoad++;
             this.$store.dispatch("call", {
                 method: 'post',
                 url: 'approve/process/addGlobalComment',
                 data: {
-                    proc_inst_id:this.data.id,
-                    content:JSON.stringify({
+                    proc_inst_id: this.data.id,
+                    content: JSON.stringify({
                         'content': this.commentData.content,
-                        'pictures': this.commentData.pictures.map(h =>{ return h.path; })
+                        'pictures': this.commentData.pictures.map(h => {
+                            return h.path;
+                        })
                     })
                 }
             }).then(({msg}) => {
                 $A.messageSuccess("添加成功");
-                if(this.$route.name=='manage-approve-details' || this.$route.name=='manage-messenger'){
+                if (this.$route.name == 'manage-approve-details' || this.$route.name == 'manage-messenger') {
                     this.getInfo(true)
-                }else{
+                } else {
                     this.$emit('approve')
                     setTimeout(() => {
                         this.scrollToBottom()
@@ -426,7 +436,7 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
-                this.loadIng--;
+                this.commentLoad--;
             });
         },
         // 滚动到容器底部
@@ -434,11 +444,11 @@ export default {
             const container = this.$refs.approveDetailsBox
             container.scrollTo({
                 top: container.scrollHeight + 1000,
-                behavior: 'smooth' 
+                behavior: 'smooth'
             });
         },
         // 获取内容
-        getContent(content){
+        getContent(content) {
             try {
                 return JSON.parse(content).content || ''
             } catch (error) {
@@ -446,7 +456,7 @@ export default {
             }
         },
         // 获取图片
-        getPictures(content){
+        getPictures(content) {
             try {
                 return JSON.parse(content).pictures || []
             } catch (error) {
@@ -455,12 +465,8 @@ export default {
         },
         // 打开图片
         onViewPicture(currentUrl) {
-            this.$store.dispatch("previewImage", $A.apiUrl('../'+currentUrl) )
+            this.$store.dispatch("previewImage", $A.apiUrl('../' + currentUrl))
         }
     }
 }
 </script>
-
-<style scoped>
-   
-</style>

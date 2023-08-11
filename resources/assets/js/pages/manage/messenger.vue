@@ -148,7 +148,7 @@
                             @on-clickoutside="operateVisible = false"
                             transfer>
                             <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
-                            <DropdownMenu slot="list">
+                            <DropdownMenu slot="list" class="messenger-dialog-operation">
                                 <DropdownItem @click.native="handleTopClick">
                                     {{ $L(operateItem.top_at ? '取消置顶' : '置顶') }}
                                 </DropdownItem>

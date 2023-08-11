@@ -74,7 +74,7 @@ class ApproveController extends AbstractController
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/procdef/findAll', json_encode($data));
         $procdef = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$procdef || $procdef['status'] != 200 || $ret['ret'] == 0) {
-            info($ret);
+            // info($ret);
             return Base::retError($procdef['message'] ?? '查询失败');
         }
         return Base::retSuccess('success', Base::arrayKeyToUnderline($procdef['data']));
@@ -209,7 +209,7 @@ class ApproveController extends AbstractController
                 $this->approveMsg('approve_comment_notifier', $dialog, $botUser, $processInst, $processInst);
             }
         }
-        
+
         $res = Base::arrayKeyToUnderline($process['data']);
         return Base::retSuccess('success', $res);
     }
@@ -220,7 +220,7 @@ class ApproveController extends AbstractController
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup approve
-     * @apiName task__complete 
+     * @apiName task__complete
      *
      * @apiQuery {Number} task_id               流程ID
      * @apiQuery {String} pass                  标题 [true-通过，false-拒绝]
@@ -1058,10 +1058,10 @@ class ApproveController extends AbstractController
         }
         $info = User::whereUserid($res['start_user_id'])->first();
         $res['userimg'] = $info ? User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname) : '';
-        // 
+        //
         $res['userids'][] = $info->userid;
         $res['userids'] = array_unique($res['userids']);
-        // 
+        //
         return $res;
     }
 

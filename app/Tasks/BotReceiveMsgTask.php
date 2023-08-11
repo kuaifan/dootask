@@ -313,7 +313,7 @@ class BotReceiveMsgTask extends AbstractTask
                     $nameKey = $isManager ? $array[2] : $array[1];
                     $data = $this->botManagerOne($botId, $msg->userid);
                     if ($data) {
-                        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.updated_at as user_at'])
+                        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.color', 'u.updated_at as user_at'])
                             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
                             ->where('web_socket_dialogs.name', 'LIKE', "%{$nameKey}%")
                             ->where('u.userid', $data->userid)
@@ -466,7 +466,7 @@ class BotReceiveMsgTask extends AbstractTask
             }
             if($res['data'] && $data = json_decode($res['data'])){
                 if($data['code'] != 200 && $data['message']){
-                    WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $res['data']['message']], $botUser->userid, false, false, true); 
+                    WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $res['data']['message']], $botUser->userid, false, false, true);
                 }
             }
         } catch (\Throwable $th) {

@@ -9,7 +9,7 @@
                 </div>
                 <Button :loading="addLoadIng" type="primary" @click="addApply">{{$L("添加申请")}}</Button>
             </div>
-           
+
             <Tabs :value="tabsValue" @on-click="tabsClick" style="margin: 0 20px;height: 100%;"  size="small">
                 <TabPane :label="$L('待办') + (unreadTotal > 0 ? ('('+unreadTotal+')') : '')" name="unread" style="height: 100%;">
                     <div class="approve-main-search">
@@ -131,7 +131,7 @@
                     </div>
                 </TabPane>
             </Tabs>
-            
+
         </div>
 
         <!--详情-->
@@ -256,17 +256,17 @@ export default {
             unreadPage: 1,
             unreadTotal: 0,
             unreadLoad: false,
-            // 
+            //
             doneList: [],
             donePage: 1,
             doneLoad: false,
             doneTotal: 0,
-            // 
+            //
             notifyList: [],
             notifyPage: 1,
             notifyLoad: false,
             notifyTotal: 0,
-            // 
+            //
             initiatedList: [],
             initiatedPage: 1,
             initiatedLoad: false,
@@ -423,7 +423,7 @@ export default {
             })
         },
 
-        // 下拉加载 
+        // 下拉加载
         handleScroll(e){
             if (e.target.scrollTop + e.target.clientHeight >= e.target.scrollHeight) {
                 if(this.tabsValue == 'unread' && !this.unreadLoad && this.unreadList.length < this.unreadTotal){
@@ -502,7 +502,7 @@ export default {
                 }
             }).then(({data}) => {
                 let activeId = 0;
-                let activeIndex = 0;    
+                let activeIndex = 0;
                 this.doneTotal = data.total;
                 if( this.doneList.length == 0 || this.doneList.length == data.total){
                     this.doneList?.map((res)=>{  if(res._active) activeId = res.id })
