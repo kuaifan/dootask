@@ -144,3 +144,10 @@
 .footer-layut{
   padding-top: 120px;
 }
+.btn-padding{
+  padding: 0;
+}
+.btn-padding a{
+  display: block;
+  padding: 10px 16px;
+}
