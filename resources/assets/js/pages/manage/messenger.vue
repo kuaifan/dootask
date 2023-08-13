@@ -150,17 +150,28 @@
                             <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
                             <DropdownMenu slot="list" class="messenger-dialog-operation">
                                 <DropdownItem @click.native="handleTopClick">
-                                    {{ $L(operateItem.top_at ? '取消置顶' : '置顶') }}
+                                    <div class="item">
+                                        {{ $L(operateItem.top_at ? '取消置顶' : '置顶') }}
+                                        <i class="taskfont" v-html="operateItem.top_at ? '&#xe7e3;' : '&#xe7e6;'"></i>
+                                    </div>
                                 </DropdownItem>
                                 <DropdownItem @click.native="handleReadClick">
-                                    {{ $L($A.getDialogUnread(operateItem, true) > 0 ? '标记已读' : '标记未读') }}
+                                    <div class="item">
+                                        {{ $L($A.getDialogUnread(operateItem, true) > 0 ? '标记已读' : '标记未读') }}
+                                        <i class="taskfont" v-html="$A.getDialogUnread(operateItem, true) > 0 ? '&#xe7e8;' : '&#xe7e9;'"></i>
+                                    </div>
+
                                 </DropdownItem>
                                 <DropdownItem @click.native="handleSilenceClick" :disabled="silenceDisabled(operateItem)">
-                                    {{ $L(operateItem.silence ? '允许消息通知' : '消息免打扰') }}
+                                    <div class="item">
+                                        {{ $L(operateItem.silence ? '允许消息通知' : '消息免打扰') }}
+                                        <i class="taskfont" v-html="operateItem.silence ? '&#xe7eb;' : '&#xe7d7;'"></i>
+                                    </div>
                                 </DropdownItem>
                                 <DropdownItem @click.native="handleColorClick(c.color)" v-for="(c, k) in taskColorList" :key="'c_' + k" :divided="k==0"  v-if="k<6" >
                                     <div class="item">
-                                        <i class="taskfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == operateItem.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
+                                        {{$L(c.name)}}
+                                        <i class="taskfont color" :style="{color:c.primary||'#ddd'}" v-html="c.color == (operateItem.color||'') ? '&#xe61d;' : '&#xe61c;'"></i>
                                     </div>
                                 </DropdownItem>
                             </DropdownMenu>

@@ -147,7 +147,7 @@ export default {
     // 列表背景色
     columnColorList: [
         {name: '默认', color: ''},
-        {name: '灰色', color: '#444444'},
+        {name: '灰色', color: '#999999'},
         {name: '棕色', color: '#947364'},
         {name: '橘色', color: '#faaa6c'},
         {name: '黄色', color: '#f2d86d'},
@@ -160,13 +160,13 @@ export default {
 
     // 任务背景色
     taskColorList: [
-        {name: '默认', color: ''},
-        {name: '黄色', color: '#fffae6'},
-        {name: '蓝色', color: '#e5f5ff'},
-        {name: '绿色', color: '#ecffe5'},
-        {name: '粉色', color: '#ffeaee'},
-        {name: '紫色', color: '#f6ecff'},
-        {name: '灰色', color: '#f3f3f3'},
+        {name: '默认', color: '', primary: ''},
+        {name: '黄色', color: '#fffae6', primary: '#f2d86d'},
+        {name: '蓝色', color: '#e5f5ff', primary: '#51abea'},
+        {name: '绿色', color: '#ecffe5', primary: '#73b45c'},
+        {name: '粉色', color: '#ffeaee', primary: '#ff819c'},
+        {name: '紫色', color: '#f6ecff', primary: '#b583e3'},
+        {name: '灰色', color: '#f3f3f3', primary: '#999999'},
     ],
 
     // 主题皮肤

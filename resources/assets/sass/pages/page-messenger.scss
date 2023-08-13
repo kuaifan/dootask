@@ -592,9 +592,16 @@
 }
 
 .messenger-dialog-operation {
+    .ivu-dropdown-item-divided {
+        &:before {
+            transform: scaleY(0.5);
+        }
+    }
+
     .item {
         display: flex;
         align-items: center;
+        justify-content: space-between;
 
         > i {
             flex-shrink: 0;
@@ -602,12 +609,11 @@
             height: 18px;
             line-height: 18px;
             font-size: 18px;
-            margin-right: 8px;
-            padding: 0;
-            color: #bbbbbb;
+            margin-left: 16px;
+            opacity: 0.7;
 
-            &.ivu-icon {
-                font-size: 16px;
+            &.color {
+                opacity: 1;
             }
         }
     }
