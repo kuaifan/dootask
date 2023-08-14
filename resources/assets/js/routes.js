@@ -116,6 +116,11 @@ export default [
                 path: 'file/:folderId?/:fileId?',
                 component: () => import('./pages/manage/file.vue'),
             },
+            {
+                name: 'manage-apply',
+                path: 'apply',
+                component: () => import('./pages/manage/apply.vue'),
+            },
         ]
     },
     {

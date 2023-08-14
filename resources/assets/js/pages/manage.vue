@@ -123,6 +123,11 @@
                             <i class="taskfont">&#xe6f3;</i>
                             <div class="menu-title">{{$L('文件')}}</div>
                         </li>
+                        <li @click="toggleRoute('apply')" :class="classNameRoute('apply')">
+                            <i class="taskfont">&#xe60c;</i>
+                            <div class="menu-title">{{$L('应用')}}</div>
+                            <Badge class="menu-badge" :overflow-count="999" :text="String((reportUnreadNumber + approveUnreadNumber) || '')"/>
+                        </li>
                     </ul>
                 </div>
                 <div ref="menuProject" class="menu-project">

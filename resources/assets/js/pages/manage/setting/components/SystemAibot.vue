@@ -1,7 +1,7 @@
 <template>
     <div class="setting-component-item">
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
-            <div class="block-setting-box">
+            <div class="block-setting-box" v-if="type=='all' || type=='ChatGPT'">
                 <h3>ChatGPT</h3>
                 <div class="form-box">
                     <FormItem label="API Key" prop="openai_key">
@@ -14,7 +14,7 @@
                     </FormItem>
                 </div>
             </div>
-            <div class="block-setting-box">
+            <div class="block-setting-box" v-if="type=='all' || type=='Claude'">
                 <h3>Claude</h3>
                 <div class="form-box">
                     <FormItem label="Token" prop="claude_token">
@@ -27,7 +27,7 @@
                     </FormItem>
                 </div>
             </div>
-            <div class="block-setting-box">
+            <div class="block-setting-box" v-if="type=='all' || type=='Wenxin'">
                 <h3>文心一言 (Wenxin)</h3>
                 <div class="form-box">
                     <FormItem label="API Key" prop="wenxin_key">
@@ -47,7 +47,7 @@
                     </FormItem>
                 </div>
             </div>
-            <div class="block-setting-box">
+            <div class="block-setting-box" v-if="type=='all' || type=='Qianwen'">
                 <h3>通义千问 (Qianwen)</h3>
                 <div class="form-box">
                     <FormItem label="API Key" prop="qianwen_key">
@@ -74,6 +74,11 @@
 <script>
 export default {
     name: "SystemAibot",
+    props: {
+        type: {
+            default: 'all'
+        }
+    },
     data() {
         return {
             loadIng: 0,
