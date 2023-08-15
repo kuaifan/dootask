@@ -1222,22 +1222,17 @@ footer {
 }
 
 .footer_beian {
-  float: left;
-  height: 20px;
   line-height: 20px;
-  margin: 0px 0px 0px 5px;
+  margin-left: 5px;
   color: #939393;
 }
 
 .footer_beian_a {
-  height: 20px;
   line-height: 20px;
-  margin: 0px 0px 0px 5px;
+  margin-left: 5px;
   color: #939393;
   text-decoration: underline;
   display: inline-block;
-  height: 20px;
-  line-height: 20px;
 }
 
 .footer_copyright {
