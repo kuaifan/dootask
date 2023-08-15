@@ -12,7 +12,7 @@
                         <div class="more-item">
                             <i class="taskfont" v-html="item.icon"></i>
                             <div class="tabbar-title">{{$L(item.label)}}</div>
-                            <Badge v-if="item.name === 'workReport'" class="tabbar-badge" :overflow-count="999" :count="reportUnreadNumber"/>
+                            <Badge v-if="item.name === 'workReport'" class="tabbar-badge" :overflow-count="999" :count="reportUnreadNumber + approveUnreadNumber"/>
                         </div>
                     </li>
                 </ul>
@@ -29,6 +29,9 @@
                 </template>
                 <template v-else-if="item.name === 'dialog'">
                     <Badge class="tabbar-badge" :overflow-count="999" :text="msgUnreadMention"/>
+                </template>
+                <template v-else-if="item.name === 'apply'">
+                    <Badge class="tabbar-badge" :overflow-count="999" :count="reportUnreadNumber + approveUnreadNumber"/>
                 </template>
                 <template v-else-if="item.name === 'more'">
                     <Badge class="tabbar-badge" :overflow-count="999" :count="reportUnreadNumber"/>
@@ -113,7 +116,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userIsAdmin', 'cacheDialogs', 'reportUnreadNumber']),
+        ...mapState(['userIsAdmin', 'cacheDialogs', 'reportUnreadNumber', 'approveUnreadNumber']),
         ...mapGetters(['dashboardTask']),
 
         routeName() {

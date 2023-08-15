@@ -202,10 +202,30 @@ export default {
             workReportTabs: "my",
             // 
             aibotList: [
-                { value: "openai", label: "ChatGPT", src: $A.apiUrl('../images/avatar/default_openai.png'), desc: this.$L('我是一个人工智能助手，为用户提供问题解答和指导。我没有具体的身份，只是一个程序。您有什么问题可以问我哦？') },
-                { value: "claude", label: "Claude", src: $A.apiUrl('../images/avatar/default_claude.png'), desc: this.$L('我是Claude,一个由Anthropic公司创造出来的AI助手机器人。我的工作是帮助人类,与人对话并给出解答。') },
-                { value: "wenxin", label: "Wenxin", src: $A.apiUrl('../avatar/Wenxin.png'), desc: this.$L('我是文心一言，英文名是ERNIE Bot。我能够与人对话互动，回答问题，协助创作，高效便捷地帮助人们获取信息、知识和灵感。') },
-                { value: "qianwen", label: "Qianwen", src: $A.apiUrl('../avatar/%E9%80%9A%E4%B9%89%E5%8D%83%E9%97%AE.png'), desc: this.$L('我是达摩院自主研发的超大规模语言模型，能够回答问题、创作文字，还能表达观点、撰写代码。') },
+                { 
+                    value: "openai", 
+                    label: "ChatGPT", 
+                    src: $A.apiUrl('../images/avatar/default_openai.png'), 
+                    desc: this.$L('我是一个人工智能助手，为用户提供问题解答和指导。我没有具体的身份，只是一个程序。您有什么问题可以问我哦？') 
+                },
+                { 
+                    value: "claude", 
+                    label: "Claude", 
+                    src: $A.apiUrl('../images/avatar/default_claude.png'), 
+                    desc: this.$L('我是Claude,一个由Anthropic公司创造出来的AI助手机器人。我的工作是帮助人类,与人对话并给出解答。') 
+                },
+                { 
+                    value: "wenxin", 
+                    label: "Wenxin", 
+                    src: $A.apiUrl('../avatar/Wenxin.png'), 
+                    desc: this.$L('我是文心一言，英文名是ERNIE Bot。我能够与人对话互动，回答问题，协助创作，高效便捷地帮助人们获取信息、知识和灵感。') 
+                },
+                { 
+                    value: "qianwen", 
+                    label: "Qianwen", 
+                    src: $A.apiUrl('../avatar/%E9%80%9A%E4%B9%89%E5%8D%83%E9%97%AE.png'), 
+                    desc: this.$L('我是达摩院自主研发的超大规模语言模型，能够回答问题、创作文字，还能表达观点、撰写代码。') 
+                },
             ],
             aibotTabAction: "opanai",
             aibotShow: false,

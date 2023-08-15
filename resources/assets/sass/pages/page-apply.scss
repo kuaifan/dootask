@@ -125,16 +125,19 @@
 
                 .ivu-form-item {
                     padding: 12px 0 0 0;
-
                     .ivu-form-item .ivu-form-item-content {
                         display: flex;
 
                         >.ivu-form {
                             margin-bottom: 8px;
+                            
                         }
                     }
+
                 }
+                
             }
+           
 
             .block-setting-box {
                 position: relative;
@@ -143,6 +146,30 @@
                 border-radius: 8px;
                 border: 1px solid #eeeeee;
                 transition: box-shadow 0.3s;
+
+                @media (max-width: 420px) {
+                    .block-setting-advance{
+                        >.ivu-form-item{
+                            display: flex;
+                            flex-direction: column;
+                            .ivu-form-item-label{
+                                text-align: left;
+                            }
+                        }
+                    }
+                }
+
+                @media (max-width: 460px) {
+                    .block-setting-msg-unread{
+                        >.ivu-form-item{
+                            display: flex;
+                            flex-direction: column;
+                            .ivu-form-item-label{
+                                text-align: left;
+                            }
+                        }
+                    }
+                }
 
                 h3 {
                     position: absolute;
