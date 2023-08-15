@@ -55,11 +55,6 @@ export default [
                         component: () => import('./pages/manage/setting/checkin.vue'),
                     },
                     {
-                        name: 'manage-setting-approve',
-                        path: 'approve',
-                        component: () => import('./pages/manage/setting/approve.vue'),
-                    },
-                    {
                         name: 'manage-setting-language',
                         path: 'language',
                         component: () => import('./pages/manage/setting/language.vue'),

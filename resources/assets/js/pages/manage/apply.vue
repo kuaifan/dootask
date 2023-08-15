@@ -1,6 +1,6 @@
 <template>
     <div class="page-apply">
-        
+
         <PageTitle :title="$L('应用')" />
 
         <div class="apply-wrapper">
@@ -11,13 +11,18 @@
             </div>
             <div class="apply-row">
                 <Row :gutter="16">
-                    <Col v-for="item in applyList" :xs="{ span: 8 }" :lg="{ span: 6 }" :xl="{ span: 4 }" :xxl="{ span: 3 }">
+                    <Col v-if="!item.isAdmin || userIsAdmin" v-for="(item, key) in applyList" :xs="{ span: 8 }"
+                        :sm="{ span: 8 }" :lg="{ span: 6 }" :xl="{ span: 4 }" :xxl="{ span: 3 }" :key="key">
                     <div class="apply-col">
                         <div @click="applyClick(item)">
                             <img :src="item.src">
                             <p>{{ item.label }}</p>
+                            <!-- 审批中心 -->
+                            <Badge v-if="item.value == 'approve' && approveUnreadNumber > 0" class="manage-box-top-report"
+                                :overflow-count="999" :count="approveUnreadNumber" />
                             <!-- 工作报告 -->
-                            <Badge v-if="item.value == 'report' && reportUnreadNumber > 0" class="manage-box-top-report" :overflow-count="999" :count="reportUnreadNumber"/>
+                            <Badge v-if="item.value == 'report' && reportUnreadNumber > 0" class="manage-box-top-report"
+                                :overflow-count="999" :count="reportUnreadNumber" />
                         </div>
                     </div>
                     </Col>
@@ -40,50 +45,39 @@
                     </p>
                 </div>
                 <div class="ivu-modal-wrap-apply-body">
-                    <div v-if="aibotType==1">
-                        <ul class="aibot-ul">
-                            <li>
-                                <img src="/images/avatar/default_openai.png">
-                                <h4>ChatGPT</h4>
-                                <p>我是一个人工智能助手，为用户提供问题解答和指导。我没有具体的身份，只是一个程序。您有什么问题可以问我哦？</p>
-                                <p class="btn">去聊天</p>
-                            </li>
-                            <li>
-                                <img src="/images/avatar/default_claude.png">
-                                <h4>Claude</h4>
-                                <p>我是Claude,一个由Anthropic公司创造出来的AI助手机器人。我的工作是帮助人类,与人对话并给出解答。</p>
-                                <p class="btn">去聊天</p>
-                            </li>
-                            <li>
-                                <img src="/avatar/Wenxin.png">
-                                <h4>文心一言 (Wenxin)</h4>
-                                <p>我是文心一言，英文名是ERNIE Bot。我能够与人对话互动，回答问题，协助创作，高效便捷地帮助人们获取信息、知识和灵感。</p>
-                                <p class="btn">去聊天</p>
-                            </li>
-                            <li>
-                                <img src="/avatar/%E9%80%9A%E4%B9%89%E5%8D%83%E9%97%AE.png">
-                                <h4>通义千问 (Qianwen)</h4>
-                                <p>我是达摩院自主研发的超大规模语言模型，能够回答问题、创作文字，还能表达观点、撰写代码。</p>
-                                <p class="btn">去聊天</p>
-                            </li>
-                        </ul>
-                    </div>
-                    <div v-if="aibotType==2">
-                        <Tabs v-model="aibotTabAction" style="height: 100%;display: flex;flex-direction: column;">
-                            <TabPane label="ChatGPT" name="opanai" style="height: 100%;">
-                                <div style="position: relative;height: 100%;"> <SystemAibot type="ChatGPT"/></div>
-                            </TabPane>
-                            <TabPane label="Claude" name="claude" style="height: 100%;">
-                                <div style="position: relative;height: 100%;"> <SystemAibot type="Claude"/></div>
-                            </TabPane>
-                            <TabPane label="文心一言" name="wenxin" style="height: 100%;">
-                                <div style="position: relative;height: 100%;"> <SystemAibot type="Wenxin"/></div>
-                            </TabPane>
-                            <TabPane label="通义千问" name="qianwen" style="height: 100%;">
-                                <div style="position: relative;height: 100%;"> <SystemAibot type="Qianwen"/></div>
-                            </TabPane>
-                        </Tabs>
-                    </div>
+                    <ul class="ivu-modal-wrap-ul" v-if="aibotType == 1">
+                        <li v-for="(item, key) in aibotList" @click="onGoToChat(item.value)" :key="key">
+                            <img :src="item.src">
+                            <h4>{{ item.label }}</h4>
+                            <p>{{ item.desc }}</p>
+                            <p class="btn">{{ $L('去聊天') }}</p>
+                            <div class="load" v-if="aibotDialogSearchLoad == item.value">
+                                <Loading />
+                            </div>
+                        </li>
+                    </ul>
+                    <Tabs v-else v-model="aibotTabAction">
+                        <TabPane label="ChatGPT" name="opanai">
+                            <div class="aibot-warp">
+                                <SystemAibot type="ChatGPT" v-if="aibotTabAction == 'opanai'" />
+                            </div>
+                        </TabPane>
+                        <TabPane label="Claude" name="claude">
+                            <div class="aibot-warp">
+                                <SystemAibot type="Claude" v-if="aibotTabAction == 'claude'" />
+                            </div>
+                        </TabPane>
+                        <TabPane label="文心一言" name="wenxin">
+                            <div class="aibot-warp">
+                                <SystemAibot type="Wenxin" v-if="aibotTabAction == 'wenxin'" />
+                            </div>
+                        </TabPane>
+                        <TabPane label="通义千问" name="qianwen">
+                            <div class="aibot-warp">
+                                <SystemAibot type="Qianwen" v-if="aibotTabAction == 'qianwen'" />
+                            </div>
+                        </TabPane>
+                    </Tabs>
                 </div>
             </div>
         </DrawerOverlay>
@@ -98,8 +92,8 @@
                     </p>
                 </div>
                 <div class="ivu-modal-wrap-apply-body">
-                    <Checkin v-if="signType==1"/>
-                    <SystemCheckin v-if="signType==2"/>
+                    <Checkin v-if="signType == 1" />
+                    <SystemCheckin v-else />
                 </div>
             </div>
         </DrawerOverlay>
@@ -108,63 +102,67 @@
         <DrawerOverlay v-model="meetingShow" placement="right" :size="600">
             <div class="ivu-modal-wrap-apply">
                 <div class="ivu-modal-wrap-apply-title">
-                    {{ $L('会议功能') }}
+                    {{ $L('会议') }}
                     <p @click="meetingType = meetingType == 1 ? 2 : 1">
                         {{ meetingType == 1 ? $L('会议设置') : $L('返回') }}
                     </p>
                 </div>
                 <div class="ivu-modal-wrap-apply-body">
-                    <div v-if="meetingType==1">
-                        <Form ref="addForm" :model="meetingAddData" label-width="auto" @submit.native.prevent>
-                            <template v-if="meetingAddData.type === 'join'">
-                                <!-- 加入会议 -->
-                                <FormItem v-if="meetingAddData.name" prop="userids" :label="$L('会议主题')">
-                                    <Input v-model="meetingAddData.name" disabled/>
-                                </FormItem>
-                                <FormItem prop="meetingid" :label="$L('会议频道ID')">
-                                    <Input v-model="meetingAddData.meetingid" :disabled="meetingAddData.meetingdisabled === true" :placeholder="$L('请输入会议频道ID')"/>
-                                </FormItem>
-                            </template>
-                            <template v-else>
-                                <!-- 新会议 -->
-                                <FormItem prop="name" :label="$L('会议主题')">
-                                    <Input v-model="meetingAddData.name" :maxlength="50" :placeholder="$L('选填')"/>
-                                </FormItem>
-                                <FormItem prop="meetingid" :label="$L('会议频道ID')">
-                                    <Input v-model="meetingAddData.meetingid" :disabled="meetingAddData.meetingdisabled === true" :placeholder="$L('请输入会议频道ID')"/>
-                                </FormItem>
-                                <FormItem prop="userids" :label="$L('邀请成员')">
-                                    <UserSelect v-model="meetingAddData.userids" :uncancelable="[userId]" :multiple-max="20" :title="$L('选择邀请成员')"/>
-                                </FormItem>
-                            </template>
-                            <FormItem prop="tracks">
-                                <CheckboxGroup v-model="meetingAddData.tracks">
-                                    <Checkbox label="audio">
-                                        <span>{{$L('麦克风')}}</span>
-                                    </Checkbox>
-                                    <Checkbox label="video">
-                                        <span>{{$L('摄像头')}}</span>
-                                    </Checkbox>
-                                </CheckboxGroup>
-                            </FormItem>
-                        </Form>
-                        <div slot="footer" class="adaption">
-                            <!-- <Button type="default" @click="meetingShow=false">{{$L('取消')}}</Button> -->
-                            <Button type="primary" :loading="meetingLoadIng > 0" @click="onMeetingSubmit">{{$L(meetingAddData.type === 'join' ? '加入会议' : '开始会议')}}</Button>
-                        </div>
-                        <!-- 
-                        <p @click="onAddMenu('createMeeting')" style="cursor: pointer;color: #2b85e4;    padding: 10px;
-                            border: 1px solid;
-                            border-radius: 5px;">新会议</p>
-
-                        <p @click="onAddMenu('joinMeeting')" style="cursor: pointer;color: #2b85e4;    padding: 10px;
-                            border: 1px solid;
-                            border-radius: 5px;margin-top: 30px;">加入会议</p> -->
-                    </div>
-                    <SystemMeeting v-if="meetingType==2"/>
+                    <ul class="ivu-modal-wrap-ul" v-if="meetingType == 1">
+                        <li @click="onMeeting('createMeeting')">
+                            <img :src="$A.apiUrl('../images/apply/meeting.svg')">
+                            <h4>{{ $L('新会议') }}</h4>
+                            <p>{{ $L('创建一个全新的会议视频会议，与会者可以在实时中进行面对面的视听交流。通过视频会议平台，参与者可以分享屏幕、共享文档，并与其他与会人员进行讨论和协。作') }}</p>
+                            <p class="btn">{{ $L('新建会议') }}</p>
+                        </li>
+                        <li @click="onMeeting('joinMeeting')">
+                            <img :src="$A.apiUrl('../images/apply/joinMeeting.svg')">
+                            <h4>{{ $L('加入会议') }}</h4>
+                            <p>{{ $L('加入视频会议，参与已经创建的会议，在会议过程中与其他参会人员进行远程实时视听交流和协作。') }}</p>
+                            <p class="btn">{{ $L('加入会议') }}</p>
+                        </li>
+                    </ul>
+                    <SystemMeeting v-else />
                 </div>
             </div>
         </DrawerOverlay>
+
+        <!--LDAP-->
+        <DrawerOverlay v-model="ldapShow" placement="right" :size="700">
+            <div class="ivu-modal-wrap-apply">
+                <div class="ivu-modal-wrap-apply-title">
+                    {{ $L('LDAP设置') }}
+                </div>
+                <div class="ivu-modal-wrap-apply-body">
+                    <SystemThirdAccess />
+                </div>
+            </div>
+        </DrawerOverlay>
+
+        <!--邮件-->
+        <DrawerOverlay v-model="mailShow" placement="right" :size="700">
+            <div class="ivu-modal-wrap-apply">
+                <div class="ivu-modal-wrap-apply-title">
+                    {{ $L('邮件管理') }}
+                </div>
+                <div class="ivu-modal-wrap-apply-body">
+                    <SystemEmailSetting />
+                </div>
+            </div>
+        </DrawerOverlay>
+
+        <!--app推送-->
+        <DrawerOverlay v-model="appPushShow" placement="right" :size="700">
+            <div class="ivu-modal-wrap-apply">
+                <div class="ivu-modal-wrap-apply-title">
+                    {{ $L('APP推送') }}
+                </div>
+                <div class="ivu-modal-wrap-apply-body">
+                    <SystemAppPush />
+                </div>
+            </div>
+        </DrawerOverlay>
+
 
     </div>
 </template>
@@ -178,40 +176,55 @@ import SystemAibot from "./setting/components/SystemAibot";
 import SystemCheckin from "./setting/components/SystemCheckin";
 import Checkin from "./setting/checkin";
 import SystemMeeting from "./setting/components/SystemMeeting";
-import {Store} from "le5le-store";
+import SystemThirdAccess from "./setting/components/SystemThirdAccess";
+import SystemEmailSetting from "./setting/components/SystemEmailSetting";
+import SystemAppPush from "./setting/components/SystemAppPush";
+import { Store } from "le5le-store";
 
 export default {
-    components: { UserSelect, DrawerOverlay, Report, SystemAibot, SystemCheckin, Checkin, SystemMeeting },
+    components: {
+        UserSelect,
+        DrawerOverlay,
+        Report,
+        SystemAibot,
+        SystemCheckin,
+        Checkin,
+        SystemMeeting,
+        SystemThirdAccess,
+        SystemEmailSetting,
+        SystemAppPush
+    },
     data() {
         return {
-            applyList: [
-                { value: "approve", label: "审批中心", src: "/images/apply/approve.svg" },
-                { value: "report", label: "工作报告", src: "/images/apply/report.svg"},
-                { value: "ai", label: "AI机器人", src: "/images/apply/robot.svg" },
-                { value: "signIn", label: "签到", src: "/images/apply/signin.svg" },
-                { value: "meeting", label: "会议", src: "/images/apply/meeting.svg" },
-                { value: "ldap", label: "LDAP", src: "/images/apply/ldap.svg" },
-                { value: "mail", label: "邮件", src: "/images/apply/mail.svg" },
-                { value: "appPush", label: "APP推送", src: "/images/apply/apppush.svg" },
-            ],
-
+            applyList: [],
+            // 
             workReportShow: false,
             workReportTabs: "my",
-
+            // 
+            aibotList: [
+                { value: "openai", label: "ChatGPT", src: $A.apiUrl('../images/avatar/default_openai.png'), desc: this.$L('我是一个人工智能助手，为用户提供问题解答和指导。我没有具体的身份，只是一个程序。您有什么问题可以问我哦？') },
+                { value: "claude", label: "Claude", src: $A.apiUrl('../images/avatar/default_claude.png'), desc: this.$L('我是Claude,一个由Anthropic公司创造出来的AI助手机器人。我的工作是帮助人类,与人对话并给出解答。') },
+                { value: "wenxin", label: "Wenxin", src: $A.apiUrl('../avatar/Wenxin.png'), desc: this.$L('我是文心一言，英文名是ERNIE Bot。我能够与人对话互动，回答问题，协助创作，高效便捷地帮助人们获取信息、知识和灵感。') },
+                { value: "qianwen", label: "Qianwen", src: $A.apiUrl('../avatar/%E9%80%9A%E4%B9%89%E5%8D%83%E9%97%AE.png'), desc: this.$L('我是达摩院自主研发的超大规模语言模型，能够回答问题、创作文字，还能表达观点、撰写代码。') },
+            ],
             aibotTabAction: "opanai",
             aibotShow: false,
             aibotType: 1,
-
+            aibotDialogSearchLoad: "",
+            // 
             signInShow: false,
             signType: 1,
-
+            // 
             meetingShow: false,
             meetingType: 1,
-            meetingAddData: {
-                userids: [],
-                tracks: ['audio']
-            },
-            meetingLoadIng: 0
+            // 
+            ldapShow: false,
+            // 
+            mailType: 1,
+            mailShow: false,
+            // 
+            appPushType: 1,
+            appPushShow: false,
         }
     },
 
@@ -219,18 +232,46 @@ export default {
     },
 
     mounted() {
+
     },
 
     activated() {
+        this.applyList = [
+            { value: "approve", label: "审批中心", src: $A.apiUrl('../images/apply/approve.svg') },
+            { value: "report", label: "工作报告", src: $A.apiUrl('../images/apply/report.svg') },
+            { value: "ai", label: "AI机器人", src: $A.apiUrl('../images/apply/robot.svg') },
+            { value: "signIn", label: "签到", src: $A.apiUrl('../images/apply/signin.svg') },
+            { value: "meeting", label: "会议", src: $A.apiUrl('../images/apply/meeting.svg') },
+            { value: "ldap", label: "LDAP", src: $A.apiUrl('../images/apply/ldap.svg'), isAdmin: true },
+            { value: "mail", label: "邮件", src: $A.apiUrl('../images/apply/mail.svg'), isAdmin: true },
+            { value: "appPush", label: "APP推送", src: $A.apiUrl('../images/apply/apppush.svg'), isAdmin: true }
+        ];
+        if (this.windowOrientation == 'portrait') {
+            this.applyList.push({ value: "calendar", label: "日历", src: $A.apiUrl('../images/apply/apppush.svg') })
+            this.applyList.push({ value: "file", label: "文件", src: $A.apiUrl('../images/apply/apppush.svg') })
+            this.applyList.push({ value: "addProject", label: "创建项目", src: $A.apiUrl('../images/apply/apppush.svg') })
+            this.applyList.push({ value: "addTask", label: "添加任务", src: $A.apiUrl('../images/apply/apppush.svg') })
+            if ($A.isEEUiApp) {
+                this.applyList.push({ value: "scan", label: "扫一扫", src: $A.apiUrl('../images/apply/apppush.svg') })
+            }
+            if (this.userIsAdmin) {
+                this.applyList.push({ value: "allUser", label: "团队管理", src: $A.apiUrl('../images/apply/apppush.svg') })
+            }
+            this.applyList.push({ value: "setting", label: "设置", src: $A.apiUrl('../images/apply/apppush.svg') })
+        }
     },
 
     computed: {
         ...mapState([
             'userInfo',
             'userIsAdmin',
-           
+
             'reportUnreadNumber',
             'approveUnreadNumber',
+
+            'cacheDialogs',
+
+            'windowOrientation',
         ]),
 
     },
@@ -241,9 +282,13 @@ export default {
 
     methods: {
         applyClick(item) {
+            this.$emit("on-click", item.value)
             switch (item.value) {
                 case 'approve':
-                    this.goForward({name: 'manage-approve'});
+                case 'calendar':
+                case 'file':
+                case 'setting':
+                    this.goForward({ name: 'manage-' + item.value });
                     break;
                 case 'report':
                     this.workReportShow = true;
@@ -254,14 +299,70 @@ export default {
                     this.aibotShow = true;
                     break;
                 case 'signIn':
+                    this.signInType = 1;
                     this.signInShow = true;
                     break;
                 case 'meeting':
+                    this.meetingType = 1;
                     this.meetingShow = true;
+                    break;
+                case 'ldap':
+                    this.ldapShow = true;
+                    break;
+                case 'mail':
+                    this.mailType = 1;
+                    this.mailShow = true;
+                    break;
+                case 'appPush':
+                    this.appPushType = 1;
+                    this.appPushShow = true;
                     break;
             }
         },
-        onAddMenu(name) {
+        // 去聊天
+        onGoToChat(type) {
+            let dialogId = 0;
+            let email = `ai-${type}@bot.system`;
+            this.cacheDialogs.map(h => {
+                if (h.email == email) {
+                    dialogId = h.id;
+                }
+            })
+            if (dialogId) {
+                if (this.windowOrientation == 'portrait') {
+                    this.$store.dispatch("openDialog", dialogId)
+                } else {
+                    this.goForward({ name: 'manage-messenger', params: { dialog_id: dialogId } });
+                }
+                this.aibotShow = false;
+            } else {
+                this.aibotDialogSearchLoad = type;
+                this.$store.dispatch("call", {
+                    url: 'dialog/search',
+                    data: { key: email },
+                }).then(({ data }) => {
+                    if (data?.length < 1) {
+                        $A.messageError('机器人暂未开启');
+                        this.aibotDialogSearchLoad = '';
+                        return;
+                    }
+                    this.$store.dispatch("openDialogUserid", data[0]?.dialog_user.userid).then(_ => {
+                        if (this.windowOrientation != 'portrait') {
+                            this.goForward({ name: 'manage-messenger' })
+                        }
+                        this.aibotShow = false;
+                    }).catch(({ msg }) => {
+                        $A.modalError(msg)
+                    }).finally(_ => {
+                        this.aibotDialogSearchLoad = '';
+                    });
+                }).catch(_ => {
+                    this.aibotDialogSearchLoad = '';
+                });
+            }
+        },
+        // 会议
+        onMeeting(name) {
             switch (name) {
                 case 'createMeeting':
                     Store.set('addMeeting', {
@@ -276,9 +377,6 @@ export default {
                     break;
             }
             this.meetingShow = false;
-        },
-        onMeetingSubmit(){
-
         }
     }
 }

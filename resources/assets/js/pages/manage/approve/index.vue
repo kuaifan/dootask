@@ -7,10 +7,13 @@
                 <div class="approve-nav">
                     <h1>{{$L('审批中心')}}</h1>
                 </div>
-                <Button :loading="addLoadIng" type="primary" @click="addApply">{{$L("添加申请")}}</Button>
+                <Button v-if="showType == 1" :loading="addLoadIng" type="primary" @click="addApply">{{$L("添加申请")}}</Button>
+                <Button v-if="userIsAdmin" @click="showType = showType == 1 ? 2 : 1">
+                    {{ showType == 1 ? $L("流程设置") : $L("返回") }}
+                </Button>
             </div>
-
-            <Tabs :value="tabsValue" @on-click="tabsClick" style="margin: 0 20px;height: 100%;"  size="small">
+            
+            <Tabs v-if="showType==1" :value="tabsValue" @on-click="tabsClick" style="margin: 0 20px;height: 100%;" size="small">
                 <TabPane :label="$L('待办') + (unreadTotal > 0 ? ('('+unreadTotal+')') : '')" name="unread" style="height: 100%;">
                     <div class="approve-main-search">
                         <div>
@@ -132,6 +135,8 @@
                 </TabPane>
             </Tabs>
 
+            <ApproveSetting v-else/>
+
         </div>
 
         <!--详情-->
@@ -214,13 +219,16 @@ import list from "./list.vue";
 import listDetails from "./details.vue";
 import DrawerOverlay from "../../../components/DrawerOverlay";
 import ImgUpload from "../../../components/ImgUpload";
+import ApproveSetting from "./setting";
+
 import {mapState} from 'vuex'
 
 export default {
-    components:{list,listDetails,DrawerOverlay,ImgUpload},
+    components:{list,listDetails,DrawerOverlay,ImgUpload,ApproveSetting},
     name: "approve",
     data() {
         return {
+            showType: 1,
             modalTransferIndex: window.modalTransferIndex,
 
             minDate: new Date(2020, 0, 1),
@@ -339,6 +347,11 @@ export default {
         addShow(val){
             if(!val){
                 this.addData.other = ""
+            }
+        },
+        showType(val){
+            if(val == 1){
+                this.tabsClick()
             }
         }
     },
@@ -682,6 +695,9 @@ export default {
                     });
                 }
             });
+        },
+        workflowSetting() {
+            console.log(1)
         }
     }
 }

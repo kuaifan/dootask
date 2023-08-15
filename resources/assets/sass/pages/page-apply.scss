@@ -3,6 +3,7 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+
     .apply-wrapper {
         flex: 1;
         height: 0;
@@ -10,29 +11,35 @@
         flex-direction: column;
         position: relative;
         background-color: #fafafa;
+
         .apply-head {
             display: flex;
             align-items: center;
             padding-bottom: 16px;
             margin: 32px 32px 0 32px;
             border-bottom: 1px solid #F4F4F5;
+
             .apply-nav {
                 flex: 1;
                 display: flex;
                 align-items: center;
-                > h1 {
+
+                >h1 {
                     color: $primary-title-color;
                     font-size: 28px;
                     font-weight: 600;
                 }
             }
         }
-        .apply-row{
+
+        .apply-row {
             flex: 1;
             padding: 16px 30px;
-            .apply-col{
+
+            .apply-col {
                 margin-bottom: 16px;
-                >div{
+
+                >div {
                     font-size: 12px;
                     font-weight: bold;
                     background: #ffffff;
@@ -44,12 +51,23 @@
                     gap: 10px;
                     cursor: pointer;
                     position: relative;
-                    border: 1px solid #ececec;
-                    >img{
+                    border: 1px solid #f1f1f1;
+
+                    @media (max-width: 510px) {
+                        display: block;
+                        text-align: center;
+                    }
+
+                    >img {
                         width: 40px;
                         height: 40px;
+
+                        @media (max-width: 510px) {
+                            margin-bottom: 5px;
+                        }
                     }
-                    .manage-box-top-report{
+
+                    .manage-box-top-report {
                         position: absolute;
                         right: -6px;
                         top: -6px;
@@ -60,29 +78,37 @@
     }
 }
 
-.ivu-modal-wrap-apply{
+.ivu-modal-wrap-apply {
     position: relative;
-    overflow: auto; 
+    overflow: auto;
     height: 100%;
     display: flex;
     flex-direction: column;
-    .ivu-modal-wrap-apply-title{
+    max-width: calc(100vw - 40px);
+    overflow: auto;
+
+    .ivu-modal-wrap-apply-title {
         line-height: 40px;
         font-size: 20px;
         font-weight: 500;
         padding: 12px 30px;
-        >p{
+
+        >p {
             float: right;
             cursor: pointer;
             color: #2b85e4;
             font-size: 14px;
         }
     }
-    .ivu-modal-wrap-apply-body{
+
+    .ivu-modal-wrap-apply-body {
         position: relative;
         flex: 1;
         padding: 8px 30px;
-        .setting-component-item,.setting-item{
+
+        // 
+        .setting-component-item,
+        .setting-item {
             position: absolute;
             top: 0;
             left: 0;
@@ -91,29 +117,34 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            >.ivu-form{
+
+            >.ivu-form {
                 padding: 8px 30px;
                 overflow: auto;
                 flex: 1;
-                .ivu-form-item{
-                    padding: 12px 0 0 0;
-                    .ivu-form-item .ivu-form-item-content{
-                        display: flex;
-                        >.ivu-form{
-                            margin-bottom: 8px;
 
+                .ivu-form-item {
+                    padding: 12px 0 0 0;
+
+                    .ivu-form-item .ivu-form-item-content {
+                        display: flex;
+
+                        >.ivu-form {
+                            margin-bottom: 8px;
                         }
                     }
                 }
             }
-            .block-setting-box{
+
+            .block-setting-box {
                 position: relative;
                 padding: 24px 24px 4px;
                 margin: 24px 0 12px;
                 border-radius: 8px;
                 border: 1px solid #eeeeee;
                 transition: box-shadow 0.3s;
-                h3{
+
+                h3 {
                     position: absolute;
                     top: 0;
                     left: 24px;
@@ -127,17 +158,21 @@
                     transform: translateY(-50%)
                 }
             }
-            .setting-template{
+
+            .setting-template {
                 margin-bottom: 12px;
-                >div{
+
+                >div {
                     padding-right: 12px;
                 }
             }
-            .export-data > p {
+
+            .export-data>p {
                 cursor: pointer;
                 color: #2b85e4;
             }
-            .setting-footer{
+
+            .setting-footer {
                 flex-shrink: 0;
                 position: static;
                 padding: 16px;
@@ -148,36 +183,47 @@
             }
         }
 
-        .ivu-tabs-content{
-            flex: 1;
+        // 
+        .ivu-tabs {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+
+            .ivu-tabs-content {
+                height: 100%;
+                flex: 1;
+            }
         }
 
-        // 机器人
-        .aibot-ul {
+        // 
+        .ivu-modal-wrap-ul {
             list-style-type: none;
             overflow: hidden;
             border-radius: 3px;
             margin-right: -10px;
-            li{
+
+            li {
                 float: left;
                 width: calc(50% - 10px);
                 border: 1px solid #eeeeee;
                 box-sizing: border-box;
-                padding: 28px;
+                padding: 28px 20px;
                 position: relative;
                 text-align: center;
                 margin-right: 10px;
                 margin-bottom: 10px;
                 border-radius: 5px;
                 cursor: pointer;
-                img{
+
+                img {
                     display: block;
                     width: 50px;
                     height: 50px;
                     border-radius: 16px;
                     margin: 0 auto 12px;
                 }
-                h4{
+
+                h4 {
                     word-break: break-all;
                     text-overflow: ellipsis;
                     white-space: nowrap;
@@ -192,21 +238,46 @@
                     padding: 0 12px;
                     margin-bottom: 6px;
                 }
-                p{
+
+                p {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     display: -webkit-box;
                     -webkit-box-orient: vertical;
                     -webkit-line-clamp: 4;
+                    @media (max-width: 510px) {
+                        -webkit-line-clamp: 2;
+                    }
                 }
-                .btn{
+
+                .btn {
                     color: #2b85e4;
                     margin: 26px auto 0;
                     cursor: pointer;
                 }
+
+                .load {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: #9797971c;
+                    line-height: 300px;
+                }
             }
         }
-        
+
+        // 机器人
+        .aibot-warp {
+            position: relative;
+            height: 100%;
+
+            .ivu-form {
+                padding: 0;
+                overflow: hidden;
+            }
+        }
+
     }
 }
-
