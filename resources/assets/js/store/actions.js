@@ -130,7 +130,8 @@ export default {
         }
         if (params.encrypt) {
             const userAgent = window.navigator.userAgent;
-            if (/Windows NT 5.1|Windows XP/.test(userAgent)
+            if (window.systemInfo.debug === "yes"
+                || /Windows NT 5.1|Windows XP/.test(userAgent)
                 || userAgent.indexOf("Windows NT 6.0") !== -1
                 || userAgent.indexOf("Windows NT 6.1") !== -1
                 || userAgent.indexOf("Windows NT 6.2") !== -1) {
@@ -3094,6 +3095,9 @@ export default {
             wgLog && console.log("[WS] Open", e, $A.formatDate())
             state.wsOpenNum++;
             //
+            if (window.systemInfo.debug === "yes") {
+                return  // 测试环境不发送加密信息
+            }
             dispatch("websocketSend", {
                 type: 'encrypt',
                 data: {
