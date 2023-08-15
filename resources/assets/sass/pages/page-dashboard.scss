@@ -6,6 +6,20 @@
     align-items: center;
     justify-content: center;
     background-color: #ffffff;
+
+    .dashboard-warning {
+        border-top: 0;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        padding-right: 14px;
+        position: fixed;
+        top: 0;
+        z-index: 2;
+        > span {
+            cursor: pointer;
+        }
+    }
+
     .dashboard-wrapper {
         width: 100%;
         height: auto;
@@ -13,18 +27,6 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-
-        .dashboard-warning {
-            border-top: 0;
-            border-top-left-radius: 0;
-            border-top-right-radius: 0;
-            padding-right: 14px;
-            position: sticky;
-            top: 0;
-            > span {
-                cursor: pointer;
-            }
-        }
 
         .dashboard-hello,
         .dashboard-desc ,
@@ -329,9 +331,6 @@ body.window-portrait {
                     margin-bottom: 36px;
                     user-select: none;
                 }
-            }
-            .dashboard-warning {
-                border-radius: 0;
             }
         }
     }
