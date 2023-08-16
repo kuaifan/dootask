@@ -21,7 +21,7 @@
                                 type="timerange"
                                 format="HH:mm"
                                 :placeholder="$L('请选择签到时间')"/>
-                            <Form @submit.native.prevent>
+                            <Form @submit.native.prevent class="block-setting-advance">
                                 <FormItem :label="$L('最早可提前')" prop="advance">
                                     <div class="input-number-box">
                                         <InputNumber v-model="formData.advance" :min="0" :step="1"/>

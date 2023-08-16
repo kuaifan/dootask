@@ -5,12 +5,27 @@
 
             <div class="approve-head">
                 <div class="approve-nav">
+                    <div class="common-nav-back" @click="goBack()"><i class="taskfont">&#xe676;</i></div>
                     <h1>{{$L('审批中心')}}</h1>
                 </div>
-                <Button :loading="addLoadIng" type="primary" @click="addApply">{{$L("添加申请")}}</Button>
+                <Button v-if="showType == 1" :loading="addLoadIng" type="primary" @click="addApply"> 
+                    <span v-if="!isShowIcon"> {{$L("添加申请")}} </span> 
+                    <i v-else class="taskfont">&#xe6f2;</i>
+                </Button>
+                <Button v-if="showType == 1 && userIsAdmin" @click="exportApproveShow = true">
+                    <span v-if="!isShowIcon"> {{$L("导出审批数据")}} </span> 
+                    <i v-else class="taskfont">&#xe7a8;</i>
+                </Button>
+                <Button v-if="userIsAdmin" @click="showType = showType == 1 ? 2 : 1">
+                    <span v-if="!isShowIcon"> {{ showType == 1 ? $L("流程设置") : $L("返回") }} </span> 
+                    <template v-else>
+                        <i v-if="showType == 1" class="taskfont">&#xe67b;</i>
+                        <i v-else class="taskfont">&#xe637;</i>
+                    </template>
+                </Button>
             </div>
-
-            <Tabs :value="tabsValue" @on-click="tabsClick" style="margin: 0 20px;height: 100%;"  size="small">
+            
+            <Tabs v-if="showType==1" :value="tabsValue" @on-click="tabsClick" style="margin: 0 20px;height: 100%;" size="small">
                 <TabPane :label="$L('待办') + (unreadTotal > 0 ? ('('+unreadTotal+')') : '')" name="unread" style="height: 100%;">
                     <div class="approve-main-search">
                         <div>
@@ -132,6 +147,8 @@
                 </TabPane>
             </Tabs>
 
+            <ApproveSetting v-else/>
+
         </div>
 
         <!--详情-->
@@ -206,6 +223,9 @@
             </div>
         </Modal>
 
+        <!--导出审批数据-->
+        <ApproveExport v-model="exportApproveShow"/>
+
     </div>
 </template>
 
@@ -214,13 +234,18 @@ import list from "./list.vue";
 import listDetails from "./details.vue";
 import DrawerOverlay from "../../../components/DrawerOverlay";
 import ImgUpload from "../../../components/ImgUpload";
+import ApproveSetting from "./setting";
+import ApproveExport from "../components/ApproveExport";
 import {mapState} from 'vuex'
 
 export default {
-    components:{list,listDetails,DrawerOverlay,ImgUpload},
+    components:{list,listDetails,DrawerOverlay,ImgUpload,ApproveSetting,ApproveExport},
     name: "approve",
     data() {
         return {
+            showType: 1,
+            exportApproveShow: false,
+            isShowIcon: false, 
             modalTransferIndex: window.modalTransferIndex,
 
             minDate: new Date(2020, 0, 1),
@@ -306,7 +331,7 @@ export default {
         }
     },
     computed: {
-        ...mapState([ 'wsMsg','userInfo','userIsAdmin' ]),
+        ...mapState([ 'wsMsg','userInfo','userIsAdmin','windowWidth' ]),
         departmentList(){
             let departmentNames = (this.userInfo.department_name || '').split(',');
             return (this.userInfo.department || []).map((h,index)=>{
@@ -340,6 +365,14 @@ export default {
             if(!val){
                 this.addData.other = ""
             }
+        },
+        showType(val){
+            if(val == 1){
+                this.tabsClick()
+            }
+        },
+        windowWidth(val){
+            this.isShowIcon = val < 515
         }
     },
     mounted() {
@@ -348,6 +381,7 @@ export default {
         this.getUnreadList()
         this.addData.department_id = this.userInfo.department[0] || 0;
         this.addData.startTime = this.addData.endTime = this.getCurrentDate();
+        this.isShowIcon = this.windowWidth < 515
     },
     methods:{
         // 获取当前时间

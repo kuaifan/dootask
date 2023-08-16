@@ -453,6 +453,14 @@ export default {
                 if (['dialog', 'contacts'].includes(params.dialogAction)) {
                     this.tabActive = params.dialogAction
                 }
+                if (params.dialog_id) {
+                    this.tabActive = 'dialog'
+                    const id = $A.runNum(params.dialog_id);
+                    if (id > 0) {
+                        this.openDialog(id)
+                    }
+                    this.clickAgainSubscribe = Store.subscribe('clickAgainDialog', this.shakeUnread);
+                }
             },
             immediate: true
         },

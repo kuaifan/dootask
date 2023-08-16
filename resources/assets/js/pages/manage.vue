@@ -11,8 +11,7 @@
                         <UserAvatar :userid="userId" :size="36" tooltipDisabled/>
                     </div>
                     <span>{{userInfo.nickname}}</span>
-                    <Badge v-if="(reportUnreadNumber + approveUnreadNumber) > 0" class="manage-box-top-report" :overflow-count="999" :count="reportUnreadNumber + approveUnreadNumber"/>
-                    <Badge v-else-if="!!clientNewVersion" class="manage-box-top-report" dot/>
+                    <Badge v-if="!!clientNewVersion" class="manage-box-top-report" dot/>
                     <div class="manage-box-arrow">
                         <Icon type="ios-arrow-up" />
                         <Icon type="ios-arrow-down" />
@@ -57,18 +56,11 @@
                             <DropdownItem :divided="!!item.divided">
                                 <div class="manage-menu-flex">
                                     {{$L(item.name)}}
-                                    <Badge v-if="reportUnreadNumber > 0" class="manage-menu-report-badge" :overflow-count="999" :count="reportUnreadNumber"/>
-                                    <Icon v-else type="ios-arrow-forward"></Icon>
+                                    <Icon type="ios-arrow-forward"></Icon>
                                 </div>
                             </DropdownItem>
                             <DropdownMenu slot="list">
                                 <DropdownItem name="allUser">{{$L('团队管理')}}</DropdownItem>
-                                <DropdownItem name="workReport">
-                                    <div class="manage-menu-flex">
-                                        {{$L('工作报告')}}
-                                        <Badge v-if="reportUnreadNumber > 0" class="manage-menu-report-badge" :overflow-count="999" :count="reportUnreadNumber"/>
-                                    </div>
-                                </DropdownItem>
                                 <DropdownItem name="exportTask">{{$L('导出任务统计')}}</DropdownItem>
                                 <DropdownItem name="exportOverdueTask">{{$L('导出超期任务')}}</DropdownItem>
                                 <DropdownItem name="exportApprove">{{$L('导出审批数据')}}</DropdownItem>
@@ -122,6 +114,11 @@
                         <li @click="toggleRoute('file')" :class="classNameRoute('file')">
                             <i class="taskfont">&#xe6f3;</i>
                             <div class="menu-title">{{$L('文件')}}</div>
+                        </li>
+                        <li @click="toggleRoute('apply')" :class="classNameRoute('apply')">
+                            <i class="taskfont">&#xe60c;</i>
+                            <div class="menu-title">{{$L('应用')}}</div>
+                            <Badge class="menu-badge" :overflow-count="999" :text="String((reportUnreadNumber + approveUnreadNumber) || '')"/>
                         </li>
                     </ul>
                 </div>
@@ -200,7 +197,7 @@
 
         <div class="manage-box-main">
             <keep-alive>
-                <router-view class="manage-box-view"></router-view>
+                <router-view class="manage-box-view" @on-click="onTabbarClick"></router-view>
             </keep-alive>
         </div>
 
@@ -564,12 +561,10 @@ export default {
                     {path: 'archivedProject', name: '已归档的项目'},
 
                     {path: 'team', name: '团队管理', divided: true},
-                    {path: 'approve', name: '审批中心'},
                 ])
             } else {
                 array.push(...[
                     {path: 'personal', name: '个人设置', divided: true},
-                    {path: 'approve', name: '审批中心'},
                     {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
 
                     {path: 'workReport', name: '工作报告', divided: true},
@@ -625,7 +620,7 @@ export default {
             if (this.routeName === 'manage-project' && !/^\d+$/.test(this.$route.params.projectId)) {
                 return true;
             }
-            return ['manage-dashboard', 'manage-calendar', 'manage-messenger', 'manage-file', 'manage-setting'].includes(this.routeName)
+            return ['manage-dashboard', 'manage-calendar', 'manage-messenger', 'manage-file', 'manage-setting', 'manage-approve', 'manage-apply'].includes(this.routeName)
         },
     },
 
@@ -818,8 +813,12 @@ export default {
         },
 
         classNameRoute(path) {
+            let routeName = this.routeName
+            if(routeName == 'manage-approve'){
+                routeName = `manage-apply`
+            }
             return {
-                "active": this.routeName === `manage-${path}`,
+                "active": routeName === `manage-${path}`,
             };
         },
 
