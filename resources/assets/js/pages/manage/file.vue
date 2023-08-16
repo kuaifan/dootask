@@ -6,7 +6,7 @@
 
             <div class="file-head">
                 <div class="file-nav">
-                    <div class="common-nav-back portrait" @click="goBack()"><i class="taskfont">&#xe676;</i></div>
+                    <div class="common-nav-back portrait" @click="goForward({name: 'manage-apply'},true)"><i class="taskfont">&#xe676;</i></div>
                     <h1>{{$L('文件')}}</h1>
                     <div v-if="loadIng == 0" class="file-refresh" @click="getFileList"><i class="taskfont">&#xe6ae;</i></div>
                 </div>
