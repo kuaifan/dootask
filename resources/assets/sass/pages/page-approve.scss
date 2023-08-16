@@ -63,6 +63,11 @@
             line-height: 150px;
         }
 
+        .page-approve-tabs{
+            margin: 0 20px;
+            height: 100%;
+        }
+
         .approve-mains {
             display: flex;
             flex: 1 1 auto;
@@ -477,7 +482,7 @@
 body.window-portrait {
     .page-approve{
         .approve-head {
-            margin: 20px 14px 16px;
+            margin: 24px 16px 6px 16px;
         }
         .approve-mains {
             height: calc(100vh - 250px);

@@ -8,24 +8,31 @@
                     <div class="common-nav-back" @click="goBack()"><i class="taskfont">&#xe676;</i></div>
                     <h1>{{$L('审批中心')}}</h1>
                 </div>
-                <Button v-if="showType == 1" :loading="addLoadIng" type="primary" @click="addApply"> 
-                    <span v-if="!isShowIcon"> {{$L("添加申请")}} </span> 
-                    <i v-else class="taskfont">&#xe6f2;</i>
+
+                <Button v-if="showType == 1 && !isShowIcon" :loading="addLoadIng" type="primary" @click="addApply"> 
+                    <span> {{$L("添加申请")}} </span> 
                 </Button>
-                <Button v-if="showType == 1 && userIsAdmin" @click="exportApproveShow = true">
-                    <span v-if="!isShowIcon"> {{$L("导出审批数据")}} </span> 
-                    <i v-else class="taskfont">&#xe7a8;</i>
+                <Button v-if="showType == 1 && isShowIcon" :loading="addLoadIng" type="primary" @click="addApply" shape="circle"> 
+                    <i class="taskfont">&#xe6f2;</i>
                 </Button>
-                <Button v-if="userIsAdmin" @click="showType = showType == 1 ? 2 : 1">
-                    <span v-if="!isShowIcon"> {{ showType == 1 ? $L("流程设置") : $L("返回") }} </span> 
-                    <template v-else>
-                        <i v-if="showType == 1" class="taskfont">&#xe67b;</i>
-                        <i v-else class="taskfont">&#xe637;</i>
-                    </template>
+
+                <Button v-if="showType == 1 && userIsAdmin && !isShowIcon" @click="exportApproveShow = true">
+                    <span> {{$L("导出审批数据")}} </span> 
+                </Button>
+                <Button v-if="showType == 1 && userIsAdmin && isShowIcon" @click="exportApproveShow = true" shape="circle">
+                    <i class="taskfont">&#xe7a8;</i>
+                </Button>
+
+                <Button v-if="userIsAdmin && !isShowIcon" @click="showType = showType == 1 ? 2 : 1">
+                    <span> {{ showType == 1 ? $L("流程设置") : $L("返回") }} </span> 
+                </Button>
+                <Button v-if="userIsAdmin && isShowIcon" @click="showType = showType == 1 ? 2 : 1" shape="circle">
+                    <i v-if="showType == 1" class="taskfont">&#xe67b;</i>
+                    <i v-else class="taskfont">&#xe637;</i>
                 </Button>
             </div>
             
-            <Tabs v-if="showType==1" :value="tabsValue" @on-click="tabsClick" style="margin: 0 20px;height: 100%;" size="small">
+            <Tabs class="page-approve-tabs" v-if="showType==1" :value="tabsValue" @on-click="tabsClick" size="small">
                 <TabPane :label="$L('待办') + (unreadTotal > 0 ? ('('+unreadTotal+')') : '')" name="unread" style="height: 100%;">
                     <div class="approve-main-search">
                         <div>

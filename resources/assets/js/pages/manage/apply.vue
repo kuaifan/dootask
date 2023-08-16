@@ -22,12 +22,14 @@
                             <div @click="applyClick(item)">
                                 <img :src="item.src">
                                 <p>{{ item.label }}</p>
-                                <!-- 审批中心 -->
-                                <Badge v-if="item.value == 'approve' && approveUnreadNumber > 0" class="manage-box-top-report"
-                                    :overflow-count="999" :count="approveUnreadNumber" />
-                                <!-- 工作报告 -->
-                                <Badge v-if="item.value == 'report' && reportUnreadNumber > 0" class="manage-box-top-report"
-                                    :overflow-count="999" :count="reportUnreadNumber" />
+                                <div @click.stop="applyClick(item,'badge')" class="apply-box-top-report">
+                                    <!-- 审批中心 -->
+                                    <Badge v-if="item.value == 'approve' && approveUnreadNumber > 0" 
+                                        :overflow-count="999" :count="approveUnreadNumber"/>
+                                    <!-- 工作报告 -->
+                                    <Badge v-if="item.value == 'report' && reportUnreadNumber > 0"
+                                        :overflow-count="999" :count="reportUnreadNumber"/>
+                                </div>
                             </div>
                         </div>
                     </Col>
@@ -298,7 +300,7 @@ export default {
             }
         },
         // 点击应用
-        applyClick(item) {
+        applyClick(item,area='') {
             this.$emit("on-click", item.value)
             switch (item.value) {
                 case 'approve':
@@ -308,6 +310,10 @@ export default {
                     this.goForward({ name: 'manage-' + item.value });
                     break;
                 case 'report':
+                    this.workReportTabs = 'my';
+                    if(area=='badge'){
+                        this.workReportTabs = 'receive';
+                    }
                     this.workReportShow = true;
                     break;
                 case 'ai':
