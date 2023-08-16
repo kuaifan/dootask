@@ -11,20 +11,25 @@
             </div>
             <div class="apply-row">
                 <Row :gutter="16">
-                    <Col v-if="!item.isAdmin || userIsAdmin" v-for="(item, key) in applyList" :xs="{ span: 8 }"
-                        :sm="{ span: 8 }" :lg="{ span: 6 }" :xl="{ span: 4 }" :xxl="{ span: 3 }" :key="key">
-                    <div class="apply-col">
-                        <div @click="applyClick(item)">
-                            <img :src="item.src">
-                            <p>{{ item.label }}</p>
-                            <!-- 审批中心 -->
-                            <Badge v-if="item.value == 'approve' && approveUnreadNumber > 0" class="manage-box-top-report"
-                                :overflow-count="999" :count="approveUnreadNumber" />
-                            <!-- 工作报告 -->
-                            <Badge v-if="item.value == 'report' && reportUnreadNumber > 0" class="manage-box-top-report"
-                                :overflow-count="999" :count="reportUnreadNumber" />
+                    <Col v-if="item.show==undefined || item.show" v-for="(item, key) in applyList"  :key="key"
+                        :xs="{ span: 8 }" 
+                        :sm="{ span: 8 }" 
+                        :lg="{ span: 6 }" 
+                        :xl="{ span: 4 }" 
+                        :xxl="{ span: 3 }"
+                    >
+                        <div class="apply-col">
+                            <div @click="applyClick(item)">
+                                <img :src="item.src">
+                                <p>{{ item.label }}</p>
+                                <!-- 审批中心 -->
+                                <Badge v-if="item.value == 'approve' && approveUnreadNumber > 0" class="manage-box-top-report"
+                                    :overflow-count="999" :count="approveUnreadNumber" />
+                                <!-- 工作报告 -->
+                                <Badge v-if="item.value == 'report' && reportUnreadNumber > 0" class="manage-box-top-report"
+                                    :overflow-count="999" :count="reportUnreadNumber" />
+                            </div>
                         </div>
-                    </div>
                     </Col>
                 </Row>
             </div>
@@ -261,23 +266,21 @@ export default {
             { value: "report", label: "工作报告", src: $A.apiUrl('../images/apply/report.svg') },
             { value: "ai", label: "AI机器人", src: $A.apiUrl('../images/apply/robot.svg') },
             { value: "signIn", label: "签到", src: $A.apiUrl('../images/apply/signin.svg') },
-            { value: "meeting", label: "会议", src: $A.apiUrl('../images/apply/meeting.svg') },
-            { value: "ldap", label: "LDAP", src: $A.apiUrl('../images/apply/ldap.svg'), isAdmin: true },
-            { value: "mail", label: "邮件", src: $A.apiUrl('../images/apply/mail.svg'), isAdmin: true },
-            { value: "appPush", label: "APP推送", src: $A.apiUrl('../images/apply/apppush.svg'), isAdmin: true }
+            { value: "meeting", label: "会议", src: $A.apiUrl('../images/apply/meeting.svg'), show: this.userIsAdmin },
+            { value: "ldap", label: "LDAP", src: $A.apiUrl('../images/apply/ldap.svg'), show: this.userIsAdmin },
+            { value: "mail", label: "邮件", src: $A.apiUrl('../images/apply/mail.svg'), show: this.userIsAdmin },
+            { value: "appPush", label: "APP推送", src: $A.apiUrl('../images/apply/apppush.svg'), show: this.userIsAdmin },
+            { value: "allUser", label: "团队管理", src: $A.apiUrl('../images/apply/allUser.svg'), show: this.userIsAdmin },
         ];
         if (this.windowOrientation == 'portrait') {
-            this.applyList.push({ value: "calendar", label: "日历", src: $A.apiUrl('../images/apply/apppush.svg') })
-            this.applyList.push({ value: "file", label: "文件", src: $A.apiUrl('../images/apply/apppush.svg') })
-            this.applyList.push({ value: "addProject", label: "创建项目", src: $A.apiUrl('../images/apply/apppush.svg') })
-            this.applyList.push({ value: "addTask", label: "添加任务", src: $A.apiUrl('../images/apply/apppush.svg') })
+            this.applyList.push({ value: "calendar", label: "日历", src: $A.apiUrl('../images/apply/calendar.svg') })
+            this.applyList.push({ value: "file", label: "文件", src: $A.apiUrl('../images/apply/file.svg') })
+            this.applyList.push({ value: "addProject", label: "创建项目", src: $A.apiUrl('../images/apply/addProject.svg') })
+            this.applyList.push({ value: "addTask", label: "添加任务", src: $A.apiUrl('../images/apply/addTask.svg') })
             if ($A.isEEUiApp) {
-                this.applyList.push({ value: "scan", label: "扫一扫", src: $A.apiUrl('../images/apply/apppush.svg') })
+                this.applyList.push({ value: "scan", label: "扫一扫", src: $A.apiUrl('../images/apply/scan.svg') })
             }
-            if (this.userIsAdmin) {
-                this.applyList.push({ value: "allUser", label: "团队管理", src: $A.apiUrl('../images/apply/apppush.svg') })
-            }
-            this.applyList.push({ value: "setting", label: "设置", src: $A.apiUrl('../images/apply/apppush.svg') })
+            this.applyList.push({ value: "setting", label: "设置", src: $A.apiUrl('../images/apply/setting.svg') })
         }
     },
 

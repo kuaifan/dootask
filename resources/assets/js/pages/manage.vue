@@ -813,8 +813,12 @@ export default {
         },
 
         classNameRoute(path) {
+            let routeName = this.routeName
+            if(routeName == 'manage-approve'){
+                routeName = `manage-apply`
+            }
             return {
-                "active": this.routeName === `manage-${path}`,
+                "active": routeName === `manage-${path}`,
             };
         },
 

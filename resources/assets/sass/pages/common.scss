@@ -776,3 +776,20 @@ body {
     transform: translate(100%, 0);
     opacity: 0;
 }
+
+// 全局返回按钮 
+.common-nav-back{
+    cursor: pointer;
+    padding-right: 5px;
+    &.portrait{
+        display: none;
+    }
+    .taskfont{
+        font-size: 26px;
+    }
+}
+body.window-portrait {
+    .common-nav-back{
+        display: block;
+    }
+}

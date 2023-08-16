@@ -4,6 +4,7 @@
         <div class="setting-head">
             <div class="setting-titbox">
                 <div class="setting-title">
+                    <div class="common-nav-back portrait" @click="goBack()"><i class="taskfont">&#xe676;</i></div>
                     <h1>{{settingTitleName}}</h1>
                     <div v-if="!showMobileBox" class="setting-more" @click="toggleRoute('index')">
                         <Icon type="md-close" />

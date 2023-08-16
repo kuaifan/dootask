@@ -84,7 +84,8 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    max-width: calc(100vw - 40px);
+    // max-width: calc(100vw - 40px);
+    max-width: 100vw;
     overflow: auto;
 
     .ivu-modal-wrap-apply-title {
@@ -99,6 +100,11 @@
             color: #2b85e4;
             font-size: 14px;
         }
+
+        @media (max-width: 500px) {
+            margin-right: 28px;
+        }
+       
     }
 
     .ivu-modal-wrap-apply-body {
@@ -306,5 +312,17 @@
             }
         }
 
+    }
+}
+
+
+body.window-portrait {
+    .page-apply {
+        .apply-head{
+            margin: 24px 24px 0 24px;
+        }
+        .apply-row{
+            padding: 16px 24px;
+        }
     }
 }
