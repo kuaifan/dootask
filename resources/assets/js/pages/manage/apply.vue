@@ -252,41 +252,11 @@ export default {
             appPushShow: false,
         }
     },
-
-    created() {
-    },
-
-    mounted() {
-
-    },
-
     activated() {
-        this.applyList = [
-            { value: "approve", label: "审批中心", src: $A.apiUrl('../images/apply/approve.svg') },
-            { value: "report", label: "工作报告", src: $A.apiUrl('../images/apply/report.svg') },
-            { value: "ai", label: "AI机器人", src: $A.apiUrl('../images/apply/robot.svg') },
-            { value: "signIn", label: "签到", src: $A.apiUrl('../images/apply/signin.svg') },
-            { value: "meeting", label: "会议", src: $A.apiUrl('../images/apply/meeting.svg'), show: this.userIsAdmin },
-            { value: "ldap", label: "LDAP", src: $A.apiUrl('../images/apply/ldap.svg'), show: this.userIsAdmin },
-            { value: "mail", label: "邮件", src: $A.apiUrl('../images/apply/mail.svg'), show: this.userIsAdmin },
-            { value: "appPush", label: "APP推送", src: $A.apiUrl('../images/apply/apppush.svg'), show: this.userIsAdmin },
-            { value: "allUser", label: "团队管理", src: $A.apiUrl('../images/apply/allUser.svg'), show: this.userIsAdmin },
-        ];
-        if (this.windowOrientation == 'portrait') {
-            this.applyList.push({ value: "calendar", label: "日历", src: $A.apiUrl('../images/apply/calendar.svg') })
-            this.applyList.push({ value: "file", label: "文件", src: $A.apiUrl('../images/apply/file.svg') })
-            this.applyList.push({ value: "addProject", label: "创建项目", src: $A.apiUrl('../images/apply/addProject.svg') })
-            this.applyList.push({ value: "addTask", label: "添加任务", src: $A.apiUrl('../images/apply/addTask.svg') })
-            if ($A.isEEUiApp) {
-                this.applyList.push({ value: "scan", label: "扫一扫", src: $A.apiUrl('../images/apply/scan.svg') })
-            }
-            this.applyList.push({ value: "setting", label: "设置", src: $A.apiUrl('../images/apply/setting.svg') })
-        }
+        this.initList()
     },
-
     computed: {
         ...mapState([
-            'userInfo',
             'userIsAdmin',
 
             'reportUnreadNumber',
@@ -298,12 +268,36 @@ export default {
         ]),
 
     },
-
     watch: {
-
+        windowOrientation(){
+            this.initList()
+        }
     },
-
     methods: {
+        initList(){
+            this.applyList = [
+                { value: "approve", label: "审批中心", src: $A.apiUrl('../images/apply/approve.svg') },
+                { value: "report", label: "工作报告", src: $A.apiUrl('../images/apply/report.svg') },
+                { value: "ai", label: "AI机器人", src: $A.apiUrl('../images/apply/robot.svg') },
+                { value: "signIn", label: "签到", src: $A.apiUrl('../images/apply/signin.svg') },
+                { value: "meeting", label: "会议", src: $A.apiUrl('../images/apply/meeting.svg'), show: this.userIsAdmin },
+                { value: "ldap", label: "LDAP", src: $A.apiUrl('../images/apply/ldap.svg'), show: this.userIsAdmin },
+                { value: "mail", label: "邮件", src: $A.apiUrl('../images/apply/mail.svg'), show: this.userIsAdmin },
+                { value: "appPush", label: "APP推送", src: $A.apiUrl('../images/apply/apppush.svg'), show: this.userIsAdmin },
+                { value: "allUser", label: "团队管理", src: $A.apiUrl('../images/apply/allUser.svg'), show: this.userIsAdmin },
+            ];
+            if (this.windowOrientation == 'portrait') {
+                this.applyList.push({ value: "calendar", label: "日历", src: $A.apiUrl('../images/apply/calendar.svg') })
+                this.applyList.push({ value: "file", label: "文件", src: $A.apiUrl('../images/apply/file.svg') })
+                this.applyList.push({ value: "addProject", label: "创建项目", src: $A.apiUrl('../images/apply/addProject.svg') })
+                this.applyList.push({ value: "addTask", label: "添加任务", src: $A.apiUrl('../images/apply/addTask.svg') })
+                if ($A.isEEUiApp) {
+                    this.applyList.push({ value: "scan", label: "扫一扫", src: $A.apiUrl('../images/apply/scan.svg') })
+                }
+                this.applyList.push({ value: "setting", label: "设置", src: $A.apiUrl('../images/apply/setting.svg') })
+            }
+        },
+        // 点击应用
         applyClick(item) {
             this.$emit("on-click", item.value)
             switch (item.value) {
