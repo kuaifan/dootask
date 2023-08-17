@@ -21,23 +21,6 @@
     </Modal>
 </template>
 
-<style lang="scss">
-body {
-    .ivu-modal-wrap {
-        &.common-drawer-overlay {
-            overflow: hidden;
-        }
-        &.common-drawer-modal{
-            .ivu-modal-body{
-                padding: 0;
-            }
-            .ivu-modal-close{
-                z-index: 3;
-            }
-        }
-    }
-}
-</style>
 <script>
 import DrawerOverlayView from "./view";
 import {mapState} from 'vuex'
