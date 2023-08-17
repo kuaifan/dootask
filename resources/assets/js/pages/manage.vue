@@ -578,21 +578,10 @@ export default {
                     {path: 'archivedProject', name: '已归档的项目'},
 
                     {path: 'team', name: '团队管理', divided: true},
-<<<<<<< HEAD
-                    {path: 'approve', name: '审批中心'},
-                    {path: 'okrManage', name: 'OKR管理'},
-                    {path: 'okrAnalyze', name: 'OKR结果分析'},
-=======
->>>>>>> pro
                 ])
             } else {
                 array.push(...[
                     {path: 'personal', name: '个人设置', divided: true},
-<<<<<<< HEAD
-                    {path: 'approve', name: '审批中心'},
-                    {path: 'okrManage', name: 'OKR管理'},
-=======
->>>>>>> pro
                     {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
 
                     {path: 'workReport', name: '工作报告', divided: true},

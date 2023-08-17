@@ -728,10 +728,7 @@ export default {
                 this.changeLoad++
                 this.textTimer && clearTimeout(this.textTimer)
                 this.textTimer = setTimeout(_ => {
-<<<<<<< HEAD
-=======
                     this.changeLoad--
->>>>>>> pro
                     if (this.maxlength > 0 && this.quill.getLength() > this.maxlength) {
                         this.quill.deleteText(this.maxlength, this.quill.getLength());
                     }
