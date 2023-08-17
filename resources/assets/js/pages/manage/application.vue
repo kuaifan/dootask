@@ -10,60 +10,32 @@
                 </div>
             </div>
             <div class="apply-content">
-
-                <div v-if="adminApplyList.length > 0" class="apply-row-title">{{ $L('常用') }}</div>
-                <Row :gutter="16">
-                    <Col v-if="item.show == undefined || item.show" v-for="(item, key) in applyList" :key="key"
-                        :xs="{ span: 8 }" 
-                        :sm="{ span: 8 }" 
-                        :lg="{ span: 6 }" 
-                        :xl="{ span: 4 }" 
-                        :xxl="{ span: 3 }"
-                    >
-                        <div class="apply-col">
-                            <div @click="applyClick(item)">
-                                <img :src="item.src">
-                                <p>{{ $L(item.label) }}</p>
-                                <div @click.stop="applyClick(item, 'badge')" class="apply-box-top-report">
-                                    <!-- 审批中心 -->
-                                    <Badge v-if="item.value == 'approve' && approveUnreadNumber > 0" :overflow-count="999"
-                                        :count="approveUnreadNumber" />
-                                    <!-- 工作报告 -->
-                                    <Badge v-if="item.value == 'report' && reportUnreadNumber > 0" :overflow-count="999"
-                                        :count="reportUnreadNumber" />
+                <template v-for="t in applyListTypes">
+                    <div v-if="isExistAdminList" class="apply-row-title">
+                        {{ t == 'base' ? $L('常用') : $L('管理员') }}
+                    </div>
+                    <Row :gutter="16">
+                        <Col v-for="(item, key) in applyList" v-if="(t=='base' && !item.type) || item.type == t" 
+                            :key="key"
+                            :xs="{ span: 8 }" 
+                            :sm="{ span: 8 }" 
+                            :lg="{ span: 6 }" 
+                            :xl="{ span: 4 }" 
+                            :xxl="{ span: 3 }"
+                        >
+                            <div class="apply-col">
+                                <div @click="applyClick(item)">
+                                    <img :src="item.src" />
+                                    <p>{{ $L(item.label) }}</p>
+                                    <div @click.stop="applyClick(item, 'badge')" class="apply-box-top-report">
+                                        <Badge v-if="showBadge(item,'approve')" :overflow-count="999" :count="approveUnreadNumber" />
+                                        <Badge v-if="showBadge(item,'report')" :overflow-count="999" :count="reportUnreadNumber" />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </Col>
-                </Row>
-
-                <!-- 管理员 -->
-                <div v-if="adminApplyList.length > 0" class="apply-row-title">{{ $L('管理员') }}</div>
-                <Row :gutter="16">
-                    <Col v-if="item.show == undefined || item.show" v-for="(item, key) in adminApplyList" :key="key"
-                        :xs="{ span: 8 }" 
-                        :sm="{ span: 8 }" 
-                        :lg="{ span: 6 }" 
-                        :xl="{ span: 4 }" 
-                        :xxl="{ span: 3 }"
-                    >
-                        <div class="apply-col">
-                            <div @click="applyClick(item)">
-                                <img :src="item.src">
-                                <p>{{ $L(item.label) }}</p>
-                                <div @click.stop="applyClick(item, 'badge')" class="apply-box-top-report">
-                                    <!-- 审批中心 -->
-                                    <Badge v-if="item.value == 'approve' && approveUnreadNumber > 0" :overflow-count="999"
-                                        :count="approveUnreadNumber" />
-                                    <!-- 工作报告 -->
-                                    <Badge v-if="item.value == 'report' && reportUnreadNumber > 0" :overflow-count="999"
-                                        :count="reportUnreadNumber" />
-                                </div>
-                            </div>
-                        </div>
-                    </Col>
-                </Row>
-
+                        </Col>
+                    </Row>
+                </template>
             </div>
         </div>
 
@@ -104,12 +76,12 @@
                                 <SystemAibot type="Claude" v-if="aibotTabAction == 'claude'" />
                             </div>
                         </TabPane>
-                        <TabPane label="文心一言" name="wenxin">
+                        <TabPane :label="$L('文心一言')" name="wenxin">
                             <div class="aibot-warp">
                                 <SystemAibot type="Wenxin" v-if="aibotTabAction == 'wenxin'" />
                             </div>
                         </TabPane>
-                        <TabPane label="通义千问" name="qianwen">
+                        <TabPane :label="$L('通义千问')" name="qianwen">
                             <div class="aibot-warp">
                                 <SystemAibot type="Qianwen" v-if="aibotTabAction == 'qianwen'" />
                             </div>
@@ -233,7 +205,7 @@ export default {
     data() {
         return {
             applyList: [],
-            adminApplyList: [],
+            applyListTypes: ['base', 'admin'],
             // 
             workReportShow: false,
             workReportTabs: "my",
@@ -290,15 +262,14 @@ export default {
     computed: {
         ...mapState([
             'userIsAdmin',
-
             'reportUnreadNumber',
             'approveUnreadNumber',
-
             'cacheDialogs',
-
             'windowOrientation',
         ]),
-
+        isExistAdminList() {
+            return this.applyList.map(h => h.type).indexOf('admin') !== -1;
+        }
     },
     watch: {
         windowOrientation() {
@@ -315,35 +286,48 @@ export default {
                 { value: "signIn", label: "签到", src: $A.apiUrl('../images/application/signin.svg') },
                 { value: "meeting", label: "会议", src: $A.apiUrl('../images/application/meeting.svg') },
             ];
-            let appapplyList = [];
+            // wap模式
+            let appApplyList = this.windowOrientation != 'portrait' ? [] : [
+                { value: "calendar", label: "日历", src: $A.apiUrl('../images/application/calendar.svg') },
+                { value: "file", label: "文件", src: $A.apiUrl('../images/application/file.svg') },
+                { value: "addProject", label: "创建项目", src: $A.apiUrl('../images/application/addProject.svg') },
+                { value: "addTask", label: "添加任务", src: $A.apiUrl('../images/application/addTask.svg') },
+            ];
             if (this.windowOrientation == 'portrait') {
-                appapplyList = [
-                    { value: "calendar", label: "日历", src: $A.apiUrl('../images/application/calendar.svg') },
-                    { value: "file", label: "文件", src: $A.apiUrl('../images/application/file.svg') },
-                    { value: "addProject", label: "创建项目", src: $A.apiUrl('../images/application/addProject.svg') },
-                    { value: "addTask", label: "添加任务", src: $A.apiUrl('../images/application/addTask.svg') },
-                ]
                 if ($A.isEEUiApp) {
-                    appapplyList.push({ value: "scan", label: "扫一扫", src: $A.apiUrl('../images/application/scan.svg') })
+                    appApplyList.push({ value: "scan", label: "扫一扫", src: $A.apiUrl('../images/application/scan.svg') })
                 }
-                appapplyList.push({ value: "setting", label: "设置", src: $A.apiUrl('../images/application/setting.svg') })
+                appApplyList.push({ value: "setting", label: "设置", src: $A.apiUrl('../images/application/setting.svg') })
             }
-            this.applyList = [...applyList, ...appapplyList]
-
             // 管理员
-            if (this.userIsAdmin) {
-                this.adminApplyList = [
-                    { value: "okrAnalyze", label: "OKR结果分析", src: $A.apiUrl('../images/application/okrAnalyze.svg') },
-                    { value: "ldap", label: "LDAP", src: $A.apiUrl('../images/application/ldap.svg') },
-                    { value: "mail", label: "邮件", src: $A.apiUrl('../images/application/mail.svg') },
-                    { value: "appPush", label: "APP推送", src: $A.apiUrl('../images/application/apppush.svg') },
-                    { value: "allUser", label: "团队管理", src: $A.apiUrl('../images/application/allUser.svg') },
-                ]
+            let adminApplyList = !this.userIsAdmin ? [] : [
+                { value: "okrAnalyze", label: "OKR结果分析", src: $A.apiUrl('../images/application/okrAnalyze.svg') },
+                { value: "ldap", label: "LDAP", src: $A.apiUrl('../images/application/ldap.svg') },
+                { value: "mail", label: "邮件", src: $A.apiUrl('../images/application/mail.svg') },
+                { value: "appPush", label: "APP推送", src: $A.apiUrl('../images/application/apppush.svg') },
+                { value: "allUser", label: "团队管理", src: $A.apiUrl('../images/application/allUser.svg') },
+            ].map((h) => {
+                h.type = 'admin';
+                return h;
+            });
+            // 
+            this.applyList = [...applyList, ...appApplyList, ...adminApplyList];
+        },
+        // 显示红点
+        showBadge(item,type){
+            let num = 0;
+            switch (type) {
+                case 'approve':
+                    num = this.approveUnreadNumber;
+                    break;
+                case 'report':
+                    num = this.reportUnreadNumber;
+                    break;
             }
+            return item.value == type && num > 0
         },
         // 点击应用
         applyClick(item, area = '') {
-            this.$emit("on-click", item.value)
             switch (item.value) {
                 case 'approve':
                 case 'calendar':
@@ -358,10 +342,7 @@ export default {
                     });
                     break;
                 case 'report':
-                    this.workReportTabs = 'my';
-                    if (area == 'badge') {
-                        this.workReportTabs = 'receive';
-                    }
+                    this.workReportTabs = area == 'badge' ? 'receive' : 'my';
                     this.workReportShow = true;
                     break;
                 case 'ai':
@@ -389,6 +370,7 @@ export default {
                     this.appPushShow = true;
                     break;
             }
+            this.$emit("on-click", item.value)
         },
         // 去聊天
         onGoToChat(type) {
