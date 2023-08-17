@@ -21,7 +21,7 @@
                         <div class="apply-col">
                             <div @click="applyClick(item)">
                                 <img :src="item.src">
-                                <p>{{ item.label }}</p>
+                                <p>{{ $L(item.label) }}</p>
                                 <div @click.stop="applyClick(item,'badge')" class="apply-box-top-report">
                                     <!-- 审批中心 -->
                                     <Badge v-if="item.value == 'approve' && approveUnreadNumber > 0" 
@@ -281,7 +281,7 @@ export default {
                 { value: "approve", label: "审批中心", src: $A.apiUrl('../images/apply/approve.svg') },
                 { value: "report", label: "工作报告", src: $A.apiUrl('../images/apply/report.svg') },
                 { value: "okr", label: "OKR管理", src: $A.apiUrl('../images/apply/okr.svg') },
-                { value: "okrAnalyze", label: "OKR结果分析", src: $A.apiUrl('../images/apply/okrAnalyze.svg') },
+                { value: "okrAnalyze", label: "OKR结果分析", src: $A.apiUrl('../images/apply/okrAnalyze.svg'), show: this.userIsAdmin },
                 { value: "ai", label: "AI机器人", src: $A.apiUrl('../images/apply/robot.svg') },
                 { value: "signIn", label: "签到", src: $A.apiUrl('../images/apply/signin.svg') },
                 { value: "meeting", label: "会议", src: $A.apiUrl('../images/apply/meeting.svg'), show: this.userIsAdmin },

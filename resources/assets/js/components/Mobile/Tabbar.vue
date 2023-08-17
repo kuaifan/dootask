@@ -206,7 +206,7 @@ export default {
         },
 
         activeName() {
-            if (this.isMore || ['manage-calendar', 'manage-file', 'manage-setting', 'manage-apply', 'manage-approve'].includes(this.routeName)) {
+            if (this.isMore || ['manage-calendar', 'manage-file', 'manage-setting', 'manage-apply', 'manage-approve', 'manage-apps'].includes(this.routeName)) {
                 // return 'more';
                 return 'apply';
             }

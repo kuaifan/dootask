@@ -637,7 +637,7 @@ export default {
             if (this.routeName === 'manage-project' && !/^\d+$/.test(this.$route.params.projectId)) {
                 return true;
             }
-            return ['manage-dashboard', 'manage-calendar', 'manage-messenger', 'manage-file', 'manage-setting', 'manage-approve', 'manage-apply'].includes(this.routeName)
+            return ['manage-dashboard', 'manage-calendar', 'manage-messenger', 'manage-file', 'manage-setting', 'manage-approve', 'manage-apply', 'manage-apps'].includes(this.routeName)
         },
     },
 
@@ -837,7 +837,7 @@ export default {
 
         classNameRoute(path) {
             let routeName = this.routeName
-            if(routeName == 'manage-approve'){
+            if(routeName == 'manage-approve' || routeName == 'manage-apps'){
                 routeName = `manage-apply`
             }
             return {
