@@ -280,6 +280,8 @@ export default {
             this.applyList = [
                 { value: "approve", label: "审批中心", src: $A.apiUrl('../images/apply/approve.svg') },
                 { value: "report", label: "工作报告", src: $A.apiUrl('../images/apply/report.svg') },
+                { value: "okr", label: "OKR管理", src: $A.apiUrl('../images/apply/okr.svg') },
+                { value: "okrAnalyze", label: "OKR结果分析", src: $A.apiUrl('../images/apply/okrAnalyze.svg') },
                 { value: "ai", label: "AI机器人", src: $A.apiUrl('../images/apply/robot.svg') },
                 { value: "signIn", label: "签到", src: $A.apiUrl('../images/apply/signin.svg') },
                 { value: "meeting", label: "会议", src: $A.apiUrl('../images/apply/meeting.svg'), show: this.userIsAdmin },
@@ -308,6 +310,12 @@ export default {
                 case 'file':
                 case 'setting':
                     this.goForward({ name: 'manage-' + item.value });
+                    break;
+                case 'okr':
+                case 'okrAnalyze':
+                    this.goForward({ 
+                        path:'/manage/apps/' + ( item.value == 'okr' ? '/#/list' : '/#/analysis'), 
+                    });
                     break;
                 case 'report':
                     this.workReportTabs = 'my';

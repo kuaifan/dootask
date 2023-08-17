@@ -66,6 +66,14 @@
                             margin-bottom: 5px;
                         }
                     }
+                
+                    >p{
+                        @media (max-width: 510px) {
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                            overflow: hidden;
+                        }
+                    }
 
                     .apply-box-top-report {
                         position: absolute;
