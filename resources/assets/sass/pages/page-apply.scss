@@ -220,11 +220,11 @@
             .setting-footer {
                 flex-shrink: 0;
                 position: static;
-                padding: 16px;
+                padding: 16px 26px;
                 border-top: 1px solid #F4F4F5;
                 display: flex;
                 align-items: center;
-                justify-content: flex-end;
+                gap: 8px;
             }
         }
 

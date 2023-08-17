@@ -2,33 +2,30 @@
     <div class="page-approve">
         <PageTitle :title="$L('审批中心')"/>
         <div class="approve-wrapper" ref="fileWrapper">
-
             <div class="approve-head">
                 <div class="approve-nav">
                     <div class="common-nav-back" @click="goBack()"><i class="taskfont">&#xe676;</i></div>
                     <h1>{{$L('审批中心')}}</h1>
                 </div>
-
+                
+                <Button v-show="showType == 1 && userIsAdmin && isShowIcon" @click="addApply" :loading="addLoadIng" type="primary" shape="circle" icon="md-add" class="ivu-btn-icon-only"></Button>
                 <Button v-if="showType == 1 && !isShowIcon" :loading="addLoadIng" type="primary" @click="addApply"> 
                     <span> {{$L("添加申请")}} </span> 
                 </Button>
-                <Button v-if="showType == 1 && isShowIcon" :loading="addLoadIng" type="primary" @click="addApply" shape="circle"> 
-                    <i class="taskfont">&#xe6f2;</i>
-                </Button>
 
-                <Button v-if="showType == 1 && userIsAdmin && !isShowIcon" @click="exportApproveShow = true">
+                <Button v-show="showType == 1 && userIsAdmin && !isShowIcon" @click="exportApproveShow = true">
                     <span> {{$L("导出审批数据")}} </span> 
                 </Button>
-                <Button v-if="showType == 1 && userIsAdmin && isShowIcon" @click="exportApproveShow = true" shape="circle">
+                <Button v-if="showType == 1 && userIsAdmin && isShowIcon" @click="exportApproveShow = true" shape="circle" class="ivu-btn-icon-only">
                     <i class="taskfont">&#xe7a8;</i>
                 </Button>
 
                 <Button v-if="userIsAdmin && !isShowIcon" @click="showType = showType == 1 ? 2 : 1">
                     <span> {{ showType == 1 ? $L("流程设置") : $L("返回") }} </span> 
                 </Button>
-                <Button v-if="userIsAdmin && isShowIcon" @click="showType = showType == 1 ? 2 : 1" shape="circle">
+                <Button v-if="userIsAdmin && isShowIcon" @click="showType = showType == 1 ? 2 : 1" shape="circle" class="ivu-btn-icon-only">
                     <i v-if="showType == 1" class="taskfont">&#xe67b;</i>
-                    <i v-else class="taskfont">&#xe637;</i>
+                    <i v-if="showType == 2" class="taskfont">&#xe637;</i>
                 </Button>
             </div>
             
