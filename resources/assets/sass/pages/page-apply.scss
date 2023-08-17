@@ -32,9 +32,10 @@
             }
         }
 
-        .apply-row {
+        .apply-content {
             flex: 1;
             padding: 16px 30px;
+            overflow: auto;
 
             .apply-row-title{
                 margin-bottom: 16px;

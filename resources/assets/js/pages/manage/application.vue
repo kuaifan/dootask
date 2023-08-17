@@ -9,7 +9,7 @@
                     <h1>{{ $L('应用') }}</h1>
                 </div>
             </div>
-            <div class="apply-row">
+            <div class="apply-content">
 
                 <div v-if="adminApplyList.length > 0" class="apply-row-title">{{ $L('常用') }}</div>
                 <Row :gutter="16">
