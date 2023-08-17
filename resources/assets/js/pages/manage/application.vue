@@ -15,8 +15,8 @@
                         {{ t == 'base' ? $L('常用') : $L('管理员') }}
                     </div>
                     <Row :gutter="16">
-                        <Col v-for="(item, key) in applyList" v-if="(t=='base' && !item.type) || item.type == t" 
-                            :key="key"
+                        <Col v-for="(item, key) in applyList" :key="key"
+                            v-if="((t=='base' && !item.type) || item.type == t) && item.show !== false" 
                             :xs="{ span: 8 }" 
                             :sm="{ span: 8 }" 
                             :lg="{ span: 6 }" 
@@ -172,6 +172,21 @@
             </div>
         </DrawerOverlay>
 
+        <!-- 扫码登录 -->
+        <Modal
+            v-model="scanLoginShow"
+            :title="$L('扫码登录')"
+            :mask-closable="false">
+            <div class="mobile-scan-login-box">
+                <div class="mobile-scan-login-title">{{$L(`你好，扫码确认登录`)}}</div>
+                <div class="mobile-scan-login-subtitle">「{{$L('为确保帐号安全，请确认是本人操作')}}」</div>
+            </div>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="scanLoginShow=false">{{$L('取消登录')}}</Button>
+                <Button type="primary" :loading="scanLoginLoad" @click="scanLoginSubmit">{{$L('确认登录')}}</Button>
+            </div>
+        </Modal>
+
     </div>
 </template>
 
@@ -254,6 +269,10 @@ export default {
             // 
             appPushType: 1,
             appPushShow: false,
+            // 
+            scanLoginShow: false,
+            scanLoginLoad: false,
+            scanLoginCode: '',
         }
     },
     activated() {
@@ -292,13 +311,9 @@ export default {
                 { value: "file", label: "文件", src: $A.apiUrl('../images/application/file.svg') },
                 { value: "addProject", label: "创建项目", src: $A.apiUrl('../images/application/addProject.svg') },
                 { value: "addTask", label: "添加任务", src: $A.apiUrl('../images/application/addTask.svg') },
+                { value: "scan", label: "扫一扫", src: $A.apiUrl('../images/application/scan.svg'), show: $A.isEEUiApp },
+                { value: "setting", label: "设置", src: $A.apiUrl('../images/application/setting.svg') }
             ];
-            if (this.windowOrientation == 'portrait') {
-                if ($A.isEEUiApp) {
-                    appApplyList.push({ value: "scan", label: "扫一扫", src: $A.apiUrl('../images/application/scan.svg') })
-                }
-                appApplyList.push({ value: "setting", label: "设置", src: $A.apiUrl('../images/application/setting.svg') })
-            }
             // 管理员
             let adminApplyList = !this.userIsAdmin ? [] : [
                 { value: "okrAnalyze", label: "OKR结果分析", src: $A.apiUrl('../images/application/okrAnalyze.svg') },
@@ -369,6 +384,9 @@ export default {
                     this.appPushType = 1;
                     this.appPushShow = true;
                     break;
+                case 'scan':
+                    $A.eeuiAppScan(this.scanResult);
+                    return;
             }
             this.$emit("on-click", item.value)
         },
@@ -430,6 +448,50 @@ export default {
                     break;
             }
             this.meetingShow = false;
+        },
+        // 扫一扫
+        scanResult(text) {
+            const arr = (text + "").match(/^https*:\/\/(.*?)\/login\?qrcode=(.*?)$/)
+            if (arr) {
+                // 扫码登录
+                this.scanLoginCode = arr[2];
+                this.scanLoginShow = true;
+                return
+            }
+            if (/^https*:\/\//i.test(text)) {
+                // 打开链接
+                $A.eeuiAppOpenPage({
+                    pageType: 'app',
+                    pageTitle: ' ',
+                    url: 'web.js',
+                    params: {
+                        url: text,
+                        browser: true,
+                        showProgress: true,
+                    },
+                });
+            }
+        },
+        scanLoginSubmit() {
+            if (this.scanLoginLoad === true) {
+                return
+            }
+            this.scanLoginLoad = true
+            //
+            this.$store.dispatch("call", {
+                url: "users/login/qrcode",
+                data: {
+                    type: "login",
+                    code: this.scanLoginCode,
+                }
+            }).then(({msg}) => {
+                this.scanLoginShow = false
+                $A.messageSuccess(msg)
+            }).catch(({msg}) => {
+                $A.messageError(msg)
+            }).finally(_ => {
+                this.scanLoginLoad = false
+            });
         }
     }
 }
