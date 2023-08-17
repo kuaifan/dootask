@@ -119,13 +119,13 @@
                 <div class="ivu-modal-wrap-apply-body">
                     <ul class="ivu-modal-wrap-ul" v-if="meetingType == 1">
                         <li @click="onMeeting('createMeeting')">
-                            <img :src="$A.apiUrl('../images/application/meeting.svg')">
+                            <img :src="getLogoPath('meeting')">
                             <h4>{{ $L('新会议') }}</h4>
                             <p>{{ $L('创建一个全新的会议视频会议，与会者可以在实时中进行面对面的视听交流。通过视频会议平台，参与者可以分享屏幕、共享文档，并与其他与会人员进行讨论和协。作') }}</p>
                             <p class="btn">{{ $L('新建会议') }}</p>
                         </li>
                         <li @click="onMeeting('joinMeeting')">
-                            <img :src="$A.apiUrl('../images/application/joinMeeting.svg')">
+                            <img :src="getLogoPath('joinMeeting')">
                             <h4>{{ $L('加入会议') }}</h4>
                             <p>{{ $L('加入视频会议，参与已经创建的会议，在会议过程中与其他参会人员进行远程实时视听交流和协作。') }}</p>
                             <p class="btn">{{ $L('加入会议') }}</p>
@@ -298,29 +298,29 @@ export default {
     methods: {
         initList() {
             let applyList = [
-                { value: "approve", label: "审批中心", src: $A.apiUrl('../images/application/approve.svg') },
-                { value: "report", label: "工作报告", src: $A.apiUrl('../images/application/report.svg') },
-                { value: "okr", label: "OKR管理", src: $A.apiUrl('../images/application/okr.svg') },
-                { value: "ai", label: "AI机器人", src: $A.apiUrl('../images/application/robot.svg') },
-                { value: "signIn", label: "签到", src: $A.apiUrl('../images/application/signin.svg') },
-                { value: "meeting", label: "会议", src: $A.apiUrl('../images/application/meeting.svg') },
+                { value: "approve", label: "审批中心", src: this.getLogoPath('approve') },
+                { value: "report", label: "工作报告", src: this.getLogoPath('report') },
+                { value: "okr", label: "OKR管理", src: this.getLogoPath('okr') },
+                { value: "ai", label: "AI机器人", src: this.getLogoPath('robot') },
+                { value: "signIn", label: "签到", src: this.getLogoPath('signin') },
+                { value: "meeting", label: "会议", src: this.getLogoPath('meeting') },
             ];
             // wap模式
             let appApplyList = this.windowOrientation != 'portrait' ? [] : [
-                { value: "calendar", label: "日历", src: $A.apiUrl('../images/application/calendar.svg') },
-                { value: "file", label: "文件", src: $A.apiUrl('../images/application/file.svg') },
-                { value: "addProject", label: "创建项目", src: $A.apiUrl('../images/application/addProject.svg') },
-                { value: "addTask", label: "添加任务", src: $A.apiUrl('../images/application/addTask.svg') },
-                { value: "scan", label: "扫一扫", src: $A.apiUrl('../images/application/scan.svg'), show: $A.isEEUiApp },
-                { value: "setting", label: "设置", src: $A.apiUrl('../images/application/setting.svg') }
+                { value: "calendar", label: "日历", src: this.getLogoPath('calendar') },
+                { value: "file", label: "文件", src: this.getLogoPath('file') },
+                { value: "addProject", label: "创建项目", src: this.getLogoPath('addProject') },
+                { value: "addTask", label: "添加任务", src: this.getLogoPath('addTask') },
+                { value: "scan", label: "扫一扫", src: this.getLogoPath('scan') , show: $A.isEEUiApp },
+                { value: "setting", label: "设置", src: this.getLogoPath('setting') }
             ];
             // 管理员
             let adminApplyList = !this.userIsAdmin ? [] : [
-                { value: "okrAnalyze", label: "OKR结果分析", src: $A.apiUrl('../images/application/okrAnalyze.svg') },
-                { value: "ldap", label: "LDAP", src: $A.apiUrl('../images/application/ldap.svg') },
-                { value: "mail", label: "邮件", src: $A.apiUrl('../images/application/mail.svg') },
-                { value: "appPush", label: "APP推送", src: $A.apiUrl('../images/application/apppush.svg') },
-                { value: "allUser", label: "团队管理", src: $A.apiUrl('../images/application/allUser.svg') },
+                { value: "okrAnalyze", label: "OKR结果分析", src: this.getLogoPath('okrAnalyze') },
+                { value: "ldap", label: "LDAP", src: this.getLogoPath('ldap') },
+                { value: "mail", label: "邮件", src: this.getLogoPath('mail') },
+                { value: "appPush", label: "APP推送", src: this.getLogoPath('apppush') },
+                { value: "allUser", label: "团队管理", src: this.getLogoPath('allUser') },
             ].map((h) => {
                 h.type = 'admin';
                 return h;
@@ -328,8 +328,10 @@ export default {
             // 
             this.applyList = [...applyList, ...appApplyList, ...adminApplyList];
         },
-        // 显示红点
-        showBadge(item,type){
+        getLogoPath(name) {
+            return $A.apiUrl(`../images/application/${name}.svg`)
+        },
+        showBadge(item,type) {
             let num = 0;
             switch (type) {
                 case 'approve':
