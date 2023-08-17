@@ -1633,7 +1633,7 @@ class DialogController extends AbstractController
         $user = User::auth();
         //
         $dialog_id = intval(Request::input('dialog_id'));
-        $userids = Request::input('userids');
+        $userids = Base::json2array(Request::input('userids'));
         //
         if (!is_array($userids)) {
             return Base::retError('请选择群成员');
@@ -1671,7 +1671,7 @@ class DialogController extends AbstractController
         $user = User::auth();
         //
         $dialog_id = intval(Request::input('dialog_id'));
-        $userids = Request::input('userids');
+        $userids = Base::json2array(Request::input('userids'));
         //
         $type = 'remove';
         if (empty($userids)) {
