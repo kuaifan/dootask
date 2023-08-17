@@ -10,8 +10,10 @@
                 </div>
             </div>
             <div class="apply-row">
+
+                <div v-if="adminApplyList.length > 0" class="apply-row-title">{{ $L('常用') }}</div>
                 <Row :gutter="16">
-                    <Col v-if="item.show==undefined || item.show" v-for="(item, key) in applyList"  :key="key"
+                    <Col v-if="item.show == undefined || item.show" v-for="(item, key) in applyList" :key="key"
                         :xs="{ span: 8 }" 
                         :sm="{ span: 8 }" 
                         :lg="{ span: 6 }" 
@@ -22,18 +24,46 @@
                             <div @click="applyClick(item)">
                                 <img :src="item.src">
                                 <p>{{ $L(item.label) }}</p>
-                                <div @click.stop="applyClick(item,'badge')" class="apply-box-top-report">
+                                <div @click.stop="applyClick(item, 'badge')" class="apply-box-top-report">
                                     <!-- 审批中心 -->
-                                    <Badge v-if="item.value == 'approve' && approveUnreadNumber > 0" 
-                                        :overflow-count="999" :count="approveUnreadNumber"/>
+                                    <Badge v-if="item.value == 'approve' && approveUnreadNumber > 0" :overflow-count="999"
+                                        :count="approveUnreadNumber" />
                                     <!-- 工作报告 -->
-                                    <Badge v-if="item.value == 'report' && reportUnreadNumber > 0"
-                                        :overflow-count="999" :count="reportUnreadNumber"/>
+                                    <Badge v-if="item.value == 'report' && reportUnreadNumber > 0" :overflow-count="999"
+                                        :count="reportUnreadNumber" />
                                 </div>
                             </div>
                         </div>
                     </Col>
                 </Row>
+
+                <!-- 管理员 -->
+                <div v-if="adminApplyList.length > 0" class="apply-row-title">{{ $L('管理员') }}</div>
+                <Row :gutter="16">
+                    <Col v-if="item.show == undefined || item.show" v-for="(item, key) in adminApplyList" :key="key"
+                        :xs="{ span: 8 }" 
+                        :sm="{ span: 8 }" 
+                        :lg="{ span: 6 }" 
+                        :xl="{ span: 4 }" 
+                        :xxl="{ span: 3 }"
+                    >
+                        <div class="apply-col">
+                            <div @click="applyClick(item)">
+                                <img :src="item.src">
+                                <p>{{ $L(item.label) }}</p>
+                                <div @click.stop="applyClick(item, 'badge')" class="apply-box-top-report">
+                                    <!-- 审批中心 -->
+                                    <Badge v-if="item.value == 'approve' && approveUnreadNumber > 0" :overflow-count="999"
+                                        :count="approveUnreadNumber" />
+                                    <!-- 工作报告 -->
+                                    <Badge v-if="item.value == 'report' && reportUnreadNumber > 0" :overflow-count="999"
+                                        :count="reportUnreadNumber" />
+                                </div>
+                            </div>
+                        </div>
+                    </Col>
+                </Row>
+
             </div>
         </div>
 
@@ -117,13 +147,13 @@
                 <div class="ivu-modal-wrap-apply-body">
                     <ul class="ivu-modal-wrap-ul" v-if="meetingType == 1">
                         <li @click="onMeeting('createMeeting')">
-                            <img :src="$A.apiUrl('../images/apply/meeting.svg')">
+                            <img :src="$A.apiUrl('../images/application/meeting.svg')">
                             <h4>{{ $L('新会议') }}</h4>
                             <p>{{ $L('创建一个全新的会议视频会议，与会者可以在实时中进行面对面的视听交流。通过视频会议平台，参与者可以分享屏幕、共享文档，并与其他与会人员进行讨论和协。作') }}</p>
                             <p class="btn">{{ $L('新建会议') }}</p>
                         </li>
                         <li @click="onMeeting('joinMeeting')">
-                            <img :src="$A.apiUrl('../images/apply/joinMeeting.svg')">
+                            <img :src="$A.apiUrl('../images/application/joinMeeting.svg')">
                             <h4>{{ $L('加入会议') }}</h4>
                             <p>{{ $L('加入视频会议，参与已经创建的会议，在会议过程中与其他参会人员进行远程实时视听交流和协作。') }}</p>
                             <p class="btn">{{ $L('加入会议') }}</p>
@@ -170,7 +200,6 @@
             </div>
         </DrawerOverlay>
 
-
     </div>
 </template>
 
@@ -204,34 +233,35 @@ export default {
     data() {
         return {
             applyList: [],
+            adminApplyList: [],
             // 
             workReportShow: false,
             workReportTabs: "my",
             // 
             aibotList: [
-                { 
-                    value: "openai", 
-                    label: "ChatGPT", 
-                    src: $A.apiUrl('../images/avatar/default_openai.png'), 
-                    desc: this.$L('我是一个人工智能助手，为用户提供问题解答和指导。我没有具体的身份，只是一个程序。您有什么问题可以问我哦？') 
+                {
+                    value: "openai",
+                    label: "ChatGPT",
+                    src: $A.apiUrl('../images/avatar/default_openai.png'),
+                    desc: this.$L('我是一个人工智能助手，为用户提供问题解答和指导。我没有具体的身份，只是一个程序。您有什么问题可以问我哦？')
                 },
-                { 
-                    value: "claude", 
-                    label: "Claude", 
-                    src: $A.apiUrl('../images/avatar/default_claude.png'), 
-                    desc: this.$L('我是Claude,一个由Anthropic公司创造出来的AI助手机器人。我的工作是帮助人类,与人对话并给出解答。') 
+                {
+                    value: "claude",
+                    label: "Claude",
+                    src: $A.apiUrl('../images/avatar/default_claude.png'),
+                    desc: this.$L('我是Claude,一个由Anthropic公司创造出来的AI助手机器人。我的工作是帮助人类,与人对话并给出解答。')
                 },
-                { 
-                    value: "wenxin", 
-                    label: "Wenxin", 
-                    src: $A.apiUrl('../avatar/Wenxin.png'), 
-                    desc: this.$L('我是文心一言，英文名是ERNIE Bot。我能够与人对话互动，回答问题，协助创作，高效便捷地帮助人们获取信息、知识和灵感。') 
+                {
+                    value: "wenxin",
+                    label: "Wenxin",
+                    src: $A.apiUrl('../avatar/Wenxin.png'),
+                    desc: this.$L('我是文心一言，英文名是ERNIE Bot。我能够与人对话互动，回答问题，协助创作，高效便捷地帮助人们获取信息、知识和灵感。')
                 },
-                { 
-                    value: "qianwen", 
-                    label: "Qianwen", 
-                    src: $A.apiUrl('../avatar/%E9%80%9A%E4%B9%89%E5%8D%83%E9%97%AE.png'), 
-                    desc: this.$L('我是达摩院自主研发的超大规模语言模型，能够回答问题、创作文字，还能表达观点、撰写代码。') 
+                {
+                    value: "qianwen",
+                    label: "Qianwen",
+                    src: $A.apiUrl('../avatar/%E9%80%9A%E4%B9%89%E5%8D%83%E9%97%AE.png'),
+                    desc: this.$L('我是达摩院自主研发的超大规模语言模型，能够回答问题、创作文字，还能表达观点、撰写代码。')
                 },
             ],
             aibotTabAction: "opanai",
@@ -271,38 +301,48 @@ export default {
 
     },
     watch: {
-        windowOrientation(){
+        windowOrientation() {
             this.initList()
         }
     },
     methods: {
-        initList(){
-            this.applyList = [
-                { value: "approve", label: "审批中心", src: $A.apiUrl('../images/apply/approve.svg') },
-                { value: "report", label: "工作报告", src: $A.apiUrl('../images/apply/report.svg') },
-                { value: "okr", label: "OKR管理", src: $A.apiUrl('../images/apply/okr.svg') },
-                { value: "okrAnalyze", label: "OKR结果分析", src: $A.apiUrl('../images/apply/okrAnalyze.svg'), show: this.userIsAdmin },
-                { value: "ai", label: "AI机器人", src: $A.apiUrl('../images/apply/robot.svg') },
-                { value: "signIn", label: "签到", src: $A.apiUrl('../images/apply/signin.svg') },
-                { value: "meeting", label: "会议", src: $A.apiUrl('../images/apply/meeting.svg'), show: this.userIsAdmin },
-                { value: "ldap", label: "LDAP", src: $A.apiUrl('../images/apply/ldap.svg'), show: this.userIsAdmin },
-                { value: "mail", label: "邮件", src: $A.apiUrl('../images/apply/mail.svg'), show: this.userIsAdmin },
-                { value: "appPush", label: "APP推送", src: $A.apiUrl('../images/apply/apppush.svg'), show: this.userIsAdmin },
-                { value: "allUser", label: "团队管理", src: $A.apiUrl('../images/apply/allUser.svg'), show: this.userIsAdmin },
+        initList() {
+            let applyList = [
+                { value: "approve", label: "审批中心", src: $A.apiUrl('../images/application/approve.svg') },
+                { value: "report", label: "工作报告", src: $A.apiUrl('../images/application/report.svg') },
+                { value: "okr", label: "OKR管理", src: $A.apiUrl('../images/application/okr.svg') },
+                { value: "ai", label: "AI机器人", src: $A.apiUrl('../images/application/robot.svg') },
+                { value: "signIn", label: "签到", src: $A.apiUrl('../images/application/signin.svg') },
+                { value: "meeting", label: "会议", src: $A.apiUrl('../images/application/meeting.svg') },
             ];
+            let appapplyList = [];
             if (this.windowOrientation == 'portrait') {
-                this.applyList.push({ value: "calendar", label: "日历", src: $A.apiUrl('../images/apply/calendar.svg') })
-                this.applyList.push({ value: "file", label: "文件", src: $A.apiUrl('../images/apply/file.svg') })
-                this.applyList.push({ value: "addProject", label: "创建项目", src: $A.apiUrl('../images/apply/addProject.svg') })
-                this.applyList.push({ value: "addTask", label: "添加任务", src: $A.apiUrl('../images/apply/addTask.svg') })
+                appapplyList = [
+                    { value: "calendar", label: "日历", src: $A.apiUrl('../images/application/calendar.svg') },
+                    { value: "file", label: "文件", src: $A.apiUrl('../images/application/file.svg') },
+                    { value: "addProject", label: "创建项目", src: $A.apiUrl('../images/application/addProject.svg') },
+                    { value: "addTask", label: "添加任务", src: $A.apiUrl('../images/application/addTask.svg') },
+                ]
                 if ($A.isEEUiApp) {
-                    this.applyList.push({ value: "scan", label: "扫一扫", src: $A.apiUrl('../images/apply/scan.svg') })
+                    appapplyList.push({ value: "scan", label: "扫一扫", src: $A.apiUrl('../images/application/scan.svg') })
                 }
-                this.applyList.push({ value: "setting", label: "设置", src: $A.apiUrl('../images/apply/setting.svg') })
+                appapplyList.push({ value: "setting", label: "设置", src: $A.apiUrl('../images/application/setting.svg') })
+            }
+            this.applyList = [...applyList, ...appapplyList]
+
+            // 管理员
+            if (this.userIsAdmin) {
+                this.adminApplyList = [
+                    { value: "okrAnalyze", label: "OKR结果分析", src: $A.apiUrl('../images/application/okrAnalyze.svg') },
+                    { value: "ldap", label: "LDAP", src: $A.apiUrl('../images/application/ldap.svg') },
+                    { value: "mail", label: "邮件", src: $A.apiUrl('../images/application/mail.svg') },
+                    { value: "appPush", label: "APP推送", src: $A.apiUrl('../images/application/apppush.svg') },
+                    { value: "allUser", label: "团队管理", src: $A.apiUrl('../images/application/allUser.svg') },
+                ]
             }
         },
         // 点击应用
-        applyClick(item,area='') {
+        applyClick(item, area = '') {
             this.$emit("on-click", item.value)
             switch (item.value) {
                 case 'approve':
@@ -313,13 +353,13 @@ export default {
                     break;
                 case 'okr':
                 case 'okrAnalyze':
-                    this.goForward({ 
-                        path:'/manage/apps/' + ( item.value == 'okr' ? '/#/list' : '/#/analysis'), 
+                    this.goForward({
+                        path: '/manage/apps/' + (item.value == 'okr' ? '/#/list' : '/#/analysis'),
                     });
                     break;
                 case 'report':
                     this.workReportTabs = 'my';
-                    if(area=='badge'){
+                    if (area == 'badge') {
                         this.workReportTabs = 'receive';
                     }
                     this.workReportShow = true;

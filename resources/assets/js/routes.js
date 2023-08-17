@@ -117,9 +117,9 @@ export default [
                 component: () => import('./pages/manage/file.vue'),
             },
             {
-                name: 'manage-apply',
-                path: 'apply',
-                component: () => import('./pages/manage/apply.vue'),
+                name: 'manage-application',
+                path: 'application',
+                component: () => import('./pages/manage/application.vue'),
             },
         ]
     },

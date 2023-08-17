@@ -18038,5 +18038,16 @@
         "de": "Trag die unterschrift ins management",
         "fr": "Gestion des inscriptions",
         "id": "Manajemen tanda tangan masuk"
+    },
+    {
+        "key": "常用",
+        "zh": "",
+        "zh-CHT": "常用",
+        "en": "In common use",
+        "ko": "흔히 사용하는",
+        "ja": "よく使います",
+        "de": "Verwende sie.",
+        "fr": "Couramment utilisés",
+        "id": "Umum"
     }
 ]

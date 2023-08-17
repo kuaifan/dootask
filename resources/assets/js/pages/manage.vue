@@ -115,7 +115,7 @@
                             <i class="taskfont">&#xe6f3;</i>
                             <div class="menu-title">{{$L('文件')}}</div>
                         </li>
-                        <li @click="toggleRoute('apply')" :class="classNameRoute('apply')">
+                        <li @click="toggleRoute('application')" :class="classNameRoute('application')">
                             <i class="taskfont">&#xe60c;</i>
                             <div class="menu-title">{{$L('应用')}}</div>
                             <Badge class="menu-badge" :overflow-count="999" :text="String((reportUnreadNumber + approveUnreadNumber) || '')"/>
@@ -637,7 +637,7 @@ export default {
             if (this.routeName === 'manage-project' && !/^\d+$/.test(this.$route.params.projectId)) {
                 return true;
             }
-            return ['manage-dashboard', 'manage-calendar', 'manage-messenger', 'manage-file', 'manage-apply'].includes(this.routeName)
+            return ['manage-dashboard', 'manage-calendar', 'manage-messenger', 'manage-file', 'manage-application'].includes(this.routeName)
         },
     },
 
@@ -838,7 +838,7 @@ export default {
         classNameRoute(path) {
             let routeName = this.routeName
             if(routeName == 'manage-approve' || routeName == 'manage-apps'){
-                routeName = `manage-apply`
+                routeName = `manage-application`
             }
             return {
                 "active": routeName === `manage-${path}`,

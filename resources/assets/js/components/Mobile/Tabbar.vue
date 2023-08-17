@@ -30,7 +30,7 @@
                 <template v-else-if="item.name === 'dialog'">
                     <Badge class="tabbar-badge" :overflow-count="999" :text="msgUnreadMention"/>
                 </template>
-                <template v-else-if="item.name === 'apply'">
+                <template v-else-if="item.name === 'application'">
                     <Badge class="tabbar-badge" :overflow-count="999" :count="reportUnreadNumber + approveUnreadNumber"/>
                 </template>
                 <template v-else-if="item.name === 'more'">
@@ -71,7 +71,7 @@ export default {
                 {icon: '&#xe6fa;', name: 'project', label: '项目'},
                 {icon: '&#xe6eb;', name: 'dialog', label: '消息'},
                 {icon: '&#xe6b2;', name: 'contacts', label: '通讯录'},
-                {icon: '&#xe60c;', name: 'apply', label: '应用'},
+                {icon: '&#xe60c;', name: 'application', label: '应用'},
                 // {icon: '&#xe6e9;', name: 'more', label: '更多'},
             ],
             navMore: [
@@ -206,9 +206,9 @@ export default {
         },
 
         activeName() {
-            if (this.isMore || ['manage-calendar', 'manage-file', 'manage-setting', 'manage-apply', 'manage-approve', 'manage-apps'].includes(this.routeName)) {
+            if (this.isMore || ['manage-calendar', 'manage-file', 'manage-setting', 'manage-application', 'manage-approve', 'manage-apps'].includes(this.routeName)) {
                 // return 'more';
-                return 'apply';
+                return 'application';
             }
 
             if (this.routeName === 'manage-dashboard') {

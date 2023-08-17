@@ -36,6 +36,10 @@
             flex: 1;
             padding: 16px 30px;
 
+            .apply-row-title{
+                margin-bottom: 16px;
+            }
+
             .apply-col {
                 margin-bottom: 16px;
 
@@ -96,7 +100,6 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    // max-width: calc(100vw - 40px);
     max-width: 100vw;
     overflow: auto;
 
@@ -105,6 +108,7 @@
         font-size: 20px;
         font-weight: 500;
         padding: 12px 30px;
+        color: #303133;
 
         >p {
             float: right;
