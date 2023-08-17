@@ -25,7 +25,7 @@
                         >
                             <div class="apply-col">
                                 <div @click="applyClick(item)">
-                                    <img :src="item.src" />
+                                    <img :src="getLogoPath(item.value)" />
                                     <p>{{ $L(item.label) }}</p>
                                     <div @click.stop="applyClick(item, 'badge')" class="apply-box-top-report">
                                         <Badge v-if="showBadge(item,'approve')" :overflow-count="999" :count="approveUnreadNumber" />
@@ -298,29 +298,29 @@ export default {
     methods: {
         initList() {
             let applyList = [
-                { value: "approve", label: "审批中心", src: this.getLogoPath('approve') },
-                { value: "report", label: "工作报告", src: this.getLogoPath('report') },
-                { value: "okr", label: "OKR管理", src: this.getLogoPath('okr') },
-                { value: "ai", label: "AI机器人", src: this.getLogoPath('robot') },
-                { value: "signIn", label: "签到", src: this.getLogoPath('signin') },
-                { value: "meeting", label: "会议", src: this.getLogoPath('meeting') },
+                { value: "approve", label: "审批中心" },
+                { value: "report", label: "工作报告" },
+                { value: "okr", label: "OKR管理" },
+                { value: "robot", label: "AI机器人" },
+                { value: "signin", label: "签到" },
+                { value: "meeting", label: "会议" }
             ];
             // wap模式
             let appApplyList = this.windowOrientation != 'portrait' ? [] : [
-                { value: "calendar", label: "日历", src: this.getLogoPath('calendar') },
-                { value: "file", label: "文件", src: this.getLogoPath('file') },
-                { value: "addProject", label: "创建项目", src: this.getLogoPath('addProject') },
-                { value: "addTask", label: "添加任务", src: this.getLogoPath('addTask') },
-                { value: "scan", label: "扫一扫", src: this.getLogoPath('scan') , show: $A.isEEUiApp },
-                { value: "setting", label: "设置", src: this.getLogoPath('setting') }
+                { value: "calendar", label: "日历" },
+                { value: "file", label: "文件" },
+                { value: "addProject", label: "创建项目" },
+                { value: "addTask", label: "添加任务" },
+                { value: "scan", label: "扫一扫", show: $A.isEEUiApp },
+                { value: "setting", label: "设置" }
             ];
             // 管理员
             let adminApplyList = !this.userIsAdmin ? [] : [
-                { value: "okrAnalyze", label: "OKR结果分析", src: this.getLogoPath('okrAnalyze') },
-                { value: "ldap", label: "LDAP", src: this.getLogoPath('ldap') },
-                { value: "mail", label: "邮件", src: this.getLogoPath('mail') },
-                { value: "appPush", label: "APP推送", src: this.getLogoPath('apppush') },
-                { value: "allUser", label: "团队管理", src: this.getLogoPath('allUser') },
+                { value: "okrAnalyze", label: "OKR结果分析" },
+                { value: "ldap", label: "LDAP" },
+                { value: "mail", label: "邮件" },
+                { value: "appPush", label: "APP推送" },
+                { value: "allUser", label: "团队管理" }
             ].map((h) => {
                 h.type = 'admin';
                 return h;
@@ -362,12 +362,12 @@ export default {
                     this.workReportTabs = area == 'badge' ? 'receive' : 'my';
                     this.workReportShow = true;
                     break;
-                case 'ai':
+                case 'robot':
                     this.aibotType = 1;
                     this.aibotTabAction = "opanai";
                     this.aibotShow = true;
                     break;
-                case 'signIn':
+                case 'signin':
                     this.signInType = 1;
                     this.signInShow = true;
                     break;
