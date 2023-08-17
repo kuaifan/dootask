@@ -76,7 +76,7 @@ class WebSocketDialog extends AbstractModel
      */
     public function getDialogList($userid, $updated = "", $deleted = "")
     {
-        $builder = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.updated_at as user_at'])
+        $builder = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.color', 'u.updated_at as user_at'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('u.userid', $userid);
         if ($updated) {
@@ -193,6 +193,7 @@ class WebSocketDialog extends AbstractModel
             $this->has_image = $msgBuilder->clone()->whereMtype('image')->exists();
             $this->has_file = $msgBuilder->clone()->whereMtype('file')->exists();
             $this->has_link = $msgBuilder->clone()->whereLink(1)->exists();
+            $this->has_todo = $msgBuilder->clone()->where('todo', '>', 0)->exists();
         }
         return $this;
     }
@@ -389,7 +390,7 @@ class WebSocketDialog extends AbstractModel
                 case 'all':
                     throw new ApiException('当前会话全员禁言');
                 case 'user':
-                    if (!User::find($userid)?->checkAdmin()) {
+                    if (!User::find($userid)?->isAdmin()) {
                         throw new ApiException('当前会话禁言');
                     }
             }
@@ -555,7 +556,7 @@ class WebSocketDialog extends AbstractModel
             return $dialogUser;
         }
         if ($receiver > 0 && $user->isTemp()) {
-            throw new ApiException('无法发起会话');
+            throw new ApiException('无法发起会话，请联系管理员。');
         }
         return AbstractModel::transaction(function () use ($receiver, $user) {
             $dialog = self::createInstance([

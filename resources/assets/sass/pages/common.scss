@@ -690,6 +690,24 @@ body {
             }
         }
     }
+
+    @media (max-width: 576px) {
+        &.lr,
+        &.auto {
+            > ul {
+                > li:not(.search-button) {
+
+                    .search-content {
+
+                        .ivu-input-wrapper,
+                        .ivu-select {
+                            width: auto;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 .search-expand {
@@ -757,4 +775,21 @@ body {
 .login-mode-leave-to {
     transform: translate(100%, 0);
     opacity: 0;
+}
+
+// 全局返回按钮 
+.common-nav-back{
+    cursor: pointer;
+    padding-right: 10px;
+    &.portrait{
+        display: none;
+    }
+    .taskfont{
+        font-size: 26px;
+    }
+}
+body.window-portrait {
+    .common-nav-back{
+        display: block;
+    }
 }

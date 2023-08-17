@@ -32,13 +32,31 @@ export default {
         previewImageList(l) {
             if (l.length > 0) {
                 if ($A.isEEUiApp) {
-                    const position = Math.min(Math.max(this.$store.state.previewImageIndex, 0), this.$store.state.previewImageList.length - 1)
-                    const paths = l.map(item => {
+                    let position = Math.min(Math.max(this.$store.state.previewImageIndex, 0), this.$store.state.previewImageList.length - 1)
+                    let paths = l.map(item => {
                         if ($A.isJson(item)) {
                             return $A.thumbRestore(item.src);
                         }
                         return $A.thumbRestore(item)
                     })
+                    let max = 50;
+                    if (paths.length > max) {
+                        const newPaths = [];
+                        let i = 0;
+                        while (newPaths.length < max && i < max) {
+                            let front = position - i;
+                            let behind = position + i + 1;
+                            if (front >= 0) {
+                                newPaths.unshift(paths[front]);
+                            }
+                            if (behind < paths.length) {
+                                newPaths.push(paths[behind]);
+                            }
+                            i++;
+                        }
+                        position = newPaths.findIndex(item => item === paths[position]);
+                        paths = newPaths;
+                    }
                     $A.eeuiAppSendMessage({
                         action: 'picturePreview',
                         position,

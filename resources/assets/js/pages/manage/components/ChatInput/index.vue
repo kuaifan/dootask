@@ -10,15 +10,20 @@
                 placement="top-end"
                 popperClass="chat-quick-emoji-popover">
                 <div slot="reference"></div>
-                <ul class="chat-quick-emoji-wrapper">
+                <Scrollbar
+                    tag="ul"
+                    ref="emojiWrapper"
+                    :enable-x="true"
+                    :enable-y="false"
+                    class-name="chat-quick-emoji-wrapper scrollbar-hidden">
                     <li v-for="item in emojiQuickItems" @click="onEmojiQuick(item)">
                         <img :title="item.name" :alt="item.name" :src="item.src"/>
                     </li>
-                </ul>
+                </Scrollbar>
             </EPopover>
         </div>
 
-        <div class="chat-input-wrapper" @click.stop="focus">
+        <div ref="inputWrapper" class="chat-input-wrapper" @click.stop="focus">
             <!-- 回复、修改 -->
             <div v-if="quoteData" class="chat-quote">
                 <div v-if="quoteUpdate" class="quote-label">{{$L('编辑消息')}}</div>
@@ -239,6 +244,10 @@ export default {
             type: Boolean,
             default: false
         },
+        sendMenu: {
+            type: Boolean,
+            default: true
+        },
         options: {
             type: Object,
             default: () => ({})
@@ -293,6 +302,8 @@ export default {
 
             pasteClean: true,
 
+            changeLoad: 0,
+
             isSpecVersion: this.checkIOSVersion(),
 
             emojiTimer: null,
@@ -343,6 +354,8 @@ export default {
                 }
             }
         }
+        //
+        $A.loadScript('js/emoticon.all.js')
     },
     beforeDestroy() {
         if (this.quill) {
@@ -549,12 +562,13 @@ export default {
                 }
             }
             if (val) {
-                let text = this.value.replace(/&nbsp;/g," ")
-                text = text.replace(/<[^>]+>/g, "")
+                let text = this.value
+                    .replace(/&nbsp;/g," ")
+                    .replace(/<[^>]+>/g, "")
                 if (text
                     && text.indexOf(" ") === -1
                     && text.length >= 1
-                    && text.length <= 4) {
+                    && text.length <= 8) {
                     this.emojiQuickKey = text;
                 } else {
                     this.emojiQuickKey = "";
@@ -711,8 +725,13 @@ export default {
 
             // Update model if text changes
             this.quill.on('text-change', _ => {
+                this.changeLoad++
                 this.textTimer && clearTimeout(this.textTimer)
                 this.textTimer = setTimeout(_ => {
+<<<<<<< HEAD
+=======
+                    this.changeLoad--
+>>>>>>> pro
                     if (this.maxlength > 0 && this.quill.getLength() > this.maxlength) {
                         this.quill.deleteText(this.maxlength, this.quill.getLength());
                     }
@@ -871,30 +890,46 @@ export default {
             }
             this.emojiTimer && clearTimeout(this.emojiTimer)
             this.emojiTimer = setTimeout(_ => {
-                text = text.replace(/&nbsp;/g," ")
-                text = text.replace(/<[^>]+>/g, "")
+                if (/<img/i.test(text)) {
+                    this.emojiQuickShow = false
+                    return
+                }
+                text = text
+                    .replace(/&nbsp;/g," ")
+                    .replace(/<[^>]+>/g, "")
                 if (text
                     && text.indexOf(" ") === -1
                     && text.length >= 1
-                    && text.length <= 4
+                    && text.length <= 8
                     && $A.isArray(window.emoticonData)) {
                     // 显示快捷选择表情窗口
                     this.emojiQuickItems = [];
-                    let baseUrl = $A.apiUrl("../images/emoticon")
+                    const baseUrl = $A.apiUrl("../images/emoticon")
                     window.emoticonData.some(data => {
-                        let item = data.list.find(d => $A.strExists(d.name + (d.key ? ` ${d.key}` : ''), text))
-                        if (item) {
-                            this.emojiQuickItems.push(Object.assign(item, {
-                                type: `emoticon`,
-                                asset: `images/emoticon/${data.path}/${item.path}`,
-                                src: `${baseUrl}/${data.path}/${item.path}`
-                            }))
-                            if (this.emojiQuickItems.length >= 3) {
-                                return true
+                        let j = 0
+                        data.list.some(item => {
+                            const arr = [item.name]
+                            if (item.key) {
+                                arr.push(...(`${item.key}`).split(" "))
                             }
+                            if (arr.includes(text)) {
+                                this.emojiQuickItems.push(Object.assign(item, {
+                                    type: `emoticon`,
+                                    asset: `images/emoticon/${data.path}/${item.path}`,
+                                    name: item.name,
+                                    src: `${baseUrl}/${data.path}/${item.path}`
+                                }))
+                                if (++j >= 2) {
+                                    return true
+                                }
+                            }
+                        })
+                        if (this.emojiQuickItems.length >= 20) {
+                            return true
                         }
                     });
                     if (this.emojiQuickItems.length > 0) {
+                        this.$refs.emojiWrapper.$el.style.maxWidth = `${Math.min(500, this.$refs.inputWrapper.clientWidth)}px`
                         this.$nextTick(_ => {
                             this.emojiQuickShow = true
                             this.$refs.emojiQuickRef.updatePopper()
@@ -908,7 +943,7 @@ export default {
 
         getText() {
             if (this.quill) {
-                return this.quill.getText()
+                return `${this.quill.getText()}`.replace(/^\s+|\s+$/g, "")
             }
             return "";
         },
@@ -941,8 +976,17 @@ export default {
         },
 
         onClickEditor() {
-            this.$store.state.messengerSearchKey = {dialog: '', contacts: ''}
+            this.clearSearchKey()
             this.updateEmojiQuick(this.value)
+        },
+
+        clearSearchKey() {
+            if (this.$parent.$options.name === 'DialogWrapper' && (this.$store.state.messengerSearchKey.dialog != '' || this.$store.state.messengerSearchKey.contacts != '')) {
+                setTimeout(_ => {
+                    this.$parent.onActive();
+                }, 10)
+            }
+            this.$store.state.messengerSearchKey = {dialog: '', contacts: ''}
         },
 
         focus() {
@@ -996,21 +1040,23 @@ export default {
         },
 
         longSend() {
-            if (this.sendClass === 'recorder') {
+            if (this.sendClass === 'recorder' || !this.sendMenu) {
                 return;
             }
             this.showMenu = true;
         },
 
         onSend(type) {
-            this.hidePopover('send')
-            this.rangeIndex = 0
-            this.$store.state.messengerSearchKey = {dialog: '', contacts: ''}
-            if (type) {
-                this.$emit('on-send', null, type)
-            } else {
-                this.$emit('on-send')
-            }
+            setTimeout(_ => {
+                this.hidePopover('send')
+                this.rangeIndex = 0
+                this.clearSearchKey()
+                if (type) {
+                    this.$emit('on-send', null, type)
+                } else {
+                    this.$emit('on-send')
+                }
+            }, this.changeLoad > 0 ? 100 : 0)
         },
 
         startRecord() {
@@ -1274,6 +1320,20 @@ export default {
                     this.mentionMode = "user-mention";
                     const atCallback = (list) => {
                         this.getMoreUser(searchTerm, list.map(item => item.id)).then(moreUser => {
+                            // 会话以外成员 排序 -> 前5名为最近联系的人
+                            let cacheDialogs = this.cacheDialogs.filter((h, index) => h.type == "user" && h.bot == 0 && h.last_at)
+                            cacheDialogs.sort((a, b) => a.last_at > b.last_at ? -1 : (a.last_at < b.last_at ? 1 : 0));
+                            cacheDialogs = cacheDialogs.filter((h, index) => index < 5)
+                            moreUser.forEach(user => {
+                                user.last_at = "1990-01-01 00:00:00";
+                                cacheDialogs.forEach(dialog => {
+                                    if (dialog.dialog_user?.userid == user.id) {
+                                        user.last_at = dialog.last_at;
+                                    }
+                                })
+                            })
+                            moreUser.sort((a, b) => a.last_at > b.last_at ? -1 : (a.last_at < b.last_at ? 1 : 0));
+                            // 
                             this.userList = list
                             this.userCache = [];
                             if (moreUser.length > 0) {

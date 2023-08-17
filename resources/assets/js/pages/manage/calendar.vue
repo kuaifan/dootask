@@ -4,6 +4,7 @@
         <div class="calendar-head">
             <div class="calendar-titbox">
                 <div class="calendar-title">
+                    <div class="common-nav-back portrait" @click="goBack()"><i class="taskfont">&#xe676;</i></div>
                     <h1>{{rangeText}}</h1>
                 </div>
                 <ButtonGroup class="calendar-arrow" size="small">
@@ -156,7 +157,7 @@ export default {
                 if (!task.end_at) {
                     return false;
                 }
-                return task.owner;
+                return task.owner == 1;
             }
             let array = cacheTasks.filter(task => filterTask(task));
             if (taskCompleteTemps.length > 0) {

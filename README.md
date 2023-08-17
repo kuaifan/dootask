@@ -11,7 +11,7 @@ Group No.: `546574618`
 
 ## Setup
 
-- `Docker` & `Docker Compose v2.0+` must be installed
+- `Docker v20.10+` & `Docker Compose v2.0+` must be installed
 - System: `Centos/Debian/Ubuntu/macOS`
 - Hardware suggestion: 2 cores and above 4G memory
 

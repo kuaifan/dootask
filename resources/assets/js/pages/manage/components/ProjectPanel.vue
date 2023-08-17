@@ -131,7 +131,7 @@
                                     </EDropdownItem>
                                     <EDropdownItem v-for="(c, k) in $store.state.columnColorList" :key="k" :divided="k==0" :command="c">
                                         <div class="item">
-                                            <i class="taskfont" :style="{color:c.color}" v-html="c.color == column.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
+                                            <i class="taskfont" :style="{color:c.color||'#ddd'}" v-html="c.color == column.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
                                         </div>
                                     </EDropdownItem>
                                 </EDropdownMenu>
@@ -387,24 +387,26 @@
             <Form :model="inviteData" label-width="auto" @submit.native.prevent>
                 <FormItem :label="$L('链接地址')">
                     <Input ref="inviteInput" v-model="inviteData.url" type="textarea" :rows="3" @on-focus="inviteFocus" readonly/>
-                    <div class="form-tip">{{$L('可通过此链接直接加入项目。')}}</div>
+                    <div class="form-tip">
+                        {{$L('可通过此链接直接加入项目。')}}
+                        <Poptip
+                            confirm
+                            placement="bottom"
+                            :ok-text="$L('确定')"
+                            :cancel-text="$L('取消')"
+                            @on-ok="inviteGet(true)"
+                            transfer>
+                            <div slot="title">
+                                <p><strong>{{$L('注意：刷新将导致原来的邀请链接失效！')}}</strong></p>
+                            </div>
+                            <a href="javascript:void(0)">{{$L('刷新链接')}}</a>
+                        </Poptip>
+                    </div>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="inviteShow=false">{{$L('取消')}}</Button>
-                <Poptip
-                    confirm
-                    placement="bottom"
-                    style="margin-left:8px"
-                    :ok-text="$L('确定')"
-                    :cancel-text="$L('取消')"
-                    @on-ok="inviteGet(true)"
-                    transfer>
-                    <div slot="title">
-                        <p><strong>{{$L('注意：刷新将导致原来的邀请链接失效！')}}</strong></p>
-                    </div>
-                    <Button type="primary" :loading="inviteLoad > 0">{{$L('刷新')}}</Button>
-                </Poptip>
+                <Button type="primary" :loading="inviteLoad > 0" @click="inviteCopy">{{$L('复制')}}</Button>
             </div>
         </Modal>
 
@@ -641,7 +643,7 @@ export default {
         allTask() {
             const {cacheTasks, projectId} = this;
             return cacheTasks.filter(task => {
-                if (task.archived_at) {
+                if (task.archived_at || !task.created_at) {
                     return false;
                 }
                 return task.project_id == projectId
@@ -1035,7 +1037,9 @@ export default {
             else if (command.name) {
                 this.updateColumn(column, {
                     color: command.color
-                }).catch($A.modalError);
+                }).catch(e => {
+                    $A.modalError(e)
+                });
             }
         },
 
@@ -1367,6 +1371,7 @@ export default {
             if (!this.inviteData.url) {
                 return;
             }
+            this.inviteFocus();
             this.$copyText(this.inviteData.url).then(_ => {
                 $A.messageSuccess('复制成功');
             }).catch(_ => {
@@ -1375,7 +1380,9 @@ export default {
         },
 
         inviteFocus() {
-            this.$refs.inviteInput.focus({cursor:'all'});
+            this.$nextTick(_ => {
+                this.$refs.inviteInput.focus({cursor:'all'});
+            });
         },
 
         toggleCompleted() {
@@ -1384,6 +1391,10 @@ export default {
 
         workflowBeforeClose() {
             return new Promise(resolve => {
+                if (!this.$refs.workflow) {
+                    resolve();
+                    return;
+                }
                 if (!this.$refs.workflow.existDiff()) {
                     resolve()
                     return
@@ -1413,7 +1424,7 @@ export default {
                     return false;
                 }
             }
-            return task.owner;
+            return task.owner == 1;
         },
 
         helpFilter(task, chackCompleted = true) {

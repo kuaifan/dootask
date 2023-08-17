@@ -1,6 +1,6 @@
 <template>
     <div class="dialog-respond">
-        <div class="respond-title"><em>{{respondData.symbol}}</em>{{$L('回应详情')}} ({{respondData.userids.length}})</div>
+        <div class="respond-title"><em class="no-dark-content">{{respondData.symbol}}</em>{{$L('回应详情')}} ({{respondData.userids.length}})</div>
 
         <div class="respond-user">
             <ul>

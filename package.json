@@ -1,6 +1,6 @@
 {
     "name": "DooTask",
-    "version": "0.27.46",
+    "version": "0.30.13",
     "description": "DooTask is task management system.",
     "scripts": {
         "start": "./cmd dev",
@@ -26,7 +26,7 @@
         "css-loader": "^6.7.2",
         "dexie": "^3.2.3",
         "echarts": "^5.2.2",
-        "element-sea": "^2.15.10-3",
+        "element-sea": "^2.15.10-6",
         "file-loader": "^6.2.0",
         "highlight.js": "^11.7.0",
         "inquirer": "^8.2.0",
@@ -55,7 +55,7 @@
         "stylus-loader": "^7.1.0",
         "tinymce": "^5.10.3",
         "tui-calendar-hi": "^1.15.1-5",
-        "view-design-hi": "^4.7.0-47",
+        "view-design-hi": "^4.7.0-48",
         "vite": "^2.9.15",
         "vite-plugin-file-copy": "^1.0.0",
         "vite-plugin-require": "^1.1.10",
@@ -68,7 +68,7 @@
         "vue-resize-observer": "^2.0.16",
         "vue-router": "^3.6.5",
         "vue-template-compiler": "~2.6.14",
-        "vue-virtual-scroll-list-hi": "^2.3.4-6",
+        "vue-virtual-scroll-list-hi": "^2.3.5-3",
         "vuedraggable": "^2.24.3",
         "vuex": "^3.6.2"
     },

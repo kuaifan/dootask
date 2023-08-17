@@ -363,15 +363,16 @@ class ProjectTask extends AbstractModel
         $content    = $data['content'];
         $times      = $data['times'];
         $owner      = $data['owner'];
-        $add_assist = intval($data['add_assist']);
+        $add_assist = intval($data['add_assist']);  // 将自己添加到参与者
+        $assist     = $data['assist'];              // 参与者，此项设置时 add_assist 无效
         $subtasks   = $data['subtasks'];
         $p_level    = intval($data['p_level']);
         $p_name     = $data['p_name'];
         $p_color    = $data['p_color'];
         $top        = intval($data['top']);
         $userid     = User::userid();
-        $is_all_visible = $data['visibility_appoint'];
-        $visibility_userids = $data['visibility_appointor'];
+        $is_all_visible = isset($data['visibility_appoint']) ? $data['visibility_appoint'] : $data['is_all_visible'];
+        $visibility_userids = $data['visibility_appointor'] ?: [];
         //
         if (ProjectTask::whereProjectId($project_id)
                 ->whereNull('project_tasks.complete_at')
@@ -400,7 +401,7 @@ class ProjectTask extends AbstractModel
             'p_level' => $p_level,
             'p_name' => $p_name,
             'p_color' => $p_color,
-            'is_all_visible' => $is_all_visible
+            'is_all_visible' => $is_all_visible ?: 1
         ]);
         if ($content) {
             $task->desc = Base::getHtml($content, 100);
@@ -438,9 +439,12 @@ class ProjectTask extends AbstractModel
         }
         $owner = $tmpArray;
         // 协助人员
-        $assist = [];
-        if (!in_array($userid, $owner) && $add_assist) {
-            $assist = [$userid];
+        $assist = is_array($assist) ? $assist : [];
+        if (empty($assist)) {
+            // 添加自己
+            if (!in_array($userid, $owner) && $add_assist) {
+                $assist = [$userid];
+            }
         }
         // 创建人
         $task->userid = $userid;
@@ -614,6 +618,9 @@ class ProjectTask extends AbstractModel
                         $data['assist'] = array_values(array_unique(array_diff($data['assist'], $data['owner'])));
                     }
                 }
+                if ($newFlowItem->columnid && ProjectColumn::whereProjectId($this->project_id)->whereId($newFlowItem->columnid)->exists()) {
+                    $data['column_id'] = $newFlowItem->columnid;
+                }
                 $this->flow_item_id = $newFlowItem->id;
                 $this->flow_item_name = $newFlowItem->status . "|" . $newFlowItem->name;
                 $this->addLog("修改{任务}状态", [
@@ -718,6 +725,7 @@ class ProjectTask extends AbstractModel
             if (Arr::exists($data, 'is_all_visible') || Arr::exists($data, 'visibility_appointor')) {
                 if (Arr::exists($data, 'is_all_visible')) {
                     ProjectTask::whereId($data['task_id'])->update(['is_all_visible' => $data["is_all_visible"]]);
+                    ProjectTask::whereParentId($data['task_id'])->update(['is_all_visible' => $data["is_all_visible"]]);
                 }
                 ProjectTaskUser::whereTaskId($data['task_id'])->whereOwner(2)->delete();
                 if (Arr::exists($data, 'visibility_appointor')) {

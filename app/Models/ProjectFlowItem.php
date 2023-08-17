@@ -16,6 +16,7 @@ use App\Module\Base;
  * @property array $userids 状态负责人ID
  * @property string|null $usertype 流转模式
  * @property int|null $userlimit 限制负责人
+ * @property int|null $columnid 对应的项目列表
  * @property int|null $sort 排序
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -23,6 +24,7 @@ use App\Module\Base;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem query()
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereColumnid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereFlowId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereId($value)

@@ -94,16 +94,19 @@
     --header 'token: <span style="color:#84c56a">{机器人Token}</span>' \
     --form 'dialog_id="<span style="color:#84c56a">{对话ID}</span>"' \
     --form 'text="<span style="color:#84c56a">{消息内容}</span>"'
-    --form 'text_type="<span style="color:#84c56a">[md|html]</span>"'
+    --form 'text_type="<span style="color:#84c56a">[html|md]</span>"'
     --form 'silence="<span style="color:#84c56a">[yes|no]</span>"'
+    --form 'reply_id="<span style="color:#84c56a">[回复指定消息ID]</span>"'
 
     <b>Webhook说明：</b>
-    机器人收到个人对话消息后会将消息POST推送到Webhook地址，请求超时为10秒，请求参数如下：
+    机器人收到消息后会将消息POST推送到Webhook地址，请求超时为10秒，请求参数如下：
     <span style="color:#84c56a">text</span>: 消息文本
     <span style="color:#84c56a">token</span>: 机器人Token
     <span style="color:#84c56a">dialog_id</span>: 对话ID
+    <span style="color:#84c56a">dialog_type</span>: 对话类型
     <span style="color:#84c56a">msg_id</span>: 消息ID
     <span style="color:#84c56a">msg_uid</span>: 消息发送人ID
+    <span style="color:#84c56a">mention</span>: 是否被@到
     <span style="color:#84c56a">bot_uid</span>: 机器人ID
     <span style="color:#84c56a">version</span>: 系统版本
 @elseif ($type === 'notice')
@@ -117,16 +120,16 @@
         @endif
         <span>开始时间：{{$data->start_time}}</span>
         <span>结束时间：{{$data->end_time}}</span>
-    </div><div class="btn-raw">
+    </div><div class="btn-raw no-dark-content">
         @if ($action === 'pass')
-            <Button type="button" class="ivu-btn" style="flex: 1;">已同意</Button>
+            <button class="ivu-btn">已同意</button>
         @elseif ($action === 'refuse')
-            <Button type="button" class="ivu-btn" style="flex: 1;">已拒绝</Button>
+            <button class="ivu-btn">已拒绝</button>
         @elseif ($action === 'withdraw')
-            <Button type="button" class="ivu-btn" style="flex: 1;">已撤销</Button>
+            <button class="ivu-btn">已撤销</button>
         @else
-            <Button type="button" class="ivu-btn ivu-btn-primary" style="flex: 1;">同意</Button>
-            <Button type="button" class="ivu-btn ivu-btn-error" style="flex: 1;">拒绝</Button>
+            <button class="ivu-btn ivu-btn-primary">同意</button>
+            <button class="ivu-btn ivu-btn-error">拒绝</button>
         @endif
     </div></span>
 @elseif ($type === 'approve_notifier')
@@ -138,15 +141,27 @@
         @endif
         <span>开始时间：{{$data->start_time}}</span>
         <span>结束时间：{{$data->end_time}}</span>
-    </div><div class="btn-raw">
+    </div><div class="btn-raw no-dark-content">
         @if ($is_finished == 1)
-        <Button type="button" class="ivu-btn" style="flex: 1;">已同意</Button>
+        <button class="ivu-btn">已同意</button>
         @else
-        <Button type="button" class="ivu-btn" style="flex: 1;">查看详情</Button>
+        <button class="ivu-btn">查看详情</button>
+        @endif
+    </div></span>
+@elseif ($type === 'approve_comment_notifier')
+    <span class="open-approve-details" data-id="{{$data->id}}"><b>{{$data->comment_nickname}}评论了此审批</b>
+    <div class="cause"><span>申请人：<span style="color:#84c56a">{{'@'}}{{$data->nickname}}</span> {{$data->department}}</span>
+        <b>评论内容</b>
+        <span>{{$data->comment_content}}</span>
+    </div><div class="btn-raw no-dark-content">
+        @if ($is_finished == 1)
+        <button class="ivu-btn">已同意</button>
+        @else
+        <button class="ivu-btn">查看详情</button>
         @endif
     </div></span>
 @elseif ($type === 'approve_submitter')
-    <span class="open-approve-details" data-id="{{$data->id}}"><b> @if ($action === 'pass')您发起的「{{$data->proc_def_name}}」已通过 @else您发起的「{{$data->proc_def_name}}」被{{$data->nickname}}拒绝 @endif</b>
+    <span class="open-approve-details" data-id="{{$data->id}}"><b>@if ($action === 'pass')您发起的「{{$data->proc_def_name}}」已通过 @else您发起的「{{$data->proc_def_name}}」被{{$data->nickname}}拒绝 @endif</b>
     <div class="cause"><span>申请人：<span style="color:#84c56a">{{'@'}}{{$data->start_nickname}}</span> {{$data->department}}</span>
         <b>审批事由</b>
         @if ($data->type)
@@ -154,13 +169,13 @@
         @endif
         <span>开始时间：{{$data->start_time}}</span>
         <span>结束时间：{{$data->end_time}}</span>
-    </div><div class="btn-raw">
+    </div><div class="btn-raw no-dark-content">
     @if ($action === 'pass')
-            <Button type="button" class="ivu-btn" style="flex: 1;">已同意</Button>
+            <button class="ivu-btn">已同意</button>
         @elseif ($action === 'refuse')
-            <Button type="button" class="ivu-btn" style="flex: 1;">已拒绝</Button>
+            <button class="ivu-btn">已拒绝</button>
         @elseif ($action === 'withdraw')
-            <Button type="button" class="ivu-btn" style="flex: 1;">已撤销</Button>
+            <button class="ivu-btn">已撤销</button>
         @endif
     </div></span>
 @else

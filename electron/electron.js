@@ -11,6 +11,7 @@ const crc = require('crc');
 const zlib = require('zlib');
 const utils = require('./utils');
 const config = require('./package.json');
+const electronMenu = require("./electron-menu");
 const spawn = require("child_process").spawn;
 
 const isMac = process.platform === 'darwin'
@@ -58,6 +59,7 @@ function createMainWindow() {
         openExternal(url)
         return {action: 'deny'}
     })
+    electronMenu.webContentsMenu(mainWindow.webContents)
 
     if (devloadUrl) {
         mainWindow.loadURL(devloadUrl).then(_ => {
@@ -77,7 +79,7 @@ function createMainWindow() {
 
     mainWindow.on('close', event => {
         if (!willQuitApp) {
-            utils.onBeforeUnload(event).then(() => {
+            utils.onBeforeUnload(event, mainWindow).then(() => {
                 if (process.platform === 'win32') {
                     mainWindow.hide()
                 } else if (process.platform === 'darwin') {
@@ -137,8 +139,8 @@ function createSubWindow(args) {
 
         browser.on('close', event => {
             if (!willQuitApp) {
-                utils.onBeforeUnload(event).then(() => {
-                    event.sender.destroy()
+                utils.onBeforeUnload(event, browser).then(() => {
+                    browser.destroy()
                 })
             }
         })
@@ -158,17 +160,55 @@ function createSubWindow(args) {
         openExternal(url)
         return {action: 'deny'}
     })
+    electronMenu.webContentsMenu(browser.webContents)
 
+    const hash = args.hash || args.path;
     if (devloadUrl) {
-        browser.loadURL(devloadUrl + '#' + (args.hash || args.path)).then(_ => {
+        browser.loadURL(devloadUrl + '#' + hash).then(_ => {
 
         })
     } else {
         browser.loadFile('./public/index.html', {
-            hash: args.hash || args.path
+            hash
         }).then(_ => {
 
         })
+    }
+}
+
+/**
+ * 更新子窗口
+ * @param browser
+ * @param args
+ */
+function updateSubWindow(browser, args) {
+    if (!args) {
+        return;
+    }
+
+    if (!utils.isJson(args)) {
+        args = {path: args, name: null}
+    }
+
+    const hash = args.hash || args.path;
+    if (hash) {
+        if (devloadUrl) {
+            browser.loadURL(devloadUrl + '#' + hash).then(_ => {
+
+            })
+        } else {
+            browser.loadFile('./public/index.html', {
+                hash
+            }).then(_ => {
+
+            })
+        }
+    }
+    if (args.name) {
+        const er = subWindow.find(item => item.browser == browser);
+        if (er) {
+            er.name = args.name;
+        }
     }
 }
 
@@ -258,6 +298,17 @@ app.on('browser-window-focus', () => {
 })
 
 /**
+ * 设置菜单语言包
+ * @param args {path}
+ */
+ipcMain.on('setMenuLanguage', (event, args) => {
+    if (utils.isJson(args)) {
+        electronMenu.setLanguage(args)
+    }
+    event.returnValue = "ok"
+})
+
+/**
  * 打开文件
  * @param args {path}
  */
@@ -280,6 +331,16 @@ ipcMain.on('windowQuit', (event) => {
  */
 ipcMain.on('windowRouter', (event, args) => {
     createSubWindow(args)
+    event.returnValue = "ok"
+})
+
+/**
+ * 更新路由窗口
+ * @param args {?name, ?path} // name: 不是要更改的窗口名，是要把窗口名改成什么， path: 地址
+ */
+ipcMain.on('updateRouter', (event, args) => {
+    const browser = BrowserWindow.fromWebContents(event.sender);
+    updateSubWindow(browser, args)
     event.returnValue = "ok"
 })
 
@@ -472,6 +533,28 @@ ipcMain.on('copyBase64Image', (event, args) => {
         const img = nativeImage.createFromDataURL(base64)
         clipboard.writeImage(img)
     }
+    event.returnValue = "ok"
+})
+
+/**
+ * 复制图片根据坐标
+ * @param args
+ */
+ipcMain.on('copyImageAt', (event, args) => {
+    try {
+        event.sender.copyImageAt(args.x, args.y);
+    } catch (e) {
+        // log.error(e)
+    }
+    event.returnValue = "ok"
+})
+
+/**
+ * 保存图片
+ * @param args
+ */
+ipcMain.on('saveImageAt', async (event, args) => {
+    await electronMenu.saveImageAs(args.url, args.params)
     event.returnValue = "ok"
 })
 

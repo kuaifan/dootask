@@ -979,10 +979,14 @@ class ProjectController extends AbstractController
         $builder->leftJoin('project_users', function ($query) {
             $query->on('project_tasks.project_id', '=', 'project_users.project_id')->where('project_users.owner', 1);
         });
+        $builder->leftJoin('project_task_users as project_p_task_users', function ($query) {
+            $query->on('project_p_task_users.task_pid', '=', 'project_tasks.parent_id');
+        });
         $builder->where(function ($query) use ($userid) {
             $query->where("project_tasks.is_all_visible", 1);
             $query->orWhere("project_users.userid", $userid);
             $query->orWhere("project_task_users.userid", $userid);
+            $query->orWhere("project_p_task_users.userid", $userid);
         });
         // 优化子查询汇总 
         $builder->leftJoinSub(function ($query) {
@@ -991,10 +995,10 @@ class ProjectController extends AbstractController
                 ->groupBy('task_id');
         }, 'task_files', 'task_files.task_id', '=', 'project_tasks.id');
         $builder->leftJoinSub(function ($query) {
-            $query->select('id', DB::raw('count(*) as msg_num'))
-                ->from('web_socket_dialogs')
-                ->groupBy('id');
-        }, 'socket_dialogs', 'socket_dialogs.id', '=', 'project_tasks.id');
+            $query->select('dialog_id', DB::raw('count(*) as msg_num'))
+                ->from('web_socket_dialog_msgs')
+                ->groupBy('dialog_id');
+        }, 'socket_dialog_msgs', 'socket_dialog_msgs.dialog_id', '=', 'project_tasks.dialog_id');
         $builder->leftJoinSub(function ($query) {
             $query->select('parent_id', DB::raw('count(*) as sub_num, sum(CASE WHEN complete_at IS NOT NULL THEN 1 ELSE 0 END) sub_complete') )
                 ->from('project_tasks')
@@ -1003,7 +1007,7 @@ class ProjectController extends AbstractController
         // 给前缀“_”是为了不触发获取器
         $prefix = DB::getTablePrefix();
         $builder->selectRaw("{$prefix}task_files.file_num as _file_num");
-        $builder->selectRaw("{$prefix}socket_dialogs.msg_num as _msg_num");
+        $builder->selectRaw("{$prefix}socket_dialog_msgs.msg_num as _msg_num");
         $builder->selectRaw("{$prefix}sub_task.sub_num as _sub_num");
         $builder->selectRaw("{$prefix}sub_task.sub_complete as _sub_complete");
         $builder->selectRaw("
@@ -1044,7 +1048,63 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/export          19. 导出任务（限管理员）
+     * @api {get} api/project/task/easylists          19. 任务列表-简单的
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__easylists
+
+     * @apiParam {String} [taskid]         排除的任务ID
+     * @apiParam {String} [userid]         用户ID（如：1,2）
+     * @apiParam {String} [timerange]      时间范围（如：2022-03-01 12:12:12,2022-05-01 12:12:12）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__easylists()
+    {
+        User::auth();
+        //
+        $taskid = trim(Request::input('taskid'));
+        $userid = Request::input('userid');
+        $timerange = Request::input('timerange');
+        // 
+        $list = ProjectTask::with(['taskUser'])
+            ->select('projects.name as project_name', 'project_tasks.id', 'project_tasks.name', 'project_tasks.start_at', 'project_tasks.end_at')
+            ->join('projects','project_tasks.project_id','=','projects.id')
+            ->leftJoin('project_task_users', function ($query) {
+                $query->on('project_tasks.id', '=', 'project_task_users.task_id')->where('project_task_users.owner', '=', 1);
+            })
+            ->whereIn('project_task_users.userid', is_array($userid) ? $userid : explode(',', $userid) )
+            ->when(!empty($timerange), function ($query) use ($timerange) {
+                if (!is_array($timerange)) {
+                    $timerange = explode(',', $timerange);
+                }
+                if (Base::isDateOrTime($timerange[0]) && Base::isDateOrTime($timerange[1])) {
+                    $query->where('project_tasks.start_at', '<=', Carbon::parse($timerange[1])->endOfDay());
+                    $query->where('project_tasks.end_at', '>=', Carbon::parse($timerange[0])->startOfDay());
+                }
+            })
+            ->when(!empty($taskid), function ($query) use ($taskid) {
+                $query->where('project_tasks.id', "!=", $taskid);
+            })
+            ->whereNull('complete_at')
+            ->distinct()
+            ->orderByDesc('project_tasks.id')
+            ->paginate(Base::getPaginate(200, 100));
+        // 
+        $list->transform(function ($customer) {
+            $customer->setAppends([]);
+            return $customer;
+        });
+        //
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
+     * @api {get} api/project/task/export          20. 导出任务（限管理员）
      *
      * @apiDescription 导出指定范围任务（已完成、未完成、已归档），返回下载地址，需要token身份
      * @apiVersion 1.0.0
@@ -1247,7 +1307,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/exportoverdue          20. 导出超期任务（限管理员）
+     * @api {get} api/project/task/exportoverdue          21. 导出超期任务（限管理员）
      *
      * @apiDescription 导出指定范围任务（已完成、未完成、已归档），返回下载地址，需要token身份
      * @apiVersion 1.0.0
@@ -1356,7 +1416,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/down          21. 下载导出的任务
+     * @api {get} api/project/task/down          22. 下载导出的任务
      *
      * @apiVersion 1.0.0
      * @apiGroup project
@@ -1382,7 +1442,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/one          22. 获取单个任务信息
+     * @api {get} api/project/task/one          23. 获取单个任务信息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1426,7 +1486,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/content          23. 获取任务详细描述
+     * @api {get} api/project/task/content          24. 获取任务详细描述
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1454,7 +1514,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/files          24. 获取任务文件列表
+     * @api {get} api/project/task/files          25. 获取任务文件列表
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1479,7 +1539,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/filedelete          25. 删除任务文件
+     * @api {get} api/project/task/filedelete          26. 删除任务文件
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1512,7 +1572,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/filedetail          26. 获取任务文件详情
+     * @api {get} api/project/task/filedetail          27. 获取任务文件详情
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1556,7 +1616,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/filedown          27. 下载任务文件
+     * @api {get} api/project/task/filedown          28. 下载任务文件
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1605,7 +1665,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/task/add          28. 添加任务
+     * @api {post} api/project/task/add          29. 添加任务
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1689,7 +1749,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/addsub          29. 添加子任务
+     * @api {get} api/project/task/addsub          30. 添加子任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1722,7 +1782,7 @@ class ProjectController extends AbstractController
             'column_id' => $task->column_id,
             'times' => [$task->start_at, $task->end_at],
             'owner' => [User::userid()],
-            'is_all_visible' => 2,
+            'is_all_visible' => $task->is_all_visible,
         ]);
         $data = ProjectTask::oneTask($task->id);
         $pushUserIds = ProjectTaskUser::whereTaskId($task->id)->pluck('userid')->toArray();
@@ -1734,7 +1794,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/task/update          30. 修改任务、子任务
+     * @api {post} api/project/task/update          31. 修改任务、子任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1833,7 +1893,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/dialog          31. 创建/获取聊天室
+     * @api {get} api/project/task/dialog          32. 创建/获取聊天室
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1882,7 +1942,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/archived          32. 归档任务
+     * @api {get} api/project/task/archived          33. 归档任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1924,7 +1984,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/remove          33. 删除任务
+     * @api {get} api/project/task/remove          34. 删除任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -1958,7 +2018,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/resetfromlog          34. 根据日志重置任务
+     * @api {get} api/project/task/resetfromlog          35. 根据日志重置任务
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -2017,7 +2077,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/flow          35. 任务工作流信息
+     * @api {get} api/project/task/flow          36. 任务工作流信息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2099,7 +2159,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/flow/list          36. 工作流列表
+     * @api {get} api/project/flow/list          37. 工作流列表
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2125,7 +2185,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/flow/save          37. 保存工作流
+     * @api {post} api/project/flow/save          38. 保存工作流
      *
      * @apiDescription 需要token身份（限：项目负责人）
      * @apiVersion 1.0.0
@@ -2159,7 +2219,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/flow/delete          38. 删除工作流
+     * @api {get} api/project/flow/delete          39. 删除工作流
      *
      * @apiDescription 需要token身份（限：项目负责人）
      * @apiVersion 1.0.0
@@ -2191,7 +2251,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/log/lists          39. 获取项目、任务日志
+     * @api {get} api/project/log/lists          40. 获取项目、任务日志
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2244,7 +2304,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/top          40. 项目置顶
+     * @api {get} api/project/top          41. 项目置顶
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0

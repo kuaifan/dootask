@@ -15,7 +15,7 @@
 .logs-layout{
   display: flex;
   align-items: flex-start;
-  height: 929px;
+  /* height: 929px; */
 }
 .logs-l{
   padding: 24px;
@@ -32,11 +32,6 @@
 }
 .logs-l-ul{
   width: 240px;
-}
-.l-ul-item{
-  padding: 9px 16px;
-  cursor: pointer;
-  height: 22px;
 }
 .l-ul-item.active .txt{
   color: var(--txt-theme-color);
@@ -56,11 +51,11 @@
 .logs-r{
   border-left: 1px solid var(--border-color);
   padding-left: 32px;
-  height: 929px;
-  overflow-y:scroll;
+  /* height: 929px; */
+  /* overflow-y:scroll; */
 }
 .logs-r::-webkit-scrollbar{
-  width: 0 !important 
+  width: 0 !important
 }
 .logs-h1{
   color: var(--text-color);
@@ -70,6 +65,8 @@
   font-size: 24px;
   line-height: 30px;
   color: var(--text-color);
+  padding-top: 15px;
+  box-sizing: border-box;
 }
 .r-ol-item{
   color: var(--txt-gray-color);
@@ -127,6 +124,18 @@
 .logs-t-768{
   display: none;
 }
-.filings{
-  border-top: 1px solid var(--border-color);
+
+.log-a{
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 9px 16px;
+    line-height: normal;
+}
+.logs-sticky{
+  position: sticky;
+  top: 80px;
+}
+.footer-layut{
+    border-top: var(--border-color) solid 1px;
 }

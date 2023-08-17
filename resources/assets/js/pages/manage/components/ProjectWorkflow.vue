@@ -80,12 +80,12 @@
                                                 <EDropdown
                                                     trigger="click"
                                                     class="more"
-                                                    :class="{opacity: item.userids.length > 0}"
+                                                    :class="{opacity: item.userids.length > 0 || item.columnid > 0}"
                                                     @command="onMore($event, item)">
                                                     <div class="more-icon">
-                                                        <EAvatar v-if="item.userids.length > 1" :size="20">{{item.userids.length}}</EAvatar>
-                                                        <UserAvatar v-else-if="item.userids.length > 0" :userid="item.userids[0]" :size="20" tooltipDisabled/>
-                                                        <Icon v-else type="ios-more" />
+                                                        <Badge :dot="item.userids.length > 0 || item.columnid > 0">
+                                                            <Icon type="ios-more" />
+                                                        </Badge>
                                                     </div>
                                                     <EDropdownMenu slot="dropdown" class="taskflow-config-more-dropdown-menu">
                                                         <EDropdownItem v-if="item.userids.length > 0" command="user">
@@ -95,8 +95,10 @@
                                                         </EDropdownItem>
                                                         <EDropdownItem command="user">
                                                             <div class="item">
-                                                                <Icon type="md-person" />
-                                                                {{$L('状态负责人')}}
+                                                                <Icon type="md-settings" />
+                                                                <Badge :dot="item.userids.length > 0 || item.columnid > 0">
+                                                                    {{$L('状态设置')}}
+                                                                </Badge>
                                                             </div>
                                                         </EDropdownItem>
                                                         <EDropdownItem command="name">
@@ -144,30 +146,53 @@
             <Button type="primary" @click="onCreate">{{$L('创建工作流')}}</Button>
         </div>
 
-        <!--状态负责人-->
+        <!--状态设置-->
         <Modal
             v-model="userShow"
-            :title="`${$L('状态负责人')} (${userData.name})`"
+            :styles="{
+                width: '90%',
+                maxWidth: '640px'
+            }"
+            :title="`${$L('状态设置')} (${settingData.name})`"
             :mask-closable="false">
-            <Form :model="userData" label-width="auto" @submit.native.prevent>
-                <FormItem prop="userids" :label="$L('状态负责人')">
-                    <UserSelect v-model="userData.userids" :project-id="projectId" :multiple-max="5" :title="$L('选择状态负责人')"/>
-                </FormItem>
-                <FormItem prop="usertype" :label="$L('流转模式')">
-                    <RadioGroup v-model="userData.usertype">
-                        <Radio label="add">{{$L('添加模式')}}</Radio>
-                        <Radio label="replace">{{$L('流转模式')}}</Radio>
-                        <Radio label="merge">{{$L('剔除模式')}}</Radio>
-                    </RadioGroup>
-                    <div v-if="userData.usertype=='replace'" class="form-tip">{{$L(`流转到【${userData.name}】时改变任务负责人为状态负责人，原本的任务负责人移至协助人员。`)}}</div>
-                    <div v-else-if="userData.usertype=='merge'" class="form-tip">{{$L(`流转到【${userData.name}】时改变任务负责人为状态负责人（并保留操作状态的人员），原本的任务负责人移至协助人员。`)}}</div>
-                    <div v-else class="form-tip">{{$L(`流转到【${userData.name}】时添加状态负责人至任务负责人。`)}}</div>
-                </FormItem>
-                <FormItem prop="userlimit" :label="$L('限制负责人')">
-                    <iSwitch v-model="userData.userlimit" :true-value="1" :false-value="0"/>
-                    <div v-if="userData.userlimit===1" class="form-tip">{{$L(`流转到【${userData.name}】时，[任务负责人] 和 [项目管理员] 可以修改状态。`)}}</div>
-                    <div v-else class="form-tip">{{$L(`流转到【${userData.name}】时，[任务负责人] 和 [项目管理员] 可以修改状态。`)}}</div>
-                </FormItem>
+            <Form :model="settingData" label-width="auto" @submit.native.prevent>
+                <div class="workflow-setting-box">
+                    <h3>{{ $L('状态负责人') }}</h3>
+                    <div class="form-box">
+                        <FormItem prop="userids" :label="$L('状态负责人')">
+                            <UserSelect v-model="settingData.userids" :project-id="projectId" :multiple-max="5" :title="$L('选择状态负责人')"/>
+                        </FormItem>
+                        <FormItem prop="usertype" :label="$L('流转模式')">
+                            <RadioGroup v-model="settingData.usertype">
+                                <Radio label="add">{{$L('添加模式')}}</Radio>
+                                <Radio label="replace">{{$L('流转模式')}}</Radio>
+                                <Radio label="merge">{{$L('剔除模式')}}</Radio>
+                            </RadioGroup>
+                            <div v-if="settingData.usertype=='replace'" class="form-tip">{{$L(`流转到【${settingData.name}】时改变任务负责人为状态负责人，原本的任务负责人移至协助人员。`)}}</div>
+                            <div v-else-if="settingData.usertype=='merge'" class="form-tip">{{$L(`流转到【${settingData.name}】时改变任务负责人为状态负责人（并保留操作状态的人员），原本的任务负责人移至协助人员。`)}}</div>
+                            <div v-else class="form-tip">{{$L(`流转到【${settingData.name}】时添加状态负责人至任务负责人。`)}}</div>
+                        </FormItem>
+                        <FormItem prop="userlimit" :label="$L('限制负责人')">
+                            <iSwitch v-model="settingData.userlimit" :true-value="1" :false-value="0"/>
+                            <div v-if="settingData.userlimit===1" class="form-tip">{{$L(`流转到【${settingData.name}】时，[任务负责人] 和 [项目管理员] 可以修改状态。`)}}</div>
+                            <div v-else class="form-tip">{{$L(`流转到【${settingData.name}】时，[任务负责人] 和 [项目管理员] 可以修改状态。`)}}</div>
+                        </FormItem>
+                    </div>
+                </div>
+                <div class="workflow-setting-box">
+                    <h3>{{ $L('关联列表') }}</h3>
+                    <div class="form-box">
+                        <FormItem prop="usertype" :label="$L('关联列表')">
+                            <Select v-model="settingData.columnid" :placeholder="$L('选择关联列表')" transfer>
+                                <Option v-for="(item, index) in columnList" :value="item.id" :key="index">{{ item.name }}</Option>
+                            </Select>
+                            <div class="form-tip">
+                                {{$L(`流转到【${settingData.name}】时自动将任务移动至关联列表。`)}}
+                                <a v-if="settingData.columnid" href="javascript:void(0)" @click="settingData.columnid=0">{{$L('取消关联')}}</a>
+                            </div>
+                        </FormItem>
+                    </div>
+                </div>
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="userShow=false">{{$L('取消')}}</Button>
@@ -180,6 +205,7 @@
 <script>
 import Draggable from "vuedraggable";
 import UserSelect from "../../../components/UserSelect.vue";
+import {mapState} from "vuex";
 
 export default {
     name: "ProjectWorkflow",
@@ -198,12 +224,32 @@ export default {
             openIndex: "",
 
             userShow: false,
-            userData: {},
+            settingData: {},
         }
     },
 
     mounted() {
 
+    },
+
+    computed: {
+        ...mapState(['cacheColumns']),
+
+        columnList({projectId, cacheColumns}) {
+            return cacheColumns.filter(({project_id}) => {
+                return project_id == projectId
+            }).sort((a, b) => {
+                if (a.sort != b.sort) {
+                    return a.sort - b.sort;
+                }
+                return a.id - b.id;
+            }).map(item => {
+                return {
+                    id: item.id,
+                    name: item.name,
+                }
+            });
+        }
     },
 
     watch: {
@@ -285,6 +331,7 @@ export default {
                         "userids": [],
                         "usertype": 'add',
                         "userlimit": 0,
+                        "columnid": 0,
                     },
                     {
                         "id": -11,
@@ -294,6 +341,7 @@ export default {
                         "userids": [],
                         "usertype": 'add',
                         "userlimit": 0,
+                        "columnid": 0,
                     },
                     {
                         "id": -12,
@@ -303,6 +351,7 @@ export default {
                         "userids": [],
                         "usertype": 'add',
                         "userlimit": 0,
+                        "columnid": 0,
                     },
                     {
                         "id": -13,
@@ -312,6 +361,7 @@ export default {
                         "userids": [],
                         "usertype": 'add',
                         "userlimit": 0,
+                        "columnid": 0,
                     },
                     {
                         "id": -14,
@@ -321,6 +371,7 @@ export default {
                         "userids": [],
                         "usertype": 'add',
                         "userlimit": 0,
+                        "columnid": 0,
                     }
                 ]
             })
@@ -367,11 +418,12 @@ export default {
         onMore(name, item) {
             switch (name) {
                 case "user":
-                    this.$set(this.userData, 'id', item.id);
-                    this.$set(this.userData, 'name', item.name);
-                    this.$set(this.userData, 'userids', item.userids);
-                    this.$set(this.userData, 'usertype', item.usertype);
-                    this.$set(this.userData, 'userlimit', item.userlimit);
+                    this.$set(this.settingData, 'id', item.id);
+                    this.$set(this.settingData, 'name', item.name);
+                    this.$set(this.settingData, 'userids', item.userids);
+                    this.$set(this.settingData, 'usertype', item.usertype);
+                    this.$set(this.settingData, 'userlimit', item.userlimit);
+                    this.$set(this.settingData, 'columnid', item.columnid);
                     this.userShow = true;
                     break;
 
@@ -388,11 +440,12 @@ export default {
         onUser() {
             this.userShow = false;
             this.list.some(data => {
-                let item = data.project_flow_item.find(item => item.id == this.userData.id)
+                let item = data.project_flow_item.find(item => item.id == this.settingData.id)
                 if (item) {
-                    this.$set(item, 'userids', this.userData.userids)
-                    this.$set(item, 'usertype', this.userData.usertype)
-                    this.$set(item, 'userlimit', this.userData.userlimit)
+                    this.$set(item, 'userids', this.settingData.userids)
+                    this.$set(item, 'usertype', this.settingData.usertype)
+                    this.$set(item, 'userlimit', this.settingData.userlimit)
+                    this.$set(item, 'columnid', this.settingData.columnid)
                 }
             })
         },
@@ -442,6 +495,7 @@ export default {
                         userids: [],
                         usertype: 'add',
                         userlimit: 0,
+                        columnid: 0,
                     })
                     data.project_flow_item.some(item => {
                         item.turns.push(id)

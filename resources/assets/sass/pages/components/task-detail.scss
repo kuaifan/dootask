@@ -1,18 +1,20 @@
 .task-detail {
     display: flex;
     flex-direction: column;
-    margin: 0 -32px 12px -10px;
-    padding: 0 22px 12px 0;
+    margin: 0 -32px 12px -15px;
+    padding: 0 22px 10px 0;
     min-height: 120px;
     .task-info {
         flex: 3;
         display: flex;
         flex-direction: column;
         position: relative;
+        z-index: 1;
         .head {
             display: flex;
             align-items: center;
             height: 42px;
+            margin-left: 5px;
             padding-bottom: 10px;
             color: #888888;
             position: relative;
@@ -149,6 +151,10 @@
             }
         }
         .scroller {
+            margin-right: -5px;
+            .scrollbar-content {
+                padding: 0 5px;
+            }
             .title {
                 margin-top: 18px;
                 .ivu-input {
@@ -241,7 +247,6 @@
                     }
                     &.user {
                         margin-top: 1px;
-                        cursor: pointer;
                     }
                     &.file {
                         margin-bottom: -3px;
@@ -262,9 +267,12 @@
                             .file-name {
                                 color: $primary-text-color;
                                 padding-left: 8px;
-                                overflow: hidden;
+                                word-break: break-all;
                                 text-overflow: ellipsis;
-                                white-space: nowrap;
+                                overflow: hidden;
+                                display: -webkit-box;
+                                -webkit-line-clamp: 1;
+                                -webkit-box-orient: vertical;
                             }
                             .file-size {
                                 flex-shrink: 0;
@@ -451,9 +459,12 @@
                     max-width: 100%;
                     .add-button {
                         > em {
-                            overflow: hidden;
+                            word-break: break-all;
                             text-overflow: ellipsis;
-                            white-space: nowrap;
+                            overflow: hidden;
+                            display: -webkit-box;
+                            -webkit-line-clamp: 1;
+                            -webkit-box-orient: vertical;
                         }
                     }
                 }
@@ -473,10 +484,12 @@
                 align-items: center;
                 margin-top: 6px;
                 height: 32px;
-                white-space: nowrap;
                 > i {
                     font-size: 14px;
                     padding-right: 8px;
+                }
+                > span {
+                    white-space: nowrap;
                 }
                 > em {
                     font-style: normal;
@@ -508,10 +521,12 @@
         justify-content: flex-end;
         margin-top: 22px;
         position: relative;
+        z-index: 1;
         .head {
             display: flex;
             align-items: center;
             height: 42px;
+            margin-left: 5px;
             padding-bottom: 10px;
             color: #888888;
             position: relative;
@@ -598,20 +613,20 @@
             .no-tip {
                 flex: 1;
                 display: none;
-                margin-left: 0;
+                margin-left: 5px;
             }
             .no-input {
                 position: relative;
-                margin: 22px 0 0 0;
+                margin: 22px 0 0 5px;
                 background-color: #F4F5F7;
-                padding: 10px 4px 10px 6px;
+                padding: 10px 0;
                 border-radius: 10px;
                 .chat-input-box {
                     .chat-input-quick-emoji {
                         right: 0;
                     }
                     .chat-input-wrapper {
-                        padding: 0;
+                        padding: 0 4px 0 6px;
                         background-color: #F4F5F7;
                         .chat-toolbar {
                             > li {
@@ -638,7 +653,7 @@
                     content: "";
                     position: absolute;
                     top: 0;
-                    left: 0;
+                    left: 5px;
                     right: 0;
                     bottom: 0;
                     border: 2px dashed #7b7b7b;
@@ -652,9 +667,9 @@
             }
         }
         .project-log {
-            margin-left: 0;
+            margin-left: 5px;
             .logs-activity {
-                padding: 22px 0 0;
+                padding: 13px 0 0;
                 > li {
                     list-style: none;
                     padding-top: 0;
@@ -696,6 +711,7 @@
         position: absolute;
         top: 50%;
         left: 50%;
+        z-index: 2;
         transform: translate(-50%, -50%);
         display: flex;
         .common-loading {
@@ -707,7 +723,6 @@
     &.open-dialog {
         flex-direction: row;
         .task-info {
-            overflow: auto;
             .head {
                 .function {
                     margin-right: 2px;
@@ -716,7 +731,7 @@
         }
         .task-dialog {
             margin: 0 0 0 18px;
-            min-width: 320px;
+            min-width: 220px;
             max-width: 450px;
             border-left: 1px solid #f4f5f5;
 
@@ -769,7 +784,7 @@
                 background-color: #ffffff;
                 overflow: auto;
                 .logs-activity {
-                    padding: 22px 0 0 10px;
+                    padding: 13px 0 0 10px;
                 }
             }
         }
@@ -839,7 +854,9 @@ body.window-portrait {
     .task-detail {
         .task-info {
             .scroller {
-                overflow-x: auto;
+                .scrollbar-content {
+                    overflow-x: auto;
+                }
             }
         }
     }

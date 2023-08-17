@@ -29,7 +29,7 @@ class ApproveController extends AbstractController
     private $flow_url = '';
     public function __construct()
     {
-        $this->flow_url = env('FLOW_URL') ?: 'http://dootask-approve-'.env('APP_ID');
+        $this->flow_url = env('FLOW_URL') ?: 'http://approve';
     }
 
     /**
@@ -74,6 +74,7 @@ class ApproveController extends AbstractController
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/procdef/findAll', json_encode($data));
         $procdef = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$procdef || $procdef['status'] != 200 || $ret['ret'] == 0) {
+            // info($ret);
             return Base::retError($procdef['message'] ?? '查询失败');
         }
         return Base::retSuccess('success', Base::arrayKeyToUnderline($procdef['data']));
@@ -190,12 +191,25 @@ class ApproveController extends AbstractController
         $data['userid'] = (string)$user->userid;
         $data['content'] = Request::input('content'); //内容+图片
 
+        $processInst = $this->getProcessById($data['proc_inst_id']);
+
         $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/addGlobalComment', json_encode(Base::arrayKeyToCamel($data)));
         $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '添加失败');
         }
-        //
+
+        // 推送通知
+        $botUser = User::botGetOrCreate('approval-alert');
+        foreach ( $processInst['userids'] as $id) {
+            if($id != $user->userid){
+                $dialog = WebSocketDialog::checkUserDialog($botUser, $id);
+                $processInst['comment_user_id'] = $user->userid;
+                $processInst['comment_content'] = json_decode($data['content'],true)['content'];
+                $this->approveMsg('approve_comment_notifier', $dialog, $botUser, $processInst, $processInst);
+            }
+        }
+
         $res = Base::arrayKeyToUnderline($process['data']);
         return Base::retSuccess('success', $res);
     }
@@ -206,7 +220,7 @@ class ApproveController extends AbstractController
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup approve
-     * @apiName task__complete 
+     * @apiName task__complete
      *
      * @apiQuery {Number} task_id               流程ID
      * @apiQuery {String} pass                  标题 [true-通过，false-拒绝]
@@ -958,6 +972,8 @@ class ApproveController extends AbstractController
             'type' => $process['var']['type'],
             'start_time' => $process['var']['start_time'],
             'end_time' => $process['var']['end_time'],
+            'comment_nickname' => $process['comment_user_id'] ? User::userid2nickname($process['comment_user_id']) : '',
+            'comment_content' => $process['comment_content'] ?? ''
         ];
         $text = view('push.bot', ['type' => $type, 'action' => $action, 'is_finished' => $process['is_finished'], 'data' => (object)$data])->render();
         $text = preg_replace("/^\x20+/", "", $text);
@@ -1011,6 +1027,7 @@ class ApproveController extends AbstractController
         }
         //
         $res = Base::arrayKeyToUnderline($process['data']);
+        $res['userids'] = [];
         foreach ($res['node_infos'] as &$val) {
             if (isset($val['node_user_list'])) {
                 $node = $val['node_user_list'];
@@ -1020,10 +1037,12 @@ class ApproveController extends AbstractController
                         continue;
                     }
                     $val['node_user_list'][$k]['userimg'] = User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname);
+                    $res['userids'][] = $item['target_id'];
                 }
             }else if($val['aprover_id']){
                 $info = User::whereUserid($val['aprover_id'])->first();
                 $val['userimg'] = $info ? User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname) : '';
+                $res['userids'][] = $val['aprover_id'];
             }
         }
         // 全局评论
@@ -1039,6 +1058,10 @@ class ApproveController extends AbstractController
         }
         $info = User::whereUserid($res['start_user_id'])->first();
         $res['userimg'] = $info ? User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname) : '';
+        //
+        $res['userids'][] = $info->userid;
+        $res['userids'] = array_unique($res['userids']);
+        //
         return $res;
     }
 

@@ -79,7 +79,7 @@
                                 <div>{{$L('搜索消息')}}</div>
                             </EDropdownItem>
                             <template v-if="dialogData.type === 'user'">
-                                <EDropdownItem v-if="dialogData.bot == userId" command="modifyNormal">
+                                <EDropdownItem v-if="isManageBot" command="modifyNormal">
                                     <div>{{$L('修改资料')}}</div>
                                 </EDropdownItem>
                                 <EDropdownItem command="openCreate">
@@ -147,6 +147,7 @@
         <VirtualList
             ref="scroller"
             class="dialog-scroller scrollbar-virtual"
+            item-inactive-class="inactive"
             :class="scrollerClass"
             :data-key="'id'"
             :data-sources="allMsgs"
@@ -318,6 +319,8 @@
             :cancel-text="$L('取消')"
             :ok-text="$L('发送')"
             :enter-ok="true"
+            :closable="false"
+            :mask-closable="false"
             @on-ok="pasteSend">
             <ul class="dialog-wrapper-paste" :class="pasteWrapperClass">
                 <li v-for="item in pasteItem">
@@ -355,20 +358,23 @@
             :title="$L('修改资料')"
             :mask-closable="false">
             <Form :model="modifyData" label-width="auto" @submit.native.prevent>
+                <Alert v-if="modifyData.system_name" type="error" style="margin-bottom:18px">{{$L(`正在修改系统机器人：${modifyData.system_name}`)}}</Alert>
                 <FormItem prop="avatar" :label="$L('头像')">
                     <ImgUpload v-model="modifyData.avatar" :num="1" :width="512" :height="512" :whcut="1"/>
                 </FormItem>
                 <FormItem v-if="typeof modifyData.name !== 'undefined'" prop="name" :label="$L('名称')">
                     <Input v-model="modifyData.name" :maxlength="20" />
                 </FormItem>
-                <FormItem v-if="typeof modifyData.clear_day !== 'undefined'" prop="clear_day" :label="$L('消息保留')">
-                    <Input v-model="modifyData.clear_day" :maxlength="3" type="number">
-                        <div slot="append">{{$L('天')}}</div>
-                    </Input>
-                </FormItem>
-                <FormItem v-if="typeof modifyData.webhook_url !== 'undefined'" prop="webhook_url" label="Webhook">
-                    <Input v-model="modifyData.webhook_url" :maxlength="255" />
-                </FormItem>
+                <template v-if="dialogData.bot == userId">
+                    <FormItem v-if="typeof modifyData.clear_day !== 'undefined'" prop="clear_day" :label="$L('消息保留')">
+                        <Input v-model="modifyData.clear_day" :maxlength="3" type="number">
+                            <div slot="append">{{$L('天')}}</div>
+                        </Input>
+                    </FormItem>
+                    <FormItem v-if="typeof modifyData.webhook_url !== 'undefined'" prop="webhook_url" label="Webhook">
+                        <Input v-model="modifyData.webhook_url" :maxlength="255" />
+                    </FormItem>
+                </template>
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="modifyShow=false">{{$L('取消')}}</Button>
@@ -500,7 +506,7 @@
         </DrawerOverlay>
 
         <!--审批详情-->
-        <DrawerOverlay v-model="approveDetailsShow"  placement="right" :size="600">
+        <DrawerOverlay v-model="approveDetailsShow" placement="right" :size="600">
             <ApproveDetails v-if="approveDetailsShow" :data="approveDetails" style="height: 100%;border-radius: 10px;"></ApproveDetails>
         </DrawerOverlay>
     </div>
@@ -605,13 +611,15 @@ export default {
 
             navStyle: {},
 
+            operateClient: {x: 0, y: 0},
             operateVisible: false,
+            operatePreventScroll: 0,
             operateCopys: [],
             operateStyles: {},
             operateItem: {},
 
             recordState: '',
-            wrapperStart: {},
+            wrapperStart: null,
 
             scrollOffset: 0,
             scrollTail: 0,
@@ -651,9 +659,18 @@ export default {
         }
     },
 
+    mounted() {
+        this.msgSubscribe = Store.subscribe('dialogMsgChange', this.onMsgChange);
+    },
+
     beforeDestroy() {
         this.$store.dispatch('forgetInDialog', this._uid)
         this.$store.dispatch('closeDialog', this.dialogId)
+        //
+        if (this.msgSubscribe) {
+            this.msgSubscribe.unsubscribe();
+            this.msgSubscribe = null;
+        }
     },
 
     computed: {
@@ -770,6 +787,9 @@ export default {
             if (this.dialogData.has_tag) {
                 array.push({type: 'tag', label: '标注'})
             }
+            if (this.dialogData.has_todo) {
+                array.push({type: 'todo', label: '事项'})
+            }
             if (this.dialogData.has_image) {
                 array.push({type: 'image', label: '图片'})
             }
@@ -844,14 +864,21 @@ export default {
             return null
         },
 
-        footerStyle({keyboardType, keyboardHeight, safeAreaBottom, windowScrollY, isMessenger}) {
-            const style = {};
+        footerPaddingBottom({keyboardType, keyboardHeight, safeAreaBottom, windowScrollY, isMessenger}) {
             if (windowScrollY === 0
                 && isMessenger
                 && keyboardType === "show"
                 && keyboardHeight > 0
                 && keyboardHeight < 120) {
-                style.paddingBottom = (keyboardHeight + safeAreaBottom) + 'px';
+                return keyboardHeight + safeAreaBottom;
+            }
+            return 0;
+        },
+
+        footerStyle({footerPaddingBottom}) {
+            const style = {};
+            if (footerPaddingBottom) {
+                style.paddingBottom = `${footerPaddingBottom}px`;
             }
             return style;
         },
@@ -873,6 +900,17 @@ export default {
         isMyDialog() {
             const {dialogData, userId} = this;
             return dialogData.dialog_user && dialogData.dialog_user.userid == userId
+        },
+
+        isManageBot() {
+            const {dialogData, userId, userIsAdmin} = this;
+            if (!dialogData.bot) {
+                return false
+            }
+            if (dialogData.bot == userId) {
+                return true
+            }
+            return dialogData.dialog_user && dialogData.dialog_user.userid == dialogData.bot && userIsAdmin
         },
 
         isMute() {
@@ -1089,7 +1127,7 @@ export default {
                 this.allMsgs = newList;
             }
             //
-            if (!this.windowActive || (tail > 10 && oldList.length > 0)) {
+            if (!this.windowActive || (tail > 55 && oldList.length > 0)) {
                 const lastId = oldList[oldList.length - 1] ? oldList[oldList.length - 1].id : 0
                 const tmpList = newList.filter(item => item.id && item.id > lastId)
                 this.msgNew += tmpList.length
@@ -1101,12 +1139,12 @@ export default {
         },
 
         windowScrollY(val) {
-            if ($A.isIos()) {
+            if ($A.isIos() && !this.$slots.head) {
                 const {tail} = this.scrollInfo();
                 this.navStyle = {
                     marginTop: val + 'px'
                 }
-                if (tail <= 10) {
+                if (tail <= 55) {
                     requestAnimationFrame(this.onToBottom)
                 }
                 if (this.$refs.input.isFocus) {
@@ -1124,6 +1162,18 @@ export default {
             }
         },
 
+        windowHeight(current, before) {
+            if (current < before
+                && $A.isEEUiApp
+                && $A.isAndroid()
+                && this.$refs.input.isFocus) {
+                const {tail} = this.scrollInfo();
+                if (tail <= 55 + (before - current)) {
+                    requestAnimationFrame(this.onToBottom)
+                }
+            }
+        },
+
         dialogDrag(val) {
             if (val) {
                 this.operateVisible = false;
@@ -1133,6 +1183,15 @@ export default {
         msgActiveIndex(index) {
             if (index > -1) {
                 setTimeout(_ => this.msgActiveIndex = -1, 800)
+            }
+        },
+
+        footerPaddingBottom(val) {
+            if (val) {
+                const {tail} = this.scrollInfo();
+                if (tail <= 55) {
+                    requestAnimationFrame(this.onToBottom)
+                }
             }
         }
     },
@@ -1320,6 +1379,28 @@ export default {
             this.sendMsg(`<p><span data-quick-key="${item.key}">${item.label}</span></p>`)
         },
 
+        onMsgChange(data) {
+            const item = this.allMsgs.find(({type, id}) => type == "text" && id == data.id)
+            if (item) {
+                const {tail} = this.scrollInfo()
+                if (data.type === 'append') {
+                    item.msg.text += data.text
+                } else if (data.type === 'replace') {
+                    item.msg.text = data.text
+                }
+                this.$nextTick(_ => {
+                    const {tail: newTail} = this.scrollInfo()
+                    if (tail <= 10 && newTail != tail) {
+                        this.operatePreventScroll++
+                        this.$refs.scroller.scrollToBottom();
+                        setTimeout(_ => {
+                            this.operatePreventScroll--
+                        }, 50)
+                    }
+                })
+            }
+        },
+
         getTempId() {
             return this.tempId++
         },
@@ -1340,6 +1421,10 @@ export default {
             if (this.msgType) {
                 if (this.msgType === 'tag') {
                     if (!item.tag) {
+                        return false
+                    }
+                } else if (this.msgType === 'todo') {
+                    if (!item.todo) {
                         return false
                     }
                 } else if (this.msgType === 'link') {
@@ -1518,6 +1603,11 @@ export default {
 
         chatPasteDrag(e, type) {
             this.dialogDrag = false;
+            if ($A.dataHasFolder(type === 'drag' ? e.dataTransfer : e.clipboardData)) {
+                e.preventDefault();
+                $A.modalWarning(`暂不支持${type === 'drag' ? '拖拽' : '粘贴'}文件夹。`)
+                return;
+            }
             const files = type === 'drag' ? e.dataTransfer.files : e.clipboardData.files;
             const postFiles = Array.prototype.slice.call(files);
             if (postFiles.length > 0) {
@@ -1547,15 +1637,32 @@ export default {
         },
 
         onTouchStart(e) {
-            this.wrapperStart = Object.assign(this.scrollInfo(), {
-                clientY: e.touches[0].clientY,
-                exclud: !this.$refs.scroller.$el.contains(e.target),
-            });
+            this.wrapperStart = null;
+            if (this.$refs.scroller.$el.contains(e.target)) {
+                // 聊天内容区域
+                this.wrapperStart = Object.assign(this.scrollInfo(), {
+                    clientY: e.touches[0].clientY,
+                });
+            } else if (this.$refs.input.$refs.editor.contains(e.target)) {
+                // 输入内容区域
+                const editor = this.$refs.input.$refs.editor.querySelector(".ql-editor");
+                if (editor) {
+                    const clientSize = editor.clientHeight;
+                    const offset = editor.scrollTop;
+                    const scrollSize = editor.scrollHeight;
+                    this.wrapperStart = {
+                        offset, // 滚动的距离
+                        scale: offset / (scrollSize - clientSize), // 已滚动比例
+                        tail: scrollSize - clientSize - offset, // 与底部距离
+                        clientY: e.touches[0].clientY,
+                    }
+                }
+            }
         },
 
         onTouchMove(e) {
-            if (this.windowPortrait && this.windowScrollY > 0) {
-                if (this.wrapperStart.exclud) {
+            if (this.footerPaddingBottom > 0 || (this.windowPortrait && this.windowScrollY > 0)) {
+                if (this.wrapperStart === null) {
                     e.preventDefault();
                     return;
                 }
@@ -1795,7 +1902,11 @@ export default {
                 // 如果当前打开着任务窗口则关闭对话窗口
                 this.$store.dispatch("openDialog", 0);
             }
-            this.$store.dispatch("openTask", this.dialogData.group_info.id);
+            this.$store.dispatch("openTask", {
+                id: this.dialogData.group_info.id,
+                deleted_at: this.dialogData.group_info.deleted_at,
+                archived_at: this.dialogData.group_info.archived_at,
+            });
         },
 
         openOkr() {
@@ -1865,6 +1976,7 @@ export default {
                             avatar: this.cacheUserBasic.find(item => item.userid === this.dialogData.dialog_user.userid)?.userimg,
                             clear_day: 0,
                             webhook_url: '',
+                            system_name: '',
                         })
                         this.modifyLoad++;
                         this.$store.dispatch("call", {
@@ -1875,6 +1987,7 @@ export default {
                         }).then(({data}) => {
                             this.modifyData.clear_day = data.clear_day
                             this.modifyData.webhook_url = data.webhook_url
+                            this.modifyData.system_name = data.system_name
                         }).finally(() => {
                             this.modifyLoad--;
                         })
@@ -2086,12 +2199,14 @@ export default {
         },
 
         onScroll(event) {
-            this.operateVisible = false;
+            if (this.operatePreventScroll === 0) {
+                this.operateVisible = false;
+            }
             //
             const {offset, tail} = this.scrollInfo();
             this.scrollOffset = offset;
             this.scrollTail = tail;
-            if (this.scrollTail <= 10) {
+            if (this.scrollTail <= 55) {
                 this.msgNew = 0;
             }
             //
@@ -2213,11 +2328,24 @@ export default {
                         value: $A.thumbRestore(event.target.currentSrc),
                     })
                 }
+                const selectText = this.getSelectedTextInElement(el)
+                if (selectText.length > 0) {
+                    this.operateCopys.push({
+                        type: 'selected',
+                        icon: '&#xe7df;',
+                        label: '复制选择',
+                        value: selectText,
+                    })
+                }
                 if (msgData.msg.text.replace(/<[^>]+>/g,"").length > 0) {
+                    let label = this.operateCopys.length > 0 ? '复制文本' : '复制'
+                    if (selectText.length > 0) {
+                        label = '复制全部'
+                    }
                     this.operateCopys.push({
                         type: 'text',
                         icon: '&#xe77f;',
-                        label: this.operateCopys.length > 0 ? '复制文本' : '复制',
+                        label,
                         value: '',
                     })
                 }
@@ -2230,6 +2358,7 @@ export default {
                     top: `${projectRect.top + this.windowScrollY}px`,
                     height: projectRect.height + 'px',
                 }
+                this.operateClient = {x: event.clientX, y: event.clientY};
                 this.operateVisible = true;
             })
         },
@@ -2300,7 +2429,7 @@ export default {
             const {tail} = this.scrollInfo()
             this.setQuote(this.operateItem.id, type)
             this.inputFocus()
-            if (tail <= 10) {
+            if (tail <= 55) {
                 requestAnimationFrame(this.onToBottom)
             }
         },
@@ -2335,27 +2464,33 @@ export default {
             switch (type) {
                 case 'image':
                     if (this.$Electron) {
-                        this.getBase64Image(value).then(base64 => {
-                            this.$Electron.sendMessage('copyBase64Image', {base64});
-                        })
+                        this.$Electron.sendMessage('copyImageAt', this.operateClient);
                     }
                     break;
 
                 case 'imagedown':
-                    this.$store.dispatch('downUrl', {
-                        url: value,
-                        token: false
-                    })
+                    if (this.$Electron) {
+                        this.$Electron.sendMessage('saveImageAt', {
+                            params: { },
+                            url: value,
+                        })
+                    } else {
+                        this.$store.dispatch('downUrl', {
+                            url: value,
+                            token: false
+                        })
+                    }
                     break;
 
                 case 'filepos':
-                    if (this.windowPortrait) {
-                        this.$store.dispatch("openDialog", 0);
-                    }
-                    this.goForward({name: 'manage-file', params: value});
+                    this.$store.dispatch("filePos", value);
                     break;
 
                 case 'link':
+                    this.$copyText(value).then(_ => $A.messageSuccess('复制成功')).catch(_ => $A.messageError('复制失败'))
+                    break;
+
+                case 'selected':
                     this.$copyText(value).then(_ => $A.messageSuccess('复制成功')).catch(_ => $A.messageError('复制失败'))
                     break;
 
@@ -2407,18 +2542,24 @@ export default {
             }
 
             // 打开审批详情
-            let domAudits = $(target).parents(".open-approve-details")
-            if( domAudits.length > 0 ){
-                let dataId = domAudits[0].getAttribute("data-id")
-                if( window.innerWidth < 426 ){
-                    this.goForward({name: 'manage-approve-details', query: { id: domAudits[0].getAttribute("data-id") } });
-                }else{
-                    this.approveDetailsShow = true;
-                    this.$nextTick(()=>{
-                        this.approveDetails = {id:dataId};
-                    })
+            let approveElement = target;
+            while (approveElement) {
+                if (approveElement.classList.contains('open-approve-details')) {
+                    const dataId = approveElement.getAttribute("data-id")
+                    if (window.innerWidth < 426) {
+                        this.goForward({name: 'manage-approve-details', query: {id: approveElement.getAttribute("data-id")}});
+                    } else {
+                        this.approveDetailsShow = true;
+                        this.$nextTick(() => {
+                            this.approveDetails = {id: dataId};
+                        })
+                    }
+                    break;
                 }
-                return;
+                if (approveElement.classList.contains('dialog-item')) {
+                    break;
+                }
+                approveElement = approveElement.parentElement;
             }
 
             switch (target.nodeName) {
@@ -2564,8 +2705,10 @@ export default {
                 config.okText = '再次编辑'
                 config.onOk = () => {
                     this.tempMsgs = this.tempMsgs.filter(({id}) => id != data.id)
+                    this.$refs.input.setPasteMode(false)
                     this.msgText = msg
                     this.inputFocus()
+                    this.$nextTick(_ => this.$refs.input.setPasteMode(true))
                 }
             } else if (type === 'record') {
                 config.okText = '重新发送'
@@ -2664,7 +2807,9 @@ export default {
                 this.onTodoSubmit(todoData).then(msg => {
                     $A.messageSuccess(msg)
                     this.todoSettingShow = false
-                }).catch($A.messageError).finally(_ => {
+                }).catch(e => {
+                    $A.messageError(e)
+                }).finally(_ => {
                     this.todoSettingLoad--
                 })
             } else {
@@ -2837,6 +2982,20 @@ export default {
                 };
                 img.src = url;
             })
+        },
+
+        getSelectedTextInElement(element) {
+            let selectedText = "";
+            if (window.getSelection) {
+                let selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    if (element.contains(range.commonAncestorContainer)) {
+                        selectedText = range.toString();
+                    }
+                }
+            }
+            return selectedText;
         },
 
         onViewAvatar(e) {

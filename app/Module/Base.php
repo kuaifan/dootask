@@ -125,9 +125,9 @@ class Base
      * @param $min
      * @return bool
      */
-    public static function judgeClientVersion($min)
+    public static function judgeClientVersion($min, $clientVersion = null)
     {
-        return !version_compare(Base::getClientVersion(), $min, '<');
+        return !version_compare($clientVersion ?: Base::getClientVersion(), $min, '<');
     }
 
     /**

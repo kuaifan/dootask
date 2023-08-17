@@ -2,7 +2,7 @@
     <div class="setting-component-item">
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
             <div class="block-setting-box">
-                <h3>{{ $L('LDAP') }}</h3>
+                <h3>LDAP</h3>
                 <div class="form-box">
                     <FormItem :label="$L('启用 LDAP 认证')" prop="ldap_open">
                         <RadioGroup v-model="formData.ldap_open">

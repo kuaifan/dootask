@@ -63,7 +63,8 @@
                                 dialog_id: dialog.id,
                                 search_msg_id: dialog.search_msg_id
                             })"
-                            v-longpress="handleLongpress">
+                            v-longpress="handleLongpress"
+                            :style="{'background-color':dialog.color}">
                             <template v-if="dialog.type=='group'">
                                 <EAvatar v-if="dialog.avatar" class="img-avatar" :src="dialog.avatar" :size="42"></EAvatar>
                                 <i v-else-if="dialog.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
@@ -148,15 +149,31 @@
                             @on-clickoutside="operateVisible = false"
                             transfer>
                             <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
-                            <DropdownMenu slot="list">
+                            <DropdownMenu slot="list" class="messenger-dialog-operation">
                                 <DropdownItem @click.native="handleTopClick">
-                                    {{ $L(operateItem.top_at ? '取消置顶' : '置顶') }}
+                                    <div class="item">
+                                        {{ $L(operateItem.top_at ? '取消置顶' : '置顶') }}
+                                        <i class="taskfont" v-html="operateItem.top_at ? '&#xe7e3;' : '&#xe7e6;'"></i>
+                                    </div>
                                 </DropdownItem>
                                 <DropdownItem @click.native="handleReadClick">
-                                    {{ $L($A.getDialogUnread(operateItem, true) > 0 ? '标记已读' : '标记未读') }}
+                                    <div class="item">
+                                        {{ $L($A.getDialogUnread(operateItem, true) > 0 ? '标记已读' : '标记未读') }}
+                                        <i class="taskfont" v-html="$A.getDialogUnread(operateItem, true) > 0 ? '&#xe7e8;' : '&#xe7e9;'"></i>
+                                    </div>
+
                                 </DropdownItem>
                                 <DropdownItem @click.native="handleSilenceClick" :disabled="silenceDisabled(operateItem)">
-                                    {{ $L(operateItem.silence ? '允许消息通知' : '消息免打扰') }}
+                                    <div class="item">
+                                        {{ $L(operateItem.silence ? '允许消息通知' : '消息免打扰') }}
+                                        <i class="taskfont" v-html="operateItem.silence ? '&#xe7eb;' : '&#xe7d7;'"></i>
+                                    </div>
+                                </DropdownItem>
+                                <DropdownItem @click.native="handleColorClick(c.color)" v-for="(c, k) in taskColorList" :key="'c_' + k" :divided="k==0"  v-if="k<6" >
+                                    <div class="item">
+                                        {{$L(c.name)}}
+                                        <i class="taskfont color" :style="{color:c.primary||'#ddd'}" v-html="c.color == (operateItem.color||'') ? '&#xe61d;' : '&#xe61c;'"></i>
+                                    </div>
                                 </DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
@@ -268,7 +285,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs', 'loadDialogs', 'dialogId', 'messengerSearchKey', 'appNotificationPermission']),
+        ...mapState(['cacheDialogs', 'loadDialogs', 'dialogId', 'messengerSearchKey', 'appNotificationPermission', 'taskColorList']),
 
         routeName() {
             return this.$route.name
@@ -437,6 +454,14 @@ export default {
                 if (['dialog', 'contacts'].includes(params.dialogAction)) {
                     this.tabActive = params.dialogAction
                 }
+                if (params.dialog_id) {
+                    this.tabActive = 'dialog'
+                    const id = $A.runNum(params.dialog_id);
+                    if (id > 0) {
+                        this.openDialog(id)
+                    }
+                    this.clickAgainSubscribe = Store.subscribe('clickAgainDialog', this.shakeUnread);
+                }
             },
             immediate: true
         },
@@ -455,10 +480,14 @@ export default {
             this.$store.state.messengerSearchKey.dialog = val
             switch (val) {
                 case 'log.o':
-                    $A.IDBSet("logOpen", "open").then($A.reloadUrl);
+                    $A.IDBSet("logOpen", "open").then(_ => {
+                        $A.reloadUrl()
+                    });
                     break;
                 case 'log.c':
-                    $A.IDBSet("logOpen", "close").then($A.reloadUrl);
+                    $A.IDBSet("logOpen", "close").then(_ => {
+                        $A.reloadUrl()
+                    });
                     break;
             }
             //
@@ -553,6 +582,9 @@ export default {
 
         shakeUnread() {
             let index = this.dialogList.findIndex(dialog => $A.getDialogNum(dialog) > 0)
+            if (index === -1) {
+                index = this.dialogList.findIndex(dialog => dialog.todo_num > 0)
+            }
             if (index === -1) {
                 index = this.dialogList.findIndex(dialog => $A.getDialogUnread(dialog, true) > 0)
             }
@@ -903,6 +935,20 @@ export default {
                 data: {
                     dialog_id: this.operateItem.id,
                     type: this.operateItem.silence ? 'cancel' : 'set'
+                },
+            }).then(({data}) => {
+                this.$store.dispatch("saveDialog", data);
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            });
+        },
+
+        handleColorClick(color) {
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/color',
+                data: {
+                    dialog_id: this.operateItem.id,
+                    color: color
                 },
             }).then(({data}) => {
                 this.$store.dispatch("saveDialog", data);

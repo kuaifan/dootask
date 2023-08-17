@@ -69,6 +69,9 @@
         margin-bottom: 12px;
         padding: 20px 24px;
         border-bottom: 1px solid #eeeeee;
+        @media (max-width: 500px) {
+            padding-right: 50px;
+        }
     }
 
     .report-detail-context {
@@ -136,32 +139,27 @@
 }
 
 .report-edit {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 24px;
+    overflow: auto;
     display: flex;
     flex-direction: column;
-    height: 100%;
-    padding: 24px;
 
     .ivu-input[disabled] {
         color: $primary-text-color;
     }
 
+    .ivu-form-item-content {
+        white-space: nowrap;
+    }
+
     .report-content {
         flex: 1 1 auto;
         overflow-y: auto;
-
-        .report-content-editor {
-            height: 100%;
-
-            .ivu-form-item-content {
-                height: 100%;
-                display: flex;
-
-                .teditor-wrapper {
-                    flex: 1;
-                    display: flex;
-                }
-            }
-        }
     }
 
     .report-users {
@@ -267,6 +265,10 @@
             .teditor-wrapper {
                 display: flex;
                 flex: 1;
+                min-height: 380px;
+                min-width: 380px;
+                margin-right: -24px;
+                padding-right: 24px;
             }
         }
     }

@@ -2,7 +2,7 @@
     <div class="setting-component-item">
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
             <div class="block-setting-box">
-                <h3>{{ $L('AgoraIO') }}</h3>
+                <h3>AgoraIO</h3>
                 <div class="form-box">
                     <FormItem :label="$L('会议功能')" prop="open">
                         <RadioGroup v-model="formData.open">

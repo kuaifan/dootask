@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Tasks\PushTask;
 use DB;
+use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Request;
 use Redirect;
 use Carbon\Carbon;
@@ -78,7 +80,7 @@ class DialogController extends AbstractController
             return Base::retError('请输入搜索关键词');
         }
         // 搜索会话
-        $dialogs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.updated_at as user_at'])
+        $dialogs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.color', 'u.updated_at as user_at'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('web_socket_dialogs.name', 'LIKE', "%{$key}%")
             ->where('u.userid', $user->userid)
@@ -115,7 +117,7 @@ class DialogController extends AbstractController
         }
         // 搜索消息会话
         if (count($list) < 20) {
-            $msgs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.updated_at as user_at', 'm.id as search_msg_id'])
+            $msgs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.color', 'u.updated_at as user_at', 'm.id as search_msg_id'])
                 ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
                 ->join('web_socket_dialog_msgs as m', 'web_socket_dialogs.id', '=', 'm.dialog_id')
                 ->where('u.userid', $user->userid)
@@ -152,7 +154,7 @@ class DialogController extends AbstractController
         //
         $dialog_id = intval(Request::input('dialog_id'));
         //
-        $item = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.updated_at as user_at'])
+        $item = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.color', 'u.updated_at as user_at'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('web_socket_dialogs.id', $dialog_id)
             ->where('u.userid', $user->userid)
@@ -403,6 +405,8 @@ class DialogController extends AbstractController
         if ($msg_type) {
             if ($msg_type === 'tag') {
                 $builder->where('tag', '>', 0);
+            } elseif ($msg_type === 'todo') {
+                $builder->where('todo', '>', 0);
             } elseif ($msg_type === 'link') {
                 $builder->whereLink(1);
             } elseif (in_array($msg_type, ['text', 'image', 'file', 'record', 'meeting'])) {
@@ -635,7 +639,46 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {post} api/dialog/msg/sendtext          14. 发送消息
+     * @api {post} api/dialog/msg/stream          14. 通知成员监听消息
+     *
+     * @apiDescription 通知指定会员EventSource监听流动消息
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__stream
+     *
+     * @apiParam {Number} dialog_id      对话ID
+     * @apiParam {Number} userid         通知会员ID
+     * @apiParam {String} stream_url     流动消息地址
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__stream()
+    {
+        // $dialog_id = intval(Request::input('dialog_id'));
+        $userid = intval(Request::input('userid'));
+        $stream_url = trim(Request::input('stream_url'));
+        //
+        if ($userid <= 0) {
+            return Base::retError('参数错误');
+        }
+        //
+        $params = [
+            'userid' => $userid,
+            'msg' => [
+                'type' => 'msgStream',
+                'stream_url' => $stream_url,
+            ]
+        ];
+        $task = new PushTask($params, false);
+        Task::deliver($task);
+        //
+        return Base::retSuccess('success');
+    }
+
+    /**
+     * @api {post} api/dialog/msg/sendtext          15. 发送消息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -648,6 +691,9 @@ class DialogController extends AbstractController
      * - html: HTML（默认）
      * - md: MARKDOWN
      * @apiParam {Number} [update_id]       更新消息ID（优先大于 reply_id）
+     * @apiParam {String} [update_mark]     是否更新标记
+     * - no: 不标记（仅机器人支持）
+     * - yes: 标记（默认）
      * @apiParam {Number} [reply_id]        回复ID
      * @apiParam {String} [silence]         是否静默发送
      * - no: 正常发送（默认）
@@ -674,69 +720,77 @@ class DialogController extends AbstractController
         }
         //
         $dialog_id = intval(Request::input('dialog_id'));
+        $dialog_ids = trim(Request::input('dialog_ids'));
         $update_id = intval(Request::input('update_id'));
+        $update_mark = !($user->bot && in_array(strtolower(trim(Request::input('update_mark'))), ['no', 'false', '0']));
         $reply_id = intval(Request::input('reply_id'));
         $text = trim(Request::input('text'));
         $text_type = strtolower(trim(Request::input('text_type')));
         $silence = in_array(strtolower(trim(Request::input('silence'))), ['yes', 'true', '1']);
         $markdown = in_array($text_type, ['md', 'markdown']);
-        //
-        WebSocketDialog::checkDialog($dialog_id);
-        //
-        if ($update_id > 0) {
-            $action = "update-$update_id";
-        } elseif ($reply_id > 0) {
-            $action = "reply-$reply_id";
-        } else {
-            $action = "";
-        }
-        //
-        if (!$markdown) {
-            $text = WebSocketDialogMsg::formatMsg($text, $dialog_id);
-        }
-        $strlen = mb_strlen($text);
-        $noimglen = mb_strlen(preg_replace("/<img[^>]*?>/i", "", $text));
-        if ($strlen < 1) {
-            return Base::retError('消息内容不能为空');
-        }
-        if ($noimglen > 200000) {
-            return Base::retError('消息内容最大不能超过200000字');
-        }
-        if ($noimglen > 5000) {
-            // 内容过长转成文件发送
-            $path = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
-            Base::makeDir(public_path($path));
-            $path = $path . md5($text) . ".htm";
-            $file = public_path($path);
-            file_put_contents($file, $text);
-            $size = filesize(public_path($path));
-            if (empty($size)) {
-                return Base::retError('消息发送保存失败');
+        // 
+        $result = [];
+        $dialogIds = $dialog_ids ? explode(',', $dialog_ids) : [$dialog_id ?: 0];
+        foreach($dialogIds as $dialog_id) {
+            //
+            WebSocketDialog::checkDialog($dialog_id);
+            //
+            if ($update_id > 0) {
+                $action = $update_mark ? "update-$update_id" : "change-$update_id";
+            } elseif ($reply_id > 0) {
+                $action = "reply-$reply_id";
+            } else {
+                $action = "";
             }
-            $ext = $markdown ? 'md' : 'htm';
-            $fileData = [
-                'name' => "LongText-{$strlen}.{$ext}",
-                'size' => $size,
-                'file' => $file,
-                'path' => $path,
-                'url' => Base::fillUrl($path),
-                'thumb' => '',
-                'width' => -1,
-                'height' => -1,
-                'ext' => $ext,
-            ];
-            return WebSocketDialogMsg::sendMsg($action, $dialog_id, 'file', $fileData, $user->userid, false, false, $silence);
+            //
+            if (!$markdown) {
+                $text = WebSocketDialogMsg::formatMsg($text, $dialog_id);
+            }
+            $strlen = mb_strlen($text);
+            $noimglen = mb_strlen(preg_replace("/<img[^>]*?>/i", "", $text));
+            if ($strlen < 1) {
+                return Base::retError('消息内容不能为空');
+            }
+            if ($noimglen > 200000) {
+                return Base::retError('消息内容最大不能超过200000字');
+            }
+            if ($noimglen > 5000) {
+                // 内容过长转成文件发送
+                $path = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
+                Base::makeDir(public_path($path));
+                $path = $path . md5($text) . ".htm";
+                $file = public_path($path);
+                file_put_contents($file, $text);
+                $size = filesize(public_path($path));
+                if (empty($size)) {
+                    return Base::retError('消息发送保存失败');
+                }
+                $ext = $markdown ? 'md' : 'htm';
+                $fileData = [
+                    'name' => "LongText-{$strlen}.{$ext}",
+                    'size' => $size,
+                    'file' => $file,
+                    'path' => $path,
+                    'url' => Base::fillUrl($path),
+                    'thumb' => '',
+                    'width' => -1,
+                    'height' => -1,
+                    'ext' => $ext,
+                ];
+                $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'file', $fileData, $user->userid, false, false, $silence);
+            }
+            //
+            $msgData = ['text' => $text];
+            if ($markdown) {
+                $msgData['type'] = 'md';
+            }
+            $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'text', $msgData, $user->userid, false, false, $silence);
         }
-        //
-        $msgData = ['text' => $text];
-        if ($markdown) {
-            $msgData['type'] = 'md';
-        }
-        return WebSocketDialogMsg::sendMsg($action, $dialog_id, 'text', $msgData, $user->userid, false, false, $silence);
+        return $result;
     }
 
     /**
-     * @api {post} api/dialog/msg/sendrecord          15. 发送语音
+     * @api {post} api/dialog/msg/sendrecord          16. 发送语音
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -783,7 +837,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {post} api/dialog/msg/sendfile          16. 文件上传
+     * @api {post} api/dialog/msg/sendfile          17. 文件上传
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -815,6 +869,7 @@ class DialogController extends AbstractController
 
     /**
      * @api {post} api/dialog/msg/sendfiles          17. 群发文件上传
+     * @api {post} api/dialog/msg/sendfiles          18. 群发文件上传
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -869,7 +924,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/sendfileid          18. 通过文件ID发送文件
+     * @api {get} api/dialog/msg/sendfileid          19. 通过文件ID发送文件
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -939,7 +994,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {post} api/dialog/msg/sendanon          19. 发送匿名消息
+     * @api {post} api/dialog/msg/sendanon          20. 发送匿名消息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -992,7 +1047,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/readlist          20. 获取消息阅读情况
+     * @api {get} api/dialog/msg/readlist          21. 获取消息阅读情况
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1021,7 +1076,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/detail          21. 消息详情
+     * @api {get} api/dialog/msg/detail          22. 消息详情
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1069,7 +1124,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/download          22. 文件下载
+     * @api {get} api/dialog/msg/download          23. 文件下载
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1112,7 +1167,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/withdraw          23. 聊天消息撤回
+     * @api {get} api/dialog/msg/withdraw          24. 聊天消息撤回
      *
      * @apiDescription 消息撤回限制24小时内，需要token身份
      * @apiVersion 1.0.0
@@ -1138,7 +1193,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/mark          24. 消息标记操作
+     * @api {get} api/dialog/msg/mark          25. 消息标记操作
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -1205,7 +1260,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/silence          25. 消息免打扰
+     * @api {get} api/dialog/msg/silence          26. 消息免打扰
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -1268,7 +1323,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/forward          26. 转发消息给
+     * @api {get} api/dialog/msg/forward          27. 转发消息给
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1305,7 +1360,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/emoji          27. emoji回复
+     * @api {get} api/dialog/msg/emoji          28. emoji回复
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1340,7 +1395,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/tag          28. 标注/取消标注
+     * @api {get} api/dialog/msg/tag          29. 标注/取消标注
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1369,7 +1424,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/todo          29. 设待办/取消待办
+     * @api {get} api/dialog/msg/todo          30. 设待办/取消待办
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1412,7 +1467,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/todolist          30. 获取消息待办情况
+     * @api {get} api/dialog/msg/todolist          31. 获取消息待办情况
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1442,7 +1497,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/done          31. 完成待办
+     * @api {get} api/dialog/msg/done          32. 完成待办
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1489,7 +1544,48 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/add          32. 新增群组
+     * @api {get} api/dialog/msg/color          30. 设置颜色
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__color
+     *
+     * @apiParam {Number} dialog_id          会话ID
+     * @apiParam {String} color              颜色
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__color()
+    {
+        $user = User::auth();
+
+        $dialogId = intval(Request::input('dialog_id'));
+        $color = Request::input('color','');
+        $dialogUser = WebSocketDialogUser::whereUserid($user->userid)->whereDialogId($dialogId)->first();
+        if (!$dialogUser) {
+            return Base::retError("会话不存在");
+        }
+        //
+        $dialogData = WebSocketDialog::find($dialogId);
+        if (empty($dialogData)) {
+            return Base::retError("会话不存在");
+        }
+        //
+        $dialogUser->color = $color;
+        $dialogUser->save();
+        // 
+        $data = [
+            'id' => $dialogId,
+            'color' => $color
+        ];
+        return Base::retSuccess("success", $data);
+    }
+
+    /**
+     * @api {get} api/dialog/group/add          33. 新增群组
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -1551,7 +1647,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/edit          33. 修改群组
+     * @api {get} api/dialog/group/edit          34. 修改群组
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -1612,7 +1708,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/adduser          34. 添加群成员
+     * @api {get} api/dialog/group/adduser          35. 添加群成员
      *
      * @apiDescription  需要token身份
      * - 有群主时：只有群主可以邀请
@@ -1648,7 +1744,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/deluser          35. 移出（退出）群成员
+     * @api {get} api/dialog/group/deluser          36. 移出（退出）群成员
      *
      * @apiDescription  需要token身份
      * - 只有群主、邀请人可以踢人
@@ -1692,7 +1788,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/transfer          36. 转让群组
+     * @api {get} api/dialog/group/transfer          37. 转让群组
      *
      * @apiDescription  需要token身份
      * - 只有群主且是个人类型群可以解散
@@ -1736,7 +1832,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/disband          37. 解散群组
+     * @api {get} api/dialog/group/disband          38. 解散群组
      *
      * @apiDescription  需要token身份
      * - 只有群主且是个人类型群可以解散
@@ -1764,7 +1860,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/searchuser          38. 搜索个人群（仅限管理员）
+     * @api {get} api/dialog/group/searchuser          39. 搜索个人群（仅限管理员）
      *
      * @apiDescription  需要token身份，用于创建部门搜索个人群组
      * @apiVersion 1.0.0

@@ -54,7 +54,7 @@
                         <template v-if="colorShow">
                             <EDropdownItem v-for="(c, k) in taskColorList" :key="'c_' + k" :divided="k==0" :command="c">
                                 <div class="item">
-                                    <i class="taskfont" :style="{color:c.color||'#f9f9f9'}" v-html="c.color == task.color ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
+                                    <i class="taskfont" :style="{color:c.primary||'#ddd'}" v-html="c.color == (task.color||'') ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
                                 </div>
                             </EDropdownItem>
                         </template>

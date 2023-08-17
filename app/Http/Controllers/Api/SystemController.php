@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\WebSocketDialog;
+use App\Models\WebSocketDialogMsg;
 use Request;
 use Session;
 use Response;
@@ -38,7 +40,7 @@ class SystemController extends AbstractController
      * @apiParam {String} type
      * - get: 获取（默认）
      * - all: 获取所有（需要管理员权限）
-     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'auto_archived', 'archived_day', 'all_group_mute', 'all_group_autoin', 'image_compress', 'image_save_local', 'start_home', 'home_footer']）
+     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'auto_archived', 'archived_day', 'task_visible', 'task_default_time', 'all_group_mute', 'all_group_autoin', 'image_compress', 'image_save_local', 'start_home']）
 
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -65,12 +67,13 @@ class SystemController extends AbstractController
                     'anon_message',
                     'auto_archived',
                     'archived_day',
+                    'task_visible',
+                    'task_default_time',
                     'all_group_mute',
                     'all_group_autoin',
                     'image_compress',
                     'image_save_local',
                     'start_home',
-                    'home_footer'
                 ])) {
                     unset($all[$key]);
                 }
@@ -104,6 +107,8 @@ class SystemController extends AbstractController
         $setting['anon_message'] = $setting['anon_message'] ?: 'open';
         $setting['auto_archived'] = $setting['auto_archived'] ?: 'close';
         $setting['archived_day'] = floatval($setting['archived_day']) ?: 7;
+        $setting['task_visible'] = $setting['task_visible'] ?: 'close';
+        $setting['task_default_time'] = $setting['task_default_time'] ? Base::json2array($setting['task_default_time']) : ['09:00', '18:00'];
         $setting['all_group_mute'] = $setting['all_group_mute'] ?: 'open';
         $setting['all_group_autoin'] = $setting['all_group_autoin'] ?: 'yes';
         $setting['image_compress'] = $setting['image_compress'] ?: 'open';
@@ -226,7 +231,92 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/setting/checkin          04. 获取签到设置、保存签到设置（限管理员）
+     * @api {get} api/system/setting/aibot          04. 获取会议设置、保存AI机器人设置（限管理员）
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName setting__aibot
+     *
+     * @apiParam {String} type
+     * - get: 获取（默认）
+     * - save: 保存设置（参数：['openai_key', 'openai_agency', 'claude_token', 'claude_agency']）
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function setting__aibot()
+    {
+        $user = User::auth('admin');
+        //
+        $type = trim(Request::input('type'));
+        $setting = Base::setting('aibotSetting');
+
+        $keys = [
+            'openai_key',
+            'openai_agency',
+            'claude_token',
+            'claude_agency',
+            'wenxin_key',
+            'wenxin_secret',
+            'wenxin_model',
+            'qianwen_key',
+            'qianwen_model'
+        ];
+
+        if ($type == 'save') {
+            if (env("SYSTEM_SETTING") == 'disabled') {
+                return Base::retError('当前环境禁止修改');
+            }
+            $all = Request::input();
+            foreach ($all as $key => $value) {
+                if (!in_array($key, $keys)) {
+                    unset($all[$key]);
+                }
+            }
+            $backup = $setting;
+            $setting = Base::setting('aibotSetting', Base::newTrim($all));
+            //
+            if ($backup['openai_key'] != $setting['openai_key']) {
+                $botUser = User::botGetOrCreate('ai-openai');
+                if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "设置成功"], $botUser->userid, true, false, true);
+                }
+            }
+            if ($backup['claude_token'] != $setting['claude_token']) {
+                $botUser = User::botGetOrCreate('ai-claude');
+                if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "设置成功"], $botUser->userid, true, false, true);
+                }
+            }
+            if ($backup['wenxin_key'] != $setting['wenxin_key']) {
+                $botUser = User::botGetOrCreate('ai-wenxin');
+                if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "设置成功"], $botUser->userid, true, false, true);
+                }
+            }
+            if ($backup['qianwen_key'] != $setting['qianwen_key']) {
+                $botUser = User::botGetOrCreate('ai-qianwen');
+                if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "设置成功"], $botUser->userid, true, false, true);
+                }
+            }
+        }
+        //
+        $setting['wenxin_model'] = $setting['wenxin_model'] ?: 'ERNIE-Bot-turbo';
+        $setting['qianwen_model'] = $setting['qianwen_model'] ?: 'qwen-v1';
+        if (env("SYSTEM_SETTING") == 'disabled') {
+            foreach ($keys as $item) {
+                if (strlen($setting[$item]) > 12) {
+                    $setting[$item] = substr($setting[$item], 0, 4) . str_repeat('*', strlen($setting[$item]) - 8) . substr($setting[$item], -4);
+                }
+            }
+        }
+        //
+        return Base::retSuccess('success', $setting ?: json_decode('{}'));
+    }
+
+    /**
+     * @api {get} api/system/setting/checkin          05. 获取签到设置、保存签到设置（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -234,7 +324,7 @@ class SystemController extends AbstractController
      *
      * @apiParam {String} type
      * - get: 获取（默认）
-     * - save: 保存设置（参数：['open', 'time', 'advance', 'delay', 'remindin', 'remindexceed', 'edit', 'key']）
+     * - save: 保存设置（参数：['open', 'time', 'advance', 'delay', 'remindin', 'remindexceed', 'edit', 'modes', 'key']）
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
@@ -258,6 +348,7 @@ class SystemController extends AbstractController
                     'remindin',
                     'remindexceed',
                     'edit',
+                    'modes',
                     'key',
                 ])) {
                     unset($all[$key]);
@@ -266,6 +357,7 @@ class SystemController extends AbstractController
             if ($all['open'] === 'close') {
                 $all['key'] = md5(Base::generatePassword(32));
             }
+            $all['modes'] = array_intersect($all['modes'], ['auto', 'manual', 'location']);
             $setting = Base::setting('checkinSetting', Base::newTrim($all));
         } else {
             $setting = Base::setting('checkinSetting');
@@ -283,13 +375,14 @@ class SystemController extends AbstractController
         $setting['remindin'] = intval($setting['remindin']) ?: 5;
         $setting['remindexceed'] = intval($setting['remindexceed']) ?: 10;
         $setting['edit'] = $setting['edit'] ?: 'close';
+        $setting['modes'] = is_array($setting['modes']) ? $setting['modes'] : [];
         $setting['cmd'] = "curl -sSL '" . Base::fillUrl("api/public/checkin/install?key={$setting['key']}") . "' | sh";
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
     }
 
     /**
-     * @api {get} api/system/setting/apppush          05. 获取APP推送设置、保存APP推送设置（限管理员）
+     * @api {get} api/system/setting/apppush          06. 获取APP推送设置、保存APP推送设置（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -334,7 +427,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/setting/thirdaccess          06. 第三方帐号（限管理员）
+     * @api {get} api/system/setting/thirdaccess          07. 第三方帐号（限管理员）
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -404,7 +497,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/demo          07. 获取演示帐号
+     * @api {get} api/system/demo          08. 获取演示帐号
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -428,7 +521,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/priority          08. 任务优先级
+     * @api {post} api/system/priority          09. 任务优先级
      *
      * @apiDescription 获取任务优先级、保存任务优先级
      * @apiVersion 1.0.0
@@ -477,7 +570,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/column/template          09. 创建项目模板
+     * @api {post} api/system/column/template          10. 创建项目模板
      *
      * @apiDescription 获取创建项目模板、保存创建项目模板
      * @apiVersion 1.0.0
@@ -524,7 +617,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/license          10. License
+     * @api {post} api/system/license          11. License
      *
      * @apiDescription 获取License信息、保存License（限管理员）
      * @apiVersion 1.0.0
@@ -587,7 +680,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/info          11. 获取终端详细信息
+     * @api {get} api/system/get/info          12. 获取终端详细信息
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -616,7 +709,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/ip          12. 获取IP地址
+     * @api {get} api/system/get/ip          13. 获取IP地址
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -631,7 +724,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/cnip          13. 是否中国IP地址
+     * @api {get} api/system/get/cnip          14. 是否中国IP地址
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -648,7 +741,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/ipgcj02          14. 获取IP地址经纬度
+     * @api {get} api/system/get/ipgcj02          15. 获取IP地址经纬度
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -665,7 +758,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/ipinfo          15. 获取IP地址详细信息
+     * @api {get} api/system/get/ipinfo          16. 获取IP地址详细信息
      *
      * @apiVersion 1.0.0
      * @apiGroup system
@@ -682,7 +775,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/imgupload          16. 上传图片
+     * @api {post} api/system/imgupload          17. 上传图片
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -742,7 +835,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/imgview          17. 浏览图片空间
+     * @api {get} api/system/get/imgview          18. 浏览图片空间
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -839,7 +932,7 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {post} api/system/fileupload          18. 上传文件
+     * @api {post} api/system/fileupload          19. 上传文件
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -881,18 +974,18 @@ class SystemController extends AbstractController
     }
 
     /**
-     * @api {get} api/system/get/showitem          19. 首页显示ITEM
+     * @api {get} api/system/get/updatelog          20. 获取更新日志
      *
-     * @apiDescription 用于判断首页是否显示：pro、github、更新日志...
+     * @apiDescription 获取更新日志
      * @apiVersion 1.0.0
      * @apiGroup system
-     * @apiName get__showitem
+     * @apiName get__updatelog
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      */
-    public function get__showitem()
+    public function get__updatelog()
     {
         $logPath = base_path('CHANGELOG.md');
         $logContent = "";
@@ -905,30 +998,7 @@ class SystemController extends AbstractController
             }
         }
         return Base::retSuccess('success', [
-            'pro' => str_contains(Request::getHost(), "dootask.com") || str_contains(Request::getHost(), "127.0.0.1"),
-            'github' => env('GITHUB_URL') ?: false,
             'updateLog' => $logContent ?: false,
-            'updateVer' => $logVersion,
-        ]);
-    }
-
-    /**
-     * @api {get} api/system/get/starthome          20. 启动首页设置信息
-     *
-     * @apiDescription 用于判断注册是否需要启动首页
-     * @apiVersion 1.0.0
-     * @apiGroup system
-     * @apiName get__starthome
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function get__starthome()
-    {
-        return Base::retSuccess('success', [
-            'need_start' => Base::settingFind('system', 'start_home') == 'open',
-            'home_footer' => Base::settingFind('system', 'home_footer')
         ]);
     }
 

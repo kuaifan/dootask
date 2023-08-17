@@ -167,7 +167,7 @@ class User extends AbstractModel
         if (!$this->bot) {
             return 0;
         }
-        $key = "getBotOwner::" . $this->userid;
+        $key = "userBotOwner::" . $this->userid;
         return Cache::remember($key, now()->addMonth(), function() {
             return intval(UserBot::whereBotId($this->userid)->value('userid')) ?: $this->userid;
         });
@@ -535,6 +535,10 @@ class User extends AbstractModel
                 return url("images/avatar/default_approval.png");
             case 'okr-alert@bot.system':
                 return url("images/avatar/default_task.png");
+            case 'ai-openai@bot.system':
+                return url("images/avatar/default_openai.png");
+            case 'ai-claude@bot.system':
+                return url("images/avatar/default_claude.png");
             case 'bot-manager@bot.system':
                 return url("images/avatar/default_bot.png");
         }
@@ -628,6 +632,7 @@ class User extends AbstractModel
                     $update['nickname'] = '机器人管理';
                     break;
             }
+            $update['nickname'] = UserBot::systemBotName($email);
         }
         if ($update) {
             $botUser->updateInstance($update);

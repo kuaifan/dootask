@@ -81,6 +81,28 @@
                 </div>
             </div>
             <div class="block-setting-box">
+                <h3>{{ $L('任务相关') }}</h3>
+                <div class="form-box">
+                    <FormItem :label="$L('可见性选项')" prop="taskVisible">
+                        <RadioGroup v-model="formDatum.task_visible">
+                            <Radio label="open">{{$L('保持')}}</Radio>
+                            <Radio label="close">{{$L('自动')}}</Radio>
+                        </RadioGroup>
+                        <div v-if="formDatum.task_visible == 'open'" class="form-tip">{{$L('保持：任务详情页可见性选项保持显示。')}}</div>
+                        <div v-else-if="formDatum.task_visible == 'close'" class="form-tip">{{$L('自动：默认值情况下显示在合并项目，设置时保持显示。')}}</div>
+                    </FormItem>
+                    <FormItem :label="$L('任务默认时间')" prop="taskDefaultTime">
+                        <TimePicker
+                            v-model="formDatum.task_default_time"
+                            type="timerange"
+                            format="HH:mm"
+                            :placeholder="$L('请选择默认时间')"
+                            transfer/>
+                        <div class="form-tip">{{$L('添加任务计划时间默认时分。')}}</div>
+                    </FormItem>
+                </div>
+            </div>
+            <div class="block-setting-box">
                 <h3>{{ $L('消息相关') }}</h3>
                 <div class="form-box">
                     <FormItem :label="$L('全员群组禁言')" prop="allGroupMute">
@@ -142,14 +164,6 @@
                             <Radio label="close">{{$L('关闭')}}</Radio>
                         </RadioGroup>
                         <div class="form-tip">{{$L('仅支持网页版。')}}</div>
-                        <Input
-                            v-if="formDatum.start_home == 'open'"
-                            v-model="formDatum.home_footer"
-                            type="textarea"
-                            style="margin:8px 0 -8px"
-                            :rows="2"
-                            :autosize="{ minRows: 2, maxRows: 8 }"
-                            :placeholder="$L('首页底部：首页底部网站备案号等信息')"/>
                     </FormItem>
                 </div>
             </div>

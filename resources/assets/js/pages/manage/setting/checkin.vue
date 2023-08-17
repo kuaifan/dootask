@@ -60,6 +60,7 @@
 <script>
 import CheckinCalendar from "../components/CheckinCalendar";
 export default {
+    name: "ManageCheckin",
     components: {CheckinCalendar},
 
     data() {

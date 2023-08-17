@@ -1,5 +1,5 @@
 <template>
-    <div v-show="userId > 0" class="page-manage" :class="{'show-tabbar': showMobileTabbar}">
+    <div class="page-manage" :class="{'show-tabbar': showMobileTabbar, 'not-logged': userId <= 0}">
         <div class="manage-box-menu" :class="{'show-mobile-menu': showMobileMenu}">
             <Dropdown
                 class="page-manage-menu-dropdown main-menu"
@@ -11,8 +11,7 @@
                         <UserAvatar :userid="userId" :size="36" tooltipDisabled/>
                     </div>
                     <span>{{userInfo.nickname}}</span>
-                    <Badge v-if="(reportUnreadNumber + approveUnreadNumber) > 0" class="manage-box-top-report" :overflow-count="999" :count="reportUnreadNumber + approveUnreadNumber"/>
-                    <Badge v-else-if="!!clientNewVersion" class="manage-box-top-report" dot/>
+                    <Badge v-if="!!clientNewVersion" class="manage-box-top-report" dot/>
                     <div class="manage-box-arrow">
                         <Icon type="ios-arrow-up" />
                         <Icon type="ios-arrow-down" />
@@ -57,18 +56,11 @@
                             <DropdownItem :divided="!!item.divided">
                                 <div class="manage-menu-flex">
                                     {{$L(item.name)}}
-                                    <Badge v-if="reportUnreadNumber > 0" class="manage-menu-report-badge" :overflow-count="999" :count="reportUnreadNumber"/>
-                                    <Icon v-else type="ios-arrow-forward"></Icon>
+                                    <Icon type="ios-arrow-forward"></Icon>
                                 </div>
                             </DropdownItem>
                             <DropdownMenu slot="list">
                                 <DropdownItem name="allUser">{{$L('团队管理')}}</DropdownItem>
-                                <DropdownItem name="workReport">
-                                    <div class="manage-menu-flex">
-                                        {{$L('工作报告')}}
-                                        <Badge v-if="reportUnreadNumber > 0" class="manage-menu-report-badge" :overflow-count="999" :count="reportUnreadNumber"/>
-                                    </div>
-                                </DropdownItem>
                                 <DropdownItem name="exportTask">{{$L('导出任务统计')}}</DropdownItem>
                                 <DropdownItem name="exportOverdueTask">{{$L('导出超期任务')}}</DropdownItem>
                                 <DropdownItem name="exportApprove">{{$L('导出审批数据')}}</DropdownItem>
@@ -122,6 +114,11 @@
                         <li @click="toggleRoute('file')" :class="classNameRoute('file')">
                             <i class="taskfont">&#xe6f3;</i>
                             <div class="menu-title">{{$L('文件')}}</div>
+                        </li>
+                        <li @click="toggleRoute('apply')" :class="classNameRoute('apply')">
+                            <i class="taskfont">&#xe60c;</i>
+                            <div class="menu-title">{{$L('应用')}}</div>
+                            <Badge class="menu-badge" :overflow-count="999" :text="String((reportUnreadNumber + approveUnreadNumber) || '')"/>
                         </li>
                     </ul>
                 </div>
@@ -200,7 +197,7 @@
 
         <div class="manage-box-main">
             <keep-alive>
-                <router-view class="manage-box-view"></router-view>
+                <router-view class="manage-box-view" @on-click="onTabbarClick"></router-view>
             </keep-alive>
         </div>
 
@@ -581,15 +578,21 @@ export default {
                     {path: 'archivedProject', name: '已归档的项目'},
 
                     {path: 'team', name: '团队管理', divided: true},
+<<<<<<< HEAD
                     {path: 'approve', name: '审批中心'},
                     {path: 'okrManage', name: 'OKR管理'},
                     {path: 'okrAnalyze', name: 'OKR结果分析'},
+=======
+>>>>>>> pro
                 ])
             } else {
                 array.push(...[
                     {path: 'personal', name: '个人设置', divided: true},
+<<<<<<< HEAD
                     {path: 'approve', name: '审批中心'},
                     {path: 'okrManage', name: 'OKR管理'},
+=======
+>>>>>>> pro
                     {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
 
                     {path: 'workReport', name: '工作报告', divided: true},
@@ -645,7 +648,7 @@ export default {
             if (this.routeName === 'manage-project' && !/^\d+$/.test(this.$route.params.projectId)) {
                 return true;
             }
-            return ['manage-dashboard', 'manage-calendar', 'manage-messenger', 'manage-file', 'manage-setting'].includes(this.routeName)
+            return ['manage-dashboard', 'manage-calendar', 'manage-messenger', 'manage-file', 'manage-setting', 'manage-approve', 'manage-apply'].includes(this.routeName)
         },
     },
 
@@ -844,8 +847,12 @@ export default {
         },
 
         classNameRoute(path) {
+            let routeName = this.routeName
+            if(routeName == 'manage-approve'){
+                routeName = `manage-apply`
+            }
             return {
-                "active": this.routeName === `manage-${path}`,
+                "active": routeName === `manage-${path}`,
             };
         },
 
@@ -929,14 +936,33 @@ export default {
 
         shortcutEvent(e) {
             if (e.metaKey || e.ctrlKey) {
-                if (e.keyCode === 74) {
-                    e.preventDefault();
-                    this.onAddMenu('createMeeting')
-                } else if (e.keyCode === 75 || e.keyCode === 78) {
-                    e.preventDefault();
-                    this.onAddMenu('task')
-                } else if (e.keyCode === 83 && this.$refs.taskModal.checkUpdate()) {
-                    e.preventDefault();
+                switch (e.keyCode) {
+                    case 66: // B - 新建项目
+                        e.preventDefault();
+                        this.onAddShow()
+                        break;
+
+                    case 74: // J - 新会议
+                        e.preventDefault();
+                        this.onAddMenu('createMeeting')
+                        break;
+
+                    case 75:
+                    case 78: // K/N - 加入会议
+                        e.preventDefault();
+                        this.onAddMenu('task')
+                        break;
+
+                    case 83: // S - 保存任务
+                        if (this.$refs.taskModal.checkUpdate()) {
+                            e.preventDefault();
+                        }
+                        break;
+
+                    case 188: // , - 进入设置
+                        e.preventDefault();
+                        this.toggleRoute('setting')
+                        break;
                 }
             }
         },

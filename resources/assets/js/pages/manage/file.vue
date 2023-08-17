@@ -6,6 +6,7 @@
 
             <div class="file-head">
                 <div class="file-nav">
+                    <div class="common-nav-back portrait" @click="goForward({name: 'manage-apply'},true)"><i class="taskfont">&#xe676;</i></div>
                     <h1>{{$L('文件')}}</h1>
                     <div v-if="loadIng == 0" class="file-refresh" @click="getFileList"><i class="taskfont">&#xe6ae;</i></div>
                 </div>
@@ -340,23 +341,25 @@
             <div>
                 <div style="margin:-10px 0 8px">{{$L('文件名称')}}: {{linkData.name}}</div>
                 <Input ref="linkInput" v-model="linkData.url" type="textarea" :rows="3" @on-focus="linkFocus" readonly/>
-                <div class="form-tip" style="padding-top:6px">{{$L('可通过此链接浏览文件。')}}<a href="javascript:void(0)" @click="linkCopy">{{$L('点击复制链接')}}</a></div>
+                <div class="form-tip" style="padding-top:6px">
+                    {{$L('可通过此链接浏览文件。')}}
+                    <Poptip
+                        confirm
+                        placement="bottom"
+                        :ok-text="$L('确定')"
+                        :cancel-text="$L('取消')"
+                        @on-ok="linkGet(true)"
+                        transfer>
+                        <div slot="title">
+                            <p><strong>{{$L('注意：刷新将导致原来的链接失效！')}}</strong></p>
+                        </div>
+                        <a href="javascript:void(0)">{{$L('刷新链接')}}</a>
+                    </Poptip>
+                </div>
             </div>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="linkShow=false">{{$L('取消')}}</Button>
-                <Poptip
-                    confirm
-                    placement="bottom"
-                    style="margin-left:8px"
-                    :ok-text="$L('确定')"
-                    :cancel-text="$L('取消')"
-                    @on-ok="linkGet(true)"
-                    transfer>
-                    <div slot="title">
-                        <p><strong>{{$L('注意：刷新将导致原来的链接失效！')}}</strong></p>
-                    </div>
-                    <Button type="primary" :loading="linkLoad > 0">{{$L('刷新')}}</Button>
-                </Poptip>
+                <Button type="primary" :loading="linkLoad > 0" @click="linkCopy">{{$L('复制')}}</Button>
             </div>
         </Modal>
 
@@ -1096,6 +1099,10 @@ export default {
         },
 
         clickRow(row, column) {
+            if (this.contextMenuVisible) {
+                this.handleClickContextMenuOutside();
+                return;
+            }
             if (column.type == "selection") {
                 this.dropFile(row, 'select');
             } else {
@@ -1300,7 +1307,7 @@ export default {
                     id: this.linkData.id,
                     name: this.linkData.name
                 });
-                this.linkFocus();
+                this.linkCopy();
             }).catch(({msg}) => {
                 this.linkShow = false
                 $A.modalError(msg);
@@ -1686,6 +1693,11 @@ export default {
 
         filePasteDrag(e, type) {
             this.dialogDrag = false;
+            if ($A.dataHasFolder(type === 'drag' ? e.dataTransfer : e.clipboardData)) {
+                e.preventDefault();
+                $A.modalWarning(`暂不支持${type === 'drag' ? '拖拽' : '粘贴'}文件夹，请手动上传文件夹。`)
+                return;
+            }
             this.pasteDragNext(e, type);
         },
 

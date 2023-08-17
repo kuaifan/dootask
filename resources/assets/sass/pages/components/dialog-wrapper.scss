@@ -308,6 +308,10 @@
                                 background-image: url("../images/dialog/tag.svg");
                             }
 
+                            &.todo i {
+                                background-image: url("../images/dialog/todo.svg");
+                            }
+
                             &.project i {
                                 background-image: url("../images/dialog/project.svg");
                             }
@@ -426,6 +430,12 @@
             overflow-x: hidden;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+        }
+
+        .inactive {
+            pre, code {
+                visibility: hidden;
+            }
         }
 
         .dialog-item {
@@ -751,12 +761,16 @@
                                         text-align: center;
                                         padding: 12px 0 5px 0;
 
-                                        > button.ivu-btn-primary {
-                                            margin-right: 12px;
-                                        }
-
-                                        > button.ivu-btn-small {
-                                            height: 32px;
+                                        > button {
+                                            &.ivu-btn {
+                                                flex: 1;
+                                            }
+                                            &.ivu-btn-primary {
+                                                margin-right: 12px;
+                                            }
+                                            &.ivu-btn-small {
+                                                height: 32px;
+                                            }
                                         }
                                     }
                                 }
@@ -951,8 +965,8 @@
                         > li {
                             list-style: none;
                             display: flex;
-                            align-items: center;
-                            padding: 2px 7px;
+                            align-items: flex-start;
+                            padding: 2px 8px;
                             margin-top: 6px;
                             margin-right: 8px;
                             border-radius: 14px;
@@ -971,17 +985,7 @@
                             }
                             .emoji-users {
                                 position: relative;
-                                padding-left: 14px;
-                                &:before {
-                                    position: absolute;
-                                    content: "";
-                                    left: 7px;
-                                    top: 6px;
-                                    bottom: 6px;
-                                    width: 1px;
-                                    transform: scaleX(0.5);
-                                    background-color: rgba(#818181, 0.5);
-                                }
+                                padding-left: 6px;
                                 > ul {
                                     display: flex;
                                     flex-wrap: wrap;
@@ -992,6 +996,8 @@
                                         list-style: none;
                                         color: #818181;
                                         font-size: 12px;
+                                        height: 22px;
+                                        line-height: 22px;
                                         &.bold {
                                             font-weight: 600;
                                         }
@@ -1299,7 +1305,7 @@
             color: $primary-text-color;
             background-color: #ffffff;
             border: 1px solid #eeeeee;
-            box-shadow: 0 4px 8px 0 rgba($primary-text-color, 0.2);
+            box-shadow: 0 0 4px 0 rgba($primary-text-color, 0.2);
             top: -48px;
             width: 40px;
             height: 40px;
@@ -1682,6 +1688,27 @@ body.window-touch {
             user-select: none;
             .dialog-item {
                 .dialog-view {
+                    .dialog-head {
+                        .dialog-content {
+                            .content-file {
+                                &.file {
+                                    .file-box {
+                                        position: relative;
+                                        &:before {
+                                            content: "";
+                                            position: absolute;
+                                            top: 0;
+                                            left: 0;
+                                            width: 60px;
+                                            height: 100%;
+                                            z-index: 1;
+                                            user-select: none;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                     &.operate-enter {
                         .dialog-head {
                             .dialog-content {

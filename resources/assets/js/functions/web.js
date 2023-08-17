@@ -540,51 +540,52 @@
          * @returns {(*)[]|[{text, value(): [Date,*]},{text, value(): [Date,*]},{text, value(): [*,*]},{text, value(): [*,*]},{text, value(): [Date,*]},null,null]|(Date|*)[]}
          */
         timeOptionShortcuts() {
+            const startSecond = $A.Date($A.formatDate("Y-m-d 00:00:00", Math.round(new Date().getTime() / 1000)));
             const lastSecond = (e) => {
-                return $A.Date($A.formatDate("Y-m-d 23:59:29", Math.round(e / 1000)))
+                return $A.Date($A.formatDate("Y-m-d 00:00:00", Math.round(e / 1000)))
             };
             return [{
                 text: $A.L('今天'),
                 value() {
-                    return [new Date(), lastSecond(new Date().getTime())];
+                    return [startSecond, lastSecond(new Date().getTime())];
                 }
             }, {
                 text: $A.L('明天'),
                 value() {
                     let e = new Date();
                     e.setDate(e.getDate() + 1);
-                    return [new Date(), lastSecond(e.getTime())];
+                    return [startSecond, lastSecond(e.getTime())];
                 }
             }, {
                 text: $A.L('本周'),
                 value() {
-                    return [new Date(), lastSecond($A.getSpecifyDate('本周结束', true).getTime())];
+                    return [startSecond, lastSecond($A.getSpecifyDate('本周结束', true).getTime())];
                 }
             }, {
                 text: $A.L('本月'),
                 value() {
-                    return [new Date(), lastSecond($A.getSpecifyDate('本月结束', true).getTime())];
+                    return [startSecond, lastSecond($A.getSpecifyDate('本月结束', true).getTime())];
                 }
             }, {
                 text: $A.L('3天'),
                 value() {
                     let e = new Date();
                     e.setDate(e.getDate() + 2);
-                    return [new Date(), lastSecond(e.getTime())];
+                    return [startSecond, lastSecond(e.getTime())];
                 }
             }, {
                 text: $A.L('5天'),
                 value() {
                     let e = new Date();
                     e.setDate(e.getDate() + 4);
-                    return [new Date(), lastSecond(e.getTime())];
+                    return [startSecond, lastSecond(e.getTime())];
                 }
             }, {
                 text: $A.L('7天'),
                 value() {
                     let e = new Date();
                     e.setDate(e.getDate() + 6);
-                    return [new Date(), lastSecond(e.getTime())];
+                    return [startSecond, lastSecond(e.getTime())];
                 }
             }];
         },
@@ -868,6 +869,23 @@
             url = $A.rightDelete(url, '_thumb.jpg')
             url = $A.rightDelete(url, '_thumb.png')
             return url
+        },
+
+        /**
+         * 拖拽或粘贴的数据是否包含文件夹
+         * @param data
+         * @returns {boolean}
+         */
+        dataHasFolder(data) {
+            const {items} = data;
+            if (items) {
+                for (const item of items) {
+                    if (!(item.kind === "file" && item.webkitGetAsEntry().isFile)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
     });
 
@@ -972,6 +990,8 @@
                 loading: true,
                 okText: $A.L(config.okText || '确定'),
                 cancelText: $A.L(config.cancelText || '取消'),
+                okType: config.okType || 'primary',
+                cancelType: config.cancelType || 'text',
             });
             setTimeout(() => {
                 document.getElementById(inputId) && document.getElementById(inputId).focus();
@@ -1140,9 +1160,30 @@
     $.extend({
         dark: {
             utils: {
-                filter: '-webkit-filter: url(#dark-mode-filter) !important; filter: url(#dark-mode-filter) !important;',
-                reverseFilter: '-webkit-filter: url(#dark-mode-reverse-filter) !important; filter: url(#dark-mode-reverse-filter) !important;',
-                noneFilter: '-webkit-filter: none !important; filter: none !important;',
+                supportMode() {
+                    let ua = typeof window !== 'undefined' && window.navigator.userAgent.toLowerCase();
+                    if (`${ua.match(/Chrome/i)}` === 'chrome') {
+                        return 'chrome';
+                    }
+                    if (`${ua.match(/Webkit/i)}` === 'webkit') {
+                        return 'webkit';
+                    }
+                    return null;
+                },
+
+                defaultFilter() {
+                    return '-webkit-filter: invert(100%) hue-rotate(180deg) contrast(90%) !important; ' +
+                        'filter: invert(100%) hue-rotate(180deg) contrast(90%) !important;';
+                },
+
+                reverseFilter() {
+                    return '-webkit-filter: invert(100%) hue-rotate(180deg) contrast(110%) !important; ' +
+                        'filter: invert(100%) hue-rotate(180deg) contrast(110%) !important;';
+                },
+
+                noneFilter() {
+                    return '-webkit-filter: none !important; filter: none !important;';
+                },
 
                 addExtraStyle() {
                     try {
@@ -1191,22 +1232,12 @@
                 },
             },
 
-            createDarkFilter() {
-                if (this.utils.hasElementById('dark-mode-svg')) return;
-                let svgDom = '<svg id="dark-mode-svg" style="height: 0; width: 0;"><filter id="dark-mode-filter" x="0" y="0" width="99999" height="99999"><feColorMatrix type="matrix" values="0.283 -0.567 -0.567 0.000 0.925 -0.567 0.283 -0.567 0.000 0.925 -0.567 -0.567 0.283 0.000 0.925 0.000 0.000 0.000 1.000 0.000"></feColorMatrix></filter><filter id="dark-mode-reverse-filter" x="0" y="0" width="99999" height="99999"><feColorMatrix type="matrix" values="0.333 -0.667 -0.667 0.000 1.000 -0.667 0.333 -0.667 0.000 1.000 -0.667 -0.667 0.333 0.000 1.000 0.000 0.000 0.000 1.000 0.000"></feColorMatrix></filter></svg>';
-                let div = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
-                div.innerHTML = svgDom;
-                let frag = document.createDocumentFragment();
-                while (div.firstChild)
-                    frag.appendChild(div.firstChild);
-                document.head.appendChild(frag);
-            },
-
             createDarkStyle() {
                 this.utils.addStyle('dark-mode-style', 'style', `
                 @media screen {
                     html {
-                        ${this.utils.filter}
+                        ${this.utils.defaultFilter()}
+                        will-change: transform;
                     }
 
                     /* Default Reverse rule */
@@ -1225,7 +1256,8 @@
                     .no-dark-mode,
                     .no-dark-content,
                     .no-dark-before:before {
-                        ${this.utils.reverseFilter}
+                        ${this.utils.reverseFilter()}
+                        will-change: transform;
                     }
 
                     [style*="background:url"] *,
@@ -1237,7 +1269,7 @@
                     .no-dark-content img,
                     .no-dark-content canvas,
                     .no-dark-content svg image {
-                        ${this.utils.noneFilter}
+                        ${this.utils.noneFilter()}
                     }
 
                     /* Text contrast */
@@ -1253,14 +1285,20 @@
                     :-moz-full-screen *,
                     :fullscreen,
                     :fullscreen * {
-                        ${this.utils.noneFilter}
+                        ${this.utils.noneFilter()}
                     }
 
                     /* Page background */
                     html {
                         min-width: 100%;
                         min-height: 100%;
-                        background: #fff !important;
+                        background: #000;
+                    }
+                    .child-view {
+                        background-color: #fff;
+                    }
+                    .page-login {
+                        background-color: #f8f8f8;
                     }
                     ${this.utils.addExtraStyle()}
                 }
@@ -1273,13 +1311,12 @@
             },
 
             enableDarkMode() {
-                if (!$A.isChrome()) {
+                if (!this.utils.supportMode()) {
                     return;
                 }
                 if (this.isDarkEnabled()) {
                     return
                 }
-                this.createDarkFilter();
                 this.createDarkStyle();
                 this.utils.addClass(document.body, "dark-mode-reverse")
             },
@@ -1288,13 +1325,15 @@
                 if (!this.isDarkEnabled()) {
                     return
                 }
-                this.utils.removeElementById('dark-mode-svg');
                 this.utils.removeElementById('dark-mode-style');
                 this.utils.removeClass(document.body, "dark-mode-reverse")
             },
 
             autoDarkMode() {
                 let darkScheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+                if ($A.isEEUiApp) {
+                    darkScheme = $A.eeuiAppGetThemeName() === "dark"
+                }
                 if (darkScheme) {
                     this.enableDarkMode()
                 } else {

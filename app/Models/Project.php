@@ -390,6 +390,7 @@ class Project extends AbstractModel
                 $userids = Base::arrayRetainInt($item['userids'] ?: [], true);
                 $usertype = trim($item['usertype']);
                 $userlimit = intval($item['userlimit']);
+                $columnid = intval($item['columnid']);
                 if ($usertype == 'replace' && empty($userids)) {
                     throw new ApiException("状态[{$item['name']}]设置错误，设置流转模式时必须填写状态负责人");
                 }
@@ -411,6 +412,7 @@ class Project extends AbstractModel
                     'userids' => $userids,
                     'usertype' => trim($item['usertype']),
                     'userlimit' => $userlimit,
+                    'columnid' => $columnid,
                 ], [], $isInsert);
                 if ($flow) {
                     $ids[] = $flow->id;
@@ -545,7 +547,7 @@ class Project extends AbstractModel
             $project->save();
             //
             if ($flow == 'open') {
-                $project->addFlow(Base::json2array('[{"id":-10,"name":"待处理","status":"start","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0},{"id":-11,"name":"进行中","status":"progress","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0},{"id":-12,"name":"待测试","status":"test","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0},{"id":-13,"name":"已完成","status":"end","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0},{"id":-14,"name":"已取消","status":"end","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0}]'));
+                $project->addFlow(Base::json2array('[{"id":-10,"name":"待处理","status":"start","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0,"columnid":0},{"id":-11,"name":"进行中","status":"progress","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0,"columnid":0},{"id":-12,"name":"待测试","status":"test","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0,"columnid":0},{"id":-13,"name":"已完成","status":"end","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0,"columnid":0},{"id":-14,"name":"已取消","status":"end","turns":[-10,-11,-12,-13,-14],"userids":[],"usertype":"add","userlimit":0,"columnid":0}]'));
             }
         });
         //

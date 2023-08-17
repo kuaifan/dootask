@@ -21,7 +21,7 @@
                                 type="timerange"
                                 format="HH:mm"
                                 :placeholder="$L('请选择签到时间')"/>
-                            <Form @submit.native.prevent>
+                            <Form @submit.native.prevent class="block-setting-advance">
                                 <FormItem :label="$L('最早可提前')" prop="advance">
                                     <div class="input-number-box">
                                         <InputNumber v-model="formData.advance" :min="0" :step="1"/>
@@ -57,11 +57,21 @@
                             </RadioGroup>
                             <div class="form-tip">{{$L('允许成员自己修改MAC地址')}}</div>
                         </FormItem>
+                        <FormItem :label="$L('签到方式')" prop="modes">
+                            <CheckboxGroup v-model="formData.modes">
+                                <Checkbox label="auto">{{$L('自动签到')}}</Checkbox>
+                                <Checkbox label="manual">{{$L('手动签到')}}</Checkbox>
+                                <Checkbox v-if="false" label="location">{{$L('定位签到')}}</Checkbox>
+                            </CheckboxGroup>
+                            <div v-if="formData.modes.includes('auto')" class="form-tip">{{$L('自动签到')}}: {{$L('详情看下文安装说明')}}</div>
+                            <div v-if="formData.modes.includes('manual')" class="form-tip">{{$L('手动签到')}}: {{$L('通过在签到打卡机器人发送指令签到')}}</div>
+                            <div v-if="formData.modes.includes('location')" class="form-tip">{{$L('定位签到')}}: {{$L('通过在签到打卡机器人发送位置签到')}}</div>
+                        </FormItem>
                     </template>
                 </div>
             </div>
 
-            <template v-if="formData.open === 'open'">
+            <template v-if="formData.open === 'open' && formData.modes.includes('auto')">
                 <div class="block-setting-placeholder"></div>
                 <div class="block-setting-box">
                     <h3>{{ $L('自动签到') }}</h3>
@@ -111,6 +121,7 @@ export default {
                 open: '',
                 edit: '',
                 cmd: '',
+                modes: [],
             },
             ruleData: {},
 

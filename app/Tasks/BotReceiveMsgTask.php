@@ -23,12 +23,16 @@ class BotReceiveMsgTask extends AbstractTask
 {
     protected $userid;
     protected $msgId;
+    protected $mention;
+    protected $client = [];
 
-    public function __construct($userid, $msgId)
+    public function __construct($userid, $msgId, $mention, $client = [])
     {
         parent::__construct(...func_get_args());
         $this->userid = $userid;
         $this->msgId = $msgId;
+        $this->mention = $mention;
+        $this->client = is_array($client) ? $client : [];
     }
 
     public function start()
@@ -42,14 +46,6 @@ class BotReceiveMsgTask extends AbstractTask
             return;
         }
         $msg->readSuccess($botUser->userid);
-        //
-        $dialog = WebSocketDialog::find($msg->dialog_id);
-        if (empty($dialog)) {
-            return;
-        }
-        if ($dialog->type !== 'user') {
-            return;
-        }
         $this->botManagerReceive($msg, $botUser);
     }
 
@@ -70,10 +66,27 @@ class BotReceiveMsgTask extends AbstractTask
             return;
         }
         $original = $msg->msg['text'];
+        if ($this->mention) {
+            $original = preg_replace("/<span class=\"mention user\" data-id=\"(\d+)\">(.*?)<\/span>/", "", $original);
+        }
         if (preg_match("/<span[^>]*?data-quick-key=([\"'])(.*?)\\1[^>]*?>(.*?)<\/span>/is", $original, $match)) {
             $command = $match[2];
         } else {
             $command = trim(strip_tags($original));
+        }
+        //
+        $dialog = WebSocketDialog::find($msg->dialog_id);
+        if (empty($dialog)) {
+            return;
+        }
+        // 推送Webhook
+        if ($command
+            && !str_starts_with($command, '/')
+            && ($dialog->type === 'user' || $this->mention)) {
+            $this->botManagerWebhook($command, $msg, $botUser, $dialog);
+        }
+        if ($dialog->type !== 'user') {
+            return;
         }
         // 签到机器人
         if ($botUser->email === 'check-in@bot.system') {
@@ -300,7 +313,7 @@ class BotReceiveMsgTask extends AbstractTask
                     $nameKey = $isManager ? $array[2] : $array[1];
                     $data = $this->botManagerOne($botId, $msg->userid);
                     if ($data) {
-                        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.updated_at as user_at'])
+                        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.color', 'u.updated_at as user_at'])
                             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
                             ->where('web_socket_dialogs.name', 'LIKE', "%{$nameKey}%")
                             ->where('u.userid', $data->userid)
@@ -337,24 +350,127 @@ class BotReceiveMsgTask extends AbstractTask
             $text = preg_replace("/^\x20+/", "", $text);
             $text = preg_replace("/\n\x20+/", "\n", $text);
             WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $text], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
+        }
+    }
+
+    /**
+     * 机器人处理 Webhook
+     * @param string $command
+     * @param WebSocketDialogMsg $msg
+     * @param User $botUser
+     * @param WebSocketDialog $dialog
+     * @return void
+     */
+    private function botManagerWebhook(string $command, WebSocketDialogMsg $msg, User $botUser, WebSocketDialog $dialog)
+    {
+        $serverUrl = 'http://' . env('APP_IPPR') . '.3';
+        $userBot = null;
+        $extras = [];
+        $error = null;
+        switch ($botUser->email) {
+            // ChatGPT 机器人
+            case 'ai-openai@bot.system':
+                $setting = Base::setting('aibotSetting');
+                $webhookUrl = "{$serverUrl}/ai/openai/send";
+                $extras = [
+                    'openai_key' => $setting['openai_key'],
+                    'openai_agency' => $setting['openai_agency'],
+                    'server_url' => $serverUrl,
+                ];
+                if (empty($extras['openai_key'])) {
+                    $error = 'Robot disabled.';
+                } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
+                    && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
+                    $error = 'The client version is low (required version ≥ v0.29.11).';
+                }
+                break;
+            // Claude 机器人
+            case 'ai-claude@bot.system':
+                $setting = Base::setting('aibotSetting');
+                $webhookUrl = "{$serverUrl}/ai/claude/send";
+                $extras = [
+                    'claude_token' => $setting['claude_token'],
+                    'claude_agency' => $setting['claude_agency'],
+                    'server_url' => $serverUrl,
+                ];
+                if (empty($extras['claude_token'])) {
+                    $error = 'Robot disabled.';
+                } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
+                    && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
+                    $error = 'The client version is low (required version ≥ v0.29.11).';
+                }
+                break;
+            // Wenxin 机器人
+            case 'ai-wenxin@bot.system':
+                $setting = Base::setting('aibotSetting');
+                $webhookUrl = "{$serverUrl}/ai/wenxin/send";
+                $extras = [
+                    'wenxin_key' => $setting['wenxin_key'],
+                    'wenxin_secret' => $setting['wenxin_secret'],
+                    'wenxin_model' => $setting['wenxin_model'],
+                    'server_url' => $serverUrl,
+                ];
+                if (empty($extras['wenxin_key'])) {
+                    $error = 'Robot disabled.';
+                } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
+                    && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
+                    $error = 'The client version is low (required version ≥ v0.29.12).';
+                }
+                break;
+            // QianWen 机器人
+            case 'ai-qianwen@bot.system':
+                $setting = Base::setting('aibotSetting');
+                $webhookUrl = "{$serverUrl}/ai/qianwen/send";
+                $extras = [
+                    'qianwen_key' => $setting['qianwen_key'],
+                    'qianwen_model' => $setting['qianwen_model'],
+                    'server_url' => $serverUrl,
+                ];
+                if (empty($extras['qianwen_key'])) {
+                    $error = 'Robot disabled.';
+                } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
+                    && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
+                    $error = 'The client version is low (required version ≥ v0.29.12).';
+                }
+                break;
+            // 其他机器人
+            default:
+                $userBot = UserBot::whereBotId($botUser->userid)->first();
+                $webhookUrl = $userBot?->webhook_url;
+                break;
+        }
+        if ($error) {
+            WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $error], $botUser->userid, false, false, true); // todo 未能在任务end事件来发送任务
             return;
         }
-        // 推送Webhook
-        if ($command) {
-            $userBot = UserBot::whereBotId($botUser->userid)->first();
-            if ($userBot && preg_match("/^https*:\/\//", $userBot->webhook_url)) {
-                Ihttp::ihttp_post($userBot->webhook_url, [
-                    'text' => $command,
-                    'token' => User::generateToken($botUser),
-                    'dialog_id' => $msg->dialog_id,
-                    'msg_id' => $msg->id,
-                    'msg_uid' => $msg->userid,
-                    'bot_uid' => $botUser->userid,
-                    'version' => Base::getVersion(),
-                ], 10);
+        if (!preg_match("/^https*:\/\//", $webhookUrl)) {
+            return;
+        }
+        //
+        try {
+            $res = Ihttp::ihttp_post($webhookUrl, [
+                'text' => $command,
+                'token' => User::generateToken($botUser),
+                'dialog_id' => $dialog->id,
+                'dialog_type' => $dialog->type,
+                'msg_id' => $msg->id,
+                'msg_uid' => $msg->userid,
+                'mention' => $this->mention ? 1 : 0,
+                'bot_uid' => $botUser->userid,
+                'version' => Base::getVersion(),
+                'extras' => Base::array2json($extras)
+            ], 10);
+            if ($userBot) {
                 $userBot->webhook_num++;
                 $userBot->save();
             }
+            if($res['data'] && $data = json_decode($res['data'])){
+                if($data['code'] != 200 && $data['message']){
+                    WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $res['data']['message']], $botUser->userid, false, false, true);
+                }
+            }
+        } catch (\Throwable $th) {
+            //throw $th;
         }
     }
 

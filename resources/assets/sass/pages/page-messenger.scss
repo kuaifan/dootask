@@ -591,6 +591,34 @@
     }
 }
 
+.messenger-dialog-operation {
+    .ivu-dropdown-item-divided {
+        &:before {
+            transform: scaleY(0.5);
+        }
+    }
+
+    .item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        > i {
+            flex-shrink: 0;
+            width: 18px;
+            height: 18px;
+            line-height: 18px;
+            font-size: 18px;
+            margin-left: 16px;
+            opacity: 0.7;
+
+            &.color {
+                opacity: 1;
+            }
+        }
+    }
+}
+
 body.window-touch {
     .page-messenger {
         .messenger-wrapper {

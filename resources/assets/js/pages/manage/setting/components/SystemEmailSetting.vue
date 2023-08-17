@@ -43,7 +43,7 @@
                             <Radio label="open">{{ $L('开启') }}</Radio>
                             <Radio label="close">{{ $L('关闭') }}</Radio>
                         </RadioGroup>
-                        <Form v-if="formData.notice_msg == 'open'" @submit.native.prevent>
+                        <Form v-if="formData.notice_msg == 'open'" @submit.native.prevent class="block-setting-msg-unread">
                             <FormItem :label="$L('未读个人消息')" prop="msg_unread_user_minute">
                                 <div class="input-number-box">
                                     <InputNumber v-model="formData.msg_unread_user_minute" :min="0" :step="1"/>

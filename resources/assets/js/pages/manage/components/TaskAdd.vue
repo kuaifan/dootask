@@ -25,18 +25,13 @@
                     enterkeyhint="done"
                     @on-keydown="onKeydown"/>
             </div>
-            <div class="desc">
-                <TEditor
-                    v-model="addData.content"
-                    :plugins="taskPlugins"
-                    :options="taskOptions"
-                    :option-full="taskOptionFull"
-                    :placeholder="$L(windowLandscape ? '详细描述，选填...（点击右键使用工具栏）' : '详细描述，选填...')"
-                    :placeholderFull="$L('详细描述...')"
-                    inline/>
-            </div>
-            <div class="advanced-option">
-                <Button :class="{advanced: advanced}" @click="advanced=!advanced">{{$L('高级选项')}}</Button>
+            <TEditorTask
+                class="desc"
+                v-model="addData.content"
+                :placeholder="$L(windowLandscape ? '详细描述，选填...（点击右键使用工具栏）' : '详细描述，选填...')"
+                :placeholderFull="$L('详细描述...')"/>
+            <div class="advanced-option" :class="{'advanced-open': advanced}">
+                <Button @click="advanced=!advanced">{{$L('高级选项')}}</Button>
                 <ul class="advanced-priority">
                     <li v-for="(item, key) in taskPriority" :key="key">
                         <ETooltip :disabled="$isEEUiApp || windowTouch" :content="taskPriorityContent(item)">
@@ -57,7 +52,7 @@
                     format="yyyy/MM/dd HH:mm"
                     type="datetimerange"
                     placement="bottom"
-                    @on-change="taskTimeChange(addData.times)"
+                    @on-change="taskTimeChange(addData)"
                     @on-open-change="taskTimeOpenChange">
                     <div class="advanced-time" @click="taskTimeOpenChange(!taskTimeOpen)">
                         <Icon type="ios-clock-outline" />
@@ -76,9 +71,9 @@
                     :placeholder="$L('选择计划范围')"
                     format="yyyy/MM/dd HH:mm"
                     type="datetimerange"
-                    @on-change="taskTimeChange(addData.times)"/>
+                    @on-change="taskTimeChange(addData)"/>
             </FormItem>
-            <FormItem :label="$L('任务负责人')" >
+            <FormItem :label="$L('负责人')" >
                 <UserSelect
                     v-model="addData.owner"
                     :multiple-max="10"
@@ -86,12 +81,16 @@
                     :project-id="addData.project_id"
                     :avatar-size="24"
                     border/>
-                <div v-if="showAddAssist" class="task-add-assist">
-                    <Checkbox v-model="addData.add_assist" :true-value="1" :false-value="0">{{$L('加入任务协助人员列表')}}</Checkbox>
-                    <ETooltip :disabled="$isEEUiApp || windowTouch" :content="$L('你不是任务负责人时建议加入任务协助人员列表')">
-                        <Icon type="ios-alert-outline" />
-                    </ETooltip>
-                </div>
+            </FormItem>
+            <FormItem :label="$L('协助人员')" >
+                <UserSelect
+                    v-model="addData.assist"
+                    :multiple-max="10"
+                    :title="$L('选择任务协助人员')"
+                    :project-id="addData.project_id"
+                    :disabled-choice="addData.owner"
+                    :avatar-size="24"
+                    border/>
             </FormItem>
             <FormItem>
                 <div slot="label">
@@ -153,7 +152,7 @@
                                 clearable
                                 @on-clear="addData.subtasks.splice(key, 1)"/>
                         </Col>
-                        <Col span="8">
+                        <Col span="8" :title="formatDate(item.times)">
                             <DatePicker
                                 v-model="item.times"
                                 :options="timeOptions"
@@ -161,7 +160,7 @@
                                 :placeholder="$L('选择时间')"
                                 format="yyyy/MM/dd HH:mm"
                                 type="datetimerange"
-                                @on-change="taskTimeChange(item.times)"/>
+                                @on-change="taskTimeChange(item)"/>
                         </Col>
                         <Col span="4">
                             <UserSelect
@@ -199,17 +198,20 @@
                 </ButtonGroup>
             </div>
         </div>
+
+        <TaskExistTips ref="taskExistTipsRef" @onAdd="onAdd(again,true)"/>
     </div>
 </template>
 
 <script>
-import TEditor from "../../../components/TEditor";
 import {mapState} from "vuex";
 import UserSelect from "../../../components/UserSelect.vue";
+import TaskExistTips from "./TaskExistTips.vue";
+import TEditorTask from "../../../components/TEditorTask.vue";
 
 export default {
     name: "TaskAdd",
-    components: {UserSelect, TEditor},
+    components: {TEditorTask, UserSelect, TaskExistTips},
     props: {
         value: {
             type: Boolean,
@@ -223,7 +225,7 @@ export default {
                 name: "",
                 content: "",
                 owner: [],
-                add_assist: 1,
+                assist: [],
                 project_id: 0,
                 column_id: 0,
                 times: [],
@@ -245,37 +247,16 @@ export default {
             advanced: false,
             subName: '',
 
-            taskPlugins: [
-                'advlist autolink lists link image charmap print preview hr anchor pagebreak',
-                'searchreplace visualblocks visualchars code',
-                'insertdatetime media nonbreaking save table directionality',
-                'emoticons paste codesample',
-                'autoresize'
-            ],
-            taskOptions: {
-                statusbar: false,
-                menubar: false,
-                autoresize_bottom_margin: 2,
-                min_height: 200,
-                max_height: 380,
-                contextmenu: 'bold italic underline forecolor backcolor | codesample | uploadImages imagePreview | preview screenload',
-                valid_elements : 'a[href|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|witdh|height],pre[class],code',
-                toolbar: false
-            },
-            taskOptionFull: {
-                menubar: 'file edit view',
-                valid_elements : 'a[href|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|witdh|height],pre[class],code',
-                toolbar: 'uploadImages | bold italic underline forecolor backcolor | codesample | preview screenload'
-            },
-
             taskTimeOpen: false,
 
-            timeOptions: {shortcuts:$A.timeOptionShortcuts()},
+            timeOptions: {shortcuts: $A.timeOptionShortcuts()},
 
             loadIng: 0,
             isMounted: false,
 
             beforeClose: [],
+
+            again: false
         }
     },
 
@@ -306,14 +287,18 @@ export default {
                 }
             }
             return 0;
-        },
-
-        showAddAssist() {
-            return !this.addData.owner.includes(this.userId);
         }
     },
 
     watch: {
+        'addData.owner'(owner) {
+            this.addData.assist = this.addData.assist.filter(item => {
+                return owner.indexOf(item) === -1;
+            })
+            if (this.addData.assist.length === 0 && owner.indexOf(this.userId) === -1) {
+                this.addData.assist = [this.userId];
+            }
+        },
         'addData.project_id'(projectId) {
             if (projectId > 0) {
                 $A.IDBSave("cacheAddTaskProjectId", projectId);
@@ -391,24 +376,23 @@ export default {
             }
             // 优先级
             if (this.taskPriority.length > 0) {
-                this.choosePriority(this.taskPriority[0]);
+                await this.choosePriority(this.taskPriority[0]);
             }
         },
 
-        taskTimeChange(times) {
-            let tempc = $A.date2string(times, "Y-m-d H:i");
-            if (tempc[0] && tempc[1]) {
-                if ($A.rightExists(tempc[0], '00:00') && $A.rightExists(tempc[1], '00:00')) {
-                    this.$set(this.addData, 'times', [
-                        tempc[0],
-                        tempc[1].replace("00:00", "23:59")
-                    ])
-                }
+        async taskTimeChange(data) {
+            const times = $A.date2string(data.times, "Y-m-d H:i");
+            if ($A.rightExists(times[0], '00:00') && $A.rightExists(times[1], '00:00')) {
+                this.$set(data, 'times', await this.$store.dispatch("taskDefaultTime", times))
             }
         },
 
         taskTimeOpenChange(val) {
             this.taskTimeOpen = val;
+        },
+
+        formatDate(value) {
+            return value ? $A.date2string(value) : null
         },
 
         onKeydown(e) {
@@ -433,19 +417,19 @@ export default {
         },
 
         taskPriorityContent(item) {
-            let days = $A.runNum(item.days);
+            const days = $A.runNum(item.days);
             if (days <= 0) {
                 return item.name + ' (' + this.$L('无时间限制') + ')';
             }
             return item.name + ' (' + days + this.$L('天') + ')';
         },
 
-        choosePriority(item) {
-            let start = new Date();
-            let days = $A.runNum(item.days);
+        async choosePriority(item) {
+            const start = new Date();
+            const days = $A.runNum(item.days);
             if (days > 0) {
-                let end = new Date(new Date().setDate(start.getDate() + days));
-                this.$set(this.addData, 'times', $A.date2string([start, end]))
+                const end = new Date(new Date().setDate(start.getDate() + days));
+                this.$set(this.addData, 'times', await this.$store.dispatch("taskDefaultTime", $A.date2string([start, end])))
             } else {
                 this.$set(this.addData, 'times', [])
             }
@@ -515,12 +499,30 @@ export default {
             this.addData = Object.assign({}, this.addData, data);
         },
 
-        onAdd(again) {
+        async onAdd(again,affirm=false) {
             if (!this.addData.name) {
                 $A.messageError("任务描述不能为空");
                 return;
             }
+
             this.loadIng++;
+
+            // 存在任务提示
+            if (!affirm && this.addData.owner.length > 0) {
+                this.$refs['taskExistTipsRef'].isExistTask({
+                    userids: this.addData.owner,
+                    timerange: this.addData.times
+                }).then(res => {
+                    if (!res) {
+                        this.onAdd(again, true)
+                    } else {
+                        this.loadIng--;
+                        this.again = again
+                    }
+                });
+                return;
+            }
+
             this.$store.dispatch("taskAdd", this.addData).then(({msg}) => {
                 this.loadIng--;
                 $A.messageSuccess(msg);
@@ -537,7 +539,7 @@ export default {
                         name: "",
                         content: "",
                         owner: [],
-                        add_assist: 1,
+                        assist: [],
                         column_id: 0,
                         times: [],
                         subtasks: [],

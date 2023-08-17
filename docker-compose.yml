@@ -3,7 +3,7 @@ version: '3'
 services:
   php:
     container_name: "dootask-php-${APP_ID}"
-    image: "kuaifan/php:swoole-8.0.rc10"
+    image: "kuaifan/php:swoole-8.0.rc14"
     shm_size: "2gb"
     ulimits:
       core:
@@ -49,6 +49,7 @@ services:
       - drawio-webapp
       - drawio-export
       - minder
+      - ai
     restart: unless-stopped
 
   redis:
@@ -101,8 +102,7 @@ services:
 
   fileview:
     container_name: "dootask-fileview-${APP_ID}"
-    image: "kuaifan/fileview:4.1.0-SNAPSHOT-RC20"
-    platform: linux/amd64
+    image: "kuaifan/fileview:4.2.0-SNAPSHOT-RC22"
     environment:
       KK_CONTEXT_PATH: "/fileview"
       KK_OFFICE_PREVIEW_SWITCH_DISABLED: true
@@ -131,8 +131,7 @@ services:
 
   drawio-export:
     container_name: "dootask-drawio-export-${APP_ID}"
-    image: "kuaifan/export-server:latest"
-    platform: linux/amd64
+    image: "kuaifan/export-server:0.0.1"
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.9"
@@ -150,9 +149,9 @@ services:
 
   approve:
     container_name: "dootask-approve-${APP_ID}"
-    image: "hitosea2020/go-approve:latest"
+    image: "hitosea2020/go-approve:0.1.4"
     environment:
-      TZ: "Asia/Shanghai"
+      TZ: "${TIMEZONE:-PRC}"
       MYSQL_HOST: "${DB_HOST}"
       MYSQL_PORT: "${DB_PORT}"
       MYSQL_DBNAME: "${DB_DATABASE}"
@@ -185,6 +184,13 @@ services:
       - mariadb
     restart: unless-stopped
 
+  ai:
+    container_name: "dootask-ai-${APP_ID}"
+    image: "kuaifan/dooai:0.0.4"
+    networks:
+      extnetwork:
+        ipv4_address: "${APP_IPPR}.12"
+    restart: unless-stopped
 
 networks:
   extnetwork:

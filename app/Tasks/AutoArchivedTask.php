@@ -36,6 +36,7 @@ class AutoArchivedTask extends AbstractTask
                     ->whereNull('archived_at')
                     ->take(100)
                     ->get();
+                /** @var ProjectTask $task */
                 foreach ($taskLists AS $task) {
                     $task->archivedTask(Carbon::now(), true);
                 }

@@ -641,7 +641,7 @@ class WebSocketDialogMsg extends AbstractModel
         }
         // 其他网络图片
         $imageSaveLocal = Base::settingFind("system", "image_save_local");
-        preg_match_all("/<img[^>]*?src=([\"'])(.*?\.(png|jpg|jpeg|webp|gif))\\1[^>]*?>/is", $text, $matchs);
+        preg_match_all("/<img[^>]*?src=([\"'])(.*?(png|jpg|jpeg|webp|gif).*?)\\1[^>]*?>/is", $text, $matchs);
         foreach ($matchs[2] as $key => $str) {
             if ($imageSaveLocal === 'close') {
                 $imageSize = getimagesize($str);
@@ -770,18 +770,19 @@ class WebSocketDialogMsg extends AbstractModel
      * 发送消息、修改消息
      * @param string $action            动作
      * - reply-98：回复消息ID=98
-     * - update-99：更新消息ID=99
+     * - update-99：更新消息ID=99（标记修改）
+     * - change-99：更新消息ID=99（不标记修改）
      * @param int $dialog_id            会话ID（即 聊天室ID）
      * @param string $type              消息类型
      * @param array $msg                发送的消息
-     * @param int $sender               发送的会员ID（默认自己，0为系统）
+     * @param int|null $sender          发送的会员ID（默认自己，0为系统）
      * @param bool $push_self           推送-是否推给自己
      * @param bool $push_retry          推送-失败后重试1次（有时候在事务里执行，数据还没生成时会出现找不到消息的情况）
      * @param bool|null $push_silence   推送-静默
      * - type = [text|file|record|meeting]  默认为：false
      * @return array
      */
-    public static function sendMsg($action, $dialog_id, $type, $msg, $sender = 0, $push_self = false, $push_retry = false, $push_silence = null)
+    public static function sendMsg($action, $dialog_id, $type, $msg, $sender = null, $push_self = false, $push_retry = false, $push_silence = null)
     {
         $link = 0;
         $mtype = $type;
@@ -809,15 +810,23 @@ class WebSocketDialogMsg extends AbstractModel
         }
         //
         $update_id = preg_match("/^update-(\d+)$/", $action, $match) ? $match[1] : 0;
+        $change_id = preg_match("/^change-(\d+)$/", $action, $match) ? $match[1] : 0;
         $reply_id = preg_match("/^reply-(\d+)$/", $action, $match) ? $match[1] : 0;
-        $sender = $sender ?: User::userid();
+        $sender = $sender === null ? User::userid() : $sender;
         //
         $dialog = WebSocketDialog::find($dialog_id);
         if (empty($dialog)) {
             throw new ApiException('获取会话失败');
         }
-        $dialog->checkMute($sender);
+        if ($sender > 0) {
+            $dialog->checkMute($sender);
+        }
         //
+        $modify = 1;
+        if ($change_id) {
+            $modify = 0;
+            $update_id = $change_id;
+        }
         if ($update_id) {
             // 修改
             $dialogMsg = self::whereId($update_id)->whereDialogId($dialog_id)->first();
@@ -835,11 +844,13 @@ class WebSocketDialogMsg extends AbstractModel
                 'mtype' => $mtype,
                 'link' => $link,
                 'msg' => $msg,
-                'modify' => 1,
+                'modify' => $modify,
             ];
             $dialogMsg->updateInstance($updateData);
             $dialogMsg->key = $dialogMsg->generateMsgKey();
             $dialogMsg->save();
+            //
+            $dialogMsg->msgJoinGroup($dialog);
             //
             $dialog->pushMsg('update', array_merge($updateData, [
                 'id' => $dialogMsg->id
@@ -886,5 +897,43 @@ class WebSocketDialogMsg extends AbstractModel
             //
             return Base::retSuccess('发送成功', $dialogMsg);
         }
+    }
+
+    /**
+     * 将被@的人加入群
+     * @param WebSocketDialog $dialog 对话
+     * @return array
+     */
+    public function msgJoinGroup(WebSocketDialog $dialog)
+    {
+        $updateds = [];
+        $silences = [];
+        foreach ($dialog->dialogUser as $dialogUser) {
+            $updateds[$dialogUser->userid] = $dialogUser->updated_at;
+            $silences[$dialogUser->userid] = $dialogUser->silence;
+        }
+        $userids = array_keys($silences);
+
+        // 提及会员
+        $mentions = [];
+        if ($this->type === 'text') {
+            preg_match_all("/<span class=\"mention user\" data-id=\"(\d+)\">/", $this->msg['text'], $matchs);
+            if ($matchs) {
+                $mentions = array_values(array_filter(array_unique($matchs[1])));
+            }
+        }
+
+        // 将会话以外的成员加入会话内
+        $diffids = array_values(array_diff($mentions, $userids));
+        if ($diffids) {
+            // 仅(群聊)且(是群主或没有群主)才可以@成员以外的人
+            if ($dialog->type === 'group' && in_array($dialog->owner_id, [0, $this->userid])) {
+                $dialog->joinGroup($diffids, $this->userid);
+                $dialog->pushMsg("groupJoin", null, $diffids);
+                $userids = array_values(array_unique(array_merge($mentions, $userids)));
+            }
+        }
+
+        return compact('updateds', 'silences', 'userids', 'mentions');
     }
 }

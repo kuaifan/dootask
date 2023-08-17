@@ -23,17 +23,17 @@ import mixin from "./store/mixin"
 import "../sass/app.scss";
 
 Vue.use(Vuex);
-Vue.use(ViewUI, {
-    modal: {
-        checkEscClose: true
-    }
-});
+Vue.use(VueRouter);
 Vue.use(VueClipboard, {
     config: {
         autoSetContainer: true
     }
 });
-Vue.use(VueRouter);
+Vue.use(ViewUI, {
+    modal: {
+        checkEscClose: true
+    }
+});
 
 import PageTitle from './components/PageTitle.vue'
 import Loading from './components/Loading.vue'
@@ -178,15 +178,10 @@ $A.execMainCacheJudge = (key) => {
 // 绑定截图快捷键
 $A.bindScreenshotKey = (data) => {
     let key = "";
-    let screenshot_key = (data.screenshot_key || "").trim().toLowerCase()
-    if (screenshot_key && (data.screenshot_mate || data.screenshot_shift)) {
-        if (data.screenshot_mate) {
-            key = /macintosh|mac os x/i.test(navigator.userAgent) ? 'command' : 'ctrl'
-        }
-        if (data.screenshot_shift) {
-            key = `${key ? `${key}+` : ''}shift`
-        }
-        key = `${key}+${screenshot_key.toLowerCase()}`
+    const screenshot_key = (data.screenshot_key || "").trim().toLowerCase()
+    if (screenshot_key) {
+        key = /macintosh|mac os x/i.test(navigator.userAgent) ? 'command' : 'ctrl'
+        key = `${key}+shift+${screenshot_key.toLowerCase()}`
     }
     $A.Electron.sendMessage('bindScreenshotKey', {key});
 };

@@ -1,10 +1,10 @@
 <template>
     <div class="common-user-select" :class="warpClass">
-        <ul v-if="!module" @click="onSelection">
-            <li v-for="userid in values" v-if="userid">
+        <ul v-if="!module">
+            <li v-for="userid in values" v-if="userid" @click="onSelection">
                 <UserAvatar :userid="userid" :size="avatarSize" :show-icon="avatarIcon" :show-name="avatarName" tooltip-disabled/>
             </li>
-            <li v-if="addIcon || values.length === 0" class="add-icon" :style="addStyle" @click.stop="onSelection"></li>
+            <li v-if="addIcon || values.length === 0" class="add-icon" :style="addStyle" @click="onSelection"></li>
         </ul>
 
         <Modal

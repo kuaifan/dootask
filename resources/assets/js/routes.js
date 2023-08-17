@@ -60,11 +60,6 @@ export default [
                         component: () => import('./pages/manage/setting/checkin.vue'),
                     },
                     {
-                        name: 'manage-setting-approve',
-                        path: 'approve',
-                        component: () => import('./pages/manage/setting/approve.vue'),
-                    },
-                    {
                         name: 'manage-setting-language',
                         path: 'language',
                         component: () => import('./pages/manage/setting/language.vue'),
@@ -120,6 +115,11 @@ export default [
                 name: 'manage-file',
                 path: 'file/:folderId?/:fileId?',
                 component: () => import('./pages/manage/file.vue'),
+            },
+            {
+                name: 'manage-apply',
+                path: 'apply',
+                component: () => import('./pages/manage/apply.vue'),
             },
         ]
     },
