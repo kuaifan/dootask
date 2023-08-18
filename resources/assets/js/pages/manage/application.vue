@@ -125,7 +125,7 @@
                             <p class="btn">{{ $L('新建会议') }}</p>
                         </li>
                         <li @click="onMeeting('joinMeeting')">
-                            <img :src="getLogoPath('joinMeeting')">
+                            <img :src="getLogoPath('meeting-join')">
                             <h4>{{ $L('加入会议') }}</h4>
                             <p>{{ $L('加入视频会议，参与已经创建的会议，在会议过程中与其他参会人员进行远程实时视听交流和协作。') }}</p>
                             <p class="btn">{{ $L('加入会议') }}</p>
@@ -316,7 +316,7 @@ export default {
             ];
             // 管理员
             let adminApplyList = !this.userIsAdmin ? [] : [
-                { value: "okrAnalyze", label: "OKR结果分析" },
+                { value: "okr-analyze", label: "OKR结果分析" },
                 { value: "ldap", label: "LDAP" },
                 { value: "mail", label: "邮件" },
                 { value: "appPush", label: "APP推送" },
@@ -329,6 +329,7 @@ export default {
             this.applyList = [...applyList, ...appApplyList, ...adminApplyList];
         },
         getLogoPath(name) {
+            name = name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
             return $A.apiUrl(`../images/application/${name}.svg`)
         },
         showBadge(item,type) {
