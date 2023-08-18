@@ -149,7 +149,7 @@ services:
 
   approve:
     container_name: "dootask-approve-${APP_ID}"
-    image: "hitosea2020/go-approve:0.1.4"
+    image: "kuaifan/dooapprove:0.0.1"
     environment:
       TZ: "${TIMEZONE:-PRC}"
       MYSQL_HOST: "${DB_HOST}"
@@ -165,31 +165,30 @@ services:
       - mariadb
     restart: unless-stopped
 
-  okr:
-    container_name: "dootask-okr-${APP_ID}"
-    image: "hitosea2020/okr:0.0.3"
-    environment:
-      TZ: "Asia/Shanghai"
-      DOO_TASK_URL: "http://${APP_IPPR}.3"
-      MYSQL_HOST: "${DB_HOST}"
-      MYSQL_PORT: "${DB_PORT}"
-      MYSQL_DBNAME: "${DB_DATABASE}"
-      MYSQL_USERNAME: "${DB_USERNAME}"
-      MYSQL_PASSWORD: "${DB_PASSWORD}"
-      MYSQL_EnableSqlLog: true 
-    networks:
-      extnetwork:
-        ipv4_address: "${APP_IPPR}.13"
-    depends_on:
-      - mariadb
-    restart: unless-stopped
-
   ai:
     container_name: "dootask-ai-${APP_ID}"
     image: "kuaifan/dooai:0.0.4"
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.12"
+    restart: unless-stopped
+  
+  okr:
+    container_name: "dootask-okr-${APP_ID}"
+    image: "hitosea2020/okr:0.0.3"
+    environment:
+      TZ: "${TIMEZONE:-PRC}"
+      DOO_TASK_URL: "http://${APP_IPPR}.3"
+      MYSQL_HOST: "${DB_HOST}"
+      MYSQL_PORT: "${DB_PORT}"
+      MYSQL_DBNAME: "${DB_DATABASE}"
+      MYSQL_USERNAME: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+    networks:
+      extnetwork:
+        ipv4_address: "${APP_IPPR}.13"
+    depends_on:
+      - mariadb
     restart: unless-stopped
 
 networks:
