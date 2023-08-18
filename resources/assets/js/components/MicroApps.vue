@@ -30,6 +30,7 @@ import { EventCenterForMicroApp, unmountAllApps } from '@micro-zoe/micro-app'
 import DialogWrapper from '../pages/manage/components/DialogWrapper.vue'
 import UserSelect from "./UserSelect.vue";
 import { languageList, languageType } from "../language";
+import { DatePicker } from 'view-design-hi';
 
 export default {
     name: "MicroApps",
@@ -117,7 +118,8 @@ export default {
                     store,
                     components: {
                         DialogWrapper,
-                        UserSelect
+                        UserSelect,
+                        DatePicker
                     }
                 },
                 theme: this.themeMode,
