@@ -94,12 +94,15 @@ if (!isElectron && !isEEUiApp) {
             ViewUI.LoadingBar.start();
         }, 300)
         if (to.query?.theme) {
-            store.dispatch("setTheme", to.query?.theme)
+            store.dispatch("setTheme", typeof to.query?.theme == 'string' ? to.query?.theme : to.query?.theme[0])
         }
-        if (to.query?.lang && window.localStorage.getItem("__language:type__") != to.query?.lang) {
-            window.localStorage.setItem("__language:type__", to.query?.lang);
-            window.location.reload();
-            return false;
+        if (to.query?.lang) {
+            let lang = typeof to.query?.lang == 'string' ? to.query?.lang : to.query?.lang[0]
+            if (window.localStorage.getItem("__language:type__") != lang) {
+                window.localStorage.setItem("__language:type__", to.query?.lang);
+                window.location.reload();
+                return false;
+            }
         }
         next();
     });
