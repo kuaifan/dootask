@@ -734,9 +734,17 @@
             text = text.replace(atReg, `<span class="mention me" data-id="${userid}">`)
             // 处理内容连接
             if (/https*:\/\//.test(text)) {
+                const match = $.apiUrl('').match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im);
+                const theme = window.localStorage.getItem("__theme:mode__")
+                const lang = window.localStorage.getItem("__language:type__")
                 text = text.split(/(<[^>]*>)/g).map(string => {
                     if (string && !/<[^>]*>/.test(string)) {
                         string = string.replace(/(^|[^'"])((https*:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;|#|@|,|!)+))/g, "$1<a href=\"$2\" target=\"_blank\">$2</a>")
+                    }
+                    if (match && match[1] && string.indexOf(match[1]) !== -1) {
+                        if (string.indexOf("?") == -1) {
+                            string = string.replace(/(href="[^"]*)/g, (string.indexOf("?") == -1 ? '$1?' : '$1&') + `theme=${theme}&lang=${lang}`);
+                        }
                     }
                     return string;
                 }).join("")

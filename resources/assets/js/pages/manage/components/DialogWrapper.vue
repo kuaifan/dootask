@@ -963,12 +963,9 @@ export default {
                 return b.msg_id - a.msg_id
             })[0]
             if (this.allMsgs.findIndex(({id}) => id == item.msg_id) === -1) {
-                if (item.label === '{UNREAD}') {
-                    return Object.assign(item, {
-                        'label': this.$L(`未读消息${unread}条`)
-                    })
-                }
-                return item
+                return Object.assign(item, {
+                    'label': this.$L(`未读消息${unread}条`)
+                })
             }
             return null
         },
