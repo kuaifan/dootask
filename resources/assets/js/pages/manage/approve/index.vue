@@ -8,7 +8,7 @@
                     <h1>{{$L('审批中心')}}</h1>
                 </div>
                 
-                <Button v-show="showType == 1 && userIsAdmin && isShowIcon" @click="addApply" :loading="addLoadIng" type="primary" shape="circle" icon="md-add" class="ivu-btn-icon-only"></Button>
+                <Button v-show="showType == 1 && isShowIcon" @click="addApply" :loading="addLoadIng" type="primary" shape="circle" icon="md-add" class="ivu-btn-icon-only"></Button>
                 <Button v-if="showType == 1 && !isShowIcon" :loading="addLoadIng" type="primary" @click="addApply"> 
                     <span> {{$L("添加申请")}} </span> 
                 </Button>
@@ -269,8 +269,6 @@ export default {
             approvalType: "all",
             approvalList: [
                 { value: "all", label: this.$L("全部审批") },
-                { value: "请假", label: this.$L("请假") },
-                { value: "加班申请", label: this.$L("加班申请") },
             ],
             searchState: "all",
             searchStateList: [
@@ -349,16 +347,22 @@ export default {
     watch: {
         '$route' (to) {
             if(to.name == 'manage-approve'){
-                this.tabsClick()
+                this.init()
             }
         },
         wsMsg: {
             handler(info) {
-                const {type, action} = info;
+                const {type, action, mode, data} = info;
                 switch (type) {
                     case 'approve':
                         if (action == 'unread') {
-                            this.tabsClick()
+                            this.tabsClick();
+                        }
+                        break;
+                    case 'dialog':
+                        if (mode == 'add' && data?.msg?.text?.indexOf('open-approve-details') != -1) {
+                            console.log(22);
+                            this.tabsClick();
                         }
                         break;
                 }
@@ -372,7 +376,7 @@ export default {
         },
         showType(val){
             if(val == 1){
-                this.tabsClick()
+                this.init()
             }
         },
         windowWidth(val){
@@ -381,13 +385,41 @@ export default {
     },
     mounted() {
         this.tabsValue = "unread"
-        this.tabsClick()
-        this.getUnreadList()
-        this.addData.department_id = this.userInfo.department[0] || 0;
-        this.addData.startTime = this.addData.endTime = this.getCurrentDate();
-        this.isShowIcon = this.windowWidth < 515
+        this.init()
     },
     methods:{
+
+        init() {
+            this.tabsClick()
+            this.getProcdefList()
+            if(this.tabsValue != 'unread'){
+                this.getUnreadList();
+            }
+            this.addData.department_id = this.userInfo.department[0] || 0;
+            this.addData.startTime = this.addData.endTime = this.getCurrentDate();
+            this.isShowIcon = this.windowWidth < 515
+        },
+
+        // 获取流程列表
+        getProcdefList() {
+            return new Promise((resolve, reject) => {
+                this.$store.dispatch("call", {
+                    url: 'approve/procdef/all',
+                    method: 'post',
+                }).then(({data}) => {
+                    this.procdefList = data.rows || [];
+                    this.approvalList = this.procdefList.map(h=>{
+                        return { value: h.name, label: h.name }
+                    })
+                    this.approvalList.unshift({ value: "all", label: this.$L("全部审批") })
+                    resolve()
+                }).catch(({msg}) => {
+                    $A.modalError(msg);
+                    reject()
+                });
+            });
+        },
+        
         // 获取当前时间
         getCurrentDate() {
             const today = new Date();
@@ -410,6 +442,9 @@ export default {
             if(val){
                 this.approvalType = this.searchState = "all"
             }
+            //
+            this.detailsShow = false; 
+            //
             if(this.tabsValue == 'unread'){
                 if(val === false){
                     this.unreadPage = 1;
@@ -438,6 +473,7 @@ export default {
                 }
                 this.getInitiatedList();
             }
+            
         },
 
         // 列表点击事件
@@ -663,16 +699,11 @@ export default {
                 skipAuthError: true
             }).then(({data}) => {
                 this.addData.department_id = data[0]?.department[0] || 0;
-                this.$store.dispatch("call", {
-                    url: 'approve/procdef/all',
-                    method: 'post',
-                }).then(({data}) => {
-                    this.procdefList = data.rows || [];
+                this.getProcdefList().then(_ => {
                     this.addTitle = this.$L("添加申请");
                     this.addShow = true;
-                }).catch(({msg}) => {
-                    $A.modalError(msg);
-                }).finally(_ => {
+                    this.addLoadIng = false;
+                }).catch(_ => {
                     this.addLoadIng = false;
                 });
             }).catch(({msg}) => {
@@ -710,6 +741,7 @@ export default {
                         this.addShow = false;
                         this.$refs.initiateRef.resetFields();
                         this.tabsValue = 'initiated';
+                        this.initiatedList.map(h=>{ h._active = false; })
                         this.$nextTick(()=>{
                             this.tabsClick();
                         })

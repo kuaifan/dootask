@@ -34,7 +34,7 @@
                     <Badge class="tabbar-badge" :overflow-count="999" :count="reportUnreadNumber + approveUnreadNumber"/>
                 </template>
                 <template v-else-if="item.name === 'more'">
-                    <Badge class="tabbar-badge" :overflow-count="999" :count="reportUnreadNumber"/>
+                    <Badge class="tabbar-badge" :overflow-count="999" :count="reportUnreadNumber + approveUnreadNumber"/>
                 </template>
             </li>
         </ul>
