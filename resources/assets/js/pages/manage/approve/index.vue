@@ -361,7 +361,6 @@ export default {
                         break;
                     case 'dialog':
                         if (mode == 'add' && data?.msg?.text?.indexOf('open-approve-details') != -1) {
-                            console.log(22);
                             this.tabsClick();
                         }
                         break;
