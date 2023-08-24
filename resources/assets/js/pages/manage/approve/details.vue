@@ -291,7 +291,7 @@ export default {
                 return type == 2 ? `${hours}${this.$L('小时')}` : `${hours} ${this.$L('小时前')}`;
             } else {
                 const days = Math.floor(timeDiff / 3600 / 24);
-                return type == 2 ? `${days + 1}${this.$L('天')}` : `${days + 1} ${this.$L('天')}`;
+                return type == 2 ? `${days + 1}${this.$L('天')}` : `${days + 1} ${this.$L('天前')}`;
             }
         },
         // 时间转为周几
