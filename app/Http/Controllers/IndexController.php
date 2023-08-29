@@ -438,4 +438,16 @@ class IndexController extends InvokeController
         }
         return implode("\n", array_values($array));
     }
+
+    /**
+     * 提取所有中文
+     * @return array|string
+     */
+    public function meeting__share()
+    {
+        return response()->view('meeting.share', [
+            'version' => Base::getVersion(),
+        ])->header('Link', "<" . url('manifest.txt') . ">; rel=\"prefetch\"");
+    }
+    
 }

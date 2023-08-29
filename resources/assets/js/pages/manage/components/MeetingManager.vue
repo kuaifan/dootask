@@ -4,12 +4,16 @@
         <Modal
             v-model="addShow"
             :title="$L(addData.type === 'join' ? '加入会议' : '新会议')"
-            :mask-closable="false">
+            :mask-closable="false"
+            :closable="!addData.meetingsign">
             <Form ref="addForm" :model="addData" label-width="auto" @submit.native.prevent>
                 <template v-if="addData.type === 'join'">
                     <!-- 加入会议 -->
                     <FormItem v-if="addData.name" prop="userids" :label="$L('会议主题')">
                         <Input v-model="addData.name" disabled/>
+                    </FormItem>
+                    <FormItem v-if="addData.meetingsign" prop="username" :label="$L('你的姓名')">
+                        <Input v-model="addData.username" :placeholder="$L('请输入你的姓名')"/>
                     </FormItem>
                     <FormItem prop="meetingid" :label="$L('会议频道ID')">
                         <Input v-model="addData.meetingid" :disabled="addData.meetingdisabled === true" :placeholder="$L('请输入会议频道ID')"/>
@@ -36,7 +40,7 @@
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
-                <Button type="default" @click="addShow=false">{{$L('取消')}}</Button>
+                <Button type="default" @click="addShow=false" v-if="!addData.meetingsign">{{$L('取消')}}</Button>
                 <Button type="primary" :loading="loadIng > 0" @click="onSubmit">{{$L(addData.type === 'join' ? '加入会议' : '开始会议')}}</Button>
             </div>
         </Modal>
@@ -56,7 +60,8 @@
             <ul>
                 <li v-if="localUser.uid">
                     <MeetingPlayer :player="localUser" isLocal/>
-                </li><li v-for="user in remoteUsers">
+                </li>
+                <li v-for="user in remoteUsers">
                     <MeetingPlayer :player="user"/>
                 </li>
             </ul>
@@ -68,20 +73,20 @@
                     <i class="taskfont" v-html="localUser.videoTrack ? '&#xe7c1;' : '&#xe7c8;'"></i>
                 </Button>
                 <template v-if="windowPortrait">
-                    <Button type="primary" @click="onInvitation('open')">
+                    <Button type="primary"  @click="onInvitation('open')">
                         <i class="taskfont">&#xe646;</i>
                     </Button>
-                    <Button type="primary" @click="meetingMini = true">
+                    <Button type="primary" v-if="!addData.meetingsign" @click="meetingMini = true">
                         <i class="taskfont">&#xe656;</i>
                     </Button>
-                    <Button type="warning" :loading="loadIng > 0" @click="onClose">
+                    <Button type="warning" v-if="!addData.meetingsign" :loading="loadIng > 0" @click="onClose">
                         <i class="taskfont">&#xe612;</i>
                     </Button>
                 </template>
                 <template v-else>
                     <Button type="primary" @click="onInvitation('open')">{{$L('邀请')}}</Button>
-                    <Button type="primary" @click="meetingMini = true">{{$L('最小化')}}</Button>
-                    <Button type="warning" :loading="loadIng > 0" @click="onClose">{{$L('离开会议')}}</Button>
+                    <Button type="primary" v-if="!addData.meetingsign" @click="meetingMini = true">{{$L('最小化')}}</Button>
+                    <Button type="warning" v-if="!addData.meetingsign" :loading="loadIng > 0" @click="onClose">{{$L('离开会议')}}</Button>
                 </template>
             </div>
         </Modal>
@@ -118,13 +123,21 @@
 <script>
 import {Store} from "le5le-store";
 import {mapState} from 'vuex'
-import MeetingPlayer from "./MeetingPlayer";
+import MeetingPlayer from "./MeetingPlayer.vue";
 import DragBallComponent from "../../../components/DragBallComponent";
 import UserSelect from "../../../components/UserSelect.vue";
 
 export default {
     name: "MeetingManager",
     components: {UserSelect, DragBallComponent, MeetingPlayer},
+    props: {
+        id: {
+            type: String,
+            default: () => {
+                return  "meeting-player-" + Math.round(Math.random() * 10000);
+            }
+        }
+    },
     data() {
         return {
             loadIng: 0,
@@ -180,10 +193,21 @@ export default {
         },
         meetingWindow: {
             handler(val) {
+                console.log(val)
                 switch (val.type) {
                     case 'add':
                         this.addShow = val.show;
                         this.loadIng = 0;
+                        break;
+                    case 'join':
+                        this.addShow = val.show;
+                        this.loadIng = 0;
+                        this.addData.type  = 'join';
+                        if(val.meetingsign){
+                            this.addData.meetingid  = val.meetingid || '';
+                            this.addData.meetingdisabled  = val.meetingsign ? true : false;
+                            this.addData.meetingsign  = val.meetingsign;
+                        }
                         break;
                     case 'invitation':
                         this.invitationShow = val.show;
@@ -352,6 +376,7 @@ export default {
         },
 
         async join(options) {
+            console.log(options)
             this.loadIng++;
             // 音频采集设备状态变化回调
             AgoraRTC.onMicrophoneChanged = async (changedDevice) => {

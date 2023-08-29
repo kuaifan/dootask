@@ -1,5 +1,5 @@
 <template>
-    <div v-if="userid" class="meeting-player">
+    <div class="meeting-player">
         <div :id="id" class="player" :style="playerStyle"></div>
         <UserAvatar :userid="userid" :size="36" :borderWitdh="2"/>
         <div class="player-state">
@@ -52,6 +52,7 @@ export default {
         ...mapState(['cacheUserBasic']),
         userid() {
             if (this.player.uid) {
+                console.log(parseInt( (this.player.uid+"").substring(6) ));
                 return parseInt( (this.player.uid+"").substring(6) )
             }
             return 0
@@ -62,8 +63,11 @@ export default {
                 return {
                     backgroundImage: `url("${user.userimg}")`
                 }
+            }else{
+                return {
+                    backgroundColor: '#000000'
+                }
             }
-            return null;
         },
         audio() {
             return !!this.player.audioTrack

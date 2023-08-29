@@ -3608,11 +3608,13 @@ export default {
     * @param type
     * @param meetingid
     */
-    showMeetingWindow({state}, {type, meetingid}) {
+    showMeetingWindow({state}, {type, meetingid, meetingdisabled, meetingsign}) {
         state.meetingWindow = {
             show: true,
             type: type,
-            meetingid: meetingid
+            meetingid: meetingid,
+            meetingdisabled: meetingdisabled,
+            meetingsign: meetingsign
         };
     },
 
