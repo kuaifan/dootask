@@ -162,20 +162,20 @@ run_exec() {
 
 run_mysql() {
     if [ "$1" = "backup" ]; then
-        # 备份数据库
         database=$(env_get DB_DATABASE)
         username=$(env_get DB_USERNAME)
         password=$(env_get DB_PASSWORD)
+        # 备份数据库
         mkdir -p ${cur_path}/docker/mysql/backup
         filename="${cur_path}/docker/mysql/backup/${database}_$(date "+%Y%m%d%H%M%S").sql.gz"
         run_exec mariadb "exec mysqldump --databases $database -u$username -p$password" | gzip > $filename
         judge "备份数据库"
         [ -f "$filename" ] && echo -e "备份文件：$filename"
     elif [ "$1" = "recovery" ]; then
-        # 还原数据库
         database=$(env_get DB_DATABASE)
         username=$(env_get DB_USERNAME)
         password=$(env_get DB_PASSWORD)
+        # 还原数据库
         mkdir -p ${cur_path}/docker/mysql/backup
         list=`ls -1 "${cur_path}/docker/mysql/backup" | grep ".sql.gz"`
         if [ -z "$list" ]; then
@@ -198,6 +198,24 @@ run_mysql() {
         run_exec mariadb "gunzip < /$inputname | mysql -u$username -p$password $database"
         run_exec php "php artisan migrate"
         judge "还原数据库"
+    elif [ "$1" = "empty" ]; then
+        read -rp "确定要清空数据库吗？(Y/n): " empty
+        [[ -z ${empty} ]] && empty="Y"
+        case $empty in
+        [yY][eE][sS] | [yY])
+            echo -e "${RedBG} 开始清空... ${Font}"
+            ;;
+        *)
+            echo -e "${GreenBG} 终止清空。 ${Font}"
+            exit 2
+            ;;
+        esac
+        ./cmd mysql backup
+        $COMPOSE stop mariadb
+        $COMPOSE rm -f mariadb
+        rm -rf "./docker/mysql/data"
+        $COMPOSE up -d mariadb
+        judge "清空数据库"
     fi
 }
 
@@ -424,6 +442,8 @@ if [ $# -gt 0 ]; then
             run_mysql backup
         elif [ "$1" = "recovery" ]; then
             run_mysql recovery
+        elif [ "$1" = "empty" ]; then
+            run_mysql empty
         else
             e="mysql $@" && run_exec mariadb "$e"
         fi

@@ -545,7 +545,7 @@ export default {
 
     methods: {
         listTouch() {
-            if (this.$refs.navMenu.visible) {
+            if (this.$refs.navMenu?.visible) {
                 this.$refs.navMenu.hide()
             }
         },

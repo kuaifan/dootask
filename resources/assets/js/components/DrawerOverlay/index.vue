@@ -78,7 +78,7 @@ export default {
             this.value !== v && this.$emit("input", v)
         },
         windowWidth(val){
-            this.isFullscreen = val < 500
+            this.isFullscreen = val < 500 && this.placement != 'bottom'
         }
     },
     computed: {
@@ -98,7 +98,7 @@ export default {
         }
     },
     mounted() {
-        this.isFullscreen = this.windowWidth < 515
+        this.isFullscreen = this.windowWidth < 500  && this.placement != 'bottom'
     },
     methods: {
         onClose() {
