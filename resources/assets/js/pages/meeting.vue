@@ -14,8 +14,8 @@ export default {
     mounted() {
         this.$store.dispatch("showMeetingWindow",{
             type: "join",
-            meetingsign: 'sign',
-            meetingid: 10812486455,
+            meetingid: this.$route.params.meetingId,
+            meetingSharekey: this.$route.params.sharekey,
             meetingdisabled: true,
         })
     },

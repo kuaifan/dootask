@@ -337,7 +337,7 @@ export default {
                         this.$store.dispatch("call", {
                             url: 'users/basic',
                             data: {
-                                userid: [ (uuid+"").substring(6) ]
+                                userid: [ (uuid+"").substring(5) ]
                             }
                         }).then(({data}) => {
                             $A.eeuiAppSendMessage({

@@ -11,7 +11,7 @@ export default [
     },
     {
         name: 'meeting',
-        path: '/meeting',
+        path: '/meeting/:meetingId?/:sharekey?',
         component: () => import('./pages/meeting.vue'),
     },
     {

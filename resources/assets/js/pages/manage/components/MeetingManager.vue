@@ -5,14 +5,14 @@
             v-model="addShow"
             :title="$L(addData.type === 'join' ? '加入会议' : '新会议')"
             :mask-closable="false"
-            :closable="!addData.meetingsign">
+            :closable="!addData.sharekey">
             <Form ref="addForm" :model="addData" label-width="auto" @submit.native.prevent>
                 <template v-if="addData.type === 'join'">
                     <!-- 加入会议 -->
                     <FormItem v-if="addData.name" prop="userids" :label="$L('会议主题')">
                         <Input v-model="addData.name" disabled/>
                     </FormItem>
-                    <FormItem v-if="addData.meetingsign" prop="username" :label="$L('你的姓名')">
+                    <FormItem v-if="addData.sharekey" prop="username" :label="$L('你的姓名')">
                         <Input v-model="addData.username" :placeholder="$L('请输入你的姓名')"/>
                     </FormItem>
                     <FormItem prop="meetingid" :label="$L('会议频道ID')">
@@ -40,7 +40,7 @@
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
-                <Button type="default" @click="addShow=false" v-if="!addData.meetingsign">{{$L('取消')}}</Button>
+                <Button type="default" @click="addShow=false" v-if="!addData.sharekey">{{$L('取消')}}</Button>
                 <Button type="primary" :loading="loadIng > 0" @click="onSubmit">{{$L(addData.type === 'join' ? '加入会议' : '开始会议')}}</Button>
             </div>
         </Modal>
@@ -76,17 +76,17 @@
                     <Button type="primary"  @click="onInvitation('open')">
                         <i class="taskfont">&#xe646;</i>
                     </Button>
-                    <Button type="primary" v-if="!addData.meetingsign" @click="meetingMini = true">
+                    <Button type="primary" v-if="!addData.sharekey" @click="meetingMini = true">
                         <i class="taskfont">&#xe656;</i>
                     </Button>
-                    <Button type="warning" v-if="!addData.meetingsign" :loading="loadIng > 0" @click="onClose">
+                    <Button type="warning" :loading="loadIng > 0" @click="onClose">
                         <i class="taskfont">&#xe612;</i>
                     </Button>
                 </template>
                 <template v-else>
                     <Button type="primary" @click="onInvitation('open')">{{$L('邀请')}}</Button>
-                    <Button type="primary" v-if="!addData.meetingsign" @click="meetingMini = true">{{$L('最小化')}}</Button>
-                    <Button type="warning" v-if="!addData.meetingsign" :loading="loadIng > 0" @click="onClose">{{$L('离开会议')}}</Button>
+                    <Button type="primary" v-if="!addData.sharekey" @click="meetingMini = true">{{$L('最小化')}}</Button>
+                    <Button type="warning" :loading="loadIng > 0" @click="onClose">{{$L('离开会议')}}</Button>
                 </template>
             </div>
         </Modal>
@@ -113,7 +113,7 @@
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
-                <Button type="default" @click="invitationShow=false">{{$L('取消')}}</Button>
+                <Button type="default" @click="linkCopy">{{$L('复制链接')}}</Button>
                 <Button type="primary" :loading="invitationLoad" @click="onInvitation('submit')">{{$L('发送邀请')}}</Button>
             </div>
         </Modal>
@@ -193,7 +193,6 @@ export default {
         },
         meetingWindow: {
             handler(val) {
-                console.log(val)
                 switch (val.type) {
                     case 'add':
                         this.addShow = val.show;
@@ -203,10 +202,10 @@ export default {
                         this.addShow = val.show;
                         this.loadIng = 0;
                         this.addData.type  = 'join';
-                        if(val.meetingsign){
+                        if(val.meetingSharekey){
+                            this.addData.sharekey  = val.meetingSharekey;
                             this.addData.meetingid  = val.meetingid || '';
-                            this.addData.meetingdisabled  = val.meetingsign ? true : false;
-                            this.addData.meetingsign  = val.meetingsign;
+                            this.addData.meetingdisabled  = val.meetingSharekey ? true : false;
                         }
                         break;
                     case 'invitation':
@@ -275,6 +274,9 @@ export default {
                     }).then(({data}) => {
                         this.$set(this.addData, 'name', data.name);
                         this.$set(this.addData, 'meetingid', data.meetingid);
+                        this.$set(this.addData, 'sharelink', data.sharelink);
+                        this.$set(this.localUser, 'nickname', data.nickname);
+                        this.$set(this.localUser, 'userimg', data.userimg);
                         this.$store.dispatch("saveDialogMsg", data.msgs);
                         this.$store.dispatch("updateDialogLastMsg", data.msgs);
                         delete data.name;
@@ -294,6 +296,7 @@ export default {
                                     video: this.addData.tracks.includes("video"),
                                     audio: this.addData.tracks.includes("audio"),
                                     meetingid: data.meetingid,
+                                    sharelink: data.sharelink,
                                     alert: {
                                         title: this.$L('温馨提示'),
                                         message: this.$L('确定要离开会议吗？'),
@@ -338,6 +341,10 @@ export default {
 
         onInvitation(type) {
             if (type === 'open') {
+                if(this.addData.sharekey){
+                    this.linkCopy();
+                    return;
+                }
                 this.invitationData = {
                     userids: [],
                     meetingid: this.addData.meetingid
@@ -369,6 +376,10 @@ export default {
                     okText: '退出',
                     onOk: async _ => {
                         await this.leave()
+                        if(this.addData.sharekey){
+                            this.addShow = true;
+                            this.loadIng = 0;
+                        }
                         resolve()
                     }
                 });
@@ -376,7 +387,6 @@ export default {
         },
 
         async join(options) {
-            console.log(options)
             this.loadIng++;
             // 音频采集设备状态变化回调
             AgoraRTC.onMicrophoneChanged = async (changedDevice) => {
@@ -521,7 +531,16 @@ export default {
             if (item) {
                 await this.agoraClient.unsubscribe(user, mediaType);
             }
-        }
+        },
+
+        linkCopy() {
+            this.$copyText(this.addData.sharelink).then(_ => {
+                $A.messageSuccess('已复制会议邀请链接');
+            }).catch(_ => {
+                $A.messageError('复制失败');
+            });
+            this.invitationShow = false;
+        },
     }
 }
 </script>
