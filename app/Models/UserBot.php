@@ -58,6 +58,7 @@ class UserBot extends AbstractModel
             'ai-wenxin' => '文心一言',
             'ai-qianwen' => '通义千问',
             'bot-manager' => '机器人管理',
+            'meeting-alert' => '会议通知',
             default => '',  // 不是系统机器人时返回空（也可以拿来判断是否是系统机器人）
         };
     }

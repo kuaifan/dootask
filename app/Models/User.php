@@ -541,7 +541,9 @@ class User extends AbstractModel
                 return url("images/avatar/default_claude.png");
             case 'bot-manager@bot.system':
                 return url("images/avatar/default_bot.png");
-        }
+            case 'meeting-alert@bot.system':
+                return url("images/avatar/default_meeting.png");
+            }
         // 生成文字头像
         if (self::$defaultAvatarMode === 'auto') {
             return url("avatar/" . urlencode($nickname) . ".png");
@@ -630,6 +632,9 @@ class User extends AbstractModel
                     break;
                 case 'bot-manager':
                     $update['nickname'] = '机器人管理';
+                    break;
+                case 'meeting-alert':
+                    $update['nickname'] = '会议通知';
                     break;
             }
             $update['nickname'] = UserBot::systemBotName($email);
