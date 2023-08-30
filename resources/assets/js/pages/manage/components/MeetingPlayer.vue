@@ -4,8 +4,8 @@
         <UserAvatar v-if="userid" :userid="userid" :size="36" :borderWitdh="2"/>
         <div v-else-if="tourist.userimg" class="common-avatar avatar-wrapper">
             <div class="avatar-box online">
-                <em style="transform: scale(1.0625);"></em>
-                <EAvatar :size="36" style="border: 2px solid #FFFFFF;" :src="tourist.userimg"></EAvatar>
+                <em></em>
+                <EAvatar :size="36" :src="tourist.userimg"></EAvatar>
             </div>
         </div>
         <div class="player-state">
