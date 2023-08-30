@@ -10,6 +10,11 @@ export default [
         component: () => import('./pages/pro.vue'),
     },
     {
+        name: 'meeting',
+        path: '/meeting/:meetingId?/:sharekey?',
+        component: () => import('./pages/meeting.vue'),
+    },
+    {
         name: 'manage',
         path: '/manage',
         component: () => import('./pages/manage.vue'),

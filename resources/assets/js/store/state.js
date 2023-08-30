@@ -199,7 +199,7 @@ export default {
     // 审批待办未读数量
     approveUnreadNumber: 0,
 
-    // 会议窗口
+    // 会议
     meetingWindow: {
         show: false,
         type: "",
