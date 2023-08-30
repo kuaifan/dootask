@@ -349,6 +349,7 @@ if [ $# -gt 0 ]; then
             run_exec php "composer update"
         fi
         run_exec php "php artisan migrate"
+        run_exec nginx "nginx -s reload"
         restart_php
         $COMPOSE up -d
     elif [[ "$1" == "uninstall" ]]; then

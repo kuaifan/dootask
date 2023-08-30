@@ -49,6 +49,7 @@ services:
       - drawio-webapp
       - drawio-export
       - minder
+      - okr
       - ai
     restart: unless-stopped
 
