@@ -2,21 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.31.5]
+
+### Bug Fixes
+
+- OKR组新增/删除人员传输格式兼容
+- 任务列表更新数量不正确的情况
+
+### Performance
+
+- 优化滚动条导致页面抖动的情况
+
 ## [0.30.13]
 
 ### Bug Fixes
 
 - 消息列表过大导致无法查看图片
 - 桌面端drawio版本错误
-
-### Performance
-
-- 优化菜单颜色选择
-
-## [0.30.6]
-
-### Bug Fixes
-
 - 无法在任务新窗口打开引用的任务
 - 在任务新窗口使用显示文件窗口错误的情况
 - 部分iOS系统按录音时页面闪烁的情况
@@ -30,8 +32,15 @@ All notable changes to this project will be documented in this file.
 - 打开工作流设置后无法关闭桌面客户端的问题
 - 打不开已归档任务的情况
 
+### Features
+
+- 新增适用OKR评论不在成员列表内也能显示聊天记录
+- 新增适用默认部门下第1级负责人才能添加部门OKR
+- 新增OKR图标和task图标对等显示
+
 ### Performance
 
+- 优化菜单颜色选择
 - 升级客户端框架
 - 优化工作汇报提交表单
 - 优化确认框按钮样式
@@ -69,6 +78,10 @@ All notable changes to this project will be documented in this file.
 - 修复用户列表默认排序
 - 1.  审批通知模版 - 按钮白色修复 2.  审批详情样式相等 3.  审批评论 - 0分钟换成刚刚 4.  没有加入部门也能发起 审批申请  5.  审批流程设置页 - 样式调整
 
+### Features
+
+- 新增多部门用户查询
+
 ### Performance
 
 - 管理员可以修改系统机器人基本资料
@@ -81,6 +94,7 @@ All notable changes to this project will be documented in this file.
 ### Bug Fixes
 
 - 修复无法从任务消息对话中打开任务详情的情况
+- 去掉test信息
 - 按照dootask启动原始尺寸截取使用说明的图
 - 修改边栏目录滚动效果
 - 修改边栏目录滚动效果
@@ -90,6 +104,10 @@ All notable changes to this project will be documented in this file.
 
 ### Features
 
+- 新增创建聊天关联id
+- 新增创建聊天关联id
+- Okr信息面板新增"打开OKR"按钮
+- 新增OKR信息推送
 - 增加获取更新日志接口，更改前端页面默认请求地址
 - 使用说明提交
 
