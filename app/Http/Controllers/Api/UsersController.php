@@ -1215,11 +1215,39 @@ class UsersController extends AbstractController
         $data['nickname'] = $sharekey ? $username : $user?->nickname;
         $data['token'] = $token;
         $data['msgs'] = $msgs;
-        $data['sharelink'] = $meeting->getShareLink();
         // 
         Meeting::setTouristInfo($data);
         // 
         return Base::retSuccess('success', $data);
+    }
+
+    /**
+     * @api {get} api/users/meeting/link          16. 【会议】获取分享链接
+     *
+     * @apiDescription  需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName meeting__link
+     *
+     * @apiParam {String} meetingid               频道ID（不是数字）
+     * @apiParam {String} [sharekey]              分享的key
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function meeting__link()
+    {
+        $meetingid = trim(Request::input('meetingid'));
+        $sharekey = trim(Request::input('sharekey'));
+        if(empty($sharekey) || !Meeting::getShareInfo($sharekey)){
+            User::auth();
+        }
+        $meeting = Meeting::whereMeetingid($meetingid)->first();
+        if (empty($meeting)) {
+            return Base::retError('频道ID不存在');
+        }
+        return Base::retSuccess('success', $meeting->getShareLink());
     }
 
     /**

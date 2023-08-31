@@ -334,43 +334,25 @@ export default {
                 switch (act) {
                     // 获取用户信息
                     case "getInfo":
-                        if( (uuid+'').indexOf('88888') !== -1 ){
-                            this.$store.dispatch("call", {
-                                url: 'users/meeting/tourist',
-                                data: {
-                                    tourist_id: uuid
+                        const isTourist = (uuid+'').indexOf('88888') !== -1;
+                        this.$store.dispatch("call", {
+                            url: isTourist ? 'users/meeting/tourist' : 'users/basic',
+                            data: {
+                                userid: uuid,
+                                tourist_id: uuid,
+                            }
+                        }).then(({data}) => {
+                            $A.eeuiAppSendMessage({
+                                action: 'updateMeetingInfo',
+                                infos: {
+                                    uuid: uuid,
+                                    avatar: isTourist ? data?.userimg : data[0]?.userimg,
+                                    username: isTourist ? data?.nickname : data[0]?.nickname,
                                 }
-                            }).then(({data}) => {
-                                $A.eeuiAppSendMessage({
-                                    action: 'updateMeetingInfo',
-                                    infos: {
-                                        uuid: uuid,
-                                        avatar: data?.userimg,
-                                        username: data?.nickname,
-                                    }
-                                });
-                            }).catch(({msg}) => {
-                                $A.modalError(msg);
                             });
-                        }else{
-                            this.$store.dispatch("call", {
-                                url: 'users/basic',
-                                data: {
-                                    userid: [ (uuid+"").substring(5) ]
-                                }
-                            }).then(({data}) => {
-                                $A.eeuiAppSendMessage({
-                                    action: 'updateMeetingInfo',
-                                    infos: {
-                                        uuid: uuid,
-                                        avatar: data[0]?.userimg,
-                                        username: data[0]?.nickname,
-                                    }
-                                });
-                            }).catch(({msg}) => {
-                                $A.modalError(msg);
-                            });
-                        }
+                        }).catch(({msg}) => {
+                            $A.modalError(msg);
+                        });
                         break;
                     //加入成功
                     case "success":

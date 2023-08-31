@@ -73,7 +73,7 @@
                     <i class="taskfont" v-html="localUser.videoTrack ? '&#xe7c1;' : '&#xe7c8;'"></i>
                 </Button>
                 <template v-if="windowPortrait">
-                    <Button type="primary"  @click="onInvitation('open')">
+                    <Button type="primary" :loading="linkCopyLoad" @click="onInvitation('open')">
                         <i class="taskfont">&#xe646;</i>
                     </Button>
                     <Button type="primary" v-if="!addData.sharekey" @click="meetingMini = true">
@@ -113,7 +113,7 @@
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
-                <Button type="default" @click="linkCopy">{{$L('复制链接')}}</Button>
+                <Button type="default" :loading="linkCopyLoad" @click="linkCopy">{{$L('复制链接')}}</Button>
                 <Button type="primary" :loading="invitationLoad" @click="onInvitation('submit')">{{$L('发送邀请')}}</Button>
             </div>
         </Modal>
@@ -172,6 +172,8 @@ export default {
                 audioTrack: null,
                 videoTrack: null,
             },
+
+            linkCopyLoad: false,
         }
     },
 
@@ -279,7 +281,6 @@ export default {
                     }).then(({data}) => {
                         this.$set(this.addData, 'name', data.name);
                         this.$set(this.addData, 'meetingid', data.meetingid);
-                        this.$set(this.addData, 'sharelink', data.sharelink);
                         this.$set(this.localUser, 'nickname', data.nickname);
                         this.$set(this.localUser, 'userimg', data.userimg);
                         this.$store.dispatch("saveDialogMsg", data.msgs);
@@ -539,12 +540,25 @@ export default {
         },
 
         linkCopy() {
-            this.$copyText(this.addData.sharelink).then(_ => {
-                $A.messageSuccess('已复制会议邀请链接');
-            }).catch(_ => {
-                $A.messageError('复制失败');
+            this.linkCopyLoad = true;
+            this.$store.dispatch("call", {
+                url: 'users/meeting/link',
+                data: {
+                    meetingid: this.addData.meetingid || this.invitationData.meetingid,
+                    sharekey: this.addData.sharekey
+                },
+            }).then(({ data }) => {
+                this.$copyText(data).then(_ => {
+                    $A.messageSuccess('已复制会议邀请链接');
+                }).catch(_ => {
+                    $A.messageError('复制失败');
+                });
+                this.invitationShow = false;
+            }).catch(({ msg }) => {
+                $A.modalError(msg);
+            }).finally(_ => {
+                this.linkCopyLoad = false;
             });
-            this.invitationShow = false;
         },
     }
 }
