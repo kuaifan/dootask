@@ -6,7 +6,7 @@
             :title="$L(addData.type === 'join' ? '加入会议' : '新会议')"
             :mask-closable="false"
             :closable="!addData.sharekey">
-            <Form ref="addForm" :model="addData" label-width="auto" @submit.native.prevent>
+            <Form ref="addForm" :model="addData" :rules="addRule" label-width="auto" @submit.native.prevent>
                 <template v-if="addData.type === 'join'">
                     <!-- 加入会议 -->
                     <FormItem v-if="addData.name" prop="userids" :label="$L('会议主题')">
@@ -147,6 +147,11 @@ export default {
             addData: {
                 userids: [],
                 tracks: ['audio']
+            },
+            addRule: {
+                username: [
+                    { required: true, message: this.$L('请输入你的姓名！'), trigger: 'change' },
+                ]
             },
 
             invitationShow: false,

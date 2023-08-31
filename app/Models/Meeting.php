@@ -84,7 +84,7 @@ class Meeting extends AbstractModel
     public static function getTouristInfo($touristId)
     {
         if(Cache::has(Meeting::CACHE_KEY.'_'.$touristId)){
-            return Base::retSuccess('success', Cache::get(Meeting::CACHE_KEY.'_'.$touristId) );
+            return Cache::get(Meeting::CACHE_KEY.'_'.$touristId);
         }
         return null;
     }

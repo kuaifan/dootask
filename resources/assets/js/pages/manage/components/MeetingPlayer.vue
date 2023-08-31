@@ -126,7 +126,7 @@ export default {
                     tourist_id: this.player.uid
                 }
             }).then(({data}) => {
-                this.tourist = data.data;
+                this.tourist = data;
             }).catch(({msg}) => {
                 $A.modalError(msg);
             });
