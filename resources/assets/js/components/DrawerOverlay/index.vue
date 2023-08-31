@@ -5,12 +5,13 @@
         :closable="escClosable"
         :mask-closable="maskClosable"
         :footer-hide="true"
-        :transition-names="[$A.isAndroid() ? '' : `drawer-slide-${placement}`, '']"
+        :transition-names="[$A.isAndroid() ? '' : `drawer-slide-${transitionName}`, '']"
         :beforeClose="beforeClose"
         fullscreen
         :class-name="modalClass">
-        <DrawerOverlayView
-            :placement="placement"
+        <slot v-if="isFullscreen" />
+        <DrawerOverlayView v-else
+            :placement="transitionName"
             :size="size"
             :minSize="minSize"
             :resize="resize"
@@ -20,17 +21,9 @@
     </Modal>
 </template>
 
-<style lang="scss">
-body {
-    .ivu-modal-wrap {
-        &.common-drawer-overlay {
-            overflow: hidden;
-        }
-    }
-}
-</style>
 <script>
 import DrawerOverlayView from "./view";
+import {mapState} from 'vuex'
 
 export default {
     name: 'DrawerOverlay',
@@ -74,6 +67,7 @@ export default {
     data() {
         return {
             show: this.value,
+            isFullscreen: false
         }
     },
     watch: {
@@ -82,16 +76,29 @@ export default {
         },
         show(v) {
             this.value !== v && this.$emit("input", v)
+        },
+        windowWidth(val){
+            this.isFullscreen = val < 500 && this.placement != 'bottom'
         }
     },
     computed: {
+        ...mapState([ 'windowWidth' ]),
+        transitionName(){
+            return this.isFullscreen ? 'bottom' : this.placement
+        },
         modalClass() {
+            if(this.isFullscreen){
+                return "common-drawer-modal"
+            }
             if (this.className) {
-                return `common-drawer-overlay ${this.className} ${this.placement}`
+                return `common-drawer-overlay ${this.className} ${this.transitionName}`
             } else {
-                return `common-drawer-overlay ${this.placement}`
+                return `common-drawer-overlay ${this.transitionName}`
             }
         }
+    },
+    mounted() {
+        this.isFullscreen = this.windowWidth < 500  && this.placement != 'bottom'
     },
     methods: {
         onClose() {

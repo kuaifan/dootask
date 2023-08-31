@@ -868,6 +868,7 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {post} api/dialog/msg/sendfiles          17. 群发文件上传
      * @api {post} api/dialog/msg/sendfiles          18. 群发文件上传
      *
      * @apiDescription 需要token身份
@@ -1728,7 +1729,7 @@ class DialogController extends AbstractController
         $user = User::auth();
         //
         $dialog_id = intval(Request::input('dialog_id'));
-        $userids = Request::input('userids');
+        $userids = Base::json2array(Request::input('userids'));
         //
         if (!is_array($userids)) {
             return Base::retError('请选择群成员');
@@ -1766,7 +1767,7 @@ class DialogController extends AbstractController
         $user = User::auth();
         //
         $dialog_id = intval(Request::input('dialog_id'));
-        $userids = Request::input('userids');
+        $userids = Base::json2array(Request::input('userids'));
         //
         $type = 'remove';
         if (empty($userids)) {
@@ -1885,5 +1886,77 @@ class DialogController extends AbstractController
         return Base::retSuccess('success', [
             'list' => $builder->take(20)->get()
         ]);
+    }
+
+    /**
+     * @api {post} api/dialog/okr/add          39. 创建OKR评论会话
+     *
+     * @apiDescription  需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName okr__add
+     *
+     * @apiParam {String} name                   标题
+     * @apiParam {Number} link_id                关联id
+     * @apiParam {Array}  userids                群成员，格式: [userid1, userid2, userid3]
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function okr__add()
+    {
+        $user = User::auth();
+        //
+        $name = trim(Request::input('name'));
+        $link_id = intval(Request::input('link_id'));        
+        $userids = Request::input('userids');
+        //
+        if (empty($name)) {
+            return Base::retError('群名称至少2个字');
+        }
+        //
+        $dialog = WebSocketDialog::createGroup($name, $userids, 'okr', $user->userid);
+        if (empty($dialog)) {
+            return Base::retError('创建群组失败');
+        }
+        if ($link_id) {
+            $dialog->link_id = $link_id;
+            $dialog->save();
+        }
+        return Base::retSuccess('创建成功', $dialog);
+    }
+
+    /**
+     * @api {post} api/dialog/okr/push          40. 推送OKR相关信息
+     *
+     * @apiDescription  需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName okr__push
+     *
+     * @apiParam {String}  text                  发送内容
+     * @apiParam {Number}  userid                成员ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function okr__push()
+    {
+        User::auth();        
+        $text = trim(Request::input('text'));
+        $userid = intval(Request::input('userid'));       
+        //
+        $botUser = User::botGetOrCreate('okr-alert');
+        if (empty($botUser)) {
+            return Base::retError('机器人不存在');
+        }
+        //
+        $dialog = WebSocketDialog::checkUserDialog($botUser, $userid);
+        if ($dialog) {
+            WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid);
+        }
+        return Base::retSuccess('success', $dialog);
     }
 }

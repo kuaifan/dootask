@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="../css/download.css">
 </head>
 <body>
+  <div class="BulletBox"></div>
   <div id="layout">
     <!-- 页头区域 -->
     <header class="head dow">
@@ -100,7 +101,7 @@
             <h4 class="txt-4001830 topics-h4 mb-64 topics-h4-en">Also supports iOS, Android, macOS, Windows versions</h4>
             <ul class="download-ul">
               <li class="download-ul-item dow-animate-box" style="--delay: 0s;" onmouseover='handleMouseover(0)' onmouseout='handleMouseout(0)'>
-                <a class="normal" href="https://apps.apple.com/cn/app/dootask/id1624855111" target="_blank">
+                <a class="normal" href="https://apps.apple.com/cn/app/dootask/id1624855111" target="_blank" id="ios">
                   <img class="icon mb-8" src="../img/dow_ios.svg" alt="ios">
                   <i class="txt-4001624 txt">ios</i>
                 </a>
@@ -110,7 +111,7 @@
                 </div>
               </li>
               <li class="download-ul-item dow-animate-box" style="--delay: 0.1s;" onmouseover='handleMouseover(1)' onmouseout='handleMouseout(1)'>
-                <a class="normal" href="https://www.dootask.com/desktop/publish/latest?platform=android" target="_blank">
+                <a class="normal" href="https://www.dootask.com/desktop/publish/latest?platform=android" target="_blank" id="Android">
                   <img class="icon mb-8" src="../img/dow_android.svg" alt="Android">
                   <i class="txt-4001624 txt">Android</i>
                 </a>
@@ -343,16 +344,90 @@
 <script src="//cdn.bootcdn.net/ajax/libs/axios/1.3.6/axios.js"></script>
 <script src="../js/common.js"></script>
 <script>
-  /* 下载应用的hover处理函数 */
+const isMobile = 'ontouchstart' in window
+const androidDOM = document.getElementById("Android")
+const iosDOM = document.getElementById("ios")
+// 判断是否为ios
+const isIos = /iPad|iPhone|iPod/.test(window.navigator.userAgent);
+// 判断是否为安卓
+const isAndroid = /Android/.test(window.navigator.userAgent);
+// 判断是否为windows
+const isWindows = /Win64/.test(window.navigator.userAgent);
+/* 下载应用的hover处理函数 */
 const download = document.querySelector('.download-ul');
 const downloadItems = download.querySelectorAll('.download-ul-item');
 const handleMouseover = (val)=>{
-  downloadItems[val].children[0].style.display = 'none'
-  downloadItems[val].children[1].style.display = 'flex'
+  if(isIos||isAndroid){
+    return;
+  }else{
+    downloadItems[val].children[0].style.display = 'none'
+    downloadItems[val].children[1].style.display = 'flex'
+  }
 }
 const handleMouseout = (val)=>{
-  downloadItems[val].children[0].style.display = 'flex'
-  downloadItems[val].children[1].style.display = 'none'
+  if(isIos||isAndroid){
+    return;
+  }else{
+    downloadItems[val].children[0].style.display = 'flex'
+    downloadItems[val].children[1].style.display = 'none'
+  }
+}
+/* 对于ios与Android pc端点击时a链接直接跳转 移动端点击时需要阻止a链接直接跳转 */
+androidDOM.addEventListener('click',function(e){
+  if(isMobile){
+    e.preventDefault()
+  }
+})
+iosDOM.addEventListener('click',function(e){
+  if(isMobile){
+    e.preventDefault()
+  }
+})
+// 对于不同类型的移动端进行处理
+function movieHandle(flag=true){
+  if(flag){
+    downloadItems.forEach((item,index)=>{
+      item.addEventListener('touchstart',function(){
+        if(index==2||index==3){
+          return showBox("Not supported on current device")
+        }
+        if(index==0){
+          if(isIos){
+            // Safari
+            if (navigator.userAgent.indexOf('Safari') !== -1 && navigator.userAgent.indexOf('Chrome') === -1 && navigator.userAgent.indexOf('Edge') === -1) {
+              return (window.open(item.children[0].href,"_blank"));
+            }
+            return window.open(item.children[0].href,"_blank")
+          }
+          return showBox("Not supported on current device")
+        }
+        if(index==1){
+          if(isAndroid){
+            return window.open(item.children[0].href,"_blank")
+          }
+          return showBox("Not supported on current device")
+        }
+      })
+    })
+  }
+}
+// 移动端
+/* 显示/隐藏提示弹框 */
+function showBox(text){
+  const box = document.querySelector('.BulletBox')
+  box.style.display = 'block'
+  box.innerHTML = text
+  setTimeout(()=>{
+    box.style.display = 'none'
+  },1000)
+}
+// 是否是移动端
+if(isMobile){
+  if(isAndroid||isIos){
+    movieHandle()
+  }else if(isWindows){
+    movieHandle(false)
+  }
 }
 const localStorageHandle = (val)=>{
   localStorage.setItem('update_log_num',val)
@@ -405,7 +480,6 @@ if(!logsItem) {
     localStorage.setItem('logs_dowmload_en', JSON.stringify(record))
     updates.innerHTML = releases;
   }).catch(err=>{
-    console.log(err,"err");
   })
 }else{
   updates.innerHTML = logsItem;

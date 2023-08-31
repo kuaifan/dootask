@@ -49,6 +49,7 @@ services:
       - drawio-webapp
       - drawio-export
       - minder
+      - okr
       - ai
     restart: unless-stopped
 
@@ -149,7 +150,7 @@ services:
 
   approve:
     container_name: "dootask-approve-${APP_ID}"
-    image: "hitosea2020/go-approve:0.1.4"
+    image: "kuaifan/dooapprove:0.0.2"
     environment:
       TZ: "${TIMEZONE:-PRC}"
       MYSQL_HOST: "${DB_HOST}"
@@ -171,6 +172,24 @@ services:
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.12"
+    restart: unless-stopped
+  
+  okr:
+    container_name: "dootask-okr-${APP_ID}"
+    image: "kuaifan/doookr:0.0.5"
+    environment:
+      TZ: "${TIMEZONE:-PRC}"
+      DOO_TASK_URL: "http://${APP_IPPR}.3"
+      MYSQL_HOST: "${DB_HOST}"
+      MYSQL_PORT: "${DB_PORT}"
+      MYSQL_DBNAME: "${DB_DATABASE}"
+      MYSQL_USERNAME: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+    networks:
+      extnetwork:
+        ipv4_address: "${APP_IPPR}.13"
+    depends_on:
+      - mariadb
     restart: unless-stopped
 
 networks:

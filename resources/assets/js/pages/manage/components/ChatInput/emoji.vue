@@ -23,7 +23,8 @@
                 </ul>
             </Scrollbar>
         </div>
-        <ul v-if="!onlyEmoji" class="chat-emoji-menu">
+        <ul v-if="!onlyEmoji" ref="chatEmojiMenuRef" class="chat-emoji-menu" :style="chatEmojiMenuStyle" @scroll="onHandleScroll">
+            <li v-if="showEmojiMenuScrollLeftBtn" @click="onEmojiMenuScroll('left')" class="left-btn"><i class="taskfont">&#xe72d;</i></li>
             <li :class="{active: type === 'emosearch'}" @click="type='emosearch'">
                 <i class="taskfont">&#xe6f8;</i>
             </li>
@@ -33,6 +34,7 @@
             <li v-for="item in emoticonData" :class="{active: type === 'emoticon' && emoticonPath == item.path}" @click="onEmoticon(item.path)">
                 <img :title="item.name" :alt="item.name" :src="item.src"/>
             </li>
+            <li v-if="showEmojiMenuScrollRightBtn" @click="onEmojiMenuScroll('right')" class="right-btn"><i class="taskfont">&#xe733;</i></li>
         </ul>
     </div>
 </template>
@@ -77,10 +79,13 @@ export default {
 
             emojiData: [],
             emoticonData: [],
+
+            emojiMenuScrollLeft: 0,
         };
     },
     mounted() {
         this.initData()
+        this.onMonitorWheel()
     },
     watch: {
         type() {
@@ -109,6 +114,20 @@ export default {
                 }
             }
             return [];
+        },
+        chatEmojiMenuStyle() {
+            return {
+                paddingLeft: this.showEmojiMenuScrollLeftBtn ? '34px' : 0,
+                paddingRight: this.showEmojiMenuScrollRightBtn ? '34px' : 0,
+            }
+        },
+        showEmojiMenuScrollLeftBtn(){
+            return this.emojiMenuScrollLeft > 34
+        },
+        showEmojiMenuScrollRightBtn(){
+            const container = this.$refs['chatEmojiMenuRef'];
+            const liWidth = container?.querySelector('li')?.offsetWidth || 48;
+            return this.emojiMenuScrollLeft < this.emoticonData.length * liWidth - 34
         }
     },
     methods: {
@@ -201,7 +220,27 @@ export default {
             } else {
                 this.$emit('on-select', item)
             }
+        },
+
+        onMonitorWheel() {
+            const container = this.$refs['chatEmojiMenuRef'];
+            container?.addEventListener("wheel", (event) =>{
+                event.preventDefault();
+                container.scrollLeft += event.deltaY;
+            });
+        },
+
+        onEmojiMenuScroll(type) {
+            const container = this.$refs['chatEmojiMenuRef'];
+            const containerWidth = container.offsetWidth - 68
+            const scrollLeft = type == 'right' ? container.scrollLeft + containerWidth : container.scrollLeft - containerWidth
+            container.scrollTo({ left: scrollLeft, behavior: "smooth" })
+        },
+
+        onHandleScroll(event) {
+            this.emojiMenuScrollLeft = event.target.scrollLeft;
         }
+        
     }
 }
 </script>

@@ -328,6 +328,8 @@ class UsersController extends AbstractController
         $data = $user->toArray();
         $data['nickname_original'] = $user->getRawOriginal('nickname');
         $data['department_name'] = $user->getDepartmentName();
+        // 适用默认部门下第1级负责人才能添加部门OKR
+        $data['department_owner'] = UserDepartment::where('parent_id',0)->where('owner_userid', $user->userid())->exists();
         return Base::retSuccess('success', $data);
     }
 
@@ -538,6 +540,16 @@ class UsersController extends AbstractController
                 $query->select('userid')->from('web_socket_dialog_users')->where('dialog_id', $keys['dialog_id']);
             });
         }
+        if ($keys['departments']) {
+            if (!is_array($keys['departments'])) {
+                $keys['departments'] = explode(",", $keys['departments']);
+            }
+            $builder->where(function($query) use ($keys) {
+                foreach ($keys['departments'] AS $department) {
+                    $query->orWhereRaw("FIND_IN_SET('{$department}', department)");
+                }
+            });            
+        }
         if (in_array($sorts['az'], ['asc', 'desc'])) {
             $builder->orderBy('az', $sorts['az']);
         } else {
@@ -601,7 +613,10 @@ class UsersController extends AbstractController
      */
     public function basic()
     {
-        User::auth();
+        $sharekey = Request::header('Sharekey');
+        if(empty($sharekey) || !Meeting::getShareInfo($sharekey)){
+            User::auth();
+        }
         //
         $userid = Request::input('userid');
         $array = Base::json2array($userid);
@@ -1108,6 +1123,8 @@ class UsersController extends AbstractController
      * - join: 加入会议，有效参数：meetingid (必填)
      * @apiParam {String} [meetingid]               频道ID（不是数字）
      * @apiParam {String} [name]                    会话ID
+     * @apiParam {String} [sharekey]                分享的key
+     * @apiParam {String} [username]                用户名称
      * @apiParam {Array} [userids]                  邀请成员
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -1116,12 +1133,20 @@ class UsersController extends AbstractController
      */
     public function meeting__open()
     {
-        $user = User::auth();
-        //
         $type = trim(Request::input('type'));
         $meetingid = trim(Request::input('meetingid'));
         $name = trim(Request::input('name'));
         $userids = Request::input('userids');
+        $sharekey = trim(Request::input('sharekey'));
+        $username = trim(Request::input('username'));
+        $user = null;
+        if(!empty($sharekey) && $type === 'join'){
+            if(!Meeting::getShareInfo($sharekey)){
+                return Base::retError('分享链接已过期');
+            }
+        }else{
+            $user = User::auth();
+        }
         $isCreate = false;
         // 创建、加入
         if ($type === 'join') {
@@ -1131,13 +1156,13 @@ class UsersController extends AbstractController
             }
         } elseif ($type === 'create') {
             $meetingid = strtoupper(Base::generatePassword(11, 1));
-            $name = $name ?: "{$user->nickname} 发起的会议";
+            $name = $name ?: "{$user?->nickname} 发起的会议";
             $channel = "DooTask:" . substr(md5($meetingid . env("APP_KEY")), 16);
             $meeting = Meeting::createInstance([
                 'meetingid' => $meetingid,
                 'name' => $name,
                 'channel' => $channel,
-                'userid' => $user->userid
+                'userid' => $user?->userid
             ]);
             $meeting->save();
             $isCreate = true;
@@ -1153,7 +1178,10 @@ class UsersController extends AbstractController
         if (empty($meetingSetting['appid']) || empty($meetingSetting['app_certificate'])) {
             return Base::retError('会议功能配置错误，请联系管理员');
         }
-        $uid = intval(str_pad( Request::header('fd'), 6, 9, STR_PAD_LEFT) . $user->userid);
+        $uid = intval(str_pad(Base::generatePassword(4,1), 9, 8, STR_PAD_LEFT));
+        if($user){
+            $uid = intval(str_pad(Request::header('fd'), 5, 9, STR_PAD_LEFT).$user->userid);
+        }
         try {
             $service = new AgoraTokenGenerator($meetingSetting['appid'], $meetingSetting['app_certificate'], $meeting->channel, $uid);
         } catch (\Exception $e) {
@@ -1170,7 +1198,8 @@ class UsersController extends AbstractController
                 if (!User::whereUserid($userid)->exists()) {
                     continue;
                 }
-                $dialog = WebSocketDialog::checkUserDialog($user, $userid);
+                $botUser = User::botGetOrCreate('meeting-alert');
+                $dialog = WebSocketDialog::checkUserDialog($botUser, $userid);
                 if ($dialog) {
                     $res = WebSocketDialogMsg::sendMsg(null, $dialog->id, 'meeting', $data, $user->userid);
                     if (Base::isSuccess($res)) {
@@ -1182,11 +1211,66 @@ class UsersController extends AbstractController
         //
         $data['appid'] = $meetingSetting['appid'];
         $data['uid'] = $uid;
-        $data['userimg'] = $user->userimg;
-        $data['nickname'] = $user->nickname;
+        $data['userimg'] = $sharekey ? Base::fillUrl('avatar/'.$username.'.png') : $user?->userimg;
+        $data['nickname'] = $sharekey ? $username : $user?->nickname;
         $data['token'] = $token;
         $data['msgs'] = $msgs;
+        // 
+        Meeting::setTouristInfo($data);
+        // 
         return Base::retSuccess('success', $data);
+    }
+
+    /**
+     * @api {get} api/users/meeting/link          16. 【会议】获取分享链接
+     *
+     * @apiDescription  需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName meeting__link
+     *
+     * @apiParam {String} meetingid               频道ID（不是数字）
+     * @apiParam {String} [sharekey]              分享的key
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function meeting__link()
+    {
+        $meetingid = trim(Request::input('meetingid'));
+        $sharekey = trim(Request::input('sharekey'));
+        if(empty($sharekey) || !Meeting::getShareInfo($sharekey)){
+            User::auth();
+        }
+        $meeting = Meeting::whereMeetingid($meetingid)->first();
+        if (empty($meeting)) {
+            return Base::retError('频道ID不存在');
+        }
+        return Base::retSuccess('success', $meeting->getShareLink());
+    }
+
+    /**
+     * @api {get} api/users/meeting/tourist          16. 【会议】游客信息
+     *
+     * @apiDescription  需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName meeting__tourist
+     *
+     * @apiParam {String} tourist_id     游客ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function meeting__tourist()
+    {
+        $touristId = trim(Request::input('tourist_id'));
+        if ($touristInfo = Meeting::getTouristInfo($touristId)) {
+            return Base::retSuccess('success', $touristInfo);
+        }
+        return Base::retError('Id不存在');
     }
 
     /**
@@ -1222,7 +1306,8 @@ class UsersController extends AbstractController
             if (!User::whereUserid($userid)->exists()) {
                 continue;
             }
-            $dialog = WebSocketDialog::checkUserDialog($user, $userid);
+            $botUser = User::botGetOrCreate('meeting-alert');
+            $dialog = WebSocketDialog::checkUserDialog($botUser, $userid);
             if ($dialog) {
                 $res = WebSocketDialogMsg::sendMsg(null, $dialog->id, 'meeting', $data, $user->userid);
                 if (Base::isSuccess($res)) {

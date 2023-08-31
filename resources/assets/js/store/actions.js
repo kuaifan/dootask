@@ -112,6 +112,9 @@ export default {
             'version': window.systemInfo.version || "0.0.1",
             'platform': $A.Platform,
         }
+        if(!state.userToken && state.meetingWindow?.meetingSharekey){
+            header.sharekey = state.meetingWindow.meetingSharekey;
+        }
         if ($A.isJson(params.header)) {
             params.header = Object.assign(header, params.header)
         } else {
@@ -3589,7 +3592,6 @@ export default {
         })
     },
 
-
     /** *****************************************************************************************/
     /** *************************************** meeting *********************************************/
     /** *****************************************************************************************/
@@ -3613,11 +3615,44 @@ export default {
     * @param type
     * @param meetingid
     */
-    showMeetingWindow({state}, {type, meetingid}) {
+    showMeetingWindow({state}, {type, meetingid, meetingdisabled, meetingSharekey}) {
         state.meetingWindow = {
             show: true,
             type: type,
-            meetingid: meetingid
+            meetingid: meetingid,
+            meetingdisabled: meetingdisabled,
+            meetingSharekey: meetingSharekey
         };
+    },
+
+    /** *****************************************************************************************/
+    /** *************************************** okr *********************************************/
+    /** *****************************************************************************************/
+
+    /**
+     * 打开Okr详情页
+     * @param state
+     * @param dispatch
+     * @param link_id
+     */
+    openOkr({state}, link_id) {
+        if (link_id > 0) {
+            if (window.innerWidth < 910) {
+                $A.goForward({ 
+                    path:'/manage/apps/#/okrDetails?data='+link_id, 
+                });
+            }else{
+                state.okrWindow = {
+                    type: 'okrDetails',
+                    show: true,
+                    id: link_id
+                };
+                setTimeout(()=>{
+                    state.okrWindow.show = false;
+                    state.okrWindow.id = 0;
+                },10)
+            }
+        }
+
     },
 }

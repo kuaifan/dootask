@@ -69,6 +69,9 @@
         margin-bottom: 12px;
         padding: 20px 24px;
         border-bottom: 1px solid #eeeeee;
+        @media (max-width: 500px) {
+            padding-right: 50px;
+        }
     }
 
     .report-detail-context {

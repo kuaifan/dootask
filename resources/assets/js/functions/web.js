@@ -734,10 +734,23 @@
             text = text.replace(atReg, `<span class="mention me" data-id="${userid}">`)
             // 处理内容连接
             if (/https*:\/\//.test(text)) {
+                const urlMatch = $.apiUrl('../').match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im);
+                const theme = window.localStorage.getItem("__theme:mode__")
+                const lang = window.localStorage.getItem("__language:type__")
                 text = text.split(/(<[^>]*>)/g).map(string => {
                     if (string && !/<[^>]*>/.test(string)) {
                         string = string.replace(/(^|[^'"])((https*:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;|#|@|,|!)+))/g, "$1<a href=\"$2\" target=\"_blank\">$2</a>")
                     }
+                    // 
+                    const href = string.match(/href="([^"]+)"/)?.[1] || ''
+                    if (urlMatch?.[1] && href.indexOf(urlMatch[1]) !== -1) {
+                        const searchParams = new URLSearchParams()
+                        href.indexOf("theme=") === -1 && searchParams.append('theme', theme);
+                        href.indexOf("lang=") === -1 && searchParams.append('lang', lang);
+                        const prefix = searchParams.toString() ? (href.indexOf("?") === -1 ? '?' : '&') : '';
+                        string = string.replace(/(href="[^"]*)/g, '$1' + prefix + searchParams.toString())
+                    }
+                    // 
                     return string;
                 }).join("")
             }

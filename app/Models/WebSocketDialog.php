@@ -496,7 +496,7 @@ class WebSocketDialog extends AbstractModel
                 }
             }
         }
-        if (!WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($userid)->exists()) {
+        if (!WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($userid)->exists() && $dialog->group_type != 'okr') {
             throw new ApiException('不在成员列表内', ['dialog_id' => $dialog_id], -4003);
         }
         return $dialog;

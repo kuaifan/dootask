@@ -24,6 +24,7 @@
                                 <i v-else-if="dialogData.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
                                 <i v-else-if="dialogData.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
                                 <i v-else-if="dialogData.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
+                                <i v-else-if="dialogData.group_type=='okr'" class="taskfont icon-avatar task">&#xe6f4;</i>
                                 <Icon v-else class="icon-avatar" type="ios-people" />
                             </template>
                             <div v-else-if="dialogData.dialog_user" class="user-avatar">
@@ -804,6 +805,9 @@ export default {
             if (this.dialogData.group_type === 'task') {
                 array.push({type: 'task', label: '打开任务'})
             }
+            if (this.dialogData.group_type === 'okr') {
+                array.push({type: 'okr', label: '打开OKR'})
+            }
             return array
         },
 
@@ -959,12 +963,9 @@ export default {
                 return b.msg_id - a.msg_id
             })[0]
             if (this.allMsgs.findIndex(({id}) => id == item.msg_id) === -1) {
-                if (item.label === '{UNREAD}') {
-                    return Object.assign(item, {
-                        'label': this.$L(`未读消息${unread}条`)
-                    })
-                }
-                return item
+                return Object.assign(item, {
+                    'label': this.$L(`未读消息${unread}条`)
+                })
             }
             return null
         },
@@ -1905,6 +1906,13 @@ export default {
             });
         },
 
+        openOkr() {
+            if (!this.dialogData.link_id) {
+                return;
+            }
+            this.$store.dispatch("openOkr", this.dialogData.link_id);
+        },
+
         onPrevPage() {
             if (this.prevId === 0) {
                 return
@@ -2261,6 +2269,10 @@ export default {
                     this.openTask()
                     break;
 
+                case 'okr':
+                    this.openOkr()
+                    break;
+
                 default:
                     if (this.loadMsg) {
                         $A.messageWarning("正在加载，请稍后再试...")
@@ -2561,6 +2573,9 @@ export default {
                 case "SPAN":
                     if (target.classList.contains('mention') && target.classList.contains('task')) {
                         this.$store.dispatch("openTask", $A.runNum(target.getAttribute("data-id")));
+                    }
+                    if (target.classList.contains('mention') && target.classList.contains('okr')) {
+                        this.$store.dispatch("openOkr", $A.runNum(target.getAttribute("data-id")));
                     }
                     break;
 

@@ -1,7 +1,13 @@
 <template>
-    <div v-if="userid" class="meeting-player">
+    <div class="meeting-player">
         <div :id="id" class="player" :style="playerStyle"></div>
-        <UserAvatar :userid="userid" :size="36" :borderWitdh="2"/>
+        <UserAvatar v-if="userid" :userid="userid" :size="36" :borderWitdh="2"/>
+        <div v-else-if="tourist.userimg" class="common-avatar avatar-wrapper">
+            <div class="avatar-box online">
+                <em></em>
+                <EAvatar :size="36" :src="tourist.userimg"></EAvatar>
+            </div>
+        </div>
         <div class="player-state">
             <i v-if="!audio" class="taskfont">&#xe7c7;</i>
             <i v-if="!video" class="taskfont">&#xe7c8;</i>
@@ -32,7 +38,12 @@ export default {
     },
     data() {
         return {
-            timer: null
+            timer: null,
+            tourist: {
+                uid: '',
+                nickname: '',
+                userimg: '',
+            }
         }
     },
     mounted() {
@@ -52,7 +63,11 @@ export default {
         ...mapState(['cacheUserBasic']),
         userid() {
             if (this.player.uid) {
-                return parseInt( (this.player.uid+"").substring(6) )
+                if( (this.player.uid + '').indexOf('88888') !== -1 ){
+                    this.getTouristInfo();
+                    return 0;
+                }
+                return parseInt( (this.player.uid+"").substring(5) ) || 0
             }
             return 0
         },
@@ -61,6 +76,10 @@ export default {
             if (user) {
                 return {
                     backgroundImage: `url("${user.userimg}")`
+                }
+            }else if(this.tourist.userimg){
+                return {
+                    backgroundImage: `url("${this.tourist.userimg}")`
                 }
             }
             return null;
@@ -99,6 +118,18 @@ export default {
                     console.log("Meeting Player Error", e);
                 }
             })
+        },
+        getTouristInfo() {
+            this.$store.dispatch("call", {
+                url: 'users/meeting/tourist',
+                data: {
+                    tourist_id: this.player.uid
+                }
+            }).then(({data}) => {
+                this.tourist = data;
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            });
         }
     }
 }

@@ -70,6 +70,7 @@
                                 <i v-else-if="dialog.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
                                 <i v-else-if="dialog.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
                                 <i v-else-if="dialog.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
+                                <i v-else-if="dialog.group_type=='okr'" class="taskfont icon-avatar task">&#xe6f4;</i>
                                 <Icon v-else class="icon-avatar" type="ios-people" />
                             </template>
                             <div v-else-if="dialog.dialog_user" class="user-avatar"><UserAvatar :userid="dialog.dialog_user.userid" :size="42"/></div>
@@ -453,6 +454,14 @@ export default {
                 if (['dialog', 'contacts'].includes(params.dialogAction)) {
                     this.tabActive = params.dialogAction
                 }
+                if (params.dialog_id) {
+                    this.tabActive = 'dialog'
+                    const id = $A.runNum(params.dialog_id);
+                    if (id > 0) {
+                        this.openDialog(id)
+                    }
+                    this.clickAgainSubscribe = Store.subscribe('clickAgainDialog', this.shakeUnread);
+                }
             },
             immediate: true
         },
@@ -536,7 +545,7 @@ export default {
 
     methods: {
         listTouch() {
-            if (this.$refs.navMenu.visible) {
+            if (this.$refs.navMenu?.visible) {
                 this.$refs.navMenu.hide()
             }
         },

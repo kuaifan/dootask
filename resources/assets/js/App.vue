@@ -334,18 +334,20 @@ export default {
                 switch (act) {
                     // 获取用户信息
                     case "getInfo":
+                        const isTourist = (uuid+'').indexOf('88888') !== -1;
                         this.$store.dispatch("call", {
-                            url: 'users/basic',
+                            url: isTourist ? 'users/meeting/tourist' : 'users/basic',
                             data: {
-                                userid: [ (uuid+"").substring(6) ]
+                                userid: uuid,
+                                tourist_id: uuid,
                             }
                         }).then(({data}) => {
                             $A.eeuiAppSendMessage({
                                 action: 'updateMeetingInfo',
                                 infos: {
                                     uuid: uuid,
-                                    avatar: data[0]?.userimg,
-                                    username: data[0]?.nickname,
+                                    avatar: isTourist ? data?.userimg : data[0]?.userimg,
+                                    username: isTourist ? data?.nickname : data[0]?.nickname,
                                 }
                             });
                         }).catch(({msg}) => {

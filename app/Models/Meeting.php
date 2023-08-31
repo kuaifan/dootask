@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use Cache;
+use App\Module\Base;
+use Illuminate\Support\Carbon;
+
 /**
  * App\Models\Meeting
  *
@@ -30,5 +34,58 @@ namespace App\Models;
  */
 class Meeting extends AbstractModel
 {
+    const CACHE_KEY = 'meeting_share_link_code';
+    const CACHE_EXPIRED_TIME = 6; // 小时
 
+    /**
+     * 获取分享链接
+     * @return mixed
+     */
+    public function getShareLink()
+    {
+        $code = base64_encode("{$this->meetingid}" . Base::generatePassword());
+        Cache::put(self::CACHE_KEY.'_'.$code, [
+            'id' => $this->id,
+            'meetingid' => $this->meetingid,
+            'channel' => $this->channel,
+        ], Carbon::now()->addHours(self::CACHE_EXPIRED_TIME));
+        return Base::fillUrl("meeting/{$this->meetingid}/".$code);
+    }
+
+    /**
+     * 获取分享信息
+     * @return mixed
+     */
+    public static function getShareInfo($code)
+    {
+        if(Cache::has(self::CACHE_KEY.'_'.$code)){
+            return Cache::get(self::CACHE_KEY.'_'.$code);
+        }
+        return null;
+    }
+
+    /**
+     * 保存访客信息
+     * @return mixed
+     */
+    public static function setTouristInfo($data)
+    {
+        Cache::put(Meeting::CACHE_KEY.'_'.$data['uid'], [
+            'uid' => $data['uid'],
+            'userimg' => $data['userimg'],
+            'nickname' => $data['nickname'],
+        ], Carbon::now()->addHours(self::CACHE_EXPIRED_TIME));
+    }
+
+    /**
+     * 获取访客信息
+     * @return mixed
+     */
+    public static function getTouristInfo($touristId)
+    {
+        if(Cache::has(Meeting::CACHE_KEY.'_'.$touristId)){
+            return Cache::get(Meeting::CACHE_KEY.'_'.$touristId);
+        }
+        return null;
+    }
 }

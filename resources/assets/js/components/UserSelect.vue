@@ -45,6 +45,7 @@
                                 <i v-else-if="item.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
                                 <i v-else-if="item.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
                                 <i v-else-if="item.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
+                                <i v-else-if="item.group_type=='okr'" class="taskfont icon-avatar task">&#xe6f4;</i>
                                 <Icon v-else class="icon-avatar" type="ios-people" />
                             </template>
                             <UserAvatar v-else :userid="item.userid" tooltip-disabled/>
@@ -112,6 +113,7 @@
                             <i v-else-if="item.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
                             <i v-else-if="item.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
                             <i v-else-if="item.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
+                            <i v-else-if="item.group_type=='okr'" class="taskfont icon-avatar task">&#xe6f4;</i>
                             <Icon v-else class="icon-avatar" type="ios-people" />
                             <div class="avatar-name">
                                 <span>{{item.name}}</span>
@@ -252,6 +254,12 @@ export default {
             default: false
         },
 
+        // 是否禁用
+        disable: {
+            type: Boolean,
+            default: false
+        },
+
         // 提交前的回调
         beforeSubmit: Function
     },
@@ -312,7 +320,7 @@ export default {
             } else {
                 this.searchKey = ""
             }
-            this.$emit("on-show-change",value)
+            this.$emit("on-show-change",value,this.values)
         },
 
         searchKey() {
@@ -582,6 +590,9 @@ export default {
         },
 
         onSelection() {
+            if(this.disable){
+                return
+            }
             this.$nextTick(_ => {
                 this.selects = $A.cloneJSON(this.values)
                 this.showModal = true

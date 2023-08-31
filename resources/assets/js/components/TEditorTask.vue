@@ -34,6 +34,7 @@
 <style lang="scss" scoped>
 .task-editor {
     position: relative;
+    word-break: break-all;
     .task-editor-operate {
         position: absolute;
         top: 0;

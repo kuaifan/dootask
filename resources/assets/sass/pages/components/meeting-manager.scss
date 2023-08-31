@@ -47,6 +47,14 @@ body {
                                         right: -8px;
                                         z-index: 2;
                                     }
+                                    .avatar-box{
+                                        em{
+                                            transform: scale(1.0625);
+                                        }
+                                        .el-avatar--circle{
+                                            border: 2px solid #FFFFFF;
+                                        }
+                                    }
                                 }
                             }
                         }

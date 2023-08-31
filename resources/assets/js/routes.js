@@ -10,6 +10,11 @@ export default [
         component: () => import('./pages/pro.vue'),
     },
     {
+        name: 'meeting',
+        path: '/meeting/:meetingId?/:sharekey?',
+        component: () => import('./pages/meeting.vue'),
+    },
+    {
         name: 'manage',
         path: '/manage',
         component: () => import('./pages/manage.vue'),
@@ -40,6 +45,11 @@ export default [
                 component: () => import('./pages/manage/approve/details.vue'),
             },
             {
+                name: 'manage-apps',
+                path: 'apps/*',
+                component: () => import('./pages/manage/apps.vue')
+            },
+            {
                 name: 'manage-setting',
                 path: 'setting',
                 component: () => import('./pages/manage/setting/index.vue'),
@@ -53,11 +63,6 @@ export default [
                         name: 'manage-setting-checkin',
                         path: 'checkin',
                         component: () => import('./pages/manage/setting/checkin.vue'),
-                    },
-                    {
-                        name: 'manage-setting-approve',
-                        path: 'approve',
-                        component: () => import('./pages/manage/setting/approve.vue'),
                     },
                     {
                         name: 'manage-setting-language',
@@ -116,6 +121,11 @@ export default [
                 path: 'file/:folderId?/:fileId?',
                 component: () => import('./pages/manage/file.vue'),
             },
+            {
+                name: 'manage-application',
+                path: 'application',
+                component: () => import('./pages/manage/application.vue'),
+            },
         ]
     },
     {
@@ -167,5 +177,5 @@ export default [
         name: '404',
         path: '*',
         component: () => import('./pages/404.vue')
-    },
+    }
 ]

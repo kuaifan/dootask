@@ -12,7 +12,7 @@
                         <div class="more-item">
                             <i class="taskfont" v-html="item.icon"></i>
                             <div class="tabbar-title">{{$L(item.label)}}</div>
-                            <Badge v-if="item.name === 'workReport'" class="tabbar-badge" :overflow-count="999" :count="reportUnreadNumber"/>
+                            <Badge v-if="item.name === 'workReport'" class="tabbar-badge" :overflow-count="999" :count="reportUnreadNumber + approveUnreadNumber"/>
                         </div>
                     </li>
                 </ul>
@@ -30,8 +30,11 @@
                 <template v-else-if="item.name === 'dialog'">
                     <Badge class="tabbar-badge" :overflow-count="999" :text="msgUnreadMention"/>
                 </template>
+                <template v-else-if="item.name === 'application'">
+                    <Badge class="tabbar-badge" :overflow-count="999" :count="reportUnreadNumber + approveUnreadNumber"/>
+                </template>
                 <template v-else-if="item.name === 'more'">
-                    <Badge class="tabbar-badge" :overflow-count="999" :count="reportUnreadNumber"/>
+                    <Badge class="tabbar-badge" :overflow-count="999" :count="reportUnreadNumber + approveUnreadNumber"/>
                 </template>
             </li>
         </ul>
@@ -68,7 +71,8 @@ export default {
                 {icon: '&#xe6fa;', name: 'project', label: '项目'},
                 {icon: '&#xe6eb;', name: 'dialog', label: '消息'},
                 {icon: '&#xe6b2;', name: 'contacts', label: '通讯录'},
-                {icon: '&#xe6e9;', name: 'more', label: '更多'},
+                {icon: '&#xe60c;', name: 'application', label: '应用'},
+                // {icon: '&#xe6e9;', name: 'more', label: '更多'},
             ],
             navMore: [
                 [
@@ -85,6 +89,7 @@ export default {
                 [
                     {icon: '&#xe7da;', name: 'workReport', label: '工作报告'},
                     {icon: '&#xe7b9;', name: 'approve', label: '审批中心'},
+                    {icon: '&#xe7b9;', name: 'okrManage', label: 'OKR管理'},
                 ]
             ],
 
@@ -100,6 +105,7 @@ export default {
         }
         if (this.userIsAdmin) {
             this.navMore[2].splice(0, 0, {icon: '&#xe63f;', name: 'allUser', label: '团队管理'})
+            this.navMore[2].push({icon: '&#xe7b9;', name: 'okrAnalyze', label: 'OKR结果分析'})
         }
     },
 
@@ -112,7 +118,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userIsAdmin', 'cacheDialogs', 'reportUnreadNumber']),
+        ...mapState(['userIsAdmin', 'cacheDialogs', 'reportUnreadNumber', 'approveUnreadNumber']),
         ...mapGetters(['dashboardTask']),
 
         routeName() {
@@ -200,8 +206,9 @@ export default {
         },
 
         activeName() {
-            if (this.isMore || ['manage-calendar', 'manage-file', 'manage-setting'].includes(this.routeName)) {
-                return 'more';
+            if (this.isMore || ['manage-calendar', 'manage-file', 'manage-setting', 'manage-application', 'manage-approve', 'manage-apps'].includes(this.routeName)) {
+                // return 'more';
+                return 'application';
             }
 
             if (this.routeName === 'manage-dashboard') {
@@ -283,6 +290,16 @@ export default {
                 case 'contacts':
                     location = {name: 'manage-messenger', params: {dialogAction: 'contacts'}};
                     break;
+                    
+                case 'okrManage':
+                case 'okrAnalyze':
+                    this.goForward({ 
+                        path:'/manage/apps/' + ( path == 'okrManage' ? '/#/list' : '/#/analysis') , 
+                        query: {
+                            baseUrl: this.okrUrl
+                        } 
+                    });
+                    return;
 
                 default:
                     location = {name: 'manage-' + path};

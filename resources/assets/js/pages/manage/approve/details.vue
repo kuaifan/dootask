@@ -1,5 +1,12 @@
 <template>
     <div class="approve-details" :style="{'z-index':modalTransferIndex}">
+        <!-- 导航 -->
+        <div class="approve-details-nav">
+            <div class="common-nav-back" @click="goBack()">
+                <i class="taskfont">&#xe676;</i>
+            </div>
+            <h2>{{$L('审批详情')}}</h2>
+        </div>
         <!-- 审批详情 -->
         <div class="approve-details-box" ref="approveDetailsBox">
             <h2 class="approve-details-title">
@@ -282,9 +289,12 @@ export default {
             } else if (timeDiff < 3600 * 24) {
                 const hours = Math.floor(timeDiff / 3600);
                 return type == 2 ? `${hours}${this.$L('小时')}` : `${hours} ${this.$L('小时前')}`;
-            } else {
+            } else if (timeDiff < 3600 * 24 * 30) {
                 const days = Math.floor(timeDiff / 3600 / 24);
-                return type == 2 ? `${days + 1}${this.$L('天')}` : `${days + 1} ${this.$L('天')}`;
+                return type == 2 ? `${days + 1}${this.$L('天')}` : `${days + 1} ${this.$L('天前')}`;
+            } else {
+                const days = Math.floor(timeDiff / 3600 / 720);
+                return type == 2 ? `${days + 1}${this.$L('月')}` : `${days + 1} ${this.$L('月前')}`;
             }
         },
         // 时间转为周几
@@ -327,10 +337,8 @@ export default {
                     }
                     return item;
                 })
-                this.$nextTick(() => {
-                    this.datas = data
-                    isScrollToBottom && this.scrollToBottom();
-                })
+                this.datas = data
+                isScrollToBottom && this.scrollToBottom();
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
@@ -424,14 +432,7 @@ export default {
                 }
             }).then(({msg}) => {
                 $A.messageSuccess("添加成功");
-                if (this.$route.name == 'manage-approve-details' || this.$route.name == 'manage-messenger') {
-                    this.getInfo(true)
-                } else {
-                    this.$emit('approve')
-                    setTimeout(() => {
-                        this.scrollToBottom()
-                    }, 500);
-                }
+                this.getInfo(true)
                 this.commentShow = false;
             }).catch(({msg}) => {
                 $A.modalError(msg);
@@ -441,11 +442,13 @@ export default {
         },
         // 滚动到容器底部
         scrollToBottom() {
-            const container = this.$refs.approveDetailsBox
-            container.scrollTo({
-                top: container.scrollHeight + 1000,
-                behavior: 'smooth'
-            });
+            this.$nextTick(() => {
+                const container = this.$refs.approveDetailsBox
+                container.scrollTo({
+                    top: container.scrollHeight + 1000,
+                    behavior: 'smooth'
+                });
+            })
         },
         // 获取内容
         getContent(content) {

@@ -743,3 +743,38 @@ body {
     transform: translate(100%, 0);
     opacity: 0;
 }
+
+/*全局 ivu-modal-wrap*/
+body {
+    .ivu-modal-wrap {
+        &.common-drawer-overlay {
+            overflow: hidden;
+        }
+        &.common-drawer-modal{
+            .ivu-modal-body{
+                padding: 0 !important;
+            }
+            .ivu-modal-close{
+                z-index: 3;
+            }
+        }
+    }
+}
+
+/*全局返回按钮*/
+.common-nav-back{
+    cursor: pointer;
+    padding-right: 8px;
+    &.portrait{
+        display: none;
+    }
+    .taskfont{
+        font-size: 26px;
+    }
+}
+body.window-portrait {
+    .common-nav-back{
+        display: block;
+    }
+}
+

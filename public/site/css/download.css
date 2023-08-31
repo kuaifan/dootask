@@ -151,3 +151,19 @@
   display: block;
   padding: 10px 16px;
 }
+/* 弹框样式 */
+.BulletBox{
+  position: fixed;
+  display: none;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  padding: 8px;
+  background-color: var(--txt-theme-color);
+  line-height: 20px;
+  text-align: center;
+  z-index: 9999;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #fff;
+}

@@ -87,5 +87,8 @@
                 "url": "https://www.dootask.com/desktop/publish"
             }
         }
-    ]
+    ],
+    "dependencies": {
+        "@micro-zoe/micro-app": "^0.8.11"
+    }
 }

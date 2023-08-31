@@ -1,18 +1,18 @@
 <template>
-    <div class="setting-item submit">
-        <Row class="approve-row" :gutter="8">
-            <Col :xxl="{ span: 6 }" :xl="{ span: 8 }" :lg="{ span: 12 }" :sm="{ span: 24 }" :xs="{ span: 24 }" >
+    <div class="page-approve-setting">
+        <Row class="approve-row" :gutter="16">
+            <Col :xxl="{ span: 6 }" :xl="{ span: 8 }" :lg="{ span: 12 }" :sm="{ span: 12 }" :xs="{ span: 24 }" >
                 <div class="approve-col-box approve-col-add" @click="add">
                     <Icon type="md-add" />
                 </div>
             </Col>
-            <Col v-for="(item, key) in list" :xxl="{ span: 6 }" :xl="{ span: 8 }" :lg="{ span: 12 }" :sm="{ span: 24 }" :xs="{ span: 24 }" :key="key">
+            <Col v-for="(item, key) in list" :xxl="{ span: 6 }" :xl="{ span: 8 }" :lg="{ span: 12 }" :sm="{ span: 12 }" :xs="{ span: 24 }" :key="key">
                 <div class="approve-col-box approve-col-for" @click="edit(item)">
-                    <p>{{$L('流程名称')}}：<span style="font-weight: 500;color: #135de6;">{{$L(item.name)}}</span></p>
-                    <Divider style="margin: 12px 0;margin-bottom: 9px;"/>
+                    <p>{{$L('流程名称')}}：<span class="approve-name">{{$L(item.name)}}</span></p>
+                    <Divider class="divider"/>
                     <div class="approve-button-box" @click.stop="edit(item)">
                         <p>{{$L('已发布')}}</p>
-                        <p @click.stop="change(item)" style="position: relative;">
+                        <p class="icon-warp" @click.stop="change(item)" >
                             <Icon type="md-trash" size="16" class="delcon"/>
                         </p>
                     </div>
@@ -33,7 +33,7 @@ import DrawerOverlay from "../../../components/DrawerOverlay";
 import store from '../../../store/state'
 import {languageType} from "../../../language";
 export default {
-    name: "approve",
+    name: "ApproveSetting",
     components: {DrawerOverlay},
     data(){
         return{

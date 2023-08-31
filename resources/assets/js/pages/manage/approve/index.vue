@@ -2,15 +2,34 @@
     <div class="page-approve">
         <PageTitle :title="$L('审批中心')"/>
         <div class="approve-wrapper" ref="fileWrapper">
-
             <div class="approve-head">
                 <div class="approve-nav">
+                    <div class="common-nav-back" @click="goBack()"><i class="taskfont">&#xe676;</i></div>
                     <h1>{{$L('审批中心')}}</h1>
                 </div>
-                <Button :loading="addLoadIng" type="primary" @click="addApply">{{$L("添加申请")}}</Button>
-            </div>
+                
+                <Button v-show="showType == 1 && isShowIcon" @click="addApply" :loading="addLoadIng" type="primary" shape="circle" icon="md-add" class="ivu-btn-icon-only"></Button>
+                <Button v-if="showType == 1 && !isShowIcon" :loading="addLoadIng" type="primary" @click="addApply"> 
+                    <span> {{$L("添加申请")}} </span> 
+                </Button>
 
-            <Tabs :value="tabsValue" @on-click="tabsClick" style="margin: 0 20px;height: 100%;"  size="small">
+                <Button v-show="showType == 1 && userIsAdmin && !isShowIcon" @click="exportApproveShow = true">
+                    <span> {{$L("导出审批数据")}} </span> 
+                </Button>
+                <Button v-if="showType == 1 && userIsAdmin && isShowIcon" @click="exportApproveShow = true" shape="circle" class="ivu-btn-icon-only">
+                    <i class="taskfont">&#xe7a8;</i>
+                </Button>
+
+                <Button v-if="userIsAdmin && !isShowIcon" @click="showType = showType == 1 ? 2 : 1">
+                    <span> {{ showType == 1 ? $L("流程设置") : $L("返回") }} </span> 
+                </Button>
+                <Button v-if="userIsAdmin && isShowIcon" @click="showType = showType == 1 ? 2 : 1" shape="circle" class="ivu-btn-icon-only">
+                    <i v-if="showType == 1" class="taskfont">&#xe67b;</i>
+                    <i v-if="showType == 2" class="taskfont">&#xe637;</i>
+                </Button>
+            </div>
+            
+            <Tabs class="page-approve-tabs" v-if="showType==1" :value="tabsValue" @on-click="tabsClick" size="small">
                 <TabPane :label="$L('待办') + (unreadTotal > 0 ? ('('+unreadTotal+')') : '')" name="unread" style="height: 100%;">
                     <div class="approve-main-search">
                         <div>
@@ -132,6 +151,8 @@
                 </TabPane>
             </Tabs>
 
+            <ApproveSetting v-else/>
+
         </div>
 
         <!--详情-->
@@ -206,6 +227,9 @@
             </div>
         </Modal>
 
+        <!--导出审批数据-->
+        <ApproveExport v-model="exportApproveShow"/>
+
     </div>
 </template>
 
@@ -214,13 +238,18 @@ import list from "./list.vue";
 import listDetails from "./details.vue";
 import DrawerOverlay from "../../../components/DrawerOverlay";
 import ImgUpload from "../../../components/ImgUpload";
+import ApproveSetting from "./setting";
+import ApproveExport from "../components/ApproveExport";
 import {mapState} from 'vuex'
 
 export default {
-    components:{list,listDetails,DrawerOverlay,ImgUpload},
+    components:{list,listDetails,DrawerOverlay,ImgUpload,ApproveSetting,ApproveExport},
     name: "approve",
     data() {
         return {
+            showType: 1,
+            exportApproveShow: false,
+            isShowIcon: false, 
             modalTransferIndex: window.modalTransferIndex,
 
             minDate: new Date(2020, 0, 1),
@@ -240,8 +269,6 @@ export default {
             approvalType: "all",
             approvalList: [
                 { value: "all", label: this.$L("全部审批") },
-                { value: "请假", label: this.$L("请假") },
-                { value: "加班申请", label: this.$L("加班申请") },
             ],
             searchState: "all",
             searchStateList: [
@@ -306,7 +333,7 @@ export default {
         }
     },
     computed: {
-        ...mapState([ 'wsMsg','userInfo','userIsAdmin' ]),
+        ...mapState([ 'wsMsg','userInfo','userIsAdmin','windowWidth' ]),
         departmentList(){
             let departmentNames = (this.userInfo.department_name || '').split(',');
             return (this.userInfo.department || []).map((h,index)=>{
@@ -320,16 +347,21 @@ export default {
     watch: {
         '$route' (to) {
             if(to.name == 'manage-approve'){
-                this.tabsClick()
+                this.init()
             }
         },
         wsMsg: {
             handler(info) {
-                const {type, action} = info;
+                const {type, action, mode, data} = info;
                 switch (type) {
                     case 'approve':
                         if (action == 'unread') {
-                            this.tabsClick()
+                            this.tabsClick();
+                        }
+                        break;
+                    case 'dialog':
+                        if (mode == 'add' && data?.msg?.text?.indexOf('open-approve-details') != -1) {
+                            this.tabsClick();
                         }
                         break;
                 }
@@ -340,16 +372,53 @@ export default {
             if(!val){
                 this.addData.other = ""
             }
+        },
+        showType(val){
+            if(val == 1){
+                this.init()
+            }
+        },
+        windowWidth(val){
+            this.isShowIcon = val < 515
         }
     },
     mounted() {
         this.tabsValue = "unread"
-        this.tabsClick()
-        this.getUnreadList()
-        this.addData.department_id = this.userInfo.department[0] || 0;
-        this.addData.startTime = this.addData.endTime = this.getCurrentDate();
+        this.init()
     },
     methods:{
+
+        init() {
+            this.tabsClick()
+            this.getProcdefList()
+            if(this.tabsValue != 'unread'){
+                this.getUnreadList();
+            }
+            this.addData.department_id = this.userInfo.department[0] || 0;
+            this.addData.startTime = this.addData.endTime = this.getCurrentDate();
+            this.isShowIcon = this.windowWidth < 515
+        },
+
+        // 获取流程列表
+        getProcdefList() {
+            return new Promise((resolve, reject) => {
+                this.$store.dispatch("call", {
+                    url: 'approve/procdef/all',
+                    method: 'post',
+                }).then(({data}) => {
+                    this.procdefList = data.rows || [];
+                    this.approvalList = this.procdefList.map(h=>{
+                        return { value: h.name, label: h.name }
+                    })
+                    this.approvalList.unshift({ value: "all", label: this.$L("全部审批") })
+                    resolve()
+                }).catch(({msg}) => {
+                    $A.modalError(msg);
+                    reject()
+                });
+            });
+        },
+        
         // 获取当前时间
         getCurrentDate() {
             const today = new Date();
@@ -372,6 +441,9 @@ export default {
             if(val){
                 this.approvalType = this.searchState = "all"
             }
+            //
+            this.detailsShow = false; 
+            //
             if(this.tabsValue == 'unread'){
                 if(val === false){
                     this.unreadPage = 1;
@@ -400,6 +472,7 @@ export default {
                 }
                 this.getInitiatedList();
             }
+            
         },
 
         // 列表点击事件
@@ -625,16 +698,11 @@ export default {
                 skipAuthError: true
             }).then(({data}) => {
                 this.addData.department_id = data[0]?.department[0] || 0;
-                this.$store.dispatch("call", {
-                    url: 'approve/procdef/all',
-                    method: 'post',
-                }).then(({data}) => {
-                    this.procdefList = data.rows || [];
+                this.getProcdefList().then(_ => {
                     this.addTitle = this.$L("添加申请");
                     this.addShow = true;
-                }).catch(({msg}) => {
-                    $A.modalError(msg);
-                }).finally(_ => {
+                    this.addLoadIng = false;
+                }).catch(_ => {
                     this.addLoadIng = false;
                 });
             }).catch(({msg}) => {
@@ -672,6 +740,7 @@ export default {
                         this.addShow = false;
                         this.$refs.initiateRef.resetFields();
                         this.tabsValue = 'initiated';
+                        this.initiatedList.map(h=>{ h._active = false; })
                         this.$nextTick(()=>{
                             this.tabsClick();
                         })

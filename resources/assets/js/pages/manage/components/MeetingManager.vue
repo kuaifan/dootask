@@ -4,12 +4,16 @@
         <Modal
             v-model="addShow"
             :title="$L(addData.type === 'join' ? '加入会议' : '新会议')"
-            :mask-closable="false">
-            <Form ref="addForm" :model="addData" label-width="auto" @submit.native.prevent>
+            :mask-closable="false"
+            :closable="!addData.sharekey">
+            <Form ref="addForm" :model="addData" :rules="addRule" label-width="auto" @submit.native.prevent>
                 <template v-if="addData.type === 'join'">
                     <!-- 加入会议 -->
                     <FormItem v-if="addData.name" prop="userids" :label="$L('会议主题')">
                         <Input v-model="addData.name" disabled/>
+                    </FormItem>
+                    <FormItem v-if="addData.sharekey" prop="username" :label="$L('你的姓名')">
+                        <Input v-model="addData.username" :placeholder="$L('请输入你的姓名')"/>
                     </FormItem>
                     <FormItem prop="meetingid" :label="$L('会议频道ID')">
                         <Input v-model="addData.meetingid" :disabled="addData.meetingdisabled === true" :placeholder="$L('请输入会议频道ID')"/>
@@ -36,7 +40,7 @@
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
-                <Button type="default" @click="addShow=false">{{$L('取消')}}</Button>
+                <Button type="default" @click="addShow=false" v-if="!addData.sharekey">{{$L('取消')}}</Button>
                 <Button type="primary" :loading="loadIng > 0" @click="onSubmit">{{$L(addData.type === 'join' ? '加入会议' : '开始会议')}}</Button>
             </div>
         </Modal>
@@ -56,7 +60,8 @@
             <ul>
                 <li v-if="localUser.uid">
                     <MeetingPlayer :player="localUser" isLocal/>
-                </li><li v-for="user in remoteUsers">
+                </li>
+                <li v-for="user in remoteUsers">
                     <MeetingPlayer :player="user"/>
                 </li>
             </ul>
@@ -68,10 +73,10 @@
                     <i class="taskfont" v-html="localUser.videoTrack ? '&#xe7c1;' : '&#xe7c8;'"></i>
                 </Button>
                 <template v-if="windowPortrait">
-                    <Button type="primary" @click="onInvitation('open')">
+                    <Button type="primary" :loading="linkCopyLoad" @click="onInvitation('open')">
                         <i class="taskfont">&#xe646;</i>
                     </Button>
-                    <Button type="primary" @click="meetingMini = true">
+                    <Button type="primary" v-if="!addData.sharekey" @click="meetingMini = true">
                         <i class="taskfont">&#xe656;</i>
                     </Button>
                     <Button type="warning" :loading="loadIng > 0" @click="onClose">
@@ -80,7 +85,7 @@
                 </template>
                 <template v-else>
                     <Button type="primary" @click="onInvitation('open')">{{$L('邀请')}}</Button>
-                    <Button type="primary" @click="meetingMini = true">{{$L('最小化')}}</Button>
+                    <Button type="primary" v-if="!addData.sharekey" @click="meetingMini = true">{{$L('最小化')}}</Button>
                     <Button type="warning" :loading="loadIng > 0" @click="onClose">{{$L('离开会议')}}</Button>
                 </template>
             </div>
@@ -108,7 +113,7 @@
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
-                <Button type="default" @click="invitationShow=false">{{$L('取消')}}</Button>
+                <Button type="default" :loading="linkCopyLoad" @click="linkCopy">{{$L('复制链接')}}</Button>
                 <Button type="primary" :loading="invitationLoad" @click="onInvitation('submit')">{{$L('发送邀请')}}</Button>
             </div>
         </Modal>
@@ -118,13 +123,21 @@
 <script>
 import {Store} from "le5le-store";
 import {mapState} from 'vuex'
-import MeetingPlayer from "./MeetingPlayer";
+import MeetingPlayer from "./MeetingPlayer.vue";
 import DragBallComponent from "../../../components/DragBallComponent";
 import UserSelect from "../../../components/UserSelect.vue";
 
 export default {
     name: "MeetingManager",
     components: {UserSelect, DragBallComponent, MeetingPlayer},
+    props: {
+        id: {
+            type: String,
+            default: () => {
+                return  "meeting-player-" + Math.round(Math.random() * 10000);
+            }
+        }
+    },
     data() {
         return {
             loadIng: 0,
@@ -134,6 +147,11 @@ export default {
             addData: {
                 userids: [],
                 tracks: ['audio']
+            },
+            addRule: {
+                username: [
+                    { required: true, message: this.$L('请输入你的姓名！'), trigger: 'change' },
+                ]
             },
 
             invitationShow: false,
@@ -154,6 +172,8 @@ export default {
                 audioTrack: null,
                 videoTrack: null,
             },
+
+            linkCopyLoad: false,
         }
     },
 
@@ -184,6 +204,16 @@ export default {
                     case 'add':
                         this.addShow = val.show;
                         this.loadIng = 0;
+                        break;
+                    case 'join':
+                        this.addShow = val.show;
+                        this.loadIng = 0;
+                        this.addData.type  = 'join';
+                        if(val.meetingSharekey){
+                            this.addData.sharekey  = val.meetingSharekey;
+                            this.addData.meetingid  = val.meetingid || '';
+                            this.addData.meetingdisabled  = val.meetingSharekey ? true : false;
+                        }
                         break;
                     case 'invitation':
                         this.invitationShow = val.show;
@@ -251,6 +281,8 @@ export default {
                     }).then(({data}) => {
                         this.$set(this.addData, 'name', data.name);
                         this.$set(this.addData, 'meetingid', data.meetingid);
+                        this.$set(this.localUser, 'nickname', data.nickname);
+                        this.$set(this.localUser, 'userimg', data.userimg);
                         this.$store.dispatch("saveDialogMsg", data.msgs);
                         this.$store.dispatch("updateDialogLastMsg", data.msgs);
                         delete data.name;
@@ -270,6 +302,7 @@ export default {
                                     video: this.addData.tracks.includes("video"),
                                     audio: this.addData.tracks.includes("audio"),
                                     meetingid: data.meetingid,
+                                    sharelink: data.sharelink,
                                     alert: {
                                         title: this.$L('温馨提示'),
                                         message: this.$L('确定要离开会议吗？'),
@@ -314,6 +347,10 @@ export default {
 
         onInvitation(type) {
             if (type === 'open') {
+                if(this.addData.sharekey){
+                    this.linkCopy();
+                    return;
+                }
                 this.invitationData = {
                     userids: [],
                     meetingid: this.addData.meetingid
@@ -345,6 +382,10 @@ export default {
                     okText: '退出',
                     onOk: async _ => {
                         await this.leave()
+                        if(this.addData.sharekey){
+                            this.addShow = true;
+                            this.loadIng = 0;
+                        }
                         resolve()
                     }
                 });
@@ -496,7 +537,29 @@ export default {
             if (item) {
                 await this.agoraClient.unsubscribe(user, mediaType);
             }
-        }
+        },
+
+        linkCopy() {
+            this.linkCopyLoad = true;
+            this.$store.dispatch("call", {
+                url: 'users/meeting/link',
+                data: {
+                    meetingid: this.addData.meetingid || this.invitationData.meetingid,
+                    sharekey: this.addData.sharekey
+                },
+            }).then(({ data }) => {
+                this.$copyText(data).then(_ => {
+                    $A.messageSuccess('已复制会议邀请链接');
+                }).catch(_ => {
+                    $A.messageError('复制失败');
+                });
+                this.invitationShow = false;
+            }).catch(({ msg }) => {
+                $A.modalError(msg);
+            }).finally(_ => {
+                this.linkCopyLoad = false;
+            });
+        },
     }
 }
 </script>

@@ -320,6 +320,10 @@
                                 background-image: url("../images/dialog/task.svg");
                             }
 
+                            &.okr i {
+                                background-image: url("../images/dialog/task.svg");
+                            }
+
                             &.active {
                                 font-weight: 500;
                                 color: $primary-color;
@@ -707,7 +711,7 @@
                                         margin: 0;
                                     }
 
-                                    &.task {
+                                    &.task,&.okr {
                                         cursor: pointer;
                                     }
 

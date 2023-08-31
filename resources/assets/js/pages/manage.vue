@@ -11,8 +11,7 @@
                         <UserAvatar :userid="userId" :size="36" tooltipDisabled/>
                     </div>
                     <span>{{userInfo.nickname}}</span>
-                    <Badge v-if="(reportUnreadNumber + approveUnreadNumber) > 0" class="manage-box-top-report" :overflow-count="999" :count="reportUnreadNumber + approveUnreadNumber"/>
-                    <Badge v-else-if="!!clientNewVersion" class="manage-box-top-report" dot/>
+                    <Badge v-if="!!clientNewVersion" class="manage-box-top-report" dot/>
                     <div class="manage-box-arrow">
                         <Icon type="ios-arrow-up" />
                         <Icon type="ios-arrow-down" />
@@ -57,18 +56,11 @@
                             <DropdownItem :divided="!!item.divided">
                                 <div class="manage-menu-flex">
                                     {{$L(item.name)}}
-                                    <Badge v-if="reportUnreadNumber > 0" class="manage-menu-report-badge" :overflow-count="999" :count="reportUnreadNumber"/>
-                                    <Icon v-else type="ios-arrow-forward"></Icon>
+                                    <Icon type="ios-arrow-forward"></Icon>
                                 </div>
                             </DropdownItem>
                             <DropdownMenu slot="list">
                                 <DropdownItem name="allUser">{{$L('团队管理')}}</DropdownItem>
-                                <DropdownItem name="workReport">
-                                    <div class="manage-menu-flex">
-                                        {{$L('工作报告')}}
-                                        <Badge v-if="reportUnreadNumber > 0" class="manage-menu-report-badge" :overflow-count="999" :count="reportUnreadNumber"/>
-                                    </div>
-                                </DropdownItem>
                                 <DropdownItem name="exportTask">{{$L('导出任务统计')}}</DropdownItem>
                                 <DropdownItem name="exportOverdueTask">{{$L('导出超期任务')}}</DropdownItem>
                                 <DropdownItem name="exportApprove">{{$L('导出审批数据')}}</DropdownItem>
@@ -122,6 +114,11 @@
                         <li @click="toggleRoute('file')" :class="classNameRoute('file')">
                             <i class="taskfont">&#xe6f3;</i>
                             <div class="menu-title">{{$L('文件')}}</div>
+                        </li>
+                        <li @click="toggleRoute('application')" :class="classNameRoute('application')">
+                            <i class="taskfont">&#xe60c;</i>
+                            <div class="menu-title">{{$L('应用')}}</div>
+                            <Badge class="menu-badge" :overflow-count="999" :text="String((reportUnreadNumber + approveUnreadNumber) || '')"/>
                         </li>
                     </ul>
                 </div>
@@ -200,7 +197,7 @@
 
         <div class="manage-box-main">
             <keep-alive>
-                <router-view class="manage-box-view"></router-view>
+                <router-view class="manage-box-view" @on-click="onTabbarClick"></router-view>
             </keep-alive>
         </div>
 
@@ -302,6 +299,9 @@
         </transition>
         <MobileBack :showTabbar="showMobileTabbar"/>
         <MobileNotification ref="mobileNotification"/>
+
+        <!-- okr明细 -->
+        <MicroApps v-show="false" v-if="$route.name != 'manage-apps'" name="okr-details" :url="okrUrl" :data="okrWindow"/>
     </div>
 </template>
 
@@ -325,6 +325,7 @@ import TaskExport from "./manage/components/TaskExport";
 import ApproveExport from "./manage/components/ApproveExport";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
+import MicroApps from "../components/MicroApps.vue";
 
 export default {
     components: {
@@ -342,7 +343,9 @@ export default {
         DrawerOverlay,
         ProjectManagement,
         TeamManagement,
-        ProjectArchived},
+        ProjectArchived,
+        MicroApps
+    },
     directives: {longpress},
     data() {
         return {
@@ -459,12 +462,23 @@ export default {
 
             'reportUnreadNumber',
             'approveUnreadNumber',
+
+            'okrWindow'
         ]),
 
         ...mapGetters(['dashboardTask']),
 
         routeName() {
             return this.$route.name
+        },
+
+        // okr路由
+        okrUrl() {
+            let url = $A.apiUrl("/apps/okr")
+            if (url.indexOf('http') == -1) {
+                url = window.location.origin + url
+            }
+            return import.meta.env.VITE_OKR_WEB_URL ||   url
         },
 
         /**
@@ -564,12 +578,10 @@ export default {
                     {path: 'archivedProject', name: '已归档的项目'},
 
                     {path: 'team', name: '团队管理', divided: true},
-                    {path: 'approve', name: '审批中心'},
                 ])
             } else {
                 array.push(...[
                     {path: 'personal', name: '个人设置', divided: true},
-                    {path: 'approve', name: '审批中心'},
                     {path: 'version', name: '更新版本', divided: true, visible: !!this.clientNewVersion},
 
                     {path: 'workReport', name: '工作报告', divided: true},
@@ -625,7 +637,7 @@ export default {
             if (this.routeName === 'manage-project' && !/^\d+$/.test(this.$route.params.projectId)) {
                 return true;
             }
-            return ['manage-dashboard', 'manage-calendar', 'manage-messenger', 'manage-file', 'manage-setting'].includes(this.routeName)
+            return ['manage-dashboard','manage-messenger', 'manage-application'].includes(this.routeName)
         },
     },
 
@@ -771,10 +783,16 @@ export default {
                         this.goForward('index');
                     }
                     return;
-               case 'approve':
+                case 'approve':
                     if (this.menu.findIndex((m) => m.path == path) > -1) {
                         this.goForward({name: 'manage-approve'});
                     }
+                    return;
+                case 'okrManage':
+                case 'okrAnalyze':
+                    this.goForward({ 
+                        path:'/manage/apps/' + ( path == 'okrManage' ? '/#/list' : '/#/analysis'), 
+                    });
                     return;
                 case 'logout':
                     $A.modalConfirm({
@@ -818,8 +836,12 @@ export default {
         },
 
         classNameRoute(path) {
+            let routeName = this.routeName
+            if(routeName == 'manage-approve' || routeName == 'manage-apps'){
+                routeName = `manage-application`
+            }
             return {
-                "active": this.routeName === `manage-${path}`,
+                "active": routeName === `manage-${path}`,
             };
         },
 
