@@ -831,26 +831,28 @@ export default {
             }
             //
             const {project_user} = this.projectData;
-            const userItems = project_user.map((item, index) => {
-                const userInfo = cacheUserBasic.find(({userid}) => userid === item.userid) || {}
-                const length = allTask.filter(({task_user, complete_at}) => {
-                    if (!this.projectData.cacheParameter.completedTask) {
-                        if (complete_at) {
-                            return false;
+            if ($A.isArray(project_user)) {
+                const userItems = project_user.map((item, index) => {
+                    const userInfo = cacheUserBasic.find(({userid}) => userid === item.userid) || {}
+                    const length = allTask.filter(({task_user, complete_at}) => {
+                        if (!this.projectData.cacheParameter.completedTask) {
+                            if (complete_at) {
+                                return false;
+                            }
                         }
+                        return task_user.find(({userid, owner}) => userid === item.userid && owner);
+                    }).length
+                    return {
+                        value: `user:${userInfo.userid}`,
+                        label: `${userInfo.nickname} (${length})`,
+                        class: `user-${index}`,
+                        userid: userInfo.userid || 0,
+                        length,
                     }
-                    return task_user.find(({userid, owner}) => userid === item.userid && owner);
-                }).length
-                return {
-                    value: `user:${userInfo.userid}`,
-                    label: `${userInfo.nickname} (${length})`,
-                    class: `user-${index}`,
-                    userid: userInfo.userid || 0,
-                    length,
+                }).filter(({userid, length}) => userid > 0 && length > 0)
+                if (userItems.length > 0) {
+                    list.push(...userItems)
                 }
-            }).filter(({userid, length}) => userid > 0 && length > 0)
-            if (userItems.length > 0) {
-                list.push(...userItems)
             }
             //
             return list

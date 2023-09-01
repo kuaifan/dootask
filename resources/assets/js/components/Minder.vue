@@ -205,7 +205,6 @@
         components: {IFrame},
         props: {
             value: {
-                type: undefined,
                 default: function () {
                     return {}
                 }

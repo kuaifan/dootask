@@ -4,7 +4,7 @@ namespace App\Observers;
 
 use App\Models\Deleted;
 use App\Models\ProjectTask;
-use App\Models\ProjectTaskUser;
+use App\Models\ProjectUser;
 
 class ProjectTaskObserver
 {
@@ -28,11 +28,10 @@ class ProjectTaskObserver
     public function updated(ProjectTask $projectTask)
     {
         if ($projectTask->isDirty('archived_at')) {
-            $userids = $this->userids($projectTask);
             if ($projectTask->archived_at) {
-                Deleted::record('projectTask', $projectTask->id, $userids);
+                Deleted::record('projectTask', $projectTask->id, $this->userids($projectTask));
             } else {
-                Deleted::forget('projectTask', $projectTask->id, $userids);
+                Deleted::forget('projectTask', $projectTask->id, $this->userids($projectTask));
             }
         }
     }
@@ -76,6 +75,6 @@ class ProjectTaskObserver
      */
     private function userids(ProjectTask $projectTask)
     {
-        return ProjectTaskUser::whereTaskId($projectTask->id)->pluck('userid')->toArray();
+        return ProjectUser::whereProjectId($projectTask->project_id)->pluck('userid')->toArray();
     }
 }

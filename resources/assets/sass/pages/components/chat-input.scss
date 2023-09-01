@@ -689,7 +689,8 @@
     min-width: 220px;
     max-width: 280px;
     max-height: 360px;
-    overflow-y: overlay;
+    overflow-x: hidden;
+    overflow-y: auto;
 
     &.task-mention {
         .ql-mention-list {
@@ -704,38 +705,6 @@
             .mention-item-disabled {
                 padding: 8px 4px 0;
             }
-        }
-    }
-
-    &::-webkit-scrollbar {
-        width: 0;
-        height: 0;
-    }
-
-    &::-webkit-scrollbar-thumb {
-        border: 3px solid transparent;
-        background-color: rgba(0, 0, 0, .2);
-        background-clip: content-box;
-        border-radius: 12px;
-        &:hover {
-            border: 2px solid transparent;
-            background-color: rgba(0, 0, 0, .2);
-        }
-        &:active {
-            border: 2px solid transparent;
-            background-color: rgba(0, 0, 0, .4);
-        }
-    }
-
-    &::-webkit-scrollbar-track {
-        border-radius: 12px;
-        background: rgba(0, 0, 0, 0);
-    }
-
-    &:hover {
-        &::-webkit-scrollbar {
-            width: 12px;
-            height: 12px;
         }
     }
 

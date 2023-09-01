@@ -548,7 +548,7 @@ class UsersController extends AbstractController
                 foreach ($keys['departments'] AS $department) {
                     $query->orWhereRaw("FIND_IN_SET('{$department}', department)");
                 }
-            });            
+            });
         }
         if (in_array($sorts['az'], ['asc', 'desc'])) {
             $builder->orderBy('az', $sorts['az']);
@@ -613,7 +613,7 @@ class UsersController extends AbstractController
      */
     public function basic()
     {
-        $sharekey = Request::header('Sharekey');
+        $sharekey = Request::header('sharekey');
         if(empty($sharekey) || !Meeting::getShareInfo($sharekey)){
             User::auth();
         }
@@ -1215,9 +1215,9 @@ class UsersController extends AbstractController
         $data['nickname'] = $sharekey ? $username : $user?->nickname;
         $data['token'] = $token;
         $data['msgs'] = $msgs;
-        // 
+        //
         Meeting::setTouristInfo($data);
-        // 
+        //
         return Base::retSuccess('success', $data);
     }
 
@@ -1927,7 +1927,7 @@ class UsersController extends AbstractController
      * @apiParam {String} [type]            分享类型：file-文件，text-列表 默认file
      * @apiParam {Number} [pid]             父级文件id，用于获取子目录和上传到指定目录的id
      * @apiParam {Number} [upload_file_id]  上传文件id
-     * 
+     *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
@@ -1990,9 +1990,9 @@ class UsersController extends AbstractController
                     'icon' => $avatar,
                     'url' => $type == "file" ? Base::fillUrl("api/dialog/msg/sendfiles") : Base::fillUrl("api/dialog/msg/sendtext"),
                     'extend' => [
-                        'dialog_ids' => $dialog['id'], 
-                        'text_type' => 'text', 
-                        'reply_id' => 0, 
+                        'dialog_ids' => $dialog['id'],
+                        'text_type' => 'text',
+                        'reply_id' => 0,
                         'silence' => 'no'
                     ]
                 ];

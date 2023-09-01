@@ -534,7 +534,7 @@ class User extends AbstractModel
             case 'approval-alert@bot.system':
                 return url("images/avatar/default_approval.png");
             case 'okr-alert@bot.system':
-                return url("images/avatar/default_task.png");
+                return url("images/avatar/default_okr.png");
             case 'ai-openai@bot.system':
                 return url("images/avatar/default_openai.png");
             case 'ai-claude@bot.system':
@@ -611,32 +611,6 @@ class User extends AbstractModel
                 ])->save();
             }
             //
-            switch ($key) {
-                case 'system-msg':
-                    $update['nickname'] = '系统消息';
-                    break;
-                case 'task-alert':
-                    $update['nickname'] = '任务提醒';
-                    break;
-                case 'check-in':
-                    $update['nickname'] = '签到打卡';
-                    break;
-                case 'anon-msg':
-                    $update['nickname'] = '匿名消息';
-                    break;
-                case 'approval-alert':
-                    $update['nickname'] = '审批';
-                    break;
-                case 'okr-alert':
-                    $update['nickname'] = "OKR提醒";    
-                    break;
-                case 'bot-manager':
-                    $update['nickname'] = '机器人管理';
-                    break;
-                case 'meeting-alert':
-                    $update['nickname'] = '会议通知';
-                    break;
-            }
             $update['nickname'] = UserBot::systemBotName($email);
         }
         if ($update) {

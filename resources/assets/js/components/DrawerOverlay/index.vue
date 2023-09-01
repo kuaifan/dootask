@@ -23,7 +23,6 @@
 
 <script>
 import DrawerOverlayView from "./view";
-import {mapState} from 'vuex'
 
 export default {
     name: 'DrawerOverlay',
@@ -82,7 +81,6 @@ export default {
         }
     },
     computed: {
-        ...mapState([ 'windowWidth' ]),
         transitionName(){
             return this.isFullscreen ? 'bottom' : this.placement
         },

@@ -1,10 +1,10 @@
 <template>
     <div class="page-dashboard">
         <PageTitle :title="$L('仪表盘')"/>
-        <div class="dashboard-wrapper">
-            <Alert v-if="warningMsg" class="dashboard-warning" type="warning" show-icon>
-                <span @click="goForward({name: 'manage-setting-license'})">{{warningMsg}}</span>
-            </Alert>
+        <Alert v-if="warningMsg" class="dashboard-warning" type="warning" show-icon>
+            <span @click="goForward({name: 'manage-setting-license'})">{{warningMsg}}</span>
+        </Alert>
+        <div class="dashboard-wrapper" :style="wrapperStyle">
             <div class="dashboard-hello">{{$L('欢迎您，' + userInfo.nickname)}}</div>
             <div class="dashboard-desc">
                 {{$L('以下是你当前的任务统计数据')}}
@@ -148,6 +148,12 @@ export default {
         total() {
             const {dashboardTask} = this;
             return dashboardTask.today_count + dashboardTask.overdue_count + dashboardTask.all_count;
+        },
+
+        wrapperStyle({warningMsg}) {
+            return warningMsg ? {
+                'max-height': 'calc(100% - 50px)'
+            } : null
         },
     },
 
