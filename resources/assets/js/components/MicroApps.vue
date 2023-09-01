@@ -142,13 +142,12 @@ export default {
     methods: {
         handleCreate(e) {
             // 创建前
-            this.showSpin = window.eventCenterForAppNameViteLoad ? false : true
-            window.eventCenterForAppNameVite = new EventCenterForMicroApp(this.name)
+            window.eventCenterForAppNameVite = new EventCenterForMicroApp(e.detail.name)
             this.appData = this.getAppData
+            this.showSpin = window["eventCenterForAppNameViteLoad-" + e.detail.name] ? false : true
         },
         handleBeforeMount(e) {
-            // 加载前
-            window.eventCenterForAppNameViteLoad = 1;
+            window["eventCenterForAppNameViteLoad-" + e.detail.name] = 1;
         },
         handleMount(e) {
             // 加载完成
