@@ -1,9 +1,9 @@
 import microApp from '@micro-zoe/micro-app'
 
 const getUrl = (s) => {
-    let url = $A.apiUrl(s)
+    let url = $A.apiUrl('../' + s)
     if (url.indexOf('http') == -1) {
-        url =  window.location.origin + url
+        url = window.location.origin + url
     }
     return import.meta.env.VITE_OKR_WEB_URL || url;
 }

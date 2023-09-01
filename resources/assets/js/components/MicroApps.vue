@@ -1,8 +1,8 @@
 <template>
     <div class="page-microapp">
-        <transition name="microapp-load">
+        <transition name="microapp-load" v-if="showSpin">
             <div class="microapp-load">
-                <Loading />
+                <Loading/>
             </div>
         </transition>
         <micro-app v-if="url && !loading" 
@@ -47,24 +47,31 @@ export default {
             type: String,
             default: ""
         },
-        data:{
+        datas:{
             type: Object,
             default: () => {}
         }
     },
     data() {
         return {
+            showSpin: false,
             loading: false,
             appUrl: '',
-            appData: {}
+            appData: {},
         }
     },
     deactivated() {
     },
     mounted() {
+        this.showSpin = true;
         this.appData = this.getAppData
     },
     watch: {
+        loading(val){
+            if(val){
+                this.showSpin = true;
+            }
+        },
         url(val) {
             this.loading = true;
             this.$nextTick(() => {
@@ -79,7 +86,7 @@ export default {
         path(val) {
             this.appData = { path: val }
         },
-        data: {
+        datas: {
             handler(info) {
                 this.appData = info
             },
@@ -135,18 +142,23 @@ export default {
     methods: {
         handleCreate(e) {
             // 创建前
+            this.showSpin = window.eventCenterForAppNameViteLoad ? false : true
             window.eventCenterForAppNameVite = new EventCenterForMicroApp(this.name)
             this.appData = this.getAppData
         },
         handleBeforeMount(e) {
             // 加载前
+            window.eventCenterForAppNameViteLoad = 1;
         },
         handleMount(e) {
             // 加载完成
-            this.appData = this.data;
+            if(this.datas){
+                this.appData = this.datas;
+            }
             if(this.path){
                 this.appData.path = this.path
             }
+            this.showSpin = false;
         },
         handleUnmount(e) {
             // 卸载

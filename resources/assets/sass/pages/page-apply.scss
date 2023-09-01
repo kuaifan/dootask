@@ -45,10 +45,10 @@
                 margin-bottom: 16px;
 
                 >div {
-                    font-size: 12px;
-                    font-weight: bold;
+                    font-size: 14px;
+                    font-weight: normal;
                     background: #ffffff;
-                    color: #282828;
+                    color: #333333;
                     border-radius: 8px;
                     padding: 14px;
                     display: flex;
@@ -351,6 +351,14 @@ body.window-portrait {
         }
         .apply-content{
             padding: 16px 20px;
+            .apply-col {
+                margin-bottom: 16px;
+    
+                >div {
+                    font-size: 12px;
+                    font-weight: bold;
+                }
+            }
         }
     }
 }

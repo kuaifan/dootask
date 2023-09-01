@@ -20,7 +20,7 @@
                             :xs="{ span: 8 }" 
                             :sm="{ span: 8 }" 
                             :lg="{ span: 6 }" 
-                            :xl="{ span: 4 }" 
+                            :xl="{ span: 6 }" 
                             :xxl="{ span: 3 }"
                         >
                             <div class="apply-col">

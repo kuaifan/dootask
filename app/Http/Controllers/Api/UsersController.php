@@ -1180,7 +1180,7 @@ class UsersController extends AbstractController
         }
         $uid = intval(str_pad(Base::generatePassword(4,1), 9, 8, STR_PAD_LEFT));
         if($user){
-            $uid = intval(str_pad(Request::header('fd'), 5, 9, STR_PAD_LEFT).$user->userid);
+            $uid = intval(str_pad(Base::generatePassword(4,1), 5, 9, STR_PAD_LEFT).$user->userid);
         }
         try {
             $service = new AgoraTokenGenerator($meetingSetting['appid'], $meetingSetting['app_certificate'], $meeting->channel, $uid);

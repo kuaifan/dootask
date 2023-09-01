@@ -22,11 +22,11 @@ export default {
     watch: {
         '$route': {
             handler(to) {
+                this.loading = true;
                 if (to.name == 'manage-apps') {
-                    this.loading = true;
                     this.$nextTick(() => {
                         this.loading = false;
-                        let url = $A.apiUrl("/apps/okr")
+                        let url = $A.apiUrl("../apps/okr")
                         if (url.indexOf('http') == -1) {
                             url = window.location.origin + url
                         }

@@ -301,7 +301,7 @@
         <MobileNotification ref="mobileNotification"/>
 
         <!-- okr明细 -->
-        <MicroApps v-show="false" v-if="$route.name != 'manage-apps'" name="okr-details" :url="okrUrl" :data="okrWindow"/>
+        <MicroApps v-show="false" v-if="$route.name != 'manage-apps'" name="okr-details" :url="okrUrl" :datas="okrWindow"/>
     </div>
 </template>
 
@@ -474,7 +474,7 @@ export default {
 
         // okr路由
         okrUrl() {
-            let url = $A.apiUrl("/apps/okr")
+            let url = $A.apiUrl("../apps/okr")
             if (url.indexOf('http') == -1) {
                 url = window.location.origin + url
             }
