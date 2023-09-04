@@ -474,11 +474,7 @@ export default {
 
         // okr路由
         okrUrl() {
-            let url = $A.apiUrl("../apps/okr")
-            if (url.indexOf('http') == -1) {
-                url = window.location.origin + url
-            }
-            return import.meta.env.VITE_OKR_WEB_URL ||   url
+            return import.meta.env.VITE_OKR_WEB_URL || $A.apiUrl("../apps/okr")
         },
 
         /**

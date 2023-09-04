@@ -3639,7 +3639,7 @@ export default {
         if (link_id > 0) {
             if (window.innerWidth < 910) {
                 $A.goForward({ 
-                    path:'/manage/apps/#/okrDetails?data='+link_id, 
+                    path:'/manage/apps/okr/okrDetails?data=' + link_id, 
                 });
             }else{
                 state.okrWindow = {

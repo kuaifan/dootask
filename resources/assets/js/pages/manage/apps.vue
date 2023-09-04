@@ -26,11 +26,7 @@ export default {
                 if (to.name == 'manage-apps') {
                     this.$nextTick(() => {
                         this.loading = false;
-                        let url = $A.apiUrl("../apps/okr")
-                        if (url.indexOf('http') == -1) {
-                            url = window.location.origin + url
-                        }
-                        this.appUrl = import.meta.env.VITE_OKR_WEB_URL || url
+                        this.appUrl = import.meta.env.VITE_OKR_WEB_URL || $A.apiUrl("../apps/okr")
                         this.path = this.$route.query.path || '';
                     })
                 }

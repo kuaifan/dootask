@@ -96,7 +96,7 @@ export default {
             handler(to) {
                 if(to.name == 'manage-apps'){
                     this.appData = {
-                        path: to.hash
+                        path: to.hash || to.fullPath
                     }
                 }
             },
@@ -120,6 +120,7 @@ export default {
         getAppData(){
             return {
                 type: 'init',
+                url: this.url,
                 vues: {
                     Vue,
                     store,

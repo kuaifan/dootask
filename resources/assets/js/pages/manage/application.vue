@@ -356,7 +356,7 @@ export default {
                 case 'okr':
                 case 'okrAnalyze':
                     this.goForward({
-                        path: '/manage/apps/' + (item.value == 'okr' ? '/#/list' : '/#/analysis'),
+                        path: '/manage/apps/okr/' + (item.value == 'okr' ? 'list' : 'analysis'),
                     });
                     break;
                 case 'report':
