@@ -85,7 +85,9 @@ export default {
     },
     mounted() {
         this.initData()
-        this.onMonitorWheel()
+        if(!this.$store.state.windowPortrait){
+            this.onMonitorWheel()
+        }
     },
     watch: {
         type() {
@@ -127,7 +129,7 @@ export default {
         showEmojiMenuScrollRightBtn(){
             const container = this.$refs['chatEmojiMenuRef'];
             const liWidth = container?.querySelector('li')?.offsetWidth || 48;
-            return this.emojiMenuScrollLeft < this.emoticonData.length * liWidth - 34
+            return this.emojiMenuScrollLeft < this.emoticonData.length * liWidth - (this.$store.state.windowPortrait ? 34 : 0)
         }
     },
     methods: {
