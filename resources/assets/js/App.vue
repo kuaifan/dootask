@@ -338,7 +338,7 @@ export default {
                         this.$store.dispatch("call", {
                             url: isTourist ? 'users/meeting/tourist' : 'users/basic',
                             data: {
-                                userid: uuid,
+                                userid: isTourist ? uuid : (uuid+'').substring(6),
                                 tourist_id: uuid,
                             }
                         }).then(({data}) => {

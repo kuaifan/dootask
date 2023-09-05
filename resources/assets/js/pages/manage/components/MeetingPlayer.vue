@@ -67,7 +67,7 @@ export default {
                     this.getTouristInfo();
                     return 0;
                 }
-                return parseInt( (this.player.uid+"").substring(5) ) || 0
+                return parseInt( (this.player.uid+"").substring(6) ) || 0
             }
             return 0
         },

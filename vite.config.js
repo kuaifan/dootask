@@ -68,7 +68,13 @@ export default defineConfig(({command, mode}) => {
             chunkSizeWarningLimit: 3000,
         },
         plugins: [
-            createVuePlugin(),
+            createVuePlugin({
+                template: {
+                    compilerOptions: {
+                        isCustomElement: (tag) => tag.includes('micro-app') ,
+                    }
+                }
+            }),
             vitePluginRequire(),
             vitePluginFileCopy([{
                 src: resolve(__dirname, 'resources/assets/statics/public'),

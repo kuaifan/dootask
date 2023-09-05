@@ -1,11 +1,7 @@
 import microApp from '@micro-zoe/micro-app'
 
-const getUrl = (s) => {
-    let url = $A.apiUrl('../' + s)
-    if (url.indexOf('http') == -1) {
-        url = window.location.origin + url
-    }
-    return import.meta.env.VITE_OKR_WEB_URL || url;
+const getUrl = (url) => {
+    return import.meta.env.VITE_OKR_WEB_URL || $A.apiUrl(url);
 }
 
 export default function() {
@@ -21,7 +17,7 @@ export default function() {
                     route = urls.replace(match[0].replace("@vite/client",""),"");
                 }
                 // 这里 /basename/ 需要和子应用vite.config.js中base的配置保持一致
-                code = code.replace( eval(`/(from|import)(\\s*['"])(${route.replace(/\//g,"\\/")})/g`) , all => {
+                code = code.replace(new RegExp(`(from|import)(\\s*['"])(${route.replace(/\//g,"\\/")})`,'g') , all => {
                     return all.replace(route, urls)
                 })
             }
@@ -44,7 +40,7 @@ export default function() {
     microApp.preFetch([
         { 
             name: 'micro-app', 
-            url: getUrl("/apps/okr"),
+            url: getUrl("../apps/okr"),
             disableSandbox: true
         }
     ])
