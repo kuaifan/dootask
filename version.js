@@ -34,7 +34,7 @@ runExec("git rev-list --count HEAD $(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
     //
     console.log("New version: " + ver);
     //
-    runExec("docker run -t --rm -v \"$(pwd)\":/app/ orhunp/git-cliff:0.8.0 > CHANGELOG.md", function (err, response) {
+    runExec("docker run -t --rm -v \"$(pwd)\":/app/ orhunp/git-cliff:1.3.0 > CHANGELOG.md", function (err, response) {
         if (err) {
             console.error(err);
             return;
@@ -43,7 +43,13 @@ runExec("git rev-list --count HEAD $(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
             console.error("Change file does not exist");
             return "";
         }
-        const newContent = fs.readFileSync(changeFile, 'utf8').replace("## [Unreleased]", `## [${ver}]`).replace("## [0.13.0]", `${changeCross}## [0.13.0]`);
+        let newContent = fs.readFileSync(changeFile, 'utf8');
+        if (newContent.indexOf("## [Unreleased]") !== -1) {
+            newContent = newContent.replace("## [Unreleased]", `## [${ver}]`);
+        } else {
+            newContent = newContent.replace(/## \[(.*?)\]/, `## [${ver}]`);
+        }
+        newContent = newContent.replace("## [0.13.0]", `${changeCross}## [0.13.0]`);
         fs.writeFileSync(changeFile, newContent, 'utf8');
         console.log("Log file: CHANGELOG.md");
     });

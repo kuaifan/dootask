@@ -2843,6 +2843,9 @@ export default {
         }
         clearTimeout(state.wsReadTimeout);
         state.wsReadTimeout = setTimeout(_ => {
+            if (state.userId === 0) {
+                return;
+            }
             const ids = Object.values(state.wsReadWaitData);
             state.wsReadWaitData = {};
             if (ids.length === 0) {
@@ -3638,8 +3641,8 @@ export default {
     openOkr({state}, link_id) {
         if (link_id > 0) {
             if (window.innerWidth < 910) {
-                $A.goForward({ 
-                    path:'/manage/apps/okr/okrDetails?data=' + link_id, 
+                $A.goForward({
+                    path:'/manage/apps/okr/okrDetails?data=' + link_id,
                 });
             }else{
                 state.okrWindow = {
