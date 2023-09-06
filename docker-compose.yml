@@ -168,12 +168,12 @@ services:
 
   ai:
     container_name: "dootask-ai-${APP_ID}"
-    image: "kuaifan/dooai:0.0.4"
+    image: "kuaifan/dooai:0.0.5"
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.12"
     restart: unless-stopped
-  
+
   okr:
     container_name: "dootask-okr-${APP_ID}"
     image: "kuaifan/doookr:0.0.7"
