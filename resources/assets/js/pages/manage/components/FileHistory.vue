@@ -1,7 +1,7 @@
 <template>
     <div class="file-history">
         <Table
-            :width="480"
+            :width="(windowWidth - 40) > 480 ? 480 : (windowWidth - 40)"
             :max-height="windowHeight - 180"
             :columns="columns"
             :data="list"

@@ -33,7 +33,7 @@
                         <li v-if="editUser.length > 10" class="more" :title="editUser.length">{{editUser.length > 999 ? '...' : editUser.length}}</li>
                     </ul>
                 </div>
-                <div v-if="file.type=='document' && contentDetail" class="header-hint">
+                <div v-if="file.type=='document' && contentDetail && !windowPortrait" class="header-hint">
                     <ButtonGroup size="small" shape="circle">
                         <Button :type="`${contentDetail.type=='md'?'primary':'default'}`" @click="setTextType('md')">{{$L('MD编辑器')}}</Button>
                         <Button :type="`${contentDetail.type!='md'?'primary':'default'}`" @click="setTextType('text')">{{$L('文本编辑器')}}</Button>
@@ -67,14 +67,22 @@
                             </ETooltip>
                         </EPopover>
                     </div>
-                    <Button :disabled="equalContent" :loading="loadSave > 0" class="header-button" size="small" type="primary" @click="handleClick('save')">{{$L('保存')}}</Button>
+                    <template v-if="windowPortrait && file.type=='document'">
+                        <Button v-if="!edit" class="header-button" size="small" type="primary" @click="edit=true">{{$L('编辑')}}</Button>
+                        <Button v-else-if="edit && equalContent" class="header-button" size="small"  @click="edit=false">{{$L('取消')}}</Button>
+                        <Button v-else :disabled="equalContent" :loading="loadSave > 0" class="header-button" size="small" type="primary" @click="handleClick('save')">{{$L('保存')}}</Button>
+                    </template>
+                    <Button v-else :disabled="equalContent" :loading="loadSave > 0" class="header-button" size="small" type="primary" @click="handleClick('save')">{{$L('保存')}}</Button>
                 </template>
             </div>
             <div class="content-body">
                 <div v-if="historyShow" class="content-mask"></div>
                 <template v-if="file.type=='document'">
-                    <MDEditor v-if="contentDetail.type=='md'" v-model="contentDetail.content" height="100%"/>
-                    <TEditor v-else v-model="contentDetail.content" height="100%" @editorSave="handleClick('saveBefore')"/>
+                    <template v-if="contentDetail.type=='md'">
+                        <MDEditor v-if="edit" v-model="contentDetail.content" height="100%" :toolbars="toolbars"/>
+                        <MDPreview v-else :initialValue="contentDetail.content"/>
+                    </template>
+                    <TEditor v-else :readOnly="!edit" v-model="contentDetail.content" height="100%" @editorSave="handleClick('saveBefore')"/>
                 </template>
                 <Drawio v-else-if="file.type=='drawio'" ref="myFlow" v-model="contentDetail" :title="file.name" @saveData="handleClick('saveBefore')"/>
                 <Minder v-else-if="file.type=='mind'" ref="myMind" v-model="contentDetail" @saveData="handleClick('saveBefore')"/>
@@ -122,6 +130,7 @@ import FileHistory from "./FileHistory";
 import IFrame from "./IFrame";
 
 const MDEditor = () => import('../../../components/MDEditor/index');
+const MDPreview = () => import('../../../components/MDEditor/preview');
 const TEditor = () => import('../../../components/TEditor');
 const AceEditor = () => import('../../../components/AceEditor');
 const OnlyOffice = () => import('../../../components/OnlyOffice');
@@ -130,7 +139,7 @@ const Minder = () => import('../../../components/Minder');
 
 export default {
     name: "FileContent",
-    components: {IFrame, FileHistory, AceEditor, TEditor, MDEditor, OnlyOffice, Drawio, Minder},
+    components: {IFrame, FileHistory, AceEditor, TEditor, MDEditor, OnlyOffice, Drawio, Minder, MDPreview},
     props: {
         value: {
             type: Boolean,
@@ -167,10 +176,13 @@ export default {
 
             historyShow: false,
             officeReady: false,
+
+            edit: false,
         }
     },
 
     mounted() {
+        this.edit = !this.windowPortrait
         document.addEventListener('keydown', this.keySave)
         window.addEventListener('message', this.handleOfficeMessage)
         //
@@ -287,6 +299,81 @@ export default {
             }
             return '';
         },
+
+        toolbars() {
+            return this.windowPortrait ? {
+                strong: true,
+                italic: true,
+                overline: true,
+                h1: true,
+                h2: true,
+                h3: true,
+                h4: false,
+                h5: false,
+                h6: false,
+                hr: true,
+                quote: false,
+                ul: true,
+                ol: true,
+                code: true,
+                link: true,
+                image: false,
+                uploadImage: false,
+                table: true,
+                checked: false,
+                notChecked: false,
+                split: true,
+                preview: false,
+                fullscreen: false,
+                theme: false,
+                exportmd: false,
+                importmd: false,
+                save: false,
+                clear: false,
+                scrolling: false,
+                html_to_markdown: false,
+                custom_image: false,
+                custom_uploadImage: false,
+                custom_uploadFile: false,
+                custom_fullscreen: false,
+            } : {
+                strong: true,
+                italic: true,
+                overline: true,
+                h1: true,
+                h2: true,
+                h3: true,
+                h4: false,
+                h5: false,
+                h6: false,
+                hr: true,
+                quote: true,
+                ul: true,
+                ol: true,
+                code: true,
+                link: true,
+                image: false,
+                uploadImage: false,
+                table: true,
+                checked: true,
+                notChecked: true,
+                split: true,
+                preview: true,
+                fullscreen: false,
+                theme: false,
+                exportmd: false,
+                importmd: false,
+                save: false,
+                clear: false,
+                scrolling: true,
+                html_to_markdown: true,
+
+                custom_image: true,
+                custom_uploadImage: true,
+                custom_uploadFile: true,
+                custom_fullscreen: true,
+            }
+        }
     },
 
     methods: {
@@ -405,6 +492,7 @@ export default {
                             newData.ext = this.fileExt;
                             this.fileExt = null;
                         }
+                        this.edit = this.windowPortrait ? false : true;
                         this.$store.dispatch("saveFile", newData);
                     }).catch(({msg}) => {
                         $A.modalError(msg);

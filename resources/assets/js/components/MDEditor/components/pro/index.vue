@@ -118,11 +118,11 @@
             <li v-if="tools.save" :name="$L('保存')" @click="handleSave">
                 <span class="iconfont icon-save"></span>
             </li>
-            <li :name="$L(scrolling ? '同步滚动:开' : '同步滚动:关')">
+            <li v-if="tools.scrolling" :name="$L(scrolling ? '同步滚动:开' : '同步滚动:关')">
                 <span @click="scrolling = !scrolling" v-show="scrolling" class="iconfont icon-on"></span>
                 <span @click="scrolling = !scrolling" v-show="!scrolling" class="iconfont icon-off"></span>
             </li>
-            <li :name="$L('html转markdown')" @click="onCustom('html2md')">
+            <li  v-if="tools.html_to_markdown" :name="$L('html转markdown')" @click="onCustom('html2md')">
                 <span style="width:auto;font-size:14px;padding:0 6px">HTML2MD</span>
             </li>
             <li class="right">

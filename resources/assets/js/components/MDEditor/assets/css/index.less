@@ -366,14 +366,14 @@
 
         .codemirror {
             flex: 1;
-            width: 0;
+            width: auto;
             height: 100%;
             overflow: auto;
         }
 
         .markdown-preview {
             flex: 1;
-            width: 0;
+            width: auto;
             height: 100%;
         }
     }
@@ -1033,5 +1033,16 @@ ul.shift {
     &.active {
         display: flex;
         opacity: 1;
+    }
+}
+
+@media (max-width: 920px) {
+    .markdown {
+        .markdown-content {
+            flex-direction: column;
+        }
+        .toc-anchor,.icon-svg{
+            display: none !important;
+        }
     }
 }

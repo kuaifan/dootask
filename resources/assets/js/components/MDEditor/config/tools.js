@@ -32,5 +32,7 @@ export default {
     exportmd: true,
     importmd: true,
     save: false,
-    clear: false
+    clear: false,
+    scrolling: true,
+    html_to_markdown: true,
 }

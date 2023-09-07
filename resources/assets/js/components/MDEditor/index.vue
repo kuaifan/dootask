@@ -96,7 +96,6 @@
 <script>
     import MarkdownPro from './pro';
     import ImgUpload from "../ImgUpload";
-    import {mapState} from "vuex";
 
     export default {
         name: 'MDEditor',
@@ -140,6 +139,8 @@
                         importmd: false,
                         save: false,
                         clear: false,
+                        scrolling: true,
+                        html_to_markdown: true,
 
                         custom_image: true,
                         custom_uploadImage: true,

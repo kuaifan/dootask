@@ -810,7 +810,7 @@ export default {
         },
 
         isPreview() {
-            return this.windowPortrait || this.fileInfo.permission === 0
+            return (this.windowPortrait && this.fileInfo.type!='document') || this.fileInfo.permission === 0
         },
 
         isParentShare() {
