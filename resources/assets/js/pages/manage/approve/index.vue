@@ -37,7 +37,8 @@
                                 <Option v-for="item in approvalList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
                             <Input v-model="approvalName" :placeholder="$L('请输入用户名')" ></Input>
-                            <Button type="primary" :loading="loadIng" icon="ios-search" @click="tabsClick(false,0)">{{ $L('搜索') }}</Button>
+                            <Button v-show="!isShowIcon" type="primary" :loading="loadIng" icon="ios-search" @click="tabsClick(false,0)">{{ $L('搜索') }}</Button>
+                            <Button v-show="isShowIcon" type="primary" :loading="loadIng" icon="ios-search" @click="tabsClick(false,0)" />
                         </div>
                     </div>
                     <div>
@@ -66,7 +67,8 @@
                                 <Option v-for="item in approvalList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
                             <Input v-model="approvalName" :placeholder="$L('请输入用户名')"></Input>
-                            <Button type="primary" :loading="loadIng" icon="ios-search" @click="tabsClick(false,0)">{{ $L('搜索') }}</Button>
+                            <Button v-show="!isShowIcon" type="primary" :loading="loadIng" icon="ios-search" @click="tabsClick(false,0)">{{ $L('搜索') }}</Button>
+                            <Button v-show="isShowIcon" type="primary" :loading="loadIng" icon="ios-search" @click="tabsClick(false,0)"/>
                         </div>
                     </div>
                     <div v-if="doneList.length==0" class="noData">{{$L('暂无数据')}}</div>
@@ -94,7 +96,8 @@
                                     <Option v-for="item in approvalList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                                 </Select>
                                 <Input v-model="approvalName" :placeholder="$L('请输入用户名')"></Input>
-                                <Button type="primary" :loading="loadIng" icon="ios-search" @click="tabsClick(false,0)">{{ $L('搜索') }}</Button>
+                                <Button v-show="!isShowIcon" type="primary" :loading="loadIng" icon="ios-search" @click="tabsClick(false,0)">{{ $L('搜索') }}</Button>
+                                <Button v-show="isShowIcon" type="primary" :loading="loadIng" icon="ios-search" @click="tabsClick(false,0)"/>
                             </div>
                         </div>
                     </div>
@@ -125,7 +128,8 @@
                                 <Option v-for="item in searchStateList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
                             <Input v-model="approvalName" :placeholder="$L('请输入用户名')"></Input>
-                            <Button type="primary" :loading="loadIng" icon="ios-search" @click="tabsClick(false,0)">{{ $L('搜索') }}</Button>
+                            <Button v-show="!isShowIcon" type="primary" :loading="loadIng" icon="ios-search" @click="tabsClick(false,0)">{{ $L('搜索') }}</Button>
+                            <Button v-show="isShowIcon" type="primary" :loading="loadIng" icon="ios-search" @click="tabsClick(false,0)"/>
                         </div>
                     </div>
                     <div v-if="initiatedList.length==0" class="noData">{{$L('暂无数据')}}</div>
