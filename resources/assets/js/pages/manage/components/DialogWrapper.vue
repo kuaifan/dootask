@@ -44,6 +44,7 @@
                                 <h2>{{dialogData.name}}</h2>
                                 <em v-if="peopleNum > 0" @click="onDialogMenu('groupInfo')">({{peopleNum}})</em>
                                 <Tag v-if="dialogData.bot" class="after" :fade="false">{{$L('机器人')}}</Tag>
+                                <Tag v-if="cacheUserBasic.find(item => item.userid === dialogData.dialog_user.userid)?.approval_status" class="after" color="red" :fade="false">{{$L(cacheUserBasic.find(item => item.userid === dialogData.dialog_user.userid)?.approval_status)}}</Tag>
                                 <Tag v-if="dialogData.group_type=='all'" class="after pointer" :fade="false" @on-click="onDialogMenu('groupInfo')">{{$L('全员')}}</Tag>
                                 <Tag v-else-if="dialogData.group_type=='department'" class="after pointer" :fade="false" @on-click="onDialogMenu('groupInfo')">{{$L('部门')}}</Tag>
                                 <div v-if="msgLoadIng > 0" class="load"><Loading/></div>
@@ -661,6 +662,7 @@ export default {
 
     mounted() {
         this.msgSubscribe = Store.subscribe('dialogMsgChange', this.onMsgChange);
+        console.log('dialogMsgChange', this.cacheUserBasic)
     },
 
     beforeDestroy() {
@@ -1443,7 +1445,7 @@ export default {
         onSearchMsgId() {
             if (this.dialogSearchMsgId > 0 && this.openId === this.dialogId) {
                 this.onPositionId(this.dialogSearchMsgId)
-                this.$store.state.dialogSearchMsgId = 0
+                this.$store.state.dialogSearchMsgId = 0                
             }
         },
 

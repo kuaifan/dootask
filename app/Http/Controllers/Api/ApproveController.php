@@ -360,6 +360,7 @@ class ApproveController extends AbstractController
     {
         $user = User::auth();
         $data['userid'] = (string)$user->userid;
+        $data['username'] = Request::input('username');
         $data['procName'] = Request::input('proc_def_name');
         $data['sort'] = Request::input('sort');
         $data['pageIndex'] = intval(Request::input('page'));
@@ -402,6 +403,7 @@ class ApproveController extends AbstractController
     {
         $user = User::auth();
         $data['userid'] = (string)$user->userid;
+        $data['username'] = Request::input('username'); 
         $data['procName'] = Request::input('proc_def_name'); //分类
         $data['state'] = intval(Request::input('state')); //状态
         $data['pageIndex'] = intval(Request::input('page'));
@@ -561,6 +563,7 @@ class ApproveController extends AbstractController
     {
         $user = User::auth();
         $data['userid'] = (string)$user->userid;
+        $data['username'] = Request::input('username');
         $data['procName'] = Request::input('proc_def_name');
         $data['sort'] = Request::input('sort');
         $data['pageIndex'] = intval(Request::input('page'));
@@ -641,6 +644,7 @@ class ApproveController extends AbstractController
     {
         $user = User::auth();
         $data['userid'] = (string)$user->userid;
+        $data['username'] = Request::input('username');
         $data['procName'] = Request::input('proc_def_name');
         $data['sort'] = Request::input('sort');
         $data['pageIndex'] = intval(Request::input('page'));

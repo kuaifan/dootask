@@ -36,9 +36,8 @@
                             <Select v-model="approvalType" @on-change="tabsClick(false,0)">
                                 <Option v-for="item in approvalList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
-                            <div v-if="this.loadIng" class="load">
-                                <Loading/>
-                            </div>
+                            <Input v-model="approvalName" :placeholder="$L('请输入用户名')" ></Input>
+                            <Button type="primary" :loading="loadIng" icon="ios-search" @click="tabsClick(false,0)">{{ $L('搜索') }}</Button>
                         </div>
                     </div>
                     <div>
@@ -66,9 +65,8 @@
                             <Select v-model="approvalType" @on-change="tabsClick(false,0)">
                                 <Option v-for="item in approvalList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
-                            <div v-if="this.loadIng" class="load">
-                                <Loading/>
-                            </div>
+                            <Input v-model="approvalName" :placeholder="$L('请输入用户名')"></Input>
+                            <Button type="primary" :loading="loadIng" icon="ios-search" @click="tabsClick(false,0)">{{ $L('搜索') }}</Button>
                         </div>
                     </div>
                     <div v-if="doneList.length==0" class="noData">{{$L('暂无数据')}}</div>
@@ -95,9 +93,8 @@
                                 <Select v-model="approvalType" @on-change="tabsClick(false,0)">
                                     <Option v-for="item in approvalList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                                 </Select>
-                                <div v-if="this.loadIng" class="load">
-                                    <Loading/>
-                                </div>
+                                <Input v-model="approvalName" :placeholder="$L('请输入用户名')"></Input>
+                                <Button type="primary" :loading="loadIng" icon="ios-search" @click="tabsClick(false,0)">{{ $L('搜索') }}</Button>
                             </div>
                         </div>
                     </div>
@@ -127,9 +124,8 @@
                             <Select v-model="searchState" @on-change="tabsClick(false,0)">
                                 <Option v-for="item in searchStateList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                             </Select>
-                            <div v-if="this.loadIng" class="load">
-                                <Loading/>
-                            </div>
+                            <Input v-model="approvalName" :placeholder="$L('请输入用户名')"></Input>
+                            <Button type="primary" :loading="loadIng" icon="ios-search" @click="tabsClick(false,0)">{{ $L('搜索') }}</Button>
                         </div>
                     </div>
                     <div v-if="initiatedList.length==0" class="noData">{{$L('暂无数据')}}</div>
@@ -267,6 +263,7 @@ export default {
             tabsValue: "",
             //
             approvalType: "all",
+            approvalName: "",
             approvalList: [
                 { value: "all", label: this.$L("全部审批") },
             ],
@@ -440,6 +437,7 @@ export default {
             this.tabsValue = val || this.tabsValue
             if(val){
                 this.approvalType = this.searchState = "all"
+                this.approvalName = ""
             }
             //
             this.detailsShow = false; 
@@ -531,6 +529,7 @@ export default {
                     page: type == 'scroll' ? this.unreadPage : 1,
                     page_size: type == 'scroll' ? this.pageSize : this.unreadPage * this.pageSize,
                     proc_def_name: this.approvalType == 'all' ? '' : this.approvalType,
+                    username: this.approvalName,
                 }
             }).then(({data}) => {
                 let activeId = 0;
@@ -572,6 +571,7 @@ export default {
                     page: type == 'scroll' ? this.donePage : 1,
                     page_size: type == 'scroll' ? this.pageSize : this.donePage * this.pageSize,
                     proc_def_name: this.approvalType == 'all' ? '' : this.approvalType,
+                    username: this.approvalName,
                 }
             }).then(({data}) => {
                 let activeId = 0;
@@ -613,6 +613,7 @@ export default {
                     page: type == 'scroll' ? this.notifyPage : 1,
                     page_size: type == 'scroll' ? this.pageSize : this.notifyPage * this.pageSize,
                     proc_def_name: this.approvalType == 'all' ? '' : this.approvalType,
+                    username: this.approvalName,
                 }
             }).then(({data}) => {
                 let activeId = 0;
@@ -654,7 +655,8 @@ export default {
                     page: type == 'scroll' ? this.initiatedPage : 1,
                     page_size: type == 'scroll' ? this.pageSize : this.initiatedPage * this.pageSize,
                     proc_def_name: this.approvalType == 'all' ? '' : this.approvalType,
-                    state: this.searchState == 'all' ? '' : this.searchState
+                    state: this.searchState == 'all' ? '' : this.searchState,
+                    username: this.approvalName,
                 }
             }).then(({data}) => {
                 let activeId = 0;

@@ -2936,4 +2936,22 @@ class Base
         }
         return $newArray;
     }
+
+    /**
+     * 获取用户审批状态
+     *
+     * @param [type] $userid
+     * @return string
+     */
+    public static function getUserApprovalStatus($userid) {
+        $data['userid'] = $userid;
+        $url = env('FLOW_URL') ?: 'http://approve';
+        $ret = Ihttp::ihttp_get($url.'/api/v1/workflow/process/getUserApprovalStatus?'.http_build_query($data));       
+        $procdef = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);         
+        if (isset($procdef['status']) && $procdef['status'] == 200) {
+            return isset($procdef['data']["proc_def_name"]) ? $procdef['data']["proc_def_name"] : '';
+        } else {
+            return '';
+        }
+    }
 }
