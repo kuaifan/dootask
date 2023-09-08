@@ -17,8 +17,8 @@
                     <Row :gutter="16">
                         <Col v-for="(item, key) in applyList" :key="key"
                             v-if="((t=='base' && !item.type) || item.type == t) && item.show !== false" 
-                            :xs="{ span: 8 }" 
-                            :sm="{ span: 8 }" 
+                            :xs="{ span: 6 }" 
+                            :sm="{ span: 6 }" 
                             :lg="{ span: 6 }" 
                             :xl="{ span: 6 }" 
                             :xxl="{ span: 3 }"
