@@ -63,9 +63,14 @@
                     position: relative;
                     border: 1px solid #f1f1f1;
 
-                    >img {
+                    >.logo {
                         width: 40px;
                         height: 40px;
+                        display: inline-block;
+                        >img{
+                            width: 100%;
+                            height: 100%;
+                        }
                     }
                 
                     >p{
@@ -110,12 +115,18 @@
                         background: none;
                         border-color: #ffffff;
 
-                        >img {
-                            margin-bottom: 5px;
+                        .logo {
+                            margin-bottom: 8px;
+                            position: relative;
                         }
 
                         >p{
                             -webkit-line-clamp: 1;
+                        }
+
+                        .apply-box-top-report {
+                            right: -20px;
+                            top: -20px;
                         }
                     }
                 }

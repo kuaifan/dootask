@@ -143,6 +143,8 @@ Vue.prototype.goBack = function () {
         app.$store.state.routeHistorys.pop();
         const length = app.$store.state.routeHistorys.length;
         app.$store.state.routeHistoryLast = length >= 2 ? app.$store.state.routeHistorys[length - 2] : {};
+    } else if (app.$route.name == 'manage-apps') {
+        app.$router.back();
     } else {
         app.$router.replace({path: '/'}).catch(_ => {});
         app.$store.state.routeHistorys = [];

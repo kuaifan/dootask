@@ -25,12 +25,14 @@
                         >
                             <div class="apply-col">
                                 <div @click="applyClick(item)">
-                                    <img :src="getLogoPath(item.value)" />
-                                    <p>{{ $L(item.label) }}</p>
-                                    <div @click.stop="applyClick(item, 'badge')" class="apply-box-top-report">
-                                        <Badge v-if="showBadge(item,'approve')" :overflow-count="999" :count="approveUnreadNumber" />
-                                        <Badge v-if="showBadge(item,'report')" :overflow-count="999" :count="reportUnreadNumber" />
+                                    <div class="logo">
+                                        <img :src="getLogoPath(item.value)" />
+                                        <div @click.stop="applyClick(item, 'badge')" class="apply-box-top-report">
+                                            <Badge v-if="showBadge(item,'approve')" :overflow-count="999" :count="approveUnreadNumber" />
+                                            <Badge v-if="showBadge(item,'report')" :overflow-count="999" :count="reportUnreadNumber" />
+                                        </div>
                                     </div>
+                                    <p>{{ $L(item.label) }}</p>
                                 </div>
                             </div>
                         </Col>
