@@ -10,43 +10,46 @@
         <!-- 审批详情 -->
         <div class="approve-details-box" ref="approveDetailsBox">
             <h2 class="approve-details-title">
-                <span>{{$L(datas.proc_def_name)}}</span>
+                <span>{{$L(datas.proc_def_name || '- -')}}</span>
                 <Tag v-if="datas.state == 0" color="cyan">{{$L('待审批')}}</Tag>
                 <Tag v-if="datas.state == 1" color="cyan">{{$L('审批中')}}</Tag>
                 <Tag v-if="datas.state == 2" color="green">{{$L('已通过')}}</Tag>
                 <Tag v-if="datas.state == 3" color="red">{{$L('已拒绝')}}</Tag>
                 <Tag v-if="datas.state == 4" color="red">{{$L('已撤回')}}</Tag>
             </h2>
-            <h3 class="approve-details-subtitle"><Avatar :src="datas.userimg" size="24"/><span>{{datas.start_user_name}}</span></h3>
+            <h3 class="approve-details-subtitle">
+                <Avatar :src="datas.userimg" size="24"/>
+                <span>{{datas.start_user_name}}</span>
+            </h3>
             <h3 class="approve-details-subtitle"><span>{{$L('提交于')}} {{datas.start_time}}</span></h3>
 
             <Divider/>
 
             <div class="approve-details-text" v-if="(datas.proc_def_name || '').indexOf('请假') !== -1 && datas.var?.type">
                 <h4>{{$L('假期类型')}}</h4>
-                <p>{{$L(datas.var?.type)}}</p>
+                <p>{{$L(datas.var?.type || '- -')}}</p>
             </div>
             <div class="approve-details-text">
                 <h4>{{$L('开始时间')}}</h4>
                 <div class="time-text">
-                    <span>{{datas.var?.start_time}}</span>
-                    <span>({{getWeekday(datas.var?.start_time)}})</span>
+                    <span>{{datas.var?.start_time || '- -'}}</span>
+                    <span v-if="datas.var?.start_time">({{getWeekday(datas.var?.start_time)}})</span>
                 </div>
             </div>
             <div class="approve-details-text">
                 <h4>{{$L('结束时间')}}</h4>
                 <div class="time-text">
-                    <span>{{datas.var?.end_time}}</span>
-                    <span>({{getWeekday(datas.var?.end_time)}})</span>
+                    <span>{{datas.var?.end_time || '- -'}}</span>
+                    <span v-if="datas.var?.end_time">({{getWeekday(datas.var?.end_time)}})</span>
                 </div>
             </div>
             <div class="approve-details-text">
                 <h4>{{ $L('时长') }}（{{getTimeDifference(datas.var?.start_time,datas.var?.end_time)['unit']}}）</h4>
-                <p>{{ datas.var?.start_time ? getTimeDifference(datas.var?.start_time,datas.var?.end_time)['time'] : 0 }}</p>
+                <p>{{ datas.var?.start_time ? getTimeDifference(datas.var?.start_time,datas.var?.end_time)['time'] : '- -' }}</p>
             </div>
             <div class="approve-details-text">
                 <h4>{{$L('事由')}}</h4>
-                <p>{{datas.var?.description}}</p>
+                <p>{{datas.var?.description || '- -'}}</p>
             </div>
             <div class="approve-details-text"  v-if="datas.var?.other">
                 <h4>{{$L('图片')}}</h4>
@@ -273,7 +276,6 @@ export default {
         init() {
             this.modalTransferIndex = window.modalTransferIndex = window.modalTransferIndex + 1
             if (this.$route.query.id) {
-                this.data.id = this.$route.query.id;
                 this.getInfo()
             }
         },
@@ -326,7 +328,7 @@ export default {
                 method: 'get',
                 url: 'approve/process/detail',
                 data: {
-                    id: this.data.id,
+                    id: this.$route.query.id || this.data.id,
                 }
             }).then(({data}) => {
                 var show = true;
@@ -422,7 +424,7 @@ export default {
                 method: 'post',
                 url: 'approve/process/addGlobalComment',
                 data: {
-                    proc_inst_id: this.data.id,
+                    proc_inst_id: this.$route.query.id || this.data.id,
                     content: JSON.stringify({
                         'content': this.commentData.content,
                         'pictures': this.commentData.pictures.map(h => {

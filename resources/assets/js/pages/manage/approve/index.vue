@@ -41,22 +41,23 @@
                             <Button v-show="isShowIcon" type="primary" :loading="loadIng" icon="ios-search" @click="tabsClick(false,0)" />
                         </div>
                     </div>
-                    <div>
-                        <div v-if="unreadList.length==0" class="noData" >{{$L('暂无数据')}}</div>
-                        <div v-else class="approve-mains">
-                            <div class="approve-main-left">
-                                <div class="approve-main-list" @scroll="handleScroll">
-                                    <div @click.stop="clickList(item,key)"  v-for="(item,key) in unreadList">
-                                        <list :class="{ 'approve-list-active': item._active }" :data="item"></list>
-                                    </div>
-                                    <div class="load" v-if="unreadList.length < unreadTotal">
-                                        <Loading/>
-                                    </div>
+                    <div v-if="loadIng && unreadList.length==0" class="approve-load">
+                        <Loading/>
+                    </div>
+                    <div v-else-if="unreadList.length==0" class="noData">{{ $L('暂无数据')}}</div>
+                    <div v-else class="approve-mains">
+                        <div class="approve-main-left">
+                            <div class="approve-main-list" @scroll="handleScroll">
+                                <div @click.stop="clickList(item,key)"  v-for="(item,key) in unreadList">
+                                    <list :class="{ 'approve-list-active': item._active }" :data="item"></list>
+                                </div>
+                                <div class="load" v-if="unreadList.length < unreadTotal">
+                                    <Loading/>
                                 </div>
                             </div>
-                            <div class="approve-main-right">
-                                <listDetails v-if="!detailsShow && tabsValue=='unread'" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
-                            </div>
+                        </div>
+                        <div class="approve-main-right">
+                            <listDetails v-if="!detailsShow && tabsValue=='unread'" :data="details" @approve="tabsClick" @revocation="tabsClick"></listDetails>
                         </div>
                     </div>
                 </TabPane>
@@ -71,7 +72,10 @@
                             <Button v-show="isShowIcon" type="primary" :loading="loadIng" icon="ios-search" @click="tabsClick(false,0)"/>
                         </div>
                     </div>
-                    <div v-if="doneList.length==0" class="noData">{{$L('暂无数据')}}</div>
+                    <div v-if="loadIng && doneList.length==0" class="approve-load">
+                        <Loading/>
+                    </div>
+                    <div v-else-if="doneList.length==0" class="noData">{{$L('暂无数据')}}</div>
                     <div v-else class="approve-mains">
                         <div class="approve-main-left">
                             <div class="approve-main-list" @scroll="handleScroll">
@@ -101,7 +105,10 @@
                             </div>
                         </div>
                     </div>
-                    <div v-if="notifyList.length==0" class="noData">{{$L('暂无数据')}}</div>
+                    <div v-if="loadIng && notifyList.length==0" class="approve-load">
+                        <Loading/>
+                    </div>
+                    <div v-else-if="notifyList.length==0" class="noData">{{$L('暂无数据')}}</div>
                     <div v-else class="approve-mains">
                         <div class="approve-main-left">
                             <div class="approve-main-list" @scroll="handleScroll">
@@ -132,7 +139,10 @@
                             <Button v-show="isShowIcon" type="primary" :loading="loadIng" icon="ios-search" @click="tabsClick(false,0)"/>
                         </div>
                     </div>
-                    <div v-if="initiatedList.length==0" class="noData">{{$L('暂无数据')}}</div>
+                    <div v-if="loadIng && initiatedList.length==0" class="approve-load">
+                        <Loading/>
+                    </div>
+                    <div v-else-if="initiatedList.length==0" class="noData">{{$L('暂无数据')}}</div>
                     <div v-else class="approve-mains">
                         <div class="approve-main-left">
                             <div class="approve-main-list" @scroll="handleScroll">
@@ -383,6 +393,9 @@ export default {
             this.isShowIcon = val < 515
         }
     },
+    activated() {
+        this.showType = 1
+    },
     mounted() {
         this.tabsValue = "unread"
         this.init()
@@ -536,29 +549,8 @@ export default {
                     username: this.approvalName,
                 }
             }).then(({data}) => {
-                let activeId = 0;
-                let activeIndex = 0;
-                this.unreadTotal = data.total;
-                if( this.unreadList.length == 0 || this.unreadList.length == data.rows.length){
-                    this.unreadList?.map((res)=>{ if(res._active)  activeId = res.id  })
-                }
-                let lists = data.rows.map((h,index)=>{
-                    h._active = activeId > 0 ? h.id == activeId : index == 0;
-                    if(h._active) activeIndex = index
-                    if(type == 'scroll' && this.unreadList.map(item=>{return item.id}).indexOf(h.id) == -1 ){
-                        this.unreadList.push(h)
-                    }
-                    return h;
-                })
-                if(type != 'scroll'){
-                    this.unreadList = lists;
-                }
-                if(this.tabsValue == 'unread'){
-                    this.$nextTick(()=>{
-                        this.details = this.unreadList[activeIndex] || {}
-                    })
-                }
-            }).catch(({msg}) => {
+                this.updateData('unread',data,type)
+            }).catch((msg) => {
                 $A.modalError(msg);
             }).finally(_ => {
                 this.loadIng = false;
@@ -578,28 +570,7 @@ export default {
                     username: this.approvalName,
                 }
             }).then(({data}) => {
-                let activeId = 0;
-                let activeIndex = 0;
-                this.doneTotal = data.total;
-                if( this.doneList.length == 0 || this.doneList.length == data.total){
-                    this.doneList?.map((res)=>{  if(res._active) activeId = res.id })
-                }
-                let lists = data.rows.map((h,index)=>{
-                    h._active = activeId > 0 ? h.id == activeId : index == 0;
-                    if(h._active) activeIndex = index
-                    if(type == 'scroll' && this.doneList.map(item=>{return item.id}).indexOf(h.id) == -1 ){
-                        this.doneList.push(h)
-                    }
-                    return h;
-                })
-                if(type != 'scroll'){
-                    this.doneList = lists;
-                }
-                if(this.tabsValue == 'done'){
-                    this.$nextTick(()=>{
-                        this.details = this.doneList[activeIndex] || {}
-                    })
-                }
+                this.updateData('done',data,type)
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
@@ -620,28 +591,7 @@ export default {
                     username: this.approvalName,
                 }
             }).then(({data}) => {
-                let activeId = 0;
-                let activeIndex = 0;
-                this.notifyTotal = data.total;
-                if( this.notifyList.length == 0 || this.notifyList.length == data.rows.length){
-                    this.notifyList?.map((res)=>{ if(res._active)  activeId = res.id  })
-                }
-                let lists = data.rows.map((h,index)=>{
-                    h._active = activeId > 0 ? h.id == activeId : index == 0;
-                    if(h._active) activeIndex = index
-                    if(type == 'scroll' && this.notifyList.map(item=>{return item.id}).indexOf(h.id) == -1 ){
-                       this.notifyList.push(h)
-                    }
-                    return h;
-                })
-                if(type != 'scroll'){
-                    this.notifyList = lists;
-                }
-                if(this.tabsValue == 'notify'){
-                    this.$nextTick(()=>{
-                        this.details = this.notifyList[activeIndex] || {}
-                    })
-                }
+                this.updateData('notify',data,type)
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
@@ -663,28 +613,7 @@ export default {
                     username: this.approvalName,
                 }
             }).then(({data}) => {
-                let activeId = 0;
-                let activeIndex = 0;
-                this.initiatedTotal = data.total;
-                if( this.initiatedList.length == 0 || this.initiatedList.length == data.rows.length){
-                    this.initiatedList?.map((res)=>{ if(res._active)  activeId = res.id  })
-                }
-                let lists = data.rows.map((h,index)=>{
-                    h._active = activeId > 0 ? h.id == activeId : index == 0;
-                    if(h._active) activeIndex = index
-                    if(type == 'scroll' && this.initiatedList.map(item=>{return item.id}).indexOf(h.id) == -1 ){
-                       this.initiatedList.push(h)
-                    }
-                    return h;
-                })
-                if(type != 'scroll'){
-                    this.initiatedList = lists;
-                }
-                if(this.tabsValue == 'initiated'){
-                    this.$nextTick(()=>{
-                        this.details = this.initiatedList[activeIndex] || {}
-                    })
-                }
+                this.updateData('initiated',data,type)
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
@@ -715,6 +644,26 @@ export default {
                 this.addLoadIng = false;
                 $A.modalError(msg);
             });
+        },
+
+        // 更新数据
+        updateData(key,data,type) {
+            let listKey = key + 'List'
+            let activeIndex = this[listKey].map((h, index) => h._active ? index : -1).filter(h => h > -1)[0] || 0
+            this[key + 'Total'] = data.total;
+            type != 'scroll' ? (this[listKey] = data.rows) : data.rows.map(h => {
+                if (this[listKey].map(item => { return item.id }).indexOf(h.id) == -1) {
+                    this[listKey].push(h)
+                }
+            });
+            if(this[listKey].length > 0){
+                this[listKey][activeIndex]._active = true;
+                if (this.tabsValue == key) {
+                    this.$nextTick(() => {
+                        this.details = this[listKey][activeIndex] || {}
+                    })
+                }
+            }
         },
 
         // 提交发起
