@@ -180,7 +180,7 @@
             <Button type="success" v-if="isShowAgreeBtn" :loading="loadIng > 0" @click="approve(1)">{{$L('同意')}}</Button>
             <Button type="error" v-if="isShowAgreeBtn" :loading="loadIng > 0" @click="approve(2)">{{$L('拒绝')}}</Button>
             <Button type="warning" v-if="isShowWarningBtn" :loading="loadIng > 0" @click="revocation">{{$L('撤销')}}</Button>
-            <Button type="success" @click="comment" ghost>+{{$L('添加评论')}}</Button>
+            <Button type="success" @click="comment" :loading="loadIng > 0" ghost>+{{$L('添加评论')}}</Button>
         </div>
 
         <!--加载中-->
