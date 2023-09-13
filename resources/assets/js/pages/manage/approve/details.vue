@@ -177,10 +177,10 @@
 
         <!--审批操作-->
         <div class="approve-operation">
-            <Button type="success" v-if="isShowAgreeBtn" @click="approve(1)">{{$L('同意')}}</Button>
-            <Button type="error" v-if="isShowAgreeBtn" @click="approve(2)">{{$L('拒绝')}}</Button>
-            <Button type="warning" v-if="isShowWarningBtn" @click="revocation">{{$L('撤销')}}</Button>
-            <Button @click="comment" type="success" ghost>+{{$L('添加评论')}}</Button>
+            <Button type="success" v-if="isShowAgreeBtn" :loading="loadIng > 0" @click="approve(1)">{{$L('同意')}}</Button>
+            <Button type="error" v-if="isShowAgreeBtn" :loading="loadIng > 0" @click="approve(2)">{{$L('拒绝')}}</Button>
+            <Button type="warning" v-if="isShowWarningBtn" :loading="loadIng > 0" @click="revocation">{{$L('撤销')}}</Button>
+            <Button type="success" @click="comment" ghost>+{{$L('添加评论')}}</Button>
         </div>
 
         <!--加载中-->
@@ -359,24 +359,26 @@ export default {
                     if (type != 1 && !desc) {
                         return `请输入审批意见`
                     }
-                    this.$store.dispatch("call", {
-                        url: 'approve/task/complete',
-                        data: {
-                            task_id: this.datas.task_id,
-                            pass: type == 1,
-                            comment: desc,
-                        }
-                    }).then(({msg}) => {
-                        $A.messageSuccess(msg);
-                        if (this.$route.name == 'manage-approve-details' || this.$route.name == 'manage-messenger') {
-                            this.getInfo()
-                        } else {
-                            this.$emit('approve')
-                        }
-                    }).catch(({msg}) => {
-                        $A.modalError(msg);
-                    });
-                    return false
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("call", {
+                            url: 'approve/task/complete',
+                            data: {
+                                task_id: this.datas.task_id,
+                                pass: type == 1,
+                                comment: desc,
+                            }
+                        }).then(({msg}) => {
+                            $A.messageSuccess(msg);
+                            if (this.$route.name == 'manage-approve-details' || this.$route.name == 'manage-messenger') {
+                                this.getInfo()
+                            } else {
+                                this.$emit('approve')
+                            }
+                            resolve()
+                        }).catch(({msg}) => {
+                            reject(msg)
+                        });
+                    })
                 }
             });
         },
@@ -403,10 +405,8 @@ export default {
                                 this.$emit('revocation')
                             }
                         }).catch(({msg}) => {
-                            $A.modalError(msg);
-                            resolve();
+                            reject(msg);
                         });
-                        return false
                     })
                 },
             });
