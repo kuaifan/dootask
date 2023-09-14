@@ -98,12 +98,12 @@
             <div class="ivu-modal-wrap-apply">
                 <div class="ivu-modal-wrap-apply-title">
                     {{ $L('签到管理') }}
-                    <p @click="signType = signType == 1 ? 2 : 1" v-if="userIsAdmin">
-                        {{ signType == 1 ? $L('系统设置') : $L('返回') }}
+                    <p @click="signInType = signInType == 1 ? 2 : 1" v-if="userIsAdmin">
+                        {{ signInType == 1 ? $L('系统设置') : $L('返回') }}
                     </p>
                 </div>
                 <div class="ivu-modal-wrap-apply-body">
-                    <Checkin v-if="signType == 1" />
+                    <Checkin v-if="signInType == 1" />
                     <SystemCheckin v-else />
                 </div>
             </div>
@@ -259,7 +259,7 @@ export default {
             aibotDialogSearchLoad: "",
             // 
             signInShow: false,
-            signType: 1,
+            signInType: 1,
             // 
             meetingShow: false,
             meetingType: 1,
@@ -308,7 +308,11 @@ export default {
                 { value: "meeting", label: "会议" }
             ];
             // wap模式
-            let appApplyList = this.windowOrientation != 'portrait' ? [] : [
+            let appApplyList = this.windowOrientation != 'portrait' ? (
+                    $A.isEEUiApp ? [
+                        { value: "scan", label: "扫一扫" }
+                    ] : []
+                ) : [
                 { value: "calendar", label: "日历" },
                 { value: "file", label: "文件" },
                 { value: "addProject", label: "创建项目" },
