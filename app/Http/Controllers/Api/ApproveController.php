@@ -1099,4 +1099,28 @@ class ApproveController extends AbstractController
         return $process;
     }
 
+
+    /**
+     * @api {get} api/approve/user/status          19. 获取用户审批状态
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName user__status
+     *
+     * @apiParam {String} userid               
+     *
+     * @apiSuccess {String}
+     */
+    public function user__status()
+    {
+        $data['userid'] = intval(Request::input('userid'));
+        $ret = Ihttp::ihttp_get($this->flow_url.'/api/v1/workflow/process/getUserApprovalStatus?'.http_build_query($data));       
+        $procdef = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);         
+        if (isset($procdef['status']) && $procdef['status'] == 200) {
+            return Base::retSuccess('success', isset($procdef['data']["proc_def_name"]) ? $procdef['data']["proc_def_name"] : '');
+        } 
+        return Base::retSuccess('success', '');
+    }
+      
+
 }

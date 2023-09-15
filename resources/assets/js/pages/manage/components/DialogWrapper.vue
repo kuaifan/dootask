@@ -44,7 +44,7 @@
                                 <h2>{{dialogData.name}}</h2>
                                 <em v-if="peopleNum > 0" @click="onDialogMenu('groupInfo')">({{peopleNum}})</em>
                                 <Tag v-if="dialogData.bot" class="after" :fade="false">{{$L('机器人')}}</Tag>
-                                <Tag v-if="dialogData.type === 'user' && approvalStatus" class="after" color="red" :fade="false">{{$L(approvalStatus)}}</Tag>
+                                <Tag v-if="dialogData.type === 'user' && approvaUserStatus" class="after" color="red" :fade="false">{{$L(approvaUserStatus)}}</Tag>
                                 <Tag v-if="dialogData.group_type=='all'" class="after pointer" :fade="false" @on-click="onDialogMenu('groupInfo')">{{$L('全员')}}</Tag>
                                 <Tag v-else-if="dialogData.group_type=='department'" class="after pointer" :fade="false" @on-click="onDialogMenu('groupInfo')">{{$L('部门')}}</Tag>
                                 <div v-if="msgLoadIng > 0" class="load"><Loading/></div>
@@ -656,7 +656,8 @@ export default {
             positionLoad: 0,
 
             approveDetails:{id: 0},
-            approveDetailsShow: false
+            approveDetailsShow: false,
+            approvaUserStatus: ''
         }
     },
 
@@ -979,10 +980,6 @@ export default {
                 }
             })
             return list
-        },
-
-        approvalStatus(){
-            return this.cacheUserBasic.find(item => item.userid === this.dialogData.dialog_user.userid)?.approval_status
         }
     },
 
@@ -1017,6 +1014,7 @@ export default {
                     }
                 }
                 this.$store.dispatch('closeDialog', old_id)
+                this.getUserApproveStatus();
             },
             immediate: true
         },
@@ -3010,7 +3008,25 @@ export default {
             if (src) {
                 this.$store.dispatch("previewImage", src)
             }
-        }
+        },
+
+        getUserApproveStatus() {
+            this.approvaUserStatus = ''
+            if (this.dialogData.type !== 'user') {
+                return
+            }
+            this.$store.dispatch("call", {
+                url: 'approve/user/status',
+                data: {
+                    userid: this.dialogData.dialog_user.userid,
+                }
+            }).then(({data}) => {
+                this.approvaUserStatus = data;
+            }).catch(({msg}) => {
+                $A.messageError(msg);
+            });
+        },
+
     }
 }
 </script>

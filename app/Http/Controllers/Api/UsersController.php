@@ -633,11 +633,6 @@ class UsersController extends AbstractController
                 $basic = UserDelete::userid2basic($id);
             }
             if ($basic) {
-                // 用户审批状态
-                $approval_status = Base::getUserApprovalStatus($basic->userid);
-                if ($approval_status != ''){
-                    $basic->approval_status = $approval_status;
-                }        
                 //
                 $retArray[] = $basic;
             }
