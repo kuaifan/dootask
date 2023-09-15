@@ -157,7 +157,7 @@
             :item-class-add="itemClassAdd"
             :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId}"
             :estimate-size="dialogData.type=='group' ? 105 : 77"
-            :keeps="50"
+            :keeps="25"
             :disabled="scrollDisabled"
             @scroll="onScroll"
             @range="onRange"

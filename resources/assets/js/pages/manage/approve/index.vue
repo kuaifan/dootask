@@ -29,7 +29,7 @@
                 </Button>
             </div>
             
-            <Tabs class="page-approve-tabs" v-if="showType==1" :value="tabsValue" @on-click="tabsClick" size="small">
+            <Tabs class="page-approve-tabs" v-show="showType==1" :value="tabsValue" @on-click="tabsClick" size="small">
                 <TabPane :label="$L('待办') + (unreadTotal > 0 ? ('('+unreadTotal+')') : '')" name="unread" style="height: 100%;">
                     <div class="approve-main-search">
                         <div>
@@ -161,7 +161,7 @@
                 </TabPane>
             </Tabs>
 
-            <ApproveSetting v-else/>
+            <ApproveSetting v-show="showType!=1"/>
 
         </div>
 

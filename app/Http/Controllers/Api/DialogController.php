@@ -386,7 +386,7 @@ class DialogController extends AbstractController
         $prev_id = intval(Request::input('prev_id'));
         $next_id = intval(Request::input('next_id'));
         $msg_type = trim(Request::input('msg_type'));
-        $take = Base::getPaginate(100, 50, 'take');
+        $take = Base::getPaginate(100, 50);
         $data = [];
         //
         $dialog = WebSocketDialog::checkDialog($dialog_id);

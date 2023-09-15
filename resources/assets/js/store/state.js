@@ -208,7 +208,8 @@ export default {
 
     // okr窗口
     okrWindow: {
-        type: 'okrDetails',
+        type: 'open',
+        model: 'details',
         id: 0,
         show: false
     }

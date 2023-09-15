@@ -1,5 +1,5 @@
 <template>
-    <MicroApps :url="appUrl" :path="path" v-if="!loading" />
+    <MicroApps :url="appUrl" :path="path" v-if="!loading && $route.name == 'manage-apps'" />
 </template>
 
 <script>
@@ -29,6 +29,8 @@ export default {
                         this.appUrl = import.meta.env.VITE_OKR_WEB_URL || $A.apiUrl("../apps/okr")
                         this.path = this.$route.query.path || '';
                     })
+                }else{
+                    this.appUrl = '';
                 }
             },
             immediate: true

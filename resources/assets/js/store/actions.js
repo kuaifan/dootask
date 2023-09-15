@@ -2614,7 +2614,7 @@ export default {
             dialog.extra_draft_has = dialog.extra_draft_content ? 1 : 0
         }
         // 关闭会话后只保留会话最后50条数据
-        const retain = 50
+        const retain = 25
         const msgs = state.dialogMsgs.filter(item => item.dialog_id == dialog_id)
         if (msgs.length > retain) {
             const delIds = msgs.sort((a, b) => {
@@ -2781,6 +2781,8 @@ export default {
                 state.dialogMsgs = state.dialogMsgs.filter(({dialog_id}) => dialog_id !== data.dialog_id)
                 $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
             }
+            // 
+            data.pagesize = 25;
             //
             dispatch("call", {
                 url: 'dialog/msg/list',
@@ -3646,7 +3648,8 @@ export default {
                 });
             }else{
                 state.okrWindow = {
-                    type: 'okrDetails',
+                    type: 'open',
+                    model: 'details',
                     show: true,
                     id: link_id
                 };
