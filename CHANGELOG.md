@@ -2,7 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.31.13]
+## [0.31.37]
+
+### Bug Fixes
+
+- Ai return error
+- 修复审批数据导出时间以请假时间为准
+- 修复服务价格页面文字
+
+### Features
+
+- 新增用户审批状态显示
+- 1 新增用户审批状态接口 2 新增审批用户查询条件
+
+## [0.31.5]
 
 ### Bug Fixes
 
