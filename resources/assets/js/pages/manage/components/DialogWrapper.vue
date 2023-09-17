@@ -3012,7 +3012,7 @@ export default {
 
         getUserApproveStatus() {
             this.approvaUserStatus = ''
-            if (this.dialogData.type !== 'user') {
+            if (this.dialogData.type !== 'user' || this.dialogData.bot) {
                 return
             }
             this.$store.dispatch("call", {
