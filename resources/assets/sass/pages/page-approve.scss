@@ -61,9 +61,12 @@
                 max-width: 200px;
             }
             
-            .ivu-btn{
-                min-width: 45px;
+            @media (max-width: 515px) {
+                .ivu-btn{
+                    min-width: 45px;
+                }
             }
+            
         }
 
         .approve-load {

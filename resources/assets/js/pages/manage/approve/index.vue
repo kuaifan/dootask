@@ -697,7 +697,7 @@ export default {
                         this.tabsValue = 'initiated';
                         this.initiatedList.map(h=>{ h._active = false; })
                         this.$nextTick(()=>{
-                            this.tabsClick();
+                            this.tabsClick(false,0);
                         })
                     }).catch(({msg}) => {
                         $A.modalError(msg);
