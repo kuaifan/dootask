@@ -975,7 +975,10 @@ class ApproveController extends AbstractController
             'department' => $process['department'],
             'type' => $process['var']['type'],
             'start_time' => $process['var']['start_time'],
+            'start_day_of_week' => '周'.Base::getTimeWeek(Carbon::parse($process['var']['start_time'])->timestamp),
             'end_time' => $process['var']['end_time'],
+            'end_day_of_week' => '周'.Base::getTimeWeek(Carbon::parse($process['var']['end_time'])->timestamp),
+            'description' => $process['var']['description'],
             'comment_nickname' => $process['comment_user_id'] ? User::userid2nickname($process['comment_user_id']) : '',
             'comment_content' => $process['comment_content'] ?? ''
         ];
