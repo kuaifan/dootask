@@ -235,10 +235,10 @@ class AbstractModel extends Model
             } catch (\Throwable $eb) {
                 info($eb);
             }
+            info($e);
             if ($e instanceof ApiException) {
                 throw new ApiException( config('app.debug') ? $e->getMessage() : '处理错误', $e->getData(), $e->getCode());
             } else {
-                info($e);
                 throw new ApiException( config('app.debug') ? ($e->getMessage() ?: '处理错误') : '处理错误');
             }
         }
