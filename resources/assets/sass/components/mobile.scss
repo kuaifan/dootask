@@ -414,4 +414,12 @@ body.window-portrait {
         width: 94%;
         max-width: none;
     }
+    @media (max-height: 400px) {
+        .mobile-tabbar,.messenger-menu {
+            display: none !important;
+        }
+        .page-manage.show-tabbar .manage-box-main{
+            margin-bottom: 0 !important;
+        }
+    }
 }
