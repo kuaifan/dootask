@@ -942,6 +942,7 @@ export default {
             this.$store.dispatch("call", {
                 url: 'project/sort',
                 data,
+                method: 'post',
             }).then(({msg}) => {
                 $A.messageSuccess(msg);
                 this.sortDisabled = false;

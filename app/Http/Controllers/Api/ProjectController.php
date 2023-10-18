@@ -549,7 +549,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/sort          10. 排序任务
+     * @api {post} api/project/sort          10. 排序任务
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
