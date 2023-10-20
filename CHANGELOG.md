@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.31.43]
+## [0.31.54]
+
+### Performance
+
+- 优化审批信息推送内容（时间、事由）
+
+## [0.31.37]
 
 ### Bug Fixes
 
