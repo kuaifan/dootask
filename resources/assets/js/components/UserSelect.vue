@@ -22,7 +22,7 @@
                     <div class="user-modal-close" @click="showModal=false">{{$L('关闭')}}</div>
                     <div class="user-modal-title"><span>{{localTitle}}</span></div>
                     <div class="user-modal-submit" @click="onSubmit">
-                        <div v-if="loadIng > 0" class="submit-loading"><Loading /></div>
+                        <div v-if="submittIng > 0" class="submit-loading"><Loading /></div>
                         {{$L('确定')}}
                         <template v-if="selects.length > 0">
                             ({{selects.length}}<span v-if="multipleMax">/{{multipleMax}}</span>)
