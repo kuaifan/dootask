@@ -918,11 +918,14 @@ export default {
         },
 
         handleReadClick() {
+            this.$store.dispatch("showSpinner", 600)
             this.$store.dispatch("dialogMsgMark", {
                 dialog_id: this.operateItem.id,
                 type: $A.getDialogUnread(this.operateItem, true) > 0 ? 'read' : 'unread'
             }).catch(({msg}) => {
                 $A.modalError(msg)
+            }).finally(_ => {
+                this.$store.dispatch("hiddenSpinner")
             })
         },
 
