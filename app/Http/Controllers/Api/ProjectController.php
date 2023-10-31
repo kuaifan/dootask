@@ -910,7 +910,7 @@ class ProjectController extends AbstractController
         $sorts = Request::input('sorts');
         $keys = is_array($keys) ? $keys : [];
         $sorts = is_array($sorts) ? $sorts : [];
-        
+
         $builder = ProjectTask::with(['taskUser', 'taskTag']);
         //
         if ($keys['name']) {
@@ -988,7 +988,7 @@ class ProjectController extends AbstractController
             $query->orWhere("project_task_users.userid", $userid);
             $query->orWhere("project_p_task_users.userid", $userid);
         });
-        // 优化子查询汇总 
+        // 优化子查询汇总
         $builder->leftJoinSub(function ($query) {
             $query->select('task_id', DB::raw('count(*) as file_num'))
                 ->from('project_task_files')
@@ -1011,10 +1011,10 @@ class ProjectController extends AbstractController
         $builder->selectRaw("{$prefix}sub_task.sub_num as _sub_num");
         $builder->selectRaw("{$prefix}sub_task.sub_complete as _sub_complete");
         $builder->selectRaw("
-            CAST(CASE 
-                WHEN {$prefix}project_tasks.complete_at IS NOT NULL THEN 100 
-                WHEN {$prefix}sub_task.sub_complete = 0 OR {$prefix}sub_task.sub_complete IS NULL THEN 0 
-                ELSE ({$prefix}sub_task.sub_complete / {$prefix}sub_task.sub_num * 100) 
+            CAST(CASE
+                WHEN {$prefix}project_tasks.complete_at IS NOT NULL THEN 100
+                WHEN {$prefix}sub_task.sub_complete = 0 OR {$prefix}sub_task.sub_complete IS NULL THEN 0
+                ELSE ({$prefix}sub_task.sub_complete / {$prefix}sub_task.sub_num * 100)
             END AS SIGNED) as _percent
         ");
         //
@@ -1024,7 +1024,7 @@ class ProjectController extends AbstractController
             $customer->setAppends(["today","overdue"]);
             return $customer;
         });
-        // 
+        //
         $data = $list->toArray();
         // 还原字段
         foreach($data['data'] as &$item){
@@ -1070,7 +1070,7 @@ class ProjectController extends AbstractController
         $taskid = trim(Request::input('taskid'));
         $userid = Request::input('userid');
         $timerange = Request::input('timerange');
-        // 
+        //
         $list = ProjectTask::with(['taskUser'])
             ->select('projects.name as project_name', 'project_tasks.id', 'project_tasks.name', 'project_tasks.start_at', 'project_tasks.end_at')
             ->join('projects','project_tasks.project_id','=','projects.id')
@@ -1094,7 +1094,7 @@ class ProjectController extends AbstractController
             ->distinct()
             ->orderByDesc('project_tasks.id')
             ->paginate(Base::getPaginate(200, 100));
-        // 
+        //
         $list->transform(function ($customer) {
             $customer->setAppends([]);
             return $customer;
@@ -1659,9 +1659,7 @@ class ProjectController extends AbstractController
         }
         //
         $filePath = public_path($file->getRawOriginal('path'));
-        return Base::streamDownload(function() use ($filePath) {
-            echo file_get_contents($filePath);
-        }, $file->name);
+        return Base::streamDownload($filePath, $file->name);
     }
 
     /**
@@ -1786,7 +1784,7 @@ class ProjectController extends AbstractController
         ]);
         $data = ProjectTask::oneTask($task->id);
         $pushUserIds = ProjectTaskUser::whereTaskId($task->id)->pluck('userid')->toArray();
-        $pushUserIds[] = ProjectUser::whereProjectId($task->project_id)->whereOwner(1)->value('userid');  
+        $pushUserIds[] = ProjectUser::whereProjectId($task->project_id)->whereOwner(1)->value('userid');
         foreach ($pushUserIds as $userId) {
             $task->pushMsg('add', $data, $userId);
         }

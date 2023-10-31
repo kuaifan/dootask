@@ -112,9 +112,7 @@ class FileContent extends AbstractModel
             } else {
                 $filePath = public_path($content['url']);
             }
-            return Base::streamDownload(function() use ($filePath) {
-                echo file_get_contents($filePath);
-            }, $name);
+            return Base::streamDownload($filePath, $name);
         }
         if (empty($content)) {
             $content = match ($file->type) {
@@ -143,9 +141,7 @@ class FileContent extends AbstractModel
             if ($download) {
                 $filePath = public_path($path);
                 if (isset($filePath)) {
-                    return Base::streamDownload(function() use ($filePath) {
-                        echo file_get_contents($filePath);
-                    }, $name);
+                    return Base::streamDownload($filePath, $name);
                 } else {
                     abort(403, "This file not support download.");
                 }

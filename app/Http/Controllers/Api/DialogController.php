@@ -728,7 +728,7 @@ class DialogController extends AbstractController
         $text_type = strtolower(trim(Request::input('text_type')));
         $silence = in_array(strtolower(trim(Request::input('silence'))), ['yes', 'true', '1']);
         $markdown = in_array($text_type, ['md', 'markdown']);
-        // 
+        //
         $result = [];
         $dialogIds = $dialog_ids ? explode(',', $dialog_ids) : [$dialog_id ?: 0];
         foreach($dialogIds as $dialog_id) {
@@ -1161,9 +1161,7 @@ class DialogController extends AbstractController
         }
         //
         $filePath = public_path($array['path']);
-        return Base::streamDownload(function() use ($filePath) {
-            echo file_get_contents($filePath);
-        }, $array['name']);
+        return Base::streamDownload($filePath, $array['name']);
     }
 
     /**
@@ -1576,7 +1574,7 @@ class DialogController extends AbstractController
         //
         $dialogUser->color = $color;
         $dialogUser->save();
-        // 
+        //
         $data = [
             'id' => $dialogId,
             'color' => $color
@@ -1909,7 +1907,7 @@ class DialogController extends AbstractController
         $user = User::auth();
         //
         $name = trim(Request::input('name'));
-        $link_id = intval(Request::input('link_id'));        
+        $link_id = intval(Request::input('link_id'));
         $userids = Request::input('userids');
         //
         if (empty($name)) {
@@ -1944,9 +1942,9 @@ class DialogController extends AbstractController
      */
     public function okr__push()
     {
-        User::auth();        
+        User::auth();
         $text = trim(Request::input('text'));
-        $userid = intval(Request::input('userid'));       
+        $userid = intval(Request::input('userid'));
         //
         $botUser = User::botGetOrCreate('okr-alert');
         if (empty($botUser)) {

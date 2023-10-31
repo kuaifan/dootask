@@ -11,6 +11,8 @@ use Redirect;
 use Request;
 use Response;
 use Storage;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\File;
 use Validator;
 
 class Base
@@ -2870,15 +2872,35 @@ class Base
 
     /**
      * 流下载，解决没有后缀无法下载的问题
-     * @param $callback
+     * @param $file
      * @param $name
      * @return mixed
      */
-    public static function streamDownload($callback, $name = null) {
+    public static function streamDownload($file, $name = null)
+    {
+        $contentType = 'application/octet-stream';
+        if ($file instanceof \Closure) {
+            $callback = $file;
+        } else {
+            if (!$file instanceof File) {
+                if ($file instanceof \SplFileInfo) {
+                    $file = new File($file->getPathname());
+                } else {
+                    $file = new File((string)$file);
+                }
+            }
+            if (!$file->isReadable()) {
+                throw new FileException('File must be readable.');
+            }
+            $contentType = $file->getMimeType() ?: $contentType;
+            $callback = $file->getContent();
+        }
         if ($name && !str_contains($name, '.')) {
             $name .= ".";
         }
-        return Response::streamDownload($callback, $name);
+        return Response::streamDownload($callback, $name, [
+            'Content-Type' => $contentType,
+        ]);
     }
 
     /**
