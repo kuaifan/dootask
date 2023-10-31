@@ -1446,7 +1446,7 @@ export default {
         onSearchMsgId() {
             if (this.dialogSearchMsgId > 0 && this.openId === this.dialogId) {
                 this.onPositionId(this.dialogSearchMsgId)
-                this.$store.state.dialogSearchMsgId = 0                
+                this.$store.state.dialogSearchMsgId = 0
             }
         },
 
@@ -2464,7 +2464,9 @@ export default {
             switch (type) {
                 case 'image':
                     if (this.$Electron) {
-                        this.$Electron.sendMessage('copyImageAt', this.operateClient);
+                        this.getBase64Image(value).then(base64 => {
+                            this.$Electron.sendMessage('copyBase64Image', {base64});
+                        })
                     }
                     break;
 
