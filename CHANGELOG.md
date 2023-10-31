@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.31.65]
+
+### Bug Fixes
+
+- 手机下载文件名出现html的情况
+- 桌面客户端内聊天复制图片模糊的情况
+- 桌面客户端截图功能
+
+### Performance
+
+- 标记已读/未读等待效果
+- App内转发没有等待效果
+
 ## [0.31.54]
 
 ### Performance
