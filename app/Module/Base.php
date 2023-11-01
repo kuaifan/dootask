@@ -2879,26 +2879,31 @@ class Base
     public static function streamDownload($file, $name = null)
     {
         $contentType = 'application/octet-stream';
-        if ($file instanceof \Closure) {
-            $callback = $file;
-        } else {
-            if (!$file instanceof File) {
-                if ($file instanceof \SplFileInfo) {
-                    $file = new File($file->getPathname());
-                } else {
-                    $file = new File((string)$file);
-                }
-            }
-            if (!$file->isReadable()) {
-                throw new FileException('File must be readable.');
-            }
-            $contentType = $file->getMimeType() ?: $contentType;
-            $callback = $file->getContent();
-        }
         if ($name && !str_contains($name, '.')) {
             $name .= ".";
         }
-        return Response::streamDownload($callback, $name, [
+        // 
+        if ($file instanceof \Closure) {
+            return Response::streamDownload($file, $name, [
+                'Content-Type' => $contentType,
+            ]);
+        }
+        // 
+        if (!$file instanceof File) {
+            if ($file instanceof \SplFileInfo) {
+                $file = new File($file->getPathname());
+            } else {
+                $file = new File((string)$file);
+            }
+        }
+        if (!$file->isReadable()) {
+            throw new FileException('File must be readable.');
+        }
+        $contentType = $file->getMimeType() ?: $contentType;
+        $content = $file->getContent();
+        return Response::streamDownload(function() use ($content) {
+            echo $content;
+        }, $name, [
             'Content-Type' => $contentType,
         ]);
     }
