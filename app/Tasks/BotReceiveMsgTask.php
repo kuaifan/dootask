@@ -375,6 +375,7 @@ class BotReceiveMsgTask extends AbstractTask
                 $extras = [
                     'openai_key' => $setting['openai_key'],
                     'openai_agency' => $setting['openai_agency'],
+                    'openai_model' => $setting['openai_model'],
                     'server_url' => $serverUrl,
                 ];
                 if (empty($extras['openai_key'])) {

@@ -254,6 +254,7 @@ class SystemController extends AbstractController
         $keys = [
             'openai_key',
             'openai_agency',
+            'openai_model',
             'claude_token',
             'claude_agency',
             'wenxin_key',
@@ -302,6 +303,7 @@ class SystemController extends AbstractController
             }
         }
         //
+        $setting['openai_model'] = $setting['openai_model'] ?: 'gpt-3.5-turbo';
         $setting['wenxin_model'] = $setting['wenxin_model'] ?: 'ERNIE-Bot-turbo';
         $setting['qianwen_model'] = $setting['qianwen_model'] ?: 'qwen-v1';
         if (env("SYSTEM_SETTING") == 'disabled') {
