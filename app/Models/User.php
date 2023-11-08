@@ -379,7 +379,7 @@ class User extends AbstractModel
     {
         $user = self::authInfo();
         if (!$user) {
-            if (Base::headerOrInput('token')) {
+            if (Base::token()) {
                 throw new ApiException('身份已失效,请重新登录', [], -1);
             } else {
                 throw new ApiException('请登录后继续...', [], -1);

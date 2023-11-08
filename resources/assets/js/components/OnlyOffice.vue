@@ -269,7 +269,7 @@ export default {
                         url: 'file/office/token',
                         data: { config: config },
                     }).then(({data}) => {
-                        config.token = data
+                        config.token = data.token
                         this.docEditor = new DocsAPI.DocEditor(this.id, config);
                     }).catch(({msg}) => {
                         $A.modalError({content: msg});

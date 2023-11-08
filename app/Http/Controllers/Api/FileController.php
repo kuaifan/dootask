@@ -614,7 +614,7 @@ class FileController extends AbstractController
      * @apiName office__token
      *
      * @apiParam {array} config
-     * 
+     *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
@@ -622,9 +622,12 @@ class FileController extends AbstractController
     public function office__token()
     {
         User::auth();
+        //
         $config = Request::input('config');
         $token = \Firebase\JWT\JWT::encode($config, env('APP_KEY') ,'HS256');
-        return Base::retSuccess('成功', $token);
+        return Base::retSuccess('成功', [
+            'token' => $token
+        ]);
     }
 
     /**

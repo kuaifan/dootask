@@ -74,8 +74,13 @@ body {
         }
 
         .input-blink {
+            position: absolute;
+            content: '';
+            display: inline-block;
             width: 2px;
-            transform: scaleY(0.8);
+            height: 16px;
+            top: 50%;
+            transform: translateY(-50%);
             animation: blink-animate 1.2s infinite steps(1, start);
         }
     }

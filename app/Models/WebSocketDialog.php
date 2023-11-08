@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $avatar 头像（群）
  * @property string|null $last_at 最后消息时间
  * @property int|null $owner_id 群主用户ID
+ * @property int|null $link_id 关联id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -36,6 +37,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereGroupType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereLastAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereLinkId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereOwnerId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereType($value)

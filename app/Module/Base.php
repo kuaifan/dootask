@@ -78,6 +78,15 @@ class Base
     }
 
     /**
+     * 获取token
+     * @return mixed|string
+     */
+    public static function token()
+    {
+        return Base::headerOrInput('dootask-token') ?: Base::headerOrInput('token');
+    }
+
+    /**
      * 如果header没有则通过input读取
      * @param $key
      * @return mixed|string
@@ -2882,13 +2891,13 @@ class Base
         if ($name && !str_contains($name, '.')) {
             $name .= ".";
         }
-        // 
+        //
         if ($file instanceof \Closure) {
             return Response::streamDownload($file, $name, [
                 'Content-Type' => $contentType,
             ]);
         }
-        // 
+        //
         if (!$file instanceof File) {
             if ($file instanceof \SplFileInfo) {
                 $file = new File($file->getPathname());
