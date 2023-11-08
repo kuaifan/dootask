@@ -1104,7 +1104,7 @@ class ApproveController extends AbstractController
 
 
     /**
-     * @api {get} api/approve/user/status          19. 获取用户审批状态
+     * @api {get} api/approve/user/status          20. 获取用户审批状态
      *
      * @apiVersion 1.0.0
      * @apiGroup system

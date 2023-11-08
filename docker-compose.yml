@@ -83,7 +83,7 @@ services:
 
   office:
     container_name: "dootask-office-${APP_ID}"
-    image: "onlyoffice/documentserver:7.3.2.8"
+    image: "onlyoffice/documentserver:7.5"
     volumes:
       - ./docker/office/logs:/var/log/onlyoffice
       - ./docker/office/data:/var/www/onlyoffice/Data
@@ -95,7 +95,8 @@ services:
       - ./docker/office/resources/spreadsheeteditor/main/resources/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/spreadsheeteditor/main/resources/css/app.css
       - ./docker/office/resources/spreadsheeteditor/mobile/css/887.css:/var/www/onlyoffice/documentserver/web-apps/apps/spreadsheeteditor/mobile/css/887.css
     environment:
-      JWT_ENABLED: false
+      JWT_ENABLED: true
+      JWT_SECRET: ${APP_KEY} 
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.6"

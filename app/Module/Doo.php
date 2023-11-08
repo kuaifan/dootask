@@ -51,7 +51,7 @@ class Doo
                 char* pgpEncrypt(char* plainText, char* publicKey);
                 char* pgpDecrypt(char* cipherText, char* privateKey, char* passphrase);
             EOF, "/usr/lib/doo/doo.so");
-        $token = $token ?: Base::headerOrInput('token');
+        $token = $token ?: Base::headerOrInput('dootask-token') ?: Base::headerOrInput('token');
         $language = $language ?: Base::headerOrInput('language');
         self::$doo->initialize("/var/www", $token, $language);
     }

@@ -606,7 +606,29 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/content/office          10. 保存文件内容（office）
+     * @api {get} api/file/office/token          10. 获取token
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName office__token
+     *
+     * @apiParam {array} config
+     * 
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function office__token()
+    {
+        User::auth();
+        $config = Request::input('config');
+        $token = \Firebase\JWT\JWT::encode($config, env('APP_KEY') ,'HS256');
+        return Base::retSuccess('成功', $token);
+    }
+
+    /**
+     * @api {get} api/file/content/office          11. 保存文件内容（office）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -660,7 +682,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/content/upload          11. 保存文件内容（上传文件）
+     * @api {get} api/file/content/upload          12. 保存文件内容（上传文件）
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -684,7 +706,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/content/history          12. 获取内容历史
+     * @api {get} api/file/content/history          13. 获取内容历史
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -716,7 +738,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/content/restore          13. 恢复文件历史
+     * @api {get} api/file/content/restore          14. 恢复文件历史
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -756,7 +778,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/share          14. 获取共享信息
+     * @api {get} api/file/share          15. 获取共享信息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -792,7 +814,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/share/update          15. 设置共享
+     * @api {get} api/file/share/update          16. 设置共享
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -882,7 +904,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/share/out          16. 退出共享
+     * @api {get} api/file/share/out          17. 退出共享
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -916,7 +938,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/link          17. 获取链接
+     * @api {get} api/file/link          18. 获取链接
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0

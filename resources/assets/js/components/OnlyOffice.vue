@@ -241,7 +241,7 @@ export default {
                         "forcesave": true,
                         "help": false,
                     },
-                    "callbackUrl": `http://nginx/api/file/content/office?id=${codeId}&token=${this.userToken}`,
+                    "callbackUrl": `http://nginx/api/file/content/office?id=${codeId}&dootask-token=${this.userToken}`,
                 },
                 "events": {
                     "onDocumentReady": this.onDocumentReady,
@@ -265,7 +265,15 @@ export default {
                     }
                 }
                 this.$nextTick(() => {
-                    this.docEditor = new DocsAPI.DocEditor(this.id, config);
+                    this.$store.dispatch("call", {
+                        url: 'file/office/token',
+                        data: { config: config },
+                    }).then(({data}) => {
+                        config.token = data
+                        this.docEditor = new DocsAPI.DocEditor(this.id, config);
+                    }).catch(({msg}) => {
+                        $A.modalError({content: msg});
+                    });
                 })
             })()
         },
