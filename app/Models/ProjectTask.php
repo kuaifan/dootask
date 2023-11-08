@@ -371,7 +371,7 @@ class ProjectTask extends AbstractModel
         $p_color    = $data['p_color'];
         $top        = intval($data['top']);
         $userid     = User::userid();
-        $is_all_visible = isset($data['visibility_appoint']) ? $data['visibility_appoint'] : $data['is_all_visible'];
+        $visibility = isset($data['visibility_appoint']) ? $data['visibility_appoint'] : $data['visibility'];
         $visibility_userids = $data['visibility_appointor'] ?: [];
         //
         if (ProjectTask::whereProjectId($project_id)
@@ -401,7 +401,7 @@ class ProjectTask extends AbstractModel
             'p_level' => $p_level,
             'p_name' => $p_name,
             'p_color' => $p_color,
-            'is_all_visible' => $is_all_visible ?: 1
+            'visibility' => $visibility ?: 1
         ]);
         if ($content) {
             $task->desc = Base::getHtml($content, 100);
@@ -722,10 +722,10 @@ class ProjectTask extends AbstractModel
                 $this->syncDialogUser();
             }
             // 可见性
-            if (Arr::exists($data, 'is_all_visible') || Arr::exists($data, 'visibility_appointor')) {
-                if (Arr::exists($data, 'is_all_visible')) {
-                    ProjectTask::whereId($data['task_id'])->update(['is_all_visible' => $data["is_all_visible"]]);
-                    ProjectTask::whereParentId($data['task_id'])->update(['is_all_visible' => $data["is_all_visible"]]);
+            if (Arr::exists($data, 'visibility') || Arr::exists($data, 'visibility_appointor')) {
+                if (Arr::exists($data, 'visibility')) {
+                    ProjectTask::whereId($data['task_id'])->update(['visibility' => $data["visibility"]]);
+                    ProjectTask::whereParentId($data['task_id'])->update(['visibility' => $data["visibility"]]);
                 }
                 ProjectTaskUser::whereTaskId($data['task_id'])->whereOwner(2)->delete();
                 if (Arr::exists($data, 'visibility_appointor')) {
@@ -1453,7 +1453,7 @@ class ProjectTask extends AbstractModel
                     ];
                 }
                 // 项目成员（其他人）
-                if ($data['is_all_visible'] == 1) {
+                if ($data['visibility'] == 1) {
                     // 全部可见
                     $userids = array_diff($userids, $owners, $assists);
                 } else {
@@ -1511,7 +1511,7 @@ class ProjectTask extends AbstractModel
         $array = [];
         if ($pushUserIds) {
             $userids = $pushUserIds;
-        } elseif ($this->is_all_visible != 1) {
+        } elseif ($this->visibility != 1) {
             $userids = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($this->id)->orWhere('task_pid', '=', $this->id)->pluck('userid')->toArray();
         } else {
             $userids = ProjectUser::whereProjectId($this->project_id)->pluck('userid')->toArray();  // 项目成员

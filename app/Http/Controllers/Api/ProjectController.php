@@ -983,7 +983,7 @@ class ProjectController extends AbstractController
             $query->on('project_p_task_users.task_pid', '=', 'project_tasks.parent_id');
         });
         $builder->where(function ($query) use ($userid) {
-            $query->where("project_tasks.is_all_visible", 1);
+            $query->where("project_tasks.visibility", 1);
             $query->orWhere("project_users.userid", $userid);
             $query->orWhere("project_task_users.userid", $userid);
             $query->orWhere("project_p_task_users.userid", $userid);
@@ -1470,7 +1470,7 @@ class ProjectController extends AbstractController
         $task = ProjectTask::userTask($task_id, $isArchived, true, false, ['taskUser', 'taskTag']);
         // 项目可见性
         $project_userid = ProjectUser::whereProjectId($task->project_id)->whereOwner(1)->value('userid');     // 项目负责人
-        if ($task->is_all_visible != 1 && $user->userid != $project_userid) {
+        if ($task->visibility != 1 && $user->userid != $project_userid) {
             $visibleUserids = ProjectTaskUser::whereTaskId($task_id)->pluck('userid')->toArray();       // 是否任务负责人、协助人、可见人
             $subVisibleUserids = ProjectTaskUser::whereTaskPid($task_id)->pluck('userid')->toArray();   // 是否子任务负责人、协助人
             if (!in_array($user->userid, $visibleUserids) && !in_array($user->userid, $subVisibleUserids)) {
@@ -1481,7 +1481,7 @@ class ProjectController extends AbstractController
         $data = $task->toArray();
         $data['project_name'] = $task->project?->name;
         $data['column_name'] = $task->projectColumn?->name;
-        $data['visibility_appointor'] = $task->is_all_visible == 1 ? [0] : ProjectTaskUser::whereTaskId($task_id)->whereOwner(2)->pluck('userid');
+        $data['visibility_appointor'] = $task->visibility == 1 ? [0] : ProjectTaskUser::whereTaskId($task_id)->whereOwner(2)->pluck('userid');
         return Base::retSuccess('success', $data);
     }
 
@@ -1732,7 +1732,7 @@ class ProjectController extends AbstractController
         }
 
 
-        if ($data['is_all_visible'] == 1) {
+        if ($data['visibility'] == 1) {
             $data['is_visible'] = 1;
         } else {
             $projectOwner = ProjectUser::whereProjectId($task->project_id)->whereOwner(1)->pluck('userid')->toArray();  // 项目负责人
@@ -1780,7 +1780,7 @@ class ProjectController extends AbstractController
             'column_id' => $task->column_id,
             'times' => [$task->start_at, $task->end_at],
             'owner' => [User::userid()],
-            'is_all_visible' => $task->is_all_visible,
+            'visibility' => $task->visibility,
         ]);
         $data = ProjectTask::oneTask($task->id);
         $pushUserIds = ProjectTaskUser::whereTaskId($task->id)->pluck('userid')->toArray();
@@ -1838,13 +1838,13 @@ class ProjectController extends AbstractController
         //
         $data = ProjectTask::oneTask($task->id)->toArray();
         $data['update_marking'] = $updateMarking ?: json_decode('{}');
-        $data['visibility_appointor'] = $data['is_all_visible'] == 1 ? [] : ProjectTaskUser::whereTaskId($task->id)->whereOwner(2)->pluck('userid');
+        $data['visibility_appointor'] = $data['visibility'] == 1 ? [] : ProjectTaskUser::whereTaskId($task->id)->whereOwner(2)->pluck('userid');
         $task->pushMsg('update', $data);
         // 可见性推送
         if ($task->parent_id == 0) {
             $subUserids = ProjectTaskUser::whereTaskPid($data['id'])->pluck('userid')->toArray();
-            if (Arr::exists($param, 'is_all_visible') || Arr::exists($param, 'visibility_appointor')) {
-                if ($data['is_all_visible'] == 1) {
+            if (Arr::exists($param, 'visibility') || Arr::exists($param, 'visibility_appointor')) {
+                if ($data['visibility'] == 1) {
                     $task->pushMsgVisibleAdd($data);
                 }
                 if ($param['visibility_appointor']) {
@@ -1854,17 +1854,17 @@ class ProjectController extends AbstractController
                     $addUserIds = array_diff($newVisibleUserIds, $oldVisibleUserIds);
                     $task->pushMsgVisibleUpdate($data, $deleteUserIds, $addUserIds);
                 }
-                if ($data['is_all_visible'] != 1 && empty($param['visibility_appointor'])) {
+                if ($data['visibility'] != 1 && empty($param['visibility_appointor'])) {
                     $task->pushMsgVisibleRemove();
                 }
             }
-            if (Arr::exists($param, 'owner') && $data['is_all_visible'] != 1) {
+            if (Arr::exists($param, 'owner') && $data['visibility'] != 1) {
                 $diff = array_diff($owners, $subUserids);
                 if ($diff) {
                     $task->pushMsgVisibleRemove($diff);
                 }
             }
-            if (Arr::exists($param, 'assist') && $data['is_all_visible'] != 1) {
+            if (Arr::exists($param, 'assist') && $data['visibility'] != 1) {
                 $diff = array_diff($assists, $subUserids);
                 if ($diff) {
                     $task->pushMsgVisibleRemove($diff);
@@ -1878,7 +1878,7 @@ class ProjectController extends AbstractController
                 }
                 $parentTask = ProjectTask::whereId($task->parent_id)->first();
                 $subUserids = ProjectTaskUser::whereTaskPid($task->parent_id)->pluck('userid')->toArray();
-                if ($parentTask && $parentTask->is_all_visible != 1 && empty($subUserids)) {
+                if ($parentTask && $parentTask->visibility != 1 && empty($subUserids)) {
                     $diff = array_diff($owners, $param['owner'] ?: [], $subUserids);
                     if ($diff) {
                         $parentTask->pushMsgVisibleRemove($diff);

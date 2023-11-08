@@ -177,7 +177,7 @@ services:
 
   okr:
     container_name: "dootask-okr-${APP_ID}"
-    image: "kuaifan/doookr:0.0.19"
+    image: "kuaifan/doookr:0.0.21"
     environment:
       TZ: "${TIMEZONE:-PRC}"
       DOO_TASK_URL: "http://${APP_IPPR}.3"

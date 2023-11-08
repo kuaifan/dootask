@@ -197,7 +197,7 @@
                             :add-icon="false"
                             :before-submit="onAssist"/>
                     </FormItem>
-                    <FormItem v-if="taskDetail.is_all_visible > 1 || visibleForce || visibleKeep">
+                    <FormItem v-if="taskDetail.visibility > 1 || visibleForce || visibleKeep">
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe77b;</i>
                             <EDropdown ref="eDropdownRef" trigger="click" placement="bottom" @command="dropVisible">
@@ -207,21 +207,21 @@
                                 <EDropdownMenu slot="dropdown">
                                     <EDropdownItem :command="1">
                                         <div class="task-menu-icon" >
-                                            <Icon v-if="taskDetail.is_all_visible == 1" class="completed" :type="'md-checkmark-circle'"/>
+                                            <Icon v-if="taskDetail.visibility == 1" class="completed" :type="'md-checkmark-circle'"/>
                                             <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
                                             {{$L('项目人员')}}
                                         </div>
                                     </EDropdownItem>
                                     <EDropdownItem :command="2">
                                         <div class="task-menu-icon" >
-                                            <Icon v-if="taskDetail.is_all_visible == 2" class="completed" :type="'md-checkmark-circle'"/>
+                                            <Icon v-if="taskDetail.visibility == 2" class="completed" :type="'md-checkmark-circle'"/>
                                             <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
                                             {{$L('任务人员')}}
                                         </div>
                                     </EDropdownItem>
                                     <EDropdownItem :command="3">
                                         <div class="task-menu-icon" >
-                                            <Icon v-if="taskDetail.is_all_visible == 3" class="completed" :type="'md-checkmark-circle'"/>
+                                            <Icon v-if="taskDetail.visibility == 3" class="completed" :type="'md-checkmark-circle'"/>
                                             <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
                                             {{$L('指定成员')}}
                                         </div>
@@ -230,8 +230,8 @@
                             </EDropdown>
                         </div>
                         <div class="item-content user">
-                            <span @click="showCisibleDropdown" v-if="taskDetail.is_all_visible == 1"  class="visibility-text">{{$L('项目人员可见')}}</span>
-                            <span @click="showCisibleDropdown" v-else-if="taskDetail.is_all_visible == 2"  class="visibility-text">{{$L('任务人员可见')}}</span>
+                            <span @click="showCisibleDropdown" v-if="taskDetail.visibility == 1"  class="visibility-text">{{$L('项目人员可见')}}</span>
+                            <span @click="showCisibleDropdown" v-else-if="taskDetail.visibility == 2"  class="visibility-text">{{$L('任务人员可见')}}</span>
                             <UserSelect
                                 v-else
                                 ref="visibleUserSelectRef"
@@ -745,7 +745,7 @@ export default {
                     name: '协助人员',
                 });
             }
-            if (taskDetail.is_all_visible <= 1 && !this.visibleKeep) {
+            if (taskDetail.visibility <= 1 && !this.visibleKeep) {
                 list.push({
                     command: 'visible',
                     icon: '&#xe77b;',
@@ -857,7 +857,7 @@ export default {
         "taskDetail.visibility_appointor": {
             handler(arr) {
                 if(arr?.length > 0 && arr[0]) {
-                    this.taskDetail.is_all_visible = 3
+                    this.taskDetail.visibility = 3
                     this.updateVisible()
                 }
             },
@@ -1582,9 +1582,9 @@ export default {
 
         visibleUserSelectShowChange(isShow){
             if(!isShow && (this.taskDetail.visibility_appointor.length == 0 || !this.taskDetail.visibility_appointor[0])){
-                let old = this.taskDetail.old_is_all_visible;
-                this.taskDetail.is_all_visible = old > 2 ? 1 : (old || 1);
-                if(this.taskDetail.is_all_visible < 3 ){
+                let old = this.taskDetail.old_visibility;
+                this.taskDetail.visibility = old > 2 ? 1 : (old || 1);
+                if(this.taskDetail.visibility < 3 ){
                     this.updateVisible();
                 }
             }
@@ -1594,12 +1594,12 @@ export default {
             switch (command) {
                 case 1:
                 case 2:
-                    this.taskDetail.is_all_visible = command
+                    this.taskDetail.visibility = command
                     this.updateVisible();
                     break;
                 case 3:
-                    this.taskDetail.old_is_all_visible = this.taskDetail.is_all_visible
-                    this.taskDetail.is_all_visible = command
+                    this.taskDetail.old_visibility = this.taskDetail.visibility
+                    this.taskDetail.visibility = command
                     this.$nextTick(() => {
                         this.$refs.visibleUserSelectRef.onSelection()
                     });
@@ -1608,7 +1608,7 @@ export default {
         },
 
         updateVisible() {
-            this.updateData(['is_all_visible', 'visibility_appointor'])
+            this.updateData(['visibility', 'visibility_appointor'])
         }
     }
 }

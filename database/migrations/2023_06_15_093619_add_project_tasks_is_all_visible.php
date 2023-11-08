@@ -30,7 +30,7 @@ class AddProjectTasksIsAllVisible extends Migration
     {
         //
         Schema::table('project_tasks', function (Blueprint $table) {
-            $table->dropColumn("avatar");
+            $table->dropColumn("is_all_visible");
         });
     }
 }

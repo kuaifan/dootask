@@ -81,11 +81,13 @@ class Deleted extends AbstractModel
     {
         $array = is_array($userid) ? $userid : [$userid];
         foreach ($array as $value) {
-            self::updateInsert([
-                'type' => $type,
-                'did' => $id,
-                'userid' => $value,
-            ]);
+            if (!self::where('type', $type)->where('did', $id)->where('userid', $value)->exists()) {
+                self::updateInsert([
+                    'type' => $type,
+                    'did' => $id,
+                    'userid' => $value,
+                ]);
+            }
         }
     }
 }
