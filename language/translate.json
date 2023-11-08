@@ -18049,5 +18049,49 @@
         "de": "Verwende sie.",
         "fr": "Couramment utilisés",
         "id": "Umum"
+    },
+    {
+        "key": "请输入你的姓名！",
+        "zh": "",
+        "zh-CHT": "請輸入你的姓名！",
+        "en": "Please enter your name!",
+        "ko": "이름을 입력하십시오!",
+        "ja": "あなたの名前を入力します!",
+        "de": "Bitte geben sie ihren namen ein!",
+        "fr": "S’il vous plaît entrer votre nom!",
+        "id": "Silakan masukkan nama anda!"
+    },
+    {
+        "key": "文心一言",
+        "zh": "",
+        "zh-CHT": "文心一言",
+        "en": "WENXIN",
+        "ko": "WENXIN",
+        "ja": "WENXIN",
+        "de": "WENXIN",
+        "fr": "WENXIN",
+        "id": "WENXIN"
+    },
+    {
+        "key": "通义千问",
+        "zh": "",
+        "zh-CHT": "通義千問",
+        "en": "QIANWEN",
+        "ko": "QIANWEN",
+        "ja": "QIANWEN",
+        "de": "QIANWEN",
+        "fr": "QIANWEN",
+        "id": "QIANWEN"
+    },
+    {
+        "key": "模型",
+        "zh": "",
+        "zh-CHT": "模型",
+        "en": "Model",
+        "ko": "모형",
+        "ja": "モデルです",
+        "de": "Modelle.",
+        "fr": "Le modèle",
+        "id": "Model"
     }
 ]

@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.31.75]
+
+### Bug Fixes
+
+- 思维导图缩放后无法触发手指移动
+
+### Performance
+
+- 新增文心一言模型
+- 补充优化
+- Update documentserver
+- Openid supports gpt-4 model
+
 ## [0.31.65]
 
 ### Bug Fixes

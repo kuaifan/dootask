@@ -16,11 +16,11 @@
                     </div>
                     <Row :gutter="16">
                         <Col v-for="(item, key) in applyList" :key="key"
-                            v-if="((t=='base' && !item.type) || item.type == t) && item.show !== false" 
-                            :xs="{ span: 6 }" 
-                            :sm="{ span: 6 }" 
-                            :lg="{ span: 6 }" 
-                            :xl="{ span: 6 }" 
+                            v-if="((t=='base' && !item.type) || item.type == t) && item.show !== false"
+                            :xs="{ span: 6 }"
+                            :sm="{ span: 6 }"
+                            :lg="{ span: 6 }"
+                            :xl="{ span: 6 }"
                             :xxl="{ span: 3 }"
                         >
                             <div class="apply-col">
@@ -123,7 +123,7 @@
                         <li @click="onMeeting('createMeeting')">
                             <img :src="getLogoPath('meeting')">
                             <h4>{{ $L('新会议') }}</h4>
-                            <p>{{ $L('创建一个全新的会议视频会议，与会者可以在实时中进行面对面的视听交流。通过视频会议平台，参与者可以分享屏幕、共享文档，并与其他与会人员进行讨论和协。作') }}</p>
+                            <p>{{ $L('创建一个全新的会议视频会议，与会者可以在实时中进行面对面的视听交流。通过视频会议平台，参与者可以分享屏幕、共享文档，并与其他与会人员进行讨论和协。') }}</p>
                             <p class="btn">{{ $L('新建会议') }}</p>
                         </li>
                         <li @click="onMeeting('joinMeeting')">
@@ -223,10 +223,10 @@ export default {
         return {
             applyList: [],
             applyListTypes: ['base', 'admin'],
-            // 
+            //
             workReportShow: false,
             workReportTabs: "my",
-            // 
+            //
             aibotList: [
                 {
                     value: "openai",
@@ -257,21 +257,21 @@ export default {
             aibotShow: false,
             aibotType: 1,
             aibotDialogSearchLoad: "",
-            // 
+            //
             signInShow: false,
             signInType: 1,
-            // 
+            //
             meetingShow: false,
             meetingType: 1,
-            // 
+            //
             ldapShow: false,
-            // 
+            //
             mailType: 1,
             mailShow: false,
-            // 
+            //
             appPushType: 1,
             appPushShow: false,
-            // 
+            //
             scanLoginShow: false,
             scanLoginLoad: false,
             scanLoginCode: '',
@@ -331,7 +331,7 @@ export default {
                 h.type = 'admin';
                 return h;
             });
-            // 
+            //
             this.applyList = [...applyList, ...appApplyList, ...adminApplyList];
         },
         getLogoPath(name) {
