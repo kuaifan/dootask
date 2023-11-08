@@ -47,8 +47,11 @@
                     </FormItem>
                     <FormItem :label="$L('模型')" prop="wenxin_model">
                         <Select v-model="formData.wenxin_model" placement="top">
-                            <Option value="ERNIE-Bot-turbo">ERNIE-Bot-turbo</Option>
-                            <Option value="ERNIE-Bot">ERNIE-Bot</Option>
+                            <Option value="completions_pro">ERNIE-Bot 4.0</Option>
+                            <Option value="completions">ERNIE-Bot</Option>
+                            <Option value="eb-instant">ERNIE-Bot-turbo</Option>
+                            <Option value="llama_2_7b">Llama-2-7b-chat</Option>
+                            <Option value="llama_2_13b">Llama-2-13B-Chat</Option>
                         </Select>
                         <div class="form-tip">{{$L('查看说明')}} <a href="https://cloud.baidu.com/doc/WENXINWORKSHOP/s/vliu6vq7u" target="_blank">https://cloud.baidu.com/doc/WENXINWORKSHOP/s/vliu6vq7u</a></div>
                     </FormItem>

@@ -304,7 +304,7 @@ class SystemController extends AbstractController
         }
         //
         $setting['openai_model'] = $setting['openai_model'] ?: 'gpt-3.5-turbo';
-        $setting['wenxin_model'] = $setting['wenxin_model'] ?: 'ERNIE-Bot-turbo';
+        $setting['wenxin_model'] = $setting['wenxin_model'] ?: 'eb-instant';
         $setting['qianwen_model'] = $setting['qianwen_model'] ?: 'qwen-v1';
         if (env("SYSTEM_SETTING") == 'disabled') {
             foreach ($keys as $item) {
