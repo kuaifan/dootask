@@ -142,7 +142,7 @@ services:
 
   minder:
     container_name: "dootask-minder-${APP_ID}"
-    image: "kuaifan/minder:0.1.1"
+    image: "kuaifan/minder:0.1.3"
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.10"

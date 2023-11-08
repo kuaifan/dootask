@@ -267,6 +267,19 @@
                     command,
                     value
                 })
+                if (command === 'goCenter' || command === 'removeAllSelected') {
+                    return
+                }
+                setTimeout(_ => {
+                    if (this.isHand) {
+                        this.$refs.frame.postMessage({
+                            app: 'minder',
+                            action: 'commandAlways',
+                            command: 'Hand',
+                            value
+                        })
+                    }
+                }, 300)
             },
 
             exportHandle(type, filename) {
