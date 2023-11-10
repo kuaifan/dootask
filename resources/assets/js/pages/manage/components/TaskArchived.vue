@@ -204,8 +204,8 @@ export default {
                                                     params.row.__restorePoptipTitle = this.$L('检测到所属的任务列表已被删除，该操作将会还原任务列表，你确定要还原归档吗？');
                                                 }
                                                 params.row.__restorePoptipShow = true;
-                                            }).catch(() => {
-                                                // this.noText = '数据加载失败';
+                                            }).catch(({msg}) => {
+                                                $A.modalError({content: msg});
                                             }).finally(_ => {
                                                 params.row.__restorePoptipLoadIng = false
                                             })
