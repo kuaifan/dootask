@@ -1681,6 +1681,13 @@ export default {
         },
 
         pasteSend() {
+            if (this.__paste_send_index) {
+                return;
+            }
+            this.__paste_send_index = 1;
+            setTimeout(() => {
+                this.__paste_send_index = 0;
+            }, 300)
             this.pasteFile.some(file => {
                 this.$refs.chatUpload.upload(file)
             });

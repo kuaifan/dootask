@@ -1718,6 +1718,13 @@ export default {
         },
 
         pasteSend() {
+            if (this.__paste_send_index) {
+                return;
+            }
+            this.__paste_send_index = 1;
+            setTimeout(() => {
+                this.__paste_send_index = 0;
+            }, 300)
             const names = []
             this.pasteFile.some(file => {
                 if (!names.find(name => name === file.name)) {
