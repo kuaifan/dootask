@@ -1289,6 +1289,13 @@ class ProjectTask extends AbstractModel
         }
         AbstractModel::transaction(function () use ($isAuto, $archived_at) {
             if ($archived_at === null) {
+                // 还原任务栏
+                if (!$this->projectColumn) {
+                    $this->projectColumn()->restore();
+                    if($projectColumn = $this->projectColumn()->first()){
+                        $projectColumn->pushMsg('recovery', $projectColumn);
+                    }
+                }
                 // 取消归档
                 $this->archived_at = null;
                 $this->archived_userid = User::userid();

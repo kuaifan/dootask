@@ -163,12 +163,14 @@ export default {
                             }, this.$L('查看')),
                             h('Poptip', {
                                 props: {
-                                    title: this.$L('你确定要还原归档吗？'),
+                                    title: params.row.__restorePoptipTitle,
                                     confirm: true,
                                     transfer: true,
                                     placement: 'left',
                                     okText: this.$L('确定'),
                                     cancelText: this.$L('取消'),
+                                    value: params.row.__restorePoptipShow,
+                                    width: 220,
                                 },
                                 style: {
                                     marginLeft: '6px',
@@ -179,9 +181,46 @@ export default {
                                 on: {
                                     'on-ok': () => {
                                         this.recovery(params.row);
-                                    }
+                                    },
+                                    'on-popper-hide': () => {
+                                        params.row.__restorePoptipLoadIng = false;
+                                        params.row.__restorePoptipTitle = this.$L('你确定要还原归档吗？');
+                                        params.row.__restorePoptipShow = false;
+                                    },
                                 },
-                            }, this.$L('还原')),
+                            },  [h('span', {
+                                    on: {
+                                        'click': (e) => {
+                                            e.stopPropagation();
+                                            params.row.__restorePoptipLoadIng = true
+                                            this.$store.dispatch("call", {
+                                                url: 'project/column/one',
+                                                data: {
+                                                    column_id:  params.row.column_id,
+                                                    deleted: 'all'
+                                                },
+                                            }).then(({ data }) => {
+                                                if(data.deleted_at){
+                                                    params.row.__restorePoptipTitle = this.$L('检测到所属的任务列表已被删除，该操作将会还原任务列表，你确定要还原归档吗？');
+                                                }
+                                                params.row.__restorePoptipShow = true;
+                                            }).catch(() => {
+                                                // this.noText = '数据加载失败';
+                                            }).finally(_ => {
+                                                params.row.__restorePoptipLoadIng = false
+                                            })
+                                        }
+                                    },
+                                }, 
+                                [ 
+                                    params.row.__restorePoptipLoadIng ? h('Loading', {
+                                        style: {
+                                            width: '26px',
+                                            height: '15px',
+                                        },
+                                    }) : this.$L('还原') 
+                                ])
+                            ]),
                             h('Poptip', {
                                 props: {
                                     title: this.$L('你确定要删除任务吗？'),
@@ -268,7 +307,12 @@ export default {
             }).then(({data}) => {
                 this.page = data.current_page;
                 this.total = data.total;
-                this.list = data.data;
+                this.list = data.data.map(h=>{
+                    h.__restorePoptipLoadIng = false;
+                    h.__restorePoptipTitle = this.$L('你确定要还原归档吗？');
+                    h.__restorePoptipShow = false;
+                    return h;
+                });
                 this.noText = '没有相关的数据';
             }).catch(() => {
                 this.noText = '数据加载失败';

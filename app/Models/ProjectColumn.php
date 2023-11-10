@@ -68,7 +68,9 @@ class ProjectColumn extends AbstractModel
         AbstractModel::transaction(function () use ($pushMsg) {
             $tasks = ProjectTask::whereColumnId($this->id)->get();
             foreach ($tasks as $task) {
-                $task->deleteTask($pushMsg);
+                if(!$task->archived_at){
+                    $task->deleteTask($pushMsg);
+                }
             }
             $this->delete();
             $this->addLog("删除列表：" . $this->name);
@@ -119,7 +121,7 @@ class ProjectColumn extends AbstractModel
             $userid = $this->project->relationUserids();
         }
         $params = [
-            'ignoreFd' => Request::header('fd'),
+            'ignoreFd' => $action == 'recovery' ? 0 : Request::header('fd'),
             'userid' => $userid,
             'msg' => [
                 'type' => 'projectColumn',

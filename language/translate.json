@@ -18104,5 +18104,82 @@
         "de": "Wir haben keinen zeitplan festgelegt",
         "fr": "Temps non défini",
         "id": "Waktu tidak diatur"
+    },
+    {
+        "key": "检测到所属的任务列表已被删除，该操作将会还原任务列表，你确定要还原归档吗",
+        "zh": "",
+        "zh-CHT": "檢測到所屬的任務列表已被刪除，該操作將會還原任務列表，你確定要還原歸檔嗎",
+        "en": "Detected that the task list has been deleted. This action will restore the task list. Are you sure you want to restore the archive",
+        "ko": "작업 목록이 삭제되었습니다.이 작업은 작업 목록을 복원합니다. 압축 파일을 복원하시겠습니까",
+        "ja": "タスクリストが削除されたことが検出されたら、タスクリストに戻します。",
+        "de": "Erkennt man, dass eine liste gelöscht wurde? Diese aktion beendet die liste der aufgaben. Möchten sie wirklich ihre dateien wiederherstellen",
+        "fr": "Il a été détecté que la liste des tâches affiliées a été supprimée. Cette action va restaurer la liste des tâches. Êtes-vous sûr de vouloir restaurer l’archive? *",
+        "id": "Senarai misi yang telah terdeteksi telah dihapus operasi akan mengembalikan senarai tugas. Apakah anda yakin ingin mengembalikan berkas"
+    },
+    {
+        "key": "检测到所属的任务列表已被删除，该操作将会还原任务列表，你确定要还原归档吗？",
+        "zh": "",
+        "zh-CHT": "檢測到所屬的任務列表已被刪除，該操作將會還原任務列表，你確定要還原歸檔嗎？",
+        "en": "Detected that the task list has been deleted. This action will restore the task list. Are you sure you want to restore the archive?",
+        "ko": "작업 목록이 삭제되었습니다.이 작업은 작업 목록을 복원합니다. 압축 파일을 복원하시겠습니까?",
+        "ja": "タスクリストが削除されたことを検知したら、タスクリストに戻します。ファイリングを元に戻しますか?",
+        "de": "Erkennt man, dass eine liste gelöscht wurde? Diese aktion beendet die liste der aufgaben. Möchten sie wirklich ihre dateien wiederherstellen?",
+        "fr": "Il a été détecté que la liste des tâches affiliées a été supprimée. Cette action va restaurer la liste des tâches. Êtes-vous sûr de vouloir restaurer l’archive?",
+        "id": "Senarai misi yang telah terdeteksi telah dihapus operasi akan mengembalikan senarai tugas. Apakah anda yakin ingin mengembalikan berkas?"
+    },
+    {
+        "key": "请选择下载的文件或文件夹",
+        "zh": "",
+        "zh-CHT": "請選擇下載的文件或文件夾",
+        "en": "Please select the file or folder to download",
+        "ko": "다운로드할 파일이나 폴더를 선택하십시오",
+        "ja": "ダウンロードするファイルまたはフォルダを選択します。",
+        "de": "Bitte wählen sie die datei Oder den ordner zum download",
+        "fr": "Veuillez sélectionner un fichier ou un dossier à télécharger",
+        "id": "Silakan pilih berkas atau folder yang anda unduh"
+    },
+    {
+        "key": "一次最多只能下载100个文件或文件夹",
+        "zh": "",
+        "zh-CHT": "一次最多隻能下載100個文件或文件夾",
+        "en": "You can download a maximum of 100 files or folders at a time",
+        "ko": "한 번에 최대 100개의 파일이나 폴더만 다운로드할 수 있다",
+        "ja": "一度にダウンロードできるファイルやフォルダは100個までです",
+        "de": "Sie können zur gleichen zeit höchstens 100 dateien Oder ordner heruntergeladen werden",
+        "fr": "Vous ne pouvez télécharger que 100 fichiers ou dossiers à la fois",
+        "id": "Hanya 100 file atau folder yang bisa diunduh sekaligus"
+    },
+    {
+        "key": "创建压缩文件失败",
+        "zh": "",
+        "zh-CHT": "創建壓縮文件失敗",
+        "en": "Failed to create the compressed file. Procedure",
+        "ko": "압축 파일을 만들 수 없습니다",
+        "ja": "圧縮ファイルの作成に失敗します",
+        "de": "Das erstellen einer komprimierten datei ist fehlgeschlagen",
+        "fr": "Échec de la création d’un fichier compressé",
+        "id": "Gagal membuat berkas kompresi"
+    },
+    {
+        "key": "文件总大小已超过1GB,请分批下载",
+        "zh": "",
+        "zh-CHT": "文件總大小已超過1GB,請分批下載",
+        "en": "The total size of the file exceeds 1GB. Please download it in batches",
+        "ko": "전체 파일 크기가 1gb를 초과했습니다. 차례로 다운로드하십시오",
+        "ja": "ファイルの総サイズはすでに1GBを超えて、いくつかに分けてダウンロードします",
+        "de": "Die datei insgesamt betrug mehr als 1 gigabyte, und bitte download sie in einzelnen gruppen",
+        "fr": "La taille totale du fichier a dépassé 1 go, veuillez le télécharger par lots",
+        "id": "Ukuran total file telah melebihi 1GB, silahkan download secara terpisah"
+    },
+    {
+        "key": "压缩下载",
+        "zh": "",
+        "zh-CHT": "壓縮下載",
+        "en": "Compressed download",
+        "ko": "압축 다운로드",
+        "ja": "圧縮ダウンロードです",
+        "de": "Download komprimieren.",
+        "fr": "Compresser et télécharger",
+        "id": "Download terkompresi"
     }
 ]

@@ -3322,6 +3322,7 @@ export default {
                                 switch (action) {
                                     case 'add':
                                     case 'update':
+                                    case 'recovery':
                                         dispatch("saveColumn", data)
                                         break;
                                     case 'delete':
