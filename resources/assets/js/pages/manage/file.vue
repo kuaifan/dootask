@@ -49,6 +49,10 @@
                         <Icon type="ios-cut" />
                         {{$L('剪切')}}
                     </Button>
+                    <Button size="small" type="info" @click="downloadZipFile(selectIds)">
+                        <Icon type="ios-download-outline" />
+                        {{$L('压缩下载')}}
+                    </Button>
                     <Button size="small" type="error" @click="deleteFile(selectIds)">
                         <Icon type="ios-trash" />
                         {{$L('删除')}}
@@ -195,6 +199,7 @@
                             <DropdownItem name="send" :disabled="contextMenuItem.type == 'folder'">{{$L('发送')}}</DropdownItem>
                             <DropdownItem name="link" :divided="contextMenuItem.userid != userId && !contextMenuItem.share" :disabled="contextMenuItem.type == 'folder'">{{$L('链接')}}</DropdownItem>
                             <DropdownItem name="download" :disabled="contextMenuItem.ext == ''">{{$L('下载')}}</DropdownItem>
+                            <DropdownItem name="downloadzip">{{$L('压缩下载')}}</DropdownItem>
 
                             <DropdownItem name="delete" divided style="color:red">{{$L('删除')}}</DropdownItem>
                         </template>
@@ -1260,6 +1265,10 @@ export default {
                     });
                     break;
 
+                case 'downloadzip':
+                    this.downloadZipFile([item.id])
+                    break;
+
                 case 'delete':
                     this.deleteFile([item.id])
                     break;
@@ -1392,6 +1401,26 @@ export default {
                             reject(msg);
                         });
                     })
+                }
+            });
+        },
+
+        downloadZipFile(ids){
+            if (ids.length === 0) {
+                return
+            }
+            const firstFile = this.fileLists.find(({ id }) => id === ids[0]) || {};
+            const allFolder = !ids.some(id => this.fileLists.some(({ type, id: itemId }) => type !== 'folder' && itemId === id));
+            const typeName = allFolder ? "文件夹" : "文件";
+            const fileName = ids.length === 1 ? `【${firstFile.name}】${typeName}` : `【${firstFile.name}】等${ids.length}个${typeName}`;
+
+            $A.modalConfirm({
+                title: '下载文件',
+                content: `你确定要下载${fileName}吗？`,
+                okText: '立即下载',
+                onOk: () => {
+                    const idsParam = ids.join('&ids[]=');
+                    this.$store.dispatch('downUrl', $A.apiUrl(`file/download/zip?ids[]=${idsParam}`));
                 }
             });
         },

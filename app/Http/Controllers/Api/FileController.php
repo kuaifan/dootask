@@ -14,6 +14,7 @@ use App\Module\Ihttp;
 use Carbon\Carbon;
 use Redirect;
 use Request;
+use ZipArchive;
 
 /**
  * @apiDefine file
@@ -968,5 +969,56 @@ class FileController extends AbstractController
         $fileLink = $file->getShareLink($user->userid, $refresh == 'yes');
         //
         return Base::retSuccess('success', $fileLink);
+    }
+
+    /**
+     * @api {get} api/file/download/zip          19. 压缩下载
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName download__zip
+     *
+     * @apiParam {Array} [ids]      文件ID，格式: [id, id2, id3]
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function download__zip()
+    {
+        $user = User::auth();
+        $ids = Request::input('ids');
+        if (!is_array($ids) || empty($ids)) {
+            return Base::retError('Please select the downloaded file or folder');
+        }
+
+        if (count($ids) > 100) {
+            return Base::retError('You can only download up to 100 files or folders at a time');
+        }
+
+        $files = [];
+        AbstractModel::transaction(function() use ($user, $ids, &$files) {
+            foreach ($ids as $id) {
+                $files[] = File::getFilesTree(intval($id), $user, 0);
+            }
+        });
+
+        $zip = new \ZipArchive();
+        $zipName = 'temp/download/' . date("Ym") . '/' . $user->userid . '/file_' . date("YmdHis") . '.zip';
+        $zipPath = storage_path('app/'.$zipName);
+        Base::makeDir(dirname($zipPath));
+
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            return Base::retError('创建压缩文件失败');
+        }
+
+        array_walk($files, function($file) use ($zip) {
+            File::addFileTreeToZip($zip, $file);
+        });
+
+        $zip->close();
+
+        return response()->download($zipPath, 'file_'. date("YmdHis") .'.zip')->deleteFileAfterSend(true);
     }
 }

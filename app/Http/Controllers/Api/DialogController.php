@@ -868,8 +868,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {post} api/dialog/msg/sendfiles          18. 群发文件上传
-     * @api {post} api/dialog/msg/sendfiles          18. 群发文件上传
+     * @api {post} api/dialog/msg/sendfiles          19. 群发文件上传
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
