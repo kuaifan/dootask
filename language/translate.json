@@ -18093,5 +18093,16 @@
         "de": "Modelle.",
         "fr": "Le modèle",
         "id": "Model"
+    },
+    {
+        "key": "未设置时间",
+        "zh": "",
+        "zh-CHT": "未設置時間",
+        "en": "No set time",
+        "ko": "시간이 설정되지 않았습니다",
+        "ja": "未設定時間です",
+        "de": "Wir haben keinen zeitplan festgelegt",
+        "fr": "Temps non défini",
+        "id": "Waktu tidak diatur"
     }
 ]

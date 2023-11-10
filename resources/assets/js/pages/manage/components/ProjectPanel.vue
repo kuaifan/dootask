@@ -614,6 +614,8 @@ export default {
                     list = list.filter(({task_user}) => task_user.find(({userid, owner}) => userid === flowInfo.userid && owner));
                 } else if (flowInfo.value > 0) {
                     list = list.filter(({flow_item_id}) => flow_item_id === flowInfo.value);
+                } else if (flowInfo.value == -1) {
+                    list = list.filter(({start_at}) => !start_at);
                 }
                 if (searchText) {
                     list = list.filter(({id, name, desc}) => {
@@ -792,6 +794,9 @@ export default {
 
         flowTitle() {
             const {flowInfo, flowData, allTask} = this;
+            if (flowInfo.value==-1) {
+                return flowInfo.label;
+            }
             if (flowInfo.value) {
                 const item = flowData.find(item => item.value === flowInfo.value);
                 return item ? item.label : flowInfo.label;
@@ -806,6 +811,11 @@ export default {
                 label: `${this.$L('全部')} (${allTask.length})`,
                 children: []
             }];
+            list.push({
+                value: -1,
+                label: `${this.$L('未设置时间')} (${allTask.filter(({start_at}) => {return !start_at}).length})`,
+                children: []
+            });
             const flows = flowList.map(item1 => {
                 return {
                     value: item1.id,
@@ -1454,6 +1464,8 @@ export default {
             if ($A.leftExists(this.flowInfo.value, "user:") && !task.task_user.find(({userid, owner}) => userid === this.flowInfo.userid && owner)) {
                 return true;
             } else if (this.flowInfo.value > 0 && task.flow_item_id !== this.flowInfo.value) {
+                return true;
+            }else if (this.flowInfo.value == -1 && task.start_at) {
                 return true;
             }
             return false;
