@@ -560,7 +560,7 @@ class WebSocketDialog extends AbstractModel
         if ($dialogUser) {
             return $dialogUser;
         }
-        if ($receiver > 0 && $user->isTemp()) {
+        if ($receiver > 0 && $user->isTemp() && !User::whereUserid($receiver)->whereBot(1)->exists() ) {
             throw new ApiException('无法发起会话，请联系管理员。');
         }
         return AbstractModel::transaction(function () use ($receiver, $user) {
