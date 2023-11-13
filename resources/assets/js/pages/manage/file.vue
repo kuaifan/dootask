@@ -1419,8 +1419,21 @@ export default {
                 content: `你确定要下载${fileName}吗？`,
                 okText: '立即下载',
                 onOk: () => {
-                    const idsParam = ids.join('&ids[]=');
-                    this.$store.dispatch('downUrl', $A.apiUrl(`file/download/zip?ids[]=${idsParam}`));
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("call", {
+                            url: 'file/download/check',
+                            data: {
+                                ids,
+                            },
+                        }).then(({msg}) => {
+                            const idsParam = ids.join('&ids[]=');
+                            this.$store.dispatch('downUrl', $A.apiUrl(`file/download/zip?ids[]=${idsParam}`));
+                        }).catch(({msg}) => {
+                            $A.modalError(msg)
+                            reject(msg);
+                        });
+                    })
+
                 }
             });
         },

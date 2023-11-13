@@ -972,7 +972,43 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/download/zip          19. 压缩下载
+     * @api {get} api/file/download/check          19. 检测下载
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName download__check
+     *
+     * @apiParam {Array} [ids]      文件ID，格式: [id, id2, id3]
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function download__check(){
+        $user = User::auth();
+        $ids = Request::input('ids');
+
+        if (!is_array($ids) || empty($ids)) {
+            return Base::retError('请选择下载的文件或文件夹');
+        }
+
+        if (count($ids) > 100) {
+            return Base::retError('一次最多只能下载100个文件或文件夹');
+        }
+
+        $files = [];
+        AbstractModel::transaction(function() use ($user, $ids, &$files) {
+            foreach ($ids as $id) {
+                $files[] = File::getFilesTree(intval($id), $user, 0);
+            }
+        });
+
+        return Base::retSuccess('success');
+    }
+
+    /**
+     * @api {get} api/file/download/zip          20. 压缩下载
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -989,13 +1025,6 @@ class FileController extends AbstractController
     {
         $user = User::auth();
         $ids = Request::input('ids');
-        if (!is_array($ids) || empty($ids)) {
-            return Base::retError('Please select the downloaded file or folder');
-        }
-
-        if (count($ids) > 100) {
-            return Base::retError('You can only download up to 100 files or folders at a time');
-        }
 
         $files = [];
         AbstractModel::transaction(function() use ($user, $ids, &$files) {
@@ -1005,12 +1034,14 @@ class FileController extends AbstractController
         });
 
         $zip = new \ZipArchive();
-        $zipName = 'temp/download/' . date("Ym") . '/' . $user->userid . '/file_' . date("YmdHis") . '.zip';
+        // 下载文件名
+        $downName = count($ids) > 1 ? 'file_'. date("YmdHis") : $files[0]->name;
+        $zipName = 'temp/download/' . date("Ym") . '/' . $user->userid . '/' . $downName . '.zip';
         $zipPath = storage_path('app/'.$zipName);
         Base::makeDir(dirname($zipPath));
 
         if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-            return Base::retError('创建压缩文件失败');
+            return Base::retError('Failed to create compressed file');
         }
 
         array_walk($files, function($file) use ($zip) {
@@ -1019,6 +1050,6 @@ class FileController extends AbstractController
 
         $zip->close();
 
-        return response()->download($zipPath, 'file_'. date("YmdHis") .'.zip')->deleteFileAfterSend(true);
+        return response()->download($zipPath, $downName .'.zip')->deleteFileAfterSend(true);
     }
 }

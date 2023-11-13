@@ -834,15 +834,16 @@ class File extends AbstractModel
     }
 
     /**
-     * 获取文件树
+     * 获取文件树并计算文件总大小
      *
      * @param int $fileId
      * @param User $user
      * @param int $permission
      * @param string $path
+     * @param int $totalSize
      * @return object
      */
-    public static function getFilesTree(int $fileId, User $user, $permission = 1, $path = '') {
+    public static function getFilesTree(int $fileId, User $user, $permission = 1, $path = '', &$totalSize = 0) {
         $file = File::permissionFind($fileId, $user, $permission);
         $file->path = ltrim($path . '/' . $file->name, '/');
         $file->children = [];
@@ -851,34 +852,21 @@ class File extends AbstractModel
             foreach ($files as &$childFile) {
                 $childFile['path'] = $file->path . '/' . $childFile['name'];
                 if ($childFile['type'] == 'folder') {
-                    $childFile['children'] = self::getFilesTree($childFile['id'], $user, $permission, $file->path);
+                    $childFile['children'] = self::getFilesTree($childFile['id'], $user, $permission, $file->path, $totalSize);
+                } else {
+                    $totalSize += $childFile['size'];
                 }
             }
             $file->children = $files;
-        }
-        $totalSize = self::calculateTotalSize($file);
-        if ($totalSize > 1024 * 1024 * 1024) { // 1GB
-            throw new ApiException('The total file size has exceeded 1GB, please download in batches');
-        }
-        return $file;
-    }
-
-    /**
-     * 计算文件夹文件总大小
-     *
-     * @param [type] $fileTree
-     * @return float|int
-     */
-    public static function calculateTotalSize($fileTree) {
-        $totalSize = 0;
-        if ($fileTree->type != 'folder') {
-            $totalSize += $fileTree->size;
         } else {
-            foreach ($fileTree->children as $childFile) {
-                $totalSize += self::calculateTotalSize((object)$childFile);
-            }
+            $totalSize += $file->size;
         }
-        return $totalSize;
+
+        if ($totalSize > 1024 * 1024 * 1024) { // 1GB
+            throw new ApiException('文件总大小已超过1GB，请分批下载');
+        }
+
+        return $file;
     }
 
     /**
