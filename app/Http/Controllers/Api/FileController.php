@@ -998,11 +998,17 @@ class FileController extends AbstractController
         }
 
         $files = [];
-        AbstractModel::transaction(function() use ($user, $ids, &$files) {
-            foreach ($ids as $id) {
-                $files[] = File::getFilesTree(intval($id), $user, 0);
+        $totalSize = 0;
+        AbstractModel::transaction(function() use ($user, $ids, &$files, &$totalSize) {
+            foreach ($ids as $k => $id) {
+                $files[] = File::getFilesTree(intval($id), $user, 1);
+                $totalSize += $files[$k]->totalSize;
             }
         });
+
+        if ($totalSize > File::zipMaxSize) {
+            throw new ApiException('文件总大小已超过1GB，请分批下载');
+        }
 
         return Base::retSuccess('success');
     }
@@ -1026,12 +1032,25 @@ class FileController extends AbstractController
         $user = User::auth();
         $ids = Request::input('ids');
 
+        if (!is_array($ids) || empty($ids)) {
+            abort(403, "Please select the file or folder to download.");
+        }
+        if (count($ids) > 100) {
+            abort(403, "You can download a maximum of 100 files or folders at a time.");
+        }
+
         $files = [];
-        AbstractModel::transaction(function() use ($user, $ids, &$files) {
-            foreach ($ids as $id) {
-                $files[] = File::getFilesTree(intval($id), $user, 0);
+        $totalSize = 0;
+        AbstractModel::transaction(function() use ($user, $ids, &$files, &$totalSize) {
+            foreach ($ids as $k => $id) {
+                $files[] = File::getFilesTree(intval($id), $user, 1);
+                $totalSize += $files[$k]->totalSize;
             }
         });
+
+        if ($totalSize > File::zipMaxSize) {
+            abort(403, "The total size of the file exceeds 1GB. Please download it in batches.");
+        }
 
         $zip = new \ZipArchive();
         // 下载文件名
@@ -1041,7 +1060,7 @@ class FileController extends AbstractController
         Base::makeDir(dirname($zipPath));
 
         if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-            return Base::retError('Failed to create compressed file');
+            abort(403, "Failed to create compressed file.");
         }
 
         array_walk($files, function($file) use ($zip) {

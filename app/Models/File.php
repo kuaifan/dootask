@@ -95,6 +95,11 @@ class File extends AbstractModel
         'avi', 'mov', 'wmv', 'mkv', '3gp', 'rm',
     ];
 
+    /**
+     * 压缩包下载大小限制
+     */
+    const zipMaxSize = 1024 * 1024 * 1024; // 1G
+
 
     /**
      * 获取文件列表
@@ -838,7 +843,7 @@ class File extends AbstractModel
      *
      * @param int $fileId
      * @param User $user
-     * @param int $permission
+     * @param int $permission 0-访问权限、1-读写权限、1000-所有者或创建者
      * @param string $path
      * @param int $totalSize
      * @return object
@@ -861,11 +866,7 @@ class File extends AbstractModel
         } else {
             $totalSize += $file->size;
         }
-
-        if ($totalSize > 1024 * 1024 * 1024) { // 1GB
-            throw new ApiException('文件总大小已超过1GB，请分批下载');
-        }
-
+        $file->totalSize = $totalSize;
         return $file;
     }
 

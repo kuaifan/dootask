@@ -1434,7 +1434,6 @@ export default {
                             this.$store.dispatch('downUrl', $A.apiUrl(`file/download/zip?ids[]=${idsParam}`));
                         }).catch(({msg}) => {
                             $A.modalError(msg)
-                            reject(msg);
                         });
                     })
 
