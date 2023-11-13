@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Module\Base;
+use App\Exceptions\ApiException;
 
 /**
  * App\Models\ProjectTaskContent
@@ -59,6 +60,7 @@ class ProjectTaskContent extends AbstractModel
      */
     public static function saveContent($task_id, $content)
     {
+        $oldContent = $content;
         $path = 'uploads/task/content/' . date("Ym") . '/' . $task_id . '/';
         //
         preg_match_all("/<img\s+src=\"data:image\/(png|jpg|jpeg|webp);base64,(.*?)\"/s", $content, $matchs);
@@ -77,7 +79,13 @@ class ProjectTaskContent extends AbstractModel
         $filePath = $path . md5($content);
         $publicPath = public_path($filePath);
         Base::makeDir(dirname($publicPath));
-        file_put_contents($publicPath, $content);
+        $result = file_put_contents($publicPath, $content);
+        if(!$result){
+            info("保存任务详情至文件失败");
+            info($publicPath);
+            info($oldContent);
+            throw new ApiException("保存任务详情至文件失败,请重试");
+        }
         //
         return $filePath;
     }

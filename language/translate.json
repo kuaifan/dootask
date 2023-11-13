@@ -18247,5 +18247,27 @@
         "de": "Die datei insgesamt betrug mehr als 1 gigabyte, und bitte download sie in einzelnen gruppen",
         "fr": "La taille totale du fichier a dépassé 1 go, veuillez le télécharger par lots",
         "id": "Ukuran total file telah melebihi 1GB, silahkan download secara terpisah"
+    },
+    {
+        "key": "保存任务详情至文件失败",
+        "zh": "",
+        "zh-CHT": "保存任務詳情至文件失敗",
+        "en": "Failed to save task details to a file. Procedure",
+        "ko": "작업 정보를 파일로 저장하는 데 실패했습니다",
+        "ja": "タスク詳細をファイル失敗まで保存します",
+        "de": "Einzelheiten der mission bis zur datei nicht speichern",
+        "fr": "Échec de l’enregistrement des détails de la tâche dans le fichier",
+        "id": "Menyimpan rincian misi sampai file gagal"
+    },
+    {
+        "key": "保存任务详情至文件失败,请重试",
+        "zh": "",
+        "zh-CHT": "保存任務詳情至文件失敗,請重試",
+        "en": "Failed to save the task details to the file. Please try again",
+        "ko": "작업 정보를 파일에 저장하는 데 실패했습니다. 다시 시도하십시오",
+        "ja": "タスクの詳細をファイルに保存するのに失敗しました。",
+        "de": "Einzelheiten der mission bis zur datei nicht speichern bitte versuchen sie es erneut",
+        "fr": "Échec de l’enregistrement des détails de la tâche dans le fichier, veuillez réessayer",
+        "id": "Menyimpan rincian misi sampai dokumen gagal. Silahkan coba lagi"
     }
 ]
