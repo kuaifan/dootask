@@ -684,7 +684,7 @@ class WebSocketDialogMsg extends AbstractModel
         foreach ($matchs[1] as $key => $str) {
             preg_match("/data-denotation-char=\"(.*?)\"/", $str, $matchChar);
             preg_match("/data-id=\"(.*?)\"/", $str, $matchId);
-            preg_match("/data-value=\"(.*?)\"/", $str, $matchValye);
+            preg_match("/data-value=\"(.*?)\"/s", $str, $matchValye);
             $keyId = $matchId[1];
             if ($matchChar[1] === "~") {
                 if (Base::isNumber($keyId)) {
@@ -760,7 +760,7 @@ class WebSocketDialogMsg extends AbstractModel
             return "<img class=\"{$match[1]}\"{$wh} src=\"{$src}\" alt=\"{$match[5]}\"/>";
         }, $text);
         $text = preg_replace("/\[:@:(.*?):(.*?):\]/i", "<span class=\"mention user\" data-id=\"$1\">@$2</span>", $text);
-        $text = preg_replace("/\[:#:(.*?):(.*?):\]/i", "<span class=\"mention task\" data-id=\"$1\">#$2</span>", $text);
+        $text = preg_replace("/\[:#:(.*?):(.*?):\]/is", "<span class=\"mention task\" data-id=\"$1\">#$2</span>", $text);
         $text = preg_replace("/\[:~:(.*?):(.*?):\]/i", "<a class=\"mention file\" href=\"{{RemoteURL}}single/file/$1\" target=\"_blank\">~$2</a>", $text);
         $text = preg_replace("/\[:QUICK:(.*?):(.*?):\]/i", "<span data-quick-key=\"$1\">$2</span>", $text);
         return preg_replace("/^(<p><\/p>)+|(<p><\/p>)+$/i", "", $text);
