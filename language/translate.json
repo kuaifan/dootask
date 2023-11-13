@@ -18236,5 +18236,16 @@
         "de": "In diesem ordner gibt es bereits einen freigegebenen ordner. Die freigabe unterdateien wird abgeschafft. Wird sie fortgesetzt?",
         "fr": "Il y a un dossier partagé dans ce dossier. L’état de partage des sous-fichiers sera annulé. Voulez-vous continuer?",
         "id": "Sudah ada folder bersama di folder ini. Status berbagi subfile akan dibatalkan. Apakah melanjutkan?"
+    },
+    {
+        "key": "文件总大小已超过1GB，请分批下载",
+        "zh": "",
+        "zh-CHT": "文件總大小已超過1GB，請分批下載",
+        "en": "The total size of the file exceeds 1GB. Please download it in batches",
+        "ko": "전체 파일 크기가 1gb를 초과했습니다. 차례로 다운로드하십시오",
+        "ja": "ファイルの総サイズはすでに1GBを超えて、いくつかに分けてダウンロードします",
+        "de": "Die datei insgesamt betrug mehr als 1 gigabyte, und bitte download sie in einzelnen gruppen",
+        "fr": "La taille totale du fichier a dépassé 1 go, veuillez le télécharger par lots",
+        "id": "Ukuran total file telah melebihi 1GB, silahkan download secara terpisah"
     }
 ]
