@@ -18181,5 +18181,60 @@
         "de": "Download komprimieren.",
         "fr": "Compresser et télécharger",
         "id": "Download terkompresi"
+    },
+    {
+        "key": "你确定要下载(*)等2个文件吗？",
+        "zh": "",
+        "zh-CHT": "你確定要下載(*)等2個文件嗎？",
+        "en": "Are you sure you want to download (*) etc 2 files?",
+        "ko": "(*) 등 2개의 파일을 다운로드 받으시겠습니까?",
+        "ja": "(*)など2つのファイルをダウンロードしますか?",
+        "de": "Soll man wirklich 2 dateien herunterladen? *)?",
+        "fr": "Êtes-vous sûr de vouloir télécharger 2 fichiers, etc. (*)?",
+        "id": "Apakah anda yakin ingin mengunduh (*) dan menunggu 2 file?"
+    },
+    {
+        "key": "你确定要下载(*)文件吗？",
+        "zh": "",
+        "zh-CHT": "你確定要下載(*)文件嗎？",
+        "en": "Are you sure you want to download the (*) file?",
+        "ko": "정말 (*) 파일을 다운로드하시겠습니까?",
+        "ja": "あなたは(*)ファイルをダウンロードしますか?",
+        "de": "Sind sie sicher, dass sie (*) dateien herunterladen möchten?",
+        "fr": "Êtes-vous sûr de vouloir télécharger le fichier (*)?",
+        "id": "Apakah anda yakin ingin mengunduh (*) berkas?"
+    },
+    {
+        "key": "你确定要下载(*)等(*)个文件吗？",
+        "zh": "",
+        "zh-CHT": "你確定要下載(*)等(*)個文件嗎？",
+        "en": "Are you sure you want to download (*) etc. (*) files?",
+        "ko": "(*) 등 (*) 파일을 다운로드하시겠습니까?",
+        "ja": "あなたは(*)など(*)のファイルをダウンロードすることを確定しますか?",
+        "de": "Sind sie sicher, dass sie (*) eine datei herunterladen möchten?",
+        "fr": "Êtes-vous sûr de vouloir télécharger (*), etc. (*) fichiers?",
+        "id": "Apakah anda yakin ingin mengunduh (*) dan menunggu (*) berkas?"
+    },
+    {
+        "key": "你确定要下载【(*)】文件吗？",
+        "zh": "",
+        "zh-CHT": "你確定要下載【(*)】文件嗎？",
+        "en": "Are you sure you want to download the [(*)] file?",
+        "ko": "[(*)] 파일을 다운로드하시겠습니까?",
+        "ja": "【(*)】ファイルをダウンロードしますか?",
+        "de": "Sind sie sicher, dass sie die datei runterladen möchten?",
+        "fr": "Êtes-vous sûr de vouloir télécharger le fichier [(*)]?",
+        "id": "Apakah anda yakin ingin mengunduh berkas [*]?"
+    },
+    {
+        "key": "此文件夹内已有共享文件夹，子文件的共享状态将被取消，是否继续？",
+        "zh": "",
+        "zh-CHT": "此文件夾內已有共享文件夾，子文件的共享狀態將被取消，是否繼續？",
+        "en": "There is already a shared folder in this folder. The sharing status of the subfile will be cancelled. Do you want to continue?",
+        "ko": "이 폴더에 공유 폴더가 이미 있습니다. 하위 파일 공유가 취소되었습니다. 계속하시겠습니까?",
+        "ja": "このフォルダ内に共有フォルダがあり、サブファイルの共有状態はキャンセルされます。",
+        "de": "In diesem ordner gibt es bereits einen freigegebenen ordner. Die freigabe unterdateien wird abgeschafft. Wird sie fortgesetzt?",
+        "fr": "Il y a un dossier partagé dans ce dossier. L’état de partage des sous-fichiers sera annulé. Voulez-vous continuer?",
+        "id": "Sudah ada folder bersama di folder ini. Status berbagi subfile akan dibatalkan. Apakah melanjutkan?"
     }
 ]
