@@ -49,7 +49,7 @@
                         <Icon type="ios-cut" />
                         {{$L('剪切')}}
                     </Button>
-                    <Button size="small" type="info" @click="downloadZipFile(selectIds)">
+                    <Button :disabled="compressedSownloadDisabled" size="small" type="info" @click="downloadZipFile(selectIds)">
                         <Icon type="ios-download-outline" />
                         {{$L('压缩下载')}}
                     </Button>
@@ -198,8 +198,8 @@
                             <DropdownItem v-else-if="contextMenuItem.share" name="outshare" divided>{{$L('退出共享')}}</DropdownItem>
                             <DropdownItem name="send" :disabled="contextMenuItem.type == 'folder'">{{$L('发送')}}</DropdownItem>
                             <DropdownItem name="link" :divided="contextMenuItem.userid != userId && !contextMenuItem.share" :disabled="contextMenuItem.type == 'folder'">{{$L('链接')}}</DropdownItem>
-                            <DropdownItem name="download" :disabled="contextMenuItem.ext == ''">{{$L('下载')}}</DropdownItem>
-                            <DropdownItem name="downloadzip">{{$L('压缩下载')}}</DropdownItem>
+                            <DropdownItem name="download" :disabled="contextMenuItem.ext == '' || (contextMenuItem.userid != userId && contextMenuItem.permission == 0)">{{$L('下载')}}</DropdownItem>
+                            <DropdownItem name="downloadzip" :disabled="contextMenuItem.userid != userId && contextMenuItem.permission == 0">{{$L('压缩下载')}}</DropdownItem>
 
                             <DropdownItem name="delete" divided style="color:red">{{$L('删除')}}</DropdownItem>
                         </template>
@@ -848,6 +848,10 @@ export default {
             } else {
                 return Math.max(300, this.windowHeight - 200)
             }
+        },
+
+        compressedSownloadDisabled() {
+            return this.fileList?.find((res)=> res._checked && res.permission < 1) ? true : false
         }
     },
 

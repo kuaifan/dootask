@@ -479,7 +479,7 @@ class FileController extends AbstractController
         //
         if (Base::isNumber($id)) {
             $user = User::auth();
-            $file = File::permissionFind(intval($id), $user);
+            $file = File::permissionFind(intval($id), $user, $down == 'yes' ? 1 : 0);
         } elseif ($id) {
             $fileLink = FileLink::whereCode($id)->first();
             $file = $fileLink?->file;
