@@ -503,7 +503,6 @@ export default {
             uploadList: [],
             uploadFormat: [],   // 不限制上传文件类型
             uploadAccept: '',
-            maxSize: 1024000,
 
             contextMenuItem: {},
             contextMenuVisible: false,
@@ -736,7 +735,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userIsAdmin', 'userInfo', 'fileLists', 'wsOpenNum']),
+        ...mapState(['systemConfig', 'userIsAdmin', 'userInfo', 'fileLists', 'wsOpenNum']),
 
         pid() {
             const {folderId} = this.$route.params;
@@ -852,6 +851,13 @@ export default {
 
         compressedSownloadDisabled() {
             return this.fileList?.find((res)=> res._checked && res.permission < 1) ? true : false
+        },
+
+        maxSize() {
+            if(this.systemConfig?.file_upload_limit){
+                return this.systemConfig.file_upload_limit * 1024
+            }
+            return 1024000
         }
     },
 

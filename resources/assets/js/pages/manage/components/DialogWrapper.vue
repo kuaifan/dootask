@@ -189,6 +189,7 @@
                 ref="chatUpload"
                 class="chat-upload"
                 :dialog-id="dialogId"
+                :maxSize="maxSize"
                 @on-progress="chatFile('progress', $event)"
                 @on-success="chatFile('success', $event)"
                 @on-error="chatFile('error', $event)"/>
@@ -677,6 +678,7 @@ export default {
 
     computed: {
         ...mapState([
+            'systemConfig',
             'userIsAdmin',
             'taskId',
             'dialogSearchMsgId',
@@ -980,6 +982,13 @@ export default {
                 }
             })
             return list
+        },
+
+        maxSize() {
+            if(this.systemConfig?.file_upload_limit){
+                return this.systemConfig.file_upload_limit * 1024
+            }
+            return 1024000
         }
     },
 

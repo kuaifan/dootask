@@ -238,13 +238,14 @@ class File extends AbstractModel
             }
         }
         //
+        $setting = Base::setting('system');
         $path = 'uploads/tmp/' . date("Ym") . '/';
         $data = Base::upload([
             "file" => Request::file('files'),
             "type" => 'more',
             "autoThumb" => false,
             "path" => $path,
-            "size" => 100 * 1024
+            "size" => ($setting['file_upload_limit'] ?: 0) * 1024
         ]);
         if (Base::isError($data)) {
             throw new ApiException($data['msg']);
