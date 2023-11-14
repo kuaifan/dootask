@@ -616,6 +616,7 @@ class WebSocketDialog extends AbstractModel
                     "type" => 'more',
                     "path" => $path,
                     "fileName" => $fileName,
+                    "size" => 100 * 1024
                 ]);
             }
             //

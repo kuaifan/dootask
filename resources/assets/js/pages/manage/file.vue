@@ -50,8 +50,8 @@
                         {{$L('剪切')}}
                     </Button>
                     <Button :disabled="compressedSownloadDisabled" size="small" type="info" @click="downloadZipFile(selectIds)">
-                        <Icon type="ios-download-outline" />
-                        {{$L('压缩下载')}}
+                        <Icon type="ios-download" />
+                        {{$L('打包下载')}}
                     </Button>
                     <Button size="small" type="error" @click="deleteFile(selectIds)">
                         <Icon type="ios-trash" />
@@ -199,7 +199,7 @@
                             <DropdownItem name="send" :disabled="contextMenuItem.type == 'folder'">{{$L('发送')}}</DropdownItem>
                             <DropdownItem name="link" :divided="contextMenuItem.userid != userId && !contextMenuItem.share" :disabled="contextMenuItem.type == 'folder'">{{$L('链接')}}</DropdownItem>
                             <DropdownItem name="download" :disabled="contextMenuItem.ext == '' || (contextMenuItem.userid != userId && contextMenuItem.permission == 0)">{{$L('下载')}}</DropdownItem>
-                            <DropdownItem name="downloadzip" :disabled="contextMenuItem.userid != userId && contextMenuItem.permission == 0">{{$L('压缩下载')}}</DropdownItem>
+                            <DropdownItem name="downloadzip" :disabled="contextMenuItem.userid != userId && contextMenuItem.permission == 0">{{$L('打包下载')}}</DropdownItem>
 
                             <DropdownItem name="delete" divided style="color:red">{{$L('删除')}}</DropdownItem>
                         </template>
@@ -1419,9 +1419,9 @@ export default {
             const fileName = ids.length === 1 ? `【${firstFile.name}】${typeName}` : `【${firstFile.name}】等${ids.length}个${typeName}`;
 
             $A.modalConfirm({
-                title: '下载文件',
-                content: `你确定要下载${fileName}吗？`,
-                okText: '立即下载',
+                title: '打包下载',
+                content: `你确定要打包下载${fileName}吗？`,
+                okText: '确定',
                 onOk: () => {
                     return new Promise((resolve, reject) => {
                         this.$store.dispatch("call", {

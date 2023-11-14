@@ -165,6 +165,16 @@
                         </RadioGroup>
                         <div class="form-tip">{{$L('仅支持网页版。')}}</div>
                     </FormItem>
+                    <FormItem v-if="$A.isDooServer()" :label="$L('文件上传限制')" prop="fileUploadLimit">
+                        <div style="width: 192px;">
+                            <Input type="number" number v-model="formDatum.file_upload_limit" :placeholder="$L('默认不限制')">
+                                <template #append>
+                                <span>MB</span>
+                                </template>
+                            </Input>
+                        </div>
+                        <div class="form-tip">{{$L('包含消息发送文件')}}</div>
+                    </FormItem>
                 </div>
             </div>
         </Form>

@@ -74,6 +74,7 @@ class SystemController extends AbstractController
                     'image_compress',
                     'image_save_local',
                     'start_home',
+                    'file_upload_limit',
                 ])) {
                     unset($all[$key]);
                 }
@@ -114,6 +115,7 @@ class SystemController extends AbstractController
         $setting['image_compress'] = $setting['image_compress'] ?: 'open';
         $setting['image_save_local'] = $setting['image_save_local'] ?: 'open';
         $setting['start_home'] = $setting['start_home'] ?: 'close';
+        $setting['file_upload_limit'] = $setting['file_upload_limit'] ?: '';
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
     }

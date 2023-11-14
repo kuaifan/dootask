@@ -244,9 +244,10 @@ class File extends AbstractModel
             "type" => 'more',
             "autoThumb" => false,
             "path" => $path,
+            "size" => 100 * 1024
         ]);
         if (Base::isError($data)) {
-            return $data;
+            throw new ApiException($data['msg']);
         }
         $data = $data['data'];
         //

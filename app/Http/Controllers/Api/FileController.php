@@ -1014,7 +1014,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/download/zip          20. 压缩下载
+     * @api {get} api/file/download/zip          20. 打包下载
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
