@@ -58,13 +58,15 @@
                         <span v-show="showBtnText">{{$L('删除')}}</span>
                     </Button>
                     <Button type="primary" size="small" @click="clearSelect">
-                        {{ showBtnText ? $L('取消选择') : $L('取消')}}
+                        {{showBtnText ? $L('取消选择') : $L('取消')}}
                     </Button>
                 </template>
                 <div v-if="loadIng > 0" class="nav-load"><Loading/></div>
                 <div class="flex-full"></div>
                 <div v-if="hasShareFile" class="only-checkbox">
-                    <Checkbox v-model="hideShared">{{$L('仅显示我的')}}</Checkbox>
+                    <Checkbox v-model="hideShared">
+                        {{showBtnText ? $L('仅显示我的') : $L('仅我的')}}
+                    </Checkbox>
                 </div>
                 <div :class="['switch-button', tableMode]">
                     <div @click="tableMode='block'"><i class="taskfont">&#xe60c;</i></div>
