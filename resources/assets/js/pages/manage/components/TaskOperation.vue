@@ -1,80 +1,104 @@
 <template>
-    <EDropdown
-        ref="dropdown"
-        trigger="click"
-        :disabled="disabled"
-        :size="size"
-        :style="styles"
-        class="task-operation-dropdown"
-        placement="bottom"
-        @command="dropTask"
-        @visible-change="visibleChange">
-        <div ref="icon" class="task-operation-icon"></div>
-        <EDropdownMenu ref="dropdownMenu" slot="dropdown" class="task-operation-more-dropdown">
-            <li class="task-operation-more-warp" :class="size">
-                <ul>
-                    <EDropdownItem v-if="!flow" class="load-flow" disabled>
-                        <div class="load-flow-warp">
-                            <Loading/>
-                        </div>
-                    </EDropdownItem>
-                    <template v-else-if="turns.length > 0">
-                        <EDropdownItem v-for="item in turns" :key="item.id" :command="`turn::${item.id}`">
-                            <div class="item flow">
-                                <Icon v-if="item.id == task.flow_item_id && flow.auto_assign !== true" class="check" type="md-checkmark-circle-outline" />
-                                <Icon v-else type="md-radio-button-off" />
-                                <div class="flow-name" :class="item.status">{{item.name}}</div>
+    <div>
+        <EDropdown
+            ref="dropdown"
+            trigger="click"
+            :disabled="disabled"
+            :size="size"
+            :style="styles"
+            class="task-operation-dropdown"
+            placement="bottom"
+            @command="dropTask"
+            @visible-change="visibleChange">
+            <div ref="icon" class="task-operation-icon"></div>
+            <EDropdownMenu ref="dropdownMenu" slot="dropdown" class="task-operation-more-dropdown">
+                <li class="task-operation-more-warp" :class="size">
+                    <ul>
+                        <EDropdownItem v-if="!flow" class="load-flow" disabled>
+                            <div class="load-flow-warp">
+                                <Loading/>
                             </div>
                         </EDropdownItem>
-                    </template>
-                    <template v-else>
-                        <EDropdownItem v-if="task.complete_at" command="uncomplete">
-                            <div class="item red">
-                                <Icon type="md-checkmark-circle-outline" />{{$L('标记未完成')}}
-                            </div>
-                        </EDropdownItem>
-                        <EDropdownItem v-else command="complete">
-                            <div class="item">
-                                <Icon type="md-radio-button-off" />{{$L('完成')}}
-                            </div>
-                        </EDropdownItem>
-                    </template>
-
-                    <template v-if="task.parent_id === 0">
-                        <EDropdownItem :divided="turns.length > 0" command="archived">
-                            <div class="item">
-                                <Icon type="ios-filing" />{{$L(task.archived_at ? '还原归档' : '归档')}}
-                            </div>
-                        </EDropdownItem>
-                        <EDropdownItem command="remove">
-                            <div class="item hover-del">
-                                <Icon type="md-trash" />{{$L('删除')}}
-                            </div>
-                        </EDropdownItem>
-                        <template v-if="colorShow">
-                            <EDropdownItem v-for="(c, k) in taskColorList" :key="'c_' + k" :divided="k==0" :command="c">
-                                <div class="item">
-                                    <i class="taskfont" :style="{color:c.primary||'#ddd'}" v-html="c.color == (task.color||'') ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
+                        <template v-else-if="turns.length > 0">
+                            <EDropdownItem v-for="item in turns" :key="item.id" :command="`turn::${item.id}`">
+                                <div class="item flow">
+                                    <Icon v-if="item.id == task.flow_item_id && flow.auto_assign !== true" class="check" type="md-checkmark-circle-outline" />
+                                    <Icon v-else type="md-radio-button-off" />
+                                    <div class="flow-name" :class="item.status">{{item.name}}</div>
                                 </div>
                             </EDropdownItem>
                         </template>
-                    </template>
-                    <EDropdownItem v-else command="remove" :divided="turns.length > 0">
-                        <div class="item">
-                            <Icon type="md-trash" />{{$L('删除')}}
-                        </div>
-                    </EDropdownItem>
-                </ul>
-            </li>
-        </EDropdownMenu>
-    </EDropdown>
+                        <template v-else>
+                            <EDropdownItem v-if="task.complete_at" command="uncomplete">
+                                <div class="item red">
+                                    <Icon type="md-checkmark-circle-outline" />{{$L('标记未完成')}}
+                                </div>
+                            </EDropdownItem>
+                            <EDropdownItem v-else command="complete">
+                                <div class="item">
+                                    <Icon type="md-radio-button-off" />{{$L('完成')}}
+                                </div>
+                            </EDropdownItem>
+                        </template>
+
+                        <template v-if="task.parent_id === 0">
+                            <EDropdownItem :divided="turns.length > 0" command="archived">
+                                <div class="item">
+                                    <Icon type="ios-filing" />{{$L(task.archived_at ? '还原归档' : '归档')}}
+                                </div>
+                            </EDropdownItem>
+                            <EDropdownItem command="move">
+                                <div class="item">
+                                    <Icon type="md-move" />{{$L('移动')}}
+                                </div>
+                            </EDropdownItem>
+                            <EDropdownItem command="remove">
+                                <div class="item hover-del">
+                                    <Icon type="md-trash" />{{$L('删除')}}
+                                </div>
+                            </EDropdownItem>
+                            <template v-if="colorShow">
+                                <EDropdownItem v-for="(c, k) in taskColorList" :key="'c_' + k" :divided="k==0" :command="c">
+                                    <div class="item">
+                                        <i class="taskfont" :style="{color:c.primary||'#ddd'}" v-html="c.color == (task.color||'') ? '&#xe61d;' : '&#xe61c;'"></i>{{$L(c.name)}}
+                                    </div>
+                                </EDropdownItem>
+                            </template>
+                        </template>
+                        <EDropdownItem v-else command="remove" :divided="turns.length > 0">
+                            <div class="item">
+                                <Icon type="md-trash" />{{$L('删除')}}
+                            </div>
+                        </EDropdownItem>
+                    </ul>
+                </li>
+            </EDropdownMenu>
+        </EDropdown>
+
+        <!--移动任务-->
+        <Modal
+            v-model="moveTaskShow"
+            :title="$L('移动任务')"
+            :mask-closable="false"
+            :styles="{
+                width: '90%',
+                maxWidth: '540px'
+            }"
+            footer-hide>
+            <TaskMove ref="addTask" v-model="moveTaskShow" :task="task"/>
+        </Modal>
+    </div>
 </template>
 
 <script>
 import {mapGetters, mapState} from "vuex";
+import TaskMove from "./TaskMove";
 
 export default {
     name: "TaskOperation",
+    components: {
+        TaskMove,
+    },
     data() {
         return {
             task: {},
@@ -88,6 +112,8 @@ export default {
             element: null,
             target: null,
             styles: {},
+
+            moveTaskShow: false,
         }
     },
     beforeDestroy() {
@@ -250,6 +276,10 @@ export default {
                 case 'archived':
                 case 'remove':
                     this.archivedOrRemoveTask(command);
+                    break;
+
+                case 'move':
+                    this.moveTaskShow = true;
                     break;
             }
         },

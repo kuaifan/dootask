@@ -1666,6 +1666,46 @@ class ProjectTask extends AbstractModel
     }
 
     /**
+     * 移动任务
+     * @param int $project_id 
+     * @param int $column_id 
+     * @return bool
+     */
+    public function moveTask(int $projectId, int $columnId)
+    {
+        AbstractModel::transaction(function () use($projectId, $columnId) {
+            // 任务内容
+            if($this->content){
+                $this->content->project_id = $projectId;
+                $this->content->save();
+            }
+            // 任务文件
+            foreach ($this->taskFile as $taskFile){
+                $taskFile->project_id = $projectId;
+                $taskFile->save();
+            }
+            // 任务标签
+            foreach ($this->taskTag as $taskTag){
+                $taskTag->project_id = $projectId;
+                $taskTag->save();
+            }
+            // 任务用户
+            foreach ($this->taskUser as $taskUser){
+                $taskUser->project_id = $projectId;
+                $taskUser->save();
+            }
+            // 
+            $this->project_id = $projectId;
+            $this->column_id = $columnId;
+            $this->save();
+            // 
+            $this->addLog("移动{任务}");
+        });
+        $this->pushMsg('update');
+        return true;
+    }
+
+    /**
      * 获取任务
      * @param $task_id
      * @return ProjectTask|\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model|object|null

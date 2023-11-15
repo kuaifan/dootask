@@ -2197,6 +2197,47 @@ class ProjectController extends AbstractController
     }
 
     /**
+     * @api {get} api/project/task/move          35. 任务移动
+     *
+     * @apiDescription 需要token身份（限：项目、任务负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__move
+     *
+     * @apiParam {Number} task_id               任务ID
+     * @apiParam {Number} project_id            项目ID
+     * @apiParam {Number} column_id             列ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__move()
+    {
+        User::auth();
+        //
+        $task_id = intval(Request::input('task_id'));
+        $project_id = intval(Request::input('project_id'));
+        $column_id = intval(Request::input('column_id'));
+        // 
+        $task = ProjectTask::userTask($task_id, true, true, 2);
+        // 
+        if( $task->project_id == $project_id && $task->column_id == $column_id){
+            return Base::retSuccess('移动成功', ['id' => $task_id]);
+        }
+        // 
+        $project = Project::userProject($project_id);
+        $column = ProjectColumn::whereProjectId($project->id)->whereId($column_id)->first();
+        if (empty($column)) {
+            return Base::retError('列表不存在');
+        }
+        // 
+        $task->moveTask($project_id,$column_id);
+        // 
+        return Base::retSuccess('移动成功', ['id' => $task_id]);
+    }
+
+    /**
      * @api {get} api/project/flow/list          38. 工作流列表
      *
      * @apiDescription 需要token身份
