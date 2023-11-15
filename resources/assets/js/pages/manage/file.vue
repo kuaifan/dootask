@@ -23,7 +23,7 @@
             </div>
 
             <div class="file-navigator">
-                <ul class="scrollbar-hidden">
+                <ul class="scrollbar-hidden" v-show="showBtnText || (!selectIds.length && !shearFirst)">
                     <li @click="browseFolder(0)">
                         <span>{{$L('全部文件')}}</span>
                     </li>
@@ -35,29 +35,31 @@
                     </li>
                 </ul>
                 <template v-if="shearFirst">
-                    <Button :disabled="shearFirst.pid == pid" size="small" type="primary" @click="shearTo">
+                    <Button :disabled="shearFirst.pid == pid" size="small" type="primary" @click="shearTo" :style="{marginLeft: showBtnText ? '12px' : 0}">
                         <div class="file-shear">
                             <span>{{$L('粘贴')}}</span>
-                            "<em>{{shearFirst.name}}</em>"
+                            <span v-show="showBtnText">"<em>{{shearFirst.name}}</em>"</span>
                             <span v-if="shearIds.length > 1">{{$L('等')}}{{shearIds.length}}{{$L('个文件')}}</span>
                         </div>
                     </Button>
                     <Button type="primary" size="small" @click="clearShear">{{ $L('取消剪切') }}</Button>
                 </template>
                 <template v-else-if="selectIds.length > 0">
-                    <Button size="small" type="info" @click="handleContextClick('shearSelect')">
+                    <Button size="small" type="info" @click="handleContextClick('shearSelect')" :style="{marginLeft: showBtnText ? '12px' : 0}">
                         <Icon type="ios-cut" />
-                        {{$L('剪切')}}
+                        <span v-show="showBtnText">{{$L('剪切')}}</span>
                     </Button>
                     <Button :disabled="compressedSownloadDisabled" size="small" type="info" @click="downloadZipFile(selectIds)">
                         <Icon type="ios-download" />
-                        {{$L('打包下载')}}
+                        <span v-show="showBtnText">{{$L('打包下载')}}</span>
                     </Button>
                     <Button size="small" type="error" @click="deleteFile(selectIds)">
                         <Icon type="ios-trash" />
-                        {{$L('删除')}}
+                        <span v-show="showBtnText">{{$L('删除')}}</span>
                     </Button>
-                    <Button type="primary" size="small" @click="clearSelect">{{$L('取消选择')}}</Button>
+                    <Button type="primary" size="small" @click="clearSelect">
+                        {{ showBtnText ? $L('取消选择') : $L('取消')}}
+                    </Button>
                 </template>
                 <div v-if="loadIng > 0" class="nav-load"><Loading/></div>
                 <div class="flex-full"></div>
@@ -735,7 +737,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['systemConfig', 'userIsAdmin', 'userInfo', 'fileLists', 'wsOpenNum']),
+        ...mapState(['systemConfig', 'userIsAdmin', 'userInfo', 'fileLists', 'wsOpenNum', 'windowWidth']),
 
         pid() {
             const {folderId} = this.$route.params;
@@ -842,11 +844,7 @@ export default {
         },
 
         tableHeight() {
-            if (this.windowLandscape) {
-                return Math.max(300, this.windowHeight - 160)
-            } else {
-                return Math.max(300, this.windowHeight - 200)
-            }
+            return this.windowHeight - 150
         },
 
         compressedSownloadDisabled() {
@@ -858,6 +856,10 @@ export default {
                 return this.systemConfig.file_upload_limit * 1024
             }
             return 1024000
+        },
+
+        showBtnText(){
+            return this.windowWidth > 600;
         }
     },
 
