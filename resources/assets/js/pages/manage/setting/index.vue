@@ -79,7 +79,7 @@ export default {
                 {path: 'theme', name: '主题设置'},
             ]
 
-            if (this.$Electron) {
+            if (this.$Electron || this.$isEEUiApp) {
                 menu.push({path: 'keyboard', name: '键盘设置', desc: ' (Beta)'})
             }
 

@@ -492,6 +492,11 @@ export default {
             }
             return null;
         },
+
+        separateSendButton() {
+            return $A.jsonParse(window.localStorage.getItem("__keyboard:data__"))?.separate_send_button === 'open';
+        },
+        
     },
     watch: {
         // Watch content change
@@ -663,6 +668,11 @@ export default {
                                 shortKey: true,
                                 handler: _ => {
                                     if (!this.isEnterSend) {
+                                        if (this.separateSendButton) {
+                                            const length = this.quill.getSelection(true).index;
+                                            this.quill.insertText(length, "\r\n");
+                                            return false;
+                                        }
                                         this.onSend();
                                         return false;
                                     }
@@ -674,6 +684,11 @@ export default {
                                 shiftKey: false,
                                 handler: _ => {
                                     if (this.isEnterSend) {
+                                        if (this.separateSendButton) {
+                                            const length = this.quill.getSelection(true).index;
+                                            this.quill.insertText(length, "\r\n");
+                                            return false;
+                                        }
                                         this.onSend();
                                         return false;
                                     }
@@ -786,7 +801,9 @@ export default {
                         this.quill.insertText(length, "\r\n");
                     }
                 });
-                this.quill.root.setAttribute('enterkeyhint', 'send')
+                if (!this.separateSendButton) {
+                    this.quill.root.setAttribute('enterkeyhint', 'send')
+                }
             })
 
             // Ready event

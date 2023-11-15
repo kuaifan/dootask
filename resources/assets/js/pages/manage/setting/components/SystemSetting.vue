@@ -158,7 +158,7 @@
                         </RadioGroup>
                         <div class="form-tip">{{$L('是否将消息中的网络图片保存到本地服务器。')}}</div>
                     </FormItem>
-                    <FormItem v-if="$A.isDooServer()" :label="$L('文件上传限制')" prop="fileUploadLimit">
+                    <FormItem :label="$L('文件上传限制')" prop="fileUploadLimit">
                         <div style="width: 192px;">
                             <Input type="number" number v-model="formDatum.file_upload_limit" :placeholder="$L('默认不限制')">
                                 <template #append>

@@ -1,31 +1,42 @@
 <template>
     <div class="setting-item submit">
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
-            <FormItem :label="$L('截图快捷键')" prop="screenshot_key">
-                <div class="input-box">
-                    {{mateName}}<div class="input-box-push">+</div>Shift<div class="input-box-push">+</div><Input class="input-box-key" v-model="formData.screenshot_key" :maxlength="2"/>
-                </div>
-            </FormItem>
-            <FormItem :label="$L('新建项目')">
-                <div class="input-box">
-                    {{mateName}}<div class="input-box-push">+</div>B
-                </div>
-            </FormItem>
-            <FormItem :label="$L('新建任务')">
-                <div class="input-box">
-                    {{mateName}}<div class="input-box-push">+</div>N (K)
-                </div>
-            </FormItem>
-            <FormItem :label="$L('新会议')">
-                <div class="input-box">
-                    {{mateName}}<div class="input-box-push">+</div>J
-                </div>
-            </FormItem>
-            <FormItem :label="$L('设置')">
-                <div class="input-box">
-                    {{mateName}}<div class="input-box-push">+</div>,
-                </div>
-            </FormItem>
+            <template v-if="this.$Electron">
+                <FormItem :label="$L('截图快捷键')" prop="screenshot_key">
+                    <div class="input-box">
+                        {{mateName}}<div class="input-box-push">+</div>Shift<div class="input-box-push">+</div><Input class="input-box-key" v-model="formData.screenshot_key" :maxlength="2"/>
+                    </div>
+                </FormItem>
+                <FormItem :label="$L('新建项目')">
+                    <div class="input-box">
+                        {{mateName}}<div class="input-box-push">+</div>B
+                    </div>
+                </FormItem>
+                <FormItem :label="$L('新建任务')">
+                    <div class="input-box">
+                        {{mateName}}<div class="input-box-push">+</div>N (K)
+                    </div>
+                </FormItem>
+                <FormItem :label="$L('新会议')">
+                    <div class="input-box">
+                        {{mateName}}<div class="input-box-push">+</div>J
+                    </div>
+                </FormItem>
+                <FormItem :label="$L('设置')">
+                    <div class="input-box">
+                        {{mateName}}<div class="input-box-push">+</div>,
+                    </div>
+                </FormItem>
+            </template>
+            <template>
+                <FormItem :label="$L('使用独立的发送按钮')" prop="anonMessage">
+                    <RadioGroup v-model="formData.separate_send_button">
+                        <Radio label="open">{{$L('开启')}}</Radio>
+                        <Radio label="close">{{$L('关闭')}}</Radio>
+                    </RadioGroup>
+                    <div class="form-tip">{{$L('开启后，键盘上的发送按钮会被替换成换行')}}</div>
+                </FormItem>
+            </template>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('保存')}}</Button>
@@ -58,6 +69,7 @@ export default {
 
             formData: {
                 screenshot_key: '',
+                separate_send_button: 'close'
             },
 
             ruleData: {
@@ -90,6 +102,7 @@ export default {
         initData() {
             this.formData = Object.assign({
                 screenshot_key: '',
+                separate_send_button: 'close',
             }, $A.jsonParse(window.localStorage.getItem("__keyboard:data__")) || {});
             //
             this.formData_bak = $A.cloneJSON(this.formData);
@@ -107,7 +120,6 @@ export default {
         submitForm() {
             this.$refs.formData.validate((valid) => {
                 if (valid) {
-                    console.log(this.formData);
                     window.localStorage.setItem("__keyboard:data__", $A.jsonStringify(this.formData));
                     $A.bindScreenshotKey(this.formData);
                     $A.messageSuccess('保存成功');
