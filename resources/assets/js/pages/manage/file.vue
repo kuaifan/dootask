@@ -1479,6 +1479,8 @@ export default {
         },
 
         async downloadPackFile(filePackName) {
+            // 延时 1 秒，等待服务器打包完成
+            await new Promise(resolve => setTimeout(resolve, 1000));
             const downloadUrl = $A.apiUrl(`file/download/confirm?name=${filePackName}&token=${this.userToken}`);
             try {
                 const response = await axios({
