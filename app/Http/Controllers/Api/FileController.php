@@ -11,6 +11,7 @@ use App\Models\FileUser;
 use App\Models\User;
 use App\Module\Base;
 use App\Module\Ihttp;
+use Swoole\Coroutine;
 use Carbon\Carbon;
 use Redirect;
 use Request;
@@ -1014,23 +1015,25 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/download/zip          20. 打包下载
+     * @api {get} api/file/download/pack          20. 打包文件
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup file
-     * @apiName download__zip
+     * @apiName download__pack
      *
-     * @apiParam {Array} [ids]      文件ID，格式: [id, id2, id3]
+     * @apiParam {Array} [ids]          文件ID，格式: [id, id2, id3]
+     * @apiParam {String} [name]        下载文件名
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      */
-    public function download__zip()
+    public function download__pack()
     {
         $user = User::auth();
         $ids = Request::input('ids');
+        $downName = Request::input('name');
 
         if (!is_array($ids) || empty($ids)) {
             abort(403, "Please select the file or folder to download.");
@@ -1053,9 +1056,7 @@ class FileController extends AbstractController
         }
 
         $zip = new \ZipArchive();
-        // 下载文件名
-        $downName = count($ids) > 1 ? 'file_'. date("YmdHis") : $files[0]->name;
-        $zipName = 'temp/download/' . date("Ym") . '/' . $user->userid . '/' . $downName . '.zip';
+        $zipName = 'temp/download/' . date("Ym") . '/' . $user->userid . '/' . $downName;
         $zipPath = storage_path('app/'.$zipName);
         Base::makeDir(dirname($zipPath));
 
@@ -1063,12 +1064,56 @@ class FileController extends AbstractController
             abort(403, "Failed to create compressed file.");
         }
 
-        array_walk($files, function($file) use ($zip) {
-            File::addFileTreeToZip($zip, $file);
+        go(function() use ($zip, $files, $downName) {
+            Coroutine::sleep(0.1);
+            // 压缩进度
+            $progress = 0;
+            $zip->registerProgressCallback(0.05, function($ratio) use ($downName, $progress) {
+                $progress = round($ratio * 100);
+                File::filePushMsg('compress', [
+                    'name'=> $downName,
+                    'progress' => $progress
+                ]);
+            });
+
+            foreach ($files as $file) {
+                File::addFileTreeToZip($zip, $file);
+            }
+            $zip->close();
+            if ($progress < 100) {
+                File::filePushMsg('compress', [
+                    'name'=> $downName,
+                    'progress' => 100
+                ]);
+            }
         });
 
-        $zip->close();
+        return Base::retSuccess('success');
+    }
 
-        return response()->download($zipPath, $downName .'.zip')->deleteFileAfterSend(true);
+    /**
+     * @api {get} api/file/download/confirm          21. 确认下载
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup file
+     * @apiName download__confirm
+     *
+     * @apiParam {String} [name]        下载文件名
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function download__confirm()
+    {
+        $user = User::auth();
+        $downName = Request::input('name');
+        $zipName = 'temp/download/' . date("Ym") . '/' . $user->userid . '/' . $downName;
+        $zipPath = storage_path('app/'.$zipName);
+        if (!file_exists($zipPath)) {
+            abort(403, "The file does not exist.");
+        }
+        return response()->download($zipPath)->deleteFileAfterSend(true);
     }
 }

@@ -921,6 +921,24 @@ export default {
     },
 
     /**
+     * 获取压缩进度
+     * @param state
+     * @param dispatch
+     * @param data
+     */
+    packProgress({state, dispatch}, data) {
+        $A.execMainDispatch("packProgress", data)
+        //
+        const index = state.packLists.findIndex(({name}) => name == data.name);
+        if (index > -1) {
+            state.packLists[index].progress = data.progress;
+        } else {
+            state.packLists.push(data);
+            $A.IDBSave("packLists", state.packLists, 600)
+        }
+    },
+
+    /**
      * 获取文件
      * @param state
      * @param dispatch
@@ -2781,7 +2799,7 @@ export default {
                 state.dialogMsgs = state.dialogMsgs.filter(({dialog_id}) => dialog_id !== data.dialog_id)
                 $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
             }
-            // 
+            //
             data.pagesize = 25;
             //
             dispatch("call", {
@@ -3378,6 +3396,9 @@ export default {
                                         break;
                                     case 'delete':
                                         dispatch("forgetFile", data.id);
+                                        break;
+                                    case 'compress':
+                                        dispatch("packProgress", data);
                                         break;
                                 }
                             })(msgDetail);

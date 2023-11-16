@@ -10,9 +10,13 @@
                     <h1>{{$L('文件')}}</h1>
                     <div v-if="loadIng == 0" class="file-refresh" @click="getFileList"><i class="taskfont">&#xe6ae;</i></div>
                 </div>
-                <div v-if="uploadList.length > 0" class="file-status" @click="uploadShow=true">
+                <div v-if="uploadList.length > 0" class="file-status" @click="[uploadShow=true, packShow=false]">
                     <Loading v-if="uploadList.find(({status}) => status !== 'finished')"/>
-                    <Button v-else shape="circle" icon="md-checkmark"></Button>
+                    <Button v-else shape="circle" icon="md-arrow-round-up"></Button>
+                </div>
+                <div v-if="packList.length > 0" class="file-status" @click="[packShow=true, uploadShow=false]">
+                    <Loading v-if="packList.find(({status}) => status !== 'finished')"/>
+                    <Button v-else shape="circle" icon="md-arrow-round-down"></Button>
                 </div>
                 <div :class="['file-search', searchKey ? 'has-value' : '']" @click="onSearchFocus" @mouseenter="onSearchFocus">
                     <Input v-model="searchKey" ref="searchInput" suffix="ios-search" @on-change="onSearchChange" :placeholder="$L('搜索名称')"/>
@@ -240,6 +244,24 @@
             </div>
         </div>
 
+        <div v-if="packShow && packList.length > 0" class="file-upload-list">
+            <div class="upload-wrap">
+                <div class="title">
+                    打包列表 ({{packList.length}})
+                    <em v-if="packList.find(({status}) => status === 'finished')" @click="packClear">清空已完成</em>
+                </div>
+                <ul class="content">
+                <li v-for="(item, index) in packList" :key="index" v-if="index < 100">
+                    <AutoTip class="file-name">{{packName(item)}}</AutoTip>
+                    <AutoTip v-if="item.status === 'finished' && item.response && item.response.ret !== 1" class="file-error">{{item.response.msg}}</AutoTip>
+                    <Progress v-else :percent="packPercentageParse(item.percentage)" :stroke-width="5" />
+                    <Icon class="file-close" type="ios-close-circle-outline" @click="packList.splice(index, 1)"/>
+                </li>
+                </ul>
+                <Icon class="close" type="md-close" @click="packShow=false"/>
+            </div>
+        </div>
+
         <!--上传文件-->
         <Upload
             name="files"
@@ -407,6 +429,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import {mapState} from "vuex";
 import {sortBy} from "lodash";
 import DrawerOverlay from "../../components/DrawerOverlay";
@@ -423,6 +446,9 @@ export default {
     directives: {longpress},
     data() {
         return {
+            packList: [],
+            packShow: false,
+
             loadIng: 0,
             searchKey: '',
             searchTimeout: null,
@@ -1419,6 +1445,65 @@ export default {
             });
         },
 
+        /********************文件打包下载部分************************/
+
+        packName(item) {
+            return item.name;
+        },
+
+        packPercentageParse(val) {
+            return parseInt(val, 10);
+        },
+
+        packClear() {
+            this.packList = this.packList.filter(item => item.status !== 'finished');
+            this.packShow = false;
+        },
+
+        async startPack(filePackName) {
+            const file = { name: filePackName, status: 'packing', percentage: 0 };
+            this.packList.push(file);
+            this.uploadShow = false; // 隐藏上传列表
+            this.packShow = true; // 显示打包列表
+
+            const downloadInterval = setInterval(async () => {
+                const pack = this.$store.state.packLists.find(({name}) => name == filePackName)
+                file.percentage = Math.max(1, pack.progress);
+                if (file.percentage >= 100) {
+                    file.status = 'finished';
+                    clearInterval(downloadInterval);
+                    // 下载文件
+                    await this.downloadPackFile(filePackName);
+                }
+            }, 1000);
+        },
+
+        async downloadPackFile(filePackName) {
+            const downloadUrl = $A.apiUrl(`file/download/confirm?name=${filePackName}&token=${this.userToken}`);
+            try {
+                const response = await axios({
+                    url: downloadUrl,
+                    method: 'GET',
+                    responseType: 'blob',
+                });
+
+                if (!response.data) {
+                    console.error('No data received from server');
+                    return;
+                }
+
+                const blob = new Blob([response.data], { type: response.data.type });
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', `${filePackName}`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (error) {
+            }
+        },
+
         downloadZipFile(ids){
             if (ids.length === 0) {
                 return
@@ -1427,26 +1512,26 @@ export default {
             const allFolder = !ids.some(id => this.fileLists.some(({ type, id: itemId }) => type !== 'folder' && itemId === id));
             const typeName = allFolder ? "文件夹" : "文件";
             const fileName = ids.length === 1 ? `【${firstFile.name}】${typeName}` : `【${firstFile.name}】等${ids.length}个${typeName}`;
+            const filePackName = ids.length === 1 ? `${firstFile.name}_${$A.formatDate("YmdHis")}.zip` : `file_${$A.formatDate("YmdHis")}.zip`;
 
             $A.modalConfirm({
                 title: '打包下载',
                 content: `你确定要打包下载${fileName}吗？`,
                 okText: '确定',
-                onOk: () => {
-                    return new Promise((resolve, reject) => {
-                        this.$store.dispatch("call", {
+                onOk: async () => {
+                    try {
+                        const { msg } = await this.$store.dispatch("call", {
                             url: 'file/download/check',
-                            data: {
-                                ids,
-                            },
-                        }).then(({msg}) => {
-                            const idsParam = ids.join('&ids[]=');
-                            this.$store.dispatch('downUrl', $A.apiUrl(`file/download/zip?ids[]=${idsParam}`));
-                        }).catch(({msg}) => {
-                            $A.modalError(msg)
+                            data: { ids },
                         });
-                    })
-
+                        this.startPack(filePackName);
+                        await this.$store.dispatch("call", {
+                            url: 'file/download/pack',
+                            data: { ids, name: filePackName },
+                        });
+                    } catch ({ msg }) {
+                        $A.modalError(msg);
+                    }
                 }
             });
         },
@@ -1884,6 +1969,7 @@ export default {
         handleBeforeUpload() {
             //上传前判断
             this.uploadShow = true;
+            this.packShow = false;
             return true;
         },
     }

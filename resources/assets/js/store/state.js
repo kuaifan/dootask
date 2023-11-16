@@ -118,6 +118,7 @@ export default {
     // 文件
     fileLists: [],
     fileLinks: [],
+    packLists: [],
 
     // 项目任务
     projectId: 0,

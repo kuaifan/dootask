@@ -875,13 +875,13 @@ class File extends AbstractModel
     /**
      * 文件夹文件添加到压缩文件
      *
-     * @param [type] $zip
+     * @param \ZipArchive $zip
      * @param object $file
      * @return void
      */
     public static function addFileTreeToZip($zip, $file)
     {
-        if ($file->type != 'folder') {
+        if ($file->type != 'folder' && $file->name != '') {
             $content = FileContent::whereFid($file->id)->orderByDesc('id')->first();
             $content = Base::json2array($content?->content ?: []);
             $typeExtensions = [
@@ -892,7 +892,7 @@ class File extends AbstractModel
             if (array_key_exists($file->type, $typeExtensions)) {
                 $filePath = empty($content) ? public_path('assets/office/empty.' . $typeExtensions[$file->type]) : public_path($content['url']);
             }
-
+            //
             $relativePath = $file->path . '.' . $file->ext;
             if (file_exists($filePath)) {
                 $zip->addFile($filePath, $relativePath);
@@ -916,5 +916,32 @@ class File extends AbstractModel
             // 在压缩包中创建文件夹
             $zip->addEmptyDir($file->path);
         }
+    }
+
+    /**
+     * 文件推送消息
+     * @param $action
+     * @param array|null $data   发送内容
+     * @param array $userid      会员ID
+     */
+    public static function filePushMsg($action, $data = null, $userid = null)
+    {
+        //
+        $userid = User::auth()->userid();
+        if (empty($userid)) {
+            return;
+        }
+        //
+        $msg = [
+            'type' => 'file',
+            'action' => $action,
+            'data' => $data,
+        ];
+        $params = [
+            'userid' => $userid,
+            'msg' => $msg
+        ];
+        $task = new PushTask($params, false);
+        Task::deliver($task);
     }
 }
