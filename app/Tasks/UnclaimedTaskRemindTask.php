@@ -47,7 +47,7 @@ class UnclaimedTaskRemindTask extends AbstractTask
             Project::whereNull('deleted_at')->whereNull('archived_at')->chunk(100,function($projects) {
                 foreach ($projects as $project) {
                     //
-                    $count = ProjectTask::query()
+                    $projectTasks = ProjectTask::select('project_tasks.id','project_tasks.name')
                         ->leftJoin('project_task_users', function ($query) {
                             $query->on('project_tasks.id', '=', 'project_task_users.task_id');
                         })
@@ -55,8 +55,10 @@ class UnclaimedTaskRemindTask extends AbstractTask
                         ->whereNull('project_tasks.deleted_at')
                         ->whereNull('project_tasks.archived_at')
                         ->whereNull('project_task_users.id')
-                        ->count();
-                    if($count > 0){
+                        ->limit(10)
+                        ->get();
+                    //
+                    if( !$projectTasks->isEmpty() ){
                         $botUser = User::botGetOrCreate('task-alert');
                         if (empty($botUser)) {
                             return;
@@ -65,8 +67,13 @@ class UnclaimedTaskRemindTask extends AbstractTask
                             $project->joinProject($botUser->userid);
                             $project->syncDialogUser();
                         }
+                        //
+                        $taskHtml = '<span style="line-height: 26px;">任务待领取</span> <br/>';
+                        foreach($projectTasks as $projectTask){
+                            $taskHtml .=  "<span class=\"mention task\" style=\"line-height: 26px;\" data-id=\"{$projectTask->id}\">#{$projectTask->name}</span> <br/>";
+                        }
                         WebSocketDialogMsg::sendMsg(null, $project->dialog_id , 'text', [
-                            'text' => "当前存在{$count}个未领取任务"
+                            'text' => $taskHtml
                         ], $botUser->userid);
                     }
                 }

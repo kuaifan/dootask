@@ -245,11 +245,28 @@
                     </FormItem>
                     <FormItem v-if="taskDetail.end_at || timeForce">
                         <div class="item-label" slot="label">
-                            <i class="taskfont">&#xe6e8;</i>{{$L('截止时间')}}
+                            <i class="taskfont">&#xe6e8;</i>
+                            <EDropdown ref="eDeadlineRef" trigger="click" placement="bottom" @command="dropDeadline">
+                                <span class="visibility-text color">{{$L('截止时间')}}
+                                </span>
+                                <EDropdownMenu slot="dropdown">
+                                    <EDropdownItem :command="1">
+                                        <div class="task-menu-icon" >
+                                            {{$L('任务延期')}}
+                                        </div>
+                                    </EDropdownItem>
+                                    <EDropdownItem :command="2">
+                                        <div class="task-menu-icon" >
+                                            {{$L('修改时间')}}
+                                        </div>
+                                    </EDropdownItem>
+                                </EDropdownMenu>
+                            </EDropdown>
                         </div>
                         <ul class="item-content">
                             <li>
                                 <DatePicker
+                                    disabled
                                     v-model="timeValue"
                                     :open="timeOpen"
                                     :options="timeOptions"
@@ -261,7 +278,21 @@
                                     @on-ok="timeOk"
                                     transfer>
                                     <div class="picker-time">
-                                        <div @click="openTime" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
+                                        <EDropdown ref="eDeadlineRef" trigger="click" placement="bottom" @command="dropDeadline">
+                                            <div @click="timeOpen = false" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
+                                            <EDropdownMenu slot="dropdown">
+                                                <EDropdownItem :command="1">
+                                                    <div class="task-menu-icon" >
+                                                        {{$L('任务延期')}}
+                                                    </div>
+                                                </EDropdownItem>
+                                                <EDropdownItem :command="2">
+                                                    <div class="task-menu-icon" >
+                                                        {{$L('修改时间')}}
+                                                    </div>
+                                                </EDropdownItem>
+                                            </EDropdownMenu>
+                                        </EDropdown>
                                         <template v-if="!taskDetail.complete_at && taskDetail.end_at">
                                             <Tag v-if="within24Hours(taskDetail.end_at)" color="blue"><i class="taskfont">&#xe71d;</i>{{expiresFormat(taskDetail.end_at)}}</Tag>
                                             <Tag v-if="isOverdue(taskDetail)" color="red">{{$L('超期未完成')}}</Tag>
@@ -270,6 +301,7 @@
                                 </DatePicker>
                             </li>
                         </ul>
+
                     </FormItem>
                     <FormItem v-if="(taskDetail.loop && taskDetail.loop != 'never') || loopForce">
                         <div class="item-label" slot="label">
@@ -453,6 +485,30 @@
         <div v-if="!taskDetail.id" class="task-load"><Loading/></div>
         <!-- 提示  -->
         <TaskExistTips ref="taskExistTipsRef" @onAdd="updateData('times', updateParams)"/>
+        <!--任务延期-->
+        <Modal
+            v-model="delayTaskShow"
+            :title="$L('任务延期')"
+            :mask-closable="false"
+            :styles="{
+                width: '90%',
+                maxWidth: '450px'
+            }"
+            @on-ok="onDelay"
+            >
+            <Form ref="formDelayTaskRef" :model="delayTaskForm" :rules="delayTaskRule" label-position="left" label-width="auto" @submit.native.prevent>
+                <FormItem :label="$L('延期时长')" prop="time">
+                    <Input type="number" v-model="delayTaskForm.time" :placeholder="$L('请输入时长')" >
+                        <template #append>
+                            {{$L('时')}}
+                        </template>
+                    </Input>
+                </FormItem>
+                <FormItem :label="$L('延期备注')" prop="remark">
+                    <Input type="textarea" v-model="delayTaskForm.remark" :placeholder="$L('请输入修改备注')"></Input>
+                </FormItem>
+            </Form>
+        </Modal>
     </div>
 </template>
 
@@ -564,6 +620,21 @@ export default {
             ],
 
             updateParams: {},
+
+            delayTaskLoading: false,
+            delayTaskShow: false,
+            delayTaskForm: {
+                time: 12,
+                remark: ''
+            },
+            delayTaskRule: {
+                time: [
+                    { required: true,  message: this.$L('请输入时长'), trigger: 'blur' },
+                ],
+                remark: [
+                    { required: true, message: this.$L('请输入备注'), trigger: 'blur' },
+                ],
+            }
         }
     },
 
@@ -1605,6 +1676,35 @@ export default {
                     });
                     break;
             }
+        },
+
+        dropDeadline(command) {
+            switch (command) {
+                case 1:
+                    this.delayTaskShow = true;
+                    break;
+                case 2:
+                    this.openTime()
+                    break;
+            }
+        },
+
+        onDeforeClose(){
+            return new Promise((resolve, reject) => {})
+        },
+
+        onDelay(){
+            this.delayTaskShow = true
+            // this.delayTaskLoading = true;
+            this.$refs['formDelayTaskRef'].validate((valid) => {
+                if (valid) {
+                    this.$Message.success('Success!');
+                } else {
+                    this.$Message.error('Fail!');
+                }
+                // this.delayTaskLoading = false;
+            })
+            return true
         },
 
         updateVisible() {
