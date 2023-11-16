@@ -429,6 +429,11 @@ body.window-portrait {
                     line-height: 38px;
                 }
             }
+            &.submit {
+                .ivu-tabs{
+                    padding: 0 16px 16px 12px;
+                }
+            }
         }
     }
 }

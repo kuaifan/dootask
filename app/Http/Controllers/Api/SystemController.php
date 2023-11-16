@@ -75,6 +75,8 @@ class SystemController extends AbstractController
                     'image_save_local',
                     'start_home',
                     'file_upload_limit',
+                    'unclaimed_task_reminder',
+                    'unclaimed_task_reminder_time',
                 ])) {
                     unset($all[$key]);
                 }
@@ -116,6 +118,8 @@ class SystemController extends AbstractController
         $setting['image_save_local'] = $setting['image_save_local'] ?: 'open';
         $setting['start_home'] = $setting['start_home'] ?: 'close';
         $setting['file_upload_limit'] = $setting['file_upload_limit'] ?: '';
+        $setting['unclaimed_task_reminder'] = $setting['unclaimed_task_reminder'] ?: 'close';
+        $setting['unclaimed_task_reminder_time'] = $setting['unclaimed_task_reminder_time'] ?: '';
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
     }

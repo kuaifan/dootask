@@ -2,25 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\File;
-use App\Module\Base;
-use App\Module\Extranet;
-use App\Module\RandomColor;
-use App\Tasks\AppPushTask;
-use App\Tasks\AutoArchivedTask;
-use App\Tasks\CheckinRemindTask;
-use App\Tasks\DeleteBotMsgTask;
-use App\Tasks\DeleteTmpTask;
-use App\Tasks\EmailNoticeTask;
-use App\Tasks\JokeSoupTask;
-use App\Tasks\LoopTask;
 use Arr;
 use Cache;
-use Hhxsv5\LaravelS\Swoole\Task\Task;
-use LasseRafn\InitialAvatarGenerator\InitialAvatar;
-use Redirect;
 use Request;
+use Redirect;
 use Response;
+use App\Models\File;
+use App\Module\Base;
+use App\Tasks\LoopTask;
+use App\Module\Extranet;
+use App\Tasks\AppPushTask;
+use App\Module\RandomColor;
+use App\Tasks\JokeSoupTask;
+use App\Tasks\DeleteTmpTask;
+use App\Tasks\EmailNoticeTask;
+use App\Tasks\AutoArchivedTask;
+use App\Tasks\DeleteBotMsgTask;
+use App\Tasks\CheckinRemindTask;
+use Hhxsv5\LaravelS\Swoole\Task\Task;
+use App\Tasks\UnclaimedTaskRemindTask;
+use LasseRafn\InitialAvatarGenerator\InitialAvatar;
 
 
 /**
@@ -203,6 +204,8 @@ class IndexController extends InvokeController
         Task::deliver(new CheckinRemindTask());
         // 获取笑话/心灵鸡汤
         Task::deliver(new JokeSoupTask());
+        // 未领取任务通知
+        Task::deliver(new UnclaimedTaskRemindTask());
 
         return "success";
     }

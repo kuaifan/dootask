@@ -100,6 +100,18 @@
                             transfer/>
                         <div class="form-tip">{{$L('添加任务计划时间默认时分。')}}</div>
                     </FormItem>
+                    <FormItem :label="$L('未领任务提醒')" prop="autoArchived">
+                        <RadioGroup :value="formDatum.unclaimed_task_reminder" @on-change="formTaskReminder">
+                            <Radio label="open">{{$L('开启')}}</Radio>
+                            <Radio label="close">{{$L('关闭')}}</Radio>
+                        </RadioGroup>
+                        <div class="form-tip">{{$L('开启后每天按设定的提醒时间在项目群聊中发送未领取任务通知。')}}</div>
+                        <TimePicker v-if="formDatum.unclaimed_task_reminder=='open'"
+                            v-model="formDatum.unclaimed_task_reminder_time"
+                            format="HH:mm"
+                            :placeholder="$L('请选择提醒时间')"
+                            transfer/>
+                    </FormItem>
                 </div>
             </div>
             <div class="block-setting-box">
@@ -221,6 +233,10 @@ export default {
 
         formArchived(value) {
             this.formDatum = { ...this.formDatum, auto_archived: value };
+        },
+
+        formTaskReminder(value) {
+            this.formDatum = { ...this.formDatum, unclaimed_task_reminder: value };
         },
 
         systemSetting(save) {

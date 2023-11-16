@@ -17,6 +17,7 @@ body {
         color: $primary-desc-color;
         line-height: 22px;
         padding: 5px 0;
+        word-break:break-all;
         &.red {
             color: #ED4014;
         }
