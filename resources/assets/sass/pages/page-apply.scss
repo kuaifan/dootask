@@ -170,7 +170,7 @@
         flex: 1;
         padding: 8px 30px;
 
-        // 
+        //
         .setting-component-item,
         .setting-item {
             position: absolute;
@@ -282,7 +282,7 @@
             }
         }
 
-        // 
+        //
         .ivu-tabs {
             display: flex;
             flex-direction: column;
@@ -297,7 +297,7 @@
             }
         }
 
-        // 
+        //
         .ivu-modal-wrap-ul {
             list-style-type: none;
             overflow: hidden;
@@ -315,7 +315,6 @@
                 margin-right: 10px;
                 margin-bottom: 10px;
                 border-radius: 5px;
-                cursor: pointer;
 
                 img {
                     display: block;
@@ -352,10 +351,15 @@
                     }
                 }
 
+                .desc{
+                    cursor: pointer;
+                }
+
                 .btn {
                     color: #2b85e4;
-                    margin: 26px auto 0;
+                    margin: 20px auto 0;
                     cursor: pointer;
+                    padding: 5px 0;
                 }
 
                 .load {

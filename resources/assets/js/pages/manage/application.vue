@@ -57,11 +57,11 @@
                 </div>
                 <div class="ivu-modal-wrap-apply-body">
                     <ul class="ivu-modal-wrap-ul" v-if="aibotType == 1">
-                        <li v-for="(item, key) in aibotList" @click="onGoToChat(item.value)" :key="key">
+                        <li v-for="(item, key) in aibotList"  :key="key">
                             <img :src="item.src">
                             <h4>{{ item.label }}</h4>
-                            <p>{{ item.desc }}</p>
-                            <p class="btn">{{ $L('去聊天') }}</p>
+                            <p class="desc" @click="openDetail(item.desc)">{{ item.desc }}</p>
+                            <p class="btn" @click="onGoToChat(item.value)">{{ $L('去聊天') }}</p>
                             <div class="load" v-if="aibotDialogSearchLoad == item.value">
                                 <Loading />
                             </div>
@@ -120,17 +120,17 @@
                 </div>
                 <div class="ivu-modal-wrap-apply-body">
                     <ul class="ivu-modal-wrap-ul" v-if="meetingType == 1">
-                        <li @click="onMeeting('createMeeting')">
+                        <li>
                             <img :src="getLogoPath('meeting')">
                             <h4>{{ $L('新会议') }}</h4>
-                            <p>{{ $L('创建一个全新的会议视频会议，与会者可以在实时中进行面对面的视听交流。通过视频会议平台，参与者可以分享屏幕、共享文档，并与其他与会人员进行讨论和协。') }}</p>
-                            <p class="btn">{{ $L('新建会议') }}</p>
+                            <p class="desc" @click="openDetail(meetingDescs.add)"> {{ meetingDescs.add }} </p>
+                            <p class="btn" @click="onMeeting('createMeeting')">{{ $L('新建会议') }}</p>
                         </li>
-                        <li @click="onMeeting('joinMeeting')">
+                        <li>
                             <img :src="getLogoPath('meeting-join')">
                             <h4>{{ $L('加入会议') }}</h4>
-                            <p>{{ $L('加入视频会议，参与已经创建的会议，在会议过程中与其他参会人员进行远程实时视听交流和协作。') }}</p>
-                            <p class="btn">{{ $L('加入会议') }}</p>
+                            <p class="desc" @click="openDetail(meetingDescs.join)">{{ meetingDescs.join }}</p>
+                            <p class="btn" @click="onMeeting('joinMeeting')">{{ $L('加入会议') }}</p>
                         </li>
                     </ul>
                     <SystemMeeting v-else />
@@ -263,6 +263,10 @@ export default {
             //
             meetingShow: false,
             meetingType: 1,
+            meetingDescs: {
+                add: this.$L('创建一个全新的会议视频会议，与会者可以在实时中进行面对面的视听交流。通过视频会议平台，参与者可以分享屏幕、共享文档，并与其他与会人员进行讨论和协。'),
+                join: this.$L('加入视频会议，参与已经创建的会议，在会议过程中与其他参会人员进行远程实时视听交流和协作。'),
+            },
             //
             ldapShow: false,
             //
@@ -481,6 +485,7 @@ export default {
                 });
             }
         },
+        // 扫描登录提交
         scanLoginSubmit() {
             if (this.scanLoginLoad === true) {
                 return
@@ -500,6 +505,28 @@ export default {
                 $A.messageError(msg)
             }).finally(_ => {
                 this.scanLoginLoad = false
+            });
+        },
+        // 打开明显
+        openDetail(desc){
+            $A.modalInfo({
+                content: desc,
+                onOk: () => {
+                    return new Promise((resolve, reject) => {
+                        this.$store.dispatch("call", {
+                            url: 'dialog/group/disband',
+                            data: {
+                                dialog_id: this.dialogId,
+                            }
+                        }).then(({msg}) => {
+                            resolve(msg);
+                            this.$store.dispatch("forgetDialog", this.dialogId);
+                            this.goForward({name: 'manage-messenger'});
+                        }).catch(({msg}) => {
+                            reject(msg);
+                        });
+                    })
+                },
             });
         }
     }
