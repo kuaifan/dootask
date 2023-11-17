@@ -46,6 +46,7 @@
 }
 </style>
 <script>
+import {mapState} from "vuex";
 export default {
     data() {
         return {
@@ -56,6 +57,9 @@ export default {
             project: {},
         }
     },
+    computed: {
+        ...mapState(['dialogId','windowPortrait']),
+    },
     watch: {
         '$route': {
             handler(route) {
@@ -63,8 +67,14 @@ export default {
                     // 唤醒app
                     if (!$A.Electron && !$A.isEEUiApp && navigator.userAgent.indexOf("MicroMessenger") === -1){
                         if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                            window.location.href = "dootask://" + route.fullPath
+                            try {
+                                window.location.href = "dootask://" + route.fullPath
+                            } catch (error) {}
                         }
+                    }
+                    // 关闭聊天
+                    if (this.windowPortrait && this.dialogId > 0){
+                        this.$store.dispatch("openDialog", 0)
                     }
                     //
                     this.code = route.query ? route.query.code : '';
