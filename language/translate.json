@@ -18269,5 +18269,203 @@
         "de": "Einzelheiten der mission bis zur datei nicht speichern bitte versuchen sie es erneut",
         "fr": "Échec de l’enregistrement des détails de la tâche dans le fichier, veuillez réessayer",
         "id": "Menyimpan rincian misi sampai dokumen gagal. Silahkan coba lagi"
+    },
+    {
+        "key": "移动成功",
+        "zh": "",
+        "zh-CHT": "移動成功",
+        "en": "Successful move",
+        "ko": "이동 성공",
+        "ja": "移動成功です",
+        "de": "Abgelehnt - abgelehnt",
+        "fr": "Le succès mobile",
+        "id": "Bergerak sukses"
+    },
+    {
+        "key": "未计划",
+        "zh": "",
+        "zh-CHT": "未計劃",
+        "en": "Unplanned",
+        "ko": "계획하지 않음",
+        "ja": "ノープランです",
+        "de": "Es gibt keine pläne.",
+        "fr": "Non planifié",
+        "id": "Tidak direncanakan"
+    },
+    {
+        "key": "打包下载",
+        "zh": "",
+        "zh-CHT": "打包下載",
+        "en": "Package download",
+        "ko": "포장하여 다운로드하다",
+        "ja": "ダウンロードします",
+        "de": "Pack und lade es hoch.",
+        "fr": "Pack à télécharger",
+        "id": "Paket untuk download"
+    },
+    {
+        "key": "你确定要打包下载【(*)】文件吗？",
+        "zh": "",
+        "zh-CHT": "你確定要打包下載【(*)】文件嗎？",
+        "en": "Are you sure you want to package and download the [(*)] file?",
+        "ko": "[(*)] 파일을 압축하여 다운로드하시겠습니까?",
+        "ja": "【(*)】ファイルをダウンロードする梱包は確実ですか?",
+        "de": "Sollen sie wirklich ihre datei packen und downloaden?",
+        "fr": "Êtes-vous sûr de vouloir emballer le fichier de téléchargement [(*)]?",
+        "id": "Apakah anda yakin ingin mengemasi dokumen [*]?"
+    },
+    {
+        "key": "你确定要打包下载(*)等(*)个文件吗？",
+        "zh": "",
+        "zh-CHT": "你確定要打包下載(*)等(*)個文件嗎？",
+        "en": "Are you sure you want to package and download (*) etc. (*) files?",
+        "ko": "(*) 등 (*) 파일을 압축해서 다운로드하시겠습니까?",
+        "ja": "あなたはダウンロード(*)など(*)のファイルを梱包することを確定しますか?",
+        "de": "Sind sie sicher, dass sie die datei (*) packen und downloaden möchten?",
+        "fr": "Êtes-vous sûr de vouloir emballer des fichiers de téléchargement (*), etc. (*)?",
+        "id": "Apakah anda yakin ingin pak dan download (*) dan menunggu (*) file?"
+    },
+    {
+        "key": "文件上传限制",
+        "zh": "",
+        "zh-CHT": "文件上傳限制",
+        "en": "File upload limit",
+        "ko": "파일 업로드 제한",
+        "ja": "ファイルのアップロード制限です",
+        "de": "Datei hochladen eingeschränkt",
+        "fr": "Limite de téléchargement de fichiers",
+        "id": "Batas upload berkas"
+    },
+    {
+        "key": "包含消息发送的文件",
+        "zh": "",
+        "zh-CHT": "包含消息發送的文件",
+        "en": "File containing the message to send",
+        "ko": "메시지 전송이 포함된 파일",
+        "ja": "メッセージを含むファイルです",
+        "de": "Die die lieferung der nachricht enthält",
+        "fr": "Fichier contenant le message envoyé",
+        "id": "Berkas yang berisi pesan yang dikirim"
+    },
+    {
+        "key": "特殊设置",
+        "zh": "",
+        "zh-CHT": "特殊設置",
+        "en": "Special setting",
+        "ko": "특수 설정",
+        "ja": "特殊設定です",
+        "de": "Es gibt ein system",
+        "fr": "Un cadre spécial",
+        "id": "Pengaturan khusus"
+    },
+    {
+        "key": "打包列表",
+        "zh": "",
+        "zh-CHT": "打包列表",
+        "en": "Packing list",
+        "ko": "패키지 목록",
+        "ja": "パッケージリストです",
+        "de": "Eine liste.",
+        "fr": "Liste des packages",
+        "id": "Daftar pak"
+    },
+    {
+        "key": "使用独立的发送按钮",
+        "zh": "",
+        "zh-CHT": "使用獨立的發送按鈕",
+        "en": "Use a separate send button",
+        "ko": "개별 보내기 단추 사용하기",
+        "ja": "別個の送信ボタンを使います",
+        "de": "Bediene dich des unabhängigen verschlussknopfes",
+        "fr": "Utilisez le bouton d’envoi séparé",
+        "id": "Gunakan tombol pengirim independen"
+    },
+    {
+        "key": "开启后，键盘上的发送按钮会被替换成换行",
+        "zh": "",
+        "zh-CHT": "開啓後，鍵盤上的發送按鈕會被替換成換行",
+        "en": "When turned on, the Send button on the keyboard is replaced with a line feed",
+        "ko": "켜면 키보드의 보내기 단추는 줄 바꿈으로 대체됩니다",
+        "ja": "オンにすると,キーボードの送信ボタンが改行に置き換えられます",
+        "de": "Ist der knopf Senden an die tastatur eingeschaltet, wird durch zeilenwechseln ersetzt",
+        "fr": "Après l’ouverture, le bouton envoyer sur le clavier est remplacé par un saut de ligne",
+        "id": "Jika diaktifkan, tombol pengirim di papan ketik akan diganti dengan baris ganti"
+    },
+    {
+        "key": "仅我的",
+        "zh": "",
+        "zh-CHT": "僅我的",
+        "en": "Mine alone",
+        "ko": "오직 내 것",
+        "ja": "私だけです",
+        "de": "Nur für mich.",
+        "fr": "Seulement le mien",
+        "id": "Hanya milikku"
+    },
+    {
+        "key": "未领任务提醒",
+        "zh": "",
+        "zh-CHT": "未領任務提醒",
+        "en": "No task reminder",
+        "ko": "작업 알림이 없습니다",
+        "ja": "未受領タスクリマインダー",
+        "de": "Ich habe eine nachricht hinterlassen",
+        "fr": "Rappel des tâches non demandées",
+        "id": "Pengingat tugas yang tak diminta"
+    },
+    {
+        "key": "开启后每天按设定的提醒时间在项目群聊中发送未领取任务通知。",
+        "zh": "",
+        "zh-CHT": "開啓後每天按設定的提醒時間在項目羣聊中發送未領取任務通知。",
+        "en": "Send unclaimed task notification in the group chat every day according to the set reminder time.",
+        "ko": "켜면 매일 설정된 알림 시간에 따라 항목 그룹 채팅에 아직 받지 않은 작업 알림을 보냅니다.",
+        "ja": "オンになったら、毎日設定したリマインダータイムにプロジェクトのグループチャットで未受領の通知を送ります。",
+        "de": "Mit & kde; wird nach aktivierung jeden tag eine nicht e-mail e-mail e-mail in der vorgegebenen zeit an die projektgruppe geschickt",
+        "fr": "Envoyer des notifications de tâches non récupérées dans le chat de groupe de projet tous les jours après l’ouverture à l’heure de rappel définie.",
+        "id": "Pengingat yang ditetapkan setiap hari setelah mengaktifkan waktu untuk mengirimkan pemberitahuan tugas yang belum dilakukan selama obrolan kelompok proyek."
+    },
+    {
+        "key": "延期时长",
+        "zh": "",
+        "zh-CHT": "延期時長",
+        "en": "Delay time",
+        "ko": "연기 시간",
+        "ja": "延期期間です",
+        "de": "Warten sie bis dahin.",
+        "fr": "Durée de l’extension",
+        "id": "Jangka waktu"
+    },
+    {
+        "key": "延期备注",
+        "zh": "",
+        "zh-CHT": "延期備註",
+        "en": "Deferred remarks",
+        "ko": "연기 설명",
+        "ja": "猶予備考です",
+        "de": "Bemerkungen",
+        "fr": "Remarques sur l’extension",
+        "id": "Komentar diperpanjang"
+    },
+    {
+        "key": "请输入时长",
+        "zh": "",
+        "zh-CHT": "請輸入時長",
+        "en": "Please enter the duration",
+        "ko": "시간을 입력하십시오",
+        "ja": "時間を入力します。",
+        "de": "Bitte geben sie die dauer ein",
+        "fr": "Veuillez entrer la durée",
+        "id": "Durasi masukan, silakan"
+    },
+    {
+        "key": "必须大于0",
+        "zh": "",
+        "zh-CHT": "必須大於0",
+        "en": "Must be greater than 0",
+        "ko": "0보다 커야 합니다",
+        "ja": "0以上でなければなりません",
+        "de": "Muss größer als null sein.",
+        "fr": "Doit être supérieur à 0",
+        "id": "Harus lebih besar 0"
     }
 ]

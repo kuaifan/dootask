@@ -59,8 +59,10 @@ export default {
     watch: {
         '$route': {
             handler(route) {
-                this.code = route.query ? route.query.code : '';
-                this.getData();
+                if(route.name == 'manage-project-invite'){
+                    this.code = route.query ? route.query.code : '';
+                    this.getData();
+                }
             },
             immediate: true
         },
