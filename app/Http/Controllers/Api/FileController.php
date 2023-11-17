@@ -1068,7 +1068,7 @@ class FileController extends AbstractController
             Coroutine::sleep(0.1);
             // 压缩进度
             $progress = 0;
-            $zip->registerProgressCallback(0.05, function($ratio) use ($downName, $progress) {
+            $zip->registerProgressCallback(0.05, function($ratio) use ($downName, &$progress) {
                 $progress = round($ratio * 100);
                 File::filePushMsg('compress', [
                     'name'=> $downName,
