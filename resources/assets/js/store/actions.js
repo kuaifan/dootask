@@ -929,12 +929,12 @@ export default {
     packProgress({state, dispatch}, data) {
         $A.execMainDispatch("packProgress", data)
         //
-        const index = state.packLists.findIndex(({name}) => name == data.name);
+        const index = state.filePackLists.findIndex(({name}) => name == data.name);
         if (index > -1) {
-            state.packLists[index].progress = data.progress;
+            state.filePackLists[index].progress = data.progress;
         } else {
-            state.packLists.push(data);
-            $A.IDBSave("packLists", state.packLists, 600)
+            state.filePackLists.push(data);
+            $A.IDBSave("filePackLists", state.filePackLists, 600)
         }
     },
 

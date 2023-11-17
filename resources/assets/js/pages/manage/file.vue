@@ -247,13 +247,16 @@
         <div v-if="packShow && packList.length > 0" class="file-upload-list">
             <div class="upload-wrap">
                 <div class="title">
-                    打包列表 ({{packList.length}})
-                    <em v-if="packList.find(({status}) => status === 'finished')" @click="packClear">清空已完成</em>
+                    <span>{{$L('打包列表')}}({{packList.length}})</span>
+                    <em v-if="packList.find(({status}) => status === 'finished')" @click="packClear">{{$L('清空已完成')}}</em>
                 </div>
                 <ul class="content">
                 <li v-for="(item, index) in packList" :key="index" v-if="index < 100">
-                    <AutoTip class="file-name">{{packName(item)}}</AutoTip>
-                    <AutoTip v-if="item.status === 'finished' && item.response && item.response.ret !== 1" class="file-error">{{item.response.msg}}</AutoTip>
+                    <AutoTip class="file-name">
+                        <span v-if="item.status !== 'finished'">{{item.name}}</span>
+                        <a v-else href="javascript:void(0)" @click="downloadPackFile(item.name)">{{item.name}}</a>
+                    </AutoTip>
+                    <AutoTip v-if="item.status === 'finished' && item.response && item.response.ret !==1" class="file-error">{{item.response.msg}}</AutoTip>
                     <Progress v-else :percent="packPercentageParse(item.percentage)" :stroke-width="5" />
                     <Icon class="file-close" type="ios-close-circle-outline" @click="packList.splice(index, 1)"/>
                 </li>
@@ -765,7 +768,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['systemConfig', 'userIsAdmin', 'userInfo', 'fileLists', 'wsOpenNum', 'windowWidth']),
+        ...mapState(['systemConfig', 'userIsAdmin', 'userInfo', 'fileLists', 'wsOpenNum', 'windowWidth', 'filePackLists']),
 
         pid() {
             const {folderId} = this.$route.params;
@@ -960,7 +963,15 @@ export default {
             this.wsOpenTimeout = setTimeout(() => {
                 this.$route.name == 'manage-file' && this.getFileList();
             }, 5000)
-        }
+        },
+
+
+        filePackLists: {
+            handler() {
+                this.updatePackProgress()
+            },
+            deep: true
+        },
     },
 
     methods: {
@@ -1446,11 +1457,6 @@ export default {
         },
 
         /********************文件打包下载部分************************/
-
-        packName(item) {
-            return item.name;
-        },
-
         packPercentageParse(val) {
             return parseInt(val, 10);
         },
@@ -1465,44 +1471,31 @@ export default {
             this.packList.push(file);
             this.uploadShow = false; // 隐藏上传列表
             this.packShow = true; // 显示打包列表
+        },
 
-            const downloadInterval = setInterval(async () => {
-                const pack = this.$store.state.packLists.find(({name}) => name == filePackName)
+        updatePackProgress () {
+            this.packList.forEach(file=>{
+                const pack = this.filePackLists.find(({name}) => name == file.name)
                 file.percentage = Math.max(1, pack.progress);
-                if (file.percentage >= 100) {
+                if (file.status != 'finished' && file.percentage >= 100) {
                     file.status = 'finished';
-                    clearInterval(downloadInterval);
                     // 下载文件
-                    await this.downloadPackFile(filePackName);
+                    this.downloadPackFile(file.name);
                 }
-            }, 1000);
+            })
         },
 
         async downloadPackFile(filePackName) {
-            // 延时 1 秒，等待服务器打包完成
-            await new Promise(resolve => setTimeout(resolve, 1000));
             const downloadUrl = $A.apiUrl(`file/download/confirm?name=${filePackName}&token=${this.userToken}`);
-            try {
-                const response = await axios({
-                    url: downloadUrl,
-                    method: 'GET',
-                    responseType: 'blob',
-                });
-
-                if (!response.data) {
-                    console.error('No data received from server');
-                    return;
-                }
-
-                const blob = new Blob([response.data], { type: response.data.type });
-                const url = window.URL.createObjectURL(blob);
+            if (!$A.Electron && !$A.isEEUiApp) {
                 const link = document.createElement('a');
-                link.href = url;
+                link.setAttribute('href', downloadUrl);
                 link.setAttribute('download', `${filePackName}`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-            } catch (error) {
+            }else{
+                this.$store.dispatch('downUrl', downloadUrl)
             }
         },
 
@@ -1522,7 +1515,7 @@ export default {
                 okText: '确定',
                 onOk: async () => {
                     try {
-                        const { msg } = await this.$store.dispatch("call", {
+                        await this.$store.dispatch("call", {
                             url: 'file/download/check',
                             data: { ids },
                         });
