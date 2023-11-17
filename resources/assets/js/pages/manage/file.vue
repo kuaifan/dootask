@@ -1457,6 +1457,7 @@ export default {
         },
 
         /********************文件打包下载部分************************/
+
         packPercentageParse(val) {
             return parseInt(val, 10);
         },
@@ -1479,13 +1480,12 @@ export default {
                 file.percentage = Math.max(1, pack.progress);
                 if (file.status != 'finished' && file.percentage >= 100) {
                     file.status = 'finished';
-                    // 下载文件
                     this.downloadPackFile(file.name);
                 }
             })
         },
 
-        async downloadPackFile(filePackName) {
+        downloadPackFile(filePackName) {
             const downloadUrl = $A.apiUrl(`file/download/confirm?name=${filePackName}&token=${this.userToken}`);
             if (!$A.Electron && !$A.isEEUiApp) {
                 const link = document.createElement('a');

@@ -21,6 +21,9 @@
 
         <!--Hidden IFrame-->
         <iframe v-for="item in iframes" :key="item.key" v-if="item.url" v-show="false" :src="item.url"></iframe>
+
+        <!--引导页-->
+        <GuidePage/>
     </div>
 </template>
 
@@ -38,12 +41,13 @@ import FloatSpinner from "./components/FloatSpinner";
 import RightBottom from "./components/RightBottom";
 import PreviewImageState from "./components/PreviewImage/state";
 import NetworkException from "./components/NetworkException";
+import GuidePage from "./components/GuidePage";
 import TaskOperation from "./pages/manage/components/TaskOperation";
 import {mapState} from "vuex";
 import {languageType} from "./language";
 
 export default {
-    components: {TaskOperation, NetworkException, PreviewImageState, RightBottom, FloatSpinner},
+    components: {TaskOperation, NetworkException, PreviewImageState, RightBottom, FloatSpinner, GuidePage},
 
     data() {
         return {
@@ -386,6 +390,10 @@ export default {
             // 通知权限
             window.__onNotificationPermissionStatus = (ret) => {
                 this.$store.state.appNotificationPermission = $A.runNum(ret) == 1;
+            }
+            // 前往页面
+            window.__handleLink = (path) => {
+                this.goForward({ path: (path || '').indexOf('/') !==0 ? "/" + path : path });
             }
         },
 

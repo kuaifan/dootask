@@ -60,6 +60,13 @@ export default {
         '$route': {
             handler(route) {
                 if(route.name == 'manage-project-invite'){
+                    // 唤醒app
+                    if (!$A.Electron && !$A.isEEUiApp && navigator.userAgent.indexOf("MicroMessenger") === -1){
+                        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                            window.location.href = "dootask://" + route.fullPath
+                        }
+                    }
+                    //
                     this.code = route.query ? route.query.code : '';
                     this.getData();
                 }
