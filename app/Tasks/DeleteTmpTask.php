@@ -96,6 +96,26 @@ class DeleteTmpTask extends AbstractTask
                         });
                 }
                 break;
+
+            /**
+             * file_pack 临时压缩下载文件
+             */
+            case 'file_pack':
+                {
+                    $path = storage_path('app/temp/download/');
+                    $dirIterator = new \RecursiveDirectoryIterator($path);
+                    $iterator = new \RecursiveIteratorIterator($dirIterator);
+
+                    foreach ($iterator as $file) {
+                        if ($file->isFile()) {
+                            $time = $file->getMTime();
+                            if ($time < time() - 3600 * 24) {
+                                unlink($file->getPathname());
+                            }
+                        }
+                    }
+                }
+                break;
         }
     }
 

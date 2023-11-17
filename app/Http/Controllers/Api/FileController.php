@@ -1114,6 +1114,6 @@ class FileController extends AbstractController
         if (!file_exists($zipPath)) {
             abort(403, "The file does not exist.");
         }
-        return response()->download($zipPath)->deleteFileAfterSend(true);
+        return response()->download($zipPath);
     }
 }
