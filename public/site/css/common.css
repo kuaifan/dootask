@@ -470,6 +470,11 @@ img {
   grid-template-columns: 480px 266px 266px 266px;
 }
 
+.grid-5 {
+  display: grid !important;
+  grid-template-columns: 336px 236px 236px 236px 236px;
+}
+
 /* padding样式 */
 .pl-26 {
   padding-left: 26px;
