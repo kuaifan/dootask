@@ -271,6 +271,14 @@ export default {
                     }).then(({data}) => {
                         config.token = data.token
                         this.docEditor = new DocsAPI.DocEditor(this.id, config);
+                        //
+                        if(this.readOnly){
+                            var docEditorIframe = $("iframe[name='frameEditor']")[0];
+                            docEditorIframe?.addEventListener("load", function() {
+                                docEditorIframe.contentWindow.postMessage("disableDownload", "*")
+                            });
+                        }
+                        //
                     }).catch(({msg}) => {
                         $A.modalError({content: msg});
                     });

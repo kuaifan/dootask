@@ -2,7 +2,7 @@
     <div v-if="show" class="common-guide">
         <img :src="src" width="100%" />
         <div>
-            <Button type="default" @click="show = false" size="large" long >{{ $L('忍心拒绝') }}</Button>
+            <Button type="default" @click="show = false" size="large" >{{ $L('忍心拒绝') }}</Button>
         </div>
     </div>
 </template>

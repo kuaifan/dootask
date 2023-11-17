@@ -7,3 +7,4 @@
 
 body .navbar.main-navbar.navbar-with-logo{height:0px}
 body .page.page-with-subnavbar.page-with-logo .page-content{--f7-page-subnavbar-offset:0px}
+body.disable-download #slot-hbtn-download, body.disable-download #fm-btn-download{ display: none !important;}

@@ -5,3 +5,4 @@
 .extra>section.logo #header-logo{display:none}
 .tool-menu-btns button#left-btn-about{display:none}
 .loadmask > .brendpanel .loading-logo{display:none}
+body.disable-download #slot-hbtn-download, body.disable-download #fm-btn-download{ display: none !important;}

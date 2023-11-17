@@ -18467,5 +18467,16 @@
         "de": "Muss größer als null sein.",
         "fr": "Doit être supérieur à 0",
         "id": "Harus lebih besar 0"
+    },
+    {
+        "key": "忍心拒绝",
+        "zh": "",
+        "zh-CHT": "忍心拒絕",
+        "en": "Have the heart to refuse",
+        "ko": "차마 거절하다",
+        "ja": "断るに忍びません",
+        "de": "Ich kann das einfach nicht.",
+        "fr": "Tolérance et refus",
+        "id": "Punya hati untuk menolak"
     }
 ]
