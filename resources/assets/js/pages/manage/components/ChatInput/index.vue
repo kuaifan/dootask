@@ -1030,6 +1030,9 @@ export default {
                     if ((event.button === undefined || event.button === 0) && this.startRecord()) {
                         return;
                     }
+                    if (event.button === 2){
+                        this.showMenu = true;
+                    }
                     break;
 
                 case 'move':

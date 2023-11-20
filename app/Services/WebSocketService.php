@@ -172,8 +172,11 @@ class WebSocketService implements WebSocketHandlerInterface
      */
     public function onClose(Server $server, $fd, $reactorId)
     {
-        Task::deliver(new LineTask($this->getUserid($fd), false));  // 通知离线
-        $this->deleteUser($fd);
+        $userid = $this->getUserid($fd);
+        if($userid){
+            Task::deliver(new LineTask($userid, false));  // 通知离线
+            $this->deleteUser($fd);
+        }
     }
 
     /** ****************************************************************************** */

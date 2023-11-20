@@ -1477,10 +1477,12 @@ export default {
         updatePackProgress () {
             this.packList.forEach(file=>{
                 const pack = this.filePackLists.find(({name}) => name == file.name)
-                file.percentage = Math.max(1, pack.progress);
-                if (file.status != 'finished' && file.percentage >= 100) {
-                    file.status = 'finished';
-                    this.downloadPackFile(file.name);
+                if(pack){
+                    file.percentage = Math.max(1, pack.progress);
+                    if (file.status != 'finished' && file.percentage >= 100) {
+                        file.status = 'finished';
+                        this.downloadPackFile(file.name);
+                    }
                 }
             })
         },
@@ -1514,16 +1516,16 @@ export default {
                 content: `你确定要打包下载${fileName}吗？`,
                 okText: '确定',
                 onOk: async () => {
+                    if( this.packList.find(({ status }) => status === 'packing') ){
+                        $A.messageWarning("请等待打包完成");
+                        return;
+                    }
                     try {
-                        await this.$store.dispatch("call", {
-                            url: 'file/download/check',
-                            data: { ids },
-                        });
-                        this.startPack(filePackName);
                         await this.$store.dispatch("call", {
                             url: 'file/download/pack',
                             data: { ids, name: filePackName },
                         });
+                        this.startPack(filePackName);
                     } catch ({ msg }) {
                         $A.modalError(msg);
                     }

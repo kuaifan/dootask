@@ -975,49 +975,7 @@ class FileController extends AbstractController
     }
 
     /**
-     * @api {get} api/file/download/check          19. 检测下载
-     *
-     * @apiDescription 需要token身份
-     * @apiVersion 1.0.0
-     * @apiGroup file
-     * @apiName download__check
-     *
-     * @apiParam {Array} [ids]      文件ID，格式: [id, id2, id3]
-     *
-     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
-     * @apiSuccess {String} msg     返回信息（错误描述）
-     * @apiSuccess {Object} data    返回数据
-     */
-    public function download__check(){
-        $user = User::auth();
-        $ids = Request::input('ids');
-
-        if (!is_array($ids) || empty($ids)) {
-            return Base::retError('请选择下载的文件或文件夹');
-        }
-
-        if (count($ids) > 100) {
-            return Base::retError('一次最多只能下载100个文件或文件夹');
-        }
-
-        $files = [];
-        $totalSize = 0;
-        AbstractModel::transaction(function() use ($user, $ids, &$files, &$totalSize) {
-            foreach ($ids as $k => $id) {
-                $files[] = File::getFilesTree(intval($id), $user, 1);
-                $totalSize += $files[$k]->totalSize;
-            }
-        });
-
-        if ($totalSize > File::zipMaxSize) {
-            throw new ApiException('文件总大小已超过1GB，请分批下载');
-        }
-
-        return Base::retSuccess('success');
-    }
-
-    /**
-     * @api {get} api/file/download/pack          20. 打包文件
+     * @api {get} api/file/download/pack          19. 打包文件
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1038,31 +996,66 @@ class FileController extends AbstractController
         $downName = Request::input('name');
 
         if (!is_array($ids) || empty($ids)) {
-            abort(403, "Please select the file or folder to download.");
+            return Base::retError('请选择下载的文件或文件夹');
         }
         if (count($ids) > 100) {
-            abort(403, "You can download a maximum of 100 files or folders at a time.");
+            return Base::retError('一次最多可以下载100个文件或文件夹');
+        }
+        if (count($ids) > 100) {
+            return Base::retError('一次最多可以下载100个文件或文件夹');
         }
 
         $files = [];
         $totalSize = 0;
-        AbstractModel::transaction(function() use ($user, $ids, &$files, &$totalSize) {
-            foreach ($ids as $k => $id) {
-                $files[] = File::getFilesTree(intval($id), $user, 1);
-                $totalSize += $files[$k]->totalSize;
+
+        foreach ($ids as $k => $id) {
+            $files[] = File::getFilesTree(intval($id), $user, 1);
+            $totalSize += $files[$k]->totalSize;
+        }
+
+        if ($totalSize > File::zipMaxSize) {
+            return Base::retError('文件总大小已超过1GB，请分批下载');
+        }
+
+        $zip = new \ZipArchive();
+        $zipName = 'temp/download/' . date("Ym") . '/' . $user->userid . '/' . $downName;
+        $zipPath = storage_path('app/'.$zipName);
+        Base::makeDir(dirname($zipPath));
+
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            return Base::retError('创建压缩文件失败');
+        }
+
+        go(function() use ($zip, $files, $downName) {
+            Coroutine::sleep(0.1);
+            // 压缩进度
+            $progress = 0;
+            $zip->registerProgressCallback(0.05, function($ratio) use ($downName, &$progress) {
+                $progress = round($ratio * 100);
+                File::filePushMsg('compress', [
+                    'name'=> $downName,
+                    'progress' => $progress
+                ]);
+            });
+            //
+            foreach ($files as $file) {
+                File::addFileTreeToZip($zip, $file);
+            }
+            $zip->close();
+            //
+            if ($progress < 100) {
+                File::filePushMsg('compress', [
+                    'name'=> $downName,
+                    'progress' => 100
+                ]);
             }
         });
 
-        if ($totalSize > File::zipMaxSize) {
-            abort(403, "The total size of the file exceeds 1GB. Please download it in batches.");
-        }
-
-        Task::deliver(new FilePackTask($user, $files, $downName));
         return Base::retSuccess('success');
     }
 
     /**
-     * @api {get} api/file/download/confirm          21. 确认下载
+     * @api {get} api/file/download/confirm          20. 确认下载
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
