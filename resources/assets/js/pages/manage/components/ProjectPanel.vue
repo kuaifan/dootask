@@ -52,6 +52,7 @@
                         <Icon class="menu-icon" type="ios-more" />
                         <EDropdownMenu v-if="projectData.owner_userid === userId" slot="dropdown">
                             <EDropdownItem command="setting">{{$L('项目设置')}}</EDropdownItem>
+                            <EDropdownItem command="permissions">{{$L('权限设置')}}</EDropdownItem>
                             <EDropdownItem command="workflow">{{$L('工作流设置')}}</EDropdownItem>
                             <EDropdownItem command="user" divided>{{$L('成员管理')}}</EDropdownItem>
                             <EDropdownItem command="invite">{{$L('邀请链接')}}</EDropdownItem>
@@ -342,6 +343,15 @@
             </div>
         </Modal>
 
+        <!--项目权限-->
+        <DrawerOverlay
+            v-model="permissionShow"
+            placement="right"
+            :beforeClose="workflowBeforeClose"
+            :size="650">
+            <ProjectPermission ref="permission" v-if="permissionShow" :project-id="projectId"/>
+        </DrawerOverlay>
+
         <!--成员管理-->
         <Modal
             v-model="userShow"
@@ -472,6 +482,7 @@ import TaskArchived from "./TaskArchived";
 import ProjectLog from "./ProjectLog";
 import DrawerOverlay from "../../../components/DrawerOverlay";
 import ProjectWorkflow from "./ProjectWorkflow";
+import ProjectPermission from "./ProjectPermission";
 import TaskMenu from "./TaskMenu";
 import TaskDeleted from "./TaskDeleted";
 import ProjectGantt from "./ProjectGantt";
@@ -485,6 +496,7 @@ export default {
         MarkdownPreviewNostyle,
         TaskMenu,
         ProjectWorkflow,
+        ProjectPermission,
         DrawerOverlay,
         ProjectLog, TaskArchived, TaskRow, Draggable, TaskAddSimple, TaskPriority, TaskDeleted, ProjectGantt},
     data() {
@@ -511,6 +523,10 @@ export default {
             settingShow: false,
             settingData: {},
             settingLoad: 0,
+
+            permissionShow: false,
+            permissionShowData: {},
+            permissionShowLoad: 0,
 
             userShow: false,
             userData: {},
@@ -1247,6 +1263,16 @@ export default {
                         this.$refs.projectName.focus()
                         setTimeout(this.$refs.projectDesc.resizeTextarea, 0)
                     });
+                    break;
+
+                case "permissions":
+                    // this.$set(this.settingData, 'name', this.projectData.name);
+                    // this.$set(this.settingData, 'desc', this.projectData.desc);
+                    this.permissionShow = true;
+                    // this.$nextTick(() => {
+                    //     this.$refs.projectName.focus()
+                    //     setTimeout(this.$refs.projectDesc.resizeTextarea, 0)
+                    // });
                     break;
 
                 case "user":
