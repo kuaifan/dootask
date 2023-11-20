@@ -1507,7 +1507,7 @@ export default {
             const allFolder = !ids.some(id => this.fileLists.some(({ type, id: itemId }) => type !== 'folder' && itemId === id));
             const typeName = allFolder ? "文件夹" : "文件";
             const fileName = ids.length === 1 ? `【${firstFile.name}】${typeName}` : `【${firstFile.name}】等${ids.length}个${typeName}`;
-            const filePackName = ids.length === 1 ? `${firstFile.name}_${$A.formatDate("YmdHis")}.zip` : `file_${$A.formatDate("YmdHis")}.zip`;
+            const filePackName = `file_${$A.formatDate("YmdHis")}.zip`;
 
             $A.modalConfirm({
                 title: '打包下载',
