@@ -926,12 +926,10 @@ class File extends AbstractModel
      */
     public static function filePushMsg($action, $data = null, $userid = null)
     {
-        //
         $userid = User::auth()->userid();
         if (empty($userid)) {
             return;
         }
-        //
         $msg = [
             'type' => 'file',
             'action' => $action,
@@ -941,7 +939,6 @@ class File extends AbstractModel
             'userid' => $userid,
             'msg' => $msg
         ];
-        $task = new PushTask($params, false);
-        Task::deliver($task);
+        Task::deliver(new PushTask($params));
     }
 }

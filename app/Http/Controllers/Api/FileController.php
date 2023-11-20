@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
+use Hhxsv5\LaravelS\Swoole\Task\Task;
 use App\Exceptions\ApiException;
 use App\Models\AbstractModel;
+use App\Tasks\FilePackTask;
 use App\Models\File;
 use App\Models\FileContent;
 use App\Models\FileLink;
@@ -1055,39 +1057,7 @@ class FileController extends AbstractController
             abort(403, "The total size of the file exceeds 1GB. Please download it in batches.");
         }
 
-        $zip = new \ZipArchive();
-        $zipName = 'temp/download/' . date("Ym") . '/' . $user->userid . '/' . $downName;
-        $zipPath = storage_path('app/'.$zipName);
-        Base::makeDir(dirname($zipPath));
-
-        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-            abort(403, "Failed to create compressed file.");
-        }
-
-        go(function() use ($zip, $files, $downName) {
-            Coroutine::sleep(0.1);
-            // 压缩进度
-            $progress = 0;
-            $zip->registerProgressCallback(0.05, function($ratio) use ($downName, &$progress) {
-                $progress = round($ratio * 100);
-                File::filePushMsg('compress', [
-                    'name'=> $downName,
-                    'progress' => $progress
-                ]);
-            });
-
-            foreach ($files as $file) {
-                File::addFileTreeToZip($zip, $file);
-            }
-            $zip->close();
-            if ($progress < 100) {
-                File::filePushMsg('compress', [
-                    'name'=> $downName,
-                    'progress' => 100
-                ]);
-            }
-        });
-
+        Task::deliver(new FilePackTask($user, $files, $downName));
         return Base::retSuccess('success');
     }
 
