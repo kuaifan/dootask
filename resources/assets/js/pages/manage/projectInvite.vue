@@ -68,7 +68,11 @@ export default {
                     if (!$A.Electron && !$A.isEEUiApp && navigator.userAgent.indexOf("MicroMessenger") === -1){
                         if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
                             try {
-                                window.location.href = "dootask://" + route.fullPath
+                                if(/Android/i.test(navigator.userAgent)){
+                                    window.open("dootask://" + route.fullPath)
+                                }else{
+                                    window.location.href = "dootask://" + route.fullPath
+                                }
                             } catch (error) {}
                         }
                     }
