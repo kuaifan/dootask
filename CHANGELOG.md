@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.32.17]
+
+### Bug Fixes
+
+- 修复打包下载问题
+- 修复 windows端  右键发送 是直接发送了，没有出现使用md格式发送  
+- 修复打包下载问题
+- 其他bug修复
+
+### Performance
+
+- 审批版本更新
+- Okr 和 审批中心弄一些演示数据
+- 项目邀请页 - 安卓用opne方式打开
+
 ## [0.32.9]
 
 ### Bug Fixes
