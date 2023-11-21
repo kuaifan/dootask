@@ -80,7 +80,7 @@ class ProjectTaskContent extends AbstractModel
         $publicPath = public_path($filePath);
         Base::makeDir(dirname($publicPath));
         $result = file_put_contents($publicPath, $content);
-        if(!$result){
+        if(!$result && $oldContent){
             info("保存任务详情至文件失败");
             info($publicPath);
             info($oldContent);
