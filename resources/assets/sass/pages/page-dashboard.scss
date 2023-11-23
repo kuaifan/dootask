@@ -26,19 +26,23 @@
         max-height: 100%;
         display: flex;
         flex-direction: column;
-        align-items: center;
+        align-items: flex-start;
+        width: 1px;
+        height: 100%;
+        flex: 1;
+        overflow: hidden;
 
         .dashboard-hello,
         .dashboard-desc ,
         .dashboard-block ,
         .dashboard-list .dashboard-title,
         .dashboard-list .dashboard-ul {
-            width: 660px;
-            max-width: 80%;
-            margin: 0 auto;
+            width: 90%;
+            max-width: 90%;
+            margin: 0 30px;
         }
         .dashboard-hello {
-            padding: 6% 12px 0;
+            padding: 32px 12px 0;
             color: $primary-title-color;
             font-size: 24px;
             font-weight: 600;
@@ -118,8 +122,8 @@
         }
         .dashboard-list {
             width: 100%;
-            margin-top: 48px;
-            padding-bottom: 6%;
+            margin-top: 22px;
+            padding-bottom: 32px;
             .dashboard-ref {
                 height: 0;
             }

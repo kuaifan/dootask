@@ -17,7 +17,7 @@
         position: relative;
         flex-grow: 0;
         flex-shrink: 0;
-        width: 255px;
+        width: 88px;
         height: 100%;
         background: #F4F5F7;
         display: flex;
@@ -44,21 +44,20 @@
                 display: flex;
                 flex-direction: column;
                 > li {
+                    list-style: none;
                     flex-shrink: 0;
-                    display: flex;
+                    text-align: center;
                     align-items: center;
-                    height: 36px;
-                    color: #6b6e72;
+                    color: #999999;
                     cursor: pointer;
                     position: relative;
-                    width: 100%;
+                    width: 64px;
                     margin: 5px auto;
-                    padding: 0 4%;
-                    border-radius: 4px;
+                    padding: 8px 4%;
+                    border-radius: 8px;
+                    font-size: 12px;
                     > i {
-                        opacity: 0.3;
                         font-size: 20px;
-                        margin-right: 10px;
                     }
                     .menu-title {
                         flex: 1;
@@ -67,14 +66,17 @@
                         text-overflow: ellipsis;
                     }
                     .menu-badge {
-                        margin-left: 12px;
                         transform: scale(0.9);
+                        position: absolute;
+                        top: 0;
+                        left: 35px;
                     }
                     &:first-child {
                         margin-top: 12px;
                     }
                     &.active {
                         background-color: #ffffff;
+                        color: #8FCE78;
                     }
                 }
             }
@@ -244,11 +246,30 @@
             }
         }
         .manage-box-new-group {
-            width: 80%;
+            width: 60%;
             margin-top: 16px;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
+            text-align: center;
+            ul{
+                list-style-type: none;
+                width: 100%;
+                li{
+                    margin-top: 12px;
+                    color: #999999;
+                    .taskfont{
+                        font-size: 22px;
+                        padding: 8px;
+                        cursor: pointer;
+                        border-radius: 8px;
+                        &:hover{
+                            background-color: #ffffff;
+                            color: #8FCE78;
+                        }
+                    }
+                }
+            }
             .manage-box-new {
                 flex: 1;
             }
@@ -299,18 +320,18 @@
         display: flex;
         align-items: center;
         flex-shrink: 0;
-        padding: 6px 10px;
+        padding: 6px 14px;
         margin-top: 27px;
         border-radius: 8px;
-        background-color: #ffffff;
         cursor: pointer;
         transition: box-shadow 0.3s;
+        position: relative;
         &.menu-visible {
             box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
         }
         .manage-box-avatar {
-            width: 36px;
-            height: 36px;
+            width: 48px;
+            height: 48px;
         }
         > span {
             flex: 1;
@@ -340,12 +361,17 @@
             flex-direction: column;
             justify-content: center;
             flex: 0 0 auto;
+            position: absolute;
+            bottom: 12px;
+            right: 19px;
             > i {
                 font-size: 12px;
                 margin: -1px;
             }
             .ivu-badge-dot {
                 margin-right: 4px;
+                width: 10px;
+                height: 10px;
             }
         }
     }

@@ -1,5 +1,5 @@
 <template>
-    <div class="page-dashboard">
+    <div class="page-dashboard" style="flex-direction: row;">
         <PageTitle :title="$L('仪表盘')"/>
         <Alert v-if="warningMsg" class="dashboard-warning" type="warning" show-icon>
             <span @click="goForward({name: 'manage-setting-license'})">{{warningMsg}}</span>
@@ -83,15 +83,19 @@
                 </template>
             </Scrollbar>
         </div>
+        <div v-if="1" style="width: 35%;min-width:400px;height: 100%;border-left: 1px solid #F4F5F7;">
+            <HomeCalendar/>
+        </div>
     </div>
 </template>
 
 <script>
 import {mapGetters, mapState} from "vuex";
 import TaskMenu from "./components/TaskMenu";
+import HomeCalendar from "./components/HomeCalendar";
 
 export default {
-    components: {TaskMenu},
+    components: {TaskMenu, HomeCalendar},
     data() {
         return {
             nowTime: $A.Time(),

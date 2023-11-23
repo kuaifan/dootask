@@ -5,7 +5,7 @@
         flex-shrink: 0;
         display: flex;
         align-items: flex-start;
-        margin: 32px 32px 16px;
+        margin: 32px 20px 16px;
         border-bottom: 1px solid #F4F4F5;
         .calendar-titbox {
             flex: 1;
@@ -179,6 +179,9 @@
                 .tui-datepicker-footer .tui-timepicker {
                     padding: 16px 46px 16px 47px;
                 }
+            }
+            .tui-full-calendar-popup-detail-item {
+                word-break: break-all;
             }
         }
     }

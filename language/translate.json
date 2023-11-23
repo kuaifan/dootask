@@ -17834,7 +17834,7 @@
         "key": "应用",
         "zh": "",
         "zh-CHT": "應用",
-        "en": "Application",
+        "en": "Apps",
         "ko": "응용",
         "ja": "応用です",
         "de": "Anwendung",
@@ -18478,5 +18478,38 @@
         "de": "Ich kann das einfach nicht.",
         "fr": "Tolérance et refus",
         "id": "Punya hati untuk menolak"
+    },
+    {
+        "key": "请等待打包完成",
+        "zh": "",
+        "zh-CHT": "請等待打包完成",
+        "en": "Please wait for packing to complete",
+        "ko": "패키지가 끝날 때까지 기다려 주세요",
+        "ja": "梱包が完了するまでお待ちいただけます。",
+        "de": "Bitte warten sie, bis ihr koffer fertig ist",
+        "fr": "Veuillez attendre que l’emballage soit terminé",
+        "id": "Tunggu sampai paket selesai"
+    },
+    {
+        "key": "选择一个项目查看更多任务",
+        "zh": "",
+        "zh-CHT": "選擇一個項目查看更多任務",
+        "en": "Select a project to view more tasks",
+        "ko": "더 많은 작업을 보려면 항목을 선택하십시오",
+        "ja": "1つのプロジェクトを選んでより多くのタスクを見ます",
+        "de": "Wählen sie ein projekt, um weitere aufgaben wahrzunehmen",
+        "fr": "Sélectionnez un projet pour voir plus de tâches",
+        "id": "Pilih satu item untuk melihat lebih banyak tugas"
+    },
+    {
+        "key": "首页",
+        "zh": "",
+        "zh-CHT": "首頁",
+        "en": "Home",
+        "ko": "첫 페이지",
+        "ja": "トップページです",
+        "de": "Die titelseite.",
+        "fr": "La page de couverture",
+        "id": "Halaman depan"
     }
 ]

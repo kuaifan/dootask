@@ -52,62 +52,63 @@
                     @touchstart.native="listTouch"
                     @on-scroll="listScroll">
                     <ul v-if="tabActive==='dialog'" ref="ul" class="dialog">
-                        <li
-                            v-if="dialogList.length > 0"
-                            v-for="(dialog, key) in dialogList"
-                            :ref="`dialog_${dialog.id}`"
-                            :key="key"
-                            :data-id="dialog.id"
-                            :class="dialogClass(dialog)"
-                            @click="openDialog({
-                                dialog_id: dialog.id,
-                                search_msg_id: dialog.search_msg_id
-                            })"
-                            v-longpress="handleLongpress"
-                            :style="{'background-color':dialog.color}">
-                            <template v-if="dialog.type=='group'">
-                                <EAvatar v-if="dialog.avatar" class="img-avatar" :src="dialog.avatar" :size="42"></EAvatar>
-                                <i v-else-if="dialog.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
-                                <i v-else-if="dialog.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
-                                <i v-else-if="dialog.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
-                                <i v-else-if="dialog.group_type=='okr'" class="taskfont icon-avatar task">&#xe6f4;</i>
-                                <Icon v-else class="icon-avatar" type="ios-people" />
-                            </template>
-                            <div v-else-if="dialog.dialog_user" class="user-avatar"><UserAvatar :userid="dialog.dialog_user.userid" :size="42"/></div>
-                            <Icon v-else class="icon-avatar" type="md-person" />
-                            <div class="dialog-box">
-                                <div class="dialog-title">
-                                    <div v-if="dialog.todo_num" class="todo">[{{$L('待办')}}{{formatTodoNum(dialog.todo_num)}}]</div>
-                                    <div v-if="$A.getDialogMention(dialog) > 0" class="mention">[@{{$A.getDialogMention(dialog)}}]</div>
-                                    <div v-if="dialog.bot" class="taskfont bot">&#xe68c;</div>
-                                    <template v-for="tag in $A.dialogTags(dialog)" v-if="tag.color != 'success'">
-                                        <Tag :color="tag.color" :fade="false" @on-click="openDialog(dialog.id)">{{$L(tag.text)}}</Tag>
-                                    </template>
-                                    <span>{{dialog.name}}</span>
-                                    <Icon v-if="dialog.type == 'user' && lastMsgReadDone(dialog.last_msg) && dialog.dialog_user.userid != userId" :type="lastMsgReadDone(dialog.last_msg)"/>
-                                    <em v-if="dialog.last_at">{{$A.formatTime(dialog.last_at)}}</em>
-                                </div>
-                                <div class="dialog-text no-dark-content">
-                                    <template v-if="dialog.extra_draft_has && dialog.id != dialogId">
-                                        <div class="last-draft">[{{$L('草稿')}}]</div>
-                                        <div class="last-text"><span>{{formatDraft(dialog.extra_draft_content)}}</span></div>
-                                    </template>
-                                    <template v-else>
-                                        <template v-if="dialog.type=='group' && dialog.last_msg && dialog.last_msg.userid">
-                                            <div v-if="dialog.last_msg.userid == userId" class="last-self">{{$L('你')}}</div>
-                                            <UserAvatar v-else :userid="dialog.last_msg.userid" :show-name="true" :show-icon="false" tooltip-disabled/>
+                        <template v-if="dialogList.length > 0">
+                            <li
+                                v-for="(dialog, key) in dialogList"
+                                :ref="`dialog_${dialog.id}`"
+                                :key="key"
+                                :data-id="dialog.id"
+                                :class="dialogClass(dialog)"
+                                @click="openDialog({
+                                    dialog_id: dialog.id,
+                                    search_msg_id: dialog.search_msg_id
+                                })"
+                                v-longpress="handleLongpress"
+                                :style="{'background-color':dialog.color}">
+                                <template v-if="dialog.type=='group'">
+                                    <EAvatar v-if="dialog.avatar" class="img-avatar" :src="dialog.avatar" :size="42"></EAvatar>
+                                    <i v-else-if="dialog.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
+                                    <i v-else-if="dialog.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
+                                    <i v-else-if="dialog.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
+                                    <i v-else-if="dialog.group_type=='okr'" class="taskfont icon-avatar task">&#xe6f4;</i>
+                                    <Icon v-else class="icon-avatar" type="ios-people" />
+                                </template>
+                                <div v-else-if="dialog.dialog_user" class="user-avatar"><UserAvatar :userid="dialog.dialog_user.userid" :size="42"/></div>
+                                <Icon v-else class="icon-avatar" type="md-person" />
+                                <div class="dialog-box">
+                                    <div class="dialog-title">
+                                        <div v-if="dialog.todo_num" class="todo">[{{$L('待办')}}{{formatTodoNum(dialog.todo_num)}}]</div>
+                                        <div v-if="$A.getDialogMention(dialog) > 0" class="mention">[@{{$A.getDialogMention(dialog)}}]</div>
+                                        <div v-if="dialog.bot" class="taskfont bot">&#xe68c;</div>
+                                        <template v-for="tag in $A.dialogTags(dialog)" v-if="tag.color != 'success'">
+                                            <Tag :color="tag.color" :fade="false" @on-click="openDialog(dialog.id)">{{$L(tag.text)}}</Tag>
                                         </template>
-                                        <div class="last-text">
-                                            <em v-if="formatMsgEmojiDesc(dialog.last_msg)">{{formatMsgEmojiDesc(dialog.last_msg)}}</em>
-                                            <span>{{$A.getMsgSimpleDesc(dialog.last_msg)}}</span>
-                                        </div>
-                                    </template>
-                                    <div v-if="dialog.silence" class="taskfont last-silence">&#xe7d7;</div>
+                                        <span>{{dialog.name}}</span>
+                                        <Icon v-if="dialog.type == 'user' && lastMsgReadDone(dialog.last_msg) && dialog.dialog_user.userid != userId" :type="lastMsgReadDone(dialog.last_msg)"/>
+                                        <em v-if="dialog.last_at">{{$A.formatTime(dialog.last_at)}}</em>
+                                    </div>
+                                    <div class="dialog-text no-dark-content">
+                                        <template v-if="dialog.extra_draft_has && dialog.id != dialogId">
+                                            <div class="last-draft">[{{$L('草稿')}}]</div>
+                                            <div class="last-text"><span>{{formatDraft(dialog.extra_draft_content)}}</span></div>
+                                        </template>
+                                        <template v-else>
+                                            <template v-if="dialog.type=='group' && dialog.last_msg && dialog.last_msg.userid">
+                                                <div v-if="dialog.last_msg.userid == userId" class="last-self">{{$L('你')}}</div>
+                                                <UserAvatar v-else :userid="dialog.last_msg.userid" :show-name="true" :show-icon="false" tooltip-disabled/>
+                                            </template>
+                                            <div class="last-text">
+                                                <em v-if="formatMsgEmojiDesc(dialog.last_msg)">{{formatMsgEmojiDesc(dialog.last_msg)}}</em>
+                                                <span>{{$A.getMsgSimpleDesc(dialog.last_msg)}}</span>
+                                            </div>
+                                        </template>
+                                        <div v-if="dialog.silence" class="taskfont last-silence">&#xe7d7;</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <Badge class="dialog-num" :type="dialog.silence ? 'normal' : 'error'" :overflow-count="999" :count="$A.getDialogUnread(dialog, true)"/>
-                            <div class="dialog-line"></div>
-                        </li>
+                                <Badge class="dialog-num" :type="dialog.silence ? 'normal' : 'error'" :overflow-count="999" :count="$A.getDialogUnread(dialog, true)"/>
+                                <div class="dialog-line"></div>
+                            </li>
+                        </template>
                         <li v-else-if="dialogSearchLoad === 0" class="nothing">
                             {{$L(dialogSearchKey ? `没有任何与"${dialogSearchKey}"相关的会话` : `没有任何会话`)}}
                         </li>

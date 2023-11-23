@@ -309,7 +309,8 @@ export default {
                 { value: "okr", label: "OKR管理" },
                 { value: "robot", label: "AI机器人" },
                 { value: "signin", label: "签到" },
-                { value: "meeting", label: "会议" }
+                { value: "meeting", label: "会议" },
+                { value: "calendar", label: "日历" },
             ];
             // wap模式
             let appApplyList = this.windowOrientation != 'portrait' ? (
@@ -317,7 +318,6 @@ export default {
                         { value: "scan", label: "扫一扫" }
                     ] : []
                 ) : [
-                { value: "calendar", label: "日历" },
                 { value: "file", label: "文件" },
                 { value: "addProject", label: "创建项目" },
                 { value: "addTask", label: "添加任务" },

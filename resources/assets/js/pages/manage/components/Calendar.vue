@@ -151,25 +151,28 @@ export default {
         }
     },
     mounted() {
+        console.log(this.view)
+        console.log(this.calendars)
         this.calendarInstance = new Calendar(this.$refs.tuiCalendar, {
             defaultView: this.view,
-            taskView: this.taskView,
-            scheduleView: this.scheduleView,
-            theme: this.theme,
-            template: this.template,
-            week: this.week,
-            month: this.month,
-            calendars: this.calendars,
-            useCreationPopup: this.useCreationPopup,
-            useDetailPopup: this.useDetailPopup,
-            timezones: this.timezones,
-            disableDblClick: this.disableDblClick,
-            disableClick: this.disableClick,
-            isReadOnly: this.isReadOnly,
-            usageStatistics: this.usageStatistics
+            calendars: [],
+            // taskView: this.taskView,
+            // scheduleView: this.scheduleView,
+            // theme: this.theme,
+            // template: this.template,
+            // week: this.week,
+            // month: this.month,
+            // calendars: this.calendars,
+            // useCreationPopup: this.useCreationPopup,
+            // useDetailPopup: this.useDetailPopup,
+            // timezones: this.timezones,
+            // disableDblClick: this.disableDblClick,
+            // disableClick: this.disableClick,
+            // isReadOnly: this.isReadOnly,
+            // usageStatistics: this.usageStatistics
         });
-        this.addEventListeners();
-        this.reflectSchedules();
+        // this.addEventListeners();
+        // this.reflectSchedules();
     },
     beforeDestroy() {
         this.calendarInstance.off();

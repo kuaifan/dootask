@@ -81,6 +81,7 @@ class ProjectTaskContent extends AbstractModel
         Base::makeDir(dirname($publicPath));
         $result = file_put_contents($publicPath, $content);
         if(!$result){
+            // todo 记录失败日志便于追查具体原因
             info("保存任务详情至文件失败");
             info($publicPath);
             info($oldContent);
