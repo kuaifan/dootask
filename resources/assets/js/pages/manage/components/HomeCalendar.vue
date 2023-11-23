@@ -52,30 +52,24 @@
                 </div>
                 <!--  -->
                 <div class="calendar-tui">
-                    <div style="height: 250px;">
-                        <Calendar
-                            ref="cal"
-                            :view="calendarView"
-                            :theme="calendarTheme"
-                            :template="calendarTemplate"
-                            :schedules="list"
-                            :taskView="false"
-                            :useCreationPopup="false"
-                            @beforeCreateSchedule="onBeforeCreateSchedule"
-                            @beforeClickSchedule="onBeforeClickSchedule"
-                            @beforeUpdateSchedule="onBeforeUpdateSchedule"
-                            disable-click/>
-                    </div>
+                    <Calendar style="height: 100%;"
+                        ref="cal"
+                        :view="calendarView"
+                        :theme="calendarTheme"
+                        :template="calendarTemplate"
+                        :schedules="list"
+                        :taskView="false"
+                        :useCreationPopup="false"
+                        @beforeCreateSchedule="onBeforeCreateSchedule"
+                        @beforeClickSchedule="onBeforeClickSchedule"
+                        @beforeUpdateSchedule="onBeforeUpdateSchedule"
+                        disable-click/>
                 </div>
             </div>
         </Scrollbar>
     </div>
 </template>
 <script>
-import 'tui-date-picker/dist/tui-date-picker.css';
-import 'tui-time-picker/dist/tui-time-picker.css';
-import 'tui-calendar-hi/dist/tui-calendar-hi.css'
-
 import {mapState, mapGetters} from "vuex";
 import Calendar from "./Calendar";
 import {Store} from "le5le-store";
@@ -164,7 +158,7 @@ export default {
                     start: $A.Date(data.start_at).toISOString(),
                     end: $A.Date(data.end_at).toISOString(),
                     color: "#515a6e",
-                    bgColor: data.color || '#E3EAFD',
+                    backgroundColor: data.color || '#E3EAFD',
                     borderColor: data.p_color,
                     priority: '',
                     preventClick: true,
@@ -194,16 +188,16 @@ export default {
                 }
                 if (data.complete_at) {
                     task.color = "#c3c2c2"
-                    task.bgColor = "#f3f3f3"
+                    task.backgroundColor = "#f3f3f3"
                     task.borderColor = "#e3e3e3"
                 } else if (data.overdue) {
                     task.title = `[${this.$L('超期')}] ${task.title}`
                     task.color = "#f56c6c"
-                    task.bgColor = data.color || "#fef0f0"
+                    task.backgroundColor = data.color || "#fef0f0"
                     task.priority+= `<span class="overdue">${this.$L('超期未完成')}</span>`;
                 }
                 if (!task.borderColor) {
-                    task.borderColor = task.bgColor;
+                    task.borderColor = task.backgroundColor;
                 }
                 return task;
             });

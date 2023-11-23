@@ -33,7 +33,7 @@
                 :taskView="false"
                 :useCreationPopup="false"
                 @beforeCreateSchedule="onBeforeCreateSchedule"
-                @beforeClickSchedule="onBeforeClickSchedule"
+                @beforeUpdateEvent="onBeforeClickSchedule"
                 @beforeUpdateSchedule="onBeforeUpdateSchedule"
                 disable-click/>
         </div>
@@ -44,10 +44,6 @@
 </template>
 
 <script>
-import 'tui-date-picker/dist/tui-date-picker.css';
-import 'tui-time-picker/dist/tui-time-picker.css';
-import 'tui-calendar-hi/dist/tui-calendar-hi.css'
-
 import {mapState, mapGetters} from "vuex";
 import Calendar from "./components/Calendar";
 import moment from "moment";
@@ -141,7 +137,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheTasks', 'taskCompleteTemps', 'wsOpenNum', 'themeIsDark']),
+        ...mapState(['cacheUserBasic', 'cacheTasks', 'taskCompleteTemps', 'wsOpenNum', 'themeIsDark']),
 
         ...mapGetters(['transforTasks']),
 
@@ -179,12 +175,15 @@ export default {
                     start: $A.Date(data.start_at).toISOString(),
                     end: $A.Date(data.end_at).toISOString(),
                     color: "#515a6e",
-                    bgColor: data.color || '#E3EAFD',
+                    backgroundColor: data.color || '#E3EAFD',
                     borderColor: data.p_color,
-                    priority: '',
+                    priority: '1122',
                     preventClick: true,
                     preventCheckHide: true,
                     isChecked: !!data.complete_at,
+                    attendees: false,
+                    isReadOnly: false,
+                    state: '',
                     //
                     complete_at: data.complete_at,
                     start_at: data.start_at,
@@ -209,17 +208,18 @@ export default {
                 }
                 if (data.complete_at) {
                     task.color = "#c3c2c2"
-                    task.bgColor = "#f3f3f3"
+                    task.backgroundColor = "#f3f3f3"
                     task.borderColor = "#e3e3e3"
                 } else if (data.overdue) {
                     task.title = `[${this.$L('超期')}] ${task.title}`
                     task.color = "#f56c6c"
-                    task.bgColor = data.color || "#fef0f0"
+                    task.backgroundColor = data.color || "#fef0f0"
                     task.priority+= `<span class="overdue">${this.$L('超期未完成')}</span>`;
                 }
                 if (!task.borderColor) {
-                    task.borderColor = task.bgColor;
+                    task.borderColor = task.backgroundColor;
                 }
+                task.state = task.priority
                 return task;
             });
         }
@@ -318,6 +318,11 @@ export default {
         },
 
         onBeforeClickSchedule(event) {
+            // calendar.updateEvent(event.id, event.calendarId, change);
+            console.log(2222);
+            this.$store.dispatch("openTask", event.event)
+            return;
+            console.log(event)
             const {type, schedule} = event;
             let data = this.cacheTasks.find(({id}) => id === schedule.id);
             if (!data) {
@@ -358,11 +363,13 @@ export default {
         },
 
         onBeforeUpdateSchedule(res) {
-            const {changes, schedule} = res;
+            const changes = res.changes
+            const schedule = res.event
             let data = this.cacheTasks.find(({id}) => id === schedule.id);
             if (!data) {
                 return;
             }
+            console.log(schedule)
             if (changes.start || changes.end) {
                 const cal = this.$refs.cal.getInstance();
                 cal.updateSchedule(schedule.id, schedule.calendarId, changes);

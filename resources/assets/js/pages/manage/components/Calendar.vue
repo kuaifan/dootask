@@ -2,7 +2,11 @@
     <div ref="tuiCalendar" class="calendar-wrapper"></div>
 </template>
 <script>
-import Calendar from 'tui-calendar-hi';
+// import 'tui-date-picker/dist/tui-date-picker.css';
+// import 'tui-time-picker/dist/tui-time-picker.css';
+import '@toast-ui/calendar/dist/toastui-calendar.css';
+import Calendar from '@toast-ui/calendar';
+// import Calendar from 'tui-calendar-hi';
 
 export default {
     name: 'Calendar',
@@ -151,28 +155,44 @@ export default {
         }
     },
     mounted() {
-        console.log(this.view)
-        console.log(this.calendars)
+        let dayNames = [
+            this.$L('{日}'),
+            this.$L('{一}'),
+            this.$L('{二}'),
+            this.$L('{三}'),
+            this.$L('{四}'),
+            this.$L('{五}'),
+            this.$L('{六}')
+        ]
         this.calendarInstance = new Calendar(this.$refs.tuiCalendar, {
             defaultView: this.view,
-            calendars: [],
-            // taskView: this.taskView,
-            // scheduleView: this.scheduleView,
-            // theme: this.theme,
-            // template: this.template,
-            // week: this.week,
-            // month: this.month,
-            // calendars: this.calendars,
-            // useCreationPopup: this.useCreationPopup,
-            // useDetailPopup: this.useDetailPopup,
-            // timezones: this.timezones,
-            // disableDblClick: this.disableDblClick,
-            // disableClick: this.disableClick,
-            // isReadOnly: this.isReadOnly,
-            // usageStatistics: this.usageStatistics
+            week: {
+                taskView: this.taskView,
+                dayNames: dayNames,
+            },
+            month: {
+                dayNames: dayNames,
+            },
+            scheduleView: this.scheduleView,
+            theme: this.theme,
+            template: this.template,
+            calendars: this.calendars,
+            useCreationPopup: this.useCreationPopup,
+            useDetailPopup: this.useDetailPopup,
+            timezone: this.timezones,
+            disableDblClick: this.disableDblClick,
+            disableClick: this.disableClick,
+            usageStatistics: this.usageStatistics,
+            // isReadOnly: true,
         });
-        // this.addEventListeners();
-        // this.reflectSchedules();
+        // this.calendarInstance.on('beforeUpdateEvent', ( event ) => {
+        //     console.log(event); // EventObject
+        // });
+        this.calendarInstance.on('beforeDeleteEvent', ( event ) => {
+            console.log(event); // EventObject
+        });
+        this.addEventListeners();
+        this.reflectSchedules();
     },
     beforeDestroy() {
         this.calendarInstance.off();
@@ -186,7 +206,7 @@ export default {
         },
         reflectSchedules() {
             if (this.schedules.length > 0) {
-                this.invoke('createSchedules', this.schedules);
+                this.calendarInstance.createEvents(this.schedules)
             }
         },
         getRootElement() {
@@ -198,15 +218,6 @@ export default {
         resetRender() {
             this.calendarInstance.clear();
             this.reflectSchedules();
-        },
-        invoke(methodName, ...args) {
-            let result;
-
-            if (this.calendarInstance[methodName]) {
-                result = this.calendarInstance[methodName](...args);
-            }
-
-            return result;
         }
     }
 };
