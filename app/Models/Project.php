@@ -24,6 +24,7 @@ use Request;
  * @property int|null $dialog_id 聊天会话ID
  * @property string|null $archived_at 归档时间
  * @property int|null $archived_userid 归档会员
+ * @property int|null $is_fixed 是否固定
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -47,6 +48,7 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereDesc($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereDialogId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Project whereIsFixed($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project wherePersonal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereUpdatedAt($value)
@@ -169,6 +171,8 @@ class Project extends AbstractModel
         $array['task_my_num'] = $builder->count();
         $array['task_my_complete'] = $builder->whereNotNull('project_tasks.complete_at')->count();
         $array['task_my_percent'] = $array['task_my_num'] ? intval($array['task_my_complete'] / $array['task_my_num'] * 100) : 0;
+        //
+        $array['panel_show_task_complete'] = ProjectPermission::getPermission($this->id, ProjectPermission::PANEL_SHOW_TASK_COMPLETE);
         //
         return $array;
     }
