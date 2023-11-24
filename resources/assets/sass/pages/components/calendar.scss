@@ -1,0 +1,162 @@
+.calendar-wrapper {
+    flex: 1;
+    position: relative;
+    &:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #ffffff;
+        z-index: 1;
+    }
+    .tui-full-calendar-popup {
+        box-shadow: none;
+        .tui-full-calendar-section-header {
+            .tui-full-calendar-ic-checkbox-checked {
+                background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAAhFBMVEUAAACLz3CLz3CLz3CKzm6Gy2+Lz3CLz3CL0HCLz3CLz3CLz3CLz3CMz3GLz3CKz3CLz3CL0HCJ0G+KznCN0HCL0HCLz3CKz3CLz3CLz3CLz3CMz3CLz3CLz3GL0XCL0HCN0XKLz3CLz3CMz3CLz3CM0HCM0G+FzHCLz3CKz3CMz3CLz3Bod5CFAAAAK3RSTlMA18RAOQ3s8+Pc0rmyq3tpiUwTgBnovyDMjmNSRjUvJQX5yKB0WisKppuUFLaY7gAAAotJREFUeNrtm+FymkAUhc8KqIAgSkyUtkmsmqa97/9+HWeSudpCd8qZ7E0m+73A9/1gxmXx4IK0nbipvDFTN2lT9JDVToLh6gx/sHQSFLfEFZUEp8IFczFgrv5CTChe/TsxYvfy/IkZy7M/c2KGywDUYkgNIBdDciARUxI0YkqDiZgygRNTHKZiyhRiTAyIATEgBsSAGBADYsAnCJgdmtIywKUAOrsA94QzJyKA95/pbALcPV7piADGryzDB+Rnv3IkAhi/UhMBjF9pQwbk3/A3JRXA+7GjAng/DqEC5v3+dMYE8P6nQsIEzFOPnw7g/QpC+R8K4QJ4f5iAzaA/TMAm6fdvZQgY+wW2fn9A0a66Bee/2xLH8kp/Rr1MB/3jAxaP0ALCPzagzPBCM9r/XcYH3K4BLfD4vw75xwdMbqB4CmaD/vEB2ztc0RD+MQHFg+c85fffDPv9AbPUd6Lz+ydCBDyjh1//6WcCGngK1L8a8lMBJTwFfj8XIC16+SnX7Af9bIDUngLSrwFEwaD/VogA5YheDj7/Wv1MgL9g/8XjpwNk+c8Cyq8BYwqePX46QOkGCmi/BowrqFi/Bvg4wYv6y7e4Kz4Rfj5AnzY/WSlcwHAB5+cD9ivKzwfIbEX4qQA99RB+NkDfO4b5sRAigHjzpP0C6u6D9wuo2z/eL+DvXx8Zv4C4gVd/qABxCeFnApQT5+cDpOP8fICcLv2VxbfjlQZUNh+vU/XbBIj6jQLm9wDWlZgFyOaYHJ3Ix/gDQwyIATEgBsSAGODBfuBgPvEwH7m0YkqLVExJYfsQuPcwdjOf+5kPHoFKjKio0e3Hn90WUCyGt7v3Nf0GsjqXYOR1hh6SJsz8v0mg/AZRXmaRKXtJBwAAAABJRU5ErkJggg==);
+            }
+        }
+        .tui-full-calendar-popup-container {
+            word-break: break-all;
+            border: 0;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+        }
+        .tui-full-calendar-arrow-top .tui-full-calendar-popup-arrow-border {
+            top: -8px;
+            border-bottom-color: rgba(217, 217, 217, .5);
+        }
+    }
+    .tui-full-calendar-dropdown-menu {
+        border-color: #e8e8e8;
+        width: calc(100% - 14px);
+    }
+    .tui-full-calendar-popup-creation {
+        .tui-full-calendar-icon {
+            &.tui-full-calendar-ic-title,
+            &.tui-full-calendar-calendar-dot {
+                display: none;
+            }
+            &.tui-full-calendar-ic-date {
+                background-image: url("data:image/svg+xml;base64,PHN2ZyB0PSIxNjIzODU5NjcwNjA3IiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjE2Mzg4IiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCI+PHBhdGggZD0iTTk2MCAxMjhIODMzYzAtNTMtNDMtOTYtOTYtOTZoLTE2Yy01MyAwLTk2IDQzLTk2IDk2SDQwMGMwLTI2LjUtMTAuNy01MC41LTI4LjEtNjcuOUMzNTQuNSA0Mi43IDMzMC41IDMyIDMwNCAzMmgtMTZjLTUzIDAtOTYgNDMtOTYgOTZINjRjLTM1LjMgMC02NCAyOC42LTY0IDY0djczNmMwIDM1LjMgMjguNyA2NCA2NCA2NGg4OTZjMzUuMyAwIDY0LTI4LjcgNjQtNjRWMTkyYzAtMzUuNC0yOC43LTY0LTY0LTY0eiBtLTI3MSA4YzAtMjIuMSAxNy45LTQwIDQwLTQwczQwIDE3LjkgNDAgNDB2ODBjMCAyMi4xLTE3LjkgNDAtNDAgNDAtMTEgMC0yMS00LjUtMjguMy0xMS43QzY5My41IDIzNyA2ODkgMjI3IDY4OSAyMTZ2LTgweiBtLTQzMyAwYzAtMjIuMSAxNy45LTQwIDQwLTQwczQwIDE3LjkgNDAgNDB2ODBjMCAyMi4xLTE3LjkgNDAtNDAgNDAtMTEgMC0yMS00LjUtMjguMy0xMS43QzI2MC41IDIzNyAyNTYgMjI3IDI1NiAyMTZ2LTgweiBtNzA0IDc2MGMwIDE3LjctMTQuMyAzMi0zMiAzMkg5NmMtMTcuNyAwLTMyLTE0LjMtMzItMzJWNDQ4aDg5NnY0NDh6IiBwLWlkPSIxNjM4OSIgZmlsbD0iIzUxNTE1MSI+PC9wYXRoPjwvc3ZnPg==");
+                background-size: contain;
+            }
+        }
+        .tui-full-calendar-content {
+            padding-left: 0;
+        }
+        .tui-full-calendar-popup-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            .tui-full-calendar-popup-section-item {
+                height: 36px;
+                line-height: 34px;
+                border-color: #e8e8e8;
+                border-radius: 4px;
+            }
+            .tui-full-calendar-popup-section-item input {
+                height: 34px;
+            }
+        }
+        .tui-full-calendar-section-title {
+            width: 100%;
+            input {
+                width: 100%;
+            }
+        }
+        .tui-full-calendar-section-start-date,
+        .tui-full-calendar-section-end-date {
+            width: 210px;
+            .tui-full-calendar-content {
+                padding-left: 8px;
+            }
+        }
+        .tui-full-calendar-popup-location,
+        .tui-full-calendar-section-private,
+        .tui-full-calendar-section-allday,
+        .tui-full-calendar-section-state {
+            display: none;
+        }
+    }
+    .tui-full-calendar-popup-task {
+        .priority {
+            color: #ffffff;
+            padding: 2px 4px;
+            border-radius: 4px;
+            margin-right: 6px;
+        }
+        .overdue {
+            color: #f5222d;
+            background: #fff1f0;
+            border: 1px solid #ffa39e;
+            padding: 1px 3px;
+            border-radius: 4px;
+            margin-right: 6px;
+        }
+        .tui-full-calendar-calendar-dot,
+        .tui-full-calendar-ic-priority {
+            opacity: 0;
+        }
+        .tui-full-calendar-ic-edit {
+            top: -2px;
+            background-image: url("data:image/svg+xml;base64,PHN2ZyB0PSIxNjIzODU5MzY4MTg5IiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjExMTkiIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48cGF0aCBkPSJNODMzLjQyODU3MTY4IDYySDE5MC41NzE0MjgzMmExMjguNTcxNDI4MzIgMTI4LjU3MTQyODMyIDAgMCAwLTEyOC41NzE0MjgzMiAxMjguNTcxNDI4MzJ2NjQyLjg1NzE0MzM2YTEyOC41NzE0MjgzMiAxMjguNTcxNDI4MzIgMCAwIDAgMTI4LjU3MTQyODMyIDEyOC41NzE0MjgzMmg2NDIuODU3MTQzMzZhMTI4LjU3MTQyODMyIDEyOC41NzE0MjgzMiAwIDAgMCAxMjguNTcxNDI4MzItMTI4LjU3MTQyODMyVjE5MC41NzE0MjgzMmExMjguNTcxNDI4MzIgMTI4LjU3MTQyODMyIDAgMCAwLTEyOC41NzE0MjgzMi0xMjguNTcxNDI4MzJ6IG02NC4yODU3MTQxNiA3NzEuNDI4NTcxNjhhNjQuMjg1NzE0MTYgNjQuMjg1NzE0MTYgMCAwIDEtNjQuMjg1NzE0MTcgNjQuMjg1NzE0MTZIMTkwLjU3MTQyODMyYTY0LjI4NTcxNDE2IDY0LjI4NTcxNDE2IDAgMCAxLTY0LjI4NTcxNDE2LTY0LjI4NTcxNDE2VjE5MC41NzE0MjgzMmE2NC4yODU3MTQxNiA2NC4yODU3MTQxNiAwIDAgMSA2NC4yODU3MTQxNy02NC4yODU3MTQxNmg2NDIuODU3MTQzMzVhNjQuMjg1NzE0MTYgNjQuMjg1NzE0MTYgMCAwIDEgNjQuMjg1NzE0MTYgNjQuMjg1NzE0MTd6IiBwLWlkPSIxMTIwIiBmaWxsPSIjNTE1MTUxIj48L3BhdGg+PHBhdGggZD0iTTE5MC41NzE0MjgzMiAyNTQuODU3MTQyNDhoNjQuMjg1NzE0MTZ2NjQuMjg1NzE1MDRIMTkwLjU3MTQyODMyek0zMTkuMTQyODU3NTIgMjU0Ljg1NzE0MjQ4aDQ1MHY2NC4yODU3MTUwNEgzMTkuMTQyODU3NTJ6TTE5MC41NzE0MjgzMiA0NDcuNzE0Mjg1ODRoNjQuMjg1NzE0MTZ2NjQuMjg1NzE0MTZIMTkwLjU3MTQyODMyek0zMTkuMTQyODU3NTIgNDQ3LjcxNDI4NTg0aDQ1MHY2NC4yODU3MTQxNkgzMTkuMTQyODU3NTJ6TTE5MC41NzE0MjgzMiA2NDAuNTcxNDI4MzJoNjQuMjg1NzE0MTZ2NjQuMjg1NzE0MTZIMTkwLjU3MTQyODMyek0zMTkuMTQyODU3NTIgNjQwLjU3MTQyODMyaDMyMS40Mjg1NzA4djY0LjI4NTcxNDE2SDMxOS4xNDI4NTc1MnoiIHAtaWQ9IjExMjEiIGZpbGw9IiM1MTUxNTEiPjwvcGF0aD48L3N2Zz4=");
+        }
+        .tui-full-calendar-ic-delete {
+            top: -2px;
+            background-image: url("data:image/svg+xml;base64,PHN2ZyB0PSIxNjIzODU5MzMwMTc2IiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9Ijc5MiIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiPjxwYXRoIGQ9Ik04OTIuMjg4IDI1NmgtMTkxLjE2OEEyMDIuMjQgMjAyLjI0IDAgMCAwIDUwOS42MzIgNjIuMDggMjAxLjIxNiAyMDEuMjE2IDAgMCAwIDMxOC44NDggMjU2SDEyOGMtMTguNjg4IDAtNjYuMDQ4LTQuMjI0LTY2LjA0OCAyNC43NjhDNjEuOTUyIDMyNy43NDQgMTA5LjM3NiAzMjAgMTI4IDMyMGg2NHY1MTJhMTQ2LjQ5NiAxNDYuNDk2IDAgMCAwIDEyNy40MjQgMTI4aDM4Mi4yNzJBMTUwLjAxNiAxNTAuMDE2IDAgMCAwIDgzMiA4MzJsLTMuMzkyLTUxMmg2NGMxOC4zNjggMCA2NS4wMjQgMS40NzIgNjUuMDI0LTM5Ljc0NEE3Mi4zODQgNzIuMzg0IDAgMCAwIDg5Mi4yODggMjU2ek01MDkuNjMyIDEyOC41MTJBMTM4LjE3NiAxMzguMTc2IDAgMCAxIDYzNy40NCAyNTZIMzgyLjU5MmExMzcuOTIgMTM3LjkyIDAgMCAxIDEyNy4wNC0xMjcuNDg4ek03NjggODMyYTk3Ljk4NCA5Ny45ODQgMCAwIDEtNjYuODggNjRIMzE4Ljg0OGE5My41NjggOTMuNTY4IDAgMCAxLTY0LTY0VjMyMEg3Njh2NTEyeiBtLTM4NS40MDgtNjRWNTEyYzAtMTguNDk2IDAuOTYtNjAuOTkyIDM2LjczNi02MC45OTIgMjcuMzI4IDAgMjYuNDk2IDQzLjAwOCAyNi45NDQgNjAuOTkydjI1NmMwIDE4LjQ5Ni02LjQgMjAuMDMyLTI0Ljk2IDIwLjAzMnMtMzguNzItMS41MzYtMzguNzItMjAuMDMyeiBtMTkxLjE2OCAwVjUxMmE2NCA2NCAwIDAgMSAyMy44MDgtNjAuOTkyYzQyLjQzMiAwIDM5LjM2IDQzLjAwOCAzOS44NzIgNjAuOTkydjI1NmMwIDE4LjQ5Ni0xOS41ODQgMjAuMDMyLTM3Ljk1MiAyMC4wMzJzLTI1Ljc5Mi0xLjUzNi0yNS43OTItMjAuMDMyeiIgcC1pZD0iNzkzIiBmaWxsPSIjNTE1MTUxIj48L3BhdGg+PC9zdmc+");
+        }
+        .tui-full-calendar-popup-detail-item-separate {
+            padding-left: 22px;
+        }
+    }
+    .tui-datepicker {
+        border-color: #e8e8e8;
+        .tui-calendar {
+            th,
+            td {
+                height: 32px;
+            }
+            .tui-calendar-prev-month.tui-calendar-date,
+            .tui-calendar-next-month.tui-calendar-date {
+                visibility: visible;
+            }
+        }
+        .tui-datepicker-body .tui-timepicker,
+        .tui-datepicker-footer .tui-timepicker {
+            padding: 16px 46px 16px 47px;
+        }
+    }
+    .tui-full-calendar-week-container{
+        min-height: 100px;
+    }
+}
+
+body.window-portrait {
+    .calendar-wrapper {
+        .tui-full-calendar-popup {
+            font-weight: normal;
+        }
+        .tui-full-calendar-section-button {
+            > button {
+                .tui-full-calendar-icon {
+                    width: 14px;
+                    height: 14px;
+                    background-size: 14px;
+                }
+                .tui-full-calendar-content {
+                    font-size: 14px;
+                }
+            }
+        }
+    }
+    @media (max-width: 640px) {
+        .calendar-wrapper {
+            .tui-full-calendar-popup-arrow {
+                display: none;
+            }
+        }
+    }
+}

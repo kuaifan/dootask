@@ -5,7 +5,7 @@
             <ProjectPanel/>
             <ProjectDialog/>
         </template>
-        <div v-else class="page-project-empty">
+        <div v-else-if="!windowPortrait" class="page-project-empty">
             <div><i class="taskfont">&#xe6f9;</i></div>
             <span>{{ $L('选择一个项目查看更多任务') }}</span>
         </div>

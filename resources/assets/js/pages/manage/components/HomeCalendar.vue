@@ -10,63 +10,61 @@
             </ButtonGroup>
             <Button class="calendar-header-back" size="small" @click="nowMonth">{{$L('今天')}}</Button>
         </div>
-        <Scrollbar class="calendar-content">
-            <div class="calendar-content" @scroll="handleScroll">
-                <transition name="slide-up">
-                    <table class="calendar-table" >
-                        <thead>
-                        <tr>
-                            <th>{{$L('日')}}</th>
-                            <th>{{$L('一')}}</th>
-                            <th>{{$L('二')}}</th>
-                            <th>{{$L('三')}}</th>
-                            <th>{{$L('四')}}</th>
-                            <th>{{$L('五')}}</th>
-                            <th>{{$L('六')}}</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr v-for="item in dateArray">
-                            <template v-for="data in item">
-                                <td v-if="data.month" :class="{today: data.today}">
-                                    <ETooltip max-width="auto" :disabled="true">
-                                        <div slot="content" v-html="getTimes(data.date)"></div>
-                                        <div @click="onDayClick(data)" class="item-day">
-                                            <div>{{data.day}}</div>
-                                            <i v-if="isCheck(data)" class="badge"></i>
-                                        </div>
-                                    </ETooltip>
-                                </td>
-                                <td v-else class="disabled">
+        <div class="calendar-content">
+            <transition name="slide-up">
+                <table class="calendar-table" >
+                    <thead>
+                    <tr>
+                        <th>{{$L('日')}}</th>
+                        <th>{{$L('一')}}</th>
+                        <th>{{$L('二')}}</th>
+                        <th>{{$L('三')}}</th>
+                        <th>{{$L('四')}}</th>
+                        <th>{{$L('五')}}</th>
+                        <th>{{$L('六')}}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr v-for="item in dateArray">
+                        <template v-for="data in item">
+                            <td v-if="data.month" :class="{today: data.today}">
+                                <ETooltip max-width="auto" :disabled="true">
+                                    <div slot="content" v-html="getTimes(data.date)"></div>
                                     <div @click="onDayClick(data)" class="item-day">
                                         <div>{{data.day}}</div>
+                                        <i v-if="isCheck(data)" class="badge"></i>
                                     </div>
-                                </td>
-                            </template>
-                        </tr>
-                        </tbody>
-                    </table>
-                </transition>
-                <div v-if="loadIng" class="calendar-loading">
-                    <Loading/>
-                </div>
-                <!--  -->
-                <div class="calendar-tui">
-                    <Calendar style="height: 100%;"
-                        ref="cal"
-                        :view="calendarView"
-                        :theme="calendarTheme"
-                        :template="calendarTemplate"
-                        :schedules="list"
-                        :taskView="false"
-                        :useCreationPopup="false"
-                        @beforeCreateSchedule="onBeforeCreateSchedule"
-                        @beforeClickSchedule="onBeforeClickSchedule"
-                        @beforeUpdateSchedule="onBeforeUpdateSchedule"
-                        disable-click/>
-                </div>
+                                </ETooltip>
+                            </td>
+                            <td v-else class="disabled">
+                                <div @click="onDayClick(data)" class="item-day">
+                                    <div>{{data.day}}</div>
+                                </div>
+                            </td>
+                        </template>
+                    </tr>
+                    </tbody>
+                </table>
+            </transition>
+            <div v-if="loadIng" class="calendar-loading">
+                <Loading/>
             </div>
-        </Scrollbar>
+            <!--  -->
+            <div class="calendar-tui">
+                <Calendar style="height:calc(100% - 7px);"
+                    ref="cal"
+                    :view="calendarView"
+                    :theme="calendarTheme"
+                    :template="calendarTemplate"
+                    :schedules="list"
+                    :taskView="false"
+                    :useCreationPopup="false"
+                    @beforeCreateSchedule="onBeforeCreateSchedule"
+                    @beforeClickSchedule="onBeforeClickSchedule"
+                    @beforeUpdateSchedule="onBeforeUpdateSchedule"
+                    disable-click/>
+            </div>
+        </div>
     </div>
 </template>
 <script>
@@ -158,7 +156,7 @@ export default {
                     start: $A.Date(data.start_at).toISOString(),
                     end: $A.Date(data.end_at).toISOString(),
                     color: "#515a6e",
-                    backgroundColor: data.color || '#E3EAFD',
+                    bgColor: data.color || '#E3EAFD',
                     borderColor: data.p_color,
                     priority: '',
                     preventClick: true,
@@ -188,36 +186,30 @@ export default {
                 }
                 if (data.complete_at) {
                     task.color = "#c3c2c2"
-                    task.backgroundColor = "#f3f3f3"
+                    task.bgColor = "#f3f3f3"
                     task.borderColor = "#e3e3e3"
                 } else if (data.overdue) {
                     task.title = `[${this.$L('超期')}] ${task.title}`
                     task.color = "#f56c6c"
-                    task.backgroundColor = data.color || "#fef0f0"
+                    task.bgColor = data.color || "#fef0f0"
                     task.priority+= `<span class="overdue">${this.$L('超期未完成')}</span>`;
                 }
                 if (!task.borderColor) {
-                    task.borderColor = task.backgroundColor;
+                    task.borderColor = task.bgColor;
                 }
                 return task;
             });
         }
     },
     methods: {
-
-        handleScroll(event) {
-            // 处理滚动事件
-            if(event.target.scrollTop >10){
-                this.showTable = false;
-                console.log('滚动事件:', event.target.scrollTop);
-            }
-        },
-
         isCheck(data){
             let time = new Date(data.date).getTime()
             return this.list.find(h=>{
-                let start = new Date(h.start).getTime()
-                let end = new Date(h.end).getTime()
+                if(!h.start_at || !h.end_at){
+                    return false;
+                }
+                let start = new Date( h.start_at.split(' ')[0].replace(/-/g,'/') ).getTime()
+                let end = new Date( h.end_at.split(' ')[0].replace(/-/g,'/') ).getTime()
                 return start <= time && end >= time;
             })
         },

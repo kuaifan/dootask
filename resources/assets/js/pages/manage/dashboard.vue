@@ -1,11 +1,26 @@
 <template>
-    <div class="page-dashboard" style="flex-direction: row;">
+    <div class="page-dashboard">
         <PageTitle :title="$L('仪表盘')"/>
         <Alert v-if="warningMsg" class="dashboard-warning" type="warning" show-icon>
             <span @click="goForward({name: 'manage-setting-license'})">{{warningMsg}}</span>
         </Alert>
         <div class="dashboard-wrapper" :style="wrapperStyle">
-            <div class="dashboard-hello">{{$L('欢迎您，' + userInfo.nickname)}}</div>
+            <div class="dashboard-hello">
+                <span class="tite">{{$L('欢迎您，' + userInfo.nickname)}}</span>
+                <div class="dashboard-search">
+                    <Poptip v-model="showPoptip" disabled placement="bottom" width="250" :class="[searchKey ? 'has-value' : '', selectedId ? 'selected' : '']">
+                        <div @click="onSearchFocus" @mouseenter="onSearchFocus">
+                            <Input v-model="searchKey" ref="searchInput" size="large" suffix="ios-search" @on-change="onSearchChange" :placeholder="$L('搜索项目名称')" clearable/>
+                        </div>
+                        <template #content>
+                            <ul>
+                                <li v-for="project in searchProjectList" @click="onSearch(project)">{{ project.name }}</li>
+                                <li class="empty" v-if="searchProjectList.length == 0">{{ $L('无相关数据') }}</li>
+                            </ul>
+                        </template>
+                    </Poptip>
+                </div>
+            </div>
             <div class="dashboard-desc">
                 {{$L('以下是你当前的任务统计数据')}}
                 <transition name="dashboard-load">
@@ -36,9 +51,7 @@
                 </li>
             </ul>
             <Scrollbar class="dashboard-list">
-                <template
-                    v-for="column in columns"
-                    v-if="column.list.length > 0">
+                <template v-for="column in columns" v-if="column.list.length > 0">
                     <div :ref="`type_${column.type}`" class="dashboard-ref"></div>
                     <div class="dashboard-title">{{column.title}}</div>
                     <ul class="dashboard-ul">
@@ -81,9 +94,19 @@
                         </li>
                     </ul>
                 </template>
+                <template v-if="columns.length <= 0">
+                    <div class="nopage">
+                        <div class="nopage-icon">
+                            <img :src="$A.apiUrl(`../images/empty/complete.svg`)">
+                        </div>
+                        <div class="nopage-text">
+                            {{ $L('哇！你真棒！所有任务都出色完成了！') }}
+                        </div>
+                    </div>
+                </template>
             </Scrollbar>
         </div>
-        <div v-if="1" style="width: 35%;min-width:400px;height: 100%;border-left: 1px solid #F4F5F7;">
+        <div v-if="!windowPortrait" class="dashboard-calendar" style="">
             <HomeCalendar/>
         </div>
     </div>
@@ -107,6 +130,13 @@ export default {
             dashboard: 'today',
 
             warningMsg: '',
+
+            searchKey: '',
+            searchTimeout: null,
+            showPoptip: false,
+            searchKeyLoading: 0,
+            selectedId: 0,
+            selectedKey: '',
         }
     },
 
@@ -123,7 +153,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userInfo', 'userIsAdmin', 'cacheTasks', 'taskCompleteTemps', 'loadDashboardTasks']),
+        ...mapState(['userInfo', 'userIsAdmin', 'cacheTasks', 'taskCompleteTemps', 'loadDashboardTasks', 'cacheProjects', 'loadProjects']),
 
         ...mapGetters(['dashboardTask', 'assistTask', 'transforTasks']),
 
@@ -131,6 +161,9 @@ export default {
             const list = [];
             ['today', 'overdue', 'all'].some(type => {
                 let data = this.transforTasks(this.dashboardTask[type]);
+                if (this.selectedId) {
+                    data = data.filter(item => item.project_id == this.selectedId )
+                }
                 list.push({
                     type,
                     title: this.getTitle(type),
@@ -142,7 +175,7 @@ export default {
             list.push({
                 type: 'assist',
                 title: this.getTitle('assist'),
-                list: this.assistTask.sort((a, b) => {
+                list: this.assistTask.filter(item => (item.project_id == this.selectedId || !this.selectedId) ).sort((a, b) => {
                     return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
                 })
             })
@@ -159,13 +192,41 @@ export default {
                 'max-height': 'calc(100% - 50px)'
             } : null
         },
+
+        searchProjectList(){
+            if (!this.searchKey){
+                return []
+            }
+            const {searchKey, cacheProjects} = this;
+            const data = $A.cloneJSON(cacheProjects).sort((a, b) => {
+                if (a.top_at || b.top_at) {
+                    return $A.Date(b.top_at) - $A.Date(a.top_at);
+                }
+                return b.id - a.id;
+            });
+           return data.filter(item => $A.strExists(`${item.name}`, searchKey));
+        },
     },
 
     watch: {
         windowActive(active) {
             this.loadInterval(active)
             this.loadLicense(active);
-        }
+        },
+        searchKey(val){
+            this.showPoptip = val ? true : false;
+            if(val != this.selectedKey){
+                this.selectedKey = '';
+                this.selectedId = 0;
+            }
+            //
+            if (!val) return;
+            setTimeout(() => {
+                if (this.searchKey == val) {
+                    this.searchProject();
+                }
+            }, 600);
+        },
     },
 
     methods: {
@@ -239,7 +300,51 @@ export default {
                     this.warningMsg = '';
                 })
             }, 1500)
-        }
+        },
+
+        searchProject() {
+            setTimeout(() => {
+                this.searchKeyLoading++;
+            }, 1000)
+            this.$store.dispatch("getProjects", {
+                keys: {
+                    name: this.searchKey
+                }
+            }).finally(_ => {
+                this.searchKeyLoading--;
+            });
+        },
+
+        onSearch(project){
+            this.searchKey = project.name;
+            this.selectedKey = project.name;
+            this.selectedId = project.id;
+            this.$nextTick(()=>{
+                this.showPoptip = false;
+            })
+        },
+
+        onSearchFocus() {
+            this.$nextTick(() => {
+                this.$refs.searchInput.focus({
+                    cursor: "end"
+                });
+            })
+        },
+
+        onSearchChange() {
+            this.searchTimeout && clearTimeout(this.searchTimeout);
+            if (this.searchKey.trim() != '') {
+                this.searchTimeout = setTimeout(() => {
+                    this.loadIng++;
+                    this.$store.dispatch("searchFiles", this.searchKey.trim()).then(() => {
+                        this.loadIng--;
+                    }).catch(() => {
+                        this.loadIng--;
+                    });
+                }, 600)
+            }
+        },
     }
 }
 </script>

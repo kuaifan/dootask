@@ -33,7 +33,7 @@
                 :taskView="false"
                 :useCreationPopup="false"
                 @beforeCreateSchedule="onBeforeCreateSchedule"
-                @beforeUpdateEvent="onBeforeClickSchedule"
+                @beforeClickSchedule="onBeforeClickSchedule"
                 @beforeUpdateSchedule="onBeforeUpdateSchedule"
                 disable-click/>
         </div>
@@ -137,7 +137,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheUserBasic', 'cacheTasks', 'taskCompleteTemps', 'wsOpenNum', 'themeIsDark']),
+        ...mapState(['cacheTasks', 'taskCompleteTemps', 'wsOpenNum', 'themeIsDark']),
 
         ...mapGetters(['transforTasks']),
 
@@ -175,15 +175,12 @@ export default {
                     start: $A.Date(data.start_at).toISOString(),
                     end: $A.Date(data.end_at).toISOString(),
                     color: "#515a6e",
-                    backgroundColor: data.color || '#E3EAFD',
+                    bgColor: data.color || '#E3EAFD',
                     borderColor: data.p_color,
-                    priority: '1122',
+                    priority: '',
                     preventClick: true,
                     preventCheckHide: true,
                     isChecked: !!data.complete_at,
-                    attendees: false,
-                    isReadOnly: false,
-                    state: '',
                     //
                     complete_at: data.complete_at,
                     start_at: data.start_at,
@@ -208,18 +205,17 @@ export default {
                 }
                 if (data.complete_at) {
                     task.color = "#c3c2c2"
-                    task.backgroundColor = "#f3f3f3"
+                    task.bgColor = "#f3f3f3"
                     task.borderColor = "#e3e3e3"
                 } else if (data.overdue) {
                     task.title = `[${this.$L('超期')}] ${task.title}`
                     task.color = "#f56c6c"
-                    task.backgroundColor = data.color || "#fef0f0"
+                    task.bgColor = data.color || "#fef0f0"
                     task.priority+= `<span class="overdue">${this.$L('超期未完成')}</span>`;
                 }
                 if (!task.borderColor) {
-                    task.borderColor = task.backgroundColor;
+                    task.borderColor = task.bgColor;
                 }
-                task.state = task.priority
                 return task;
             });
         }
@@ -318,11 +314,6 @@ export default {
         },
 
         onBeforeClickSchedule(event) {
-            // calendar.updateEvent(event.id, event.calendarId, change);
-            console.log(2222);
-            this.$store.dispatch("openTask", event.event)
-            return;
-            console.log(event)
             const {type, schedule} = event;
             let data = this.cacheTasks.find(({id}) => id === schedule.id);
             if (!data) {
