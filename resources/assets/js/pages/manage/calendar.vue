@@ -354,14 +354,15 @@ export default {
         },
 
         onBeforeUpdateSchedule(res) {
-            const changes = res.changes
-            const schedule = res.event
+            const {changes, schedule} = res;
             let data = this.cacheTasks.find(({id}) => id === schedule.id);
             if (!data) {
                 return;
             }
-            console.log(schedule)
-            if (changes.start || changes.end) {
+            if(changes?.start?.getTime() == schedule?.start?.getTime() && changes?.end?.getTime() == schedule?.end?.getTime()){
+                return;
+            }
+            if (changes?.start || changes?.end) {
                 const cal = this.$refs.cal.getInstance();
                 cal.updateSchedule(schedule.id, schedule.calendarId, changes);
                 //

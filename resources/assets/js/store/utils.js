@@ -127,13 +127,11 @@ export class SSEClient {
                 this._removeAllEvent(type, handler);
                 this.unsunscribe();
             }
-
             if (this.retry > 0) {
+                this.retry--;
                 this.timer = setTimeout(() => {
                     this.subscribe(type, handler);
                 }, this.options.interval);
-            } else {
-                this.retry--;
             }
         };
     }

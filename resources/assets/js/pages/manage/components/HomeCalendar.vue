@@ -32,7 +32,7 @@
                                     <div slot="content" v-html="getTimes(data.date)"></div>
                                     <div @click="onDayClick(data)" class="item-day">
                                         <div>{{data.day}}</div>
-                                        <i v-if="isCheck(data)" class="badge"></i>
+                                        <i v-if="data.check" class="badge"></i>
                                     </div>
                                 </ETooltip>
                             </td>
@@ -202,8 +202,8 @@ export default {
         }
     },
     methods: {
-        isCheck(data){
-            let time = new Date(data.date).getTime()
+        isCheck(date){
+            let time = new Date(date).getTime()
             return this.list.find(h=>{
                 if(!h.start_at || !h.end_at){
                     return false;
@@ -238,6 +238,7 @@ export default {
                         future: today.getTime() < curDate.getTime(),
                         month: curMonth == this.month
                     }
+                    array[i][j].check = this.isCheck( array[i][j].date )
                     calcTime += 86400 * 1000
                 }
             }
@@ -394,7 +395,10 @@ export default {
             if (!data) {
                 return;
             }
-            if (changes.start || changes.end) {
+            if(changes?.start?.getTime() == schedule?.start?.getTime() && changes?.end?.getTime() == schedule?.end?.getTime()){
+                return;
+            }
+            if (changes?.start || changes?.end) {
                 const cal = this.$refs.cal.getInstance();
                 cal.updateSchedule(schedule.id, schedule.calendarId, changes);
                 //

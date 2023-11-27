@@ -4,7 +4,7 @@
             <FormItem label="License" prop="license">
                 <Input v-model="formData.license" type="textarea" :autosize="{minRows: 2,maxRows: 5}" :placeholder="$L('请输入License...')" />
             </FormItem>
-            <FormItem :label="$L('详细信息')">
+            <FormItem>
                 <div class="license-box">
                     <ul v-if="formData.info.sn">
                         <li>
@@ -51,12 +51,26 @@
                                 <Icon class="information" type="ios-information-circle-outline" />
                             </ETooltip>
                         </li>
-                        <li v-for="tip in formData.error" class="warning">{{tip}}</li>
                     </ul>
                     <ul v-else>
                         <li>
                             {{$L('加载中...')}}
                         </li>
+                    </ul>
+                </div>
+            </FormItem>
+            <FormItem :label="$L('当前环境')" v-if="formData.error?.length > 0">
+                <div class="license-box">
+                    <ul>
+                        <li>
+                            <em>SN:</em>
+                            <span>{{formData.doo_sn}}</span>
+                        </li>
+                        <li>
+                            <em>MAC:</em>
+                            <span>{{infoJoin(formData.macs)}}</span>
+                        </li>
+                        <li v-for="tip in formData.error" class="warning">{{tip}}</li>
                     </ul>
                 </div>
             </FormItem>

@@ -18511,5 +18511,16 @@
         "de": "Die titelseite.",
         "fr": "La page de couverture",
         "id": "Halaman depan"
+    },
+    {
+        "key": "无相关数据",
+        "zh": "",
+        "zh-CHT": "無相關數據",
+        "en": "No relevant data",
+        "ko": "관련 데이터 없음",
+        "ja": "データはありません",
+        "de": "Es liegen keine daten vor.",
+        "fr": "Aucune donnée disponible",
+        "id": "Tidak ada data yang relevan"
     }
 ]

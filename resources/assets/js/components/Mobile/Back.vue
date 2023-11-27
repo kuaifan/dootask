@@ -141,7 +141,7 @@ export default {
             if(microAppIsVisible){
                 return true;
             }
-            // 
+            //
             return false;
         },
 
@@ -149,11 +149,12 @@ export default {
             // 微应用通知
             let microAppIsAccept = false;
             microApp.setGlobalData({
-                type:'route', 
+                type:'route',
                 action: 'back',
                 route: this.$route,
                 callback: (appName, isAccept) => {
                     if(isAccept){
+                        console.log(1)
                         microAppIsAccept = true;
                     }
                 }
@@ -161,21 +162,15 @@ export default {
             if(microAppIsAccept){
                 return;
             }
-            // 
+            //
             if (this.$Modal.removeLast()) {
                 return;
             }
-            if (this.fileFolderId > 0) {
-                const file = this.fileLists.find(({id, permission}) => id == this.fileFolderId && permission > -1)
-                if (file) {
-                    const prevFile = this.fileLists.find(({id, permission}) => id == file.pid && permission > -1)
-                    if (prevFile) {
-                        this.goForward({name: 'manage-file', params: {folderId: prevFile.id, fileId: null}});
-                        return;
-                    }
+            if (this.routeName === 'manage-file') {
+                if (this.fileFolderId == 0) {
+                    this.goForward({name: 'manage-application'});
+                    return;
                 }
-                this.goForward({name: 'manage-file'});
-                return;
             }
             if (this.routeName === 'manage-messenger') {
                 if (this.$route.params.dialogAction === 'contacts') {

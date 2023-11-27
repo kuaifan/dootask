@@ -4,7 +4,7 @@
         <Alert v-if="warningMsg" class="dashboard-warning" type="warning" show-icon>
             <span @click="goForward({name: 'manage-setting-license'})">{{warningMsg}}</span>
         </Alert>
-        <div class="dashboard-wrapper" :style="wrapperStyle">
+        <div class="dashboard-wrapper">
             <div class="dashboard-hello">
                 <span class="tite">{{$L('欢迎您，' + userInfo.nickname)}}</span>
                 <div class="dashboard-search">
@@ -185,12 +185,6 @@ export default {
         total() {
             const {dashboardTask} = this;
             return dashboardTask.today_count + dashboardTask.overdue_count + dashboardTask.all_count;
-        },
-
-        wrapperStyle({warningMsg}) {
-            return warningMsg ? {
-                'max-height': 'calc(100% - 50px)'
-            } : null
         },
 
         searchProjectList(){

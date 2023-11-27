@@ -31,7 +31,10 @@ export default {
 
         projId() {
             const {projectId} = this.$route.params;
-            return parseInt(/^\d+$/.test(projectId) ? projectId : 0) || this.projectId || 0;
+            if (!this.windowPortrait){
+                return parseInt(/^\d+$/.test(projectId) ? projectId : 0) || this.projectId || 0;
+            }
+            return parseInt(/^\d+$/.test(projectId) ? projectId : 0) || 0;
         }
     },
 
