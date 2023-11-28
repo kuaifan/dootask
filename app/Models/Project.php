@@ -172,8 +172,6 @@ class Project extends AbstractModel
         $array['task_my_complete'] = $builder->whereNotNull('project_tasks.complete_at')->count();
         $array['task_my_percent'] = $array['task_my_num'] ? intval($array['task_my_complete'] / $array['task_my_num'] * 100) : 0;
         //
-        $array['panel_show_task_complete'] = ProjectPermission::getPermission($this->id, ProjectPermission::PANEL_SHOW_TASK_COMPLETE);
-        //
         return $array;
     }
 

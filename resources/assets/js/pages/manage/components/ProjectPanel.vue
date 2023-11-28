@@ -304,7 +304,7 @@
                 <TaskRow v-if="projectData.cacheParameter.showUndone" :list="unList" open-key="undone" @on-priority="addTaskOpen"/>
             </div>
             <!--已完成任务-->
-            <div v-if="projectData.task_num > 0 && projectData.panel_show_task_complete == 1" :class="['project-table-body', !projectData.cacheParameter.showCompleted ? 'project-table-hide' : '']">
+            <div v-if="projectData.task_num > 0" :class="['project-table-body', !projectData.cacheParameter.showCompleted ? 'project-table-hide' : '']">
                 <Row class="task-row">
                     <Col span="12" class="row-title">
                         <i class="taskfont" @click="toggleParameter('showCompleted')">&#xe689;</i>

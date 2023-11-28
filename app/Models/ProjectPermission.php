@@ -27,13 +27,32 @@ use App\Module\Base;
 class ProjectPermission extends AbstractModel
 {
 
-    const TASK_ADD = 'task_add'; // 任务添加
-    const TASK_UPDATE = 'task_update'; // 任务更新
-    const TASK_REMOVE = 'task_remove'; // 任务删除
-    const TASK_UPDATE_COMPLETE = 'task_update_complete'; // 任务完成
-    const TASK_ARCHIVED = 'task_archived'; // 任务归档
-    const TASK_MOVE = 'task_move'; // 任务移动
-    const PANEL_SHOW_TASK_COMPLETE = 'panel_show_task_complete'; // 显示已完成任务
+    const TASK_LIST_ADD = 'task_list_add';             // 添加列
+    const TASK_LIST_UPDATE = 'task_list_update';       // 修改列
+    const TASK_LIST_REMOVE = 'task_list_remove';       // 删除列
+    const TASK_LIST_SORT = 'task_list_sort';           // 列表排序
+    const TASK_ADD = 'task_add';                       // 任务添加
+    const TASK_UPDATE = 'task_update';                 // 任务更新
+    const TASK_STATUS = 'task_status';                 // 任务状态
+    const TASK_REMOVE = 'task_remove';                 // 任务删除
+    const TASK_ARCHIVED = 'task_archived';             // 任务归档
+    const TASK_MOVE = 'task_move';                     // 任务移动
+
+    // 权限列表
+    const PERMISSIONS = [
+        'project_leader' => 1,  // 项目负责人
+        'project_member' => 2,  // 项目成员
+        'task_leader' => 3,     // 任务负责人
+        'task_assist' => 4,     // 任务协助人
+    ];
+
+    // 权限描述
+    const PERMISSIONS_DESC = [
+        1 => "项目负责人",
+        2 => "项目成员",
+        3 => "任务负责人",
+        4 => "任务协助人",
+    ];
 
     /**
      * The attributes that are mass assignable.
@@ -63,7 +82,7 @@ class ProjectPermission extends AbstractModel
     {
         $projectPermission = self::initPermissions($projectId);
         $currentPermissions = $projectPermission->permissions;
-        if ($key){
+        if ($key) {
             if (!isset($currentPermissions[$key])) {
                 throw new ApiException('项目权限设置不存在');
             }
@@ -81,13 +100,16 @@ class ProjectPermission extends AbstractModel
     public static function initPermissions($projectId)
     {
         $permissions = [
-            self::TASK_ADD => [1,3],
-            self::TASK_UPDATE => [1,2],
-            self::TASK_REMOVE => [1,2],
-            self::TASK_UPDATE_COMPLETE => [1,2],
-            self::TASK_ARCHIVED => [1,2],
-            self::TASK_MOVE => [1,2],
-            self::PANEL_SHOW_TASK_COMPLETE => 1,
+            self::TASK_LIST_ADD => $projectTaskList = [self::PERMISSIONS['project_leader'], self::PERMISSIONS['project_member']],
+            self::TASK_LIST_UPDATE => $projectTaskList,
+            self::TASK_LIST_REMOVE => [self::PERMISSIONS['project_leader']],
+            self::TASK_LIST_SORT => $projectTaskList,
+            self::TASK_ADD => $projectTaskList,
+            self::TASK_UPDATE => $taskUpdate = [self::PERMISSIONS['project_leader'], self::PERMISSIONS['task_leader'], self::PERMISSIONS['task_assist']],
+            self::TASK_STATUS => [self::PERMISSIONS['project_leader'], self::PERMISSIONS['task_leader']],
+            self::TASK_REMOVE => $taskUpdate,
+            self::TASK_ARCHIVED => $taskUpdate,
+            self::TASK_MOVE => $taskUpdate
         ];
         return self::firstOrCreate(
             ['project_id' => $projectId],
@@ -112,5 +134,69 @@ class ProjectPermission extends AbstractModel
         $projectPermission->save();
 
         return $projectPermission;
+    }
+
+    /**
+     * 检查用户是否有执行特定动作的权限
+     * @param string $action 动作名称
+     * @param Project $project 项目实例
+     * @param ProjectTask $task 任务实例
+     * @return bool
+     */
+    public static function userTaskPermission(Project $project, $action, ProjectTask $task = null)
+    {
+        $userid = User::userid();
+        $permissions = self::getPermission($project->id, $action);
+        switch ($action) {
+                // 任务添加，任务更新, 任务状态, 任务删除, 任务完成, 任务归档, 任务移动
+            case self::TASK_LIST_ADD:
+            case self::TASK_LIST_UPDATE:
+            case self::TASK_LIST_REMOVE:
+            case self::TASK_LIST_SORT:
+            case self::TASK_ADD:
+            case self::TASK_UPDATE:
+            case self::TASK_STATUS:
+            case self::TASK_REMOVE:
+            case self::TASK_ARCHIVED:
+            case self::TASK_MOVE:
+                $verify = false;
+                // 项目负责人
+                if (in_array(self::PERMISSIONS['project_leader'], $permissions)) {
+                    if ($project->owner) {
+                        $verify = true;
+                    }
+                }
+                // 项目成员
+                if (!$verify && in_array(self::PERMISSIONS['project_member'], $permissions)) {
+                    $user = ProjectUser::whereProjectId($project->id)->whereUserid(intval($userid))->first();
+                    if (!empty($user)) {
+                        $verify = true;
+                    }
+                }
+                // 任务负责人
+                if (!$verify && $task && in_array(self::PERMISSIONS['task_leader'], $permissions)) {
+                    if ($task->isOwner()) {
+                        $verify = true;
+                    }
+                }
+                // 任务协助人
+                if (!$verify && $task && in_array(self::PERMISSIONS['task_assist'], $permissions)) {
+                    if ($task->isAssister()) {
+                        $verify = true;
+                    }
+                }
+                //
+                if (!$verify) {
+                    $desc = [];
+                    rsort($permissions);
+                    foreach ($permissions as $permission) {
+                        $desc[] = self::PERMISSIONS_DESC[$permission];
+                    }
+                    $desc = array_reverse($desc);
+                    throw new ApiException(sprintf("仅限%s操作", implode('、', $desc)));
+                }
+                break;
+        }
+        return true;
     }
 }
