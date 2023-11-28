@@ -30,6 +30,7 @@ use App\Models\ProjectTaskFile;
 use App\Models\ProjectTaskUser;
 use App\Models\WebSocketDialog;
 use App\Exceptions\ApiException;
+use App\Models\ProjectPermission;
 use App\Module\BillMultipleExport;
 use Illuminate\Support\Facades\DB;
 use App\Models\ProjectTaskFlowChange;
@@ -575,6 +576,8 @@ class ProjectController extends AbstractController
         $project = Project::userProject($project_id);
         //
         if ($only_column) {
+            //
+            ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_LIST_SORT);
             // 排序列表
             $index = 0;
             foreach ($sort as $item) {
@@ -760,6 +763,8 @@ class ProjectController extends AbstractController
         // 项目
         $project = Project::userProject($project_id);
         //
+        ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_LIST_ADD);
+        //
         if (empty($name)) {
             return Base::retError('列表名称不能为空');
         }
@@ -809,7 +814,9 @@ class ProjectController extends AbstractController
             return Base::retError('列表不存在');
         }
         // 项目
-        Project::userProject($column->project_id);
+        $project = Project::userProject($column->project_id);
+        //
+        ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_LIST_UPDATE);
         //
         if (Arr::exists($data, 'name') && $column->name != $data['name']) {
             $column->addLog("修改列表名称：{$column->name} => {$data['name']}");
@@ -849,7 +856,9 @@ class ProjectController extends AbstractController
             return Base::retError('列表不存在');
         }
         // 项目
-        Project::userProject($column->project_id, true, true);
+        $project = Project::userProject($column->project_id);
+        //
+        ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_LIST_REMOVE);
         //
         $column->deleteColumn();
         return Base::retSuccess('删除成功', ['id' => $column->id]);
@@ -876,10 +885,10 @@ class ProjectController extends AbstractController
     public function column__one()
     {
         User::auth();
-        // 
+        //
         $column_id = intval(Request::input('column_id'));
         $deleted = Request::input('deleted', 'no');
-        // 
+        //
         $builder = ProjectColumn::whereId($column_id);
         if ($deleted == 'all') {
             $builder->withTrashed();
@@ -890,10 +899,10 @@ class ProjectController extends AbstractController
         if (empty($column)) {
             return Base::retError('列表不存在');
         }
-        // 
+        //
         return Base::retSuccess('success', $column);
     }
-    
+
 
     /**
      * @api {get} api/project/task/lists          19. 任务列表
@@ -1507,7 +1516,7 @@ class ProjectController extends AbstractController
         $archived = Request::input('archived', 'no');
         //
         $isArchived = str_replace(['all', 'yes', 'no'], [null, false, true], $archived);
-        $task = ProjectTask::userTask($task_id, $isArchived, true, false, ['taskUser', 'taskTag']);
+        $task = ProjectTask::userTask($task_id, $isArchived, true, ['taskUser', 'taskTag']);
         // 项目可见性
         $project_userid = ProjectUser::whereProjectId($task->project_id)->whereOwner(1)->value('userid');     // 项目负责人
         if ($task->visibility != 1 && $user->userid != $project_userid) {
@@ -1603,7 +1612,9 @@ class ProjectController extends AbstractController
             return Base::retError('文件不存在或已被删除');
         }
         //
-        $task = ProjectTask::userTask($file->task_id, true, true, true);
+        $task = ProjectTask::userTask($file->task_id);
+        //
+        ProjectPermission::userTaskPermission(Project::userProject($task->project_id), ProjectPermission::TASK_UPDATE, $task);
         //
         $task->pushMsg('filedelete', $file);
         $file->delete();
@@ -1732,6 +1743,8 @@ class ProjectController extends AbstractController
         $column_id = $data['column_id'];
         // 项目
         $project = Project::userProject($project_id);
+        //
+        ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_ADD);
         // 列表
         $column = null;
         $newColumn = null;
@@ -1808,10 +1821,12 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $name = Request::input('name');
         //
-        $task = ProjectTask::userTask($task_id, true, true, true);
+        $task = ProjectTask::userTask($task_id);
         if ($task->complete_at) {
             return Base::retError('主任务已完成无法添加子任务');
         }
+        //
+        ProjectPermission::userTaskPermission(Project::userProject($task->project_id), ProjectPermission::TASK_ADD);
         //
         $task = ProjectTask::addTask([
             'name' => $name,
@@ -1867,11 +1882,18 @@ class ProjectController extends AbstractController
         $param = Request::input();
         $task_id = intval($param['task_id']);
         //
-        $task = ProjectTask::userTask($task_id, true, true, 2);
+        $task = ProjectTask::userTask($task_id);
+        //
+        $project = Project::userProject($task->project_id);
+        if (Arr::exists($param, 'flow_item_id')) {
+            ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_STATUS, $task);
+        }else{
+            ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_UPDATE, $task);
+        }
+        //
         $taskUser = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($task_id)->get();
         $owners = $taskUser->where('owner', 1)->pluck('userid')->toArray();         // 负责人
         $assists = $taskUser->where('owner', 0)->pluck('userid')->toArray();         // 协助人
-
         // 更新任务
         $updateMarking = [];
         $task->updateTask($param, $updateMarking);
@@ -2003,11 +2025,14 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $type = Request::input('type', 'add');
         //
-        $task = ProjectTask::userTask($task_id, $type == 'add', true, true);
+        $task = ProjectTask::userTask($task_id, $type == 'add');
         //
         if ($task->parent_id > 0) {
             return Base::retError('子任务不支持此功能');
         }
+        //
+        $project = Project::userProject($task->project_id);
+        ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_ARCHIVED, $task);
         //
         if ($type == 'recovery') {
             $task->archivedTask(null);
@@ -2045,7 +2070,11 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $type = Request::input('type', 'delete');
         //
-        $task = ProjectTask::userTask($task_id, null, $type !== 'recovery', true);
+        $task = ProjectTask::userTask($task_id, null, $type !== 'recovery');
+        //
+        $project = Project::userProject($task->project_id);
+        ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_REMOVE, $task);
+        //
         if ($type == 'recovery') {
             $task->restoreTask();
             return Base::retSuccess('操作成功', ['id' => $task->id]);
@@ -2080,7 +2109,7 @@ class ProjectController extends AbstractController
             return Base::retError('记录不存在');
         }
         //
-        $task = ProjectTask::userTask($projectLog->task_id, true, true, true);
+        $task = ProjectTask::userTask($projectLog->task_id);
         //
         $record = $projectLog->record;
         if ($record['flow'] && is_array($record['flow'])) {
@@ -2219,21 +2248,24 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $project_id = intval(Request::input('project_id'));
         $column_id = intval(Request::input('column_id'));
-        // 
-        $task = ProjectTask::userTask($task_id, true, true, 2);
-        // 
+        //
+        $task = ProjectTask::userTask($task_id);
+        //
+        $project = Project::userProject($task->project_id);
+        ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_MOVE, $task);
+        //
         if( $task->project_id == $project_id && $task->column_id == $column_id){
             return Base::retSuccess('移动成功', ['id' => $task_id]);
         }
-        // 
+        //
         $project = Project::userProject($project_id);
         $column = ProjectColumn::whereProjectId($project->id)->whereId($column_id)->first();
         if (empty($column)) {
             return Base::retError('列表不存在');
         }
-        // 
+        //
         $task->moveTask($project_id,$column_id);
-        // 
+        //
         return Base::retSuccess('移动成功', ['id' => $task_id]);
     }
 
@@ -2410,5 +2442,75 @@ class ProjectController extends AbstractController
             'id' => $projectUser->project_id,
             'top_at' => $projectUser->top_at?->toDateTimeString(),
         ]);
+    }
+
+    /**
+     * @api {get} api/project/permission          43. 获取项目权限设置
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName permission
+     *
+     * @apiParam {Number} project_id                项目ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function permission()
+    {
+        $user = User::auth();
+        $projectId = intval(Request::input('project_id'), 0);
+        $projectUser = ProjectUser::whereUserid($user->userid)->whereProjectId($projectId)->first();
+        if (!$projectUser) {
+            return Base::retError("项目不存在");
+        }
+        $projectPermission = ProjectPermission::initPermissions($projectId);
+        return Base::retSuccess("success",  $projectPermission);
+    }
+
+    /**
+     * @api {get} api/project/permission/update          44. 项目权限设置
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName permission__update
+     *
+     * @apiParam {Number} project_id                        项目ID
+     * @apiParam {Array} task_add                           添加任务权限
+     * @apiParam {Array} task_update                        修改任务权限
+     * @apiParam {Array} task_remove                        删除任务权限
+     * @apiParam {Array} task_update_complete               标记完成权限
+     * @apiParam {Array} task_archived                      归档任务权限
+     * @apiParam {Array} task_move                          移动任务权限
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function permission__update()
+    {
+        $user = User::auth();
+        $projectId = intval(Request::input('project_id'), 0);
+        $projectUser = ProjectUser::whereUserid($user->userid)->whereProjectId($projectId)->first();
+        if (!$projectUser) {
+            return Base::retError("项目不存在");
+        }
+        $permissions = Request::only([
+            ProjectPermission::TASK_LIST_ADD,
+            ProjectPermission::TASK_LIST_UPDATE,
+            ProjectPermission::TASK_LIST_REMOVE,
+            ProjectPermission::TASK_LIST_SORT,
+            ProjectPermission::TASK_ADD,
+            ProjectPermission::TASK_UPDATE,
+            ProjectPermission::TASK_REMOVE,
+            ProjectPermission::TASK_STATUS,
+            ProjectPermission::TASK_ARCHIVED,
+            ProjectPermission::TASK_MOVE,
+        ]);
+        $projectPermission = ProjectPermission::updatePermissions($projectId, Base::newArrayRecursive('intval', $permissions));
+        return Base::retSuccess("success",  $projectPermission);
     }
 }

@@ -18522,5 +18522,126 @@
         "de": "Es liegen keine daten vor.",
         "fr": "Aucune donnée disponible",
         "id": "Tidak ada data yang relevan"
+    },
+    {
+        "key": "权限设置",
+        "zh": "",
+        "zh-CHT": "權限設置",
+        "en": "Permission setting",
+        "ko": "권한 설정",
+        "ja": "権限設定です",
+        "de": "Berechtigungen festlegen",
+        "fr": "Paramètres des droits",
+        "id": "Pengaturan hak akses"
+    },
+    {
+        "key": "任务列权限",
+        "zh": "",
+        "zh-CHT": "任務列權限",
+        "en": "Task bar permission",
+        "ko": "작업 칸 권한",
+        "ja": "任務列権限",
+        "de": "Aufgabenliste zugriff auf",
+        "fr": "Autorisations de colonne de tâche",
+        "id": "Izin kolom tugas"
+    },
+    {
+        "key": "添加列",
+        "zh": "",
+        "zh-CHT": "添加列",
+        "en": "Add column",
+        "ko": "칸 추가",
+        "ja": "列を追加します",
+        "de": "Geben sie zu.",
+        "fr": "Ajouter une colonne",
+        "id": "Tambahkan kolom"
+    },
+    {
+        "key": "修改列",
+        "zh": "",
+        "zh-CHT": "修改列",
+        "en": "Modified column",
+        "ko": "칸 수정하기",
+        "ja": "修正列です",
+        "de": "Ich repariere sie.",
+        "fr": "Modifier une colonne",
+        "id": "Merevisi kolom"
+    },
+    {
+        "key": "删除列",
+        "zh": "",
+        "zh-CHT": "刪除列",
+        "en": "Delete column",
+        "ko": "칸 삭제",
+        "ja": "列を削除します",
+        "de": "Spalte löschen",
+        "fr": "Supprimer une colonne",
+        "id": "Hapus kolom"
+    },
+    {
+        "key": "排序列",
+        "zh": "",
+        "zh-CHT": "排序列",
+        "en": "Sequencing",
+        "ko": "서열을 정하다",
+        "ja": "序列をつけます。",
+        "de": "Reihen aufstellen.",
+        "fr": "Séquence de rangées",
+        "id": "Urutan"
+    },
+    {
+        "key": "修改任务",
+        "zh": "",
+        "zh-CHT": "修改任務",
+        "en": "Modify task",
+        "ko": "작업 변경",
+        "ja": "タスクを修正します",
+        "de": "Die mission ändern.",
+        "fr": "Modifier une tâche",
+        "id": "Memodifikasi tugas"
+    },
+    {
+        "key": "修改状态",
+        "zh": "",
+        "zh-CHT": "修改狀態",
+        "en": "Modified state",
+        "ko": "상태 수정",
+        "ja": "状態を修正します",
+        "de": "Ändern.",
+        "fr": "Modifier le statut",
+        "id": "Memodifikasi status"
+    },
+    {
+        "key": "移动任务",
+        "zh": "",
+        "zh-CHT": "移動任務",
+        "en": "Mobile task",
+        "ko": "작업 이동",
+        "ja": "移動ミッションです",
+        "de": "Mobile mission?",
+        "fr": "Déplacer la tâche",
+        "id": "Tugas bergerak"
+    },
+    {
+        "key": "任务协助人",
+        "zh": "",
+        "zh-CHT": "任務協助人",
+        "en": "Mission helper",
+        "ko": "임무 협조자",
+        "ja": "任務協力者です",
+        "de": "Entbindungen für die mission",
+        "fr": "Collaboration en mission",
+        "id": "Kolaborasi tugas"
+    },
+    {
+        "key": "任务权限",
+        "zh": "",
+        "zh-CHT": "任務權限",
+        "en": "Task authority",
+        "ko": "작업 권한",
+        "ja": "任務権限です",
+        "de": "Auftrag autorisiert.",
+        "fr": "Autorisations de tâches",
+        "id": "Hak akses tugas"
     }
 ]

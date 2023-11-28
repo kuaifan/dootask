@@ -688,6 +688,22 @@ class Base
     }
 
     /**
+     * 递归处理数组
+     *
+     * @param string $callback 如：'intval'、'trim'、'addslashes'、'stripslashes'、'htmlspecialchars'
+     * @param array $array
+     * @return array
+     */
+    public static function newArrayRecursive($callback, $array)
+    {
+        $func = function ($item) use (&$func, &$callback) {
+            return is_array($item) ? array_map($func, $item) : call_user_func($callback, $item);
+        };
+
+        return array_map($func, $array);
+    }
+
+    /**
      * 重MD5加密
      * @param $text
      * @param string $pass

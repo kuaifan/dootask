@@ -32,7 +32,8 @@ use Request;
  * @property int|null $archived_follow 跟随项目归档（项目取消归档时任务也取消归档）
  * @property string|null $complete_at 完成时间
  * @property int|null $userid 创建人
- * @property int|null $is_all_visible 是否所有人可见
+ * @property int|null $visibility 任务可见性：1-项目人员 2-任务人员 3-指定成员
+ * @property int|null $is_default 是否默认任务
  * @property int|null $p_level 优先级
  * @property string|null $p_name 优先级名称
  * @property string|null $p_color 优先级颜色
@@ -81,7 +82,7 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereFlowItemId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereFlowItemName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereIsAllVisible($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereIsDefault($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereLoop($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereLoopAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereName($value)
@@ -94,6 +95,7 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereStartAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereUserid($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereVisibility($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask withTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask withoutTrashed()
  * @mixin \Eloquent
@@ -549,15 +551,12 @@ class ProjectTask extends AbstractModel
      */
     public function updateTask($data, &$updateMarking = [])
     {
+        //
         AbstractModel::transaction(function () use ($data, &$updateMarking) {
             // 主任务
             $mainTask = $this->parent_id > 0 ? self::find($this->parent_id) : null;
             // 工作流
             if (Arr::exists($data, 'flow_item_id')) {
-                $isProjectOwner = $this->useridInTheProject(User::userid()) === 2;
-                if (!$isProjectOwner && !$this->isOwner()) {
-                    throw new ApiException('仅限项目或任务负责人修改任务状态');
-                }
                 if ($this->flow_item_id == $data['flow_item_id']) {
                     throw new ApiException('任务状态未发生改变');
                 }
@@ -578,6 +577,7 @@ class ProjectTask extends AbstractModel
                             throw new ApiException("当前状态[{$currentFlowItem->name}]不可流转到[{$newFlowItem->name}]");
                         }
                         if ($currentFlowItem->userlimit) {
+                            $isProjectOwner = $this->useridInTheProject(User::userid()) === 2;
                             if (!$isProjectOwner && !in_array(User::userid(), $currentFlowItem->userids)) {
                                 throw new ApiException("当前状态[{$currentFlowItem->name}]仅限状态负责人或项目负责人修改");
                             }
@@ -1667,8 +1667,8 @@ class ProjectTask extends AbstractModel
 
     /**
      * 移动任务
-     * @param int $project_id 
-     * @param int $column_id 
+     * @param int $project_id
+     * @param int $column_id
      * @return bool
      */
     public function moveTask(int $projectId, int $columnId)
@@ -1694,11 +1694,11 @@ class ProjectTask extends AbstractModel
                 $taskUser->project_id = $projectId;
                 $taskUser->save();
             }
-            // 
+            //
             $this->project_id = $projectId;
             $this->column_id = $columnId;
             $this->save();
-            // 
+            //
             $this->addLog("移动{任务}");
         });
         $this->pushMsg('update');
@@ -1728,14 +1728,10 @@ class ProjectTask extends AbstractModel
      * @param int $task_id
      * @param bool $archived true:仅限未归档, false:仅限已归档, null:不限制
      * @param bool $trashed true:仅限未删除, false:仅限已删除, null:不限制
-     * @param int|bool $permission
-     * - 0|false   限制：项目成员、任务成员、任务群聊成员（任务成员 = 任务创建人+任务协助人+任务负责人）
-     * - 1|true    限制：项目负责人、任务成员
-     * - 2         已有负责人才限制true (子任务时如果是主任务负责人也可以)
      * @param array $with
      * @return self
      */
-    public static function userTask($task_id, $archived = true, $trashed = true, $permission = false, $with = [])
+    public static function userTask($task_id, $archived = true, $trashed = true, $with = [])
     {
         $builder = self::with($with)->allData()->where("project_tasks.id", intval($task_id));
         if ($trashed === false) {
@@ -1758,7 +1754,7 @@ class ProjectTask extends AbstractModel
         try {
             $project = Project::userProject($task->project_id);
         } catch (\Throwable $e) {
-            if ($task->owner !== null || (!$permission && $task->permission(4))) {
+            if ($task->owner !== null || $task->permission(4)) {
                 $project = Project::find($task->project_id);
                 if (empty($project)) {
                     throw new ApiException('项目不存在或已被删除', [ 'task_id' => $task_id ], -4002);
@@ -1766,13 +1762,6 @@ class ProjectTask extends AbstractModel
             } else {
                 throw new ApiException($e->getMessage(), [ 'task_id' => $task_id ], -4002);
             }
-        }
-        //
-        if ($permission >= 2) {
-            $permission = $task->hasOwner() ? 1 : 0;
-        }
-        if ($permission && !$project->owner && !$task->permission(3)) {
-            throw new ApiException('仅限项目负责人、任务负责人、协助人员或任务创建者操作');
         }
         //
         return $task;

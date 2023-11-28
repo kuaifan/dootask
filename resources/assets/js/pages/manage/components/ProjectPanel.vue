@@ -347,9 +347,8 @@
         <DrawerOverlay
             v-model="permissionShow"
             placement="right"
-            :beforeClose="workflowBeforeClose"
             :size="650">
-            <ProjectPermission ref="permission" v-if="permissionShow" :project-id="projectId"/>
+            <ProjectPermission ref="permission" v-if="permissionShow" @close="()=>{ this.permissionShow = false }" :project-id="projectId"/>
         </DrawerOverlay>
 
         <!--成员管理-->

@@ -11,7 +11,6 @@
         font-size: 20px;
         font-weight: 500;
         line-height: 1;
-        // style="font-weight: bold;line-height: 40px;"
         padding: 20px 20px 24px;
         display: flex;
         align-items: center;
@@ -33,6 +32,7 @@
         overflow: auto;
         margin-bottom: 20px;
         height: 100%;
+        position: relative;
 
         .project-permission-title{
             font-weight: 500;
@@ -49,4 +49,29 @@
         }
     }
 
+    .project-permission-footer{
+        flex-shrink: 0;
+        position: static;
+        padding: 16px 26px;
+        border-top: 1px solid #F4F4F5;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        button {
+            min-width: 120px;
+            height: 38px;
+            line-height: 36px;
+        }
+    }
+}
+
+
+body.window-portrait {
+    .project-permission {
+        .project-permission-footer{
+            button {
+                width: 50%;
+            }
+        }
+    }
 }
