@@ -1073,6 +1073,9 @@ export default {
                     if (content == this.taskContent) {
                         return;
                     }
+                    if (content == this.taskContent.replace(/original-width="[^"]*"/g, "").replace(/original-height="[^"]*"/g, "").replace(/\"   \//g, "\" /")) {
+                        return;
+                    }
                     this.$set(this.taskDetail, 'content', content)
                     successCallback = () => {
                         this.$store.dispatch("saveTaskContent", {

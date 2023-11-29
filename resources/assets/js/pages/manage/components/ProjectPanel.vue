@@ -81,7 +81,7 @@
                 <div v-if="completedCount > 0" class="project-checkbox">
                     <Checkbox :value="projectData.cacheParameter.completedTask" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
                 </div>
-                <div v-if="flowList.length > 0" class="project-select">
+                <div class="project-select">
                     <Cascader ref="flow" :data="flowData" @on-change="flowChange" transfer-class-name="project-panel-flow-cascader" transfer>
                         <span :class="`project-flow ${flowInfo.status || ''}`">{{ flowTitle }}</span>
                     </Cascader>
@@ -857,7 +857,7 @@ export default {
             //
             const {project_user} = this.projectData;
             if ($A.isArray(project_user)) {
-                const userItems = project_user.map((item, index) => {
+                let userItems = project_user.map((item, index) => {
                     const userInfo = cacheUserBasic.find(({userid}) => userid === item.userid) || {}
                     const length = allTask.filter(({task_user, complete_at}) => {
                         if (!this.projectData.cacheParameter.completedTask) {
@@ -870,12 +870,18 @@ export default {
                     return {
                         value: `user:${userInfo.userid}`,
                         label: `${userInfo.nickname} (${length})`,
-                        class: `user-${index}`,
                         userid: userInfo.userid || 0,
                         length,
                     }
                 }).filter(({userid, length}) => userid > 0 && length > 0)
                 if (userItems.length > 0) {
+                    userItems.sort((a, b) => {
+                        return a.userid == this.userId ? -1 : 1
+                    })
+                    userItems = userItems.map((item, index)=>{
+                        item.class = `user-${index}`
+                        return item;
+                    })
                     list.push(...userItems)
                 }
             }

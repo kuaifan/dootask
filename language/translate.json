@@ -18643,5 +18643,16 @@
         "de": "Auftrag autorisiert.",
         "fr": "Autorisations de tâches",
         "id": "Hak akses tugas"
+    },
+    {
+        "key": "搜索项目名称",
+        "zh": "",
+        "zh-CHT": "搜索項目名稱",
+        "en": "Search project name",
+        "ko": "검색 항목 이름",
+        "ja": "項目名を検索します",
+        "de": "Name des suchprojekts:",
+        "fr": "Recherche par nom d’article",
+        "id": "Cari nama item"
     }
 ]

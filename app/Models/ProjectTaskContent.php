@@ -60,6 +60,8 @@ class ProjectTaskContent extends AbstractModel
      */
     public static function saveContent($task_id, $content)
     {
+        @ini_set("pcre.backtrack_limit", 999999999);
+        // 
         $oldContent = $content;
         $path = 'uploads/task/content/' . date("Ym") . '/' . $task_id . '/';
         //
@@ -80,11 +82,7 @@ class ProjectTaskContent extends AbstractModel
         $publicPath = public_path($filePath);
         Base::makeDir(dirname($publicPath));
         $result = file_put_contents($publicPath, $content);
-        if(!$result){
-            // todo 记录失败日志便于追查具体原因
-            info("保存任务详情至文件失败");
-            info($publicPath);
-            info($oldContent);
+        if(!$result && $oldContent){
             throw new ApiException("保存任务详情至文件失败,请重试");
         }
         //

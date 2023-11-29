@@ -105,11 +105,11 @@ class ProjectPermission extends AbstractModel
             self::TASK_LIST_REMOVE => [self::PERMISSIONS['project_leader']],
             self::TASK_LIST_SORT => $projectTaskList,
             self::TASK_ADD => $projectTaskList,
-            self::TASK_UPDATE => $taskUpdate = [self::PERMISSIONS['project_leader'], self::PERMISSIONS['task_leader'], self::PERMISSIONS['task_assist']],
-            self::TASK_STATUS => [self::PERMISSIONS['project_leader'], self::PERMISSIONS['task_leader']],
-            self::TASK_REMOVE => $taskUpdate,
-            self::TASK_ARCHIVED => $taskUpdate,
-            self::TASK_MOVE => $taskUpdate
+            self::TASK_UPDATE => [self::PERMISSIONS['project_leader'], self::PERMISSIONS['task_leader'], self::PERMISSIONS['task_assist']],
+            self::TASK_STATUS => $taskStatus = [self::PERMISSIONS['project_leader'], self::PERMISSIONS['task_leader']],
+            self::TASK_REMOVE => $taskStatus,
+            self::TASK_ARCHIVED => $taskStatus,
+            self::TASK_MOVE => $taskStatus
         ];
         return self::firstOrCreate(
             ['project_id' => $projectId],

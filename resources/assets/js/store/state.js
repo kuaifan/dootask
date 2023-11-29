@@ -103,6 +103,7 @@ export default {
 
     // 会话聊天
     dialogId: 0,
+    dialogMsgId: 0,
     dialogSearchMsgId: 0,
     dialogIns: [],
     dialogMsgs: [],

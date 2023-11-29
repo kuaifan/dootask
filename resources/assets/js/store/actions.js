@@ -2485,13 +2485,16 @@ export default {
     openDialog({state, dispatch}, dialog_id) {
         return new Promise(resolve => {
             let search_msg_id;
+            let dialog_msg_id;
             if ($A.isJson(dialog_id)) {
                 search_msg_id = dialog_id.search_msg_id;
+                dialog_msg_id = dialog_id.dialog_msg_id;
                 dialog_id = dialog_id.dialog_id;
             }
             //
             requestAnimationFrame(_ => {
                 state.dialogSearchMsgId = /^\d+$/.test(search_msg_id) ? search_msg_id : 0;
+                state.dialogMsgId = /^\d+$/.test(dialog_msg_id) ? dialog_msg_id : 0;
                 state.dialogId = /^\d+$/.test(dialog_id) ? dialog_id : 0;
                 resolve()
             })

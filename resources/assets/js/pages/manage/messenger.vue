@@ -61,7 +61,8 @@
                                 :class="dialogClass(dialog)"
                                 @click="openDialog({
                                     dialog_id: dialog.id,
-                                    search_msg_id: dialog.search_msg_id
+                                    dialog_msg_id: dialog.search_msg_id,
+                                    search_msg_id: dialog.search_msg_id,
                                 })"
                                 v-longpress="handleLongpress"
                                 :style="{'background-color':dialog.color}">
@@ -109,8 +110,11 @@
                                 <div class="dialog-line"></div>
                             </li>
                         </template>
-                        <li v-else-if="dialogSearchLoad === 0" class="nothing">
+                        <li v-else-if="dialogSearchLoad === 0 && dialogMarkLoad === 0" class="nothing">
                             {{$L(dialogSearchKey ? `没有任何与"${dialogSearchKey}"相关的会话` : `没有任何会话`)}}
+                        </li>
+                        <li v-else class="nothing">
+                            <Loading/>
                         </li>
                     </ul>
                     <ul v-else class="contacts">
@@ -230,6 +234,7 @@ export default {
                 {type: 'user', name: '单聊'},
                 {type: 'group', name: '群聊'},
                 {type: 'bot', name: '机器人'},
+                {type: 'mark', name: '标注'},
             ],
             dialogHistory: MessengerObject.menuHistory,
 
@@ -246,6 +251,8 @@ export default {
             operateVisible: false,
 
             clickAgainSubscribe: null,
+
+            dialogMarkLoad: 0,
         }
     },
 
@@ -286,7 +293,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs', 'loadDialogs', 'dialogId', 'messengerSearchKey', 'appNotificationPermission', 'taskColorList']),
+        ...mapState(['cacheDialogs', 'loadDialogs', 'dialogId', 'dialogMsgId', 'dialogMsgs', 'messengerSearchKey', 'appNotificationPermission', 'taskColorList']),
 
         routeName() {
             return this.$route.name
@@ -332,6 +339,19 @@ export default {
             if (dialogActive == '' && dialogSearchKey == '') {
                 return this.cacheDialogs.filter(dialog => this.filterDialog(dialog)).sort(this.dialogSort);
             }
+            if(dialogActive == 'mark' && !dialogSearchKey){
+                const lists = [];
+                this.dialogMsgs.filter(h=>h.tag).forEach(h=>{
+                    let dialog = $A.cloneJSON(this.cacheDialogs).find(p=>p.id == h.dialog_id)
+                    if(dialog){
+                        dialog.last_msg = h;
+                        dialog.search_msg_id = h.id;
+                        lists.push(dialog);
+                    }
+                });
+                this.searchTagDialog()
+                return lists;
+            } 
             const list = this.cacheDialogs.filter(dialog => {
                 if (!this.filterDialog(dialog)) {
                     return false;
@@ -542,6 +562,10 @@ export default {
             },
             immediate: true
         },
+
+        dialogActive(){
+            this.dialogSearchList = [];
+        }
     },
 
     methods: {
@@ -612,7 +636,7 @@ export default {
             }
             return {
                 top: dialog.top_at,
-                active: dialog.id == this.dialogId,
+                active: dialog.id == this.dialogId && (dialog.search_msg_id == this.dialogMsgId || !this.dialogMsgId),
                 operate: this.operateVisible && dialog.id == this.operateItem.id,
                 completed: $A.dialogCompleted(dialog)
             }
@@ -755,6 +779,29 @@ export default {
                 this.dialogSearchList = list;
             }).finally(_ => {
                 this.dialogSearchLoad--;
+            });
+        },
+
+        searchTagDialog() {
+            //
+            this.dialogMarkLoad++;
+            this.$store.dispatch("call", {
+                url: 'dialog/search/tag',
+            }).then(({data}) => {
+                const msgIds = [];
+                const lists = [];
+                this.dialogList.forEach(h=>{
+                    lists.push(h);
+                    msgIds.push(h.search_msg_id)
+                });
+                data.some(item => {
+                    if (!item.last_msg || !msgIds.includes(item.search_msg_id)) {
+                        lists.push(Object.assign(item, {is_search: true}))
+                    }
+                })
+                this.dialogSearchList = lists;
+            }).finally(_ => {
+                this.dialogMarkLoad--;
             });
         },
 
