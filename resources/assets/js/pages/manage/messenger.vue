@@ -349,7 +349,6 @@ export default {
                         lists.push(dialog);
                     }
                 });
-                this.searchTagDialog()
                 return lists;
             } 
             const list = this.cacheDialogs.filter(dialog => {
@@ -565,6 +564,9 @@ export default {
 
         dialogActive(){
             this.dialogSearchList = [];
+            if(this.dialogActive == 'mark' && !this.dialogSearchKey){
+                this.searchTagDialog()
+            }
         }
     },
 
