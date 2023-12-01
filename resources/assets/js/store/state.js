@@ -182,6 +182,7 @@ export default {
 
     // 客户端新版本号
     clientNewVersion: null,
+    clientDownloadUrl: null,
 
     // 预览图片
     previewImageIndex: 0,

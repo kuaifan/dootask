@@ -126,6 +126,18 @@
             <div class="manage-box-new-group">
                 <ul>
                     <li>
+                        <Tooltip v-if="clientDownloadUrl && !$Electron" :content="$L('客户端下载')" placement="right" transfer :delay="300">
+                            <a class="client-download common-right-bottom-link" :href="clientDownloadUrl" target="_blank">
+                                <Icon type="md-download"/>
+                            </a>
+                        </Tooltip>
+                        <Tooltip v-else-if="!!clientNewVersion && $Electron" :content="$L('更新客户端')" placement="right" transfer :delay="300">
+                            <div class="client-update" @click="settingRoute('version')">
+                                <img :src="$A.apiUrl(`../images/common/uploading.svg`)">
+                            </div>
+                        </Tooltip>
+                    </li>
+                    <li>
                         <Tooltip :content="$L('新建项目') + ' ('+mateName+'+B)'" placement="right" transfer :delay="300">
                             <i class="taskfont" @click="onAddShow">&#xe7b9;</i>
                         </Tooltip>
@@ -398,6 +410,7 @@ export default {
             'wsMsg',
 
             'clientNewVersion',
+            'clientDownloadUrl',
             'cacheTaskBrowse',
 
             'dialogIns',

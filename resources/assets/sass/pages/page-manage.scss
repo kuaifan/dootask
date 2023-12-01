@@ -268,6 +268,25 @@
                             color: #8FCE78;
                         }
                     }
+                    .client-download .ivu-icon-md-download,.client-update{
+                        font-size: 20px;
+                        padding: 6px;
+                        cursor: pointer;
+                        border-radius: 8px;
+                        background-color: #8FCE78;
+                        color: #ffffff;
+                        margin-bottom: 10px;
+                    }
+                    .client-update{
+                        width: 32px;
+                        height: 32px;
+                        line-height: 38px;
+                        padding: 0px;
+                        img{
+                            line-height: 0;
+                            width: 18px;
+                        }
+                    }
                 }
             }
             .manage-box-new {
