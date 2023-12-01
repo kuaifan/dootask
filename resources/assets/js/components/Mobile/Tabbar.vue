@@ -105,7 +105,7 @@ export default {
         }
         if (this.userIsAdmin) {
             this.navMore[2].splice(0, 0, {icon: '&#xe63f;', name: 'allUser', label: '团队管理'})
-            this.navMore[2].push({icon: '&#xe7b9;', name: 'okrAnalyze', label: 'OKR结果分析'})
+            this.navMore[2].push({icon: '&#xe7b9;', name: 'okrAnalyze', label: 'OKR结果'})
         }
     },
 
@@ -290,14 +290,14 @@ export default {
                 case 'contacts':
                     location = {name: 'manage-messenger', params: {dialogAction: 'contacts'}};
                     break;
-                    
+
                 case 'okrManage':
                 case 'okrAnalyze':
-                    this.goForward({ 
-                        path:'/manage/apps/' + ( path == 'okrManage' ? '/#/list' : '/#/analysis') , 
+                    this.goForward({
+                        path:'/manage/apps/' + ( path == 'okrManage' ? '/#/list' : '/#/analysis') ,
                         query: {
                             baseUrl: this.okrUrl
-                        } 
+                        }
                     });
                     return;
 

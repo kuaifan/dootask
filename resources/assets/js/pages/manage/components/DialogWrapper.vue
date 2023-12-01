@@ -1212,6 +1212,11 @@ export default {
          * @param type
          */
         sendMsg(text, type) {
+
+            console.log( this.$refs.scroller.getSizes() )
+
+            return;
+
             let textBody,
                 textType = "text",
                 silence = "no",
@@ -2225,6 +2230,8 @@ export default {
             if (this.scrollTail <= 55) {
                 this.msgNew = 0;
             }
+            //
+            console.log(this.allMsgs)
             //
             this.scrollAction = event.target.scrollTop;
             this.scrollDirection = this.scrollTmp <= this.scrollAction ? 'down' : 'up';

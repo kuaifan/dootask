@@ -163,7 +163,9 @@ export default {
                     }
                     const documentKey = this.documentKey();
                     if (documentKey && documentKey.then) {
-                        documentKey.then(this.loadFile);
+                        documentKey.then(this.loadFile).catch(({msg})=>{
+                            $A.modalError({content: msg});
+                        });
                     } else {
                         this.loadFile();
                     }
@@ -280,6 +282,14 @@ export default {
                         }
                         //
                     }).catch(({msg}) => {
+                        if( msg.indexOf("404 not found") !== -1 ){
+                            $A.modalInfo({
+                                language: false,
+                                title: '版本过低',
+                                content: '服务器版本过低，请升级服务器。',
+                            })
+                            return;
+                        }
                         $A.modalError({content: msg});
                     });
                 })

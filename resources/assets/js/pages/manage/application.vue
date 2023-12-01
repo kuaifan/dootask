@@ -326,7 +326,7 @@ export default {
             ];
             // 管理员
             let adminApplyList = !this.userIsAdmin ? [] : [
-                { value: "okrAnalyze", label: "OKR结果分析" },
+                { value: "okrAnalyze", label: "OKR结果" },
                 { value: "ldap", label: "LDAP" },
                 { value: "mail", label: "邮件" },
                 { value: "appPush", label: "APP推送" },

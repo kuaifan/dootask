@@ -480,6 +480,8 @@ class FileController extends AbstractController
         $only_update_at = Request::input('only_update_at', 'no');
         $history_id = intval(Request::input('history_id'));
         //
+        Base::checkClientVersion('0.31.75');
+        //
         if (Base::isNumber($id)) {
             $user = User::auth();
             $file = File::permissionFind(intval($id), $user, $down == 'yes' ? 1 : 0);

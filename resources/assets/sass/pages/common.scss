@@ -1,6 +1,10 @@
 body {
     overflow: hidden;
 
+    .display-block{
+        display: block;
+    }
+
     &.touch-back {
         .scrollbar-container .scrollbar-content,
         .dialog-wrapper .vue-recycle-scroller.direction-vertical:not(.page-mode),
