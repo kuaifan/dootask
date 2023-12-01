@@ -125,16 +125,14 @@
             </Scrollbar>
             <div class="manage-box-new-group">
                 <ul>
-                    <li>
+                    <li class="client-download-update">
                         <Tooltip v-if="clientDownloadUrl && !$Electron" :content="$L('客户端下载')" placement="right" transfer :delay="300">
                             <a class="client-download common-right-bottom-link" :href="clientDownloadUrl" target="_blank">
-                                <Icon type="md-download"/>
+                                <i class="taskfont">&#xe7fa;</i>
                             </a>
                         </Tooltip>
                         <Tooltip v-else-if="!!clientNewVersion && $Electron" :content="$L('更新客户端')" placement="right" transfer :delay="300">
-                            <div class="client-update" @click="settingRoute('version')">
-                                <img :src="$A.apiUrl(`../images/common/uploading.svg`)">
-                            </div>
+                            <i class="taskfont"  @click="settingRoute('version')">&#xe7fb;</i>
                         </Tooltip>
                     </li>
                     <li>

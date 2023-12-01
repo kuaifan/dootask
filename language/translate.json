@@ -18654,5 +18654,27 @@
         "de": "Name des suchprojekts:",
         "fr": "Recherche par nom d’article",
         "id": "Cari nama item"
+    },
+    {
+        "key": "OKR结果",
+        "zh": "",
+        "zh-CHT": "OKR結果",
+        "en": "OKR result",
+        "ko": "Okr 결과",
+        "ja": "OKRの結果です",
+        "de": "OKR bringt das ergebnis.",
+        "fr": "Résultats pour OKR",
+        "id": "Hasil OKR"
+    },
+    {
+        "key": "服务器版本过低，请升级服务器。",
+        "zh": "",
+        "zh-CHT": "服務器版本過低，請升級服務器。",
+        "en": "The server version is too early. Please upgrade the server.",
+        "ko": "서버 버전이 낮습니다. 서버를 업그레이드하십시오.",
+        "ja": "サーバーのバージョンが低いので、サーバーのアップグレードをお願いします。",
+        "de": "Server sind zu niedrig. Bitte aktualisiert den server.",
+        "fr": "La version du serveur est trop basse. Veuillez mettre à jour le serveur.",
+        "id": "Versi server di bawah rendah, silahkan upgrade server."
     }
 ]
