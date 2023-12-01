@@ -130,27 +130,7 @@ export default {
         },
     },
 
-    watch: {
-        source: {
-            handler() {
-                this.msgRead();
-            },
-            immediate: true,
-        },
-        windowActive(active) {
-            if (active) {
-                this.msgRead();
-            }
-        }
-    },
-
     methods: {
-        msgRead() {
-            if (!this.windowActive) {
-                return;
-            }
-            this.$store.dispatch("dialogMsgRead", this.source);
-        },
 
         formatTodoUser(data) {
             if ($A.isJson(data)) {

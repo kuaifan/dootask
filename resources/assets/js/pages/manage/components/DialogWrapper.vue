@@ -149,6 +149,7 @@
             ref="scroller"
             class="dialog-scroller scrollbar-virtual"
             item-inactive-class="inactive"
+            item-active-class="active"
             :class="scrollerClass"
             :data-key="'id'"
             :data-sources="allMsgs"
@@ -579,6 +580,7 @@ export default {
             tempId: $A.randNum(1000000000, 9999999999),
             msgLoadIng: 0,
             msgActiveIndex: -1,
+            msgReadIds: [],
 
             pasteShow: false,
             pasteFile: [],
@@ -658,7 +660,9 @@ export default {
 
             approveDetails:{id: 0},
             approveDetailsShow: false,
-            approvaUserStatus: ''
+            approvaUserStatus: '',
+
+            mountedNow: 0,
         }
     },
 
@@ -966,7 +970,7 @@ export default {
             const item = position_msgs.sort((a, b) => {
                 return b.msg_id - a.msg_id
             })[0]
-            if (this.allMsgs.findIndex(({id}) => id == item.msg_id) === -1) {
+            if(item){
                 return Object.assign(item, {
                     'label': this.$L(`未读消息${unread}条`)
                 })
@@ -995,6 +999,7 @@ export default {
     watch: {
         dialogId: {
             handler(dialog_id, old_id) {
+                this.mountedNow = Date.now();
                 if (dialog_id) {
                     this.msgNew = 0
                     this.msgType = ''
@@ -1021,6 +1026,8 @@ export default {
                     if (this.autoFocus) {
                         this.inputFocus()
                     }
+                    //
+                    setTimeout(()=>this.msgRead(),100)
                 }
                 this.$store.dispatch('closeDialog', old_id)
                 this.getUserApproveStatus();
@@ -1163,6 +1170,9 @@ export default {
         },
 
         windowActive(active) {
+            if (active) {
+                this.msgRead();
+            }
             if (active && this.autoFocus) {
                 const lastDialog = $A.last(this.dialogIns)
                 if (lastDialog && lastDialog.uid === this._uid) {
@@ -1212,11 +1222,6 @@ export default {
          * @param type
          */
         sendMsg(text, type) {
-
-            console.log( this.$refs.scroller.getSizes() )
-
-            return;
-
             let textBody,
                 textType = "text",
                 silence = "no",
@@ -2219,6 +2224,26 @@ export default {
             })
         },
 
+        msgRead() {
+            if (!this.windowActive) {
+                return;
+            }
+            this.$nextTick(()=>{
+                this.$refs.scroller.activeEvent(this.$refs.scroller.$el)
+                this.$nextTick(()=>{
+                    this.$refs.scroller.$el.querySelectorAll('div.active .dialog-view')?.forEach(element => {
+                        const mid = Number(element.getAttribute('data-id') || 0) || 0;
+                        if(mid){
+                            const source = this.allMsgs.find(msg =>{return msg.id == mid})
+                            if(source){
+                                this.$store.dispatch("dialogMsgRead",source);
+                            }
+                        }
+                    });
+                })
+            })
+        },
+
         onScroll(event) {
             if (this.operatePreventScroll === 0) {
                 this.operateVisible = false;
@@ -2231,11 +2256,13 @@ export default {
                 this.msgNew = 0;
             }
             //
-            console.log(this.allMsgs)
-            //
             this.scrollAction = event.target.scrollTop;
             this.scrollDirection = this.scrollTmp <= this.scrollAction ? 'down' : 'up';
             setTimeout(_ => this.scrollTmp = this.scrollAction, 0);
+            //
+            if(Date.now() - this.mountedNow > 500){
+                this.msgRead()
+            }
         },
 
         onRange(range) {
@@ -2927,19 +2954,9 @@ export default {
             //
             this.positionLoad++
             const {msg_id} = this.positionMsg;
-            this.$store.dispatch("dialogMsgMark", {
-                dialog_id: this.dialogId,
-                type: 'read',
-                after_msg_id: msg_id,
-            }).then(_ => {
-                this.positionLoad++
-                this.onPositionId(msg_id).finally(_ => {
-                    this.positionLoad--
-                })
-            }).catch(({msg}) => {
-                $A.modalError(msg)
-            }).finally(_ => {
+            this.onPositionId(msg_id).finally(_ => {
                 this.positionLoad--
+                this.msgRead();
             })
         },
 
