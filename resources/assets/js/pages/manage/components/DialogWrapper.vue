@@ -391,10 +391,32 @@
             v-model="forwardData"
             :multiple-max="50"
             :title="$L('转发')"
+            :twice-affirm="true"
+            :twice-affirm-title="$L('转发给:')"
             :before-submit="onForward"
             :show-select-all="false"
             show-dialog
-            module/>
+            module>
+            <template #twice-affirm-body-extend>
+                <div class="dialog-wrapper-forward-body">
+                    <div class="dialog-wrapper ">
+                        <div class="dialog-scroller">
+                            <DialogItem :source="operateItem" simpleView :dialogAvatar="false"/>
+                        </div>
+                    </div>
+                    <div class="leave-message">
+                        <Input type="textarea" :autosize="{minRows: 1,maxRows: 3}" v-model="forwardLeaveMessage" :placeholder="$L('留言')" clearable />
+                    </div>
+                </div>
+            </template>
+            <template #twice-affirm-footer-extend>
+                <div class="dialog-wrapper-forward-footer" :class="{'selected': !forwardShowOriginal}" @click="forwardShowOriginal = !forwardShowOriginal">
+                    <Icon v-if="!forwardShowOriginal" class="user-modal-icon" type="ios-checkmark-circle" />
+                    <Icon v-else class="user-modal-icon" type="ios-radio-button-off" />
+                    {{$L('不显示原发送者信息')}}
+                </div>
+            </template>
+        </UserSelect>
 
         <!-- 设置待办 -->
         <Modal
@@ -601,6 +623,8 @@ export default {
             modifyLoad: 0,
 
             forwardData: [],
+            forwardShowOriginal: true,
+            forwardLeaveMessage: '',
 
             openId: 0,
             dialogDrag: false,
@@ -662,7 +686,7 @@ export default {
             approveDetailsShow: false,
             approvaUserStatus: '',
 
-            mountedNow: 0,
+            mountedNow: 0
         }
     },
 
@@ -2203,6 +2227,7 @@ export default {
                     reject();
                     return
                 }
+
                 const dialogids = this.forwardData.filter(value => $A.leftExists(value, 'd:')).map(value => value.replace('d:', ''));
                 const userids = this.forwardData.filter(value => !$A.leftExists(value, 'd:'));
                 this.$store.dispatch("call", {
@@ -2210,7 +2235,9 @@ export default {
                     data: {
                         dialogids,
                         userids,
-                        msg_id: this.operateItem.id
+                        msg_id: this.operateItem.id,
+                        show_source: this.forwardShowOriginal ? 1 : 0,
+                        leave_message: this.forwardLeaveMessage
                     }
                 }).then(({data, msg}) => {
                     this.$store.dispatch("saveDialogMsg", data.msgs);
@@ -2433,6 +2460,8 @@ export default {
 
                     case "forward":
                         this.forwardData = [];
+                        this.forwardLeaveMessage = '';
+                        this.forwardShowOriginal = true;
                         this.$refs.forwardSelect.onSelection()
                         break;
 

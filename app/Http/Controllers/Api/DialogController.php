@@ -1358,9 +1358,11 @@ class DialogController extends AbstractController
      * @apiGroup dialog
      * @apiName msg__forward
      *
-     * @apiParam {Number} msg_id            消息ID
-     * @apiParam {Array} dialogids          转发给的对话ID
-     * @apiParam {Array} userids            转发给的成员ID
+     * @apiParam {Number} msg_id                消息ID
+     * @apiParam {Array} dialogids              转发给的对话ID
+     * @apiParam {Array} userids                转发给的成员ID
+     * @apiParam {Number} show_source           是否显示原发送者信息
+     * @apiParam {Array} leave_message          转发留言
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1373,6 +1375,8 @@ class DialogController extends AbstractController
         $msg_id = intval(Request::input("msg_id"));
         $dialogids = Request::input('dialogids');
         $userids = Request::input('userids');
+        $show_source = intval(Request::input("show_source"));
+        $leave_message = Request::input('leave_message');
         //
         if (empty($dialogids) && empty($userids)) {
             return Base::retError("请选择转发对话或成员");
@@ -1384,7 +1388,7 @@ class DialogController extends AbstractController
         }
         WebSocketDialog::checkDialog($msg->dialog_id);
         //
-        return $msg->forwardMsg($dialogids, $userids, $user);
+        return $msg->forwardMsg($dialogids, $userids, $user, $show_source, $leave_message);
     }
 
     /**

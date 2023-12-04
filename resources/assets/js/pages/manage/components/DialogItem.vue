@@ -21,7 +21,7 @@
             {{source.msg.notice}}
         </div>
         <template v-else>
-            <div class="dialog-avatar">
+            <div class="dialog-avatar" v-if="dialogAvatar">
                 <UserAvatar
                     v-longpress="{callback: onMention, delay: 300}"
                     @open-dialog="onOpenDialog"
@@ -93,6 +93,10 @@ export default {
         msgId: {
             type: Number,
             default: 0
+        },
+        dialogAvatar: {
+            type: Boolean,
+            default: true
         },
     },
 

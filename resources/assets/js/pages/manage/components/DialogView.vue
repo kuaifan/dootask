@@ -14,6 +14,10 @@
                 <UserAvatar :userid="msgData.reply_data.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
                 <div class="reply-desc" v-html="$A.getMsgSimpleDesc(msgData.reply_data, 'image-preview')"></div>
             </div>
+            <!--转发-->
+            <div v-if="msgData.forward_show && msgData.forward_data && msgData.forward_data.userid" class="dialog-reply no-dark-content" @click="openDialog(msgData.forward_data.userid)">
+                <UserAvatar :userid="msgData.forward_data.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
+            </div>
             <!--详情-->
             <div ref="content" class="dialog-content" :class="contentClass">
                 <!--文本-->
@@ -450,6 +454,14 @@ export default {
                 name: this.msgData.msg.name,
                 meetingid: this.msgData.msg.meetingid,
                 meetingdisabled: true,
+            });
+        },
+
+        openDialog(userid) {
+            this.$store.dispatch("openDialogUserid", userid).then(_ => {
+                this.goForward({name: 'manage-messenger'})
+            }).catch(({msg}) => {
+                $A.modalError(msg)
             });
         },
 

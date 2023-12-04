@@ -72,6 +72,7 @@ class WebSocketDialogMsg extends AbstractModel
     protected $appends = [
         'percentage',
         'reply_data',
+        'forward_data',
     ];
 
     protected $hidden = [
@@ -112,6 +113,21 @@ class WebSocketDialogMsg extends AbstractModel
             }
         }
         return $this->appendattrs['reply_data'];
+    }
+
+    /**
+     * 转发消息详情
+     * @return WebSocketDialogMsg|null
+     */
+    public function getForwardDataAttribute()
+    {
+        if (!isset($this->appendattrs['forward_data'])) {
+            $this->appendattrs['forward_data'] = null;
+            if ($this->forward_id > 0) {
+                $this->appendattrs['forward_data'] = self::find($this->forward_id, ['id', 'userid', 'type', 'msg'])?->cancelAppend() ?: null;
+            }
+        }
+        return $this->appendattrs['forward_data'];
     }
 
     /**
@@ -369,11 +385,13 @@ class WebSocketDialogMsg extends AbstractModel
      * @param array|int $dialogids
      * @param array|int $userids
      * @param User $user    发送的会员
+     * @param int $showSource    是否显示原发送者信息
+     * @param string $leaveMessage    转发留言
      * @return mixed
      */
-    public function forwardMsg($dialogids, $userids, $user)
+    public function forwardMsg($dialogids, $userids, $user, $showSource = 1, $leaveMessage = '')
     {
-        return AbstractModel::transaction(function() use ($dialogids, $user, $userids) {
+        return AbstractModel::transaction(function() use ($dialogids, $user, $userids, $showSource, $leaveMessage) {
             $originalMsg = Base::json2array($this->getRawOriginal('msg'));
             $msgs = [];
             $already = [];
@@ -382,10 +400,13 @@ class WebSocketDialogMsg extends AbstractModel
                     $dialogids = [$dialogids];
                 }
                 foreach ($dialogids as $dialogid) {
-                    $res = self::sendMsg(null, $dialogid, $this->type, $originalMsg, $user->userid);
+                    $res = self::sendMsg('forward-'.( $showSource ? 1 : 0).'-'.($this->forward_id ?: $this->id), $dialogid, $this->type, $originalMsg, $user->userid);
                     if (Base::isSuccess($res)) {
                         $msgs[] = $res['data'];
                         $already[] = $dialogid;
+                    }
+                    if($leaveMessage){
+                        self::sendMsg(null, $dialogid, 'text', ['text' => $leaveMessage], $user->userid);
                     }
                 }
             }
@@ -399,9 +420,12 @@ class WebSocketDialogMsg extends AbstractModel
                     }
                     $dialog = WebSocketDialog::checkUserDialog($user, $userid);
                     if ($dialog && !in_array($dialog->id, $already)) {
-                        $res = self::sendMsg(null, $dialog->id, $this->type, $originalMsg, $user->userid);
+                        $res = self::sendMsg('forward-'.( $showSource ? 1 : 0).'-'.($this->forward_id  ?: $this->id), $dialog->id, $this->type, $originalMsg, $user->userid);
                         if (Base::isSuccess($res)) {
                             $msgs[] = $res['data'];
+                        }
+                        if($leaveMessage){
+                            self::sendMsg(null, $dialog->id, 'text', ['text' => $leaveMessage], $user->userid);
                         }
                     }
                 }
@@ -772,6 +796,7 @@ class WebSocketDialogMsg extends AbstractModel
      * - reply-98：回复消息ID=98
      * - update-99：更新消息ID=99（标记修改）
      * - change-99：更新消息ID=99（不标记修改）
+     * - forward-99：转发消息ID=99
      * @param int $dialog_id            会话ID（即 聊天室ID）
      * @param string $type              消息类型
      * @param array $msg                发送的消息
@@ -812,6 +837,7 @@ class WebSocketDialogMsg extends AbstractModel
         $update_id = preg_match("/^update-(\d+)$/", $action, $match) ? $match[1] : 0;
         $change_id = preg_match("/^change-(\d+)$/", $action, $match) ? $match[1] : 0;
         $reply_id = preg_match("/^reply-(\d+)$/", $action, $match) ? $match[1] : 0;
+        $forward_id = preg_match("/^forward-(\d+)-(\d+)$/", $action, $match) ? $match[2] : 0;
         $sender = $sender === null ? User::userid() : $sender;
         //
         $dialog = WebSocketDialog::find($dialog_id);
@@ -862,6 +888,10 @@ class WebSocketDialogMsg extends AbstractModel
             if ($reply_id && !self::whereId($reply_id)->increment('reply_num')) {
                 throw new ApiException('回复的消息不存在');
             }
+            // 转发
+            if ($forward_id && !self::whereId($forward_id)->increment('forward_num')) {
+                throw new ApiException('转发的消息不存在');
+            }
             //
             $dialogMsg = self::createInstance([
                 'dialog_id' => $dialog_id,
@@ -873,6 +903,8 @@ class WebSocketDialogMsg extends AbstractModel
                 'link' => $link,
                 'msg' => $msg,
                 'read' => 0,
+                'forward_id' => $forward_id,
+                'forward_show' => $forward_id ? $match[1] : 1,
             ]);
             AbstractModel::transaction(function () use ($dialog, $dialogMsg) {
                 $dialog->last_at = Carbon::now();
