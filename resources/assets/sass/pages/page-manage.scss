@@ -260,9 +260,9 @@
                     color: #999999;
                     .taskfont{
                         font-size: 22px;
-                        padding: 8px;
+                        padding: 4px;
                         cursor: pointer;
-                        border-radius: 8px;
+                        border-radius: 4px;
                         &:hover{
                             background-color: #ffffff;
                             color: #8FCE78;
@@ -313,6 +313,7 @@
         width: 86%;
     }
     .ivu-select-dropdown {
+        min-width: 180px;
         padding: 7px 0;
         .ivu-dropdown-item {
             padding: 9px 16px;

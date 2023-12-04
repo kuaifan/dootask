@@ -1027,7 +1027,7 @@ export default {
                         this.inputFocus()
                     }
                     //
-                    setTimeout(()=>this.msgRead(),100)
+                    setTimeout(()=>this.msgRead(),500)
                 }
                 this.$store.dispatch('closeDialog', old_id)
                 this.getUserApproveStatus();
@@ -2229,10 +2229,12 @@ export default {
                 return;
             }
             this.$nextTick(()=>{
-                this.$refs.scroller.activeEvent(this.$refs.scroller.$el)
+                if(!this.$refs.scroller.$el.querySelector('div.active')){
+                    this.$refs.scroller.activeEvent(this.$refs.scroller.$el)
+                }
                 this.$nextTick(()=>{
-                    this.$refs.scroller.$el.querySelectorAll('div.active .dialog-view')?.forEach(element => {
-                        const mid = Number(element.getAttribute('data-id') || 0) || 0;
+                    this.$refs.scroller.$el.querySelectorAll('div.active .dialog-item')?.forEach(element => {
+                        const mid = Number(element.getAttribute('data-dialog-id') || 0) || 0;
                         if(mid){
                             const source = this.allMsgs.find(msg =>{return msg.id == mid})
                             if(source){

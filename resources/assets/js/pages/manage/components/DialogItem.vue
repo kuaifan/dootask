@@ -1,5 +1,5 @@
 <template>
-    <div :class="classArray">
+    <div :class="classArray" :data-dialog-id="source.id">
         <div v-if="source.type === 'tag'" class="dialog-tag" @click="onViewTag">
             <div class="tag-user"><UserAvatar :userid="source.userid" :tooltipDisabled="source.userid == userId" :show-name="true" :show-icon="false"/></div>
             {{$L(source.msg.action === 'remove' ? '取消标注' : '标注了')}}
