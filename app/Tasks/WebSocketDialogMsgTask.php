@@ -38,12 +38,17 @@ class WebSocketDialogMsgTask extends AbstractTask
     {
         parent::__construct(...func_get_args());
         $this->id = $id;
-        $this->ignoreFd = $ignoreFd === null ? Request::header('fd') : $ignoreFd;
-        $this->client = [
-            'version' => Base::headerOrInput('version'),
-            'language' => Base::headerOrInput('language'),
-            'platform' => Base::headerOrInput('platform'),
-        ];
+        // 判断是否有Request方法，兼容go协程请求
+        $this->ignoreFd = $ignoreFd;
+        $this->client = [];
+        if (method_exists(new Request,"header")) {
+            $this->ignoreFd = $ignoreFd === null ? Request::header('fd') : $ignoreFd;
+            $this->client = [
+                'version' => Base::headerOrInput('version'),
+                'language' => Base::headerOrInput('language'),
+                'platform' => Base::headerOrInput('platform'),
+            ];
+        }
     }
 
     /**

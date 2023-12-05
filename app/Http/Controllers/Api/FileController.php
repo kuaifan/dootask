@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Api;
 
-use Hhxsv5\LaravelS\Swoole\Task\Task;
+use App\Models\WebSocketDialogMsg;
+use App\Models\WebSocketDialog;
 use App\Exceptions\ApiException;
 use App\Models\AbstractModel;
-use App\Tasks\FilePackTask;
 use App\Models\File;
 use App\Models\FileContent;
 use App\Models\FileLink;
@@ -1020,15 +1020,15 @@ class FileController extends AbstractController
         }
 
         $zip = new \ZipArchive();
-        $zipName = 'temp/download/' . date("Ym") . '/' . $user->userid . '/' . $downName;
-        $zipPath = storage_path('app/'.$zipName);
+        $zipName = 'tmp/file/' . date("Ym") . '/' . $user->userid . '/' . $downName;
+        $zipPath = public_path($zipName);
         Base::makeDir(dirname($zipPath));
 
         if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             return Base::retError('创建压缩文件失败');
         }
 
-        go(function() use ($zip, $files, $downName) {
+        go(function() use ($user, $zip, $files, $downName, $zipName) {
             Coroutine::sleep(0.1);
             // 压缩进度
             $progress = 0;
@@ -1050,6 +1050,19 @@ class FileController extends AbstractController
                     'name'=> $downName,
                     'progress' => 100
                 ]);
+            }
+            //
+            $botUser = User::botGetOrCreate('system-msg');
+            if (empty($botUser)) {
+                return;
+            }
+            if ($dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
+                $text = "<b>文件下载打包已完成。</b>";
+                $text .= "\n\n";
+                $text .= "文件名：{$downName}";
+                $text .= "\n";
+                $text .= "下载地址：".Base::fillUrl($zipName);
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
             }
         });
 
@@ -1074,8 +1087,8 @@ class FileController extends AbstractController
     {
         $user = User::auth();
         $downName = Request::input('name');
-        $zipName = 'temp/download/' . date("Ym") . '/' . $user->userid . '/' . $downName;
-        $zipPath = storage_path('app/'.$zipName);
+        $zipName = 'tmp/file/' . date("Ym") . '/' . $user->userid . '/' . $downName;
+        $zipPath = public_path($zipName);
         if (!file_exists($zipPath)) {
             abort(403, "The file does not exist.");
         }

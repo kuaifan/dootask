@@ -102,7 +102,7 @@ class DeleteTmpTask extends AbstractTask
              */
             case 'file_pack':
                 {
-                    $path = storage_path('app/temp/download/');
+                    $path = public_path('tmp/file/');
                     $dirIterator = new \RecursiveDirectoryIterator($path);
                     $iterator = new \RecursiveIteratorIterator($dirIterator);
 
