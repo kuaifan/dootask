@@ -18676,5 +18676,49 @@
         "de": "Server sind zu niedrig. Bitte aktualisiert den server.",
         "fr": "La version du serveur est trop basse. Veuillez mettre à jour le serveur.",
         "id": "Versi server di bawah rendah, silahkan upgrade server."
+    },
+    {
+        "key": "不显示原发送者信息",
+        "zh": "",
+        "zh-CHT": "不顯示原發送者信息",
+        "en": "The original sender information is not displayed",
+        "ko": "원래 보낸 사람 메시지 안 보이기",
+        "ja": "元送信者情報は表示されません。",
+        "de": "Kein original absender anzeigen",
+        "fr": "Ne pas afficher les informations de l’expéditeur original",
+        "id": "Tidak menunjukkan pesan asli"
+    },
+    {
+        "key": "转发给:",
+        "zh": "",
+        "zh-CHT": "轉發給:",
+        "en": "Forward to:",
+        "ko": "다음으로 전달:",
+        "ja": "転送します:",
+        "de": "Und an scotty.",
+        "fr": "Envoyer à:",
+        "id": "Teruskan ke:"
+    },
+    {
+        "key": "留言",
+        "zh": "",
+        "zh-CHT": "留言",
+        "en": "Leave a message",
+        "ko": "메시지",
+        "ja": "伝言です",
+        "de": "Nachricht für mich.",
+        "fr": "Le message",
+        "id": "Tinggalkan pesan"
+    },
+    {
+        "key": "多选",
+        "zh": "",
+        "zh-CHT": "多選",
+        "en": "Multiple choice",
+        "ko": "선",
+        "ja": "複数回答です",
+        "de": "Kommt an die reihe.",
+        "fr": "DuoXuan",
+        "id": "DuoXuan"
     }
 ]

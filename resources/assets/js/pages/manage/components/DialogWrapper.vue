@@ -395,6 +395,7 @@
             :twice-affirm-title="$L('转发给:')"
             :before-submit="onForward"
             :show-select-all="false"
+            :multiple-choice="false"
             show-dialog
             module>
             <template #twice-affirm-body-extend>

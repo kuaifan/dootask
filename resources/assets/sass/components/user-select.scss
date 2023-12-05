@@ -174,10 +174,18 @@
                 }
 
                 &.twice-affirm{
-                   padding-bottom: 20px;
-                   .search-selected{
+                    padding-bottom: 20px;
+                    .search-selected{
                         max-width: 100%;
-                   }
+                    }
+                    .user-modal-avatar{
+                        display: flex;
+                        align-items: center;
+                        gap: 5px;
+                        .avatar-name{
+                            max-width: 90%;
+                        }
+                    }
                 }
             }
 

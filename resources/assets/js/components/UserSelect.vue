@@ -19,14 +19,19 @@
             <!-- 顶部 -->
             <template #header>
                 <div v-if="isFullscreen" class="user-modal-header">
-                    <div class="user-modal-close" @click="showModal=false">{{$L('关闭')}}</div>
+                    <div class="user-modal-close" @click="[  !multipleChoice && showMultiple ? showMultiple=false : showModal=false]">
+                        {{ !multipleChoice && showMultiple ? $L('取消') : $L('关闭') }}
+                    </div>
                     <div class="user-modal-title"><span>{{localTitle}}</span></div>
-                    <div class="user-modal-submit" @click="onSubmit(1)">
+                    <div v-if="showMultiple" class="user-modal-submit" @click="onSubmit(1)">
                         <div v-if="submittIng > 0" class="submit-loading"><Loading /></div>
                         {{$L('确定')}}
                         <template v-if="selects.length > 0">
                             ({{selects.length}}<span v-if="multipleMax">/{{multipleMax}}</span>)
                         </template>
+                    </div>
+                    <div v-else class="user-modal-submit" @click="showMultiple = true">
+                        {{$L('多选')}}
                     </div>
                 </div>
                 <div v-else class="ivu-modal-header-inner">{{localTitle}}</div>
@@ -37,7 +42,7 @@
 
             <!-- 搜索 -->
             <div class="user-modal-search">
-                <Scrollbar ref="selected" class="search-selected" v-if="selects.length > 0" enable-x :enable-y="false">
+                <Scrollbar ref="selected" class="search-selected" v-if="showMultiple && selects.length > 0" enable-x :enable-y="false">
                     <ul>
                         <li v-for="item in formatSelect(selects)" :data-id="item.userid" @click.stop="onRemoveItem(item.userid)">
                             <template v-if="item.type=='group'">
@@ -76,15 +81,19 @@
                         v-for="item in lists"
                         :class="selectClass(item.userid_list)"
                         @click="onSelectProject(item.userid_list)">
-                        <Icon class="user-modal-icon" :type="selectIcon(item.userid_list)" />
+                        <template v-if="showMultiple">
+                            <Icon class="user-modal-icon" :type="selectIcon(item.userid_list)" />
+                        </template>
                         <div class="user-modal-avatar">
                             <i class="taskfont icon-avatar">&#xe6f9;</i>
                             <div class="project-name">
                                 <div class="label">{{item.name}}</div>
                                 <div class="subtitle">
                                     {{item.userid_list.length}} {{$L('项目成员')}}
-                                    <em class="all">{{$L('已全选')}}</em>
-                                    <em class="some">{{$L('已选部分')}}</em>
+                                    <template v-if="showMultiple">
+                                        <em class="all">{{$L('已全选')}}</em>
+                                        <em class="some">{{$L('已选部分')}}</em>
+                                    </template>
                                 </div>
                             </div>
                         </div>
@@ -93,7 +102,7 @@
                 <!-- 会员、会话 -->
                 <ul v-else>
                     <li
-                        v-if="showSelectAll"
+                        v-if="showMultiple && showSelectAll"
                         :class="selectClass('all')"
                         @click="onSelectAll">
                         <Icon class="user-modal-icon" :type="selectIcon('all')" />
@@ -106,8 +115,10 @@
                             disabled: isUncancelable(item.userid) || isDisabled(item.userid)
                         }"
                         @click="onSelectItem(item)">
-                        <Icon v-if="selects.includes(item.userid)" class="user-modal-icon" type="ios-checkmark-circle" />
-                        <Icon v-else class="user-modal-icon" type="ios-radio-button-off" />
+                        <template v-if="showMultiple">
+                            <Icon v-if="selects.includes(item.userid)" class="user-modal-icon" type="ios-checkmark-circle" />
+                            <Icon v-else class="user-modal-icon" type="ios-radio-button-off" />
+                        </template>
                         <div v-if="item.type=='group'" class="user-modal-avatar">
                             <EAvatar v-if="item.avatar" class="img-avatar" :src="item.avatar" :size="40"></EAvatar>
                             <i v-else-if="item.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
@@ -134,12 +145,19 @@
 
             <!-- 底部 -->
             <template #footer>
-                <Button type="primary" :loading="submittIng > 0" @click="onSubmit(1)">
+                <Button v-if="!multipleChoice && showMultiple"  @click="showMultiple = false">
+                    {{$L('取消')}}
+                </Button>
+                <Button v-if="showMultiple" type="primary" :loading="submittIng > 0" @click="onSubmit(1)">
                     {{$L('确定')}}
                     <template v-if="selects.length > 0">
                         ({{selects.length}}<span v-if="multipleMax">/{{multipleMax}}</span>)
                     </template>
                 </Button>
+                <Button v-else type="primary"  @click="showMultiple = true">
+                    {{$L('多选')}}
+                </Button>
+
             </template>
         </Modal>
 
@@ -154,14 +172,17 @@
                 <Scrollbar class="search-selected" v-if="selects?.length > 0" enable-x :enable-y="false">
                     <ul>
                         <li v-for="item in formatSelect(selects)" :data-id="item.userid">
-                            <template v-if="item.type=='group'">
+                            <div v-if="item.type=='group'" class="user-modal-avatar">
                                 <EAvatar v-if="item.avatar" class="img-avatar" :src="item.avatar" :size="32"></EAvatar>
                                 <i v-else-if="item.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
                                 <i v-else-if="item.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
                                 <i v-else-if="item.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
                                 <i v-else-if="item.group_type=='okr'" class="taskfont icon-avatar task">&#xe6f4;</i>
                                 <Icon v-else class="icon-avatar" type="ios-people" />
-                            </template>
+                                <div v-if="selects?.length == 1" class="avatar-name">
+                                    <span>{{item.name}}</span>
+                                </div>
+                            </div>
                             <UserAvatar v-else :userid="item.userid" :size="32" :show-name="selects?.length == 1" tooltip-disabled />
                         </li>
                     </ul>
@@ -309,6 +330,13 @@ export default {
             type: String,
             default: ''
         },
+
+        // 是否多选
+        multipleChoice: {
+            type: Boolean,
+            default: true
+        },
+
         // 提交前的回调
         beforeSubmit: Function
     },
@@ -332,6 +360,7 @@ export default {
             searchKey: null,
             searchCache: [],
             showAffirmModal: false,
+            showMultiple: true,
         };
     },
     watch: {
@@ -362,6 +391,7 @@ export default {
         showModal(value) {
             if (value) {
                 this.searchBefore();
+                this.showMultiple = this.multipleChoice
             }
             else {
                 this.searchKey = "";
@@ -648,6 +678,9 @@ export default {
             });
         },
         onSelectItem({ userid }) {
+            if(!this.showMultiple){
+                this.selects = [];
+            }
             if (this.selects.includes(userid)) {
                 if (this.isUncancelable(userid)) {
                     return;
@@ -665,11 +698,17 @@ export default {
                 this.selects.push(userid);
                 // 滚动到选中的位置
                 this.$nextTick(() => {
-                    $A.scrollIntoViewIfNeeded(this.$refs.selected.querySelector(`li[data-id="${userid}"]`));
+                    $A.scrollIntoViewIfNeeded(this.$refs.selected?.querySelector(`li[data-id="${userid}"]`));
                 });
+            }
+            if(!this.showMultiple){
+                this.onSubmit(1)
             }
         },
         onSelectProject(userid_list) {
+            if(!this.showMultiple){
+                this.selects = [];
+            }
             switch (this.selectIcon(userid_list)) {
                 case 'ios-checkmark-circle':
                     // 去除
@@ -692,6 +731,9 @@ export default {
                         this.selects = this.selects.slice(0, this.multipleMax);
                     }
                     break;
+            }
+            if(!this.showMultiple){
+                this.onSubmit(1)
             }
         },
         onRemoveItem(userid) {

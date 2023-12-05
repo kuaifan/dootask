@@ -1453,16 +1453,38 @@
         position: relative !important;
         .dialog-scroller{
             padding: 0 !important;
-            .dialog-view{
-                width: 100%;
-                max-width: 100% !important;
-                margin: 0 !important;
-                .dialog-head{
+            .dialog-item{
+                .dialog-view{
                     width: 100%;
-                    border-radius: 8px !important;
+                    max-width: 100% !important;
+                    margin: 0 !important;
+                    .dialog-head{
+                        width: 100%;
+                        border-radius: 8px !important;
+                    }
+                    .dialog-foot{
+                        display: none !important;
+                    }
                 }
-                .dialog-foot{
-                    display: none !important;
+                &.self {
+                    .dialog-head{
+                        background-color: #F4F5F7;
+                        .content-text{
+                            color: #303133 !important;
+                            .markdown-body{
+                                color: #303133 !important;
+                            }
+                        }
+                        .dialog-reply{
+                            &:after{
+                                background-color: rgba(132, 197, 106, 0.7);
+                            }
+                            .bot,.common-avatar{
+                                color: #84C56A !important;
+                            }
+                        }
+
+                    }
                 }
             }
         }
