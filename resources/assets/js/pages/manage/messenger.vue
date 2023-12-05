@@ -235,6 +235,7 @@ export default {
                 {type: 'group', name: '群聊'},
                 {type: 'bot', name: '机器人'},
                 {type: 'mark', name: '标注'},
+                {type: '@', name: '@我的'},
             ],
             dialogHistory: MessengerObject.menuHistory,
 
@@ -392,6 +393,11 @@ export default {
                             break;
                         case 'bot':
                             if (!dialog.bot) {
+                                return false;
+                            }
+                            break;
+                        case '@':
+                            if (!$A.getDialogMention(dialog)) {
                                 return false;
                             }
                             break;
