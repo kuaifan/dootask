@@ -2166,6 +2166,7 @@ class ProjectController extends AbstractController
      * @apiName task__flow
      *
      * @apiParam {Number} task_id               任务ID
+     * @apiParam {Number} project_id            项目ID - 存在时只返回这个项目的
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -2176,17 +2177,23 @@ class ProjectController extends AbstractController
         User::auth();
         //
         $task_id = intval(Request::input('task_id'));
+        $project_id = intval(Request::input('project_id'));
         //
         $projectTask = ProjectTask::select(['id', 'project_id', 'complete_at', 'flow_item_id', 'flow_item_name'])->withTrashed()->find($task_id);
         if (empty($projectTask)) {
             return Base::retError('任务不存在', [ 'task_id' => $task_id ], -4002);
         }
         //
-        $projectFlowItem = $projectTask->flow_item_id ? ProjectFlowItem::with(['projectFlow'])->find($projectTask->flow_item_id) : null;
-        if ($projectFlowItem?->projectFlow) {
-            $projectFlow = $projectFlowItem->projectFlow;
-        } else {
-            $projectFlow = ProjectFlow::whereProjectId($projectTask->project_id)->orderByDesc('id')->first();
+        $projectFlowItem = null;
+        if($project_id){
+            $projectFlow = ProjectFlow::whereProjectId($project_id)->orderByDesc('id')->first();
+        }else{
+            $projectFlowItem = $projectTask->flow_item_id ? ProjectFlowItem::with(['projectFlow'])->find($projectTask->flow_item_id) : null;
+            if ($projectFlowItem?->projectFlow) {
+                $projectFlow = $projectFlowItem->projectFlow;
+            } else {
+                $projectFlow = ProjectFlow::whereProjectId($projectTask->project_id)->orderByDesc('id')->first();
+            }
         }
         if (empty($projectFlow)) {
             return Base::retSuccess('success', [
@@ -2250,6 +2257,9 @@ class ProjectController extends AbstractController
      * @apiParam {Number} task_id               任务ID
      * @apiParam {Number} project_id            项目ID
      * @apiParam {Number} column_id             列ID
+     * @apiParam {Number} flow_item_id          工作流id
+     * @apiParam {Array} owner                  负责人
+     * @apiParam {Array} assist                 协助人
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -2262,6 +2272,9 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $project_id = intval(Request::input('project_id'));
         $column_id = intval(Request::input('column_id'));
+        $flow_item_id = intval(Request::input('flow_item_id'));
+        $owner = Request::input('owner', []);
+        $assist = Request::input('assist', []);
         //
         $task = ProjectTask::userTask($task_id);
         //
@@ -2277,10 +2290,18 @@ class ProjectController extends AbstractController
         if (empty($column)) {
             return Base::retError('列表不存在');
         }
+        if($flow_item_id){
+            $flowItem = projectFlowItem::whereProjectId($project->id)->whereId($flow_item_id)->first();
+            if (empty($flowItem)) {
+                return Base::retError('任务状态不存在');
+            }
+        }
         //
-        $task->moveTask($project_id,$column_id);
+        $task->moveTask($project_id, $column_id, $flow_item_id, $owner, $assist);
         //
-        return Base::retSuccess('移动成功', ['id' => $task_id]);
+        $task = ProjectTask::userTask($task_id);
+        //
+        return Base::retSuccess('移动成功', $task);
     }
 
     /**

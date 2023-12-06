@@ -28,6 +28,10 @@ export default {
             type: Boolean,
             default: true
         },
+        operationShow: {
+            type: Boolean,
+            default: true
+        },
         updateBefore: {
             type: Boolean,
             default: false
@@ -48,6 +52,10 @@ export default {
             type: String,
             default: 'md-checkmark-circle'
         },
+        projectId:{
+            type: Number,
+            default: 0
+        }
     },
     computed: {
         ...mapState(['loads', 'taskFlows']),
@@ -67,9 +75,11 @@ export default {
                 task: this.task,
                 loadStatus: this.loadStatus,
                 colorShow: this.colorShow,
+                operationShow: this.operationShow,
                 updateBefore: this.updateBefore,
                 disabled: this.disabled,
                 size: this.size,
+                projectId: this.projectId,
                 onUpdate: data => {
                     this.$emit("on-update", data)
                 }

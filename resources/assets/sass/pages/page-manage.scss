@@ -17,7 +17,7 @@
         position: relative;
         flex-grow: 0;
         flex-shrink: 0;
-        width: 88px;
+        width: 78px;
         height: 100%;
         background: #F4F5F7;
         display: flex;
@@ -27,7 +27,7 @@
         .scrollbar-container {
             flex: 1;
             width: 100%;
-            margin-top: 16px;
+            margin-top: 14px;
             display: flex;
             flex-direction: column;
         }
@@ -51,9 +51,9 @@
                     color: #999999;
                     cursor: pointer;
                     position: relative;
-                    width: 64px;
+                    width: 56px;
                     margin: 5px auto;
-                    padding: 8px 4%;
+                    padding: 5px 4%;
                     border-radius: 8px;
                     font-size: 12px;
                     > i {
@@ -64,15 +64,13 @@
                         white-space: nowrap;
                         overflow: hidden;
                         text-overflow: ellipsis;
+                        margin-top: -2px;
                     }
                     .menu-badge {
-                        transform: scale(0.9);
+                        transform: scale(0.8);
                         position: absolute;
                         top: 0;
-                        left: 35px;
-                    }
-                    &:first-child {
-                        margin-top: 12px;
+                        left: 30px;
                     }
                     &.active {
                         background-color: #ffffff;
@@ -246,35 +244,50 @@
             }
         }
         .manage-box-new-group {
-            width: 60%;
             margin-top: 16px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            text-align: center;
+            margin-bottom: 18px;
             ul{
                 list-style-type: none;
                 width: 100%;
                 li{
-                    margin-top: 12px;
                     color: #999999;
-                    .taskfont{
-                        font-size: 22px;
-                        padding: 4px;
-                        cursor: pointer;
-                        border-radius: 4px;
-                        &:hover{
-                            background-color: #ffffff;
-                            color: #8FCE78;
+                    cursor: pointer;
+                    width: 46px;
+                    height: 46px;
+                    border-radius: 6px;
+                    .ivu-tooltip{
+                        width: 100%;
+                        height: 100%;
+                        .ivu-tooltip-rel{
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            height: 100%;
+                            width: 100%;
                         }
                     }
+                    .taskfont{
+                        font-size: 20px;
+                        border-radius: 4px;
+                    }
                     &.client-download-update{
-                        margin-bottom: 24px;
+                        a{
+                            width: 100%;
+                            height: 100%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        }
                         .taskfont{
-                            font-size: 18px;
+                            padding: 0 4px;
+                            font-size: 14px;
                             background-color: #8FCE78;
                             color: #ffffff;
                         }
+                    }
+                    &:hover{
+                        background-color: #ffffff;
+                        color: #8FCE78;
                     }
                 }
             }
@@ -329,8 +342,8 @@
         display: flex;
         align-items: center;
         flex-shrink: 0;
-        padding: 6px 14px;
-        margin-top: 27px;
+        padding: 0 14px;
+        margin-top: 34px;
         border-radius: 8px;
         cursor: pointer;
         transition: box-shadow 0.3s;
@@ -339,8 +352,8 @@
             box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
         }
         .manage-box-avatar {
-            width: 48px;
-            height: 48px;
+            width: 42px;
+            height: 42px;
         }
         > span {
             flex: 1;

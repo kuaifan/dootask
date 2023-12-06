@@ -1,0 +1,105 @@
+.task-move {
+    .task-move-content{
+        display: flex;
+        gap: 10px;
+        margin-top: 16px;
+        >div{
+            flex: 1;
+            padding: 5px;
+            border-radius: 5px;
+            .task-move-title{
+                margin-bottom: 10px;
+                font-weight: bold;
+            }
+            .task-move-row{
+                padding: 5px 0;
+                display: flex;
+                line-height: 36px;
+                &.not-flex{
+                    display: block;
+                }
+
+                .label{
+                    width: 60px;
+                    min-width: 60px;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+                }
+
+                .task-menu-icon{
+                    padding-right: 5px;
+                }
+
+                .flow {
+                    cursor: pointer;
+                    > span{
+                        font-size: 12px;
+                        height: 18px;
+                        min-width: 20px;
+                        line-height: 16px;
+                        padding: 0 2px;
+                        border-radius: 3px;
+                        color: $primary-color;
+                        border: 1px solid $primary-color;
+                        display: inline-block;
+                        vertical-align: top;
+                        margin-top: 8px;
+                        text-align: center;
+                        &.start {
+                            background-color: rgba($flow-status-start-color, 0.1);
+                            border-color: rgba($flow-status-start-color, 0.1);
+                            color: $flow-status-start-color;
+                        }
+                        &.progress {
+                            background-color: rgba($flow-status-progress-color, 0.1);
+                            border-color: rgba($flow-status-progress-color, 0.1);
+                            color: $flow-status-progress-color;
+                        }
+                        &.test {
+                            background-color: rgba($flow-status-test-color, 0.1);
+                            border-color: rgba($flow-status-test-color, 0.1);
+                            color: $flow-status-test-color;
+                        }
+                        &.end {
+                            background-color: rgba($flow-status-end-color, 0.1);
+                            border-color: rgba($flow-status-end-color, 0.1);
+                            color: $flow-status-end-color;
+                        }
+                    }
+                }
+            }
+            &.task-move-content-old{
+                .task-move-row{
+                    >div{
+                        opacity: 0.5;
+                    }
+                    .common-user-select > ul > li, .flow{
+                        cursor: initial;
+                    }
+                }
+            }
+        }
+    }
+    .ivu-modal-footer {
+        padding: 26px 0 22px !important;
+    }
+}
+
+body.window-portrait {
+    .task-move {
+        .ivu-select-dropdown{
+            max-width: 100%;
+            overflow: auto;
+            .ivu-cascader-menu:last-child{
+                margin-right: 0px;
+            }
+        }
+        .task-move-row{
+            .label{
+                width: auto;
+                min-width: 50px;
+            }
+        }
+    }
+}

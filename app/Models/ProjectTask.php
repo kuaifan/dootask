@@ -1669,11 +1669,19 @@ class ProjectTask extends AbstractModel
      * 移动任务
      * @param int $project_id
      * @param int $column_id
+     * @param int $flowItemId
+     * @param array $owner
+     * @param array $assist
      * @return bool
      */
-    public function moveTask(int $projectId, int $columnId)
+    public function moveTask(int $projectId, int $columnId,int $flowItemId = 0,array $owner = [], array $assist = [])
     {
-        AbstractModel::transaction(function () use($projectId, $columnId) {
+        AbstractModel::transaction(function () use($projectId, $columnId, $flowItemId, $owner, $assist) {
+            $newTaskUser =  array_merge($owner, $assist);
+            //
+            $this->project_id = $projectId;
+            $this->column_id = $columnId;
+            $this->flow_item_id = $flowItemId;
             // 任务内容
             if($this->content){
                 $this->content->project_id = $projectId;
@@ -1690,13 +1698,22 @@ class ProjectTask extends AbstractModel
                 $taskTag->save();
             }
             // 任务用户
+            $this->updateTask(['owner' => $owner]);
+            $this->updateTask(['assist' => $assist]);
             foreach ($this->taskUser as $taskUser){
-                $taskUser->project_id = $projectId;
-                $taskUser->save();
+                if( in_array($taskUser->id, $newTaskUser) ){
+                    $taskUser->project_id = $projectId;
+                    $taskUser->save();
+                }
             }
             //
-            $this->project_id = $projectId;
-            $this->column_id = $columnId;
+            if($flowItemId){
+                $flowItem = projectFlowItem::whereProjectId($projectId)->whereId($flowItemId)->first();
+                $this->flow_item_name = $flowItem->status . "|" . $flowItem->name;
+            }else{
+                $this->flow_item_name = '';
+            }
+            //
             $this->save();
             //
             $this->addLog("移动{任务}");

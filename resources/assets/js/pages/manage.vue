@@ -9,7 +9,7 @@
                 >
                 <div :class="['manage-box-title', visibleMenu ? 'menu-visible' : '']">
                     <div class="manage-box-avatar">
-                        <UserAvatar :userid="userId" :size="48" tooltipDisabled/>
+                        <UserAvatar :userid="userId" :size="42" tooltipDisabled/>
                     </div>
                     <Badge v-if="!!clientNewVersion" class="manage-box-top-report" dot/>
                 </div>
@@ -135,24 +135,24 @@
                             <i class="taskfont"  @click="settingRoute('version')">&#xe7fb;</i>
                         </Tooltip>
                     </li>
-                    <li>
+                    <li @click="onAddShow">
                         <Tooltip :content="$L('新建项目') + ' ('+mateName+'+B)'" placement="right" transfer :delay="300">
-                            <i class="taskfont" @click="onAddShow">&#xe7b9;</i>
+                            <i class="taskfont">&#xe7b9;</i>
                         </Tooltip>
                     </li>
-                    <li>
+                    <li @click="onAddMenu('task')">
                         <Tooltip :content="$L('新建任务') + ' ('+mateName+'+K)'" placement="right" transfer :delay="300">
-                            <i class="taskfont" @click="onAddMenu('task')">&#xe7b5;</i>
+                            <i class="taskfont">&#xe7b5;</i>
                         </Tooltip>
                     </li>
-                    <li>
+                    <li @click="onAddMenu('createMeeting')">
                         <Tooltip :content="$L('新会议') + ' ('+mateName+'+J)'" placement="right" transfer :delay="300">
-                            <i class="taskfont" @click="onAddMenu('createMeeting')">&#xe7c1;</i>
+                            <i class="taskfont">&#xe7c1;</i>
                         </Tooltip>
                     </li>
-                    <li>
+                    <li @click="onAddMenu('joinMeeting')">
                         <Tooltip :content="$L('加入会议')" placement="right" transfer :delay="300">
-                            <i class="taskfont" @click="onAddMenu('joinMeeting')">&#xe794;</i>
+                            <i class="taskfont">&#xe794;</i>
                         </Tooltip>
                     </li>
                 </ul>

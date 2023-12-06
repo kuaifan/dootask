@@ -666,6 +666,9 @@
                         align-items: center;
                         cursor: pointer;
                     }
+                    .head-title{
+                        white-space: nowrap;
+                    }
                     .task-sort {
                         display: inline-block;
                         width: 14px;

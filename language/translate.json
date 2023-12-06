@@ -18720,5 +18720,71 @@
         "de": "Kommt an die reihe.",
         "fr": "DuoXuan",
         "id": "DuoXuan"
+    },
+    {
+        "key": "@我的",
+        "zh": "",
+        "zh-CHT": "@我的",
+        "en": "@ My",
+        "ko": "@ 나의",
+        "ja": "@私のです",
+        "de": "Mich hat er mich nie verraten.",
+        "fr": "@ mon",
+        "id": "My"
+    },
+    {
+        "key": "移动前",
+        "zh": "",
+        "zh-CHT": "移動前",
+        "en": "Premove",
+        "ko": "이동 전",
+        "ja": "移動前です",
+        "de": "Vor der bewegung",
+        "fr": "Avant de déménager",
+        "id": "Sebelum pindah"
+    },
+    {
+        "key": "移动后",
+        "zh": "",
+        "zh-CHT": "移動後",
+        "en": "Post move",
+        "ko": "이동 후",
+        "ja": "移動後です",
+        "de": "Vorwärts und dann vorwärts.",
+        "fr": "Après le déménagement",
+        "id": "Setelah pindah"
+    },
+    {
+        "key": "状态",
+        "zh": "",
+        "zh-CHT": "狀態",
+        "en": "Status",
+        "ko": "상태",
+        "ja": "状態です",
+        "de": "Versetzen.",
+        "fr": "L’état",
+        "id": "Keadaan"
+    },
+    {
+        "key": "协助人",
+        "zh": "",
+        "zh-CHT": "協助人",
+        "en": "Assist",
+        "ko": "조력자",
+        "ja": "協力者です",
+        "de": "Vorm helfen.",
+        "fr": "Confraternité",
+        "id": "Kolaborasi"
+    },
+    {
+        "key": "未变更移动项",
+        "zh": "",
+        "zh-CHT": "未變更移動項",
+        "en": "The move item is not changed",
+        "ko": "이동 항목이 변경되지 않았습니다",
+        "ja": "移働項変更ありません",
+        "de": "Der zeiger wird unverändert gelassen",
+        "fr": "Article mobile non modifié",
+        "id": "Tidak mengubah item mobile"
     }
 ]

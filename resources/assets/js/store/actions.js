@@ -1885,6 +1885,7 @@ export default {
             }
             return
         }
+
         state.taskArchiveView = task_id;
         state.taskId = task_id;
         if (task_id > 0) {
@@ -1904,6 +1905,8 @@ export default {
                     }
                 });
             });
+        }else{
+            state.taskOperation = {};
         }
     },
 
@@ -2110,14 +2113,16 @@ export default {
      * @param state
      * @param dispatch
      * @param task_id
+     * @param project_id
      * @returns {Promise<unknown>}
      */
-    getTaskFlow({state, dispatch}, task_id) {
+    getTaskFlow({state, dispatch}, {task_id, project_id}) {
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'project/task/flow',
                 data: {
-                    task_id: task_id
+                    task_id: task_id,
+                    project_id: project_id || 0
                 },
             }).then(result => {
                 let task = state.cacheTasks.find(({id}) => id == task_id)

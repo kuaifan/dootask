@@ -235,11 +235,11 @@
         <Scrollbar v-else-if="tabTypeActive === 'table'" class="project-table" enable-x>
             <div class="project-table-head">
                 <Row class="task-row">
-                    <Col span="12"># {{$L('任务名称')}}</Col>
-                    <Col span="3">{{$L('列表')}}</Col>
+                    <Col span="12"><span class="head-title"># {{$L('任务名称')}}</span></Col>
+                    <Col span="3"><span class="head-title">{{$L('列表')}}</span></Col>
                     <Col span="3">
                         <div class="sort" @click="onSort('level')">
-                            {{$L('优先级')}}
+                            <span class="head-title">{{$L('优先级')}}</span>
                             <div class="task-sort">
                                 <Icon :class="{on:sortField=='level' && sortType=='asc'}" type="md-arrow-dropup" />
                                 <Icon :class="{on:sortField=='level' && sortType=='desc'}" type="md-arrow-dropdown" />
@@ -249,7 +249,7 @@
                     <Col span="3">{{$L('负责人')}}</Col>
                     <Col span="3">
                         <div class="sort" @click="onSort('end_at')">
-                            {{$L('到期时间')}}
+                            <span class="head-title">{{$L('到期时间')}}</span>
                             <div class="task-sort">
                                 <Icon :class="{on:sortField=='end_at' && sortType=='asc'}" type="md-arrow-dropup" />
                                 <Icon :class="{on:sortField=='end_at' && sortType=='desc'}" type="md-arrow-dropdown" />

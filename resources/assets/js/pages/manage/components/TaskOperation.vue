@@ -42,21 +42,23 @@
                         </template>
 
                         <template v-if="task.parent_id === 0">
-                            <EDropdownItem :divided="turns.length > 0" command="archived">
-                                <div class="item">
-                                    <Icon type="ios-filing" />{{$L(task.archived_at ? '还原归档' : '归档')}}
-                                </div>
-                            </EDropdownItem>
-                            <EDropdownItem command="move">
-                                <div class="item">
-                                    <Icon type="md-move" />{{$L('移动')}}
-                                </div>
-                            </EDropdownItem>
-                            <EDropdownItem command="remove">
-                                <div class="item hover-del">
-                                    <Icon type="md-trash" />{{$L('删除')}}
-                                </div>
-                            </EDropdownItem>
+                            <template v-if="operationShow">
+                                <EDropdownItem :divided="turns.length > 0" command="archived">
+                                    <div class="item">
+                                        <Icon type="ios-filing" />{{$L(task.archived_at ? '还原归档' : '归档')}}
+                                    </div>
+                                </EDropdownItem>
+                                <EDropdownItem command="move">
+                                    <div class="item">
+                                        <Icon type="md-move" />{{$L('移动')}}
+                                    </div>
+                                </EDropdownItem>
+                                <EDropdownItem command="remove">
+                                    <div class="item hover-del">
+                                        <Icon type="md-trash" />{{$L('删除')}}
+                                    </div>
+                                </EDropdownItem>
+                            </template>
                             <template v-if="colorShow">
                                 <EDropdownItem v-for="(c, k) in taskColorList" :key="'c_' + k" :divided="k==0" :command="c">
                                     <div class="item">
@@ -65,7 +67,7 @@
                                 </EDropdownItem>
                             </template>
                         </template>
-                        <EDropdownItem v-else command="remove" :divided="turns.length > 0">
+                        <EDropdownItem v-else-if="operationShow" command="remove" :divided="turns.length > 0">
                             <div class="item">
                                 <Icon type="md-trash" />{{$L('删除')}}
                             </div>
@@ -104,9 +106,11 @@ export default {
             task: {},
             loadStatus: false,
             colorShow: true,
+            operationShow: true,
             updateBefore: false,
             disabled: false,
             size: 'small',
+            projectId: 0,
             onUpdate: null,
 
             element: null,
@@ -164,15 +168,17 @@ export default {
                 this.task = data.task;
                 this.loadStatus = typeof data.loadStatus === "undefined" ? false : data.loadStatus;
                 this.colorShow = typeof data.colorShow === "undefined" ? true : data.colorShow;
+                this.operationShow = typeof data.operationShow === "undefined" ? true : data.operationShow;
                 this.updateBefore = typeof data.updateBefore === "undefined" ? false : data.updateBefore;
                 this.disabled = typeof data.disabled === "undefined" ? false : data.disabled;
                 this.size = typeof data.size === "undefined" ? "small" : data.size;
+                this.projectId = typeof data.projectId === "undefined" ? 0 : data.projectId;
                 this.onUpdate = typeof data.onUpdate === "function" ? data.onUpdate : null;
                 //
                 this.$refs.icon.focus();
                 this.updatePopper();
                 this.show();
-                this.$store.dispatch("getTaskFlow", this.task.id).finally(this.updatePopper)
+                this.$store.dispatch("getTaskFlow", {task_id: this.task.id, project_id: this.projectId}).finally(this.updatePopper)
                 this.setupEventListeners(data.event)
             } else {
                 this.hide();
@@ -223,7 +229,9 @@ export default {
                     }
                 }
                 this.updateTask({
-                    flow_item_id
+                    flow_item_id,
+                    flow_item_status: updateFlow.status,
+                    flow_item_name: updateFlow.name
                 }).then(() => {
                     if (isComplete) {
                         completeTemp(true)
@@ -291,11 +299,19 @@ export default {
                     return;
                 }
                 //
-                Object.keys(updata).forEach(key => this.$set(this.task, key, updata[key]));
-                //
                 const updateData = Object.assign(updata, {
                     task_id: this.task.id,
                 });
+                if(!this.operationShow){
+                    if (typeof this.onUpdate === "function") {
+                        this.onUpdate(updateData)
+                    }
+                    reject()
+                    return;
+                }
+                //
+                Object.keys(updata).forEach(key => this.$set(this.task, key, updata[key]));
+                //
                 this.$store.dispatch("taskUpdate", updateData).then(({data, msg}) => {
                     $A.messageSuccess(msg);
                     resolve()

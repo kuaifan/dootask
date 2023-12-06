@@ -230,10 +230,33 @@
                             </EDropdown>
                         </div>
                         <div class="item-content user">
-                            <span @click="showCisibleDropdown" v-if="taskDetail.visibility == 1"  class="visibility-text">{{$L('项目人员可见')}}</span>
-                            <span @click="showCisibleDropdown" v-else-if="taskDetail.visibility == 2"  class="visibility-text">{{$L('任务人员可见')}}</span>
-                            <UserSelect
-                                v-else
+                            <EDropdown v-if="taskDetail.visibility == 1 || taskDetail.visibility == 2"  trigger="click" placement="bottom" @command="dropVisible">
+                                <span class="visibility-text">{{ taskDetail.visibility == 1 ? $L('项目人员可见') : $L('任务人员可见') }}</span>
+                                <EDropdownMenu slot="dropdown">
+                                    <EDropdownItem :command="1">
+                                        <div class="task-menu-icon" >
+                                            <Icon v-if="taskDetail.visibility == 1" class="completed" :type="'md-checkmark-circle'"/>
+                                            <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
+                                            {{$L('项目人员')}}
+                                        </div>
+                                    </EDropdownItem>
+                                    <EDropdownItem :command="2">
+                                        <div class="task-menu-icon" >
+                                            <Icon v-if="taskDetail.visibility == 2" class="completed" :type="'md-checkmark-circle'"/>
+                                            <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
+                                            {{$L('任务人员')}}
+                                        </div>
+                                    </EDropdownItem>
+                                    <EDropdownItem :command="3">
+                                        <div class="task-menu-icon" >
+                                            <Icon v-if="taskDetail.visibility == 3" class="completed" :type="'md-checkmark-circle'"/>
+                                            <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
+                                            {{$L('指定成员')}}
+                                        </div>
+                                    </EDropdownItem>
+                                </EDropdownMenu>
+                            </EDropdown>
+                            <UserSelect v-else
                                 ref="visibleUserSelectRef"
                                 v-model="taskDetail.visibility_appointor"
                                 :avatar-size="28"
