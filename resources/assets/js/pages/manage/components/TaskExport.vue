@@ -102,9 +102,7 @@ export default {
                 data: this.formData,
             }).then(({data}) => {
                 this.show = false;
-                this.$store.dispatch('downUrl', {
-                    url: data.url
-                });
+                $A.messageSuccess(data.msg);
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
