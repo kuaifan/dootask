@@ -209,6 +209,9 @@ export default {
         meetingid: 0
     },
 
+    // 接龙
+    chainReaction: {},
+
     // okr窗口
     okrWindow: {
         type: 'open',

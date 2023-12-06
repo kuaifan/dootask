@@ -311,6 +311,7 @@ export default {
                 { value: "signin", label: "签到" },
                 { value: "meeting", label: "会议" },
                 { value: "calendar", label: "日历" },
+                { value: "jielong", label: "接龙" },
             ];
             // wap模式
             let appApplyList = this.windowOrientation != 'portrait' ? (
@@ -399,6 +400,9 @@ export default {
                     break;
                 case 'scan':
                     $A.eeuiAppScan(this.scanResult);
+                    return;
+                case 'jielong':
+                    // DOTO
                     return;
             }
             this.$emit("on-click", item.value)

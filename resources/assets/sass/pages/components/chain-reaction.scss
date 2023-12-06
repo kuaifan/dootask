@@ -1,0 +1,14 @@
+.chain-reaction-wrapper {
+
+}
+
+body.window-portrait {
+    .chain-reaction-wrapper {
+
+    }
+    @media (max-width: 640px) {
+        .chain-reaction-wrapper {
+
+        }
+    }
+}

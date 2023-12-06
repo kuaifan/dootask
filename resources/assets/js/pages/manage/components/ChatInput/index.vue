@@ -106,6 +106,10 @@
                             <i class="taskfont">&#xe6a7;</i>
                             {{$L('全屏输入')}}
                         </div>
+                        <div v-if="dialogData.type == 'group'" class="chat-input-popover-item" @click="onToolbar('chain-reaction')">
+                            <i class="taskfont">&#xe6a7;</i>
+                            {{$L('接龙')}}
+                        </div>
                     </EPopover>
                 </li>
 
@@ -1228,6 +1232,13 @@ export default {
                 case 'anon':
                     this.$emit('on-more', action)
                     break;
+
+                case 'chain-reaction':
+                    this.$store.state.chainReaction = {
+                        type: 'create',
+                        dialog_id: this.dialogId
+                    }
+                    break;
             }
         },
 
@@ -1350,7 +1361,7 @@ export default {
                                 })
                             })
                             moreUser.sort((a, b) => a.last_at > b.last_at ? -1 : (a.last_at < b.last_at ? 1 : 0));
-                            // 
+                            //
                             this.userList = list
                             this.userCache = [];
                             if (moreUser.length > 0) {

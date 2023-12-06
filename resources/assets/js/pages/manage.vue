@@ -264,6 +264,9 @@
         <MobileBack :showTabbar="showMobileTabbar"/>
         <MobileNotification ref="mobileNotification"/>
 
+        <!--接龙-->
+        <ChainReaction/>
+
         <!-- okr明细 -->
         <MicroApps v-show="false" v-if="$route.name != 'manage-apps'" name="okr-details" :url="okrUrl" :datas="okrWindow"/>
     </div>
@@ -290,6 +293,7 @@ import ApproveExport from "./manage/components/ApproveExport";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
 import MicroApps from "../components/MicroApps.vue";
+import ChainReaction from "../components/ChainReaction.vue";
 
 export default {
     components: {
@@ -308,7 +312,8 @@ export default {
         ProjectManagement,
         TeamManagement,
         ProjectArchived,
-        MicroApps
+        MicroApps,
+        ChainReaction
     },
     directives: {longpress},
     data() {
