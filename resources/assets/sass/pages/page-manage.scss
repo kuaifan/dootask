@@ -27,7 +27,7 @@
         .scrollbar-container {
             flex: 1;
             width: 100%;
-            margin-top: 14px;
+            margin-top: 6px;
             display: flex;
             flex-direction: column;
         }
@@ -342,8 +342,8 @@
         display: flex;
         align-items: center;
         flex-shrink: 0;
-        padding: 0 14px;
-        margin-top: 34px;
+        padding: 8px 14px;
+        margin-top: 28px;
         border-radius: 8px;
         cursor: pointer;
         transition: box-shadow 0.3s;
