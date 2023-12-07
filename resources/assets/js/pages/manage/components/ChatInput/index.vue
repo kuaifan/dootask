@@ -252,6 +252,12 @@ export default {
             type: Object,
             default: () => ({})
         },
+        toolbar: {
+            type: Array,
+            default: () => {
+                return ['bold', 'strike', 'italic', 'underline', {'list': 'ordered'}, {'list': 'bullet'}, 'blockquote', 'code-block']
+            },
+        },
         maxlength: {
             type: Number
         },
@@ -496,7 +502,7 @@ export default {
         separateSendButton() {
             return $A.jsonParse(window.localStorage.getItem("__keyboard:data__"))?.separate_send_button === 'open';
         },
-        
+
     },
     watch: {
         // Watch content change
@@ -658,9 +664,7 @@ export default {
                 readOnly: false,
                 placeholder: this.placeholder,
                 modules: {
-                    toolbar: [
-                        ['bold', 'strike', 'italic', 'underline', {'list': 'ordered'}, {'list': 'bullet'}, 'blockquote', 'code-block']
-                    ],
+                    toolbar: this.$isEEUiApp || this.windowTouch ? false : this.toolbar,
                     keyboard: {
                         bindings: {
                             'short enter': {
@@ -1244,9 +1248,7 @@ export default {
                         readOnly: false,
                         placeholder: this.placeholder,
                         modules: {
-                            toolbar: [
-                                ['bold', 'strike', 'italic', 'underline', {'list': 'ordered'}, {'list': 'bullet'}, 'blockquote', 'code-block']
-                            ],
+                            toolbar: this.toolbar,
                             mention: this.quillMention()
                         }
                     }, this.options))
@@ -1350,7 +1352,7 @@ export default {
                                 })
                             })
                             moreUser.sort((a, b) => a.last_at > b.last_at ? -1 : (a.last_at < b.last_at ? 1 : 0));
-                            // 
+                            //
                             this.userList = list
                             this.userCache = [];
                             if (moreUser.length > 0) {
