@@ -112,6 +112,8 @@ export default {
     dialogDraftTimer: {},
     dialogMsgTransfer: {time: 0},
     dialogSseList: [],
+    dialogDroupWordChain: {},
+    dialogGroupVote: {},
 
     // 搜索关键词（主要用于移动端判断滑动返回）
     messengerSearchKey: {dialog: '', contacts: ''},
@@ -208,9 +210,6 @@ export default {
         type: "",
         meetingid: 0
     },
-
-    // 接龙
-    wordChain: {},
 
     // okr窗口
     okrWindow: {

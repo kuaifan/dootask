@@ -535,6 +535,13 @@
         <DrawerOverlay v-model="approveDetailsShow" placement="right" :size="600">
             <ApproveDetails v-if="approveDetailsShow" :data="approveDetails" style="height: 100%;border-radius: 10px;"></ApproveDetails>
         </DrawerOverlay>
+
+        <!-- 群接龙 -->
+        <DialogGroupWordChain/>
+
+        <!-- 群投票 -->
+        <DialogGroupVote/>
+
     </div>
 </template>
 
@@ -554,6 +561,9 @@ import {choiceEmojiOne} from "./ChatInput/one";
 
 import ApproveDetails from "../../../pages/manage/approve/details.vue";
 import UserSelect from "../../../components/UserSelect.vue";
+import DialogGroupWordChain from "./DialogGroupWordChain";
+import DialogGroupVote from "./DialogGroupVote";
+
 
 export default {
     name: "DialogWrapper",
@@ -567,7 +577,9 @@ export default {
         DialogGroupInfo,
         DrawerOverlay,
         DialogUpload,
-        ApproveDetails
+        ApproveDetails,
+        DialogGroupWordChain,
+        DialogGroupVote,
     },
 
     props: {

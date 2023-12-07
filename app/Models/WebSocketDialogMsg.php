@@ -521,6 +521,7 @@ class WebSocketDialogMsg extends AbstractModel
         }
         switch ($data['type']) {
             case 'text':
+            case 'word-chain':
                 return $this->previewTextMsg($data['msg']['text'], $preserveHtml);
             case 'record':
                 return "[语音]";

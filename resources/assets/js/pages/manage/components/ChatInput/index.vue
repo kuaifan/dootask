@@ -102,13 +102,17 @@
                             <i class="taskfont">&#xe690;</i>
                             {{$L('匿名消息')}}
                         </div>
+                        <div v-if="dialogData.type == 'group'" class="chat-input-popover-item" @click="onToolbar('word-chain')">
+                            <i class="taskfont">&#xe807;</i>
+                            {{$L('接龙')}}
+                        </div>
+                        <div v-if="dialogData.type == 'group'" class="chat-input-popover-item" @click="onToolbar('vote')">
+                            <i class="taskfont">&#xe806;</i>
+                            {{$L('投票')}}
+                        </div>
                         <div class="chat-input-popover-item" @click="onToolbar('full')">
                             <i class="taskfont">&#xe6a7;</i>
                             {{$L('全屏输入')}}
-                        </div>
-                        <div v-if="dialogData.type == 'group'" class="chat-input-popover-item" @click="onToolbar('chain-reaction')">
-                            <i class="taskfont">&#xe807;</i>
-                            {{$L('接龙')}}
                         </div>
                     </EPopover>
                 </li>
@@ -1233,12 +1237,20 @@ export default {
                     this.$emit('on-more', action)
                     break;
 
-                case 'chain-reaction':
-                    this.$store.state.wordChain = {
+                case 'word-chain':
+                    this.$store.state.dialogDroupWordChain = {
                         type: 'create',
                         dialog_id: this.dialogId
                     }
                     break;
+
+                case 'vote':
+                    this.$store.state.dialogGroupVote = {
+                        type: 'create',
+                        dialog_id: this.dialogId
+                    }
+                    break;
+
             }
         },
 

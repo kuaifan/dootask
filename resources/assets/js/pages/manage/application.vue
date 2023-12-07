@@ -191,7 +191,7 @@
 
         <!-- 发起接龙 -->
         <UserSelect
-            ref="wordChain"
+            ref="wordChainRef"
             v-model="sendData"
             :multiple-max="50"
             :title="$L('选择群组发起接龙')"
@@ -327,6 +327,7 @@ export default {
                 { value: "meeting", label: "会议" },
                 { value: "calendar", label: "日历" },
                 { value: "word-chain", label: "接龙" },
+                { value: "vote", label: "投票" },
             ];
             // wap模式
             let appApplyList = this.windowOrientation != 'portrait' ? (
@@ -418,7 +419,11 @@ export default {
                     return;
                 case 'word-chain':
                     this.sendData = [];
-                    this.$refs.wordChain.onSelection()
+                    this.$refs.wordChainRef.onSelection()
+                    return;
+                case 'vote':
+                    this.sendData = [];
+                    this.$refs.wordChainRef.onSelection()
                     return;
             }
             this.$emit("on-click", item.value)
@@ -549,12 +554,12 @@ export default {
                 },
             });
         },
-        //
+        // 前往接龙
         onWordChain(){
             const dialog_id = Number(this.sendData[0].replace('d:', ''))
             if(this.windowPortrait){
                 this.$store.dispatch("openDialog", dialog_id ).then(() => {
-                    this.$store.state.wordChain = {
+                    this.$store.state.dialogDroupWordChain = {
                         type: 'create',
                         dialog_id: dialog_id
                     }
@@ -562,13 +567,12 @@ export default {
             }else{
                 this.goForward({ name: 'manage-messenger', params: { dialog_id: dialog_id}});
                 setTimeout(()=>{
-                    this.$store.state.wordChain = {
+                    this.$store.state.dialogDroupWordChain = {
                         type: 'create',
                         dialog_id: dialog_id
                     }
                 },100)
             }
-
         }
     }
 }

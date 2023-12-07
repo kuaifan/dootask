@@ -264,9 +264,6 @@
         <MobileBack :showTabbar="showMobileTabbar"/>
         <MobileNotification ref="mobileNotification"/>
 
-        <!--接龙-->
-        <WordChain/>
-
         <!-- okr明细 -->
         <MicroApps v-show="false" v-if="$route.name != 'manage-apps'" name="okr-details" :url="okrUrl" :datas="okrWindow"/>
     </div>
@@ -292,8 +289,7 @@ import TaskExport from "./manage/components/TaskExport";
 import ApproveExport from "./manage/components/ApproveExport";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
-import MicroApps from "../components/MicroApps.vue";
-import WordChain from "../components/WordChain.vue";
+import MicroApps from "../components/MicroApps";
 
 export default {
     components: {
@@ -312,8 +308,7 @@ export default {
         ProjectManagement,
         TeamManagement,
         ProjectArchived,
-        MicroApps,
-        WordChain
+        MicroApps
     },
     directives: {longpress},
     data() {

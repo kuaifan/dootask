@@ -1,8 +1,8 @@
 <template>
-    <Modal class-name="word-chain-wrapper"
+    <Modal class-name="dialog-droup-word-chain"
         v-model="show"
         :mask-closable="false"
-        :title="wordChain.type == 'create' ? $L('发起接龙') : $L('接龙结果')"
+        :title="dialogGroupVote.type == 'create' ? $L('发起投票') : $L('投票结果')"
         :closable="!isFullscreen"
         :fullscreen="isFullscreen"
         :footer-hide="isFullscreen">
@@ -13,7 +13,7 @@
                     {{ $L('取消') }}
                 </div>
                 <div class="chain-modal-title">
-                    {{ wordChain.type == 'create' ? $L('发起接龙') : $L('接龙结果') }}
+                    {{ dialogGroupVote.type == 'create' ? $L('发起接龙') : $L('接龙结果') }}
                 </div>
                 <div class="chain-modal-submit" :class="{'disabled': !isEdit}" @click="onSend" >
                     <div v-if="loadIng > 0" class="submit-loading"><Loading /></div>
@@ -25,26 +25,29 @@
             <i class="ivu-icon ivu-icon-ios-close"></i>
         </template>
         <div ref="wordChainBodyRef" class="word-chain-body">
-            <div class="source" v-if="wordChain.type == 'create'">
+            <div class="source" v-if="dialogGroupVote.type == 'create'">
                 {{$L('来自')}}
                 <span>{{ dialog.name }}</span>
             </div>
             <div class="initiate">
                 <span>{{ $L('由') }}</span>
                 <UserAvatar :userid="createId" :size="22" :showName="true" tooltipDisabled/>
-                <span> {{ $L('发起，参与接龙目前共'+num+'人') }}</span>
+                <span> {{ $L('发起') }}</span>
             </div>
             <div class="textarea">
-                <Input ref="wordChainTextareaRef" v-model="value" type="textarea" :autosize="{minRows: 3,maxRows: 5}" :disabled="wordChain.type != 'create'" />
+                <Input ref="wordChainTextareaRef"
+                    v-model="value"
+                    type="textarea"
+                    :placeholder="$L('请输入投票主题')"
+                    :autosize="{minRows: 3,maxRows: 5}"
+                    :disabled="dialogGroupVote.type != 'create'" />
             </div>
             <ul ref="wordChainListRef">
-                <li v-for="(item,index) in list" :key="index" v-if="item.type == 'case' && (wordChain.type == 'create' || item.text)">
-                    <span>{{ $L('例') }}</span>
-                    <Input v-model="item.text" :placeholder="$L('可填写接龙格式')" :disabled="wordChain.type != 'create'" />
-                </li>
-                <li v-for="(item,index) in list" :key="index" v-if="item.type != 'case'">
-                    <span>{{index}}</span>
-                    <Input v-model="item.text" :disabled="item.userid != userId"/>
+                <li v-for="(item,index) in list">
+                    <span>
+                        <i class="taskfont" @click="del">&#xe680;</i>
+                    </span>
+                    <Input v-model="item.text" :disabled="item.userid != userId" :placeholder="$L('请输入选项内容')"/>
                 </li>
                 <li class="add">
                     <i class="taskfont" @click="add">&#xe78c;</i>
@@ -61,14 +64,14 @@
 <script>
 import {mapState} from "vuex";
 export default {
-    name: 'WordChain',
+    name: 'DialogGroupVote',
 
     data() {
         return {
             show: false,
 
             createId: 0,
-            value: "#接龙 \n",
+            value: "",
             list: [],
 
             oldData: '',
@@ -77,23 +80,20 @@ export default {
     },
 
     computed: {
-        ...mapState(['wordChain', 'userInfo', 'dialogMsgs', 'cacheDialogs']),
+        ...mapState(['dialogGroupVote', 'userInfo', 'dialogMsgs', 'cacheDialogs']),
 
         isFullscreen({ windowWidth }) {
             return windowWidth < 576;
         },
 
-        num(){
-            return this.list.filter(h=>h.type != 'case')?.length || 0;
-        },
-
         allList(){
-            let list = JSON.parse(JSON.stringify(this.wordChain.msgData?.msg?.list)) || [];
+            const msg = this.dialogGroupVote.msgData?.msg || {};
+            let list = JSON.parse(JSON.stringify(msg.list || []));
             this.dialogMsgs.filter(h=>{
-                return h.type == "word-chain" && h.msg?.uuid == this.wordChain.msgData?.msg?.uuid
+                return h.type == "word-chain" && h.msg?.uuid == msg.uuid
             }).forEach((h)=>{
                 (h.msg.list || []).forEach(k=>{
-                    if( k.type != 'case' && list.map(j=>j.id).indexOf(k.id) == -1 ){
+                    if(list.map(j=>j.id).indexOf(k.id) == -1){
                         list.push(k)
                     }
                 })
@@ -102,51 +102,50 @@ export default {
         },
 
         isEdit(){
-            return this.oldData != JSON.stringify(this.list)
+            return this.oldData != JSON.stringify(this.list);
         },
 
         dialog(){
-            return this.cacheDialogs.find(h=>h.id == this.wordChain.dialog_id) || {}
+            return this.cacheDialogs.find(h=>h.id == this.dialogGroupVote.dialog_id) || {}
         },
     },
 
     watch: {
         show(val){
             if(!val){
-                this.value = "#接龙 \n";
+                this.value = "";
                 this.list = [];
             }else{
-                if(this.wordChain.type == 'create'){
+                if(this.dialogGroupVote.type == 'create'){
                     this.$nextTick(()=>{
                         this.$refs.wordChainTextareaRef.focus()
                     })
                 }
+                this.scrollTo();
             }
         },
 
-        wordChain(data) {
+        dialogGroupVote(data) {
             if(data.type == 'create' && data.dialog_id){
                 this.show = true;
-                this.createId = this.userId
+                this.createId = this.userId;
                 this.list.push({
                     id: Date.now(),
-                    type: 'case',
                     userid: this.userId,
-                    text: '',
-                })
+                    text: ""
+                });
                 this.list.push({
                     id: Date.now() + 1,
-                    type: 'text',
                     userid: this.userId,
-                    text: this.userInfo.nickname,
-                })
+                    text: ""
+                });
             }
             if(data.type == 'participate' && data.dialog_id && data.msgData){
                 this.show = true;
-                this.createId = data.msgData.msg.userid
-                this.value = data.msgData.msg.text
-                this.list =  this.allList
-                this.oldData = JSON.stringify(this.list)
+                this.createId = data.msgData.msg.userid;
+                this.value = data.msgData.msg.text;
+                this.list =  this.allList;
+                this.oldData = JSON.stringify(this.list);
             }
         }
     },
@@ -158,10 +157,23 @@ export default {
                 type: 'text',
                 userid: this.userId,
                 text: this.userInfo.nickname,
-            })
+            });
+            this.scrollTo();
+        },
+
+        del(){
+            this.list.push({
+                id: Date.now(),
+                type: 'text',
+                userid: this.userId,
+                text: this.userInfo.nickname,
+            });
+        },
+
+        scrollTo(){
             this.$nextTick(()=>{
                 this.$refs.wordChainListRef.scrollTo(0, 99999);
-            })
+            });
         },
 
         onSend() {
@@ -180,7 +192,7 @@ export default {
                 })
                 return;
             }
-            this.send()
+            this.send();
         },
 
         /**
@@ -199,10 +211,10 @@ export default {
                 url: 'dialog/msg/wordchain',
                 method: 'post',
                 data: {
-                    dialog_id: this.wordChain.dialog_id,
+                    dialog_id: this.dialogGroupVote.dialog_id,
                     text: this.value,
                     list: list,
-                    uuid: this.wordChain.msgData?.msg?.uuid || ''
+                    uuid: this.dialogGroupVote.msgData?.msg?.uuid || ''
                 }
             }).then(({data}) => {
                 this.show = false;

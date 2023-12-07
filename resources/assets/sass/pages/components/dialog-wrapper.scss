@@ -980,7 +980,7 @@
                                         margin-left: 2px;
                                     }
                                 }
-                                &.expand{
+                                &.expand,li:nth-last-child(2){
                                     .expand{
                                         display: none;
                                     }

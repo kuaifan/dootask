@@ -818,6 +818,7 @@
             if ($A.isJson(data)) {
                 switch (data.type) {
                     case 'text':
+                    case 'word-chain':
                         return $A.getMsgTextPreview(data.msg.text, imgClassName)
                     case 'record':
                         return `[${$A.L('语音')}]`
