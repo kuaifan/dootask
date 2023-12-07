@@ -720,11 +720,16 @@
                                         color: #436FF6 !important;
                                     }
 
+                                    &.user {
+                                        white-space: nowrap;
+                                    }
+
                                     &.me {
                                         font-size: 13px;
                                         font-weight: 600;
                                         padding: 3px 4px;
                                         color: #ffffff;
+                                        white-space: nowrap;
                                         background-color: $primary-color;
                                     }
                                 }
