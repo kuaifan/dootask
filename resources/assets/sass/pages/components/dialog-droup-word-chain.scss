@@ -64,14 +64,12 @@
             }
         }
         .initiate{
-            padding: 10px 0;
             gap: 5px;
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow-y: auto;
-            min-height: 40px;
-            margin-right: 32px;
-            padding-bottom: 20px;
+            min-height: 26px;
+            margin: 10px 32px 20px 0;
             .ivu-input{
                 border-color: #fff !important;
             }
@@ -122,12 +120,14 @@
 
 body.window-portrait {
     .dialog-droup-word-chain {
-        .ivu-modal-body{
-            padding-top: 10px !important;
-            max-height: 100%;
-        }
-        .word-chain-body{
-            max-height: 100%;
+        .ivu-modal-fullscreen{
+            .ivu-modal-body{
+                padding-top: 10px !important;
+                max-height: 100%;
+            }
+            .word-chain-body{
+                max-height: 100%;
+            }
         }
     }
 }
