@@ -518,6 +518,14 @@ body.dark-mode-reverse {
         }
     }
 
+    .ql-mention-list-container {
+        .ql-mention-list-item {
+            .mention-item-at {
+                color: #000000;
+            }
+        }
+    }
+
     .common-user-select-modal {
         .ivu-modal {
             .ivu-modal-body {
