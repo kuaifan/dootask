@@ -963,6 +963,13 @@
                                 margin-top: 20px;
                                 li{
                                     margin-top: 5px;
+                                    .expand{
+                                        cursor: pointer;
+                                        color: #0bc037;
+                                    }
+                                    .shrink{
+                                        display: none;
+                                    }
                                 }
                                 li.participate{
                                     cursor: pointer;
@@ -971,6 +978,14 @@
                                     >span{
                                         font-size: 12px;
                                         margin-left: 2px;
+                                    }
+                                }
+                                &.expand{
+                                    .expand{
+                                        display: none;
+                                    }
+                                    .shrink{
+                                        display: block;
                                     }
                                 }
                             }
@@ -1227,6 +1242,11 @@
 
                             .content-word-chain{
                                 ul{
+                                    li{
+                                        .expand{
+                                            color: #23241f;
+                                        }
+                                    }
                                     li.participate{
                                         color: #23241f;
                                     }

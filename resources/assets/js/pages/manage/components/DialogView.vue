@@ -67,12 +67,17 @@
                     </ul>
                 </div>
                 <!--接龙-->
-                <div v-else-if="msgData.type === 'word-chain'" class="content-text content-word-chain  no-dark-content">
+                <div v-else-if="msgData.type === 'word-chain'" class="content-text content-word-chain no-dark-content">
                     <pre v-html="$A.formatTextMsg(msgData.msg.text, userId)"></pre>
                     <ul>
                         <li v-for="(item,index) in (msgData.msg.list || [])" :key="index">
-                            <span v-if="item.type == 'case' && item.text">{{ $L('例') }} {{ item.text }}</span>
-                            <span v-else-if="item.type != 'case'">{{index}}. {{item.text}}</span>
+                            <span class="expand" v-if="index == 2 && index != msgData.msg.list.length - 1" @click="unfoldWordChain">
+                                ...{{$L('展开')}}...
+                            </span>
+                            <span :class="{'shrink': (index >= 2 && index != msgData.msg.list.length - 1) } ">
+                                <span v-if="item.type == 'case' && item.text">{{ $L('例') }} {{ item.text }}</span>
+                                <span v-else-if="item.type != 'case'">{{index}}. {{item.text}}</span>
+                            </span>
                         </li>
                         <li @click="onWordChain" class="participate">{{ $L('参与接龙') }}<span>></span></li>
                     </ul>
@@ -522,6 +527,10 @@ export default {
                 dialog_id: this.msgData.dialog_id,
                 msgData: this.msgData,
             }
+        },
+
+        unfoldWordChain(e){
+            e.target.parentNode?.parentNode?.classList.add('expand')
         }
     }
 }
