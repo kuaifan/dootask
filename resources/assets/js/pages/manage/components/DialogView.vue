@@ -71,10 +71,10 @@
                     <pre v-html="$A.formatTextMsg(msgData.msg.text, userId)"></pre>
                     <ul>
                         <li v-for="(item,index) in (msgData.msg.list || [])" :key="index">
-                            <span class="expand" v-if="index == 2 && index != msgData.msg.list.length - 1" @click="unfoldWordChain">
+                            <span class="expand" v-if="index == 2 && index != msgData.msg.list.length - 1 && msgData.msg.list.length > 4" @click="unfoldWordChain">
                                 ...{{$L('展开')}}...
                             </span>
-                            <span :class="{'shrink': (index >= 2 && index != msgData.msg.list.length - 1) } ">
+                            <span :class="{'shrink': index >= 2 && index != msgData.msg.list.length - 1 && msgData.msg.list.length > 4 } ">
                                 <span v-if="item.type == 'case' && item.text">{{ $L('例') }} {{ item.text }}</span>
                                 <span v-else-if="item.type != 'case'">{{index}}. {{item.text}}</span>
                             </span>
