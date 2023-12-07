@@ -107,7 +107,7 @@
                             {{$L('全屏输入')}}
                         </div>
                         <div v-if="dialogData.type == 'group'" class="chat-input-popover-item" @click="onToolbar('chain-reaction')">
-                            <i class="taskfont">&#xe6a7;</i>
+                            <i class="taskfont">&#xe807;</i>
                             {{$L('接龙')}}
                         </div>
                     </EPopover>
@@ -500,7 +500,7 @@ export default {
         separateSendButton() {
             return $A.jsonParse(window.localStorage.getItem("__keyboard:data__"))?.separate_send_button === 'open';
         },
-        
+
     },
     watch: {
         // Watch content change
@@ -1234,7 +1234,7 @@ export default {
                     break;
 
                 case 'chain-reaction':
-                    this.$store.state.chainReaction = {
+                    this.$store.state.wordChain = {
                         type: 'create',
                         dialog_id: this.dialogId
                     }

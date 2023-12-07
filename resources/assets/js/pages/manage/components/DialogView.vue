@@ -66,6 +66,17 @@
                         </li>
                     </ul>
                 </div>
+                <!--接龙-->
+                <div v-else-if="msgData.type === 'word-chain'" class="content-text content-word-chain  no-dark-content">
+                    <pre v-html="$A.formatTextMsg(msgData.msg.text, userId)"></pre>
+                    <ul>
+                        <li v-for="(item,index) in (msgData.msg.list || [])" :key="index">
+                            <span v-if="item.type == 'case' && item.text">{{ $L('例') }} {{ item.text }}</span>
+                            <span v-else-if="item.type != 'case'">{{index}}. {{item.text}}</span>
+                        </li>
+                        <li @click="onWordChain" class="participate">{{ $L('参与接龙') }}<span>></span></li>
+                    </ul>
+                </div>
                 <!--等待-->
                 <div v-else-if="msgData.type === 'loading'" class="content-loading">
                     <Icon v-if="msgData.error === true" type="ios-alert-outline" />
@@ -504,6 +515,14 @@ export default {
         onShowEmojiUser(item) {
             this.$emit("on-show-emoji-user", item)
         },
+
+        onWordChain(){
+            this.$store.state.wordChain = {
+                type: 'participate',
+                dialog_id: this.msgData.dialog_id,
+                msgData: this.msgData,
+            }
+        }
     }
 }
 </script>

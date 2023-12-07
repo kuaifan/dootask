@@ -956,6 +956,25 @@
                             text-decoration: underline;
                             color: $primary-title-color;
                         }
+
+                        .content-word-chain{
+                            ul{
+                                list-style-type:none;
+                                margin-top: 20px;
+                                li{
+                                    margin-top: 5px;
+                                }
+                                li.participate{
+                                    cursor: pointer;
+                                    margin-top: 10px;
+                                    color: #0bc037;
+                                    >span{
+                                        font-size: 12px;
+                                        margin-left: 2px;
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     .dialog-emoji {
@@ -1204,6 +1223,14 @@
 
                             .content-unknown {
                                 color: #ffffff;
+                            }
+
+                            .content-word-chain{
+                                ul{
+                                    li.participate{
+                                        color: #23241f;
+                                    }
+                                }
                             }
                         }
 

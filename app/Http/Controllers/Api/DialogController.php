@@ -1991,4 +1991,71 @@ class DialogController extends AbstractController
         }
         return Base::retSuccess('success', $dialog);
     }
+
+    /**
+     * @api {post} api/dialog/msg/wordchain          15. 发送接龙消息
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__wordchain
+     *
+     * @apiParam {Number} dialog_id         对话ID
+     * @apiParam {String} uuid              接龙ID
+     * @apiParam {String} text              接龙内容
+     * @apiParam {Array}  list              接龙列表
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__wordchain()
+    {
+        $user = User::auth();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        $uuid = trim(Request::input('uuid'));
+        $text = trim(Request::input('text'));
+        $list = Request::input('list');
+        //
+        $result = [];
+        //
+        WebSocketDialog::checkDialog($dialog_id);
+        $strlen = mb_strlen($text);
+        $noimglen = mb_strlen(preg_replace("/<img[^>]*?>/i", "", $text));
+        if ($strlen < 1) {
+            return Base::retError('内容不能为空');
+        }
+        if ($noimglen > 200000) {
+            return Base::retError('内容最大不能超过200000字');
+        }
+        //
+        $userid = $user->userid;
+        if($uuid){
+            $dialogMsg = WebSocketDialogMsg::whereDialogId($dialog_id)
+                ->whereType('word-chain')
+                ->orderByDesc('created_at')
+                ->where('msg','like',"%$uuid%")
+                ->value('msg');
+            $list = array_reverse(array_merge($dialogMsg['list'] ?? [], $list));
+            $list = array_reduce($list, function ($result, $item) {
+                $fieldValue = $item['id'];  // 指定字段名
+                if(!isset($result[$fieldValue])) {
+                    $result[$fieldValue] = $item;
+                }
+                return $result;
+            }, []);
+            $list = array_reverse(array_values($list));
+        }
+        //
+        $msgData = [
+            'text' => $text,
+            'list' => $list,
+            'userid' => $userid,
+            'uuid' => $uuid ?: Base::generatePassword(36),
+        ];
+        $result = WebSocketDialogMsg::sendMsg(null, $dialog_id, 'word-chain', $msgData, $user->userid);
+        //
+        return $result;
+    }
 }

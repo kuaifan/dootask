@@ -210,7 +210,7 @@ export default {
     },
 
     // 接龙
-    chainReaction: {},
+    wordChain: {},
 
     // okr窗口
     okrWindow: {

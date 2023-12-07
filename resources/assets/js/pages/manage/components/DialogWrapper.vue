@@ -256,7 +256,7 @@
                                 <i class="taskfont" v-html="item.icon"></i>
                                 <span>{{ $L(item.label) }}</span>
                             </li>
-                            <li @click="onOperate('forward')">
+                            <li v-if="operateItem.type !== 'word-chain' && operateItem.type !== 'vote'" @click="onOperate('forward')">
                                 <i class="taskfont">&#xe638;</i>
                                 <span>{{ $L('转发') }}</span>
                             </li>

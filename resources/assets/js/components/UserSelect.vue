@@ -30,7 +30,7 @@
                             ({{selects.length}}<span v-if="multipleMax">/{{multipleMax}}</span>)
                         </template>
                     </div>
-                    <div v-else class="user-modal-submit" @click="showMultiple = true">
+                    <div v-else-if="!forcedRadio" class="user-modal-submit" @click="showMultiple = true">
                         {{$L('多选')}}
                     </div>
                 </div>
@@ -145,19 +145,18 @@
 
             <!-- 底部 -->
             <template #footer>
-                <Button v-if="!multipleChoice && showMultiple"  @click="showMultiple = false">
+                <Button v-if="!forcedRadio && !multipleChoice && showMultiple"  @click="showMultiple = false">
                     {{$L('取消')}}
                 </Button>
-                <Button v-if="showMultiple" type="primary" :loading="submittIng > 0" @click="onSubmit(1)">
+                <Button v-if="!forcedRadio && showMultiple" type="primary" :loading="submittIng > 0" @click="onSubmit(1)">
                     {{$L('确定')}}
                     <template v-if="selects.length > 0">
                         ({{selects.length}}<span v-if="multipleMax">/{{multipleMax}}</span>)
                     </template>
                 </Button>
-                <Button v-else type="primary"  @click="showMultiple = true">
+                <Button v-else-if="!forcedRadio" type="primary"  @click="showMultiple = true">
                     {{$L('多选')}}
                 </Button>
-
             </template>
         </Modal>
 
@@ -336,6 +335,16 @@ export default {
             type: Boolean,
             default: true
         },
+        // 强制单选
+        forcedRadio: {
+            type: Boolean,
+            default: false
+        },
+        // 只显示群组
+        group: {
+            type: Boolean,
+            default: false
+        },
 
         // 提交前的回调
         beforeSubmit: Function
@@ -379,7 +388,7 @@ export default {
         },
         isWhole: {
             handler(value) {
-                if (value) {
+                if (value || this.group) {
                     this.switchActive = 'recent';
                 }
                 else {
@@ -392,6 +401,9 @@ export default {
             if (value) {
                 this.searchBefore();
                 this.showMultiple = this.multipleChoice
+                if(this.forcedRadio){
+                    this.showMultiple = false;
+                }
             }
             else {
                 this.searchKey = "";
@@ -413,7 +425,7 @@ export default {
             return windowWidth < 576;
         },
         isWhole({ projectId, noProjectId, dialogId }) {
-            return projectId === 0 && noProjectId === 0 && dialogId === 0;
+            return projectId === 0 && noProjectId === 0 && dialogId === 0 && !this.group;
         },
         lists({ switchActive, searchKey, recents, contacts, projects }) {
             switch (switchActive) {
@@ -528,6 +540,9 @@ export default {
         },
         searchRecent() {
             this.recents = this.cacheDialogs.filter(dialog => {
+                if(this.group && dialog.type != 'group'){
+                    return false;
+                }
                 if (dialog.name === undefined || dialog.dialog_delete === 1) {
                     return false;
                 }

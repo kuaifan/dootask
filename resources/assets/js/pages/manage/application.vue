@@ -189,6 +189,19 @@
             </div>
         </Modal>
 
+        <!-- 发起接龙 -->
+        <UserSelect
+            ref="wordChain"
+            v-model="sendData"
+            :multiple-max="50"
+            :title="$L('选择群组发起接龙')"
+            :before-submit="onWordChain"
+            :show-select-all="false"
+            :forced-radio="true"
+            :group="true"
+            show-dialog
+            module/>
+
     </div>
 </template>
 
@@ -279,6 +292,8 @@ export default {
             scanLoginShow: false,
             scanLoginLoad: false,
             scanLoginCode: '',
+            //
+            sendData: []
         }
     },
     activated() {
@@ -311,7 +326,7 @@ export default {
                 { value: "signin", label: "签到" },
                 { value: "meeting", label: "会议" },
                 { value: "calendar", label: "日历" },
-                { value: "jielong", label: "接龙" },
+                { value: "word-chain", label: "接龙" },
             ];
             // wap模式
             let appApplyList = this.windowOrientation != 'portrait' ? (
@@ -401,8 +416,9 @@ export default {
                 case 'scan':
                     $A.eeuiAppScan(this.scanResult);
                     return;
-                case 'jielong':
-                    // DOTO
+                case 'word-chain':
+                    this.sendData = [];
+                    this.$refs.wordChain.onSelection()
                     return;
             }
             this.$emit("on-click", item.value)
@@ -511,7 +527,7 @@ export default {
                 this.scanLoginLoad = false
             });
         },
-        // 打开明显
+        // 打开明细
         openDetail(desc){
             $A.modalInfo({
                 content: desc,
@@ -532,6 +548,27 @@ export default {
                     })
                 },
             });
+        },
+        //
+        onWordChain(){
+            const dialog_id = Number(this.sendData[0].replace('d:', ''))
+            if(this.windowPortrait){
+                this.$store.dispatch("openDialog", dialog_id ).then(() => {
+                    this.$store.state.wordChain = {
+                        type: 'create',
+                        dialog_id: dialog_id
+                    }
+                })
+            }else{
+                this.goForward({ name: 'manage-messenger', params: { dialog_id: dialog_id}});
+                setTimeout(()=>{
+                    this.$store.state.wordChain = {
+                        type: 'create',
+                        dialog_id: dialog_id
+                    }
+                },100)
+            }
+
         }
     }
 }

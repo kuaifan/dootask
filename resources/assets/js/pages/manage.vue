@@ -265,7 +265,7 @@
         <MobileNotification ref="mobileNotification"/>
 
         <!--接龙-->
-        <ChainReaction/>
+        <WordChain/>
 
         <!-- okr明细 -->
         <MicroApps v-show="false" v-if="$route.name != 'manage-apps'" name="okr-details" :url="okrUrl" :datas="okrWindow"/>
@@ -293,7 +293,7 @@ import ApproveExport from "./manage/components/ApproveExport";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
 import MicroApps from "../components/MicroApps.vue";
-import ChainReaction from "../components/ChainReaction.vue";
+import WordChain from "../components/WordChain.vue";
 
 export default {
     components: {
@@ -313,7 +313,7 @@ export default {
         TeamManagement,
         ProjectArchived,
         MicroApps,
-        ChainReaction
+        WordChain
     },
     directives: {longpress},
     data() {
