@@ -5,7 +5,13 @@
             <div class="messenger-select">
                 <div class="messenger-search">
                     <div class="search-wrapper">
-                        <Input v-if="tabActive==='dialog'" v-model="dialogSearchKey" :placeholder="$L(loadDialogs ? '更新中...' : '搜索消息')" clearable >
+                        <Input
+                            v-if="tabActive==='dialog'"
+                            v-model="dialogSearchKey"
+                            ref="searchInput"
+                            :placeholder="$L(loadDialogs ? '更新中...' : '搜索消息')"
+                            @on-keydown="onKeydown"
+                            clearable>
                             <div class="search-pre" slot="prefix">
                                 <Loading v-if="loadDialogs || dialogSearchLoad > 0"/>
                                 <Icon v-else type="ios-search" />
@@ -563,6 +569,12 @@ export default {
             }
             const scrollInfo = this.$refs.list.scrollInfo()
             return scrollInfo.scrollE
+        },
+
+        onKeydown(e) {
+            if (e.key === "Escape") {
+                this.$refs.searchInput.handleClear()
+            }
         },
 
         onActive(type) {
