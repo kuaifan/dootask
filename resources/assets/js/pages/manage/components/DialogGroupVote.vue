@@ -13,7 +13,7 @@
                     {{ $L('取消') }}
                 </div>
                 <div class="chain-modal-title">
-                    {{ dialogGroupVote.type == 'create' ? $L('发起接龙') : $L('接龙结果') }}
+                    {{ dialogGroupVote.type == 'create' ? $L('发起投票') : $L('投票结果') }}
                 </div>
                 <div class="chain-modal-submit" :class="{'disabled': !isEdit}" @click="onSend" >
                     <div v-if="loadIng > 0" class="submit-loading"><Loading /></div>
@@ -44,15 +44,21 @@
             </div>
             <ul ref="wordChainListRef">
                 <li v-for="(item,index) in list">
-                    <span>
-                        <i class="taskfont" @click="del">&#xe680;</i>
-                    </span>
-                    <Input v-model="item.text" :disabled="item.userid != userId" :placeholder="$L('请输入选项内容')"/>
+                    <i class="taskfont" :class="{'disabled': list.length <= 2}"  @click="onDel(index)">&#xe680;</i>
+                    <Input v-model="item.text" :placeholder="$L('请输入选项内容')"/>
                 </li>
                 <li class="add">
-                    <i class="taskfont" @click="add">&#xe78c;</i>
+                    <i class="taskfont" @click="onAdd">&#xe78c;</i>
                 </li>
             </ul>
+            <div class="switch-row" v-if="dialogGroupVote.type == 'create'">
+                <span class="label">{{ $L('允许多选') }}</span>
+                <iSwitch v-model="multiple" :true-value="1" :false-value="0"/>
+            </div>
+            <div class="switch-row" v-if="dialogGroupVote.type == 'create'">
+                <span class="label">{{ $L('匿名投票') }}</span>
+                <iSwitch v-model="anonymous" :true-value="1" :false-value="0"/>
+            </div>
         </div>
         <div slot="footer">
             <Button type="default" @click="show=false">{{$L('取消')}}</Button>
@@ -73,6 +79,8 @@ export default {
             createId: 0,
             value: "",
             list: [],
+            multiple: 0,
+            anonymous: 0,
 
             oldData: '',
             loadIng: 0,
@@ -131,12 +139,10 @@ export default {
                 this.createId = this.userId;
                 this.list.push({
                     id: Date.now(),
-                    userid: this.userId,
                     text: ""
                 });
                 this.list.push({
                     id: Date.now() + 1,
-                    userid: this.userId,
                     text: ""
                 });
             }
@@ -151,23 +157,18 @@ export default {
     },
 
     methods: {
-        add(){
+        onAdd(){
             this.list.push({
                 id: Date.now(),
-                type: 'text',
-                userid: this.userId,
-                text: this.userInfo.nickname,
+                text: "",
             });
             this.scrollTo();
         },
 
-        del(){
-            this.list.push({
-                id: Date.now(),
-                type: 'text',
-                userid: this.userId,
-                text: this.userInfo.nickname,
-            });
+        onDel(index){
+            if( this.list.length > 2 ){
+                this.list.splice(index, 1);
+            }
         },
 
         scrollTo(){
@@ -177,44 +178,30 @@ export default {
         },
 
         onSend() {
-            if( !this.isEdit ){
+            if(!this.isEdit){
                 return;
             }
-            const texts = this.list.map(h=> h.text);
-            if( texts.length != [...new Set(texts)].length ){
-                $A.modalConfirm({
-                    content: '重复内容将不再计入接龙结果',
-                    cancelText: '返回编辑',
-                    okText: '继续发送',
-                    onOk: () => {
-                       this.send()
-                    }
-                })
+            //
+            if(!this.value){
+                $A.messageError("请输入投票主题");
                 return;
             }
-            this.send();
-        },
-
-        /**
-         * 发送消息
-         */
-        send() {
-            const list = [];
-            this.list.forEach(h=>{
-                if( list.map(h=> h.text).indexOf(h.text) == -1){
-                    list.push(h);
-                }
-            });
+            if(this.list.find(h=> !h.text)){
+                $A.messageError("请输入选项内容");
+                return;
+            }
             //
             this.loadIng++;
             this.$store.dispatch("call", {
-                url: 'dialog/msg/wordchain',
+                url: 'dialog/msg/vote',
                 method: 'post',
                 data: {
                     dialog_id: this.dialogGroupVote.dialog_id,
                     text: this.value,
-                    list: list,
-                    uuid: this.dialogGroupVote.msgData?.msg?.uuid || ''
+                    list: this.list,
+                    uuid: this.dialogGroupVote.msgData?.msg?.uuid || '',
+                    multiple: this.multiple,
+                    anonymous: this.anonymous
                 }
             }).then(({data}) => {
                 this.show = false;

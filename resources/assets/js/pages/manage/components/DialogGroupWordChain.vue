@@ -35,10 +35,16 @@
                 <span> {{ $L('发起，参与接龙目前共'+num+'人') }}</span>
             </div>
             <div class="textarea">
-                <Input ref="wordChainTextareaRef" v-model="value" type="textarea" :autosize="{minRows: 3,maxRows: 5}" :disabled="dialogDroupWordChain.type != 'create'" />
+                <Input ref="wordChainTextareaRef"
+                    v-model="value"
+                    type="textarea"
+                    :autosize="{minRows: 3,maxRows: 5}"
+                    :disabled="dialogDroupWordChain.type != 'create'"
+                    :placeholder="$L('请输入接龙主题')"
+                />
             </div>
             <ul ref="wordChainListRef">
-                <li v-for="(item,index) in list" v-if="item.type == 'case' && (dialogDroupWordChain.type == 'create' || item.text)">
+                <li v-for="(item) in list" v-if="item.type == 'case' && (dialogDroupWordChain.type == 'create' || item.text)">
                     <span>{{ $L('例') }}</span>
                     <Input v-model="item.text" :placeholder="$L('可填写接龙格式')" :disabled="dialogDroupWordChain.type != 'create'" />
                 </li>
@@ -47,7 +53,7 @@
                     <Input v-model="item.text" :disabled="item.userid != userId" :placeholder="$L('请输入接龙内容')"/>
                 </li>
                 <li class="add">
-                    <i class="taskfont" @click="add">&#xe78c;</i>
+                    <i class="taskfont" @click="onAdd">&#xe78c;</i>
                 </li>
             </ul>
         </div>
@@ -154,7 +160,7 @@ export default {
     },
 
     methods: {
-        add(){
+        onAdd(){
             this.list.push({
                 id: Date.now(),
                 type: 'text',
@@ -174,6 +180,16 @@ export default {
             if( !this.isEdit ){
                 return;
             }
+            //
+            if(!this.value){
+                $A.messageError("请输入接龙主题");
+                return;
+            }
+            if( this.list.find(h=> !h.text && h.type != "case") ){
+                $A.messageError("请输入接龙内容");
+                return;
+            }
+            //
             const texts = this.list.map(h=> h.text);
             if( texts.length != [...new Set(texts)].length ){
                 $A.modalConfirm({
@@ -194,20 +210,11 @@ export default {
          */
         send() {
             const list = [];
-            let isEmpty = false;
             this.list.forEach(h=>{
-                if(!h.text && h.type != "case"){
-                    isEmpty = true;
-                    return;
-                }
-                if( h.text && list.map(h=> h.text).indexOf(h.text) == -1){
+                if(h.text && list.map(h=> h.text).indexOf(h.text) == -1){
                     list.push(h);
                 }
             });
-            if(isEmpty){
-                $A.messageError("请输入接龙内容");
-                return;
-            }
             //
             this.loadIng++;
             this.$store.dispatch("call", {

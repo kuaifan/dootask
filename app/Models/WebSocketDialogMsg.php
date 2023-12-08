@@ -522,6 +522,7 @@ class WebSocketDialogMsg extends AbstractModel
         switch ($data['type']) {
             case 'text':
             case 'word-chain':
+            case 'vote':
                 return $this->previewTextMsg($data['msg']['text'], $preserveHtml);
             case 'record':
                 return "[语音]";
@@ -860,10 +861,10 @@ class WebSocketDialogMsg extends AbstractModel
             if (empty($dialogMsg)) {
                 throw new ApiException('消息不存在');
             }
-            if ($dialogMsg->type !== 'text') {
+            if ($dialogMsg->type !== 'text' && $dialogMsg->type !== 'vote') {
                 throw new ApiException('此消息不支持此操作');
             }
-            if ($dialogMsg->userid != $sender) {
+            if ($dialogMsg->userid != $sender && $dialogMsg->type !== 'vote') {
                 throw new ApiException('仅支持修改自己的消息');
             }
             //

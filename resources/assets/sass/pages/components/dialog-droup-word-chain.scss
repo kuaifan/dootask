@@ -57,7 +57,6 @@
         height: 100%;
         max-height: calc(100vh - 370px);
         .source{
-            padding-top: 10px;
             margin-right: 32px;
             span{
                 color: #84C56A;
@@ -93,26 +92,47 @@
                 display: flex;
                 gap: 10px;
                 padding: 5px 0;
+                color: #7f7f7f;
                 span{
-                    min-width: 30px;
-                    height: 30px;
-                    line-height: 30px;
+                    min-width: 28px;
+                    height: 28px;
+                    line-height: 28px;
                     margin-top: 2px;
                     background-color: #f2f2f2;
                     border-radius: 100%;
                     text-align: center;
                     font-size: 12px;
-                    color: #7f7f7f;
+
+                }
+                .taskfont{
+                    font-size: 28px;
+                    cursor: pointer;
+                    line-height: 34px;
+                    user-select: none;
+                    transform: scale(0.92);
+                    &.disabled{
+                        opacity: 0.5;
+                        cursor: no-drop;
+                    }
                 }
                 &.add{
                     .taskfont{
-                        font-size: 30px;
-                        cursor: pointer;
-                        line-height: 30px;
-                        user-select: none;
+                        line-height: 32px;
+                        transform: scale(1);
                     }
                 }
-
+            }
+        }
+        .switch-row{
+            padding: 10px 5px;
+            margin: 0 32px 0 0;
+            display: flex;
+            border-top: 1px solid #f0f0f0;
+            span.label{
+                flex: 1;
+            }
+            &:last-child{
+                border-bottom: 1px solid #f0f0f0;
             }
         }
     }
@@ -127,6 +147,9 @@ body.window-portrait {
             }
             .word-chain-body{
                 max-height: 100%;
+                ul{
+                    flex: none;
+                }
             }
         }
     }
