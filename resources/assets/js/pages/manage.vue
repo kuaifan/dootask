@@ -125,7 +125,7 @@
             </Scrollbar>
             <div class="manage-box-new-group">
                 <ul>
-                    <li class="client-download-update">
+                    <li class="client-download-update" v-if="!!clientNewVersion || !$Electron">
                         <Tooltip v-if="clientDownloadUrl && !$Electron" :content="$L('客户端下载')" placement="right" transfer :delay="300">
                             <a class="client-download common-right-bottom-link" :href="clientDownloadUrl" target="_blank">
                                 <i class="taskfont">&#xe7fa;</i>
