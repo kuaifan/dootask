@@ -136,10 +136,10 @@
         </div>
 
         <!--跳转提示-->
-        <div v-if="positionMsg" class="dialog-position" :class="{'down': tagShow}">
+        <div v-if="positionMsg" class="dialog-position" :class="{'down': true}">
             <div class="position-label" @click="onPositionMark">
                 <Icon v-if="positionLoad > 0" type="ios-loading" class="icon-loading"></Icon>
-                <i v-else class="taskfont">&#xe624;</i>
+                <i v-else class="taskfont" :class="{'below': positionLoadMark}">&#xe624;</i>
                 {{positionMsg.label}}
             </div>
         </div>
@@ -694,6 +694,7 @@ export default {
             scrollTmp: 0,
 
             positionLoad: 0,
+            positionLoadMark: false,
 
             approveDetails:{id: 0},
             approveDetailsShow: false,
@@ -1036,6 +1037,7 @@ export default {
     watch: {
         dialogId: {
             handler(dialog_id, old_id) {
+                this.positionLoadMark = false;
                 this.mountedNow = Date.now();
                 if (dialog_id) {
                     this.msgNew = 0
@@ -2996,6 +2998,7 @@ export default {
                 return;
             }
             //
+            this.positionLoadMark = true;
             this.positionLoad++
             const {msg_id} = this.positionMsg;
             this.onPositionId(msg_id).finally(_ => {

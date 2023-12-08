@@ -1392,6 +1392,9 @@
                 height: 14px;
                 font-size: 14px;
                 line-height: 14px;
+                &.below{
+                    transform: rotate(-180deg);
+                }
             }
         }
     }
