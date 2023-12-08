@@ -139,18 +139,26 @@
 }
 .plans-ol-item-h6{
   color: var(--txt-4ca5);
+  line-height: normal;
 }
 .plans-ol-item-icon{
   display: block;
   height: 24px;
 }
+
+.plans-ol-item-icon2{
+  display: block;
+  height: 24px;
+  opacity: 0.5;
+}
+
 .plans-ul-b{
   display: grid;
     grid-template-columns: 506px 266px 266px 266px;
 }
 .plans-ul-b-item-btn{
   display: inline-block; 
-  width: 218px;
+  width: 160px;
 }
 .flex-s-c{
   display: flex;
@@ -202,6 +210,13 @@
   box-sizing: border-box;
   box-shadow: 0 4px 12px rgba(0,0,0,.15);
 }
+
+@media screen and (max-width: 600px) {
+  .BulletBox1{
+    width: 80%;
+  }
+}
+
 .BulletBox1 .top{
   width: 382px;
   line-height: 20px;
@@ -225,13 +240,12 @@
   color: rgb(96, 98, 102);
 }
 .BulletBox1 .bottom{
-  width: 370px;
-  height: 34px;
+  display: flex;
+  justify-content: end;
   padding: 20px 30px 22px 30px;
   position: relative;
 }
 .BulletBox1 .bottom .BulletBox1Btn{
-  position: absolute;
   min-width: 100px;
   right: 20px;
   height: 34px;
@@ -242,4 +256,12 @@
   cursor: pointer;
   border-radius: 8px;
   padding: 5px;
+}
+
+.price-ceiling {
+  position: sticky;
+  top: 80px;
+  background-color: #fff;
+  border-bottom: 1px solid var(--border-color);
+  z-index: 9999;
 }
