@@ -136,10 +136,10 @@
         </div>
 
         <!--跳转提示-->
-        <div v-if="positionMsg" class="dialog-position" :class="{'down': true}">
+        <div v-if="positionMsg && !positionLoadMark" class="dialog-position">
             <div class="position-label" @click="onPositionMark">
                 <Icon v-if="positionLoad > 0" type="ios-loading" class="icon-loading"></Icon>
-                <i v-else class="taskfont" :class="{'below': positionLoadMark}">&#xe624;</i>
+                <i v-else class="taskfont" :class="{'down': positionLoadMark}">&#xe624;</i>
                 {{positionMsg.label}}
             </div>
         </div>
@@ -158,7 +158,7 @@
             :item-class-add="itemClassAdd"
             :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId}"
             :estimate-size="dialogData.type=='group' ? 105 : 77"
-            :keeps="25"
+            :keeps="keeps"
             :disabled="scrollDisabled"
             @scroll="onScroll"
             @range="onRange"
@@ -610,6 +610,7 @@ export default {
             msgType: '',
             loadIng: 0,
 
+            keeps: 25,
             allMsgs: [],
             tempMsgs: [],
             tempId: $A.randNum(1000000000, 9999999999),
@@ -700,7 +701,8 @@ export default {
             approveDetailsShow: false,
             approvaUserStatus: '',
 
-            mountedNow: 0
+            mountedNow: 0,
+            unreadMsgId: 0
         }
     },
 
@@ -794,9 +796,23 @@ export default {
                     array.push(...tempMsgList)
                 }
             }
-            return array.sort((a, b) => {
+
+            array.sort((a, b) => {
                 return a.id - b.id;
             })
+
+            if(this.unreadMsgId){
+                const index = array.findIndex(item => item.id === this.unreadMsgId);
+                const activeLength = this.$refs.scroller?.$el.querySelectorAll('div.active').length || this.keeps + 1;
+                if(index > -1 && this.unreadMsgId <= (array[array.length - activeLength]?.id || 0)){
+                    this.keeps = 26;
+                    array.splice(index, 0, {id: 0, type: "new"});
+                }else{
+                    this.keeps = 25;
+                }
+            }
+
+            return array
         },
 
         loadMsg() {
@@ -1037,12 +1053,14 @@ export default {
     watch: {
         dialogId: {
             handler(dialog_id, old_id) {
-                this.positionLoadMark = false;
-                this.mountedNow = Date.now();
                 if (dialog_id) {
                     this.msgNew = 0
                     this.msgType = ''
                     this.searchShow = false
+                    this.keeps = 25;
+                    this.unreadMsgId = 0;
+                    this.mountedNow = Date.now()
+                    this.positionLoadMark = false
                     //
                     if (this.allMsgList.length > 0) {
                         this.allMsgs = this.allMsgList
@@ -1052,7 +1070,10 @@ export default {
                         dialog_id,
                         msg_id: this.msgId,
                         msg_type: this.msgType,
-                    }).then(_ => {
+                    }).then(({data}) => {
+                        if(data.dialog.position_msgs && data.dialog.position_msgs[0]){
+                            this.unreadMsgId = data.dialog.position_msgs[0].msg_id;
+                        }
                         this.openId = dialog_id;
                         setTimeout(this.onSearchMsgId, 100)
                     }).catch(_ => {});
@@ -1170,6 +1191,9 @@ export default {
         },
 
         allMsgList(newList, oldList) {
+            if(JSON.stringify(newList) == JSON.stringify(oldList)){
+                return;
+            }
             const {tail} = this.scrollInfo();
             if ($A.isIos() && newList.length !== oldList.length) {
                 // 隐藏区域，让iOS断触
@@ -1250,6 +1274,12 @@ export default {
                 if (tail <= 55) {
                     requestAnimationFrame(this.onToBottom)
                 }
+            }
+        },
+
+        positionMsg(val){
+            if(val && val.msg_id && val.msg_id >this.unreadMsgId){
+                this.unreadMsgId = val.msg_id
             }
         }
     },
@@ -2275,7 +2305,7 @@ export default {
                     this.$refs.scroller.activeEvent(this.$refs.scroller.$el)
                 }
                 this.$nextTick(()=>{
-                    this.$refs.scroller.$el.querySelectorAll('div.active .dialog-item')?.forEach(element => {
+                    this.$refs.scroller.$el.querySelectorAll('div.active .dialog-item')?.forEach((element,index) => {
                         const mid = Number(element.getAttribute('data-dialog-id') || 0) || 0;
                         if(mid){
                             const source = this.allMsgs.find(msg =>{return msg.id == mid})
@@ -3001,9 +3031,19 @@ export default {
             this.positionLoadMark = true;
             this.positionLoad++
             const {msg_id} = this.positionMsg;
-            this.onPositionId(msg_id).finally(_ => {
+            this.$store.dispatch("dialogMsgMark", {
+                dialog_id: this.dialogId,
+                type: 'read',
+                after_msg_id: msg_id,
+            }).then(_ => {
+                this.positionLoad++
+                this.onPositionId(msg_id).finally(_ => {
+                    this.positionLoad--
+                })
+            }).catch(({msg}) => {
+                $A.modalError(msg)
+            }).finally(_ => {
                 this.positionLoad--
-                this.msgRead();
             })
         },
 

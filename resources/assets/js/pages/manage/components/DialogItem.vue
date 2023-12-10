@@ -20,6 +20,9 @@
         <div v-else-if="source.type === 'notice'" class="dialog-notice">
             {{source.msg.notice}}
         </div>
+        <div v-else-if="source.type === 'new'" class="dialog-new">
+           {{$L('以下为新消息')}}
+        </div>
         <template v-else>
             <div class="dialog-avatar" v-if="dialogAvatar">
                 <UserAvatar

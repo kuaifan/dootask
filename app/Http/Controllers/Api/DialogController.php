@@ -616,12 +616,11 @@ class DialogController extends AbstractController
             $dialogUser->updated_at = Carbon::now();
             $dialogUser->save();
             //
-            $dialogUser->webSocketDialog->generateUnread($user->userid, true);
+            $dialogUser->webSocketDialog->generateUnread($user->userid);
             $data[] = [
                 'id' => $dialogUser->webSocketDialog->id,
                 'unread' => $dialogUser->webSocketDialog->unread,
                 'mention' => $dialogUser->webSocketDialog->mention,
-                'position_msgs' => $dialogUser->webSocketDialog->position_msgs,
                 'user_at' =>  Carbon::parse($dialogUser->updated_at)->toDateTimeString('millisecond'),
                 'user_ms' => Carbon::parse($dialogUser->updated_at)->valueOf(),
             ];

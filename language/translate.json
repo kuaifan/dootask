@@ -19160,5 +19160,16 @@
         "de": "Gruppen werden zur wahl gewählt",
         "fr": "Choisir un groupe pour lancer un sondage",
         "id": "Pilih grup untuk memulai voting"
+    },
+    {
+        "key": "以下为新消息",
+        "zh": "",
+        "zh-CHT": "以下爲新消息",
+        "en": "Here's what's new",
+        "ko": "다음은 새 소식",
+        "ja": "新情報はこちらです",
+        "de": "Sie haben eine neue nachricht",
+        "fr": "Voici les nouveaux messages",
+        "id": "Berikut ini untuk informasi baru"
     }
 ]

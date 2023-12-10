@@ -447,7 +447,8 @@
 
             .dialog-tag,
             .dialog-todo,
-            .dialog-notice {
+            .dialog-notice,
+            .dialog-new {
                 font-size: 12px;
                 max-width: 80%;
                 margin: 0 auto;
@@ -1392,7 +1393,7 @@
                 height: 14px;
                 font-size: 14px;
                 line-height: 14px;
-                &.below{
+                &.down{
                     transform: rotate(-180deg);
                 }
             }
