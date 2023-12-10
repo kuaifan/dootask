@@ -19171,5 +19171,27 @@
         "de": "Sie haben eine neue nachricht",
         "fr": "Voici les nouveaux messages",
         "id": "Berikut ini untuk informasi baru"
+    },
+    {
+        "key": "接龙",
+        "zh": "",
+        "zh-CHT": "接龍",
+        "en": "Solitaire",
+        "ko": "다이 크",
+        "ja": "しりとりです",
+        "de": "Schnappt euch den drachen!",
+        "fr": "Mines",
+        "id": "JieLong"
+    },
+    {
+        "key": "参与接龙",
+        "zh": "",
+        "zh-CHT": "參與接龍",
+        "en": "Participate in the solitaire",
+        "ko": "릴레이 작업에 참여하다.",
+        "ja": "しりとりに参加します",
+        "de": "Ich übernehme die verantwortung.",
+        "fr": "Participez à solitaire",
+        "id": "Berpartisipasi dalam tangkapan"
     }
 ]

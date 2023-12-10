@@ -2433,14 +2433,21 @@ export default {
                     value: $A.thumbRestore(event.target.currentSrc),
                 })
             } else if (event.target.nodeName === 'A') {
+                let href = event.target.href;
                 if (event.target.classList.contains("mention") && event.target.classList.contains("file")) {
-                    this.findOperateFile(this.operateItem.id, event.target.href)
+                    if(this.isEEUiApp || this.$Electron){
+                        const url = new URL(href);
+                        const params = new URLSearchParams(url.search);
+                        params.delete('theme'); params.delete('lang');
+                        href = url.origin + url.pathname + (params.toString() ? ('?' + params.toString()) : '');
+                    }
+                    this.findOperateFile(this.operateItem.id, href)
                 }
                 this.operateCopys.push({
                     type: 'link',
                     icon: '&#xe7cb;',
                     label: '复制链接',
-                    value: event.target.href,
+                    value: href,
                 })
             }
             if (msgData.type === 'text') {

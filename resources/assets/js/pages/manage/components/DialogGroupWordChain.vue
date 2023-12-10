@@ -74,7 +74,7 @@ export default {
             show: false,
 
             createId: 0,
-            value: "#接龙 \n",
+            value: "#" + this.$L('接龙') + " \n",
             list: [],
 
             oldData: '',
@@ -120,7 +120,7 @@ export default {
     watch: {
         show(val){
             if(!val){
-                this.value = "#接龙 \n";
+                this.value = "#" + this.$L('接龙') + " \n";
                 this.list = [];
             }else{
                 if(this.dialogDroupWordChain.type == 'create'){

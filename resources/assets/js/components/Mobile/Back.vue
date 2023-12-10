@@ -154,7 +154,6 @@ export default {
                 route: this.$route,
                 callback: (appName, isAccept) => {
                     if(isAccept){
-                        console.log(1)
                         microAppIsAccept = true;
                     }
                 }

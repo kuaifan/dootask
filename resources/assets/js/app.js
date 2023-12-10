@@ -2,7 +2,7 @@ const isElectron = !!(window && window.process && window.process.type);
 const isEEUiApp = window && window.navigator && /eeui/i.test(window.navigator.userAgent);
 
 import microappInit from "./microapp"
-import {switchLanguage as $L} from "./language";
+import {switchLanguage as $L, setLanguage, getLanguage} from "./language";
 
 import './functions/common'
 import './functions/eeui'
@@ -91,17 +91,18 @@ if (!isElectron && !isEEUiApp) {
             ViewUI.LoadingBar._load = true;
             ViewUI.LoadingBar.start();
         }, 300)
+        //
         if (to.query?.theme) {
             store.dispatch("setTheme", typeof to.query?.theme == 'string' ? to.query?.theme : to.query?.theme[0])
         }
         if (to.query?.lang) {
             let lang = typeof to.query?.lang == 'string' ? to.query?.lang : to.query?.lang[0]
-            if (window.localStorage.getItem("__language:type__") != lang) {
-                window.localStorage.setItem("__language:type__", to.query?.lang);
-                window.location.reload();
-                return false;
+            if(lang && lang != getLanguage()){
+                setLanguage(lang, true)
+                return;
             }
         }
+        //
         next();
     });
     router.afterEach(() => {
@@ -157,6 +158,7 @@ $A.Platform = "web";
 $A.isMainElectron = false;
 $A.isSubElectron = false;
 $A.isEEUiApp = isEEUiApp;
+$A.isElectron = isElectron;
 $A.openLog = false;
 if (isElectron) {
     $A.Electron = electron;
