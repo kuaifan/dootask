@@ -2301,6 +2301,9 @@ export default {
                 return;
             }
             this.$nextTick(()=>{
+                if(!this.$refs.scroller){
+                    return;
+                }
                 if(!this.$refs.scroller.$el.querySelector('div.active')){
                     this.$refs.scroller.activeEvent(this.$refs.scroller.$el)
                 }
