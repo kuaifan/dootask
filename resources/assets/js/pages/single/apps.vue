@@ -1,5 +1,7 @@
 <template>
-    <MicroApps :url="appUrl" :path="path" v-if="!loading && $route.name == 'manage-apps'" />
+    <div class="electron-single-micro-apps">
+        <MicroApps :url="appUrl" :path="path" v-if="!loading && $route.name == 'single-apps'" />
+    </div>
 </template>
 
 <script>
@@ -23,7 +25,7 @@ export default {
         '$route': {
             handler(to) {
                 this.loading = true;
-                if (to.name == 'manage-apps') {
+                if (to.name == 'single-apps') {
                     this.$nextTick(() => {
                         this.loading = false;
                         this.appUrl = import.meta.env.VITE_OKR_WEB_URL || $A.apiUrl("../apps/okr")

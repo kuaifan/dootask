@@ -149,6 +149,11 @@ export default [
         component: () => import('./pages/single/task.vue'),
     },
     {
+        name: 'single-apps',
+        path: '/single/apps/*',
+        component: () => import('./pages/single/apps.vue')
+    },
+    {
         name: 'valid-email',
         path: '/single/valid/email',
         component: () => import('./pages/single/validEmail.vue')

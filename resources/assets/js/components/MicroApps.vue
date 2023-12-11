@@ -5,18 +5,18 @@
                 <Loading/>
             </div>
         </transition>
-        <micro-app v-if="url && !loading" 
-            :name='name' 
-            :url='url' 
-            inline 
+        <micro-app v-if="url && !loading"
+            :name='name'
+            :url='url'
+            inline
             keep-alive
-            disableSandbox 
+            disableSandbox
             :data='appData'
-            @created='handleCreate' 
-            @beforemount='handleBeforeMount' 
-            @mounted='handleMount' 
+            @created='handleCreate'
+            @beforemount='handleBeforeMount'
+            @mounted='handleMount'
             @unmount='handleUnmount'
-            @error='handleError' 
+            @error='handleError'
             @datachange='handleDataChange'
         ></micro-app>
     </div>
@@ -94,7 +94,7 @@ export default {
         },
         '$route': {
             handler(to) {
-                if(to.name == 'manage-apps'){
+                if(to.name == 'manage-apps' || to.name == 'single-apps'){
                     this.appData = {
                         path: to.hash || to.fullPath
                     }
@@ -136,7 +136,8 @@ export default {
                     languageType,
                 },
                 userInfo: this.userInfo,
-                path: this.path
+                path: this.path,
+                electron: this.$Electron
             }
         }
     },
