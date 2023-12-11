@@ -1,6 +1,6 @@
 .dialog-droup-word-chain {
     .ivu-modal-body{
-        max-height: calc(100vh - 365px);
+        max-height: calc(100vh - 260px);
         overflow: auto;
         padding-top: 0 !important;
         padding-right: 0 !important;
@@ -55,7 +55,7 @@
         display: flex;
         flex-direction: column;
         height: 100%;
-        max-height: calc(100vh - 370px);
+        max-height: calc(100vh - 265px);
         .source{
             margin-right: 32px;
             span{

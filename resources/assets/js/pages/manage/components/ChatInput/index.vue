@@ -104,11 +104,11 @@
                         </div>
                         <div v-if="dialogData.type == 'group'" class="chat-input-popover-item" @click="onToolbar('word-chain')">
                             <i class="taskfont">&#xe807;</i>
-                            {{$L('接龙')}}
+                            {{$L('发起接龙')}}
                         </div>
                         <div v-if="dialogData.type == 'group'" class="chat-input-popover-item" @click="onToolbar('vote')">
                             <i class="taskfont">&#xe806;</i>
-                            {{$L('投票')}}
+                            {{$L('发起投票')}}
                         </div>
                         <div class="chat-input-popover-item" @click="onToolbar('full')">
                             <i class="taskfont">&#xe6a7;</i>
