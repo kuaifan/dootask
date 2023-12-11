@@ -1969,6 +1969,7 @@ class DialogController extends AbstractController
      *
      * @apiParam {String}  text                  发送内容
      * @apiParam {Number}  userid                成员ID
+     * @apiParam {String}  key                   密钥（APP_KEY）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1976,6 +1977,9 @@ class DialogController extends AbstractController
      */
     public function okr__push()
     {
+        if (Request::input("key") !== env('APP_KEY')) {
+            User::auth();
+        }
         $text = trim(Request::input('text'));
         $userid = intval(Request::input('userid'));
         //
