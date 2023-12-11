@@ -1976,7 +1976,6 @@ class DialogController extends AbstractController
      */
     public function okr__push()
     {
-        User::auth();
         $text = trim(Request::input('text'));
         $userid = intval(Request::input('userid'));
         //
