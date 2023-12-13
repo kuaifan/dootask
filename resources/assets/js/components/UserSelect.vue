@@ -69,6 +69,7 @@
             <ul v-if="isWhole" class="user-modal-switch">
                 <li
                     v-for="item in switchItems" :key="item.key"
+                    v-if="!(forcedRadio && !showMultiple && item.key == 'project')"
                     :class="{active:switchActive===item.key}"
                     @click="switchActive=item.key">{{ $L(item.label) }}</li>
             </ul>
