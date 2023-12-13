@@ -8,7 +8,7 @@
                 @on-visible-change="menuVisibleChange">
                 <div :class="['manage-box-title', visibleMenu ? 'menu-visible' : '']">
                     <div class="manage-box-avatar">
-                        <UserAvatar :userid="userId" :size="36" tooltipDisabled/>
+                        <UserAvatar :userid="userId" :size="36"/>
                     </div>
                     <span>{{userInfo.nickname}}</span>
                     <Badge v-if="!!clientNewVersion" class="manage-box-top-report" dot/>
@@ -786,8 +786,8 @@ export default {
                     return;
                 case 'okrManage':
                 case 'okrAnalyze':
-                    this.goForward({ 
-                        path:'/manage/apps/' + ( path == 'okrManage' ? '/#/list' : '/#/analysis'), 
+                    this.goForward({
+                        path:'/manage/apps/' + ( path == 'okrManage' ? '/#/list' : '/#/analysis'),
                     });
                     return;
                 case 'logout':

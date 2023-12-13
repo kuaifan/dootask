@@ -2,7 +2,7 @@
     <div class="common-user-select" :class="warpClass">
         <ul v-if="!module">
             <li v-for="userid in values" v-if="userid" @click="onSelection">
-                <UserAvatar :userid="userid" :size="avatarSize" :show-icon="avatarIcon" :show-name="avatarName" tooltip-disabled/>
+                <UserAvatar :userid="userid" :size="avatarSize" :show-icon="avatarIcon" :show-name="avatarName"/>
             </li>
             <li v-if="addIcon || values.length === 0" class="add-icon" :style="addStyle" @click="onSelection"></li>
         </ul>
@@ -48,7 +48,7 @@
                                 <i v-else-if="item.group_type=='okr'" class="taskfont icon-avatar task">&#xe6f4;</i>
                                 <Icon v-else class="icon-avatar" type="ios-people" />
                             </template>
-                            <UserAvatar v-else :userid="item.userid" tooltip-disabled/>
+                            <UserAvatar v-else :userid="item.userid"/>
                         </li>
                     </ul>
                 </Scrollbar>
@@ -119,7 +119,7 @@
                                 <span>{{item.name}}</span>
                             </div>
                         </div>
-                        <UserAvatar v-else class="user-modal-avatar" :userid="item.userid" :size="40" show-name tooltip-disabled/>
+                        <UserAvatar v-else class="user-modal-avatar" :userid="item.userid" :size="40" show-name/>
                     </li>
                 </ul>
             </Scrollbar>

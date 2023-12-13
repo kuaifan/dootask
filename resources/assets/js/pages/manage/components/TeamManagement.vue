@@ -33,9 +33,9 @@
                         :key="item.id"
                         :class="[`level-${item.level}`, departmentSelect === item.id ? 'active' : '']"
                         @click="onSelectDepartment(item.id)">
-                        <UserAvatar :userid="item.owner_userid" :size="20" class="department-icon">
+                        <UserAvatarTip :userid="item.owner_userid" :size="20" class="department-icon">
                             <p><strong>{{$L('部门负责人')}}</strong></p>
-                        </UserAvatar>
+                        </UserAvatarTip>
                         <div class="department-title">{{item.name}}</div>
                         <EDropdown
                             size="medium"
@@ -299,10 +299,11 @@
 
 <script>
 import UserSelect from "../../../components/UserSelect.vue";
+import UserAvatarTip from "../../../components/UserAvatar/tip.vue";
 
 export default {
     name: "TeamManagement",
-    components: {UserSelect},
+    components: {UserAvatarTip, UserSelect},
     props: {
         checkinMac: {
             type: Boolean,

@@ -101,7 +101,7 @@
                                     <template v-else>
                                         <template v-if="dialog.type=='group' && dialog.last_msg && dialog.last_msg.userid">
                                             <div v-if="dialog.last_msg.userid == userId" class="last-self">{{$L('你')}}</div>
-                                            <UserAvatar v-else :userid="dialog.last_msg.userid" :show-name="true" :show-icon="false" tooltip-disabled/>
+                                            <UserAvatar v-else :userid="dialog.last_msg.userid" :show-name="true" :show-icon="false"/>
                                         </template>
                                         <div class="last-text">
                                             <em v-if="formatMsgEmojiDesc(dialog.last_msg)">{{formatMsgEmojiDesc(dialog.last_msg)}}</em>

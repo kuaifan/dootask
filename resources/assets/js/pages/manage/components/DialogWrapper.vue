@@ -28,11 +28,11 @@
                                 <Icon v-else class="icon-avatar" type="ios-people" />
                             </template>
                             <div v-else-if="dialogData.dialog_user" class="user-avatar">
-                                <UserAvatar :online.sync="dialogData.online_state" :userid="dialogData.dialog_user.userid" :size="42">
+                                <UserAvatarTip :online.sync="dialogData.online_state" :userid="dialogData.dialog_user.userid" :size="42">
                                     <p v-if="dialogData.type === 'user' && dialogData.online_state !== true" slot="end">
                                         {{$L(dialogData.online_state)}}
                                     </p>
-                                </UserAvatar>
+                                </UserAvatarTip>
                             </div>
                             <Icon v-else class="icon-avatar" type="md-person" />
                         </div>
@@ -530,10 +530,12 @@ import {choiceEmojiOne} from "./ChatInput/one";
 
 import ApproveDetails from "../../../pages/manage/approve/details.vue";
 import UserSelect from "../../../components/UserSelect.vue";
+import UserAvatarTip from "../../../components/UserAvatar/tip.vue";
 
 export default {
     name: "DialogWrapper",
     components: {
+        UserAvatarTip,
         UserSelect,
         ImgUpload,
         DialogRespond,

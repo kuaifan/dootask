@@ -5,7 +5,7 @@
         <div class="respond-user">
             <ul>
                 <li v-for="(userid, index) in respondData.userids" :key="index" @click="openUser(userid)">
-                    <UserAvatar :userid="userid" :size="32" showName tooltipDisabled/>
+                    <UserAvatar :userid="userid" :size="32" showName/>
                 </li>
             </ul>
         </div>

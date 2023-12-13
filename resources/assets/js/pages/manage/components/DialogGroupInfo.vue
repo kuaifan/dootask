@@ -19,7 +19,7 @@
         <div class="group-info-user">
             <ul>
                 <li v-for="(item, index) in userList" :key="index" @click="openUser(item.userid)">
-                    <UserAvatar :userid="item.userid" :size="32" showName tooltipDisabled/>
+                    <UserAvatar :userid="item.userid" :size="32" showName/>
                     <div v-if="item.userid === dialogData.owner_id" class="user-tag">{{ $L("群主") }}</div>
                     <div v-else-if="operableExit(item)" class="user-exit" @click.stop="onExit(item)"><Icon type="md-exit"/></div>
                 </li>

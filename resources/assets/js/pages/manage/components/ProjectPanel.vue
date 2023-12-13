@@ -13,9 +13,9 @@
                 <li class="project-avatar" :class="{'cursor-default': projectData.owner_userid !== userId}" @click="projectDropdown('user')">
                     <ul>
                         <li>
-                            <UserAvatar :userid="projectData.owner_userid" :size="36" :borderWitdh="2" :openDelay="0">
+                            <UserAvatarTip :userid="projectData.owner_userid" :size="36" :borderWitdh="2" :openDelay="0">
                                 <p>{{$L('项目负责人')}}</p>
-                            </UserAvatar>
+                            </UserAvatarTip>
                             <Badge v-if="(windowWidth <= 980 || projectData.cacheParameter.chat) && projectUser.length > 0" type="normal" :overflow-count="999" :count="projectData.project_user.length"/>
                         </li>
                         <template v-if="!(windowWidth <= 980 || projectData.cacheParameter.chat) && projectUser.length > 0" v-for="item in projectUser">
@@ -25,7 +25,7 @@
                                 </ETooltip>
                             </li>
                             <li v-else>
-                                <UserAvatar :userid="item.userid" :size="36" :borderWitdh="2" :openDelay="0"/>
+                                <UserAvatarTip :userid="item.userid" :size="36" :borderWitdh="2" :openDelay="0"/>
                             </li>
                         </template>
                     </ul>
@@ -369,7 +369,7 @@
                         <ul class="project-panel-wait-remove">
                             <li>{{$L('即将移除')}}：</li>
                             <li v-for="id in userWaitRemove" :key="id">
-                                <UserAvatar :userid="id" :size="20" showName tooltipDisabled/>
+                                <UserAvatar :userid="id" :size="20" showName/>
                             </li>
                         </ul>
                     </div>
@@ -477,10 +477,12 @@ import TaskDeleted from "./TaskDeleted";
 import ProjectGantt from "./ProjectGantt";
 import MarkdownPreviewNostyle from "../../../components/MDEditor/components/preview/nostyle.vue";
 import UserSelect from "../../../components/UserSelect.vue";
+import UserAvatarTip from "../../../components/UserAvatar/tip.vue";
 
 export default {
     name: "ProjectPanel",
     components: {
+        UserAvatarTip,
         UserSelect,
         MarkdownPreviewNostyle,
         TaskMenu,

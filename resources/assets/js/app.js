@@ -39,7 +39,7 @@ import AutoTip from './components/AutoTip.vue'
 import TagInput from './components/TagInput.vue'
 import TableAction from './components/TableAction.vue'
 import QuickEdit from './components/QuickEdit.vue'
-import UserAvatar from './components/UserAvatar.vue'
+import UserAvatar from './components/UserAvatar'
 import ImgView from './components/ImgView.vue'
 import Scrollbar from './components/Scrollbar'
 

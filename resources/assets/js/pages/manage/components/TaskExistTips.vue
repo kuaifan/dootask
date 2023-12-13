@@ -10,7 +10,7 @@
         <List :split="false" size="small">
             <ListItem v-for="(items, userid) in tipsTask" :key="userid">
                 <div class="list-content">
-                    <UserAvatar :userid="userid" :size="28" :show-icon="true" :show-name="true" tooltipDisabled />
+                    <UserAvatar :userid="userid" :size="28" :show-icon="true" :show-name="true"/>
                     <div class="list-task" v-for="(item, key) in items" :key="key">
                         <div class="list-task-info">
                             <span>[{{ item.project_name }}] </span>
