@@ -570,7 +570,6 @@ export default {
             msgNew: 0,
             msgType: '',
             loadIng: 0,
-            unreadMsgId: 0,
 
             allMsgs: [],
             tempMsgs: [],
@@ -654,11 +653,13 @@ export default {
             scrollTmp: 0,
             scrollIng: 0,
 
-            positionLoad: 0,
-
-            approveDetails:{id: 0},
+            approveDetails: {id: 0},
             approveDetailsShow: false,
-            approvaUserStatus: ''
+            approvaUserStatus: '',
+
+            positionLoad: 0,            // 定位跳转加载中
+            unreadMsgId: 0,             // 最早未读消息id
+            toBottomReGetMsg: false,    // 滚动到底部重新获取消息
         }
     },
 
@@ -997,6 +998,7 @@ export default {
                     this.msgType = ''
                     this.searchShow = false
                     this.unreadMsgId = 0
+                    this.toBottomReGetMsg = false
                     //
                     if (this.allMsgList.length > 0) {
                         this.allMsgs = this.allMsgList
@@ -1114,11 +1116,15 @@ export default {
             if (num <= 1) {
                 return
             }
-            this.getMsgs({
-                dialog_id: this.dialogId,
-                msg_id: this.msgId,
-                msg_type: this.msgType,
-            }).catch(_ => {});
+            // 判断是否最后一条消息可见才重新获取消息
+            const lastMsg = this.allMsgs[this.allMsgs.length - 1]
+            const lastEl = $A(this.$refs.scroller.$el).find(`[data-id="${lastMsg.id}"]`)
+            if (lastEl.length === 0) {
+                this.toBottomReGetMsg = true
+                return;
+            }
+            // 开始请求重新获取消息
+            this.onReGetMsg()
         },
 
         allMsgList(newList, oldList) {
@@ -1936,6 +1942,15 @@ export default {
             this.$store.dispatch("openOkr", this.dialogData.link_id);
         },
 
+        onReGetMsg() {
+            this.toBottomReGetMsg = false
+            this.getMsgs({
+                dialog_id: this.dialogId,
+                msg_id: this.msgId,
+                msg_type: this.msgType,
+            }).catch(_ => {});
+        },
+
         onPrevPage() {
             if (this.prevId === 0) {
                 return
@@ -2228,6 +2243,7 @@ export default {
             this.scrollTail = tail;
             if (this.scrollTail <= 55) {
                 this.msgNew = 0;
+                this.toBottomReGetMsg && this.onReGetMsg()
             }
             //
             this.scrollAction = event.target.scrollTop;
