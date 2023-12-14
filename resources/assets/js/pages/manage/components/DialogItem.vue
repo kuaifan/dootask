@@ -1,5 +1,8 @@
 <template>
     <div :class="classArray">
+        <div v-if="isUnreadStart" class="dialog-unread-label">
+            <em></em><span>{{$L('以下为新消息')}}</span><em></em>
+        </div>
         <div v-if="source.type === 'tag'" class="dialog-tag" @click="onViewTag">
             <div class="tag-user"><UserAvatar :userid="source.userid" :show-name="true" :show-icon="false"/></div>
             {{$L(source.msg.action === 'remove' ? '取消标注' : '标注了')}}
@@ -93,6 +96,10 @@ export default {
             type: Number,
             default: 0
         },
+        unreadMsgId: {
+            type: Number,
+            default: 0
+        },
         scrollIng: {
             type: Number,
             default: 0
@@ -118,6 +125,10 @@ export default {
             return this.isRightMsg || this.source.read_at
         },
 
+        isUnreadStart() {
+            return this.unreadMsgId === this.source.id
+        },
+
         hidePercentage() {
             return this.simpleView || this.isMyDialog || this.isReply
         },
@@ -130,6 +141,7 @@ export default {
             return {
                 'dialog-item': true,
                 'reply-item': this.isReply,
+                'unread-start': this.isUnreadStart,
                 'self': this.isRightMsg,
             }
         },

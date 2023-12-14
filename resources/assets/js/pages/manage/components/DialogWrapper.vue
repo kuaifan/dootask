@@ -155,7 +155,7 @@
             :data-component="msgItem"
 
             :item-class-add="itemClassAdd"
-            :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, scrollIng}"
+            :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, unreadMsgId, scrollIng}"
             :estimate-size="dialogData.type=='group' ? 105 : 77"
             :keeps="25"
             :disabled="scrollDisabled"
@@ -570,6 +570,7 @@ export default {
             msgNew: 0,
             msgType: '',
             loadIng: 0,
+            unreadMsgId: 0,
 
             allMsgs: [],
             tempMsgs: [],
@@ -964,6 +965,7 @@ export default {
             }
             const item = $A.cloneJSON(position_msgs[0])
             if (item.label === '{UNREAD}') {
+                item.is_unread = unread > 1
                 item.label = this.$L(`未读消息${unread}条`)
             }
             return item
@@ -994,6 +996,7 @@ export default {
                     this.msgNew = 0
                     this.msgType = ''
                     this.searchShow = false
+                    this.unreadMsgId = 0
                     //
                     if (this.allMsgList.length > 0) {
                         this.allMsgs = this.allMsgList
@@ -1196,6 +1199,12 @@ export default {
                 if (tail <= 55) {
                     requestAnimationFrame(this.onToBottom)
                 }
+            }
+        },
+
+        positionMsg(msg) {
+            if (msg && msg.is_unread === true) {
+                this.unreadMsgId = msg.msg_id
             }
         }
     },
