@@ -18478,5 +18478,137 @@
         "de": "Ich kann das einfach nicht.",
         "fr": "Tolérance et refus",
         "id": "Punya hati untuk menolak"
+    },
+    {
+        "key": "OKR结果",
+        "zh": "",
+        "zh-CHT": "OKR結果",
+        "en": "OKR result",
+        "ko": "Okr 결과",
+        "ja": "OKRの結果です",
+        "de": "OKR bringt das ergebnis.",
+        "fr": "Résultats pour OKR",
+        "id": "Hasil OKR"
+    },
+    {
+        "key": "开始聊天",
+        "zh": "",
+        "zh-CHT": "開始聊天",
+        "en": "Start chatting",
+        "ko": "대화를 시작하다",
+        "ja": "雑談を始めます",
+        "de": "Reden wir!",
+        "fr": "Commencer le chat",
+        "id": "Mulai ngobrol"
+    },
+    {
+        "key": "邮件通知",
+        "zh": "",
+        "zh-CHT": "郵件通知",
+        "en": "Email notification",
+        "ko": "우편물 통지",
+        "ja": "メールでお知らせします",
+        "de": "Per e-mail,",
+        "fr": "Notification par email",
+        "id": "Notifikasi surat"
+    },
+    {
+        "key": "移动任务",
+        "zh": "",
+        "zh-CHT": "移動任務",
+        "en": "Mobile task",
+        "ko": "작업 이동",
+        "ja": "移動ミッションです",
+        "de": "Mobile mission?",
+        "fr": "Déplacer la tâche",
+        "id": "Tugas bergerak"
+    },
+    {
+        "key": "请输入备注",
+        "zh": "",
+        "zh-CHT": "請輸入備註",
+        "en": "Please enter remarks",
+        "ko": "비고를 입력하십시오",
+        "ja": "備考をお願いします。",
+        "de": "Bitte geben sie die bemerkungen",
+        "fr": "Veuillez entrer une remarque",
+        "id": "Silahkan masukkan komentar"
+    },
+    {
+        "key": "任务延期",
+        "zh": "",
+        "zh-CHT": "任務延期",
+        "en": "Task delay",
+        "ko": "임무가 연기되다",
+        "ja": "任務の延期です",
+        "de": "Mission verschoben.",
+        "fr": "Report du mandat",
+        "id": "Penugasan ditunda"
+    },
+    {
+        "key": "修改时间",
+        "zh": "",
+        "zh-CHT": "修改時間",
+        "en": "Modification time",
+        "ko": "수정한 날짜",
+        "ja": "時間を修正します",
+        "de": "Ändern sie den termin.",
+        "fr": "Modifier le temps",
+        "id": "Revisi waktu"
+    },
+    {
+        "key": "请确认扫码的服务器与当前服务器一致",
+        "zh": "",
+        "zh-CHT": "請確認掃碼的服務器與當前服務器一致",
+        "en": "Ensure that the server for scanning codes is the same as the current server",
+        "ko": "스캔 서버가 현재 서버와 일치하는지 확인하십시오",
+        "ja": "コードを読み取るサーバーが現在のサーバーと一致していることを確認します。",
+        "de": "Vergewissern sie sich, dass der server, der den code beschriftet, mit dem aktuellen identisch ist",
+        "fr": "Assurez-vous que le serveur du code de balayage est le même que le serveur actuel",
+        "id": "Harap konfirmasi sadapan server sadapan yang sesuai dengan server saat ini"
+    },
+    {
+        "key": "二维码服务器",
+        "zh": "",
+        "zh-CHT": "二維碼服務器",
+        "en": "Qr code server",
+        "ko": "Qr 코드 서버",
+        "ja": "Qrコードサーバーです",
+        "de": "Der binäre server",
+        "fr": "Serveur qr code",
+        "id": "Server qr"
+    },
+    {
+        "key": "当前服务器",
+        "zh": "",
+        "zh-CHT": "當前服務器",
+        "en": "Current server",
+        "ko": "현재 서버",
+        "ja": "現在のサーバです",
+        "de": "Dem aktuellen server.",
+        "fr": "Le serveur actuel",
+        "id": "Server saat ini"
+    },
+    {
+        "key": "你确定取消待办吗？",
+        "zh": "",
+        "zh-CHT": "你確定取消待辦嗎？",
+        "en": "Are you sure you want to cancel the backlog?",
+        "ko": "업무 취소하시겠습니까?",
+        "ja": "未処理のキャンセルは確定ですか?",
+        "de": "Soll ich sie wirklich absagen?",
+        "fr": "Etes-vous sûr d’annuler tout?",
+        "id": "Apakah anda yakin dibatalkan?"
+    },
+    {
+        "key": "以下为新消息",
+        "zh": "",
+        "zh-CHT": "以下爲新消息",
+        "en": "Here's what's new",
+        "ko": "다음은 새 소식",
+        "ja": "新情報はこちらです",
+        "de": "Sie haben eine neue nachricht",
+        "fr": "Voici les nouveaux messages",
+        "id": "Berikut ini untuk informasi baru"
     }
 ]
