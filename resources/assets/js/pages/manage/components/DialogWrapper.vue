@@ -155,7 +155,7 @@
             :data-component="msgItem"
 
             :item-class-add="itemClassAdd"
-            :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId}"
+            :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, scrollIng}"
             :estimate-size="dialogData.type=='group' ? 105 : 77"
             :keeps="25"
             :disabled="scrollDisabled"
@@ -651,6 +651,7 @@ export default {
             scrollDirection: null,
             scrollAction: 0,
             scrollTmp: 0,
+            scrollIng: 0,
 
             positionLoad: 0,
 
@@ -961,15 +962,11 @@ export default {
             if (!position_msgs || position_msgs.length === 0 || unread === 0 || this.allMsgs.length === 0) {
                 return null
             }
-            const item = position_msgs.sort((a, b) => {
-                return b.msg_id - a.msg_id
-            })[0]
-            if (this.allMsgs.findIndex(({id}) => id == item.msg_id) === -1) {
-                return Object.assign(item, {
-                    'label': this.$L(`未读消息${unread}条`)
-                })
+            const item = $A.cloneJSON(position_msgs[0])
+            if (item.label === '{UNREAD}') {
+                item.label = this.$L(`未读消息${unread}条`)
             }
-            return null
+            return item
         },
 
         operateEmojis() {
@@ -2227,6 +2224,9 @@ export default {
             this.scrollAction = event.target.scrollTop;
             this.scrollDirection = this.scrollTmp <= this.scrollAction ? 'down' : 'up';
             setTimeout(_ => this.scrollTmp = this.scrollAction, 0);
+            //
+            this.scrollIng++;
+            setTimeout(_=> this.scrollIng--, 100);
         },
 
         onRange(range) {

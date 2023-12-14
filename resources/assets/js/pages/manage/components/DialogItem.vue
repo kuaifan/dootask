@@ -93,23 +93,29 @@ export default {
             type: Number,
             default: 0
         },
+        scrollIng: {
+            type: Number,
+            default: 0
+        },
     },
 
-    data() {
-        return {
-            subscribe: null,
-        }
+    mounted() {
+        this.checkWatch()
     },
 
     computed: {
         ...mapState(['userId']),
 
         isRightMsg() {
-            return this.source.userid == this.userId
+            return this.source.userid == this.$store.state.userId
         },
 
         isReply() {
             return this.simpleView || this.msgId === this.source.id
+        },
+
+        isNoWatch() {
+            return this.isRightMsg || this.source.read_at
         },
 
         hidePercentage() {
@@ -130,24 +136,42 @@ export default {
     },
 
     watch: {
-        source: {
-            handler() {
-                this.msgRead();
-            },
-            immediate: true,
+        source() {
+            this.msgRead();
         },
         windowActive(active) {
-            if (active) {
-                this.msgRead();
+            if (!active) {
+               return
             }
+            this.msgRead();
         }
     },
 
     methods: {
+        checkWatch() {
+            if (this.isNoWatch) {
+                return
+            }
+            const watchr = this.$watch("scrollIng", _ => {
+                if (this.isNoWatch) {
+                    watchr()
+                    return
+                }
+                this.msgRead()
+            })
+        },
+
         msgRead() {
             if (!this.windowActive) {
                 return;
             }
+            if (!this.$el) {
+                return;
+            }
+            if (this.$el.parentNode.classList.contains('inactive')) {
+                return;
+            }
+            //
             this.$store.dispatch("dialogMsgRead", this.source);
         },
 
