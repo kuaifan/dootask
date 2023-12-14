@@ -1300,7 +1300,7 @@ export default {
                     this.sendSuccess(data)
                 }).catch(error => {
                     this.$set(tempMsg, 'error', true)
-                    this.$set(tempMsg, 'errorData', {type: 'text', content: error.msg, msg: textBody})
+                    this.$set(tempMsg, 'errorData', {type: 'text', mType: type, content: error.msg, msg: textBody})
                 });
             }
             if (emptied) {
@@ -1340,7 +1340,7 @@ export default {
                 this.sendSuccess(data);
             }).catch(error => {
                 this.$set(tempMsg, 'error', true)
-                this.$set(tempMsg, 'errorData', {type: 'record', content: error.msg, msg})
+                this.$set(tempMsg, 'errorData', {type: 'record', mType: 'record', content: error.msg, msg})
             });
         },
 
@@ -2707,7 +2707,7 @@ export default {
             if (data.error !== true) {
                 return
             }
-            const {type, content, msg} = data.errorData
+            const {type, mType, content, msg} = data.errorData
             const config = {
                 icon: 'error',
                 title: '发送失败',
@@ -2718,13 +2718,10 @@ export default {
                 }
             }
             if (type === 'text') {
-                config.okText = '再次编辑'
+                config.okText = '重新发送'
                 config.onOk = () => {
                     this.tempMsgs = this.tempMsgs.filter(({id}) => id != data.id)
-                    this.$refs.input.setPasteMode(false)
-                    this.msgText = msg
-                    this.inputFocus()
-                    this.$nextTick(_ => this.$refs.input.setPasteMode(true))
+                    this.sendMsg(msg, mType)
                 }
             } else if (type === 'record') {
                 config.okText = '重新发送'
