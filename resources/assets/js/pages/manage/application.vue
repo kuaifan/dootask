@@ -467,6 +467,17 @@ export default {
             const arr = (text + "").match(/^https*:\/\/(.*?)\/login\?qrcode=(.*?)$/)
             if (arr) {
                 // 扫码登录
+                if ($A.getDomain(text) != $A.getDomain($A.apiUrl('../'))) {
+                    let content = this.$L('请确认扫码的服务器与当前服务器一致')
+                    content += `<br/>${this.$L('二维码服务器')}: ${$A.getDomain(text)}`
+                    content += `<br/>${this.$L('当前服务器')}: ${$A.getDomain($A.apiUrl('../'))}`
+                    $A.modalWarning({
+                        language: false,
+                        title: this.$L('扫码登录'),
+                        content
+                    })
+                    return
+                }
                 this.scanLoginCode = arr[2];
                 this.scanLoginShow = true;
                 return

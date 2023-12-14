@@ -39,7 +39,7 @@
 
             .apply-row-title{
                 margin-bottom: 16px;
-                
+
             }
 
             >div.apply-row-title:nth-last-child(2){
@@ -72,7 +72,7 @@
                             height: 100%;
                         }
                     }
-                
+
                     >p{
                         overflow: hidden;
                         text-overflow: ellipsis;
@@ -99,7 +99,7 @@
             }
 
             .apply-content{
-                
+
                 .ivu-row{
                     margin-left: -12px !important;
                     margin-right: -12px !important;
@@ -162,7 +162,7 @@
         @media (max-width: 500px) {
             margin-right: 28px;
         }
-       
+
     }
 
     .ivu-modal-wrap-apply-body {
@@ -194,14 +194,14 @@
 
                         >.ivu-form {
                             margin-bottom: 8px;
-                            
+
                         }
                     }
 
                 }
-                
+
             }
-           
+
 
             .block-setting-box {
                 position: relative;
@@ -388,6 +388,15 @@
     }
 }
 
+.mobile-scan-login-box {
+    margin: 2px 0 12px;
+    .mobile-scan-login-title {
+        font-size: 20px;
+    }
+    .mobile-scan-login-subtitle {
+        padding-top: 8px;
+    }
+}
 
 body.window-portrait {
     .page-apply {

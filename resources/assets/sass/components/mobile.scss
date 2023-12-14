@@ -83,80 +83,6 @@
             }
         }
     }
-
-    .more-mask {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 1;
-        background-color: rgba(0, 0, 0, 0.15);
-    }
-
-    .more-box {
-        position: relative;
-        z-index: 2;
-        display: block;
-        margin-bottom: -2px;
-        border-radius: 16px 16px 0 0;
-        padding-bottom: 16px;
-        background-color: #ffffff;
-        border-top: 1px solid #f1f1f1;
-
-        .tabbar-more-title {
-            font-size: 18px;
-            font-weight: 500;
-            padding: 16px 16px 36px;
-        }
-
-        > ul {
-            padding: 0 12px;
-
-            > li {
-                list-style: none;
-                display: inline-block;
-                width: 25%;
-                margin-bottom: 28px;
-
-                .more-item {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    position: relative;
-
-                    .taskfont {
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        width: 56px;
-                        height: 56px;
-                        font-size: 25px;
-                        color: $primary-color;
-                        background-color: rgba($primary-color, 0.08);
-                        border-radius: 12px;
-                    }
-
-                    .tabbar-title {
-                        padding-top: 6px;
-                        font-size: 13px;
-                        max-width: 92%;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
-                    }
-
-                    .tabbar-badge {
-                        position: absolute;
-                        top: -6px;
-                        right: 50%;
-                        transform: translateX(36px);
-                    }
-                }
-            }
-        }
-    }
 }
 
 .mobile-back {
@@ -227,16 +153,6 @@
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
-    }
-}
-
-.mobile-scan-login-box {
-    margin: 2px 0 12px;
-    .mobile-scan-login-title {
-        font-size: 20px;
-    }
-    .mobile-scan-login-subtitle {
-        padding-top: 8px;
     }
 }
 

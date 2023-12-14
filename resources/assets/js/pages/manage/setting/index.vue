@@ -210,7 +210,7 @@ export default {
                     content += `<br/>${this.$L('客户端版本')}: v${this.version}`
                     $A.modalInfo({
                         language: false,
-                        title: '版本信息',
+                        title: this.$L('版本信息'),
                         content
                     })
                 }
