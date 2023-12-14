@@ -104,10 +104,10 @@ export default {
             type: Number,
             default: 0
         },
-    },
-
-    mounted() {
-        this.checkWatch()
+        msgReady: {
+            type: Boolean,
+            default: false
+        },
     },
 
     computed: {
@@ -121,7 +121,7 @@ export default {
             return this.simpleView || this.msgId === this.source.id
         },
 
-        isNoWatch() {
+        isNoRead() {
             return this.isRightMsg || this.source.read_at
         },
 
@@ -148,32 +148,25 @@ export default {
     },
 
     watch: {
-        source() {
+        msgReady() {
             this.msgRead();
         },
-        windowActive(active) {
-            if (!active) {
-               return
-            }
+        windowActive() {
             this.msgRead();
-        }
+        },
+        scrollIng() {
+            this.msgRead();
+        },
     },
 
     methods: {
-        checkWatch() {
-            if (this.isNoWatch) {
-                return
-            }
-            const watchr = this.$watch("scrollIng", _ => {
-                if (this.isNoWatch) {
-                    watchr()
-                    return
-                }
-                this.msgRead()
-            })
-        },
-
         msgRead() {
+            if (this.isNoRead) {
+                return;
+            }
+            if (!this.msgReady) {
+                return;
+            }
             if (!this.windowActive) {
                 return;
             }

@@ -155,7 +155,7 @@
             :data-component="msgItem"
 
             :item-class-add="itemClassAdd"
-            :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, unreadMsgId, scrollIng}"
+            :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, unreadMsgId, scrollIng, msgReady}"
             :estimate-size="dialogData.type=='group' ? 105 : 77"
             :keeps="25"
             :disabled="scrollDisabled"
@@ -658,6 +658,7 @@ export default {
             approvaUserStatus: '',
 
             positionLoad: 0,            // 定位跳转加载中
+            msgReady: false,            // 消息准备完成
             unreadMsgId: 0,             // 最早未读消息id
             toBottomReGetMsg: false,    // 滚动到底部重新获取消息
         }
@@ -997,6 +998,7 @@ export default {
                     this.msgNew = 0
                     this.msgType = ''
                     this.searchShow = false
+                    this.msgReady = false
                     this.unreadMsgId = 0
                     this.toBottomReGetMsg = false
                     //
@@ -1010,6 +1012,7 @@ export default {
                         msg_type: this.msgType,
                     }).then(_ => {
                         this.openId = dialog_id;
+                        this.onMsgReady()
                         setTimeout(this.onSearchMsgId, 100)
                     }).catch(_ => {});
                     //
@@ -1460,6 +1463,21 @@ export default {
                 }
             }
             return true
+        },
+
+        onMsgReady() {
+            let count = 0;
+            let offsetA = this.scrollInfo().offset
+            const func = () => {
+                const offsetB = this.scrollInfo().offset
+                if (++count > 10 || offsetA == offsetB) {
+                    this.msgReady = true
+                    return
+                }
+                offsetA = offsetB
+                setTimeout(func, 200);
+            }
+            setTimeout(func, 200);
         },
 
         onSearchMsgId() {
