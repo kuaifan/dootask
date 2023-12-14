@@ -94,7 +94,7 @@
                         </li>
                     </ul>
                 </template>
-                <template v-if="columns.length <= 0">
+                <template v-if="columns.filter(h=>h.list.length > 0).length == 0">
                     <div class="nopage">
                         <div class="nopage-icon">
                             <img :src="$A.apiUrl(`../images/empty/complete.svg`)">

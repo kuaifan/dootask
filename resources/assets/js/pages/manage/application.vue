@@ -302,6 +302,7 @@ export default {
     },
     computed: {
         ...mapState([
+            'userInfo',
             'userIsAdmin',
             'reportUnreadNumber',
             'approveUnreadNumber',
@@ -353,6 +354,12 @@ export default {
                 h.type = 'admin';
                 return h;
             });
+            //
+            if(this.userInfo.department_owner && !this.userIsAdmin){
+                adminApplyList = [
+                    { value: "okrAnalyze", label: "OKR结果", sort: 15, type: 'admin' },
+                ]
+            }
             //
             this.applyList = [...applyList, ...appApplyList, ...adminApplyList].sort((a, b) => {
                 if (a.sort < b.sort) {
