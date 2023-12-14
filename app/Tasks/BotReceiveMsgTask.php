@@ -71,6 +71,9 @@ class BotReceiveMsgTask extends AbstractTask
         }
         if (preg_match("/<span[^>]*?data-quick-key=([\"'])(.*?)\\1[^>]*?>(.*?)<\/span>/is", $original, $match)) {
             $command = $match[2];
+            if (str_starts_with($command, '%3A.')) {
+                $command = ":" . substr($command, 4);
+            }
         } else {
             $command = trim(strip_tags($original));
         }
