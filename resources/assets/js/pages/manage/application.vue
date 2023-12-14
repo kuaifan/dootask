@@ -1,6 +1,5 @@
 <template>
     <div class="page-apply">
-
         <PageTitle :title="$L('应用')" />
 
         <div class="apply-wrapper">
@@ -61,7 +60,7 @@
                             <img :src="item.src">
                             <h4>{{ item.label }}</h4>
                             <p class="desc" @click="openDetail(item.desc)">{{ item.desc }}</p>
-                            <p class="btn" @click="onGoToChat(item.value)">{{ $L('去聊天') }}</p>
+                            <p class="btn" @click="onGoToChat(item.value)">{{ $L('开始聊天') }}</p>
                             <div class="load" v-if="aibotDialogSearchLoad == item.value">
                                 <Loading />
                             </div>
@@ -99,7 +98,7 @@
                 <div class="ivu-modal-wrap-apply-title">
                     {{ $L('签到管理') }}
                     <p @click="signInType = signInType == 1 ? 2 : 1" v-if="userIsAdmin">
-                        {{ signInType == 1 ? $L('系统设置') : $L('返回') }}
+                        {{ signInType == 1 ? $L('签到设置') : $L('返回') }}
                     </p>
                 </div>
                 <div class="ivu-modal-wrap-apply-body">
@@ -154,7 +153,7 @@
         <DrawerOverlay v-model="mailShow" placement="right" :size="700">
             <div class="ivu-modal-wrap-apply">
                 <div class="ivu-modal-wrap-apply-title">
-                    {{ $L('邮件管理') }}
+                    {{ $L('邮件通知') }}
                 </div>
                 <div class="ivu-modal-wrap-apply-body">
                     <SystemEmailSetting />
@@ -303,34 +302,32 @@ export default {
     },
     methods: {
         initList() {
-            let applyList = [
-                { value: "approve", label: "审批中心" },
-                { value: "report", label: "工作报告" },
-                { value: "okr", label: "OKR管理" },
-                { value: "robot", label: "AI机器人" },
-                { value: "signin", label: "签到" },
-                { value: "meeting", label: "会议" }
+            const applyList = [
+                {value: "approve", label: "审批中心"},
+                {value: "okr", label: "OKR管理"},
+                {value: "report", label: "工作报告"},
+                {value: "robot", label: "AI机器人"},
+                {value: "signin", label: "签到"},
+                {value: "meeting", label: "会议"}
             ];
             // wap模式
-            let appApplyList = this.windowOrientation != 'portrait' ? (
-                    $A.isEEUiApp ? [
-                        { value: "scan", label: "扫一扫" }
-                    ] : []
-                ) : [
-                { value: "calendar", label: "日历" },
-                { value: "file", label: "文件" },
-                { value: "addProject", label: "创建项目" },
-                { value: "addTask", label: "添加任务" },
-                { value: "scan", label: "扫一扫", show: $A.isEEUiApp },
-                { value: "setting", label: "设置" }
+            const appApplyList = this.windowOrientation != 'portrait' ? [
+                {value: "scan", label: "扫一扫", show: $A.isEEUiApp},
+            ] : [
+                {value: "calendar", label: "日历"},
+                {value: "file", label: "文件"},
+                {value: "addProject", label: "创建项目"},
+                {value: "addTask", label: "添加任务"},
+                {value: "scan", label: "扫一扫", show: $A.isEEUiApp},
+                {value: "setting", label: "设置"}
             ];
             // 管理员
-            let adminApplyList = !this.userIsAdmin ? [] : [
-                { value: "okrAnalyze", label: "OKR结果分析" },
-                { value: "ldap", label: "LDAP" },
-                { value: "mail", label: "邮件" },
-                { value: "appPush", label: "APP推送" },
-                { value: "allUser", label: "团队管理" }
+            const adminApplyList = !this.userIsAdmin ? [] : [
+                {value: "okrAnalyze", label: "OKR结果"},
+                {value: "ldap", label: "LDAP"},
+                {value: "mail", label: "邮件通知"},
+                {value: "appPush", label: "APP推送"},
+                {value: "allUser", label: "团队管理"}
             ].map((h) => {
                 h.type = 'admin';
                 return h;
@@ -403,7 +400,7 @@ export default {
             }
             this.$emit("on-click", item.value)
         },
-        // 去聊天
+        // 开始聊天
         onGoToChat(type) {
             let dialogId = 0;
             let email = `ai-${type}@bot.system`;
