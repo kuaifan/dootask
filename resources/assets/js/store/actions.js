@@ -3261,27 +3261,22 @@ export default {
                                         break;
                                     case 'update':
                                     case 'readed':
-                                        // 更新、已读回执
-                                        if (state.dialogMsgs.find(({id}) => id == data.id)) {
-                                            dispatch("saveDialogMsg", data)
-                                            // 更新待办
-                                            if (typeof data.todo !== "undefined") {
-                                                dispatch("getDialogTodo", dialog_id)
+                                        const updateMsg = (data, count) => {
+                                            if (state.dialogMsgs.find(({id}) => id == data.id)) {
+                                                dispatch("saveDialogMsg", data)
+                                                // 更新待办
+                                                if (typeof data.todo !== "undefined") {
+                                                    dispatch("getDialogTodo", dialog_id)
+                                                }
+                                                return;
                                             }
-                                        } else if (mode === 'readed') {
-                                            // 消息不存在，重试已读标记
-                                            let readedNum = 0
-                                            const readedTimer = setInterval(_ => {
-                                                if (readedNum > 6) {
-                                                    clearInterval(readedTimer)
-                                                }
-                                                if (state.dialogMsgs.find(({id}) => id == data.id)) {
-                                                    clearInterval(readedTimer)
-                                                    dispatch("saveDialogMsg", data)
-                                                }
-                                                readedNum++
-                                            }, 500)
+                                            if (count <= 5) {
+                                                setTimeout(_ => {
+                                                    updateMsg(data, ++count)
+                                                }, 500);
+                                            }
                                         }
+                                        updateMsg(data, 0);
                                         break;
                                     case 'groupAdd':
                                     case 'groupJoin':
