@@ -402,29 +402,24 @@
             :mask-closable="false">
             <Form ref="todoSettingForm" :model="todoSettingData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="type" :label="$L('当前会话')">
-                    <RadioGroup v-model="todoSettingData.type">
+                    <RadioGroup v-model="todoSettingData.type" @on-change="onTypeChange">
                         <Radio label="all">{{$L('所有成员')}}</Radio>
                         <Radio label="user">{{$L('指定成员')}}</Radio>
-                        <br/>
-                        <Radio v-if="todoSettingData.my_id" label="my">
-                            <div class="dialog-wrapper-todo">
-                                <div>
-                                    <UserAvatar :userid="todoSettingData.my_id" :show-icon="false" :show-name="true"/>
-                                    <Tag>{{$L('自己')}}</Tag>
-                                </div>
-                            </div>
-                        </Radio>
-                        <Radio v-if="todoSettingData.you_id" label="you">
-                            <div class="dialog-wrapper-todo">
-                                <div>
-                                    <UserAvatar :userid="todoSettingData.you_id" :show-icon="false" :show-name="true"/>
-                                </div>
-                            </div>
-                        </Radio>
+                        <Radio label="quick_select" v-show="false"></Radio>
                     </RadioGroup>
+                    <CheckboxGroup v-model="todoSettingData.quick_value" @on-change="onQuickChange">
+                        <Checkbox v-for="userid in todoSettingData.quick_list" :key="userid" :label="userid">
+                            <div class="dialog-wrapper-todo">
+                                <div>
+                                    <UserAvatar :userid="userid" :show-icon="false" :show-name="true"/>
+                                    <Tag v-if="userid==userId">{{$L('自己')}}</Tag>
+                                </div>
+                            </div>
+                        </Checkbox>
+                    </CheckboxGroup>
                 </FormItem>
                 <FormItem prop="userids" :label="$L('指定成员')" v-if="todoSettingData.type === 'user'">
-                    <UserSelect v-model="todoSettingData.userids" :dialog-id="dialogId" :title="$L('选择指定成员')"/>
+                    <UserSelect ref="userSelect" v-model="todoSettingData.userids" :dialog-id="dialogId" :title="$L('选择指定成员')"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -642,6 +637,7 @@ export default {
             todoSettingData: {
                 type: 'all',
                 userids: [],
+                quick_value: [],
             },
 
             todoViewLoad: false,
@@ -2807,18 +2803,33 @@ export default {
             });
         },
 
+        onTypeChange(val) {
+            if (val === 'user') {
+                if (this.todoSettingData.userids.length === 0 && this.todoSettingData.quick_value.length > 0) {
+                    this.todoSettingData.userids = this.todoSettingData.quick_value
+                }
+                this.$nextTick(_ => {
+                    this.$refs.userSelect.onSelection()
+                })
+            }
+            if (val !== 'quick_select') {
+                this.todoSettingData.quick_value = []
+            }
+        },
+
+        onQuickChange(val) {
+            this.todoSettingData.type = val.length === 0 ? 'all' : 'quick_select';
+        },
+
         onTodo(type) {
             if (this.operateVisible) {
                 return
             }
             if (type === 'submit') {
                 const todoData = $A.cloneJSON(this.todoSettingData)
-                if (todoData.type === 'my') {
+                if (todoData.type === 'quick_select') {
                     todoData.type = 'user'
-                    todoData.userids = [todoData.my_id]
-                } else if (todoData.type === 'you') {
-                    todoData.type = 'user'
-                    todoData.userids = [todoData.you_id]
+                    todoData.userids = todoData.quick_value
                 } else if (todoData.type === 'user' && $A.arrayLength(todoData.userids) === 0) {
                     $A.messageWarning("选择指定成员");
                     return
@@ -2833,13 +2844,30 @@ export default {
                     this.todoSettingLoad--
                 })
             } else {
-                const youId = this.dialogData.dialog_user?.userid
+                const quickList = {}
+                quickList[this.userId] = this.userId
+                const userid = this.dialogData.dialog_user?.userid
+                if (userid && userid != this.userId && !this.dialogData.bot) {
+                    quickList[userid] = userid
+                }
+                if (this.operateItem.type === 'text') {
+                    const atReg = /<span class="mention user" data-id="(\d+)">([^<]+)<\/span>/g
+                    const atList = this.operateItem.msg.text.match(atReg)
+                    if (atList) {
+                        atList.forEach(item => {
+                            const userid = parseInt(item.replace(atReg, '$1'))
+                            if (userid && userid != this.userId) {
+                                quickList[userid] = userid
+                            }
+                        })
+                    }
+                }
                 this.todoSettingData = {
                     type: 'all',
                     userids: [],
                     msg_id: this.operateItem.id,
-                    my_id: this.userId,
-                    you_id: youId != this.userId && !this.dialogData.bot ? youId : 0,
+                    quick_value: [],
+                    quick_list: Object.values(quickList),
                 }
                 if (this.operateItem.todo) {
                     $A.modalConfirm({
