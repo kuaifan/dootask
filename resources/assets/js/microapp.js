@@ -1,9 +1,5 @@
 import microApp from '@micro-zoe/micro-app'
 
-const getUrl = (url) => {
-    return import.meta.env.VITE_OKR_WEB_URL || $A.apiUrl(url);
-}
-
 export default function() {
     let urls  = "";
     let route  = "/";
@@ -24,24 +20,15 @@ export default function() {
             return code
         }
     }
-    
+
     // 微应用名称
     modules["micro-app"] = [obj]
     modules["okr-details"] = [obj]
-    
+
     // 微应用
     microApp.start({
         plugins: {
             modules: modules
         }
     })
-   
-    //预加载 
-    microApp.preFetch([
-        { 
-            name: 'micro-app', 
-            url: getUrl("../apps/okr"),
-            disableSandbox: true
-        }
-    ])
 }

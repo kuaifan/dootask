@@ -580,7 +580,7 @@ export default {
                         $A.modalError({
                             content: msg,
                             onOk: _ => {
-                                this.$refs.code.focus()
+                                this.$refs.code?.focus()
                             }
                         })
                     }

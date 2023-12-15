@@ -56,32 +56,20 @@ export default {
         return {
             showSpin: false,
             loading: false,
-            appUrl: '',
             appData: {},
         }
-    },
-    deactivated() {
     },
     mounted() {
         this.showSpin = true;
         this.appData = this.getAppData
+
+        console.log(this.url)
     },
     watch: {
         loading(val){
             if(val){
                 this.showSpin = true;
             }
-        },
-        url(val) {
-            this.loading = true;
-            this.$nextTick(() => {
-                this.loading = false;
-                let url = $A.apiUrl(val)
-                if (url.indexOf('http') == -1) {
-                    url = window.location.origin + url
-                }
-                this.appUrl =  import.meta.env.VITE_OKR_WEB_URL || url
-            })
         },
         path(val) {
             this.appData = { path: val }
@@ -166,7 +154,7 @@ export default {
             window.dispatchEvent(new Event('apps-unmount'));
         },
         handleError(e) {
-            console.error("子应用加载出错了",e.detail.error)
+            // console.error("子应用加载出错了",e.detail.error)
         },
         handleDataChange(e) {
             // console.log('来自子应用 child-vite 的数据:', e.detail.data)
