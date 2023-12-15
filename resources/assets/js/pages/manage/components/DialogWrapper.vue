@@ -148,7 +148,7 @@
         <VirtualList
             ref="scroller"
             class="dialog-scroller scrollbar-virtual"
-            item-inactive-class="inactive"
+            active-prefix="item"
             :class="scrollerClass"
             :data-key="'id'"
             :data-sources="allMsgs"
@@ -974,9 +974,6 @@ export default {
             }))
             if (item.label === '{UNREAD}') {
                 item.label = this.$L(`未读消息${unread}条`)
-                item.is_unread = unread > 1
-            } else {
-                item.is_unread = false
             }
             return item
         },
@@ -1217,8 +1214,13 @@ export default {
             }
         },
 
-        positionMsg(msg) {
-            if (msg && msg.is_unread === true) {
+        positionMsg() {
+            const {unread, position_msgs} = this.dialogData
+            if (!$A.isArray(position_msgs) || unread < 2) {
+                return
+            }
+            const msg = position_msgs.find(item => item.label === '{UNREAD}')
+            if (msg) {
                 this.unreadMsgId = msg.msg_id
             }
         }

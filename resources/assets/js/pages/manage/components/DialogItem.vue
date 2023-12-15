@@ -170,10 +170,7 @@ export default {
             if (!this.windowActive) {
                 return;
             }
-            if (!this.$el) {
-                return;
-            }
-            if (this.$el.parentNode.classList.contains('inactive')) {
+            if (!this.$el?.parentNode.classList.contains('item-enter')) {
                 return;
             }
             // 标记已读
