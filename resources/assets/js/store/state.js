@@ -98,7 +98,6 @@ export default {
     userId: 0,
     userToken: '',
     userIsAdmin: false,
-    userOnline: {},
     userAvatar: {},
 
     // 会话聊天

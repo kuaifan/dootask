@@ -663,18 +663,6 @@ export default {
     },
 
     /**
-     * 更新会员在线
-     * @param state
-     * @param info {userid,online}
-     */
-    saveUserOnlineStatus({state}, info) {
-        const {userid, online} = info;
-        if (state.userOnline[userid] !== online) {
-            state.userOnline = Object.assign({}, state.userOnline, {[userid]: online});
-        }
-    },
-
-    /**
      * 获取用户基础信息
      * @param state
      * @param dispatch
@@ -700,7 +688,7 @@ export default {
             if (temp && time - temp._time <= 30) {
                 setTimeout(() => {
                     state.cacheUserActive = Object.assign(temp, {__:Math.random()});
-                    Store.set('cacheUserActive', temp);
+                    Store.set('userActive', {type: 'cache', data: temp});
                 }, timeout += 5);
                 return false;
             }
@@ -752,7 +740,7 @@ export default {
             state.cacheUserBasic.push(data)
         }
         state.cacheUserActive = Object.assign(data, {__:Math.random()});
-        Store.set('cacheUserActive', data);
+        Store.set('userActive', {type: 'cache', data});
         //
         $A.IDBSave("cacheUserBasic", state.cacheUserBasic)
     },
@@ -3168,7 +3156,7 @@ export default {
                     break
 
                 case "line":
-                    dispatch("saveUserOnlineStatus", msgDetail.data);
+                    Store.set('userActive', {type: 'line', data: msgDetail.data});
                     break
 
                 case "msgStream":

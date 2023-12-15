@@ -62,9 +62,21 @@ export default {
         }
     },
 
+    mounted() {
+        if (this.$listeners['update:online']) {
+            this.$watch('userid', () => {
+                this.updateOnline()
+            })
+            this.$watch('user.online', () => {
+                this.updateOnline()
+            })
+            this.updateOnline()
+        }
+    },
+
     computed: {
         showMenu() {
-            if (this.userId == this.userid) {
+            if (this.$store.state.userId == this.userid) {
                 return false
             }
             if (this.user.delete_at || this.user.disable_at) {
@@ -88,6 +100,39 @@ export default {
                 this.userResult(info);
             }
             this.user = info;
+        },
+
+        updateOnline() {
+            if (!this.user) {
+                return
+            }
+            if (this.user.online || this.$store.state.userId === this.userid) {
+                this.$emit('update:online', true)
+            } else {
+                const now = $A.Time()
+                const line = $A.Time(this.user.line_at)
+                const seconds = now - line
+                let stats = '最后在线于很久以前';
+                if (seconds < 60) {
+                    stats = `最后在线于刚刚`
+                } else if (seconds < 3600) {
+                    stats = `最后在线于 ${Math.floor(seconds / 60)} 分钟前`
+                } else if (seconds < 3600 * 6) {
+                    stats = `最后在线于 ${Math.floor(seconds / 3600)} 小时前`
+                } else {
+                    const nowYmd = $A.formatDate('Y-m-d', now)
+                    const lineYmd = $A.formatDate('Y-m-d', line)
+                    const lineHi = $A.formatDate('H:i', line)
+                    if (nowYmd === lineYmd) {
+                        stats = `最后在线于今天 ${lineHi}`
+                    } else if ($A.formatDate('Y-m-d', now - 86400) === lineYmd) {
+                        stats = `最后在线于昨天 ${lineHi}`
+                    } else if (seconds < 3600 * 24 * 365) {
+                        stats = `最后在线于 ${lineYmd}`
+                    }
+                }
+                this.$emit('update:online', this.$L(stats))
+            }
         }
     }
 }

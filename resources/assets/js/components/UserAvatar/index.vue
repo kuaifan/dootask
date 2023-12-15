@@ -36,7 +36,7 @@ export default {
     mounted() {
         this.getData();
         //
-        this.subscribe = Store.subscribe('cacheUserActive', (data) => {
+        this.subscribe = Store.subscribe('userActive', ({data}) => {
             if (data.userid == this.userid) {
                 this.setUser(data)
             }
@@ -136,13 +136,14 @@ export default {
             return value || 'D';
         }
     },
+    watch: {
+        userid() {
+            this.getData();
+        }
+    },
     methods: {
         getData() {
             if (!this.$store.state.userId) {
-                return;
-            }
-            if (this.userid == this.$store.state.userId) {
-                this.setUser(this.$store.state.userInfo);
                 return;
             }
             const tempUser = this.$store.state.cacheUserBasic.find(({userid}) => userid == this.userid);
@@ -153,6 +154,13 @@ export default {
         },
 
         setUser(info) {
+            try {
+                if (this.user && this.user.userimg != info.userimg && this.$refs.avatar) {
+                    this.$refs.avatar.$data.isImageExist = true;
+                }
+            } catch (e) {
+                //
+            }
             this.user = info;
 
             if (typeof this.userResult === "function") {
