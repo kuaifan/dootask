@@ -170,6 +170,10 @@ export default {
             //
             let location;
             switch (path) {
+                case 'project':
+                    location = {name: 'manage-project', params: {projectId: 'all'}};
+                    break;
+
                 case 'dialog':
                     location = {name: 'manage-messenger', params: {dialogAction: 'dialog'}};
                     if (this.routeName === 'manage-messenger') {
