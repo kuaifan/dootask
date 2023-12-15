@@ -62,8 +62,6 @@ export default {
     mounted() {
         this.showSpin = true;
         this.appData = this.getAppData
-
-        console.log(this.url)
     },
     watch: {
         loading(val){
