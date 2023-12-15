@@ -153,12 +153,8 @@ export default {
             // 卸载
             window.dispatchEvent(new Event('apps-unmount'));
         },
-        handleError(e) {
-            // console.error("子应用加载出错了",e.detail.error)
-        },
-        handleDataChange(e) {
-            // console.log('来自子应用 child-vite 的数据:', e.detail.data)
-        }
+        handleError(e) { },
+        handleDataChange(e) { }
     }
 }
 </script>
