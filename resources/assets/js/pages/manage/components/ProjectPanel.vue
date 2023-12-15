@@ -175,35 +175,37 @@
                                         <TaskMenu :ref="`taskMenu_${item.id}`" :task="item" icon="ios-more"/>
                                     </div>
                                 </div>
-                                <div v-if="item.desc" class="task-desc"><pre v-html="item.desc"></pre></div>
-                                <div v-if="item.task_tag.length > 0" class="task-tags">
-                                    <Tag v-for="(tag, keyt) in item.task_tag" :key="keyt" :color="tag.color">{{tag.name}}</Tag>
-                                </div>
-                                <div class="task-users">
-                                    <ul>
-                                        <li v-for="(user, keyu) in ownerUser(item.task_user)" :key="keyu">
-                                            <UserAvatar :userid="user.userid" size="32" :borderWitdh="2" :borderColor="item.color"/>
-                                        </li>
-                                        <li v-if="ownerUser(item.task_user).length === 0" class="no-owner">
-                                            <Button type="primary" size="small" ghost @click.stop="openTask(item, true)">{{$L('领取任务')}}</Button>
-                                        </li>
-                                    </ul>
-                                    <div v-if="item.file_num > 0" class="task-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>
-                                    <div v-if="item.msg_num > 0" class="task-icon">{{item.msg_num}}<Icon type="ios-chatbubbles-outline" /></div>
-                                </div>
-                                <div class="task-progress">
-                                    <div v-if="item.sub_num > 0" class="task-sub-num">{{item.sub_complete}}/{{item.sub_num}}</div>
-                                    <Progress :percent="item.percent" :stroke-width="6" />
-                                    <ETooltip
-                                        v-if="item.end_at"
-                                        :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
-                                        :disabled="$isEEUiApp || windowTouch"
-                                        :open-delay="600"
-                                        :content="item.end_at">
-                                        <div v-if="!item.complete_at"><i class="taskfont">&#xe71d;</i>{{ expiresFormat(item.end_at) }}</div>
-                                    </ETooltip>
-                                </div>
-                                <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
+                                <template v-if="!item.complete_at">
+                                    <div v-if="item.desc" class="task-desc"><pre v-html="item.desc"></pre></div>
+                                    <div v-if="item.task_tag.length > 0" class="task-tags">
+                                        <Tag v-for="(tag, keyt) in item.task_tag" :key="keyt" :color="tag.color">{{tag.name}}</Tag>
+                                    </div>
+                                    <div class="task-users">
+                                        <ul>
+                                            <li v-for="(user, keyu) in ownerUser(item.task_user)" :key="keyu">
+                                                <UserAvatar :userid="user.userid" size="32" :borderWitdh="2" :borderColor="item.color"/>
+                                            </li>
+                                            <li v-if="ownerUser(item.task_user).length === 0" class="no-owner">
+                                                <Button type="primary" size="small" ghost @click.stop="openTask(item, true)">{{$L('领取任务')}}</Button>
+                                            </li>
+                                        </ul>
+                                        <div v-if="item.file_num > 0" class="task-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>
+                                        <div v-if="item.msg_num > 0" class="task-icon">{{item.msg_num}}<Icon type="ios-chatbubbles-outline" /></div>
+                                    </div>
+                                    <div class="task-progress">
+                                        <div v-if="item.sub_num > 0" class="task-sub-num">{{item.sub_complete}}/{{item.sub_num}}</div>
+                                        <Progress :percent="item.percent" :stroke-width="6" />
+                                        <ETooltip
+                                            v-if="item.end_at"
+                                            :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
+                                            :disabled="$isEEUiApp || windowTouch"
+                                            :open-delay="600"
+                                            :content="item.end_at">
+                                            <div v-if="!item.complete_at"><i class="taskfont">&#xe71d;</i>{{ expiresFormat(item.end_at) }}</div>
+                                        </ETooltip>
+                                    </div>
+                                    <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
+                                </template>
                             </div>
                             <div class="task-item additem">
                                 <TaskAddSimple
