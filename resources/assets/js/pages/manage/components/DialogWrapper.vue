@@ -159,6 +159,7 @@
             :estimate-size="dialogData.type=='group' ? 105 : 77"
             :keeps="25"
             :disabled="scrollDisabled"
+            @activity="onActivity"
             @scroll="onScroll"
             @range="onRange"
             @totop="onPrevPage"
@@ -961,14 +962,21 @@ export default {
         },
 
         positionMsg() {
-            const {unread, position_msgs} = this.dialogData
+            const {mention, unread, position_msgs} = this.dialogData
             if (!position_msgs || position_msgs.length === 0 || unread === 0 || this.allMsgs.length === 0) {
                 return null
             }
-            const item = $A.cloneJSON(position_msgs[0])
+            const item = $A.cloneJSON(position_msgs.find(item => {
+                if (mention === 0) {
+                    return item.label === '{UNREAD}'
+                }
+                return true
+            }))
             if (item.label === '{UNREAD}') {
-                item.is_unread = unread > 1
                 item.label = this.$L(`未读消息${unread}条`)
+                item.is_unread = unread > 1
+            } else {
+                item.is_unread = false
             }
             return item
         },
@@ -998,7 +1006,6 @@ export default {
                     this.msgNew = 0
                     this.msgType = ''
                     this.searchShow = false
-                    this.msgReady = false
                     this.unreadMsgId = 0
                     this.toBottomReGetMsg = false
                     //
@@ -1012,7 +1019,6 @@ export default {
                         msg_type: this.msgType,
                     }).then(_ => {
                         this.openId = dialog_id;
-                        this.onMsgReady()
                         setTimeout(this.onSearchMsgId, 100)
                     }).catch(_ => {});
                     //
@@ -1463,21 +1469,6 @@ export default {
                 }
             }
             return true
-        },
-
-        onMsgReady() {
-            let count = 0;
-            let offsetA = this.scrollInfo().offset
-            const func = () => {
-                const offsetB = this.scrollInfo().offset
-                if (++count > 10 || offsetA == offsetB) {
-                    this.msgReady = true
-                    return
-                }
-                offsetA = offsetB
-                setTimeout(func, 200);
-            }
-            setTimeout(func, 200);
         },
 
         onSearchMsgId() {
@@ -2251,6 +2242,10 @@ export default {
             })
         },
 
+        onActivity(activity) {
+            this.msgReady = !activity
+        },
+
         onScroll(event) {
             if (this.operatePreventScroll === 0) {
                 this.operateVisible = false;
@@ -2987,8 +2982,19 @@ export default {
             if (this.positionLoad > 0) {
                 return;
             }
-            //
             this.positionLoad++
+            //
+            const positionMsgs = []
+            this.dialogData.position_msgs.forEach(item => {
+                if (!this.allMsgs.find(({id}) => id == item.msg_id)?.read_at) {
+                    positionMsgs.push(item)
+                }
+            })
+            this.$store.dispatch("saveDialog", {
+                id: this.dialogData.id,
+                position_msgs: positionMsgs
+            });
+            //
             const {msg_id} = this.positionMsg;
             this.$store.dispatch("dialogMsgMark", {
                 dialog_id: this.dialogId,

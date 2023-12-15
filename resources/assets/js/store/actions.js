@@ -2315,7 +2315,6 @@ export default {
                 if (nowTime < originalTime) {
                     typeof data.unread !== "undefined" && delete data.unread
                     typeof data.mention !== "undefined" && delete data.mention
-                    typeof data.position_msgs !== "undefined" && delete data.position_msgs
                 }
                 state.cacheDialogs.splice(index, 1, Object.assign({}, original, data));
             } else {

@@ -176,8 +176,17 @@ export default {
             if (this.$el.parentNode.classList.contains('inactive')) {
                 return;
             }
-            //
+            // 标记已读
             this.$store.dispatch("dialogMsgRead", this.source);
+            // 阅读最早未读消息之后如何还有未读信息则标记为已读
+            if (this.isUnreadStart
+                && $A.getDialogUnread(this.dialogData, true) > 0) {
+                this.$store.dispatch("dialogMsgMark", {
+                    dialog_id: this.source.dialog_id,
+                    type: 'read',
+                    after_msg_id: this.source.id,
+                })
+            }
         },
 
         formatTodoUser(data) {
