@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.32.52]
+
+### Bug Fixes
+
+- 会员头像显示错乱
+
+### Performance
+
+- 优化输入空换行时的兼容问题
+- 优化设置页面
+- 优化应用中心菜单排序
+- 更新录音插件
+- 更换移动任务图标
+- 优化设置返回跟滑动返回冲突
+- 优化键盘设置
+- 优化清除缓存数据
+- 优化阅读消息列表机制
+- 优化项目页面任务加载速度
+
 ## [0.32.35]
 
 ### Bug Fixes
@@ -16,6 +35,9 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
+- 优化消息阅读逻辑
+- 优化未读消息机制
+- 优化重连时消息列表跳回第一页的情况
 - 优化未读消息机制
 - 优化消息更新太快导致不更新数据的情况
 - 机器人添加清空上下文菜单

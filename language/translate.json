@@ -18610,5 +18610,27 @@
         "de": "Sie haben eine neue nachricht",
         "fr": "Voici les nouveaux messages",
         "id": "Berikut ini untuk informasi baru"
+    },
+    {
+        "key": "发送按钮",
+        "zh": "",
+        "zh-CHT": "發送按鈕",
+        "en": "Send button",
+        "ko": "보내기 단추",
+        "ja": "送信ボタンです",
+        "de": "Knopf Senden.",
+        "fr": "Le bouton envoyer",
+        "id": "Kirim tombol"
+    },
+    {
+        "key": "开启后，发送消息时键盘上的发送按钮会被替换成换行",
+        "zh": "",
+        "zh-CHT": "開啓後，發送消息時鍵盤上的發送按鈕會被替換成換行",
+        "en": "When enabled, the Send button on the keyboard is replaced with line feed when sending messages",
+        "ko": "켜지면 메시지를 보낼 때 키보드의 전송 단추는 줄 바꿈으로 대체된다",
+        "ja": "オンにすると、メッセージを送るときにキーボードの送信ボタンが改行に置き換えられます。",
+        "de": "Ist die nachricht eingeschaltet, wird der knopf Senden über der tastatur durch zeilenwechsel ersetzt",
+        "fr": "Une fois activé, le bouton envoyer sur le clavier lors de l’envoi du message est remplacé par un saut de ligne",
+        "id": "Jika diaktifkan, tombol pengirim di keyboard saat mengirim pesan diganti dengan baris ganti"
     }
 ]
