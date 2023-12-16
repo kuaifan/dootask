@@ -115,7 +115,7 @@
                     class="chat-send"
                     :class="sendClass"
                     v-touchmouse="clickSend"
-                    v-longpress="{callback: longSend, delay: 300}">
+                    v-longpress="{callback: onShowMenu, delay: 300}">
                     <EPopover
                         v-model="showMenu"
                         :visibleArrow="false"
@@ -447,7 +447,7 @@ export default {
         },
 
         sendClass() {
-            if (this.value) {
+            if (this.filterInvalidLine(this.value)) {
                 return 'sender';
             }
             if (this.recordReady) {
@@ -1032,7 +1032,7 @@ export default {
                         return;
                     }
                     if (event.button === 2){
-                        this.showMenu = true;
+                        this.onShowMenu()
                     }
                     break;
 
@@ -1057,7 +1057,7 @@ export default {
             }
         },
 
-        longSend() {
+        onShowMenu() {
             if (this.sendClass === 'recorder' || !this.sendMenu) {
                 return;
             }
