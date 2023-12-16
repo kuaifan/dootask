@@ -133,15 +133,18 @@ export default {
             }
             // 微应用
             let microAppIsVisible = false;
-            microApp.setGlobalData({ type:'modalVisible', callback: (appName, isVisible) => {
-                if(isVisible){
-                    microAppIsVisible = true;
+            microApp.setGlobalData({
+                type: 'modalVisible',
+                callback: (appName, isVisible) => {
+                    if (isVisible) {
+                        microAppIsVisible = true;
+                    }
                 }
-            }})
-            if(microAppIsVisible){
+            })
+            if (microAppIsVisible) {
                 return true;
             }
-            // 
+            //
             return false;
         },
 
@@ -149,32 +152,36 @@ export default {
             // 微应用通知
             let microAppIsAccept = false;
             microApp.setGlobalData({
-                type:'route', 
+                type: 'route',
                 action: 'back',
                 route: this.$route,
                 callback: (appName, isAccept) => {
-                    if(isAccept){
+                    if (isAccept) {
                         microAppIsAccept = true;
                     }
                 }
             })
-            if(microAppIsAccept){
+            if (microAppIsAccept) {
                 return;
             }
-            // 
+            //
             if (this.$Modal.removeLast()) {
                 return;
             }
-            if (this.fileFolderId > 0) {
-                const file = this.fileLists.find(({id, permission}) => id == this.fileFolderId && permission > -1)
-                if (file) {
-                    const prevFile = this.fileLists.find(({id, permission}) => id == file.pid && permission > -1)
-                    if (prevFile) {
-                        this.goForward({name: 'manage-file', params: {folderId: prevFile.id, fileId: null}});
-                        return;
+            if (this.routeName === 'manage-file') {
+                if (this.fileFolderId > 0) {
+                    const file = this.fileLists.find(({id, permission}) => id == this.fileFolderId && permission > -1)
+                    if (file) {
+                        const prevFile = this.fileLists.find(({id, permission}) => id == file.pid && permission > -1)
+                        if (prevFile) {
+                            this.goForward({name: 'manage-file', params: {folderId: prevFile.id, fileId: null}});
+                            return;
+                        }
                     }
+                    this.goForward({name: 'manage-file'});
+                    return;
                 }
-                this.goForward({name: 'manage-file'});
+                this.goForward({name: 'manage-application'}, true);
                 return;
             }
             if (this.routeName === 'manage-messenger') {
