@@ -405,11 +405,8 @@ export default {
         },
 
         editorStyle() {
-            const {wrapperWidth, editorHeight, value} = this;
+            const {wrapperWidth, editorHeight} = this;
             const style = {};
-            if (value.length < 10) {
-                style.height = '30px';
-            }
             if (wrapperWidth > 0
                 && editorHeight > 0
                 && (wrapperWidth < 280 || editorHeight > 40)) {
@@ -515,7 +512,7 @@ export default {
                     this.quill.setText('')
                 }
             }
-            this.$store.dispatch("saveDialogDraft", {id: this.dialogId, extra_draft_content: val})
+            this.$store.dispatch("saveDialogDraft", {id: this.dialogId, extra_draft_content: this.filterInvalidLine(val)})
         },
 
         // Watch disabled change
@@ -752,8 +749,6 @@ export default {
                         this.quill.deleteText(this.maxlength, this.quill.getLength());
                     }
                     let html = this.$refs.editor.firstChild.innerHTML
-                    html = html.replace(/^(<p>\s*<\/p>)+|(<p>\s*<\/p>)+$/gi, '')
-                    html = html.replace(/^(<p><br\/*><\/p>)+|(<p><br\/*><\/p>)+$/gi, '')
                     this.updateEmojiQuick(html)
                     this._content = html
                     this.$emit('input', this._content)
@@ -1071,6 +1066,9 @@ export default {
 
         onSend(type) {
             setTimeout(_ => {
+                if (this.filterInvalidLine(this.value) === '') {
+                    return
+                }
                 this.hidePopover('send')
                 this.rangeIndex = 0
                 this.clearSearchKey()
@@ -1658,6 +1656,11 @@ export default {
                 }
             }
             return false
+        },
+
+        filterInvalidLine(content) {
+            let value = (content + '').replace(/^(<p>\s*<\/p>)+|(<p>\s*<\/p>)+$/gi, '')
+            return value.replace(/^(<p><br\/*><\/p>)+|(<p><br\/*><\/p>)+$/gi, '')
         },
     }
 }
