@@ -49,11 +49,11 @@
                             </EDropdownItem>
                             <EDropdownItem command="move">
                                 <div class="item">
-                                    <Icon type="md-move" />{{$L('移动')}}
+                                    <i class="taskfont movefont">&#xe7fc;</i>{{$L('移动')}}
                                 </div>
                             </EDropdownItem>
                             <EDropdownItem command="remove">
-                                <div class="item hover-del">
+                                <div class="item">
                                     <Icon type="md-trash" />{{$L('删除')}}
                                 </div>
                             </EDropdownItem>
