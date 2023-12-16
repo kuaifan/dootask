@@ -2,10 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.32.52]
+## [0.32.55]
 
 ### Bug Fixes
 
+- 聊天输入框内容为空时仍可以长安发送显示发送菜单
+- 文件页移动端滑动返回失败情况
 - 会员头像显示错乱
 
 ### Performance
