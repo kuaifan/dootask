@@ -1,7 +1,7 @@
 <template>
     <div class="setting-item submit">
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
-            <template v-if="this.$Electron">
+            <template v-if="$Electron">
                 <FormItem :label="$L('截图快捷键')" prop="screenshot_key">
                     <div class="input-box">
                         {{mateName}}<div class="input-box-push">+</div>Shift<div class="input-box-push">+</div><Input class="input-box-key" v-model="formData.screenshot_key" :maxlength="2"/>
@@ -28,15 +28,13 @@
                     </div>
                 </FormItem>
             </template>
-            <template>
-                <FormItem :label="$L('使用独立的发送按钮')" prop="anonMessage">
-                    <RadioGroup v-model="formData.separate_send_button">
-                        <Radio label="open">{{$L('开启')}}</Radio>
-                        <Radio label="close">{{$L('关闭')}}</Radio>
-                    </RadioGroup>
-                    <div class="form-tip">{{$L('开启后，键盘上的发送按钮会被替换成换行')}}</div>
-                </FormItem>
-            </template>
+            <FormItem :label="$L('发送按钮')" prop="anonMessage">
+                <RadioGroup v-model="formData.separate_send_button">
+                    <Radio label="open">{{$L('开启')}}</Radio>
+                    <Radio label="close">{{$L('关闭')}}</Radio>
+                </RadioGroup>
+                <div class="form-tip">{{$L('开启后，发送消息时键盘上的发送按钮会被替换成换行')}}</div>
+            </FormItem>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('保存')}}</Button>
@@ -69,7 +67,7 @@ export default {
 
             formData: {
                 screenshot_key: '',
-                separate_send_button: 'close'
+                separate_send_button: 'open'
             },
 
             ruleData: {
@@ -102,26 +100,19 @@ export default {
         initData() {
             this.formData = Object.assign({
                 screenshot_key: '',
-                separate_send_button: 'close',
+                separate_send_button: 'open',
             }, $A.jsonParse(window.localStorage.getItem("__keyboard:data__")) || {});
             //
             this.formData_bak = $A.cloneJSON(this.formData);
-        },
-
-        onKeydown({key, keyCode}) {
-            if (keyCode !== 8) {
-                key = /^[A-Za-z0-9]?$/.test(key) ? key.toUpperCase() : ""
-                if (key) {
-                    this.formData.screenshot_key = key
-                }
-            }
         },
 
         submitForm() {
             this.$refs.formData.validate((valid) => {
                 if (valid) {
                     window.localStorage.setItem("__keyboard:data__", $A.jsonStringify(this.formData));
-                    $A.bindScreenshotKey(this.formData);
+                    if (this.$Electron) {
+                        $A.bindScreenshotKey(this.formData);
+                    }
                     $A.messageSuccess('保存成功');
                 }
             })

@@ -500,7 +500,7 @@ export default {
         },
 
         separateSendButton() {
-            return $A.jsonParse(window.localStorage.getItem("__keyboard:data__"))?.separate_send_button === 'open';
+            return $A.jsonParse(window.localStorage.getItem("__keyboard:data__"))?.separate_send_button !== 'close';
         },
 
     },
