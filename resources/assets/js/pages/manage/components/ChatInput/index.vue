@@ -827,6 +827,8 @@ export default {
                         type: "mp3",
                         bitRate: 64,
                         sampleRate: 32000,
+                        audioTrackSet: null,
+                        disableEnvInFix: false,
                         onProcess: (buffers, powerLevel, duration, sampleRate, newBufferIdx, asyncEnd) => {
                             this.recordWave?.input(buffers[buffers.length - 1], powerLevel, sampleRate);
                             this.recordDuration = duration;
