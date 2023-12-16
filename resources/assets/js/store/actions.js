@@ -630,7 +630,7 @@ export default {
      * @param info
      * @returns {Promise<unknown>}
      */
-    saveUserInfo({state, dispatch}, info) {
+    saveUserInfoBase({state, dispatch}, info) {
         return new Promise(async resolve => {
             const userInfo = $A.cloneJSON(info);
             userInfo.userid = $A.runNum(userInfo.userid);
@@ -652,6 +652,21 @@ export default {
                 dirUrl: $A.apiUrl('../api/file/content/upload') + `?token=${state.userToken}`,
                 chatUrl: $A.apiUrl('../api/dialog/msg/sendfiles') + `?token=${state.userToken}`,
             });
+            //
+            resolve()
+        })
+    },
+
+    /**
+     * 更新会员信息
+     * @param state
+     * @param dispatch
+     * @param info
+     * @returns {Promise<unknown>}
+     */
+    saveUserInfo({state, dispatch}, info) {
+        return new Promise(async resolve => {
+            await dispatch("saveUserInfoBase", info);
             //
             dispatch("getBasicData", null);
             if (state.userId > 0) {
@@ -851,7 +866,7 @@ export default {
                 await $A.IDBSet("cacheEmojis", state.cacheEmojis);
 
                 // userInfo
-                dispatch("saveUserInfo", $A.isJson(userInfo) ? userInfo : state.userInfo).then(resolve);
+                dispatch("saveUserInfoBase", $A.isJson(userInfo) ? userInfo : state.userInfo).then(resolve);
             } catch (e) {
                 resolve()
             }
