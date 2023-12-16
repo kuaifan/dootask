@@ -310,17 +310,22 @@ export default {
                 {value: "signin", label: "签到"},
                 {value: "meeting", label: "会议"}
             ];
-            // wap模式
-            const appApplyList = this.windowOrientation != 'portrait' ? [
-                {value: "scan", label: "扫一扫", show: $A.isEEUiApp},
-            ] : [
-                {value: "calendar", label: "日历"},
-                {value: "file", label: "文件"},
-                {value: "addProject", label: "创建项目"},
-                {value: "addTask", label: "添加任务"},
-                {value: "scan", label: "扫一扫", show: $A.isEEUiApp},
-                {value: "setting", label: "设置"}
-            ];
+            if (this.windowOrientation == 'landscape') {
+                // 横屏模式
+                applyList.push({value: "scan", label: "扫一扫", show: $A.isEEUiApp})
+            } else {
+                // 竖屏模式
+                applyList.unshift(...[
+                    {value: "calendar", label: "日历"},
+                    {value: "file", label: "文件"}
+                ])
+                applyList.push(...[
+                    {value: "addProject", label: "创建项目"},
+                    {value: "addTask", label: "添加任务"},
+                    {value: "scan", label: "扫一扫", show: $A.isEEUiApp},
+                    {value: "setting", label: "设置"}
+                ])
+            }
             // 管理员
             const adminApplyList = !this.userIsAdmin ? [] : [
                 {value: "okrAnalyze", label: "OKR结果"},
@@ -333,7 +338,7 @@ export default {
                 return h;
             });
             //
-            this.applyList = [...applyList, ...appApplyList, ...adminApplyList];
+            this.applyList = [...applyList, ...adminApplyList];
         },
         getLogoPath(name) {
             name = name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
@@ -410,10 +415,10 @@ export default {
                 }
             })
             if (dialogId) {
-                if (this.windowOrientation == 'portrait') {
-                    this.$store.dispatch("openDialog", dialogId)
-                } else {
+                if (this.windowOrientation == 'landscape') {
                     this.goForward({ name: 'manage-messenger', params: { dialog_id: dialogId } });
+                } else {
+                    this.$store.dispatch("openDialog", dialogId)
                 }
                 this.aibotShow = false;
             } else {
@@ -428,7 +433,7 @@ export default {
                         return;
                     }
                     this.$store.dispatch("openDialogUserid", data[0]?.dialog_user.userid).then(_ => {
-                        if (this.windowOrientation != 'portrait') {
+                        if (this.windowOrientation == 'landscape') {
                             this.goForward({ name: 'manage-messenger' })
                         }
                         this.aibotShow = false;
