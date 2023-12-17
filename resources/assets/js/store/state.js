@@ -77,6 +77,9 @@ export default {
     // ServerUrl
     cacheServerUrl: "",
 
+    // keyboard
+    cacheKeyboard: {},
+
     // Ajax
     ajaxWsReady: false,
     ajaxWsListener: [],

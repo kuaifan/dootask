@@ -28,12 +28,20 @@
                     </div>
                 </FormItem>
             </template>
-            <FormItem :label="$L('发送按钮')" prop="anonMessage">
-                <RadioGroup v-model="formData.separate_send_button">
-                    <Radio label="open">{{$L('开启')}}</Radio>
-                    <Radio label="close">{{$L('关闭')}}</Radio>
+            <FormItem v-if="$isEEUiApp" :label="$L('发送按钮')">
+                <RadioGroup v-model="formData.send_button_app">
+                    <Radio label="button">{{$L('开启')}}</Radio>
+                    <Radio label="enter">{{$L('关闭')}}</Radio>
                 </RadioGroup>
                 <div class="form-tip">{{$L('开启后，发送消息时键盘上的发送按钮会被替换成换行')}}</div>
+            </FormItem>
+            <FormItem v-else-if="$Electron" :label="$L('发送按钮')">
+                <RadioGroup v-model="formData.send_button_desktop" vertical>
+                    <Radio label="enter">Enter {{$L('发送')}}</Radio>
+                    <Radio label="button" class="input-box">
+                        {{mateName}}<div class="input-box-push">+</div>Enter {{$L('发送')}}
+                    </Radio>
+                </RadioGroup>
             </FormItem>
         </Form>
         <div class="setting-footer">
@@ -67,7 +75,8 @@ export default {
 
             formData: {
                 screenshot_key: '',
-                separate_send_button: 'open'
+                send_button_app: '',
+                send_button_desktop: '',
             },
 
             ruleData: {
@@ -98,29 +107,26 @@ export default {
 
     methods: {
         initData() {
-            this.formData = Object.assign({
-                screenshot_key: '',
-                separate_send_button: 'open',
-            }, $A.jsonParse(window.localStorage.getItem("__keyboard:data__")) || {});
-            //
+            this.formData = $A.cloneJSON(this.$store.state.cacheKeyboard);
             this.formData_bak = $A.cloneJSON(this.formData);
         },
 
         submitForm() {
             this.$refs.formData.validate((valid) => {
                 if (valid) {
-                    window.localStorage.setItem("__keyboard:data__", $A.jsonStringify(this.formData));
-                    if (this.$Electron) {
-                        $A.bindScreenshotKey(this.formData);
-                    }
-                    $A.messageSuccess('保存成功');
+                    this.$store.dispatch('handleKeyboard', this.formData).then((data) => {
+                        if (this.$Electron) {
+                            $A.bindScreenshotKey(data);
+                        }
+                        $A.messageSuccess('保存成功');
+                    });
                 }
             })
         },
 
         resetForm() {
             this.formData = $A.cloneJSON(this.formData_bak);
-        }
+        },
     }
 }
 </script>

@@ -57,6 +57,9 @@ export default {
             // 主题皮肤
             await dispatch("synchTheme")
 
+            // Keyboard
+            await dispatch("handleKeyboard")
+
             // 客户端ID
             if (!state.clientId) {
                 state.clientId = $A.randomString(6)
@@ -824,6 +827,24 @@ export default {
             }
             $A.goForward({name: 'login', query: from ? {from: from} : {}}, true);
         });
+    },
+
+    /**
+     * 处理快捷键配置
+     * @param state
+     * @param newData
+     * @returns {Promise<unknown>}
+     */
+    handleKeyboard({state}, newData) {
+        return new Promise(resolve => {
+            const data = $A.isJson(newData) ? newData : ($A.jsonParse(window.localStorage.getItem("__keyboard:data__")) || {})
+            data.screenshot_key = (data.screenshot_key || "").trim().toLowerCase()
+            data.send_button_app = data.send_button_app || 'button'         // button, enter 移动端发送按钮，默认 button （页面按钮发送）
+            data.send_button_desktop = data.send_button_desktop || 'enter'  // button, enter 桌面端发送按钮，默认 enter （键盘回车发送）
+            window.localStorage.setItem("__keyboard:data__", $A.jsonStringify(data))
+            state.cacheKeyboard = data
+            resolve(data)
+        })
     },
 
     /**

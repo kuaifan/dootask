@@ -236,10 +236,6 @@ export default {
             type: Boolean,
             default: false
         },
-        enterSend: {
-            type: [String, Boolean],
-            default: null
-        },
         emojiBottom: {
             type: Boolean,
             default: false
@@ -386,13 +382,15 @@ export default {
 
             'cacheDialogs',
             'dialogMsgs',
+
+            'cacheKeyboard',
         ]),
 
-        isEnterSend({enterSend}) {
-            if (typeof enterSend === "boolean") {
-                return enterSend;
+        isEnterSend({cacheKeyboard}) {
+            if (this.$isEEUiApp) {
+                return cacheKeyboard.send_button_app === 'enter';
             } else {
-                return true;
+                return cacheKeyboard.send_button_desktop === 'enter';
             }
         },
 
@@ -495,11 +493,6 @@ export default {
             }
             return null;
         },
-
-        separateSendButton() {
-            return $A.jsonParse(window.localStorage.getItem("__keyboard:data__"))?.separate_send_button !== 'close';
-        },
-
     },
     watch: {
         // Watch content change
@@ -669,11 +662,6 @@ export default {
                                 shortKey: true,
                                 handler: _ => {
                                     if (!this.isEnterSend) {
-                                        if (this.separateSendButton) {
-                                            const length = this.quill.getSelection(true).index;
-                                            this.quill.insertText(length, "\r\n");
-                                            return false;
-                                        }
                                         this.onSend();
                                         return false;
                                     }
@@ -685,11 +673,6 @@ export default {
                                 shiftKey: false,
                                 handler: _ => {
                                     if (this.isEnterSend) {
-                                        if (this.separateSendButton) {
-                                            const length = this.quill.getSelection(true).index;
-                                            this.quill.insertText(length, "\r\n");
-                                            return false;
-                                        }
                                         this.onSend();
                                         return false;
                                     }
@@ -798,9 +781,18 @@ export default {
                     if (e.key === '\r\r' && e.keyCode === 229) {
                         const length = this.quill.getSelection(true).index;
                         this.quill.insertText(length, "\r\n");
+                        //
+                        this.keyTimer && clearTimeout(this.keyTimer)
+                        this.keyTimer = setTimeout(_ => {
+                            this.$refs.editor.firstChild.childNodes.forEach(child => {
+                                if (/^\r+/.test(child.innerHTML)) {
+                                    child.innerHTML = child.innerHTML.replace(/^\r+/, "") || "<br>"
+                                }
+                            })
+                        }, 200)
                     }
                 });
-                if (!this.separateSendButton) {
+                if (this.$isEEUiApp && this.cacheKeyboard.send_button_app === 'enter') {
                     this.quill.root.setAttribute('enterkeyhint', 'send')
                 }
             })
