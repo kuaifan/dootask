@@ -36,9 +36,13 @@ export default {
     mounted() {
         this.getData();
         //
-        this.subscribe = Store.subscribe('userActive', ({data}) => {
+        this.subscribe = Store.subscribe('userActive', ({type, data}) => {
             if (data.userid == this.userid) {
-                this.setUser(data)
+                if (type === 'line') {
+                    this.user && this.$set(this.user, 'online', data.online);
+                } else {
+                    this.setUser(data)
+                }
             }
         });
         this.$store.state.userAvatar[this._uid] = this.$props;
