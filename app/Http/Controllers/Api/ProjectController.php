@@ -876,10 +876,10 @@ class ProjectController extends AbstractController
     public function column__one()
     {
         User::auth();
-        // 
+        //
         $column_id = intval(Request::input('column_id'));
         $deleted = Request::input('deleted', 'no');
-        // 
+        //
         $builder = ProjectColumn::whereId($column_id);
         if ($deleted == 'all') {
             $builder->withTrashed();
@@ -890,10 +890,10 @@ class ProjectController extends AbstractController
         if (empty($column)) {
             return Base::retError('列表不存在');
         }
-        // 
+        //
         return Base::retSuccess('success', $column);
     }
-    
+
 
     /**
      * @api {get} api/project/task/lists          19. 任务列表
@@ -1016,11 +1016,14 @@ class ProjectController extends AbstractController
             $builder->orderBy('project_tasks.' . $column, $direction);
         }
         // 任务可见性条件
-        $builder->leftJoin('project_users', function ($query) {
-            $query->on('project_tasks.project_id', '=', 'project_users.project_id')->where('project_users.owner', 1);
+        $builder->leftJoin('project_users', function ($query) use($userid) {
+            $query->on('project_tasks.project_id', '=', 'project_users.project_id');
+            $query->where('project_users.owner', 1);
+            $query->where('project_users.userid', $userid);
         });
-        $builder->leftJoin('project_task_users as project_p_task_users', function ($query) {
+        $builder->leftJoin('project_task_users as project_p_task_users', function ($query) use($userid) {
             $query->on('project_p_task_users.task_pid', '=', 'project_tasks.parent_id');
+            $query->where('project_p_task_users.userid', $userid);
         });
         $builder->where(function ($query) use ($userid) {
             $query->where("project_tasks.visibility", 1);
@@ -2219,21 +2222,21 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $project_id = intval(Request::input('project_id'));
         $column_id = intval(Request::input('column_id'));
-        // 
+        //
         $task = ProjectTask::userTask($task_id, true, true, 2);
-        // 
+        //
         if( $task->project_id == $project_id && $task->column_id == $column_id){
             return Base::retSuccess('移动成功', ['id' => $task_id]);
         }
-        // 
+        //
         $project = Project::userProject($project_id);
         $column = ProjectColumn::whereProjectId($project->id)->whereId($column_id)->first();
         if (empty($column)) {
             return Base::retError('列表不存在');
         }
-        // 
+        //
         $task->moveTask($project_id,$column_id);
-        // 
+        //
         return Base::retSuccess('移动成功', ['id' => $task_id]);
     }
 
