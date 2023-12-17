@@ -7,7 +7,8 @@
         @dragover.prevent="chatDragOver(true, $event)"
         @dragleave.prevent="chatDragOver(false, $event)"
         @touchstart="onTouchStart"
-        @touchmove="onTouchMove">
+        @touchmove="onTouchMove"
+        @touchend="onTouchEnd">
         <!--顶部导航-->
         <div class="dialog-nav" :style="navStyle">
             <slot name="head">
@@ -662,11 +663,13 @@ export default {
             msgReady: false,            // 消息准备完成
             unreadMsgId: 0,             // 最早未读消息id
             toBottomReGetMsg: false,    // 滚动到底部重新获取消息
+            selectionRange: false,      // 是否选择文本
         }
     },
 
     mounted() {
         this.msgSubscribe = Store.subscribe('dialogMsgChange', this.onMsgChange);
+        document.addEventListener('selectionchange', this.onSelectionchange);
     },
 
     beforeDestroy() {
@@ -677,6 +680,7 @@ export default {
             this.msgSubscribe.unsubscribe();
             this.msgSubscribe = null;
         }
+        document.removeEventListener('selectionchange', this.onSelectionchange);
     },
 
     computed: {
@@ -1166,9 +1170,6 @@ export default {
                 if (tail <= 55) {
                     requestAnimationFrame(this.onToBottom)
                 }
-                if (this.$refs.input.isFocus) {
-                    $A.scrollToView(this.$refs.footer)
-                }
             }
         },
 
@@ -1431,6 +1432,11 @@ export default {
             }
         },
 
+        onSelectionchange() {
+            const selectionType = window.getSelection().type;
+            this.selectionRange = selectionType === "Range"
+        },
+
         getTempId() {
             return this.tempId++
         },
@@ -1668,6 +1674,10 @@ export default {
 
         onTouchStart(e) {
             this.wrapperStart = null;
+            if (this.selectionRange) {
+                this.wrapperStart = window.scrollY
+                return
+            }
             if (this.$refs.scroller.$el.contains(e.target)) {
                 // 聊天内容区域
                 this.wrapperStart = Object.assign(this.scrollInfo(), {
@@ -1692,6 +1702,9 @@ export default {
 
         onTouchMove(e) {
             if (this.footerPaddingBottom > 0 || (this.windowPortrait && this.windowScrollY > 0)) {
+                if (typeof this.wrapperStart === 'number') {
+                    return;
+                }
                 if (this.wrapperStart === null) {
                     e.preventDefault();
                     return;
@@ -1707,6 +1720,12 @@ export default {
                         e.preventDefault();
                     }
                 }
+            }
+        },
+
+        onTouchEnd() {
+            if ($A.isIos()) {
+                $A.scrollToView(this.$refs.footer)
             }
         },
 
