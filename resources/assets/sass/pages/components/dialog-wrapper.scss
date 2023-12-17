@@ -735,7 +735,7 @@
                                 }
 
                                 .open-approve-details {
-                                    width: 245px;
+                                    width: 260px;
                                     display: inline-block;
                                     max-width: 100%;
 
@@ -943,6 +943,8 @@
 
                         .content-loading {
                             display: flex;
+                            align-items: center;
+                            height: 24px;
 
                             > i {
                                 font-size: 20px;
