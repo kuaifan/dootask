@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.32.65]
+
+### Bug Fixes
+
+- 修复头像出现D的情况
+
+### Documentation
+
+- 更新文档
+
+### Performance
+
+- 优化任务列表查询速度
+- 优化消息输入框内选择文本
+- 移动端修改任务详情确认提示
+- 优化发送录音消息抖动
+- 优化录音效果
+- 优化快捷键设置
+
 ## [0.32.55]
 
 ### Bug Fixes
