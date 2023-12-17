@@ -30,7 +30,7 @@
                     </li>
                 </ul>
             </div>
-            <transition name="mobile-dialog">
+            <transition :name="$isEEUiApp ? 'mobile-dialog' : 'none'">
                 <div v-if="showContent" class="setting-content">
                     <MobileNavTitle :title="settingTitleName"/>
                     <div class="setting-content-title">{{titleNameRoute}}</div>

@@ -1562,13 +1562,8 @@ export default {
      * @returns {Promise<unknown>}
      */
     getTasks({state, dispatch}, requestData) {
-        const taskData = [];
         if (requestData === null) {
             requestData = {}
-        }
-        if ($A.isArray(requestData.taskData)) {
-            taskData.push(...requestData.taskData)
-            delete requestData.taskData;
         }
         const callData = $callData('tasks', requestData, state)
         //
@@ -1589,12 +1584,11 @@ export default {
                 if (requestData.project_id) {
                     state.projectLoad--;
                 }
-                taskData.push(...data.data);
+                dispatch("saveTask", data.data);
                 callData.save(data).then(ids => dispatch("forgetTask", ids))
                 //
                 if (data.next_page_url) {
                     requestData.page = data.current_page + 1
-                    requestData.taskData = taskData
                     if (data.current_page % 10 === 0) {
                         $A.modalWarning({
                             content: "数据已超过" + data.to + "条，是否继续加载？",
@@ -1602,7 +1596,6 @@ export default {
                                 dispatch("getTasks", requestData).then(resolve).catch(reject)
                             },
                             onCancel: () => {
-                                dispatch("saveTask", taskData);
                                 resolve()
                             }
                         });
@@ -1610,7 +1603,6 @@ export default {
                         dispatch("getTasks", requestData).then(resolve).catch(reject)
                     }
                 } else {
-                    dispatch("saveTask", taskData);
                     resolve()
                 }
             }).catch(e => {
