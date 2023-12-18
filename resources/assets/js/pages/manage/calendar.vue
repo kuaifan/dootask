@@ -4,7 +4,7 @@
         <div class="calendar-head">
             <div class="calendar-titbox">
                 <div class="calendar-title">
-                    <div class="common-nav-back" @click="goForward({name: 'manage-application'},true)"><i class="taskfont">&#xe676;</i></div>
+                    <div class="common-nav-back portrait" @click="goForward({name: 'manage-application'},true)"><i class="taskfont">&#xe676;</i></div>
                     <h1>{{rangeText}}</h1>
                 </div>
                 <ButtonGroup class="calendar-arrow" size="small">
