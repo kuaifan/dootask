@@ -1027,11 +1027,14 @@ class ProjectController extends AbstractController
             $builder->orderBy('project_tasks.' . $column, $direction);
         }
         // 任务可见性条件
-        $builder->leftJoin('project_users', function ($query) {
-            $query->on('project_tasks.project_id', '=', 'project_users.project_id')->where('project_users.owner', 1);
+        $builder->leftJoin('project_users', function ($query) use($userid) {
+            $query->on('project_tasks.project_id', '=', 'project_users.project_id');
+            $query->where('project_users.owner', 1);
+            $query->where('project_users.userid', $userid);
         });
-        $builder->leftJoin('project_task_users as project_p_task_users', function ($query) {
+        $builder->leftJoin('project_task_users as project_p_task_users', function ($query) use($userid) {
             $query->on('project_p_task_users.task_pid', '=', 'project_tasks.parent_id');
+            $query->where('project_p_task_users.userid', $userid);
         });
         $builder->where(function ($query) use ($userid) {
             $query->where("project_tasks.visibility", 1);
