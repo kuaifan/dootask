@@ -12,6 +12,7 @@ use App\Module\Doo;
 use App\Models\File;
 use App\Models\User;
 use App\Module\Base;
+use Swoole\Coroutine;
 use App\Models\Deleted;
 use App\Models\Project;
 use App\Module\TimeRange;
@@ -30,7 +31,9 @@ use App\Models\ProjectTaskFile;
 use App\Models\ProjectTaskUser;
 use App\Models\WebSocketDialog;
 use App\Exceptions\ApiException;
+use App\Models\ProjectPermission;
 use App\Module\BillMultipleExport;
+use App\Models\WebSocketDialogMsg;
 use Illuminate\Support\Facades\DB;
 use App\Models\ProjectTaskFlowChange;
 
@@ -575,6 +578,8 @@ class ProjectController extends AbstractController
         $project = Project::userProject($project_id);
         //
         if ($only_column) {
+            //
+            ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_LIST_SORT);
             // 排序列表
             $index = 0;
             foreach ($sort as $item) {
@@ -760,6 +765,8 @@ class ProjectController extends AbstractController
         // 项目
         $project = Project::userProject($project_id);
         //
+        ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_LIST_ADD);
+        //
         if (empty($name)) {
             return Base::retError('列表名称不能为空');
         }
@@ -809,7 +816,9 @@ class ProjectController extends AbstractController
             return Base::retError('列表不存在');
         }
         // 项目
-        Project::userProject($column->project_id);
+        $project = Project::userProject($column->project_id);
+        //
+        ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_LIST_UPDATE);
         //
         if (Arr::exists($data, 'name') && $column->name != $data['name']) {
             $column->addLog("修改列表名称：{$column->name} => {$data['name']}");
@@ -849,7 +858,9 @@ class ProjectController extends AbstractController
             return Base::retError('列表不存在');
         }
         // 项目
-        Project::userProject($column->project_id, true, true);
+        $project = Project::userProject($column->project_id);
+        //
+        ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_LIST_REMOVE);
         //
         $column->deleteColumn();
         return Base::retSuccess('删除成功', ['id' => $column->id]);
@@ -876,10 +887,10 @@ class ProjectController extends AbstractController
     public function column__one()
     {
         User::auth();
-        // 
+        //
         $column_id = intval(Request::input('column_id'));
         $deleted = Request::input('deleted', 'no');
-        // 
+        //
         $builder = ProjectColumn::whereId($column_id);
         if ($deleted == 'all') {
             $builder->withTrashed();
@@ -890,10 +901,10 @@ class ProjectController extends AbstractController
         if (empty($column)) {
             return Base::retError('列表不存在');
         }
-        // 
+        //
         return Base::retSuccess('success', $column);
     }
-    
+
 
     /**
      * @api {get} api/project/task/lists          19. 任务列表
@@ -1180,170 +1191,182 @@ class ProjectController extends AbstractController
         if (Carbon::parse($time[1])->timestamp - Carbon::parse($time[0])->timestamp > 90 * 86400) {
             return Base::retError('时间范围限制最大90天');
         }
-        $headings = [];
-        $headings[] = '任务ID';
-        $headings[] = '父级任务ID';
-        $headings[] = '所属项目';
-        $headings[] = '任务标题';
-        $headings[] = '任务开始时间';
-        $headings[] = '任务结束时间';
-        $headings[] = '完成时间';
-        $headings[] = '归档时间';
-        $headings[] = '任务计划用时';
-        $headings[] = '实际完成用时';
-        $headings[] = '超时时间';
-        $headings[] = '开发用时';
-        $headings[] = '验收/测试用时';
-        $headings[] = '负责人';
-        $headings[] = '创建人';
-        $headings[] = '状态';
-        $datas = [];
-        //
-        $builder = ProjectTask::select(['project_tasks.*', 'project_task_users.userid as ownerid'])
-            ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_id')
-            ->where('project_task_users.owner', 1)
-            ->whereIn('project_task_users.userid', $userid)
-            ->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay(), $type);
-        $builder->orderByDesc('project_tasks.id')->chunk(100, function ($tasks) use (&$datas) {
-            /** @var ProjectTask $task */
-            foreach ($tasks as $task) {
-                $flowChanges = ProjectTaskFlowChange::whereTaskId($task->id)->get();
-                $testTime = 0;//验收/测试时间
-                $taskStartTime = $task->start_at ? Carbon::parse($task->start_at)->timestamp : Carbon::parse($task->created_at)->timestamp;
-                $taskCompleteTime = $task->complete_at ? Carbon::parse($task->complete_at)->timestamp : time();
-                $totalTime = $taskCompleteTime - $taskStartTime; //开发测试总用时
-                foreach ($flowChanges as $change) {
-                    if (!str_contains($change->before_flow_item_name, 'end')) {
-                        $upOne = ProjectTaskFlowChange::where('id', '<', $change->id)->whereTaskId($task->id)->orderByDesc('id')->first();
-                        if ($upOne) {
-                            if (str_contains($change->before_flow_item_name, 'test') || str_contains($change->before_flow_item_name, '测试') || strpos($change->before_flow_item_name, '验收') !== false) {
-                                $testCtime = Carbon::parse($change->created_at)->timestamp;
-                                $tTime = Carbon::parse($upOne->created_at)->timestamp;
-                                $tMinusNum = $testCtime - $tTime;
-                                $testTime += $tMinusNum;
+        go(function() use ($user, $userid, $time, $type) {
+            Coroutine::sleep(0.1);
+            $headings = [];
+            $headings[] = '任务ID';
+            $headings[] = '父级任务ID';
+            $headings[] = '所属项目';
+            $headings[] = '任务标题';
+            $headings[] = '任务开始时间';
+            $headings[] = '任务结束时间';
+            $headings[] = '完成时间';
+            $headings[] = '归档时间';
+            $headings[] = '任务计划用时';
+            $headings[] = '实际完成用时';
+            $headings[] = '超时时间';
+            $headings[] = '开发用时';
+            $headings[] = '验收/测试用时';
+            $headings[] = '负责人';
+            $headings[] = '创建人';
+            $headings[] = '状态';
+            $datas = [];
+            //
+            $builder = ProjectTask::select(['project_tasks.*', 'project_task_users.userid as ownerid'])
+                ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_id')
+                ->where('project_task_users.owner', 1)
+                ->whereIn('project_task_users.userid', $userid)
+                ->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay(), $type);
+            $builder->orderByDesc('project_tasks.id')->chunk(100, function ($tasks) use (&$datas) {
+                /** @var ProjectTask $task */
+                foreach ($tasks as $task) {
+                    $flowChanges = ProjectTaskFlowChange::whereTaskId($task->id)->get();
+                    $testTime = 0;//验收/测试时间
+                    $taskStartTime = $task->start_at ? Carbon::parse($task->start_at)->timestamp : Carbon::parse($task->created_at)->timestamp;
+                    $taskCompleteTime = $task->complete_at ? Carbon::parse($task->complete_at)->timestamp : time();
+                    $totalTime = $taskCompleteTime - $taskStartTime; //开发测试总用时
+                    foreach ($flowChanges as $change) {
+                        if (!str_contains($change->before_flow_item_name, 'end')) {
+                            $upOne = ProjectTaskFlowChange::where('id', '<', $change->id)->whereTaskId($task->id)->orderByDesc('id')->first();
+                            if ($upOne) {
+                                if (str_contains($change->before_flow_item_name, 'test') || str_contains($change->before_flow_item_name, '测试') || strpos($change->before_flow_item_name, '验收') !== false) {
+                                    $testCtime = Carbon::parse($change->created_at)->timestamp;
+                                    $tTime = Carbon::parse($upOne->created_at)->timestamp;
+                                    $tMinusNum = $testCtime - $tTime;
+                                    $testTime += $tMinusNum;
+                                }
                             }
                         }
                     }
-                }
-                if (!$task->complete_at) {
-                    $lastChange = ProjectTaskFlowChange::whereTaskId($task->id)->orderByDesc('id')->first();
-                    $nowTime = time();
-                    $unFinishTime = $nowTime - Carbon::parse($lastChange->created_at)->timestamp;
-                    if (str_contains($lastChange->after_flow_item_name, 'test') || str_contains($lastChange->after_flow_item_name, '测试') || strpos($lastChange->after_flow_item_name, '验收') !== false) {
-                        $testTime += $unFinishTime;
+                    if (!$task->complete_at) {
+                        $lastChange = ProjectTaskFlowChange::whereTaskId($task->id)->orderByDesc('id')->first();
+                        $nowTime = time();
+                        $unFinishTime = $nowTime - Carbon::parse($lastChange->created_at)->timestamp;
+                        if (str_contains($lastChange->after_flow_item_name, 'test') || str_contains($lastChange->after_flow_item_name, '测试') || strpos($lastChange->after_flow_item_name, '验收') !== false) {
+                            $testTime += $unFinishTime;
+                        }
                     }
-                }
-                $developTime = $totalTime - $testTime;//开发时间
-                $planTime = '-';//任务计划用时
-                $overTime = '-';//超时时间
-                if ($task->end_at) {
-                    $startTime = Carbon::parse($task->start_at)->timestamp;
-                    $endTime = Carbon::parse($task->end_at)->timestamp;
-                    $planTotalTime = $endTime - $startTime;
-                    $residueTime = $planTotalTime - $totalTime;
-                    if ($residueTime < 0) {
-                        $overTime = Base::timeFormat(abs($residueTime));
+                    $developTime = $totalTime - $testTime;//开发时间
+                    $planTime = '-';//任务计划用时
+                    $overTime = '-';//超时时间
+                    if ($task->end_at) {
+                        $startTime = Carbon::parse($task->start_at)->timestamp;
+                        $endTime = Carbon::parse($task->end_at)->timestamp;
+                        $planTotalTime = $endTime - $startTime;
+                        $residueTime = $planTotalTime - $totalTime;
+                        if ($residueTime < 0) {
+                            $overTime = Base::timeFormat(abs($residueTime));
+                        }
+                        $planTime = Base::timeDiff($startTime, $endTime);
                     }
-                    $planTime = Base::timeDiff($startTime, $endTime);
-                }
-                $actualTime = $task->complete_at ? $totalTime : 0;//实际完成用时
-                $statusText = '未完成';
-                if ($task->flow_item_name) {
-                    if (str_contains($task->flow_item_name, '已取消')) {
-                        $statusText = '已取消';
-                        $actualTime = 0;
-                        $testTime = 0;
-                        $developTime = 0;
-                        $overTime = '-';
-                    } elseif (str_contains($task->flow_item_name, '已完成')) {
+                    $actualTime = $task->complete_at ? $totalTime : 0;//实际完成用时
+                    $statusText = '未完成';
+                    if ($task->flow_item_name) {
+                        if (str_contains($task->flow_item_name, '已取消')) {
+                            $statusText = '已取消';
+                            $actualTime = 0;
+                            $testTime = 0;
+                            $developTime = 0;
+                            $overTime = '-';
+                        } elseif (str_contains($task->flow_item_name, '已完成')) {
+                            $statusText = '已完成';
+                        }
+                    } elseif ($task->complete_at) {
                         $statusText = '已完成';
                     }
-                } elseif ($task->complete_at) {
-                    $statusText = '已完成';
+                    if (!isset($datas[$task->ownerid])) {
+                        $datas[$task->ownerid] = [
+                            'index' => 1,
+                            'nickname' => Base::filterEmoji(User::userid2nickname($task->ownerid)),
+                            'styles' => ["A1:P1" => ["font" => ["bold" => true]]],
+                            'data' => [],
+                        ];
+                    }
+                    $datas[$task->ownerid]['index']++;
+                    if ($statusText === '未完成') {
+                        $datas[$task->ownerid]['styles']["P{$datas[$task->ownerid]['index']}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];  // 未完成
+                    } elseif ($statusText === '已完成' && $task->end_at && Carbon::parse($task->complete_at)->gt($task->end_at)) {
+                        $datas[$task->ownerid]['styles']["P{$datas[$task->ownerid]['index']}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];  // 已完成超期
+                    }
+                    $datas[$task->ownerid]['data'][] = [
+                        $task->id,
+                        $task->parent_id ?: '-',
+                        Base::filterEmoji($task->project?->name) ?: '-',
+                        Base::filterEmoji($task->name),
+                        $task->start_at ?: '-',
+                        $task->end_at ?: '-',
+                        $task->complete_at ?: '-',
+                        $task->archived_at ?: '-',
+                        $planTime ?: '-',
+                        $actualTime ? Base::timeFormat($actualTime) : '-',
+                        $overTime,
+                        $developTime > 0 ? Base::timeFormat($developTime) : '-',
+                        $testTime > 0 ? Base::timeFormat($testTime) : '-',
+                        Base::filterEmoji(User::userid2nickname($task->ownerid)) . " (ID: {$task->ownerid})",
+                        Base::filterEmoji(User::userid2nickname($task->userid)) . " (ID: {$task->userid})",
+                        $statusText
+                    ];
                 }
-                if (!isset($datas[$task->ownerid])) {
-                    $datas[$task->ownerid] = [
-                        'index' => 1,
-                        'nickname' => Base::filterEmoji(User::userid2nickname($task->ownerid)),
+            });
+            if (empty($datas)) {
+                return Base::retError('没有任何数据');
+            }
+            //
+            $sheets = [];
+            foreach ($userid as $ownerid) {
+                $data = $datas[$ownerid] ?? [
+                        'nickname' => Base::filterEmoji(User::userid2nickname($ownerid)),
                         'styles' => ["A1:P1" => ["font" => ["bold" => true]]],
                         'data' => [],
                     ];
+                $title = (count($sheets) + 1) . "." . ($data['nickname'] ?: $ownerid);
+                $sheets[] = BillExport::create()->setTitle($title)->setHeadings($headings)->setData($data['data'])->setStyles($data['styles']);
+            }
+            //
+            $fileName = User::userid2nickname($userid[0]) ?: $userid[0];
+            if (count($userid) > 1) {
+                $fileName .= "等" . count($userid) . "位成员";
+            }
+            $fileName .= '任务统计_' . Base::time() . '.xls';
+            $filePath = "temp/task/export/" . date("Ym", Base::time());
+            $export = new BillMultipleExport($sheets);
+            $res = $export->store($filePath . "/" . $fileName);
+            if ($res != 1) {
+                return Base::retError('导出失败，' . $fileName . '！');
+            }
+            $xlsPath = storage_path("app/" . $filePath . "/" . $fileName);
+            $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xls') . ".zip";
+            $zipPath = storage_path($zipFile);
+            if (file_exists($zipPath)) {
+                Base::deleteDirAndFile($zipPath, true);
+            }
+            try {
+                Madzipper::make($zipPath)->add($xlsPath)->close();
+            } catch (\Throwable) {
+            }
+            //
+            if (file_exists($zipPath)) {
+                $base64 = base64_encode(Base::array2string([
+                    'file' => $zipFile,
+                ]));
+                Session::put('task::export:userid', $user->userid);
+                $botUser = User::botGetOrCreate('system-msg');
+                if (empty($botUser)) {
+                    return;
                 }
-                $datas[$task->ownerid]['index']++;
-                if ($statusText === '未完成') {
-                    $datas[$task->ownerid]['styles']["P{$datas[$task->ownerid]['index']}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];  // 未完成
-                } elseif ($statusText === '已完成' && $task->end_at && Carbon::parse($task->complete_at)->gt($task->end_at)) {
-                    $datas[$task->ownerid]['styles']["P{$datas[$task->ownerid]['index']}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];  // 已完成超期
+                if ($dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
+                    $text = "<b>导出任务统计已完成。</b>";
+                    $text .= "\n\n";
+                    $text .= "文件名：{$fileName}";
+                    $text .= "\n";
+                    $text .= "文件大小：".Base::twoFloat(filesize($zipPath) / 1024, true)."KB";
+                    $text .= "\n";
+                    $text .= "下载地址：".Base::fillUrl('api/project/task/down?key=' . urlencode($base64));
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
                 }
-                $datas[$task->ownerid]['data'][] = [
-                    $task->id,
-                    $task->parent_id ?: '-',
-                    Base::filterEmoji($task->project?->name) ?: '-',
-                    Base::filterEmoji($task->name),
-                    $task->start_at ?: '-',
-                    $task->end_at ?: '-',
-                    $task->complete_at ?: '-',
-                    $task->archived_at ?: '-',
-                    $planTime ?: '-',
-                    $actualTime ? Base::timeFormat($actualTime) : '-',
-                    $overTime,
-                    $developTime > 0 ? Base::timeFormat($developTime) : '-',
-                    $testTime > 0 ? Base::timeFormat($testTime) : '-',
-                    Base::filterEmoji(User::userid2nickname($task->ownerid)) . " (ID: {$task->ownerid})",
-                    Base::filterEmoji(User::userid2nickname($task->userid)) . " (ID: {$task->userid})",
-                    $statusText
-                ];
             }
         });
-        if (empty($datas)) {
-            return Base::retError('没有任何数据');
-        }
-        //
-        $sheets = [];
-        foreach ($userid as $ownerid) {
-            $data = $datas[$ownerid] ?? [
-                    'nickname' => Base::filterEmoji(User::userid2nickname($ownerid)),
-                    'styles' => ["A1:P1" => ["font" => ["bold" => true]]],
-                    'data' => [],
-                ];
-            $title = (count($sheets) + 1) . "." . ($data['nickname'] ?: $ownerid);
-            $sheets[] = BillExport::create()->setTitle($title)->setHeadings($headings)->setData($data['data'])->setStyles($data['styles']);
-        }
-        //
-        $fileName = User::userid2nickname($userid[0]) ?: $userid[0];
-        if (count($userid) > 1) {
-            $fileName .= "等" . count($userid) . "位成员";
-        }
-        $fileName .= '任务统计_' . Base::time() . '.xls';
-        $filePath = "temp/task/export/" . date("Ym", Base::time());
-        $export = new BillMultipleExport($sheets);
-        $res = $export->store($filePath . "/" . $fileName);
-        if ($res != 1) {
-            return Base::retError('导出失败，' . $fileName . '！');
-        }
-        $xlsPath = storage_path("app/" . $filePath . "/" . $fileName);
-        $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xls') . ".zip";
-        $zipPath = storage_path($zipFile);
-        if (file_exists($zipPath)) {
-            Base::deleteDirAndFile($zipPath, true);
-        }
-        try {
-            Madzipper::make($zipPath)->add($xlsPath)->close();
-        } catch (\Throwable) {
-        }
-        //
-        if (file_exists($zipPath)) {
-            $base64 = base64_encode(Base::array2string([
-                'file' => $zipFile,
-            ]));
-            Session::put('task::export:userid', $user->userid);
-            return Base::retSuccess('success', [
-                'size' => Base::twoFloat(filesize($zipPath) / 1024, true),
-                'url' => Base::fillUrl('api/project/task/down?key=' . urlencode($base64)),
-            ]);
-        } else {
-            return Base::retError('打包失败，请稍后再试...');
-        }
+        return Base::retSuccess('success',['msg' => '正在打包，请留意系统消息']);
     }
 
     /**
@@ -1507,7 +1530,7 @@ class ProjectController extends AbstractController
         $archived = Request::input('archived', 'no');
         //
         $isArchived = str_replace(['all', 'yes', 'no'], [null, false, true], $archived);
-        $task = ProjectTask::userTask($task_id, $isArchived, true, false, ['taskUser', 'taskTag']);
+        $task = ProjectTask::userTask($task_id, $isArchived, true, ['taskUser', 'taskTag']);
         // 项目可见性
         $project_userid = ProjectUser::whereProjectId($task->project_id)->whereOwner(1)->value('userid');     // 项目负责人
         if ($task->visibility != 1 && $user->userid != $project_userid) {
@@ -1603,7 +1626,9 @@ class ProjectController extends AbstractController
             return Base::retError('文件不存在或已被删除');
         }
         //
-        $task = ProjectTask::userTask($file->task_id, true, true, true);
+        $task = ProjectTask::userTask($file->task_id);
+        //
+        ProjectPermission::userTaskPermission(Project::userProject($task->project_id), ProjectPermission::TASK_UPDATE, $task);
         //
         $task->pushMsg('filedelete', $file);
         $file->delete();
@@ -1732,6 +1757,8 @@ class ProjectController extends AbstractController
         $column_id = $data['column_id'];
         // 项目
         $project = Project::userProject($project_id);
+        //
+        ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_ADD);
         // 列表
         $column = null;
         $newColumn = null;
@@ -1808,10 +1835,12 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $name = Request::input('name');
         //
-        $task = ProjectTask::userTask($task_id, true, true, true);
+        $task = ProjectTask::userTask($task_id);
         if ($task->complete_at) {
             return Base::retError('主任务已完成无法添加子任务');
         }
+        //
+        ProjectPermission::userTaskPermission(Project::userProject($task->project_id), ProjectPermission::TASK_ADD);
         //
         $task = ProjectTask::addTask([
             'name' => $name,
@@ -1867,11 +1896,18 @@ class ProjectController extends AbstractController
         $param = Request::input();
         $task_id = intval($param['task_id']);
         //
-        $task = ProjectTask::userTask($task_id, true, true, 2);
+        $task = ProjectTask::userTask($task_id);
+        //
+        $project = Project::userProject($task->project_id);
+        if (Arr::exists($param, 'flow_item_id')) {
+            ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_STATUS, $task);
+        }else{
+            ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_UPDATE, $task);
+        }
+        //
         $taskUser = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($task_id)->get();
         $owners = $taskUser->where('owner', 1)->pluck('userid')->toArray();         // 负责人
         $assists = $taskUser->where('owner', 0)->pluck('userid')->toArray();         // 协助人
-
         // 更新任务
         $updateMarking = [];
         $task->updateTask($param, $updateMarking);
@@ -2003,11 +2039,14 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $type = Request::input('type', 'add');
         //
-        $task = ProjectTask::userTask($task_id, $type == 'add', true, true);
+        $task = ProjectTask::userTask($task_id, $type == 'add');
         //
         if ($task->parent_id > 0) {
             return Base::retError('子任务不支持此功能');
         }
+        //
+        $project = Project::userProject($task->project_id);
+        ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_ARCHIVED, $task);
         //
         if ($type == 'recovery') {
             $task->archivedTask(null);
@@ -2045,7 +2084,11 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $type = Request::input('type', 'delete');
         //
-        $task = ProjectTask::userTask($task_id, null, $type !== 'recovery', true);
+        $task = ProjectTask::userTask($task_id, null, $type !== 'recovery');
+        //
+        $project = Project::userProject($task->project_id);
+        ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_REMOVE, $task);
+        //
         if ($type == 'recovery') {
             $task->restoreTask();
             return Base::retSuccess('操作成功', ['id' => $task->id]);
@@ -2080,7 +2123,7 @@ class ProjectController extends AbstractController
             return Base::retError('记录不存在');
         }
         //
-        $task = ProjectTask::userTask($projectLog->task_id, true, true, true);
+        $task = ProjectTask::userTask($projectLog->task_id);
         //
         $record = $projectLog->record;
         if ($record['flow'] && is_array($record['flow'])) {
@@ -2123,6 +2166,7 @@ class ProjectController extends AbstractController
      * @apiName task__flow
      *
      * @apiParam {Number} task_id               任务ID
+     * @apiParam {Number} project_id            项目ID - 存在时只返回这个项目的
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -2133,17 +2177,23 @@ class ProjectController extends AbstractController
         User::auth();
         //
         $task_id = intval(Request::input('task_id'));
+        $project_id = intval(Request::input('project_id'));
         //
         $projectTask = ProjectTask::select(['id', 'project_id', 'complete_at', 'flow_item_id', 'flow_item_name'])->withTrashed()->find($task_id);
         if (empty($projectTask)) {
-            return Base::retError('任务不存在', [ 'task_id' => $task_id ], -4002);
+            return Base::retError('任务不存在', ['task_id' => $task_id], -4002);
         }
         //
-        $projectFlowItem = $projectTask->flow_item_id ? ProjectFlowItem::with(['projectFlow'])->find($projectTask->flow_item_id) : null;
-        if ($projectFlowItem?->projectFlow) {
-            $projectFlow = $projectFlowItem->projectFlow;
+        $projectFlowItem = null;
+        if ($project_id) {
+            $projectFlow = ProjectFlow::whereProjectId($project_id)->orderByDesc('id')->first();
         } else {
-            $projectFlow = ProjectFlow::whereProjectId($projectTask->project_id)->orderByDesc('id')->first();
+            $projectFlowItem = $projectTask->flow_item_id ? ProjectFlowItem::with(['projectFlow'])->find($projectTask->flow_item_id) : null;
+            if ($projectFlowItem?->projectFlow) {
+                $projectFlow = $projectFlowItem->projectFlow;
+            } else {
+                $projectFlow = ProjectFlow::whereProjectId($projectTask->project_id)->orderByDesc('id')->first();
+            }
         }
         if (empty($projectFlow)) {
             return Base::retSuccess('success', [
@@ -2207,6 +2257,9 @@ class ProjectController extends AbstractController
      * @apiParam {Number} task_id               任务ID
      * @apiParam {Number} project_id            项目ID
      * @apiParam {Number} column_id             列ID
+     * @apiParam {Number} flow_item_id          工作流id
+     * @apiParam {Array} owner                  负责人
+     * @apiParam {Array} assist                 协助人
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -2219,22 +2272,36 @@ class ProjectController extends AbstractController
         $task_id = intval(Request::input('task_id'));
         $project_id = intval(Request::input('project_id'));
         $column_id = intval(Request::input('column_id'));
-        // 
-        $task = ProjectTask::userTask($task_id, true, true, 2);
-        // 
+        $flow_item_id = intval(Request::input('flow_item_id'));
+        $owner = Request::input('owner', []);
+        $assist = Request::input('assist', []);
+        //
+        $task = ProjectTask::userTask($task_id);
+        //
+        $project = Project::userProject($task->project_id);
+        ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_MOVE, $task);
+        //
         if( $task->project_id == $project_id && $task->column_id == $column_id){
             return Base::retSuccess('移动成功', ['id' => $task_id]);
         }
-        // 
+        //
         $project = Project::userProject($project_id);
         $column = ProjectColumn::whereProjectId($project->id)->whereId($column_id)->first();
         if (empty($column)) {
             return Base::retError('列表不存在');
         }
-        // 
-        $task->moveTask($project_id,$column_id);
-        // 
-        return Base::retSuccess('移动成功', ['id' => $task_id]);
+        if($flow_item_id){
+            $flowItem = projectFlowItem::whereProjectId($project->id)->whereId($flow_item_id)->first();
+            if (empty($flowItem)) {
+                return Base::retError('任务状态不存在');
+            }
+        }
+        //
+        $task->moveTask($project_id, $column_id, $flow_item_id, $owner, $assist);
+        //
+        $task = ProjectTask::userTask($task_id);
+        //
+        return Base::retSuccess('移动成功', $task);
     }
 
     /**
@@ -2410,5 +2477,75 @@ class ProjectController extends AbstractController
             'id' => $projectUser->project_id,
             'top_at' => $projectUser->top_at?->toDateTimeString(),
         ]);
+    }
+
+    /**
+     * @api {get} api/project/permission          43. 获取项目权限设置
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName permission
+     *
+     * @apiParam {Number} project_id                项目ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function permission()
+    {
+        $user = User::auth();
+        $projectId = intval(Request::input('project_id'), 0);
+        $projectUser = ProjectUser::whereUserid($user->userid)->whereProjectId($projectId)->first();
+        if (!$projectUser) {
+            return Base::retError("项目不存在");
+        }
+        $projectPermission = ProjectPermission::initPermissions($projectId);
+        return Base::retSuccess("success",  $projectPermission);
+    }
+
+    /**
+     * @api {get} api/project/permission/update          44. 项目权限设置
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName permission__update
+     *
+     * @apiParam {Number} project_id                        项目ID
+     * @apiParam {Array} task_add                           添加任务权限
+     * @apiParam {Array} task_update                        修改任务权限
+     * @apiParam {Array} task_remove                        删除任务权限
+     * @apiParam {Array} task_update_complete               标记完成权限
+     * @apiParam {Array} task_archived                      归档任务权限
+     * @apiParam {Array} task_move                          移动任务权限
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function permission__update()
+    {
+        $user = User::auth();
+        $projectId = intval(Request::input('project_id'), 0);
+        $projectUser = ProjectUser::whereUserid($user->userid)->whereProjectId($projectId)->first();
+        if (!$projectUser) {
+            return Base::retError("项目不存在");
+        }
+        $permissions = Request::only([
+            ProjectPermission::TASK_LIST_ADD,
+            ProjectPermission::TASK_LIST_UPDATE,
+            ProjectPermission::TASK_LIST_REMOVE,
+            ProjectPermission::TASK_LIST_SORT,
+            ProjectPermission::TASK_ADD,
+            ProjectPermission::TASK_UPDATE,
+            ProjectPermission::TASK_REMOVE,
+            ProjectPermission::TASK_STATUS,
+            ProjectPermission::TASK_ARCHIVED,
+            ProjectPermission::TASK_MOVE,
+        ]);
+        $projectPermission = ProjectPermission::updatePermissions($projectId, Base::newArrayRecursive('intval', $permissions));
+        return Base::retSuccess("success",  $projectPermission);
     }
 }

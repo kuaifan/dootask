@@ -1920,6 +1920,8 @@ export default {
                     }
                 });
             });
+        } else {
+            state.taskOperation = {};
         }
     },
 
@@ -2126,14 +2128,16 @@ export default {
      * @param state
      * @param dispatch
      * @param task_id
+     * @param project_id
      * @returns {Promise<unknown>}
      */
-    getTaskFlow({state, dispatch}, task_id) {
+    getTaskFlow({state, dispatch}, {task_id, project_id}) {
         return new Promise(function (resolve, reject) {
             dispatch("call", {
                 url: 'project/task/flow',
                 data: {
-                    task_id: task_id
+                    task_id: task_id,
+                    project_id: project_id || 0
                 },
             }).then(result => {
                 let task = state.cacheTasks.find(({id}) => id == task_id)
@@ -2500,13 +2504,16 @@ export default {
     openDialog({state, dispatch}, dialog_id) {
         return new Promise(resolve => {
             let search_msg_id;
+            let dialog_msg_id;
             if ($A.isJson(dialog_id)) {
                 search_msg_id = dialog_id.search_msg_id;
+                dialog_msg_id = dialog_id.dialog_msg_id;
                 dialog_id = dialog_id.dialog_id;
             }
             //
             requestAnimationFrame(_ => {
                 state.dialogSearchMsgId = /^\d+$/.test(search_msg_id) ? search_msg_id : 0;
+                state.dialogMsgId = /^\d+$/.test(dialog_msg_id) ? dialog_msg_id : 0;
                 state.dialogId = /^\d+$/.test(dialog_id) ? dialog_id : 0;
                 resolve()
             })

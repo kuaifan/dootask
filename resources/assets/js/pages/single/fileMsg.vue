@@ -168,7 +168,7 @@ export default {
         },
 
         documentKey() {
-            return new Promise(resolve => {
+            return new Promise((resolve,reject) => {
                 this.$store.dispatch("call", {
                     url: 'dialog/msg/detail',
                     data: {
@@ -177,8 +177,8 @@ export default {
                     },
                 }).then(({data}) => {
                     resolve(`${data.id}-${$A.Time(data.update_at)}`)
-                }).catch(() => {
-                    resolve(0)
+                }).catch((res) => {
+                    reject(res)
                 });
             });
         },

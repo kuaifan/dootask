@@ -1,7 +1,11 @@
 <template>
     <div ref="tuiCalendar" class="calendar-wrapper"></div>
 </template>
+
 <script>
+import 'tui-date-picker/dist/tui-date-picker.css';
+import 'tui-time-picker/dist/tui-time-picker.css';
+import 'tui-calendar-hi/dist/tui-calendar-hi.css'
 import Calendar from 'tui-calendar-hi';
 
 export default {
@@ -148,7 +152,13 @@ export default {
         },
         isReadOnly(newValue) {
             this.calendarInstance.setOptions({isReadOnly: newValue});
-        }
+        },
+        windowPortrait: {
+            handler(v) {
+                this.resetRender()
+            },
+            immediate: true
+        },
     },
     mounted() {
         this.calendarInstance = new Calendar(this.$refs.tuiCalendar, {
@@ -170,10 +180,13 @@ export default {
         });
         this.addEventListeners();
         this.reflectSchedules();
+        //
+        window.addEventListener('resize',this.resetRender);
     },
     beforeDestroy() {
         this.calendarInstance.off();
         this.calendarInstance.destroy();
+        window.removeEventListener('resize',this.resetRender);
     },
     methods: {
         addEventListeners() {
@@ -193,8 +206,10 @@ export default {
             return this.calendarInstance;
         },
         resetRender() {
-            this.calendarInstance.clear();
-            this.reflectSchedules();
+            if(this.calendarInstance){
+                this.calendarInstance.clear();
+                this.reflectSchedules();
+            }
         },
         invoke(methodName, ...args) {
             let result;

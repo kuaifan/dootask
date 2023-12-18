@@ -1,0 +1,156 @@
+.dialog-droup-word-chain {
+    .ivu-modal-body{
+        max-height: calc(100vh - 260px);
+        overflow: auto;
+        padding-top: 0 !important;
+        padding-right: 0 !important;
+    }
+    .chain-modal-header {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        font-weight: 500;
+
+        .chain-modal-close {
+            color: $primary-text-color;
+        }
+
+        .chain-modal-title {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 100px;
+            right: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            > span {
+                font-size: 16px;
+                color: $primary-title-color;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+
+        .chain-modal-submit {
+            color: $primary-color;
+            display: flex;
+            align-items: center;
+
+            .submit-loading {
+                width: 14px;
+                height: 14px;
+                margin-right: 6px;
+            }
+
+            &.disabled{
+                color: #9c9c9c;
+            }
+        }
+    }
+    .word-chain-body{
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        max-height: calc(100vh - 265px);
+        .source{
+            margin-right: 32px;
+            span{
+                color: #84C56A;
+            }
+        }
+        .initiate{
+            gap: 5px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow-y: auto;
+            min-height: 26px;
+            margin: 10px 32px 20px 0;
+            .ivu-input{
+                border-color: #fff !important;
+            }
+            .avatar-wrapper{
+                margin: 0 4px 4px;
+            }
+            >span,>div{
+                float: left;
+            }
+        }
+        .textarea{
+            padding-right: 32px;
+        }
+        ul{
+            margin: 20px 0;
+            list-style-type:none;
+            flex: 1;
+            overflow: auto;
+            padding-right: 32px;
+            li{
+                display: flex;
+                gap: 10px;
+                padding: 5px 0;
+                color: #7f7f7f;
+                span{
+                    min-width: 28px;
+                    height: 28px;
+                    line-height: 28px;
+                    margin-top: 2px;
+                    background-color: #f2f2f2;
+                    border-radius: 100%;
+                    text-align: center;
+                    font-size: 12px;
+
+                }
+                .taskfont{
+                    font-size: 28px;
+                    cursor: pointer;
+                    line-height: 34px;
+                    user-select: none;
+                    transform: scale(0.92);
+                    &.disabled{
+                        opacity: 0.5;
+                        cursor: no-drop;
+                    }
+                }
+                &.add{
+                    .taskfont{
+                        line-height: 32px;
+                        transform: scale(1);
+                    }
+                }
+            }
+        }
+        .switch-row{
+            padding: 10px 5px;
+            margin: 0 32px 0 0;
+            display: flex;
+            border-top: 1px solid #f0f0f0;
+            span.label{
+                flex: 1;
+            }
+            &:last-child{
+                border-bottom: 1px solid #f0f0f0;
+            }
+        }
+    }
+}
+
+body.window-portrait {
+    .dialog-droup-word-chain {
+        .ivu-modal-fullscreen{
+            .ivu-modal-body{
+                padding-top: 10px !important;
+                max-height: 100%;
+            }
+            .word-chain-body{
+                max-height: 100%;
+                ul{
+                    flex: none;
+                }
+            }
+        }
+    }
+}

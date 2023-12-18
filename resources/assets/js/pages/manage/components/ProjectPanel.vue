@@ -52,6 +52,7 @@
                         <Icon class="menu-icon" type="ios-more" />
                         <EDropdownMenu v-if="projectData.owner_userid === userId" slot="dropdown">
                             <EDropdownItem command="setting">{{$L('项目设置')}}</EDropdownItem>
+                            <EDropdownItem command="permissions">{{$L('权限设置')}}</EDropdownItem>
                             <EDropdownItem command="workflow">{{$L('工作流设置')}}</EDropdownItem>
                             <EDropdownItem command="user" divided>{{$L('成员管理')}}</EDropdownItem>
                             <EDropdownItem command="invite">{{$L('邀请链接')}}</EDropdownItem>
@@ -80,7 +81,7 @@
                 <div v-if="completedCount > 0" class="project-checkbox">
                     <Checkbox :value="projectData.cacheParameter.completedTask" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
                 </div>
-                <div v-if="flowList.length > 0" class="project-select">
+                <div class="project-select">
                     <Cascader ref="flow" :data="flowData" @on-change="flowChange" transfer-class-name="project-panel-flow-cascader" transfer>
                         <span :class="`project-flow ${flowInfo.status || ''}`">{{ flowTitle }}</span>
                     </Cascader>
@@ -236,11 +237,11 @@
         <Scrollbar v-else-if="tabTypeActive === 'table'" class="project-table" enable-x>
             <div class="project-table-head">
                 <Row class="task-row">
-                    <Col span="12"># {{$L('任务名称')}}</Col>
-                    <Col span="3">{{$L('列表')}}</Col>
+                    <Col span="12"><span class="head-title"># {{$L('任务名称')}}</span></Col>
+                    <Col span="3"><span class="head-title">{{$L('列表')}}</span></Col>
                     <Col span="3">
                         <div class="sort" @click="onSort('level')">
-                            {{$L('优先级')}}
+                            <span class="head-title">{{$L('优先级')}}</span>
                             <div class="task-sort">
                                 <Icon :class="{on:sortField=='level' && sortType=='asc'}" type="md-arrow-dropup" />
                                 <Icon :class="{on:sortField=='level' && sortType=='desc'}" type="md-arrow-dropdown" />
@@ -250,7 +251,7 @@
                     <Col span="3">{{$L('负责人')}}</Col>
                     <Col span="3">
                         <div class="sort" @click="onSort('end_at')">
-                            {{$L('到期时间')}}
+                            <span class="head-title">{{$L('到期时间')}}</span>
                             <div class="task-sort">
                                 <Icon :class="{on:sortField=='end_at' && sortType=='asc'}" type="md-arrow-dropup" />
                                 <Icon :class="{on:sortField=='end_at' && sortType=='desc'}" type="md-arrow-dropdown" />
@@ -343,6 +344,14 @@
                 <Button type="primary" :loading="settingLoad > 0" @click="onSetting">{{$L('修改')}}</Button>
             </div>
         </Modal>
+
+        <!--项目权限-->
+        <DrawerOverlay
+            v-model="permissionShow"
+            placement="right"
+            :size="650">
+            <ProjectPermission ref="permission" v-if="permissionShow" @close="()=>{ this.permissionShow = false }" :project-id="projectId"/>
+        </DrawerOverlay>
 
         <!--成员管理-->
         <Modal
@@ -474,6 +483,7 @@ import TaskArchived from "./TaskArchived";
 import ProjectLog from "./ProjectLog";
 import DrawerOverlay from "../../../components/DrawerOverlay";
 import ProjectWorkflow from "./ProjectWorkflow";
+import ProjectPermission from "./ProjectPermission";
 import TaskMenu from "./TaskMenu";
 import TaskDeleted from "./TaskDeleted";
 import ProjectGantt from "./ProjectGantt";
@@ -489,6 +499,7 @@ export default {
         MarkdownPreviewNostyle,
         TaskMenu,
         ProjectWorkflow,
+        ProjectPermission,
         DrawerOverlay,
         ProjectLog, TaskArchived, TaskRow, Draggable, TaskAddSimple, TaskPriority, TaskDeleted, ProjectGantt},
     data() {
@@ -515,6 +526,10 @@ export default {
             settingShow: false,
             settingData: {},
             settingLoad: 0,
+
+            permissionShow: false,
+            permissionShowData: {},
+            permissionShowLoad: 0,
 
             userShow: false,
             userData: {},
@@ -846,7 +861,7 @@ export default {
             //
             const {project_user} = this.projectData;
             if ($A.isArray(project_user)) {
-                const userItems = project_user.map((item, index) => {
+                let userItems = project_user.map((item, index) => {
                     const userInfo = cacheUserBasic.find(({userid}) => userid === item.userid) || {}
                     const length = allTask.filter(({task_user, complete_at}) => {
                         if (!this.projectData.cacheParameter.completedTask) {
@@ -859,12 +874,18 @@ export default {
                     return {
                         value: `user:${userInfo.userid}`,
                         label: `${userInfo.nickname} (${length})`,
-                        class: `user-${index}`,
                         userid: userInfo.userid || 0,
                         length,
                     }
                 }).filter(({userid, length}) => userid > 0 && length > 0)
                 if (userItems.length > 0) {
+                    userItems.sort((a, b) => {
+                        return a.userid == this.userId ? -1 : 1
+                    })
+                    userItems = userItems.map((item, index)=>{
+                        item.class = `user-${index}`
+                        return item;
+                    })
                     list.push(...userItems)
                 }
             }
@@ -1251,6 +1272,16 @@ export default {
                         this.$refs.projectName.focus()
                         setTimeout(this.$refs.projectDesc.resizeTextarea, 0)
                     });
+                    break;
+
+                case "permissions":
+                    // this.$set(this.settingData, 'name', this.projectData.name);
+                    // this.$set(this.settingData, 'desc', this.projectData.desc);
+                    this.permissionShow = true;
+                    // this.$nextTick(() => {
+                    //     this.$refs.projectName.focus()
+                    //     setTimeout(this.$refs.projectDesc.resizeTextarea, 0)
+                    // });
                     break;
 
                 case "user":

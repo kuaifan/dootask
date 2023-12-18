@@ -257,7 +257,7 @@
                                 <i class="taskfont" v-html="item.icon"></i>
                                 <span>{{ $L(item.label) }}</span>
                             </li>
-                            <li @click="onOperate('forward')">
+                            <li v-if="operateItem.type !== 'word-chain' && operateItem.type !== 'vote'" @click="onOperate('forward')">
                                 <i class="taskfont">&#xe638;</i>
                                 <span>{{ $L('转发') }}</span>
                             </li>
@@ -392,10 +392,33 @@
             v-model="forwardData"
             :multiple-max="50"
             :title="$L('转发')"
+            :twice-affirm="true"
+            :twice-affirm-title="$L('转发给:')"
             :before-submit="onForward"
             :show-select-all="false"
+            :multiple-choice="false"
             show-dialog
-            module/>
+            module>
+            <template #twice-affirm-body-extend>
+                <div class="dialog-wrapper-forward-body">
+                    <div class="dialog-wrapper ">
+                        <div class="dialog-scroller">
+                            <DialogItem :source="operateItem" simpleView :dialogAvatar="false"/>
+                        </div>
+                    </div>
+                    <div class="leave-message">
+                        <Input type="textarea" :autosize="{minRows: 1,maxRows: 3}" v-model="forwardLeaveMessage" :placeholder="$L('留言')" clearable />
+                    </div>
+                </div>
+            </template>
+            <template #twice-affirm-footer-extend>
+                <div class="dialog-wrapper-forward-footer" :class="{'selected': !forwardShowOriginal}" @click="forwardShowOriginal = !forwardShowOriginal">
+                    <Icon v-if="!forwardShowOriginal" class="user-modal-icon" type="ios-checkmark-circle" />
+                    <Icon v-else class="user-modal-icon" type="ios-radio-button-off" />
+                    {{$L('不显示原发送者信息')}}
+                </div>
+            </template>
+        </UserSelect>
 
         <!-- 设置待办 -->
         <Modal
@@ -508,6 +531,13 @@
         <DrawerOverlay v-model="approveDetailsShow" placement="right" :size="600">
             <ApproveDetails v-if="approveDetailsShow" :data="approveDetails" style="height: 100%;border-radius: 10px;"></ApproveDetails>
         </DrawerOverlay>
+
+        <!-- 群接龙 -->
+        <DialogGroupWordChain/>
+
+        <!-- 群投票 -->
+        <DialogGroupVote/>
+
     </div>
 </template>
 
@@ -528,6 +558,9 @@ import {choiceEmojiOne} from "./ChatInput/one";
 import ApproveDetails from "../../../pages/manage/approve/details.vue";
 import UserSelect from "../../../components/UserSelect.vue";
 import UserAvatarTip from "../../../components/UserAvatar/tip.vue";
+import DialogGroupWordChain from "./DialogGroupWordChain";
+import DialogGroupVote from "./DialogGroupVote";
+
 
 export default {
     name: "DialogWrapper",
@@ -542,7 +575,9 @@ export default {
         DialogGroupInfo,
         DrawerOverlay,
         DialogUpload,
-        ApproveDetails
+        ApproveDetails,
+        DialogGroupWordChain,
+        DialogGroupVote,
     },
 
     props: {
@@ -598,6 +633,8 @@ export default {
             modifyLoad: 0,
 
             forwardData: [],
+            forwardShowOriginal: true,
+            forwardLeaveMessage: '',
 
             openId: 0,
             dialogDrag: false,
@@ -1138,6 +1175,9 @@ export default {
         },
 
         allMsgList(newList, oldList) {
+            if(JSON.stringify(newList) == JSON.stringify(oldList)){
+                return;
+            }
             const {tail} = this.scrollInfo();
             if ($A.isIos() && newList.length !== oldList.length) {
                 // 隐藏区域，让iOS断触
@@ -2249,7 +2289,9 @@ export default {
                     data: {
                         dialogids,
                         userids,
-                        msg_id: this.operateItem.id
+                        msg_id: this.operateItem.id,
+                        show_source: this.forwardShowOriginal ? 1 : 0,
+                        leave_message: this.forwardLeaveMessage
                     }
                 }).then(({data, msg}) => {
                     this.$store.dispatch("saveDialogMsg", data.msgs);
@@ -2382,14 +2424,21 @@ export default {
                     value: $A.thumbRestore(event.target.currentSrc),
                 })
             } else if (event.target.nodeName === 'A') {
+                let href = event.target.href;
                 if (event.target.classList.contains("mention") && event.target.classList.contains("file")) {
-                    this.findOperateFile(this.operateItem.id, event.target.href)
+                    if(this.isEEUiApp || this.$Electron){
+                        const url = new URL(href);
+                        const params = new URLSearchParams(url.search);
+                        params.delete('theme'); params.delete('lang');
+                        href = url.origin + url.pathname + (params.toString() ? ('?' + params.toString()) : '');
+                    }
+                    this.findOperateFile(this.operateItem.id, href)
                 }
                 this.operateCopys.push({
                     type: 'link',
                     icon: '&#xe7cb;',
                     label: '复制链接',
-                    value: event.target.href,
+                    value: href,
                 })
             }
             if (msgData.type === 'text') {
@@ -2454,6 +2503,8 @@ export default {
 
                     case "forward":
                         this.forwardData = [];
+                        this.forwardLeaveMessage = '';
+                        this.forwardShowOriginal = true;
                         this.$refs.forwardSelect.onSelection()
                         break;
 

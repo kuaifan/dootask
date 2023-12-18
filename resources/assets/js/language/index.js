@@ -30,20 +30,33 @@ function addLanguage(data) {
 /**
  * 设置语言
  * @param language
+ * @param silence
  */
-function setLanguage(language) {
+function setLanguage(language, silence = false) {
     if (language === undefined) {
         return
     }
-    $A.modalConfirm({
-        content: '切换语言需要刷新后生效，是否确定刷新？',
-        cancelText: '取消',
-        okText: '确定',
-        onOk: () => {
-            window.localStorage.setItem("__language:type__", language)
-            $A.reloadUrl()
-        }
-    })
+    if(silence){
+        window.localStorage.setItem("__language:type__", language)
+        $A.reloadUrl()
+    }else{
+        $A.modalConfirm({
+            content: '切换语言需要刷新后生效，是否确定刷新？',
+            cancelText: '取消',
+            okText: '确定',
+            onOk: () => {
+                window.localStorage.setItem("__language:type__", language)
+                $A.reloadUrl()
+            }
+        })
+    }
+}
+
+/**
+ * 获取最新语言
+ */
+function getLanguage() {
+    return utils.getLanguage();
 }
 
 /**
@@ -111,4 +124,4 @@ function switchLanguage(text) {
     return text
 }
 
-export { languageType, languageList, addLanguage, setLanguage, switchLanguage }
+export { languageType, languageList, addLanguage, setLanguage, getLanguage, switchLanguage }

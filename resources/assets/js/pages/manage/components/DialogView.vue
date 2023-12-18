@@ -14,6 +14,10 @@
                 <UserAvatar :userid="msgData.reply_data.userid" :show-icon="false" :show-name="true"/>
                 <div class="reply-desc" v-html="$A.getMsgSimpleDesc(msgData.reply_data, 'image-preview')"></div>
             </div>
+            <!--转发-->
+            <div v-if="msgData.forward_show && msgData.forward_data && msgData.forward_data.userid" class="dialog-reply no-dark-content" @click="openDialog(msgData.forward_data.userid)">
+                <UserAvatar :userid="msgData.forward_data.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
+            </div>
             <!--详情-->
             <div ref="content" class="dialog-content" :class="contentClass">
                 <!--文本-->
@@ -61,6 +65,72 @@
                             <i class="taskfont">&#xe68b;</i>
                         </li>
                     </ul>
+                </div>
+                <!--接龙-->
+                <div v-else-if="msgData.type === 'word-chain'" class="content-text content-word-chain no-dark-content">
+                    <pre v-html="$A.formatTextMsg(msgData.msg.text, userId)"></pre>
+                    <ul>
+                        <li v-for="(item) in (msgData.msg.list || []).filter(h=>h.type == 'case')">
+                            {{ $L('例') }} {{ item.text }}
+                        </li>
+                        <li v-for="(item,index) in (msgData.msg.list || []).filter(h=>h.type != 'case')">
+                            <span class="expand" v-if="index == 2 && msgData.msg.list.length > 4" @click="unfoldWordChain">
+                                ...{{$L('展开')}}...
+                            </span>
+                            <span :class="{'shrink': index >= 2 && msgData.msg.list.length > 4 } ">
+                                {{index + 1}}. {{item.text}}
+                            </span>
+                        </li>
+                        <li @click="onWordChain" class="participate">{{ $L('参与接龙') }}<span>></span></li>
+                    </ul>
+                </div>
+                <!--投票-->
+                <div v-else-if="msgData.type === 'vote'" class="content-text content-word-vote no-dark-content">
+                    <div class="vote-msg-head">
+                        <i class="taskfont">&#xe7fd;</i> {{ $L('投票') }}
+                        <span>{{ msgData.msg.multiple == 1 ? $L('多选') : $L('单选')}}</span>
+                        <span>{{ msgData.msg.multiple == 1 ? $L('匿名') : $L('实名')}}</span>
+                    </div>
+                    <pre v-html="$A.formatTextMsg(msgData.msg.text, userId)"></pre>
+                    <template v-if="(msgData.msg.votes || []).filter(h=>h.userid == userId).length == 0">
+                        <RadioGroup v-if="msgData.msg.multiple == 0" v-model="msgData.msg._vote" vertical>
+                            <Radio v-for="(item,index) in (msgData.msg.list || [])" :label="item.id" :key="index">
+                                {{item.text}}
+                            </Radio>
+                        </RadioGroup>
+                        <CheckboxGroup v-else v-model="msgData.msg._vote">
+                            <Checkbox v-for="(item,index) in (msgData.msg.list || [])" :label="item.id" :key="index">
+                                {{item.text}}
+                            </Checkbox>
+                        </CheckboxGroup>
+                        <div class="btn-row no-dark-content">
+                            <Button v-if="(msgData.msg._vote || []).length == 0" class="ivu-btn" disabled>{{$L("请选择后投票")}}</Button>
+                            <Button v-else class="ivu-btn" :loading="msgData.msg._loadIng > 0"  @click="onVote('vote',msgData)">{{$L("立即投票")}}</Button>
+                        </div>
+                    </template>
+                    <template v-else>
+                        <div class="vote-result-body">
+                            <ul>
+                                <li v-for="item in (msgData.msg.list || [])">
+                                    <div class="vote-option-title">{{ item.text }}</div>
+                                    <div class="ticket-num">
+                                        <span>{{ getVoteProgress(msgData.msg,item.id).num }}{{$L('票')}}</span>
+                                        <span>{{ getVoteProgress(msgData.msg,item.id).progress + '%' }}</span>
+                                    </div>
+                                    <Progress :percent="Number(getVoteProgress(msgData.msg,item.id).progress)" :stroke-width="5" hide-info/>
+                                    <div v-if="msgData.msg.anonymous" class="avatar-row">
+                                        <template v-for="votes in (msgData.msg.votes || []).filter(h=>h.votes.indexOf(item.id) != -1)">
+                                            <UserAvatar  :userid="votes.userid" :size="18" />
+                                        </template>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="btn-row no-dark-content" v-if="msgData.msg.state == 1 && msgData.msg.userid == userId">
+                            <Button class="ivu-btn" :loading="msgData.msg._loadIng > 0" @click="onVote('again',msgData)">{{$L("再次发送")}}</Button>
+                            <Button class="ivu-btn" :loading="msgData.msg._loadIng > 0" @click="onVote('finish',msgData)">{{$L("结束投票")}}</Button>
+                        </div>
+                    </template>
                 </div>
                 <!--等待-->
                 <div v-else-if="msgData.type === 'loading'" class="content-loading">
@@ -453,6 +523,14 @@ export default {
             });
         },
 
+        openDialog(userid) {
+            this.$store.dispatch("openDialogUserid", userid).then(_ => {
+                this.goForward({name: 'manage-messenger'})
+            }).catch(({msg}) => {
+                $A.modalError(msg)
+            });
+        },
+
         viewReply() {
             this.$emit("on-view-reply", {
                 msg_id: this.msgData.id,
@@ -492,6 +570,67 @@ export default {
         onShowEmojiUser(item) {
             this.$emit("on-show-emoji-user", item)
         },
+
+        onWordChain(){
+            this.$store.state.dialogDroupWordChain = {
+                type: 'participate',
+                dialog_id: this.msgData.dialog_id,
+                msgData: this.msgData,
+            }
+        },
+
+        unfoldWordChain(e){
+            e.target.parentNode?.parentNode?.classList.add('expand')
+        },
+
+        onVote(type,msgData){
+            if(type != 'vote'){
+                $A.modalConfirm({
+                    content: type == 'finish' ? '确定结束投票？': '再次发送投票？',
+                    cancelText: '取消',
+                    okText: '确定',
+                    onOk: () => {
+                        this.vote(type,msgData);
+                    }
+                });
+                return;
+            }
+            this.vote(type,msgData);
+        },
+
+        vote(type,msgData){
+            this.$set(msgData.msg,'_loadIng',1)
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/vote',
+                method: 'post',
+                data: {
+                    dialog_id: msgData.dialog_id,
+                    uuid: msgData.msg.uuid,
+                    vote: msgData.msg._vote || [],
+                    type: type
+                }
+            }).then(({data}) => {
+                if(type == 'again'){
+                    $A.messageSuccess("已发送");
+                }
+                data.forEach(d => {
+                    this.$store.dispatch("saveDialogMsg", d );
+                });
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            }).finally(_ => {
+                this.$set(msgData.msg,'_loadIng',0)
+            });
+        },
+
+        getVoteProgress(msgData, id){
+            const num = msgData.votes.filter(h=>(h.votes || '').indexOf(id) != -1).length
+            let progress = '0.00';
+            if(num){
+                progress = (msgData.votes.length / num * 100).toFixed(2)
+            }
+            return {num, progress};
+        }
     }
 }
 </script>

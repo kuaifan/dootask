@@ -135,6 +135,37 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {get} api/dialog/search/tag          02. 搜索标注会话
+     *
+     * @apiDescription 根据消息关键词搜索相关会话，需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName search__tag
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function search__tag()
+    {
+        $user = User::auth();
+        // 搜索会话
+        $msgs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.color', 'u.updated_at as user_at', 'm.id as search_msg_id'])
+            ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
+            ->join('web_socket_dialog_msgs as m', 'web_socket_dialogs.id', '=', 'm.dialog_id')
+            ->where('u.userid', $user->userid)
+            ->where('m.tag', '>', 0)
+            ->orderByDesc('m.id')
+            ->take(50)
+            ->get();
+        $msgs->transform(function (WebSocketDialog $item) use ($user) {
+            return $item->formatData($user->userid);
+        });
+        //
+        return Base::retSuccess('success', $msgs->toArray());
+    }
+
+    /**
      * @api {get} api/dialog/one          03. 获取单个会话信息
      *
      * @apiDescription 需要token身份
@@ -1327,9 +1358,11 @@ class DialogController extends AbstractController
      * @apiGroup dialog
      * @apiName msg__forward
      *
-     * @apiParam {Number} msg_id            消息ID
-     * @apiParam {Array} dialogids          转发给的对话ID
-     * @apiParam {Array} userids            转发给的成员ID
+     * @apiParam {Number} msg_id                消息ID
+     * @apiParam {Array} dialogids              转发给的对话ID
+     * @apiParam {Array} userids                转发给的成员ID
+     * @apiParam {Number} show_source           是否显示原发送者信息
+     * @apiParam {Array} leave_message          转发留言
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1342,6 +1375,8 @@ class DialogController extends AbstractController
         $msg_id = intval(Request::input("msg_id"));
         $dialogids = Request::input('dialogids');
         $userids = Request::input('userids');
+        $show_source = intval(Request::input("show_source"));
+        $leave_message = Request::input('leave_message');
         //
         if (empty($dialogids) && empty($userids)) {
             return Base::retError("请选择转发对话或成员");
@@ -1353,7 +1388,7 @@ class DialogController extends AbstractController
         }
         WebSocketDialog::checkDialog($msg->dialog_id);
         //
-        return $msg->forwardMsg($dialogids, $userids, $user);
+        return $msg->forwardMsg($dialogids, $userids, $user, $show_source, $leave_message);
     }
 
     /**
@@ -1956,4 +1991,179 @@ class DialogController extends AbstractController
         }
         return Base::retSuccess('success', $dialog);
     }
+
+    /**
+     * @api {post} api/dialog/msg/wordchain          44. 发送接龙消息
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__wordchain
+     *
+     * @apiParam {Number} dialog_id         对话ID
+     * @apiParam {String} uuid              接龙ID
+     * @apiParam {String} text              接龙内容
+     * @apiParam {Array}  list              接龙列表
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__wordchain()
+    {
+        $user = User::auth();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        $uuid = trim(Request::input('uuid'));
+        $text = trim(Request::input('text'));
+        $list = Request::input('list');
+        //
+        WebSocketDialog::checkDialog($dialog_id);
+        $strlen = mb_strlen($text);
+        $noimglen = mb_strlen(preg_replace("/<img[^>]*?>/i", "", $text));
+        if ($strlen < 1) {
+            return Base::retError('内容不能为空');
+        }
+        if ($noimglen > 200000) {
+            return Base::retError('内容最大不能超过200000字');
+        }
+        //
+        $userid = $user->userid;
+        if ($uuid) {
+            $dialogMsg = WebSocketDialogMsg::whereDialogId($dialog_id)
+                ->whereType('word-chain')
+                ->orderByDesc('created_at')
+                ->where('msg', 'like', "%$uuid%")
+                ->value('msg');
+            $list = array_reverse(array_merge($dialogMsg['list'] ?? [], $list));
+            $list = array_reduce($list, function ($result, $item) {
+                $fieldValue = $item['id'];  // 指定字段名
+                if (!isset($result[$fieldValue])) {
+                    $result[$fieldValue] = $item;
+                }
+                return $result;
+            }, []);
+            $list = array_reverse(array_values($list));
+        }
+        //
+        $msgData = [
+            'text' => $text,
+            'list' => $list,
+            'userid' => $userid,
+            'uuid' => $uuid ?: Base::generatePassword(36),
+        ];
+        return WebSocketDialogMsg::sendMsg(null, $dialog_id, 'word-chain', $msgData, $user->userid);
+    }
+
+    /**
+     * @api {post} api/dialog/msg/vote          45. 发起投票
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__vote
+     *
+     * @apiParam {Number} dialog_id             对话ID
+     * @apiParam {String} text                  投票内容
+     * @apiParam {Array}  type                  投票类型
+     * @apiParam {String} [uuid]                投票ID
+     * @apiParam {Array}  [list]                投票列表
+     * @apiParam {Number} [multiple]            多选
+     * @apiParam {Number} [anonymous]           匿名
+     * @apiParam {Array}  [vote]                投票
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__vote()
+    {
+        $user = User::auth();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        $uuid = trim(Request::input('uuid'));
+        $text = trim(Request::input('text'));
+        $type = trim(Request::input('type', 'create'));
+        $multiple = intval(Request::input('multiple')) ?: 0;
+        $anonymous = intval(Request::input('anonymous')) ?: 0;
+        $list = Request::input('list');
+        $vote = Request::input('vote') ?: [];
+        $votes = is_array($vote) ? $vote : [$vote];
+        //
+        WebSocketDialog::checkDialog($dialog_id);
+        //
+        $action = null;
+        $userid = $user->userid;
+        $result = [];
+        if ($type != 'create') {
+            if ($type == 'vote' && empty($votes)) {
+                return Base::retError('参数错误');
+            }
+            if (empty($uuid)) {
+                return Base::retError('参数错误');
+            }
+            $dialogMsgs = WebSocketDialogMsg::whereDialogId($dialog_id)
+                ->whereType('vote')
+                ->orderByDesc('created_at')
+                ->where('msg', 'like', "%$uuid%")
+                ->get();
+            //
+            if ($type == 'again') {
+                $res = WebSocketDialogMsg::sendMsg(null, $dialog_id, 'vote', $dialogMsgs[0]->msg, $user->userid);
+                if (Base::isError($res)) {
+                    return $res;
+                }
+                $result[] = $res['data'];
+            } else {
+                foreach ($dialogMsgs as $dialogMsg) {
+                    $action = "change-{$dialogMsg->id}";
+                    $msgData = $dialogMsg->msg;
+                    if ($type == 'finish') {
+                        $msgData['state'] = 0;
+                    } else {
+                        $msgDataVotes = $msgData['votes'] ?? [];
+                        if (in_array($userid, array_column($msgDataVotes, 'userid'))) {
+                            return Base::retError('不能重复投票');
+                        }
+                        $msgDataVotes[] = [
+                            'userid' => $userid,
+                            'votes' => $votes,
+                        ];
+                        $msgData['votes'] = $msgDataVotes;
+                    }
+                    $res = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'vote', $msgData, $user->userid);
+                    if (Base::isError($res)) {
+                        return $res;
+                    }
+                    $result[] = $res['data'];
+                }
+            }
+        } else {
+            $strlen = mb_strlen($text);
+            $noimglen = mb_strlen(preg_replace("/<img[^>]*?>/i", "", $text));
+            if ($strlen < 1) {
+                return Base::retError('内容不能为空');
+            }
+            if ($noimglen > 200000) {
+                return Base::retError('内容最大不能超过200000字');
+            }
+            $msgData = [
+                'text' => $text,
+                'list' => $list,
+                'userid' => $userid,
+                'uuid' => $uuid ?: Base::generatePassword(36),
+                'multiple' => $multiple,
+                'anonymous' => $anonymous,
+                'votes' => [],
+                'state' => 1
+            ];
+            $res = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'vote', $msgData, $user->userid);
+            if (Base::isError($res)) {
+                return $res;
+            }
+            $result[] = $res['data'];
+        }
+        return Base::retSuccess('发送成功', $result);
+    }
+
 }

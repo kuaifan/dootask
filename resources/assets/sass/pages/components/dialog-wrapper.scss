@@ -447,7 +447,8 @@
 
             .dialog-tag,
             .dialog-todo,
-            .dialog-notice {
+            .dialog-notice,
+            .dialog-new {
                 font-size: 12px;
                 max-width: 80%;
                 margin: 0 auto;
@@ -963,6 +964,120 @@
                             text-decoration: underline;
                             color: $primary-title-color;
                         }
+
+                        .content-word-chain{
+                            ul{
+                                list-style-type:none;
+                                margin-top: 20px;
+                                li{
+                                    margin-top: 5px;
+                                    .expand{
+                                        cursor: pointer;
+                                        color: #0bc037;
+                                    }
+                                    .shrink{
+                                        display: none;
+                                    }
+                                }
+                                li.participate{
+                                    cursor: pointer;
+                                    margin-top: 10px;
+                                    color: #0bc037;
+                                    >span{
+                                        font-size: 12px;
+                                        margin-left: 2px;
+                                    }
+                                }
+                                &.expand,li:nth-last-child(2){
+                                    .expand{
+                                        display: none;
+                                    }
+                                    .shrink{
+                                        display: block;
+                                    }
+                                }
+                            }
+                        }
+
+                        .content-word-vote{
+                            min-width: 200px;
+                            max-width: 260px;
+                            .vote-msg-head{
+                                margin-bottom: 8px;
+                                color: #0bc037;
+                                line-height: 18px;
+                                span{
+                                    padding: 2px 4px;
+                                    border-radius: 3px;
+                                    background-color: #dee2fa;
+                                    margin: 0 4px;
+                                    font-size: 12px;
+                                    color: #7076e4;
+                                }
+                            }
+                            .ivu-checkbox-group,.ivu-radio-group{
+                                margin-top: 10px;
+                                width: 100%;
+                                .ivu-checkbox-wrapper,.ivu-radio-wrapper{
+                                    display: block;
+                                    width: 100%;
+                                    height: 34px;
+                                    line-height: 34px;
+                                    .ivu-checkbox-inner{
+                                        border-radius: 100%;
+                                    }
+                                }
+                            }
+                            .vote-result-body{
+                                font-size: 12px;
+                                margin-top: 14px;
+                                ul{
+                                    list-style-type:none;
+                                    li{
+                                        margin-bottom: 14px;
+                                        .vote-option-title{
+                                            margin-bottom: 3px;
+                                        }
+                                        .ivu-progress-inner{
+                                            background-color: #e2e2e2;
+                                        }
+                                        .avatar-row{
+                                            gap: 2px;
+                                            margin-top: 2px;
+                                            display: flex;
+                                            overflow: auto;
+                                            padding-bottom: 4px;
+                                            &::-webkit-scrollbar {
+                                                background: none;
+                                                width: 6px;
+                                                height: 6px;
+                                            }
+                                            &::-webkit-scrollbar-thumb {
+                                                background: #d4d4d4;
+                                                -webkit-border-radius: 10px;
+                                                -moz-border-radius: 10px;
+                                                border-radius: 10px;
+                                            }
+                                        }
+                                    }
+                                    li:last-child{
+                                        margin-bottom: 10px;
+                                    }
+                                }
+                                >span,.ticket-num span{
+                                    margin-right: 10px;
+                                }
+                            }
+                            .btn-row{
+                                display: flex;
+                                text-align: center;
+                                padding: 10px 0 5px 0;
+                                gap: 10px;
+                                .ivu-btn{
+                                    flex: 1;
+                                }
+                            }
+                        }
                     }
 
                     .dialog-emoji {
@@ -1237,6 +1352,20 @@
                             .content-unknown {
                                 color: #ffffff;
                             }
+
+                            .content-word-chain{
+                                ul{
+                                    li.participate, li .expand{
+                                        color: #23241f;
+                                    }
+                                }
+                            }
+
+                            .content-word-vote{
+                                .vote-msg-head{
+                                    color: #23241f;
+                                }
+                            }
                         }
 
                         .dialog-emoji {
@@ -1301,6 +1430,9 @@
                 height: 14px;
                 font-size: 14px;
                 line-height: 14px;
+                &.down{
+                    transform: rotate(-180deg);
+                }
             }
         }
     }
@@ -1482,6 +1614,73 @@
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
+    }
+}
+
+.dialog-wrapper-forward-body{
+    .dialog-wrapper{
+        position: relative !important;
+        .dialog-scroller{
+            padding: 0 !important;
+            .dialog-item{
+                .dialog-view{
+                    width: 100%;
+                    max-width: 100% !important;
+                    margin: 0 !important;
+                    .dialog-head{
+                        width: 100%;
+                        border-radius: 8px !important;
+                    }
+                    .dialog-foot{
+                        display: none !important;
+                    }
+                }
+                &.self {
+                    .dialog-head{
+                        background-color: #F4F5F7;
+                        .content-text{
+                            color: #303133 !important;
+                            .markdown-body{
+                                color: #303133 !important;
+                            }
+                        }
+                        .dialog-reply{
+                            &:after{
+                                background-color: rgba(132, 197, 106, 0.7);
+                            }
+                            .bot,.common-avatar{
+                                color: #84C56A !important;
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+    .leave-message{
+        padding-bottom: 16px;
+        textarea{
+            background: #f7f7f7;
+        }
+    }
+}
+
+.dialog-wrapper-forward-footer{
+    display: flex;
+    line-height: 34px;
+    cursor: pointer;
+    .user-modal-icon {
+        flex-shrink: 0;
+        font-size: 22px;
+        margin-right: 5px;
+        color: rgba($primary-desc-color, 0.7);
+        margin-top: 6px;
+    }
+    &.selected {
+        .user-modal-icon {
+            color: $primary-color;
+        }
     }
 }
 

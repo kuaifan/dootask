@@ -172,6 +172,21 @@
                         }
                     }
                 }
+
+                &.twice-affirm{
+                    padding-bottom: 20px;
+                    .search-selected{
+                        max-width: 100%;
+                    }
+                    .user-modal-avatar{
+                        display: flex;
+                        align-items: center;
+                        gap: 5px;
+                        .avatar-name{
+                            max-width: 90%;
+                        }
+                    }
+                }
             }
 
             .user-modal-switch {
@@ -416,12 +431,19 @@
                     border-radius: 14px;
                 }
             }
+
+            .twice-affirm-body-extend{
+                margin: 0 24px;
+            }
         }
 
         .ivu-modal-footer {
             border-top: 1px solid #f2f2f2 !important;
             padding: 12px 0 !important;
             margin: 0 24px !important;
+            display: flex;
+            justify-content: flex-end;
+            gap: 20px;
         }
 
         &.ivu-modal-fullscreen {
@@ -460,6 +482,12 @@
                     }
                 }
             }
+        }
+    }
+    &.twice-affirm-modal{
+        .ivu-modal {
+            max-width: 90%;
+            margin: 10px auto;
         }
     }
 }

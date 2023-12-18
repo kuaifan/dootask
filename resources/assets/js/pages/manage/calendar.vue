@@ -4,7 +4,7 @@
         <div class="calendar-head">
             <div class="calendar-titbox">
                 <div class="calendar-title">
-                    <div class="common-nav-back portrait" @click="goForward({name: 'manage-application'},true)"><i class="taskfont">&#xe676;</i></div>
+                    <div class="common-nav-back" @click="goForward({name: 'manage-application'},true)"><i class="taskfont">&#xe676;</i></div>
                     <h1>{{rangeText}}</h1>
                 </div>
                 <ButtonGroup class="calendar-arrow" size="small">
@@ -44,10 +44,6 @@
 </template>
 
 <script>
-import 'tui-date-picker/dist/tui-date-picker.css';
-import 'tui-time-picker/dist/tui-time-picker.css';
-import 'tui-calendar-hi/dist/tui-calendar-hi.css'
-
 import {mapState, mapGetters} from "vuex";
 import Calendar from "./components/Calendar";
 import moment from "moment";
@@ -363,7 +359,10 @@ export default {
             if (!data) {
                 return;
             }
-            if (changes.start || changes.end) {
+            if(changes?.start?.getTime() == schedule?.start?.getTime() && changes?.end?.getTime() == schedule?.end?.getTime()){
+                return;
+            }
+            if (changes?.start || changes?.end) {
                 const cal = this.$refs.cal.getInstance();
                 cal.updateSchedule(schedule.id, schedule.calendarId, changes);
                 //

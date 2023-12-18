@@ -58,64 +58,69 @@
                     @touchstart.native="listTouch"
                     @on-scroll="listScroll">
                     <ul v-if="tabActive==='dialog'" ref="ul" class="dialog">
-                        <li
-                            v-if="dialogList.length > 0"
-                            v-for="(dialog, key) in dialogList"
-                            :ref="`dialog_${dialog.id}`"
-                            :key="key"
-                            :data-id="dialog.id"
-                            :class="dialogClass(dialog)"
-                            @click="openDialog({
-                                dialog_id: dialog.id,
-                                search_msg_id: dialog.search_msg_id
-                            })"
-                            v-longpress="handleLongpress"
-                            :style="{'background-color':dialog.color}">
-                            <template v-if="dialog.type=='group'">
-                                <EAvatar v-if="dialog.avatar" class="img-avatar" :src="dialog.avatar" :size="42"></EAvatar>
-                                <i v-else-if="dialog.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
-                                <i v-else-if="dialog.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
-                                <i v-else-if="dialog.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
-                                <i v-else-if="dialog.group_type=='okr'" class="taskfont icon-avatar task">&#xe6f4;</i>
-                                <Icon v-else class="icon-avatar" type="ios-people" />
-                            </template>
-                            <div v-else-if="dialog.dialog_user" class="user-avatar"><UserAvatar :userid="dialog.dialog_user.userid" :size="42"/></div>
-                            <Icon v-else class="icon-avatar" type="md-person" />
-                            <div class="dialog-box">
-                                <div class="dialog-title">
-                                    <div v-if="dialog.todo_num" class="todo">[{{$L('待办')}}{{formatTodoNum(dialog.todo_num)}}]</div>
-                                    <div v-if="$A.getDialogMention(dialog) > 0" class="mention">[@{{$A.getDialogMention(dialog)}}]</div>
-                                    <div v-if="dialog.bot" class="taskfont bot">&#xe68c;</div>
-                                    <template v-for="tag in $A.dialogTags(dialog)" v-if="tag.color != 'success'">
-                                        <Tag :color="tag.color" :fade="false" @on-click="openDialog(dialog.id)">{{$L(tag.text)}}</Tag>
-                                    </template>
-                                    <span>{{dialog.name}}</span>
-                                    <Icon v-if="dialog.type == 'user' && lastMsgReadDone(dialog.last_msg) && dialog.dialog_user.userid != userId" :type="lastMsgReadDone(dialog.last_msg)"/>
-                                    <em v-if="dialog.last_at">{{$A.formatTime(dialog.last_at)}}</em>
-                                </div>
-                                <div class="dialog-text no-dark-content">
-                                    <template v-if="dialog.extra_draft_has && dialog.id != dialogId">
-                                        <div class="last-draft">[{{$L('草稿')}}]</div>
-                                        <div class="last-text"><span>{{formatDraft(dialog.extra_draft_content)}}</span></div>
-                                    </template>
-                                    <template v-else>
-                                        <template v-if="dialog.type=='group' && dialog.last_msg && dialog.last_msg.userid">
-                                            <div v-if="dialog.last_msg.userid == userId" class="last-self">{{$L('你')}}</div>
-                                            <UserAvatar v-else :userid="dialog.last_msg.userid" :show-name="true" :show-icon="false"/>
+                        <template v-if="dialogList.length > 0">
+                            <li
+                                v-for="(dialog, key) in dialogList"
+                                :ref="`dialog_${dialog.id}`"
+                                :key="key"
+                                :data-id="dialog.id"
+                                :class="dialogClass(dialog)"
+                                @click="openDialog({
+                                    dialog_id: dialog.id,
+                                    dialog_msg_id: dialog.search_msg_id,
+                                    search_msg_id: dialog.search_msg_id,
+                                })"
+                                v-longpress="handleLongpress"
+                                :style="{'background-color':dialog.color}">
+                                <template v-if="dialog.type=='group'">
+                                    <EAvatar v-if="dialog.avatar" class="img-avatar" :src="dialog.avatar" :size="42"></EAvatar>
+                                    <i v-else-if="dialog.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
+                                    <i v-else-if="dialog.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
+                                    <i v-else-if="dialog.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
+                                    <i v-else-if="dialog.group_type=='okr'" class="taskfont icon-avatar task">&#xe6f4;</i>
+                                    <Icon v-else class="icon-avatar" type="ios-people" />
+                                </template>
+                                <div v-else-if="dialog.dialog_user" class="user-avatar"><UserAvatar :userid="dialog.dialog_user.userid" :size="42"/></div>
+                                <Icon v-else class="icon-avatar" type="md-person" />
+                                <div class="dialog-box">
+                                    <div class="dialog-title">
+                                        <div v-if="dialog.todo_num" class="todo">[{{$L('待办')}}{{formatTodoNum(dialog.todo_num)}}]</div>
+                                        <div v-if="$A.getDialogMention(dialog) > 0" class="mention">[@{{$A.getDialogMention(dialog)}}]</div>
+                                        <div v-if="dialog.bot" class="taskfont bot">&#xe68c;</div>
+                                        <template v-for="tag in $A.dialogTags(dialog)" v-if="tag.color != 'success'">
+                                            <Tag :color="tag.color" :fade="false" @on-click="openDialog(dialog.id)">{{$L(tag.text)}}</Tag>
                                         </template>
-                                        <div class="last-text">
-                                            <em v-if="formatMsgEmojiDesc(dialog.last_msg)">{{formatMsgEmojiDesc(dialog.last_msg)}}</em>
-                                            <span>{{$A.getMsgSimpleDesc(dialog.last_msg)}}</span>
-                                        </div>
-                                    </template>
-                                    <div v-if="dialog.silence" class="taskfont last-silence">&#xe7d7;</div>
+                                        <span>{{dialog.name}}</span>
+                                        <Icon v-if="dialog.type == 'user' && lastMsgReadDone(dialog.last_msg) && dialog.dialog_user.userid != userId" :type="lastMsgReadDone(dialog.last_msg)"/>
+                                        <em v-if="dialog.last_at">{{$A.formatTime(dialog.last_at)}}</em>
+                                    </div>
+                                    <div class="dialog-text no-dark-content">
+                                        <template v-if="dialog.extra_draft_has && dialog.id != dialogId">
+                                            <div class="last-draft">[{{$L('草稿')}}]</div>
+                                            <div class="last-text"><span>{{formatDraft(dialog.extra_draft_content)}}</span></div>
+                                        </template>
+                                        <template v-else>
+                                            <template v-if="dialog.type=='group' && dialog.last_msg && dialog.last_msg.userid">
+                                                <div v-if="dialog.last_msg.userid == userId" class="last-self">{{$L('你')}}</div>
+                                                <UserAvatar v-else :userid="dialog.last_msg.userid" :show-name="true" :show-icon="false"/>
+                                            </template>
+                                            <div class="last-text">
+                                                <em v-if="formatMsgEmojiDesc(dialog.last_msg)">{{formatMsgEmojiDesc(dialog.last_msg)}}</em>
+                                                <span>{{$A.getMsgSimpleDesc(dialog.last_msg)}}</span>
+                                            </div>
+                                        </template>
+                                        <div v-if="dialog.silence" class="taskfont last-silence">&#xe7d7;</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <Badge class="dialog-num" :type="dialog.silence ? 'normal' : 'error'" :overflow-count="999" :count="$A.getDialogUnread(dialog, true)"/>
-                            <div class="dialog-line"></div>
-                        </li>
-                        <li v-else-if="dialogSearchLoad === 0" class="nothing">
+                                <Badge class="dialog-num" :type="dialog.silence ? 'normal' : 'error'" :overflow-count="999" :count="$A.getDialogUnread(dialog, true)"/>
+                                <div class="dialog-line"></div>
+                            </li>
+                        </template>
+                        <li v-else-if="dialogSearchLoad === 0 && dialogMarkLoad === 0" class="nothing">
                             {{$L(dialogSearchKey ? `没有任何与"${dialogSearchKey}"相关的会话` : `没有任何会话`)}}
+                        </li>
+                        <li v-else class="nothing">
+                            <Loading/>
                         </li>
                     </ul>
                     <ul v-else class="contacts">
@@ -235,6 +240,8 @@ export default {
                 {type: 'user', name: '单聊'},
                 {type: 'group', name: '群聊'},
                 {type: 'bot', name: '机器人'},
+                {type: 'mark', name: '标注'},
+                {type: '@', name: '@我的'},
             ],
             dialogHistory: MessengerObject.menuHistory,
 
@@ -251,6 +258,8 @@ export default {
             operateVisible: false,
 
             clickAgainSubscribe: null,
+
+            dialogMarkLoad: 0,
         }
     },
 
@@ -291,7 +300,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs', 'loadDialogs', 'dialogId', 'messengerSearchKey', 'appNotificationPermission', 'taskColorList']),
+        ...mapState(['cacheDialogs', 'loadDialogs', 'dialogId', 'dialogMsgId', 'dialogMsgs', 'messengerSearchKey', 'appNotificationPermission', 'taskColorList']),
 
         routeName() {
             return this.$route.name
@@ -337,6 +346,18 @@ export default {
             if (dialogActive == '' && dialogSearchKey == '') {
                 return this.cacheDialogs.filter(dialog => this.filterDialog(dialog)).sort(this.dialogSort);
             }
+            if(dialogActive == 'mark' && !dialogSearchKey){
+                const lists = [];
+                this.dialogMsgs.filter(h=>h.tag).forEach(h=>{
+                    let dialog = $A.cloneJSON(this.cacheDialogs).find(p=>p.id == h.dialog_id)
+                    if(dialog){
+                        dialog.last_msg = h;
+                        dialog.search_msg_id = h.id;
+                        lists.push(dialog);
+                    }
+                });
+                return lists;
+            }
             const list = this.cacheDialogs.filter(dialog => {
                 if (!this.filterDialog(dialog)) {
                     return false;
@@ -378,6 +399,11 @@ export default {
                             break;
                         case 'bot':
                             if (!dialog.bot) {
+                                return false;
+                            }
+                            break;
+                        case '@':
+                            if (!$A.getDialogMention(dialog)) {
                                 return false;
                             }
                             break;
@@ -547,6 +573,13 @@ export default {
             },
             immediate: true
         },
+
+        dialogActive(){
+            this.dialogSearchList = [];
+            if(this.dialogActive == 'mark' && !this.dialogSearchKey){
+                this.searchTagDialog()
+            }
+        }
     },
 
     methods: {
@@ -623,7 +656,7 @@ export default {
             }
             return {
                 top: dialog.top_at,
-                active: dialog.id == this.dialogId,
+                active: dialog.id == this.dialogId && (dialog.search_msg_id == this.dialogMsgId || !this.dialogMsgId),
                 operate: this.operateVisible && dialog.id == this.operateItem.id,
                 completed: $A.dialogCompleted(dialog)
             }
@@ -766,6 +799,29 @@ export default {
                 this.dialogSearchList = list;
             }).finally(_ => {
                 this.dialogSearchLoad--;
+            });
+        },
+
+        searchTagDialog() {
+            //
+            this.dialogMarkLoad++;
+            this.$store.dispatch("call", {
+                url: 'dialog/search/tag',
+            }).then(({data}) => {
+                const msgIds = [];
+                const lists = [];
+                this.dialogList.forEach(h=>{
+                    lists.push(h);
+                    msgIds.push(h.search_msg_id)
+                });
+                data.some(item => {
+                    if (!item.last_msg || !msgIds.includes(item.search_msg_id)) {
+                        lists.push(Object.assign(item, {is_search: true}))
+                    }
+                })
+                this.dialogSearchList = lists;
+            }).finally(_ => {
+                this.dialogMarkLoad--;
             });
         },
 

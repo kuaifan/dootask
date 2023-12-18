@@ -80,6 +80,9 @@
   .grid-4{
     grid-template-columns: 32vw 18vw 18vw 18vw !important;
   }
+  .grid-5{
+    grid-template-columns: 26vw 18.5vw 18.5vw 18.5vw 18.5vw !important;
+  }
   .plans-ul-b{
     grid-template-columns: calc(34vw + 4px) 18vw 18vw 18vw !important;
   }

@@ -735,8 +735,9 @@
             // 处理内容连接
             if (/https*:\/\//.test(text)) {
                 const urlMatch = $.apiUrl('../').match(/^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n]+)/im);
-                // const theme = window.localStorage.getItem("__theme:mode__")
-                // const lang = window.localStorage.getItem("__language:type__")
+                const isMentionFile = text.indexOf('class="mention file"') !== -1 && ($A.isEEUiApp || $A.isElectron)
+                const theme = isMentionFile ? $A.dark.isDarkEnabled() ? 'dark' : 'light' : '';
+                const lang = isMentionFile ? window.localStorage.getItem("__language:type__") : ''
                 text = text.split(/(<[^>]*>)/g).map(string => {
                     if (string && !/<[^>]*>/.test(string)) {
                         string = string.replace(/(^|[^'"])((https*:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;|#|@|,|!)+))/g, "$1<a href=\"$2\" target=\"_blank\">$2</a>")
@@ -745,8 +746,8 @@
                     const href = string.match(/href="([^"]+)"/)?.[1] || ''
                     if (urlMatch?.[1] && href.indexOf(urlMatch[1]) !== -1) {
                         const searchParams = new URLSearchParams()
-                        // href.indexOf("theme=") === -1 && searchParams.append('theme', theme);
-                        // href.indexOf("lang=") === -1 && searchParams.append('lang', lang);
+                        theme && href.indexOf("theme=") === -1 && searchParams.append('theme', theme);
+                        lang && href.indexOf("lang=") === -1 && searchParams.append('lang', lang);
                         const prefix = searchParams.toString() ? (href.indexOf("?") === -1 ? '?' : '&') : '';
                         string = string.replace(/(href="[^"]*)/g, '$1' + prefix + searchParams.toString())
                     }
@@ -819,6 +820,10 @@
                 switch (data.type) {
                     case 'text':
                         return $A.getMsgTextPreview(data.msg.text, imgClassName)
+                    case 'word-chain':
+                        return `[${$A.L('接龙')}]` + $A.getMsgTextPreview(data.msg.text, imgClassName)
+                    case 'vote':
+                        return `[${$A.L('投票')}]` + $A.getMsgTextPreview(data.msg.text, imgClassName)
                     case 'record':
                         return `[${$A.L('语音')}]`
                     case 'meeting':
