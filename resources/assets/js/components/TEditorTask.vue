@@ -138,6 +138,10 @@ export default {
             return this.$refs.desc.getContent();
         },
 
+        updateContent(html) {
+            this.content = html
+        },
+
         onEditing() {
             this.$refs.desc.onFull()
         },

@@ -1,7 +1,7 @@
 <template>
     <div class="setting-item submit">
         <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
-            <template v-if="this.$Electron">
+            <template v-if="$Electron">
                 <FormItem :label="$L('截图快捷键')" prop="screenshot_key">
                     <div class="input-box">
                         {{mateName}}<div class="input-box-push">+</div>Shift<div class="input-box-push">+</div><Input class="input-box-key" v-model="formData.screenshot_key" :maxlength="2"/>
@@ -28,15 +28,21 @@
                     </div>
                 </FormItem>
             </template>
-            <template>
-                <FormItem :label="$L('使用独立的发送按钮')" prop="anonMessage">
-                    <RadioGroup v-model="formData.separate_send_button">
-                        <Radio label="open">{{$L('开启')}}</Radio>
-                        <Radio label="close">{{$L('关闭')}}</Radio>
-                    </RadioGroup>
-                    <div class="form-tip">{{$L('开启后，键盘上的发送按钮会被替换成换行')}}</div>
-                </FormItem>
-            </template>
+            <FormItem v-if="$isEEUiApp" :label="$L('发送按钮')">
+                <RadioGroup v-model="formData.send_button_app">
+                    <Radio label="button">{{$L('开启')}}</Radio>
+                    <Radio label="enter">{{$L('关闭')}}</Radio>
+                </RadioGroup>
+                <div class="form-tip">{{$L('开启后，发送消息时键盘上的发送按钮会被替换成换行')}}</div>
+            </FormItem>
+            <FormItem v-else-if="$Electron" :label="$L('发送按钮')">
+                <RadioGroup v-model="formData.send_button_desktop" vertical>
+                    <Radio label="enter">Enter {{$L('发送')}}</Radio>
+                    <Radio label="button" class="input-box">
+                        {{mateName}}<div class="input-box-push">+</div>Enter {{$L('发送')}}
+                    </Radio>
+                </RadioGroup>
+            </FormItem>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('保存')}}</Button>
@@ -69,7 +75,8 @@ export default {
 
             formData: {
                 screenshot_key: '',
-                separate_send_button: 'close'
+                send_button_app: '',
+                send_button_desktop: '',
             },
 
             ruleData: {
@@ -100,36 +107,26 @@ export default {
 
     methods: {
         initData() {
-            this.formData = Object.assign({
-                screenshot_key: '',
-                separate_send_button: 'close',
-            }, $A.jsonParse(window.localStorage.getItem("__keyboard:data__")) || {});
-            //
+            this.formData = $A.cloneJSON(this.$store.state.cacheKeyboard);
             this.formData_bak = $A.cloneJSON(this.formData);
-        },
-
-        onKeydown({key, keyCode}) {
-            if (keyCode !== 8) {
-                key = /^[A-Za-z0-9]?$/.test(key) ? key.toUpperCase() : ""
-                if (key) {
-                    this.formData.screenshot_key = key
-                }
-            }
         },
 
         submitForm() {
             this.$refs.formData.validate((valid) => {
                 if (valid) {
-                    window.localStorage.setItem("__keyboard:data__", $A.jsonStringify(this.formData));
-                    $A.bindScreenshotKey(this.formData);
-                    $A.messageSuccess('保存成功');
+                    this.$store.dispatch('handleKeyboard', this.formData).then((data) => {
+                        if (this.$Electron) {
+                            $A.bindScreenshotKey(data);
+                        }
+                        $A.messageSuccess('保存成功');
+                    });
                 }
             })
         },
 
         resetForm() {
             this.formData = $A.cloneJSON(this.formData_bak);
-        }
+        },
     }
 }
 </script>

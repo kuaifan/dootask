@@ -11,7 +11,7 @@
             v-longpress="{callback: handleLongpress, delay: 300}">
             <!--回复-->
             <div v-if="!hideReply && msgData.reply_data" class="dialog-reply no-dark-content" @click="viewReply">
-                <UserAvatar :userid="msgData.reply_data.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
+                <UserAvatar :userid="msgData.reply_data.userid" :show-icon="false" :show-name="true"/>
                 <div class="reply-desc" v-html="$A.getMsgSimpleDesc(msgData.reply_data, 'image-preview')"></div>
             </div>
             <!--转发-->
@@ -54,7 +54,7 @@
                         </li>
                         <li>
                             <em>{{$L('会议创建人')}}</em>
-                            <UserAvatar :userid="msgData.msg.userid" :show-icon="false" :show-name="true" tooltip-disabled/>
+                            <UserAvatar :userid="msgData.msg.userid" :show-icon="false" :show-name="true"/>
                         </li>
                         <li>
                             <em>{{$L('频道ID')}}</em>
@@ -150,7 +150,7 @@
                     <div class="emoji-users" @click="onShowEmojiUser(item)">
                         <ul>
                             <template v-for="(uitem, uindex) in item.userids">
-                                <li v-if="uindex < emojiUsersNum" :class="{bold:uitem==userId}"><UserAvatar :userid="uitem" tooltip-disabled show-name :show-icon="false"/></li>
+                                <li v-if="uindex < emojiUsersNum" :class="{bold:uitem==userId}"><UserAvatar :userid="uitem" show-name :show-icon="false"/></li>
                                 <li v-else-if="uindex == emojiUsersNum">+{{item.userids.length - emojiUsersNum}}位</li>
                             </template>
                         </ul>
@@ -181,7 +181,7 @@
                             <div class="read-title"><em>{{ todoDoneList.length }}</em>{{ $L('完成') }}</div>
                             <ul>
                                 <li v-for="item in todoDoneList">
-                                    <UserAvatar :userid="item.userid" :size="26" showName tooltipDisabled/>
+                                    <UserAvatar :userid="item.userid" :size="26" showName/>
                                 </li>
                             </ul>
                         </Scrollbar>
@@ -189,7 +189,7 @@
                             <div class="read-title"><em>{{ todoUndoneList.length }}</em>{{ $L('待办') }}</div>
                             <ul>
                                 <li v-for="item in todoUndoneList">
-                                    <UserAvatar :userid="item.userid" :size="26" showName tooltipDisabled/>
+                                    <UserAvatar :userid="item.userid" :size="26" showName/>
                                 </li>
                             </ul>
                         </Scrollbar>
@@ -225,7 +225,7 @@
                                     <div class="read-title"><em>{{ readList.length }}</em>{{ $L('已读') }}</div>
                                     <ul>
                                         <li v-for="item in readList">
-                                            <UserAvatar :userid="item.userid" :size="26" showName tooltipDisabled/>
+                                            <UserAvatar :userid="item.userid" :size="26" showName/>
                                         </li>
                                     </ul>
                                 </Scrollbar>
@@ -233,7 +233,7 @@
                                     <div class="read-title"><em>{{ unreadList.length }}</em>{{ $L('未读') }}</div>
                                     <ul>
                                         <li v-for="item in unreadList">
-                                            <UserAvatar :userid="item.userid" :size="26" showName tooltipDisabled/>
+                                            <UserAvatar :userid="item.userid" :size="26" showName/>
                                         </li>
                                     </ul>
                                 </Scrollbar>

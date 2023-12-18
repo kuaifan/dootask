@@ -90,7 +90,7 @@
                                                     <EDropdownMenu slot="dropdown" class="taskflow-config-more-dropdown-menu">
                                                         <EDropdownItem v-if="item.userids.length > 0" command="user">
                                                             <div class="users">
-                                                                <UserAvatar v-for="(uid, ukey) in item.userids" :key="ukey" :userid="uid" :size="28" :borderWitdh="1" :showName="item.userids.length === 1" tooltipDisabled/>
+                                                                <UserAvatar v-for="(uid, ukey) in item.userids" :key="ukey" :userid="uid" :size="28" :borderWitdh="1" :showName="item.userids.length === 1"/>
                                                             </div>
                                                         </EDropdownItem>
                                                         <EDropdownItem command="user">

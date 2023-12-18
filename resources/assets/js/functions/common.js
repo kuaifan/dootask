@@ -552,14 +552,14 @@ const localforage = require("localforage");
          * @returns {string}
          */
         screenOrientation() {
-            try {
+            /*try {
                 if (typeof window.screen.orientation === "object") {
                     return $A.strExists(window.screen.orientation.type, 'portrait') ? 'portrait' : 'landscape'
                 }
             } catch (e) {
                 //
-            }
-            return $A(window).width() > $A(window).height() ? "landscape" : "portrait"
+            }*/ // 注释原因：有些设备宽和高对调了
+            return $A(window).width() - $A(window).height() > 50 ? "landscape" : "portrait"
         },
 
         /**

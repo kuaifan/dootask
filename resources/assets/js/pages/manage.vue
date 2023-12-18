@@ -5,13 +5,17 @@
                 class="page-manage-menu-dropdown main-menu"
                 trigger="click"
                 @on-click="settingRoute"
-                @on-visible-change="menuVisibleChange"
-                >
+                @on-visible-change="menuVisibleChange">
                 <div :class="['manage-box-title', visibleMenu ? 'menu-visible' : '']">
                     <div class="manage-box-avatar">
-                        <UserAvatar :userid="userId" :size="42" tooltipDisabled/>
+                        <UserAvatar :userid="userId" :size="36"/>
                     </div>
+                    <span>{{userInfo.nickname}}</span>
                     <Badge v-if="!!clientNewVersion" class="manage-box-top-report" dot/>
+                    <div class="manage-box-arrow">
+                        <Icon type="ios-arrow-up" />
+                        <Icon type="ios-arrow-down" />
+                    </div>
                 </div>
                 <DropdownMenu slot="list">
                     <template v-for="item in menu">
@@ -48,8 +52,7 @@
                             v-else-if="item.path === 'team'"
                             transfer
                             transfer-class-name="page-manage-menu-dropdown"
-                            placement="right-start"
-                            class="display-block" >
+                            placement="right-start">
                             <DropdownItem :divided="!!item.divided">
                                 <div class="manage-menu-flex">
                                     {{$L(item.name)}}
@@ -93,23 +96,20 @@
                 <div class="menu-base">
                     <ul>
                         <li @click="toggleRoute('dashboard')" :class="classNameRoute('dashboard')">
-                            <i class="taskfont" v-if="!classNameRoute('dashboard')?.active">&#xe7f8;</i>
-                            <i class="taskfont" v-else>&#xe7f7;</i>
-                            <div class="menu-title">{{$L('首页')}}</div>
+                            <i class="taskfont">&#xe6fb;</i>
+                            <div class="menu-title">{{$L('仪表盘')}}</div>
                             <Badge v-if="dashboardTask.overdue_count > 0" class="menu-badge" type="error" :overflow-count="999" :count="dashboardTask.overdue_count"/>
                             <Badge v-else-if="dashboardTask.today_count > 0" class="menu-badge" type="info" :overflow-count="999" :count="dashboardTask.today_count"/>
                             <Badge v-else-if="dashboardTask.all_count > 0" class="menu-badge" type="primary" :overflow-count="999" :count="dashboardTask.all_count"/>
                         </li>
+                        <li @click="toggleRoute('calendar')" :class="classNameRoute('calendar')">
+                            <i class="taskfont">&#xe6f5;</i>
+                            <div class="menu-title">{{$L('日历')}}</div>
+                        </li>
                         <li @click="toggleRoute('messenger')" :class="classNameRoute('messenger')">
-                            <i class="taskfont" v-if="!classNameRoute('messenger')?.active">&#xe6eb;</i>
-                            <i class="taskfont" v-else>&#xe7f5;</i>
+                            <i class="taskfont">&#xe6eb;</i>
                             <div class="menu-title">{{$L('消息')}}</div>
                             <Badge class="menu-badge" :overflow-count="999" :text="msgUnreadMention"/>
-                        </li>
-                        <li @click="toggleRoute('project')" :class="classNameRoute('project')">
-                            <i class="taskfont" v-if="!classNameRoute('project')?.active">&#xe6fa;</i>
-                            <i class="taskfont" v-else>&#xe6f9;</i>
-                            <div class="menu-title">{{$L('项目')}}</div>
                         </li>
                         <li @click="toggleRoute('file')" :class="classNameRoute('file')">
                             <i class="taskfont">&#xe6f3;</i>
@@ -122,41 +122,77 @@
                         </li>
                     </ul>
                 </div>
+                <div ref="menuProject" class="menu-project">
+                    <ul>
+                        <li
+                            v-for="(item, key) in projectLists"
+                            :ref="`project_${item.id}`"
+                            :key="key"
+                            :class="classNameProject(item)"
+                            :data-id="item.id"
+                            @click="toggleRoute('project', {projectId: item.id})"
+                            v-longpress="handleLongpress">
+                            <div class="project-h1">
+                                <em @click.stop="toggleOpenMenu(item.id)"></em>
+                                <div class="title">{{item.name}}</div>
+                                <div v-if="item.top_at" class="icon-top"></div>
+                                <div v-if="item.task_my_num - item.task_my_complete > 0" class="num">{{item.task_my_num - item.task_my_complete}}</div>
+                            </div>
+                            <div class="project-h2">
+                                <p>
+                                    <em>{{$L('我的')}}:</em>
+                                    <span>{{item.task_my_complete}}/{{item.task_my_num}}</span>
+                                    <Progress :percent="item.task_my_percent" :stroke-width="6" />
+                                </p>
+                                <p>
+                                    <em>{{$L('全部')}}:</em>
+                                    <span>{{item.task_complete}}/{{item.task_num}}</span>
+                                    <Progress :percent="item.task_percent" :stroke-width="6" />
+                                </p>
+                            </div>
+                        </li>
+                        <li v-if="projectKeyLoading > 0" class="loading"><Loading/></li>
+                    </ul>
+                </div>
             </Scrollbar>
-            <div class="manage-box-new-group">
-                <ul>
-                    <li class="client-download-update" v-if="!!clientNewVersion || !$Electron">
-                        <Tooltip v-if="clientDownloadUrl && !$Electron" :content="$L('客户端下载')" placement="right" transfer :delay="300">
-                            <a class="client-download common-right-bottom-link" :href="clientDownloadUrl" target="_blank">
-                                <i class="taskfont">&#xe7fa;</i>
-                            </a>
-                        </Tooltip>
-                        <Tooltip v-else-if="!!clientNewVersion && $Electron" :content="$L('更新客户端')" placement="right" transfer :delay="300">
-                            <i class="taskfont"  @click="settingRoute('version')">&#xe7fb;</i>
-                        </Tooltip>
-                    </li>
-                    <li @click="onAddShow">
-                        <Tooltip :content="$L('新建项目') + ' ('+mateName+'+B)'" placement="right" transfer :delay="300">
-                            <i class="taskfont">&#xe7b9;</i>
-                        </Tooltip>
-                    </li>
-                    <li @click="onAddMenu('task')">
-                        <Tooltip :content="$L('新建任务') + ' ('+mateName+'+K)'" placement="right" transfer :delay="300">
-                            <i class="taskfont">&#xe7b5;</i>
-                        </Tooltip>
-                    </li>
-                    <li @click="onAddMenu('createMeeting')">
-                        <Tooltip :content="$L('新会议') + ' ('+mateName+'+J)'" placement="right" transfer :delay="300">
-                            <i class="taskfont">&#xe7c1;</i>
-                        </Tooltip>
-                    </li>
-                    <li @click="onAddMenu('joinMeeting')">
-                        <Tooltip :content="$L('加入会议')" placement="right" transfer :delay="300">
-                            <i class="taskfont">&#xe794;</i>
-                        </Tooltip>
-                    </li>
-                </ul>
+            <div class="operate-position" :style="operateStyles" v-show="operateVisible">
+                <Dropdown
+                    trigger="custom"
+                    :placement="windowLandscape ? 'bottom' : 'top'"
+                    :visible="operateVisible"
+                    @on-clickoutside="operateVisible = false"
+                    transfer>
+                    <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
+                    <DropdownMenu slot="list">
+                        <DropdownItem @click.native="handleTopClick">
+                            {{ $L(operateItem.top_at ? '取消置顶' : '置顶该项目') }}
+                        </DropdownItem>
+                    </DropdownMenu>
+                </Dropdown>
             </div>
+            <div
+                v-if="(projectSearchShow || projectTotal > 20) && windowHeight > 600"
+                class="manage-project-search">
+                <Input v-model="projectKeyValue" :placeholder="$L(`共${projectTotal || cacheProjects.length}个项目，搜索...`)" clearable>
+                    <div class="search-pre" slot="prefix">
+                        <Loading v-if="projectKeyLoading > 0"/>
+                        <Icon v-else type="ios-search" />
+                    </div>
+                </Input>
+            </div>
+            <ButtonGroup class="manage-box-new-group">
+                <Button class="manage-box-new" type="primary" icon="md-add" @click="onAddShow">{{$L('新建项目')}}</Button>
+                <Dropdown @on-click="onAddMenu" trigger="click">
+                    <Button type="primary">
+                        <Icon type="ios-arrow-down"></Icon>
+                    </Button>
+                    <DropdownMenu slot="list">
+                        <DropdownItem name="task">{{$L('新建任务')}} ({{mateName}}+K)</DropdownItem>
+                        <DropdownItem name="createMeeting">{{$L('新会议')}} ({{mateName}}+J)</DropdownItem>
+                        <DropdownItem name="joinMeeting">{{$L('加入会议')}}</DropdownItem>
+                    </DropdownMenu>
+                </Dropdown>
+            </ButtonGroup>
         </div>
 
         <div class="manage-box-main">
@@ -289,7 +325,7 @@ import TaskExport from "./manage/components/TaskExport";
 import ApproveExport from "./manage/components/ApproveExport";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
-import MicroApps from "../components/MicroApps";
+import MicroApps from "../components/MicroApps.vue";
 
 export default {
     components: {
@@ -337,8 +373,14 @@ export default {
             exportCheckinShow: false,
             exportApproveShow: false,
 
+
             dialogMsgSubscribe: null,
 
+            projectKeyValue: '',
+            projectKeyLoading: 0,
+            projectSearchShow: false,
+
+            openMenu: {},
             visibleMenu: false,
             showMobileMenu: false,
 
@@ -351,6 +393,10 @@ export default {
             notificationManage: null,
 
             reportTabs: "my",
+
+            operateStyles: {},
+            operateVisible: false,
+            operateItem: {},
 
             needStartHome: false,
         }
@@ -402,13 +448,14 @@ export default {
             'cacheUserBasic',
             'cacheTasks',
             'cacheDialogs',
+            'cacheProjects',
+            'projectTotal',
             'wsOpenNum',
             'columnTemplate',
 
             'wsMsg',
 
             'clientNewVersion',
-            'clientDownloadUrl',
             'cacheTaskBrowse',
 
             'dialogIns',
@@ -561,6 +608,19 @@ export default {
             return array
         },
 
+        projectLists() {
+            const {projectKeyValue, cacheProjects} = this;
+            const data = $A.cloneJSON(cacheProjects).sort((a, b) => {
+                if (a.top_at || b.top_at) {
+                    return $A.Date(b.top_at) - $A.Date(a.top_at);
+                }
+                return b.id - a.id;
+            });
+            if (projectKeyValue) {
+                return data.filter(item => $A.strExists(`${item.name} ${item.desc}`, projectKeyValue));
+            }
+            return data;
+        },
 
         taskBrowseLists() {
             const {cacheTasks, cacheTaskBrowse, userId} = this;
@@ -586,6 +646,17 @@ export default {
             this.chackPass();
         },
 
+        projectKeyValue(val) {
+            if (val == '') {
+                return;
+            }
+            setTimeout(() => {
+                if (this.projectKeyValue == val) {
+                    this.searchProject();
+                }
+            }, 600);
+        },
+
         wsOpenNum(num) {
             if (num <= 1) return
             this.$store.dispatch("getBasicData", 600)
@@ -595,6 +666,25 @@ export default {
             if (show) {
                 this.$store.dispatch("getReportUnread", 0)
             }
+        },
+
+        'cacheProjects.length': {
+            handler() {
+                this.$nextTick(_ => {
+                    const menuProject = this.$refs.menuProject
+                    const lastEl = $A.last($A.getObject(menuProject, 'children.0.children'))
+                    if (lastEl) {
+                        const lastRect = lastEl.getBoundingClientRect()
+                        const menuRect = menuProject.getBoundingClientRect()
+                        if (lastRect.top > menuRect.top + menuRect.height) {
+                            this.projectSearchShow = true
+                            return
+                        }
+                    }
+                    this.projectSearchShow = false
+                })
+            },
+            immediate: true
         },
 
         unreadAndOverdue: {
@@ -641,6 +731,10 @@ export default {
                 location.params.folderId = fileFolderId
             }
             this.goForward(location);
+        },
+
+        toggleOpenMenu(id) {
+            this.$set(this.openMenu, id, !this.openMenu[id])
         },
 
         settingRoute(path) {
@@ -739,11 +833,19 @@ export default {
 
         classNameRoute(path) {
             let routeName = this.routeName
-            if(routeName == 'manage-approve' || routeName == 'manage-apps' || routeName == 'manage-calendar'){
+            if(routeName == 'manage-approve' || routeName == 'manage-apps'){
                 routeName = `manage-application`
             }
             return {
                 "active": routeName === `manage-${path}`,
+            };
+        },
+
+        classNameProject(item) {
+            return {
+                "active": this.routeName === 'manage-project' && this.$route.params.projectId == item.id,
+                "open-menu": this.openMenu[item.id] === true,
+                "operate": item.id == this.operateItem.id && this.operateVisible
             };
         },
 
@@ -798,6 +900,18 @@ export default {
             });
         },
 
+        searchProject() {
+            setTimeout(() => {
+                this.projectKeyLoading++;
+            }, 1000)
+            this.$store.dispatch("getProjects", {
+                keys: {
+                    name: this.projectKeyValue
+                }
+            }).finally(_ => {
+                this.projectKeyLoading--;
+            });
+        },
 
         selectChange(index) {
             this.$nextTick(() => {
@@ -947,6 +1061,45 @@ export default {
             } else {
                 this.$store.dispatch("getDialogOne", dialog_id).then(({data}) => notificationFuncA(data.name)).catch(() => {})
             }
+        },
+
+        handleLongpress(event, el) {
+            const projectId = $A.getAttr(el, 'data-id')
+            const projectItem = this.projectLists.find(item => item.id == projectId)
+            if (!projectItem) {
+                return
+            }
+            this.operateVisible = false;
+            this.operateItem = $A.isJson(projectItem) ? projectItem : {};
+            this.$nextTick(() => {
+                const projectRect = el.getBoundingClientRect();
+                const wrapRect = this.$refs.menuProject.getBoundingClientRect();
+                this.operateStyles = {
+                    left: `${event.clientX - wrapRect.left}px`,
+                    top: `${projectRect.top + this.windowScrollY}px`,
+                    height: projectRect.height + 'px',
+                }
+                this.operateVisible = true;
+            })
+        },
+
+        handleTopClick() {
+            this.$store.dispatch("call", {
+                url: 'project/top',
+                data: {
+                    project_id: this.operateItem.id,
+                },
+            }).then(({data}) => {
+                this.$store.dispatch("saveProject", data);
+                this.$nextTick(() => {
+                    const active = this.$refs.menuProject.querySelector(".active")
+                    if (active) {
+                        $A.scrollIntoViewIfNeeded(active);
+                    }
+                });
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            });
         },
 
         onTabbarClick(act) {

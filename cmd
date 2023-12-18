@@ -421,9 +421,9 @@ if [ $# -gt 0 ]; then
         e="redis $@" && run_exec redis "$e"
     elif [[ "$1" == "mysql" ]]; then
         shift 1
-        if [ "$1" = "backup" ]; then
+        if [[ "$1" == "backup" ]] || [[ "$1" == "b" ]]; then
             run_mysql backup
-        elif [ "$1" = "recovery" ]; then
+        elif [[ "$1" == "recovery" ]] || [[ "$1" == "r" ]]; then
             run_mysql recovery
         else
             e="mysql $@" && run_exec mariadb "$e"

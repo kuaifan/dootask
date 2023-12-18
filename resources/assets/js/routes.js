@@ -113,7 +113,7 @@ export default [
             },
             {
                 name: 'manage-project',
-                path: 'project/:projectId?',
+                path: 'project/:projectId',
                 component: () => import('./pages/manage/project.vue'),
             },
             {

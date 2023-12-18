@@ -7,7 +7,8 @@
         @dragover.prevent="chatDragOver(true, $event)"
         @dragleave.prevent="chatDragOver(false, $event)"
         @touchstart="onTouchStart"
-        @touchmove="onTouchMove">
+        @touchmove="onTouchMove"
+        @touchend="onTouchEnd">
         <!--顶部导航-->
         <div class="dialog-nav" :style="navStyle">
             <slot name="head">
@@ -28,11 +29,11 @@
                                 <Icon v-else class="icon-avatar" type="ios-people" />
                             </template>
                             <div v-else-if="dialogData.dialog_user" class="user-avatar">
-                                <UserAvatar :online.sync="dialogData.online_state" :userid="dialogData.dialog_user.userid" :size="42">
+                                <UserAvatarTip :online.sync="dialogData.online_state" :userid="dialogData.dialog_user.userid" :size="42">
                                     <p v-if="dialogData.type === 'user' && dialogData.online_state !== true" slot="end">
                                         {{$L(dialogData.online_state)}}
                                     </p>
-                                </UserAvatar>
+                                </UserAvatarTip>
                             </div>
                             <Icon v-else class="icon-avatar" type="md-person" />
                         </div>
@@ -136,10 +137,10 @@
         </div>
 
         <!--跳转提示-->
-        <div v-if="positionMsg && !positionLoadMark" class="dialog-position">
+        <div v-if="positionMsg" class="dialog-position" :class="{'down': tagShow}">
             <div class="position-label" @click="onPositionMark">
                 <Icon v-if="positionLoad > 0" type="ios-loading" class="icon-loading"></Icon>
-                <i v-else class="taskfont" :class="{'down': positionLoadMark}">&#xe624;</i>
+                <i v-else class="taskfont">&#xe624;</i>
                 {{positionMsg.label}}
             </div>
         </div>
@@ -148,18 +149,18 @@
         <VirtualList
             ref="scroller"
             class="dialog-scroller scrollbar-virtual"
-            item-inactive-class="inactive"
-            item-active-class="active"
+            active-prefix="item"
             :class="scrollerClass"
             :data-key="'id'"
             :data-sources="allMsgs"
             :data-component="msgItem"
 
             :item-class-add="itemClassAdd"
-            :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId}"
+            :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, unreadMsgId, scrollIng, msgReady}"
             :estimate-size="dialogData.type=='group' ? 105 : 77"
-            :keeps="keeps"
+            :keeps="25"
             :disabled="scrollDisabled"
+            @activity="onActivity"
             @scroll="onScroll"
             @range="onRange"
             @totop="onPrevPage"
@@ -426,29 +427,24 @@
             :mask-closable="false">
             <Form ref="todoSettingForm" :model="todoSettingData" label-width="auto" @submit.native.prevent>
                 <FormItem prop="type" :label="$L('当前会话')">
-                    <RadioGroup v-model="todoSettingData.type">
+                    <RadioGroup v-model="todoSettingData.type" @on-change="onTypeChange">
                         <Radio label="all">{{$L('所有成员')}}</Radio>
                         <Radio label="user">{{$L('指定成员')}}</Radio>
-                        <br/>
-                        <Radio v-if="todoSettingData.my_id" label="my">
-                            <div class="dialog-wrapper-todo">
-                                <div>
-                                    <UserAvatar :userid="todoSettingData.my_id" :show-icon="false" :show-name="true"/>
-                                    <Tag>{{$L('自己')}}</Tag>
-                                </div>
-                            </div>
-                        </Radio>
-                        <Radio v-if="todoSettingData.you_id" label="you">
-                            <div class="dialog-wrapper-todo">
-                                <div>
-                                    <UserAvatar :userid="todoSettingData.you_id" :show-icon="false" :show-name="true"/>
-                                </div>
-                            </div>
-                        </Radio>
+                        <Radio label="quick_select" v-show="false"></Radio>
                     </RadioGroup>
+                    <CheckboxGroup v-model="todoSettingData.quick_value" @on-change="onQuickChange">
+                        <Checkbox v-for="userid in todoSettingData.quick_list" :key="userid" :label="userid">
+                            <div class="dialog-wrapper-todo">
+                                <div>
+                                    <UserAvatar :userid="userid" :show-icon="false" :show-name="true"/>
+                                    <Tag v-if="userid==userId">{{$L('自己')}}</Tag>
+                                </div>
+                            </div>
+                        </Checkbox>
+                    </CheckboxGroup>
                 </FormItem>
                 <FormItem prop="userids" :label="$L('指定成员')" v-if="todoSettingData.type === 'user'">
-                    <UserSelect v-model="todoSettingData.userids" :dialog-id="dialogId" :title="$L('选择指定成员')"/>
+                    <UserSelect ref="userSelect" v-model="todoSettingData.userids" :dialog-id="dialogId" :title="$L('选择指定成员')"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
@@ -561,6 +557,7 @@ import {choiceEmojiOne} from "./ChatInput/one";
 
 import ApproveDetails from "../../../pages/manage/approve/details.vue";
 import UserSelect from "../../../components/UserSelect.vue";
+import UserAvatarTip from "../../../components/UserAvatar/tip.vue";
 import DialogGroupWordChain from "./DialogGroupWordChain";
 import DialogGroupVote from "./DialogGroupVote";
 
@@ -568,6 +565,7 @@ import DialogGroupVote from "./DialogGroupVote";
 export default {
     name: "DialogWrapper",
     components: {
+        UserAvatarTip,
         UserSelect,
         ImgUpload,
         DialogRespond,
@@ -610,13 +608,11 @@ export default {
             msgType: '',
             loadIng: 0,
 
-            keeps: 25,
             allMsgs: [],
             tempMsgs: [],
             tempId: $A.randNum(1000000000, 9999999999),
             msgLoadIng: 0,
             msgActiveIndex: -1,
-            msgReadIds: [],
 
             pasteShow: false,
             pasteFile: [],
@@ -680,6 +676,7 @@ export default {
             todoSettingData: {
                 type: 'all',
                 userids: [],
+                quick_value: [],
             },
 
             todoViewLoad: false,
@@ -693,21 +690,23 @@ export default {
             scrollDirection: null,
             scrollAction: 0,
             scrollTmp: 0,
+            scrollIng: 0,
 
-            positionLoad: 0,
-            positionLoadMark: false,
-
-            approveDetails:{id: 0},
+            approveDetails: {id: 0},
             approveDetailsShow: false,
             approvaUserStatus: '',
 
-            mountedNow: 0,
-            unreadMsgId: 0
+            positionLoad: 0,            // 定位跳转加载中
+            msgReady: false,            // 消息准备完成
+            unreadMsgId: 0,             // 最早未读消息id
+            toBottomReGetMsg: false,    // 滚动到底部重新获取消息
+            selectionRange: false,      // 是否选择文本
         }
     },
 
     mounted() {
         this.msgSubscribe = Store.subscribe('dialogMsgChange', this.onMsgChange);
+        document.addEventListener('selectionchange', this.onSelectionchange);
     },
 
     beforeDestroy() {
@@ -718,6 +717,7 @@ export default {
             this.msgSubscribe.unsubscribe();
             this.msgSubscribe = null;
         }
+        document.removeEventListener('selectionchange', this.onSelectionchange);
     },
 
     computed: {
@@ -796,23 +796,9 @@ export default {
                     array.push(...tempMsgList)
                 }
             }
-
-            array.sort((a, b) => {
+            return array.sort((a, b) => {
                 return a.id - b.id;
             })
-
-            if(this.unreadMsgId){
-                const index = array.findIndex(item => item.id === this.unreadMsgId);
-                const activeLength = this.$refs.scroller?.$el.querySelectorAll('div.active').length || this.keeps + 1;
-                if(index > -1 && this.unreadMsgId <= (array[array.length - activeLength]?.id || 0)){
-                    this.keeps = 26;
-                    array.splice(index, 0, {id: 0, type: "new"});
-                }else{
-                    this.keeps = 25;
-                }
-            }
-
-            return array
         },
 
         loadMsg() {
@@ -1017,19 +1003,20 @@ export default {
         },
 
         positionMsg() {
-            const {unread, position_msgs} = this.dialogData
+            const {mention, unread, position_msgs} = this.dialogData
             if (!position_msgs || position_msgs.length === 0 || unread === 0 || this.allMsgs.length === 0) {
                 return null
             }
-            const item = position_msgs.sort((a, b) => {
-                return b.msg_id - a.msg_id
-            })[0]
-            if(item){
-                return Object.assign(item, {
-                    'label': this.$L(`未读消息${unread}条`)
-                })
+            const item = $A.cloneJSON(position_msgs.find(item => {
+                if (mention === 0) {
+                    return item.label === '{UNREAD}'
+                }
+                return true
+            }))
+            if (item.label === '{UNREAD}') {
+                item.label = this.$L(`未读消息${unread}条`)
             }
-            return null
+            return item
         },
 
         operateEmojis() {
@@ -1057,10 +1044,8 @@ export default {
                     this.msgNew = 0
                     this.msgType = ''
                     this.searchShow = false
-                    this.keeps = 25;
-                    this.unreadMsgId = 0;
-                    this.mountedNow = Date.now()
-                    this.positionLoadMark = false
+                    this.unreadMsgId = 0
+                    this.toBottomReGetMsg = false
                     //
                     if (this.allMsgList.length > 0) {
                         this.allMsgs = this.allMsgList
@@ -1070,10 +1055,7 @@ export default {
                         dialog_id,
                         msg_id: this.msgId,
                         msg_type: this.msgType,
-                    }).then(({data}) => {
-                        if(data.dialog.position_msgs && data.dialog.position_msgs[0]){
-                            this.unreadMsgId = data.dialog.position_msgs[0].msg_id;
-                        }
+                    }).then(_ => {
                         this.openId = dialog_id;
                         setTimeout(this.onSearchMsgId, 100)
                     }).catch(_ => {});
@@ -1086,8 +1068,6 @@ export default {
                     if (this.autoFocus) {
                         this.inputFocus()
                     }
-                    //
-                    setTimeout(()=>this.msgRead(),500)
                 }
                 this.$store.dispatch('closeDialog', old_id)
                 this.getUserApproveStatus();
@@ -1183,11 +1163,15 @@ export default {
             if (num <= 1) {
                 return
             }
-            this.getMsgs({
-                dialog_id: this.dialogId,
-                msg_id: this.msgId,
-                msg_type: this.msgType,
-            }).catch(_ => {});
+            // 判断是否最后一条消息可见才重新获取消息
+            const lastMsg = this.allMsgs[this.allMsgs.length - 1]
+            const lastEl = $A(this.$refs.scroller.$el).find(`[data-id="${lastMsg.id}"]`)
+            if (lastEl.length === 0) {
+                this.toBottomReGetMsg = true
+                return;
+            }
+            // 开始请求重新获取消息
+            this.onReGetMsg()
         },
 
         allMsgList(newList, oldList) {
@@ -1226,16 +1210,10 @@ export default {
                 if (tail <= 55) {
                     requestAnimationFrame(this.onToBottom)
                 }
-                if (this.$refs.input.isFocus) {
-                    $A.scrollToView(this.$refs.footer)
-                }
             }
         },
 
         windowActive(active) {
-            if (active) {
-                this.msgRead();
-            }
             if (active && this.autoFocus) {
                 const lastDialog = $A.last(this.dialogIns)
                 if (lastDialog && lastDialog.uid === this._uid) {
@@ -1277,9 +1255,14 @@ export default {
             }
         },
 
-        positionMsg(val){
-            if(val && val.msg_id && val.msg_id >this.unreadMsgId){
-                this.unreadMsgId = val.msg_id
+        positionMsg() {
+            const {unread, position_msgs} = this.dialogData
+            if (!$A.isArray(position_msgs) || unread < 2) {
+                return
+            }
+            const msg = position_msgs.find(item => item.label === '{UNREAD}')
+            if (msg) {
+                this.unreadMsgId = msg.msg_id
             }
         }
     },
@@ -1381,7 +1364,7 @@ export default {
                     this.sendSuccess(data)
                 }).catch(error => {
                     this.$set(tempMsg, 'error', true)
-                    this.$set(tempMsg, 'errorData', {type: 'text', content: error.msg, msg: textBody})
+                    this.$set(tempMsg, 'errorData', {type: 'text', mType: type, content: error.msg, msg: textBody})
                 });
             }
             if (emptied) {
@@ -1421,7 +1404,7 @@ export default {
                 this.sendSuccess(data);
             }).catch(error => {
                 this.$set(tempMsg, 'error', true)
-                this.$set(tempMsg, 'errorData', {type: 'record', content: error.msg, msg})
+                this.$set(tempMsg, 'errorData', {type: 'record', mType: 'record', content: error.msg, msg})
             });
         },
 
@@ -1487,6 +1470,11 @@ export default {
                     }
                 })
             }
+        },
+
+        onSelectionchange() {
+            const selectionType = window.getSelection().type;
+            this.selectionRange = selectionType === "Range"
         },
 
         getTempId() {
@@ -1726,6 +1714,10 @@ export default {
 
         onTouchStart(e) {
             this.wrapperStart = null;
+            if (this.selectionRange) {
+                this.wrapperStart = window.scrollY
+                return
+            }
             if (this.$refs.scroller.$el.contains(e.target)) {
                 // 聊天内容区域
                 this.wrapperStart = Object.assign(this.scrollInfo(), {
@@ -1750,6 +1742,9 @@ export default {
 
         onTouchMove(e) {
             if (this.footerPaddingBottom > 0 || (this.windowPortrait && this.windowScrollY > 0)) {
+                if (typeof this.wrapperStart === 'number') {
+                    return;
+                }
                 if (this.wrapperStart === null) {
                     e.preventDefault();
                     return;
@@ -1765,6 +1760,12 @@ export default {
                         e.preventDefault();
                     }
                 }
+            }
+        },
+
+        onTouchEnd() {
+            if ($A.isIos()) {
+                $A.scrollToView(this.$refs.footer)
             }
         },
 
@@ -2009,6 +2010,15 @@ export default {
                 return;
             }
             this.$store.dispatch("openOkr", this.dialogData.link_id);
+        },
+
+        onReGetMsg() {
+            this.toBottomReGetMsg = false
+            this.getMsgs({
+                dialog_id: this.dialogId,
+                msg_id: this.msgId,
+                msg_type: this.msgType,
+            }).catch(_ => {});
         },
 
         onPrevPage() {
@@ -2272,7 +2282,6 @@ export default {
                     reject();
                     return
                 }
-
                 const dialogids = this.forwardData.filter(value => $A.leftExists(value, 'd:')).map(value => value.replace('d:', ''));
                 const userids = this.forwardData.filter(value => !$A.leftExists(value, 'd:'));
                 this.$store.dispatch("call", {
@@ -2296,29 +2305,8 @@ export default {
             })
         },
 
-        msgRead() {
-            if (!this.windowActive) {
-                return;
-            }
-            this.$nextTick(()=>{
-                if(!this.$refs.scroller){
-                    return;
-                }
-                if(!this.$refs.scroller.$el.querySelector('div.active')){
-                    this.$refs.scroller.activeEvent(this.$refs.scroller.$el)
-                }
-                this.$nextTick(()=>{
-                    this.$refs.scroller.$el.querySelectorAll('div.active .dialog-item')?.forEach((element,index) => {
-                        const mid = Number(element.getAttribute('data-dialog-id') || 0) || 0;
-                        if(mid){
-                            const source = this.allMsgs.find(msg =>{return msg.id == mid})
-                            if(source){
-                                this.$store.dispatch("dialogMsgRead",source);
-                            }
-                        }
-                    });
-                })
-            })
+        onActivity(activity) {
+            this.msgReady = !activity
         },
 
         onScroll(event) {
@@ -2331,15 +2319,15 @@ export default {
             this.scrollTail = tail;
             if (this.scrollTail <= 55) {
                 this.msgNew = 0;
+                this.toBottomReGetMsg && this.onReGetMsg()
             }
             //
             this.scrollAction = event.target.scrollTop;
             this.scrollDirection = this.scrollTmp <= this.scrollAction ? 'down' : 'up';
             setTimeout(_ => this.scrollTmp = this.scrollAction, 0);
             //
-            if(Date.now() - this.mountedNow > 500){
-                this.msgRead()
-            }
+            this.scrollIng++;
+            setTimeout(_=> this.scrollIng--, 100);
         },
 
         onRange(range) {
@@ -2829,7 +2817,7 @@ export default {
             if (data.error !== true) {
                 return
             }
-            const {type, content, msg} = data.errorData
+            const {type, mType, content, msg} = data.errorData
             const config = {
                 icon: 'error',
                 title: '发送失败',
@@ -2840,13 +2828,10 @@ export default {
                 }
             }
             if (type === 'text') {
-                config.okText = '再次编辑'
+                config.okText = '重新发送'
                 config.onOk = () => {
                     this.tempMsgs = this.tempMsgs.filter(({id}) => id != data.id)
-                    this.$refs.input.setPasteMode(false)
-                    this.msgText = msg
-                    this.inputFocus()
-                    this.$nextTick(_ => this.$refs.input.setPasteMode(true))
+                    this.sendMsg(msg, mType)
                 }
             } else if (type === 'record') {
                 config.okText = '重新发送'
@@ -2925,18 +2910,33 @@ export default {
             });
         },
 
+        onTypeChange(val) {
+            if (val === 'user') {
+                if (this.todoSettingData.userids.length === 0 && this.todoSettingData.quick_value.length > 0) {
+                    this.todoSettingData.userids = this.todoSettingData.quick_value
+                }
+                this.$nextTick(_ => {
+                    this.$refs.userSelect.onSelection()
+                })
+            }
+            if (val !== 'quick_select') {
+                this.todoSettingData.quick_value = []
+            }
+        },
+
+        onQuickChange(val) {
+            this.todoSettingData.type = val.length === 0 ? 'all' : 'quick_select';
+        },
+
         onTodo(type) {
             if (this.operateVisible) {
                 return
             }
             if (type === 'submit') {
                 const todoData = $A.cloneJSON(this.todoSettingData)
-                if (todoData.type === 'my') {
+                if (todoData.type === 'quick_select') {
                     todoData.type = 'user'
-                    todoData.userids = [todoData.my_id]
-                } else if (todoData.type === 'you') {
-                    todoData.type = 'user'
-                    todoData.userids = [todoData.you_id]
+                    todoData.userids = todoData.quick_value
                 } else if (todoData.type === 'user' && $A.arrayLength(todoData.userids) === 0) {
                     $A.messageWarning("选择指定成员");
                     return
@@ -2951,13 +2951,30 @@ export default {
                     this.todoSettingLoad--
                 })
             } else {
-                const youId = this.dialogData.dialog_user?.userid
+                const quickList = {}
+                quickList[this.userId] = this.userId
+                const userid = this.dialogData.dialog_user?.userid
+                if (userid && userid != this.userId && !this.dialogData.bot) {
+                    quickList[userid] = userid
+                }
+                if (this.operateItem.type === 'text') {
+                    const atReg = /<span class="mention user" data-id="(\d+)">([^<]+)<\/span>/g
+                    const atList = this.operateItem.msg.text.match(atReg)
+                    if (atList) {
+                        atList.forEach(item => {
+                            const userid = parseInt(item.replace(atReg, '$1'))
+                            if (userid && userid != this.userId) {
+                                quickList[userid] = userid
+                            }
+                        })
+                    }
+                }
                 this.todoSettingData = {
                     type: 'all',
                     userids: [],
                     msg_id: this.operateItem.id,
-                    my_id: this.userId,
-                    you_id: youId != this.userId && !this.dialogData.bot ? youId : 0,
+                    quick_value: [],
+                    quick_list: Object.values(quickList),
                 }
                 if (this.operateItem.todo) {
                     $A.modalConfirm({
@@ -3037,9 +3054,19 @@ export default {
             if (this.positionLoad > 0) {
                 return;
             }
-            //
-            this.positionLoadMark = true;
             this.positionLoad++
+            //
+            const positionMsgs = []
+            this.dialogData.position_msgs.forEach(item => {
+                if (!this.allMsgs.find(({id}) => id == item.msg_id)?.read_at) {
+                    positionMsgs.push(item)
+                }
+            })
+            this.$store.dispatch("saveDialog", {
+                id: this.dialogData.id,
+                position_msgs: positionMsgs
+            });
+            //
             const {msg_id} = this.positionMsg;
             this.$store.dispatch("dialogMsgMark", {
                 dialog_id: this.dialogId,

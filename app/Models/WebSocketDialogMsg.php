@@ -405,7 +405,7 @@ class WebSocketDialogMsg extends AbstractModel
                         $msgs[] = $res['data'];
                         $already[] = $dialogid;
                     }
-                    if($leaveMessage){
+                    if ($leaveMessage) {
                         self::sendMsg(null, $dialogid, 'text', ['text' => $leaveMessage], $user->userid);
                     }
                 }
@@ -424,7 +424,7 @@ class WebSocketDialogMsg extends AbstractModel
                         if (Base::isSuccess($res)) {
                             $msgs[] = $res['data'];
                         }
-                        if($leaveMessage){
+                        if ($leaveMessage) {
                             self::sendMsg(null, $dialog->id, 'text', ['text' => $leaveMessage], $user->userid);
                         }
                     }

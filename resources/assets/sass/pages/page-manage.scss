@@ -17,7 +17,7 @@
         position: relative;
         flex-grow: 0;
         flex-shrink: 0;
-        width: 78px;
+        width: 255px;
         height: 100%;
         background: #F4F5F7;
         display: flex;
@@ -27,7 +27,7 @@
         .scrollbar-container {
             flex: 1;
             width: 100%;
-            margin-top: 6px;
+            margin-top: 16px;
             display: flex;
             flex-direction: column;
         }
@@ -44,37 +44,37 @@
                 display: flex;
                 flex-direction: column;
                 > li {
-                    list-style: none;
                     flex-shrink: 0;
-                    text-align: center;
+                    display: flex;
                     align-items: center;
-                    color: #999999;
+                    height: 36px;
+                    color: #6b6e72;
                     cursor: pointer;
                     position: relative;
-                    width: 56px;
+                    width: 100%;
                     margin: 5px auto;
-                    padding: 5px 4%;
-                    border-radius: 8px;
-                    font-size: 12px;
+                    padding: 0 4%;
+                    border-radius: 4px;
                     > i {
+                        opacity: 0.3;
                         font-size: 20px;
+                        margin-right: 10px;
                     }
                     .menu-title {
                         flex: 1;
                         white-space: nowrap;
                         overflow: hidden;
                         text-overflow: ellipsis;
-                        margin-top: -2px;
                     }
                     .menu-badge {
-                        transform: scale(0.8);
-                        position: absolute;
-                        top: 0;
-                        left: 30px;
+                        margin-left: 12px;
+                        transform: scale(0.9);
+                    }
+                    &:first-child {
+                        margin-top: 12px;
                     }
                     &.active {
                         background-color: #ffffff;
-                        color: #8FCE78;
                     }
                 }
             }
@@ -244,53 +244,11 @@
             }
         }
         .manage-box-new-group {
+            width: 80%;
             margin-top: 16px;
-            margin-bottom: 18px;
-            ul{
-                list-style-type: none;
-                width: 100%;
-                li{
-                    color: #999999;
-                    cursor: pointer;
-                    width: 46px;
-                    height: 46px;
-                    border-radius: 6px;
-                    .ivu-tooltip{
-                        width: 100%;
-                        height: 100%;
-                        .ivu-tooltip-rel{
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            height: 100%;
-                            width: 100%;
-                        }
-                    }
-                    .taskfont{
-                        font-size: 20px;
-                        border-radius: 4px;
-                    }
-                    &.client-download-update{
-                        a{
-                            width: 100%;
-                            height: 100%;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                        }
-                        .taskfont{
-                            padding: 0 4px;
-                            font-size: 14px;
-                            background-color: #8FCE78;
-                            color: #ffffff;
-                        }
-                    }
-                    &:hover{
-                        background-color: #ffffff;
-                        color: #8FCE78;
-                    }
-                }
-            }
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
             .manage-box-new {
                 flex: 1;
             }
@@ -326,7 +284,6 @@
         width: 86%;
     }
     .ivu-select-dropdown {
-        min-width: 180px;
         padding: 7px 0;
         .ivu-dropdown-item {
             padding: 9px 16px;
@@ -342,18 +299,18 @@
         display: flex;
         align-items: center;
         flex-shrink: 0;
-        padding: 8px 14px;
-        margin-top: 28px;
+        padding: 6px 10px;
+        margin-top: 27px;
         border-radius: 8px;
+        background-color: #ffffff;
         cursor: pointer;
         transition: box-shadow 0.3s;
-        position: relative;
         &.menu-visible {
             box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
         }
         .manage-box-avatar {
-            width: 42px;
-            height: 42px;
+            width: 36px;
+            height: 36px;
         }
         > span {
             flex: 1;
@@ -383,17 +340,12 @@
             flex-direction: column;
             justify-content: center;
             flex: 0 0 auto;
-            position: absolute;
-            bottom: 12px;
-            right: 19px;
             > i {
                 font-size: 12px;
                 margin: -1px;
             }
             .ivu-badge-dot {
                 margin-right: 4px;
-                width: 10px;
-                height: 10px;
             }
         }
     }

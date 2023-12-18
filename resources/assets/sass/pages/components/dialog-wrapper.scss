@@ -432,7 +432,7 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        .inactive {
+        .item-leave {
             pre, code {
                 visibility: hidden;
             }
@@ -721,17 +721,22 @@
                                         color: #436FF6 !important;
                                     }
 
+                                    &.user {
+                                        white-space: nowrap;
+                                    }
+
                                     &.me {
                                         font-size: 13px;
                                         font-weight: 600;
                                         padding: 3px 4px;
                                         color: #ffffff;
+                                        white-space: nowrap;
                                         background-color: $primary-color;
                                     }
                                 }
 
                                 .open-approve-details {
-                                    width: 275px;
+                                    width: 260px;
                                     display: inline-block;
                                     max-width: 100%;
 
@@ -939,6 +944,8 @@
 
                         .content-loading {
                             display: flex;
+                            align-items: center;
+                            height: 24px;
 
                             > i {
                                 font-size: 20px;
@@ -1225,6 +1232,31 @@
 
             }
 
+            &.unread-start {
+                position: relative;
+                padding-top: 44px;
+                .dialog-unread-label {
+                    position: absolute;
+                    top: 4px;
+                    left: 0;
+                    right: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    > em {
+                        height: 1px;
+                        background-color: #e9e9e9;
+                        flex: 1;
+                        margin: 0 12px;
+                        max-width: 80px;
+                    }
+                    > span {
+                        font-size: 12px;
+                        color: $primary-desc-color;
+                    }
+                }
+            }
+
             &.loading {
                 height: 20px;
                 box-sizing: content-box;
@@ -1374,10 +1406,15 @@
         position: absolute;
         top: 100px;
         right: 0;
-        z-index: 1;
+        z-index: 2;
         display: flex;
         align-items: center;
         justify-content: flex-end;
+        opacity: 0;
+        transform: translateX(100%);
+        animation: position-in-animation 200ms ease-out forwards;
+        animation-delay: 600ms;
+
         .position-label {
             display: flex;
             align-items: center;
@@ -2165,5 +2202,16 @@ body.window-portrait {
                 }
             }
         }
+    }
+}
+
+@keyframes position-in-animation {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
     }
 }

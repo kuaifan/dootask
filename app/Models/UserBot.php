@@ -114,6 +114,15 @@ class UserBot extends AbstractModel
                     'label' => Doo::translate('我的机器人')
                 ],
             ],
+            'ai-openai@bot.system',
+            'ai-claude@bot.system',
+            'ai-wenxin@bot.system',
+            'ai-qianwen@bot.system' => [
+                [
+                    'key' => '%3A.clear',
+                    'label' => Doo::translate('清空上下文')
+                ]
+            ],
             default => [],
         };
 

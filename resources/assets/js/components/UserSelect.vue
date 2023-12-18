@@ -2,7 +2,7 @@
     <div class="common-user-select" :class="warpClass">
         <ul v-if="!module">
             <li v-for="userid in values" v-if="userid" @click="onSelection">
-                <UserAvatar :userid="userid" :size="avatarSize" :show-icon="avatarIcon" :show-name="avatarName" tooltip-disabled/>
+                <UserAvatar :userid="userid" :size="avatarSize" :show-icon="avatarIcon" :show-name="avatarName"/>
             </li>
             <li v-if="addIcon || values.length === 0" class="add-icon" :style="addStyle" @click="onSelection"></li>
         </ul>
@@ -53,7 +53,7 @@
                                 <i v-else-if="item.group_type=='okr'" class="taskfont icon-avatar task">&#xe6f4;</i>
                                 <Icon v-else class="icon-avatar" type="ios-people" />
                             </template>
-                            <UserAvatar v-else :userid="item.userid" tooltip-disabled/>
+                            <UserAvatar v-else :userid="item.userid"/>
                         </li>
                     </ul>
                 </Scrollbar>
@@ -131,7 +131,7 @@
                                 <span>{{item.name}}</span>
                             </div>
                         </div>
-                        <UserAvatar v-else class="user-modal-avatar" :userid="item.userid" :size="40" show-name tooltip-disabled/>
+                        <UserAvatar v-else class="user-modal-avatar" :userid="item.userid" :size="40" show-name/>
                     </li>
                 </ul>
             </Scrollbar>
@@ -310,12 +310,14 @@ export default {
             type: Boolean,
             default: false
         },
+
         // 是否禁用
         disable: {
             type: Boolean,
             default: false
         },
-        // 是否禁用
+
+        // 二次确认框提交按钮的文本
         submitBtnTwoText: {
             type: String,
             default: ''
@@ -363,12 +365,16 @@ export default {
             submittIng: 0,
             values: [],
             selects: [],
+
             recents: [],
             contacts: [],
             projects: [],
+
             showModal: false,
+
             searchKey: null,
             searchCache: [],
+
             showAffirmModal: false,
             showMultiple: true,
         };
@@ -377,102 +383,111 @@ export default {
         value: {
             handler(value) {
                 if (typeof value === 'number') {
-                    this.$emit('input', value > 0 ? [value] : []);
+                    this.$emit('input', value > 0 ? [value] : [])
+                } else if (typeof value === 'string') {
+                    value = value.indexOf(',') > -1 ? value.split(',') : [value]
+                    this.$emit('input', value.map(item => $A.runNum(item)).filter(item => item > 0))
                 }
-                else if (typeof value === 'string') {
-                    value = value.indexOf(',') > -1 ? value.split(',') : [value];
-                    this.$emit('input', value.map(item => $A.runNum(item)).filter(item => item > 0));
-                }
-                this.values = value;
+                this.values = value
             },
             immediate: true
         },
+
         isWhole: {
             handler(value) {
                 if (value || this.group) {
-                    this.switchActive = 'recent';
-                }
-                else {
-                    this.switchActive = 'contact';
+                    this.switchActive = 'recent'
+                } else {
+                    this.switchActive = 'contact'
                 }
             },
             immediate: true
         },
+
         showModal(value) {
             if (value) {
-                this.searchBefore();
+                this.searchBefore()
                 this.showMultiple = this.multipleChoice
                 if(this.forcedRadio){
-                    this.showMultiple = false;
+                    this.showMultiple = false
                 }
+            } else {
+                this.searchKey = ""
             }
-            else {
-                this.searchKey = "";
-            }
-            this.$emit("on-show-change", value, this.values);
+            this.$emit("on-show-change", value, this.values)
         },
+
         searchKey() {
-            this.searchBefore();
+            this.searchBefore()
         },
+
         switchActive() {
-            this.searchBefore();
+            this.searchBefore()
         },
     },
     computed: {
         ...mapState([
             'cacheDialogs',
         ]),
+
         isFullscreen({ windowWidth }) {
-            return windowWidth < 576;
+            return windowWidth < 576
         },
+
         isWhole({ projectId, noProjectId, dialogId }) {
-            return projectId === 0 && noProjectId === 0 && dialogId === 0 && !this.group;
+            return projectId === 0 && noProjectId === 0 && dialogId === 0 && !this.group
         },
+
         lists({ switchActive, searchKey, recents, contacts, projects }) {
             switch (switchActive) {
                 case 'recent':
                     if (searchKey) {
                         return recents.filter(item => {
-                            return `${item.name}`.indexOf(searchKey) > -1;
-                        });
+                            return `${item.name}`.indexOf(searchKey) > -1
+                        })
                     }
-                    return recents;
+                    return recents
+
                 case 'contact':
-                    return contacts;
+                    return contacts
+
                 case 'project':
-                    return projects;
+                    return projects
             }
-            return [];
+            return []
         },
+
         isSelectAll({ lists, selects }) {
             return lists.length > 0 && lists.filter(item => selects.includes(item.userid)).length === lists.length;
         },
+
         warpClass() {
             return {
                 'select-module': this.module,
                 'select-border': this.border,
                 'select-whole': this.isWhole,
-            };
+            }
         },
+
         addStyle({ avatarSize }) {
             return {
                 width: avatarSize + 'px',
                 height: avatarSize + 'px',
-            };
+            }
         },
+
         localTitle({ title }) {
             if (title === undefined) {
-                return this.$L('选择会员');
-            }
-            else {
+                return this.$L('选择会员')
+            } else {
                 return title;
             }
         },
+
         localPlaceholder({ placeholder }) {
             if (placeholder === undefined) {
-                return this.$L('搜索');
-            }
-            else {
+                return this.$L('搜索')
+            } else {
                 return placeholder;
             }
         }
@@ -484,29 +499,32 @@ export default {
             }
             return this.uncancelable.includes(value);
         },
+
         isDisabled(userid) {
             if (this.disabledChoice.length === 0) {
                 return false;
             }
-            return this.disabledChoice.includes(userid);
+            return this.disabledChoice.includes(userid)
         },
+
         formatSelect(list) {
             return list.map(userid => {
                 if ($A.leftExists(userid, 'd:')) {
-                    return this.recents.find(item => item.userid === userid);
+                    return this.recents.find(item => item.userid === userid)
                 }
                 return {
                     type: 'user',
                     userid,
-                };
-            });
+                }
+            })
         },
+
         selectIcon(value) {
             if (value === 'all') {
                 return this.isSelectAll ? 'ios-checkmark-circle' : 'ios-radio-button-off';
             }
             if ($A.isArray(value) && value.length > 0) {
-                const len = value.filter(value => this.selects.includes(value)).length;
+                const len = value.filter(value => this.selects.includes(value)).length
                 if (len === value.length) {
                     return 'ios-checkmark-circle';
                 }
@@ -516,6 +534,7 @@ export default {
             }
             return 'ios-radio-button-off';
         },
+
         selectClass(value) {
             switch (this.selectIcon(value)) {
                 case 'ios-checkmark-circle':
@@ -525,32 +544,32 @@ export default {
             }
             return '';
         },
+
         searchBefore() {
             if (!this.showModal) {
-                return;
+                return
             }
             if (this.switchActive === 'recent') {
-                this.searchRecent();
-            }
-            else if (this.switchActive === 'contact') {
-                this.searchContact();
-            }
-            else if (this.switchActive === 'project') {
-                this.searchProject();
+                this.searchRecent()
+            } else if (this.switchActive === 'contact') {
+                this.searchContact()
+            } else if (this.switchActive === 'project') {
+                this.searchProject()
             }
         },
+
         searchRecent() {
             this.recents = this.cacheDialogs.filter(dialog => {
                 if(this.group && dialog.type != 'group'){
-                    return false;
+                    return false
                 }
                 if (dialog.name === undefined || dialog.dialog_delete === 1) {
-                    return false;
+                    return false
                 }
                 if (!this.showBot && dialog.bot) {
-                    return false;
+                    return false
                 }
-                return this.showDialog || dialog.type === 'user';
+                return this.showDialog || dialog.type === 'user'
             }).sort((a, b) => {
                 if (a.top_at || b.top_at) {
                     return $A.Date(b.top_at) - $A.Date(a.top_at);
@@ -566,25 +585,26 @@ export default {
                     group_type,
                     avatar,
                     userid: type === 'user' ? dialog_user.userid : `d:${id}`,
-                };
+                }
             });
         },
+
         searchContact() {
             let key = this.searchKey;
             const cache = this.searchCache.find(item => item.type === 'contact' && item.key == key);
             if (cache) {
-                this.contacts = cache.data;
+                this.contacts = cache.data
             }
             //
-            this.waitIng++;
+            this.waitIng++
             setTimeout(() => {
                 if (this.searchKey != key) {
-                    this.waitIng--;
+                    this.waitIng--
                     return;
                 }
                 setTimeout(() => {
-                    this.loadIng++;
-                }, 300);
+                    this.loadIng++
+                }, 300)
                 this.$store.dispatch("call", {
                     url: 'users/search',
                     data: {
@@ -599,42 +619,42 @@ export default {
                         take: 50
                     },
                 }).then(({ data }) => {
-                    data = data.map(item => Object.assign(item, { type: 'user' }));
-                    this.contacts = data;
+                    data = data.map(item => Object.assign(item, { type: 'user' }))
+                    this.contacts = data
                     //
                     const index = this.searchCache.findIndex(item => item.key == key);
                     const tmpData = { type: 'contact', key, data, time: $A.Time() };
                     if (index > -1) {
-                        this.searchCache.splice(index, 1, tmpData);
-                    }
-                    else {
-                        this.searchCache.push(tmpData);
+                        this.searchCache.splice(index, 1, tmpData)
+                    } else {
+                        this.searchCache.push(tmpData)
                     }
                 }).catch(({ msg }) => {
-                    this.contacts = [];
-                    $A.messageWarning(msg);
+                    this.contacts = []
+                    $A.messageWarning(msg)
                 }).finally(_ => {
                     this.loadIng--;
                     this.waitIng--;
                 });
-            }, this.searchCache.length > 0 ? 300 : 0);
+            }, this.searchCache.length > 0 ? 300 : 0)
         },
+
         searchProject() {
             let key = this.searchKey;
             const cache = this.searchCache.find(item => item.type === 'project' && item.key == key);
             if (cache) {
-                this.projects = cache.data;
+                this.projects = cache.data
             }
             //
-            this.waitIng++;
+            this.waitIng++
             setTimeout(() => {
                 if (this.searchKey != key) {
-                    this.waitIng--;
+                    this.waitIng--
                     return;
                 }
                 setTimeout(() => {
-                    this.loadIng++;
-                }, 300);
+                    this.loadIng++
+                }, 300)
                 this.$store.dispatch("call", {
                     url: 'project/lists',
                     data: {
@@ -646,157 +666,161 @@ export default {
                         getstatistics: 'no'
                     },
                 }).then(({ data }) => {
-                    data = data.data.map(item => Object.assign(item, { type: 'project' }));
+                    data = data.data.map(item => Object.assign(item, { type: 'project' }))
                     this.projects = data;
                     //
                     const index = this.searchCache.findIndex(item => item.key == key);
                     const tmpData = { type: 'project', key, data, time: $A.Time() };
                     if (index > -1) {
-                        this.searchCache.splice(index, 1, tmpData);
-                    }
-                    else {
-                        this.searchCache.push(tmpData);
+                        this.searchCache.splice(index, 1, tmpData)
+                    } else {
+                        this.searchCache.push(tmpData)
                     }
                 }).catch(({ msg }) => {
-                    this.projects = [];
-                    $A.messageWarning(msg);
+                    this.projects = []
+                    $A.messageWarning(msg)
                 }).finally(_ => {
                     this.loadIng--;
                     this.waitIng--;
                 });
-            }, this.searchCache.length > 0 ? 300 : 0);
+            }, this.searchCache.length > 0 ? 300 : 0)
         },
+
         onSelection() {
             if (this.disable) {
-                return;
+                return
             }
             this.$nextTick(_ => {
-                this.selects = $A.cloneJSON(this.values);
-                this.showModal = true;
-            });
+                this.selects = $A.cloneJSON(this.values)
+                this.showModal = true
+            })
         },
+
         onSelectAll() {
             if (this.isSelectAll) {
-                this.selects = $A.cloneJSON(this.uncancelable);
-                return;
+                this.selects = $A.cloneJSON(this.uncancelable)
+                return
             }
             this.lists.some(item => {
                 if (this.isDisabled(item.userid)) {
-                    return false;
+                    return false
                 }
                 if (this.multipleMax && this.selects.length >= this.multipleMax) {
-                    $A.messageWarning("已超过最大选择数量");
-                    return true;
+                    $A.messageWarning("已超过最大选择数量")
+                    return true
                 }
                 if (!this.selects.includes(item.userid)) {
-                    this.selects.push(item.userid);
+                    this.selects.push(item.userid)
                 }
-            });
+            })
         },
+
         onSelectItem({ userid }) {
-            if(!this.showMultiple){
-                this.selects = [];
+            if (!this.showMultiple) {
+                this.selects = []
             }
             if (this.selects.includes(userid)) {
                 if (this.isUncancelable(userid)) {
-                    return;
+                    return
                 }
-                this.selects = this.selects.filter(value => value != userid);
-            }
-            else {
+                this.selects = this.selects.filter(value => value != userid)
+            } else {
                 if (this.isDisabled(userid)) {
-                    return;
+                    return
                 }
                 if (this.multipleMax && this.selects.length >= this.multipleMax) {
-                    $A.messageWarning("已超过最大选择数量");
-                    return;
+                    $A.messageWarning("已超过最大选择数量")
+                    return
                 }
-                this.selects.push(userid);
+                this.selects.push(userid)
                 // 滚动到选中的位置
                 this.$nextTick(() => {
-                    $A.scrollIntoViewIfNeeded(this.$refs.selected?.querySelector(`li[data-id="${userid}"]`));
-                });
+                    $A.scrollIntoViewIfNeeded(this.$refs.selected?.querySelector(`li[data-id="${userid}"]`))
+                })
             }
             if(!this.showMultiple){
                 this.onSubmit(1)
             }
         },
+
         onSelectProject(userid_list) {
-            if(!this.showMultiple){
-                this.selects = [];
+            if (!this.showMultiple) {
+                this.selects = []
             }
             switch (this.selectIcon(userid_list)) {
                 case 'ios-checkmark-circle':
                     // 去除
-                    const removeList = userid_list.filter(userid => !this.isUncancelable(userid));
+                    const removeList = userid_list.filter(userid => !this.isUncancelable(userid))
                     if (removeList.length != userid_list.length) {
-                        $A.messageWarning("部分成员禁止取消");
+                        $A.messageWarning("部分成员禁止取消")
                     }
-                    this.selects = this.selects.filter(userid => !removeList.includes(userid));
+                    this.selects = this.selects.filter(userid => !removeList.includes(userid))
                     break;
                 default:
                     // 添加
-                    const addList = userid_list.filter(userid => !this.isDisabled(userid));
+                    const addList = userid_list.filter(userid => !this.isDisabled(userid))
                     if (addList.length != userid_list.length) {
-                        $A.messageWarning("部分成员禁止选择");
+                        $A.messageWarning("部分成员禁止选择")
                     }
-                    this.selects = this.selects.concat(addList.filter(userid => !this.selects.includes(userid)));
+                    this.selects = this.selects.concat(addList.filter(userid => !this.selects.includes(userid)))
                     // 超过最大数量
                     if (this.multipleMax && this.selects.length > this.multipleMax) {
-                        $A.messageWarning("已超过最大选择数量");
-                        this.selects = this.selects.slice(0, this.multipleMax);
+                        $A.messageWarning("已超过最大选择数量")
+                        this.selects = this.selects.slice(0, this.multipleMax)
                     }
                     break;
             }
-            if(!this.showMultiple){
+            if (!this.showMultiple) {
                 this.onSubmit(1)
             }
         },
+
         onRemoveItem(userid) {
             if (this.isUncancelable(userid)) {
-                return;
+                return
             }
-            this.selects = this.selects.filter(value => value != userid);
+            this.selects = this.selects.filter(value => value != userid)
         },
+
         onSubmit(index) {
             if (this.submittIng > 0) {
-                return;
+                return
             }
-            const clone = $A.cloneJSON(this.values);
-            this.values = $A.cloneJSON(this.selects);
+            const clone = $A.cloneJSON(this.values)
+            this.values = $A.cloneJSON(this.selects)
             //
             if (index !=2 && this.twiceAffirm) {
                 if (this.values.length < 1) {
-                    $A.messageError("请选择对话或成员");
-                    return;
+                    $A.messageError("请选择对话或成员")
+                    return
                 }
-                this.showAffirmModal = true;
-                return;
+                this.showAffirmModal = true
+                return
             }
             //
-            this.$emit('input', this.values);
-            this.$emit('onSubmit', this.values);
+            this.$emit('input', this.values)
+            this.$emit('onSubmit', this.values)
+
             if (!this.beforeSubmit) {
-                this.showModal = false;
-                this.showAffirmModal = false;
-                return;
+                this.showModal = false
+                this.showAffirmModal = false
+                return
             }
             const before = this.beforeSubmit();
             if (before && before.then) {
-                this.submittIng++;
+                this.submittIng++
                 before.then(() => {
-                    this.showModal = false;
-                    this.showAffirmModal = false;
+                    this.showModal = false
+                    this.showAffirmModal = false
                 }).catch(() => {
-                    this.values = clone;
-                    this.$emit('input', this.values);
+                    this.values = clone
+                    this.$emit('input', this.values)
                 }).finally(() => {
-                    this.submittIng--;
-                });
-            }
-            else {
-                this.showModal = false;
-                this.showAffirmModal = false;
+                    this.submittIng--
+                })
+            } else {
+                this.showModal = false
+                this.showAffirmModal = false
             }
         },
     }

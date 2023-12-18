@@ -2,7 +2,6 @@
     flex: 1;
     display: flex;
     align-items: flex-start;
-    background-color: #fafafa;
     .project-panel {
         flex: 1;
         width: 0;
@@ -16,35 +15,6 @@
         min-width: 320px;
         max-width: 520px;
         flex-shrink: 0;
-    }
-    .page-project-empty{
-        flex: 1;
-        height: 90%;
-        text-align: center;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        >div{
-            width: 86px;
-            height: 86px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #F4F5F7;
-            border-radius: 100%;
-            margin-bottom: 16px;
-            .taskfont{
-                color: rgba(157, 167, 175, 0.6);
-                font-size: 46px;
-            }
-        }
-        span{
-            background: #F4F5F7;
-            color: #9DA7AF;
-            padding: 8px 16px;
-            border-radius: 20px;
-        }
     }
 }
 

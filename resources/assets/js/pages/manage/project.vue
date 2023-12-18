@@ -1,15 +1,10 @@
 <template>
     <div class="page-project">
-        <ProjectMenu v-if="!windowPortrait" :projectId="projId"/>
-        <template v-if="projId > 0">
+        <template v-if="projectId > 0">
             <ProjectPanel/>
             <ProjectDialog/>
         </template>
-        <div v-else-if="!windowPortrait" class="page-project-empty">
-            <div><i class="taskfont">&#xe6f9;</i></div>
-            <span>{{ $L('选择一个项目查看更多任务') }}</span>
-        </div>
-        <ProjectList v-if="windowPortrait" v-show="projId === 0"/>
+        <ProjectList v-if="windowPortrait" v-show="projectId === 0"/>
     </div>
 </template>
 
@@ -18,28 +13,24 @@ import {mapState} from "vuex";
 import ProjectPanel from "./components/ProjectPanel";
 import ProjectDialog from "./components/ProjectDialog";
 import ProjectList from "./components/ProjectList";
-import ProjectMenu from "./components/ProjectMenu";
 export default {
-    components: {ProjectList, ProjectMenu, ProjectDialog, ProjectPanel},
+    components: {ProjectList, ProjectDialog, ProjectPanel},
 
     deactivated() {
         this.$store.dispatch("forgetTaskCompleteTemp", true);
     },
 
     computed: {
-        ...mapState(['cacheProjects', 'wsOpenNum', 'projectId']),
+        ...mapState(['cacheProjects', 'wsOpenNum']),
 
-        projId() {
+        projectId() {
             const {projectId} = this.$route.params;
-            if (!this.windowPortrait){
-                return parseInt(/^\d+$/.test(projectId) ? projectId : 0) || this.projectId || 0;
-            }
-            return parseInt(/^\d+$/.test(projectId) ? projectId : 0) || 0;
+            return parseInt(/^\d+$/.test(projectId) ? projectId : 0);
         }
     },
 
     watch: {
-        projId: {
+        projectId: {
             handler() {
                 this.getProjectData();
             },
@@ -57,15 +48,15 @@ export default {
 
     methods: {
         getProjectData() {
-            if (this.projId <= 0) return;
-            const projId = this.projId;
+            if (this.projectId <= 0) return;
+            const projectId = this.projectId;
             this.$nextTick(() => {
-                this.$store.state.projectId = projId;
-                this.$store.dispatch("getProjectOne", projId).then(() => {
-                    this.$store.dispatch("getColumns", projId).catch(() => {});
-                    this.$store.dispatch("getTaskForProject", projId).catch(() => {})
+                this.$store.state.projectId = projectId;
+                this.$store.dispatch("getProjectOne", projectId).then(() => {
+                    this.$store.dispatch("getColumns", projectId).catch(() => {});
+                    this.$store.dispatch("getTaskForProject", projectId).catch(() => {})
                 }).catch(({msg}) => {
-                    if (projId !== this.projId) {
+                    if (projectId !== this.projectId) {
                         return;
                     }
                     $A.modalWarning({

@@ -27,7 +27,7 @@
             <!-- 回复、修改 -->
             <div v-if="quoteData" class="chat-quote">
                 <div v-if="quoteUpdate" class="quote-label">{{$L('编辑消息')}}</div>
-                <UserAvatar v-else :userid="quoteData.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
+                <UserAvatar v-else :userid="quoteData.userid" :show-icon="false" :show-name="true"/>
                 <div class="quote-desc">{{$A.getMsgSimpleDesc(quoteData)}}</div>
                 <i class="taskfont" @click.stop="cancelQuote">&#xe6e5;</i>
             </div>
@@ -123,7 +123,7 @@
                     class="chat-send"
                     :class="sendClass"
                     v-touchmouse="clickSend"
-                    v-longpress="{callback: longSend, delay: 300}">
+                    v-longpress="{callback: onShowMenu, delay: 300}">
                     <EPopover
                         v-model="showMenu"
                         :visibleArrow="false"
@@ -244,10 +244,6 @@ export default {
             type: Boolean,
             default: false
         },
-        enterSend: {
-            type: [String, Boolean],
-            default: null
-        },
         emojiBottom: {
             type: Boolean,
             default: false
@@ -259,6 +255,12 @@ export default {
         options: {
             type: Object,
             default: () => ({})
+        },
+        toolbar: {
+            type: Array,
+            default: () => {
+                return ['bold', 'strike', 'italic', 'underline', {'list': 'ordered'}, {'list': 'bullet'}, 'blockquote', 'code-block']
+            },
         },
         maxlength: {
             type: Number
@@ -388,13 +390,15 @@ export default {
 
             'cacheDialogs',
             'dialogMsgs',
+
+            'cacheKeyboard',
         ]),
 
-        isEnterSend({enterSend}) {
-            if (typeof enterSend === "boolean") {
-                return enterSend;
+        isEnterSend({cacheKeyboard}) {
+            if (this.$isEEUiApp) {
+                return cacheKeyboard.send_button_app === 'enter';
             } else {
-                return true;
+                return cacheKeyboard.send_button_desktop === 'enter';
             }
         },
 
@@ -407,11 +411,8 @@ export default {
         },
 
         editorStyle() {
-            const {wrapperWidth, editorHeight, value} = this;
+            const {wrapperWidth, editorHeight} = this;
             const style = {};
-            if (value.length < 10) {
-                style.height = '30px';
-            }
             if (wrapperWidth > 0
                 && editorHeight > 0
                 && (wrapperWidth < 280 || editorHeight > 40)) {
@@ -452,7 +453,7 @@ export default {
         },
 
         sendClass() {
-            if (this.value) {
+            if (this.filterInvalidLine(this.value)) {
                 return 'sender';
             }
             if (this.recordReady) {
@@ -500,11 +501,6 @@ export default {
             }
             return null;
         },
-
-        separateSendButton() {
-            return $A.jsonParse(window.localStorage.getItem("__keyboard:data__"))?.separate_send_button === 'open';
-        },
-
     },
     watch: {
         // Watch content change
@@ -517,7 +513,7 @@ export default {
                     this.quill.setText('')
                 }
             }
-            this.$store.dispatch("saveDialogDraft", {id: this.dialogId, extra_draft_content: val})
+            this.$store.dispatch("saveDialogDraft", {id: this.dialogId, extra_draft_content: this.filterInvalidLine(val)})
         },
 
         // Watch disabled change
@@ -666,9 +662,7 @@ export default {
                 readOnly: false,
                 placeholder: this.placeholder,
                 modules: {
-                    toolbar: [
-                        ['bold', 'strike', 'italic', 'underline', {'list': 'ordered'}, {'list': 'bullet'}, 'blockquote', 'code-block']
-                    ],
+                    toolbar: this.$isEEUiApp || this.windowTouch ? false : this.toolbar,
                     keyboard: {
                         bindings: {
                             'short enter': {
@@ -676,11 +670,6 @@ export default {
                                 shortKey: true,
                                 handler: _ => {
                                     if (!this.isEnterSend) {
-                                        if (this.separateSendButton) {
-                                            const length = this.quill.getSelection(true).index;
-                                            this.quill.insertText(length, "\r\n");
-                                            return false;
-                                        }
                                         this.onSend();
                                         return false;
                                     }
@@ -692,11 +681,6 @@ export default {
                                 shiftKey: false,
                                 handler: _ => {
                                     if (this.isEnterSend) {
-                                        if (this.separateSendButton) {
-                                            const length = this.quill.getSelection(true).index;
-                                            this.quill.insertText(length, "\r\n");
-                                            return false;
-                                        }
                                         this.onSend();
                                         return false;
                                     }
@@ -756,8 +740,6 @@ export default {
                         this.quill.deleteText(this.maxlength, this.quill.getLength());
                     }
                     let html = this.$refs.editor.firstChild.innerHTML
-                    html = html.replace(/^(<p>\s*<\/p>)+|(<p>\s*<\/p>)+$/gi, '')
-                    html = html.replace(/^(<p><br\/*><\/p>)+|(<p><br\/*><\/p>)+$/gi, '')
                     this.updateEmojiQuick(html)
                     this._content = html
                     this.$emit('input', this._content)
@@ -807,9 +789,18 @@ export default {
                     if (e.key === '\r\r' && e.keyCode === 229) {
                         const length = this.quill.getSelection(true).index;
                         this.quill.insertText(length, "\r\n");
+                        //
+                        this.keyTimer && clearTimeout(this.keyTimer)
+                        this.keyTimer = setTimeout(_ => {
+                            this.$refs.editor.firstChild.childNodes.forEach(child => {
+                                if (/^\r+/.test(child.innerHTML)) {
+                                    child.innerHTML = child.innerHTML.replace(/^\r+/, "") || "<br>"
+                                }
+                            })
+                        }, 200)
                     }
                 });
-                if (!this.separateSendButton) {
+                if (this.$isEEUiApp && this.cacheKeyboard.send_button_app === 'enter') {
                     this.quill.root.setAttribute('enterkeyhint', 'send')
                 }
             })
@@ -831,6 +822,8 @@ export default {
                         type: "mp3",
                         bitRate: 64,
                         sampleRate: 32000,
+                        audioTrackSet: null,
+                        disableEnvInFix: false,
                         onProcess: (buffers, powerLevel, duration, sampleRate, newBufferIdx, asyncEnd) => {
                             this.recordWave?.input(buffers[buffers.length - 1], powerLevel, sampleRate);
                             this.recordDuration = duration;
@@ -1039,7 +1032,7 @@ export default {
                         return;
                     }
                     if (event.button === 2){
-                        this.showMenu = true;
+                        this.onShowMenu()
                     }
                     break;
 
@@ -1064,7 +1057,7 @@ export default {
             }
         },
 
-        longSend() {
+        onShowMenu() {
             if (this.sendClass === 'recorder' || !this.sendMenu) {
                 return;
             }
@@ -1073,6 +1066,9 @@ export default {
 
         onSend(type) {
             setTimeout(_ => {
+                if (this.filterInvalidLine(this.value) === '') {
+                    return
+                }
                 this.hidePopover('send')
                 this.rangeIndex = 0
                 this.clearSearchKey()
@@ -1267,9 +1263,7 @@ export default {
                         readOnly: false,
                         placeholder: this.placeholder,
                         modules: {
-                            toolbar: [
-                                ['bold', 'strike', 'italic', 'underline', {'list': 'ordered'}, {'list': 'bullet'}, 'blockquote', 'code-block']
-                            ],
+                            toolbar: this.toolbar,
                             mention: this.quillMention()
                         }
                     }, this.options))
@@ -1677,6 +1671,11 @@ export default {
                 }
             }
             return false
+        },
+
+        filterInvalidLine(content) {
+            let value = (content + '').replace(/^(<p>\s*<\/p>)+|(<p>\s*<\/p>)+$/gi, '')
+            return value.replace(/^(<p><br\/*><\/p>)+|(<p><br\/*><\/p>)+$/gi, '')
         },
     }
 }

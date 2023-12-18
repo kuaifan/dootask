@@ -57,6 +57,9 @@ export default {
             // 主题皮肤
             await dispatch("synchTheme")
 
+            // Keyboard
+            await dispatch("handleKeyboard")
+
             // 客户端ID
             if (!state.clientId) {
                 state.clientId = $A.randomString(6)
@@ -630,7 +633,7 @@ export default {
      * @param info
      * @returns {Promise<unknown>}
      */
-    saveUserInfo({state, dispatch}, info) {
+    saveUserInfoBase({state, dispatch}, info) {
         return new Promise(async resolve => {
             const userInfo = $A.cloneJSON(info);
             userInfo.userid = $A.runNum(userInfo.userid);
@@ -653,6 +656,21 @@ export default {
                 chatUrl: $A.apiUrl('../api/dialog/msg/sendfiles') + `?token=${state.userToken}`,
             });
             //
+            resolve()
+        })
+    },
+
+    /**
+     * 更新会员信息
+     * @param state
+     * @param dispatch
+     * @param info
+     * @returns {Promise<unknown>}
+     */
+    saveUserInfo({state, dispatch}, info) {
+        return new Promise(async resolve => {
+            await dispatch("saveUserInfoBase", info);
+            //
             dispatch("getBasicData", null);
             if (state.userId > 0) {
                 state.cacheUserBasic = state.cacheUserBasic.filter(({userid}) => userid !== state.userId)
@@ -660,18 +678,6 @@ export default {
             }
             resolve()
         });
-    },
-
-    /**
-     * 更新会员在线
-     * @param state
-     * @param info {userid,online}
-     */
-    saveUserOnlineStatus({state}, info) {
-        const {userid, online} = info;
-        if (state.userOnline[userid] !== online) {
-            state.userOnline = Object.assign({}, state.userOnline, {[userid]: online});
-        }
     },
 
     /**
@@ -700,7 +706,7 @@ export default {
             if (temp && time - temp._time <= 30) {
                 setTimeout(() => {
                     state.cacheUserActive = Object.assign(temp, {__:Math.random()});
-                    Store.set('cacheUserActive', temp);
+                    Store.set('userActive', {type: 'cache', data: temp});
                 }, timeout += 5);
                 return false;
             }
@@ -752,7 +758,7 @@ export default {
             state.cacheUserBasic.push(data)
         }
         state.cacheUserActive = Object.assign(data, {__:Math.random()});
-        Store.set('cacheUserActive', data);
+        Store.set('userActive', {type: 'cache', data});
         //
         $A.IDBSave("cacheUserBasic", state.cacheUserBasic)
     },
@@ -824,6 +830,24 @@ export default {
     },
 
     /**
+     * 处理快捷键配置
+     * @param state
+     * @param newData
+     * @returns {Promise<unknown>}
+     */
+    handleKeyboard({state}, newData) {
+        return new Promise(resolve => {
+            const data = $A.isJson(newData) ? newData : ($A.jsonParse(window.localStorage.getItem("__keyboard:data__")) || {})
+            data.screenshot_key = (data.screenshot_key || "").trim().toLowerCase()
+            data.send_button_app = data.send_button_app || 'button'         // button, enter 移动端发送按钮，默认 button （页面按钮发送）
+            data.send_button_desktop = data.send_button_desktop || 'enter'  // button, enter 桌面端发送按钮，默认 enter （键盘回车发送）
+            window.localStorage.setItem("__keyboard:data__", $A.jsonStringify(data))
+            state.cacheKeyboard = data
+            resolve(data)
+        })
+    },
+
+    /**
      * 清除缓存
      * @param state
      * @param dispatch
@@ -863,7 +887,7 @@ export default {
                 await $A.IDBSet("cacheEmojis", state.cacheEmojis);
 
                 // userInfo
-                dispatch("saveUserInfo", $A.isJson(userInfo) ? userInfo : state.userInfo).then(resolve);
+                dispatch("saveUserInfoBase", $A.isJson(userInfo) ? userInfo : state.userInfo).then(resolve);
             } catch (e) {
                 resolve()
             }
@@ -1538,13 +1562,8 @@ export default {
      * @returns {Promise<unknown>}
      */
     getTasks({state, dispatch}, requestData) {
-        const taskData = [];
         if (requestData === null) {
             requestData = {}
-        }
-        if ($A.isArray(requestData.taskData)) {
-            taskData.push(...requestData.taskData)
-            delete requestData.taskData;
         }
         const callData = $callData('tasks', requestData, state)
         //
@@ -1565,12 +1584,11 @@ export default {
                 if (requestData.project_id) {
                     state.projectLoad--;
                 }
-                taskData.push(...data.data);
+                dispatch("saveTask", data.data);
                 callData.save(data).then(ids => dispatch("forgetTask", ids))
                 //
                 if (data.next_page_url) {
                     requestData.page = data.current_page + 1
-                    requestData.taskData = taskData
                     if (data.current_page % 10 === 0) {
                         $A.modalWarning({
                             content: "数据已超过" + data.to + "条，是否继续加载？",
@@ -1578,7 +1596,6 @@ export default {
                                 dispatch("getTasks", requestData).then(resolve).catch(reject)
                             },
                             onCancel: () => {
-                                dispatch("saveTask", taskData);
                                 resolve()
                             }
                         });
@@ -1586,7 +1603,6 @@ export default {
                         dispatch("getTasks", requestData).then(resolve).catch(reject)
                     }
                 } else {
-                    dispatch("saveTask", taskData);
                     resolve()
                 }
             }).catch(e => {
@@ -1885,7 +1901,6 @@ export default {
             }
             return
         }
-
         state.taskArchiveView = task_id;
         state.taskId = task_id;
         if (task_id > 0) {
@@ -1905,7 +1920,7 @@ export default {
                     }
                 });
             });
-        }else{
+        } else {
             state.taskOperation = {};
         }
     },
@@ -2320,7 +2335,6 @@ export default {
                 if (nowTime < originalTime) {
                     typeof data.unread !== "undefined" && delete data.unread
                     typeof data.mention !== "undefined" && delete data.mention
-                    typeof data.position_msgs !== "undefined" && delete data.position_msgs
                 }
                 state.cacheDialogs.splice(index, 1, Object.assign({}, original, data));
             } else {
@@ -3177,7 +3191,7 @@ export default {
                     break
 
                 case "line":
-                    dispatch("saveUserOnlineStatus", msgDetail.data);
+                    Store.set('userActive', {type: 'line', data: msgDetail.data});
                     break
 
                 case "msgStream":
@@ -3269,27 +3283,22 @@ export default {
                                         break;
                                     case 'update':
                                     case 'readed':
-                                        // 更新、已读回执
-                                        if (state.dialogMsgs.find(({id}) => id == data.id)) {
-                                            dispatch("saveDialogMsg", data)
-                                            // 更新待办
-                                            if (typeof data.todo !== "undefined") {
-                                                dispatch("getDialogTodo", dialog_id)
+                                        const updateMsg = (data, count) => {
+                                            if (state.dialogMsgs.find(({id}) => id == data.id)) {
+                                                dispatch("saveDialogMsg", data)
+                                                // 更新待办
+                                                if (typeof data.todo !== "undefined") {
+                                                    dispatch("getDialogTodo", dialog_id)
+                                                }
+                                                return;
                                             }
-                                        } else if (mode === 'readed') {
-                                            // 消息不存在，重试已读标记
-                                            let readedNum = 0
-                                            const readedTimer = setInterval(_ => {
-                                                if (readedNum > 6) {
-                                                    clearInterval(readedTimer)
-                                                }
-                                                if (state.dialogMsgs.find(({id}) => id == data.id)) {
-                                                    clearInterval(readedTimer)
-                                                    dispatch("saveDialogMsg", data)
-                                                }
-                                                readedNum++
-                                            }, 500)
+                                            if (count <= 5) {
+                                                setTimeout(_ => {
+                                                    updateMsg(data, ++count)
+                                                }, 500);
+                                            }
                                         }
+                                        updateMsg(data, 0);
                                         break;
                                     case 'groupAdd':
                                     case 'groupJoin':

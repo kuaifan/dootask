@@ -77,6 +77,9 @@ export default {
     // ServerUrl
     cacheServerUrl: "",
 
+    // keyboard
+    cacheKeyboard: {},
+
     // Ajax
     ajaxWsReady: false,
     ajaxWsListener: [],
@@ -98,7 +101,6 @@ export default {
     userId: 0,
     userToken: '',
     userIsAdmin: false,
-    userOnline: {},
     userAvatar: {},
 
     // 会话聊天
@@ -184,7 +186,6 @@ export default {
 
     // 客户端新版本号
     clientNewVersion: null,
-    clientDownloadUrl: null,
 
     // 预览图片
     previewImageIndex: 0,

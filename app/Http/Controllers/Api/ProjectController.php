@@ -2181,13 +2181,13 @@ class ProjectController extends AbstractController
         //
         $projectTask = ProjectTask::select(['id', 'project_id', 'complete_at', 'flow_item_id', 'flow_item_name'])->withTrashed()->find($task_id);
         if (empty($projectTask)) {
-            return Base::retError('任务不存在', [ 'task_id' => $task_id ], -4002);
+            return Base::retError('任务不存在', ['task_id' => $task_id], -4002);
         }
         //
         $projectFlowItem = null;
-        if($project_id){
+        if ($project_id) {
             $projectFlow = ProjectFlow::whereProjectId($project_id)->orderByDesc('id')->first();
-        }else{
+        } else {
             $projectFlowItem = $projectTask->flow_item_id ? ProjectFlowItem::with(['projectFlow'])->find($projectTask->flow_item_id) : null;
             if ($projectFlowItem?->projectFlow) {
                 $projectFlow = $projectFlowItem->projectFlow;
@@ -2247,7 +2247,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/move          35. 任务移动
+     * @api {get} api/project/task/move          38. 任务移动
      *
      * @apiDescription 需要token身份（限：项目、任务负责人）
      * @apiVersion 1.0.0
@@ -2305,7 +2305,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/flow/list          38. 工作流列表
+     * @api {get} api/project/flow/list          39. 工作流列表
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2331,7 +2331,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {post} api/project/flow/save          39. 保存工作流
+     * @api {post} api/project/flow/save          40. 保存工作流
      *
      * @apiDescription 需要token身份（限：项目负责人）
      * @apiVersion 1.0.0
@@ -2365,7 +2365,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/flow/delete          40. 删除工作流
+     * @api {get} api/project/flow/delete          41. 删除工作流
      *
      * @apiDescription 需要token身份（限：项目负责人）
      * @apiVersion 1.0.0
@@ -2397,7 +2397,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/log/lists          41. 获取项目、任务日志
+     * @api {get} api/project/log/lists          42. 获取项目、任务日志
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2450,7 +2450,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/top          42. 项目置顶
+     * @api {get} api/project/top          43. 项目置顶
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0

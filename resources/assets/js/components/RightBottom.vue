@@ -95,9 +95,6 @@ export default {
             if (show) {
                 this.updateBottomShow = true
             }
-        },
-        downloadUrl(val){
-            this.$store.state.clientDownloadUrl = val
         }
     },
 
@@ -111,7 +108,7 @@ export default {
         },
 
         showDown() {
-            return !this.$isEEUiApp && !this.windowTouch && ['login', 'index'].includes(this.$route.name)
+            return !this.$isEEUiApp && !this.windowTouch && ['login', 'index', 'manage-dashboard'].includes(this.$route.name)
         },
 
         showPrivacy() {

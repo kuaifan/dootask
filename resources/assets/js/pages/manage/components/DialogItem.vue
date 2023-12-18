@@ -1,18 +1,21 @@
 <template>
-    <div :class="classArray" :data-dialog-id="source.id">
+    <div :class="classArray">
+        <div v-if="isUnreadStart" class="dialog-unread-label">
+            <em></em><span>{{$L('以下为新消息')}}</span><em></em>
+        </div>
         <div v-if="source.type === 'tag'" class="dialog-tag" @click="onViewTag">
-            <div class="tag-user"><UserAvatar :userid="source.userid" :tooltipDisabled="source.userid == userId" :show-name="true" :show-icon="false"/></div>
+            <div class="tag-user"><UserAvatar :userid="source.userid" :show-name="true" :show-icon="false"/></div>
             {{$L(source.msg.action === 'remove' ? '取消标注' : '标注了')}}
             "{{$A.getMsgSimpleDesc(source.msg.data)}}"
         </div>
         <div v-else-if="source.type === 'todo'" class="dialog-todo" @click="onViewTodo">
-            <div class="todo-user"><UserAvatar :userid="source.userid" :tooltipDisabled="source.userid == userId" :show-name="true" :show-icon="false"/></div>
+            <div class="todo-user"><UserAvatar :userid="source.userid" :show-name="true" :show-icon="false"/></div>
             {{$L(source.msg.action === 'remove' ? '取消待办' : (source.msg.action === 'done' ? '完成' : '设待办'))}}
             "{{$A.getMsgSimpleDesc(source.msg.data)}}"
             <div v-if="formatTodoUser(source.msg.data).length > 0" class="todo-users">
                 <span>{{$L('给')}}</span>
                 <template v-for="(item, index) in formatTodoUser(source.msg.data)">
-                    <div v-if="index < 3" class="todo-user"><UserAvatar :userid="item" :tooltipDisabled="item == userId" :show-name="true" :show-icon="false"/></div>
+                    <div v-if="index < 3" class="todo-user"><UserAvatar :userid="item" :show-name="true" :show-icon="false"/></div>
                     <div v-else-if="index == 3" class="todo-user">+{{formatTodoUser(source.msg.data).length - 3}}</div>
                 </template>
             </div>
@@ -20,17 +23,13 @@
         <div v-else-if="source.type === 'notice'" class="dialog-notice">
             {{source.msg.notice}}
         </div>
-        <div v-else-if="source.type === 'new'" class="dialog-new">
-           {{$L('以下为新消息')}}
-        </div>
         <template v-else>
-            <div class="dialog-avatar" v-if="dialogAvatar">
+            <div class="dialog-avatar">
                 <UserAvatar
                     v-longpress="{callback: onMention, delay: 300}"
                     @open-dialog="onOpenDialog"
                     :userid="source.userid"
-                    :size="30"
-                    tooltip-disabled/>
+                    :size="30"/>
             </div>
             <DialogView
                 :msg-data="source"
@@ -97,27 +96,37 @@ export default {
             type: Number,
             default: 0
         },
-        dialogAvatar: {
-            type: Boolean,
-            default: true
+        unreadMsgId: {
+            type: Number,
+            default: 0
         },
-    },
-
-    data() {
-        return {
-            subscribe: null,
-        }
+        scrollIng: {
+            type: Number,
+            default: 0
+        },
+        msgReady: {
+            type: Boolean,
+            default: false
+        },
     },
 
     computed: {
         ...mapState(['userId']),
 
         isRightMsg() {
-            return this.source.userid == this.userId
+            return this.source.userid == this.$store.state.userId
         },
 
         isReply() {
             return this.simpleView || this.msgId === this.source.id
+        },
+
+        isNoRead() {
+            return this.isRightMsg || this.source.read_at
+        },
+
+        isUnreadStart() {
+            return this.unreadMsgId === this.source.id
         },
 
         hidePercentage() {
@@ -132,12 +141,50 @@ export default {
             return {
                 'dialog-item': true,
                 'reply-item': this.isReply,
+                'unread-start': this.isUnreadStart,
                 'self': this.isRightMsg,
             }
         },
     },
 
+    watch: {
+        msgReady() {
+            this.msgRead();
+        },
+        windowActive() {
+            this.msgRead();
+        },
+        scrollIng() {
+            this.msgRead();
+        },
+    },
+
     methods: {
+        msgRead() {
+            if (this.isNoRead) {
+                return;
+            }
+            if (!this.msgReady) {
+                return;
+            }
+            if (!this.windowActive) {
+                return;
+            }
+            if (!this.$el?.parentNode.classList.contains('item-enter')) {
+                return;
+            }
+            // 标记已读
+            this.$store.dispatch("dialogMsgRead", this.source);
+            // 阅读最早未读消息之后如何还有未读信息则标记为已读
+            if (this.isUnreadStart
+                && $A.getDialogUnread(this.dialogData, true) > 0) {
+                this.$store.dispatch("dialogMsgMark", {
+                    dialog_id: this.source.dialog_id,
+                    type: 'read',
+                    after_msg_id: this.source.id,
+                })
+            }
+        },
 
         formatTodoUser(data) {
             if ($A.isJson(data)) {

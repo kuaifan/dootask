@@ -4,16 +4,13 @@
         <div class="setting-head">
             <div class="setting-titbox">
                 <div class="setting-title">
-                    <div v-if="showMobileBox" class="common-nav-back portrait" @click="goForward({name: 'manage-application'},true)"><i class="taskfont">&#xe676;</i></div>
                     <h1>{{settingTitleName}}</h1>
-                    <div v-if="!showMobileBox" class="setting-more" @click="goBack()">
-                        <Icon type="md-close" />
-                    </div>
                 </div>
             </div>
         </div>
-        <div class="setting-box" :class="{'show-mobile-box':showMobileBox}">
+        <div class="setting-box">
             <div class="setting-menu">
+                <MobileNavTitle :title="$L('设置')"/>
                 <ul>
                     <li
                         v-for="(item, key) in menu"
@@ -33,12 +30,15 @@
                     </li>
                 </ul>
             </div>
-            <div class="setting-content">
-                <div class="setting-content-title">{{titleNameRoute}}</div>
-                <div class="setting-content-view">
-                    <router-view class="setting-router-view"></router-view>
+            <transition :name="$isEEUiApp ? 'mobile-dialog' : 'none'">
+                <div v-if="showContent" class="setting-content">
+                    <MobileNavTitle :title="settingTitleName"/>
+                    <div class="setting-content-title">{{titleNameRoute}}</div>
+                    <div class="setting-content-view">
+                        <router-view class="setting-router-view"></router-view>
+                    </div>
                 </div>
-            </div>
+            </transition>
         </div>
     </div>
 </template>
@@ -47,8 +47,10 @@
 import {mapState} from "vuex";
 import {Store} from "le5le-store";
 import axios from "axios";
+import MobileNavTitle from "../../../components/Mobile/NavTitle.vue";
 
 export default {
+    components: {MobileNavTitle},
     data() {
         return {
             version: window.systemInfo.version
@@ -66,8 +68,8 @@ export default {
             return this.$route.name
         },
 
-        showMobileBox() {
-            return this.routeName === 'manage-setting'
+        showContent() {
+            return this.$route.path.match(/^\/manage\/setting\/\w+$/)
         },
 
         menu() {
@@ -210,7 +212,7 @@ export default {
                     content += `<br/>${this.$L('客户端版本')}: v${this.version}`
                     $A.modalInfo({
                         language: false,
-                        title: '版本信息',
+                        title: this.$L('版本信息'),
                         content
                     })
                 }

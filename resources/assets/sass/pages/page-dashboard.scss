@@ -2,7 +2,7 @@
     width: 100%;
     height: 100%;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     background-color: #ffffff;
@@ -26,107 +26,19 @@
         max-height: 100%;
         display: flex;
         flex-direction: column;
-        width: 1px;
-        align-items: flex-start;
-        height: 100%;
-        flex: 1;
-        padding: 32px 4%;
-
-        .dashboard-hello {
-            display: flex;
-            .tite{
-                width: 1px;
-                flex: 1;
-                padding-right: 30px;
-                min-height: 41px;
-                padding-left: 2px;
-            }
-            .dashboard-search {
-                width: 1px;
-                flex-shrink: 0;
-                margin-left: 22px;
-                cursor: pointer;
-                .ivu-poptip{
-                    float: right;
-                    margin-left: auto;
-                    .ivu-poptip-body{
-                        padding:8px;
-                        ul{
-                            li{
-                                overflow: hidden;
-                                white-space: nowrap;
-                                text-overflow: ellipsis;
-                                padding: 8px 10px;
-                                border-radius: 6px;
-                                cursor: pointer;
-                                color: #999999;
-                                &:hover{
-                                    color: #8FCE78;
-                                }
-                                &.selected{
-                                    color: #8FCE78;
-                                }
-                            }
-                            .empty{
-                                text-align: center;
-                                color: #999999 !important;
-                            }
-                        }
-                    }
-                }
-                .ivu-input-wrapper {
-                    max-width: 100%;
-                    margin-left: auto;
-                    width: auto;
-                    transform: translateZ(0);
-                    .ivu-input {
-                        border-color: #dcdee2;
-                        width: 0;
-                        padding-left: 0;
-                        padding-right: 38px;
-                        border-radius: 32px;
-                        transition: all 0.3s;
-                        font-size: 14px;
-                    }
-                    .ivu-input-suffix {
-                        width: 40px;
-                        i {
-                            width: 40px;
-                            color: $primary-text-color;
-                        }
-                    }
-                }
-                .has-value,
-                &:hover {
-                    .ivu-input-wrapper {
-                        .ivu-input {
-                            width: 250px;
-                            padding-left: 14px;
-                        }
-                    }
-                }
-                .selected{
-                    .ivu-input-wrapper {
-                        .ivu-input {
-                            color: #8FCE78;
-                        }
-                    }
-                }
-            }
-
-        }
-
+        align-items: center;
 
         .dashboard-hello,
         .dashboard-desc ,
         .dashboard-block ,
         .dashboard-list .dashboard-title,
         .dashboard-list .dashboard-ul {
-            width: 100%;
-            max-width: 100%;
+            width: 660px;
+            max-width: 80%;
             margin: 0 auto;
         }
         .dashboard-hello {
+            padding: 6% 12px 0;
             color: $primary-title-color;
             font-size: 24px;
             font-weight: 600;
@@ -136,6 +48,7 @@
             display: flex;
             align-items: center;
             margin-top: 18px;
+            padding: 0 12px;
             color: #888888;
             font-size: 13px;
             .dashboard-load {
@@ -149,6 +62,7 @@
         }
         .dashboard-block {
             margin-top: 18px;
+            padding: 0 12px;
             display: flex;
             > li {
                 flex: 1;
@@ -204,7 +118,8 @@
         }
         .dashboard-list {
             width: 100%;
-            margin-top: 22px;
+            margin-top: 48px;
+            padding-bottom: 6%;
             .dashboard-ref {
                 height: 0;
             }
@@ -213,6 +128,7 @@
                 top: 0;
                 z-index: 1;
                 margin: 0 auto;
+                padding: 0 12px;
                 height: 46px;
                 line-height: 46px;
                 font-weight: 600;
@@ -221,7 +137,7 @@
             }
             .dashboard-ul {
                 margin: 0 auto 18px;
-                padding: 6px 0 0;
+                padding: 6px 12px 0;
                 overflow: hidden;
                 > li {
                     position: relative;
@@ -332,18 +248,6 @@
             }
         }
     }
-
-    .dashboard-calendar{
-        width: 35%;
-        min-width:400px;
-        height: 100%;
-        border-left: 1px solid #F4F5F7;
-        padding: 32px 24px 24px;
-        @media (max-width: 980px) {
-            display: none;
-        }
-    }
-
     .nopage {
         width: 100%;
         height: 100%;
@@ -352,6 +256,8 @@
         align-items: center;
         justify-content: center;
         .nopage-icon {
+            background-color: #f4f5f7;
+            padding: 20px;
             border-radius: 50%;
             .ivu-icon {
                 color: #d1d8dd;
@@ -361,9 +267,9 @@
         .nopage-text {
             margin-top: 16px;
             color: #bec6cc;
+            background-color: #f4f5f7;
             padding: 4px 15px;
             border-radius: 14px;
-            margin-bottom: 60px;
         }
     }
 }
@@ -400,7 +306,6 @@ body.window-portrait {
     .page-dashboard {
         .dashboard-wrapper {
             display: block;
-            padding-top: 20px;
             .dashboard-hello,
             .dashboard-desc ,
             .dashboard-block ,
@@ -427,46 +332,6 @@ body.window-portrait {
                     user-select: none;
                 }
             }
-            .dashboard-hello{
-                position: relative;
-                .tite{
-                    white-space: nowrap;
-                    text-overflow: ellipsis;
-                    overflow: hidden;
-                }
-                .dashboard-search {
-                    .has-value,
-                    .selected,
-                    &:hover {
-                        position: absolute;
-                        top: 0;
-                        right: 0;
-                        width: 100%;
-                        .ivu-input-wrapper {
-                            .ivu-input {
-                                width: 100%;
-                            }
-                        }
-                        .ivu-poptip,
-                        .ivu-poptip-rel,
-                        .ivu-poptip-rel .selected,
-                        .ivu-input-wrapper{
-                            height: 42px;
-                            width: 100%;
-                            .ivu-input {
-                                float: right;
-                                padding-left: 14px;
-                            }
-                        }
-                    }
-                }
-                .ivu-poptip-popper{
-                    width: 90% !important;
-                }
-            }
-        }
-        .nopage{
-            margin-top: 30px;
         }
     }
 }

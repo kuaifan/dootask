@@ -125,18 +125,18 @@
                                     </div>
                                     <div :class="`no-dark-before file-icon ${item.type}${item.share ? ' share' : ''}`">
                                         <template v-if="item.share">
-                                            <UserAvatar v-if="item.userid != userId" :userid="item.userid" class="share-avatar" :size="20">
+                                            <UserAvatarTip v-if="item.userid != userId" :userid="item.userid" class="share-avatar" :size="20">
                                                 <p>{{$L('共享权限')}}: {{$L(item.permission == 1 ? '读/写' : '只读')}}</p>
-                                            </UserAvatar>
+                                            </UserAvatarTip>
                                             <div v-else class="share-icon no-dark-content">
                                                 <i class="taskfont">&#xe757;</i>
                                             </div>
                                         </template>
                                         <template v-else-if="isParentShare">
-                                            <UserAvatar :userid="item.created_id" class="share-avatar" :size="20">
+                                            <UserAvatarTip :userid="item.created_id" class="share-avatar" :size="20">
                                                 <p v-if="item.created_id != item.userid"><strong>{{$L('成员创建于')}}: {{item.created_at}}</strong></p>
                                                 <p v-else>{{$L('所有者创建于')}}: {{item.created_at}}</p>
-                                            </UserAvatar>
+                                            </UserAvatarTip>
                                         </template>
                                     </div>
                                     <div v-if="item._edit" class="file-input">
@@ -345,7 +345,7 @@
                             <EAvatar class="avatar-text" icon="el-icon-s-custom"/>
                             <span class="avatar-name">{{$L('所有人')}}</span>
                         </div>
-                        <UserAvatar v-else :size="32" :userid="item.userid" showName tooltipDisabled/>
+                        <UserAvatar v-else :size="32" :userid="item.userid" showName/>
                         <Select v-model="item.permission" :placeholder="$L('权限')" @on-change="upShare(item)">
                             <Option :value="1">{{ $L('读/写') }}</Option>
                             <Option :value="0">{{ $L('只读') }}</Option>
@@ -439,13 +439,14 @@ import DrawerOverlay from "../../components/DrawerOverlay";
 import PreviewImage from "../../components/PreviewImage";
 import longpress from "../../directives/longpress";
 import UserSelect from "../../components/UserSelect.vue";
+import UserAvatarTip from "../../components/UserAvatar/tip.vue";
 
 const FilePreview = () => import('./components/FilePreview');
 const FileContent = () => import('./components/FileContent');
 const FileObject = {sort: null, mode: null, shared: null};
 
 export default {
-    components: {UserSelect, PreviewImage, FilePreview, DrawerOverlay, FileContent},
+    components: {UserAvatarTip, UserSelect, PreviewImage, FilePreview, DrawerOverlay, FileContent},
     directives: {longpress},
     data() {
         return {

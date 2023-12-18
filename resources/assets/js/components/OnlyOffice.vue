@@ -282,7 +282,7 @@ export default {
                         }
                         //
                     }).catch(({msg}) => {
-                        if( msg.indexOf("404 not found") !== -1 ){
+                        if (msg.indexOf("404 not found") !== -1) {
                             $A.modalInfo({
                                 language: false,
                                 title: '版本过低',

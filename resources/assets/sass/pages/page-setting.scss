@@ -33,6 +33,9 @@
         height: 0;
         display: flex;
         padding-bottom: 16px;
+        .mobile-nav-box {
+            display: none;
+        }
         .setting-menu {
             width: 200px;
             flex-shrink: 0;
@@ -375,27 +378,18 @@
 
 body.window-portrait {
     .page-setting {
+        background-color: #f8f8f8;
         .setting-head {
-            margin: 24px 16px 16px;
-            .setting-titbox {
-                .setting-title {
-                    .setting-more {
-                        display: flex;
-                        font-size: 24px;
-                        width: 42px;
-                        height: 42px;
-                        align-items: center;
-                        justify-content: center;
-                    }
-                }
-            }
+            display: none;
         }
         .setting-box {
             position: relative;
-            &.show-mobile-box {
-                .setting-menu {
-                    transform: translateX(0);
-                }
+            .mobile-nav-box {
+                display: flex;
+                position: sticky;
+                top: 0;
+                z-index: 3;
+                background-color: #f8f8f8;
             }
             .setting-menu {
                 position: absolute;
@@ -403,20 +397,49 @@ body.window-portrait {
                 left: 0;
                 width: 100%;
                 height: 100%;
-                z-index: 9;
-                background-color: #ffffff;
-                transform: translateX(-120%);
+                z-index: 1;
                 > ul {
-                    padding: 12px 32px;
+                    padding: 20px 0;
                     > li {
-                        padding: 0 8px;
-                        &:hover {
-                            background-color: transparent;
+                        position: relative;
+                        padding: 0 32px;
+                        line-height: 48px;
+                        margin: 0;
+                        background-color: #ffffff;
+                        &:after {
+                            content: "";
+                            position: absolute;
+                            top: 0;
+                            left: 32px;
+                            right: 0;
+                            z-index: 1;
+                            height: 1px;
+                            transform: scaleY(0.5);
+                            background-color: #F4F4F5;
+                        }
+                        &:first-child {
+                            &:after {
+                                display: none;
+                            }
+                        }
+                        &.divided {
+                            margin-top: 20px;
+                            &:before,
+                            &:after {
+                                display: none;
+                            }
                         }
                     }
                 }
             }
             .setting-content {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 2;
+                background-color: #ffffff;
                 .setting-content-title {
                     display: none;
                 }
@@ -432,7 +455,25 @@ body.window-portrait {
             }
             &.submit {
                 .ivu-tabs{
-                    padding: 0 16px 16px 12px;
+                    padding: 0;
+                    .ivu-tabs-bar {
+                        margin-bottom: 0;
+                    }
+                    .ivu-tabs-content {
+                        .ivu-tabs-tabpane {
+                            .setting-component-item {
+                                .ivu-form {
+                                    padding-top: 16px;
+                                }
+                                .setting-footer {
+                                    margin: 0;
+                                }
+                            }
+                        }
+                    }
+                }
+                .setting-footer {
+                    padding: 16px 24px;
                 }
             }
         }

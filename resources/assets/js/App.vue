@@ -297,7 +297,7 @@ export default {
                 key: 'manifest',
                 url: $A.apiUrl("../manifest")
             })
-            $A.bindScreenshotKey($A.jsonParse(window.localStorage.getItem("__keyboard:data__")) || {});
+            $A.bindScreenshotKey(this.$store.state.cacheKeyboard);
             //
             this.$Electron.sendMessage('setMenuLanguage', {
                 openInBrowser: this.$L("在浏览器中打开"),

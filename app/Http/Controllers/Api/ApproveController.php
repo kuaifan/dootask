@@ -19,6 +19,7 @@ use App\Models\UserDepartment;
 use App\Models\WebSocketDialogMsg;
 use App\Module\BillMultipleExport;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
+
 /**
  * @apiDefine approve
  *
@@ -403,7 +404,7 @@ class ApproveController extends AbstractController
     {
         $user = User::auth();
         $data['userid'] = (string)$user->userid;
-        $data['username'] = Request::input('username'); 
+        $data['username'] = Request::input('username');
         $data['procName'] = Request::input('proc_def_name'); //分类
         $data['state'] = intval(Request::input('state')); //状态
         $data['pageIndex'] = intval(Request::input('page'));
@@ -1110,20 +1111,22 @@ class ApproveController extends AbstractController
      * @apiGroup system
      * @apiName user__status
      *
-     * @apiParam {String} userid               
+     * @apiParam {String} userid
      *
-     * @apiSuccess {String}
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
      */
     public function user__status()
     {
         $data['userid'] = intval(Request::input('userid'));
-        $ret = Ihttp::ihttp_get($this->flow_url.'/api/v1/workflow/process/getUserApprovalStatus?'.http_build_query($data));       
-        $procdef = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);         
+        $ret = Ihttp::ihttp_get($this->flow_url.'/api/v1/workflow/process/getUserApprovalStatus?'.http_build_query($data));
+        $procdef = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (isset($procdef['status']) && $procdef['status'] == 200) {
             return Base::retSuccess('success', isset($procdef['data']["proc_def_name"]) ? $procdef['data']["proc_def_name"] : '');
-        } 
+        }
         return Base::retSuccess('success', '');
     }
-      
+
 
 }

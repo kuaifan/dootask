@@ -7,6 +7,7 @@ use App\Models\TaskWorker;
 use App\Models\Tmp;
 use App\Models\WebSocketTmpMsg;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\File as SupportFile;
 
 /**
  * 删除过期临时数据任务
@@ -103,9 +104,11 @@ class DeleteTmpTask extends AbstractTask
             case 'file_pack':
                 {
                     $path = public_path('tmp/file/');
+                    if (!SupportFile::exists($path)) {
+                        return;
+                    }
                     $dirIterator = new \RecursiveDirectoryIterator($path);
                     $iterator = new \RecursiveIteratorIterator($dirIterator);
-
                     foreach ($iterator as $file) {
                         if ($file->isFile()) {
                             $time = $file->getMTime();

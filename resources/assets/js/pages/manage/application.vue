@@ -61,7 +61,7 @@
                             <img :src="item.src">
                             <h4>{{ item.label }}</h4>
                             <p class="desc" @click="openDetail(item.desc)">{{ item.desc }}</p>
-                            <p class="btn" @click="onGoToChat(item.value)">{{ $L('去聊天') }}</p>
+                            <p class="btn" @click="onGoToChat(item.value)">{{ $L('开始聊天') }}</p>
                             <div class="load" v-if="aibotDialogSearchLoad == item.value">
                                 <Loading />
                             </div>
@@ -99,7 +99,7 @@
                 <div class="ivu-modal-wrap-apply-title">
                     {{ $L('签到管理') }}
                     <p @click="signInType = signInType == 1 ? 2 : 1" v-if="userIsAdmin">
-                        {{ signInType == 1 ? $L('系统设置') : $L('返回') }}
+                        {{ signInType == 1 ? $L('签到设置') : $L('返回') }}
                     </p>
                 </div>
                 <div class="ivu-modal-wrap-apply-body">
@@ -154,7 +154,7 @@
         <DrawerOverlay v-model="mailShow" placement="right" :size="700">
             <div class="ivu-modal-wrap-apply">
                 <div class="ivu-modal-wrap-apply-title">
-                    {{ $L('邮件管理') }}
+                    {{ $L('邮件通知') }}
                 </div>
                 <div class="ivu-modal-wrap-apply-body">
                     <SystemEmailSetting />
@@ -321,47 +321,51 @@ export default {
     methods: {
         initList() {
             let applyList = [
-                { value: "approve", label: "审批中心", sort: 1 },
-                { value: "report", label: "工作报告", sort: 2 },
-                { value: "okr", label: "OKR管理", sort: 3 },
-                { value: "robot", label: "AI机器人", sort: 4 },
-                { value: "signin", label: "签到", sort: 5 },
-                { value: "meeting", label: "会议", sort: 6 },
-                { value: "calendar", label: "日历", sort: 7 },
+                { value: "approve", label: "审批中心", sort: 3 },
+                { value: "report", label: "工作报告", sort: 5 },
+                { value: "okr", label: "OKR管理", sort: 4 },
+                { value: "robot", label: "AI机器人", sort: 6 },
+                { value: "signin", label: "签到", sort: 7 },
+                { value: "meeting", label: "会议", sort: 8 },
                 { value: "word-chain", label: "接龙", sort: 9 },
                 { value: "vote", label: "投票", sort: 10 },
             ];
             // wap模式
-            let appApplyList = this.windowOrientation != 'portrait' ? (
-                    $A.isEEUiApp ? [
-                        { value: "scan", label: "扫一扫", sort: 13 }
-                    ] : []
-                ) : [
-                { value: "file", label: "文件", sort: 8 },
-                { value: "addProject", label: "创建项目", sort: 11 },
-                { value: "addTask", label: "添加任务", sort: 12 },
-                { value: "scan", label: "扫一扫", sort: 13 , show: $A.isEEUiApp },
-                { value: "setting", label: "设置", sort: 14 }
-            ];
+            if (this.windowOrientation == 'landscape') {
+                // 横屏模式
+                applyList.push({ value: "scan", label: "扫一扫", show: $A.isEEUiApp, sort: 13 })
+            } else {
+                // 竖屏模式
+                applyList.push(...[
+                    { value: "calendar", label: "日历", sort: 1 },
+                    { value: "file", label: "文件", sort: 2 },
+                    { value: "addProject", label: "创建项目", sort: 11 },
+                    { value: "addTask", label: "添加任务", sort: 12 },
+                    { value: "scan", label: "扫一扫", show: $A.isEEUiApp, sort: 13 },
+                    { value: "setting", label: "设置", sort: 14 }
+                ])
+            }
             // 管理员
-            let adminApplyList = !this.userIsAdmin ? [] : [
-                { value: "okrAnalyze", label: "OKR结果", sort: 15 },
-                { value: "ldap", label: "LDAP", sort: 16 },
-                { value: "mail", label: "邮件", sort: 17 },
-                { value: "appPush", label: "APP推送", sort: 18 },
-                { value: "allUser", label: "团队管理", sort: 19 }
-            ].map((h) => {
+            let adminApplyList = [];
+            if (!this.userIsAdmin) {
+                if (this.userInfo.department_owner) {
+                    adminApplyList.push({ value: "okrAnalyze", label: "OKR结果", sort: 15 })
+                }
+            } else {
+                adminApplyList.push(...[
+                    { value: "okrAnalyze", label: "OKR结果", sort: 15 },
+                    { value: "ldap", label: "LDAP", sort: 16 },
+                    { value: "mail", label: "邮件通知", sort: 17 },
+                    { value: "appPush", label: "APP推送", sort: 18 },
+                    { value: "allUser", label: "团队管理", sort: 19 }
+                ])
+            }
+            adminApplyList = adminApplyList.map((h) => {
                 h.type = 'admin';
                 return h;
             });
             //
-            if(this.userInfo.department_owner && !this.userIsAdmin){
-                adminApplyList = [
-                    { value: "okrAnalyze", label: "OKR结果", sort: 15, type: 'admin' },
-                ]
-            }
-            //
-            this.applyList = [...applyList, ...appApplyList, ...adminApplyList].sort((a, b) => {
+            this.applyList = [...applyList, ...adminApplyList].sort((a, b) => {
                 if (a.sort < b.sort) {
                     return -1;
                 } else if (a.sort > b.sort) {
@@ -442,7 +446,7 @@ export default {
             }
             this.$emit("on-click", item.value)
         },
-        // 去聊天
+        // 开始聊天
         onGoToChat(type) {
             let dialogId = 0;
             let email = `ai-${type}@bot.system`;
@@ -452,10 +456,10 @@ export default {
                 }
             })
             if (dialogId) {
-                if (this.windowOrientation == 'portrait') {
-                    this.$store.dispatch("openDialog", dialogId)
-                } else {
+                if (this.windowOrientation == 'landscape') {
                     this.goForward({ name: 'manage-messenger', params: { dialog_id: dialogId } });
+                } else {
+                    this.$store.dispatch("openDialog", dialogId)
                 }
                 this.aibotShow = false;
             } else {
@@ -470,7 +474,7 @@ export default {
                         return;
                     }
                     this.$store.dispatch("openDialogUserid", data[0]?.dialog_user.userid).then(_ => {
-                        if (this.windowOrientation != 'portrait') {
+                        if (this.windowOrientation == 'landscape') {
                             this.goForward({ name: 'manage-messenger' })
                         }
                         this.aibotShow = false;
@@ -506,6 +510,17 @@ export default {
             const arr = (text + "").match(/^https*:\/\/(.*?)\/login\?qrcode=(.*?)$/)
             if (arr) {
                 // 扫码登录
+                if ($A.getDomain(text) != $A.getDomain($A.apiUrl('../'))) {
+                    let content = this.$L('请确认扫码的服务器与当前服务器一致')
+                    content += `<br/>${this.$L('二维码服务器')}: ${$A.getDomain(text)}`
+                    content += `<br/>${this.$L('当前服务器')}: ${$A.getDomain($A.apiUrl('../'))}`
+                    $A.modalWarning({
+                        language: false,
+                        title: this.$L('扫码登录'),
+                        content
+                    })
+                    return
+                }
                 this.scanLoginCode = arr[2];
                 this.scanLoginShow = true;
                 return

@@ -214,12 +214,14 @@ class WebSocketDialog extends AbstractModel
         if ($positionData) {
             $array = [];
             // @我的消息
-            if ($this->mention > 0
-                && $mention_id = intval($builder->clone()->whereMention(1)->orderByDesc('msg_id')->value('msg_id'))) {
-                $array[] = [
-                    'msg_id' => $mention_id,
-                    'label' => Doo::translate('@我的消息'),
-                ];
+            if ($this->mention > 0) {
+                $list = $builder->clone()->whereMention(1)->orderByDesc('msg_id')->take(20)->get();
+                foreach ($list as $item) {
+                    $array[] = [
+                        'msg_id' => $item->msg_id,
+                        'label' => Doo::translate('@我的消息'),
+                    ];
+                }
             }
             // 最早一条未读消息
             if ($this->unread > 0

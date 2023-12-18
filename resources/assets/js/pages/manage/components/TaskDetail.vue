@@ -1096,6 +1096,29 @@ export default {
                     if (content == this.taskContent) {
                         return;
                     }
+                    if (this.windowTouch) {
+                        $A.modalConfirm({
+                            title: '温馨提示',
+                            content: '是否保存编辑内容？',
+                            onOk: () => {
+                                this.updateData("contentSave", params)
+                            },
+                            onCancel: () => {
+                                this.$refs.desc.updateContent(this.taskContent);
+                            }
+                        });
+                    } else {
+                        this.updateData("contentSave", params)
+                    }
+                    return;
+
+                case 'contentSave':
+                    const contentSave = this.$refs.desc.getContent();
+                    if (contentSave == this.taskContent) {
+                        return;
+                    }
+                    this.$set(this.taskDetail, 'content', contentSave)
+                    action = 'content';
                     if (content == this.taskContent.replace(/original-width="[^"]*"/g, "").replace(/original-height="[^"]*"/g, "").replace(/\"   \//g, "\" /")) {
                         return;
                     }
@@ -1103,7 +1126,7 @@ export default {
                     successCallback = () => {
                         this.$store.dispatch("saveTaskContent", {
                             task_id: this.taskId,
-                            content
+                            content: contentSave
                         })
                     }
                     break;
