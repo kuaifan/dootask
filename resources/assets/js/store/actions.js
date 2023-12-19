@@ -551,6 +551,7 @@ export default {
         //
         dispatch("getProjects").catch(() => {});
         dispatch("getDialogs").catch(() => {});
+        dispatch("getDialogTodo", 0).catch(() => {});
         dispatch("getReportUnread", 1000);
         dispatch("getApproveUnread", 1000);
         dispatch("getTaskForDashboard");
@@ -2479,17 +2480,21 @@ export default {
             },
         }).then(({data}) => {
             if ($A.arrayLength(data) > 0) {
-                dispatch("saveDialog", {
-                    id: dialog_id,
-                    todo_num: $A.arrayLength(data)
-                });
-                state.dialogTodos = state.dialogTodos.filter(item => item.dialog_id != dialog_id)
+                if (dialog_id > 0) {
+                    dispatch("saveDialog", {
+                        id: dialog_id,
+                        todo_num: $A.arrayLength(data)
+                    });
+                    state.dialogTodos = state.dialogTodos.filter(item => item.dialog_id != dialog_id)
+                }
                 dispatch("saveDialogTodo", data)
             } else {
-                dispatch("saveDialog", {
-                    id: dialog_id,
-                    todo_num: 0
-                });
+                if (dialog_id > 0) {
+                    dispatch("saveDialog", {
+                        id: dialog_id,
+                        todo_num: 0
+                    });
+                }
             }
         }).catch(console.warn);
     },

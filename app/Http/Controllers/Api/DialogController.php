@@ -249,7 +249,7 @@ class DialogController extends AbstractController
      * @apiGroup dialog
      * @apiName todo
      *
-     * @apiParam {Number} dialog_id            会话ID
+     * @apiParam {Number} [dialog_id]            会话ID
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -261,9 +261,13 @@ class DialogController extends AbstractController
         //
         $dialog_id = intval(Request::input('dialog_id'));
         //
-        WebSocketDialog::checkDialog($dialog_id);
+        $builder = WebSocketDialogMsgTodo::whereUserid($user->userid)->whereDoneAt(null);
+        if ($dialog_id > 0) {
+            WebSocketDialog::checkDialog($dialog_id);
+            $builder->whereDialogId($dialog_id);
+        }
         //
-        $list = WebSocketDialogMsgTodo::whereDialogId($dialog_id)->whereUserid($user->userid)->whereDoneAt(null)->orderByDesc('id')->take(50)->get();
+        $list = $builder->orderByDesc('id')->take(50)->get();
         return Base::retSuccess("success", $list);
     }
 
