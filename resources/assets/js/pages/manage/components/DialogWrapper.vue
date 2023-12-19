@@ -1772,7 +1772,7 @@ export default {
         },
 
         onTouchEnd() {
-            if ($A.isIos()) {
+            if (typeof this.wrapperStart === 'number' && $A.isIos()) {
                 $A.scrollToView(this.$refs.footer)
             }
         },
