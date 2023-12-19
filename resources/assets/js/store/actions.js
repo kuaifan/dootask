@@ -1589,7 +1589,7 @@ export default {
                 //
                 if (data.next_page_url) {
                     requestData.page = data.current_page + 1
-                    if (data.current_page % 10 === 0) {
+                    if (data.current_page % 20 === 0) {
                         $A.modalWarning({
                             content: "数据已超过" + data.to + "条，是否继续加载？",
                             onOk: () => {
