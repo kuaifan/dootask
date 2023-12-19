@@ -104,7 +104,7 @@ export default {
             type: Number,
             default: 0
         },
-        msgReady: {
+        readEnabled: {
             type: Boolean,
             default: false
         },
@@ -148,7 +148,7 @@ export default {
     },
 
     watch: {
-        msgReady() {
+        readEnabled() {
             this.msgRead();
         },
         windowActive() {
@@ -164,7 +164,7 @@ export default {
             if (this.isNoRead) {
                 return;
             }
-            if (!this.msgReady) {
+            if (!this.readEnabled) {
                 return;
             }
             if (!this.windowActive) {

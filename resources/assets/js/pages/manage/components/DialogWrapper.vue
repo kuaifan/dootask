@@ -137,7 +137,7 @@
         </div>
 
         <!--跳转提示-->
-        <div v-if="positionMsg" class="dialog-position" :class="{'down': tagShow}">
+        <div v-if="readEnabled && positionMsg" class="dialog-position" :class="{'down': tagShow}">
             <div class="position-label" @click="onPositionMark">
                 <Icon v-if="positionLoad > 0" type="ios-loading" class="icon-loading"></Icon>
                 <i v-else class="taskfont">&#xe624;</i>
@@ -156,7 +156,7 @@
             :data-component="msgItem"
 
             :item-class-add="itemClassAdd"
-            :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, unreadMsgId, scrollIng, msgReady}"
+            :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, unreadMsgId, scrollIng, readEnabled}"
             :estimate-size="dialogData.type=='group' ? 105 : 77"
             :keeps="25"
             :disabled="scrollDisabled"
@@ -696,11 +696,12 @@ export default {
             approveDetailsShow: false,
             approvaUserStatus: '',
 
-            positionLoad: 0,            // 定位跳转加载中
-            msgReady: false,            // 消息准备完成
-            unreadMsgId: 0,             // 最早未读消息id
-            toBottomReGetMsg: false,    // 滚动到底部重新获取消息
-            selectionRange: false,      // 是否选择文本
+            unreadMsgId: 0,                     // 最早未读消息id
+            positionLoad: 0,                    // 定位跳转加载中
+            msgPreparedStatus: false,           // 消息准备完成
+            listPreparedStatus: false,          // 消息准备完成
+            selectedTextStatus: false,          // 是否选择文本
+            scrollToBottomAndRefresh: false,    // 滚动到底部重新获取消息
         }
     },
 
@@ -1034,7 +1035,11 @@ export default {
                 return this.systemConfig.file_upload_limit * 1024
             }
             return 1024000
-        }
+        },
+
+        readEnabled() {
+            return this.msgPreparedStatus && this.listPreparedStatus
+        },
     },
 
     watch: {
@@ -1045,7 +1050,8 @@ export default {
                     this.msgType = ''
                     this.searchShow = false
                     this.unreadMsgId = 0
-                    this.toBottomReGetMsg = false
+                    this.listPreparedStatus = false
+                    this.scrollToBottomAndRefresh = false
                     //
                     if (this.allMsgList.length > 0) {
                         this.allMsgs = this.allMsgList
@@ -1058,7 +1064,9 @@ export default {
                     }).then(_ => {
                         this.openId = dialog_id;
                         setTimeout(this.onSearchMsgId, 100)
-                    }).catch(_ => {});
+                    }).catch(_ => {}).finally(_ => {
+                        this.listPreparedStatus = true
+                    });
                     //
                     this.$store.dispatch('saveInDialog', {
                         uid: this._uid,
@@ -1167,7 +1175,7 @@ export default {
             const lastMsg = this.allMsgs[this.allMsgs.length - 1]
             const lastEl = $A(this.$refs.scroller.$el).find(`[data-id="${lastMsg.id}"]`)
             if (lastEl.length === 0) {
-                this.toBottomReGetMsg = true
+                this.scrollToBottomAndRefresh = true
                 return;
             }
             // 开始请求重新获取消息
@@ -1474,7 +1482,7 @@ export default {
 
         onSelectionchange() {
             const selectionType = window.getSelection().type;
-            this.selectionRange = selectionType === "Range"
+            this.selectedTextStatus = selectionType === "Range"
         },
 
         getTempId() {
@@ -1714,7 +1722,7 @@ export default {
 
         onTouchStart(e) {
             this.wrapperStart = null;
-            if (this.selectionRange) {
+            if (this.selectedTextStatus) {
                 this.wrapperStart = window.scrollY
                 return
             }
@@ -2013,7 +2021,7 @@ export default {
         },
 
         onReGetMsg() {
-            this.toBottomReGetMsg = false
+            this.scrollToBottomAndRefresh = false
             this.getMsgs({
                 dialog_id: this.dialogId,
                 msg_id: this.msgId,
@@ -2306,7 +2314,7 @@ export default {
         },
 
         onActivity(activity) {
-            this.msgReady = !activity
+            this.msgPreparedStatus = !activity
         },
 
         onScroll(event) {
@@ -2319,7 +2327,7 @@ export default {
             this.scrollTail = tail;
             if (this.scrollTail <= 55) {
                 this.msgNew = 0;
-                this.toBottomReGetMsg && this.onReGetMsg()
+                this.scrollToBottomAndRefresh && this.onReGetMsg()
             }
             //
             this.scrollAction = event.target.scrollTop;
