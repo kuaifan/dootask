@@ -16,7 +16,9 @@ const longpress = {
         el.__longpressContextmenu__ = (e) => {
             e.preventDefault()
             e.stopPropagation()
-            callback(e, el)
+            if (!isSupportTouch) {
+                callback(e, el)
+            }
         }
         el.addEventListener('contextmenu', el.__longpressContextmenu__);
         // 不支持touch
