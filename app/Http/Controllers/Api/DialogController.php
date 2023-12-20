@@ -1831,6 +1831,7 @@ class DialogController extends AbstractController
      * @apiParam {Number} dialog_id             会话ID
      * @apiParam {Number} userid                新的群主
      * @apiParam {String} check_owner           转让验证  yes-需要验证  no-不需要验证
+     * @apiParam {String} key                   密钥（APP_KEY）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1838,13 +1839,15 @@ class DialogController extends AbstractController
      */
     public function group__transfer()
     {
-        $user = User::auth();
+        if (!Base::is_internal_ip(Base::getIp()) || Request::input("key") !== env('APP_KEY')) {
+            $user = User::auth();
+        }
         //
         $dialog_id = intval(Request::input('dialog_id'));
         $userid = intval(Request::input('userid'));
         $check_owner = trim(Request::input('check_owner', 'yes')) === 'yes';
         //
-        if ($check_owner && $userid === $user->userid) {
+        if ($check_owner && $userid === $user?->userid) {
             return Base::retError('你已经是群主');
         }
         if (!User::whereUserid($userid)->exists()) {
@@ -1979,7 +1982,7 @@ class DialogController extends AbstractController
      */
     public function okr__push()
     {
-        if (Request::input("key") !== env('APP_KEY')) {
+        if (!Base::is_internal_ip(Base::getIp()) || Request::input("key") !== env('APP_KEY')) {
             User::auth();
         }
         $text = trim(Request::input('text'));
