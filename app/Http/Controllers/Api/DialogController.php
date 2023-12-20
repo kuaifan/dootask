@@ -1830,6 +1830,7 @@ class DialogController extends AbstractController
      *
      * @apiParam {Number} dialog_id             会话ID
      * @apiParam {Number} userid                新的群主
+     * @apiParam {String} check_owner           转让验证  yes-需要验证  no-不需要验证
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1841,17 +1842,18 @@ class DialogController extends AbstractController
         //
         $dialog_id = intval(Request::input('dialog_id'));
         $userid = intval(Request::input('userid'));
+        $check_owner = trim(Request::input('check_owner', 'yes')) === 'yes';
         //
-        if ($userid === $user->userid) {
+        if ($check_owner && $userid === $user->userid) {
             return Base::retError('你已经是群主');
         }
         if (!User::whereUserid($userid)->exists()) {
             return Base::retError('请选择有效的新群主');
         }
         //
-        $dialog = WebSocketDialog::checkDialog($dialog_id, true);
+        $dialog = WebSocketDialog::checkDialog($dialog_id, $check_owner);
         //
-        $dialog->checkGroup('user');
+        $dialog->checkGroup($check_owner ? 'user' : null);
         $dialog->owner_id = $userid;
         if ($dialog->save()) {
             $dialog->joinGroup($userid, 0);
