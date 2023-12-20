@@ -902,7 +902,9 @@ export default {
         },
 
         formatDraft(value) {
-            return value?.replace(/<img[^>]*>/gi, `[${$A.L('图片')}]`).replace(/<[^>]*>/g, '') || null
+            return value?.replace(/<img[^>]*>/gi, `[${$A.L('图片')}]`)
+                .replace(/<[^>]*>/g, '')
+                .replace(/&nbsp;/g, ' ')|| null
         },
 
         formatTodoNum(num) {
