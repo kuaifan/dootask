@@ -629,6 +629,8 @@
                         padding: 0 4px 0 6px;
                         background-color: #F4F5F7;
                         .chat-toolbar {
+                            right: 4px;
+                            bottom: 0;
                             > li {
                                 &.chat-record-recwave {
                                     background-color: #F4F5F7;

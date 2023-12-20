@@ -141,6 +141,10 @@
                 margin: 4px 7px;
                 line-height: 22px;
 
+                &::-webkit-scrollbar {
+                    display: none;
+                }
+
                 img {
                     max-width: 150px;
                     max-height: 150px;
@@ -210,8 +214,16 @@
             }
         }
 
-        .chat-toolbar {
+        .chat-space {
             float: right;
+            width: 170px;
+            height: 30px;
+        }
+
+        .chat-toolbar {
+            position: absolute;
+            right: 2px;
+            bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: flex-end;

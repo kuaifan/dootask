@@ -696,6 +696,8 @@ export default {
             approveDetailsShow: false,
             approvaUserStatus: '',
 
+            footerObserver: null,
+
             unreadMsgId: 0,                     // 最早未读消息id
             positionLoad: 0,                    // 定位跳转加载中
             msgPreparedStatus: false,           // 消息准备完成
@@ -717,6 +719,10 @@ export default {
         if (this.msgSubscribe) {
             this.msgSubscribe.unsubscribe();
             this.msgSubscribe = null;
+        }
+        if (this.footerObserver) {
+            this.footerObserver.disconnect()
+            this.footerObserver = null
         }
         document.removeEventListener('selectionchange', this.onSelectionchange);
     },
@@ -1092,6 +1098,22 @@ export default {
                         this.loadIng--
                     }, 300)
                 }
+            },
+            immediate: true
+        },
+
+        isReady: {
+            handler(ready) {
+                if (!ready) {
+                    return
+                }
+                this.$nextTick(_ => {
+                    if (!this.$refs.footer && this.footerObserver) {
+                        return
+                    }
+                    this.footerObserver = new ResizeObserver(this.onResizeEvent)
+                    this.footerObserver.observe(this.$refs.footer);
+                })
             },
             immediate: true
         },
@@ -1773,7 +1795,7 @@ export default {
 
         onTouchEnd() {
             if (typeof this.wrapperStart === 'number' && $A.isIos()) {
-                $A.scrollToView(this.$refs.footer)
+                $A.scrollToView(this.$refs.footer, false)
             }
         },
 
@@ -1934,12 +1956,29 @@ export default {
         },
 
         onHeightChange({newVal, oldVal}) {
+            this.onFooterResize();
             const diff = newVal - oldVal;
             if (diff !== 0) {
                 const {offset, tail} = this.scrollInfo()
                 if (tail > 0) {
                     this.onToOffset(offset + diff)
                 }
+            }
+        },
+
+        onResizeEvent(entries) {
+            entries.some(({target}) => {
+                if (target === this.$refs.footer) {
+                    this.onFooterResize()
+                }
+            })
+        },
+
+        onFooterResize() {
+            const footer = this.$refs.footer;
+            const marginSize = parseInt($A.css(footer, 'marginTop')) + parseInt($A.css(footer, 'marginBottom'))
+            if (this.$refs.scroller) {
+                this.$refs.scroller.$el.style.marginBottom = `${footer.getBoundingClientRect().height + marginSize}px`;
             }
         },
 

@@ -36,9 +36,11 @@
             <div
                 ref="editor"
                 class="no-dark-content"
-                :style="editorStyle"
                 @click.stop="onClickEditor"
                 @paste="handlePaste"></div>
+
+            <!-- 工具栏占位 -->
+            <div class="chat-space"></div>
 
             <!-- 工具栏 -->
             <ul class="chat-toolbar" @click.stop>
@@ -293,10 +295,8 @@ export default {
             emojiQuickKey: '',
             emojiQuickItems: [],
 
-            observer: null,
-            wrapperWidth: 0,
+            wrapperObserver: null,
             wrapperHeight: 0,
-            editorHeight: 0,
 
             recordReady: false,
             recordRec: null,
@@ -330,18 +330,8 @@ export default {
     mounted() {
         this.init();
         //
-        this.observer = new ResizeObserver(entries => {
-            entries.some(({target, contentRect}) => {
-                if (target === this.$el) {
-                    this.wrapperWidth = contentRect.width;
-                    this.wrapperHeight = contentRect.height;
-                } else if (target === this.$refs.editor) {
-                    this.editorHeight = contentRect.height;
-                }
-            })
-        });
-        this.observer.observe(this.$el);
-        this.observer.observe(this.$refs.editor);
+        this.wrapperObserver = new ResizeObserver(this.onResizeEvent)
+        this.wrapperObserver.observe(this.$el);
         //
         this.recordInter = setInterval(_ => {
             if (this.recordState === 'ing') {
@@ -374,9 +364,9 @@ export default {
         if (this.recordRec) {
             this.recordRec = null
         }
-        if (this.observer) {
-            this.observer.disconnect()
-            this.observer = null
+        if (this.wrapperObserver) {
+            this.wrapperObserver.disconnect()
+            this.wrapperObserver = null
         }
         if (this.recordInter) {
             clearInterval(this.recordInter)
@@ -408,17 +398,6 @@ export default {
 
         canAnon() {
             return this.dialogData.type === 'user' && !this.dialogData.bot
-        },
-
-        editorStyle() {
-            const {wrapperWidth, editorHeight} = this;
-            const style = {};
-            if (wrapperWidth > 0
-                && editorHeight > 0
-                && (wrapperWidth < 280 || editorHeight > 40)) {
-                style.width = '100%';
-            }
-            return style;
         },
 
         recordTransferStyle() {
@@ -838,6 +817,14 @@ export default {
                     }
                 });
             }
+        },
+
+        onResizeEvent(entries) {
+            entries.some(({target, contentRect}) => {
+                if (target === this.$el) {
+                    this.wrapperHeight = contentRect.height;
+                }
+            })
         },
 
         quillMention() {
@@ -1284,10 +1271,6 @@ export default {
                 }
                 resolve()
             })
-        },
-
-        onMoreVisibleChange(v) {
-            this.showMore = v;
         },
 
         setQuote(id, type = 'reply') {
