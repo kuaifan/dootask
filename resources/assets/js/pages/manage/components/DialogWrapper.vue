@@ -1328,7 +1328,9 @@ export default {
                 return;
             }
             if (textType === "text") {
-                textBody = textBody.replace(/<\/span> <\/p>$/, "</span></p>")
+                textBody = textBody
+                    .replace(/<\/span> <\/p>$/, "</span></p>")
+                    .replace(/(<span\s+class="mention"(.*?)>.*?<\/span>.*?<\/span>.*?<\/span>)(\x20)?/, "$1 ")
             }
             //
             if (this.quoteUpdate) {
