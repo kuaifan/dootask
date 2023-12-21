@@ -2172,14 +2172,10 @@ body.window-portrait {
             .chat-input-box {
                 .chat-input-wrapper {
                     background-color: #ffffff;
-                    .chat-toolbar {
-                        > li {
-                            &.chat-record-recwave {
-                                margin-left: -10px;
-                                width: calc(100% + 20px);
-                                background-color: #f8f8f8;
-                            }
-                        }
+                    .chat-record {
+                        margin-left: -10px;
+                        width: calc(100% + 20px);
+                        background-color: #f8f8f8;
                     }
                 }
                 .chat-emoji-wrapper {

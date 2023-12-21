@@ -137,7 +137,7 @@
         </div>
 
         <!--跳转提示-->
-        <div v-if="readEnabled && positionMsg" class="dialog-position" :class="{'down': tagShow}">
+        <div v-if="listPreparedStatus && positionMsg" class="dialog-position" :class="{'down': tagShow}">
             <div class="position-label" @click="onPositionMark">
                 <Icon v-if="positionLoad > 0" type="ios-loading" class="icon-loading"></Icon>
                 <i v-else class="taskfont">&#xe624;</i>

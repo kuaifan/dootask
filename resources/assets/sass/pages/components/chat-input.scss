@@ -33,12 +33,12 @@
                             transform: translate(-50%, -50%) scale(2.5);
                         }
                     }
-                    &.chat-record-recwave {
-                        visibility: visible;
-                        opacity: 1;
-                        z-index: 1;
-                    }
                 }
+            }
+            .chat-record {
+                visibility: visible;
+                opacity: 1;
+                z-index: 1;
             }
         }
     }
@@ -288,30 +288,31 @@
                         }
                     }
                 }
-                &.chat-record-recwave {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    z-index: -1;
-                    height: 100%;
-                    width: 100%;
-                    background-color: #ffffff;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: flex-end;
-                    pointer-events: none;
-                    visibility: hidden;
-                    opacity: 0;
-                    > div {
-                        flex: 1;
-                        width: 100%;
-                        max-height: 46px;
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: flex-end;
-                    }
-                }
+            }
+        }
+
+        .chat-record {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            height: 100%;
+            width: 100%;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            pointer-events: none;
+            visibility: hidden;
+            opacity: 0;
+            > div {
+                flex: 1;
+                width: 100%;
+                max-height: 46px;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end;
             }
         }
 

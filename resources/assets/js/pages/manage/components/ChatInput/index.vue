@@ -157,10 +157,10 @@
                         </div>
                     </EPopover>
                 </li>
-
-                <!-- 录音效果 -->
-                <li class="chat-record-recwave"><div ref="recwave"></div></li>
             </ul>
+
+            <!-- 录音效果 -->
+            <div class="chat-record"><div ref="recwave"></div></div>
 
             <!-- 覆盖层 -->
             <div class="chat-cover" @click.stop="onClickCover"></div>
