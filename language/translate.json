@@ -19314,5 +19314,93 @@
         "de": "Gruppen werden zur wahl gewählt",
         "fr": "Choisir un groupe pour lancer un sondage",
         "id": "Pilih grup untuk memulai voting"
+    },
+    {
+        "key": "@我",
+        "zh": "",
+        "zh-CHT": "@我",
+        "en": "@ Me",
+        "ko": "@나",
+        "ja": "@私です",
+        "de": "(englischer song)",
+        "fr": "@ je",
+        "id": "@ aku punya"
+    },
+    {
+        "key": "签到打卡",
+        "zh": "",
+        "zh-CHT": "簽到打卡",
+        "en": "Sign in and punch in",
+        "ko": "출근 카드를 찍다",
+        "ja": "タイムカードを押します。",
+        "de": "Trag 'ne karte ein",
+        "fr": "Connexion et pointage",
+        "id": "Log masuk"
+    },
+    {
+        "key": "在线会议",
+        "zh": "",
+        "zh-CHT": "在線會議",
+        "en": "Online conference",
+        "ko": "온라인 회의",
+        "ja": "オンライン会議です",
+        "de": "Bei denen ich online bin.",
+        "fr": "Conférence en ligne",
+        "id": "Pertemuan online"
+    },
+    {
+        "key": "群接龙",
+        "zh": "",
+        "zh-CHT": "羣接龍",
+        "en": "Solitaire",
+        "ko": "뭇사람이 꼬리를 잇다.",
+        "ja": "しりとりです",
+        "de": "Ich war in der schlange.",
+        "fr": "Groupe solitaire",
+        "id": "Kelompok relay"
+    },
+    {
+        "key": "群投票",
+        "zh": "",
+        "zh-CHT": "羣投票",
+        "en": "Group voting",
+        "ko": "집단 투표",
+        "ja": "グループ投票です",
+        "de": "Wahlmännerstimmen.",
+        "fr": "Vote en groupe",
+        "id": "Kelompok suara"
+    },
+    {
+        "key": "LDAP",
+        "zh": "",
+        "zh-CHT": "LDAP",
+        "en": "LDAP",
+        "ko": "Ldap",
+        "ja": "LDAPです",
+        "de": "LDAP",
+        "fr": "LDAP",
+        "id": "LDAP"
+    },
+    {
+        "key": "你确定要打包下载【Bigw】文件夹吗？",
+        "zh": "",
+        "zh-CHT": "你確定要打包下載【Bigw】文件夾嗎？",
+        "en": "Are you sure you want to package and download the [Bigw] folder?",
+        "ko": "정말 [bigw] 폴더를 포장하시겠습니까?",
+        "ja": "【Bigw】フォルダをダウンロードしますか?",
+        "de": "Möchten sie ganz sicher ihre koffer packen und den ordner \"Bigw\" runterladen?",
+        "fr": "Êtes-vous sûr de vouloir emballer le dossier download [Bigw]?",
+        "id": "Kau yakin ingin berkemas untuk download?"
+    },
+    {
+        "key": "正在打包，请留意系统消息",
+        "zh": "",
+        "zh-CHT": "正在打包，請留意系統消息",
+        "en": "Packing, please pay attention to the system message",
+        "ko": "압축하고 있습니다. 시스템 메시지를 확인하십시오",
+        "ja": "パッケージ化中ですので、システムメッセージにご注意ください。",
+        "de": "Bereits am packen, geben sie eine nachricht nach system ab",
+        "fr": "Emballage en cours, gardez un oeil sur les messages du système",
+        "id": "Paket sedang dikemas"
     }
 ]
