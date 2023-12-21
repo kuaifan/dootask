@@ -381,6 +381,49 @@ class WebSocketDialogMsg extends AbstractModel
     }
 
     /**
+     * 置顶、取消置顶
+     * @param int $sender       置顶的会员ID
+     * @return mixed
+     */
+    public function toggleTopMsg($sender)
+    {
+        $before = $this->top;
+        $beforeTopAt = $this->top_at;
+        $this->top = $before ? 0 : $sender;
+        $this->top_at = $before ? null : Carbon::now();
+        $this->save();
+        $resData = [
+            'id' => $this->id,
+            'top' => $this->top,
+            'top_at' => $this->top_at,
+        ];
+        //
+        $data = [
+            'update' => $resData
+        ];
+        $res = self::sendMsg(null, $this->dialog_id, 'top', [
+            'action' => $this->top ? 'add' : 'remove',
+            'data' => [
+                'id' => $this->id,
+                'type' => $this->type,
+                'msg' => $this->quoteTextMsg(),
+            ]
+        ], $sender);
+        if (Base::isSuccess($res)) {
+            $data['add'] = $res['data'];
+            $dialog = WebSocketDialog::find($this->dialog_id);
+            $resData['tops'] = WebSocketDialogMsg::whereDialogId($dialog->id)->whereNotNull('top_at')->orderByDesc('top_at')->take(50)->get();
+            $dialog->pushMsg('update', $resData);
+        } else {
+            $this->top = $before;
+            $this->top_at = $beforeTopAt;
+            $this->save();
+        }
+        //
+        return Base::retSuccess($this->top ? '置顶成功' : '取消成功', $data);
+    }
+
+    /**
      * 转发消息
      * @param array|int $dialogids
      * @param array|int $userids
@@ -535,6 +578,9 @@ class WebSocketDialogMsg extends AbstractModel
                 return "[文件] {$data['msg']['name']}";
             case 'tag':
                 $action = $data['msg']['action'] === 'remove' ? '取消标注' : '标注';
+                return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
+            case 'top':
+                $action = $data['msg']['action'] === 'remove' ? '取消置顶' : '置顶';
                 return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
             case 'todo':
                 $action = $data['msg']['action'] === 'remove' ? '取消待办' : ($data['msg']['action'] === 'done' ? '完成' : '设待办');

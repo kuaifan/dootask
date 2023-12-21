@@ -169,6 +169,10 @@
             <div v-if="msgData.tag" class="tag">
                 <i class="taskfont">&#xe61e;</i>
             </div>
+            <!--置顶-->
+            <div v-if="msgData.top" class="top">
+                <i class="taskfont">&#xe61e;</i>
+            </div>
             <!--待办-->
             <div v-if="msgData.todo" class="todo" @click="openTodo">
                 <EPopover

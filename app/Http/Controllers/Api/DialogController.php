@@ -438,6 +438,8 @@ class DialogController extends AbstractController
                 $builder->where('tag', '>', 0);
             } elseif ($msg_type === 'todo') {
                 $builder->where('todo', '>', 0);
+            } elseif ($msg_type === 'top') {
+                $builder->whereNotNull('top_at');
             } elseif ($msg_type === 'link') {
                 $builder->whereLink(1);
             } elseif (in_array($msg_type, ['text', 'image', 'file', 'record', 'meeting'])) {
@@ -507,6 +509,7 @@ class DialogController extends AbstractController
         if ($reDialog) {
             $data['dialog'] = $dialog->formatData($user->userid, true);
             $data['todo'] = $data['dialog']->todo_num > 0 ? WebSocketDialogMsgTodo::whereDialogId($dialog->id)->whereUserid($user->userid)->whereDoneAt(null)->orderByDesc('id')->take(50)->get() : [];
+            $data['tops'] = WebSocketDialogMsg::whereDialogId($dialog->id)->whereNotNull('top_at')->orderByDesc('top_at')->take(50)->get();
         }
         return Base::retSuccess('success', $data);
     }
@@ -2167,6 +2170,62 @@ class DialogController extends AbstractController
             $result[] = $res['data'];
         }
         return Base::retSuccess('发送成功', $result);
+    }
+
+    /**
+     * @api {get} api/dialog/msg/top          46. 置顶/取消置顶
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__top
+     *
+     * @apiParam {Number} msg_id            消息ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__top()
+    {
+        $user = User::auth();
+        //
+        $msg_id = intval(Request::input("msg_id"));
+        //
+        $msg = WebSocketDialogMsg::whereId($msg_id)->first();
+        if (empty($msg)) {
+            return Base::retError("消息不存在或已被删除");
+        }
+        WebSocketDialog::checkDialog($msg->dialog_id);
+        //
+        return $msg->toggleTopMsg($user->userid);
+    }
+
+    /**
+     * @api {get} api/dialog/toplist          47. 获取置顶列表
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName toplist
+     *
+     * @apiParam {Number} dialog_id            会话ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function toplist()
+    {
+        $user = User::auth();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        //
+        WebSocketDialog::checkDialog($dialog_id);
+        //
+        $tops = WebSocketDialogMsg::whereDialogId($dialog_id)->whereNotNull('top_at')->orderByDesc('top_at')->take(50)->get();
+        //
+        return Base::retSuccess('success', $tops ?: []);
     }
 
 }

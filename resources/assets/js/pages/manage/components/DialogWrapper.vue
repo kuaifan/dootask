@@ -136,6 +136,17 @@
             </slot>
         </div>
 
+        <!--置顶消息-->
+        <div v-if="topMessage" class="dialog-top-message" @click="topViewShow = true">
+            <div class="dialog-top-message-content">
+                <p >{{$L('置顶消息')}}</p>
+                <p>{{$A.getMsgSimpleDesc(topMessage)}}</p>
+            </div>
+            <div class="dialog-top-message-font">
+                <i class="taskfont">&#xe7d4;</i>
+            </div>
+        </div>
+
         <!--跳转提示-->
         <div v-if="positionMsg" class="dialog-position" :class="{'down': tagShow}">
             <div class="position-label" @click="onPositionMark">
@@ -286,6 +297,10 @@
                             <li @click="onOperate('todo')">
                                 <i class="taskfont">&#xe7b7;</i>
                                 <span>{{ $L(operateItem.todo ? '取消待办' : '设待办') }}</span>
+                            </li>
+                            <li @click="onOperate('top')">
+                                <i class="taskfont" v-html="operateItem.top_at ? '&#xe7e2;' : '&#xe7e4;'"></i>
+                                <span>{{ $L(operateItem.top_at ? '取消置顶' : '置顶') }}</span>
                             </li>
                             <li v-if="msgType !== ''" @click="onOperate('pos')">
                                 <i class="taskfont">&#xee15;</i>
@@ -538,6 +553,34 @@
         <!-- 群投票 -->
         <DialogGroupVote/>
 
+        <!--置顶消息列表-->
+        <DrawerOverlay
+            v-model="topViewShow"
+            placement="right"
+            class-name="dialog-wrapper-drawer-list"
+            :size="500">
+            <div class="dialog-wrapper drawer-list">
+                <div class="dialog-nav">
+                    <div class="drawer-title">{{$L('置顶消息')}}</div>
+                </div>
+                <Scrollbar class-name="dialog-scroller">
+                    <div class="dialog-scroller-item" v-for="msg in topList.sort((a, b) => a.top_at - b.top_at)">
+                        <DialogItem
+                            :source="msg"
+                            @on-view-text="onViewText"
+                            @on-view-file="onViewFile"
+                            @on-down-file="onDownFile"
+                            @on-emoji="onEmoji"
+                            simpleView/>
+                        <div class="original-button-warp">
+                            <Button class="original-button" icon="md-exit" type="text" :loading="todoViewPosLoad" @click="onPosTodo">{{ $L("回到原文") }}</Button>
+                            <Button class="original-button" icon="md-exit" type="text" :loading="todoViewPosLoad" @click="onPosTodo">{{ $L("取消置顶") }}</Button>
+                        </div>
+                    </div>
+                </Scrollbar>
+            </div>
+        </DrawerOverlay>
+
     </div>
 </template>
 
@@ -701,6 +744,8 @@ export default {
             unreadMsgId: 0,             // 最早未读消息id
             toBottomReGetMsg: false,    // 滚动到底部重新获取消息
             selectionRange: false,      // 是否选择文本
+
+            topViewShow: false,
         }
     },
 
@@ -728,6 +773,7 @@ export default {
             'dialogSearchMsgId',
             'dialogMsgs',
             'dialogTodos',
+            'dialogTops',
             'dialogMsgTransfer',
             'cacheDialogs',
             'wsOpenNum',
@@ -1034,7 +1080,17 @@ export default {
                 return this.systemConfig.file_upload_limit * 1024
             }
             return 1024000
-        }
+        },
+
+        topList() {
+            return this.dialogTops.filter(item => item.top_at && item.dialog_id == this.dialogId).sort((a, b) => {
+                return b.top_at - a.top_at;
+            });
+        },
+
+        topMessage() {
+            return this.topList[0]
+        },
     },
 
     watch: {
@@ -2545,6 +2601,10 @@ export default {
                             this.onEmoji(value)
                         }
                         break;
+
+                    case "top":
+                        this.onTop()
+                        break;
                 }
             })
         },
@@ -2902,7 +2962,7 @@ export default {
                 url: 'dialog/msg/tag',
                 data,
             }).then(({data}) => {
-                this.tagOrTodoSuccess(data)
+                this.tagOrTodoOrTopSuccess(data)
             }).catch(({msg}) => {
                 $A.messageError(msg);
             }).finally(_ => {
@@ -3001,7 +3061,7 @@ export default {
                     data,
                 }).then(({data, msg}) => {
                     resolve(msg)
-                    this.tagOrTodoSuccess(data)
+                    this.tagOrTodoOrTopSuccess(data)
                     this.onActive()
                 }).catch(({msg}) => {
                     reject(msg);
@@ -3011,7 +3071,7 @@ export default {
             })
         },
 
-        tagOrTodoSuccess(data) {
+        tagOrTodoOrTopSuccess(data) {
             this.$store.dispatch("saveDialogMsg", data.update);
             if (data.add) {
                 this.$store.dispatch("saveDialogMsg", data.add);
@@ -3174,6 +3234,46 @@ export default {
             if (src) {
                 this.$store.dispatch("previewImage", src)
             }
+        },
+
+        onTop() {
+            if (this.operateVisible) {
+                return
+            }
+            if (this.operateItem?.top_at) {
+                $A.modalConfirm({
+                    content: "你确定取消置顶吗？",
+                    cancelText: '取消',
+                    okText: '确定',
+                    loading: true,
+                    onOk: () => this.onTopSubmit(this.operateItem)
+                });
+            } else {
+                this.onTopSubmit(this.operateItem)
+            }
+        },
+
+        onTopSubmit(data) {
+            return new Promise((resolve, reject) => {
+                this.$store.dispatch("setLoad", {
+                    key: `msg-${data.msg_id}`,
+                    delay: 600
+                })
+                this.$store.dispatch("call", {
+                    url: 'dialog/msg/top',
+                    data: {
+                        msg_id: data.id
+                    },
+                }).then(({ data, msg }) => {
+                    resolve(msg)
+                    this.tagOrTodoOrTopSuccess({ update: data })
+                    this.onActive()
+                }).catch(({ msg }) => {
+                    reject(msg);
+                }).finally(_ => {
+                    this.$store.dispatch("cancelLoad", `msg-${data.msg_id}`)
+                });
+            })
         },
 
         getUserApproveStatus() {

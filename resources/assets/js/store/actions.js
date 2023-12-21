@@ -2495,6 +2495,26 @@ export default {
     },
 
     /**
+     * 获取会话置顶
+     * @param state
+     * @param dispatch
+     * @param dialog_id
+     */
+    getDialogTop({state, dispatch}, dialog_id) {
+        dispatch("call", {
+            url: 'dialog/toplist',
+            data: {
+                dialog_id,
+            },
+        }).then(({data}) => {
+            if ($A.arrayLength(data) > 0) {
+                state.dialogTops = state.dialogTops.filter(item => item.dialog_id != dialog_id)
+                dispatch("saveDialogTop", data)
+            }
+        }).catch(console.warn);
+    },
+
+    /**
      * 打开会话
      * @param state
      * @param dispatch
@@ -2704,6 +2724,44 @@ export default {
     },
 
     /**
+     * 保存置顶数据
+     * @param state
+     * @param dispatch
+     * @param data
+     */
+    saveDialogTop({state, dispatch}, data) {
+        $A.execMainDispatch("saveDialogTop", data)
+        //
+        if ($A.isArray(data)) {
+            data.forEach(item => {
+                dispatch("saveDialogTop", item)
+            });
+        } else if ($A.isJson(data)) {
+            const index = state.dialogTops.findIndex(item => item.id == data.id);
+            if (index > -1) {
+                state.dialogTops.splice(index, 1, Object.assign({}, state.dialogTops[index], data));
+            } else {
+                state.dialogTops.push(data);
+            }
+        }
+    },
+
+    /**
+     * 忘记置顶数据
+     * @param state
+     * @param dispatch
+     * @param msg_id
+     */
+    forgetDialogTopForMsgId({state, dispatch}, msg_id) {
+        $A.execMainDispatch("forgetDialogTopForMsgId", msg_id)
+        //
+        const index = state.dialogTops.findIndex(item => item.msg_id == msg_id);
+        if (index > -1) {
+            state.dialogTops.splice(index, 1);
+        }
+    },
+
+    /**
      * 保存聊天草稿
      * @param state
      * @param dispatch
@@ -2777,6 +2835,7 @@ export default {
             }
         })
         dispatch("forgetDialogTodoForMsgId", msg_id)
+        dispatch("forgetDialogTopForMsgId", msg_id)
     },
 
     /**
@@ -2844,6 +2903,10 @@ export default {
                 if ($A.isArray(resData.todo)) {
                     state.dialogTodos = state.dialogTodos.filter(item => item.dialog_id != data.dialog_id)
                     dispatch("saveDialogTodo", resData.todo)
+                }
+                if ($A.isArray(resData.tops)) {
+                    state.dialogTops = state.dialogTops.filter(item => item.dialog_id != data.dialog_id)
+                    dispatch("saveDialogTop", resData.tops)
                 }
                 //
                 dispatch("saveDialogMsg", resData.list)
@@ -3289,6 +3352,11 @@ export default {
                                                 // 更新待办
                                                 if (typeof data.todo !== "undefined") {
                                                     dispatch("getDialogTodo", dialog_id)
+                                                }
+                                                // 更新置顶
+                                                if ($A.isArray(data.tops)) {
+                                                    state.dialogTops = data.tops
+                                                    dispatch("saveDialogTop", data.tops)
                                                 }
                                                 return;
                                             }

@@ -41,6 +41,19 @@
                 margin: 0 auto;
                 box-shadow: none;
             }
+
+            .dialog-scroller-item{
+                border-bottom: 1px solid #eeeeee;
+                margin-bottom: 16px;
+                .reply-item {
+                    border-bottom: none;
+                    margin-bottom: 0;
+                }
+                .original-button-warp{
+                    display: flex;
+                    margin-bottom: 16px;
+                }
+            }
         }
 
         .todo-button {
@@ -421,6 +434,38 @@
         }
     }
 
+    .dialog-top-message {
+        padding: 10px;
+        position: relative;
+        display: flex;
+        &:before {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 1px;
+            background-color: #f4f5f5;
+        }
+        .dialog-top-message-content {
+            flex: 1;
+            overflow: hidden;
+            p {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        }
+        .dialog-top-message-font {
+            width: 40px;
+            line-height: 42px;
+            text-align: center;
+            .taskfont{
+                font-size: 22px;
+            }
+        }
+    }
+
     .dialog-scroller {
         flex: 1;
         position: relative;
@@ -447,6 +492,7 @@
 
             .dialog-tag,
             .dialog-todo,
+            .dialog-top,
             .dialog-notice,
             .dialog-new {
                 font-size: 12px;
@@ -459,6 +505,7 @@
                 word-wrap: break-word;
             }
 
+            .dialog-top,
             .dialog-tag {
                 cursor: pointer;
 
@@ -1635,6 +1682,9 @@
                         display: none !important;
                     }
                 }
+                .dialog-avatar{
+                    display: none;
+                }
                 &.self {
                     .dialog-head{
                         background-color: #F4F5F7;
@@ -1652,7 +1702,14 @@
                                 color: #84C56A !important;
                             }
                         }
-
+                        .dialog-emoji{
+                            .avatar-name{
+                                color: #818181;
+                            }
+                            > li.hasme{
+                                background-color: #e1e1e1;
+                            }
+                        }
                     }
                 }
             }
