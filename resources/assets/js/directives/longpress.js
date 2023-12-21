@@ -1,4 +1,4 @@
-const isSupportTouch = "ontouchend" in document;
+const useModeTouch = $A.isIos() && "ontouchend" in document;
 // 长按或右键指令
 const longpress = {
     bind: function (el, binding) {
@@ -16,13 +16,13 @@ const longpress = {
         el.__longpressContextmenu__ = (e) => {
             e.preventDefault()
             e.stopPropagation()
-            if (!isSupportTouch) {
+            if (!useModeTouch) {
                 callback(e, el)
             }
         }
         el.addEventListener('contextmenu', el.__longpressContextmenu__);
         // 不支持touch
-        if (!isSupportTouch) {
+        if (!useModeTouch) {
             return
         }
         // 定义变量
@@ -68,7 +68,7 @@ const longpress = {
     unbind(el) {
         el.removeEventListener('contextmenu', el.__longpressContextmenu__)
         delete el.__longpressContextmenu__
-        if (!isSupportTouch) {
+        if (!useModeTouch) {
             return
         }
         el.removeEventListener('touchstart', el.__longpressStart__)

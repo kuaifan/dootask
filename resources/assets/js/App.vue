@@ -395,6 +395,8 @@ export default {
             window.__handleLink = (path) => {
                 this.goForward({ path: (path || '').indexOf('/') !==0 ? "/" + path : path });
             }
+            // 取消长按振动
+            $A.eeuiAppSetHapticBackEnabled(false)
         },
 
         otherEvents() {
