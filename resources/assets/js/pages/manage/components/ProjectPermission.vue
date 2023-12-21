@@ -86,8 +86,8 @@
             </Form>
         </div>
         <div slot="footer" class="project-permission-footer">
-            <Button type="default" @click="onClose()">{{$L('取消')}}</Button>
-            <Button type="primary" @click="updateData()" :loading="loadIng > 0">{{$L('修改')}}</Button>
+            <Button type="primary" @click="updateData" :loading="loadIng > 0">{{$L('修改')}}</Button>
+            <Button type="default" @click="onClose">{{$L('取消')}}</Button>
         </div>
     </div>
 </template>

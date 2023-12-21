@@ -325,10 +325,10 @@ export default {
                 { value: "report", label: "工作报告", sort: 5 },
                 { value: "okr", label: "OKR管理", sort: 4 },
                 { value: "robot", label: "AI机器人", sort: 6 },
-                { value: "signin", label: "签到", sort: 7 },
-                { value: "meeting", label: "会议", sort: 8 },
-                { value: "word-chain", label: "接龙", sort: 9 },
-                { value: "vote", label: "投票", sort: 10 },
+                { value: "signin", label: "签到打卡", sort: 7 },
+                { value: "meeting", label: "在线会议", sort: 8 },
+                { value: "word-chain", label: "群接龙", sort: 9 },
+                { value: "vote", label: "群投票", sort: 10 },
             ];
             // wap模式
             if (this.windowOrientation == 'landscape') {
