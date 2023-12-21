@@ -1208,7 +1208,7 @@ export default {
         },
 
         allMsgList(newList, oldList) {
-            if(JSON.stringify(newList) == JSON.stringify(oldList)){
+            if (JSON.stringify(newList) == JSON.stringify(oldList)) {
                 return;
             }
             const {tail} = this.scrollInfo();
@@ -1393,8 +1393,7 @@ export default {
                     },
                     method: 'post',
                 }).then(({data}) => {
-                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempMsg.id)
-                    this.sendSuccess(data)
+                    this.sendSuccess(data, tempMsg.id)
                 }).catch(error => {
                     this.$set(tempMsg, 'error', true)
                     this.$set(tempMsg, 'errorData', {type: 'text', mType: type, content: error.msg, msg: textBody})
@@ -1433,8 +1432,7 @@ export default {
                 }),
                 method: 'post',
             }).then(({data}) => {
-                this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempMsg.id)
-                this.sendSuccess(data);
+                this.sendSuccess(data, tempMsg.id);
             }).catch(error => {
                 this.$set(tempMsg, 'error', true)
                 this.$set(tempMsg, 'errorData', {type: 'record', mType: 'record', content: error.msg, msg})
@@ -1834,20 +1832,30 @@ export default {
                     break;
 
                 case 'error':
-                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != file.tempId)
+                    this.forgetTempMsg(file.tempId)
                     break;
 
                 case 'success':
-                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != file.tempId)
-                    this.sendSuccess(file.data)
+                    this.sendSuccess(file.data, file.tempId)
                     break;
             }
         },
 
-        sendSuccess(data) {
+        sendSuccess(data, tempId = 0) {
             if ($A.isArray(data)) {
-                data.some(this.sendSuccess)
+                data.some(item => {
+                    this.sendSuccess(item, tempId)
+                })
                 return;
+            }
+            if (tempId > 0) {
+                const index = this.tempMsgs.findIndex(({id}) => id == tempId)
+                if (index > -1) {
+                    this.tempMsgs.splice(index, 1, data)
+                }
+                setTimeout(_ => {
+                    this.forgetTempMsg(tempId)
+                }, 1000)
             }
             this.$store.dispatch("saveDialogMsg", data);
             if (!this.quoteUpdate) {
@@ -1857,6 +1865,10 @@ export default {
             }
             this.cancelQuote();
             this.onActive();
+        },
+
+        forgetTempMsg(tempId) {
+            this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
         },
 
         setQuote(id, type) {
@@ -2888,19 +2900,19 @@ export default {
                 content,
                 cancelText: '取消发送',
                 onCancel: _ => {
-                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != data.id)
+                    this.forgetTempMsg(data.id)
                 }
             }
             if (type === 'text') {
                 config.okText = '重新发送'
                 config.onOk = () => {
-                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != data.id)
+                    this.forgetTempMsg(data.id)
                     this.sendMsg(msg, mType)
                 }
             } else if (type === 'record') {
                 config.okText = '重新发送'
                 config.onOk = () => {
-                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != data.id)
+                    this.forgetTempMsg(data.id)
                     this.sendRecord(msg)
                 }
             } else {
