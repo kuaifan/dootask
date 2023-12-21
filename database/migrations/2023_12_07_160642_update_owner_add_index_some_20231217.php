@@ -168,7 +168,7 @@ class UpdateOwnerAddIndexSome20231217 extends Migration
             $table->dropIndex(['msg_id']);
             $table->dropIndex(['userid']);
         });
-        Schema::table('web_socket_dialog_msg_todos', function (Blueprint $table) {
+        Schema::table('web_socket_dialog_msg_reads', function (Blueprint $table) {
             $table->dropIndex(['dialog_id']);
         });
 

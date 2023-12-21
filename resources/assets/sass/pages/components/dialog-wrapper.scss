@@ -1635,6 +1635,9 @@
                         display: none !important;
                     }
                 }
+                .dialog-avatar{
+                    display: none;
+                }
                 &.self {
                     .dialog-head{
                         background-color: #F4F5F7;
@@ -1652,7 +1655,14 @@
                                 color: #84C56A !important;
                             }
                         }
-
+                        .dialog-emoji{
+                            .avatar-name{
+                                color: #818181;
+                            }
+                            > li.hasme{
+                                background-color: #e1e1e1;
+                            }
+                        }
                     }
                 }
             }
