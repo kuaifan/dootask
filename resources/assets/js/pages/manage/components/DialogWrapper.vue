@@ -164,6 +164,7 @@
             @scroll="onScroll"
             @range="onRange"
             @totop="onPrevPage"
+            @resized="onItemRendered"
 
             @on-mention="onMention"
             @on-longpress="onLongpress"
@@ -700,6 +701,7 @@ export default {
 
             unreadMsgId: 0,                     // 最早未读消息id
             positionLoad: 0,                    // 定位跳转加载中
+            isFirstPageReady: false,            // 首页消息是否准备完成
             msgPreparedStatus: false,           // 消息准备完成
             listPreparedStatus: false,          // 消息准备完成
             selectedTextStatus: false,          // 是否选择文本
@@ -1056,6 +1058,7 @@ export default {
                     this.msgType = ''
                     this.searchShow = false
                     this.unreadMsgId = 0
+                    this.isFirstPageReady = false
                     this.listPreparedStatus = false
                     this.scrollToBottomAndRefresh = false
                     //
@@ -1975,6 +1978,9 @@ export default {
         },
 
         onFooterResize() {
+            if (!this.$refs.footer) {
+                return
+            }
             const footer = this.$refs.footer;
             const marginSize = parseInt($A.css(footer, 'marginTop')) + parseInt($A.css(footer, 'marginBottom'))
             if (this.$refs.scroller) {
@@ -2095,6 +2101,17 @@ export default {
                     setTimeout(_ => scroller.virtual.handleFront(), 10)
                 });
             }).catch(() => {})
+        },
+
+        onItemRendered() {
+            if (!this.$refs.scroller || !this.$refs.footer) {
+                return
+            }
+            if (!this.isFirstPageReady) {
+                this.isFirstPageReady = true
+                this.onFooterResize()
+                this.onToBottom()
+            }
         },
 
         onDialogMenu(cmd) {
