@@ -189,16 +189,15 @@
             </div>
         </Modal>
 
-        <!-- 发起接龙 -->
+        <!-- 发起群投票、接龙 -->
         <UserSelect
             ref="wordChainAndVoteRef"
             v-model="sendData"
-            :multiple-max="50"
+            :multiple-max="1"
             :title="sendType == 'vote' ? $L('选择群组发起投票') : $L('选择群组发起接龙')"
             :before-submit="goWordChainAndVote"
             :show-select-all="false"
-            :forced-radio="true"
-            :group="true"
+            :only-group="true"
             show-dialog
             module/>
 
@@ -584,23 +583,24 @@ export default {
             });
         },
         // 前往接龙与投票
-        goWordChainAndVote(){
+        goWordChainAndVote() {
             const dialog_id = Number(this.sendData[0].replace('d:', ''))
-            if(this.windowPortrait){
-                this.$store.dispatch("openDialog", dialog_id ).then(() => {
-                    this.$store.state[ this.sendType == 'word-chain' ?'dialogDroupWordChain' : 'dialogGroupVote'] = {
+            const type = this.sendType == 'word-chain' ? 'dialogDroupWordChain' : 'dialogGroupVote'
+            if (this.windowPortrait) {
+                this.$store.dispatch("openDialog", dialog_id).then(() => {
+                    this.$store.state[type] = {
                         type: 'create',
                         dialog_id: dialog_id
                     }
                 })
-            }else{
-                this.goForward({ name: 'manage-messenger', params: { dialog_id: dialog_id}});
-                setTimeout(()=>{
-                    this.$store.state[ this.sendType == 'word-chain' ?'dialogDroupWordChain' : 'dialogGroupVote'] = {
+            } else {
+                this.goForward({name: 'manage-messenger', params: {dialog_id: dialog_id}});
+                setTimeout(() => {
+                    this.$store.state[type] = {
                         type: 'create',
                         dialog_id: dialog_id
                     }
-                },100)
+                }, 100)
             }
         }
     }
