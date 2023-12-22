@@ -1117,12 +1117,11 @@ export default {
                     if (contentSave == this.taskContent) {
                         return;
                     }
-                    this.$set(this.taskDetail, 'content', contentSave)
-                    action = 'content';
-                    if (content == this.taskContent.replace(/original-width="[^"]*"/g, "").replace(/original-height="[^"]*"/g, "").replace(/\"   \//g, "\" /")) {
+                    if (contentSave == this.taskContent.replace(/original-width="[^"]*"/g, "").replace(/original-height="[^"]*"/g, "").replace(/\"   \//g, "\" /")) {
                         return;
                     }
-                    this.$set(this.taskDetail, 'content', content)
+                    this.$set(this.taskDetail, 'content', contentSave)
+                    action = 'content';
                     successCallback = () => {
                         this.$store.dispatch("saveTaskContent", {
                             task_id: this.taskId,
