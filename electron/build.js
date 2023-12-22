@@ -323,7 +323,7 @@ if (["dev"].includes(argv[2])) {
         configure: {
             platform: '',
             publish: false,
-            release: false,
+            release: true,
             notarize: false,
         }
     }, false, false)
@@ -334,7 +334,7 @@ if (["dev"].includes(argv[2])) {
             data.configure = {
                 platform,
                 publish: true,
-                release: false,
+                release: true,
                 notarize: false,
             }
             startBuild(data)
