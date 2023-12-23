@@ -14,18 +14,6 @@ export default {
         return new Promise(async resolve => {
             let action = null
 
-            // 迁移缓存
-            const initTag = await $A.IDBBoolean("initTag")
-            if (!initTag) {
-                await $A.IDBSet("initTag", true)
-                const userInfo = $A.getStorageJson("userInfo")
-                if (userInfo.userid > 0) {
-                    await $A.IDBSet("userInfo", userInfo)
-                    await $A.IDBSet("cacheServerUrl", $A.getStorageString("cacheServerUrl"))
-                    window.localStorage.clear()
-                }
-            }
-
             // 读取缓存
             state.clientId = await $A.IDBString("clientId")
             state.cacheServerUrl = await $A.IDBString("cacheServerUrl")
@@ -69,11 +57,16 @@ export default {
             // 清理缓存
             const clearCache = await $A.IDBString("clearCache")
             if (clearCache) {
-                await $A.IDBRemove("clearCache")
-                await $A.IDBSet("callAt", state.callAt = [])
                 if (clearCache === "handle") {
-                    await dispatch(action = "handleClearCache")
+                    action = "handleClearCache"
                 }
+                await $A.IDBRemove("clearCache")
+                await $A.IDBRemove("cacheVersion")
+            }
+            const cacheVersion = await $A.IDBString("cacheVersion")
+            if (cacheVersion !== "v2") {
+                await dispatch("handleClearCache")
+                await $A.IDBSet("cacheVersion", "v2")
             }
 
             // 获取apiKey
