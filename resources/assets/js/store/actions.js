@@ -2735,12 +2735,23 @@ export default {
                 dispatch("saveDialogMsg", msg)
             });
         } else if ($A.isJson(data)) {
+            let delay = false
+            if (typeof data.__delay__ !== "undefined") {
+                delete data.__delay__
+                delay = true
+            }
             const index = state.dialogMsgs.findIndex(({id}) => id == data.id);
             data = Object.assign({}, state.dialogMsgs[index], data)
             if (index > -1) {
                 state.dialogMsgs.splice(index, 1, data);
             } else {
-                state.dialogMsgs.push(data);
+                if (delay) {
+                    setTimeout(_ => {
+                        state.dialogMsgs.push(data);
+                    }, 100)
+                } else {
+                    state.dialogMsgs.push(data);
+                }
             }
             $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
             //
@@ -3275,7 +3286,7 @@ export default {
                                             }
                                         }
                                         // 更新消息列表
-                                        dispatch("saveDialogMsg", data)
+                                        dispatch("saveDialogMsg", Object.assign(data, {__delay__: true}))
                                         // 更新最后消息
                                         dispatch("updateDialogLastMsg", data);
                                         break;
@@ -3283,7 +3294,7 @@ export default {
                                     case 'readed':
                                         const updateMsg = (data, count) => {
                                             if (state.dialogMsgs.find(({id}) => id == data.id)) {
-                                                dispatch("saveDialogMsg", data)
+                                                dispatch("saveDialogMsg", Object.assign(data, {__delay__: true}))
                                                 // 更新待办
                                                 if (typeof data.todo !== "undefined") {
                                                     dispatch("getDialogTodo", dialog_id)
