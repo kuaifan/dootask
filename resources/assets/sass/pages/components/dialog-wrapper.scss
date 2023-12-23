@@ -1437,7 +1437,6 @@
         opacity: 0;
         transform: translateX(100%);
         animation: position-in-animation 200ms ease-out forwards;
-        animation-delay: 600ms;
 
         .position-label {
             display: flex;
