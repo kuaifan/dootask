@@ -19402,5 +19402,60 @@
         "de": "Bereits am packen, geben sie eine nachricht nach system ab",
         "fr": "Emballage en cours, gardez un oeil sur les messages du système",
         "id": "Paket sedang dikemas"
+    },
+    {
+        "key": "创建一个全新的会议视频会议，与会者可以在实时中进行面对面的视听交流。",
+        "zh": "",
+        "zh-CHT": "創建一個全新的會議視頻會議，與會者可以在實時中進行面對面的視聽交流。",
+        "en": "Create a new conference video conferencing where attendees can meet face-to-face in real time.",
+        "ko": "실시간 시청각 대면 대화가 가능한 새로운 화상 회의를 만듭니다.",
+        "ja": "参加者同士がリアルタイムで対面でコミュニケーションできる、まったく新しいビデオ会議を作ります。",
+        "de": "Erstellen sie eine neue video-konferenz, bei der die teilnehmer direkten audio-kontakt in echtzeit haben.",
+        "fr": "Créez une nouvelle vidéoconférence de conférence où les participants peuvent communiquer en face à face en temps réel.",
+        "id": "Buatlah konferensi video konferensi yang sama sekali baru di mana peserta dapat bertemu langsung dan saling bertatap muka secara langsung."
+    },
+    {
+        "key": "通过视频会议平台，参与者可以分享屏幕、共享文档，并与其他与会人员进行讨论和协。",
+        "zh": "",
+        "zh-CHT": "通過視頻會議平臺，參與者可以分享屏幕、共享文檔，並與其他與會人員進行討論和協。",
+        "en": "Through the video conferencing platform, participants can share screens, share documents, and discuss and collaborate with other participants.",
+        "ko": "화상 회의 플랫폼을 통해 참가자들은 화면을 공유하고 문서를 공유하며 다른 참가자들과 토론하고 협력할 수 있다.",
+        "ja": "ビデオ会議のプラットフォームを通じて、参加者はスクリーンを共有したり、文書を共有したり、他の参加者と議論を和協することができます。",
+        "de": "Auf der videokonferenz können die teilnehmer bildschirm-teile teilen, dokumente teilen und mit den anderen teilnehmern erörtern und diskutieren.",
+        "fr": "La plateforme de visioconférence permet aux participants de partager des écrans, de partager des documents, de discuter et de s’associer avec les autres participants.",
+        "id": "Melalui platform konferensi video, peserta dapat berbagi layar, berbagi dokumen, dan berunding dengan peserta lain."
+    },
+    {
+        "key": "你确定要打包下载【(*)】文件夹吗？",
+        "zh": "",
+        "zh-CHT": "你確定要打包下載【(*)】文件夾嗎？",
+        "en": "Are you sure you want to pack and download the [(*)] folder?",
+        "ko": "[(*)] 폴더를 압축하시겠습니까?",
+        "ja": "【(*)】フォルダをダウンロードすることは確かですか?",
+        "de": "Sollen sie ganz sicher ihre koffer packen und den ordner runterladen?",
+        "fr": "Êtes-vous sûr de vouloir emballer le dossier de téléchargement [(*)]?",
+        "id": "Apakah anda yakin ingin mengemasi folder [*]?"
+    },
+    {
+        "key": "发起，参与接龙目前共(*)人",
+        "zh": "",
+        "zh-CHT": "發起，參與接龍目前共(*)人",
+        "en": "Initiated, participating in the relay is currently a total of (*) people",
+        "ko": "련계를 발기, 참여하여 현재 총 (*) 사람",
+        "ja": "しりとりに参加しました(*)",
+        "de": "Einleitung der entführung, die zur zeit durchgeführt wird",
+        "fr": "Initié, participant solitaire actuellement au total (*) personnes",
+        "id": "Inisiasi, partisipasi dalam naga saat ini (*) orang"
+    },
+    {
+        "key": "License Key",
+        "zh": "",
+        "zh-CHT": "License Key",
+        "en": "License Key",
+        "ko": "라이선스 key",
+        "ja": "ライセンスキーです",
+        "de": "License Key",
+        "fr": "License Key",
+        "id": "License Key"
     }
 ]

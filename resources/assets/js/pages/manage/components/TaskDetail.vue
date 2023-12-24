@@ -1054,7 +1054,6 @@ export default {
                 case 'content':
                     const content = this.$refs.desc.getContent();
                     if (content == this.taskContent.replace(/\s+original-(width|height)="[^"]*"/g, "")) {
-                        console.log(111);
                         return;
                     }
                     if (this.windowTouch) {

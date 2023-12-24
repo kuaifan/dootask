@@ -983,13 +983,15 @@
                                 }
 
                                 li.participate {
+                                    display: flex;
+                                    align-items: center;
                                     cursor: pointer;
                                     margin-top: 10px;
                                     color: #0bc037;
 
-                                    > span {
+                                    > i {
                                         font-size: 12px;
-                                        margin-left: 2px;
+                                        padding-left: 2px;
                                     }
                                 }
 
@@ -1010,9 +1012,17 @@
                             max-width: 260px;
 
                             .vote-msg-head {
+                                display: flex;
+                                align-items: center;
                                 margin-bottom: 8px;
                                 color: #0bc037;
                                 line-height: 18px;
+
+                                em {
+                                    font-style: normal;
+                                    font-weight: bold;
+                                    padding: 4px;
+                                }
 
                                 span {
                                     padding: 2px 4px;
@@ -1024,11 +1034,13 @@
                                 }
                             }
 
-                            .ivu-checkbox-group, .ivu-radio-group {
+                            .ivu-checkbox-group,
+                            .ivu-radio-group {
                                 margin-top: 10px;
                                 width: 100%;
 
-                                .ivu-checkbox-wrapper, .ivu-radio-wrapper {
+                                .ivu-checkbox-wrapper,
+                                .ivu-radio-wrapper {
                                     display: block;
                                     width: 100%;
                                     height: 34px;

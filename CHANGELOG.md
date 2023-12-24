@@ -2,13 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.33.54]
+
+### Bug Fixes
+
+- 撤回消息不删除消息的情况
+
+### Performance
+
+- 优化录音load效果
+- 优化消息列表
+- 优化应用图标
+- 升级okr容器
+- 优化用户选择器
+- 优化对话列表接口数据
+- 优化未读消息提示动画
+- 优化消息更新机制
+- 优化缓存
+- 优化用户选择器
+
 ## [0.33.41]
 
 ### Bug Fixes
 
 - 更新导致的小问题
 - 更新导致的小问题
-- 版本验证有问题，先干掉
 
 ### Performance
 
@@ -18,6 +36,7 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- 版本验证有问题，先干掉
 - Android 无法回删输入框内的@(mention)内容
 - Android 长按重复事件
 - 合并修复

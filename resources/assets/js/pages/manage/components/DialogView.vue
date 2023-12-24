@@ -81,13 +81,17 @@
                                 {{index + 1}}. {{item.text}}
                             </span>
                         </li>
-                        <li @click="onWordChain" class="participate">{{ $L('参与接龙') }}<span>></span></li>
+                        <li @click="onWordChain" class="participate">
+                            {{ $L('参与接龙') }}
+                            <i class="taskfont">&#xe703;</i>
+                        </li>
                     </ul>
                 </div>
                 <!--投票-->
                 <div v-else-if="msgData.type === 'vote'" class="content-text content-word-vote no-dark-content">
                     <div class="vote-msg-head">
-                        <i class="taskfont">&#xe7fd;</i> {{ $L('投票') }}
+                        <i class="taskfont">&#xe7fd;</i>
+                        <em>{{ $L('投票') }}</em>
                         <span>{{ msgData.msg.multiple == 1 ? $L('多选') : $L('单选')}}</span>
                         <span>{{ msgData.msg.multiple == 1 ? $L('匿名') : $L('实名')}}</span>
                     </div>
@@ -103,9 +107,9 @@
                                 {{item.text}}
                             </Checkbox>
                         </CheckboxGroup>
-                        <div class="btn-row no-dark-content">
-                            <Button v-if="(msgData.msg._vote || []).length == 0" class="ivu-btn" disabled>{{$L("请选择后投票")}}</Button>
-                            <Button v-else class="ivu-btn" :loading="msgData.msg._loadIng > 0"  @click="onVote('vote',msgData)">{{$L("立即投票")}}</Button>
+                        <div class="btn-row">
+                            <Button v-if="(msgData.msg._vote || []).length == 0" disabled>{{$L("请选择后投票")}}</Button>
+                            <Button v-else type="warning" :loading="msgData.msg._loadIng > 0"  @click="onVote('vote',msgData)">{{$L("立即投票")}}</Button>
                         </div>
                     </template>
                     <template v-else>
@@ -126,9 +130,9 @@
                                 </li>
                             </ul>
                         </div>
-                        <div class="btn-row no-dark-content" v-if="msgData.msg.state == 1 && msgData.msg.userid == userId">
-                            <Button class="ivu-btn" :loading="msgData.msg._loadIng > 0" @click="onVote('again',msgData)">{{$L("再次发送")}}</Button>
-                            <Button class="ivu-btn" :loading="msgData.msg._loadIng > 0" @click="onVote('finish',msgData)">{{$L("结束投票")}}</Button>
+                        <div class="btn-row" v-if="msgData.msg.state == 1 && msgData.msg.userid == userId">
+                            <Button type="warning" :loading="msgData.msg._loadIng > 0" @click="onVote('again',msgData)">{{$L("再次发送")}}</Button>
+                            <Button type="warning" :loading="msgData.msg._loadIng > 0" @click="onVote('finish',msgData)">{{$L("结束投票")}}</Button>
                         </div>
                     </template>
                 </div>
