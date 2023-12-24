@@ -638,8 +638,11 @@ export default {
                     return
                 }
                 if (this.multipleMax && this.selects.length >= this.multipleMax) {
-                    $A.messageWarning("已超过最大选择数量")
-                    return
+                    if (this.multipleMax > 1) {
+                        $A.messageWarning("已超过最大选择数量")
+                        return
+                    }
+                    this.selects = []
                 }
                 this.selects.push(userid)
                 // 滚动到选中的位置
