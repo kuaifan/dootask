@@ -26,7 +26,7 @@
                             <div class="apply-col">
                                 <div @click="applyClick(item)">
                                     <div class="logo">
-                                        <img :src="getLogoPath(item.value)" />
+                                        <div class="apply-icon no-dark-content" :class="getLogoClass(item.value)"></div>
                                         <div @click.stop="applyClick(item, 'badge')" class="apply-box-top-report">
                                             <Badge v-if="showBadge(item,'approve')" :overflow-count="999" :count="approveUnreadNumber" />
                                             <Badge v-if="showBadge(item,'report')" :overflow-count="999" :count="reportUnreadNumber" />
@@ -58,7 +58,7 @@
                 <div class="ivu-modal-wrap-apply-body">
                     <ul class="ivu-modal-wrap-ul" v-if="aibotType == 1">
                         <li v-for="(item, key) in aibotList"  :key="key">
-                            <img :src="item.src">
+                            <img class="apply-icon" :src="item.src">
                             <h4>{{ item.label }}</h4>
                             <p class="desc" @click="openDetail(item.desc)">{{ item.desc }}</p>
                             <p class="btn" @click="onGoToChat(item.value)">{{ $L('开始聊天') }}</p>
@@ -121,13 +121,13 @@
                 <div class="ivu-modal-wrap-apply-body">
                     <ul class="ivu-modal-wrap-ul" v-if="meetingType == 1">
                         <li>
-                            <img :src="getLogoPath('meeting')">
+                            <div class="apply-icon no-dark-content meeting"></div>
                             <h4>{{ $L('新会议') }}</h4>
                             <p class="desc" @click="openDetail(meetingDescs.add)"> {{ meetingDescs.add }} </p>
                             <p class="btn" @click="onMeeting('createMeeting')">{{ $L('新建会议') }}</p>
                         </li>
                         <li>
-                            <img :src="getLogoPath('meeting-join')">
+                            <div class="apply-icon no-dark-content meeting-join"></div>
                             <h4>{{ $L('加入会议') }}</h4>
                             <p class="desc" @click="openDetail(meetingDescs.join)">{{ meetingDescs.join }}</p>
                             <p class="btn" @click="onMeeting('joinMeeting')">{{ $L('加入会议') }}</p>
@@ -374,9 +374,9 @@ export default {
                 }
             });
         },
-        getLogoPath(name) {
+        getLogoClass(name) {
             name = name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-            return $A.apiUrl(`../images/application/${name}.svg`)
+            return name
         },
         showBadge(item,type) {
             let num = 0;
