@@ -192,10 +192,26 @@ class WebSocketDialog extends AbstractModel
         if ($hasData === true) {
             $msgBuilder = WebSocketDialogMsg::whereDialogId($this->id);
             $this->has_tag = $msgBuilder->clone()->where('tag', '>', 0)->exists();
+            $this->has_todo = $msgBuilder->clone()->where('todo', '>', 0)->exists();
             $this->has_image = $msgBuilder->clone()->whereMtype('image')->exists();
             $this->has_file = $msgBuilder->clone()->whereMtype('file')->exists();
             $this->has_link = $msgBuilder->clone()->whereLink(1)->exists();
-            $this->has_todo = $msgBuilder->clone()->where('todo', '>', 0)->exists();
+            Cache::forever("Dialog::tag:" . $this->id, Base::array2json([
+                'has_tag' => $this->has_tag,
+                'has_todo' => $this->has_todo,
+                'has_image' => $this->has_image,
+                'has_file' => $this->has_file,
+                'has_link' => $this->has_link,
+            ]));
+        } else {
+            $tagData = Base::json2array(Cache::get("Dialog::tag:" . $this->id));
+            if ($tagData) {
+                $this->has_tag = !!$tagData['has_tag'];
+                $this->has_todo = !!$tagData['has_todo'];
+                $this->has_image = !!$tagData['has_image'];
+                $this->has_file = !!$tagData['has_file'];
+                $this->has_link = !!$tagData['has_link'];
+            }
         }
         return $this;
     }
