@@ -180,7 +180,7 @@
                 :style="recordTransferStyle"
                 @click="stopRecord">
                 <div v-if="recordDuration > 0" class="record-duration">{{recordFormatDuration}}</div>
-                <div v-else class="record-loading"><Loading/></div>
+                <div v-else class="record-loading"><Loading type="pure"/></div>
                 <div class="record-cancel" @click.stop="stopRecord(true)">{{$L(touchLimitY ? '松开取消' : '向上滑动取消')}}</div>
             </div>
         </transition>
