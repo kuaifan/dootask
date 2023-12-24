@@ -731,7 +731,8 @@ export default {
 
             unreadMsgId: 0,                     // 最早未读消息id
             positionLoad: 0,                    // 定位跳转加载中
-            isFirstPageReady: false,            // 首页消息是否准备完成
+            firstMsgLength: 0,                  // 首次加载消息数量
+            isFirstShowTag: false,              // 是否首次显示标签
             msgPreparedStatus: false,           // 消息准备完成
             listPreparedStatus: false,          // 消息准备完成
             selectedTextStatus: false,          // 是否选择文本
@@ -867,32 +868,32 @@ export default {
             return '发送文件'
         },
 
-        msgTags() {
+        msgTags({dialogData}) {
             const array = [
                 {type: '', label: '消息'},
             ];
-            if (this.dialogData.has_tag) {
+            if (dialogData.has_tag) {
                 array.push({type: 'tag', label: '标注'})
             }
-            if (this.dialogData.has_todo) {
+            if (dialogData.has_todo) {
                 array.push({type: 'todo', label: '事项'})
             }
-            if (this.dialogData.has_image) {
+            if (dialogData.has_image) {
                 array.push({type: 'image', label: '图片'})
             }
-            if (this.dialogData.has_file) {
+            if (dialogData.has_file) {
                 array.push({type: 'file', label: '文件'})
             }
-            if (this.dialogData.has_link) {
+            if (dialogData.has_link) {
                 array.push({type: 'link', label: '链接'})
             }
-            if (this.dialogData.group_type === 'project') {
+            if (dialogData.group_type === 'project') {
                 array.push({type: 'project', label: '打开项目'})
             }
-            if (this.dialogData.group_type === 'task') {
+            if (dialogData.group_type === 'task') {
                 array.push({type: 'task', label: '打开任务'})
             }
-            if (this.dialogData.group_type === 'okr') {
+            if (dialogData.group_type === 'okr') {
                 array.push({type: 'okr', label: '打开OKR'})
             }
             return array
@@ -1088,11 +1089,11 @@ export default {
                     this.msgType = ''
                     this.searchShow = false
                     this.unreadMsgId = 0
-                    this.isFirstPageReady = false
+                    this.firstMsgLength = this.allMsgList.length || 1
                     this.listPreparedStatus = false
                     this.scrollToBottomAndRefresh = false
                     //
-                    if (this.allMsgList.length > 0) {
+                    if (this.firstMsgLength > 0) {
                         this.allMsgs = this.allMsgList
                         requestAnimationFrame(this.onToBottom)
                     }
@@ -1327,7 +1328,17 @@ export default {
             if (msg) {
                 this.unreadMsgId = msg.msg_id
             }
-        }
+        },
+
+        tagShow(val) {
+            if (!this.isFirstShowTag && val) {
+                this.isFirstShowTag = true
+                const {tail} = this.scrollInfo();
+                if (tail <= 55) {
+                    requestAnimationFrame(this.onToBottom)
+                }
+            }
+        },
     },
 
     methods: {
@@ -2152,8 +2163,8 @@ export default {
             if (!this.$refs.scroller || !this.$refs.footer) {
                 return
             }
-            if (!this.isFirstPageReady) {
-                this.isFirstPageReady = true
+            if (this.firstMsgLength > 0 && this.$refs.scroller.getSizes() >= this.firstMsgLength) {
+                this.firstMsgLength = 0
                 this.onFooterResize()
                 this.onToBottom()
             }
