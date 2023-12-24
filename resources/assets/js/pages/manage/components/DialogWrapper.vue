@@ -1887,6 +1887,7 @@ export default {
                 }
                 setTimeout(_ => {
                     this.forgetTempMsg(tempId)
+                    this.forgetTempMsg(data.id)
                 }, 1000)
             }
             this.$store.dispatch("saveDialogMsg", data);
