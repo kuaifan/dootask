@@ -2767,23 +2767,12 @@ export default {
                 dispatch("saveDialogMsg", msg)
             });
         } else if ($A.isJson(data)) {
-            let delay = false
-            if (typeof data.__delay__ !== "undefined") {
-                delete data.__delay__
-                delay = true
-            }
             const index = state.dialogMsgs.findIndex(({id}) => id == data.id);
             data = Object.assign({}, state.dialogMsgs[index], data)
             if (index > -1) {
                 state.dialogMsgs.splice(index, 1, data);
             } else {
-                if (delay) {
-                    setTimeout(_ => {
-                        state.dialogMsgs.push(data);
-                    }, 100)
-                } else {
-                    state.dialogMsgs.push(data);
-                }
+                state.dialogMsgs.push(data);
             }
             $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
             //
@@ -3317,16 +3306,25 @@ export default {
                                                 Store.set('dialogMsgPush', data);
                                             }
                                         }
-                                        // 更新消息列表
-                                        dispatch("saveDialogMsg", Object.assign(data, {__delay__: true}))
-                                        // 更新最后消息
-                                        dispatch("updateDialogLastMsg", data);
+                                        const saveMsg = (data, count) => {
+                                            if (count > 5 || state.dialogMsgs.find(({id}) => id == data.id)) {
+                                                // 更新消息列表
+                                                dispatch("saveDialogMsg", data)
+                                                // 更新最后消息
+                                                dispatch("updateDialogLastMsg", data);
+                                                return;
+                                            }
+                                            setTimeout(_ => {
+                                                saveMsg(data, ++count)
+                                            }, 20);
+                                        }
+                                        saveMsg(data, 0);
                                         break;
                                     case 'update':
                                     case 'readed':
                                         const updateMsg = (data, count) => {
                                             if (state.dialogMsgs.find(({id}) => id == data.id)) {
-                                                dispatch("saveDialogMsg", Object.assign(data, {__delay__: true}))
+                                                dispatch("saveDialogMsg", data)
                                                 // 更新待办
                                                 if (typeof data.todo !== "undefined") {
                                                     dispatch("getDialogTodo", dialog_id)
