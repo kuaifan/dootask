@@ -137,7 +137,7 @@
         </div>
 
         <!--跳转提示-->
-        <div v-if="listPreparedStatus && positionMsg" class="dialog-position" :class="{'down': tagShow}">
+        <div v-if="positionStatus && positionMsg" class="dialog-position" :class="{'down': tagShow}">
             <div class="position-label" @click="onPositionMark">
                 <Icon v-if="positionLoad > 0" type="ios-loading" class="icon-loading"></Icon>
                 <i v-else class="taskfont">&#xe624;</i>
@@ -733,6 +733,7 @@ export default {
             positionLoad: 0,                    // 定位跳转加载中
             firstMsgLength: 0,                  // 首次加载消息数量
             isFirstShowTag: false,              // 是否首次显示标签
+            positionStatus: false,              // 定位跳转状态
             msgPreparedStatus: false,           // 消息准备完成
             listPreparedStatus: false,          // 消息准备完成
             selectedTextStatus: false,          // 是否选择文本
@@ -1090,6 +1091,7 @@ export default {
                     this.searchShow = false
                     this.unreadMsgId = 0
                     this.firstMsgLength = this.allMsgList.length || 1
+                    this.positionStatus = false
                     this.listPreparedStatus = false
                     this.scrollToBottomAndRefresh = false
                     //
@@ -1337,6 +1339,12 @@ export default {
                 if (tail <= 55) {
                     requestAnimationFrame(this.onToBottom)
                 }
+            }
+        },
+
+        readEnabled(val) {
+            if (!this.positionStatus && val) {
+                this.positionStatus = true
             }
         },
     },

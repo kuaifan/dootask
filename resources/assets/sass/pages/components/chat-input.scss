@@ -199,7 +199,13 @@
                 }
 
                 .mention {
+                    color: #0bc037;
+                    background-color: transparent;
+                    margin-right: 0;
                     -webkit-user-select: auto;
+                    > span {
+                        margin: 0 2px;
+                    }
                 }
             }
         }

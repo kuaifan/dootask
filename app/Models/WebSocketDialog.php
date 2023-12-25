@@ -10,6 +10,7 @@ use Cache;
 use Carbon\Carbon;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 /**
  * App\Models\WebSocketDialog
@@ -76,7 +77,7 @@ class WebSocketDialog extends AbstractModel
      * @param $deleted
      * @return array
      */
-    public function getDialogList($userid, $updated = "", $deleted = "")
+    public static function getDialogList($userid, $updated = "", $deleted = "")
     {
         $builder = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.color', 'u.updated_at as user_at'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
@@ -98,6 +99,34 @@ class WebSocketDialog extends AbstractModel
         }
         return $data;
     }
+
+    /**
+     * 获取未读对话列表
+     * @param $userid
+     * @param $beforeAt
+     * @param $take
+     * @return WebSocketDialog[]
+     */
+    public static function getDialogUnread($userid, $beforeAt, $take = 20)
+    {
+        DB::statement("SET SQL_MODE=''");
+        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.color', 'u.updated_at as user_at'])
+            ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
+            ->join('web_socket_dialog_msg_reads as r', 'web_socket_dialogs.id', '=', 'r.dialog_id')
+            ->where('r.userid', $userid)
+            ->where('r.silence', 0)
+            ->where('r.read_at')
+            ->where('web_socket_dialogs.last_at', '>', $beforeAt)
+            ->groupBy('web_socket_dialogs.id')
+            ->take(min(100, $take))
+            ->get();
+        $list->transform(function (WebSocketDialog $item) use ($userid) {
+            return $item->formatData($userid);
+        });
+        //
+        return $list;
+    }
+
 
     /**
      * 格式化对话

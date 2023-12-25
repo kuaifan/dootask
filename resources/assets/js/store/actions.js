@@ -2421,6 +2421,7 @@ export default {
                     dispatch("getDialogs", requestData).then(resolve).catch(reject)
                 } else {
                     resolve()
+                    dispatch("getDialogUnreads").catch(() => {})
                 }
             }).catch(e => {
                 console.warn(e);
@@ -2429,6 +2430,37 @@ export default {
                 callData.showLoad() && state.loadDialogs--;
             });
         });
+    },
+
+    /**
+     * 获取超期未读会话
+     * @param state
+     * @param dispatch
+     * @returns {Promise<unknown>}
+     */
+    getDialogUnreads({state, dispatch}) {
+        return new Promise(async resolve => {
+            const key = await $A.IDBString("dialogUnread")
+            if (key == $A.formatDate("Y-m-d")) {
+                return  // 一天取一次
+            }
+            await $A.IDBSet("dialogUnread", $A.formatDate("Y-m-d"))
+            //
+            const dialog = $A.cloneJSON(state.cacheDialogs).sort((a, b) => {
+                return $A.Date(a.last_at) - $A.Date(b.last_at);
+            }).find(({id}) => id > 0);
+            if (dialog) {
+                dispatch("call", {
+                    url: 'dialog/unread',
+                    data: {
+                        before_at: dialog.last_at,
+                    }
+                }).then(({data}) => {
+                    dispatch("saveDialog", data);
+                });
+            }
+            resolve()
+        })
     },
 
     /**
