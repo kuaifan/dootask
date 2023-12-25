@@ -2441,12 +2441,13 @@ export default {
     getDialogUnreads({state, dispatch}) {
         return new Promise(async resolve => {
             const key = await $A.IDBString("dialogUnread")
-            if (key == $A.formatDate("Y-m-d")) {
+            const val = "v2:" + $A.formatDate("Y-m-d")
+            if (key == val) {
                 return  // 一天取一次
             }
-            await $A.IDBSet("dialogUnread", $A.formatDate("Y-m-d"))
+            await $A.IDBSet("dialogUnread", val)
             //
-            const dialog = $A.cloneJSON(state.cacheDialogs).sort((a, b) => {
+            const dialog = $A.cloneJSON(state.cacheDialogs).filter(({last_at}) => last_at).sort((a, b) => {
                 return $A.Date(a.last_at) - $A.Date(b.last_at);
             }).find(({id}) => id > 0);
             if (dialog) {

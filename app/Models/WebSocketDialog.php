@@ -549,6 +549,7 @@ class WebSocketDialog extends AbstractModel
             return $dialog;
         }
         if (!WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($userid)->exists()) {
+            WebSocketDialogMsgRead::forceRead($dialog_id, $userid);
             throw new ApiException('不在成员列表内', ['dialog_id' => $dialog_id], -4003);
         }
         return $dialog;

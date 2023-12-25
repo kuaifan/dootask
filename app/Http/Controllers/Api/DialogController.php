@@ -219,6 +219,7 @@ class DialogController extends AbstractController
             ->where('u.userid', $user->userid)
             ->first();
         if (empty($item)) {
+            WebSocketDialogMsgRead::forceRead($dialog_id, $user->userid);
             return Base::retError('会话不存在或已被删除', ['dialog_id' => $dialog_id], -4003);
         }
         return Base::retSuccess('success', $item->formatData($user->userid));
@@ -1738,6 +1739,7 @@ class DialogController extends AbstractController
             $user->checkAdmin();
             $dialog = WebSocketDialog::find($dialog_id);
             if (empty($dialog)) {
+                WebSocketDialogMsgRead::forceRead($dialog_id, $user->userid);
                 return Base::retError('对话不存在或已被删除', ['dialog_id' => $dialog_id], -4003);
             }
         } else {

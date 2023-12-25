@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.33.58]
+
+### Bug Fixes
+
+- 修复已知问题
+
+### Performance
+
+- 优化会话列表
+
 ## [0.33.54]
 
 ### Bug Fixes
@@ -27,6 +37,7 @@ All notable changes to this project will be documented in this file.
 
 - 更新导致的小问题
 - 更新导致的小问题
+- 版本验证有问题，先干掉
 
 ### Performance
 
@@ -36,7 +47,6 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
-- 版本验证有问题，先干掉
 - Android 无法回删输入框内的@(mention)内容
 - Android 长按重复事件
 - 合并修复
