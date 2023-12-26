@@ -288,7 +288,8 @@ class ProjectTask extends AbstractModel
             ->leftJoin('project_task_users', function ($leftJoin) use ($userid) {
                 $leftJoin
                     ->on('project_task_users.userid', '=', DB::raw($userid))
-                    ->on('project_tasks.id', '=', 'project_task_users.task_id');
+                    ->on('project_tasks.id', '=', 'project_task_users.task_id')
+                    ->where('project_task_users.owner', '<', 2);
             });
         return $query;
     }
@@ -309,7 +310,11 @@ class ProjectTask extends AbstractModel
                 'project_task_users.owner'
             ])
             ->selectRaw("1 AS assist")
-            ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_id')
+            ->join('project_task_users', function ($leftJoin) {
+                $leftJoin
+                    ->on('project_tasks.id', '=', 'project_task_users.task_id')
+                    ->where('project_task_users.owner', '<', 2);
+            })
             ->where('project_task_users.userid', $userid);
         if ($owner !== null) {
             $query->where('project_task_users.owner', $owner);

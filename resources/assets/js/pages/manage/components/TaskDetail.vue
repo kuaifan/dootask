@@ -914,7 +914,7 @@ export default {
         },
         "taskDetail.visibility_appointor": {
             handler(arr) {
-                if(arr?.length > 0 && arr[0]) {
+                if (arr?.filter(id=>id).length > 0) {
                     this.taskDetail.visibility = 3
                     this.updateVisible()
                 }
@@ -1696,10 +1696,10 @@ export default {
         },
 
         visibleUserSelectShowChange(isShow){
-            if(!isShow && (this.taskDetail.visibility_appointor.length == 0 || !this.taskDetail.visibility_appointor[0])){
+            if (!isShow && this.taskDetail.visibility_appointor.filter(id => id).length == 0) {
                 let old = this.taskDetail.old_visibility;
                 this.taskDetail.visibility = old > 2 ? 1 : (old || 1);
-                if(this.taskDetail.visibility < 3 ){
+                if (this.taskDetail.visibility < 3) {
                     this.updateVisible();
                 }
             }
