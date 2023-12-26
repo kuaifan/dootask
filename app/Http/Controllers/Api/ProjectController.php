@@ -1918,16 +1918,16 @@ class ProjectController extends AbstractController
         }
         //
         $taskUser = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($task_id)->get();
-        $owners = $taskUser->where('owner', 1)->pluck('userid')->toArray();         // 负责人
-        $assists = $taskUser->where('owner', 0)->pluck('userid')->toArray();         // 协助人
-        $visible = ProjectTaskVisibilityUser::whereTaskId($task->id)->pluck('userid')->toArray() ?? [];
+        $owners = $taskUser->where('owner', 1)->pluck('userid')->toArray();
+        $assists = $taskUser->where('owner', 0)->pluck('userid')->toArray();
+        $visible = ProjectTaskVisibilityUser::whereTaskId($task->id)->pluck('userid')->toArray();
         // 更新任务
         $updateMarking = [];
         $task->updateTask($param, $updateMarking);
         //
         $data = ProjectTask::oneTask($task->id)->toArray();
         $data['update_marking'] = $updateMarking ?: json_decode('{}');
-        $data['visibility_appointor'] = $data['visibility'] == 1 ? [] : ProjectTaskVisibilityUser::whereTaskId($task->id)->pluck('userid')->toArray();
+        $data['visibility_appointor'] = $data['visibility'] == 1 ? [] : ProjectTaskVisibilityUser::whereTaskId($task->id)->pluck('userid');
         $task->pushMsg('update', $data);
         // 可见性推送
         if ($task->parent_id == 0) {
