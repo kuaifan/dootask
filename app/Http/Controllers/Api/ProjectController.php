@@ -1352,6 +1352,7 @@ class ProjectController extends AbstractController
                 $base64 = base64_encode(Base::array2string([
                     'file' => $zipFile,
                 ]));
+                $fileUrl = Base::fillUrl('api/project/task/down?key=' . urlencode($base64));
                 Session::put('task::export:userid', $user->userid);
                 $botUser = User::botGetOrCreate('system-msg');
                 if (empty($botUser)) {
@@ -1364,7 +1365,7 @@ class ProjectController extends AbstractController
                     $text .= "\n";
                     $text .= "文件大小：".Base::twoFloat(filesize($zipPath) / 1024, true)."KB";
                     $text .= "\n";
-                    $text .= "下载地址：".Base::fillUrl('api/project/task/down?key=' . urlencode($base64));
+                    $text .= '<button class="ivu-btn" style="margin-top: 10px;"><a href="'.$fileUrl.'" target="_blank">立即下载</a></button>';
                     WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
                 }
             }
