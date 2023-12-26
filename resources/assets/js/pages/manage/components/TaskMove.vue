@@ -269,6 +269,8 @@ export default {
                 }
             }).then(({data,msg}) => {
                 this.loadIng--;
+                data.column_name = "";
+                data.project_name = "";
                 this.$store.dispatch("saveTask", data);
                 $A.messageSuccess(msg);
                 this.close()
