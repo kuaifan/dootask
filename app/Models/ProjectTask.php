@@ -310,8 +310,8 @@ class ProjectTask extends AbstractModel
                 'project_task_users.owner'
             ])
             ->selectRaw("1 AS assist")
-            ->join('project_task_users', function ($leftJoin) {
-                $leftJoin
+            ->join('project_task_users', function ($join) {
+                $join
                     ->on('project_tasks.id', '=', 'project_task_users.task_id')
                     ->where('project_task_users.owner', '<', 2);
             })
