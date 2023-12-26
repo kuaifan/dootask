@@ -396,6 +396,7 @@ class WebSocketDialogMsg extends AbstractModel
             'id' => $this->id,
             'top' => $this->top,
             'top_at' => $this->top_at,
+            'dialog_id' => $this->dialog_id
         ];
         //
         $data = [
@@ -410,9 +411,22 @@ class WebSocketDialogMsg extends AbstractModel
             ]
         ], $sender);
         if (Base::isSuccess($res)) {
-            $data['add'] = $res['data'];
             $dialog = WebSocketDialog::find($this->dialog_id);
-            $resData['tops'] = WebSocketDialogMsg::whereDialogId($dialog->id)->whereNotNull('top_at')->orderByDesc('top_at')->take(50)->get();
+            if ($this->top) {
+                $oldTops = self::whereDialogId($this->dialog_id)->where('id', '!=', $this->id)->where('top', '>', 0)->get();
+                foreach($oldTops as $oldTop){
+                    $oldTop->top = 0;
+                    $oldTop->top_at = null;
+                    $oldTop->save();
+                    $dialog->pushMsg('update', [
+                        'id' => $oldTop->id,
+                        'top' => $oldTop->top,
+                        'top_at' => $oldTop->top_at,
+                    ]);
+                }
+            }
+            $data['add'] = $res['data'];
+            $resData['tops'] = self::whereDialogId($dialog->id)->whereNotNull('top_at')->orderByDesc('top_at')->take(50)->get();
             $dialog->pushMsg('update', $resData);
         } else {
             $this->top = $before;

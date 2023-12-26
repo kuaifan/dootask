@@ -26,7 +26,7 @@
                             <div class="apply-col">
                                 <div @click="applyClick(item)">
                                     <div class="logo">
-                                        <img :src="getLogoPath(item.value)" />
+                                        <div class="apply-icon no-dark-content" :class="getLogoClass(item.value)"></div>
                                         <div @click.stop="applyClick(item, 'badge')" class="apply-box-top-report">
                                             <Badge v-if="showBadge(item,'approve')" :overflow-count="999" :count="approveUnreadNumber" />
                                             <Badge v-if="showBadge(item,'report')" :overflow-count="999" :count="reportUnreadNumber" />
@@ -58,7 +58,7 @@
                 <div class="ivu-modal-wrap-apply-body">
                     <ul class="ivu-modal-wrap-ul" v-if="aibotType == 1">
                         <li v-for="(item, key) in aibotList"  :key="key">
-                            <img :src="item.src">
+                            <img class="apply-icon" :src="item.src">
                             <h4>{{ item.label }}</h4>
                             <p class="desc" @click="openDetail(item.desc)">{{ item.desc }}</p>
                             <p class="btn" @click="onGoToChat(item.value)">{{ $L('开始聊天') }}</p>
@@ -121,13 +121,13 @@
                 <div class="ivu-modal-wrap-apply-body">
                     <ul class="ivu-modal-wrap-ul" v-if="meetingType == 1">
                         <li>
-                            <img :src="getLogoPath('meeting')">
+                            <div class="apply-icon no-dark-content meeting"></div>
                             <h4>{{ $L('新会议') }}</h4>
                             <p class="desc" @click="openDetail(meetingDescs.add)"> {{ meetingDescs.add }} </p>
                             <p class="btn" @click="onMeeting('createMeeting')">{{ $L('新建会议') }}</p>
                         </li>
                         <li>
-                            <img :src="getLogoPath('meeting-join')">
+                            <div class="apply-icon no-dark-content meeting-join"></div>
                             <h4>{{ $L('加入会议') }}</h4>
                             <p class="desc" @click="openDetail(meetingDescs.join)">{{ meetingDescs.join }}</p>
                             <p class="btn" @click="onMeeting('joinMeeting')">{{ $L('加入会议') }}</p>
@@ -189,16 +189,15 @@
             </div>
         </Modal>
 
-        <!-- 发起接龙 -->
+        <!-- 发起群投票、接龙 -->
         <UserSelect
             ref="wordChainAndVoteRef"
             v-model="sendData"
-            :multiple-max="50"
+            :multiple-max="1"
             :title="sendType == 'vote' ? $L('选择群组发起投票') : $L('选择群组发起接龙')"
             :before-submit="goWordChainAndVote"
             :show-select-all="false"
-            :forced-radio="true"
-            :group="true"
+            :only-group="true"
             show-dialog
             module/>
 
@@ -277,7 +276,7 @@ export default {
             meetingShow: false,
             meetingType: 1,
             meetingDescs: {
-                add: this.$L('创建一个全新的会议视频会议，与会者可以在实时中进行面对面的视听交流。通过视频会议平台，参与者可以分享屏幕、共享文档，并与其他与会人员进行讨论和协。'),
+                add: this.$L('创建一个全新的会议视频会议，与会者可以在实时中进行面对面的视听交流。') + this.$L('通过视频会议平台，参与者可以分享屏幕、共享文档，并与其他与会人员进行讨论和协。'),
                 join: this.$L('加入视频会议，参与已经创建的会议，在会议过程中与其他参会人员进行远程实时视听交流和协作。'),
             },
             //
@@ -325,10 +324,10 @@ export default {
                 { value: "report", label: "工作报告", sort: 5 },
                 { value: "okr", label: "OKR管理", sort: 4 },
                 { value: "robot", label: "AI机器人", sort: 6 },
-                { value: "signin", label: "签到", sort: 7 },
-                { value: "meeting", label: "会议", sort: 8 },
-                { value: "word-chain", label: "接龙", sort: 9 },
-                { value: "vote", label: "投票", sort: 10 },
+                { value: "signin", label: "签到打卡", sort: 7 },
+                { value: "meeting", label: "在线会议", sort: 8 },
+                { value: "word-chain", label: "群接龙", sort: 9 },
+                { value: "vote", label: "群投票", sort: 10 },
             ];
             // wap模式
             if (this.windowOrientation == 'landscape') {
@@ -375,9 +374,9 @@ export default {
                 }
             });
         },
-        getLogoPath(name) {
+        getLogoClass(name) {
             name = name.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
-            return $A.apiUrl(`../images/application/${name}.svg`)
+            return name
         },
         showBadge(item,type) {
             let num = 0;
@@ -584,23 +583,24 @@ export default {
             });
         },
         // 前往接龙与投票
-        goWordChainAndVote(){
+        goWordChainAndVote() {
             const dialog_id = Number(this.sendData[0].replace('d:', ''))
-            if(this.windowPortrait){
-                this.$store.dispatch("openDialog", dialog_id ).then(() => {
-                    this.$store.state[ this.sendType == 'word-chain' ?'dialogDroupWordChain' : 'dialogGroupVote'] = {
+            const type = this.sendType == 'word-chain' ? 'dialogDroupWordChain' : 'dialogGroupVote'
+            if (this.windowPortrait) {
+                this.$store.dispatch("openDialog", dialog_id).then(() => {
+                    this.$store.state[type] = {
                         type: 'create',
                         dialog_id: dialog_id
                     }
                 })
-            }else{
-                this.goForward({ name: 'manage-messenger', params: { dialog_id: dialog_id}});
-                setTimeout(()=>{
-                    this.$store.state[ this.sendType == 'word-chain' ?'dialogDroupWordChain' : 'dialogGroupVote'] = {
-                        type: 'create',
+            } else {
+                this.goForward({
+                    name: 'manage-messenger',
+                    params: {
+                        open: this.sendType,
                         dialog_id: dialog_id
                     }
-                },100)
+                })
             }
         }
     }

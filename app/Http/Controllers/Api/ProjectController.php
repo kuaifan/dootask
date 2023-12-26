@@ -2483,7 +2483,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/permission          43. 获取项目权限设置
+     * @api {get} api/project/permission          44. 获取项目权限设置
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2509,7 +2509,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/permission/update          44. 项目权限设置
+     * @api {get} api/project/permission/update          45. 项目权限设置
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0

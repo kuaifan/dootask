@@ -262,8 +262,8 @@ function startBuild(data) {
     econfig.build.nsis.artifactName = appName + "-v${version}-${os}-${arch}.${ext}";
     // changelog
     econfig.build.releaseInfo.releaseNotes = changeLog()
-    if (release) {
-        econfig.build.releaseInfo.releaseNotes = econfig.build.releaseInfo.releaseNotes.replace(`## [${config.version}]`, `## [${config.version}-Release]`)
+    if (!release) {
+        econfig.build.releaseInfo.releaseNotes = econfig.build.releaseInfo.releaseNotes.replace(`## [${config.version}]`, `## [${config.version}-Silence]`)
     }
     // darwin notarize
     if (notarize && APPLEID && APPLEIDPASS) {
@@ -323,7 +323,7 @@ if (["dev"].includes(argv[2])) {
         configure: {
             platform: '',
             publish: false,
-            release: false,
+            release: true,
             notarize: false,
         }
     }, false, false)
@@ -334,7 +334,7 @@ if (["dev"].includes(argv[2])) {
             data.configure = {
                 platform,
                 publish: true,
-                release: false,
+                release: true,
                 notarize: false,
             }
             startBuild(data)
@@ -375,11 +375,11 @@ if (["dev"].includes(argv[2])) {
             name: 'release',
             message: "选择是否弹出升级提示框",
             choices: [{
-                name: "No",
-                value: false
-            }, {
                 name: "Yes",
                 value: true
+            }, {
+                name: "No",
+                value: false
             }]
         },
         {

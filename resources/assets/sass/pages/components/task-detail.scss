@@ -508,6 +508,27 @@
                     color: $primary-desc-color;
                 }
             }
+
+            .calculate-dropdown {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: 0;
+                height: 0;
+                z-index: -1;
+                pointer-events: none;
+                .calculate-content {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    width: 100%;
+                    height: 100%;
+                }
+            }
         }
         .upload {
             display: none;
@@ -629,11 +650,11 @@
                         padding: 0 4px 0 6px;
                         background-color: #F4F5F7;
                         .chat-toolbar {
-                            > li {
-                                &.chat-record-recwave {
-                                    background-color: #F4F5F7;
-                                }
-                            }
+                            right: 4px;
+                            bottom: 0;
+                        }
+                        .chat-record {
+                            background-color: #F4F5F7;
                         }
                     }
                 }

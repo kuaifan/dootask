@@ -241,7 +241,7 @@ export default {
                 {type: 'group', name: '群聊'},
                 {type: 'bot', name: '机器人'},
                 {type: 'mark', name: '标注'},
-                {type: '@', name: '@我的'},
+                {type: '@', name: '@我'},
             ],
             dialogHistory: MessengerObject.menuHistory,
 
@@ -273,6 +273,7 @@ export default {
         if (id > 0) {
             this.openDialog(id)
         }
+        //
         this.clickAgainSubscribe = Store.subscribe('clickAgainDialog', this.shakeUnread);
     },
 
@@ -472,6 +473,10 @@ export default {
                                 return false;
                             }
                             break;
+                        case 'mark':
+                            return false;
+                        case '@':
+                            return false;
                     }
                     num += $A.getDialogNum(dialog);
                 });
@@ -902,7 +907,9 @@ export default {
         },
 
         formatDraft(value) {
-            return value?.replace(/<img[^>]*>/gi, `[${$A.L('图片')}]`).replace(/<[^>]*>/g, '') || null
+            return value?.replace(/<img[^>]*>/gi, `[${$A.L('图片')}]`)
+                .replace(/<[^>]*>/g, '')
+                .replace(/&nbsp;/g, ' ')|| null
         },
 
         formatTodoNum(num) {

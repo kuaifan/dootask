@@ -832,7 +832,7 @@ export default {
             }];
             list.push({
                 value: -1,
-                label: `${this.$L('未计划')} (${allTask.filter(({start_at}) => {return !start_at}).length})`,
+                label: `${this.$L('未计划')} (${allTask.filter(({start_at, complete_at}) => !start_at && !complete_at).length})`,
                 children: []
             });
             const flows = flowList.map(item1 => {

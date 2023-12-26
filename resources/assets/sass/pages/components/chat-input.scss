@@ -33,12 +33,12 @@
                             transform: translate(-50%, -50%) scale(2.5);
                         }
                     }
-                    &.chat-record-recwave {
-                        visibility: visible;
-                        opacity: 1;
-                        z-index: 1;
-                    }
                 }
+            }
+            .chat-record {
+                visibility: visible;
+                opacity: 1;
+                z-index: 1;
             }
         }
     }
@@ -141,6 +141,10 @@
                 margin: 4px 7px;
                 line-height: 22px;
 
+                &::-webkit-scrollbar {
+                    display: none;
+                }
+
                 img {
                     max-width: 150px;
                     max-height: 150px;
@@ -195,7 +199,13 @@
                 }
 
                 .mention {
+                    color: #0bc037;
+                    background-color: transparent;
+                    margin-right: 0;
                     -webkit-user-select: auto;
+                    > span {
+                        margin: 0 2px;
+                    }
                 }
             }
         }
@@ -210,8 +220,16 @@
             }
         }
 
-        .chat-toolbar {
+        .chat-space {
             float: right;
+            width: 170px;
+            height: 30px;
+        }
+
+        .chat-toolbar {
+            position: absolute;
+            right: 2px;
+            bottom: 8px;
             display: flex;
             align-items: center;
             justify-content: flex-end;
@@ -276,30 +294,31 @@
                         }
                     }
                 }
-                &.chat-record-recwave {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    z-index: -1;
-                    height: 100%;
-                    width: 100%;
-                    background-color: #ffffff;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: flex-end;
-                    pointer-events: none;
-                    visibility: hidden;
-                    opacity: 0;
-                    > div {
-                        flex: 1;
-                        width: 100%;
-                        max-height: 46px;
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: flex-end;
-                    }
-                }
+            }
+        }
+
+        .chat-record {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            height: 100%;
+            width: 100%;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            pointer-events: none;
+            visibility: hidden;
+            opacity: 0;
+            > div {
+                flex: 1;
+                width: 100%;
+                max-height: 46px;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end;
             }
         }
 
@@ -621,7 +640,7 @@
         align-items: center;
         justify-content: center;
         height: 30px;
-        .common-loading {
+        .common-pureing {
             width: 24px;
             height: 24px;
             margin: 0;

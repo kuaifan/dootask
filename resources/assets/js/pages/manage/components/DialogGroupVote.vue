@@ -137,14 +137,10 @@ export default {
             if(data.type == 'create' && data.dialog_id){
                 this.show = true;
                 this.createId = this.userId;
-                this.list.push({
-                    id: Date.now(),
-                    text: ""
-                });
-                this.list.push({
-                    id: Date.now() + 1,
-                    text: ""
-                });
+                this.list = [
+                    { id: Date.now(), text: "" },
+                    { id: Date.now() + 1, text: "" }
+                ]
             }
             if(data.type == 'participate' && data.dialog_id && data.msgData){
                 this.show = true;

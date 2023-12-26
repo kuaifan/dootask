@@ -48,6 +48,20 @@ class WebSocketDialogMsgRead extends AbstractModel
     }
 
     /**
+     * 强制标记成阅读
+     * @param $dialogId
+     * @param $userId
+     * @return void
+     */
+    public static function forceRead($dialogId, $userId)
+    {
+        self::whereDialogId($dialogId)
+            ->whereUserid($userId)
+            ->whereNull('read_at')
+            ->update(['read_at' => Carbon::now()]);
+    }
+
+    /**
      * 仅标记成阅读
      * @param $list
      * @return void

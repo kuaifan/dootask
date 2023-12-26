@@ -14,18 +14,6 @@ export default {
         return new Promise(async resolve => {
             let action = null
 
-            // 迁移缓存
-            const initTag = await $A.IDBBoolean("initTag")
-            if (!initTag) {
-                await $A.IDBSet("initTag", true)
-                const userInfo = $A.getStorageJson("userInfo")
-                if (userInfo.userid > 0) {
-                    await $A.IDBSet("userInfo", userInfo)
-                    await $A.IDBSet("cacheServerUrl", $A.getStorageString("cacheServerUrl"))
-                    window.localStorage.clear()
-                }
-            }
-
             // 读取缓存
             state.clientId = await $A.IDBString("clientId")
             state.cacheServerUrl = await $A.IDBString("cacheServerUrl")
@@ -69,11 +57,16 @@ export default {
             // 清理缓存
             const clearCache = await $A.IDBString("clearCache")
             if (clearCache) {
-                await $A.IDBRemove("clearCache")
-                await $A.IDBSet("callAt", state.callAt = [])
                 if (clearCache === "handle") {
-                    await dispatch(action = "handleClearCache")
+                    action = "handleClearCache"
                 }
+                await $A.IDBRemove("clearCache")
+                await $A.IDBRemove("cacheVersion")
+            }
+            const cacheVersion = await $A.IDBString("cacheVersion")
+            if (cacheVersion !== "v2") {
+                await dispatch("handleClearCache")
+                await $A.IDBSet("cacheVersion", "v2")
             }
 
             // 获取apiKey
@@ -551,6 +544,7 @@ export default {
         //
         dispatch("getProjects").catch(() => {});
         dispatch("getDialogs").catch(() => {});
+        dispatch("getDialogTodo", 0).catch(() => {});
         dispatch("getReportUnread", 1000);
         dispatch("getApproveUnread", 1000);
         dispatch("getTaskForDashboard");
@@ -1589,7 +1583,7 @@ export default {
                 //
                 if (data.next_page_url) {
                     requestData.page = data.current_page + 1
-                    if (data.current_page % 10 === 0) {
+                    if (data.current_page % 20 === 0) {
                         $A.modalWarning({
                             content: "数据已超过" + data.to + "条，是否继续加载？",
                             onOk: () => {
@@ -2427,6 +2421,7 @@ export default {
                     dispatch("getDialogs", requestData).then(resolve).catch(reject)
                 } else {
                     resolve()
+                    dispatch("getDialogUnreads").catch(() => {})
                 }
             }).catch(e => {
                 console.warn(e);
@@ -2435,6 +2430,38 @@ export default {
                 callData.showLoad() && state.loadDialogs--;
             });
         });
+    },
+
+    /**
+     * 获取超期未读会话
+     * @param state
+     * @param dispatch
+     * @returns {Promise<unknown>}
+     */
+    getDialogUnreads({state, dispatch}) {
+        return new Promise(async resolve => {
+            const key = await $A.IDBString("dialogUnread")
+            const val = "v2:" + $A.formatDate("Y-m-d")
+            if (key == val) {
+                return  // 一天取一次
+            }
+            await $A.IDBSet("dialogUnread", val)
+            //
+            const dialog = $A.cloneJSON(state.cacheDialogs).filter(({last_at}) => last_at).sort((a, b) => {
+                return $A.Date(a.last_at) - $A.Date(b.last_at);
+            }).find(({id}) => id > 0);
+            if (dialog) {
+                dispatch("call", {
+                    url: 'dialog/unread',
+                    data: {
+                        before_at: dialog.last_at,
+                    }
+                }).then(({data}) => {
+                    dispatch("saveDialog", data);
+                });
+            }
+            resolve()
+        })
     },
 
     /**
@@ -2479,17 +2506,21 @@ export default {
             },
         }).then(({data}) => {
             if ($A.arrayLength(data) > 0) {
-                dispatch("saveDialog", {
-                    id: dialog_id,
-                    todo_num: $A.arrayLength(data)
-                });
-                state.dialogTodos = state.dialogTodos.filter(item => item.dialog_id != dialog_id)
+                if (dialog_id > 0) {
+                    dispatch("saveDialog", {
+                        id: dialog_id,
+                        todo_num: $A.arrayLength(data)
+                    });
+                    state.dialogTodos = state.dialogTodos.filter(item => item.dialog_id != dialog_id)
+                }
                 dispatch("saveDialogTodo", data)
             } else {
-                dispatch("saveDialog", {
-                    id: dialog_id,
-                    todo_num: 0
-                });
+                if (dialog_id > 0) {
+                    dispatch("saveDialog", {
+                        id: dialog_id,
+                        todo_num: 0
+                    });
+                }
             }
         }).catch(console.warn);
     },
@@ -3339,10 +3370,19 @@ export default {
                                                 Store.set('dialogMsgPush', data);
                                             }
                                         }
-                                        // 更新消息列表
-                                        dispatch("saveDialogMsg", data)
-                                        // 更新最后消息
-                                        dispatch("updateDialogLastMsg", data);
+                                        const saveMsg = (data, count) => {
+                                            if (count > 5 || state.dialogMsgs.find(({id}) => id == data.id)) {
+                                                // 更新消息列表
+                                                dispatch("saveDialogMsg", data)
+                                                // 更新最后消息
+                                                dispatch("updateDialogLastMsg", data);
+                                                return;
+                                            }
+                                            setTimeout(_ => {
+                                                saveMsg(data, ++count)
+                                            }, 20);
+                                        }
+                                        saveMsg(data, 0);
                                         break;
                                     case 'update':
                                     case 'readed':
@@ -3355,7 +3395,7 @@ export default {
                                                 }
                                                 // 更新置顶
                                                 if ($A.isArray(data.tops)) {
-                                                    state.dialogTops = data.tops
+                                                    state.dialogTops = state.dialogTops.filter(item => item.dialog_id != data.dialog_id)
                                                     dispatch("saveDialogTop", data.tops)
                                                 }
                                                 return;

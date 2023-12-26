@@ -21,23 +21,23 @@
                 </div>
                 <div class="task-move-row" :class="{'not-flex': windowPortrait}">
                     <span class="label">{{$L('负责人')}}:</span>
-                    <UserSelect class="item-content user"
+                    <UserSelect
                         v-model="ownerUserids"
+                        class="item-content user"
                         :avatar-size="28"
                         :project-id="task.project_id"
                         :add-icon="false"
-                        disable
-                    />
+                        disabled/>
                 </div>
                 <div class="task-move-row" :class="{'not-flex': windowPortrait}">
                     <span class="label">{{$L('协助人')}}:</span>
-                    <UserSelect class="item-content user"
+                    <UserSelect
+                        class="item-content user"
                         v-model="assistUserids"
                         :avatar-size="28"
                         :project-id="task.project_id"
                         :add-icon="false"
-                        disable
-                    />
+                        disabled/>
                 </div>
             </div>
             <div class="task-move-content-new">
@@ -66,8 +66,7 @@
                             :multiple-max="10"
                             :avatar-size="28"
                             :project-id="cascader[0]"
-                            :add-icon="false"
-                        />
+                            :add-icon="false"/>
                     </div>
                 </div>
                 <div class="task-move-row" :class="{'not-flex': windowPortrait}">
@@ -79,8 +78,7 @@
                             :multiple-max="10"
                             :avatar-size="28"
                             :project-id="cascader[0]"
-                            :add-icon="false"
-                        />
+                            :add-icon="false"/>
                     </div>
                 </div>
             </div>

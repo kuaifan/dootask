@@ -137,18 +137,28 @@
         </div>
 
         <!--置顶消息-->
-        <div v-if="topMessage" class="dialog-top-message" @click="topViewShow = true">
-            <div class="dialog-top-message-content">
-                <p >{{$L('置顶消息')}}</p>
-                <p>{{$A.getMsgSimpleDesc(topMessage)}}</p>
-            </div>
-            <div class="dialog-top-message-font">
-                <i class="taskfont">&#xe7d4;</i>
+        <div v-if="topMessage" class="dialog-top-message" :class="topMessageClass" @click="onPosTop">
+            <div class="dialog-top-message-warp">
+                <div class="dialog-top-message-font">
+                    <i class="taskfont">&#xe7e4;</i>
+                </div>
+                <div class="dialog-top-message-content">
+                    <p class="content">
+                        <UserAvatar :userid="topMessage.userid" showName :showIcon="false"/>:
+                        <span>{{$A.getMsgSimpleDesc(topMessage)}}</span>
+                    </p>
+                    <p class="personnel">{{$L('置顶人员')}} <UserAvatar :userid="topMessage.top" showName :showIcon="false"/> </p>
+                </div>
+                <div class="dialog-top-message-btn">
+                    <i class="taskfont" v-if="!topViewPosLoad">&#xee15;</i>
+                    <Loading v-else/>
+                    <i class="taskfont" @click.stop="onCancelTop">&#xe6e5;</i>
+                </div>
             </div>
         </div>
 
         <!--跳转提示-->
-        <div v-if="positionMsg" class="dialog-position" :class="{'down': tagShow}">
+        <div v-if="listPreparedStatus && positionMsg" class="dialog-position" :class="{'down': tagShow}">
             <div class="position-label" @click="onPositionMark">
                 <Icon v-if="positionLoad > 0" type="ios-loading" class="icon-loading"></Icon>
                 <i v-else class="taskfont">&#xe624;</i>
@@ -167,7 +177,7 @@
             :data-component="msgItem"
 
             :item-class-add="itemClassAdd"
-            :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, unreadMsgId, scrollIng, msgReady}"
+            :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, unreadMsgId, scrollIng, readEnabled}"
             :estimate-size="dialogData.type=='group' ? 105 : 77"
             :keeps="25"
             :disabled="scrollDisabled"
@@ -175,6 +185,7 @@
             @scroll="onScroll"
             @range="onRange"
             @totop="onPrevPage"
+            @resized="onItemRendered"
 
             @on-mention="onMention"
             @on-longpress="onLongpress"
@@ -401,20 +412,44 @@
             </div>
         </Modal>
 
-        <!-- 转发 -->
+        <!-- 转发选择 -->
         <UserSelect
             ref="forwardSelect"
-            v-model="forwardData"
             :multiple-max="50"
             :title="$L('转发')"
-            :twice-affirm="true"
-            :twice-affirm-title="$L('转发给:')"
-            :before-submit="onForward"
+            :before-submit="onForwardBefore"
             :show-select-all="false"
-            :multiple-choice="false"
             show-dialog
-            module>
-            <template #twice-affirm-body-extend>
+            module/>
+
+        <!-- 转发确认 -->
+        <Modal
+            v-model="forwardhow"
+            :title="$L('转发给:')"
+            class-name="common-user-select-modal dialog-forward-message-modal"
+            :mask-closable="false"
+            width="420">
+            <div class="user-modal-search">
+                <Scrollbar class="search-selected" enable-x :enable-y="false">
+                    <ul>
+                        <li v-for="item in forwardData" :data-id="item.userid">
+                            <div v-if="item.type=='group'" class="user-modal-avatar">
+                                <EAvatar v-if="item.avatar" class="img-avatar" :src="item.avatar" :size="32"></EAvatar>
+                                <i v-else-if="item.group_type=='department'" class="taskfont icon-avatar department">&#xe75c;</i>
+                                <i v-else-if="item.group_type=='project'" class="taskfont icon-avatar project">&#xe6f9;</i>
+                                <i v-else-if="item.group_type=='task'" class="taskfont icon-avatar task">&#xe6f4;</i>
+                                <i v-else-if="item.group_type=='okr'" class="taskfont icon-avatar task">&#xe6f4;</i>
+                                <Icon v-else class="icon-avatar" type="ios-people" />
+                                <div v-if="forwardData.length == 1" class="avatar-name">
+                                    <span>{{item.name}}</span>
+                                </div>
+                            </div>
+                            <UserAvatar v-else :userid="item.userid" :size="32" :show-name="forwardData.length == 1" tooltip-disabled />
+                        </li>
+                    </ul>
+                </Scrollbar>
+            </div>
+            <div class="twice-affirm-body-extend">
                 <div class="dialog-wrapper-forward-body">
                     <div class="dialog-wrapper ">
                         <div class="dialog-scroller">
@@ -422,18 +457,22 @@
                         </div>
                     </div>
                     <div class="leave-message">
-                        <Input type="textarea" :autosize="{minRows: 1,maxRows: 3}" v-model="forwardLeaveMessage" :placeholder="$L('留言')" clearable />
+                        <Input type="textarea" :autosize="{minRows: 1,maxRows: 3}" v-model="forwardMessage" :placeholder="$L('留言')" clearable />
                     </div>
                 </div>
-            </template>
-            <template #twice-affirm-footer-extend>
-                <div class="dialog-wrapper-forward-footer" :class="{'selected': !forwardShowOriginal}" @click="forwardShowOriginal = !forwardShowOriginal">
-                    <Icon v-if="!forwardShowOriginal" class="user-modal-icon" type="ios-checkmark-circle" />
-                    <Icon v-else class="user-modal-icon" type="ios-radio-button-off" />
+            </div>
+            <template #footer>
+                <div class="dialog-wrapper-forward-footer" :class="{selected: !forwardSource}" @click="forwardSource = !forwardSource">
+                    <Icon class="user-modal-icon" :type="forwardSource ? 'ios-radio-button-off' : 'ios-checkmark-circle'" />
                     {{$L('不显示原发送者信息')}}
                 </div>
+                <Button type="primary" :loading="forwardLoad > 0" @click="onForwardAffirm">
+                    {{$L('确定')}}
+                    <template v-if="forwardData.length > 0">({{forwardData.length}})</template>
+                </Button>
             </template>
-        </UserSelect>
+        </Modal>
+
 
         <!-- 设置待办 -->
         <Modal
@@ -553,34 +592,6 @@
         <!-- 群投票 -->
         <DialogGroupVote/>
 
-        <!--置顶消息列表-->
-        <DrawerOverlay
-            v-model="topViewShow"
-            placement="right"
-            class-name="dialog-wrapper-drawer-list"
-            :size="500">
-            <div class="dialog-wrapper drawer-list">
-                <div class="dialog-nav">
-                    <div class="drawer-title">{{$L('置顶消息')}}</div>
-                </div>
-                <Scrollbar class-name="dialog-scroller">
-                    <div class="dialog-scroller-item" v-for="msg in topList.sort((a, b) => a.top_at - b.top_at)">
-                        <DialogItem
-                            :source="msg"
-                            @on-view-text="onViewText"
-                            @on-view-file="onViewFile"
-                            @on-down-file="onDownFile"
-                            @on-emoji="onEmoji"
-                            simpleView/>
-                        <div class="original-button-warp">
-                            <Button class="original-button" icon="md-exit" type="text" :loading="todoViewPosLoad" @click="onPosTodo">{{ $L("回到原文") }}</Button>
-                            <Button class="original-button" icon="md-exit" type="text" :loading="todoViewPosLoad" @click="onPosTodo">{{ $L("取消置顶") }}</Button>
-                        </div>
-                    </div>
-                </Scrollbar>
-            </div>
-        </DrawerOverlay>
-
     </div>
 </template>
 
@@ -675,9 +686,11 @@ export default {
             modifyData: {},
             modifyLoad: 0,
 
+            forwardhow: false,
             forwardData: [],
-            forwardShowOriginal: true,
-            forwardLeaveMessage: '',
+            forwardLoad: 0,
+            forwardMessage: '',
+            forwardSource: true,
 
             openId: 0,
             dialogDrag: false,
@@ -739,13 +752,18 @@ export default {
             approveDetailsShow: false,
             approvaUserStatus: '',
 
-            positionLoad: 0,            // 定位跳转加载中
-            msgReady: false,            // 消息准备完成
-            unreadMsgId: 0,             // 最早未读消息id
-            toBottomReGetMsg: false,    // 滚动到底部重新获取消息
-            selectionRange: false,      // 是否选择文本
+            footerObserver: null,
 
-            topViewShow: false,
+            unreadMsgId: 0,                     // 最早未读消息id
+            positionLoad: 0,                    // 定位跳转加载中
+            firstMsgLength: 0,                  // 首次加载消息数量
+            isFirstShowTag: false,              // 是否首次显示标签
+            msgPreparedStatus: false,           // 消息准备完成
+            listPreparedStatus: false,          // 消息准备完成
+            selectedTextStatus: false,          // 是否选择文本
+            scrollToBottomAndRefresh: false,    // 滚动到底部重新获取消息
+
+            topViewPosLoad: false,
         }
     },
 
@@ -761,6 +779,10 @@ export default {
         if (this.msgSubscribe) {
             this.msgSubscribe.unsubscribe();
             this.msgSubscribe = null;
+        }
+        if (this.footerObserver) {
+            this.footerObserver.disconnect()
+            this.footerObserver = null
         }
         document.removeEventListener('selectionchange', this.onSelectionchange);
     },
@@ -874,32 +896,32 @@ export default {
             return '发送文件'
         },
 
-        msgTags() {
+        msgTags({dialogData}) {
             const array = [
                 {type: '', label: '消息'},
             ];
-            if (this.dialogData.has_tag) {
+            if (dialogData.has_tag) {
                 array.push({type: 'tag', label: '标注'})
             }
-            if (this.dialogData.has_todo) {
+            if (dialogData.has_todo) {
                 array.push({type: 'todo', label: '事项'})
             }
-            if (this.dialogData.has_image) {
+            if (dialogData.has_image) {
                 array.push({type: 'image', label: '图片'})
             }
-            if (this.dialogData.has_file) {
+            if (dialogData.has_file) {
                 array.push({type: 'file', label: '文件'})
             }
-            if (this.dialogData.has_link) {
+            if (dialogData.has_link) {
                 array.push({type: 'link', label: '链接'})
             }
-            if (this.dialogData.group_type === 'project') {
+            if (dialogData.group_type === 'project') {
                 array.push({type: 'project', label: '打开项目'})
             }
-            if (this.dialogData.group_type === 'task') {
+            if (dialogData.group_type === 'task') {
                 array.push({type: 'task', label: '打开任务'})
             }
-            if (this.dialogData.group_type === 'okr') {
+            if (dialogData.group_type === 'okr') {
                 array.push({type: 'okr', label: '打开OKR'})
             }
             return array
@@ -938,7 +960,7 @@ export default {
         },
 
         scrollerClass() {
-            return !this.$slots.head && this.tagShow ? 'default-header' : null
+            return !this.$slots.head && !this.topMessage && this.tagShow ? 'default-header' : null
         },
 
         pasteWrapperClass() {
@@ -1082,8 +1104,12 @@ export default {
             return 1024000
         },
 
+        readEnabled() {
+            return this.msgPreparedStatus && this.listPreparedStatus
+        },
+
         topList() {
-            return this.dialogTops.filter(item => item.top_at && item.dialog_id == this.dialogId).sort((a, b) => {
+            return this.dialogTops.filter(item => item.top && item.dialog_id == this.dialogId).sort((a, b) => {
                 return b.top_at - a.top_at;
             });
         },
@@ -1091,9 +1117,27 @@ export default {
         topMessage() {
             return this.topList[0]
         },
+
+        topMessageClass() {
+            return !this.$slots.head && this.tagShow ? 'default-header' : null
+        },
     },
 
     watch: {
+        '$route': {
+            handler({params}) {
+                if (params.dialog_id && params.open && (params.open == 'word-chain' || params.open == 'vote')) {
+                    this.$nextTick(_ => {
+                        this.$store.state[params.open == 'word-chain' ? 'dialogDroupWordChain' : 'dialogGroupVote'] = {
+                            type: 'create',
+                            dialog_id: params.dialog_id
+                        }
+                        params.open = "";
+                    })
+                }
+            },
+            immediate: true
+        },
         dialogId: {
             handler(dialog_id, old_id) {
                 if (dialog_id) {
@@ -1101,9 +1145,11 @@ export default {
                     this.msgType = ''
                     this.searchShow = false
                     this.unreadMsgId = 0
-                    this.toBottomReGetMsg = false
+                    this.firstMsgLength = this.allMsgList.length || 1
+                    this.listPreparedStatus = false
+                    this.scrollToBottomAndRefresh = false
                     //
-                    if (this.allMsgList.length > 0) {
+                    if (this.firstMsgLength > 0) {
                         this.allMsgs = this.allMsgList
                         requestAnimationFrame(this.onToBottom)
                     }
@@ -1114,7 +1160,9 @@ export default {
                     }).then(_ => {
                         this.openId = dialog_id;
                         setTimeout(this.onSearchMsgId, 100)
-                    }).catch(_ => {});
+                    }).catch(_ => {}).finally(_ => {
+                        this.listPreparedStatus = true
+                    });
                     //
                     this.$store.dispatch('saveInDialog', {
                         uid: this._uid,
@@ -1140,6 +1188,22 @@ export default {
                         this.loadIng--
                     }, 300)
                 }
+            },
+            immediate: true
+        },
+
+        isReady: {
+            handler(ready) {
+                if (!ready) {
+                    return
+                }
+                this.$nextTick(_ => {
+                    if (!this.$refs.footer && this.footerObserver) {
+                        return
+                    }
+                    this.footerObserver = new ResizeObserver(this.onResizeEvent)
+                    this.footerObserver.observe(this.$refs.footer);
+                })
             },
             immediate: true
         },
@@ -1223,7 +1287,7 @@ export default {
             const lastMsg = this.allMsgs[this.allMsgs.length - 1]
             const lastEl = $A(this.$refs.scroller.$el).find(`[data-id="${lastMsg.id}"]`)
             if (lastEl.length === 0) {
-                this.toBottomReGetMsg = true
+                this.scrollToBottomAndRefresh = true
                 return;
             }
             // 开始请求重新获取消息
@@ -1231,7 +1295,7 @@ export default {
         },
 
         allMsgList(newList, oldList) {
-            if(JSON.stringify(newList) == JSON.stringify(oldList)){
+            if (JSON.stringify(newList) == JSON.stringify(oldList)) {
                 return;
             }
             const {tail} = this.scrollInfo();
@@ -1320,7 +1384,17 @@ export default {
             if (msg) {
                 this.unreadMsgId = msg.msg_id
             }
-        }
+        },
+
+        tagShow(val) {
+            if (!this.isFirstShowTag && val) {
+                this.isFirstShowTag = true
+                const {tail} = this.scrollInfo();
+                if (tail <= 55) {
+                    requestAnimationFrame(this.onToBottom)
+                }
+            }
+        },
     },
 
     methods: {
@@ -1351,7 +1425,9 @@ export default {
                 return;
             }
             if (textType === "text") {
-                textBody = textBody.replace(/<\/span> <\/p>$/, "</span></p>")
+                textBody = textBody
+                    .replace(/<\/span> <\/p>$/, "</span></p>")
+                    .replace(/(<span\s+class="mention"(.*?)>.*?<\/span>.*?<\/span>.*?<\/span>)(\x20)?/, "$1 ")
             }
             //
             if (this.quoteUpdate) {
@@ -1416,8 +1492,7 @@ export default {
                     },
                     method: 'post',
                 }).then(({data}) => {
-                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempMsg.id)
-                    this.sendSuccess(data)
+                    this.sendSuccess(data, tempMsg.id)
                 }).catch(error => {
                     this.$set(tempMsg, 'error', true)
                     this.$set(tempMsg, 'errorData', {type: 'text', mType: type, content: error.msg, msg: textBody})
@@ -1456,8 +1531,7 @@ export default {
                 }),
                 method: 'post',
             }).then(({data}) => {
-                this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempMsg.id)
-                this.sendSuccess(data);
+                this.sendSuccess(data, tempMsg.id);
             }).catch(error => {
                 this.$set(tempMsg, 'error', true)
                 this.$set(tempMsg, 'errorData', {type: 'record', mType: 'record', content: error.msg, msg})
@@ -1530,7 +1604,7 @@ export default {
 
         onSelectionchange() {
             const selectionType = window.getSelection().type;
-            this.selectionRange = selectionType === "Range"
+            this.selectedTextStatus = selectionType === "Range"
         },
 
         getTempId() {
@@ -1770,7 +1844,7 @@ export default {
 
         onTouchStart(e) {
             this.wrapperStart = null;
-            if (this.selectionRange) {
+            if (this.selectedTextStatus) {
                 this.wrapperStart = window.scrollY
                 return
             }
@@ -1820,8 +1894,8 @@ export default {
         },
 
         onTouchEnd() {
-            if ($A.isIos()) {
-                $A.scrollToView(this.$refs.footer)
+            if (typeof this.wrapperStart === 'number' && $A.isIos()) {
+                $A.scrollToView(this.$refs.footer, false)
             }
         },
 
@@ -1857,20 +1931,31 @@ export default {
                     break;
 
                 case 'error':
-                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != file.tempId)
+                    this.forgetTempMsg(file.tempId)
                     break;
 
                 case 'success':
-                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != file.tempId)
-                    this.sendSuccess(file.data)
+                    this.sendSuccess(file.data, file.tempId)
                     break;
             }
         },
 
-        sendSuccess(data) {
+        sendSuccess(data, tempId = 0) {
             if ($A.isArray(data)) {
-                data.some(this.sendSuccess)
+                data.some(item => {
+                    this.sendSuccess(item, tempId)
+                })
                 return;
+            }
+            if (tempId > 0) {
+                const index = this.tempMsgs.findIndex(({id}) => id == tempId)
+                if (index > -1) {
+                    this.tempMsgs.splice(index, 1, data)
+                }
+                setTimeout(_ => {
+                    this.forgetTempMsg(tempId)
+                    this.forgetTempMsg(data.id)
+                }, 1000)
             }
             this.$store.dispatch("saveDialogMsg", data);
             if (!this.quoteUpdate) {
@@ -1880,6 +1965,10 @@ export default {
             }
             this.cancelQuote();
             this.onActive();
+        },
+
+        forgetTempMsg(tempId) {
+            this.tempMsgs = this.tempMsgs.filter(({id}) => id != tempId)
         },
 
         setQuote(id, type) {
@@ -1982,12 +2071,32 @@ export default {
         },
 
         onHeightChange({newVal, oldVal}) {
+            this.onFooterResize();
             const diff = newVal - oldVal;
             if (diff !== 0) {
                 const {offset, tail} = this.scrollInfo()
                 if (tail > 0) {
                     this.onToOffset(offset + diff)
                 }
+            }
+        },
+
+        onResizeEvent(entries) {
+            entries.some(({target}) => {
+                if (target === this.$refs.footer) {
+                    this.onFooterResize()
+                }
+            })
+        },
+
+        onFooterResize() {
+            if (!this.$refs.footer) {
+                return
+            }
+            const footer = this.$refs.footer;
+            const marginSize = parseInt($A.css(footer, 'marginTop')) + parseInt($A.css(footer, 'marginBottom'))
+            if (this.$refs.scroller) {
+                this.$refs.scroller.$el.style.marginBottom = `${footer.getBoundingClientRect().height + marginSize}px`;
             }
         },
 
@@ -2069,7 +2178,7 @@ export default {
         },
 
         onReGetMsg() {
-            this.toBottomReGetMsg = false
+            this.scrollToBottomAndRefresh = false
             this.getMsgs({
                 dialog_id: this.dialogId,
                 msg_id: this.msgId,
@@ -2104,6 +2213,17 @@ export default {
                     setTimeout(_ => scroller.virtual.handleFront(), 10)
                 });
             }).catch(() => {})
+        },
+
+        onItemRendered() {
+            if (!this.$refs.scroller || !this.$refs.footer) {
+                return
+            }
+            if (this.firstMsgLength > 0 && this.$refs.scroller.getSizes() >= this.firstMsgLength) {
+                this.firstMsgLength = 0
+                this.onFooterResize()
+                this.onToBottom()
+            }
         },
 
         onDialogMenu(cmd) {
@@ -2331,38 +2451,53 @@ export default {
             }
         },
 
-        onForward() {
+        onForwardBefore() {
             return new Promise((resolve, reject) => {
+                this.forwardData = this.$refs.forwardSelect.formatSelect(this.$refs.forwardSelect.selects);
                 if (this.forwardData.length === 0) {
                     $A.messageError("请选择转发对话或成员");
-                    reject();
-                    return
+                } else {
+                    this.forwardMessage = '';
+                    this.forwardSource = true;
+                    this.forwardhow = true;
                 }
-                const dialogids = this.forwardData.filter(value => $A.leftExists(value, 'd:')).map(value => value.replace('d:', ''));
-                const userids = this.forwardData.filter(value => !$A.leftExists(value, 'd:'));
-                this.$store.dispatch("call", {
-                    url: 'dialog/msg/forward',
-                    data: {
-                        dialogids,
-                        userids,
-                        msg_id: this.operateItem.id,
-                        show_source: this.forwardShowOriginal ? 1 : 0,
-                        leave_message: this.forwardLeaveMessage
-                    }
-                }).then(({data, msg}) => {
-                    this.$store.dispatch("saveDialogMsg", data.msgs);
-                    this.$store.dispatch("updateDialogLastMsg", data.msgs);
-                    $A.messageSuccess(msg);
-                    resolve();
-                }).catch(({msg}) => {
-                    $A.modalError(msg);
-                    reject();
-                });
+                reject();
             })
         },
 
+        onForwardAffirm() {
+            const selects = this.$refs.forwardSelect.selects;
+            if (selects.length === 0) {
+                $A.messageError("请选择转发对话或成员");
+                return
+            }
+            const dialogids = selects.filter(value => $A.leftExists(value, 'd:')).map(value => value.replace('d:', ''));
+            const userids = selects.filter(value => !$A.leftExists(value, 'd:'));
+            this.forwardLoad++;
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/forward',
+                data: {
+                    dialogids,
+                    userids,
+                    msg_id: this.operateItem.id,
+                    show_source: this.forwardSource ? 1 : 0,
+                    leave_message: this.forwardMessage
+                }
+            }).then(({data, msg}) => {
+                this.$store.dispatch("saveDialogMsg", data.msgs);
+                this.$store.dispatch("updateDialogLastMsg", data.msgs);
+                $A.messageSuccess(msg);
+                this.$refs.forwardSelect.hide()
+                this.forwardhow = false;
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            }).finally(_ => {
+                this.forwardLoad--;
+            });
+        },
+
         onActivity(activity) {
-            this.msgReady = !activity
+            this.msgPreparedStatus = !activity
         },
 
         onScroll(event) {
@@ -2375,7 +2510,7 @@ export default {
             this.scrollTail = tail;
             if (this.scrollTail <= 55) {
                 this.msgNew = 0;
-                this.toBottomReGetMsg && this.onReGetMsg()
+                this.scrollToBottomAndRefresh && this.onReGetMsg()
             }
             //
             this.scrollAction = event.target.scrollTop;
@@ -2541,6 +2676,44 @@ export default {
             })
         },
 
+        onTopLongpress({event, el, msgData}) {
+            this.operateVisible = this.operateItem.id === msgData.id;
+            this.operateItem = $A.isJson(msgData) ? msgData : {};
+            this.operateCopys = []
+            const selectText = this.getSelectedTextInElement(el)
+            if (selectText.length > 0) {
+                this.operateCopys.push({
+                    type: 'selected',
+                    icon: '&#xe7df;',
+                    label: '复制选择',
+                    value: selectText,
+                })
+            }
+            if (msgData.msg.text.replace(/<[^>]+>/g,"").length > 0) {
+                let label = this.operateCopys.length > 0 ? '复制文本' : '复制'
+                if (selectText.length > 0) {
+                    label = '复制全部'
+                }
+                this.operateCopys.push({
+                    type: 'text',
+                    icon: '&#xe77f;',
+                    label,
+                    value: '',
+                })
+            }
+            this.$nextTick(() => {
+                const projectRect = el.getBoundingClientRect();
+                const wrapRect = this.$el.getBoundingClientRect();
+                this.operateStyles = {
+                    left: `${event.clientX - wrapRect.left}px`,
+                    top: `${projectRect.top + this.windowScrollY}px`,
+                    height: projectRect.height + 'px',
+                }
+                this.operateClient = {x: event.clientX, y: event.clientY};
+                this.operateVisible = true;
+            })
+        },
+
         onOperate(action, value = null) {
             this.operateVisible = false;
             this.$nextTick(_ => {
@@ -2558,9 +2731,6 @@ export default {
                         break;
 
                     case "forward":
-                        this.forwardData = [];
-                        this.forwardLeaveMessage = '';
-                        this.forwardShowOriginal = true;
                         this.$refs.forwardSelect.onSelection()
                         break;
 
@@ -2884,19 +3054,19 @@ export default {
                 content,
                 cancelText: '取消发送',
                 onCancel: _ => {
-                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != data.id)
+                    this.forgetTempMsg(data.id)
                 }
             }
             if (type === 'text') {
                 config.okText = '重新发送'
                 config.onOk = () => {
-                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != data.id)
+                    this.forgetTempMsg(data.id)
                     this.sendMsg(msg, mType)
                 }
             } else if (type === 'record') {
                 config.okText = '重新发送'
                 config.onOk = () => {
-                    this.tempMsgs = this.tempMsgs.filter(({id}) => id != data.id)
+                    this.forgetTempMsg(data.id)
                     this.sendRecord(msg)
                 }
             } else {
@@ -3266,8 +3436,13 @@ export default {
                     },
                 }).then(({ data, msg }) => {
                     resolve(msg)
-                    this.tagOrTodoOrTopSuccess({ update: data })
-                    this.onActive()
+                    this.tagOrTodoOrTopSuccess(data)
+                    this.$store.dialogTops = this.dialogMsgs.filter(item => item.dialog_id != this.dialogId)
+                    const index =  this.dialogMsgs.findIndex(({id}) => id == data.update?.id);
+                    if (index > -1) {
+                        const update = Object.assign({},  this.dialogMsgs[index], data.update)
+                        this.$store.dispatch("saveDialogTop", update)
+                    }
                 }).catch(({ msg }) => {
                     reject(msg);
                 }).finally(_ => {
@@ -3275,6 +3450,27 @@ export default {
                 });
             })
         },
+
+        onPosTop() {
+            if (!this.topMessage) {
+                return
+            }
+            this.topViewPosLoad = true
+            this.onPositionId(this.topMessage.id).finally(_ => {
+                this.topViewPosLoad = false
+            })
+        },
+
+        onCancelTop() {
+            $A.modalConfirm({
+                content: "你确定取消置顶吗？",
+                cancelText: '取消',
+                okText: '确定',
+                loading: true,
+                onOk: () => this.onTopSubmit(this.topMessage)
+            });
+        },
+
 
         getUserApproveStatus() {
             this.approvaUserStatus = ''

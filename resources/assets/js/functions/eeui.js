@@ -93,6 +93,16 @@
             if (!$A.isEEUiApp) return;
             return requireModuleJs("eeui").keyboardStatus();
         },
+
+        eeuiAppSetHapticBackEnabled(val) {
+            if (!$A.isEEUiApp) return;
+            return requireModuleJs("webview").setHapticBackEnabled(val);
+        },
+
+        eeuiAppSetDisabledUserLongClickSelect(val) {
+            if (!$A.isEEUiApp) return;
+            return requireModuleJs("webview").setDisabledUserLongClickSelect(val);
+        },
     });
 
     window.$A = $;

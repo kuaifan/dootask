@@ -8,7 +8,7 @@
             {{$L(source.msg.action === 'remove' ? '取消标注' : '标注了')}}
             "{{$A.getMsgSimpleDesc(source.msg.data)}}"
         </div>
-        <div v-if="source.type === 'top'" class="dialog-top" @click="onViewTag">
+        <div v-else-if="source.type === 'top'" class="dialog-top" @click="onViewTag">
             <div class="tag-user"><UserAvatar :userid="source.userid" :show-name="true" :show-icon="false"/></div>
             {{$L(source.msg.action === 'remove' ? '取消置顶' : '置顶了')}}
             "{{$A.getMsgSimpleDesc(source.msg.data)}}"
@@ -109,7 +109,7 @@ export default {
             type: Number,
             default: 0
         },
-        msgReady: {
+        readEnabled: {
             type: Boolean,
             default: false
         },
@@ -153,7 +153,7 @@ export default {
     },
 
     watch: {
-        msgReady() {
+        readEnabled() {
             this.msgRead();
         },
         windowActive() {
@@ -169,7 +169,7 @@ export default {
             if (this.isNoRead) {
                 return;
             }
-            if (!this.msgReady) {
+            if (!this.readEnabled) {
                 return;
             }
             if (!this.windowActive) {

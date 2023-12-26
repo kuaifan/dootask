@@ -136,6 +136,7 @@ export default {
             if(data.type == 'create' && data.dialog_id){
                 this.show = true;
                 this.createId = this.userId;
+                this.list = [];
                 this.list.push({
                     id: Date.now(),
                     type: "case",

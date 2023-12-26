@@ -1971,7 +1971,7 @@ class UsersController extends AbstractController
                     'name' => Doo::translate('文件'),
                 ];
             }
-            $dialogList = (new WebSocketDialog)->getDialogList($user->userid);
+            $dialogList = WebSocketDialog::getDialogList($user->userid);
             foreach ($dialogList['data'] as $dialog) {
                 if ($dialog['avatar']) {
                     $avatar = url($dialog['avatar']);

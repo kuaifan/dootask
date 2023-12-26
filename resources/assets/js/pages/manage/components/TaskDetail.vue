@@ -122,7 +122,7 @@
                     </div>
                 </div>
             </div>
-            <Scrollbar class="scroller">
+            <Scrollbar ref="scroller" class="scroller">
                 <div class="title">
                     <Input
                         v-model="taskDetail.name"
@@ -200,62 +200,10 @@
                     <FormItem v-if="taskDetail.visibility > 1 || visibleForce || visibleKeep">
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe77b;</i>
-                            <EDropdown ref="eDropdownRef" trigger="click" placement="bottom" @command="dropVisible">
-                                <span class="visibility-text color">{{$L('可见性')}}
-                                    <i class="taskfont">&#xe740;</i>
-                                </span>
-                                <EDropdownMenu slot="dropdown">
-                                    <EDropdownItem :command="1">
-                                        <div class="task-menu-icon" >
-                                            <Icon v-if="taskDetail.visibility == 1" class="completed" :type="'md-checkmark-circle'"/>
-                                            <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
-                                            {{$L('项目人员')}}
-                                        </div>
-                                    </EDropdownItem>
-                                    <EDropdownItem :command="2">
-                                        <div class="task-menu-icon" >
-                                            <Icon v-if="taskDetail.visibility == 2" class="completed" :type="'md-checkmark-circle'"/>
-                                            <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
-                                            {{$L('任务人员')}}
-                                        </div>
-                                    </EDropdownItem>
-                                    <EDropdownItem :command="3">
-                                        <div class="task-menu-icon" >
-                                            <Icon v-if="taskDetail.visibility == 3" class="completed" :type="'md-checkmark-circle'"/>
-                                            <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
-                                            {{$L('指定成员')}}
-                                        </div>
-                                    </EDropdownItem>
-                                </EDropdownMenu>
-                            </EDropdown>
+                            <span class="visibility-text color" @click="showCisibleDropdown">{{$L('可见性')}} <i class="taskfont">&#xe740;</i></span>
                         </div>
                         <div class="item-content user">
-                            <EDropdown v-if="taskDetail.visibility == 1 || taskDetail.visibility == 2"  trigger="click" placement="bottom" @command="dropVisible">
-                                <span class="visibility-text">{{ taskDetail.visibility == 1 ? $L('项目人员可见') : $L('任务人员可见') }}</span>
-                                <EDropdownMenu slot="dropdown">
-                                    <EDropdownItem :command="1">
-                                        <div class="task-menu-icon" >
-                                            <Icon v-if="taskDetail.visibility == 1" class="completed" :type="'md-checkmark-circle'"/>
-                                            <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
-                                            {{$L('项目人员')}}
-                                        </div>
-                                    </EDropdownItem>
-                                    <EDropdownItem :command="2">
-                                        <div class="task-menu-icon" >
-                                            <Icon v-if="taskDetail.visibility == 2" class="completed" :type="'md-checkmark-circle'"/>
-                                            <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
-                                            {{$L('任务人员')}}
-                                        </div>
-                                    </EDropdownItem>
-                                    <EDropdownItem :command="3">
-                                        <div class="task-menu-icon" >
-                                            <Icon v-if="taskDetail.visibility == 3" class="completed" :type="'md-checkmark-circle'"/>
-                                            <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
-                                            {{$L('指定成员')}}
-                                        </div>
-                                    </EDropdownItem>
-                                </EDropdownMenu>
-                            </EDropdown>
+                            <span v-if="taskDetail.visibility == 1 || taskDetail.visibility == 2" ref="visibilityText" class="visibility-text" @click="showCisibleDropdown">{{ taskDetail.visibility == 1 ? $L('项目人员可见') : $L('任务人员可见') }}</span>
                             <UserSelect v-else
                                 ref="visibleUserSelectRef"
                                 v-model="taskDetail.visibility_appointor"
@@ -270,21 +218,7 @@
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe6e8;</i>
                             <span v-if="!taskDetail.end_at" @click="timeOpen = true" class="visibility-text color">{{$L('截止时间')}}</span>
-                            <EDropdown v-else ref="eDeadlineRef" trigger="click" placement="bottom" @command="dropDeadline">
-                                <span class="visibility-text color">{{$L('截止时间')}}</span>
-                                <EDropdownMenu slot="dropdown">
-                                    <EDropdownItem :command="1">
-                                        <div class="task-menu-icon" >
-                                            {{$L('任务延期')}}
-                                        </div>
-                                    </EDropdownItem>
-                                    <EDropdownItem :command="2">
-                                        <div class="task-menu-icon" >
-                                            {{$L('修改时间')}}
-                                        </div>
-                                    </EDropdownItem>
-                                </EDropdownMenu>
-                            </EDropdown>
+                            <span v-else class="visibility-text color" @click="showAtDropdown">{{$L('截止时间')}}</span>
                         </div>
                         <ul class="item-content">
                             <li>
@@ -302,21 +236,7 @@
                                     transfer>
                                     <div class="picker-time">
                                         <div v-if="!taskDetail.end_at" @click="timeOpen = true" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
-                                        <EDropdown v-else ref="eDeadlineRef" trigger="click" placement="bottom" @command="dropDeadline">
-                                            <div @click="timeOpen = false" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
-                                            <EDropdownMenu slot="dropdown">
-                                                <EDropdownItem :command="1">
-                                                    <div class="task-menu-icon" >
-                                                        {{$L('任务延期')}}
-                                                    </div>
-                                                </EDropdownItem>
-                                                <EDropdownItem :command="2">
-                                                    <div class="task-menu-icon" >
-                                                        {{$L('修改时间')}}
-                                                    </div>
-                                                </EDropdownItem>
-                                            </EDropdownMenu>
-                                        </EDropdown>
+                                        <div v-else @click="showAtDropdown" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
                                         <template v-if="!taskDetail.complete_at && taskDetail.end_at">
                                             <Tag v-if="within24Hours(taskDetail.end_at)" color="blue"><i class="taskfont">&#xe71d;</i>{{expiresFormat(taskDetail.end_at)}}</Tag>
                                             <Tag v-if="isOverdue(taskDetail)" color="red">{{$L('超期未完成')}}</Tag>
@@ -440,6 +360,47 @@
                         </EDropdownMenu>
                     </EDropdown>
                 </div>
+                <EDropdown ref="eDropdownRef" class="calculate-dropdown" trigger="click" placement="bottom" @command="dropVisible">
+                    <div class="calculate-content"></div>
+                    <EDropdownMenu slot="dropdown">
+                        <EDropdownItem :command="1">
+                            <div class="task-menu-icon" >
+                                <Icon v-if="taskDetail.visibility == 1" class="completed" :type="'md-checkmark-circle'"/>
+                                <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
+                                {{$L('项目人员')}}
+                            </div>
+                        </EDropdownItem>
+                        <EDropdownItem :command="2">
+                            <div class="task-menu-icon" >
+                                <Icon v-if="taskDetail.visibility == 2" class="completed" :type="'md-checkmark-circle'"/>
+                                <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
+                                {{$L('任务人员')}}
+                            </div>
+                        </EDropdownItem>
+                        <EDropdownItem :command="3">
+                            <div class="task-menu-icon" >
+                                <Icon v-if="taskDetail.visibility == 3" class="completed" :type="'md-checkmark-circle'"/>
+                                <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
+                                {{$L('指定成员')}}
+                            </div>
+                        </EDropdownItem>
+                    </EDropdownMenu>
+                </EDropdown>
+                <EDropdown ref="eDeadlineRef" class="calculate-dropdown" trigger="click" placement="bottom" @command="dropDeadline">
+                    <div class="calculate-content"></div>
+                    <EDropdownMenu slot="dropdown">
+                        <EDropdownItem :command="1">
+                            <div class="task-menu-icon" >
+                                {{$L('任务延期')}}
+                            </div>
+                        </EDropdownItem>
+                        <EDropdownItem :command="2">
+                            <div class="task-menu-icon" >
+                                {{$L('修改时间')}}
+                            </div>
+                        </EDropdownItem>
+                    </EDropdownMenu>
+                </EDropdown>
             </Scrollbar>
             <TaskUpload ref="upload" class="upload" @on-select-file="onSelectFile"/>
         </div>
@@ -517,8 +478,7 @@
             :styles="{
                 width: '90%',
                 maxWidth: '450px'
-            }"
-            >
+            }">
             <Form ref="formDelayTaskRef" :model="delayTaskForm" :rules="delayTaskRule" label-position="left" label-width="auto" @submit.native.prevent>
                 <FormItem :label="$L('延期时长')" prop="time">
                     <Input type="number" v-model="delayTaskForm.time" :placeholder="$L('请输入时长')" >
@@ -1093,7 +1053,7 @@ export default {
 
                 case 'content':
                     const content = this.$refs.desc.getContent();
-                    if (content == this.taskContent) {
+                    if (content == this.taskContent.replace(/\s+original-(width|height)="[^"]*"/g, "")) {
                         return;
                     }
                     if (this.windowTouch) {
@@ -1101,32 +1061,24 @@ export default {
                             title: '温馨提示',
                             content: '是否保存编辑内容？',
                             onOk: () => {
-                                this.updateData("contentSave", params)
+                                this.updateData("contentSave", {content})
                             },
                             onCancel: () => {
                                 this.$refs.desc.updateContent(this.taskContent);
                             }
                         });
                     } else {
-                        this.updateData("contentSave", params)
+                        this.updateData("contentSave", {content})
                     }
                     return;
 
                 case 'contentSave':
-                    const contentSave = this.$refs.desc.getContent();
-                    if (contentSave == this.taskContent) {
-                        return;
-                    }
-                    this.$set(this.taskDetail, 'content', contentSave)
+                    this.$set(this.taskDetail, 'content', params.content)
                     action = 'content';
-                    if (content == this.taskContent.replace(/original-width="[^"]*"/g, "").replace(/original-height="[^"]*"/g, "").replace(/\"   \//g, "\" /")) {
-                        return;
-                    }
-                    this.$set(this.taskDetail, 'content', content)
                     successCallback = () => {
                         this.$store.dispatch("saveTaskContent", {
                             task_id: this.taskId,
-                            content: contentSave
+                            content: params.content
                         })
                     }
                     break;
@@ -1393,7 +1345,7 @@ export default {
                 case 'visible':
                     this.visibleForce = true;
                     this.$nextTick(() => {
-                        this.showCisibleDropdown();
+                        this.showCisibleDropdown(null);
                     });
                     break;
 
@@ -1700,8 +1652,47 @@ export default {
             });
         },
 
-        showCisibleDropdown(){
-            this.$refs.eDropdownRef.show()
+        showCisibleDropdown(e){
+            let eRect = null
+            if (e === null) {
+                eRect = this.$refs.visibilityText?.getBoundingClientRect()
+            } else {
+                eRect = e.target.getBoundingClientRect()
+            }
+            if (eRect === null) {
+                return
+            }
+            const boxRect = this.$refs.scroller.$el.getBoundingClientRect()
+            const refEl = this.$refs.eDropdownRef.$el
+            refEl.style.top = (eRect.top - boxRect.top) + 'px'
+            refEl.style.left = (eRect.left - boxRect.left) + 'px'
+            refEl.style.width = eRect.width + 'px'
+            refEl.style.height = eRect.height + 'px'
+            //
+            if (this.$refs.eDropdownRef.visible) {
+                this.$refs.eDropdownRef.hide()
+            }
+            setTimeout(() => {
+                this.$refs.eDropdownRef.show()
+            }, 0)
+        },
+
+        showAtDropdown({target}){
+            this.timeOpen = false
+            const eRect = target.getBoundingClientRect()
+            const boxRect = this.$refs.scroller.$el.getBoundingClientRect()
+            const refEl = this.$refs.eDeadlineRef.$el
+            refEl.style.top = (eRect.top - boxRect.top) + 'px'
+            refEl.style.left = (eRect.left - boxRect.left) + 'px'
+            refEl.style.width = eRect.width + 'px'
+            refEl.style.height = eRect.height + 'px'
+            //
+            if (this.$refs.eDeadlineRef.visible) {
+                this.$refs.eDeadlineRef.hide()
+            }
+            setTimeout(() => {
+                this.$refs.eDeadlineRef.show()
+            }, 0)
         },
 
         visibleUserSelectShowChange(isShow){

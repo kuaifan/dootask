@@ -36,9 +36,11 @@
             <div
                 ref="editor"
                 class="no-dark-content"
-                :style="editorStyle"
                 @click.stop="onClickEditor"
                 @paste="handlePaste"></div>
+
+            <!-- 工具栏占位 -->
+            <div class="chat-space"></div>
 
             <!-- 工具栏 -->
             <ul class="chat-toolbar" @click.stop>
@@ -103,11 +105,11 @@
                             {{$L('匿名消息')}}
                         </div>
                         <div v-if="dialogData.type == 'group'" class="chat-input-popover-item" @click="onToolbar('word-chain')">
-                            <i class="taskfont">&#xe807;</i>
+                            <i class="taskfont">&#xe80a;</i>
                             {{$L('发起接龙')}}
                         </div>
                         <div v-if="dialogData.type == 'group'" class="chat-input-popover-item" @click="onToolbar('vote')">
-                            <i class="taskfont">&#xe806;</i>
+                            <i class="taskfont">&#xe7fd;</i>
                             {{$L('发起投票')}}
                         </div>
                         <div class="chat-input-popover-item" @click="onToolbar('full')">
@@ -155,10 +157,10 @@
                         </div>
                     </EPopover>
                 </li>
-
-                <!-- 录音效果 -->
-                <li class="chat-record-recwave"><div ref="recwave"></div></li>
             </ul>
+
+            <!-- 录音效果 -->
+            <div class="chat-record"><div ref="recwave"></div></div>
 
             <!-- 覆盖层 -->
             <div class="chat-cover" @click.stop="onClickCover"></div>
@@ -178,7 +180,7 @@
                 :style="recordTransferStyle"
                 @click="stopRecord">
                 <div v-if="recordDuration > 0" class="record-duration">{{recordFormatDuration}}</div>
-                <div v-else class="record-loading"><Loading/></div>
+                <div v-else class="record-loading"><Loading type="pure"/></div>
                 <div class="record-cancel" @click.stop="stopRecord(true)">{{$L(touchLimitY ? '松开取消' : '向上滑动取消')}}</div>
             </div>
         </transition>
@@ -293,10 +295,8 @@ export default {
             emojiQuickKey: '',
             emojiQuickItems: [],
 
-            observer: null,
-            wrapperWidth: 0,
+            wrapperObserver: null,
             wrapperHeight: 0,
-            editorHeight: 0,
 
             recordReady: false,
             recordRec: null,
@@ -330,18 +330,8 @@ export default {
     mounted() {
         this.init();
         //
-        this.observer = new ResizeObserver(entries => {
-            entries.some(({target, contentRect}) => {
-                if (target === this.$el) {
-                    this.wrapperWidth = contentRect.width;
-                    this.wrapperHeight = contentRect.height;
-                } else if (target === this.$refs.editor) {
-                    this.editorHeight = contentRect.height;
-                }
-            })
-        });
-        this.observer.observe(this.$el);
-        this.observer.observe(this.$refs.editor);
+        this.wrapperObserver = new ResizeObserver(this.onResizeEvent)
+        this.wrapperObserver.observe(this.$el);
         //
         this.recordInter = setInterval(_ => {
             if (this.recordState === 'ing') {
@@ -374,9 +364,9 @@ export default {
         if (this.recordRec) {
             this.recordRec = null
         }
-        if (this.observer) {
-            this.observer.disconnect()
-            this.observer = null
+        if (this.wrapperObserver) {
+            this.wrapperObserver.disconnect()
+            this.wrapperObserver = null
         }
         if (this.recordInter) {
             clearInterval(this.recordInter)
@@ -408,17 +398,6 @@ export default {
 
         canAnon() {
             return this.dialogData.type === 'user' && !this.dialogData.bot
-        },
-
-        editorStyle() {
-            const {wrapperWidth, editorHeight} = this;
-            const style = {};
-            if (wrapperWidth > 0
-                && editorHeight > 0
-                && (wrapperWidth < 280 || editorHeight > 40)) {
-                style.width = '100%';
-            }
-            return style;
         },
 
         recordTransferStyle() {
@@ -838,6 +817,14 @@ export default {
                     }
                 });
             }
+        },
+
+        onResizeEvent(entries) {
+            entries.some(({target, contentRect}) => {
+                if (target === this.$el) {
+                    this.wrapperHeight = contentRect.height;
+                }
+            })
         },
 
         quillMention() {
@@ -1284,10 +1271,6 @@ export default {
                 }
                 resolve()
             })
-        },
-
-        onMoreVisibleChange(v) {
-            this.showMore = v;
         },
 
         setQuote(id, type = 'reply') {
