@@ -9,11 +9,11 @@
                             v-if="tabActive==='dialog'"
                             v-model="dialogSearchKey"
                             ref="searchInput"
-                            :placeholder="$L(loadDialogs ? '更新中...' : '搜索消息')"
+                            :placeholder="$L(loadDialogs > 0 ? '更新中...' : '搜索消息')"
                             @on-keydown="onKeydown"
                             clearable>
                             <div class="search-pre" slot="prefix">
-                                <Loading v-if="loadDialogs || dialogSearchLoad > 0"/>
+                                <Loading v-if="loadDialogs > 0 || dialogSearchLoad > 0"/>
                                 <Icon v-else type="ios-search" />
                             </div>
                         </Input>
@@ -225,6 +225,7 @@ export default {
     directives: {longpress},
     data() {
         return {
+            firstLoad: true,
             activeNum: 0,
             tabActive: 'dialog',
 
@@ -286,7 +287,9 @@ export default {
     },
 
     activated() {
-        this.updateDialogs(1000);
+        this.updateDialogs(this.firstLoad ? 0 : 1000);
+        this.firstLoad = false;
+        //
         this.$nextTick(_ => this.activeNum++)
         //
         if ($A.isEEUiApp) {
@@ -1039,7 +1042,7 @@ export default {
             if (timeout > -1) {
                 this.__updateDialogs = setTimeout(_ => {
                     if (this.tabActive === 'dialog') {
-                        this.$store.dispatch("getDialogs", {hideload: true}).catch(() => {});
+                        this.$store.dispatch("getDialogAuto").catch(() => {});
                     }
                 }, timeout)
             }

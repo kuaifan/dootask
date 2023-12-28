@@ -6,6 +6,9 @@ export default {
     // 客户端ID（希望不变的，除非清除浏览器缓存或者卸载应用）
     clientId: "",
 
+    // 缓存版本号（如果想升级后清除客户端缓存则修改此参数值）
+    cacheVersion: "v3",
+
     // 窗口是否激活
     windowActive: true,
 
@@ -52,6 +55,8 @@ export default {
     loadUserBasic: false,
     loadProjects: 0,
     loadDialogs: 0,
+    loadDialogAuto: false,
+    loadDialogLatestId: 0,
     floatSpinnerTimer: [],
     floatSpinnerLoad: 0,
     touchBackInProgress: false,
