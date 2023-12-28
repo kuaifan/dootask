@@ -3,9 +3,9 @@
         <PageTitle :title="$L('项目')"/>
         <div class="list-search">
             <div class="search-wrapper">
-                <Input v-model="projectKeyValue" :placeholder="$L(loadProjects ? '更新中...' : '搜索项目')" clearable>
+                <Input v-model="projectKeyValue" :placeholder="$L(loadProjects > 0 ? '更新中...' : '搜索项目')" clearable>
                     <div class="search-pre" slot="prefix">
-                        <Loading v-if="loadProjects"/>
+                        <Loading v-if="loadProjects > 0"/>
                         <Icon v-else type="ios-search" />
                     </div>
                 </Input>
@@ -141,7 +141,6 @@ export default {
                 keys: {
                     name: this.projectKeyValue
                 },
-                hideload: true,
             }).finally(_ => {
                 this.projectKeyLoading--;
             });

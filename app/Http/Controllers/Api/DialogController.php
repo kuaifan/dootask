@@ -548,6 +548,47 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {get} api/dialog/msg/latest          11. 获取最新消息列表
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__latest
+     *
+     * @apiParam {Number} [latest_id]       此消息ID之后的数据
+     *
+     * @apiParam {Number} [page]            当前页，默认:1
+     * @apiParam {Number} [pagesize]        每页显示数量，默认:50，最大:100
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__latest()
+    {
+        $user = User::auth();
+        //
+        $latest_id = intval(Request::input('latest_id'));
+        //
+        $builder = WebSocketDialogMsg::select([
+            'web_socket_dialog_msgs.*',
+            'read.mention',
+            'read.read_at',
+        ])->join('web_socket_dialog_msg_reads as read', 'read.msg_id', '=', 'web_socket_dialog_msgs.id')
+            ->where('read.userid', $user->userid);
+        //
+        if ($latest_id > 0) {
+            $builder->where('read.msg_id', '>', $latest_id);
+        }
+        //
+        $data = $builder->orderByDesc('read.msg_id')->paginate(Base::getPaginate(100, 50));
+        if ($data->isEmpty()) {
+            return Base::retError('empty');
+        }
+        return Base::retSuccess('success', $data);
+    }
+
+    /**
      * @api {get} api/dialog/msg/search          12. 搜索消息位置
      *
      * @apiDescription 需要token身份

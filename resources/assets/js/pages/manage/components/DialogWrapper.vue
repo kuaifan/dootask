@@ -158,7 +158,7 @@
         </div>
 
         <!--跳转提示-->
-        <div v-if="listPreparedStatus && positionMsg" class="dialog-position" :class="{'down': tagShow}">
+        <div v-if="positionShow && positionMsg" class="dialog-position" :class="{'down': tagShow}">
             <div class="position-label" @click="onPositionMark">
                 <Icon v-if="positionLoad > 0" type="ios-loading" class="icon-loading"></Icon>
                 <i v-else class="taskfont">&#xe624;</i>
@@ -756,6 +756,7 @@ export default {
 
             unreadMsgId: 0,                     // 最早未读消息id
             positionLoad: 0,                    // 定位跳转加载中
+            positionShow: false,                // 定位跳转显示
             firstMsgLength: 0,                  // 首次加载消息数量
             isFirstShowTag: false,              // 是否首次显示标签
             msgPreparedStatus: false,           // 消息准备完成
@@ -805,6 +806,7 @@ export default {
             'fileLinks',
             'cacheEmojis',
 
+            'readReqNum',
             'keyboardType',
             'keyboardHeight',
             'safeAreaBottom'
@@ -1070,9 +1072,9 @@ export default {
             return null
         },
 
-        positionMsg() {
-            const {mention, unread, position_msgs} = this.dialogData
-            if (!position_msgs || position_msgs.length === 0 || unread === 0 || this.allMsgs.length === 0) {
+        positionMsg({msgNew, dialogData, allMsgs}) {
+            const {mention, unread, position_msgs} = dialogData
+            if (!position_msgs || position_msgs.length === 0 || (unread - msgNew) <= 0 || allMsgs.length === 0) {
                 return null
             }
             const item = $A.cloneJSON(position_msgs.find(item => {
@@ -1087,8 +1089,8 @@ export default {
             return item
         },
 
-        operateEmojis() {
-            const list = this.cacheEmojis.slice(0, 3)
+        operateEmojis({cacheEmojis}) {
+            const list = cacheEmojis.slice(0, 3)
             Object.values(['👌', '👍', '😂', '🎉', '❤️', '🥳️', '🥰', '😥', '😭']).some(item => {
                 if (!list.includes(item)) {
                     list.push(item)
@@ -1097,15 +1099,15 @@ export default {
             return list
         },
 
-        maxSize() {
-            if(this.systemConfig?.file_upload_limit){
-                return this.systemConfig.file_upload_limit * 1024
+        maxSize({systemConfig}) {
+            if(systemConfig?.file_upload_limit){
+                return systemConfig.file_upload_limit * 1024
             }
             return 1024000
         },
 
-        readEnabled() {
-            return this.msgPreparedStatus && this.listPreparedStatus
+        readEnabled({msgPreparedStatus, listPreparedStatus}) {
+            return msgPreparedStatus && listPreparedStatus
         },
 
         topList() {
@@ -1145,6 +1147,7 @@ export default {
                     this.msgType = ''
                     this.searchShow = false
                     this.unreadMsgId = 0
+                    this.positionShow = false
                     this.firstMsgLength = this.allMsgList.length || 1
                     this.listPreparedStatus = false
                     this.scrollToBottomAndRefresh = false
@@ -1394,6 +1397,10 @@ export default {
                     requestAnimationFrame(this.onToBottom)
                 }
             }
+        },
+
+        readReqNum() {
+            this.positionShow = true
         },
     },
 

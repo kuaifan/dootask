@@ -1,3 +1,5 @@
+import {MarkdownPreview} from "../store/markdown";
+
 /**
  * 页面专用
  */
@@ -819,7 +821,7 @@
             if ($A.isJson(data)) {
                 switch (data.type) {
                     case 'text':
-                        return $A.getMsgTextPreview(data.msg.text, imgClassName)
+                        return $A.getMsgTextPreview(data.msg.type === 'md' ? MarkdownPreview(data.msg.text) : data.msg.text, imgClassName)
                     case 'word-chain':
                         return `[${$A.L('接龙')}]` + $A.getMsgTextPreview(data.msg.text, imgClassName)
                     case 'vote':

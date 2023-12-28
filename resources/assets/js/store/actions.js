@@ -14,6 +14,20 @@ export default {
         return new Promise(async resolve => {
             let action = null
 
+            // 清理缓存
+            const clearCache = await $A.IDBString("clearCache")
+            if (clearCache) {
+                if (clearCache === "handle") {
+                    action = "handleClearCache"
+                }
+                await $A.IDBRemove("clearCache")
+                await $A.IDBRemove("cacheVersion")
+            }
+            const cacheVersion = await $A.IDBString("cacheVersion")
+            if (cacheVersion !== state.cacheVersion) {
+                await dispatch("handleClearCache")
+            }
+
             // 读取缓存
             state.clientId = await $A.IDBString("clientId")
             state.cacheServerUrl = await $A.IDBString("cacheServerUrl")
@@ -52,21 +66,6 @@ export default {
             if (!state.clientId) {
                 state.clientId = $A.randomString(6)
                 await $A.IDBSet("clientId", state.clientId)
-            }
-
-            // 清理缓存
-            const clearCache = await $A.IDBString("clearCache")
-            if (clearCache) {
-                if (clearCache === "handle") {
-                    action = "handleClearCache"
-                }
-                await $A.IDBRemove("clearCache")
-                await $A.IDBRemove("cacheVersion")
-            }
-            const cacheVersion = await $A.IDBString("cacheVersion")
-            if (cacheVersion !== "v2") {
-                await dispatch("handleClearCache")
-                await $A.IDBSet("cacheVersion", "v2")
             }
 
             // 获取apiKey
@@ -543,7 +542,7 @@ export default {
         window.__getBasicDataKey = tmpKey
         //
         dispatch("getProjects").catch(() => {});
-        dispatch("getDialogs").catch(() => {});
+        dispatch("getDialogAuto").catch(() => {});
         dispatch("getDialogTodo", 0).catch(() => {});
         dispatch("getReportUnread", 1000);
         dispatch("getApproveUnread", 1000);
@@ -845,20 +844,12 @@ export default {
      * 清除缓存
      * @param state
      * @param dispatch
-     * @param userInfo
+     * @param userData
      * @returns {Promise<unknown>}
      */
-    handleClearCache({state, dispatch}, userInfo) {
+    handleClearCache({state, dispatch}, userData) {
         return new Promise(async resolve => {
             try {
-                // state
-                state.cacheUserBasic = [];
-                state.cacheDialogs = [];
-                state.cacheProjects = [];
-                state.cacheColumns = [];
-                state.cacheTasks = [];
-                state.callAt = [];
-
                 // localStorage
                 const languageType = window.localStorage.getItem("__language:type__");
                 const keyboardData = window.localStorage.getItem("__keyboard:data__");
@@ -869,19 +860,26 @@ export default {
                 window.localStorage.setItem("__theme:mode__", themeMode)
 
                 // localForage
+                const clientId = await $A.IDBString("clientId")
+                const cacheServerUrl = await $A.IDBString("cacheServerUrl")
+                const cacheProjectParameter = await $A.IDBArray("cacheProjectParameter")
                 const cacheLoginEmail = await $A.IDBString("cacheLoginEmail");
                 const cacheFileSort = await $A.IDBJson("cacheFileSort");
+                const cacheTaskBrowse = await $A.IDBArray("cacheTaskBrowse")
+                const cacheEmojis = await $A.IDBArray("cacheEmojis")
+                const userInfo = await $A.IDBJson("userInfo")
                 await $A.IDBClear();
-                await $A.IDBSet("clientId", state.clientId);
-                await $A.IDBSet("cacheServerUrl", state.cacheServerUrl);
-                await $A.IDBSet("cacheProjectParameter", state.cacheProjectParameter);
+                await $A.IDBSet("clientId", clientId);
+                await $A.IDBSet("cacheServerUrl", cacheServerUrl);
+                await $A.IDBSet("cacheProjectParameter", cacheProjectParameter);
                 await $A.IDBSet("cacheLoginEmail", cacheLoginEmail);
                 await $A.IDBSet("cacheFileSort", cacheFileSort);
-                await $A.IDBSet("cacheTaskBrowse", state.cacheTaskBrowse);
-                await $A.IDBSet("cacheEmojis", state.cacheEmojis);
+                await $A.IDBSet("cacheTaskBrowse", cacheTaskBrowse);
+                await $A.IDBSet("cacheEmojis", cacheEmojis);
+                await $A.IDBSet("cacheVersion", state.cacheVersion)
 
                 // userInfo
-                dispatch("saveUserInfoBase", $A.isJson(userInfo) ? userInfo : state.userInfo).then(resolve);
+                dispatch("saveUserInfoBase", $A.isJson(userData) ? userData : userInfo).then(resolve);
             } catch (e) {
                 resolve()
             }
@@ -1111,7 +1109,9 @@ export default {
             }
             const callData = $callData('projects', requestData, state)
             //
-            callData.showLoad() && state.loadProjects++;
+            setTimeout(() => {
+                state.loadProjects++;
+            }, 2000)
             dispatch("call", {
                 url: 'project/lists',
                 data: callData.get()
@@ -1125,7 +1125,7 @@ export default {
                 console.warn(e);
                 reject(e)
             }).finally(_ => {
-                callData.showLoad() && state.loadProjects--;
+                state.loadProjects--;
             });
         });
     },
@@ -2383,6 +2383,34 @@ export default {
     },
 
     /**
+     * 获取会话列表（避免重复获取）
+     * @param state
+     * @param dispatch
+     * @returns {Promise<unknown>}
+     */
+    getDialogAuto({state, dispatch}) {
+        return new Promise(function (resolve, reject) {
+            if (state.loadDialogAuto) {
+                reject({msg: 'Loading'});
+                return
+            }
+            setTimeout(_ => {
+                state.loadDialogs++;
+            }, 2000)
+            state.loadDialogAuto = true
+            dispatch("getDialogs")
+                .then(resolve)
+                .catch(reject)
+                .finally(_ => {
+                    state.loadDialogs--;
+                    state.loadDialogAuto = false
+                })
+            //
+            dispatch("getDialogLatestMsgs").catch(() => {})
+        })
+    },
+
+    /**
      * 获取会话列表
      * @param state
      * @param dispatch
@@ -2408,7 +2436,6 @@ export default {
             }
             const callData = $callData('dialogs', requestData, state)
             //
-            callData.showLoad() && state.loadDialogs++;
             dispatch("call", {
                 url: 'dialog/lists',
                 data: callData.get()
@@ -2426,8 +2453,6 @@ export default {
             }).catch(e => {
                 console.warn(e);
                 reject(e)
-            }).finally(_ => {
-                callData.showLoad() && state.loadDialogs--;
             });
         });
     },
@@ -2965,6 +2990,61 @@ export default {
     },
 
     /**
+     * 获取最新消息
+     * @param state
+     * @param dispatch
+     * @param requestData
+     * @returns {Promise<unknown>}
+     */
+    getDialogLatestMsgs({state, dispatch}, requestData = {}) {
+        return new Promise(function (resolve, reject) {
+            if (state.userId === 0) {
+                reject({msg: 'Parameter error'});
+                return;
+            }
+            if (!$A.isJson(requestData)) {
+                requestData = {}
+            }
+            if (typeof requestData.page === "undefined") {
+                requestData.page = 1
+            }
+            if (typeof requestData.pagesize === "undefined") {
+                requestData.pagesize = 20
+            }
+            if (typeof requestData.latest_id === "undefined") {
+                requestData.latest_id = state.loadDialogLatestId
+            }
+            //
+            dispatch("call", {
+                url: 'dialog/msg/latest',
+                data: requestData,
+            }).then(({data}) => {
+                const list = data.data
+                if (list.length === 0) {
+                    resolve()
+                    return
+                }
+                //
+                const lastId = list[list.length - 1].id;
+                const lastNotExist = state.dialogMsgs.findIndex(({id}) => id == lastId) === -1
+                if (requestData.page === 1) {
+                    state.loadDialogLatestId = list[0].id
+                }
+                dispatch("saveDialogMsg", list);
+                //
+                if (data.next_page_url && data.current_page < 5 && lastNotExist) {
+                    requestData.page++
+                    dispatch("getDialogLatestMsgs", requestData).then(resolve).catch(reject)
+                } else {
+                    resolve()
+                }
+            }).catch(e => {
+                reject(e)
+            });
+        })
+    },
+
+    /**
      * 发送已阅消息
      * @param state
      * @param dispatch
@@ -2975,15 +3055,15 @@ export default {
             if (data.userid == state.userId) return;
             if (data.read_at) return;
             data.read_at = $A.formatDate();
-            state.wsReadWaitData[data.id] = data.id;
+            state.readWaitData[data.id] = data.id;
         }
-        clearTimeout(state.wsReadTimeout);
-        state.wsReadTimeout = setTimeout(_ => {
+        clearTimeout(state.readTimeout);
+        state.readTimeout = setTimeout(_ => {
             if (state.userId === 0) {
                 return;
             }
-            const ids = Object.values(state.wsReadWaitData);
-            state.wsReadWaitData = {};
+            const ids = Object.values(state.readWaitData);
+            state.readWaitData = {};
             if (ids.length === 0) {
                 return
             }
@@ -2997,8 +3077,10 @@ export default {
                 dispatch("saveDialog", data)
             }).catch(_ => {
                 ids.some(id => {
-                    state.wsReadWaitData[id] = id;
+                    state.readWaitData[id] = id;
                 })
+            }).finally(_ => {
+                state.readReqNum++
             });
         }, 50);
     },

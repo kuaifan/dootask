@@ -11,7 +11,6 @@ function __callData(key, requestData, state) {
     const callKey = key + "::" + encodeURIComponent(new URLSearchParams($.sortObject(requestData, [
         'page',
         'pagesize',
-        'hideload',
         'timerange',
     ])).toString())
     const callData = state.callAt.find(item => item.key === callKey) || {}
@@ -59,13 +58,6 @@ function __callData(key, requestData, state) {
                 }
             }
         })
-    }
-
-    /**
-     * @returns {boolean}
-     */
-    this.showLoad = () => {
-        return !requestData.hideload
     }
 
     return this
