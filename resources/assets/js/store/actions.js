@@ -2992,15 +2992,15 @@ export default {
             if (data.userid == state.userId) return;
             if (data.read_at) return;
             data.read_at = $A.formatDate();
-            state.wsReadWaitData[data.id] = data.id;
+            state.readWaitData[data.id] = data.id;
         }
-        clearTimeout(state.wsReadTimeout);
-        state.wsReadTimeout = setTimeout(_ => {
+        clearTimeout(state.readTimeout);
+        state.readTimeout = setTimeout(_ => {
             if (state.userId === 0) {
                 return;
             }
-            const ids = Object.values(state.wsReadWaitData);
-            state.wsReadWaitData = {};
+            const ids = Object.values(state.readWaitData);
+            state.readWaitData = {};
             if (ids.length === 0) {
                 return
             }
@@ -3014,8 +3014,10 @@ export default {
                 dispatch("saveDialog", data)
             }).catch(_ => {
                 ids.some(id => {
-                    state.wsReadWaitData[id] = id;
+                    state.readWaitData[id] = id;
                 })
+            }).finally(_ => {
+                state.readReqNum++
             });
         }, 50);
     },
