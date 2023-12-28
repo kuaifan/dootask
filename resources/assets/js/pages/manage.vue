@@ -326,6 +326,7 @@ import ApproveExport from "./manage/components/ApproveExport";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
 import MicroApps from "../components/MicroApps.vue";
+import {MarkdownPreview} from "../store/markdown";
 
 export default {
     components: {
@@ -986,7 +987,7 @@ export default {
             let body;
             switch (type) {
                 case 'text':
-                    body = $A.getMsgTextPreview(msg.text)
+                    body = $A.getMsgTextPreview(msg.type === 'md' ? MarkdownPreview(msg.text) : msg.text)
                     break;
                 case 'file':
                     body = '[' + this.$L(msg.type == 'img' ? '图片信息' : '文件信息') + ']'

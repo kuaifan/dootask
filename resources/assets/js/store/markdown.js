@@ -8,6 +8,7 @@ import mdKatex from "@traptitech/markdown-it-katex";
  */
 const MarkdownUtils = {
     mdi: null,
+    mds: null,
     formatMsg: (text) => {
         const array = text.match(/<img\s+[^>]*?>/g);
         if (array) {
@@ -42,4 +43,11 @@ export function MarkdownConver(text) {
         MarkdownUtils.mdi.use(mdKatex, {blockClass: 'katexmath-block rounded-md p-[10px]', errorColor: ' #cc0000'})
     }
     return MarkdownUtils.formatMsg(MarkdownUtils.mdi.render(text))
+}
+
+export function MarkdownPreview(text) {
+    if (MarkdownUtils.mds === null) {
+        MarkdownUtils.mds = MarkdownIt()
+    }
+    return MarkdownUtils.mds.render(text)
 }
