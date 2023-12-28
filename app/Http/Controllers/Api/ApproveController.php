@@ -1128,5 +1128,27 @@ class ApproveController extends AbstractController
         return Base::retSuccess('success', '');
     }
 
+    /**
+     * @api {get} api/approve/process/doto          20. 查询需要我审批的流程数量
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup approve
+     * @apiName process__doto
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function process__doto()
+    {
+        $user = User::auth();
+        $ret = Ihttp::ihttp_get($this->flow_url.'/api/v1/workflow/process/findTaskTotal?userid='.$user->userid);
+        $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
+        if (!$process || $process['status'] != 200) {
+            return Base::retError($process['message'] ?? '查询失败');
+        }
+        return Base::retSuccess('success', $process['data']);
+    }
 
 }

@@ -588,14 +588,19 @@ export default {
                 state.approveUnreadNumber = 0;
             } else {
                 dispatch("call", {
-                    url: 'approve/process/findTask',
-                    data: {
-                        page:1,
-                        page_size: 500,
-                    }
+                    url: 'approve/process/doto'
                 }).then(({data}) => {
                     state.approveUnreadNumber = data.total || 0;
-                }).catch(_ => {});
+                }).catch(({msg}) => {
+                    if( msg.indexOf("404 not found") !== -1){
+                        $A.modalInfo({
+                            language: false,
+                            title: '版本过低',
+                            content: '服务器版本过低，请升级服务器。',
+                        })
+                        return;
+                    }
+                });
             }
         }, typeof timeout === "number" ? timeout : 1000)
     },
