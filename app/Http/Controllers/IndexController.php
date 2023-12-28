@@ -321,6 +321,10 @@ class IndexController extends InvokeController
         $data = parse_url($key);
         $path = Arr::get($data, 'path');
         $file = public_path($path);
+        // 防止 ../ 穿越获取到系统文件
+        if (strpos(realpath($file), public_path()) !== 0) {
+            return abort(404);
+        }
         //
         if (file_exists($file)) {
             parse_str($data['query'], $query);
