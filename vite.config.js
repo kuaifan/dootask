@@ -63,9 +63,16 @@ export default defineConfig(({command, mode}) => {
             emptyOutDir: false,
             rollupOptions: {
                 input: 'resources/assets/js/app.js',
+                output: {
+                    manualChunks(id) {
+                        if (id.includes('node_modules')) {
+                            return id.toString().split('node_modules/')[1].split('/')[0].toString();
+                        }
+                    }
+                }
             },
             brotliSize: false,
-            chunkSizeWarningLimit: 3000,
+            chunkSizeWarningLimit: 1500,
         },
         plugins: [
             createVuePlugin({
