@@ -2297,7 +2297,7 @@ class DialogController extends AbstractController
      */
     public function toplist()
     {
-        $user = User::auth();
+        User::auth();
         //
         $dialog_id = intval(Request::input('dialog_id'));
         //

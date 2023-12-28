@@ -2563,7 +2563,7 @@ export default {
                 dialog_id,
             },
         }).then(({data}) => {
-            if ($A.arrayLength(data) > 0) {
+            if ($A.isArray(data)) {
                 state.dialogTops = state.dialogTops.filter(item => item.dialog_id != dialog_id)
                 dispatch("saveDialogTop", data)
             }
@@ -3476,9 +3476,8 @@ export default {
                                                     dispatch("getDialogTodo", dialog_id)
                                                 }
                                                 // 更新置顶
-                                                if ($A.isArray(data.tops)) {
-                                                    state.dialogTops = state.dialogTops.filter(item => item.dialog_id != data.dialog_id)
-                                                    dispatch("saveDialogTop", data.tops)
+                                                if (typeof data.top !== "undefined") {
+                                                    dispatch("getDialogTop", dialog_id)
                                                 }
                                                 return;
                                             }

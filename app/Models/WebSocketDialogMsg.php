@@ -426,7 +426,6 @@ class WebSocketDialogMsg extends AbstractModel
                 }
             }
             $data['add'] = $res['data'];
-            $resData['tops'] = self::whereDialogId($dialog->id)->whereNotNull('top_at')->orderByDesc('top_at')->take(50)->get();
             $dialog->pushMsg('update', $resData);
         } else {
             $this->top = $before;

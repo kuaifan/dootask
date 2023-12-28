@@ -3444,11 +3444,20 @@ export default {
                 }).then(({ data, msg }) => {
                     resolve(msg)
                     this.tagOrTodoOrTopSuccess(data)
-                    this.$store.dialogTops = this.dialogMsgs.filter(item => item.dialog_id != this.dialogId)
-                    const index =  this.dialogMsgs.findIndex(({id}) => id == data.update?.id);
-                    if (index > -1) {
-                        const update = Object.assign({},  this.dialogMsgs[index], data.update)
-                        this.$store.dispatch("saveDialogTop", update)
+                    // 取消所有置顶
+                    const dialogTops = this.dialogTops.filter(item => item.dialog_id == this.dialogId);
+                    this.$store.dispatch("saveDialogTop", dialogTops.map(item => {
+                        item.top = 0;
+                        item.top_at = "";
+                        return item;
+                    }))
+                    // 置顶
+                    if (data.update?.top) {
+                        const index = this.dialogMsgs.findIndex(({ id }) => id == data.update.id && data.update.top);
+                        if (index > -1) {
+                            const update = Object.assign({}, this.dialogMsgs[index], data.update)
+                            this.$store.dispatch("saveDialogTop", update)
+                        }
                     }
                 }).catch(({ msg }) => {
                     reject(msg);
