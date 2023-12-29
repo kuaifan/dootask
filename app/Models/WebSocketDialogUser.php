@@ -14,7 +14,7 @@ use Carbon\Carbon;
  * @property int|null $mark_unread 是否标记为未读：0否，1是
  * @property int|null $silence 是否免打扰：0否，1是
  * @property int|null $inviter 邀请人
- * @property int|null $important 是否不可移出（项目、任务、部门人员）
+ * @property int|null $important 是否不可移出（项目、任务人员）
  * @property string|null $color 颜色
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at

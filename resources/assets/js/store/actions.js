@@ -2965,7 +2965,7 @@ export default {
                     state.dialogTodos = state.dialogTodos.filter(item => item.dialog_id != data.dialog_id)
                     dispatch("saveDialogTodo", resData.todo)
                 }
-                if (typeof resData.top !== "undefined") {
+                if ($A.isJson(resData.top)) {
                     dispatch("saveDialogMsgTop", resData.top)
                 }
                 //
@@ -3508,10 +3508,8 @@ export default {
                                         break;
                                     case 'updateTopMsg':
                                         // 更新置顶
-                                        if (typeof data.top_msg_id !== "undefined") {
-                                            dispatch("saveDialog", { id: data.dialog_id, top_msg_id: data?.top_msg_id || 0 })
-                                            dispatch("getDialogMsgTop", dialog_id)
-                                        }
+                                        dispatch("saveDialog", {id: data.dialog_id, top_msg_id: data.top_msg_id})
+                                        dispatch("getDialogMsgTop", dialog_id)
                                         break;
                                 }
                             })(msgDetail);

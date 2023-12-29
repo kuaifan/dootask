@@ -842,7 +842,7 @@ import {MarkdownPreview} from "../store/markdown";
                     case 'tag':
                         return `[${$A.L(data.msg.action === 'remove' ? '取消标注' : '标注')}] ${$A.getMsgSimpleDesc(data.msg.data)}`
                     case 'top':
-                        return `[${$A.L(data.msg.action === 'remove' ? '取消置顶' : '置顶*')}] ${$A.getMsgSimpleDesc(data.msg.data)}`
+                        return `[${$A.L(data.msg.action === 'remove' ? '取消置顶' : '置顶')}] ${$A.getMsgSimpleDesc(data.msg.data)}`
                     case 'todo':
                         return `[${$A.L(data.msg.action === 'remove' ? '取消待办' : (data.msg.action === 'done' ? '完成' : '设待办'))}] ${$A.getMsgSimpleDesc(data.msg.data)}`
                     case 'notice':

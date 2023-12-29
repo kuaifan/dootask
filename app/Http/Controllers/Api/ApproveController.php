@@ -28,6 +28,7 @@ use Hhxsv5\LaravelS\Swoole\Task\Task;
 class ApproveController extends AbstractController
 {
     private $flow_url = '';
+
     public function __construct()
     {
         $this->flow_url = env('FLOW_URL') ?: 'http://approve';
@@ -72,7 +73,7 @@ class ApproveController extends AbstractController
     {
         User::auth();
         $data['name'] = Request::input('name');
-        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/procdef/findAll', json_encode($data));
+        $ret = Ihttp::ihttp_post($this->flow_url . '/api/v1/workflow/procdef/findAll', json_encode($data));
         $procdef = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$procdef || $procdef['status'] != 200 || $ret['ret'] == 0) {
             // info($ret);
@@ -99,7 +100,7 @@ class ApproveController extends AbstractController
     {
         User::auth('admin');
         $data['id'] = Request::input('id');
-        $ret = Ihttp::ihttp_get($this->flow_url.'/api/v1/workflow/procdef/delById?'.http_build_query($data));
+        $ret = Ihttp::ihttp_get($this->flow_url . '/api/v1/workflow/procdef/delById?' . http_build_query($data));
         $procdef = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$procdef || $procdef['status'] != 200) {
             return Base::retError($procdef['message'] ?? '删除失败');
@@ -132,7 +133,7 @@ class ApproveController extends AbstractController
         //
         $var = json_decode(Request::input('var'), true);
         $data['var'] = $var;
-        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/start', json_encode(Base::arrayKeyToCamel($data)));
+        $ret = Ihttp::ihttp_post($this->flow_url . '/api/v1/workflow/process/start', json_encode(Base::arrayKeyToCamel($data)));
         $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '启动失败');
@@ -194,7 +195,7 @@ class ApproveController extends AbstractController
 
         $processInst = $this->getProcessById($data['proc_inst_id']);
 
-        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/addGlobalComment', json_encode(Base::arrayKeyToCamel($data)));
+        $ret = Ihttp::ihttp_post($this->flow_url . '/api/v1/workflow/process/addGlobalComment', json_encode(Base::arrayKeyToCamel($data)));
         $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '添加失败');
@@ -202,11 +203,11 @@ class ApproveController extends AbstractController
 
         // 推送通知
         $botUser = User::botGetOrCreate('approval-alert');
-        foreach ( $processInst['userids'] as $id) {
-            if($id != $user->userid){
+        foreach ($processInst['userids'] as $id) {
+            if ($id != $user->userid) {
                 $dialog = WebSocketDialog::checkUserDialog($botUser, $id);
                 $processInst['comment_user_id'] = $user->userid;
-                $processInst['comment_content'] = json_decode($data['content'],true)['content'];
+                $processInst['comment_content'] = json_decode($data['content'], true)['content'];
                 $this->approveMsg('approve_comment_notifier', $dialog, $botUser, $processInst, $processInst);
             }
         }
@@ -238,7 +239,7 @@ class ApproveController extends AbstractController
         $data['task_id'] = intval(Request::input('task_id'));
         $data['pass'] = Request::input('pass');
         $data['comment'] = Request::input('comment');
-        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/task/complete', json_encode(Base::arrayKeyToCamel($data)));
+        $ret = Ihttp::ihttp_post($this->flow_url . '/api/v1/workflow/task/complete', json_encode(Base::arrayKeyToCamel($data)));
         $task = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$task || $task['status'] != 200) {
             return Base::retError($task['message'] ?? '审批失败');
@@ -261,12 +262,12 @@ class ApproveController extends AbstractController
             $this->approveMsg('approve_reviewer', $dialog, $botUser, $val, $process, $pass);
         }
         // 发起人
-        if($process['is_finished'] == true) {
+        if ($process['is_finished'] == true) {
             $dialog = WebSocketDialog::checkUserDialog($botUser, $process['start_user_id']);
             if (!empty($dialog)) {
                 $this->approveMsg('approve_submitter', $dialog, $botUser, ['userid' => $data['userid']], $process, $pass);
             }
-        }else if ($process['candidate']) {
+        } else if ($process['candidate']) {
             // 下个审批人
             $userid = explode(',', $process['candidate']);
             $toUser = User::whereIn('userid', $userid)->get()->toArray();
@@ -278,7 +279,7 @@ class ApproveController extends AbstractController
                 if (empty($dialog)) {
                     continue;
                 }
-                $this->approveMsg('approve_reviewer', $dialog, $botUser, $val, $process,'start');
+                $this->approveMsg('approve_reviewer', $dialog, $botUser, $val, $process, 'start');
             }
         }
 
@@ -292,7 +293,7 @@ class ApproveController extends AbstractController
                 }
             }
         }
-        return Base::retSuccess( $pass == 'pass' ? '已通过' : '已拒绝', $task);
+        return Base::retSuccess($pass == 'pass' ? '已通过' : '已拒绝', $task);
     }
 
     /**
@@ -316,7 +317,7 @@ class ApproveController extends AbstractController
         $data['userid'] = (string)$user->userid;
         $data['task_id'] = intval(Request::input('task_id'));
         $data['proc_inst_id'] = intval(Request::input('proc_inst_id'));
-        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/task/withdraw', json_encode(Base::arrayKeyToCamel($data)));
+        $ret = Ihttp::ihttp_post($this->flow_url . '/api/v1/workflow/task/withdraw', json_encode(Base::arrayKeyToCamel($data)));
         $task = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$task || $task['status'] != 200) {
             return Base::retError($task['message'] ?? '撤回失败');
@@ -366,7 +367,7 @@ class ApproveController extends AbstractController
         $data['sort'] = Request::input('sort');
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
-        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/findTask', json_encode(Base::arrayKeyToCamel($data)));
+        $ret = Ihttp::ihttp_post($this->flow_url . '/api/v1/workflow/process/findTask', json_encode(Base::arrayKeyToCamel($data)));
         $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '查询失败');
@@ -380,7 +381,7 @@ class ApproveController extends AbstractController
             }
             $val['userimg'] = User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname);
         }
-        return Base::retSuccess('success',$res);
+        return Base::retSuccess('success', $res);
     }
 
     /**
@@ -409,7 +410,7 @@ class ApproveController extends AbstractController
         $data['state'] = intval(Request::input('state')); //状态
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
-        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/startByMyselfAll', json_encode($data));
+        $ret = Ihttp::ihttp_post($this->flow_url . '/api/v1/workflow/process/startByMyselfAll', json_encode($data));
         $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '查询失败');
@@ -447,7 +448,7 @@ class ApproveController extends AbstractController
         $data['userid'] = (string)$user->userid;
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
-        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/startByMyself', json_encode($data));
+        $ret = Ihttp::ihttp_post($this->flow_url . '/api/v1/workflow/process/startByMyself', json_encode($data));
         $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '查询失败');
@@ -491,7 +492,7 @@ class ApproveController extends AbstractController
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
 
-        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/findProcNotify', json_encode($data));
+        $ret = Ihttp::ihttp_post($this->flow_url . '/api/v1/workflow/process/findProcNotify', json_encode($data));
         $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '查询失败');
@@ -526,7 +527,7 @@ class ApproveController extends AbstractController
     {
         User::auth();
         $proc_inst_id = Request::input('proc_inst_id');
-        $ret = Ihttp::ihttp_get($this->flow_url.'/api/v1/workflow/identitylink/findParticipant?procInstId=' . $proc_inst_id);
+        $ret = Ihttp::ihttp_get($this->flow_url . '/api/v1/workflow/identitylink/findParticipant?procInstId=' . $proc_inst_id);
         $identitylink = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$identitylink || $identitylink['status'] != 200) {
             return Base::retError($identitylink['message'] ?? '查询失败');
@@ -569,7 +570,7 @@ class ApproveController extends AbstractController
         $data['sort'] = Request::input('sort');
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
-        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/procHistory/findTask', json_encode(Base::arrayKeyToCamel($data)));
+        $ret = Ihttp::ihttp_post($this->flow_url . '/api/v1/workflow/procHistory/findTask', json_encode(Base::arrayKeyToCamel($data)));
         $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '查询失败');
@@ -607,7 +608,7 @@ class ApproveController extends AbstractController
         $data['userid'] = (string)$user->userid;
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
-        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/procHistory/startByMyself', json_encode($data));
+        $ret = Ihttp::ihttp_post($this->flow_url . '/api/v1/workflow/procHistory/startByMyself', json_encode($data));
         $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '查询失败');
@@ -651,7 +652,7 @@ class ApproveController extends AbstractController
         $data['pageIndex'] = intval(Request::input('page'));
         $data['pageSize'] = intval(Request::input('page_size'));
 
-        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/procHistory/findProcNotify', json_encode($data));
+        $ret = Ihttp::ihttp_post($this->flow_url . '/api/v1/workflow/procHistory/findProcNotify', json_encode($data));
         $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '查询失败');
@@ -686,7 +687,7 @@ class ApproveController extends AbstractController
     {
         User::auth();
         $proc_inst_id = Request::input('proc_inst_id');
-        $ret = Ihttp::ihttp_get($this->flow_url.'/api/v1/workflow/identitylinkHistory/findParticipant?procInstId=' . $proc_inst_id);
+        $ret = Ihttp::ihttp_get($this->flow_url . '/api/v1/workflow/identitylinkHistory/findParticipant?procInstId=' . $proc_inst_id);
         $identitylink = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$identitylink || $identitylink['status'] != 200) {
             return Base::retError($identitylink['message'] ?? '查询失败');
@@ -750,7 +751,7 @@ class ApproveController extends AbstractController
         $data['isFinished'] = intval(Request::input('is_finished')); //是否完成
         $date = Request::input('date');
         $data['startTime'] = $date[0]; //开始时间
-        $data['endTime'] =Carbon::parse($date[1])->addDay()->toDateString(); //结束时间 + 1天
+        $data['endTime'] = Carbon::parse($date[1])->addDay()->toDateString(); //结束时间 + 1天
         //
         if (empty($name) || empty($date)) {
             return Base::retError('参数错误');
@@ -762,7 +763,7 @@ class ApproveController extends AbstractController
             return Base::retError('日期范围限制最大35天');
         }
         //
-        $ret = Ihttp::ihttp_post($this->flow_url.'/api/v1/workflow/process/findAllProcIns', json_encode($data));
+        $ret = Ihttp::ihttp_post($this->flow_url . '/api/v1/workflow/process/findAllProcIns', json_encode($data));
         $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '查询失败');
@@ -889,7 +890,8 @@ class ApproveController extends AbstractController
         }
     }
 
-    function getStateDescription($state) {
+    function getStateDescription($state)
+    {
         $state_map = array(
             0 => '全部',
             1 => '审批中',
@@ -951,13 +953,13 @@ class ApproveController extends AbstractController
                 }
                 // 审批记录
                 $name = $val['username'] . '|';
-                $call = $val['step'] == 0 ? '发起审批'. '|' : '同意' . '|';
-                $time =$val['step'] == 0 ? $process['start_time'] . '|' : '';
+                $call = $val['step'] == 0 ? '发起审批' . '|' : '同意' . '|';
+                $time = $val['step'] == 0 ? $process['start_time'] . '|' : '';
                 $comment = $val['step'] == 0 ? '' : ($val['comment'] ?? '') . '|';
                 $res['approval_record'] .= $name . $call . $time . $comment;
             }
         }
-        $res['historical_approver'] =  trim(implode(';', $historical_approver), ';');
+        $res['historical_approver'] = trim(implode(';', $historical_approver), ';');
         $res['approved_node'] = $approved_node;
         $res['approved_num'] = $approved_num;
         $res['historical_agent'] = $res['historical_approver'];
@@ -976,9 +978,9 @@ class ApproveController extends AbstractController
             'department' => $process['department'],
             'type' => $process['var']['type'],
             'start_time' => $process['var']['start_time'],
-            'start_day_of_week' => '周'.Base::getTimeWeek(Carbon::parse($process['var']['start_time'])->timestamp),
+            'start_day_of_week' => '周' . Base::getTimeWeek(Carbon::parse($process['var']['start_time'])->timestamp),
             'end_time' => $process['var']['end_time'],
-            'end_day_of_week' => '周'.Base::getTimeWeek(Carbon::parse($process['var']['end_time'])->timestamp),
+            'end_day_of_week' => '周' . Base::getTimeWeek(Carbon::parse($process['var']['end_time'])->timestamp),
             'description' => $process['var']['description'],
             'comment_nickname' => $process['comment_user_id'] ? User::userid2nickname($process['comment_user_id']) : '',
             'comment_content' => $process['comment_content'] ?? ''
@@ -989,11 +991,11 @@ class ApproveController extends AbstractController
         $msg_action = null;
         if ($action == 'withdraw' || $action == 'pass' || $action == 'refuse') {
             // 任务完成，给发起人发送消息
-            if($type == 'approve_submitter' && $action != 'withdraw'){
+            if ($type == 'approve_submitter' && $action != 'withdraw') {
                 return WebSocketDialogMsg::sendMsg($msg_action, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
             }
             // 查找最后一条消息msg_id
-            $msg_action = 'update-'.$toUser['msg_id'];
+            $msg_action = 'update-' . $toUser['msg_id'];
         }
         //
         try {
@@ -1007,9 +1009,9 @@ class ApproveController extends AbstractController
                 $proc_msg->save();
             }
             // 更新工作报告 未读数量
-            if($type == 'approve_reviewer' && $toUser['userid']){
+            if ($type == 'approve_reviewer' && $toUser['userid']) {
                 $params = [
-                    'userid' => [ $toUser['userid'], User::auth()->userid() ],
+                    'userid' => [$toUser['userid'], User::auth()->userid()],
                     'msg' => [
                         'type' => 'approve',
                         'action' => 'unread',
@@ -1028,7 +1030,7 @@ class ApproveController extends AbstractController
     public function getProcessById($id)
     {
         $data['id'] = intval($id);
-        $ret = Ihttp::ihttp_get($this->flow_url."/api/v1/workflow/process/findById?".http_build_query($data));
+        $ret = Ihttp::ihttp_get($this->flow_url . "/api/v1/workflow/process/findById?" . http_build_query($data));
         $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             throw new ApiException($process['message'] ?? '查询失败');
@@ -1047,14 +1049,14 @@ class ApproveController extends AbstractController
                     $val['node_user_list'][$k]['userimg'] = User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname);
                     $res['userids'][] = $item['target_id'];
                 }
-            }else if($val['aprover_id']){
+            } else if ($val['aprover_id']) {
                 $info = User::whereUserid($val['aprover_id'])->first();
                 $val['userimg'] = $info ? User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname) : '';
                 $res['userids'][] = $val['aprover_id'];
             }
         }
         // 全局评论
-        if(isset($res['global_comments'])){
+        if (isset($res['global_comments'])) {
             foreach ($res['global_comments'] as $k => &$globalComment) {
                 $info = User::whereUserid($globalComment['user_id'])->first();
                 if (!$info) {
@@ -1095,7 +1097,7 @@ class ApproveController extends AbstractController
     public function getUserProcessParticipantById($id)
     {
         $data['procInstId'] = intval($id);
-        $ret = Ihttp::ihttp_get($this->flow_url."/api/v1/workflow/identitylink/findParticipantAll?".http_build_query($data));
+        $ret = Ihttp::ihttp_get($this->flow_url . "/api/v1/workflow/identitylink/findParticipantAll?" . http_build_query($data));
         $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             throw new ApiException($process['message'] ?? '查询失败');
@@ -1120,7 +1122,7 @@ class ApproveController extends AbstractController
     public function user__status()
     {
         $data['userid'] = intval(Request::input('userid'));
-        $ret = Ihttp::ihttp_get($this->flow_url.'/api/v1/workflow/process/getUserApprovalStatus?'.http_build_query($data));
+        $ret = Ihttp::ihttp_get($this->flow_url . '/api/v1/workflow/process/getUserApprovalStatus?' . http_build_query($data));
         $procdef = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (isset($procdef['status']) && $procdef['status'] == 200) {
             return Base::retSuccess('success', isset($procdef['data']["proc_def_name"]) ? $procdef['data']["proc_def_name"] : '');
@@ -1129,7 +1131,7 @@ class ApproveController extends AbstractController
     }
 
     /**
-     * @api {get} api/approve/process/doto          20. 查询需要我审批的流程数量
+     * @api {get} api/approve/process/doto          21. 查询需要我审批的流程数量
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1143,7 +1145,7 @@ class ApproveController extends AbstractController
     public function process__doto()
     {
         $user = User::auth();
-        $ret = Ihttp::ihttp_get($this->flow_url.'/api/v1/workflow/process/findTaskTotal?userid='.$user->userid);
+        $ret = Ihttp::ihttp_get($this->flow_url . '/api/v1/workflow/process/findTaskTotal?userid=' . $user->userid);
         $process = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (!$process || $process['status'] != 200) {
             return Base::retError($process['message'] ?? '查询失败');

@@ -490,18 +490,20 @@
             }
 
             .dialog-top-message-btn {
-                line-height: 42px;
-                text-align: center;
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: 10px;
                 padding:0 10px;
-                .taskfont{
+                .taskfont {
                     border-radius: 3px;
                     font-size: 18px;
-                    margin-left: 10px;
                     padding: 4px;
                 }
-                .common-loading{
-                    width: 20px;
-                    height: 20px;
+                .common-pureing {
+                    width: 18px;
+                    height: 18px;
+                    margin: 4px;
                 }
             }
         }

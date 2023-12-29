@@ -10,10 +10,9 @@ use App\Module\Base;
  *
  * @property int $id
  * @property int|null $project_id 项目ID
- * @property string|null $permissions 权限
+ * @property string $permissions 权限
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Project|null $project
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectPermission newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectPermission newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectPermission query()
