@@ -113,7 +113,7 @@ export default {
     dialogIns: [],
     dialogMsgs: [],
     dialogTodos: [],
-    dialogTops: [],
+    dialogMsgTops: [],
     dialogHistory: [],
     dialogDraftTimer: {},
     dialogMsgTransfer: {time: 0},

@@ -310,8 +310,8 @@
                                 <span>{{ $L(operateItem.todo ? '取消待办' : '设待办') }}</span>
                             </li>
                             <li @click="onOperate('top')">
-                                <i class="taskfont" v-html="operateItem.top_at ? '&#xe7e2;' : '&#xe7e4;'"></i>
-                                <span>{{ $L(operateItem.top_at ? '取消置顶' : '置顶') }}</span>
+                                <i class="taskfont" v-html="dialogData.top_msg_id == operateItem.id ? '&#xe7e2;' : '&#xe7e4;'"></i>
+                                <span>{{ $L(dialogData.top_msg_id == operateItem.id ? '取消置顶' : '置顶') }}</span>
                             </li>
                             <li v-if="msgType !== ''" @click="onOperate('pos')">
                                 <i class="taskfont">&#xee15;</i>
@@ -796,7 +796,7 @@ export default {
             'dialogSearchMsgId',
             'dialogMsgs',
             'dialogTodos',
-            'dialogTops',
+            'dialogMsgTops',
             'dialogMsgTransfer',
             'cacheDialogs',
             'wsOpenNum',
@@ -1110,24 +1110,21 @@ export default {
             return msgPreparedStatus && listPreparedStatus
         },
 
-        topList() {
-            return this.dialogTops.filter(item => item.top && item.dialog_id == this.dialogId).sort((a, b) => {
-                return b.top_at - a.top_at;
-            });
-        },
-
         topMessage() {
-            return this.topList[0]
+            return this.dialogData?.top_msg_id && this.dialogMsgTops.filter(item => item.dialog_id == this.dialogId)[0]
         },
 
         topMessageClass() {
             return !this.$slots.head && this.tagShow ? 'default-header' : null
-        },
+        }
     },
 
     watch: {
         '$route': {
-            handler({params}) {
+            handler({name, params}) {
+                if (name != 'manage-messenger') {
+                    return
+                }
                 if (params.dialog_id && params.open && (params.open == 'word-chain' || params.open == 'vote')) {
                     this.$nextTick(_ => {
                         this.$store.state[params.open == 'word-chain' ? 'dialogDroupWordChain' : 'dialogGroupVote'] = {
@@ -2683,44 +2680,6 @@ export default {
             })
         },
 
-        onTopLongpress({event, el, msgData}) {
-            this.operateVisible = this.operateItem.id === msgData.id;
-            this.operateItem = $A.isJson(msgData) ? msgData : {};
-            this.operateCopys = []
-            const selectText = this.getSelectedTextInElement(el)
-            if (selectText.length > 0) {
-                this.operateCopys.push({
-                    type: 'selected',
-                    icon: '&#xe7df;',
-                    label: '复制选择',
-                    value: selectText,
-                })
-            }
-            if (msgData.msg.text.replace(/<[^>]+>/g,"").length > 0) {
-                let label = this.operateCopys.length > 0 ? '复制文本' : '复制'
-                if (selectText.length > 0) {
-                    label = '复制全部'
-                }
-                this.operateCopys.push({
-                    type: 'text',
-                    icon: '&#xe77f;',
-                    label,
-                    value: '',
-                })
-            }
-            this.$nextTick(() => {
-                const projectRect = el.getBoundingClientRect();
-                const wrapRect = this.$el.getBoundingClientRect();
-                this.operateStyles = {
-                    left: `${event.clientX - wrapRect.left}px`,
-                    top: `${projectRect.top + this.windowScrollY}px`,
-                    height: projectRect.height + 'px',
-                }
-                this.operateClient = {x: event.clientX, y: event.clientY};
-                this.operateVisible = true;
-            })
-        },
-
         onOperate(action, value = null) {
             this.operateVisible = false;
             this.$nextTick(_ => {
@@ -3139,7 +3098,7 @@ export default {
                 url: 'dialog/msg/tag',
                 data,
             }).then(({data}) => {
-                this.tagOrTodoOrTopSuccess(data)
+                this.tagOrTodoSuccess(data)
             }).catch(({msg}) => {
                 $A.messageError(msg);
             }).finally(_ => {
@@ -3238,7 +3197,7 @@ export default {
                     data,
                 }).then(({data, msg}) => {
                     resolve(msg)
-                    this.tagOrTodoOrTopSuccess(data)
+                    this.tagOrTodoSuccess(data)
                     this.onActive()
                 }).catch(({msg}) => {
                     reject(msg);
@@ -3248,7 +3207,7 @@ export default {
             })
         },
 
-        tagOrTodoOrTopSuccess(data) {
+        tagOrTodoSuccess(data) {
             this.$store.dispatch("saveDialogMsg", data.update);
             if (data.add) {
                 this.$store.dispatch("saveDialogMsg", data.add);
@@ -3443,20 +3402,16 @@ export default {
                     },
                 }).then(({ data, msg }) => {
                     resolve(msg)
-                    this.tagOrTodoOrTopSuccess(data)
-                    // 取消所有置顶
-                    const dialogTops = this.dialogTops.filter(item => item.dialog_id == this.dialogId);
-                    this.$store.dispatch("saveDialogTop", dialogTops.map(item => {
-                        item.top = 0;
-                        item.top_at = "";
-                        return item;
-                    }))
+                    // 取消置顶
+                    this.$store.dispatch("saveDialog", {
+                        'id' : this.dialogId,
+                        'top_msg_id' : data.update?.top_msg_id || 0
+                    });
                     // 置顶
-                    if (data.update?.top) {
-                        const index = this.dialogMsgs.findIndex(({ id }) => id == data.update.id && data.update.top);
+                    if (data.update?.top_msg_id) {
+                        const index = this.dialogMsgs.findIndex(({ id }) => id == data.update.top_msg_id && data.update.top_msg_id);
                         if (index > -1) {
-                            const update = Object.assign({}, this.dialogMsgs[index], data.update)
-                            this.$store.dispatch("saveDialogTop", update)
+                            this.$store.dispatch("saveDialogMsgTop", Object.assign({}, this.dialogMsgs[index]))
                         }
                     }
                 }).catch(({ msg }) => {

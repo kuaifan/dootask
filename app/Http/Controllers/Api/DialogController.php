@@ -471,8 +471,6 @@ class DialogController extends AbstractController
                 $builder->where('tag', '>', 0);
             } elseif ($msg_type === 'todo') {
                 $builder->where('todo', '>', 0);
-            } elseif ($msg_type === 'top') {
-                $builder->whereNotNull('top_at');
             } elseif ($msg_type === 'link') {
                 $builder->whereLink(1);
             } elseif (in_array($msg_type, ['text', 'image', 'file', 'record', 'meeting'])) {
@@ -542,7 +540,7 @@ class DialogController extends AbstractController
         if ($reDialog) {
             $data['dialog'] = $dialog->formatData($user->userid, true);
             $data['todo'] = $data['dialog']->todo_num > 0 ? WebSocketDialogMsgTodo::whereDialogId($dialog->id)->whereUserid($user->userid)->whereDoneAt(null)->orderByDesc('id')->take(50)->get() : [];
-            $data['tops'] = WebSocketDialogMsg::whereDialogId($dialog->id)->whereNotNull('top_at')->orderByDesc('top_at')->take(50)->get();
+            $data['top'] = WebSocketDialogMsg::whereId($dialog->top_msg_id)->first();
         }
         return Base::retSuccess('success', $data);
     }
@@ -2276,18 +2274,52 @@ class DialogController extends AbstractController
         if (empty($msg)) {
             return Base::retError("消息不存在或已被删除");
         }
-        WebSocketDialog::checkDialog($msg->dialog_id);
+        $dialog = WebSocketDialog::checkDialog($msg->dialog_id);
         //
-        return $msg->toggleTopMsg($user->userid);
+        $before = $dialog->top_msg_id;
+        $dialog->top_msg_id = $msg->id == $before ? 0 : $msg->id;
+        $dialog->save();
+        //
+        $data = [
+            'update' => [
+                'dialog_id' => $dialog->id,
+                'top_msg_id' => $dialog->top_msg_id,
+            ]
+        ];
+        $res = $msg->sendMsg(null, $dialog->id, 'top', [
+            'action' => $dialog->top_msg_id ? 'add' : 'remove',
+            'data' => [
+                'id' => $msg->id,
+                'type' => $msg->type,
+                'msg' => $msg->quoteTextMsg()
+            ]
+        ], $user->userid);
+        if (Base::isSuccess($res)) {
+            if ($before != $dialog->top_msg_id) {
+                $oldTop = WebSocketDialog::whereTopMsgId($before)->first();
+                if ($oldTop){
+                    $oldTop->top_msg_id = 0;
+                    $oldTop->save();
+                }
+            }
+            $data['add'] = $res['data'];
+            $dialog->pushMsg('updateTopMsg', $data['update']);
+        } else {
+            $dialog->top_msg_id = $before;
+            $dialog->save();
+        }
+        //
+        return Base::retSuccess($dialog->top_msg_id ? '置顶成功' : '取消成功', $data);
+        //
     }
 
     /**
-     * @api {get} api/dialog/toplist          48. 获取置顶列表
+     * @api {get} api/dialog/msg/topinfo          48. 获取置顶消息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup dialog
-     * @apiName toplist
+     * @apiName msg__topinfo
      *
      * @apiParam {Number} dialog_id            会话ID
      *
@@ -2295,17 +2327,17 @@ class DialogController extends AbstractController
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      */
-    public function toplist()
+    public function msg__topinfo()
     {
         User::auth();
         //
         $dialog_id = intval(Request::input('dialog_id'));
         //
-        WebSocketDialog::checkDialog($dialog_id);
+        $dialog = WebSocketDialog::checkDialog($dialog_id);
         //
-        $tops = WebSocketDialogMsg::whereDialogId($dialog_id)->whereNotNull('top_at')->orderByDesc('top_at')->take(50)->get();
+        $topMsg = WebSocketDialogMsg::whereId($dialog->top_msg_id)->first();
         //
-        return Base::retSuccess('success', $tops ?: []);
+        return Base::retSuccess('success', $topMsg);
     }
 
 }

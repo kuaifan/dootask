@@ -2556,21 +2556,20 @@ export default {
     },
 
     /**
-     * 获取会话置顶
+     * 获取会话消息置顶
      * @param state
      * @param dispatch
      * @param dialog_id
      */
-    getDialogTop({state, dispatch}, dialog_id) {
+    getDialogMsgTop({state, dispatch}, dialog_id) {
         dispatch("call", {
-            url: 'dialog/toplist',
+            url: 'dialog/msg/topinfo',
             data: {
                 dialog_id,
             },
         }).then(({data}) => {
-            if ($A.isArray(data)) {
-                state.dialogTops = state.dialogTops.filter(item => item.dialog_id != dialog_id)
-                dispatch("saveDialogTop", data)
+            if ($A.isJson(data)) {
+                dispatch("saveDialogMsgTop", data)
             }
         }).catch(console.warn);
     },
@@ -2790,35 +2789,36 @@ export default {
      * @param dispatch
      * @param data
      */
-    saveDialogTop({state, dispatch}, data) {
-        $A.execMainDispatch("saveDialogTop", data)
+    saveDialogMsgTop({state, dispatch}, data) {
+        $A.execMainDispatch("saveDialogMsgTop", data)
         //
         if ($A.isArray(data)) {
             data.forEach(item => {
-                dispatch("saveDialogTop", item)
+                dispatch("saveDialogMsgTop", item)
             });
         } else if ($A.isJson(data)) {
-            const index = state.dialogTops.findIndex(item => item.id == data.id);
+            state.dialogMsgTops = state.dialogMsgTops.filter(item => item.dialog_id != data.dialog_id)
+            const index = state.dialogMsgTops.findIndex(item => item.id == data.id);
             if (index > -1) {
-                state.dialogTops.splice(index, 1, Object.assign({}, state.dialogTops[index], data));
+                state.dialogMsgTops.splice(index, 1, Object.assign({}, state.dialogMsgTops[index], data));
             } else {
-                state.dialogTops.push(data);
+                state.dialogMsgTops.push(data);
             }
         }
     },
 
     /**
-     * 忘记置顶数据
+     * 忘记消息置顶数据
      * @param state
      * @param dispatch
      * @param msg_id
      */
-    forgetDialogTopForMsgId({state, dispatch}, msg_id) {
-        $A.execMainDispatch("forgetDialogTopForMsgId", msg_id)
+    forgetDialogMsgTopForMsgId({state, dispatch}, msg_id) {
+        $A.execMainDispatch("forgetDialogMsgTopForMsgId", msg_id)
         //
-        const index = state.dialogTops.findIndex(item => item.msg_id == msg_id);
+        const index = state.dialogMsgTops.findIndex(item => item.msg_id == msg_id);
         if (index > -1) {
-            state.dialogTops.splice(index, 1);
+            state.dialogMsgTops.splice(index, 1);
         }
     },
 
@@ -2896,7 +2896,7 @@ export default {
             }
         })
         dispatch("forgetDialogTodoForMsgId", msg_id)
-        dispatch("forgetDialogTopForMsgId", msg_id)
+        dispatch("forgetDialogMsgTopForMsgId", msg_id)
     },
 
     /**
@@ -2965,9 +2965,8 @@ export default {
                     state.dialogTodos = state.dialogTodos.filter(item => item.dialog_id != data.dialog_id)
                     dispatch("saveDialogTodo", resData.todo)
                 }
-                if ($A.isArray(resData.tops)) {
-                    state.dialogTops = state.dialogTops.filter(item => item.dialog_id != data.dialog_id)
-                    dispatch("saveDialogTop", resData.tops)
+                if (typeof resData.top !== "undefined") {
+                    dispatch("saveDialogMsgTop", resData.top)
                 }
                 //
                 dispatch("saveDialogMsg", resData.list)
@@ -3480,10 +3479,6 @@ export default {
                                                 if (typeof data.todo !== "undefined") {
                                                     dispatch("getDialogTodo", dialog_id)
                                                 }
-                                                // 更新置顶
-                                                if (typeof data.top !== "undefined") {
-                                                    dispatch("getDialogTop", dialog_id)
-                                                }
                                                 return;
                                             }
                                             if (count <= 5) {
@@ -3510,6 +3505,13 @@ export default {
                                     case 'groupDelete':
                                         // 群组退出、解散
                                         dispatch("forgetDialog", data.id)
+                                        break;
+                                    case 'updateTopMsg':
+                                        // 更新置顶
+                                        if (typeof data.top_msg_id !== "undefined") {
+                                            dispatch("saveDialog", { id: data.dialog_id, top_msg_id: data?.top_msg_id || 0 })
+                                            dispatch("getDialogMsgTop", dialog_id)
+                                        }
                                         break;
                                 }
                             })(msgDetail);

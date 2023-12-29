@@ -381,62 +381,6 @@ class WebSocketDialogMsg extends AbstractModel
     }
 
     /**
-     * 置顶、取消置顶
-     * @param int $sender       置顶的会员ID
-     * @return mixed
-     */
-    public function toggleTopMsg($sender)
-    {
-        $before = $this->top;
-        $beforeTopAt = $this->top_at;
-        $this->top = $before ? 0 : $sender;
-        $this->top_at = $before ? null : Carbon::now();
-        $this->save();
-        $resData = [
-            'id' => $this->id,
-            'top' => $this->top,
-            'top_at' => $this->top_at,
-            'dialog_id' => $this->dialog_id
-        ];
-        //
-        $data = [
-            'update' => $resData
-        ];
-        $res = self::sendMsg(null, $this->dialog_id, 'top', [
-            'action' => $this->top ? 'add' : 'remove',
-            'data' => [
-                'id' => $this->id,
-                'type' => $this->type,
-                'msg' => $this->quoteTextMsg(),
-            ]
-        ], $sender);
-        if (Base::isSuccess($res)) {
-            $dialog = WebSocketDialog::find($this->dialog_id);
-            if ($this->top) {
-                $oldTops = self::whereDialogId($this->dialog_id)->where('id', '!=', $this->id)->where('top', '>', 0)->get();
-                foreach($oldTops as $oldTop){
-                    $oldTop->top = 0;
-                    $oldTop->top_at = null;
-                    $oldTop->save();
-                    $dialog->pushMsg('update', [
-                        'id' => $oldTop->id,
-                        'top' => $oldTop->top,
-                        'top_at' => $oldTop->top_at,
-                    ]);
-                }
-            }
-            $data['add'] = $res['data'];
-            $dialog->pushMsg('update', $resData);
-        } else {
-            $this->top = $before;
-            $this->top_at = $beforeTopAt;
-            $this->save();
-        }
-        //
-        return Base::retSuccess($this->top ? '置顶成功' : '取消成功', $data);
-    }
-
-    /**
      * 转发消息
      * @param array|int $dialogids
      * @param array|int $userids
