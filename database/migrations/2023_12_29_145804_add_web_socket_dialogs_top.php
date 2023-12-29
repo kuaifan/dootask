@@ -21,7 +21,8 @@ class AddWebSocketDialogsTop extends Migration
         });
         //
         Schema::table('web_socket_dialogs', function (Blueprint $table) {
-            $table->bigInteger('top_msg_id')->nullable()->default(0)->after('link_id')->comment('置顶的消息ID');
+            $table->bigInteger('top_userid')->nullable()->default(0)->after('link_id')->comment('置顶的用户ID');
+            $table->bigInteger('top_msg_id')->nullable()->default(0)->after('top_userid')->comment('置顶的消息ID');
         });
     }
 
@@ -40,7 +41,12 @@ class AddWebSocketDialogsTop extends Migration
         });
         //
         Schema::table('web_socket_dialogs', function (Blueprint $table) {
-            $table->dropColumn("top_msg_id");
+            if (Schema::hasColumn('web_socket_dialogs', 'top_msg_id')) {
+                $table->dropColumn("top_msg_id");
+            }
+            if (Schema::hasColumn('web_socket_dialogs', 'top_userid')) {
+                $table->dropColumn("top_userid");
+            }
         });
     }
 }

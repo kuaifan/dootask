@@ -2277,13 +2277,16 @@ class DialogController extends AbstractController
         $dialog = WebSocketDialog::checkDialog($msg->dialog_id);
         //
         $before = $dialog->top_msg_id;
+        $beforeTopUserid = $dialog->top_userid;
         $dialog->top_msg_id = $msg->id == $before ? 0 : $msg->id;
+        $dialog->top_userid = $dialog->top_msg_id ? $user->userid : 0;
         $dialog->save();
         //
         $data = [
             'update' => [
                 'dialog_id' => $dialog->id,
                 'top_msg_id' => $dialog->top_msg_id,
+                'top_userid' => $dialog->top_userid,
             ]
         ];
         $res = $msg->sendMsg(null, $dialog->id, 'top', [
@@ -2295,17 +2298,11 @@ class DialogController extends AbstractController
             ]
         ], $user->userid);
         if (Base::isSuccess($res)) {
-            if ($before != $dialog->top_msg_id) {
-                $oldTop = WebSocketDialog::whereTopMsgId($before)->first();
-                if ($oldTop){
-                    $oldTop->top_msg_id = 0;
-                    $oldTop->save();
-                }
-            }
             $data['add'] = $res['data'];
             $dialog->pushMsg('updateTopMsg', $data['update']);
         } else {
             $dialog->top_msg_id = $before;
+            $dialog->top_userid = $beforeTopUserid;
             $dialog->save();
         }
         //

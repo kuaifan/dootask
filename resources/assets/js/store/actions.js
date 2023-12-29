@@ -3508,7 +3508,11 @@ export default {
                                         break;
                                     case 'updateTopMsg':
                                         // 更新置顶
-                                        dispatch("saveDialog", {id: data.dialog_id, top_msg_id: data.top_msg_id})
+                                        dispatch("saveDialog", {
+                                            id: data.dialog_id,
+                                            top_msg_id: data.top_msg_id,
+                                            top_userid: data.top_userid
+                                        })
                                         dispatch("getDialogMsgTop", dialog_id)
                                         break;
                                 }

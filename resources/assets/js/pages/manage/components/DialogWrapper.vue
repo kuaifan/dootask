@@ -147,7 +147,7 @@
                         <UserAvatar :userid="topMessageInfo.userid" showName :showIcon="false"/>:
                         <span>{{$A.getMsgSimpleDesc(topMessageInfo)}}</span>
                     </p>
-                    <p class="personnel">{{$L('置顶人员')}} <UserAvatar :userid="topMessageInfo.top" showName :showIcon="false"/> </p>
+                    <p class="personnel">{{$L('置顶人员')}} <UserAvatar :userid="dialogData.top_userid" showName :showIcon="false"/> </p>
                 </div>
                 <div class="dialog-top-message-btn">
                     <Loading v-if="topViewPosLoad" type="pure"/>
@@ -3399,7 +3399,8 @@ export default {
                     // 取消置顶
                     this.$store.dispatch("saveDialog", {
                         'id' : this.dialogId,
-                        'top_msg_id' : data.update?.top_msg_id || 0
+                        'top_msg_id' : data.update?.top_msg_id || 0,
+                        'top_userid' : data.update?.top_userid || 0
                     });
                     // 置顶
                     if (data.update?.top_msg_id) {
