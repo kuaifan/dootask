@@ -28,7 +28,7 @@
             <div v-if="quoteData" class="chat-quote">
                 <div v-if="quoteUpdate" class="quote-label">{{$L('编辑消息')}}</div>
                 <UserAvatar v-else :userid="quoteData.userid" :show-icon="false" :show-name="true"/>
-                <div class="quote-desc">{{$A.getMsgSimpleDesc(quoteData)}}</div>
+                <div class="quote-desc no-dark-content">{{$A.getMsgSimpleDesc(quoteData)}}</div>
                 <i class="taskfont" @click.stop="cancelQuote">&#xe6e5;</i>
             </div>
 

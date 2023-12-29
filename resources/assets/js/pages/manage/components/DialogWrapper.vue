@@ -156,9 +156,9 @@
             :data-component="msgItem"
 
             :item-class-add="itemClassAdd"
-            :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, unreadMsgId, scrollIng, readEnabled}"
+            :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, unreadMsgId, readEnabled}"
             :estimate-size="dialogData.type=='group' ? 105 : 77"
-            :keeps="25"
+            :keeps="keeps"
             :disabled="scrollDisabled"
             @activity="onActivity"
             @scroll="onScroll"
@@ -631,6 +631,7 @@ export default {
 
     data() {
         return {
+            keeps: 25,
             msgItem: DialogItem,
             msgText: '',
             msgNew: 0,
@@ -721,19 +722,17 @@ export default {
             scrollDirection: null,
             scrollAction: 0,
             scrollTmp: 0,
-            scrollIng: 0,
 
             approveDetails: {id: 0},
             approveDetailsShow: false,
             approvaUserStatus: '',
 
-            footerObserver: null,
+            observers: [],
 
             unreadMsgId: 0,                     // 最早未读消息id
             positionLoad: 0,                    // 定位跳转加载中
             positionShow: false,                // 定位跳转显示
             firstMsgLength: 0,                  // 首次加载消息数量
-            isFirstShowTag: false,              // 是否首次显示标签
             msgPreparedStatus: false,           // 消息准备完成
             listPreparedStatus: false,          // 消息准备完成
             selectedTextStatus: false,          // 是否选择文本
@@ -754,10 +753,9 @@ export default {
             this.msgSubscribe.unsubscribe();
             this.msgSubscribe = null;
         }
-        if (this.footerObserver) {
-            this.footerObserver.disconnect()
-            this.footerObserver = null
-        }
+        this.observers.forEach(({observer}) => observer.disconnect())
+        this.observers = []
+        //
         document.removeEventListener('selectionchange', this.onSelectionchange);
     },
 
@@ -779,6 +777,7 @@ export default {
             'cacheEmojis',
 
             'readReqNum',
+            'readReqLoad',
             'keyboardType',
             'keyboardHeight',
             'safeAreaBottom'
@@ -1089,27 +1088,24 @@ export default {
                 if (dialog_id) {
                     this.msgNew = 0
                     this.msgType = ''
-                    this.searchShow = false
                     this.unreadMsgId = 0
+                    this.searchShow = false
                     this.positionShow = false
-                    this.firstMsgLength = this.allMsgList.length || 1
                     this.listPreparedStatus = false
                     this.scrollToBottomAndRefresh = false
+                    this.firstMsgLength = Math.min(this.keeps, this.allMsgList.length || 1)
+                    this.allMsgs = this.allMsgList
                     //
-                    if (this.firstMsgLength > 0) {
-                        this.allMsgs = this.allMsgList
-                        requestAnimationFrame(this.onToBottom)
-                    }
                     this.getMsgs({
                         dialog_id,
                         msg_id: this.msgId,
                         msg_type: this.msgType,
                     }).then(_ => {
-                        this.openId = dialog_id;
-                        setTimeout(this.onSearchMsgId, 100)
-                    }).catch(_ => {}).finally(_ => {
+                        this.openId = dialog_id
+                        this.positionShow = this.readReqLoad === 0
                         this.listPreparedStatus = true
-                    });
+                        setTimeout(this.onSearchMsgId, 100)
+                    }).catch(_ => {});
                     //
                     this.$store.dispatch('saveInDialog', {
                         uid: this._uid,
@@ -1145,11 +1141,20 @@ export default {
                     return
                 }
                 this.$nextTick(_ => {
-                    if (!this.$refs.footer && this.footerObserver) {
-                        return
+                    if (this.$refs.footer) {
+                        if (!this.observers.find(({key}) => key === 'footer')) {
+                            const footerObserver = new ResizeObserver(this.onResizeEvent)
+                            footerObserver.observe(this.$refs.footer);
+                            this.observers.push({key: 'footer', observer: footerObserver})
+                        }
                     }
-                    this.footerObserver = new ResizeObserver(this.onResizeEvent)
-                    this.footerObserver.observe(this.$refs.footer);
+                    if (this.$refs.scroller) {
+                        if (!this.observers.find(({key}) => key === 'scroller')) {
+                            const scrollerObserver = new ResizeObserver(this.onResizeEvent)
+                            scrollerObserver.observe(this.$refs.scroller.$el);
+                            this.observers.push({key: 'scroller', observer: scrollerObserver})
+                        }
+                    }
                 })
             },
             immediate: true
@@ -1313,15 +1318,6 @@ export default {
             }
         },
 
-        footerPaddingBottom(val) {
-            if (val) {
-                const {tail} = this.scrollInfo();
-                if (tail <= 55) {
-                    requestAnimationFrame(this.onToBottom)
-                }
-            }
-        },
-
         positionMsg() {
             const {unread, position_msgs} = this.dialogData
             if (!$A.isArray(position_msgs) || unread < 2) {
@@ -1330,16 +1326,6 @@ export default {
             const msg = position_msgs.find(item => item.label === '{UNREAD}')
             if (msg) {
                 this.unreadMsgId = msg.msg_id
-            }
-        },
-
-        tagShow(val) {
-            if (!this.isFirstShowTag && val) {
-                this.isFirstShowTag = true
-                const {tail} = this.scrollInfo();
-                if (tail <= 55) {
-                    requestAnimationFrame(this.onToBottom)
-                }
             }
         },
 
@@ -2036,6 +2022,8 @@ export default {
             entries.some(({target}) => {
                 if (target === this.$refs.footer) {
                     this.onFooterResize()
+                } else if (target === this.$refs.scroller?.$el) {
+                    this.onScrollerResize()
                 }
             })
         },
@@ -2048,6 +2036,16 @@ export default {
             const marginSize = parseInt($A.css(footer, 'marginTop')) + parseInt($A.css(footer, 'marginBottom'))
             if (this.$refs.scroller) {
                 this.$refs.scroller.$el.style.marginBottom = `${footer.getBoundingClientRect().height + marginSize}px`;
+            }
+        },
+
+        onScrollerResize() {
+            if (!this.$refs.scroller) {
+                return
+            }
+            const {tail} = this.scrollInfo();
+            if (tail <= 55) {
+                requestAnimationFrame(this.onToBottom)
             }
         },
 
@@ -2467,9 +2465,6 @@ export default {
             this.scrollAction = event.target.scrollTop;
             this.scrollDirection = this.scrollTmp <= this.scrollAction ? 'down' : 'up';
             setTimeout(_ => this.scrollTmp = this.scrollAction, 0);
-            //
-            this.scrollIng++;
-            setTimeout(_=> this.scrollIng--, 100);
         },
 
         onRange(range) {
@@ -2689,12 +2684,8 @@ export default {
         },
 
         onReply(type) {
-            const {tail} = this.scrollInfo()
             this.setQuote(this.operateItem.id, type)
             this.inputFocus()
-            if (tail <= 55) {
-                requestAnimationFrame(this.onToBottom)
-            }
         },
 
         onUpdate() {

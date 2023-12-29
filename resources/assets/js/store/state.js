@@ -124,6 +124,7 @@ export default {
     messengerSearchKey: {dialog: '', contacts: ''},
 
     // 阅读消息
+    readReqLoad: 0,
     readReqNum: 0,
     readTimeout: null,
     readWaitData: {},

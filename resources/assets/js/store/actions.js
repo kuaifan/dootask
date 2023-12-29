@@ -3005,6 +3005,7 @@ export default {
                 return
             }
             //
+            state.readReqLoad++
             dispatch("call", {
                 url: 'dialog/msg/read',
                 data: {
@@ -3017,6 +3018,7 @@ export default {
                     state.readWaitData[id] = id;
                 })
             }).finally(_ => {
+                state.readReqLoad--
                 state.readReqNum++
             });
         }, 50);

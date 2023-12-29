@@ -100,10 +100,6 @@ export default {
             type: Number,
             default: 0
         },
-        scrollIng: {
-            type: Number,
-            default: 0
-        },
         readEnabled: {
             type: Boolean,
             default: false
@@ -152,9 +148,6 @@ export default {
             this.msgRead();
         },
         windowActive() {
-            this.msgRead();
-        },
-        scrollIng() {
             this.msgRead();
         },
     },

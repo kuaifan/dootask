@@ -683,11 +683,13 @@ import {MarkdownPreview} from "../store/markdown";
             } else {
                 text = text.replace(/<img\s+class="browse"[^>]*?>/g, `[${$A.L('图片')}]`)
             }
-            text = text.replace(/<[^>]+>/g,"")
-            text = text.replace(/&nbsp;/g," ")
-            text = text.replace(/&amp;/g,"&")
-            text = text.replace(/&lt;/g,"<")
-            text = text.replace(/&gt;/g,">")
+            text = text
+                .replace(/<[^>]+>/g, "")
+                .replace(/&nbsp;/g, " ")
+                .replace(/&quot;/g, "\"")
+                .replace(/&amp;/g, "&")
+                .replace(/&lt;/g, "<")
+                .replace(/&gt;/g, ">")
             if (imgClassName) {
                 text = text.replace(/\[image:(.*?)\]/g, `<img class="${imgClassName}" src="$1">`)
                 text = text.replace(/\{\{RemoteURL\}\}/g, this.apiUrl('../'))
