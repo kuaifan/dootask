@@ -675,11 +675,25 @@ import {MarkdownPreview} from "../store/markdown";
          * @returns {*}
          */
         getMsgTextPreview(text, imgClassName = null) {
-            if (!text) return '';
+            if (!text) {
+                return '';
+            }
+            //
             text = text.replace(/<img\s+class="emoticon"[^>]*?alt="(\S+)"[^>]*?>/g, "[$1]")
             text = text.replace(/<img\s+class="emoticon"[^>]*?>/g, `[${$A.L('动画表情')}]`)
             if (imgClassName) {
-                text = text.replace(/<img\s+class="browse"[^>]*?src="(\S+)"[^>]*?>/g, `[image:$1]`)
+                text = text.replace(/<img\s+class="browse"[^>]*?src="(\S+)"[^>]*?>/g, function (res, src) {
+                    const widthMatch = res.match("width=\"(\\d+)\""),
+                        heightMatch = res.match("height=\"(\\d+)\"");
+                    if (widthMatch && heightMatch) {
+                        const width = parseInt(widthMatch[1]),
+                            height = parseInt(heightMatch[1]),
+                            maxSize = 40;
+                        const scale = $A.scaleToScale(width, height, maxSize, maxSize);
+                        imgClassName = `${imgClassName}" style="width:${scale.width}px;height:${scale.height}px`
+                    }
+                    return `[image:${src}]`
+                })
             } else {
                 text = text.replace(/<img\s+class="browse"[^>]*?>/g, `[${$A.L('图片')}]`)
             }
@@ -770,11 +784,11 @@ import {MarkdownPreview} from "../store/markdown";
                     if (widthMatch && heightMatch) {
                         const width = parseInt(widthMatch[1]),
                             height = parseInt(heightMatch[1]),
-                            maxSize = res.indexOf("emoticon") > -1 ? 150 : 220;
+                            maxSize = res.indexOf("emoticon") > -1 ? 150 : 220; // 跟css中的设置一致
                         const scale = $A.scaleToScale(width, height, maxSize, maxSize);
                         const value = res
-                            .replace(widthReg, `original-width="${width}" width="${scale.width}"`)
-                            .replace(heightReg, `original-height="${height}" height="${scale.height}"`)
+                            .replace(widthReg, `original-width="${width}"`)
+                            .replace(heightReg, `original-height="${height}" style="width:${scale.width}px;height:${scale.height}px"`)
                         text = text.replace(res, value)
                     } else {
                         text = text.replace(res, `<div class="no-size-image-box">${res}</div>`);
@@ -835,7 +849,11 @@ import {MarkdownPreview} from "../store/markdown";
                     case 'file':
                         if (data.msg.type == 'img') {
                             if (imgClassName) {
-                                return `<img class="${imgClassName}" src="${data.msg.thumb}">`
+                                const width = parseInt(data.msg.width),
+                                    height = parseInt(data.msg.height),
+                                    maxSize = 40;
+                                const scale = $A.scaleToScale(width, height, maxSize, maxSize);
+                                return `<img class="${imgClassName}" style="width:${scale.width}px;height:${scale.height}px" src="${data.msg.thumb}">`
                             } else {
                                 return `[${$A.L('图片')}]`
                             }
