@@ -10,7 +10,7 @@
         @touchmove="onTouchMove"
         @touchend="onTouchEnd">
         <!--顶部导航-->
-        <div class="dialog-nav" :style="navStyle">
+        <div ref="nav" class="dialog-nav">
             <slot name="head">
                 <div class="nav-wrapper" :class="{completed: $A.dialogCompleted(dialogData)}">
                     <div class="dialog-back" @click="onBack">
@@ -138,7 +138,7 @@
 
         <!--跳转提示-->
         <div v-if="positionShow && positionMsg" class="dialog-position" :class="{'down': tagShow}">
-            <div class="position-label" @click="onPositionMark">
+            <div class="position-label" @click="onPositionMark(positionMsg.msg_id)">
                 <Icon v-if="positionLoad > 0" type="ios-loading" class="icon-loading"></Icon>
                 <i v-else class="taskfont">&#xe624;</i>
                 {{positionMsg.label}}
@@ -156,7 +156,7 @@
             :data-component="msgItem"
 
             :item-class-add="itemClassAdd"
-            :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, unreadMsgId, readEnabled}"
+            :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, unreadMsgId, scrollIng, readEnabled}"
             :estimate-size="dialogData.type=='group' ? 105 : 77"
             :keeps="keeps"
             :disabled="scrollDisabled"
@@ -185,7 +185,7 @@
         </VirtualList>
 
         <!--底部输入-->
-        <div ref="footer" class="dialog-footer" :class="footerClass" :style="footerStyle" @click="onActive">
+        <div ref="footer" class="dialog-footer" :class="footerClass" @click="onActive">
             <div class="dialog-newmsg" @click="onToBottom">{{$L(`有${msgNew}条新消息`)}}</div>
             <div class="dialog-goto" @click="onToBottom"><i class="taskfont">&#xe72b;</i></div>
             <DialogUpload
@@ -637,6 +637,7 @@ export default {
             msgNew: 0,
             msgType: '',
             loadIng: 0,
+            isFocus: false,
 
             allMsgs: [],
             tempMsgs: [],
@@ -679,8 +680,6 @@ export default {
                 disabledChoice: []
             },
 
-            navStyle: {},
-
             operateClient: {x: 0, y: 0},
             operateVisible: false,
             operatePreventScroll: 0,
@@ -722,6 +721,7 @@ export default {
             scrollDirection: null,
             scrollAction: 0,
             scrollTmp: 0,
+            scrollIng: 0,
 
             approveDetails: {id: 0},
             approveDetailsShow: false,
@@ -732,9 +732,9 @@ export default {
             unreadMsgId: 0,                     // 最早未读消息id
             positionLoad: 0,                    // 定位跳转加载中
             positionShow: false,                // 定位跳转显示
-            firstMsgLength: 0,                  // 首次加载消息数量
+            renderMsgLength: 0,                 // 渲染消息长度
             msgPreparedStatus: false,           // 消息准备完成
-            listPreparedStatus: false,          // 消息准备完成
+            listPreparedStatus: false,          // 列表准备完成
             selectedTextStatus: false,          // 是否选择文本
             scrollToBottomAndRefresh: false,    // 滚动到底部重新获取消息
         }
@@ -776,8 +776,8 @@ export default {
             'fileLinks',
             'cacheEmojis',
 
-            'readReqNum',
-            'readReqLoad',
+            'readLoadNum',
+            'readTimeout',
             'keyboardType',
             'keyboardHeight',
             'safeAreaBottom'
@@ -953,8 +953,9 @@ export default {
             return null
         },
 
-        footerPaddingBottom({keyboardType, keyboardHeight, safeAreaBottom, windowScrollY, isMessenger}) {
+        footerPaddingBottom({keyboardType, keyboardHeight, safeAreaBottom, windowScrollY, isMessenger, isFocus}) {
             if (windowScrollY === 0
+                && isFocus
                 && isMessenger
                 && keyboardType === "show"
                 && keyboardHeight > 0
@@ -962,14 +963,6 @@ export default {
                 return keyboardHeight + safeAreaBottom;
             }
             return 0;
-        },
-
-        footerStyle({footerPaddingBottom}) {
-            const style = {};
-            if (footerPaddingBottom) {
-                style.paddingBottom = `${footerPaddingBottom}px`;
-            }
-            return style;
         },
 
         msgUnreadOnly() {
@@ -1055,7 +1048,7 @@ export default {
                 return true
             }))
             if (item.label === '{UNREAD}') {
-                item.label = this.$L(`未读消息${unread}条`)
+                item.label = this.$L(`未读消息${unread - msgNew}条`)
             }
             return item
         },
@@ -1093,7 +1086,7 @@ export default {
                     this.positionShow = false
                     this.listPreparedStatus = false
                     this.scrollToBottomAndRefresh = false
-                    this.firstMsgLength = Math.min(this.keeps, Math.max(this.allMsgList.length, 1))
+                    this.renderMsgLength = Math.min(this.keeps, Math.max(this.allMsgList.length, 1))
                     this.allMsgs = this.allMsgList
                     //
                     const tmpMsgA = this.allMsgList.map(({id, msg, emoji}) => {
@@ -1106,15 +1099,22 @@ export default {
                     }).then(_ => {
                         this.openId = dialog_id
                         this.listPreparedStatus = true
+                        //
+                        const {position_msgs} = this.dialogData
+                        if ($A.isArray(position_msgs)) {
+                            this.unreadMsgId = position_msgs.find(item => item.label === '{UNREAD}')?.msg_id || 0
+                        }
+                        //
                         const tmpMsgB = this.allMsgList.map(({id, msg, emoji}) => {
                             return {id, msg, emoji}
                         })
                         if (JSON.stringify(tmpMsgA) != JSON.stringify(tmpMsgB)) {
-                            this.firstMsgLength = Math.min(this.keeps, Math.max(this.allMsgList.length, 1))
+                            this.renderMsgLength = Math.min(this.keeps, Math.max(this.allMsgList.length, 1))
                         }
+                        //
                         setTimeout(_ => {
-                            this.positionShow = this.readReqLoad === 0
                             this.onSearchMsgId()
+                            this.positionShow = this.readTimeout === null
                         }, 100)
                     }).catch(_ => {});
                     //
@@ -1287,9 +1287,7 @@ export default {
         windowScrollY(val) {
             if ($A.isIos() && !this.$slots.head) {
                 const {tail} = this.scrollInfo();
-                this.navStyle = {
-                    marginTop: val + 'px'
-                }
+                this.$refs.nav.style.marginTop = `${val}px`
                 if (tail <= 55) {
                     requestAnimationFrame(this.onToBottom)
                 }
@@ -1309,7 +1307,7 @@ export default {
             if (current < before
                 && $A.isEEUiApp
                 && $A.isAndroid()
-                && this.$refs.input.isFocus) {
+                && this.isFocus) {
                 const {tail} = this.scrollInfo();
                 if (tail <= 55 + (before - current)) {
                     requestAnimationFrame(this.onToBottom)
@@ -1329,18 +1327,12 @@ export default {
             }
         },
 
-        positionMsg() {
-            const {unread, position_msgs} = this.dialogData
-            if (!$A.isArray(position_msgs) || unread < 2) {
-                return
-            }
-            const msg = position_msgs.find(item => item.label === '{UNREAD}')
-            if (msg) {
-                this.unreadMsgId = msg.msg_id
-            }
+        footerPaddingBottom(val) {
+            this.$refs.footer.style.paddingBottom = `${val}px`;
+            requestAnimationFrame(this.onFooterResize)
         },
 
-        readReqNum() {
+        readLoadNum() {
             this.positionShow = true
         },
     },
@@ -1928,10 +1920,12 @@ export default {
         },
 
         onEventFocus() {
+            this.isFocus = true
             this.$emit("on-focus")
         },
 
         onEventBlur() {
+            this.isFocus = false
             this.$emit("on-blur")
         },
 
@@ -2179,8 +2173,8 @@ export default {
             if (!this.$refs.scroller || !this.$refs.footer) {
                 return
             }
-            if (this.firstMsgLength > 0 && this.$refs.scroller.getSizes() >= this.firstMsgLength) {
-                this.firstMsgLength = 0
+            if (this.renderMsgLength > 0 && this.$refs.scroller.getSizes() >= this.renderMsgLength) {
+                this.renderMsgLength = 0
                 this.onFooterResize()
                 this.onToBottom()
             }
@@ -2476,6 +2470,9 @@ export default {
             this.scrollAction = event.target.scrollTop;
             this.scrollDirection = this.scrollTmp <= this.scrollAction ? 'down' : 'up';
             setTimeout(_ => this.scrollTmp = this.scrollAction, 0);
+            //
+            this.scrollIng++;
+            setTimeout(_=> this.scrollIng--, 100);
         },
 
         onRange(range) {
@@ -3191,36 +3188,13 @@ export default {
             }
         },
 
-        onPositionMark() {
+        onPositionMark(id) {
             if (this.positionLoad > 0) {
                 return;
             }
             this.positionLoad++
             //
-            const positionMsgs = []
-            this.dialogData.position_msgs.forEach(item => {
-                if (!this.allMsgs.find(({id}) => id == item.msg_id)?.read_at) {
-                    positionMsgs.push(item)
-                }
-            })
-            this.$store.dispatch("saveDialog", {
-                id: this.dialogData.id,
-                position_msgs: positionMsgs
-            });
-            //
-            const {msg_id} = this.positionMsg;
-            this.$store.dispatch("dialogMsgMark", {
-                dialog_id: this.dialogId,
-                type: 'read',
-                after_msg_id: msg_id,
-            }).then(_ => {
-                this.positionLoad++
-                this.onPositionId(msg_id).finally(_ => {
-                    this.positionLoad--
-                })
-            }).catch(({msg}) => {
-                $A.modalError(msg)
-            }).finally(_ => {
+            this.onPositionId(id).finally(_ => {
                 this.positionLoad--
             })
         },

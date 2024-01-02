@@ -2889,13 +2889,12 @@ export default {
                 saveBefore()
                 const resData = result.data;
                 if ($A.isJson(resData.dialog)) {
-                    setTimeout(_ => dispatch("saveDialog", resData.dialog), 10)    // 延迟更新对话详情是因为等消息处理完
-                    //
                     const ids = resData.list.map(({id}) => id)
                     state.dialogMsgs = state.dialogMsgs.filter(item => {
                         return item.dialog_id != data.dialog_id || ids.includes(item.id) || $A.Time(item.created_at) >= resData.time
                     });
                     $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
+                    dispatch("saveDialog", resData.dialog)
                 }
                 if ($A.isArray(resData.todo)) {
                     state.dialogTodos = state.dialogTodos.filter(item => item.dialog_id != data.dialog_id)
@@ -2993,9 +2992,25 @@ export default {
             if (data.read_at) return;
             data.read_at = $A.formatDate();
             state.readWaitData[data.id] = data.id;
+            //
+            const dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
+            if (dialog && $A.isArray(dialog.position_msgs)) {
+                const index = dialog.position_msgs.findIndex(({msg_id}) => msg_id == data.id);
+                if (index > -1) {
+                    dialog.position_msgs.splice(index, 1);
+                    dispatch("saveDialog", dialog)
+                }
+                dispatch("dialogMsgMark", {
+                    type: 'read',
+                    dialog_id: data.dialog_id,
+                    after_msg_id: data.id,
+                })
+            }
         }
         clearTimeout(state.readTimeout);
         state.readTimeout = setTimeout(_ => {
+            state.readTimeout = null;
+            //
             if (state.userId === 0) {
                 return;
             }
@@ -3005,7 +3020,6 @@ export default {
                 return
             }
             //
-            state.readReqLoad++
             dispatch("call", {
                 url: 'dialog/msg/read',
                 data: {
@@ -3018,8 +3032,7 @@ export default {
                     state.readWaitData[id] = id;
                 })
             }).finally(_ => {
-                state.readReqLoad--
-                state.readReqNum++
+                state.readLoadNum++
             });
         }, 50);
     },
