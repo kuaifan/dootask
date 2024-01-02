@@ -1093,18 +1093,29 @@ export default {
                     this.positionShow = false
                     this.listPreparedStatus = false
                     this.scrollToBottomAndRefresh = false
-                    this.firstMsgLength = Math.min(this.keeps, this.allMsgList.length || 1)
+                    this.firstMsgLength = Math.min(this.keeps, Math.max(this.allMsgList.length, 1))
                     this.allMsgs = this.allMsgList
                     //
+                    const tmpMsgA = this.allMsgList.map(({id, msg, emoji}) => {
+                        return {id, msg, emoji}
+                    })
                     this.getMsgs({
                         dialog_id,
                         msg_id: this.msgId,
                         msg_type: this.msgType,
                     }).then(_ => {
                         this.openId = dialog_id
-                        this.positionShow = this.readReqLoad === 0
                         this.listPreparedStatus = true
-                        setTimeout(this.onSearchMsgId, 100)
+                        const tmpMsgB = this.allMsgList.map(({id, msg, emoji}) => {
+                            return {id, msg, emoji}
+                        })
+                        if (JSON.stringify(tmpMsgA) != JSON.stringify(tmpMsgB)) {
+                            this.firstMsgLength = Math.min(this.keeps, Math.max(this.allMsgList.length, 1))
+                        }
+                        setTimeout(_ => {
+                            this.positionShow = this.readReqLoad === 0
+                            this.onSearchMsgId()
+                        }, 100)
                     }).catch(_ => {});
                     //
                     this.$store.dispatch('saveInDialog', {
