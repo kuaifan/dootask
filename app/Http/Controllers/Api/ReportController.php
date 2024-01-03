@@ -474,10 +474,13 @@ class ReportController extends AbstractController
     {
         $user = User::auth();
         //
-        $data = Report::whereHas("Receives", function (Builder $query) use ($user) {
-            $query->where("userid", $user->userid)->where("read", 0);
-        })->orderByDesc('created_at')->paginate(Base::getPaginate(50, 20));
-        return Base::retSuccess("success", $data);
+        $total = Report::select('reports.id')
+            ->join('report_receives', 'report_receives.rid', '=', 'reports.id')
+            ->where('report_receives.userid', $user->userid)
+            ->where('report_receives.read', 0)
+            ->count();
+        //
+        return Base::retSuccess("success", compact("total"));
     }
 
     /**
