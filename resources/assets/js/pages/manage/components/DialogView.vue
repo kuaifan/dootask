@@ -11,12 +11,16 @@
             v-longpress="{callback: handleLongpress, delay: 300}">
             <!--回复-->
             <div v-if="!hideReply && msgData.reply_data" class="dialog-reply no-dark-content" @click="viewReply">
-                <UserAvatar :userid="msgData.reply_data.userid" :show-icon="false" :show-name="true"/>
+                <div class="reply-avatar">
+                    <UserAvatar :userid="msgData.reply_data.userid" :show-icon="false" :show-name="true"/>
+                </div>
                 <div class="reply-desc" v-html="$A.getMsgSimpleDesc(msgData.reply_data, 'image-preview')"></div>
             </div>
             <!--转发-->
             <div v-if="msgData.forward_show && msgData.forward_data && msgData.forward_data.userid" class="dialog-reply no-dark-content" @click="openDialog(msgData.forward_data.userid)">
-                <UserAvatar :userid="msgData.forward_data.userid" :show-icon="false" :show-name="true" :tooltip-disabled="true"/>
+                <div class="reply-avatar">
+                    <UserAvatar :userid="msgData.forward_data.userid" :show-icon="false" :show-name="true"/>
+                </div>
             </div>
             <!--详情-->
             <div ref="content" class="dialog-content" :class="contentClass">

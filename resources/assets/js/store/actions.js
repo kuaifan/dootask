@@ -1922,7 +1922,7 @@ export default {
     /**
      * 添加任务
      * @param state
-     * @param commit
+     * @param dispatch
      * @param data
      * @returns {Promise<unknown>}
      */
@@ -3245,9 +3245,8 @@ export default {
      * 初始化 websocket
      * @param state
      * @param dispatch
-     * @param commit
      */
-    websocketConnection({state, dispatch, commit}) {
+    websocketConnection({state, dispatch}) {
         clearTimeout(state.wsTimeout);
         if (state.ws) {
             state.ws.close();
@@ -3554,6 +3553,28 @@ export default {
                                     case 'compress':
                                         dispatch("packProgress", data);
                                         break;
+                                }
+                            })(msgDetail);
+                            break;
+
+                        /**
+                         * 工作报告
+                         */
+                        case "report":
+                            (function ({action}) {
+                                if (action == 'unreadUpdate') {
+                                    dispatch("getReportUnread", 1000)
+                                }
+                            })(msgDetail);
+                            break;
+
+                        /**
+                         * 流程审批
+                         */
+                        case "approve":
+                            (function ({action}) {
+                                if (action == 'unread') {
+                                    dispatch("getApproveUnread", 1000)
                                 }
                             })(msgDetail);
                             break;

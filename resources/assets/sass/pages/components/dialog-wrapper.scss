@@ -38,7 +38,7 @@
 
             .original-button {
                 display: block;
-                margin: 0 auto;
+                margin: 0 auto 16px;
                 box-shadow: none;
             }
         }
@@ -541,7 +541,6 @@
                         padding-left: 9px;
                         margin-bottom: 4px;
                         cursor: pointer;
-
                         &:after {
                             content: "";
                             position: absolute;
@@ -554,10 +553,14 @@
                             transform-origin: left center;
                             background-color: rgba($primary-color, 0.7);
                         }
-                        .common-avatar {
-                            font-weight: 500;
-                            font-size: 13px;
-                            color: $primary-color;
+                        .reply-avatar {
+                            height: 20px;
+                            line-height: 20px;
+                            .common-avatar {
+                                font-weight: 500;
+                                font-size: 13px;
+                                color: $primary-color;
+                            }
                         }
                         .reply-desc {
                             font-size: 13px;
@@ -1321,12 +1324,14 @@
 
                         .dialog-reply {
                             color: #ffffff;
-                            .common-avatar,
-                            .bot {
-                                color: #ffffff;
-                            }
                             &:after {
                                 background-color: #ffffff;
+                            }
+                            .reply-avatar {
+                                .bot,
+                                .common-avatar {
+                                    color: #ffffff;
+                                }
                             }
                         }
 
@@ -1724,8 +1729,11 @@
                                                 background-color: rgba(132, 197, 106, 0.7);
                                             }
 
-                                            .bot, .common-avatar {
-                                                color: #84C56A !important;
+                                            .reply-avatar {
+                                                .bot,
+                                                .common-avatar {
+                                                    color: #84C56A !important;
+                                                }
                                             }
                                         }
 

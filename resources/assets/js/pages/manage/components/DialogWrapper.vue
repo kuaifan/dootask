@@ -419,7 +419,7 @@
                                     <span>{{item.name}}</span>
                                 </div>
                             </div>
-                            <UserAvatar v-else :userid="item.userid" :size="32" :show-name="forwardData.length == 1" tooltip-disabled />
+                            <UserAvatar v-else :userid="item.userid" :size="32" :show-name="forwardData.length == 1"/>
                         </li>
                     </ul>
                 </Scrollbar>

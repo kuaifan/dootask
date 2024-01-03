@@ -1,7 +1,6 @@
 <template>
     <div class="mobile-back">
-        <div v-show="windowScrollY > 0" ref="bar" class="back-bar"></div>
-        <div v-if="show" class="back-semicircle" :style="style"></div>
+        <div v-if="isVisible" class="back-semicircle" :style="style"></div>
     </div>
 </template>
 
@@ -20,9 +19,13 @@ export default {
 
     data() {
         return {
-            show: false,
             x: 0,
-            y: 0
+            y: 0,
+
+            isVisible: false,
+            isTouched: false,
+            isScrolling: undefined,
+            touchesStart: {},
         };
     },
 
@@ -31,14 +34,12 @@ export default {
     },
 
     mounted() {
-        this.$refs.bar.addEventListener('touchmove', this.barListener)
         document.addEventListener('touchstart', this.touchstart)
-        document.addEventListener('touchmove', this.touchmove)
+        document.addEventListener('touchmove', this.touchmove, { passive: false })
         document.addEventListener('touchend', this.touchend)
     },
 
     beforeDestroy() {
-        this.$refs.bar.removeEventListener('touchmove', this.barListener)
         document.removeEventListener('touchstart', this.touchstart)
         document.removeEventListener('touchmove', this.touchmove)
         document.removeEventListener('touchend', this.touchend)
@@ -68,46 +69,51 @@ export default {
     },
 
     watch: {
-        show(state) {
-            if (state) {
-                document.body.classList.add("touch-back");
-            } else {
-                document.body.classList.remove("touch-back");
-            }
+        isVisible(state) {
             this.$store.state.touchBackInProgress = state;
         }
     },
 
     methods: {
         getXY(event) {
-            let touch = event.touches[0]
+            const touch = event.touches[0]
             this.x = touch.clientX
             this.y = touch.clientY
         },
 
-        barListener(event) {
-            event.preventDefault()
-        },
-
         touchstart(event) {
             this.getXY(event)
-            // 判断是否是边缘滑动
-            this.show = this.canBack() && this.x < 20;
+            this.isTouched = this.canBack() && this.x < 20;
+            this.isScrolling = undefined
+            this.touchesStart.x = event.type === 'touchstart' ? event.targetTouches[0].pageX : event.pageX;
+            this.touchesStart.y = event.type === 'touchstart' ? event.targetTouches[0].pageY : event.pageY;
         },
 
         touchmove(event) {
-            if (this.show) {
-                this.getXY(event)
+            if (!this.isTouched) {
+                return;
             }
+            const pageX = event.type === 'touchmove' ? event.targetTouches[0].pageX : event.pageX;
+            const pageY = event.type === 'touchmove' ? event.targetTouches[0].pageY : event.pageY;
+            if (typeof this.isScrolling === 'undefined') {
+                this.isScrolling = !!(this.isScrolling || Math.abs(pageY - this.touchesStart.y) > Math.abs(pageX - this.touchesStart.x));
+            }
+            if (this.isScrolling) {
+                this.isTouched = false;
+                return;
+            }
+            this.isVisible = true
+            this.getXY(event)
+            event.preventDefault()
         },
 
         touchend() {
             // 判断停止时的位置偏移
-            if (this.x > 90 && this.show) {
+            if (this.x > 90 && this.isVisible) {
                 this.onBack();
             }
             this.x = 0
-            this.show = false
+            this.isVisible = false
         },
 
         canBack() {

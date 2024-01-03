@@ -1,18 +1,6 @@
 body {
     overflow: hidden;
 
-    &.touch-back {
-        .scrollbar-container .scrollbar-content,
-        .dialog-wrapper .vue-recycle-scroller.direction-vertical:not(.page-mode),
-        .dialog-wrapper .dialog-scroller.scrollbar-virtual,
-        .common-gantt .gantt-left .gantt-item,
-        .project-panel .project-column,
-        .project-panel .project-table,
-        .ivu-modal-wrap {
-            overflow: hidden;
-        }
-    }
-
     .form-tip {
         color: $primary-desc-color;
         line-height: 22px;

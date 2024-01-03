@@ -31,7 +31,7 @@
             </div>
             <div class="initiate">
                 <span>{{ $L('由') }}</span>
-                <UserAvatar :userid="createId" :size="22" :showName="true" tooltipDisabled/>
+                <UserAvatar :userid="createId" :size="22" :showName="true"/>
                 <span> {{ $L('发起，参与接龙目前共'+num+'人') }}</span>
             </div>
             <div class="textarea">

@@ -59,6 +59,8 @@ export default {
     loadDialogLatestId: 0,
     floatSpinnerTimer: [],
     floatSpinnerLoad: 0,
+
+    // 滑动返回
     touchBackInProgress: false,
 
     // User

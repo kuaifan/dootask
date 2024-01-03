@@ -415,8 +415,8 @@ export default {
     activated() {
         this.$store.dispatch("getUserInfo").catch(_ => {})
         this.$store.dispatch("getTaskPriority").catch(_ => {})
-        this.$store.dispatch("getReportUnread", 0)
-        this.$store.dispatch("getApproveUnread", 0)
+        this.$store.dispatch("getReportUnread", 1000)
+        this.$store.dispatch("getApproveUnread", 1000)
         //
         this.$store.dispatch("needHome").then(_ => {
             this.needStartHome = true
@@ -453,8 +453,6 @@ export default {
             'projectTotal',
             'wsOpenNum',
             'columnTemplate',
-
-            'wsMsg',
 
             'clientNewVersion',
             'cacheTaskBrowse',
@@ -695,25 +693,6 @@ export default {
                 }
             },
             immediate: true
-        },
-
-        wsMsg: {
-            handler(info) {
-                const {type, action} = info;
-                switch (type) {
-                    case 'report':
-                        if (action == 'unreadUpdate') {
-                            this.$store.dispatch("getReportUnread", 1000)
-                        }
-                        break;
-                    case 'approve':
-                        if (action == 'unread') {
-                            this.$store.dispatch("getApproveUnread", 1000)
-                        }
-                        break;
-                }
-            },
-            deep: true,
         },
     },
 
