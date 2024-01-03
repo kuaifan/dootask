@@ -205,7 +205,6 @@ export default {
             }).catch(({msg}) => {
                 if( msg.indexOf("System error") !== -1){
                     $A.modalInfo({
-                        language: false,
                         title: '版本过低',
                         content: '服务器版本过低，请升级服务器。',
                     })

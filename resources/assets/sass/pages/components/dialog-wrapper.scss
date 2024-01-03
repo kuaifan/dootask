@@ -514,22 +514,6 @@
         position: relative;
         padding: 16px 32px 0;
 
-        &::-webkit-scrollbar {
-            width: 6px;
-            background-color: transparent;
-            &:hover {
-                width: 16px;
-                background-color: #f0f0f0;
-            }
-        }
-        &::-webkit-scrollbar-thumb {
-            border-radius: 6px;
-            background-color: #c8c8c9;
-            &:hover {
-                background-color: #a2a2a2;
-            }
-        }
-
         &.scrollbar-virtual {
             overflow-x: hidden;
             overflow-y: auto;
@@ -1763,6 +1747,28 @@
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
+    }
+}
+
+body:not(.window-touch) {
+    .dialog-wrapper {
+        .dialog-scroller {
+            &::-webkit-scrollbar {
+                width: 6px;
+                background-color: transparent;
+                &:hover {
+                    width: 16px;
+                    background-color: #f0f0f0;
+                }
+            }
+            &::-webkit-scrollbar-thumb {
+                border-radius: 6px;
+                background-color: #c8c8c9;
+                &:hover {
+                    background-color: #a2a2a2;
+                }
+            }
+        }
     }
 }
 

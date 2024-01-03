@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.33.91]
+
+### Bug Fixes
+
+- 修复置顶人员
+- 修复高危bug
+- 1.修复可见效数据取值，2.修复设置可见效指定人员不成功
+
+### Performance
+
+- 优化打包下载
+- 去掉无用引用
+- 优化报告未读接口
+- 优化图片显示
+- 优化代码
+- 优化代码
+- 代码整理
+- 优化待审批流程数量接口
+- 代码优化
+- 优化未读消息提示
+- 优化预览消息
+- 优化缓存数据
+- 代码优化
+- 代码整理
+- 任务可见性用户 - 分表优化
+- 代码命名优化
+- 移动任务后，对应项目路径也要更改显示
+- 升级okr容器
+- 导出任务统计 - 下载地址换成按钮
+
 ## [0.33.58]
 
 ### Bug Fixes
@@ -37,7 +67,6 @@ All notable changes to this project will be documented in this file.
 
 - 更新导致的小问题
 - 更新导致的小问题
-- 版本验证有问题，先干掉
 
 ### Performance
 
@@ -47,9 +76,14 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
+- 版本验证有问题，先干掉
 - Android 无法回删输入框内的@(mention)内容
 - Android 长按重复事件
 - 合并修复
+
+### Features
+
+- 消息置顶功能 - 50%
 
 ### Performance
 

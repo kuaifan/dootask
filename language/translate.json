@@ -19501,5 +19501,27 @@
         "de": "Sicher, dass der turm abgebrochen wurde?",
         "fr": "Êtes-vous sûr de supprimer le plafond?",
         "id": "Kau yakin mau membatalkan toplesnya?"
+    },
+    {
+        "key": "正在打包，请留意系统消息。",
+        "zh": "",
+        "zh-CHT": "正在打包，請留意系統消息。",
+        "en": "Packing, please pay attention to the system message.",
+        "ko": "압축하고 있습니다. 시스템 메시지를 확인하십시오.",
+        "ja": "パッケージ化中ですので、システムメッセージにご注意ください。",
+        "de": "Bereits am packen, geben sie eine nachricht nach system ab.",
+        "fr": "Emballage en cours. Gardez un oeil sur les messages système.",
+        "id": "Paket sedang dikemas."
+    },
+    {
+        "key": "打包下载(*)",
+        "zh": "",
+        "zh-CHT": "打包下載(*)",
+        "en": "Package download (*)",
+        "ko": "패키지 다운로드 (*)",
+        "ja": "ダウンロードパッケージ化します(*)",
+        "de": "Lade deine taschen herunter (*)",
+        "fr": "Pack à télécharger (*)",
+        "id": "Kemas tas untuk download (*)"
     }
 ]
