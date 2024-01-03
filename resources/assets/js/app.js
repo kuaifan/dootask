@@ -91,18 +91,6 @@ if (!isElectron && !isEEUiApp) {
             ViewUI.LoadingBar._load = true;
             ViewUI.LoadingBar.start();
         }, 300)
-        //
-        if (to.query?.theme) {
-            store.dispatch("setTheme", typeof to.query?.theme == 'string' ? to.query?.theme : to.query?.theme[0])
-        }
-        if (to.query?.lang) {
-            let lang = typeof to.query?.lang == 'string' ? to.query?.lang : to.query?.lang[0]
-            if(lang && lang != getLanguage()){
-                setLanguage(lang, true)
-                return;
-            }
-        }
-        //
         next();
     });
     router.afterEach(() => {
