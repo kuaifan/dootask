@@ -2117,7 +2117,7 @@ class Base
             }
             $scaleName = "";
             if ($param['fileName']) {
-                $fileName = $param['fileName'];
+                $fileName = basename($param['fileName']);
             } else {
                 if ($param['scale'] && is_array($param['scale'])) {
                     list($width, $height) = $param['scale'];
@@ -2276,7 +2276,7 @@ class Base
             if ($param['fileName'] === true) {
                 $fileName = $file->getClientOriginalName();
             } elseif ($param['fileName']) {
-                $fileName = $param['fileName'];
+                $fileName = basename($param['fileName']);
             } else {
                 if ($param['scale'] && is_array($param['scale'])) {
                     list($width, $height) = $param['scale'];

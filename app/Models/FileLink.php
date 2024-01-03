@@ -8,7 +8,7 @@ use App\Module\Base;
  * App\Models\FileLink
  *
  * @property int $id
- * @property int|null $file_id 文件ID
+ * @property int|null $file_id 项目ID
  * @property int|null $num 累计访问
  * @property string|null $code 链接码
  * @property int|null $userid 会员ID

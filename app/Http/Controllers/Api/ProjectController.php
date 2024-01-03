@@ -32,10 +32,11 @@ use App\Models\ProjectTaskUser;
 use App\Models\WebSocketDialog;
 use App\Exceptions\ApiException;
 use App\Models\ProjectPermission;
-use App\Module\BillMultipleExport;
 use App\Models\WebSocketDialogMsg;
+use App\Module\BillMultipleExport;
 use Illuminate\Support\Facades\DB;
 use App\Models\ProjectTaskFlowChange;
+use App\Models\ProjectTaskVisibilityUser;
 
 /**
  * @apiDefine project
@@ -1032,15 +1033,20 @@ class ProjectController extends AbstractController
             $query->where('project_users.owner', 1);
             $query->where('project_users.userid', $userid);
         });
-        $builder->leftJoin('project_task_users as project_p_task_users', function ($query) use($userid) {
-            $query->on('project_p_task_users.task_pid', '=', 'project_tasks.parent_id');
-            $query->where('project_p_task_users.userid', $userid);
+        $builder->leftJoin('project_task_users as project_sub_task_users', function ($query) use($userid) {
+            $query->on('project_sub_task_users.task_pid', '=', 'project_tasks.parent_id');
+            $query->where('project_sub_task_users.userid', $userid);
+        });
+        $builder->leftJoin('project_task_visibility_users', function ($query) use($userid) {
+            $query->on('project_task_visibility_users.task_id', '=', 'project_tasks.id');
+            $query->where('project_task_visibility_users.userid', $userid);
         });
         $builder->where(function ($query) use ($userid) {
             $query->where("project_tasks.visibility", 1);
             $query->orWhere("project_users.userid", $userid);
             $query->orWhere("project_task_users.userid", $userid);
-            $query->orWhere("project_p_task_users.userid", $userid);
+            $query->orWhere("project_task_visibility_users.userid", $userid);
+            $query->orWhere("project_sub_task_users.userid", $userid);
         });
         // 优化子查询汇总
         $builder->leftJoinSub(function ($query) {
@@ -1352,6 +1358,7 @@ class ProjectController extends AbstractController
                 $base64 = base64_encode(Base::array2string([
                     'file' => $zipFile,
                 ]));
+                $fileUrl = Base::fillUrl('api/project/task/down?key=' . urlencode($base64));
                 Session::put('task::export:userid', $user->userid);
                 $botUser = User::botGetOrCreate('system-msg');
                 if (empty($botUser)) {
@@ -1364,7 +1371,7 @@ class ProjectController extends AbstractController
                     $text .= "\n";
                     $text .= "文件大小：".Base::twoFloat(filesize($zipPath) / 1024, true)."KB";
                     $text .= "\n";
-                    $text .= "下载地址：".Base::fillUrl('api/project/task/down?key=' . urlencode($base64));
+                    $text .= '<button class="ivu-btn" style="margin-top: 10px;"><a href="'.$fileUrl.'" target="_blank">立即下载</a></button>';
                     WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
                 }
             }
@@ -1537,9 +1544,11 @@ class ProjectController extends AbstractController
         // 项目可见性
         $project_userid = ProjectUser::whereProjectId($task->project_id)->whereOwner(1)->value('userid');     // 项目负责人
         if ($task->visibility != 1 && $user->userid != $project_userid) {
-            $visibleUserids = ProjectTaskUser::whereTaskId($task_id)->pluck('userid')->toArray();       // 是否任务负责人、协助人、可见人
-            $subVisibleUserids = ProjectTaskUser::whereTaskPid($task_id)->pluck('userid')->toArray();   // 是否子任务负责人、协助人
-            if (!in_array($user->userid, $visibleUserids) && !in_array($user->userid, $subVisibleUserids)) {
+            $taskUserids = ProjectTaskUser::whereTaskId($task_id)->pluck('userid')->toArray();                //任务负责人、协助人
+            $subTaskUserids = ProjectTaskUser::whereTaskPid($task_id)->pluck('userid')->toArray();            //子任务负责人、协助人
+            $visibleUserids = ProjectTaskVisibilityUser::whereTaskId($task_id)->pluck('userid')->toArray();   //可见人
+            $visibleUserids = array_merge($taskUserids, $subTaskUserids, $visibleUserids);
+            if (!in_array($user->userid, $visibleUserids)) {
                 return Base::retError('无任务权限');
             }
         }
@@ -1547,7 +1556,7 @@ class ProjectController extends AbstractController
         $data = $task->toArray();
         $data['project_name'] = $task->project?->name;
         $data['column_name'] = $task->projectColumn?->name;
-        $data['visibility_appointor'] = $task->visibility == 1 ? [0] : ProjectTaskUser::whereTaskId($task_id)->whereOwner(2)->pluck('userid');
+        $data['visibility_appointor'] = $task->visibility == 1 ? [0] : ProjectTaskVisibilityUser::whereTaskId($task_id)->pluck('userid');
         return Base::retSuccess('success', $data);
     }
 
@@ -1909,15 +1918,16 @@ class ProjectController extends AbstractController
         }
         //
         $taskUser = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($task_id)->get();
-        $owners = $taskUser->where('owner', 1)->pluck('userid')->toArray();         // 负责人
-        $assists = $taskUser->where('owner', 0)->pluck('userid')->toArray();         // 协助人
+        $owners = $taskUser->where('owner', 1)->pluck('userid')->toArray();
+        $assists = $taskUser->where('owner', 0)->pluck('userid')->toArray();
+        $visible = ProjectTaskVisibilityUser::whereTaskId($task->id)->pluck('userid')->toArray();
         // 更新任务
         $updateMarking = [];
         $task->updateTask($param, $updateMarking);
         //
         $data = ProjectTask::oneTask($task->id)->toArray();
         $data['update_marking'] = $updateMarking ?: json_decode('{}');
-        $data['visibility_appointor'] = $data['visibility'] == 1 ? [] : ProjectTaskUser::whereTaskId($task->id)->whereOwner(2)->pluck('userid');
+        $data['visibility_appointor'] = $data['visibility'] == 1 ? [] : ProjectTaskVisibilityUser::whereTaskId($task->id)->pluck('userid');
         $task->pushMsg('update', $data);
         // 可见性推送
         if ($task->parent_id == 0) {
@@ -1927,10 +1937,9 @@ class ProjectController extends AbstractController
                     $task->pushMsgVisibleAdd($data);
                 }
                 if ($param['visibility_appointor']) {
-                    $oldVisibleUserIds = $taskUser->where('owner', 2)->pluck('userid')->toArray() ?? [];
                     $newVisibleUserIds = $param['visibility_appointor'] ?? [];
-                    $deleteUserIds = array_diff($oldVisibleUserIds, $newVisibleUserIds, $subUserids);
-                    $addUserIds = array_diff($newVisibleUserIds, $oldVisibleUserIds);
+                    $deleteUserIds = array_diff($visible, $newVisibleUserIds, $subUserids);
+                    $addUserIds = array_diff($newVisibleUserIds, $visible);
                     $task->pushMsgVisibleUpdate($data, $deleteUserIds, $addUserIds);
                 }
                 if ($data['visibility'] != 1 && empty($param['visibility_appointor'])) {

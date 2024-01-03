@@ -594,13 +594,13 @@ export default {
                     }
                 })
             } else {
-                this.goForward({name: 'manage-messenger', params: {dialog_id: dialog_id}});
-                setTimeout(() => {
-                    this.$store.state[type] = {
-                        type: 'create',
+                this.goForward({
+                    name: 'manage-messenger',
+                    params: {
+                        open: this.sendType,
                         dialog_id: dialog_id
                     }
-                }, 100)
+                })
             }
         }
     }

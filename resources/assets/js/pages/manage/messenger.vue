@@ -274,6 +274,7 @@ export default {
         if (id > 0) {
             this.openDialog(id)
         }
+        //
         this.clickAgainSubscribe = Store.subscribe('clickAgainDialog', this.shakeUnread);
     },
 

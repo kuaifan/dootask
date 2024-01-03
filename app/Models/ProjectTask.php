@@ -2,15 +2,16 @@
 
 namespace App\Models;
 
-use App\Exceptions\ApiException;
+use DB;
+use Arr;
+use Request;
+use Carbon\Carbon;
 use App\Module\Base;
 use App\Tasks\PushTask;
-use Arr;
-use Carbon\Carbon;
-use DB;
+use App\Exceptions\ApiException;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
+use App\Models\ProjectTaskVisibilityUser;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Request;
 
 /**
  * App\Models\ProjectTask
@@ -33,7 +34,6 @@ use Request;
  * @property string|null $complete_at 完成时间
  * @property int|null $userid 创建人
  * @property int|null $visibility 任务可见性：1-项目人员 2-任务人员 3-指定成员
- * @property int|null $is_default 是否默认任务
  * @property int|null $p_level 优先级
  * @property string|null $p_name 优先级名称
  * @property string|null $p_color 优先级颜色
@@ -82,7 +82,6 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereFlowItemId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereFlowItemName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereIsDefault($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereLoop($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereLoopAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTask whereName($value)
@@ -496,13 +495,12 @@ class ProjectTask extends AbstractModel
                 ])->save();
             }
 
+            // 可见性
             foreach ($visibility_userids as $uid) {
-                ProjectTaskUser::createInstance([
+                ProjectTaskVisibilityUser::createInstance([
                     'project_id' => $task->project_id,
                     'task_id' => $task->id,
-                    'task_pid' => $task->parent_id ?: $task->id,
-                    'userid' => $uid,
-                    'owner' => 2,
+                    'userid' => $uid
                 ])->save();
             }
 
@@ -729,16 +727,14 @@ class ProjectTask extends AbstractModel
                     ProjectTask::whereId($data['task_id'])->update(['visibility' => $data["visibility"]]);
                     ProjectTask::whereParentId($data['task_id'])->update(['visibility' => $data["visibility"]]);
                 }
-                ProjectTaskUser::whereTaskId($data['task_id'])->whereOwner(2)->delete();
+                ProjectTaskVisibilityUser::whereTaskId($data['task_id'])->delete();
                 if (Arr::exists($data, 'visibility_appointor')) {
                     foreach ($data['visibility_appointor'] as $uid) {
                         if ($uid) {
-                            ProjectTaskUser::createInstance([
+                            ProjectTaskVisibilityUser::createInstance([
                                 'project_id' => $this->project_id,
                                 'task_id' => $this->id,
-                                'task_pid' => $this->parent_id ?: $this->id,
-                                'userid' => $uid,
-                                'owner' => 2,
+                                'userid' => $uid
                             ])->save();
                         }
                     }
@@ -1521,7 +1517,10 @@ class ProjectTask extends AbstractModel
         if ($pushUserIds) {
             $userids = $pushUserIds;
         } elseif ($this->visibility != 1) {
-            $userids = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($this->id)->orWhere('task_pid', '=', $this->id)->pluck('userid')->toArray();
+            $userids = ProjectTaskUser::whereTaskId($this->id)->orWhere('task_pid', '=', $this->id)->pluck('userid')->toArray();
+            if ($this->visibility == 3) {
+                $userids = array_merge($userids, ProjectTaskVisibilityUser::whereTaskId($this->id)->pluck('userid')->toArray());
+            }
         } else {
             $userids = ProjectUser::whereProjectId($this->project_id)->pluck('userid')->toArray();  // 项目成员
         }

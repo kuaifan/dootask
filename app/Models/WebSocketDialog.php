@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\DB;
  * @property string|null $last_at 最后消息时间
  * @property int|null $owner_id 群主用户ID
  * @property int|null $link_id 关联id
+ * @property int|null $top_msg_id 置顶的消息ID
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -41,6 +42,7 @@ use Illuminate\Support\Facades\DB;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereLinkId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereOwnerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereTopMsgId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog withTrashed()

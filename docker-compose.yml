@@ -150,7 +150,7 @@ services:
 
   approve:
     container_name: "dootask-approve-${APP_ID}"
-    image: "kuaifan/dooapprove:0.0.9"
+    image: "kuaifan/dooapprove:0.0.10"
     environment:
       TZ: "${TIMEZONE:-PRC}"
       MYSQL_HOST: "${DB_HOST}"
@@ -177,7 +177,7 @@ services:
 
   okr:
     container_name: "dootask-okr-${APP_ID}"
-    image: "kuaifan/doookr:0.0.25"
+    image: "kuaifan/doookr:0.0.26"
     environment:
       TZ: "${TIMEZONE:-PRC}"
       DOO_TASK_URL: "http://${APP_IPPR}.3"

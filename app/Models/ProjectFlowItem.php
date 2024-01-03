@@ -13,7 +13,7 @@ use App\Module\Base;
  * @property string|null $name 名称
  * @property string|null $status 状态
  * @property array $turns 可流转
- * @property array $userids 状态负责人ID
+ * @property array $userids 自动负责人ID
  * @property string|null $usertype 流转模式
  * @property int|null $userlimit 限制负责人
  * @property int|null $columnid 对应的项目列表

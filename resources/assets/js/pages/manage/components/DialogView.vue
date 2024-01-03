@@ -325,7 +325,7 @@ export default {
     },
 
     beforeDestroy() {
-        this.$store.dispatch("audioStop", this.msgData.msg.path)
+        this.$store.dispatch("audioStop", this.msgData.msg?.path)
     },
 
     computed: {

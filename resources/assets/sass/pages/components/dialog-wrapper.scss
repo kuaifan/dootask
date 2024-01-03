@@ -41,6 +41,19 @@
                 margin: 0 auto 16px;
                 box-shadow: none;
             }
+
+            .dialog-scroller-item{
+                border-bottom: 1px solid #eeeeee;
+                margin-bottom: 16px;
+                .reply-item {
+                    border-bottom: none;
+                    margin-bottom: 0;
+                }
+                .original-button-warp{
+                    display: flex;
+                    margin-bottom: 16px;
+                }
+            }
         }
 
         .todo-button {
@@ -421,10 +434,101 @@
         }
     }
 
+    .dialog-top-message {
+        background: white;
+
+        .dialog-top-message-warp{
+            padding:10px 5px;
+            position: relative;
+            display: flex;
+            margin: 10px 16px 0;
+            cursor: pointer;
+            border-radius: 10px;
+            border: 1px solid #ebebeb;
+            box-shadow: 0px 0px 5px 0 rgb(205 205 205 / 50%);
+
+            .dialog-top-message-content {
+                flex: 1;
+                overflow: hidden;
+                p {
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    display: flex;
+                    gap: 4px;
+                    &.content {
+                        margin-bottom: 2px;
+                        >span{
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            line-height: 22px;
+                        }
+                    }
+                    &.personnel {
+                        font-size: 12px;
+                        color: #afafaf;
+                        .avatar-name {
+                            color: #84C56A;
+                            margin-left: 10px;
+                        }
+                    }
+                }
+            }
+
+            .dialog-top-message-font{
+                line-height: 42px;
+                text-align: center;
+                padding:0 10px;
+                .taskfont{
+                    font-size: 16px;
+                    padding: 5px;
+                    border-radius: 50%;
+                    background-color: #ff821a;
+                    color: #fff;
+                }
+            }
+
+            .dialog-top-message-btn {
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: 10px;
+                padding:0 10px;
+                .taskfont {
+                    border-radius: 3px;
+                    font-size: 18px;
+                    padding: 4px;
+                }
+                .common-pureing {
+                    width: 18px;
+                    height: 18px;
+                    margin: 4px;
+                }
+            }
+        }
+    }
+
     .dialog-scroller {
         flex: 1;
         position: relative;
         padding: 16px 32px 0;
+
+        &::-webkit-scrollbar {
+            width: 6px;
+            background-color: transparent;
+            &:hover {
+                width: 16px;
+                background-color: #f0f0f0;
+            }
+        }
+        &::-webkit-scrollbar-thumb {
+            border-radius: 6px;
+            background-color: #c8c8c9;
+            &:hover {
+                background-color: #a2a2a2;
+            }
+        }
 
         &.scrollbar-virtual {
             overflow-x: hidden;
@@ -447,6 +551,7 @@
 
             .dialog-tag,
             .dialog-todo,
+            .dialog-top,
             .dialog-notice {
                 font-size: 12px;
                 max-width: 80%;
@@ -458,6 +563,7 @@
                 word-wrap: break-word;
             }
 
+            .dialog-top,
             .dialog-tag {
                 cursor: pointer;
 
@@ -1208,6 +1314,7 @@
 
                     .tag,
                     .todo,
+                    .top,
                     .reply,
                     .modify {
                         display: flex;
@@ -1964,6 +2071,12 @@
             }
         }
     }
+    .operate-action-top{
+        width: auto;
+        > li {
+            margin-bottom: 0;
+        }
+    }
     .operate-emoji {
         width: 316px;
         padding: 8px 4px 2px;
@@ -2186,6 +2299,11 @@ body.window-portrait {
                         }
                     }
                 }
+            }
+        }
+        .dialog-top-message {
+            &.default-header {
+                margin-top: 34px;
             }
         }
         .dialog-scroller {

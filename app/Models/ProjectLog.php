@@ -10,7 +10,7 @@ use App\Module\Base;
  * @property int $id
  * @property int|null $project_id 项目ID
  * @property int|null $column_id 列表ID
- * @property int|null $task_id 任务ID
+ * @property int|null $task_id 项目ID
  * @property int|null $userid 会员ID
  * @property string|null $detail 详细信息
  * @property array $record 记录数据

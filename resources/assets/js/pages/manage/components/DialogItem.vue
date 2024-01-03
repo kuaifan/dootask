@@ -8,6 +8,11 @@
             {{$L(source.msg.action === 'remove' ? '取消标注' : '标注了')}}
             "{{$A.getMsgSimpleDesc(source.msg.data)}}"
         </div>
+        <div v-else-if="source.type === 'top'" class="dialog-top" @click="onViewTag">
+            <div class="tag-user"><UserAvatar :userid="source.userid" :show-name="true" :show-icon="false"/></div>
+            {{$L(source.msg.action === 'remove' ? '取消置顶' : '置顶了')}}
+            "{{$A.getMsgSimpleDesc(source.msg.data)}}"
+        </div>
         <div v-else-if="source.type === 'todo'" class="dialog-todo" @click="onViewTodo">
             <div class="todo-user"><UserAvatar :userid="source.userid" :show-name="true" :show-icon="false"/></div>
             {{$L(source.msg.action === 'remove' ? '取消待办' : (source.msg.action === 'done' ? '完成' : '设待办'))}}

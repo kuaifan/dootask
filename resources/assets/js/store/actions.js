@@ -588,14 +588,19 @@ export default {
                 state.approveUnreadNumber = 0;
             } else {
                 dispatch("call", {
-                    url: 'approve/process/findTask',
-                    data: {
-                        page:1,
-                        page_size: 500,
-                    }
+                    url: 'approve/process/doto'
                 }).then(({data}) => {
                     state.approveUnreadNumber = data.total || 0;
-                }).catch(_ => {});
+                }).catch(({msg}) => {
+                    if( msg.indexOf("404 not found") !== -1){
+                        $A.modalInfo({
+                            language: false,
+                            title: '版本过低',
+                            content: '服务器版本过低，请升级服务器。',
+                        })
+                        return;
+                    }
+                });
             }
         }, typeof timeout === "number" ? timeout : 1000)
     },
@@ -2551,6 +2556,25 @@ export default {
     },
 
     /**
+     * 获取会话消息置顶
+     * @param state
+     * @param dispatch
+     * @param dialog_id
+     */
+    getDialogMsgTop({state, dispatch}, dialog_id) {
+        dispatch("call", {
+            url: 'dialog/msg/topinfo',
+            data: {
+                dialog_id,
+            },
+        }).then(({data}) => {
+            if ($A.isJson(data)) {
+                dispatch("saveDialogMsgTop", data)
+            }
+        }).catch(console.warn);
+    },
+
+    /**
      * 打开会话
      * @param state
      * @param dispatch
@@ -2760,6 +2784,45 @@ export default {
     },
 
     /**
+     * 保存置顶数据
+     * @param state
+     * @param dispatch
+     * @param data
+     */
+    saveDialogMsgTop({state, dispatch}, data) {
+        $A.execMainDispatch("saveDialogMsgTop", data)
+        //
+        if ($A.isArray(data)) {
+            data.forEach(item => {
+                dispatch("saveDialogMsgTop", item)
+            });
+        } else if ($A.isJson(data)) {
+            state.dialogMsgTops = state.dialogMsgTops.filter(item => item.dialog_id != data.dialog_id)
+            const index = state.dialogMsgTops.findIndex(item => item.id == data.id);
+            if (index > -1) {
+                state.dialogMsgTops.splice(index, 1, Object.assign({}, state.dialogMsgTops[index], data));
+            } else {
+                state.dialogMsgTops.push(data);
+            }
+        }
+    },
+
+    /**
+     * 忘记消息置顶数据
+     * @param state
+     * @param dispatch
+     * @param msg_id
+     */
+    forgetDialogMsgTopForMsgId({state, dispatch}, msg_id) {
+        $A.execMainDispatch("forgetDialogMsgTopForMsgId", msg_id)
+        //
+        const index = state.dialogMsgTops.findIndex(item => item.msg_id == msg_id);
+        if (index > -1) {
+            state.dialogMsgTops.splice(index, 1);
+        }
+    },
+
+    /**
      * 保存聊天草稿
      * @param state
      * @param dispatch
@@ -2833,6 +2896,7 @@ export default {
             }
         })
         dispatch("forgetDialogTodoForMsgId", msg_id)
+        dispatch("forgetDialogMsgTopForMsgId", msg_id)
     },
 
     /**
@@ -2899,6 +2963,9 @@ export default {
                 if ($A.isArray(resData.todo)) {
                     state.dialogTodos = state.dialogTodos.filter(item => item.dialog_id != data.dialog_id)
                     dispatch("saveDialogTodo", resData.todo)
+                }
+                if ($A.isJson(resData.top)) {
+                    dispatch("saveDialogMsgTop", resData.top)
                 }
                 //
                 dispatch("saveDialogMsg", resData.list)
@@ -3452,6 +3519,15 @@ export default {
                                     case 'groupDelete':
                                         // 群组退出、解散
                                         dispatch("forgetDialog", data.id)
+                                        break;
+                                    case 'updateTopMsg':
+                                        // 更新置顶
+                                        dispatch("saveDialog", {
+                                            id: data.dialog_id,
+                                            top_msg_id: data.top_msg_id,
+                                            top_userid: data.top_userid
+                                        })
+                                        dispatch("getDialogMsgTop", dialog_id)
                                         break;
                                 }
                             })(msgDetail);

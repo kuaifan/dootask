@@ -19457,5 +19457,60 @@
         "de": "License Key",
         "fr": "License Key",
         "id": "License Key"
+    },
+    {
+        "key": "选择会员",
+        "zh": "",
+        "zh-CHT": "選擇會員",
+        "en": "Select member",
+        "ko": "회원 선택",
+        "ja": "会員を選ぶ",
+        "de": "Entscheide dich für mitglied.",
+        "fr": "Choisissez votre adhésion",
+        "id": "Memilih anggota"
+    },
+    {
+        "key": "请选择移动后状态",
+        "zh": "",
+        "zh-CHT": "請選擇移動後狀態",
+        "en": "Please select post-move status",
+        "ko": "이동 후 상태를 선택해주세요",
+        "ja": "移動後の状態を選択します。",
+        "de": "Bitte wählen sie die einstellungen nach dem start",
+        "fr": "Veuillez sélectionner le statut post-déménagement",
+        "id": "Silahkan pilih status belakang"
+    },
+    {
+        "key": "置顶人员",
+        "zh": "",
+        "zh-CHT": "置頂人員",
+        "en": "Roofer",
+        "ko": "구제인원",
+        "ja": "トップスタッフです",
+        "de": "Ersatzleute?",
+        "fr": "Personnes au toit",
+        "id": "Personil yang ditempatkan"
+    },
+    {
+        "key": "置顶了",
+        "zh": "",
+        "zh-CHT": "置頂了",
+        "en": "Pinned to top",
+        "ko": "머리를 숙이다",
+        "ja": "屋根にしました",
+        "de": "Es ist versteckt.",
+        "fr": "Sur le toit",
+        "id": "Sebuah pengganti."
+    },
+    {
+        "key": "你确定取消置顶吗？",
+        "zh": "",
+        "zh-CHT": "你確定取消置頂嗎？",
+        "en": "Are you sure you can cancel the top?",
+        "ko": "상단 취소 확실합니까?",
+        "ja": "屋根の取り消しは確かですか?",
+        "de": "Sicher, dass der turm abgebrochen wurde?",
+        "fr": "Êtes-vous sûr de supprimer le plafond?",
+        "id": "Kau yakin mau membatalkan toplesnya?"
     }
 ]

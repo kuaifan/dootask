@@ -31,9 +31,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $modify 是否编辑
  * @property int|null $reply_num 有多少条回复
  * @property int|null $reply_id 回复ID
+ * @property int|null $forward_id 转发ID
+ * @property int|null $forward_num 被转发多少次
+ * @property int|null $forward_show 是否显示转发的来源
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \App\Models\WebSocketDialogMsg|null $forward_data
  * @property-read int|mixed $percentage
  * @property-read \App\Models\WebSocketDialogMsg|null $reply_data
  * @property-read \App\Models\WebSocketDialog|null $webSocketDialog
@@ -46,6 +50,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDialogId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDialogType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereEmoji($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereForwardId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereForwardNum($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereForwardShow($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereKey($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereLink($value)
@@ -535,6 +542,9 @@ class WebSocketDialogMsg extends AbstractModel
                 return "[文件] {$data['msg']['name']}";
             case 'tag':
                 $action = $data['msg']['action'] === 'remove' ? '取消标注' : '标注';
+                return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
+            case 'top':
+                $action = $data['msg']['action'] === 'remove' ? '取消置顶' : '置顶';
                 return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
             case 'todo':
                 $action = $data['msg']['action'] === 'remove' ? '取消待办' : ($data['msg']['action'] === 'done' ? '完成' : '设待办');

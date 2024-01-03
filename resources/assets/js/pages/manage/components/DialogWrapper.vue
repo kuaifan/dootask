@@ -136,6 +136,27 @@
             </slot>
         </div>
 
+        <!--置顶消息-->
+        <div v-if="topMessageInfo" class="dialog-top-message" :class="topMessageClass" @click="onPosTop">
+            <div class="dialog-top-message-warp">
+                <div class="dialog-top-message-font">
+                    <i class="taskfont">&#xe7e4;</i>
+                </div>
+                <div class="dialog-top-message-content">
+                    <p class="content">
+                        <UserAvatar :userid="topMessageInfo.userid" showName :showIcon="false"/>:
+                        <span>{{$A.getMsgSimpleDesc(topMessageInfo)}}</span>
+                    </p>
+                    <p class="personnel">{{$L('置顶人员')}} <UserAvatar :userid="dialogData.top_userid" showName :showIcon="false"/> </p>
+                </div>
+                <div class="dialog-top-message-btn">
+                    <Loading v-if="topViewPosLoad" type="pure"/>
+                    <i v-else class="taskfont">&#xee15;</i>
+                    <i class="taskfont" @click.stop="onCancelTop(topMessageInfo)">&#xe6e5;</i>
+                </div>
+            </div>
+        </div>
+
         <!--跳转提示-->
         <div v-if="positionShow && positionMsg" class="dialog-position" :class="{'down': tagShow}">
             <div class="position-label" @click="onPositionMark(positionMsg.msg_id)">
@@ -287,6 +308,10 @@
                             <li @click="onOperate('todo')">
                                 <i class="taskfont">&#xe7b7;</i>
                                 <span>{{ $L(operateItem.todo ? '取消待办' : '设待办') }}</span>
+                            </li>
+                            <li @click="onOperate('top')">
+                                <i class="taskfont" v-html="dialogData.top_msg_id == operateItem.id ? '&#xe7e2;' : '&#xe7e4;'"></i>
+                                <span>{{ $L(dialogData.top_msg_id == operateItem.id ? '取消置顶' : '置顶') }}</span>
                             </li>
                             <li v-if="msgType !== ''" @click="onOperate('pos')">
                                 <i class="taskfont">&#xee15;</i>
@@ -737,6 +762,8 @@ export default {
             listPreparedStatus: false,          // 列表准备完成
             selectedTextStatus: false,          // 是否选择文本
             scrollToBottomAndRefresh: false,    // 滚动到底部重新获取消息
+
+            topViewPosLoad: false,              // 置顶消息定位加载中
         }
     },
 
@@ -767,6 +794,7 @@ export default {
             'dialogSearchMsgId',
             'dialogMsgs',
             'dialogTodos',
+            'dialogMsgTops',
             'dialogMsgTransfer',
             'cacheDialogs',
             'wsOpenNum',
@@ -933,7 +961,7 @@ export default {
         },
 
         scrollerClass() {
-            return !this.$slots.head && this.tagShow ? 'default-header' : null
+            return !this.$slots.head && !this.topMessageInfo && this.tagShow ? 'default-header' : null
         },
 
         pasteWrapperClass() {
@@ -1073,9 +1101,34 @@ export default {
         readEnabled({msgPreparedStatus, listPreparedStatus}) {
             return msgPreparedStatus && listPreparedStatus
         },
+
+        topMessageInfo() {
+            return this.dialogData.top_msg_id && this.dialogMsgTops.find(({id}) => id == this.dialogData.top_msg_id)
+        },
+
+        topMessageClass() {
+            return !this.$slots.head && this.tagShow ? 'default-header' : null
+        }
     },
 
     watch: {
+        '$route': {
+            handler({name, params}) {
+                if (name != 'manage-messenger') {
+                    return
+                }
+                if (params.dialog_id && params.open && ['word-chain', 'vote'].includes(params.open)) {
+                    this.$nextTick(_ => {
+                        this.$store.state[params.open == 'word-chain' ? 'dialogDroupWordChain' : 'dialogGroupVote'] = {
+                            type: 'create',
+                            dialog_id: params.dialog_id
+                        }
+                        params.open = "";
+                    })
+                }
+            },
+            immediate: true
+        },
         dialogId: {
             handler(dialog_id, old_id) {
                 if (dialog_id) {
@@ -2680,6 +2733,10 @@ export default {
                             this.onEmoji(value)
                         }
                         break;
+
+                    case "top":
+                        this.onTopOperate()
+                        break;
                 }
             })
         },
@@ -3282,6 +3339,71 @@ export default {
             if (src) {
                 this.$store.dispatch("previewImage", src)
             }
+        },
+
+        onTopOperate() {
+            if (this.operateVisible) {
+                return
+            }
+            if (this.operateItem.top_at) {
+                this.onCancelTop(this.operateItem)
+            } else {
+                this.onTopSubmit(this.operateItem)
+            }
+        },
+
+        onTopSubmit(data) {
+            return new Promise((resolve, reject) => {
+                this.$store.dispatch("setLoad", {
+                    key: `msg-${data.msg_id}`,
+                    delay: 600
+                })
+                this.$store.dispatch("call", {
+                    url: 'dialog/msg/top',
+                    data: {
+                        msg_id: data.id
+                    },
+                }).then(({ data, msg }) => {
+                    resolve(msg)
+                    // 取消置顶
+                    this.$store.dispatch("saveDialog", {
+                        'id' : this.dialogId,
+                        'top_msg_id' : data.update?.top_msg_id || 0,
+                        'top_userid' : data.update?.top_userid || 0
+                    });
+                    // 置顶
+                    if (data.update?.top_msg_id) {
+                        const index = this.dialogMsgs.findIndex(({ id }) => id == data.update.top_msg_id);
+                        if (index > -1) {
+                            this.$store.dispatch("saveDialogMsgTop", Object.assign({}, this.dialogMsgs[index]))
+                        }
+                    }
+                }).catch(({ msg }) => {
+                    reject(msg);
+                }).finally(_ => {
+                    this.$store.dispatch("cancelLoad", `msg-${data.msg_id}`)
+                });
+            })
+        },
+
+        onPosTop() {
+            if (!this.topMessageInfo) {
+                return
+            }
+            this.topViewPosLoad = true
+            this.onPositionId(this.topMessageInfo.id).finally(_ => {
+                this.topViewPosLoad = false
+            })
+        },
+
+        onCancelTop(info) {
+            $A.modalConfirm({
+                content: "你确定取消置顶吗？",
+                cancelText: '取消',
+                okText: '确定',
+                loading: true,
+                onOk: () => this.onTopSubmit(info)
+            });
         },
 
         getUserApproveStatus() {

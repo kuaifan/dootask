@@ -43,7 +43,7 @@
             <div class="task-move-content-new">
                 <div class="task-move-title">{{ $L('移动后') }}</div>
                 <div class="task-move-row">
-                    <span class="label"> {{$L('状态:')}} </span>
+                    <span class="label">{{$L('状态')}}:</span>
                     <TaskMenu
                         :ref="`taskMenu_${task.id}`"
                         :task="tasks"
@@ -58,7 +58,7 @@
                     </div>
                 </div>
                 <div class="task-move-row" :class="{'not-flex': windowPortrait}">
-                    <span class="label">{{$L('负责人:')}}</span>
+                    <span class="label">{{$L('负责人')}}:</span>
                     <div>
                         <UserSelect
                             class="item-content user"
@@ -70,7 +70,7 @@
                     </div>
                 </div>
                 <div class="task-move-row" :class="{'not-flex': windowPortrait}">
-                    <span class="label">{{$L('协助人:')}}</span>
+                    <span class="label">{{$L('协助人')}}:</span>
                     <div>
                         <UserSelect
                             class="item-content user"
@@ -269,6 +269,8 @@ export default {
                 }
             }).then(({data,msg}) => {
                 this.loadIng--;
+                data.column_name = "";
+                data.project_name = "";
                 this.$store.dispatch("saveTask", data);
                 $A.messageSuccess(msg);
                 this.close()

@@ -31,34 +31,34 @@ class UnclaimedTaskRemindTask extends AbstractTask
             return;
         }
         //
-        $times = explode(':',date('H:i'));
-        $reminderTimes = explode(':',$setting['unclaimed_task_reminder_time']);
-        if( !isset($times[1]) || !isset($reminderTimes[1]) || $times[0] != $reminderTimes[0]){
+        $times = explode(':', date('H:i'));
+        $reminderTimes = explode(':', $setting['unclaimed_task_reminder_time']);
+        if (!isset($times[1]) || !isset($reminderTimes[1]) || $times[0] != $reminderTimes[0]) {
             return;
         }
         // 执行一次
-        if (Cache::get("UnclaimedTaskRemindTask:His",0)) {
+        if (Cache::get("UnclaimedTaskRemindTask:His", 0)) {
             return;
         }
-        if( $times[1] >= $reminderTimes[1] - 1 && $times[1] <= $reminderTimes[1] + 1){
+        if ($times[1] >= intval($reminderTimes[1]) - 1 && $times[1] <= intval($reminderTimes[1]) + 1) {
             //
             Cache::put("UnclaimedTaskRemindTask:His", date('H:i:s'), Carbon::now()->addMinutes(5));
             //
-            Project::whereNull('deleted_at')->whereNull('archived_at')->chunk(100,function($projects) {
+            Project::whereNull('deleted_at')->whereNull('archived_at')->chunk(100, function ($projects) {
                 foreach ($projects as $project) {
                     //
-                    $projectTasks = ProjectTask::select('project_tasks.id','project_tasks.name')
+                    $projectTasks = ProjectTask::select('project_tasks.id', 'project_tasks.name')
                         ->leftJoin('project_task_users', function ($query) {
                             $query->on('project_tasks.id', '=', 'project_task_users.task_id');
                         })
-                        ->where('project_tasks.project_id',$project->id)
+                        ->where('project_tasks.project_id', $project->id)
                         ->whereNull('project_tasks.deleted_at')
                         ->whereNull('project_tasks.archived_at')
                         ->whereNull('project_task_users.id')
                         ->limit(10)
                         ->get();
                     //
-                    if( !$projectTasks->isEmpty() ){
+                    if (!$projectTasks->isEmpty()) {
                         $botUser = User::botGetOrCreate('task-alert');
                         if (empty($botUser)) {
                             return;
@@ -69,10 +69,10 @@ class UnclaimedTaskRemindTask extends AbstractTask
                         }
                         //
                         $taskHtml = '<span style="line-height: 26px;">任务待领取</span> <br/>';
-                        foreach($projectTasks as $projectTask){
+                        foreach ($projectTasks as $projectTask) {
                             $taskHtml .=  "<span class=\"mention task\" style=\"line-height: 26px;\" data-id=\"{$projectTask->id}\">#{$projectTask->name}</span> <br/>";
                         }
-                        WebSocketDialogMsg::sendMsg(null, $project->dialog_id , 'text', [
+                        WebSocketDialogMsg::sendMsg(null, $project->dialog_id, 'text', [
                             'text' => $taskHtml
                         ], $botUser->userid);
                     }
@@ -83,7 +83,5 @@ class UnclaimedTaskRemindTask extends AbstractTask
 
     public function end()
     {
-
     }
-
 }
