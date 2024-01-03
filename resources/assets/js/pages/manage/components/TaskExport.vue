@@ -102,7 +102,7 @@ export default {
                 data: this.formData,
             }).then(({data}) => {
                 this.show = false;
-                $A.messageSuccess(data.msg);
+                $A.modalSuccess(data.msg);
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {

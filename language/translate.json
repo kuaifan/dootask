@@ -19393,17 +19393,6 @@
         "id": "Kau yakin ingin berkemas untuk download?"
     },
     {
-        "key": "正在打包，请留意系统消息",
-        "zh": "",
-        "zh-CHT": "正在打包，請留意系統消息",
-        "en": "Packing, please pay attention to the system message",
-        "ko": "압축하고 있습니다. 시스템 메시지를 확인하십시오",
-        "ja": "パッケージ化中ですので、システムメッセージにご注意ください。",
-        "de": "Bereits am packen, geben sie eine nachricht nach system ab",
-        "fr": "Emballage en cours, gardez un oeil sur les messages du système",
-        "id": "Paket sedang dikemas"
-    },
-    {
         "key": "创建一个全新的会议视频会议，与会者可以在实时中进行面对面的视听交流。",
         "zh": "",
         "zh-CHT": "創建一個全新的會議視頻會議，與會者可以在實時中進行面對面的視聽交流。",

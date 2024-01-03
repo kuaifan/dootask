@@ -254,7 +254,7 @@
                 <li v-for="(item, index) in packList" :key="index" v-if="index < 100">
                     <AutoTip class="file-name">
                         <span v-if="item.status !== 'finished'">{{item.name}}</span>
-                        <a v-else href="javascript:void(0)" @click="downloadPackFile(item.name)">{{item.name}}</a>
+                        <a v-else :href="item.url" target="_blank">{{item.name}}</a>
                     </AutoTip>
                     <AutoTip v-if="item.status === 'finished' && item.response && item.response.ret !==1" class="file-error">{{item.response.msg}}</AutoTip>
                     <Progress v-else :percent="packPercentageParse(item.percentage)" :stroke-width="5" />
@@ -1468,38 +1468,28 @@ export default {
             this.packShow = false;
         },
 
-        async startPack(filePackName) {
-            const file = { name: filePackName, status: 'packing', percentage: 0 };
-            this.packList.push(file);
+        async startPack(data) {
+            this.packList.push(Object.assign(data, {
+                status: 'packing',
+                percentage: 0
+            }));
             this.uploadShow = false; // 隐藏上传列表
             this.packShow = true; // 显示打包列表
         },
 
-        updatePackProgress () {
-            this.packList.forEach(file=>{
+        updatePackProgress() {
+            this.packList.forEach(file => {
                 const pack = this.filePackLists.find(({name}) => name == file.name)
-                if(pack){
+                if (pack) {
+                    if (typeof file.percentage === "number" && file.percentage >= 100) {
+                        return
+                    }
                     file.percentage = Math.max(1, pack.progress);
-                    if (file.status != 'finished' && file.percentage >= 100) {
+                    if (file.percentage >= 100) {
                         file.status = 'finished';
-                        this.downloadPackFile(file.name);
                     }
                 }
             })
-        },
-
-        downloadPackFile(filePackName) {
-            const downloadUrl = $A.apiUrl(`file/download/confirm?name=${filePackName}&token=${this.userToken}`);
-            if (!$A.Electron && !$A.isEEUiApp) {
-                const link = document.createElement('a');
-                link.setAttribute('href', downloadUrl);
-                link.setAttribute('download', `${filePackName}`);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            }else{
-                this.$store.dispatch('downUrl', downloadUrl)
-            }
         },
 
         downloadZipFile(ids){
@@ -1510,26 +1500,25 @@ export default {
             const allFolder = !ids.some(id => this.fileLists.some(({ type, id: itemId }) => type !== 'folder' && itemId === id));
             const typeName = allFolder ? "文件夹" : "文件";
             const fileName = ids.length === 1 ? `【${firstFile.name}】${typeName}` : `【${firstFile.name}】等${ids.length}个${typeName}`;
-            const filePackName = `file_${$A.formatDate("YmdHis")}.zip`;
 
             $A.modalConfirm({
                 title: '打包下载',
                 content: `你确定要打包下载${fileName}吗？`,
                 okText: '确定',
-                onOk: async () => {
-                    if( this.packList.find(({ status }) => status === 'packing') ){
+                onOk: () => {
+                    if (this.packList.find(({status}) => status === 'packing')) {
                         $A.messageWarning("请等待打包完成");
                         return;
                     }
-                    try {
-                        await this.$store.dispatch("call", {
-                            url: 'file/download/pack',
-                            data: { ids, name: filePackName },
-                        });
-                        this.startPack(filePackName);
-                    } catch ({ msg }) {
+                    const name = this.$L(`打包下载${fileName}`)
+                    this.$store.dispatch("call", {
+                        url: 'file/download/pack',
+                        data: {ids, name},
+                    }).then(({data}) => {
+                        this.startPack(data);
+                    }).catch(({msg}) => {
                         $A.modalError(msg);
-                    }
+                    });
                 }
             });
         },

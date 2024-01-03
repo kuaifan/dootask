@@ -1200,7 +1200,7 @@ class ProjectController extends AbstractController
         if (Carbon::parse($time[1])->timestamp - Carbon::parse($time[0])->timestamp > 90 * 86400) {
             return Base::retError('时间范围限制最大90天');
         }
-        go(function() use ($user, $userid, $time, $type) {
+        go(function () use ($user, $userid, $time, $type) {
             Coroutine::sleep(0.1);
             $headings = [];
             $headings[] = '任务ID';
@@ -1324,10 +1324,10 @@ class ProjectController extends AbstractController
             $sheets = [];
             foreach ($userid as $ownerid) {
                 $data = $datas[$ownerid] ?? [
-                        'nickname' => Base::filterEmoji(User::userid2nickname($ownerid)),
-                        'styles' => ["A1:P1" => ["font" => ["bold" => true]]],
-                        'data' => [],
-                    ];
+                    'nickname' => Base::filterEmoji(User::userid2nickname($ownerid)),
+                    'styles' => ["A1:P1" => ["font" => ["bold" => true]]],
+                    'data' => [],
+                ];
                 $title = (count($sheets) + 1) . "." . ($data['nickname'] ?: $ownerid);
                 $sheets[] = BillExport::create()->setTitle($title)->setHeadings($headings)->setData($data['data'])->setStyles($data['styles']);
             }
@@ -1369,14 +1369,14 @@ class ProjectController extends AbstractController
                     $text .= "\n\n";
                     $text .= "文件名：{$fileName}";
                     $text .= "\n";
-                    $text .= "文件大小：".Base::twoFloat(filesize($zipPath) / 1024, true)."KB";
+                    $text .= "文件大小：" . Base::twoFloat(filesize($zipPath) / 1024, true) . "KB";
                     $text .= "\n";
-                    $text .= '<button class="ivu-btn" style="margin-top: 10px;"><a href="'.$fileUrl.'" target="_blank">立即下载</a></button>';
+                    $text .= '<a href="' . $fileUrl . '" target="_blank"><button type="button" class="ivu-btn ivu-btn-warning" style="margin-top: 10px;"><span>立即下载</span></button></a>';
                     WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
                 }
             }
         });
-        return Base::retSuccess('success',['msg' => '正在打包，请留意系统消息']);
+        return Base::retSuccess('success', ['msg' => '正在打包，请留意系统消息。']);
     }
 
     /**
