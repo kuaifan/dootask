@@ -130,6 +130,7 @@ export default {
     readLoadNum: 0,
     readTimeout: null,
     readWaitData: {},
+    readEndMark: {},
 
     // 文件
     fileLists: [],

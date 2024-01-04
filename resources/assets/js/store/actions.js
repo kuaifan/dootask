@@ -3062,14 +3062,10 @@ export default {
             if (dialog && $A.isArray(dialog.position_msgs)) {
                 const index = dialog.position_msgs.findIndex(({msg_id}) => msg_id == data.id);
                 if (index > -1) {
+                    state.readEndMark[data.dialog_id] = Math.max(data.id, $A.runNum(state.readEndMark[data.dialog_id]))
                     dialog.position_msgs.splice(index, 1);
                     dispatch("saveDialog", dialog)
                 }
-                dispatch("dialogMsgMark", {
-                    type: 'read',
-                    dialog_id: data.dialog_id,
-                    after_msg_id: data.id,
-                })
             }
         }
         clearTimeout(state.readTimeout);
@@ -3098,6 +3094,15 @@ export default {
                 })
             }).finally(_ => {
                 state.readLoadNum++
+                //
+                for (let dialog_id in state.readEndMark) {
+                    dispatch("dialogMsgMark", {
+                        type: 'read',
+                        dialog_id,
+                        after_msg_id: state.readEndMark[dialog_id],
+                    })
+                }
+                state.readEndMark = {}
             });
         }, 50);
     },
