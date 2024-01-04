@@ -19523,5 +19523,16 @@
         "de": "Lade deine taschen herunter (*)",
         "fr": "Pack à télécharger (*)",
         "id": "Kemas tas untuk download (*)"
+    },
+    {
+        "key": "系统机器人不存在",
+        "zh": "",
+        "zh-CHT": "系統機器人不存在",
+        "en": "Systematic robots do not exist",
+        "ko": "시스템 로봇은 존재하지 않습니다",
+        "ja": "システムロボットは存在しません",
+        "de": "Roboter existieren nicht",
+        "fr": "Le robot système n’existe pas",
+        "id": "Robot sistem tidak ada"
     }
 ]
