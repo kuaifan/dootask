@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.33.94]
+
+### Bug Fixes
+
+- 消息阅读回馈
+
+### Performance
+
+- 消息首次加载数据优化
+
 ## [0.33.91]
 
 ### Bug Fixes
