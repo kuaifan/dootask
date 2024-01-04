@@ -757,6 +757,7 @@ export default {
             unreadMsgId: 0,                     // 最早未读消息id
             positionLoad: 0,                    // 定位跳转加载中
             positionShow: false,                // 定位跳转显示
+            renderMsgOffset: 0,                 // 渲染滚动距离
             renderMsgLength: 0,                 // 渲染消息长度
             msgPreparedStatus: false,           // 消息准备完成
             listPreparedStatus: false,          // 列表准备完成
@@ -1149,6 +1150,10 @@ export default {
                         dialog_id,
                         msg_id: this.msgId,
                         msg_type: this.msgType,
+                        save_before: _ => {
+                            const {tail} = this.scrollInfo();
+                            this.renderMsgOffset = tail > 55 ? (this.$refs.scroller.getScrollSize() - this.$refs.scroller.getOffset()) : 0
+                        }
                     }).then(_ => {
                         this.openId = dialog_id
                         this.listPreparedStatus = true
@@ -2229,7 +2234,12 @@ export default {
             if (this.renderMsgLength > 0 && this.$refs.scroller.getSizes() >= this.renderMsgLength) {
                 this.renderMsgLength = 0
                 this.onFooterResize()
-                this.onToBottom()
+                if (this.renderMsgOffset > 0) {
+                    this.onToOffset(this.$refs.scroller.getScrollSize() - this.renderMsgOffset)
+                    this.renderMsgOffset = 0
+                } else {
+                    this.onToBottom()
+                }
             }
         },
 

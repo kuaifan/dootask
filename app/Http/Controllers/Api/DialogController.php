@@ -568,21 +568,34 @@ class DialogController extends AbstractController
         //
         $latest_id = intval(Request::input('latest_id'));
         //
+        \DB::statement("SET SQL_MODE=''");
         $builder = WebSocketDialogMsg::select([
             'web_socket_dialog_msgs.*',
             'read.mention',
             'read.read_at',
-        ])->join('web_socket_dialog_msg_reads as read', 'read.msg_id', '=', 'web_socket_dialog_msgs.id')
-            ->where('read.userid', $user->userid);
+        ])
+            ->join('web_socket_dialog_msg_reads as read', 'read.msg_id', '=', 'web_socket_dialog_msgs.id')
+            ->where('read.userid', $user->userid)
+            ->orWhere('web_socket_dialog_msgs.userid', $user->userid);
         //
         if ($latest_id > 0) {
             $builder->where('read.msg_id', '>', $latest_id);
         }
         //
-        $data = $builder->orderByDesc('read.msg_id')->paginate(Base::getPaginate(100, 50));
+        $data = $builder
+            ->groupBy('id')
+            ->orderByDesc('id')
+            ->paginate(Base::getPaginate(100, 50));
         if ($data->isEmpty()) {
             return Base::retError('empty');
         }
+        $data->transform(function (WebSocketDialogMsg $item) use ($user) {
+            if ($item->userid === $user->userid) {
+                $item->mention = 0;
+                $item->read_at = null;
+            }
+            return $item;
+        });
         return Base::retSuccess('success', $data);
     }
 
