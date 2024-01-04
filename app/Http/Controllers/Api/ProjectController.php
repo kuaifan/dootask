@@ -1200,7 +1200,13 @@ class ProjectController extends AbstractController
         if (Carbon::parse($time[1])->timestamp - Carbon::parse($time[0])->timestamp > 90 * 86400) {
             return Base::retError('时间范围限制最大90天');
         }
-        go(function () use ($user, $userid, $time, $type) {
+        $botUser = User::botGetOrCreate('system-msg');
+        if (empty($botUser)) {
+            return Base::retError('系统机器人不存在');
+        }
+        $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid);
+        //
+        go(function () use ($user, $userid, $time, $type, $botUser, $dialog) {
             Coroutine::sleep(0.1);
             $headings = [];
             $headings[] = '任务ID';
@@ -1220,6 +1226,9 @@ class ProjectController extends AbstractController
             $headings[] = '创建人';
             $headings[] = '状态';
             $datas = [];
+            //
+            $text = '<b>导出任务统计已完成。</b>';
+            $text .= "\n\n";
             //
             $builder = ProjectTask::select(['project_tasks.*', 'project_task_users.userid as ownerid'])
                 ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_id')
@@ -1318,7 +1327,9 @@ class ProjectController extends AbstractController
                 }
             });
             if (empty($datas)) {
-                return Base::retError('没有任何数据');
+                $text .= '没有任何数据';
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
+                return;
             }
             //
             $sheets = [];
@@ -1334,15 +1345,18 @@ class ProjectController extends AbstractController
             //
             $fileName = User::userid2nickname($userid[0]) ?: $userid[0];
             if (count($userid) > 1) {
-                $fileName .= "等" . count($userid) . "位成员";
+                $fileName .= '等' . count($userid) . '位成员任务统计';
             }
-            $fileName .= '任务统计_' . Base::time() . '.xls';
+            $fileName .= '_' . Base::time() . '.xls';
             $filePath = "temp/task/export/" . date("Ym", Base::time());
             $export = new BillMultipleExport($sheets);
             $res = $export->store($filePath . "/" . $fileName);
             if ($res != 1) {
-                return Base::retError('导出失败，' . $fileName . '！');
+                $text .= "导出失败，{$fileName}！";
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
+                return;
             }
+            //
             $xlsPath = storage_path("app/" . $filePath . "/" . $fileName);
             $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xls') . ".zip";
             $zipPath = storage_path($zipFile);
@@ -1360,21 +1374,15 @@ class ProjectController extends AbstractController
                 ]));
                 $fileUrl = Base::fillUrl('api/project/task/down?key=' . urlencode($base64));
                 Session::put('task::export:userid', $user->userid);
-                $botUser = User::botGetOrCreate('system-msg');
-                if (empty($botUser)) {
-                    return;
-                }
-                if ($dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
-                    $text = "<b>导出任务统计已完成。</b>";
-                    $text .= "\n\n";
-                    $text .= "文件名：{$fileName}";
-                    $text .= "\n";
-                    $text .= "文件大小：" . Base::twoFloat(filesize($zipPath) / 1024, true) . "KB";
-                    $text .= "\n";
-                    $text .= '<a href="' . $fileUrl . '" target="_blank"><button type="button" class="ivu-btn ivu-btn-warning" style="margin-top: 10px;"><span>立即下载</span></button></a>';
-                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
-                }
+                $text .= "文件名：{$fileName}";
+                $text .= "\n";
+                $text .= "文件大小：" . Base::twoFloat(filesize($zipPath) / 1024, true) . "KB";
+                $text .= "\n";
+                $text .= '<a href="' . $fileUrl . '" target="_blank"><button type="button" class="ivu-btn ivu-btn-warning" style="margin-top: 10px;"><span>立即下载</span></button></a>';
+            } else {
+                $text .= '打包失败，请稍后再试...';
             }
+            WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
         });
         return Base::retSuccess('success', ['msg' => '正在打包，请留意系统消息。']);
     }

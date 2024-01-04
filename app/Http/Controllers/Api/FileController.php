@@ -1028,6 +1028,12 @@ class FileController extends AbstractController
             return Base::retError('一次最多可以下载100个文件或文件夹');
         }
 
+        $botUser = User::botGetOrCreate('system-msg');
+        if (empty($botUser)) {
+            return Base::retError('系统机器人不存在');
+        }
+        $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid);
+
         $files = [];
         $totalSize = 0;
 
@@ -1053,7 +1059,7 @@ class FileController extends AbstractController
             return Base::retError('创建压缩文件失败');
         }
 
-        go(function () use ($zipPath, $fileUrl, $user, $zip, $files, $fileName, $zipFile) {
+        go(function () use ($zipPath, $fileUrl, $zip, $files, $fileName, $botUser, $dialog) {
             Coroutine::sleep(0.1);
             // 压缩进度
             $progress = 0;
@@ -1079,20 +1085,14 @@ class FileController extends AbstractController
                 ]);
             }
             //
-            $botUser = User::botGetOrCreate('system-msg');
-            if (empty($botUser)) {
-                return;
-            }
-            if ($dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
-                $text = "<b>文件下载打包已完成。</b>";
-                $text .= "\n\n";
-                $text .= "文件名：{$fileName}";
-                $text .= "\n";
-                $text .= "文件大小：".Base::twoFloat(filesize($zipPath) / 1024, true)."KB";
-                $text .= "\n";
-                $text .= '<a href="' . $fileUrl . '" target="_blank"><button type="button" class="ivu-btn ivu-btn-warning" style="margin-top: 10px;"><span>立即下载</span></button></a>';
-                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
-            }
+            $text = "<b>文件下载打包已完成。</b>";
+            $text .= "\n\n";
+            $text .= "文件名：{$fileName}";
+            $text .= "\n";
+            $text .= "文件大小：".Base::twoFloat(filesize($zipPath) / 1024, true)."KB";
+            $text .= "\n";
+            $text .= '<a href="' . $fileUrl . '" target="_blank"><button type="button" class="ivu-btn ivu-btn-warning" style="margin-top: 10px;"><span>立即下载</span></button></a>';
+            WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
         });
         return Base::retSuccess('success', [
             'name' => $fileName,
