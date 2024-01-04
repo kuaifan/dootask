@@ -1586,8 +1586,8 @@ export default {
                 //
                 if (data.next_page_url) {
                     requestData.page = data.current_page + 1
-                    if (data.current_page % 20 === 0) {
-                        $A.modalWarning({
+                    if (data.current_page % 30 === 0) {
+                        $A.modalConfirm({
                             content: "数据已超过" + data.to + "条，是否继续加载？",
                             onOk: () => {
                                 dispatch("getTasks", requestData).then(resolve).catch(reject)
