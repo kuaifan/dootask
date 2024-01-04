@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.33.94]
+## [0.33.98]
 
 ### Bug Fixes
 
@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Performance
 
 - 消息首次加载数据优化
+- 优化打包下载
 
 ## [0.33.91]
 

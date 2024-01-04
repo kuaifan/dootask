@@ -19534,5 +19534,38 @@
         "de": "Roboter existieren nicht",
         "fr": "Le robot système n’existe pas",
         "id": "Robot sistem tidak ada"
+    },
+    {
+        "key": "数据已超过(*)条，是否继续加载？",
+        "zh": "",
+        "zh-CHT": "數據已超過(*)條，是否繼續加載？",
+        "en": "Data has exceeded the (*) bar, do you want to continue loading?",
+        "ko": "데이터가 막대 (*)를 초과했습니다. 계속 불러오시겠습니까?",
+        "ja": "データは(*)バーを超えましたが、引き続きロードしますか?",
+        "de": "Werden die daten weiter geladen, als die buchstaben * überschritten wurden?",
+        "fr": "Les données ont dépassé la barre (*). Voulez-vous continuer le chargement?",
+        "id": "Data telah melampaui (*) bar, melanjutkan memuat?"
+    },
+    {
+        "key": "版本过低",
+        "zh": "",
+        "zh-CHT": "版本過低",
+        "en": "Underversion",
+        "ko": "버전이 너무 낮음",
+        "ja": "低バージョンです",
+        "de": "(viktor) zu tief.",
+        "fr": "Version trop basse",
+        "id": "Versi rendah"
+    },
+    {
+        "key": "服务器接口版本过低，部分功能可能无法正常使用。",
+        "zh": "",
+        "zh-CHT": "服務器接口版本過低，部分功能可能無法正常使用。",
+        "en": "The version of the server interface is too early, and some functions may be unavailable.",
+        "ko": "서버 인터페이스 버전이 너무 낮아 일부 기능을 정상적으로 사용할 수 없을 것 같다.",
+        "ja": "サーバーインターフェースのバージョンが低すぎて、一部の機能が正常に使用できない場合があります。",
+        "de": "Die server-version ist zu niedrig und teilweise unbrauchbar.",
+        "fr": "La version de l’interface du serveur est trop basse, certaines fonctions peuvent ne pas fonctionner correctement.",
+        "id": "Versi antarmuka server yang rendah, sebagian fungsinya mungkin tidak berfungsi dengan baik."
     }
 ]
