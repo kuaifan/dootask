@@ -2090,7 +2090,7 @@ class UsersController extends AbstractController
                             ->whereYear('web_socket_dialog_msgs.created_at', $year)
                             ->groupBy('web_socket_dialog_msgs.dialog_id');
                     }, 'm', 'm.dialog_id', '=', 'd.id')
-                    ->leftJoin('web_socket_dialog_users as du', function ($query) use ($user) {
+                    ->leftJoin('web_socket_dialog_users as du', function ($query) {
                         $query->on('d.id', '=', 'du.dialog_id');
                         $query->where('d.type', 'user');
                     })
