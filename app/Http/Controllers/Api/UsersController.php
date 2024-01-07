@@ -18,7 +18,6 @@ use App\Models\UserBot;
 use App\Models\WebSocket;
 use App\Models\UmengAlias;
 use App\Models\UserDelete;
-use App\Models\ProjectTask;
 use App\Models\UserTransfer;
 use App\Models\AbstractModel;
 use App\Models\UserCheckinMac;
