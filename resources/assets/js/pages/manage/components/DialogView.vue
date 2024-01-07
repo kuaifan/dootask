@@ -215,7 +215,7 @@
             <div v-if="msgData.error === true" class="error" @click="onError">
                 <Icon type="ios-alert" />
             </div>
-            <Loading v-else-if="isLoading"/>
+            <Loading v-else-if="isLoading" :delay="300"/>
             <template v-else>
                 <!--时间-->
                 <div v-if="timeShow" class="time" @click="timeShow=false">{{msgData.created_at}}</div>

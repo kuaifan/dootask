@@ -7,7 +7,7 @@ export default {
     isLoad(state) {
         return function (key) {
             const load = state.loads.find(item => item.key === key);
-            return load && load.num > 0
+            return !!(load && load.num > 0)
         }
     },
 
