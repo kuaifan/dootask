@@ -1,6 +1,6 @@
 <template>
     <div class="mobile-back">
-        <div v-if="isVisible" class="back-semicircle" :style="style"></div>
+        <div v-if="isVisible && x > 20" class="back-semicircle" :style="style"></div>
     </div>
 </template>
 
@@ -54,7 +54,6 @@ export default {
                 maxTop = this.windowHeight - offset;
             return {
                 top: Math.min(top, maxTop) + 'px',
-                left: this.x > 20 ? 0 : '-50px',
             }
         },
 

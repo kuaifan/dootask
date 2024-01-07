@@ -98,11 +98,16 @@
         z-index: 9999;
         border-radius: 50%;
         transform: translate(-460px, -50%);
-        transition: left 0.2s;
+        animation: mobile-back-animation 200ms forwards;
+    }
+}
 
-        &.show-back {
-            left: 0;
-        }
+@keyframes mobile-back-animation {
+    from {
+        left: -50px;
+    }
+    to {
+        left: 0;
     }
 }
 
