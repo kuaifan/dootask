@@ -2087,7 +2087,7 @@ class UsersController extends AbstractController
                         $query->select('web_socket_dialog_msgs.dialog_id', DB::raw('count(*) as chat_num'))
                             ->from('web_socket_dialog_msgs')
                             ->where('web_socket_dialog_msgs.userid', $user->userid)
-                            ->whereYear('web_socket_dialog_msgs.created_at', 2024)
+                            ->whereYear('web_socket_dialog_msgs.created_at', $year)
                             ->groupBy('web_socket_dialog_msgs.dialog_id');
                     }, 'm', 'm.dialog_id', '=', 'd.id')
                     ->leftJoin('web_socket_dialog_users as du', function ($query) use ($user) {
