@@ -2149,10 +2149,10 @@ export default {
                 if (this.__markOffset === undefined) {
                     return false
                 }
-                this.onToOffset(scroller.getScrollSize() - this.__markOffset)
+                this.onToOffset(scroller.getScrollSize() - scroller.getClientSize() - this.__markOffset)
                 this.__markOffset = undefined
             } else {
-                this.__markOffset = scroller.getScrollSize() - scroller.getOffset()
+                this.__markOffset = scroller.getScrollSize() - scroller.getClientSize() - scroller.getOffset()
             }
             return true
         },
@@ -3383,10 +3383,11 @@ export default {
                     data: {
                         msg_id: data.id
                     },
-                }).then(({ data, msg }) => {
+                }).then(async ({ data, msg }) => {
                     resolve(msg)
+                    this.onMarkOffset(false)
                     // 取消置顶
-                    this.$store.dispatch("saveDialog", {
+                    await this.$store.dispatch("saveDialog", {
                         'id' : this.dialogId,
                         'top_msg_id' : data.update?.top_msg_id || 0,
                         'top_userid' : data.update?.top_userid || 0
@@ -3395,9 +3396,10 @@ export default {
                     if (data.update?.top_msg_id) {
                         const index = this.dialogMsgs.findIndex(({ id }) => id == data.update.top_msg_id);
                         if (index > -1) {
-                            this.$store.dispatch("saveDialogMsgTop", Object.assign({}, this.dialogMsgs[index]))
+                            await this.$store.dispatch("saveDialogMsgTop", Object.assign({}, this.dialogMsgs[index]))
                         }
                     }
+                    this.onMarkOffset(true)
                 }).catch(({ msg }) => {
                     reject(msg);
                 }).finally(_ => {
