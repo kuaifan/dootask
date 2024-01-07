@@ -12,7 +12,7 @@
         <!--顶部导航-->
         <div ref="nav" class="dialog-nav">
             <slot name="head">
-                <div class="nav-wrapper" :class="{completed: $A.dialogCompleted(dialogData)}">
+                <div class="nav-wrapper" :class="navClass">
                     <div class="dialog-back" @click="onBack">
                         <i class="taskfont">&#xe676;</i>
                         <div v-if="msgUnreadOnly" class="back-num">{{msgUnreadOnly}}</div>
@@ -137,7 +137,7 @@
         </div>
 
         <!--置顶消息-->
-        <div v-if="topMessageInfo" class="dialog-top-message" :class="topMessageClass" @click="onPosTop">
+        <div v-if="topShow" class="dialog-top-message" @click="onPosTop">
             <div class="dialog-top-message-warp">
                 <div class="dialog-top-message-font">
                     <i class="taskfont">&#xe7e4;</i>
@@ -147,7 +147,10 @@
                         <UserAvatar :userid="topMessageInfo.userid" showName :showIcon="false"/>:
                         <span>{{$A.getMsgSimpleDesc(topMessageInfo)}}</span>
                     </p>
-                    <p class="personnel">{{$L('置顶人员')}} <UserAvatar :userid="dialogData.top_userid" showName :showIcon="false"/> </p>
+                    <p class="personnel">
+                        {{ $L('置顶人员') }}
+                        <UserAvatar :userid="dialogData.top_userid" showName :showIcon="false"/>
+                    </p>
                 </div>
                 <div class="dialog-top-message-btn">
                     <Loading v-if="topViewPosLoad" type="pure"/>
@@ -158,7 +161,7 @@
         </div>
 
         <!--跳转提示-->
-        <div v-if="positionShow && positionMsg" class="dialog-position" :class="{'down': tagShow}">
+        <div v-if="positionShow && positionMsg" class="dialog-position">
             <div class="position-label" @click="onPositionMark(positionMsg.msg_id)">
                 <Icon v-if="positionLoad > 0" type="ios-loading" class="icon-loading"></Icon>
                 <i v-else class="taskfont">&#xe624;</i>
@@ -171,7 +174,6 @@
             ref="scroller"
             class="dialog-scroller scrollbar-virtual"
             active-prefix="item"
-            :class="scrollerClass"
             :data-key="'id'"
             :data-sources="allMsgs"
             :data-component="msgItem"
@@ -949,6 +951,14 @@ export default {
             return this.todoList.length > 0 && this.windowScrollY === 0 && this.quoteId === 0
         },
 
+        tagShow() {
+            return this.msgTags.length > 1 && this.windowScrollY === 0 && !this.searchShow
+        },
+
+        topShow() {
+            return this.topMessageInfo && this.windowScrollY === 0 && !this.searchShow
+        },
+
         wrapperClass() {
             if (['ready', 'ing'].includes(this.recordState)) {
                 return ['record-ready']
@@ -956,12 +966,11 @@ export default {
             return null
         },
 
-        tagShow() {
-            return this.msgTags.length > 1 && this.windowScrollY === 0 && !this.searchShow
-        },
-
-        scrollerClass() {
-            return !this.$slots.head && !this.topMessageInfo && this.tagShow ? 'default-header' : null
+        navClass() {
+            return {
+                'completed': $A.dialogCompleted(this.dialogData),
+                'tagged': this.tagShow
+            }
         },
 
         pasteWrapperClass() {
@@ -1104,10 +1113,6 @@ export default {
 
         topMessageInfo() {
             return this.dialogData.top_msg_id && this.dialogMsgTops.find(({id}) => id == this.dialogData.top_msg_id)
-        },
-
-        topMessageClass() {
-            return !this.$slots.head && this.tagShow ? 'default-header' : null
         }
     },
 
@@ -3383,11 +3388,10 @@ export default {
                     data: {
                         msg_id: data.id
                     },
-                }).then(async ({ data, msg }) => {
+                }).then(({ data, msg }) => {
                     resolve(msg)
-                    this.onMarkOffset(false)
                     // 取消置顶
-                    await this.$store.dispatch("saveDialog", {
+                    this.$store.dispatch("saveDialog", {
                         'id' : this.dialogId,
                         'top_msg_id' : data.update?.top_msg_id || 0,
                         'top_userid' : data.update?.top_userid || 0
@@ -3396,10 +3400,15 @@ export default {
                     if (data.update?.top_msg_id) {
                         const index = this.dialogMsgs.findIndex(({ id }) => id == data.update.top_msg_id);
                         if (index > -1) {
-                            await this.$store.dispatch("saveDialogMsgTop", Object.assign({}, this.dialogMsgs[index]))
+                            this.$store.dispatch("saveDialogMsgTop", Object.assign({}, this.dialogMsgs[index]))
                         }
                     }
-                    this.onMarkOffset(true)
+                    // 添加消息
+                    if (data.add) {
+                        this.$store.dispatch("saveDialogMsg", data.add);
+                        this.$store.dispatch("updateDialogLastMsg", data.add);
+                        this.onActive();
+                    }
                 }).catch(({ msg }) => {
                     reject(msg);
                 }).finally(_ => {

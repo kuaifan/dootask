@@ -2296,13 +2296,14 @@ class DialogController extends AbstractController
         $dialog->save();
         //
         $data = [
+            'add' => null,
             'update' => [
                 'dialog_id' => $dialog->id,
                 'top_msg_id' => $dialog->top_msg_id,
                 'top_userid' => $dialog->top_userid,
             ]
         ];
-        $res = $msg->sendMsg(null, $dialog->id, 'top', [
+        $res = WebSocketDialogMsg::sendMsg(null, $dialog->id, 'top', [
             'action' => $dialog->top_msg_id ? 'add' : 'remove',
             'data' => [
                 'id' => $msg->id,

@@ -437,8 +437,8 @@
     .dialog-top-message {
         background: white;
 
-        .dialog-top-message-warp{
-            padding:10px 5px;
+        .dialog-top-message-warp {
+            padding: 10px 5px;
             position: relative;
             display: flex;
             margin: 10px 16px 0;
@@ -450,24 +450,29 @@
             .dialog-top-message-content {
                 flex: 1;
                 overflow: hidden;
+
                 p {
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
                     display: flex;
                     gap: 4px;
+
                     &.content {
                         margin-bottom: 2px;
-                        >span{
+
+                        > span {
                             white-space: nowrap;
                             overflow: hidden;
                             text-overflow: ellipsis;
                             line-height: 22px;
                         }
                     }
+
                     &.personnel {
                         font-size: 12px;
                         color: #afafaf;
+
                         .avatar-name {
                             color: #84C56A;
                             margin-left: 10px;
@@ -476,11 +481,12 @@
                 }
             }
 
-            .dialog-top-message-font{
+            .dialog-top-message-font {
                 line-height: 42px;
                 text-align: center;
-                padding:0 10px;
-                .taskfont{
+                padding: 0 10px;
+
+                .taskfont {
                     font-size: 16px;
                     padding: 5px;
                     border-radius: 50%;
@@ -494,17 +500,54 @@
                 align-items: center;
                 justify-content: flex-end;
                 gap: 10px;
-                padding:0 10px;
+                padding: 0 10px;
+
                 .taskfont {
                     border-radius: 3px;
                     font-size: 18px;
                     padding: 4px;
                 }
+
                 .common-pureing {
                     width: 18px;
                     height: 18px;
                     margin: 4px;
                 }
+            }
+        }
+    }
+
+    .dialog-position {
+        position: relative;
+        z-index: 2;
+        height: 0;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        opacity: 0;
+        transform: translateX(100%);
+        animation: position-in-animation 200ms ease-out forwards;
+        animation-delay: 300ms;
+
+        .position-label {
+            position: absolute;
+            top: 24px;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px 10px;
+            border-radius: 18px 0 0 18px;
+            color: #ffffff;
+            background-color: $primary-color;
+            cursor: pointer;
+            > i {
+                margin-right: 4px;
+                width: 14px;
+                height: 14px;
+                font-size: 14px;
+                line-height: 14px;
             }
         }
     }
@@ -1534,38 +1577,6 @@
         }
     }
 
-    .dialog-position {
-        position: absolute;
-        top: 100px;
-        right: 0;
-        z-index: 2;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        opacity: 0;
-        transform: translateX(100%);
-        animation: position-in-animation 200ms ease-out forwards;
-        animation-delay: 300ms;
-
-        .position-label {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 5px 10px;
-            border-radius: 18px 0 0 18px;
-            color: #ffffff;
-            background-color: $primary-color;
-            cursor: pointer;
-            > i {
-                margin-right: 4px;
-                width: 14px;
-                height: 14px;
-                font-size: 14px;
-                line-height: 14px;
-            }
-        }
-    }
-
     .dialog-footer {
         position: absolute;
         left: 0;
@@ -2216,6 +2227,10 @@ body.window-portrait {
                     }
                 }
 
+                &.tagged {
+                    margin-bottom: 34px;
+                }
+
                 .dialog-back,
                 .dialog-menu {
                     position: absolute;
@@ -2307,20 +2322,11 @@ body.window-portrait {
                 }
             }
         }
-        .dialog-top-message {
-            &.default-header {
-                margin-top: 34px;
-            }
-        }
         .dialog-scroller {
             padding-right: 14px;
             padding-left: 14px;
             overscroll-behavior: none;
             background-color: #ffffff;
-
-            &.default-header {
-                margin-top: 34px;
-            }
 
             .dialog-item {
                 .dialog-view {
@@ -2361,11 +2367,6 @@ body.window-portrait {
                         }
                     }
                 }
-            }
-        }
-        .dialog-position {
-            &.down {
-                top: 130px;
             }
         }
         .dialog-footer {
