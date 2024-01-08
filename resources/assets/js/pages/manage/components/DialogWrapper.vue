@@ -144,8 +144,8 @@
                 </div>
                 <div class="dialog-top-message-content">
                     <p class="content">
-                        <UserAvatar :userid="topMessageInfo.userid" showName :showIcon="false"/>:
-                        <span>{{$A.getMsgSimpleDesc(topMessageInfo)}}</span>
+                        <UserAvatar :userid="topMsg.userid" showName :showIcon="false"/>:
+                        <span>{{$A.getMsgSimpleDesc(topMsg)}}</span>
                     </p>
                     <p class="personnel">
                         {{ $L('置顶人员') }}
@@ -155,7 +155,7 @@
                 <div class="dialog-top-message-btn">
                     <Loading v-if="topViewPosLoad" type="pure"/>
                     <i v-else class="taskfont">&#xee15;</i>
-                    <i class="taskfont" @click.stop="onCancelTop(topMessageInfo)">&#xe6e5;</i>
+                    <i class="taskfont" @click.stop="onCancelTop(topMsg)">&#xe6e5;</i>
                 </div>
             </div>
         </div>
@@ -208,9 +208,15 @@
         </VirtualList>
 
         <!--底部输入-->
-        <div ref="footer" class="dialog-footer" :class="footerClass" @click="onActive">
-            <div class="dialog-newmsg" @click="onToBottom">{{$L(`有${msgNew}条新消息`)}}</div>
-            <div class="dialog-goto" @click="onToBottom"><i class="taskfont">&#xe72b;</i></div>
+        <div ref="footer" class="dialog-footer" @click="onActive">
+            <div
+                v-if="scrollTail > 500 || (msgNew > 0 && allMsgs.length > 0)"
+                class="dialog-goto"
+                @click="onToBottom">
+                <Badge :overflow-count="999" :count="msgNew">
+                    <i class="taskfont">&#xe72b;</i>
+                </Badge>
+            </div>
             <DialogUpload
                 ref="chatUpload"
                 class="chat-upload"
@@ -354,7 +360,7 @@
             :closable="false"
             :mask-closable="false"
             @on-ok="pasteSend">
-            <ul class="dialog-wrapper-paste" :class="pasteWrapperClass">
+            <ul class="dialog-wrapper-paste" :class="pasteClass">
                 <li v-for="item in pasteItem">
                     <img v-if="item.type == 'image'" :src="item.result"/>
                     <div v-else>{{$L('文件')}}: {{item.name}} ({{$A.bytesToSize(item.size)}})</div>
@@ -759,7 +765,8 @@ export default {
             unreadMsgId: 0,                     // 最早未读消息id
             positionLoad: 0,                    // 定位跳转加载中
             positionShow: false,                // 定位跳转显示
-            renderMsgLength: 0,                 // 渲染消息长度
+            renderMsgNum: 0,                    // 渲染消息数量
+            renderMsgSizes: new Map(),          // 渲染消息尺寸
             msgPreparedStatus: false,           // 消息准备完成
             listPreparedStatus: false,          // 列表准备完成
             selectedTextStatus: false,          // 是否选择文本
@@ -930,12 +937,12 @@ export default {
             return array
         },
 
-        quickMsgs() {
-            return this.dialogData.quick_msgs || []
+        topMsg() {
+            return this.dialogData.top_msg_id && this.dialogMsgTops.find(({id}) => id == this.dialogData.top_msg_id)
         },
 
-        quickShow() {
-            return this.quickMsgs.length > 0 && this.windowScrollY === 0 && this.quoteId === 0
+        quickMsgs() {
+            return this.dialogData.quick_msgs || []
         },
 
         todoList() {
@@ -947,6 +954,10 @@ export default {
             });
         },
 
+        quickShow() {
+            return this.quickMsgs.length > 0 && this.windowScrollY === 0 && this.quoteId === 0
+        },
+
         todoShow() {
             return this.todoList.length > 0 && this.windowScrollY === 0 && this.quoteId === 0
         },
@@ -956,12 +967,12 @@ export default {
         },
 
         topShow() {
-            return this.topMessageInfo && this.windowScrollY === 0 && !this.searchShow
+            return this.topMsg && this.windowScrollY === 0 && !this.searchShow && this.msgType === ''
         },
 
         wrapperClass() {
             if (['ready', 'ing'].includes(this.recordState)) {
-                return ['record-ready']
+                return 'record-ready'
             }
             return null
         },
@@ -973,21 +984,11 @@ export default {
             }
         },
 
-        pasteWrapperClass() {
+        pasteClass() {
             if (this.pasteItem.find(({type}) => type !== 'image')) {
                 return ['multiple'];
             }
             return [];
-        },
-
-        footerClass() {
-            if (this.msgNew > 0 && this.allMsgs.length > 0) {
-                return 'newmsg'
-            }
-            if (this.scrollTail > 500) {
-                return 'goto'
-            }
-            return null
         },
 
         footerPaddingBottom({keyboardType, keyboardHeight, safeAreaBottom, windowScrollY, isMessenger, isFocus}) {
@@ -1110,10 +1111,6 @@ export default {
         readEnabled({msgPreparedStatus, listPreparedStatus}) {
             return msgPreparedStatus && listPreparedStatus
         },
-
-        topMessageInfo() {
-            return this.dialogData.top_msg_id && this.dialogMsgTops.find(({id}) => id == this.dialogData.top_msg_id)
-        }
     },
 
     watch: {
@@ -1144,7 +1141,8 @@ export default {
                     this.positionShow = false
                     this.listPreparedStatus = false
                     this.scrollToBottomAndRefresh = false
-                    this.renderMsgLength = Math.min(this.keeps, Math.max(this.allMsgList.length, 1))
+                    this.renderMsgNum = Math.min(this.keeps, Math.max(this.allMsgList.length, 1))
+                    this.renderMsgSizes.clear()
                     this.allMsgs = this.allMsgList
                     //
                     const tmpMsgA = this.allMsgList.map(({id, msg, emoji}) => {
@@ -1168,7 +1166,7 @@ export default {
                             return {id, msg, emoji}
                         })
                         if (JSON.stringify(tmpMsgA) != JSON.stringify(tmpMsgB)) {
-                            this.renderMsgLength = Math.min(this.keeps, Math.max(this.allMsgList.length, 1))
+                            this.renderMsgNum = Math.min(this.keeps, Math.max(this.allMsgList.length, 1))
                         }
                         //
                         setTimeout(_ => {
@@ -2245,17 +2243,22 @@ export default {
             }).catch(() => {})
         },
 
-        onItemRendered() {
+        onItemRendered(id, size) {
             if (!this.$refs.scroller || !this.$refs.footer) {
                 return
             }
-            if (this.renderMsgLength > 0 && this.$refs.scroller.getSizes() >= this.renderMsgLength) {
-                this.renderMsgLength = 0
+            if (this.renderMsgNum > 0 && this.$refs.scroller.getSizes() >= this.renderMsgNum) {
+                this.renderMsgNum = 0
                 this.onFooterResize()
-                if (!this.onMarkOffset(true)) {
-                    this.onToBottom()
-                }
+                !this.onMarkOffset(true) && this.onToBottom()
             }
+            //
+            if (this.renderMsgSizes.has(id)
+                && size > this.renderMsgSizes.get(id)
+                && size - this.renderMsgSizes.get(id) === this.scrollInfo().tail) {
+                this.onToBottom()
+            }
+            this.renderMsgSizes.set(id, size)
         },
 
         onDialogMenu(cmd) {
@@ -3418,11 +3421,11 @@ export default {
         },
 
         onPosTop() {
-            if (!this.topMessageInfo) {
+            if (!this.topMsg) {
                 return
             }
             this.topViewPosLoad = true
-            this.onPositionId(this.topMessageInfo.id).finally(_ => {
+            this.onPositionId(this.topMsg.id).finally(_ => {
                 this.topViewPosLoad = false
             })
         },

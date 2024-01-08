@@ -512,6 +512,7 @@
                     width: 18px;
                     height: 18px;
                     margin: 4px;
+                    border-width: 2px;
                 }
             }
         }
@@ -1586,44 +1587,36 @@
         padding: 0 24px;
         margin-bottom: 16px;
 
-        .dialog-newmsg,
         .dialog-goto {
             position: absolute;
+            top: -48px;
             right: 30px;
-            color: #ffffff;
-            background-color: #555555;
-            cursor: pointer;
             z-index: 2;
-            transition: all 0.2s;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: $primary-text-color;
+            box-shadow: 0 0 4px 0 rgba($primary-text-color, 0.2);
+            background-color: #ffffff;
+            border: 1px solid #eeeeee;
+            cursor: pointer;
             user-select: none;
-            pointer-events: none;
-            opacity: 0;
-            transform: scale(0);
-        }
-
-        .dialog-newmsg {
-            display: block;
-            top: -44px;
-            height: 30px;
-            line-height: 30px;
-            font-size: 12px;
-            padding: 0 12px;
-            border-radius: 16px;
-        }
-
-        .dialog-goto {
             display: flex;
             align-content: center;
             justify-content: center;
-            color: $primary-text-color;
-            background-color: #ffffff;
-            border: 1px solid #eeeeee;
-            box-shadow: 0 0 4px 0 rgba($primary-text-color, 0.2);
-            top: -48px;
-            width: 40px;
-            height: 40px;
-            line-height: 38px;
-            border-radius: 50%;
+            animation: dialog-goto-animation 200ms ease-out forwards;
+
+            .ivu-badge {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                .ivu-badge-count {
+                    right: unset;
+                    transform: unset;
+                    border: none;
+                }
+            }
 
             .taskfont {
                 font-size: 24px;
@@ -1700,22 +1693,6 @@
                         }
                     }
                 }
-            }
-        }
-
-        &.newmsg {
-            .dialog-newmsg {
-                pointer-events: auto;
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        &.goto {
-            .dialog-goto {
-                pointer-events: auto;
-                opacity: 1;
-                transform: scale(1);
             }
         }
     }
@@ -2402,7 +2379,6 @@ body.window-portrait {
                     width: calc(100% + 20px);
                 }
             }
-            .dialog-newmsg,
             .dialog-goto {
                 right: 16px;
             }
@@ -2430,6 +2406,17 @@ body.window-portrait {
                 }
             }
         }
+    }
+}
+
+@keyframes dialog-goto-animation {
+    from {
+        opacity: 0;
+        transform: scale(0);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
     }
 }
 
