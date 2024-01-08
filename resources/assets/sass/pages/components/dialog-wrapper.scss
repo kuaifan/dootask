@@ -521,7 +521,8 @@
     .dialog-position {
         position: relative;
         z-index: 2;
-        height: 0;
+        height: 1px;   // 不加高度iOS动画无效果
+        margin-bottom: -1px;
         width: 100%;
         display: flex;
         align-items: center;
@@ -2434,11 +2435,11 @@ body.window-portrait {
 
 @keyframes position-in-animation {
     from {
+        transform: translate3d(100%, 0, 0);
         opacity: 0;
-        transform: translateX(100%);
     }
     to {
+        transform: translate3d(0%, 0, 0);
         opacity: 1;
-        transform: translateX(0);
     }
 }

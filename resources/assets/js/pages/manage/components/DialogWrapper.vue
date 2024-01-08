@@ -140,7 +140,7 @@
         <div v-if="topShow" class="dialog-top-message" @click="onPosTop">
             <div class="dialog-top-message-warp">
                 <div class="dialog-top-message-font">
-                    <i class="taskfont">&#xe7e4;</i>
+                    <i class="taskfont">&#xe7e6;</i>
                 </div>
                 <div class="dialog-top-message-content">
                     <p class="content">
@@ -318,7 +318,7 @@
                                 <span>{{ $L(operateItem.todo ? '取消待办' : '设待办') }}</span>
                             </li>
                             <li @click="onOperate('top')">
-                                <i class="taskfont" v-html="dialogData.top_msg_id == operateItem.id ? '&#xe7e2;' : '&#xe7e4;'"></i>
+                                <i class="taskfont" v-html="dialogData.top_msg_id == operateItem.id ? '&#xe7e3;' : '&#xe7e6;'"></i>
                                 <span>{{ $L(dialogData.top_msg_id == operateItem.id ? '取消置顶' : '置顶') }}</span>
                             </li>
                             <li v-if="msgType !== ''" @click="onOperate('pos')">
@@ -956,20 +956,24 @@ export default {
             });
         },
 
+        isDefaultSize() {
+            return this.windowScrollY === 0 && !this.androidKeyboardVisible
+        },
+
         quickShow() {
-            return this.quickMsgs.length > 0 && this.windowScrollY === 0 && this.quoteId === 0
+            return this.quickMsgs.length > 0 && this.isDefaultSize && this.quoteId === 0
         },
 
         todoShow() {
-            return this.todoList.length > 0 && this.windowScrollY === 0 && this.quoteId === 0
+            return this.todoList.length > 0 && this.isDefaultSize && this.quoteId === 0
         },
 
         tagShow() {
-            return this.msgTags.length > 1 && this.windowScrollY === 0 && !this.searchShow
+            return this.msgTags.length > 1 && this.isDefaultSize && !this.searchShow
         },
 
         topShow() {
-            return this.topMsg && this.windowScrollY === 0 && !this.searchShow && this.msgType === ''
+            return this.topMsg && this.isDefaultSize && !this.searchShow && this.msgType === ''
         },
 
         wrapperClass() {
@@ -1358,6 +1362,7 @@ export default {
 
         windowHeight() {
             this.androidKeyboardVisible = $A.isAndroid() && $A.eeuiAppKeyboardStatus()
+            requestAnimationFrame(this.$refs.input.updateTools)
         },
 
         dialogDrag(val) {
