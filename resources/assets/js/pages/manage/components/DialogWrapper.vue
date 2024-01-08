@@ -170,42 +170,44 @@
         </div>
 
         <!--消息列表-->
-        <VirtualList
-            ref="scroller"
-            class="dialog-scroller scrollbar-virtual"
-            active-prefix="item"
-            :data-key="'id'"
-            :data-sources="allMsgs"
-            :data-component="msgItem"
+        <div ref="msgs" class="dialog-msgs">
+            <VirtualList
+                ref="scroller"
+                class="dialog-scroller scrollbar-virtual"
+                active-prefix="item"
+                :data-key="'id'"
+                :data-sources="allMsgs"
+                :data-component="msgItem"
 
-            :item-class-add="itemClassAdd"
-            :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, unreadMsgId, scrollIng, readEnabled}"
-            :estimate-size="dialogData.type=='group' ? 105 : 77"
-            :keeps="keeps"
-            :disabled="scrollDisabled"
-            @activity="onActivity"
-            @scroll="onScroll"
-            @range="onRange"
-            @totop="onPrevPage"
-            @resized="onItemRendered"
+                :item-class-add="itemClassAdd"
+                :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, unreadMsgId, scrollIng, readEnabled}"
+                :estimate-size="dialogData.type=='group' ? 105 : 77"
+                :keeps="keeps"
+                :disabled="scrollDisabled"
+                @activity="onActivity"
+                @scroll="onScroll"
+                @range="onRange"
+                @totop="onPrevPage"
+                @resized="onItemRendered"
 
-            @on-mention="onMention"
-            @on-longpress="onLongpress"
-            @on-view-reply="onViewReply"
-            @on-view-text="onViewText"
-            @on-view-file="onViewFile"
-            @on-down-file="onDownFile"
-            @on-reply-list="onReplyList"
-            @on-error="onError"
-            @on-emoji="onEmoji"
-            @on-show-emoji-user="onShowEmojiUser">
-            <template #header>
-                <div v-if="(allMsgs.length === 0 && loadIng) || prevId > 0" class="dialog-item loading">
-                    <div v-if="scrollOffset < 100" class="dialog-wrapper-loading"></div>
-                </div>
-                <div v-else-if="allMsgs.length === 0" class="dialog-item nothing">{{$L('暂无消息')}}</div>
-            </template>
-        </VirtualList>
+                @on-mention="onMention"
+                @on-longpress="onLongpress"
+                @on-view-reply="onViewReply"
+                @on-view-text="onViewText"
+                @on-view-file="onViewFile"
+                @on-down-file="onDownFile"
+                @on-reply-list="onReplyList"
+                @on-error="onError"
+                @on-emoji="onEmoji"
+                @on-show-emoji-user="onShowEmojiUser">
+                <template #header>
+                    <div v-if="(allMsgs.length === 0 && loadIng) || prevId > 0" class="dialog-item loading">
+                        <div v-if="scrollOffset < 100" class="dialog-wrapper-loading"></div>
+                    </div>
+                    <div v-else-if="allMsgs.length === 0" class="dialog-item nothing">{{$L('暂无消息')}}</div>
+                </template>
+            </VirtualList>
+        </div>
 
         <!--底部输入-->
         <div ref="footer" class="dialog-footer" @click="onActive">
@@ -725,7 +727,6 @@ export default {
 
             scrollOffset: 0,
             scrollTail: 0,
-            scrollerHeight: 0,
 
             preventMoreLoad: false,
             preventToBottom: false,
@@ -1210,18 +1211,18 @@ export default {
                     return
                 }
                 this.$nextTick(_ => {
+                    if (this.$refs.msgs) {
+                        if (!this.observers.find(({key}) => key === 'scroller')) {
+                            const scrollerObserver = new ResizeObserver(this.onResizeEvent)
+                            scrollerObserver.observe(this.$refs.msgs);
+                            this.observers.push({key: 'scroller', observer: scrollerObserver})
+                        }
+                    }
                     if (this.$refs.footer) {
                         if (!this.observers.find(({key}) => key === 'footer')) {
                             const footerObserver = new ResizeObserver(this.onResizeEvent)
                             footerObserver.observe(this.$refs.footer);
                             this.observers.push({key: 'footer', observer: footerObserver})
-                        }
-                    }
-                    if (this.$refs.scroller) {
-                        if (!this.observers.find(({key}) => key === 'scroller')) {
-                            const scrollerObserver = new ResizeObserver(this.onResizeEvent)
-                            scrollerObserver.observe(this.$refs.scroller.$el);
-                            this.observers.push({key: 'scroller', observer: scrollerObserver})
                         }
                     }
                 })
@@ -2056,12 +2057,27 @@ export default {
 
         onResizeEvent(entries) {
             entries.some(({target, contentRect}) => {
-                if (target === this.$refs.footer) {
+                if (target === this.$refs.msgs) {
+                    this.onMsgsResize(contentRect)
+                } else if (target === this.$refs.footer) {
                     this.onFooterResize()
-                } else if (target === this.$refs.scroller?.$el) {
-                    this.onScrollerResize(contentRect)
                 }
             })
+        },
+
+        onMsgsResize({height}) {
+            this.$refs.scroller.$el.style.height = `${height}px`
+            //
+            if (typeof this.__msgs_height !== "undefined") {
+                const size = this.__msgs_height - height;
+                if (size !== 0) {
+                    const {offset, tail} = this.scrollInfo()
+                    if (tail > 0) {
+                        this.onToOffset(offset + size)
+                    }
+                }
+            }
+            this.__msgs_height = height;
         },
 
         onFooterResize() {
@@ -2070,22 +2086,9 @@ export default {
             }
             const footer = this.$refs.footer;
             const marginSize = parseInt($A.css(footer, 'marginTop')) + parseInt($A.css(footer, 'marginBottom'))
-            if (this.$refs.scroller) {
-                this.$refs.scroller.$el.style.marginBottom = `${footer.getBoundingClientRect().height + marginSize}px`;
+            if (this.$refs.msgs) {
+                this.$refs.msgs.style.marginBottom = `${footer.getBoundingClientRect().height + marginSize}px`;
             }
-        },
-
-        onScrollerResize({height}) {
-            if (this.scrollerHeight > 0) {
-                const diff = this.scrollerHeight - height;
-                if (diff !== 0) {
-                    const {offset, tail} = this.scrollInfo()
-                    if (tail > 0) {
-                        this.onToOffset(offset + diff)
-                    }
-                }
-            }
-            this.scrollerHeight = height;
         },
 
         onActive() {
