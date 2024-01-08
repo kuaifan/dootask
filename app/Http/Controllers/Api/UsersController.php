@@ -2076,12 +2076,15 @@ class UsersController extends AbstractController
                 // 跟谁聊天最多（发消息的次数。可以是群、私聊、机器人除外）
                 'longest_chat_user' => DB::table('web_socket_dialogs as d')
                     ->selectRaw("
-                            {$prefix}d.id,
-                            {$prefix}d.name as dialog_name,
-                            {$prefix}d.type as dialog_type,
-                            {$prefix}d.group_type as dialog_group_type,
-                            {$prefix}m.chat_num
-                        ")
+                        {$prefix}d.id,
+                        {$prefix}d.name as dialog_name,
+                        {$prefix}d.type as dialog_type,
+                        {$prefix}d.group_type as dialog_group_type,
+                        {$prefix}m.chat_num,
+                        {$prefix}u.userid,
+                        {$prefix}u.email as user_email,
+                        {$prefix}u.nickname as user_nickname
+                    ")
                     ->leftJoinSub(function ($query) use ($user, $year) {
                         $query->select('web_socket_dialog_msgs.dialog_id', DB::raw('count(*) as chat_num'))
                             ->from('web_socket_dialog_msgs')
