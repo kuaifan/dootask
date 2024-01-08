@@ -177,7 +177,7 @@ services:
 
   okr:
     container_name: "dootask-okr-${APP_ID}"
-    image: "kuaifan/doookr:0.0.26"
+    image: "kuaifan/doookr:0.0.27"
     environment:
       TZ: "${TIMEZONE:-PRC}"
       DOO_TASK_URL: "http://${APP_IPPR}.3"
@@ -186,6 +186,7 @@ services:
       MYSQL_DBNAME: "${DB_DATABASE}"
       MYSQL_USERNAME: "${DB_USERNAME}"
       MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_PREFIX: "${DB_PREFIX}"
       DEMO_DATA: true
     networks:
       extnetwork:
