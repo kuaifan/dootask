@@ -153,7 +153,7 @@
                     </p>
                 </div>
                 <div class="dialog-top-message-btn">
-                    <Loading v-if="topViewPosLoad" type="pure"/>
+                    <Loading v-if="topPosLoad" type="pure"/>
                     <i v-else class="taskfont">&#xee15;</i>
                     <i class="taskfont" @click.stop="onCancelTop(topMsg)">&#xe6e5;</i>
                 </div>
@@ -250,16 +250,14 @@
                 :dialog-id="dialogId"
                 :emoji-bottom="windowPortrait"
                 :maxlength="200000"
+                :placeholder="$L('输入消息...')"
                 @on-focus="onEventFocus"
                 @on-blur="onEventBlur"
                 @on-more="onEventMore"
                 @on-file="sendFileMsg"
                 @on-send="sendMsg"
                 @on-record="sendRecord"
-                @on-record-state="onRecordState"
-                @on-emoji-visible-change="onEventEmojiVisibleChange"
-                @on-height-change="onHeightChange"
-                :placeholder="$L('输入消息...')"/>
+                @on-record-state="onRecordState"/>
         </div>
 
         <!--长按、右键-->
@@ -670,7 +668,9 @@ export default {
             msgNew: 0,
             msgType: '',
             loadIng: 0,
-            isFocus: false,
+
+            focusLazy: false,
+            focusTimer: null,
 
             allMsgs: [],
             tempMsgs: [],
@@ -725,6 +725,7 @@ export default {
 
             scrollOffset: 0,
             scrollTail: 0,
+            scrollerHeight: 0,
 
             preventMoreLoad: false,
             preventToBottom: false,
@@ -763,6 +764,7 @@ export default {
             observers: [],
 
             unreadMsgId: 0,                     // 最早未读消息id
+            topPosLoad: false,                  // 置顶消息定位加载中
             positionLoad: 0,                    // 定位跳转加载中
             positionShow: false,                // 定位跳转显示
             renderMsgNum: 0,                    // 渲染消息数量
@@ -771,8 +773,7 @@ export default {
             listPreparedStatus: false,          // 列表准备完成
             selectedTextStatus: false,          // 是否选择文本
             scrollToBottomAndRefresh: false,    // 滚动到底部重新获取消息
-
-            topViewPosLoad: false,              // 置顶消息定位加载中
+            androidKeyboardVisible: false,      // Android键盘是否可见
         }
     },
 
@@ -991,9 +992,9 @@ export default {
             return [];
         },
 
-        footerPaddingBottom({keyboardType, keyboardHeight, safeAreaBottom, windowScrollY, isMessenger, isFocus}) {
+        footerPaddingBottom({keyboardType, keyboardHeight, safeAreaBottom, windowScrollY, isMessenger, focusLazy}) {
             if (windowScrollY === 0
-                && isFocus
+                && focusLazy
                 && isMessenger
                 && keyboardType === "show"
                 && keyboardHeight > 0
@@ -1335,19 +1336,13 @@ export default {
                 const tmpList = newList.filter(item => item.id && item.id > lastId)
                 this.msgNew += tmpList.length
             } else {
-                if (!this.preventToBottom) {
-                    this.$nextTick(this.onToBottom)
-                }
+                !this.preventToBottom && this.$nextTick(this.onToBottom)
             }
         },
 
         windowScrollY(val) {
             if ($A.isIos() && !this.$slots.head) {
-                const {tail} = this.scrollInfo();
                 this.$refs.nav.style.marginTop = `${val}px`
-                if (tail <= 55) {
-                    requestAnimationFrame(this.onToBottom)
-                }
             }
         },
 
@@ -1360,16 +1355,8 @@ export default {
             }
         },
 
-        windowHeight(current, before) {
-            if (current < before
-                && $A.isEEUiApp
-                && $A.isAndroid()
-                && this.isFocus) {
-                const {tail} = this.scrollInfo();
-                if (tail <= 55 + (before - current)) {
-                    requestAnimationFrame(this.onToBottom)
-                }
-            }
+        windowHeight() {
+            this.androidKeyboardVisible = $A.isAndroid() && $A.eeuiAppKeyboardStatus()
         },
 
         dialogDrag(val) {
@@ -1386,7 +1373,10 @@ export default {
 
         footerPaddingBottom(val) {
             this.$refs.footer.style.paddingBottom = `${val}px`;
-            requestAnimationFrame(this.onFooterResize)
+            requestAnimationFrame(_ => {
+                this.$refs.input.updateTools()
+                this.onFooterResize()
+            })
         },
 
         readLoadNum() {
@@ -1820,10 +1810,10 @@ export default {
         },
 
         chatDragOver(show, e) {
-            let random = (this.__dialogDrag = $A.randomString(8));
+            let random = (this.__dialog_drag = $A.randomString(8));
             if (!show) {
                 setTimeout(() => {
-                    if (random === this.__dialogDrag) {
+                    if (random === this.__dialog_drag) {
                         this.dialogDrag = show;
                     }
                 }, 150);
@@ -1977,12 +1967,13 @@ export default {
         },
 
         onEventFocus() {
-            this.isFocus = true
+            this.focusTimer && clearTimeout(this.focusTimer)
+            this.focusLazy = true
             this.$emit("on-focus")
         },
 
         onEventBlur() {
-            this.isFocus = false
+            this.focusTimer = setTimeout(_ => this.focusLazy = false, 10)
             this.$emit("on-blur")
         },
 
@@ -2063,29 +2054,12 @@ export default {
             });
         },
 
-        onEventEmojiVisibleChange(val) {
-            if (val && this.windowPortrait) {
-                this.onToBottom();
-            }
-        },
-
-        onHeightChange({newVal, oldVal}) {
-            this.onFooterResize();
-            const diff = newVal - oldVal;
-            if (diff !== 0) {
-                const {offset, tail} = this.scrollInfo()
-                if (tail > 0) {
-                    this.onToOffset(offset + diff)
-                }
-            }
-        },
-
         onResizeEvent(entries) {
-            entries.some(({target}) => {
+            entries.some(({target, contentRect}) => {
                 if (target === this.$refs.footer) {
                     this.onFooterResize()
                 } else if (target === this.$refs.scroller?.$el) {
-                    this.onScrollerResize()
+                    this.onScrollerResize(contentRect)
                 }
             })
         },
@@ -2101,14 +2075,17 @@ export default {
             }
         },
 
-        onScrollerResize() {
-            if (!this.$refs.scroller) {
-                return
+        onScrollerResize({height}) {
+            if (this.scrollerHeight > 0) {
+                const diff = this.scrollerHeight - height;
+                if (diff !== 0) {
+                    const {offset, tail} = this.scrollInfo()
+                    if (tail > 0) {
+                        this.onToOffset(offset + diff)
+                    }
+                }
             }
-            const {tail} = this.scrollInfo();
-            if (tail <= 55) {
-                requestAnimationFrame(this.onToBottom)
-            }
+            this.scrollerHeight = height;
         },
 
         onActive() {
@@ -2149,13 +2126,13 @@ export default {
                 return false
             }
             if (recovery) {
-                if (this.__markOffset === undefined) {
+                if (this.__mark_offset === undefined) {
                     return false
                 }
-                this.onToOffset(scroller.getScrollSize() - scroller.getClientSize() - this.__markOffset)
-                this.__markOffset = undefined
+                this.onToOffset(scroller.getScrollSize() - scroller.getClientSize() - this.__mark_offset)
+                this.__mark_offset = undefined
             } else {
-                this.__markOffset = scroller.getScrollSize() - scroller.getClientSize() - scroller.getOffset()
+                this.__mark_offset = scroller.getScrollSize() - scroller.getClientSize() - scroller.getOffset()
             }
             return true
         },
@@ -2251,9 +2228,7 @@ export default {
                 this.renderMsgNum = 0
                 this.onFooterResize()
                 !this.onMarkOffset(true) && this.onToBottom()
-            }
-            //
-            if (this.renderMsgSizes.has(id)
+            } else if (this.renderMsgSizes.has(id)
                 && size > this.renderMsgSizes.get(id)
                 && size - this.renderMsgSizes.get(id) === this.scrollInfo().tail) {
                 this.onToBottom()
@@ -3424,9 +3399,9 @@ export default {
             if (!this.topMsg) {
                 return
             }
-            this.topViewPosLoad = true
+            this.topPosLoad = true
             this.onPositionId(this.topMsg.id).finally(_ => {
-                this.topViewPosLoad = false
+                this.topPosLoad = false
             })
         },
 

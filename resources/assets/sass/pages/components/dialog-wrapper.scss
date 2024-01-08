@@ -1615,6 +1615,10 @@
                     right: unset;
                     transform: unset;
                     border: none;
+                    box-shadow: none;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
                 }
             }
 

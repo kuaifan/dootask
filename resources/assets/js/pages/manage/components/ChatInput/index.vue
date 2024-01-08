@@ -47,6 +47,7 @@
                 <!-- 桌面端表情（漂浮） -->
                 <li>
                     <EPopover
+                        ref="emoji"
                         v-if="!emojiBottom"
                         v-model="showEmoji"
                         :visibleArrow="false"
@@ -77,6 +78,7 @@
                 <!-- 图片文件 -->
                 <li>
                     <EPopover
+                        ref="more"
                         v-model="showMore"
                         :visibleArrow="false"
                         placement="top"
@@ -127,6 +129,7 @@
                     v-touchmouse="clickSend"
                     v-longpress="{callback: onShowMenu, delay: 300}">
                     <EPopover
+                        ref="menu"
                         v-model="showMenu"
                         :visibleArrow="false"
                         trigger="manual"
@@ -295,9 +298,6 @@ export default {
             emojiQuickKey: '',
             emojiQuickItems: [],
 
-            wrapperObserver: null,
-            wrapperHeight: 0,
-
             recordReady: false,
             recordRec: null,
             recordBlob: null,
@@ -330,9 +330,6 @@ export default {
     mounted() {
         this.init();
         //
-        this.wrapperObserver = new ResizeObserver(this.onResizeEvent)
-        this.wrapperObserver.observe(this.$el);
-        //
         this.recordInter = setInterval(_ => {
             if (this.recordState === 'ing') {
                 // 录音中，但录音时长不增加则取消录音
@@ -363,10 +360,6 @@ export default {
         }
         if (this.recordRec) {
             this.recordRec = null
-        }
-        if (this.wrapperObserver) {
-            this.wrapperObserver.disconnect()
-            this.wrapperObserver = null
         }
         if (this.recordInter) {
             clearInterval(this.recordInter)
@@ -573,7 +566,6 @@ export default {
             } else if (this.rangeIndex > 0) {
                 this.quill.setSelection(this.rangeIndex)
             }
-            this.$emit('on-emoji-visible-change', val)
         },
 
         emojiQuickShow(val) {
@@ -623,10 +615,6 @@ export default {
                 this.$refs.recwave.innerHTML = ""
             }
             this.$emit('on-record-state', state)
-        },
-
-        wrapperHeight(newVal, oldVal) {
-            this.$emit('on-height-change', {newVal, oldVal})
         },
 
         fullInput(val) {
@@ -817,14 +805,6 @@ export default {
                     }
                 });
             }
-        },
-
-        onResizeEvent(entries) {
-            entries.some(({target, contentRect}) => {
-                if (target === this.$el) {
-                    this.wrapperHeight = contentRect.height;
-                }
-            })
         },
 
         quillMention() {
@@ -1660,6 +1640,22 @@ export default {
             let value = (content + '').replace(/^(<p>\s*<\/p>)+|(<p>\s*<\/p>)+$/gi, '')
             return value.replace(/^(<p><br\/*><\/p>)+|(<p><br\/*><\/p>)+$/gi, '')
         },
+
+        updateTools() {
+            if (this.showEmoji) {
+                this.$refs.emoji?.updatePopper()
+            }
+            if (this.showMore) {
+                this.$refs.more?.updatePopper()
+            }
+            if (this.showMenu) {
+                this.$refs.menu?.updatePopper()
+            }
+            const mention = this.quill?.getModule("mention")
+            if (mention.isOpen) {
+                mention.setMentionContainerPosition()
+            }
+        }
     }
 }
 </script>
