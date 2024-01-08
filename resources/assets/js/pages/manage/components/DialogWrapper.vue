@@ -160,17 +160,18 @@
             </div>
         </div>
 
-        <!--跳转提示-->
-        <div v-if="positionShow && positionMsg" class="dialog-position">
-            <div class="position-label" @click="onPositionMark(positionMsg.msg_id)">
-                <Icon v-if="positionLoad > 0" type="ios-loading" class="icon-loading"></Icon>
-                <i v-else class="taskfont">&#xe624;</i>
-                {{positionMsg.label}}
-            </div>
-        </div>
-
-        <!--消息列表-->
+        <!--消息部分-->
         <div ref="msgs" class="dialog-msgs">
+            <!--定位提示-->
+            <div v-if="positionShow && positionMsg" class="dialog-position">
+                <div class="position-label" @click="onPositionMark(positionMsg.msg_id)">
+                    <Icon v-if="positionLoad > 0" type="ios-loading" class="icon-loading"></Icon>
+                    <i v-else class="taskfont">&#xe624;</i>
+                    {{positionMsg.label}}
+                </div>
+            </div>
+
+            <!--消息列表-->
             <VirtualList
                 ref="scroller"
                 class="dialog-scroller scrollbar-virtual"
@@ -765,7 +766,7 @@ export default {
             observers: [],
 
             unreadMsgId: 0,                     // 最早未读消息id
-            topPosLoad: false,                  // 置顶消息定位加载中
+            topPosLoad: false,                  // 置顶跳转加载中
             positionLoad: 0,                    // 定位跳转加载中
             positionShow: false,                // 定位跳转显示
             renderMsgNum: 0,                    // 渲染消息数量
@@ -2124,7 +2125,10 @@ export default {
             if (scroller) {
                 scroller.stopToBottom();
                 scroller.scrollToOffset(offset);
-                setTimeout(_ => scroller.scrollToOffset(offset), 10)  // 预防出现白屏的情况
+                setTimeout(_ => {
+                    scroller.scrollToOffset(offset)
+                    scroller.virtual.handleFront()
+                }, 10)  // 预防出现白屏的情况
             }
         },
 
@@ -2223,7 +2227,6 @@ export default {
                         offset -= 36
                     }
                     this.onToOffset(offset)
-                    setTimeout(_ => scroller.virtual.handleFront(), 10)
                 });
             }).catch(() => {})
         },

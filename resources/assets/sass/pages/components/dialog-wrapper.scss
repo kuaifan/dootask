@@ -518,12 +518,16 @@
         }
     }
 
-    .dialog-position {
+    .dialog-msgs {
+        flex: 1;
         position: relative;
+    }
+
+    .dialog-position {
+        position: absolute;
+        top: 24px;
+        right: 0;
         z-index: 2;
-        height: 1px;   // 不加高度iOS动画无效果
-        margin-bottom: -1px;
-        width: 100%;
         display: flex;
         align-items: center;
         justify-content: flex-end;
@@ -533,9 +537,6 @@
         animation-delay: 300ms;
 
         .position-label {
-            position: absolute;
-            top: 24px;
-            right: 0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -552,11 +553,6 @@
                 line-height: 14px;
             }
         }
-    }
-
-    .dialog-msgs {
-        flex: 1;
-        position: relative;
     }
 
     .dialog-scroller {
