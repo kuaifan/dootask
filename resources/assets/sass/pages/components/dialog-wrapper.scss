@@ -1797,24 +1797,25 @@ body:not(.window-touch) {
 
                 .dialog-wrapper-forward-body {
                     .dialog-wrapper {
-                        position: relative !important;
+                        position: relative;
 
                         .dialog-scroller {
-                            padding: 0 !important;
+                            position: relative;
+                            padding: 0;
 
                             .dialog-item {
                                 .dialog-view {
                                     width: 100%;
-                                    max-width: 100% !important;
-                                    margin: 0 !important;
+                                    max-width: 100%;
+                                    margin: 0;
 
                                     .dialog-head {
                                         width: 100%;
-                                        border-radius: 8px !important;
+                                        border-radius: 8px;
                                     }
 
                                     .dialog-foot {
-                                        display: none !important;
+                                        display: none;
                                     }
                                 }
 
@@ -1827,10 +1828,10 @@ body:not(.window-touch) {
                                         background-color: #F4F5F7;
 
                                         .content-text {
-                                            color: #303133 !important;
+                                            color: #303133;
 
                                             .markdown-body {
-                                                color: #303133 !important;
+                                                color: #303133;
                                             }
                                         }
 
@@ -1842,7 +1843,7 @@ body:not(.window-touch) {
                                             .reply-avatar {
                                                 .bot,
                                                 .common-avatar {
-                                                    color: #84C56A !important;
+                                                    color: #84C56A;
                                                 }
                                             }
                                         }

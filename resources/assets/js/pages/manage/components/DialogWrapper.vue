@@ -460,7 +460,7 @@
             </div>
             <div class="twice-affirm-body-extend">
                 <div class="dialog-wrapper-forward-body">
-                    <div class="dialog-wrapper ">
+                    <div class="dialog-wrapper">
                         <div class="dialog-scroller">
                             <DialogItem :source="operateItem" simpleView :dialogAvatar="false"/>
                         </div>
