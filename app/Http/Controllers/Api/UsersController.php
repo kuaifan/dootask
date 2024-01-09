@@ -2053,8 +2053,60 @@ class UsersController extends AbstractController
                 ->whereNotNull('t.start_at')
                 ->whereNotNull('t.complete_at');
 
+            // 最多聊天用户
+            $longestChat = DB::table('web_socket_dialogs as d')
+                ->selectRaw("
+                    {$prefix}d.id,
+                    {$prefix}d.name as dialog_name,
+                    {$prefix}d.type as dialog_type,
+                    {$prefix}d.group_type as dialog_group_type,
+                    {$prefix}m.chat_num,
+                    {$prefix}u.userid,
+                    {$prefix}u.email as user_email,
+                    {$prefix}u.nickname as user_nickname,
+                    ifnull({$prefix}d.avatar, {$prefix}u.userimg) as avatar
+                ")
+                ->leftJoinSub(function ($query) use ($user, $year) {
+                    $query->select('web_socket_dialog_msgs.dialog_id', DB::raw('count(*) as chat_num'))
+                        ->from('web_socket_dialog_msgs')
+                        ->where('web_socket_dialog_msgs.userid', $user->userid)
+                        ->whereYear('web_socket_dialog_msgs.created_at', $year)
+                        ->groupBy('web_socket_dialog_msgs.dialog_id');
+                }, 'm', 'm.dialog_id', '=', 'd.id')
+                ->leftJoin('web_socket_dialog_users as du', function ($query) use ($user) {
+                    $query->on('d.id', '=', 'du.dialog_id');
+                    $query->where('du.userid', '!=', $user->userid);
+                    $query->where('d.type', 'user');
+                })
+                ->leftJoin('users as u', 'du.userid', '=', 'u.userid')
+                ->where('d.type', '!=', 'user')
+                ->orWhere('u.bot', 0)
+                ->orderByDesc('m.chat_num')
+                ->first();
+            if (!empty($longestChat)) {
+                if ($longestChat->avatar) {
+                    $longestChat->avatar = url($longestChat->avatar);
+                } else if ($longestChat->dialog_type == 'user') {
+                    $longestChat->avatar = User::getAvatar($longestChat->userid, $longestChat->avatar, $longestChat->user_email, $longestChat->user_nickname);
+                } else {
+                    $longestChat->avatar = match ($longestChat->dialog_group_type) {
+                        'department' => url("images/avatar/default_group_department.png"),
+                        'project' => url("images/avatar/default_group_project.png"),
+                        'task' => url("images/avatar/default_group_task.png"),
+                        default => url("images/avatar/default_group_people.png"),
+                    };
+                }
+            }
+
             //
             $_A["__annual__report_".$user->userid] = [
+                // 本人信息
+                'user' => [
+                    'userid' => $user->userid,
+                    'email' => $user->email,
+                    'nickname' => $user->nickname,
+                    'avatar' => User::getAvatar($user->userid, $user->userimg, $user->email, $user->nickname)
+                ],
                 // 入职时间（年月日）
                 'hire_date' => date("Y-m-d", $hireTimestamp),
                 // 在职时间（天为单位）
@@ -2074,33 +2126,7 @@ class UsersController extends AbstractController
                         })->max('report_time')
                 ),
                 // 跟谁聊天最多（发消息的次数。可以是群、私聊、机器人除外）
-                'longest_chat_user' => DB::table('web_socket_dialogs as d')
-                    ->selectRaw("
-                        {$prefix}d.id,
-                        {$prefix}d.name as dialog_name,
-                        {$prefix}d.type as dialog_type,
-                        {$prefix}d.group_type as dialog_group_type,
-                        {$prefix}m.chat_num,
-                        {$prefix}u.userid,
-                        {$prefix}u.email as user_email,
-                        {$prefix}u.nickname as user_nickname
-                    ")
-                    ->leftJoinSub(function ($query) use ($user, $year) {
-                        $query->select('web_socket_dialog_msgs.dialog_id', DB::raw('count(*) as chat_num'))
-                            ->from('web_socket_dialog_msgs')
-                            ->where('web_socket_dialog_msgs.userid', $user->userid)
-                            ->whereYear('web_socket_dialog_msgs.created_at', $year)
-                            ->groupBy('web_socket_dialog_msgs.dialog_id');
-                    }, 'm', 'm.dialog_id', '=', 'd.id')
-                    ->leftJoin('web_socket_dialog_users as du', function ($query) {
-                        $query->on('d.id', '=', 'du.dialog_id');
-                        $query->where('d.type', 'user');
-                    })
-                    ->leftJoin('users as u', 'du.userid', '=', 'u.userid')
-                    ->where('d.type', '!=', 'user')
-                    ->orWhere('u.bot', 0)
-                    ->orderByDesc('m.chat_num')
-                    ->first(),
+                'longest_chat_user' => $longestChat,
                 // 跟所有ai机器人聊天的次数
                 'chat_al_num' => DB::table('web_socket_dialog_msgs as m')
                     ->join('web_socket_dialogs as d', 'd.id', '=', 'm.dialog_id')
