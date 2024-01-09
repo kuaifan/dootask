@@ -25,6 +25,7 @@ use App\Models\UserDepartment;
 use App\Models\WebSocketDialog;
 use App\Models\UserCheckinRecord;
 use App\Models\WebSocketDialogMsg;
+use Illuminate\Support\Facades\DB;
 use App\Models\UserEmailVerification;
 use App\Module\AgoraIO\AgoraTokenGenerator;
 
@@ -2001,5 +2002,182 @@ class UsersController extends AbstractController
         }
         // 返回
         return Base::retSuccess('success', $lists);
+    }
+
+    /**
+     * @api {get} api/users/annual/report          34. 年度报告
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName annual__report
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function annual__report()
+    {
+        $user = User::auth();
+        //
+        global $_A;
+        if (!isset($_A["__annual__report_".$user->userid])) {
+            $year = '2023';
+            $time = '2300-01-01 00:00:01';
+            $prefix = \DB::getTablePrefix();
+            $hireTimestamp = strtotime($user->created_at);
+            DB::statement("SET SQL_MODE=''");
+
+            // 我的任务
+            $taskDb = DB::table('project_tasks as t')
+                ->join('project_task_users as tu', 't.id', '=', 'tu.task_id')
+                ->where('tu.owner', 1)
+                ->whereYear('t.created_at', $year)
+                ->where('tu.userid', $user->userid);
+
+            // 我的任务 - 时长（分钟）
+            $durationTaskDb = $taskDb->clone()
+                ->selectRaw("
+                    {$prefix}t.id,
+                    {$prefix}t.flow_item_name,
+                    {$prefix}t.name as task_name,
+                    {$prefix}p.name as project_name,
+                    {$prefix}c.name as project_column_name,
+                    {$prefix}t.start_at,
+                    {$prefix}t.end_at,
+                    {$prefix}t.complete_at,
+                    {$prefix}t.created_at,
+                    ifnull(TIMESTAMPDIFF(MINUTE, {$prefix}t.start_at, {$prefix}t.complete_at), 0) as duration
+                ")
+                ->leftJoin('projects as p', 'p.id', '=', 't.project_id')
+                ->leftJoin('project_columns as c', 'c.id', '=', 't.column_id')
+                ->whereNotNull('t.start_at')
+                ->whereNotNull('t.complete_at');
+
+            // 最多聊天用户
+            $longestChat = DB::table('web_socket_dialogs as d')
+                ->selectRaw("
+                    {$prefix}d.id,
+                    {$prefix}d.name as dialog_name,
+                    {$prefix}d.type as dialog_type,
+                    {$prefix}d.group_type as dialog_group_type,
+                    {$prefix}m.chat_num,
+                    {$prefix}u.userid,
+                    {$prefix}u.email as user_email,
+                    {$prefix}u.nickname as user_nickname,
+                    ifnull({$prefix}d.avatar, {$prefix}u.userimg) as avatar
+                ")
+                ->leftJoinSub(function ($query) use ($user, $year) {
+                    $query->select('web_socket_dialog_msgs.dialog_id', DB::raw('count(*) as chat_num'))
+                        ->from('web_socket_dialog_msgs')
+                        ->where('web_socket_dialog_msgs.userid', $user->userid)
+                        ->whereYear('web_socket_dialog_msgs.created_at', $year)
+                        ->groupBy('web_socket_dialog_msgs.dialog_id');
+                }, 'm', 'm.dialog_id', '=', 'd.id')
+                ->leftJoin('web_socket_dialog_users as du', function ($query) use ($user) {
+                    $query->on('d.id', '=', 'du.dialog_id');
+                    $query->where('du.userid', '!=', $user->userid);
+                    $query->where('d.type', 'user');
+                })
+                ->leftJoin('users as u', 'du.userid', '=', 'u.userid')
+                ->where('d.type', '!=', 'user')
+                ->orWhere('u.bot', 0)
+                ->orderByDesc('m.chat_num')
+                ->first();
+            if (!empty($longestChat)) {
+                if ($longestChat->avatar) {
+                    $longestChat->avatar = url($longestChat->avatar);
+                } else if ($longestChat->dialog_type == 'user') {
+                    $longestChat->avatar = User::getAvatar($longestChat->userid, $longestChat->avatar, $longestChat->user_email, $longestChat->user_nickname);
+                } else {
+                    $longestChat->avatar = match ($longestChat->dialog_group_type) {
+                        'department' => url("images/avatar/default_group_department.png"),
+                        'project' => url("images/avatar/default_group_project.png"),
+                        'task' => url("images/avatar/default_group_task.png"),
+                        default => url("images/avatar/default_group_people.png"),
+                    };
+                }
+            }
+
+            //
+            $_A["__annual__report_".$user->userid] = [
+                // 本人信息
+                'user' => [
+                    'userid' => $user->userid,
+                    'email' => $user->email,
+                    'nickname' => $user->nickname,
+                    'avatar' => User::getAvatar($user->userid, $user->userimg, $user->email, $user->nickname)
+                ],
+                // 入职时间（年月日）
+                'hire_date' => date("Y-m-d", $hireTimestamp),
+                // 在职时间（天为单位）
+                'tenure_days' => floor((strtotime(date('Y-m-d')) - $hireTimestamp) / (24 * 60 * 60)),
+                // 最晚在线时间
+                'latest_online_time' => date(
+                    'Y-m-d H:i:s',
+                    UserCheckinRecord::whereUserid($user->userid)
+                        ->whereYear('created_at', $year)
+                        ->where(function ($query) {
+                            $query->where(function ($query) {
+                                $query->whereRaw('HOUR(FROM_UNIXTIME(report_time)) < 6');
+                                $query->whereRaw('DATE(FROM_UNIXTIME(report_time)) = CURDATE() - INTERVAL 1 DAY');
+                            })->orWhere(function ($query) {
+                                $query->whereRaw('DATE(FROM_UNIXTIME(report_time)) = CURDATE()');
+                            });
+                        })->max('report_time')
+                ),
+                // 跟谁聊天最多（发消息的次数。可以是群、私聊、机器人除外）
+                'longest_chat_user' => $longestChat,
+                // 跟所有ai机器人聊天的次数
+                'chat_al_num' => DB::table('web_socket_dialog_msgs as m')
+                    ->join('web_socket_dialogs as d', 'd.id', '=', 'm.dialog_id')
+                    ->join('web_socket_dialog_users as du', 'd.id', '=', 'du.dialog_id')
+                    ->join('users as u', 'du.userid', '=', 'u.userid')
+                    ->where('u.email', 'like', "%ai-%")
+                    ->where('u.bot', 1)
+                    ->where('m.userid', $user->userid)
+                    ->whereYear('m.created_at', $year)
+                    ->count(),
+                // 文件创建数量
+                'file_created_num' => File::whereCreatedId($user->userid)->whereYear('created_at', $year)->count(),
+                // 参与过的项目
+                'projects' => DB::table('projects as p')
+                    ->select('p.id', 'p.name')
+                    ->join('project_users as pu', 'p.id', '=', 'pu.project_id')
+                    ->join('project_task_users as ptu', 'p.id', '=', 'ptu.project_id')
+                    ->where(function($query) use ($user,$year) {
+                        $query->where('pu.userid', $user->userid);
+                        $query->whereYear('pu.created_at', $year);
+                    })
+                    ->orWhere(function($query) use ($user,$year) {
+                        $query->where('ptu.userid', $user->userid);
+                        $query->whereYear('ptu.created_at', $year);
+                    })
+                    ->groupBy('p.id')
+                    ->take(100)
+                    ->get(),
+                // 任务统计
+                'tasks' => [
+                    // 总数量
+                    'total' => $taskDb->count(),
+                    // 完成数量
+                    'completed' => $taskDb->clone()->whereNotNUll('t.complete_at')->count(),
+                    // 超时数量
+                    'overtime' => $taskDb->clone()->whereRaw("ifnull({$prefix}t.complete_at,'$time') > ifnull({$prefix}t.end_at,'$time')")->count(),
+                    // 做得最久的任务
+                    'longest_task' => $durationTaskDb->clone()->orderByDesc('duration')->first(),
+                    // 做得最快的任务
+                    'fastest_task' => $durationTaskDb->clone()->orderBy('duration')->first(),
+                    // 每个月完成多少个任务
+                    'month_completed_task' => $taskDb->clone()
+                        ->selectRaw("MONTH({$prefix}t.complete_at) AS month, COUNT({$prefix}t.id) AS num")
+                        ->whereNotNUll('t.complete_at')
+                        ->whereYear('t.complete_at', $year)
+                        ->groupBy('month')
+                        ->get()
+                ]
+            ];
+        }
+        //
+        return Base::retSuccess('success', $_A["__annual__report_".$user->userid]);
     }
 }
