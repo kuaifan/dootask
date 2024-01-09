@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.34.19]
+
+### Features
+
+- 更新okr
+- 添加年度报告接口
+
+### Performance
+
+- 年度汇报接口返回用户头像
+- 年度报告接口	 - 增加用户信息字段返回
+- 去掉未使用的引用
+- 优化滑动返回动画效果
+- 消息置顶滚动恢复
+- 优化消息Load效果
+
 ## [0.33.98]
 
 ### Bug Fixes
@@ -28,15 +44,12 @@ All notable changes to this project will be documented in this file.
 - 优化报告未读接口
 - 优化图片显示
 - 优化代码
-- 优化代码
 - 代码整理
 - 优化待审批流程数量接口
 - 代码优化
 - 优化未读消息提示
 - 优化预览消息
 - 优化缓存数据
-- 代码优化
-- 代码整理
 - 任务可见性用户 - 分表优化
 - 代码命名优化
 - 移动任务后，对应项目路径也要更改显示
@@ -70,13 +83,11 @@ All notable changes to this project will be documented in this file.
 - 优化未读消息提示动画
 - 优化消息更新机制
 - 优化缓存
-- 优化用户选择器
 
 ## [0.33.41]
 
 ### Bug Fixes
 
-- 更新导致的小问题
 - 更新导致的小问题
 
 ### Performance
@@ -108,7 +119,6 @@ All notable changes to this project will be documented in this file.
 - 优化消息阅读规则
 - Okr版本升级
 - 1.数据库迁移文件修复  2.转发样式优化
-- 兼容okr1.1版本
 - 兼容okr1.1版本
 - 整体数据库索引和字段类型优化
 - 项目列表数据库查询优化
@@ -184,7 +194,6 @@ All notable changes to this project will be documented in this file.
 - 添加一个 @我的 消息标签
 - 转发消息 - 添加单选模式
 - 转发消息 - 添加来源显示
-- 翻译
 - 首页改版 - 100%
 - 新增项目任务创建权限功能 - 90%
 - 更换calendar
@@ -194,10 +203,8 @@ All notable changes to this project will be documented in this file.
 
 - 优化消息阅读逻辑
 - 微应用优化
-- 微应用优化
 - 优化未读消息机制
 - 优化重连时消息列表跳回第一页的情况
-- 优化未读消息机制
 - 优化消息更新太快导致不更新数据的情况
 - 机器人添加清空上下文菜单
 - 优化翻译
@@ -206,22 +213,16 @@ All notable changes to this project will be documented in this file.
 - 优化扫一扫登录功能
 - 优化头像
 - 兼容okr1.1版本
-- 兼容okr1.1版本
-- 兼容okr1.1版本
 - 接龙和投票的样式优化
 - 逻辑强化
-- 未读消息优化
 - 搜索消息时按esc取消搜索
-- 接龙优化
 - 接龙优化
 - 移动设备优化消息输入框菜单
 - 优化消息输入框@所有人暗黑样式
 - 优化@人名换行的情况
 - 样式优化
 - 优化导出任务统计
-- 样式调优
 - 客户端下载按钮，仪表盘不显示
-- 未读消息优化
 - 细节优化
 
 ## [0.32.17]
@@ -230,7 +231,6 @@ All notable changes to this project will be documented in this file.
 
 - 修复打包下载问题
 - 1. 修复 windows端  右键发送 是直接发送了，没有出现使用md格式发送  2.其他bug修复
-- 修复打包下载问题
 - 修复统一打包下载命名
 
 ### Features
@@ -269,7 +269,6 @@ All notable changes to this project will be documented in this file.
 - 文件共享只读禁止下载文件
 - 保存任务详情至文件的方法 添加失败日志
 - 翻译
-- 翻译
 - 新增实现文件夹下载以及多文件压缩下载功能
 - 任务可以筛选未设置时间的
 - 临时账号可以主动跟机器人聊天
@@ -278,14 +277,11 @@ All notable changes to this project will be documented in this file.
 
 - Office只读模式，隐藏下载按钮
 - 优化实现文件夹下载以及多文件压缩下载功能
-- 优化实现文件夹下载以及多文件压缩下载功能
 - 机器人设置页面，点点点看不到内容，需要给弹窗看详细内容
 - 文件选中后，移动端页面宽度放不下对应内容
 - 文件选中后，移动端页面宽度放不下对应内容，没有滚动条
 - 压缩下载改名打包下载
 - 复制链接去除主题语言参数
-- 优化实现文件夹下载以及多文件压缩下载功能
-- 优化实现文件夹下载以及多文件压缩下载功能
 
 ## [0.31.75]
 
@@ -427,14 +423,12 @@ All notable changes to this project will be documented in this file.
 - 去掉test信息
 - 按照dootask启动原始尺寸截取使用说明的图
 - 修改边栏目录滚动效果
-- 修改边栏目录滚动效果
 - 官网使用说明的图重新截取更换
 - 优化官网布局与样式
 - 修复下载英文页面跳转
 
 ### Features
 
-- 新增创建聊天关联id
 - 新增创建聊天关联id
 - Okr信息面板新增"打开OKR"按钮
 - 新增OKR信息推送
@@ -521,7 +515,6 @@ All notable changes to this project will be documented in this file.
 - 优化会员选择器
 - 优化图片压缩
 - 回复图片显示图片搜略图
-- 优化会员选择器
 - 会员选择下拉框提示
 
 ## [0.27.26]
@@ -551,7 +544,6 @@ All notable changes to this project will be documented in this file.
 ### Bug Fixes
 
 - 修复获取聊天列表的接口
-- 添加密码账号长度限制
 - 添加密码账号长度限制
 - Dootask对接系统分享 - 添加头像返回
 - 兼容加密bug问题处理
@@ -602,7 +594,6 @@ All notable changes to this project will be documented in this file.
 
 ### Bug Fixes
 
-- 审批流程静态页
 - 审批流程静态页
 
 ### Performance
@@ -1887,7 +1878,6 @@ All notable changes to this project will be documented in this file.
 - 优化甘特图
 - 优化任务列表切换显示
 - 更新icon图标库
-- 更新icon图标库
 - 已删除任务详情任务描述改为只读
 - 已删除任务操作文案及显示优化
 - 项目--删除任务查看详情页功能
@@ -1978,7 +1968,6 @@ All notable changes to this project will be documented in this file.
 - 报表导出任务没有流程日志判断优化
 - 修复登录页设置下拉显示不全的情况
 - 处理回滚后异常代码
-- 处理回滚后异常代码
 - 【系统设置】邮件设置提前小时数双向绑定无效问题修改
 
 ### Features
@@ -2065,7 +2054,6 @@ All notable changes to this project will be documented in this file.
 - 文件、聊天文件、任务文件预览优化（支持预览drawio、mind等）
 - 调整消息置顶标识位置
 - 消息列表详情增加'置顶'标识
-- 项目列表置顶优化
 - 项目列表置顶优化
 - 【文件】剪切后加'取消剪切'按钮
 - 消息会话右键时隐藏滚动条
@@ -2167,7 +2155,6 @@ All notable changes to this project will be documented in this file.
 - 该文件版本已经改变了。该页面将被重新加载
 - 点击切换语言一级菜单出现的兼容问题
 - 上传文件夹
-- 该文件版本已经改变了。该页面将被重新加载
 - 团队管理新增身份筛选项
 - 任务文件支持更多格式上传
 
@@ -2205,7 +2192,6 @@ All notable changes to this project will be documented in this file.
 - 任务中没有聊天记录时，发送图片无法成功
 - 修复消息撤回文字提示在第一条时会被顶部遮住的问题
 - 修复个人对话为空时无法重复打开该对话的问题
-- 修复消息撤回文字提示在第一条时会被顶部遮住的问题
 - MacOS客户端首次不加载角标的问题
 - 工作流列表接口用作筛选时不用传多余参数
 
@@ -2306,7 +2292,6 @@ All notable changes to this project will be documented in this file.
 
 - 工作报告优化
 - 规范代码
-- 工作报告优化
 - 共享文件删除、移动改为仅限所有者或创建者操作
 
 ## [0.6.38]
@@ -2586,7 +2571,6 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
-- 客户端新窗口打开文件
 - 客户端窗口标题
 - 领取任务流程
 - 到期时间格式化
@@ -2598,7 +2582,6 @@ All notable changes to this project will be documented in this file.
 ### Styling
 
 - 客户端文件窗口样式
-- Iview
 - Iview
 - 排序箭头颜色
 
