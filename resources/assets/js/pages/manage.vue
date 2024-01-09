@@ -1002,6 +1002,7 @@ export default {
             }
             const notificationFuncB = (title) => {
                 if (this.__notificationId === id) {
+                    this.__notificationId = null
                     if (this.$isEEUiApp) {
                         this.$refs.mobileNotification.open({
                             userid: userid,

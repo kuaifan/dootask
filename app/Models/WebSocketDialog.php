@@ -156,7 +156,7 @@ class WebSocketDialog extends AbstractModel
             $this->last_at = $this->last_msg?->created_at;
         } else {
             // 未读信息
-            $this->generateUnread($userid, $hasData);
+            $this->generateUnread($userid);
             // 未读标记
             $this->mark_unread = $this->mark_unread ?? $dialogUserFun('mark_unread');
             // 是否免打扰
@@ -250,37 +250,19 @@ class WebSocketDialog extends AbstractModel
     /**
      * 生成未读数据
      * @param $userid
-     * @param $positionData
      * @return $this
      */
-    public function generateUnread($userid, $positionData = false)
+    public function generateUnread($userid)
     {
         $builder = WebSocketDialogMsgRead::whereDialogId($this->id)->whereUserid($userid)->whereReadAt(null);
+        // 未读消息
         $this->unread = $builder->count();
+        // 最早一条未读消息
+        $this->unread_one = $this->unread > 0 ? intval($builder->clone()->orderBy('msg_id')->value('msg_id')) : 0;
+        // @我的消息
         $this->mention = $this->unread > 0 ? $builder->clone()->whereMention(1)->count() : 0;
-        if ($positionData) {
-            $array = [];
-            // @我的消息
-            if ($this->mention > 0) {
-                $list = $builder->clone()->whereMention(1)->orderByDesc('msg_id')->take(20)->get();
-                foreach ($list as $item) {
-                    $array[] = [
-                        'msg_id' => $item->msg_id,
-                        'label' => Doo::translate('@我的消息'),
-                    ];
-                }
-            }
-            // 最早一条未读消息
-            if ($this->unread > 0
-                && $first_id = intval($builder->clone()->orderBy('msg_id')->value('msg_id'))) {
-                $array[] = [
-                    'msg_id' => $first_id,
-                    'label' => '{UNREAD}'
-                ];
-            }
-            //
-            $this->position_msgs = $array;
-        }
+        // @我的消息（id集合）
+        $this->mention_ids = $this->mention > 0 ? $builder->clone()->whereMention(1)->orderByDesc('msg_id')->take(20)->pluck('msg_id')->toArray() : [];
         return $this;
     }
 

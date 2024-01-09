@@ -181,7 +181,7 @@
                 :data-component="msgItem"
 
                 :item-class-add="itemClassAdd"
-                :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, unreadMsgId, scrollIng, readEnabled}"
+                :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, unreadOne, scrollIng, readEnabled}"
                 :estimate-size="dialogData.type=='group' ? 105 : 77"
                 :keeps="keeps"
                 :disabled="scrollDisabled"
@@ -765,13 +765,13 @@ export default {
 
             observers: [],
 
-            unreadMsgId: 0,                     // 最早未读消息id
+            unreadOne: 0,                       // 最早未读消息id
             topPosLoad: false,                  // 置顶跳转加载中
             positionLoad: 0,                    // 定位跳转加载中
             positionShow: false,                // 定位跳转显示
             renderMsgNum: 0,                    // 渲染消息数量
             renderMsgSizes: new Map(),          // 渲染消息尺寸
-            msgPreparedStatus: false,           // 消息准备完成
+            msgActivityStatus: false,           // 消息准备完成
             listPreparedStatus: false,          // 列表准备完成
             selectedTextStatus: false,          // 是否选择文本
             scrollToBottomAndRefresh: false,    // 滚动到底部重新获取消息
@@ -830,7 +830,11 @@ export default {
         },
 
         dialogData() {
-            return this.cacheDialogs.find(({id}) => id == this.dialogId) || {};
+            const data = this.cacheDialogs.find(({id}) => id == this.dialogId) || {}
+            if (this.unreadOne === 0) {
+                this.unreadOne = data.unread_one || 0
+            }
+            return data
         },
 
         dialogList() {
@@ -1082,20 +1086,29 @@ export default {
         },
 
         positionMsg({msgNew, dialogData, allMsgs}) {
-            const {mention, unread, position_msgs} = dialogData
-            if (!position_msgs || position_msgs.length === 0 || (unread - msgNew) <= 0 || allMsgs.length === 0) {
+            const {unread, unread_one, mention, mention_ids} = dialogData
+            const not = unread - msgNew
+            const array = []
+            if (unread_one) {
+                array.push({
+                    type: 'unread',
+                    label: this.$L(`未读消息${not}条`),
+                    msg_id: unread_one
+                })
+            }
+            if (mention_ids && mention_ids.length > 0) {
+                array.push(...mention_ids.map(msg_id => {
+                    return {
+                        type: 'mention',
+                        label: this.$L(`@我的消息`),
+                        msg_id
+                    }
+                }))
+            }
+            if (not <= 0 || array.length === 0 || allMsgs.length === 0) {
                 return null
             }
-            const item = $A.cloneJSON(position_msgs.find(item => {
-                if (mention === 0) {
-                    return item.label === '{UNREAD}'
-                }
-                return true
-            }))
-            if (item.label === '{UNREAD}') {
-                item.label = this.$L(`未读消息${unread - msgNew}条`)
-            }
-            return item
+            return array.find(item => item.type === (mention === 0 ? 'unread' : 'mention')) || array[0]
         },
 
         operateEmojis({cacheEmojis}) {
@@ -1115,8 +1128,8 @@ export default {
             return 1024000
         },
 
-        readEnabled({msgPreparedStatus, listPreparedStatus}) {
-            return msgPreparedStatus && listPreparedStatus
+        readEnabled({msgActivityStatus, listPreparedStatus}) {
+            return msgActivityStatus === 0 && listPreparedStatus
         },
     },
 
@@ -1143,7 +1156,7 @@ export default {
                 if (dialog_id) {
                     this.msgNew = 0
                     this.msgType = ''
-                    this.unreadMsgId = 0
+                    this.unreadOne = 0
                     this.searchShow = false
                     this.positionShow = false
                     this.listPreparedStatus = false
@@ -1163,11 +1176,6 @@ export default {
                     }).then(_ => {
                         this.openId = dialog_id
                         this.listPreparedStatus = true
-                        //
-                        const {position_msgs} = this.dialogData
-                        if ($A.isArray(position_msgs)) {
-                            this.unreadMsgId = position_msgs.find(item => item.label === '{UNREAD}')?.msg_id || 0
-                        }
                         //
                         const tmpMsgB = this.allMsgList.map(({id, msg, emoji}) => {
                             return {id, msg, emoji}
@@ -1328,10 +1336,11 @@ export default {
             const {tail} = this.scrollInfo();
             if ($A.isIos() && newList.length !== oldList.length) {
                 // 隐藏区域，让iOS断触
-                this.$refs.scroller.$el.style.visibility = 'hidden'
+                const scrollEl = this.$refs.scroller.$el
+                scrollEl.style.visibility = 'hidden'
                 this.allMsgs = newList;
                 this.$nextTick(_ => {
-                    this.$refs.scroller.$el.style.visibility = 'visible'
+                    scrollEl.style.visibility = 'visible'
                 })
             } else {
                 this.allMsgs = newList;
@@ -1339,7 +1348,7 @@ export default {
             //
             if (!this.windowActive || (tail > 55 && oldList.length > 0)) {
                 const lastId = oldList[oldList.length - 1] ? oldList[oldList.length - 1].id : 0
-                const tmpList = newList.filter(item => item.id && item.id > lastId)
+                const tmpList = newList.filter(item => item.id && item.id > lastId && !item.read_at)
                 this.msgNew += tmpList.length
             } else {
                 !this.preventToBottom && this.$nextTick(this.onToBottom)
@@ -1741,6 +1750,7 @@ export default {
             this.todoViewData = {}
             this.todoViewMid = 0
             this.todoViewId = 0
+            this.onFooterResize()
         },
 
         onPosTodo() {
@@ -2128,6 +2138,7 @@ export default {
                 setTimeout(_ => {
                     scroller.scrollToOffset(offset)
                     scroller.virtual.handleFront()
+                    // scroller.virtual.handleBehind()
                 }, 10)  // 预防出现白屏的情况
             }
         },
@@ -2518,7 +2529,17 @@ export default {
         },
 
         onActivity(activity) {
-            this.msgPreparedStatus = !activity
+            if (this.msgActivityStatus === false) {
+                if (activity) {
+                    this.msgActivityStatus = 1
+                }
+                return
+            }
+            if (activity) {
+                this.msgActivityStatus++
+            } else {
+                this.msgActivityStatus--
+            }
         },
 
         onScroll(event) {

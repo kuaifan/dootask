@@ -708,7 +708,9 @@ class DialogController extends AbstractController
             $data[] = [
                 'id' => $dialogUser->webSocketDialog->id,
                 'unread' => $dialogUser->webSocketDialog->unread,
+                'unread_one' => $dialogUser->webSocketDialog->unread_one,
                 'mention' => $dialogUser->webSocketDialog->mention,
+                'mention_ids' => $dialogUser->webSocketDialog->mention_ids,
                 'user_at' =>  Carbon::parse($dialogUser->updated_at)->toDateTimeString('millisecond'),
                 'user_ms' => Carbon::parse($dialogUser->updated_at)->valueOf()
             ];
@@ -751,7 +753,9 @@ class DialogController extends AbstractController
         return Base::retSuccess('success', [
             'id' => $dialogUser->webSocketDialog->id,
             'unread' => $dialogUser->webSocketDialog->unread,
+            'unread_one' => $dialogUser->webSocketDialog->unread_one,
             'mention' => $dialogUser->webSocketDialog->mention,
+            'mention_ids' => $dialogUser->webSocketDialog->mention_ids,
             'user_at' => Carbon::parse($dialogUser->updated_at)->toDateTimeString('millisecond'),
             'user_ms' => Carbon::parse($dialogUser->updated_at)->valueOf()
         ]);
@@ -1340,6 +1344,7 @@ class DialogController extends AbstractController
         }
         switch ($type) {
             case 'read':
+                // 标记已读
                 $builder = WebSocketDialogMsgRead::whereDialogId($dialog_id)->whereUserid($user->userid)->whereReadAt(null);
                 if ($after_msg_id > 0) {
                     $builder->where('msg_id', '>=', $after_msg_id);
@@ -1347,32 +1352,28 @@ class DialogController extends AbstractController
                 $builder->chunkById(100, function ($list) {
                     WebSocketDialogMsgRead::onlyMarkRead($list);
                 });
-                //
-                $dialogUser->webSocketDialog->generateUnread($user->userid);
-                $data = [
-                    'id' => $dialogUser->webSocketDialog->id,
-                    'unread' => $dialogUser->webSocketDialog->unread,
-                    'mention' => $dialogUser->webSocketDialog->mention,
-                    'mark_unread' => 0,
-                ];
                 break;
 
             case 'unread':
-                $data = [
-                    'id' => $dialogUser->webSocketDialog->id,
-                    'mark_unread' => 1,
-                ];
+                // 标记未读
                 break;
 
             default:
                 return Base::retError("参数错误");
         }
-        $dialogUser->mark_unread = $data['mark_unread'];
+        $dialogUser->mark_unread = $type == 'unread' ? 1 : 0;
         $dialogUser->save();
-        return Base::retSuccess("success", array_merge($data, [
+        $dialogUser->webSocketDialog->generateUnread($user->userid);
+        return Base::retSuccess("success", [
+            'id' => $dialogUser->webSocketDialog->id,
+            'unread' => $dialogUser->webSocketDialog->unread,
+            'unread_one' => $dialogUser->webSocketDialog->unread_one,
+            'mention' => $dialogUser->webSocketDialog->mention,
+            'mention_ids' => $dialogUser->webSocketDialog->mention_ids,
             'user_at' => Carbon::parse($dialogUser->updated_at)->toDateTimeString('millisecond'),
             'user_ms' => Carbon::parse($dialogUser->updated_at)->valueOf(),
-        ]));
+            'mark_unread' => $dialogUser->mark_unread,
+        ]);
     }
 
     /**

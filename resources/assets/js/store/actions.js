@@ -2331,7 +2331,9 @@ export default {
                 const originalTime = original.user_ms || 0
                 if (nowTime < originalTime) {
                     typeof data.unread !== "undefined" && delete data.unread
+                    typeof data.unread_one !== "undefined" && delete data.unread_one
                     typeof data.mention !== "undefined" && delete data.mention
+                    typeof data.mention_ids !== "undefined" && delete data.mention_ids
                 }
                 state.cacheDialogs.splice(index, 1, Object.assign({}, original, data));
             } else {
@@ -3059,11 +3061,21 @@ export default {
             state.readWaitData[data.id] = data.id;
             //
             const dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
-            if (dialog && $A.isArray(dialog.position_msgs)) {
-                const index = dialog.position_msgs.findIndex(({msg_id}) => msg_id == data.id);
-                if (index > -1) {
+            if (dialog) {
+                let mark = false
+                if (data.id == dialog.unread_one) {
+                    dialog.unread_one = 0
+                    mark = true
+                }
+                if ($A.isArray(dialog.mention_ids)) {
+                    const index = dialog.mention_ids.findIndex(id => id == data.id)
+                    if (index > -1) {
+                        dialog.mention_ids.splice(index, 1)
+                        mark = true
+                    }
+                }
+                if (mark) {
                     state.readEndMark[data.dialog_id] = Math.max(data.id, $A.runNum(state.readEndMark[data.dialog_id]))
-                    dialog.position_msgs.splice(index, 1);
                     dispatch("saveDialog", dialog)
                 }
             }
@@ -3120,6 +3132,13 @@ export default {
                 url: 'dialog/msg/mark',
                 data,
             }).then(result => {
+                if (typeof data.after_msg_id !== "undefined") {
+                    state.dialogMsgs.some(item => {
+                        if (item.dialog_id == data.dialog_id && item.id >= data.after_msg_id) {
+                            item.read_at = $A.formatDate()
+                        }
+                    })
+                }
                 dispatch("saveDialog", result.data)
                 resolve(result)
             }).catch(e => {

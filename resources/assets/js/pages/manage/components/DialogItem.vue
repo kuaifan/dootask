@@ -101,7 +101,7 @@ export default {
             type: Number,
             default: 0
         },
-        unreadMsgId: {
+        unreadOne: {
             type: Number,
             default: 0
         },
@@ -131,7 +131,7 @@ export default {
         },
 
         isUnreadStart() {
-            return this.unreadMsgId === this.source.id
+            return this.unreadOne === this.source.id
         },
 
         hidePercentage() {
