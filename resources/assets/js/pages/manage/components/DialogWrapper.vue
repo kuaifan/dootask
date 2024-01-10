@@ -180,7 +180,6 @@
                 :data-sources="allMsgs"
                 :data-component="msgItem"
 
-                :item-class-add="itemClassAdd"
                 :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, unreadOne, scrollIng, readEnabled}"
                 :estimate-size="dialogData.type=='group' ? 105 : 77"
                 :keeps="keeps"
@@ -679,7 +678,7 @@ export default {
             tempMsgs: [],
             tempId: $A.randNum(1000000000, 9999999999),
             msgLoadIng: 0,
-            msgActiveIndex: -1,
+            msgActiveId: 0,
 
             pasteShow: false,
             pasteFile: [],
@@ -1154,6 +1153,7 @@ export default {
         dialogId: {
             handler(dialog_id, old_id) {
                 if (dialog_id) {
+                    this.scrollInit()
                     this.msgNew = 0
                     this.msgType = ''
                     this.unreadOne = 0
@@ -1348,10 +1348,10 @@ export default {
             //
             if (!this.windowActive || (tail > 55 && oldList.length > 0)) {
                 const lastId = oldList[oldList.length - 1] ? oldList[oldList.length - 1].id : 0
-                const tmpList = newList.filter(item => item.id && item.id > lastId && !item.read_at)
+                const tmpList = newList.filter(item => item.id && item.id > lastId && item.userid != this.userId && !item.read_at)
                 this.msgNew += tmpList.length
             } else {
-                !this.preventToBottom && this.$nextTick(this.onToBottom)
+                !this.preventToBottom && this.onToBottom()
             }
         },
 
@@ -1381,9 +1381,14 @@ export default {
             }
         },
 
-        msgActiveIndex(index) {
-            if (index > -1) {
-                setTimeout(_ => this.msgActiveIndex = -1, 800)
+        msgActiveId(val) {
+            if (val > 0) {
+                this.msgActiveId = 0
+                const element = this.$refs.scroller.$el.querySelector(`[data-id="${val}"]`)?.querySelector(".dialog-head")
+                if (element) {
+                    element.classList.add("common-shake")
+                    setTimeout(_ => element.classList.remove("common-shake"), 800)
+                }
             }
         },
 
@@ -1691,7 +1696,7 @@ export default {
                 const gtpos = this.prevId > 0 ? 0 : -1  // 如果还有更多消息时定位的消息必须不是第一条是为了避免定位后又有新加载
                 if (index > gtpos) {
                     setTimeout(_ => {
-                        this.onToIndex(index)
+                        this.onToIndex(index, position_id)
                         resolve()
                     }, 200)
                 } else {
@@ -1711,7 +1716,7 @@ export default {
                     }).finally(_ => {
                         const index = this.allMsgs.findIndex(item => item.id === position_id)
                         if (index > -1) {
-                            this.onToIndex(index)
+                            this.onToIndex(index, position_id)
                             resolve()
                         }
                         if (msg_id > 0) {
@@ -1795,10 +1800,6 @@ export default {
             }).finally(_ => {
                 this.todoViewLoad = false
             });
-        },
-
-        itemClassAdd(index) {
-            return index === this.msgActiveIndex ? 'common-shake' : '';
         },
 
         inputFocus() {
@@ -2116,30 +2117,32 @@ export default {
             const scroller = this.$refs.scroller;
             if (scroller) {
                 scroller.scrollToBottom();
-                requestAnimationFrame(_ => scroller.scrollToBottom())    // 确保滚动到
             }
         },
 
-        onToIndex(index) {
+        onToIndex(index, id) {
             const scroller = this.$refs.scroller;
             if (scroller) {
                 scroller.stopToBottom();
-                scroller.scrollToIndex(index, -100);
-                requestAnimationFrame(_ => scroller.scrollToIndex(index, -100))    // 确保滚动到
+                const element = scroller.$el.querySelector(`[data-id="${id}"]`)
+                if (!element?.parentNode.parentNode.classList.contains('item-enter')) {
+                    scroller.scrollToIndex(index, -80);
+                }
             }
-            requestAnimationFrame(_ => this.msgActiveIndex = index)
+            requestAnimationFrame(_ => this.msgActiveId = id)
         },
 
         onToOffset(offset) {
             const scroller = this.$refs.scroller;
             if (scroller) {
+                const front = scroller.getOffset() > offset
                 scroller.stopToBottom();
                 scroller.scrollToOffset(offset);
-                setTimeout(_ => {
-                    scroller.scrollToOffset(offset)
+                if (front) {
                     scroller.virtual.handleFront()
-                    // scroller.virtual.handleBehind()
-                }, 10)  // 预防出现白屏的情况
+                } else {
+                    scroller.virtual.handleBehind()
+                }
             }
         },
 
@@ -2158,6 +2161,17 @@ export default {
                 this.__mark_offset = scroller.getScrollSize() - scroller.getClientSize() - scroller.getOffset()
             }
             return true
+        },
+
+        scrollInit() {
+            const scroller = this.$refs.scroller;
+            if (scroller) {
+                const scrollEl = scroller.$el
+                scrollEl.style.visibility = 'hidden'
+                this.$nextTick(_ => {
+                    scrollEl.style.visibility = 'visible'
+                })
+            }
         },
 
         scrollInfo() {
