@@ -2115,7 +2115,7 @@ class UsersController extends AbstractController
                 'latest_online_time' => date(
                     'Y-m-d H:i:s',
                     UserCheckinRecord::whereUserid($user->userid)
-                        ->whereYear('created_at', $year)
+                        ->whereYear(DB::raw('from_unixtime(report_time)'), $year)
                         ->where(function ($query) {
                             $query->where(function ($query) {
                                 $query->whereRaw('HOUR(FROM_UNIXTIME(report_time)) < 6');
