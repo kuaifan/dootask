@@ -1584,11 +1584,7 @@
     }
 
     .dialog-footer {
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 2;
+        position: relative;
         padding: 0 24px;
         margin-bottom: 16px;
 

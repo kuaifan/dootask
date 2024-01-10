@@ -795,6 +795,11 @@ export default {
         this.observers = []
         //
         document.removeEventListener('selectionchange', this.onSelectionchange);
+        //
+        const scroller = this.$refs.scroller;
+        if (scroller) {
+            scroller.virtual.destroy()
+        }
     },
 
     computed: {
@@ -1152,8 +1157,8 @@ export default {
         },
         dialogId: {
             handler(dialog_id, old_id) {
+                this.scrollInit()
                 if (dialog_id) {
-                    this.scrollInit()
                     this.msgNew = 0
                     this.msgType = ''
                     this.unreadOne = 0
@@ -1198,9 +1203,10 @@ export default {
                     if (this.autoFocus) {
                         this.inputFocus()
                     }
+                    //
+                    this.getUserApproveStatus()
                 }
                 this.$store.dispatch('closeDialog', old_id)
-                this.getUserApproveStatus();
             },
             immediate: true
         },
@@ -1229,13 +1235,6 @@ export default {
                             const scrollerObserver = new ResizeObserver(this.onResizeEvent)
                             scrollerObserver.observe(this.$refs.msgs);
                             this.observers.push({key: 'scroller', observer: scrollerObserver})
-                        }
-                    }
-                    if (this.$refs.footer) {
-                        if (!this.observers.find(({key}) => key === 'footer')) {
-                            const footerObserver = new ResizeObserver(this.onResizeEvent)
-                            footerObserver.observe(this.$refs.footer);
-                            this.observers.push({key: 'footer', observer: footerObserver})
                         }
                     }
                 })
@@ -1347,7 +1346,7 @@ export default {
             }
             //
             if (!this.windowActive || (tail > 55 && oldList.length > 0)) {
-                const lastId = oldList[oldList.length - 1] ? oldList[oldList.length - 1].id : 0
+                const lastId = oldList[oldList.length - 1]?.id || 0
                 const tmpList = newList.filter(item => item.id && item.id > lastId && item.userid != this.userId && !item.read_at)
                 this.msgNew += tmpList.length
             } else {
@@ -1396,7 +1395,6 @@ export default {
             this.$refs.footer.style.paddingBottom = `${val}px`;
             requestAnimationFrame(_ => {
                 this.$refs.input.updateTools()
-                this.onFooterResize()
             })
         },
 
@@ -1601,10 +1599,8 @@ export default {
                     const {tail: newTail} = this.scrollInfo()
                     if (tail <= 10 && newTail != tail) {
                         this.operatePreventScroll++
-                        this.$refs.scroller.scrollToBottom();
-                        setTimeout(_ => {
-                            this.operatePreventScroll--
-                        }, 50)
+                        this.$refs.scroller.scrollToBottom()
+                        setTimeout(_ => this.operatePreventScroll--, 50)
                     }
                 })
             }
@@ -1755,7 +1751,6 @@ export default {
             this.todoViewData = {}
             this.todoViewMid = 0
             this.todoViewId = 0
-            this.onFooterResize()
         },
 
         onPosTodo() {
@@ -2076,8 +2071,6 @@ export default {
             entries.some(({target, contentRect}) => {
                 if (target === this.$refs.msgs) {
                     this.onMsgsResize(contentRect)
-                } else if (target === this.$refs.footer) {
-                    this.onFooterResize()
                 }
             })
         },
@@ -2097,17 +2090,6 @@ export default {
             this.__msgs_height = height;
         },
 
-        onFooterResize() {
-            if (!this.$refs.footer) {
-                return
-            }
-            const footer = this.$refs.footer;
-            const marginSize = parseInt($A.css(footer, 'marginTop')) + parseInt($A.css(footer, 'marginBottom'))
-            if (this.$refs.msgs) {
-                this.$refs.msgs.style.marginBottom = `${footer.getBoundingClientRect().height + marginSize}px`;
-            }
-        },
-
         onActive() {
             this.$emit("on-active");
         },
@@ -2117,6 +2099,7 @@ export default {
             const scroller = this.$refs.scroller;
             if (scroller) {
                 scroller.scrollToBottom();
+                requestAnimationFrame(_ => scroller.scrollToBottom())    // 确保滚动到
             }
         },
 
@@ -2127,6 +2110,7 @@ export default {
                 const element = scroller.$el.querySelector(`[data-id="${id}"]`)
                 if (!element?.parentNode.parentNode.classList.contains('item-enter')) {
                     scroller.scrollToIndex(index, -80);
+                    requestAnimationFrame(_ => scroller.scrollToIndex(index, -80))    // 确保滚动到
                 }
             }
             requestAnimationFrame(_ => this.msgActiveId = id)
@@ -2165,12 +2149,11 @@ export default {
 
         scrollInit() {
             const scroller = this.$refs.scroller;
-            if (scroller) {
-                const scrollEl = scroller.$el
-                scrollEl.style.visibility = 'hidden'
-                this.$nextTick(_ => {
-                    scrollEl.style.visibility = 'visible'
-                })
+            if (scroller && this.allMsgs.length > 0) {
+                scroller.virtual.destroy()
+                this.allMsgs = []
+                scroller.scrollToOffset(0)
+                scroller.installVirtual()
             }
         },
 
@@ -2257,12 +2240,12 @@ export default {
         },
 
         onItemRendered(id, size) {
-            if (!this.$refs.scroller || !this.$refs.footer) {
+            const scroller = this.$refs.scroller
+            if (!scroller) {
                 return
             }
-            if (this.renderMsgNum > 0 && this.$refs.scroller.getSizes() >= this.renderMsgNum) {
+            if (this.renderMsgNum > 0 && scroller.getSizes() >= this.renderMsgNum) {
                 this.renderMsgNum = 0
-                this.onFooterResize()
                 !this.onMarkOffset(true) && this.onToBottom()
             } else if (this.renderMsgSizes.has(id)
                 && size > this.renderMsgSizes.get(id)
@@ -2583,20 +2566,24 @@ export default {
             }
             const key = this.scrollDirection === 'down' ? 'next_id' : 'prev_id';
             for (let i = range.start; i <= range.end; i++) {
+                if (!this.allMsgs[i]) {
+                    continue
+                }
                 const rangeValue = this.allMsgs[i][key]
-                if (rangeValue) {
-                    const nearMsg = this.allMsgs[i + (key === 'next_id' ? 1 : -1)]
-                    if (nearMsg && nearMsg.id != rangeValue) {
-                        this.preventMoreLoad = true
-                        this.getMsgs({
-                            dialog_id: this.dialogId,
-                            msg_id: this.msgId,
-                            msg_type: this.msgType,
-                            [key]: rangeValue,
-                        }).finally(_ => {
-                            this.preventMoreLoad = false
-                        })
-                    }
+                if (!rangeValue) {
+                    continue
+                }
+                const nearMsg = this.allMsgs[i + (key === 'next_id' ? 1 : -1)]
+                if (nearMsg && nearMsg.id != rangeValue) {
+                    this.preventMoreLoad = true
+                    this.getMsgs({
+                        dialog_id: this.dialogId,
+                        msg_id: this.msgId,
+                        msg_type: this.msgType,
+                        [key]: rangeValue,
+                    }).finally(_ => {
+                        this.preventMoreLoad = false
+                    })
                 }
             }
         },
