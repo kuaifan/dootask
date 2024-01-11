@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.34.23]
+## [0.34.28]
 
 ### Features
 
@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
+- 年度报告接口	 - 查询条件优化
+- 升级okr, ai
 - 年度汇报接口返回用户头像
 - 年度报告接口	 - 增加用户信息字段返回
 - 去掉未使用的引用
