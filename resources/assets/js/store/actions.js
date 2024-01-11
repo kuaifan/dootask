@@ -2677,9 +2677,9 @@ export default {
         } else {
             state.dialogIns.push(data);
         }
-        // 会话消息总数量大于1500时只保留最近打开的30个会话
-        const msg_max = 1500
-        const retain_num = 30
+        // 会话消息总数量大于5000时只保留最近打开的50个会话
+        const msg_max = 5000
+        const retain_num = 500
         state.dialogHistory = state.dialogHistory.filter(id => id != data.dialog_id)
         state.dialogHistory.push(data.dialog_id)
         if (state.dialogMsgs.length > msg_max && state.dialogHistory.length > retain_num) {
@@ -3012,7 +3012,7 @@ export default {
                 requestData.page = 1
             }
             if (typeof requestData.pagesize === "undefined") {
-                requestData.pagesize = 20
+                requestData.pagesize = 50
             }
             if (typeof requestData.latest_id === "undefined") {
                 requestData.latest_id = state.loadDialogLatestId
@@ -3058,7 +3058,7 @@ export default {
             if (data.userid == state.userId) return;
             if (data.read_at) return;
             data.read_at = $A.formatDate();
-            state.readWaitData[data.id] = data.id;
+            state.readWaitData[data.id] = state.readWaitData[data.id] || 0
             //
             const dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
             if (dialog) {
@@ -3075,8 +3075,8 @@ export default {
                     }
                 }
                 if (mark) {
-                    state.readEndMark[data.dialog_id] = Math.max(data.id, $A.runNum(state.readEndMark[data.dialog_id]))
                     dispatch("saveDialog", dialog)
+                    state.readWaitData[data.id] = data.dialog_id
                 }
             }
         }
@@ -3087,34 +3087,33 @@ export default {
             if (state.userId === 0) {
                 return;
             }
-            const ids = Object.values(state.readWaitData);
-            state.readWaitData = {};
-            if (ids.length === 0) {
+            if (Object.values(state.readWaitData).length === 0) {
                 return
             }
+            const ids = $A.cloneJSON(state.readWaitData);
+            state.readWaitData = {};
             //
             dispatch("call", {
+                method: 'post',
                 url: 'dialog/msg/read',
                 data: {
-                    id: ids.join(",")
+                    id: ids
                 }
             }).then(({data}) => {
+                for (const id in ids) {
+                    if (ids.hasOwnProperty(id) && /^\d+$/.test(ids[id])) {
+                        state.dialogMsgs.some(item => {
+                            if (item.dialog_id == ids[id] && item.id >= id) {
+                                item.read_at = $A.formatDate()
+                            }
+                        })
+                    }
+                }
                 dispatch("saveDialog", data)
             }).catch(_ => {
-                ids.some(id => {
-                    state.readWaitData[id] = id;
-                })
+                state.readWaitData = ids;
             }).finally(_ => {
                 state.readLoadNum++
-                //
-                for (let dialog_id in state.readEndMark) {
-                    dispatch("dialogMsgMark", {
-                        type: 'read',
-                        dialog_id,
-                        after_msg_id: state.readEndMark[dialog_id],
-                    })
-                }
-                state.readEndMark = {}
             });
         }, 50);
     },

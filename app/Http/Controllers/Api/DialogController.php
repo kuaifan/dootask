@@ -673,7 +673,11 @@ class DialogController extends AbstractController
      * @apiGroup dialog
      * @apiName msg__read
      *
-     * @apiParam {Number} id         消息ID（组）
+     * @apiParam {Object} id         消息ID（组）
+     * - 1、多个ID用逗号分隔，如：1,2,3
+     * - 2、另一种格式：{"id": "[会话ID]"}，如：{"2": 0, "3": 10}
+     * -- 会话ID：标记id之后的消息已读
+     * -- 其他：标记已读
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -684,16 +688,30 @@ class DialogController extends AbstractController
         $user = User::auth();
         //
         $id = Request::input('id');
-        $ids = Base::explodeInt($id);
+        $ids = $id && is_array($id) ? $id : array_fill_keys(Base::explodeInt($id), 'r');
         //
         $dialogIds = [];
-        WebSocketDialogMsg::whereIn('id', $ids)->chunkById(20, function($list) use ($user, &$dialogIds) {
+        $markIds = [];
+        WebSocketDialogMsg::whereIn('id', array_keys($ids))->chunkById(100, function($list) use ($ids, $user, &$dialogIds, &$markIds) {
             /** @var WebSocketDialogMsg $item */
             foreach ($list as $item) {
                 $item->readSuccess($user->userid);
                 $dialogIds[$item->dialog_id] = $item->dialog_id;
+                if ($ids[$item->id] == $item->dialog_id) {
+                    $markIds[$item->dialog_id] = min($item->id, $markIds[$item->dialog_id] ?? 0);
+                }
             }
         });
+        //
+        foreach ($markIds as $dialogId => $msgId) {
+            WebSocketDialogMsgRead::whereDialogId($dialogId)
+                ->whereUserid($user->userid)
+                ->whereReadAt(null)
+                ->where('msg_id', '>=', $msgId)
+                ->chunkById(100, function ($list) {
+                    WebSocketDialogMsgRead::onlyMarkRead($list);
+                });
+        }
         //
         $data = [];
         $dialogUsers = WebSocketDialogUser::with(['webSocketDialog'])->whereUserid($user->userid)->whereIn('dialog_id', array_values($dialogIds))->get();
