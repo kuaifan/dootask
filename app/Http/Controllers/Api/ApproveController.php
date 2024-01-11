@@ -995,7 +995,7 @@ class ApproveController extends AbstractController
                 return WebSocketDialogMsg::sendMsg($msg_action, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
             }
             // 查找最后一条消息msg_id
-            $msg_action = 'update-' . $toUser['msg_id'];
+            $msg_action = 'change-' . $toUser['msg_id'];
         }
         //
         try {

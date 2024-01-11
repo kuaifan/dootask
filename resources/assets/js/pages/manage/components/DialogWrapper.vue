@@ -1139,7 +1139,8 @@ export default {
 
     watch: {
         '$route': {
-            handler({name, params}) {
+            handler(data) {
+                const { name, params } = data || {}
                 if (name != 'manage-messenger') {
                     return
                 }

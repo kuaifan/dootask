@@ -380,6 +380,7 @@ class BotReceiveMsgTask extends AbstractTask
                     'openai_agency' => $setting['openai_agency'],
                     'openai_model' => $setting['openai_model'],
                     'server_url' => $serverUrl,
+                    'chunk_size' => 7,
                 ];
                 if (empty($extras['openai_key'])) {
                     $error = 'Robot disabled.';
