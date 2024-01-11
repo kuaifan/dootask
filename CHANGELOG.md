@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.34.19]
+## [0.34.23]
 
 ### Features
 
