@@ -2872,7 +2872,7 @@ export default {
             const dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
             if (dialog) {
                 let isUpdate = false
-                if (!data.read_at) {
+                if (!data.read_at && data.userid != state.userId) {
                     if (dialog.unread_one) {
                         dialog.unread_one = Math.min(dialog.unread_one, data.id)
                     } else {
