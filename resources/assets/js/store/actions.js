@@ -2857,20 +2857,36 @@ export default {
             });
         } else if ($A.isJson(data)) {
             const index = state.dialogMsgs.findIndex(({id}) => id == data.id);
-            data = Object.assign({}, state.dialogMsgs[index], data)
             if (index > -1) {
+                const original = state.dialogMsgs[index]
+                if (original.read_at) {
+                    delete data.read_at
+                }
+                data = Object.assign({}, original, data)
                 state.dialogMsgs.splice(index, 1, data);
             } else {
                 state.dialogMsgs.push(data);
             }
             $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
             //
-            const dialog = state.cacheDialogs.find(({id, last_msg}) => id == data.dialog_id && last_msg && last_msg.id === data.id);
+            const dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
             if (dialog) {
-                dispatch("saveDialog", {
-                    id: data.dialog_id,
-                    last_msg: Object.assign({}, dialog.last_msg, data),
-                })
+                let isUpdate = false
+                if (!data.read_at) {
+                    if (dialog.unread_one) {
+                        dialog.unread_one = Math.min(dialog.unread_one, data.id)
+                    } else {
+                        dialog.unread_one = data.id
+                    }
+                    isUpdate = true
+                }
+                if (dialog.last_msg && dialog.last_msg.id == data.id) {
+                    dialog.last_msg = Object.assign({}, dialog.last_msg, data)
+                    isUpdate = true
+                }
+                if (isUpdate) {
+                    dispatch("saveDialog", dialog)
+                }
             }
         }
     },
