@@ -699,9 +699,13 @@ export default {
 
             // Update model if text changes
             this.quill.on('text-change', _ => {
-                this.changeLoad++
-                this.textTimer && clearTimeout(this.textTimer)
+                if (this.textTimer) {
+                    clearTimeout(this.textTimer)
+                } else {
+                    this.changeLoad++
+                }
                 this.textTimer = setTimeout(_ => {
+                    this.textTimer = null
                     this.changeLoad--
                     if (this.maxlength > 0 && this.quill.getLength() > this.maxlength) {
                         this.quill.deleteText(this.maxlength, this.quill.getLength());
@@ -1032,6 +1036,8 @@ export default {
         },
 
         onSend(type) {
+            this.emojiQuickShow = false;
+            //
             setTimeout(_ => {
                 if (this.filterInvalidLine(this.value) === '') {
                     return
