@@ -153,7 +153,7 @@
                     </p>
                 </div>
                 <div class="dialog-top-message-btn">
-                    <Loading v-if="topPosLoad" type="pure"/>
+                    <Loading v-if="topPosLoad > 0" type="pure"/>
                     <i v-else class="taskfont">&#xee15;</i>
                     <i class="taskfont" @click.stop="onCancelTop(topMsg)">&#xe6e5;</i>
                 </div>
@@ -188,7 +188,6 @@
                 @scroll="onScroll"
                 @range="onRange"
                 @totop="onPrevPage"
-                @resized="onItemRendered"
 
                 @on-mention="onMention"
                 @on-longpress="onLongpress"
@@ -623,7 +622,6 @@ import UserAvatarTip from "../../../components/UserAvatar/tip.vue";
 import DialogGroupWordChain from "./DialogGroupWordChain";
 import DialogGroupVote from "./DialogGroupVote";
 
-
 export default {
     name: "DialogWrapper",
     components: {
@@ -665,11 +663,15 @@ export default {
     data() {
         return {
             keeps: 25,
+            loadIng: 0,
+
             msgItem: DialogItem,
             msgText: '',
-            msgNew: 0,
-            msgType: '',
-            loadIng: 0,
+            msgNew: 0,              // 新消息数
+            msgType: '',            // 消息类型
+            msgActivity: false,     // 消息活动中
+            msgPrepared: false,     // 消息已准备
+
 
             focusLazy: false,
             focusTimer: null,
@@ -725,11 +727,8 @@ export default {
             recordState: '',
             wrapperStart: null,
 
-            scrollOffset: 0,
             scrollTail: 0,
-
-            preventMoreLoad: false,
-            preventToBottom: false,
+            scrollOffset: 0,
 
             replyListShow: false,
             replyListId: 0,
@@ -757,6 +756,7 @@ export default {
             scrollAction: 0,
             scrollTmp: 0,
             scrollIng: 0,
+            scrollGroup: null,
 
             approveDetails: {id: 0},
             approveDetailsShow: false,
@@ -765,15 +765,12 @@ export default {
             observers: [],
 
             unreadOne: 0,                       // 最早未读消息id
-            topPosLoad: false,                  // 置顶跳转加载中
+            topPosLoad: 0,                      // 置顶跳转加载中
             positionLoad: 0,                    // 定位跳转加载中
             positionShow: false,                // 定位跳转显示
-            renderMsgNum: 0,                    // 渲染消息数量
-            renderMsgSizes: new Map(),          // 渲染消息尺寸
-            msgActivityStatus: false,           // 消息准备完成
-            listPreparedStatus: false,          // 列表准备完成
+            preventMoreLoad: false,             // 阻止加载更多
             selectedTextStatus: false,          // 是否选择文本
-            scrollToBottomAndRefresh: false,    // 滚动到底部重新获取消息
+            scrollToBottomRefresh: false,       // 滚动到底部重新获取消息
             androidKeyboardVisible: false,      // Android键盘是否可见
         }
     },
@@ -1132,9 +1129,13 @@ export default {
             return 1024000
         },
 
-        readEnabled({msgActivityStatus, listPreparedStatus}) {
-            return msgActivityStatus === 0 && listPreparedStatus
+        readEnabled({msgActivity, msgPrepared}) {
+            return msgActivity === 0 && msgPrepared
         },
+
+        stickToBottom({windowActive, scrollTail}) {
+            return windowActive && scrollTail <= 0
+        }
     },
 
     watch: {
@@ -1156,39 +1157,28 @@ export default {
             },
             immediate: true
         },
+
         dialogId: {
             handler(dialog_id, old_id) {
-                this.scrollInit()
                 if (dialog_id) {
                     this.msgNew = 0
                     this.msgType = ''
                     this.unreadOne = 0
+                    this.scrollTail = 0
+                    this.scrollOffset = 0
                     this.searchShow = false
                     this.positionShow = false
-                    this.listPreparedStatus = false
-                    this.scrollToBottomAndRefresh = false
-                    this.renderMsgNum = Math.min(this.keeps, Math.max(this.allMsgList.length, 1))
-                    this.renderMsgSizes.clear()
+                    this.msgPrepared = false
+                    this.scrollToBottomRefresh = false
                     this.allMsgs = this.allMsgList
                     //
-                    const tmpMsgA = this.allMsgList.map(({id, msg, emoji}) => {
-                        return {id, msg, emoji}
-                    })
                     this.getMsgs({
                         dialog_id,
                         msg_id: this.msgId,
                         msg_type: this.msgType,
-                        save_before: _ => this.onMarkOffset(false)
                     }).then(_ => {
                         this.openId = dialog_id
-                        this.listPreparedStatus = true
-                        //
-                        const tmpMsgB = this.allMsgList.map(({id, msg, emoji}) => {
-                            return {id, msg, emoji}
-                        })
-                        if (JSON.stringify(tmpMsgA) != JSON.stringify(tmpMsgB)) {
-                            this.renderMsgNum = Math.min(this.keeps, Math.max(this.allMsgList.length, 1))
-                        }
+                        this.msgPrepared = true
                         //
                         setTimeout(_ => {
                             this.onSearchMsgId()
@@ -1236,6 +1226,16 @@ export default {
                             const scrollerObserver = new ResizeObserver(this.onResizeEvent)
                             scrollerObserver.observe(this.$refs.msgs);
                             this.observers.push({key: 'scroller', observer: scrollerObserver})
+                        }
+                    }
+                    if (this.$refs.scroller) {
+                        this.scrollGroup = this.$refs.scroller.$el.querySelector('[role="group"]')
+                        if (this.scrollGroup) {
+                            if (!this.observers.find(({key}) => key === 'scrollGroup')) {
+                                const groupObserver = new ResizeObserver(this.onResizeEvent)
+                                groupObserver.observe(this.scrollGroup);
+                                this.observers.push({key: 'scrollGroup', observer: groupObserver})
+                            }
                         }
                     }
                 })
@@ -1322,7 +1322,7 @@ export default {
             const lastMsg = this.allMsgs[this.allMsgs.length - 1]
             const lastEl = $A(this.$refs.scroller.$el).find(`[data-id="${lastMsg.id}"]`)
             if (lastEl.length === 0) {
-                this.scrollToBottomAndRefresh = true
+                this.scrollToBottomRefresh = true
                 return;
             }
             // 开始请求重新获取消息
@@ -1333,7 +1333,6 @@ export default {
             if (JSON.stringify(newList) == JSON.stringify(oldList)) {
                 return;
             }
-            const {tail} = this.scrollInfo();
             if ($A.isIos() && newList.length !== oldList.length) {
                 // 隐藏区域，让iOS断触
                 const scrollEl = this.$refs.scroller.$el
@@ -1346,12 +1345,16 @@ export default {
                 this.allMsgs = newList;
             }
             //
-            if (!this.windowActive || (tail > 55 && oldList.length > 0)) {
-                const lastId = oldList[oldList.length - 1]?.id || 0
-                const tmpList = newList.filter(item => item.id && item.id > lastId && item.userid != this.userId && !item.read_at)
-                this.msgNew += tmpList.length
-            } else {
-                !this.preventToBottom && this.onToBottom()
+            if (!this.stickToBottom) {
+                const oldId = oldList.length > 0 ? oldList[oldList.length - 1].id : 0
+                this.msgNew += newList.filter(item => item.id && item.id > oldId && item.userid != this.userId && !item.read_at).length
+            }
+        },
+
+
+        'allMsgs.length' () {
+            if (this.stickToBottom) {
+                this.onToBottom()
             }
         },
 
@@ -1597,8 +1600,7 @@ export default {
                     item.msg.text = data.text
                 }
                 this.$nextTick(_ => {
-                    const {tail: newTail} = this.scrollInfo()
-                    if (tail <= 10 && newTail != tail) {
+                    if (tail <= 10 && tail != this.scrollInfo().tail) {
                         this.operatePreventScroll++
                         this.$refs.scroller.scrollToBottom()
                         setTimeout(_ => this.operatePreventScroll--, 50)
@@ -1703,7 +1705,6 @@ export default {
                             delay: 600
                         })
                     }
-                    this.preventToBottom = true;
                     this.getMsgs({
                         dialog_id: this.dialogId,
                         msg_id: this.msgId,
@@ -1719,7 +1720,6 @@ export default {
                         if (msg_id > 0) {
                             this.$store.dispatch("cancelLoad", `msg-${msg_id}`)
                         }
-                        this.preventToBottom = false;
                     })
                 }
             })
@@ -2072,6 +2072,8 @@ export default {
             entries.some(({target, contentRect}) => {
                 if (target === this.$refs.msgs) {
                     this.onMsgsResize(contentRect)
+                } else if (target === this.scrollGroup) {
+                    this.onScrollGroupResize(contentRect)
                 }
             })
         },
@@ -2089,6 +2091,18 @@ export default {
                 }
             }
             this.__msgs_height = height;
+        },
+
+        onScrollGroupResize({height}) {
+            const {offset, tail} = this.scrollInfo()
+            if (this.stickToBottom) {
+                this.onToBottom()
+            } else if (tail > 0
+                && typeof this.__scroll_group_data !== "undefined"
+                && offset - this.__scroll_group_data.offset + tail === height - this.__scroll_group_data.height) {
+                this.onToBottom()
+            }
+            this.__scroll_group_data = {height, offset, tail}
         },
 
         onActive() {
@@ -2128,33 +2142,6 @@ export default {
                 } else {
                     scroller.virtual.handleBehind()
                 }
-            }
-        },
-
-        onMarkOffset(recovery = false) {
-            const scroller = this.$refs.scroller
-            if (!scroller) {
-                return false
-            }
-            if (recovery) {
-                if (this.__mark_offset === undefined) {
-                    return false
-                }
-                this.onToOffset(scroller.getScrollSize() - scroller.getClientSize() - this.__mark_offset)
-                this.__mark_offset = undefined
-            } else {
-                this.__mark_offset = scroller.getScrollSize() - scroller.getClientSize() - scroller.getOffset()
-            }
-            return true
-        },
-
-        scrollInit() {
-            const scroller = this.$refs.scroller;
-            if (scroller && this.allMsgs.length > 0) {
-                scroller.virtual.destroy()
-                this.allMsgs = []
-                scroller.scrollToOffset(0)
-                scroller.installVirtual()
             }
         },
 
@@ -2204,7 +2191,7 @@ export default {
         },
 
         onReGetMsg() {
-            this.scrollToBottomAndRefresh = false
+            this.scrollToBottomRefresh = false
             this.getMsgs({
                 dialog_id: this.dialogId,
                 msg_id: this.msgId,
@@ -2238,22 +2225,6 @@ export default {
                     this.onToOffset(offset)
                 });
             }).catch(() => {})
-        },
-
-        onItemRendered(id, size) {
-            const scroller = this.$refs.scroller
-            if (!scroller) {
-                return
-            }
-            if (this.renderMsgNum > 0 && scroller.getSizes() >= this.renderMsgNum) {
-                this.renderMsgNum = 0
-                !this.onMarkOffset(true) && this.onToBottom()
-            } else if (this.renderMsgSizes.has(id)
-                && size > this.renderMsgSizes.get(id)
-                && size - this.renderMsgSizes.get(id) === this.scrollInfo().tail) {
-                this.onToBottom()
-            }
-            this.renderMsgSizes.set(id, size)
         },
 
         onDialogMenu(cmd) {
@@ -2527,16 +2498,16 @@ export default {
         },
 
         onActivity(activity) {
-            if (this.msgActivityStatus === false) {
+            if (this.msgActivity === false) {
                 if (activity) {
-                    this.msgActivityStatus = 1
+                    this.msgActivity = 1
                 }
                 return
             }
             if (activity) {
-                this.msgActivityStatus++
+                this.msgActivity++
             } else {
-                this.msgActivityStatus--
+                this.msgActivity--
             }
         },
 
@@ -2548,9 +2519,9 @@ export default {
             const {offset, tail} = this.scrollInfo();
             this.scrollOffset = offset;
             this.scrollTail = tail;
-            if (this.scrollTail <= 55) {
+            if (tail <= 10) {
                 this.msgNew = 0;
-                this.scrollToBottomAndRefresh && this.onReGetMsg()
+                this.scrollToBottomRefresh && this.onReGetMsg()
             }
             //
             this.scrollAction = event.target.scrollTop;
@@ -3433,9 +3404,9 @@ export default {
             if (!this.topMsg) {
                 return
             }
-            this.topPosLoad = true
+            this.topPosLoad++
             this.onPositionId(this.topMsg.id).finally(_ => {
-                this.topPosLoad = false
+                this.topPosLoad--
             })
         },
 
