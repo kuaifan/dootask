@@ -182,7 +182,7 @@
 
                 :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, unreadOne, scrollIng, readEnabled}"
                 :estimate-size="dialogData.type=='group' ? 105 : 77"
-                :keeps="keeps"
+                :keeps="dialogMsgKeep"
                 :disabled="scrollDisabled"
                 @activity="onActivity"
                 @scroll="onScroll"
@@ -664,7 +664,6 @@ export default {
 
     data() {
         return {
-            keeps: 25,
             loadIng: 0,
 
             msgItem: DialogItem,
@@ -811,10 +810,11 @@ export default {
             'dialogTodos',
             'dialogMsgTops',
             'dialogMsgTransfer',
+            'dialogMsgKeep',
+            'dialogIns',
             'cacheDialogs',
             'wsOpenNum',
             'touchBackInProgress',
-            'dialogIns',
             'cacheUserBasic',
             'fileLinks',
             'cacheEmojis',

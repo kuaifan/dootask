@@ -111,6 +111,7 @@ export default {
     // 会话聊天
     dialogId: 0,
     dialogMsgId: 0,
+    dialogMsgKeep: 25,
     dialogSearchMsgId: 0,
     dialogIns: [],
     dialogMsgs: [],

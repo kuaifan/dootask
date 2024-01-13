@@ -2733,23 +2733,22 @@ export default {
      * @param dialog_id
      */
     closeDialog({state, dispatch}, dialog_id) {
-        $A.execMainDispatch("closeDialog", dialog_id)
-        //
         if (!/^\d+$/.test(dialog_id)) {
             return
         }
+        $A.execMainDispatch("closeDialog", dialog_id)
+        //
         // 更新草稿状态
         const dialog = state.cacheDialogs.find(item => item.id == dialog_id);
         if (dialog) {
             dialog.extra_draft_has = dialog.extra_draft_content ? 1 : 0
         }
-        // 关闭会话后只保留会话最后50条数据
-        const retain = 25
+        // 关闭会话后删除会话超限消息
         const msgs = state.dialogMsgs.filter(item => item.dialog_id == dialog_id)
-        if (msgs.length > retain) {
+        if (msgs.length > state.dialogMsgKeep) {
             const delIds = msgs.sort((a, b) => {
                 return b.id - a.id
-            }).splice(retain).map(item => item.id)
+            }).splice(state.dialogMsgKeep).map(item => item.id)
             state.dialogMsgs = state.dialogMsgs.filter(item => !delIds.includes(item.id))
             $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
         }
