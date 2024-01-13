@@ -41,7 +41,7 @@ class WebSocketDialogMsgTask extends AbstractTask
         // 判断是否有Request方法，兼容go协程请求
         $this->ignoreFd = $ignoreFd;
         $this->client = [];
-        if (method_exists(new Request,"header")) {
+        if (method_exists(request(), "header")) {
             $this->ignoreFd = $ignoreFd === null ? Request::header('fd') : $ignoreFd;
             $this->client = [
                 'version' => Base::headerOrInput('version'),
