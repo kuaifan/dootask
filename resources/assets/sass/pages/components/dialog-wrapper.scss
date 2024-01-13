@@ -1411,6 +1411,37 @@
 
             }
 
+            &.head-box {
+                height: 36px;
+                align-items: center;
+                justify-content: center;
+
+                .loading {
+                    > span {
+                        width: 8px;
+                        height: 8px;
+                        border-radius: 50%;
+                        display: block;
+                        margin: 0 auto;
+                        position: relative;
+                        background: #e3e3e3;
+                        box-sizing: border-box;
+                        animation: head-box-loading-animation 0.5s linear infinite alternate;
+                    }
+                }
+
+                .describe {
+                    color: $primary-desc-color;
+                }
+
+                .filled {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                }
+            }
+
             &.unread-start {
                 position: relative;
                 padding-top: 44px;
@@ -1434,22 +1465,6 @@
                         color: $primary-desc-color;
                     }
                 }
-            }
-
-            &.loading {
-                height: 20px;
-                box-sizing: content-box;
-                align-items: center;
-                justify-content: center;
-            }
-
-            &.nothing {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                color: $primary-desc-color;
-                padding: 0;
             }
 
             &.self {
@@ -2116,19 +2131,7 @@ body:not(.window-touch) {
     overflow: hidden !important;
 }
 
-.dialog-wrapper-loading {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    display: block;
-    margin: 0 auto;
-    position: relative;
-    background: #e3e3e3;
-    box-sizing: border-box;
-    animation: dialog-loading-animation 0.5s linear infinite alternate;
-}
-
-@keyframes dialog-loading-animation {
+@keyframes head-box-loading-animation {
     0% {
         box-shadow: 0 0, 0 0;
         color: rgba(#e3e3e3, 0.2);

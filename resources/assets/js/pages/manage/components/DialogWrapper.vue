@@ -200,10 +200,12 @@
                 @on-emoji="onEmoji"
                 @on-show-emoji-user="onShowEmojiUser">
                 <template #header>
-                    <div v-if="(allMsgs.length === 0 && loadIng) || prevId > 0" class="dialog-item loading">
-                        <div v-if="scrollOffset < 100" class="dialog-wrapper-loading"></div>
+                    <div class="dialog-item head-box">
+                        <div v-if="loadIng > 0 || prevId > 0" class="loading" :class="{filled: allMsgs.length === 0}">
+                            <span v-if="scrollOffset < 100"></span>
+                        </div>
+                        <div v-else-if="allMsgs.length === 0" class="describe filled">{{$L('暂无消息')}}</div>
                     </div>
-                    <div v-else-if="allMsgs.length === 0" class="dialog-item nothing">{{$L('暂无消息')}}</div>
                 </template>
             </VirtualList>
         </div>
@@ -2131,17 +2133,19 @@ export default {
             requestAnimationFrame(_ => this.msgActiveId = id)
         },
 
-        onToOffset(offset) {
+        onToOffset(offset, forceFront = false) {
             const scroller = this.$refs.scroller;
             if (scroller) {
                 const front = scroller.getOffset() > offset
                 scroller.stopToBottom();
                 scroller.scrollToOffset(offset);
-                if (front) {
-                    scroller.virtual.handleFront()
-                } else {
-                    scroller.virtual.handleBehind()
-                }
+                setTimeout(_ => {
+                    if (front || forceFront) {
+                        scroller.virtual.handleFront()
+                    } else {
+                        scroller.virtual.handleBehind()
+                    }
+                }, 10)
             }
         },
 
@@ -2218,11 +2222,7 @@ export default {
                         const previousSize = typeof previousValue === "object" ? previousValue.size : scroller.getSize(previousValue)
                         return {size: previousSize + scroller.getSize(currentId)}
                     })
-                    let offset = scroller.getOffset() + reducer.size
-                    if (this.prevId === 0) {
-                        offset -= 36
-                    }
-                    this.onToOffset(offset)
+                    this.onToOffset(scroller.getOffset() + reducer.size, true)
                 });
             }).catch(() => {})
         },
