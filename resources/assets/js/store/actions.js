@@ -2335,6 +2335,16 @@ export default {
                     typeof data.mention !== "undefined" && delete data.mention
                     typeof data.mention_ids !== "undefined" && delete data.mention_ids
                 }
+                if (data.unread_one) {
+                    if (state.dialogMsgs.find(m => m.id == data.unread_one)?.read_at) {
+                        delete data.unread_one
+                    }
+                }
+                if (data.mention_ids) {
+                    data.mention_ids = data.mention_ids.filter(id => {
+                        return !state.dialogMsgs.find(m => m.id == id)?.read_at
+                    })
+                }
                 state.cacheDialogs.splice(index, 1, Object.assign({}, original, data));
             } else {
                 state.cacheDialogs.push(data);
@@ -2872,7 +2882,9 @@ export default {
             const dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
             if (dialog) {
                 let isUpdate = false
-                if (!data.read_at && data.userid != state.userId) {
+                if (!data.read_at
+                    && data.userid != state.userId
+                    && !state.dialogIns.find(({dialog_id}) => dialog_id == dialog.id)) {
                     if (dialog.unread_one) {
                         dialog.unread_one = Math.min(dialog.unread_one, data.id)
                     } else {
