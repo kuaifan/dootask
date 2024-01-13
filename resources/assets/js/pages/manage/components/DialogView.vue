@@ -579,7 +579,7 @@ export default {
             this.$emit("on-show-emoji-user", item)
         },
 
-        onWordChain(){
+        onWordChain() {
             this.$store.state.dialogDroupWordChain = {
                 type: 'participate',
                 dialog_id: this.msgData.dialog_id,
@@ -587,27 +587,27 @@ export default {
             }
         },
 
-        unfoldWordChain(e){
+        unfoldWordChain(e) {
             e.target.parentNode?.parentNode?.classList.add('expand')
         },
 
-        onVote(type,msgData){
-            if(type != 'vote'){
+        onVote(type, msgData) {
+            if (type != 'vote') {
                 $A.modalConfirm({
-                    content: type == 'finish' ? '确定结束投票？': '再次发送投票？',
+                    content: type == 'finish' ? '确定结束投票？' : '再次发送投票？',
                     cancelText: '取消',
                     okText: '确定',
                     onOk: () => {
-                        this.vote(type,msgData);
+                        this.vote(type, msgData);
                     }
                 });
                 return;
             }
-            this.vote(type,msgData);
+            this.vote(type, msgData);
         },
 
-        vote(type,msgData){
-            this.$set(msgData.msg,'_loadIng',1)
+        vote(type, msgData) {
+            this.$set(msgData.msg, '_loadIng', 1)
             this.$store.dispatch("call", {
                 url: 'dialog/msg/vote',
                 method: 'post',
@@ -617,27 +617,24 @@ export default {
                     vote: msgData.msg._vote || [],
                     type: type
                 }
-            }).then(({data}) => {
-                if(type == 'again'){
+            }).then(({ data }) => {
+                if (type == 'again') {
                     $A.messageSuccess("已发送");
                 }
                 data.forEach(d => {
-                    this.$store.dispatch("saveDialogMsg", d );
+                    this.$store.dispatch("saveDialogMsg", d);
                 });
-            }).catch(({msg}) => {
+            }).catch(({ msg }) => {
                 $A.modalError(msg);
             }).finally(_ => {
-                this.$set(msgData.msg,'_loadIng',0)
+                this.$set(msgData.msg, '_loadIng', 0)
             });
         },
 
-        getVoteProgress(msgData, id){
-            const num = msgData.votes.filter(h=>(h.votes || '').indexOf(id) != -1).length
-            let progress = '0.00';
-            if(num){
-                progress = (msgData.votes.length / num * 100).toFixed(2)
-            }
-            return {num, progress};
+        getVoteProgress(msgData, id) {
+            const num = msgData.votes.filter(h => (h.votes || '').indexOf(id) != -1).length
+            const progress = !num ? '0.00' : (num / msgData.votes.length * 100).toFixed(2);
+            return { num, progress };
         }
     }
 }
