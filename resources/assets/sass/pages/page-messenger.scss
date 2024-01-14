@@ -127,6 +127,16 @@
                 width: 100%;
                 overflow-x: hidden;
                 ul {
+                    > li {
+                        &.nothing {
+                            margin: 0 !important;
+                            padding: 24px !important;
+                            text-align: center;
+                            height: 100%;
+                            border-radius: 0;
+                            line-height: 22px;
+                        }
+                    }
                     &.dialog {
                         > li {
                             display: flex;
@@ -364,15 +374,6 @@
                                     }
                                 }
                             }
-                            &.nothing {
-                                justify-content: center;
-                                padding: 24px;
-                                margin: 0;
-                                border: 0;
-                                line-height: 22px;
-                                cursor: default;
-                                word-break: break-all;
-                            }
                         }
                     }
                     &.contacts {
@@ -396,25 +397,6 @@
                                     height: 1px;
                                     background-color: #f2f2f2;
                                     transform: scaleY(0.5);
-                                }
-                            }
-                            &.nothing,
-                            &.loading {
-                                text-align: center;
-                                height: 100%;
-                                margin: 0;
-                                padding: 24px;
-                                border-radius: 0;
-                                line-height: 22px;
-                            }
-                            &.loading {
-                                display: flex;
-                                align-items: flex-start;
-                                justify-content: center;
-                                .common-loading {
-                                    width: 20px;
-                                    height: 20px;
-                                    margin: 1px;
                                 }
                             }
                             &.loaded {

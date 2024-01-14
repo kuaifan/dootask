@@ -9,15 +9,26 @@
                             v-if="tabActive==='dialog'"
                             v-model="dialogSearchKey"
                             ref="searchInput"
-                            :placeholder="$L(loadDialogs > 0 ? '更新中...' : '搜索消息')"
+                            :placeholder="$L(loadDialogs > 0 ? '更新中...' : '搜索')"
                             @on-keydown="onKeydown"
                             clearable>
                             <div class="search-pre" slot="prefix">
-                                <Loading v-if="loadDialogs > 0 || dialogSearchLoad > 0"/>
+                                <Loading v-if="dialogLoading"/>
                                 <Icon v-else type="ios-search" />
                             </div>
                         </Input>
-                        <Input v-else prefix="ios-search" v-model="contactsKey" :placeholder="$L('搜索联系人')" clearable />
+                        <Input
+                            v-else
+                            v-model="contactsKey"
+                            ref="contactInput"
+                            :placeholder="$L('搜索')"
+                            @on-keydown="onKeydown"
+                            clearable>
+                            <div class="search-pre" slot="prefix">
+                                <Loading v-if="contactsLoad"/>
+                                <Icon v-else type="ios-search" />
+                            </div>
+                        </Input>
                     </div>
                 </div>
                 <div v-if="tabActive==='dialog' && !dialogSearchKey" class="messenger-nav">
@@ -116,21 +127,12 @@
                                 <div class="dialog-line"></div>
                             </li>
                         </template>
-                        <li v-else-if="dialogSearchLoad === 0 && dialogMarkLoad === 0" class="nothing">
-                            {{$L(dialogSearchKey ? `没有任何与"${dialogSearchKey}"相关的会话` : `没有任何会话`)}}
-                        </li>
-                        <li v-else class="nothing">
-                            <Loading/>
+                        <li v-else-if="dialogSearchLoad === 0" class="nothing">
+                            {{$L(dialogSearchKey ? `没有任何与"${dialogSearchKey}"相关的结果` : `没有任何会话`)}}
                         </li>
                     </ul>
                     <ul v-else class="contacts">
-                        <template v-if="contactsFilter.length === 0">
-                            <li v-if="contactsLoad > 0" class="loading"><Loading/></li>
-                            <li v-else class="nothing">
-                                {{$L(contactsKey ? `没有任何与"${contactsKey}"相关的联系人` : `没有任何联系人`)}}
-                            </li>
-                        </template>
-                        <template v-else>
+                        <template v-if="contactsFilter.length > 0">
                             <li v-for="items in contactsList">
                                 <div class="label">{{items.az}}</div>
                                 <ul>
@@ -151,6 +153,9 @@
                                 <template v-else>{{$L('共' + contactsTotal + '位联系人')}}</template>
                             </li>
                         </template>
+                        <li v-else-if="contactsLoad == 0" class="nothing">
+                            {{$L(contactsKey ? `没有任何与"${contactsKey}"相关的结果` : `没有任何联系人`)}}
+                        </li>
                     </ul>
                     <div class="operate-position" :style="operateStyles" v-show="operateVisible">
                         <Dropdown
@@ -259,8 +264,6 @@ export default {
             operateVisible: false,
 
             clickAgainSubscribe: null,
-
-            dialogMarkLoad: 0,
         }
     },
 
@@ -485,6 +488,10 @@ export default {
                 });
                 return num;
             }
+        },
+
+        dialogLoading({loadDialogs, dialogSearchLoad}) {
+            return loadDialogs > 0 || dialogSearchLoad > 0
         }
     },
 
@@ -535,8 +542,8 @@ export default {
             if (val == '') {
                 return
             }
-            this.__searchTimer && clearTimeout(this.__searchTimer)
-            this.__searchTimer = setTimeout(this.searchDialog, 600)
+            this.__search_timer && clearTimeout(this.__search_timer)
+            this.__search_timer = setTimeout(this.searchDialog, 600)
             this.dialogSearchLoad++
             setTimeout(_ => this.dialogSearchLoad--, 600)
         },
@@ -614,7 +621,8 @@ export default {
 
         onKeydown(e) {
             if (e.key === "Escape") {
-                this.$refs.searchInput.handleClear()
+                this.$refs.searchInput?.handleClear()
+                this.$refs.contactInput?.handleClear()
             }
         },
 
@@ -811,8 +819,7 @@ export default {
         },
 
         searchTagDialog() {
-            //
-            this.dialogMarkLoad++;
+            this.dialogSearchLoad++;
             this.$store.dispatch("call", {
                 url: 'dialog/search/tag',
             }).then(({data}) => {
@@ -829,7 +836,7 @@ export default {
                 })
                 this.dialogSearchList = lists;
             }).finally(_ => {
-                this.dialogMarkLoad--;
+                this.dialogSearchLoad--;
             });
         },
 

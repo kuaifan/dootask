@@ -48,7 +48,7 @@
                                 <Tag v-if="dialogData.type === 'user' && approvaUserStatus" class="after" color="red" :fade="false">{{$L(approvaUserStatus)}}</Tag>
                                 <Tag v-if="dialogData.group_type=='all'" class="after pointer" :fade="false" @on-click="onDialogMenu('groupInfo')">{{$L('全员')}}</Tag>
                                 <Tag v-else-if="dialogData.group_type=='department'" class="after pointer" :fade="false" @on-click="onDialogMenu('groupInfo')">{{$L('部门')}}</Tag>
-                                <div v-if="msgLoadIng > 0" class="load"><Loading/></div>
+                                <div v-if="msgLoadIng > 0 && allMsgs.length > 0" class="load"><Loading/></div>
                             </div>
                             <ul class="title-desc">
                                 <li v-if="dialogData.type === 'user'" :class="[dialogData.online_state === true ? 'online' : 'offline']">

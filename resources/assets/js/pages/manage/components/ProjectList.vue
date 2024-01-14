@@ -15,7 +15,7 @@
             <template v-if="projectLists.length === 0">
                 <li v-if="projectKeyLoading > 0" class="loading"><Loading/></li>
                 <li v-else class="nothing">
-                    {{$L(projectKeyValue ? `没有任何与"${projectKeyValue}"相关的项目` : `没有任何项目`)}}
+                    {{$L(projectKeyValue ? `没有任何与"${projectKeyValue}"相关的结果` : `没有任何项目`)}}
                 </li>
             </template>
             <li
