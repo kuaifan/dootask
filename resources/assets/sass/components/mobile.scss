@@ -13,14 +13,17 @@
         position: fixed;
         bottom: 72px;
         width: 100%;
+
         .ivu-alert {
             margin: 0 12px;
+
             &.ivu-alert-with-icon {
                 .ivu-alert-icon {
                     top: 50%;
                     transform: translateY(-50%);
                 }
             }
+
             &.ivu-alert-error {
                 background-color: rgba(255, 240, 231, 0.95);
             }
@@ -124,19 +127,23 @@
     width: 90%;
     max-width: 320px;
     transform: translate(-50%, 0);
+
     .common-avatar {
         &.avatar-wrapper {
             align-items: flex-start;
+
             .avatar-name {
                 flex: 1;
                 width: 0;
                 margin-left: 12px;
+
                 > span {
                     font-weight: bold;
                 }
             }
         }
     }
+
     .notification-desc {
         float: left;
         margin-top: -18px;
@@ -254,6 +261,10 @@
 
 .mobile-dialog-leave-active {
     animation: mobile-dialog-leave-animation 0.3s backwards;
+
+    .ql-editor {
+        caret-color: transparent;
+    }
 }
 
 @keyframes mobile-dialog-enter-animation {
@@ -315,22 +326,30 @@ body.window-touch {
     .mobile-back {
         display: block;
     }
+
+    input,
+    textarea,
+    .ql-editor {
+        caret-color: $flow-status-end-color;
+    }
 }
 
 body.window-portrait {
     .mobile-tabbar {
         display: flex;
     }
+
     .mobile-notification {
         top: 12px;
         width: 94%;
         max-width: none;
     }
+
     @media (max-height: 400px) {
-        .mobile-tabbar,.messenger-menu {
+        .mobile-tabbar, .messenger-menu {
             display: none !important;
         }
-        .page-manage.show-tabbar .manage-box-main{
+        .page-manage.show-tabbar .manage-box-main {
             margin-bottom: 0 !important;
         }
     }

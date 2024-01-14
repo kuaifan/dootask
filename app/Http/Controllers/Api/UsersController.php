@@ -2098,6 +2098,13 @@ class UsersController extends AbstractController
                 }
             }
 
+            // 最晚在线时间
+            $timezone = config('app.timezone');
+            $latestOnline = UserCheckinRecord::whereUserid($user->userid)
+                ->whereYear(DB::raw('from_unixtime(report_time)'), $year)
+                ->orderByRaw("TIME_FORMAT(DATE_ADD(CONVERT_TZ(from_unixtime(report_time), 'UTC', '$timezone'), INTERVAL 18 HOUR), '%H%i%s') desc")
+                ->first();
+
             //
             $_A["__annual__report_".$user->userid] = [
                 // 本人信息
@@ -2112,19 +2119,7 @@ class UsersController extends AbstractController
                 // 在职时间（天为单位）
                 'tenure_days' => floor((strtotime(date('Y-m-d')) - $hireTimestamp) / (24 * 60 * 60)),
                 // 最晚在线时间
-                'latest_online_time' => date(
-                    'Y-m-d H:i:s',
-                    UserCheckinRecord::whereUserid($user->userid)
-                        ->whereYear(DB::raw('from_unixtime(report_time)'), $year)
-                        ->where(function ($query) {
-                            $query->where(function ($query) {
-                                $query->whereRaw('HOUR(FROM_UNIXTIME(report_time)) < 6');
-                                $query->whereRaw('DATE(FROM_UNIXTIME(report_time)) = CURDATE() - INTERVAL 1 DAY');
-                            })->orWhere(function ($query) {
-                                $query->whereRaw('DATE(FROM_UNIXTIME(report_time)) = CURDATE()');
-                            });
-                        })->max('report_time')
-                ),
+                'latest_online_time' => date("Y-m-d H:i:s", $latestOnline->report_time),
                 // 跟谁聊天最多（发消息的次数。可以是群、私聊、机器人除外）
                 'longest_chat_user' => $longestChat,
                 // 跟所有ai机器人聊天的次数

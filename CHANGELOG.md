@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.34.46]
+
+### Bug Fixes
+
+- 重复通知
+- 修复投票进度的算法
+
+### Performance
+
+- 优化发送消息接口
+- 优化搜索提示
+- 优化消息列表
+- 优化消息保存覆盖
+- 优化快捷表情发送消息时关闭延迟的问题
+- 升级okr
+
 ## [0.34.28]
 
 ### Features

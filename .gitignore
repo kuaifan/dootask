@@ -1,6 +1,7 @@
 /node_modules
 /public/hot
 /public/tmp
+/public/summary
 /public/uploads/*
 /public/.well-known
 /public/.user.ini

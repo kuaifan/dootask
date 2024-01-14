@@ -1173,6 +1173,7 @@ export default {
                     this.positionShow = false
                     this.msgPrepared = false
                     this.scrollToBottomRefresh = false
+                    this.allMsgs = this.allMsgList
                     //
                     this.getMsgs({
                         dialog_id,
