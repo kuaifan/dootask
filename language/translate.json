@@ -19567,5 +19567,27 @@
         "de": "Die server-version ist zu niedrig und teilweise unbrauchbar.",
         "fr": "La version de l’interface du serveur est trop basse, certaines fonctions peuvent ne pas fonctionner correctement.",
         "id": "Versi antarmuka server yang rendah, sebagian fungsinya mungkin tidak berfungsi dengan baik."
+    },
+    {
+        "key": "没有任何联系人",
+        "zh": "",
+        "zh-CHT": "沒有任何聯繫人",
+        "en": "Without any contacts",
+        "ko": "연락처가 없습니다.",
+        "ja": "連絡先はありません",
+        "de": "Haben sie jemanden angerufen?",
+        "fr": "Sans aucun contact",
+        "id": "Tidak ada kontak"
+    },
+    {
+        "key": "没有任何与(*)相关的结果",
+        "zh": "",
+        "zh-CHT": "沒有任何與(*)相關的結果",
+        "en": "There are no results related to (*)",
+        "ko": "(*)와 관련된 결과가 없습니다",
+        "ja": "(*)に関する結果はありませんでした",
+        "de": "Kein ergebnis in irgendeiner beziehung (*)",
+        "fr": "Aucun résultat associé à (*)",
+        "id": "Tidak ada hasil yang berhubungan dengan (*)"
     }
 ]

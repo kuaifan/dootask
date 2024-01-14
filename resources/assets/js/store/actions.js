@@ -3039,7 +3039,7 @@ export default {
                 requestData.page = 1
             }
             if (typeof requestData.pagesize === "undefined") {
-                requestData.pagesize = 50
+                requestData.pagesize = 20
             }
             if (typeof requestData.latest_id === "undefined") {
                 requestData.latest_id = state.loadDialogLatestId
