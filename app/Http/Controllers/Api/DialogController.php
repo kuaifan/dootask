@@ -872,7 +872,7 @@ class DialogController extends AbstractController
         //
         $result = [];
         $dialogIds = $dialog_ids ? explode(',', $dialog_ids) : [$dialog_id ?: 0];
-        foreach($dialogIds as $dialog_id) {
+        foreach ($dialogIds as $dialog_id) {
             //
             WebSocketDialog::checkDialog($dialog_id);
             //
@@ -919,13 +919,13 @@ class DialogController extends AbstractController
                     'ext' => $ext,
                 ];
                 $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'file', $fileData, $user->userid, false, false, $silence);
+            } else {
+                $msgData = ['text' => $text];
+                if ($markdown) {
+                    $msgData['type'] = 'md';
+                }
+                $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'text', $msgData, $user->userid, false, false, $silence);
             }
-            //
-            $msgData = ['text' => $text];
-            if ($markdown) {
-                $msgData['type'] = 'md';
-            }
-            $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'text', $msgData, $user->userid, false, false, $silence);
         }
         return $result;
     }
