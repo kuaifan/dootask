@@ -770,6 +770,7 @@ export default {
             positionLoad: 0,                    // 定位跳转加载中
             positionShow: false,                // 定位跳转显示
             preventMoreLoad: false,             // 阻止加载更多
+            preventToBottom: false,             // 阻止滚动到底部
             selectedTextStatus: false,          // 是否选择文本
             scrollToBottomRefresh: false,       // 滚动到底部重新获取消息
             androidKeyboardVisible: false,      // Android键盘是否可见
@@ -1135,8 +1136,8 @@ export default {
             return msgActivity === 0 && msgPrepared
         },
 
-        stickToBottom({windowActive, scrollTail}) {
-            return windowActive && scrollTail <= 0
+        stickToBottom({windowActive, scrollTail, preventToBottom}) {
+            return windowActive && scrollTail <= 0 && !preventToBottom
         }
     },
 
@@ -1172,7 +1173,6 @@ export default {
                     this.positionShow = false
                     this.msgPrepared = false
                     this.scrollToBottomRefresh = false
-                    this.allMsgs = this.allMsgList
                     //
                     this.getMsgs({
                         dialog_id,
@@ -1331,25 +1331,26 @@ export default {
             this.onReGetMsg()
         },
 
-        allMsgList(newList, oldList) {
-            if (JSON.stringify(newList) == JSON.stringify(oldList)) {
+        allMsgList(list) {
+            if (JSON.stringify(list) == JSON.stringify(this.allMsgs)) {
                 return;
             }
-            if ($A.isIos() && newList.length !== oldList.length) {
+            const historyLength = this.allMsgs.length
+            const historyLastId = historyLength > 0 ? this.allMsgs[historyLength - 1].id : 0
+            if ($A.isIos() && list.length !== historyLength) {
                 // 隐藏区域，让iOS断触
                 const scrollEl = this.$refs.scroller.$el
                 scrollEl.style.visibility = 'hidden'
-                this.allMsgs = newList;
+                this.allMsgs = list;
                 this.$nextTick(_ => {
                     scrollEl.style.visibility = 'visible'
                 })
             } else {
-                this.allMsgs = newList;
+                this.allMsgs = list;
             }
             //
             if (!this.stickToBottom) {
-                const oldId = oldList.length > 0 ? oldList[oldList.length - 1].id : 0
-                this.msgNew += newList.filter(item => item.id && item.id > oldId && item.userid != this.userId && !item.read_at).length
+                this.msgNew += list.filter(item => item.id && item.id > historyLastId && item.userid != this.userId && !item.read_at).length
             }
         },
 
@@ -1391,6 +1392,7 @@ export default {
                 this.msgActiveId = 0
                 const element = this.$refs.scroller.$el.querySelector(`[data-id="${val}"]`)?.querySelector(".dialog-head")
                 if (element) {
+                    $A.scrollIntoViewIfNeeded(element)
                     element.classList.add("common-shake")
                     setTimeout(_ => element.classList.remove("common-shake"), 800)
                 }
@@ -1712,7 +1714,15 @@ export default {
                         msg_id: this.msgId,
                         msg_type: this.msgType,
                         position_id,
-                        spinner: 2000
+                        spinner: 2000,
+                        save_before: _ => {
+                            this.preventToBottom = true
+                        },
+                        save_after: _ => {
+                            this.$nextTick(_ => {
+                                this.preventToBottom = false
+                            })
+                        }
                     }).finally(_ => {
                         const index = this.allMsgs.findIndex(item => item.id === position_id)
                         if (index > -1) {
