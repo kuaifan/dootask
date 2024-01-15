@@ -725,7 +725,7 @@
                         &.an-emoji {
                             .content-text {
                                 > pre {
-                                    font-size: 72px;
+                                    font-size: 72px !important;
                                     line-height: 1;
                                 }
                             }
@@ -734,7 +734,7 @@
                         &.two-emoji {
                             .content-text {
                                 > pre {
-                                    font-size: 52px;
+                                    font-size: 52px !important;
                                     line-height: 1;
                                     letter-spacing: 4px;
                                 }
@@ -744,7 +744,7 @@
                         &.three-emoji {
                             .content-text {
                                 > pre {
-                                    font-size: 32px;
+                                    font-size: 32px !important;
                                     line-height: 1;
                                     letter-spacing: 4px;
                                 }
@@ -759,6 +759,10 @@
                             .no-size-image-box {
                                 display: inline-block;
                                 max-width: 220px;
+                            }
+
+                            .markdown-body {
+                                line-height: 20px;
                             }
 
                             > pre {

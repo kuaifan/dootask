@@ -2420,8 +2420,6 @@ export default {
                     state.loadDialogs--;
                     state.loadDialogAuto = false
                 })
-            //
-            dispatch("getDialogLatestMsgs").catch(() => {})
         })
     },
 
@@ -2457,6 +2455,10 @@ export default {
             }).then(({data}) => {
                 dispatch("saveDialog", data.data);
                 callData.save(data).then(ids => dispatch("forgetDialog", ids))
+                //
+                if (data.current_page === 1) {
+                    dispatch("getDialogLatestMsgs", data.data.map(({id}) => id))
+                }
                 //
                 if (data.next_page_url && data.current_page < 5) {
                     requestData.page++
@@ -3023,48 +3025,44 @@ export default {
      * 获取最新消息
      * @param state
      * @param dispatch
-     * @param requestData
+     * @param dialogIds
      * @returns {Promise<unknown>}
      */
-    getDialogLatestMsgs({state, dispatch}, requestData = {}) {
+    getDialogLatestMsgs({state, dispatch}, dialogIds = []) {
         return new Promise(function (resolve, reject) {
             if (state.userId === 0) {
                 reject({msg: 'Parameter error'});
                 return;
             }
-            if (!$A.isJson(requestData)) {
-                requestData = {}
+            if (!$A.isArray(dialogIds)) {
+                reject({msg: 'Parameter is not array'});
+                return
             }
-            if (typeof requestData.page === "undefined") {
-                requestData.page = 1
-            }
-            if (typeof requestData.pagesize === "undefined") {
-                requestData.pagesize = 20
-            }
-            if (typeof requestData.latest_id === "undefined") {
-                requestData.latest_id = state.loadDialogLatestId
+            if (dialogIds.length === 0) {
+                resolve()
+                return
             }
             //
+            const wait = dialogIds.slice(5)
+            const dialogs = dialogIds.slice(0, 5)
             dispatch("call", {
+                method: 'post',
                 url: 'dialog/msg/latest',
-                data: requestData,
+                data: {
+                    dialogs: dialogs.map(id => {
+                        return {
+                            id,
+                            latest_id: state.dialogMsgs.sort((a, b) => {
+                                return b.id - a.id
+                            }).find(({dialog_id}) => dialog_id == id)?.id || 0
+                        }
+                    }),
+                    take: state.dialogMsgKeep
+                },
             }).then(({data}) => {
-                const list = data.data
-                if (list.length === 0) {
-                    resolve()
-                    return
-                }
-                //
-                const lastId = list[list.length - 1].id;
-                const lastNotExist = state.dialogMsgs.findIndex(({id}) => id == lastId) === -1
-                if (requestData.page === 1) {
-                    state.loadDialogLatestId = list[0].id
-                }
-                dispatch("saveDialogMsg", list);
-                //
-                if (data.next_page_url && data.current_page < 5 && lastNotExist) {
-                    requestData.page++
-                    dispatch("getDialogLatestMsgs", requestData).then(resolve).catch(reject)
+                dispatch("saveDialogMsg", data.data);
+                if (wait.length > 0) {
+                    dispatch("getDialogLatestMsgs", wait).then(resolve).catch(reject)
                 } else {
                     resolve()
                 }

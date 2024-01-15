@@ -553,10 +553,9 @@ class DialogController extends AbstractController
      * @apiGroup dialog
      * @apiName msg__latest
      *
-     * @apiParam {Number} [latest_id]       此消息ID之后的数据
-     *
-     * @apiParam {Number} [page]            当前页，默认:1
-     * @apiParam {Number} [pagesize]        每页显示数量，默认:50，最大:100
+     * @apiParam {Array} [dialogs]          对话ID列表
+     * - 格式：[{id:会话ID, latest_id:此消息ID之后的数据}, ...]
+     * @apiParam {Number} [take]            每个会话获取多少条，默认:25，最大:50
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -564,39 +563,51 @@ class DialogController extends AbstractController
      */
     public function msg__latest()
     {
+        if (!Base::judgeClientVersion('0.34.47')) {
+            return Base::retSuccess('success', ['data' => []]);
+        }
+        //
         $user = User::auth();
         //
-        $latest_id = intval(Request::input('latest_id'));
-        //
-        \DB::statement("SET SQL_MODE=''");
+        $dialogs = Request::input('dialogs');
+        if (empty($dialogs) || !is_array($dialogs)) {
+            return Base::retError('参数错误');
+        }
         $builder = WebSocketDialogMsg::select([
             'web_socket_dialog_msgs.*',
             'read.mention',
             'read.read_at',
-        ])
-            ->join('web_socket_dialog_msg_reads as read', 'read.msg_id', '=', 'web_socket_dialog_msgs.id')
-            ->where('read.userid', $user->userid)
-            ->orWhere('web_socket_dialog_msgs.userid', $user->userid);
-        //
-        if ($latest_id > 0) {
-            $builder->where('read.msg_id', '>', $latest_id);
-        }
-        //
-        $data = $builder
-            ->groupBy('id')
-            ->orderByDesc('id')
-            ->paginate(Base::getPaginate(100, 50));
-        if ($data->isEmpty()) {
-            return Base::retError('empty');
-        }
-        $data->transform(function (WebSocketDialogMsg $item) use ($user) {
-            if ($item->userid === $user->userid) {
-                $item->mention = 0;
-                $item->read_at = null;
-            }
-            return $item;
+        ])->leftJoin('web_socket_dialog_msg_reads as read', function ($leftJoin) use ($user) {
+            $leftJoin
+                ->on('read.userid', '=', DB::raw($user->userid))
+                ->on('read.msg_id', '=', 'web_socket_dialog_msgs.id');
         });
-        return Base::retSuccess('success', $data);
+        $data = [];
+        $num = 0;
+        foreach ($dialogs as $item) {
+            $dialog_id = intval($item['id']);
+            $latest_id = intval($item['latest_id']);
+            if ($dialog_id <= 0) {
+                continue;
+            }
+            if ($num >= 5) {
+                break;
+            }
+            $num++;
+            WebSocketDialog::checkDialog($dialog_id);
+            //
+            $cloner = $builder->clone();
+            $cloner->where('web_socket_dialog_msgs.dialog_id', $dialog_id);
+            if ($latest_id > 0) {
+                $cloner->where('web_socket_dialog_msgs.id', '>', $latest_id);
+            }
+            $cloner->orderByDesc('web_socket_dialog_msgs.id');
+            $list = $cloner->take(Base::getPaginate(50, 25, 'take'))->get();
+            if ($list->isNotEmpty()) {
+                $data = array_merge($data, $list->toArray());
+            }
+        }
+        return Base::retSuccess('success', compact('data'));
     }
 
     /**
@@ -631,9 +642,7 @@ class DialogController extends AbstractController
             ->where('key', 'LIKE', "%{$key}%")
             ->take(200)
             ->pluck('id');
-        return Base::retSuccess('success', [
-            'data' => $data
-        ]);
+        return Base::retSuccess('success', compact('data'));
     }
 
     /**
