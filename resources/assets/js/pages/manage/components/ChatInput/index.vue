@@ -876,6 +876,7 @@ export default {
             }
             this.emojiTimer && clearTimeout(this.emojiTimer)
             this.emojiTimer = setTimeout(_ => {
+                this.emojiTimer = null
                 if (/<img/i.test(text)) {
                     this.emojiQuickShow = false
                     return
@@ -1036,6 +1037,7 @@ export default {
         },
 
         onSend(type) {
+            this.emojiTimer && clearTimeout(this.emojiTimer)
             this.emojiQuickShow = false;
             //
             setTimeout(_ => {

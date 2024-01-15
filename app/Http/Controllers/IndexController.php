@@ -37,9 +37,14 @@ class IndexController extends InvokeController
         if ($action) {
             $app .= "__" . $action;
         }
-        if ($app === 'manifest.txt') {
-            $app = 'manifest';
-            $child = 'txt';
+        switch ($app) {
+            case 'manifest.txt':
+                $app = 'manifest';
+                $child = 'txt';
+                break;
+
+            case 'default':
+                return '';
         }
         if (!method_exists($this, $app)) {
             $app = method_exists($this, $method) ? $method : 'main';

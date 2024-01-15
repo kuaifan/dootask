@@ -203,8 +203,6 @@ function startBuild(data) {
     fs.writeFileSync(electronDir + "/config.js", "window.systemInfo = " + JSON.stringify(systemInfo), 'utf8');
     fs.writeFileSync(nativeCachePath, utils.formatUrl(data.url));
     fs.writeFileSync(devloadCachePath, "", 'utf8');
-    // default (fix "Failed to load resource: net::ERR_FILE_NOT_FOUND" report)
-    fs.writeFileSync(electronDir + "/default", "default", 'utf8');
     // index.html
     let manifestFile = path.resolve(electronDir, "manifest.json");
     if (!fs.existsSync(manifestFile)) {
