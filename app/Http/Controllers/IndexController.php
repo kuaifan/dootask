@@ -339,7 +339,7 @@ class IndexController extends InvokeController
                     ], 'inline');
                 }
                 // EEUI App 直接在线预览查看
-                if (str_contains($userAgent, 'eeui')) {
+                if (str_contains($userAgent, 'eeui') && Base::judgeClientVersion("0.34.47")) {
                     if (str_contains($userAgent, 'iphone') || str_contains($userAgent, 'ipad')) {
                         $message = Base::array2json([
                             'type' => 'currentOpen',

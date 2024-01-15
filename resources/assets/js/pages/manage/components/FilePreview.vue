@@ -109,7 +109,7 @@ export default {
         previewUrl() {
             if (this.isPreview) {
                 const {name, key} = this.contentDetail;
-                return $A.apiUrl(`../online/preview/${name}?key=${key}`)
+                return $A.apiUrl(`../online/preview/${name}?key=${key}&version=${window.systemInfo.version}`)
             }
             return '';
         },

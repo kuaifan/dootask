@@ -121,7 +121,7 @@ export default {
 
         previewUrl() {
             const {name, key} = this.fileDetail.content;
-            return $A.apiUrl(`../online/preview/${name}?key=${key}`)
+            return $A.apiUrl(`../online/preview/${name}?key=${key}&version=${window.systemInfo.version}`)
         }
     },
     methods: {

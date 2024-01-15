@@ -133,7 +133,7 @@ export default {
 
         previewUrl() {
             const {name, key} = this.msgDetail.content;
-            return $A.apiUrl(`../online/preview/${name}?key=${key}`)
+            return $A.apiUrl(`../online/preview/${name}?key=${key}&version=${window.systemInfo.version}`)
         }
     },
     methods: {
