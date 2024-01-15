@@ -1,8 +1,12 @@
-const useModeTouch = $A.isIos() && "ontouchend" in document;
+const isSupportTouch = "ontouchend" in document;
+
 // 长按或右键指令
 const longpress = {
     bind: function (el, binding) {
         let delay = 500,
+            mode = 'default',
+            isCall = false,
+            pressTimer = null,
             callback = binding.value;
         if ($A.isJson(binding.value)) {
             delay = binding.value.delay || 500;
@@ -16,38 +20,43 @@ const longpress = {
         el.__longpressContextmenu__ = (e) => {
             e.preventDefault()
             e.stopPropagation()
-            if (!useModeTouch) {
+            if (mode === 'default') {
                 callback(e, el)
             }
         }
         el.addEventListener('contextmenu', el.__longpressContextmenu__);
+
         // 不支持touch
-        if (!useModeTouch) {
+        if (!isSupportTouch) {
             return
         }
-        // 定义变量
-        let pressTimer = null
-        let isCall = false
+
         // 创建计时器（ 500秒后执行函数 ）
         el.__longpressStart__ = (e) => {
             if (e.type === 'click' && e.button !== 0) {
                 return
             }
+            mode = 'touch'
             isCall = false
             if (pressTimer === null) {
                 pressTimer = setTimeout(() => {
-                    isCall = true
-                    callback(e.touches[0], el)
+                    if (mode === 'touch') {
+                        isCall = true
+                        callback(e.touches[0], el)
+                    }
                 }, delay)
             }
         }
+
         // 取消计时器
         el.__longpressCancel__ = (e) => {
             if (pressTimer !== null) {
                 clearTimeout(pressTimer)
                 pressTimer = null
             }
+            mode = 'default'
         }
+
         // 点击拦截
         el.__longpressClick__ = (e) => {
             if (isCall) {
@@ -56,9 +65,9 @@ const longpress = {
             }
             el.__longpressCancel__(e)
         }
+
         // 添加事件监听器
         el.addEventListener('touchstart', el.__longpressStart__)
-        // 取消计时器
         el.addEventListener('click', el.__longpressClick__)
         el.addEventListener('touchmove', el.__longpressCancel__)
         el.addEventListener('touchend', el.__longpressCancel__)
@@ -68,7 +77,7 @@ const longpress = {
     unbind(el) {
         el.removeEventListener('contextmenu', el.__longpressContextmenu__)
         delete el.__longpressContextmenu__
-        if (!useModeTouch) {
+        if (!isSupportTouch) {
             return
         }
         el.removeEventListener('touchstart', el.__longpressStart__)
