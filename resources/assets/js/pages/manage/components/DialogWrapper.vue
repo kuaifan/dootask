@@ -482,7 +482,6 @@
             </template>
         </Modal>
 
-
         <!-- 设置待办 -->
         <Modal
             v-model="todoSettingShow"
@@ -672,7 +671,6 @@ export default {
             msgType: '',            // 消息类型
             msgActivity: false,     // 消息活动中
             msgPrepared: false,     // 消息已准备
-
 
             focusLazy: false,
             focusTimer: null,
@@ -1338,7 +1336,7 @@ export default {
             }
             const historyLength = this.allMsgs.length
             const historyLastId = historyLength > 0 ? this.allMsgs[historyLength - 1].id : 0
-            if ($A.isIos() && list.length !== historyLength) {
+            if ($A.isIos() && list.length !== historyLength && this.$refs.scroller) {
                 // 隐藏区域，让iOS断触
                 const scrollEl = this.$refs.scroller.$el
                 scrollEl.style.visibility = 'hidden'
@@ -1354,7 +1352,6 @@ export default {
                 this.msgNew += list.filter(item => item.id && item.id > historyLastId && item.userid != this.userId && !item.read_at).length
             }
         },
-
 
         'allMsgs.length' () {
             if (this.stickToBottom) {
