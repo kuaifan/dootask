@@ -322,8 +322,8 @@ class IndexController extends InvokeController
         $path = Arr::get($data, 'path');
         $file = public_path($path);
         // 防止 ../ 穿越获取到系统文件
-        if (strpos(realpath($file), public_path()) !== 0) {
-            return abort(404);
+        if (!str_starts_with(realpath($file), public_path())) {
+            abort(404);
         }
         //
         if (file_exists($file)) {
@@ -331,11 +331,23 @@ class IndexController extends InvokeController
             $name = Arr::get($query, 'name');
             $ext = strtolower(Arr::get($query, 'ext'));
             $userAgent = strtolower(Request::server('HTTP_USER_AGENT'));
-            if ($ext === 'pdf'
-                && (str_contains($userAgent, 'electron') || str_contains($userAgent, 'chrome'))) {
-                return Response::download($file, $name, [
-                    'Content-Type' => 'application/pdf'
-                ], 'inline');
+            if ($ext === 'pdf') {
+                // electron 直接在线预览查看
+                if (str_contains($userAgent, 'electron')) {
+                    return Response::download($file, $name, [
+                        'Content-Type' => 'application/pdf'
+                    ], 'inline');
+                }
+                // EEUI App 直接在线预览查看
+                if (str_contains($userAgent, 'eeui')) {
+                    if (str_contains($userAgent, 'iphone') || str_contains($userAgent, 'ipad')) {
+                        $message = Base::array2json([
+                            'type' => 'currentOpen',
+                            'url' => Base::fillUrl($path),
+                        ]);
+                        return "<script>window.top.postMessage($message, '*')</script>";
+                    }
+                }
             }
             //
             if (in_array($ext, File::localExt)) {
@@ -351,7 +363,7 @@ class IndexController extends InvokeController
             $toUrl = Base::fillUrl("fileview/onlinePreview?url=" . urlencode(base64_encode($url)));
             return Redirect::to($toUrl, 301);
         }
-        return abort(404);
+        abort(404);
     }
 
     /**
@@ -363,6 +375,18 @@ class IndexController extends InvokeController
         return view('setting', [
             'theme' => Request::input('theme'),
             'language' => Request::input('language')
+        ]);
+    }
+
+    /**
+     * 设置用户信息
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
+     */
+    public function setting__userinfo()
+    {
+        return view('setting', [
+            'userid' => Request::input('userid'),
+            'token' => Request::input('token')
         ]);
     }
 

@@ -68,12 +68,14 @@ export default {
     mounted() {
         window.addEventListener('resize', this.windowSizeListener);
         window.addEventListener('scroll', this.windowScrollListener);
+        window.addEventListener('message', this.windowHandleMessage)
         this.searchInter = setInterval(this.searchEnter, 1000);
     },
 
     beforeDestroy() {
         window.removeEventListener('resize', this.windowSizeListener);
         window.removeEventListener('scroll', this.windowScrollListener);
+        window.removeEventListener('message', this.windowHandleMessage)
         this.searchInter && clearInterval(this.searchInter);
     },
 
@@ -106,6 +108,7 @@ export default {
         userId: {
             handler() {
                 this.$store.dispatch("websocketConnection");
+                this.synchUserToken();
                 //
                 if (this.userId > 0) {
                     if (this.$isEEUiApp) {
@@ -223,6 +226,16 @@ export default {
             });
         },
 
+        synchUserToken() {
+            if (this.isSoftware) {
+                this.iframes = this.iframes.filter(({key}) => key != 'synchUserToken')
+                this.iframes.push({
+                    key: 'synchUserToken',
+                    url: $A.apiUrl(`../setting/userinfo?userid=${this.userId}&token=${this.userToken}`)
+                })
+            }
+        },
+
         autoTheme() {
             if (this.themeMode === "auto") {
                 this.$store.dispatch("synchTheme")
@@ -269,6 +282,15 @@ export default {
 
         windowScrollListener() {
             this.$store.state.windowScrollY = window.scrollY
+        },
+
+        windowHandleMessage({data}) {
+            data = $A.jsonParse(data);
+            if (data.type === 'currentOpen') {
+                if ($A.getDomain(window.location.href) === $A.getDomain(data.url) || $A.getDomain($A.apiUrl('../')) === $A.getDomain(data.url)) {
+                    window.location.href = data.url
+                }
+            }
         },
 
         electronEvents() {
