@@ -2,7 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.34.47]
+## [0.34.53]
+
+### Bug Fixes
+
+- 部分机型首次打开聊天窗口不显示聊天记录的问题
+
+### Performance
+
+- 优化获取最近消息
+- 优化请求时间
+- 优化触摸长按和右键菜单共存
+
+## [0.34.46]
 
 ### Bug Fixes
 
