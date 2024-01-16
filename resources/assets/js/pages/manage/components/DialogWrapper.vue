@@ -2680,12 +2680,11 @@ export default {
                 }
             }
             this.$nextTick(() => {
-                const projectRect = el.getBoundingClientRect();
-                const wrapRect = this.$el.getBoundingClientRect();
+                const rect = el.getBoundingClientRect();
                 this.operateStyles = {
-                    left: `${event.clientX - wrapRect.left}px`,
-                    top: `${projectRect.top + this.windowScrollY}px`,
-                    height: projectRect.height + 'px',
+                    left: `${event.clientX}px`,
+                    top: `${rect.top + this.windowScrollY}px`,
+                    height: rect.height + 'px',
                 }
                 this.operateClient = {x: event.clientX, y: event.clientY};
                 this.operateVisible = true;

@@ -977,12 +977,11 @@ export default {
             this.operateVisible = false;
             this.operateItem = $A.isJson(dialogItem) ? dialogItem : {};
             this.$nextTick(() => {
-                const dialogRect = el.getBoundingClientRect();
-                const wrapRect = this.$refs.list.$el.getBoundingClientRect();
+                const rect = el.getBoundingClientRect();
                 this.operateStyles = {
-                    left: `${event.clientX - wrapRect.left}px`,
-                    top: `${dialogRect.top - dialogRect.height + this.windowScrollY}px`,
-                    height: dialogRect.height + 'px',
+                    left: `${event.clientX}px`,
+                    top: `${rect.top + this.windowScrollY}px`,
+                    height: rect.height + 'px',
                 }
                 this.operateVisible = true;
             })
