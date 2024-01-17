@@ -1,5 +1,6 @@
 const isElectron = !!(window && window.process && window.process.type);
 const isEEUiApp = window && window.navigator && /eeui/i.test(window.navigator.userAgent);
+const isSoftware = isElectron || isEEUiApp;
 
 import microappInit from "./microapp"
 import {switchLanguage as $L} from "./language";
@@ -75,12 +76,12 @@ VueRouter.prototype.push = function push(location) {
 }
 
 const router = new VueRouter({
-    mode: isElectron || isEEUiApp ? 'hash' : 'history',
+    mode: isSoftware && !/https*:/i.test(window.location.protocol) ? 'hash' : 'history',
     routes
 });
 
 // 进度条配置
-if (!isElectron && !isEEUiApp) {
+if (!isSoftware) {
     ViewUI.LoadingBar.config({
         color: '#3fcc25',
         failedColor: '#ff0000'
@@ -147,7 +148,7 @@ $A.isMainElectron = false;
 $A.isSubElectron = false;
 $A.isEEUiApp = isEEUiApp;
 $A.isElectron = isElectron;
-$A.isSoftware = isEEUiApp || isElectron;
+$A.isSoftware = isSoftware;
 $A.openLog = false;
 if (isElectron) {
     $A.Electron = electron;

@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.34.53]
+## [0.34.56]
 
 ### Bug Fixes
 
@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
+- 优化系统参数
+- 优化菜单显示位置
 - 优化获取最近消息
 - 优化请求时间
 - 优化触摸长按和右键菜单共存
