@@ -5,7 +5,8 @@
                 <Loading/>
             </div>
         </transition>
-        <micro-app v-if="url && !loading"
+        <micro-app
+            v-if="url && !loading"
             :name='name'
             :url='url'
             inline
@@ -18,19 +19,19 @@
             @unmount='handleUnmount'
             @error='handleError'
             @datachange='handleDataChange'
-        ></micro-app>
+        />
     </div>
 </template>
 
 <script>
 import Vue from 'vue'
 import store from '../store/index'
-import { mapState } from "vuex";
-import { EventCenterForMicroApp, unmountAllApps } from '@micro-zoe/micro-app'
+import {mapState} from "vuex";
+import {EventCenterForMicroApp, unmountAllApps} from '@micro-zoe/micro-app'
 import DialogWrapper from '../pages/manage/components/DialogWrapper.vue'
 import UserSelect from "./UserSelect.vue";
-import { languageList, languageType } from "../language";
-import { DatePicker } from 'view-design-hi';
+import {languageList, languageName} from "../language";
+import {DatePicker} from 'view-design-hi';
 
 export default {
     name: "MicroApps",
@@ -47,9 +48,10 @@ export default {
             type: String,
             default: ""
         },
-        datas:{
+        datas: {
             type: Object,
-            default: () => {}
+            default: () => {
+            }
         }
     },
     data() {
@@ -64,13 +66,13 @@ export default {
         this.appData = this.getAppData
     },
     watch: {
-        loading(val){
-            if(val){
+        loading(val) {
+            if (val) {
                 this.showSpin = true;
             }
         },
         path(val) {
-            this.appData = { path: val }
+            this.appData = {path: val}
         },
         datas: {
             handler(info) {
@@ -80,7 +82,7 @@ export default {
         },
         '$route': {
             handler(to) {
-                if(to.name == 'manage-apps' || to.name == 'single-apps'){
+                if (to.name == 'manage-apps' || to.name == 'single-apps') {
                     this.appData = {
                         path: to.hash || to.fullPath
                     }
@@ -90,10 +92,10 @@ export default {
         },
         userToken(val) {
             this.appData = this.getAppData;
-            if(!val){
-                unmountAllApps({ destroy: true })
+            if (!val) {
+                unmountAllApps({destroy: true})
                 this.loading = true;
-            }else{
+            } else {
                 this.loading = false;
             }
         },
@@ -101,9 +103,9 @@ export default {
     computed: {
         ...mapState([
             'userInfo',
-            'themeMode',
+            'themeName',
         ]),
-        getAppData(){
+        getAppData() {
             return {
                 type: 'init',
                 url: this.url,
@@ -116,10 +118,11 @@ export default {
                         DatePicker
                     }
                 },
-                theme: this.themeMode,
+                theme: this.themeName,
                 languages: {
                     languageList,
-                    languageType,
+                    languageName,
+                    languageType: languageName,
                 },
                 userInfo: this.userInfo,
                 path: this.path,
@@ -132,17 +135,17 @@ export default {
             // 创建前
             window.eventCenterForAppNameVite = new EventCenterForMicroApp(e.detail.name)
             this.appData = this.getAppData
-            this.showSpin = window["eventCenterForAppNameViteLoad-" + e.detail.name] ? false : true
+            this.showSpin = !window["eventCenterForAppNameViteLoad-" + e.detail.name]
         },
         handleBeforeMount(e) {
             window["eventCenterForAppNameViteLoad-" + e.detail.name] = 1;
         },
         handleMount(e) {
             // 加载完成
-            if(this.datas){
+            if (this.datas) {
                 this.appData = this.datas;
             }
-            if(this.path){
+            if (this.path) {
                 this.appData.path = this.path
             }
             this.showSpin = false;

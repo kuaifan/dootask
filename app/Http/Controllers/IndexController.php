@@ -372,27 +372,20 @@ class IndexController extends InvokeController
     }
 
     /**
-     * 设置语言和皮肤
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
+     * 保存配置
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|string
      */
-    public function setting__theme_language()
+    public function storage__synch()
     {
-        return view('setting', [
-            'theme' => Request::input('theme'),
-            'language' => Request::input('language')
-        ]);
-    }
-
-    /**
-     * 设置用户信息
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View
-     */
-    public function setting__userinfo()
-    {
-        return view('setting', [
-            'userid' => Request::input('userid'),
-            'token' => Request::input('token')
-        ]);
+        $key = Request::input('key');
+        $value = Request::input('value');
+        if ($key) {
+            $value = [$key => $value];
+        }
+        if (!is_array($value)) {
+            $value = Base::json2array($value);
+        }
+        return view('storage', ['value' => Base::array2json($value)]);
     }
 
     /**

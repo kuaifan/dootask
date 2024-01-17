@@ -2,11 +2,11 @@
 </template>
 
 <script>
-import {languageType} from "../language";
+import {languageName} from "../language";
 
 export default {
     mounted() {
-        if (languageType === "zh" || languageType === "zh-CHT") {
+        if (languageName === "zh" || languageName === "zh-CHT") {
             window.location.href = $A.apiUrl("../site/zh/price.html")
         } else {
             window.location.href = $A.apiUrl("../site/en/price.html")

@@ -432,7 +432,6 @@
 </template>
 
 <script>
-import axios from "axios";
 import {mapState} from "vuex";
 import {sortBy} from "lodash";
 import DrawerOverlay from "../../components/DrawerOverlay";

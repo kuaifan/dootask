@@ -3,17 +3,11 @@
 </template>
 
 <script>
-import {languageType} from "../language";
+import {languageName} from "../language";
 
 export default {
     data() {
         return {}
-    },
-
-    computed: {
-        isSoftware() {
-            return this.$Electron || this.$isEEUiApp;
-        },
     },
 
     mounted() {
@@ -36,7 +30,7 @@ export default {
 
     methods: {
         start() {
-            if (this.isSoftware) {
+            if (this.$isSoftware) {
                 this.goNext()
                 return;
             }
@@ -52,7 +46,7 @@ export default {
         },
 
         goIndex() {
-            if (languageType === "zh" || languageType === "zh-CHT") {
+            if (languageName === "zh" || languageName === "zh-CHT") {
                 window.location.href = $A.apiUrl("../site/zh/index.html")
             } else {
                 window.location.href = $A.apiUrl("../site/en/index.html")

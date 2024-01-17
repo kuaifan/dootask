@@ -64,7 +64,7 @@
 
 import {mapState} from "vuex";
 import IFrame from "../pages/manage/components/IFrame";
-import {languageType} from "../language";
+import {languageName} from "../language";
 
 export default {
     name: "OnlyOffice",
@@ -114,7 +114,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userInfo', 'themeIsDark']),
+        ...mapState(['userInfo', 'themeName']),
 
         fileType() {
             return this.getType(this.value.type);
@@ -211,8 +211,8 @@ export default {
                 this.docEditor = null;
             }
             //
-            let lang = languageType;
-            switch (languageType) {
+            let lang = languageName;
+            switch (languageName) {
                 case 'zh-CHT':
                     lang = "zh-TW";
                     break;
@@ -239,7 +239,7 @@ export default {
                         "name": this.userInfo.nickname
                     },
                     "customization": {
-                        "uiTheme": this.themeIsDark ? "theme-dark" : "theme-classic-light",
+                        "uiTheme": this.themeName === 'dark' ? "theme-dark" : "theme-classic-light",
                         "forcesave": true,
                         "help": false,
                     },

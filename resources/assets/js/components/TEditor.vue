@@ -59,7 +59,7 @@
     import tinymce from 'tinymce/tinymce';
     import ImgUpload from "./ImgUpload";
     import {mapState} from "vuex";
-    import {languageType} from "../language";
+    import {languageName} from "../language";
 
     const windowTouch = "ontouchend" in document
 
@@ -191,7 +191,7 @@
             this.destroy();
         },
         computed: {
-            ...mapState(['themeIsDark']),
+            ...mapState(['themeName']),
 
             headers() {
                 return {
@@ -258,8 +258,8 @@
             },
 
             option(isFull) {
-                let lang = languageType;
-                switch (languageType) {
+                let lang = languageName;
+                switch (languageName) {
                     case 'zh':
                         lang = "zh_CN";
                         break;
@@ -312,7 +312,7 @@
                     resize: !isFull,
                     convert_urls:false,
                     toolbar_mode: 'sliding',
-                    content_css: this.themeIsDark ? 'dark' : 'default',
+                    content_css: this.themeName === 'dark' ? 'dark' : 'default',
                     setup: (editor) => {
                         editor.ui.registry.addMenuButton('uploadImages', {
                             text: this.$L('图片'),

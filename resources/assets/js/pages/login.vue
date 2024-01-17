@@ -27,7 +27,7 @@
                 <transition name="login-mode">
                     <div v-if="loginMode=='access'" class="login-access">
                         <Input
-                            v-if="isSoftware && cacheServerUrl"
+                            v-if="$isSoftware && cacheServerUrl"
                             :value="$A.getDomain(cacheServerUrl)"
                             prefix="ios-globe-outline"
                             size="large"
@@ -121,7 +121,7 @@
                                     v-for="(item, key) in themeList"
                                     :key="key"
                                     :name="item.value"
-                                    :selected="themeMode === item.value">{{$L(item.name)}}</DropdownItem>
+                                    :selected="themeConf === item.value">{{$L(item.name)}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                         <Dropdown placement="right-start" transfer @on-click="onLanguage">
@@ -136,7 +136,7 @@
                                     v-for="(item, key) in languageList"
                                     :key="key"
                                     :name="key"
-                                    :selected="languageType === key">{{item}}</DropdownItem>
+                                    :selected="languageName === key">{{item}}</DropdownItem>
                             </DropdownMenu>
                         </Dropdown>
                     </DropdownMenu>
@@ -165,7 +165,7 @@
 <script>
 import {mapState} from "vuex";
 import {Store} from "le5le-store";
-import {languageList, languageType, setLanguage} from "../language";
+import {languageList, languageName, setLanguage} from "../language";
 import VueQrcode from "@chenfengyuan/vue-qrcode";
 
 export default {
@@ -175,7 +175,7 @@ export default {
             loadIng: 0,
 
             languageList,
-            languageType,
+            languageName,
 
             qrcodeVal: '',
             qrcodeTimer: null,
@@ -210,7 +210,7 @@ export default {
         this.privacyShow = !!this.$isEEUiApp && (await $A.IDBString("cachePrivacyShow")) !== "no";
         this.email = await $A.IDBString("cacheLoginEmail") || ''
         //
-        if (this.isSoftware) {
+        if (this.$isSoftware) {
             this.chackServerUrl().catch(_ => {});
         } else {
             this.setServerUrl('').catch(_ => {});
@@ -254,16 +254,12 @@ export default {
         ...mapState([
             'cacheServerUrl',
 
-            'themeMode',
+            'themeConf',
             'themeList',
         ]),
 
-        isSoftware() {
-            return this.$Electron || this.$isEEUiApp;
-        },
-
         currentLanguage() {
-            return languageList[languageType] || 'Language'
+            return languageList[languageName] || 'Language'
         },
 
         welcomeTitle() {
@@ -493,7 +489,7 @@ export default {
 
         isNotServer() {
             let apiHome = $A.getDomain(window.systemInfo.apiUrl)
-            return this.isSoftware && (apiHome == "" || apiHome == "public")
+            return this.$isSoftware && (apiHome == "" || apiHome == "public")
         },
 
         onBlur() {

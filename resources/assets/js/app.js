@@ -2,7 +2,7 @@ const isElectron = !!(window && window.process && window.process.type);
 const isEEUiApp = window && window.navigator && /eeui/i.test(window.navigator.userAgent);
 
 import microappInit from "./microapp"
-import {switchLanguage as $L, setLanguage, getLanguage} from "./language";
+import {switchLanguage as $L} from "./language";
 
 import './functions/common'
 import './functions/eeui'
@@ -147,6 +147,7 @@ $A.isMainElectron = false;
 $A.isSubElectron = false;
 $A.isEEUiApp = isEEUiApp;
 $A.isElectron = isElectron;
+$A.isSoftware = isEEUiApp || isElectron;
 $A.openLog = false;
 if (isElectron) {
     $A.Electron = electron;
@@ -192,6 +193,7 @@ Vue.prototype.$Platform = $A.Platform;
 Vue.prototype.$isMainElectron = $A.isMainElectron;
 Vue.prototype.$isSubElectron = $A.isSubElectron;
 Vue.prototype.$isEEUiApp = $A.isEEUiApp;
+Vue.prototype.$isSoftware = $A.isSoftware;
 
 Vue.config.productionTip = false;
 Vue.mixin(mixin)

@@ -2,7 +2,7 @@ export default {
     /**
      * 语言类型
      */
-    languageTypes: {
+    languageList: {
         "zh": "简体中文",
         "zh-CHT": "繁體中文",
         "en": "English",
@@ -49,8 +49,8 @@ export default {
      * @returns {string}
      */
     getLanguage() {
-        let lang = window.localStorage.getItem("__language:type__")
-        if (typeof lang === "string" && typeof this.languageTypes[lang] !== "undefined") {
+        let lang = window.localStorage.getItem("__system:languageName__")
+        if (typeof lang === "string" && typeof this.languageList[lang] !== "undefined") {
             return lang;
         }
         lang = 'en';
@@ -69,12 +69,20 @@ export default {
                 lang = 'zh-CHT'
                 break;
             default:
-                if (typeof this.languageTypes[navLang] !== "undefined") {
+                if (typeof this.languageList[navLang] !== "undefined") {
                     lang = navLang
                 }
                 break;
         }
-        window.localStorage.setItem("__language:type__", lang)
+        this.saveLanguage(lang)
         return lang
-    }
+    },
+
+    /**
+     * 保存语言
+     * @param lang
+     */
+    saveLanguage(lang) {
+        window.localStorage.setItem("__system:languageName__", lang)
+    },
 }

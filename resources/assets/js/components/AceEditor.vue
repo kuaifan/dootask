@@ -294,11 +294,11 @@ export default {
         }
     },
     computed: {
-        ...mapState(['themeIsDark']),
+        ...mapState(['themeName']),
 
         editTheme() {
             if (this.theme == 'auto') {
-                if (this.themeIsDark) {
+                if (this.themeName === 'dark') {
                     return "dracula-dark"
                 } else {
                     return "chrome"

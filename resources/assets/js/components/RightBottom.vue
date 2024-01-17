@@ -43,7 +43,6 @@
 <script>
 import MarkdownPreview from "./MDEditor/components/preview";
 import axios from "axios";
-import {mapState} from "vuex";
 import {Store} from "le5le-store";
 
 export default {
@@ -99,12 +98,8 @@ export default {
     },
 
     computed: {
-        isSoftware() {
-            return this.$Electron || this.$isEEUiApp;
-        },
-
         showSSO() {
-            return this.isSoftware && ['login'].includes(this.$route.name)
+            return this.$isSoftware && ['login'].includes(this.$route.name)
         },
 
         showDown() {
@@ -119,7 +114,7 @@ export default {
     methods: {
         isNotServer() {
             let apiHome = $A.getDomain(window.systemInfo.apiUrl)
-            return this.isSoftware && (apiHome == "" || apiHome == "public")
+            return this.$isSoftware && (apiHome == "" || apiHome == "public")
         },
 
         checkVersion() {

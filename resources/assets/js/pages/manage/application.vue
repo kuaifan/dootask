@@ -205,7 +205,7 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
+import {mapState} from "vuex";
 import DrawerOverlay from "../../components/DrawerOverlay";
 import UserSelect from "../../components/UserSelect";
 import Report from "../manage/components/Report";

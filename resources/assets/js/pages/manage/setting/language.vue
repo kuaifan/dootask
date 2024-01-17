@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import {languageList, languageType, setLanguage} from "../../../language";
+import {languageList, languageName, setLanguage} from "../../../language";
 import {mapState} from "vuex";
 
 export default {
@@ -43,7 +43,7 @@ export default {
 
     methods: {
         initData() {
-            this.$set(this.formData, 'language', languageType);
+            this.$set(this.formData, 'language', languageName);
             this.formData_bak = $A.cloneJSON(this.formData);
         },
 

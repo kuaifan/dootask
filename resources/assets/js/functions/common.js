@@ -1056,6 +1056,64 @@ const localforage = require("localforage");
         __loadCss: {},
 
         /**
+         * 动态加载iframe
+         * @param url
+         * @param loadedRemove
+         * @returns {Promise<unknown>}
+         */
+        loadIframe(url, loadedRemove = 0) {
+            return new Promise(async (resolve, reject) => {
+                url = $A.originUrl(url)
+                //
+                let i = 0
+                while (this.__loadIframe[url] === "loading") {
+                    await new Promise(r => setTimeout(r, 1000))
+                    i++
+                    if (i > 30) {
+                        return reject("加载超时")
+                    }
+                }
+                if (this.__loadIframe[url] === "loaded") {
+                    return resolve(false)
+                }
+                this.__loadIframe[url] = "loading"
+                //
+                const iframe = document.createElement("iframe")
+                iframe.style.display = 'none'
+                iframe.src = url
+                iframe.onload = () => {
+                    this.__loadIframe[url] = "loaded"
+                    resolve(true)
+                    if (loadedRemove > 0) {
+                        setTimeout(() => {
+                            document.body.removeChild(iframe)
+                            delete this.__loadIframe[url]
+                        }, loadedRemove)
+                    }
+                }
+                iframe.onerror = (e) => {
+                    this.__loadIframe[url] = "error"
+                    reject(e)
+                }
+                document.body.appendChild(iframe)
+            })
+        },
+        loadIframes(urls) {
+            return new Promise(resolve => {
+                let i = 0
+                const recursiveCallback = () => {
+                    if (++i < urls.length) {
+                        this.loadIframe(urls[i]).finally(recursiveCallback)
+                    } else {
+                        resolve()
+                    }
+                }
+                this.loadIframe(urls[0]).finally(recursiveCallback)
+            })
+        },
+        __loadIframe: {},
+
+        /**
          *  对象中有Date格式的转成指定格式
          * @param params
          * @param format  默认格式：Y-m-d H:i:s

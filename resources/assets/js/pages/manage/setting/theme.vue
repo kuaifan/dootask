@@ -36,7 +36,7 @@ export default {
 
     computed: {
         ...mapState([
-            'themeMode',
+            'themeConf',
             'themeList',
             'formLabelPosition',
             'formLabelWidth'
@@ -45,7 +45,7 @@ export default {
 
     methods: {
         initData() {
-            this.$set(this.formData, 'theme', this.themeMode);
+            this.$set(this.formData, 'theme', this.themeConf);
             this.formData_bak = $A.cloneJSON(this.formData);
         },
 

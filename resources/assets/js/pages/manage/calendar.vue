@@ -137,7 +137,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheTasks', 'taskCompleteTemps', 'wsOpenNum', 'themeIsDark']),
+        ...mapState(['cacheTasks', 'taskCompleteTemps', 'wsOpenNum', 'themeName']),
 
         ...mapGetters(['transforTasks']),
 
@@ -189,7 +189,7 @@ export default {
                 };
                 if (data.p_name) {
                     let priorityStyle = `background-color:${data.p_color}`;
-                    if (this.themeIsDark) {
+                    if (this.themeName === 'dark') {
                         priorityStyle = `color:${data.p_color};border:1px solid ${data.p_color};padding:1px 3px;`;
                     }
                     task.priority = `<span class="priority" style="${priorityStyle}">${data.p_name}</span>`;

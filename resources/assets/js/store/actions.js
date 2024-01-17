@@ -1,6 +1,6 @@
 import {Store} from 'le5le-store';
 import * as openpgp from 'openpgp_hi/lightweight';
-import {languageType} from "../language";
+import {languageName} from "../language";
 import {$callData, $urlSafe, SSEClient} from './utils'
 
 export default {
@@ -83,8 +83,9 @@ export default {
             // 加载语言包
             await $A.loadScriptS([
                 `language/web/key.js`,
-                `language/web/${languageType}.js`,
+                `language/web/${languageName}.js`,
             ])
+            $A.storageByIframe({languageName})
 
             resolve(action)
         })
@@ -101,7 +102,7 @@ export default {
         if (!$A.isJson(params)) params = {url: params}
         const header = {
             'Content-Type': 'application/json',
-            'language': languageType,
+            'language': languageName,
             'token': state.userToken,
             'fd': $A.getSessionStorageString("userWsFd"),
             'version': window.systemInfo.version || "0.0.1",
@@ -464,10 +465,11 @@ export default {
     /**
      * 设置主题
      * @param state
+     * @param dispatch
      * @param mode
      * @returns {Promise<unknown>}
      */
-    setTheme({state}, mode) {
+    setTheme({state, dispatch}, mode) {
         return new Promise(function (resolve) {
             if (mode === undefined) {
                 resolve(false)
@@ -482,20 +484,7 @@ export default {
                 resolve(false)
                 return;
             }
-            switch (mode) {
-                case 'dark':
-                    $A.dark.enableDarkMode()
-                    break;
-                case 'light':
-                    $A.dark.disableDarkMode()
-                    break;
-                default:
-                    $A.dark.autoDarkMode()
-                    break;
-            }
-            state.themeMode = mode;
-            state.themeIsDark = $A.dark.isDarkEnabled();
-            window.localStorage.setItem("__theme:mode__", mode);
+            dispatch("synchTheme", mode)
             resolve(true)
         });
     },
@@ -503,9 +492,14 @@ export default {
     /**
      * 同步主题
      * @param state
+     * @param dispatch
+     * @param mode
      */
-    synchTheme({state}) {
-        switch (state.themeMode) {
+    synchTheme({state, dispatch}, mode = undefined) {
+        if (typeof mode === "undefined") {
+            mode = state.themeConf
+        }
+        switch (mode) {
             case 'dark':
                 $A.dark.enableDarkMode()
                 break;
@@ -513,11 +507,20 @@ export default {
                 $A.dark.disableDarkMode()
                 break;
             default:
-                state.themeMode = "auto"
+                state.themeConf = "auto"
                 $A.dark.autoDarkMode()
                 break;
         }
-        state.themeIsDark = $A.dark.isDarkEnabled()
+        state.themeName = $A.dark.isDarkEnabled() ? 'dark' : 'light'
+        window.localStorage.setItem("__system:themeConf__", state.themeConf)
+        //
+        if ($A.isEEUiApp) {
+            $A.eeuiAppSendMessage({
+                action: 'updateTheme',
+                themeName: state.themeName,
+            });
+        }
+        $A.storageByIframe({themeConf: state.themeConf})
     },
 
     /**
@@ -833,11 +836,15 @@ export default {
      */
     handleKeyboard({state}, newData) {
         return new Promise(resolve => {
-            const data = $A.isJson(newData) ? newData : ($A.jsonParse(window.localStorage.getItem("__keyboard:data__")) || {})
+            if (!window.localStorage.getItem("__system:keyboardConf__")) {
+                window.localStorage.setItem("__system:keyboardConf__", window.localStorage.getItem("__keyboard:data__"))
+                window.localStorage.removeItem("__keyboard:data__")
+            }
+            const data = $A.isJson(newData) ? newData : ($A.jsonParse(window.localStorage.getItem("__system:keyboardConf__")) || {})
             data.screenshot_key = (data.screenshot_key || "").trim().toLowerCase()
             data.send_button_app = data.send_button_app || 'button'         // button, enter 移动端发送按钮，默认 button （页面按钮发送）
             data.send_button_desktop = data.send_button_desktop || 'enter'  // button, enter 桌面端发送按钮，默认 enter （键盘回车发送）
-            window.localStorage.setItem("__keyboard:data__", $A.jsonStringify(data))
+            window.localStorage.setItem("__system:keyboardConf__", $A.jsonStringify(data))
             state.cacheKeyboard = data
             resolve(data)
         })
@@ -854,13 +861,13 @@ export default {
         return new Promise(async resolve => {
             try {
                 // localStorage
-                const languageType = window.localStorage.getItem("__language:type__");
-                const keyboardData = window.localStorage.getItem("__keyboard:data__");
-                const themeMode = window.localStorage.getItem("__theme:mode__");
+                const themeConf = window.localStorage.getItem("__system:themeConf__");
+                const languageName = window.localStorage.getItem("__system:languageName__");
+                const keyboardConf = window.localStorage.getItem("__system:keyboardConf__");
                 window.localStorage.clear();
-                window.localStorage.setItem("__language:type__", languageType)
-                window.localStorage.setItem("__keyboard:data__", keyboardData)
-                window.localStorage.setItem("__theme:mode__", themeMode)
+                window.localStorage.setItem("__system:themeConf__", themeConf)
+                window.localStorage.setItem("__system:languageName__", languageName)
+                window.localStorage.setItem("__system:keyboardConf__", keyboardConf)
 
                 // localForage
                 const clientId = await $A.IDBString("clientId")
@@ -3372,7 +3379,7 @@ export default {
         let url = $A.apiUrl('../ws');
         url = url.replace("https://", "wss://");
         url = url.replace("http://", "ws://");
-        url += `?action=web&token=${state.userToken}&language=${languageType}`;
+        url += `?action=web&token=${state.userToken}&language=${languageName}`;
         //
         const wgLog = $A.openLog;
         const wsRandom = $A.randomString(16);

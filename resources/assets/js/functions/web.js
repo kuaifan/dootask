@@ -914,6 +914,17 @@ import {MarkdownPreview} from "../store/markdown";
                 }
             }
             return false;
+        },
+
+        /**
+         * 通过Iframe存储数据
+         * @param json
+         */
+        storageByIframe(json) {
+            if ($A.isSoftware) {
+                const value = encodeURIComponent(JSON.stringify(json));
+                $A.loadIframe($A.apiUrl(`../storage/synch?value=${value}`), 100).catch(_ => {})
+            }
         }
     });
 
@@ -1320,7 +1331,6 @@ import {MarkdownPreview} from "../store/markdown";
                     html {
                         min-width: 100%;
                         min-height: 100%;
-                        background: #000;
                     }
                     .child-view {
                         background-color: #fff;

@@ -31,7 +31,7 @@
 <script>
 import DrawerOverlay from "../../../components/DrawerOverlay";
 import store from '../../../store/state'
-import {languageType} from "../../../language";
+import {languageName} from "../../../language";
 export default {
     name: "ApproveSetting",
     components: {DrawerOverlay},
@@ -48,7 +48,7 @@ export default {
     watch: {
         approvalSettingShow(val) {
             if (val) {
-                this.iframeSrc = $A.apiUrl(`../approve/#/?name=${this.name}&token=${store.userToken}&lang=${languageType}`)
+                this.iframeSrc = $A.apiUrl(`../approve/#/?name=${this.name}&token=${store.userToken}&lang=${languageName}`)
             }
         }
     },

@@ -24,11 +24,11 @@ export default {
         }
     },
     computed: {
-        ...mapState(['themeIsDark']),
+        ...mapState(['themeName']),
 
         myStyle() {
-            const {color, background, backgroundColor, themeIsDark} = this;
-            if (themeIsDark) {
+            const {color, background, backgroundColor, themeName} = this;
+            if (themeName === 'dark') {
                 return {
                     color: backgroundColor || background,
                     borderColor: backgroundColor || background,

@@ -19,9 +19,6 @@
         <!--网络提示-->
         <NetworkException v-if="windowLandscape"/>
 
-        <!--Hidden IFrame-->
-        <iframe v-for="item in iframes" :key="item.key" v-if="item.url" v-show="false" :src="item.url"></iframe>
-
         <!--引导页-->
         <GuidePage/>
     </div>
@@ -44,7 +41,7 @@ import NetworkException from "./components/NetworkException";
 import GuidePage from "./components/GuidePage";
 import TaskOperation from "./pages/manage/components/TaskOperation";
 import {mapState} from "vuex";
-import {languageType} from "./language";
+import {languageName} from "./language";
 
 export default {
     components: {TaskOperation, NetworkException, PreviewImageState, RightBottom, FloatSpinner, GuidePage},
@@ -53,7 +50,6 @@ export default {
         return {
             routePath: null,
             searchInter: null,
-            iframes: [],
         }
     },
 
@@ -61,8 +57,6 @@ export default {
         this.electronEvents();
         this.eeuiEvents();
         this.otherEvents();
-        this.synchThemeLanguage();
-        this.synchAppTheme();
     },
 
     mounted() {
@@ -80,11 +74,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['ws', 'themeMode', 'themeIsDark', 'windowOrientation']),
-
-        isSoftware() {
-            return this.$Electron || this.$isEEUiApp;
-        },
+        ...mapState(['ws', 'themeConf', 'windowOrientation']),
     },
 
     watch: {
@@ -108,7 +98,6 @@ export default {
         userId: {
             handler() {
                 this.$store.dispatch("websocketConnection");
-                this.synchUserToken();
                 //
                 if (this.userId > 0) {
                     if (this.$isEEUiApp) {
@@ -143,6 +132,13 @@ export default {
                         }
                     })
                 }
+                //
+                window.localStorage.setItem("__system:userId__", this.userId)
+                window.localStorage.setItem("__system:userToken__", this.userToken)
+                $A.storageByIframe({
+                    userId: this.userId,
+                    userToken: this.userToken,
+                })
             },
             immediate: true
         },
@@ -187,10 +183,6 @@ export default {
                 this.$store.dispatch("audioStop", true)
             }
         },
-
-        themeIsDark() {
-            this.synchThemeLanguage();
-        }
     },
 
     methods: {
@@ -226,39 +218,9 @@ export default {
             });
         },
 
-        synchUserToken() {
-            if (this.isSoftware) {
-                this.iframes = this.iframes.filter(({key}) => key != 'synchUserToken')
-                this.iframes.push({
-                    key: 'synchUserToken',
-                    url: $A.apiUrl(`../setting/userinfo?userid=${this.userId}&token=${this.userToken}`)
-                })
-            }
-        },
-
         autoTheme() {
-            if (this.themeMode === "auto") {
+            if (this.themeConf === "auto") {
                 this.$store.dispatch("synchTheme")
-            }
-        },
-
-        synchThemeLanguage() {
-            if (this.isSoftware) {
-                this.iframes = this.iframes.filter(({key}) => key != 'synchThemeLanguage')
-                this.iframes.push({
-                    key: 'synchThemeLanguage',
-                    url: $A.apiUrl(`../setting/theme_language?theme=${this.themeIsDark ? 'dark' : 'light'}&language=${languageType}`)
-                })
-            }
-            this.synchAppTheme()
-        },
-
-        synchAppTheme() {
-            if (this.$isEEUiApp) {
-                $A.eeuiAppSendMessage({
-                    action: 'updateTheme',
-                    themeName: this.themeIsDark ? 'dark' : 'light',
-                });
             }
         },
 
@@ -315,10 +277,7 @@ export default {
             this.$Electron.registerMsgListener('browserWindowFocus', _ => {
                 this.$store.state.windowActive = true;
             })
-            this.iframes.push({
-                key: 'manifest',
-                url: $A.apiUrl("../manifest")
-            })
+            $A.loadIframe($A.apiUrl("../manifest")).catch(_ => {})
             $A.bindScreenshotKey(this.$store.state.cacheKeyboard);
             //
             this.$Electron.sendMessage('setMenuLanguage', {
@@ -422,7 +381,7 @@ export default {
         },
 
         otherEvents() {
-            if (!this.isSoftware) {
+            if (!this.$isSoftware) {
                 // 非客户端监听窗口激活
                 const hiddenProperty = 'hidden' in document ? 'hidden' : 'webkitHidden' in document ? 'webkitHidden' : 'mozHidden' in document ? 'mozHidden' : null;
                 const visibilityChangeEvent = hiddenProperty.replace(/hidden/i, 'visibilitychange');

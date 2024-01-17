@@ -1,8 +1,12 @@
 const utils = require('./utils')
 
-const languageList = utils.languageTypes
-const languageType = utils.getLanguage()
+const languageList = utils.languageList
+const languageName = utils.getLanguage()
 const languageRege = {}
+
+if (typeof window.LANGUAGE_DATA === "undefined") {
+    window.LANGUAGE_DATA = {}
+}
 
 /**
  * 添加语言数据
@@ -36,18 +40,15 @@ function setLanguage(language, silence = false) {
     if (language === undefined) {
         return
     }
-    if(silence){
-        window.localStorage.setItem("__language:type__", language)
+    if (silence) {
+        utils.saveLanguage(language)
         $A.reloadUrl()
-    }else{
+    } else {
         $A.modalConfirm({
             content: '切换语言需要刷新后生效，是否确定刷新？',
             cancelText: '取消',
             okText: '确定',
-            onOk: () => {
-                window.localStorage.setItem("__language:type__", language)
-                $A.reloadUrl()
-            }
+            onOk: () => setLanguage(language, true)
         })
     }
 }
@@ -74,12 +75,12 @@ function switchLanguage(text) {
     //
     if (typeof window.LANGUAGE_DATA === "undefined"
         || typeof window.LANGUAGE_DATA["key"] === "undefined"
-        || typeof window.LANGUAGE_DATA[languageType] === "undefined") {
+        || typeof window.LANGUAGE_DATA[languageName] === "undefined") {
         return text
     }
     const index = window.LANGUAGE_DATA["key"][text] || -1
     if (index > -1) {
-        return window.LANGUAGE_DATA[languageType][index] || text
+        return window.LANGUAGE_DATA[languageName][index] || text
     }
     if (typeof languageRege[text] === "undefined") {
         languageRege[text] = false
@@ -89,7 +90,7 @@ function switchLanguage(text) {
                 if (rege.test(text)) {
                     let j = 0
                     const index = window.LANGUAGE_DATA["key"][key]
-                    const value = (window.LANGUAGE_DATA[languageType][index] || key)?.replace(/\(\*\)/g, function () {
+                    const value = (window.LANGUAGE_DATA[languageName][index] || key)?.replace(/\(\*\)/g, function () {
                         return "$" + (++j)
                     })
                     languageRege[text] = {rege, value}
@@ -118,10 +119,11 @@ function switchLanguage(text) {
                     languageTmp.push(text)
                     window.localStorage.setItem(key, JSON.stringify(languageTmp))
                 }
-            } catch (e) { }
+            } catch (e) {
+            }
         }, 10)
     }
     return text
 }
 
-export { languageType, languageList, addLanguage, setLanguage, getLanguage, switchLanguage }
+export {languageName, languageList, addLanguage, setLanguage, getLanguage, switchLanguage}

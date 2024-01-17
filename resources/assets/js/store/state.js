@@ -188,13 +188,13 @@ export default {
     ],
 
     // 主题皮肤
-    themeMode: window.localStorage.getItem("__theme:mode__"),
+    themeConf: window.localStorage.getItem("__system:themeConf__"), // auto|light|dark
+    themeName: null, // 自动生成
     themeList: [
         {name: '跟随系统', value: 'auto'},
         {name: '明亮', value: 'light'},
         {name: '暗黑', value: 'dark'},
     ],
-    themeIsDark: false,
 
     // 客户端新版本号
     clientNewVersion: null,
