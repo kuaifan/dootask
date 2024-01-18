@@ -498,6 +498,8 @@ export default {
     synchTheme({state, dispatch}, mode = undefined) {
         if (typeof mode === "undefined") {
             mode = state.themeConf
+        } else {
+            state.themeConf = mode
         }
         switch (mode) {
             case 'dark':

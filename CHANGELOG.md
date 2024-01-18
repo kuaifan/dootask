@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.34.56]
+## [0.34.59]
 
 ### Bug Fixes
 
@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
+- IOS打开键盘时看不见通知的情况
 - 优化系统参数
 - 优化菜单显示位置
 - 优化获取最近消息
