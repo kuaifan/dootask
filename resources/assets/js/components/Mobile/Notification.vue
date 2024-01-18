@@ -3,6 +3,7 @@
         <div
             class="mobile-notification"
             :class="{show}"
+            :style="notifyStyle"
             @click.stop="onClick"
             @touchstart="onTouchstart"
             @touchmove="onTouchmove">
@@ -33,6 +34,14 @@ export default {
     beforeDestroy() {
         this.timer && clearTimeout(this.timer);
         this.show = false;
+    },
+
+    computed: {
+        notifyStyle() {
+            return {
+                marginTop: this.$store.state.windowScrollY + 'px',
+            };
+        },
     },
 
     methods: {
