@@ -1,13 +1,6 @@
 let themeName = window.localStorage.getItem('__system:themeConf__')
 if (!['dark', 'light'].includes(themeName)) {
     let isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-    if (/eeui/i.test(window.navigator.userAgent)) {
-        if (typeof requireModuleJs === 'function') {
-            isDark = requireModuleJs("eeui").getThemeName() === 'dark'
-        } else {
-            isDark = /system_theme\/dark;/i.test(window.navigator.userAgent)
-        }
-    }
     themeName = isDark ? 'dark' : 'light'
 }
 if (themeName === 'dark') {
