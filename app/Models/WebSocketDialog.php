@@ -115,6 +115,7 @@ class WebSocketDialog extends AbstractModel
         $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.color', 'u.updated_at as user_at'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->join('web_socket_dialog_msg_reads as r', 'web_socket_dialogs.id', '=', 'r.dialog_id')
+            ->where('u.userid', $userid)
             ->where('r.userid', $userid)
             ->where('r.silence', 0)
             ->where('r.read_at')

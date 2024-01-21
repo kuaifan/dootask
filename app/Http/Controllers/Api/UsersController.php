@@ -571,9 +571,9 @@ class UsersController extends AbstractController
         $list->transform(function (User $userInfo) use ($user, $state) {
             $tags = [];
             $dep = $userInfo->getDepartmentName();
-            $dep = array_filter(explode(",", $dep), function($item) {
+            $dep = array_values(array_filter(explode(",", $dep), function($item) {
                 return preg_match("/\(M\)$/", $item);
-            });
+            }));
             if ($dep) {
                 $tags[] = preg_replace("/\(M\)$/", "", trim($dep[0])) . Doo::translate("负责人");
             }

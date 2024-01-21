@@ -66,7 +66,6 @@
         flex-shrink: 0;
         font-size: 16px;
         font-weight: bold;
-        margin-bottom: 12px;
         padding: 20px 24px;
         border-bottom: 1px solid #eeeeee;
         @media (max-width: 500px) {
@@ -77,7 +76,7 @@
     .report-detail-context {
         flex: 1;
         height: 0;
-        padding: 12px 0 12px 24px;
+        padding: 24px;
         display: flex;
         flex-direction: column;
         overflow: auto;
