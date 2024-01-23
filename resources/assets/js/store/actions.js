@@ -85,7 +85,7 @@ export default {
                 `language/web/key.js`,
                 `language/web/${languageName}.js`,
             ])
-            $A.storageByIframe({languageName})
+            $A.storageBySubWeb({languageName})
 
             resolve(action)
         })
@@ -522,7 +522,7 @@ export default {
                 themeName: state.themeName,
             });
         }
-        $A.storageByIframe({themeConf: state.themeConf})
+        $A.storageBySubWeb({themeConf: state.themeConf})
     },
 
     /**

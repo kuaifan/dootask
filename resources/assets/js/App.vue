@@ -135,7 +135,7 @@ export default {
                 //
                 window.localStorage.setItem("__system:userId__", this.userId)
                 window.localStorage.setItem("__system:userToken__", this.userToken)
-                $A.storageByIframe({
+                $A.storageBySubWeb({
                     userId: this.userId,
                     userToken: this.userToken,
                 })

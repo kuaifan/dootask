@@ -917,15 +917,34 @@ import {MarkdownPreview} from "../store/markdown";
         },
 
         /**
-         * 通过Iframe存储数据
+         * 通过结果存储同步本地数据
          * @param json
          */
-        storageByIframe(json) {
+        storageBySubWeb(json) {
             if ($A.isSoftware) {
-                const value = encodeURIComponent(JSON.stringify(json));
-                $A.loadIframe($A.apiUrl(`../storage/synch?value=${value}`), 100).catch(_ => {})
+                json = Object.assign({}, this.__storageBySubWeb, json)
+                const obj = {}
+                Object.keys(json).sort().map(item => {
+                    obj[item] = json[item]
+                })
+                if (JSON.stringify(obj) == JSON.stringify(this.__storageBySubWeb)) {
+                    return
+                }
+                this.__storageBySubWeb = obj
+                const value = encodeURIComponent(JSON.stringify(this.__storageBySubWeb))
+                const url = $A.apiUrl(`../storage/synch?value=${value}`)
+                console.log(url);
+                if ($A.isEEUiApp) {
+                    $A.eeuiAppSendMessage({
+                        action: 'subWeb',
+                        url,
+                    });
+                } else {
+                    $A.loadIframe(url, 15000).catch(_ => {})
+                }
             }
-        }
+        },
+        __storageBySubWeb: {}
     });
 
     /**
