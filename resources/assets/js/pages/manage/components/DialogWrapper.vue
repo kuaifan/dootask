@@ -1047,14 +1047,8 @@ export default {
         },
 
         isMute() {
-            if (this.dialogData.group_type === 'all') {
-                if (this.dialogData.all_group_mute === 'all') {
-                    return true
-                } else if (this.dialogData.all_group_mute === 'user') {
-                    if (!this.userIsAdmin) {
-                        return true
-                    }
-                }
+            if (this.dialogData.dialog_mute === 'close') {
+                return !this.userIsAdmin
             }
             return false
         },

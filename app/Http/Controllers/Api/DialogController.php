@@ -856,18 +856,7 @@ class DialogController extends AbstractController
     public function msg__sendtext()
     {
         $user = User::auth();
-        //
-        if (!$user->bot) {
-            $chatInformation = Base::settingFind('system', 'chat_information');
-            if ($chatInformation == 'required') {
-                if (empty($user->getRawOriginal('nickname'))) {
-                    return Base::retError('请设置昵称', [], -2);
-                }
-                if (empty($user->getRawOriginal('tel'))) {
-                    return Base::retError('请设置联系电话', [], -3);
-                }
-            }
-        }
+        $user->checkChatInformation();
         //
         $dialog_id = intval(Request::input('dialog_id'));
         $dialog_ids = trim(Request::input('dialog_ids'));
@@ -959,6 +948,7 @@ class DialogController extends AbstractController
     public function msg__sendrecord()
     {
         $user = User::auth();
+        $user->checkChatInformation();
         //
         $dialog_id = intval(Request::input('dialog_id'));
         $reply_id = intval(Request::input('reply_id'));
@@ -1008,6 +998,7 @@ class DialogController extends AbstractController
     public function msg__sendfile()
     {
         $user = User::auth();
+        //
         $dialogIds = [intval(Request::input('dialog_id'))];
         $replyId = intval(Request::input('reply_id'));
         $imageAttachment = intval(Request::input('image_attachment'));
@@ -1040,6 +1031,7 @@ class DialogController extends AbstractController
     public function msg__sendfiles()
     {
         $user = User::auth();
+        //
         $files = Request::file('files');
         $image64 = Request::input('image64');
         $fileName = Request::input('filename');

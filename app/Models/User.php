@@ -290,6 +290,26 @@ class User extends AbstractModel
         });
     }
 
+    /**
+     * 检查发送聊天内容前必须设置昵称、电话
+     * @return void
+     */
+    public function checkChatInformation()
+    {
+        if ($this->bot) {
+            return;
+        }
+        $chatInformation = Base::settingFind('system', 'chat_information');
+        if ($chatInformation == 'required') {
+            if (empty($this->getRawOriginal('nickname'))) {
+                throw new ApiException('请设置昵称', [], -2);
+            }
+            if (empty($this->getRawOriginal('tel'))) {
+                throw new ApiException('请设置联系电话', [], -3);
+            }
+        }
+    }
+
     /** ***************************************************************************************** */
     /** ***************************************************************************************** */
     /** ***************************************************************************************** */

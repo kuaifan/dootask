@@ -120,12 +120,10 @@
                     <FormItem :label="$L('全员群组禁言')" prop="allGroupMute">
                         <RadioGroup v-model="formDatum.all_group_mute">
                             <Radio label="open">{{$L('开放')}}</Radio>
-                            <Radio label="user">{{$L('成员禁言')}}</Radio>
-                            <Radio label="all">{{$L('全部禁言')}}</Radio>
+                            <Radio label="close">{{$L('禁言')}}</Radio>
                         </RadioGroup>
-                        <div v-if="formDatum.all_group_mute == 'open'" class="form-tip">{{$L('开放：所有人都可以发言。')}}</div>
-                        <div v-else-if="formDatum.all_group_mute == 'user'" class="form-tip">{{$L('成员禁言：仅管理员可以发言。')}}</div>
-                        <div v-else-if="formDatum.all_group_mute == 'all'" class="form-tip">{{$L('全部禁言：所有人都禁止发言。')}}</div>
+                        <div v-if="formDatum.all_group_mute == 'open'" class="form-tip">{{$L('开放：所有人都可以在全员群组发言。')}}</div>
+                        <div v-else-if="formDatum.all_group_mute == 'close'" class="form-tip">{{$L('禁言：除管理员外所有人都禁止在全员群组发言。')}}</div>
                     </FormItem>
                     <FormItem :label="$L('自动进入全员群')" prop="allGroupAutoin">
                         <RadioGroup v-model="formDatum.all_group_autoin">
@@ -134,6 +132,27 @@
                         </RadioGroup>
                         <div v-if="formDatum.all_group_autoin == 'yes'" class="form-tip">{{$L('自动：注册成功后自动进入全员群。')}}</div>
                         <div v-else-if="formDatum.all_group_autoin == 'no'" class="form-tip">{{$L('关闭：其他成员通过@邀请进入。')}}</div>
+                    </FormItem>
+                    <FormItem :label="$L('私聊禁言')" prop="userPrivateChatMute">
+                        <RadioGroup v-model="formDatum.user_private_chat_mute">
+                            <Radio label="open">{{$L('开放')}}</Radio>
+                            <Radio label="close">{{$L('禁言')}}</Radio>
+                        </RadioGroup>
+                        <div v-if="formDatum.user_private_chat_mute == 'open'" class="form-tip">{{$L('开放：所有人都可以相互发起个人聊天。')}}</div>
+                        <div v-else-if="formDatum.user_private_chat_mute == 'close'" class="form-tip">{{$L('禁言：除管理员外所有人都禁止发起个人聊天。')}}</div>
+                    </FormItem>
+                    <FormItem :label="$L('群聊禁言')" prop="userGroupChatMute">
+                        <RadioGroup v-model="formDatum.user_group_chat_mute">
+                            <Radio label="open">{{$L('开放')}}</Radio>
+                            <Radio label="close">{{$L('禁言')}}</Radio>
+                        </RadioGroup>
+                        <div v-if="formDatum.user_group_chat_mute == 'open'" class="form-tip">{{$L('开放：允许个人群组聊天发言。')}}</div>
+                        <div v-else-if="formDatum.user_group_chat_mute == 'close'" class="form-tip form-list">
+                            <ol>
+                                <li>{{$L('除管理员外禁止个人群组聊天发言。')}}</li>
+                                <li>{{$L('注意，仅禁止个人群组，其他类型的群组不禁止，比如：部门群聊、项目群聊等系统群聊。')}}</li>
+                            </ol>
+                        </div>
                     </FormItem>
                     <FormItem :label="$L('聊天资料')" prop="chatInformation">
                         <RadioGroup v-model="formDatum.chat_information">

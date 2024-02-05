@@ -197,9 +197,13 @@ class WebSocketDialog extends AbstractModel
                     $this->dialog_delete = 1;
                 }
                 $this->dialog_user = $dialog_user;
+                $this->dialog_mute = Base::settingFind('system', 'user_private_chat_mute');
                 break;
             case "group":
                 switch ($this->group_type) {
+                    case 'user':
+                        $this->dialog_mute = Base::settingFind('system', 'user_group_chat_mute');
+                        break;
                     case 'project':
                         $this->group_info = Project::withTrashed()->select(['id', 'name', 'archived_at', 'deleted_at'])->whereDialogId($this->id)->first()?->cancelAppend()->cancelHidden();
                         if ($this->group_info) {
@@ -220,7 +224,7 @@ class WebSocketDialog extends AbstractModel
                         break;
                     case 'all':
                         $this->name = Doo::translate('全体成员');
-                        $this->all_group_mute = Base::settingFind('system', 'all_group_mute');
+                        $this->dialog_mute = Base::settingFind('system', 'all_group_mute');
                         break;
                 }
                 break;
@@ -459,17 +463,37 @@ class WebSocketDialog extends AbstractModel
      */
     public function checkMute($userid)
     {
-        if ($this->group_type === 'all') {
-            $allGroupMute = Base::settingFind('system', 'all_group_mute');
-            switch ($allGroupMute) {
-                case 'all':
-                    throw new ApiException('当前会话全员禁言');
-                case 'user':
-                    if (!User::find($userid)?->isAdmin()) {
-                        throw new ApiException('当前会话禁言');
+        $muteMsgTip = null;
+        $systemConfig = Base::setting('system');
+        switch ($this->type) {
+            case 'user':
+                if ($systemConfig['user_private_chat_mute'] === 'close') {
+                    $muteMsgTip = '个人会话禁言';
+                }
+                break;
+
+            case 'group':
+                if ($this->group_type === 'user') {
+                    if ($systemConfig['user_group_chat_mute'] === 'close') {
+                        $muteMsgTip = '个人群组禁言';
                     }
+                } elseif ($this->group_type === 'all') {
+                    if ($systemConfig['all_group_mute'] === 'close') {
+                        $muteMsgTip = '当前会话全员禁言';
+                    }
+                }
+                break;
+        }
+        if ($muteMsgTip === null) {
+            return;
+        }
+        if ($userid) {
+            $user = User::find($userid);
+            if ($user?->bot || $user?->isAdmin()) { // 机器人或管理员不受禁言
+                return;
             }
         }
+        throw new ApiException($muteMsgTip);
     }
 
     /**
