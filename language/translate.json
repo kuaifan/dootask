@@ -19589,5 +19589,148 @@
         "de": "Kein ergebnis in irgendeiner beziehung (*)",
         "fr": "Aucun résultat associé à (*)",
         "id": "Tidak ada hasil yang berhubungan dengan (*)"
+    },
+    {
+        "key": "个人会话禁言",
+        "zh": "",
+        "zh-CHT": "個人會話禁言",
+        "en": "Personal conversations are forbidden",
+        "ko": "개인 회화 금언",
+        "ja": "個人的な会話は禁句です",
+        "de": "In persönlicher sitzung gilt ein schweigewort",
+        "fr": "Conversation personnelle mots interdits",
+        "id": "Percakapan pribadi terlarang"
+    },
+    {
+        "key": "个人群组禁言",
+        "zh": "",
+        "zh-CHT": "個人羣組禁言",
+        "en": "Personal group gag",
+        "ko": "개인 집단 금언",
+        "ja": "個人グループ禁止です",
+        "de": "Gruppen Von einzelpersonen haben schweigen",
+        "fr": "Groupes individuels mots interdits",
+        "id": "Setiap kelompok individu dilarang berbicara"
+    },
+    {
+        "key": "禁言",
+        "zh": "",
+        "zh-CHT": "禁言",
+        "en": "Banned from speaking",
+        "ko": "는가하면 금연",
+        "ja": "禁句です",
+        "de": "Tabu.",
+        "fr": "Silence",
+        "id": "."
+    },
+    {
+        "key": "私聊禁言",
+        "zh": "",
+        "zh-CHT": "私聊禁言",
+        "en": "Private conversations are forbidden",
+        "ko": "사사로이 이야기해서는 안 된다",
+        "ja": "禁句です",
+        "de": "Vertrauliche gespräche",
+        "fr": "Chat privé mots interdits",
+        "id": "Obrolan pribadi"
+    },
+    {
+        "key": "群聊禁言",
+        "zh": "",
+        "zh-CHT": "羣聊禁言",
+        "en": "Group chat gag",
+        "ko": "여럿이 잡담하며 말을 해서는 안 된다",
+        "ja": "グループトーク禁句です",
+        "de": "Mit der menge geplaudert",
+        "fr": "Chat de groupe mots interdits",
+        "id": "Obrolan kelompok"
+    },
+    {
+        "key": "默认不限制",
+        "zh": "",
+        "zh-CHT": "默認不限制",
+        "en": "Default no limit",
+        "ko": "기본값 무제한",
+        "ja": "黙認して制限しません",
+        "de": "Keine begrenzung für standard.",
+        "fr": "Pas limité par défaut",
+        "id": "Tak terbatas secara default"
+    },
+    {
+        "key": "开放：所有人都可以在全员群组发言。",
+        "zh": "",
+        "zh-CHT": "開放：所有人都可以在全員羣組發言。",
+        "en": "Open: Anyone can contribute to the whole group.",
+        "ko": "공개:모든 사람이 그룹 내에서 발언할 수 있습니다.",
+        "ja": "開放:全員がグループで話すことができます。",
+        "de": "Offenheit: alle haben das recht, in der gruppe zu sprechen.",
+        "fr": "Ouvert: tout le monde peut parler en groupe complet.",
+        "id": "Open: semua boleh berbicara dalam kelompok."
+    },
+    {
+        "key": "开放：所有人都可以相互发起个人聊天。",
+        "zh": "",
+        "zh-CHT": "開放：所有人都可以相互發起個人聊天。",
+        "en": "Open: Everyone can initiate personal chats with each other.",
+        "ko": "개방됨:모든 사람들이 개인 채팅을 할 수 있다.",
+        "ja": "オープン:誰でもチャットができます。",
+        "de": "Offenheit: alle können sich gegenseitig auf den neuesten stand bringen.",
+        "fr": "Ouvert: un chat personnel peut être initié par tous.",
+        "id": "Open house: semua dapat memulai obrolan pribadi satu sama lain."
+    },
+    {
+        "key": "开放：允许个人群组聊天发言。",
+        "zh": "",
+        "zh-CHT": "開放：允許個人羣組聊天發言。",
+        "en": "Open: Allows individual group chats.",
+        "ko": "개방:개인 그룹 대화를 허용합니다.",
+        "ja": "開放:個人のグループチャットでの発言を許可します。",
+        "de": "Offenheit: diskussionen in kleinen gruppen erlauben",
+        "fr": "Ouvert: permet aux chats de groupe individuels de parler.",
+        "id": "Open house: izinkan kelompok-kelompok individu untuk berbicara."
+    },
+    {
+        "key": "禁言：除管理员外所有人都禁止在全员群组发言。",
+        "zh": "",
+        "zh-CHT": "禁言：除管理員外所有人都禁止在全員羣組發言。",
+        "en": "Gag: Everyone except managers is forbidden to speak in the group.",
+        "ko": "금언:관리자를 제외한 모든 사람의 발언을 금지한다.",
+        "ja": "禁句:役員以外全員がグループで発言することは禁じられています。",
+        "de": "Hausarrest: alle haben verboten, mit ausnahme der mitglieder zu sprechen.",
+        "fr": "Interdiction de parole: tout le monde, sauf les administrateurs, est interdit de parler dans les groupes.",
+        "id": "Gag: semua kecuali para anggota eksekutif dilarang berbicara dalam kelompok seluruhnya."
+    },
+    {
+        "key": "禁言：除管理员外所有人都禁止发起个人聊天。",
+        "zh": "",
+        "zh-CHT": "禁言：除管理員外所有人都禁止發起個人聊天。",
+        "en": "Ban: All but managers are prohibited from initiating personal chats.",
+        "ko": "금언:관리자를 제외한 모든 사람의 개인 채팅을 금지한다.",
+        "ja": "禁句:役員以外の人とのチャットは禁止です。",
+        "de": "Hausarrest: alle führen bis auf die sitzung keine privatgespräche.",
+        "fr": "Bâillonnement: il est interdit à tout le monde, sauf aux administrateurs, de commencer un chat personnel.",
+        "id": "Gag: semua kecuali para eksekutif, tidak boleh memulai obrolan pribadi."
+    },
+    {
+        "key": "除管理员外禁止个人群组聊天发言。",
+        "zh": "",
+        "zh-CHT": "除管理員外禁止個人羣組聊天發言。",
+        "en": "Personal group chats are prohibited except for managers.",
+        "ko": "관리자를 제외한 개인 그룹 채팅과 발언을 금지한다.",
+        "ja": "役員を除いてグループチャットでの発言は禁止です。",
+        "de": "Erklärungen Von einzelpersonen sind verboten, ausgenommen teilnehmer.",
+        "fr": "Il est interdit de parler sur le chat de groupe à l’exception des administrateurs.",
+        "id": "Tidak ada kelompok individu yang boleh berbicara atau berbicara selain anggota manajemen."
+    },
+    {
+        "key": "注意，仅禁止个人群组，其他类型的群组不禁止，比如：部门群聊、项目群聊等系统群聊。",
+        "zh": "",
+        "zh-CHT": "注意，僅禁止個人羣組，其他類型的羣組不禁止，比如：部門羣聊、項目羣聊等系統羣聊。",
+        "en": "Note that only individual groups are prohibited, other types of groups are not prohibited, such as: department group chat, project group chat and other system group chat.",
+        "ko": "개인 그룹만 금지됩니다. 부서 그룹 채팅, 프로젝트 그룹 채팅 등 시스템 그룹 채팅과 같은 다른 유형의 그룹채팅은 금지되지 않습니다.",
+        "ja": "ただし、個人のグループのみが禁止されます。その他のグループでは禁止されません。例えば、部門グループやプロジェクトグループなどのシステムグループは禁止されません。",
+        "de": "Beachten sie, dass individuelle gruppen nicht erlaubt sind, andere gruppen nicht. Beispielsweise gruppen mit gruppen Von sektoren und gruppen mit projektgruppen.",
+        "fr": "Notez que seuls les groupes individuels sont interdits. Les autres types de groupes ne sont pas interdits. Par exemple: chats de groupe de département, chats de groupe de projet et autres chats de groupe systématiques.",
+        "id": "Perhatian, hanya kelompok individu yang dilarang, tipe kelompok lain tidak dilarang, seperti obrolan kelompok departemen atau kelompok proyek."
     }
 ]

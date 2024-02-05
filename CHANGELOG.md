@@ -2,7 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.34.62]
+## [0.34.66]
+
+### Performance
+
+- 升级okr容器
+- 新增禁止私聊、群聊功能
+- 更换笑话和鸡汤接口
+
+## [0.34.59]
 
 ### Bug Fixes
 
