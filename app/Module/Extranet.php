@@ -174,19 +174,16 @@ class Extranet
 
     /**
      * 随机笑话接口
-     * @return array
+     * @return string
      */
-    public static function randJoke(): array
+    public static function randJoke(): string
     {
-        $jokeKey = env("JUKE_KEY_JOKE");
-        if ($jokeKey) {
-            $data = self::curl("http://v.juhe.cn/joke/randJoke.php?key=" . $jokeKey);
-            $data = Base::json2array($data);
-            if ($data['reason'] === 'success') {
-                return $data['result'];
-            }
+        $data = self::curl("https://hmajax.itheima.net/api/randjoke");
+        $data = Base::json2array($data);
+        if ($data['message'] === '获取成功' && $text = trim($data['data'])) {
+            return $text;
         }
-        return [];
+        return "";
     }
 
     /**
@@ -195,13 +192,10 @@ class Extranet
      */
     public static function soups(): string
     {
-        $soupKey = env("JUKE_KEY_SOUP");
-        if ($soupKey) {
-            $data = self::curl("https://apis.juhe.cn/fapig/soup/query?key=" . $soupKey);
-            $data = Base::json2array($data);
-            if ($data['reason'] === 'success' && $text = trim($data['result']['text'])) {
-                return $text;
-            }
+        $data = self::curl("https://hmajax.itheima.net/api/ambition");
+        $data = Base::json2array($data);
+        if ($data['message'] === '获取成功' && $text = trim($data['data'])) {
+            return $text;
         }
         return "";
     }
