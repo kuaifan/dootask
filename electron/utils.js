@@ -314,6 +314,25 @@ module.exports = {
     },
 
     /**
+     * 新窗口打开事件
+     * @param webContents
+     * @param url
+     * @returns {Promise<unknown>}
+     */
+    onBeforeOpenWindow(webContents, url) {
+        return new Promise(resolve => {
+            const encodeUrl = encodeURIComponent(url)
+            webContents.executeJavaScript(`if(typeof window.__onBeforeOpenWindow === 'function'){window.__onBeforeOpenWindow({url:decodeURIComponent("${encodeUrl}")})}`, true).then(options => {
+                if (options !== true) {
+                    resolve()
+                }
+            }).catch(_ => {
+                resolve()
+            })
+        })
+    },
+
+    /**
      * 版本比较
      * @param version1
      * @param version2

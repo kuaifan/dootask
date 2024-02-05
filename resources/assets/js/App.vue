@@ -264,6 +264,22 @@ export default {
                     return true;
                 }
             }
+            window.__onBeforeOpenWindow = ({url}) => {
+                if ($A.getDomain(url) != $A.getDomain($A.apiUrl('../'))) {
+                    return false;
+                }
+                this.$Electron.sendMessage('windowRouter', {
+                    name: `window-${encodeURIComponent(url)}`,
+                    path: url,
+                    force: false,
+                    config: {
+                        parent: null,
+                        width: Math.min(window.screen.availWidth, 1440),
+                        height: Math.min(window.screen.availHeight, 900),
+                    },
+                });
+                return true;
+            }
             this.$Electron.registerMsgListener('dispatch', args => {
                 if (!$A.isJson(args)) {
                     return;

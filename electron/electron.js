@@ -56,7 +56,9 @@ function createMainWindow() {
     const originalUA = mainWindow.webContents.session.getUserAgent() || mainWindow.webContents.getUserAgent()
     mainWindow.webContents.setUserAgent(originalUA + " MainTaskWindow/" + process.platform + "/" + os.arch() + "/1.0");
     mainWindow.webContents.setWindowOpenHandler(({url}) => {
-        openExternal(url)
+        utils.onBeforeOpenWindow(mainWindow.webContents, url).then(() => {
+            openExternal(url)
+        })
         return {action: 'deny'}
     })
     electronMenu.webContentsMenu(mainWindow.webContents)
@@ -157,23 +159,31 @@ function createSubWindow(args) {
     const originalUA = browser.webContents.session.getUserAgent() || browser.webContents.getUserAgent()
     browser.webContents.setUserAgent(originalUA + " SubTaskWindow/" + process.platform + "/" + os.arch() + "/1.0" + (args.userAgent ? (" " + args.userAgent) : ""));
     browser.webContents.setWindowOpenHandler(({url}) => {
-        openExternal(url)
+        utils.onBeforeOpenWindow(browser.webContents, url).then(() => {
+            openExternal(url)
+        })
         return {action: 'deny'}
     })
     electronMenu.webContentsMenu(browser.webContents)
 
     const hash = args.hash || args.path;
+    if (/^https?:\/\//i.test(hash)) {
+        browser.loadURL(hash).then(_ => {
+
+        })
+        return;
+    }
     if (devloadUrl) {
         browser.loadURL(devloadUrl + '#' + hash).then(_ => {
 
         })
-    } else {
-        browser.loadFile('./public/index.html', {
-            hash
-        }).then(_ => {
-
-        })
+        return;
     }
+    browser.loadFile('./public/index.html', {
+        hash
+    }).then(_ => {
+
+    })
 }
 
 /**
