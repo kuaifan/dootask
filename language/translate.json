@@ -19732,5 +19732,16 @@
         "de": "Beachten sie, dass individuelle gruppen nicht erlaubt sind, andere gruppen nicht. Beispielsweise gruppen mit gruppen Von sektoren und gruppen mit projektgruppen.",
         "fr": "Notez que seuls les groupes individuels sont interdits. Les autres types de groupes ne sont pas interdits. Par exemple: chats de groupe de département, chats de groupe de projet et autres chats de groupe systématiques.",
         "id": "Perhatian, hanya kelompok individu yang dilarang, tipe kelompok lain tidak dilarang, seperti obrolan kelompok departemen atau kelompok proyek."
+    },
+    {
+        "key": "浏览器打开",
+        "zh": "",
+        "zh-CHT": "瀏覽器打開",
+        "en": "Browser",
+        "ko": "Browser",
+        "ja": "Browser",
+        "de": "Browser",
+        "fr": "Browser",
+        "id": "Browser"
     }
 ]

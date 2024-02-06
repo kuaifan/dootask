@@ -394,6 +394,9 @@ export default {
             }
             // 取消长按振动
             $A.eeuiAppSetHapticBackEnabled(false)
+            // 设置语言
+            $A.eeuiAppSetVariate("languageWebBrowser", this.$L("浏览器打开"))
+            $A.eeuiAppSetVariate("languageWebRefresh", this.$L("刷新"))
         },
 
         otherEvents() {

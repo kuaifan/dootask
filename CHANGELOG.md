@@ -2,10 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.34.66]
+## [0.34.70]
 
 ### Performance
 
+- 优化客户端打开服务器链接
 - 升级okr容器
 - 新增禁止私聊、群聊功能
 - 更换笑话和鸡汤接口

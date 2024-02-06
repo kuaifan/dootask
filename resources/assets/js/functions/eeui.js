@@ -94,6 +94,11 @@
             return requireModuleJs("eeui").keyboardStatus();
         },
 
+        eeuiAppSetVariate(key, value) {
+            if (!$A.isEEUiApp) return;
+            return requireModuleJs("eeui").setVariate(key, value);
+        },
+
         eeuiAppSetHapticBackEnabled(val) {
             if (!$A.isEEUiApp) return;
             return requireModuleJs("webview").setHapticBackEnabled(val);
