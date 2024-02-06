@@ -85,7 +85,7 @@ export default {
                 `language/web/key.js`,
                 `language/web/${languageName}.js`,
             ])
-            $A.storageBySubWeb({languageName})
+            $A.storageByBrowser({languageName})
 
             resolve(action)
         })
@@ -522,7 +522,7 @@ export default {
                 themeName: state.themeName,
             });
         }
-        $A.storageBySubWeb({themeConf: state.themeConf})
+        $A.storageByBrowser({themeConf: state.themeConf})
     },
 
     /**

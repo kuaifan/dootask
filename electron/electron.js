@@ -24,6 +24,7 @@ let enablePlugins = false;
 let mainWindow = null,
     mainTray = null,
     subWindow = [],
+    storageBrowser = null,
     isReady = false,
     willQuitApp = false,
     devloadUrl = "",
@@ -487,6 +488,33 @@ ipcMain.on('windowMax', (event) => {
         win.restore();
     } else {
         win.maximize();
+    }
+    event.returnValue = "ok"
+})
+
+/**
+ * 创建子窗口存储浏览器
+ * @param args {url}
+ */
+ipcMain.on('storageBrowser', (event, args) => {
+    if (utils.isJson(args) && allowedUrls.test(args.url)) {
+        if (storageBrowser === null) {
+            storageBrowser = new BrowserWindow({
+                show: false,
+                frame: false,
+                transparent: true,
+                webPreferences: {
+                    preload: path.join(__dirname, 'electron-preload.js'),
+                    webSecurity: true,
+                    nodeIntegration: true,
+                    contextIsolation: true,
+                    nativeWindowOpen: true
+                },
+            })
+        }
+        storageBrowser.loadURL(args.url).then(_ => {
+
+        })
     }
     event.returnValue = "ok"
 })

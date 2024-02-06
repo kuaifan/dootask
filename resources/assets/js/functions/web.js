@@ -920,31 +920,32 @@ import {MarkdownPreview} from "../store/markdown";
          * 通过结果存储同步本地数据
          * @param json
          */
-        storageBySubWeb(json) {
+        storageByBrowser(json) {
             if ($A.isSoftware) {
-                json = Object.assign({}, this.__storageBySubWeb, json)
+                json = Object.assign({}, this.__storageByBrowser, json)
                 const obj = {}
                 Object.keys(json).sort().map(item => {
                     obj[item] = json[item]
                 })
-                if (JSON.stringify(obj) == JSON.stringify(this.__storageBySubWeb)) {
+                if (JSON.stringify(obj) == JSON.stringify(this.__storageByBrowser)) {
                     return
                 }
-                this.__storageBySubWeb = obj
-                const value = encodeURIComponent(JSON.stringify(this.__storageBySubWeb))
+                this.__storageByBrowser = obj
+                const value = encodeURIComponent(JSON.stringify(this.__storageByBrowser))
                 const url = $A.apiUrl(`../storage/synch?value=${value}`)
-                console.log(url);
                 if ($A.isEEUiApp) {
                     $A.eeuiAppSendMessage({
-                        action: 'subWeb',
+                        action: 'storageBrowser',
                         url,
                     });
                 } else {
-                    $A.loadIframe(url, 15000).catch(_ => {})
+                    $A.Electron.sendMessage('storageBrowser', {
+                        url
+                    });
                 }
             }
         },
-        __storageBySubWeb: {}
+        __storageByBrowser: {}
     });
 
     /**
