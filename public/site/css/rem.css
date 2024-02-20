@@ -255,7 +255,7 @@
     padding-top: 100px !important;
     padding-left: 20px !important;
     padding-right: 20px !important;
-  } 
+  }
   .details, .manage-tit, .company-profile-l{
     width: calc(100vw - 40px) !important;
   }
@@ -808,4 +808,8 @@
     left: 0;
     margin: 0 auto;
   }
+}
+.download-other-btn{
+  margin-top: 0px !important;
+  margin-bottom: 56px !important;
 }
