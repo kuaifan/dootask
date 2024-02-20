@@ -72,7 +72,6 @@
   }
   .download-ul{
     width: 100% !important;
-    padding-bottom: 120px !important;
   }
   .update-r{
     margin-left: 0 !important;
@@ -808,8 +807,8 @@
     left: 0;
     margin: 0 auto;
   }
-}
-.download-other-btn{
-  margin-top: 0px !important;
-  margin-bottom: 56px !important;
+  .download-other-btn{
+    margin-top: 0px !important;
+    margin-bottom: 56px !important;
+  }
 }
