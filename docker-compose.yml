@@ -160,6 +160,7 @@ services:
       MYSQL_PASSWORD: "${DB_PASSWORD}"
       MYSQL_Prefix: "${DB_PREFIX}approve_"
       DEMO_DATA: true
+      KEY: ${APP_KEY}
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.11"
@@ -188,6 +189,7 @@ services:
       MYSQL_PASSWORD: "${DB_PASSWORD}"
       MYSQL_PREFIX: "${DB_PREFIX}"
       DEMO_DATA: true
+      KEY: ${APP_KEY}
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.13"
