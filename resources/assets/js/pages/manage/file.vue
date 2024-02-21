@@ -649,7 +649,7 @@ export default {
                         }, [
                             h('AutoTip', {
                                 props: {
-                                    placement: 'right'
+                                    placement: 'top'
                                 }
                             }, $A.getFileName(row))
                         ]));

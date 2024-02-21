@@ -316,13 +316,16 @@ class ReportController extends AbstractController
         // 未完成的任务
         $unfinishedContent = "";
         $unfinished_task = ProjectTask::query()
-            ->whereNull("complete_at")
-            ->whereNotNull("start_at")
-            ->where("end_at", "<", $end_time->toDateTimeString())
+            ->join("projects", "projects.id", "=", "project_tasks.project_id")
+            ->whereNull("projects.archived_at")
+            ->whereNull("project_tasks.complete_at")
+            ->whereNotNull("project_tasks.start_at")
+            ->where("project_tasks.end_at", "<", $end_time->toDateTimeString())
             ->whereHas("taskUser", function ($query) use ($user) {
                 $query->where("userid", $user->userid);
             })
-            ->orderByDesc("id")
+            ->select("project_tasks.*")
+            ->orderByDesc("project_tasks.id")
             ->get();
         if ($unfinished_task->isNotEmpty()) {
             foreach ($unfinished_task as $task) {
