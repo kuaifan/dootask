@@ -246,7 +246,7 @@ class IndexController extends InvokeController
                 if (Base::isSuccess($res)) {
                     file_put_contents($latestFile, $publishVersion);
                     $uploadSuccessFileNum = $uploadSuccessFileNum + 1;
-                    Cache::set($publishVersion, $uploadSuccessFileNum, 720);
+                    Cache::set($publishVersion, $uploadSuccessFileNum, 7200);
                 }
                 if ($uploadSuccessFileNum >= $fileNum){
                     $directoryPath = public_path("uploads/desktop");
