@@ -149,6 +149,7 @@ export default {
 
         systemSetting(save) {
             this.loadIng++;
+            this.formData.cmd = '';
             this.$store.dispatch("call", {
                 url: 'system/setting/checkin?type=' + (save ? 'save' : 'all'),
                 data: this.formData,
