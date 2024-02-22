@@ -222,6 +222,7 @@ class IndexController extends InvokeController
     public function desktop__publish($name = '')
     {
         $publishVersion = Request::header('publish-version');
+        $fileNum = Request::get('file_num', 1);
         $latestFile = public_path("uploads/desktop/latest");
         $latestVersion = file_exists($latestFile) ? trim(file_get_contents($latestFile)) : "0.0.1";
         if (strtolower($name) === 'latest') {
@@ -229,6 +230,7 @@ class IndexController extends InvokeController
         }
         // 上传
         if (preg_match("/^\d+\.\d+\.\d+$/", $publishVersion)) {
+            $uploadSuccessFileNum  = (int)Cache::get($publishVersion, 0);
             $publishKey = Request::header('publish-key');
             if ($publishKey !== env('APP_KEY')) {
                 return Base::retError("key error");
@@ -243,6 +245,20 @@ class IndexController extends InvokeController
                 ]);
                 if (Base::isSuccess($res)) {
                     file_put_contents($latestFile, $publishVersion);
+                    $uploadSuccessFileNum = $uploadSuccessFileNum + 1;
+                    Cache::set($publishVersion, $uploadSuccessFileNum, 720);
+                }
+                if ($uploadSuccessFileNum >= $fileNum){
+                    $directoryPath = public_path("uploads/desktop");
+                    $files = array_filter(scandir($directoryPath), function($file) use($directoryPath) {
+                        return is_dir($directoryPath . '/' . $file) && $file != '.' && $file != '..';
+                    });
+                    sort($files);
+                    foreach ($files as $key => $file) {
+                        if ($file != $publishVersion && $key < count($files) - 2) {
+                            Base::deleteDirAndFile($directoryPath . '/' . $file);
+                        }
+                    }
                 }
                 return $res;
             }
@@ -254,7 +270,7 @@ class IndexController extends InvokeController
             $lists = Base::readDir($dirPath);
             $files = [];
             foreach ($lists as $file) {
-                if (str_ends_with($file, '.yml') || str_ends_with($file, '.yaml')) {
+                if (str_ends_with($file, '.yml') || str_ends_with($file, '.yaml') || str_ends_with($file, '.blockmap')) {
                     continue;
                 }
                 $fileName = Base::leftDelete($file, $dirPath);

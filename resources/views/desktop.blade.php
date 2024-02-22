@@ -30,7 +30,9 @@
 
         .mirror-nav {
             width: 1180px;
-            margin: 20px auto 10px
+            margin: 20px auto 10px;
+            display: flex;
+            justify-content: space-between;
         }
 
         .table {
@@ -79,6 +81,21 @@
         tbody tr:first-child td {
             height: 6px;
             padding: 0;
+        }
+
+        .fileName {
+            position: relative;
+        }
+
+        .download-other-btn {
+            padding: 2px 12px;
+            color: #088acb;
+            border-radius: 8px;
+            margin-top: 2px;
+            border: 1px solid #088acb;
+            font-size: 14px;
+            height: 30px;
+            line-height: 30px;
         }
 
         .fileDate, .fileName, .fileSize {
@@ -162,7 +179,10 @@
 <body>
 @extends('ie')
 
-<h1 class="mirror-nav">Download of v{{ $version }}</h1>
+<h1 class="mirror-nav">
+    <p>Download of v{{ $version }}</p>
+    <a class="download-other-btn" href="https://www.dootask.com/desktop/publish/latest" target="_blank">Other Versions</a>
+</h1>
 <div class="mirror">
     <table class="table">
         <thead>
