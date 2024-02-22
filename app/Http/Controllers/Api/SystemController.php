@@ -389,6 +389,9 @@ class SystemController extends AbstractController
         $setting['edit'] = $setting['edit'] ?: 'close';
         $setting['modes'] = is_array($setting['modes']) ? $setting['modes'] : [];
         $setting['cmd'] = "curl -sSL '" . Base::fillUrl("api/public/checkin/install?key={$setting['key']}") . "' | sh";
+        if (Base::judgeClientVersion('0.34.67')) {
+            $setting['cmd'] = base64_encode($setting['cmd']);
+        }
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
     }

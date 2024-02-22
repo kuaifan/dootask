@@ -157,6 +157,9 @@ export default {
                     $A.messageSuccess('修改成功');
                 }
                 this.formData = data;
+                try {
+                    this.formData.cmd = atob(this.formData.cmd);
+                } catch (error) {}
                 this.formDatum_bak = $A.cloneJSON(this.formData);
             }).catch(({msg}) => {
                 if (save) {
