@@ -181,7 +181,7 @@
 
 <h1 class="mirror-nav">
     <p>Download of v{{ $version }}</p>
-    <a class="download-other-btn" href="https://www.dootask.com/desktop/publish/latest" target="_blank">Other Versions</a>
+    <a class="download-other-btn" href="https://github.com/kuaifan/dootask/releases" target="_blank">Other Versions</a>
 </h1>
 <div class="mirror">
     <table class="table">
