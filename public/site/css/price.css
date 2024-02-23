@@ -261,7 +261,7 @@
 .price-ceiling {
   position: sticky;
   top: 80px;
-  background-color: #fff;
+  background-color: var(--bg-color);
   border-bottom: 1px solid var(--border-color);
   z-index: 9999;
 }
