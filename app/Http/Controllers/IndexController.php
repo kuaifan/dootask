@@ -274,10 +274,11 @@ class IndexController extends InvokeController
                     continue;
                 }
                 $fileName = Base::leftDelete($file, $dirPath);
+                $fileSize = filesize($file);
                 $files[] = [
                     'name' => substr($fileName, 1),
                     'time' => date("Y-m-d H:i:s", filemtime($file)),
-                    'size' => Base::readableBytes(filesize($file)),
+                    'size' => $fileSize > 0 ? Base::readableBytes($fileSize) : 0,
                     'url' => Base::fillUrl($path . $fileName),
                 ];
             }
@@ -294,10 +295,11 @@ class IndexController extends InvokeController
                     continue;
                 }
                 $fileName = Base::leftDelete($file, $dirPath);
+                $fileSize = filesize($file);
                 $apkFile = [
                     'name' => substr($fileName, 1),
                     'time' => date("Y-m-d H:i:s", filemtime($file)),
-                    'size' => Base::readableBytes(filesize($file)),
+                    'size' => $fileSize > 0 ? Base::readableBytes($fileSize) : 0,
                     'url' => Base::fillUrl($path . $fileName),
                 ];
             }
