@@ -84,7 +84,7 @@
   color: var(--text-color);
 }
 .update-ul{
-  width: 515px;
+  width: 465px;
 }
 .update-item{
   display: flex;
@@ -127,7 +127,7 @@
   background-size: contain;
 }
 .update-r{
-  max-width: 622px;
+  max-width: 672px;
   margin-left: 123px;
   box-shadow: 0px 2px 8px 4px rgba(0, 0, 0, 0.05);
   border-radius: 45px;
@@ -168,9 +168,13 @@
 }
 .download-other-btn{
     padding: 10px 16px;
-    color: var(--txt-theme-color);
+    color: var(--txt-gray-color);
+    opacity: .7;
     border-radius: 8px;
-    margin-top: 32px;
-    margin-bottom: 120px;
-    border: 1px solid var(--txt-theme-color);
+    margin-top: 64px;
+    margin-bottom: 100px;
+}
+.download-other-btn:hover{
+    color: var(--txt-theme-color);
+    opacity: 1;
 }

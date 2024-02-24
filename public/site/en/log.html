@@ -416,7 +416,16 @@ function domHandle (html){
         value.classList.toggle('active', value === clickedItem);
       }
     }
-    window.location.hash = '#section-'+updateLogNum
+    window.history.scrollRestoration = 'manual';
+    const topSection = changelog.querySelector(`#section-${updateLogNum}`)
+    if (topSection) {
+      const offset = 90; // 上偏移量（可以根据需要进行调整）
+      const targetPosition = topSection.getBoundingClientRect().top + window.scrollY; // 目标位置相对于视口的位置
+      // 滚动到目标位置，并考虑上偏移量
+      window.scrollTo({
+        top: targetPosition-offset,
+      });
+    }
   }
   handleMou()
   localStorage.removeItem('update_log_num')
@@ -459,7 +468,7 @@ function logsHandler(){
       const content = document.getElementById(`${id}`)
       if (content) {
           const offset = 90; // 上偏移量（可以根据需要进行调整）
-          const targetPosition = content.getBoundingClientRect().top + window.pageYOffset; // 目标位置相对于视口的位置
+          const targetPosition = content.getBoundingClientRect().top + window.scrollY; // 目标位置相对于视口的位置
           // 滚动到目标位置，并考虑上偏移量
           window.scrollTo({
             top: targetPosition-offset,

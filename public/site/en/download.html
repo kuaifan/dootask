@@ -105,10 +105,10 @@
                   <img class="icon mb-8" src="../img/dow_ios.svg" alt="ios">
                   <i class="txt-4001624 txt">ios</i>
                 </a>
-                <div class="hover">
+                <a class="hover" href="https://apps.apple.com/cn/app/dootask/id1624855111" target="_blank">
                   <img class="qr-code mb-8" src="../img/ios_code.png" alt="Scan download,ios">
                   <i class="txt-4001624 txt"> Download</i>
-                </div>
+                </a>
               </li>
               <li class="download-ul-item dow-animate-box" style="--delay: 0.1s;" onmouseover='handleMouseover(1)' onmouseout='handleMouseout(1)'>
                 <a class="normal" href="https://www.dootask.com/desktop/publish/latest?platform=android" target="_blank" id="Android">
@@ -394,17 +394,15 @@ function movieHandle(flag=true){
         }
         if(index==0){
           if(isIos){
-            // Safari
-            if (navigator.userAgent.indexOf('Safari') !== -1 && navigator.userAgent.indexOf('Chrome') === -1 && navigator.userAgent.indexOf('Edge') === -1) {
-              return (window.open(item.children[0].href,"_blank"));
-            }
-            return window.open(item.children[0].href,"_blank")
+            window.location.href = item.children[0].href
+            return
           }
           return showBox("Not supported on current device")
         }
         if(index==1){
           if(isAndroid){
-            return window.open(item.children[0].href,"_blank")
+            window.location.href = item.children[0].href
+            return
           }
           return showBox("Not supported on current device")
         }
