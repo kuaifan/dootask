@@ -321,11 +321,28 @@ module.exports = {
      */
     onBeforeOpenWindow(webContents, url) {
         return new Promise(resolve => {
-            const encodeUrl = encodeURIComponent(url)
-            webContents.executeJavaScript(`if(typeof window.__onBeforeOpenWindow === 'function'){window.__onBeforeOpenWindow({url:decodeURIComponent("${encodeUrl}")})}`, true).then(options => {
+            const dataStr = JSON.stringify({url: url})
+            webContents.executeJavaScript(`if(typeof window.__onBeforeOpenWindow === 'function'){window.__onBeforeOpenWindow(${dataStr})}`, true).then(options => {
                 if (options !== true) {
                     resolve()
                 }
+            }).catch(_ => {
+                resolve()
+            })
+        })
+    },
+
+    /**
+     * 分发事件
+     * @param webContents
+     * @param data
+     * @returns {Promise<unknown>}
+     */
+    onDispatchEvent(webContents, data) {
+        return new Promise(resolve => {
+            const dataStr = JSON.stringify(data)
+            webContents.executeJavaScript(`window.__onDispatchEvent(${dataStr})`, true).then(options => {
+                resolve(options)
             }).catch(_ => {
                 resolve()
             })

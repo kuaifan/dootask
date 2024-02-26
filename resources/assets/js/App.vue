@@ -265,19 +265,15 @@ export default {
                 }
             }
             window.__onBeforeOpenWindow = ({url}) => {
-                if ($A.getDomain(url) != $A.getDomain($A.apiUrl('../'))) {
-                    return false;
+                if ($A.getDomain(url) == $A.getDomain($A.apiUrl('../'))) {
+                    try {
+                        // 下载文件不使用内置浏览器打开
+                        if (/^\/uploads\//i.test(new URL(url).pathname)) {
+                            return false;
+                        }
+                    } catch (e) { }
                 }
-                this.$Electron.sendMessage('windowRouter', {
-                    name: `window-${encodeURIComponent(url)}`,
-                    path: url,
-                    force: false,
-                    config: {
-                        parent: null,
-                        width: Math.min(window.screen.availWidth, 1440),
-                        height: Math.min(window.screen.availHeight, 900),
-                    },
-                });
+                this.$Electron.sendMessage('openWebWindow', {url});
                 return true;
             }
             this.$Electron.registerMsgListener('dispatch', args => {

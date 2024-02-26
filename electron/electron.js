@@ -1,9 +1,11 @@
 const fs = require('fs')
 const os = require("os");
 const path = require('path')
-const {app, BrowserWindow, ipcMain, dialog, clipboard, nativeImage, shell, Tray, Menu, globalShortcut, Notification} = require('electron')
+const {app, BrowserWindow, ipcMain, dialog, clipboard, nativeImage, shell, Tray, Menu, globalShortcut, Notification, BrowserView, nativeTheme} = require('electron')
 const {autoUpdater} = require("electron-updater")
 const log = require("electron-log");
+const electronConf = require('electron-config')
+const userConf = new electronConf()
 const fsProm = require('fs/promises');
 const PDFDocument = require('pdf-lib').PDFDocument;
 const Screenshots = require("electron-screenshots-tool").Screenshots;
@@ -33,6 +35,19 @@ let mainWindow = null,
 let screenshotObj = null,
     screenshotKey = null;
 
+let webWindow = null,
+    webTabView = [],
+    webTabHeight = 38;
+
+let showState = {},
+    onShowWindow = (win) => {
+        if (typeof showState[win.webContents.id] === 'undefined') {
+            showState[win.webContents.id] = true
+            win.setBackgroundColor('rgba(255, 255, 255, 0)')
+            win.show();
+        }
+    }
+
 if (fs.existsSync(devloadCachePath)) {
     devloadUrl = fs.readFileSync(devloadCachePath, 'utf8')
 }
@@ -44,6 +59,8 @@ function createMainWindow() {
     mainWindow = new BrowserWindow({
         width: 1280,
         height: 800,
+        minWidth: 360,
+        minHeight: 360,
         center: true,
         autoHideMenuBar: true,
         webPreferences: {
@@ -65,13 +82,9 @@ function createMainWindow() {
     electronMenu.webContentsMenu(mainWindow.webContents)
 
     if (devloadUrl) {
-        mainWindow.loadURL(devloadUrl).then(_ => {
-
-        })
+        mainWindow.loadURL(devloadUrl).then(_ => { }).catch(_ => { })
     } else {
-        mainWindow.loadFile('./public/index.html').then(_ => {
-
-        })
+        mainWindow.loadFile('./public/index.html').then(_ => { }).catch(_ => { })
     }
 
     mainWindow.on('page-title-updated', (event, title) => {
@@ -122,7 +135,10 @@ function createSubWindow(args) {
         browser = new BrowserWindow(Object.assign({
             width: 1280,
             height: 800,
+            minWidth: 360,
+            minHeight: 360,
             center: true,
+            show: false,
             parent: mainWindow,
             autoHideMenuBar: true,
             webPreferences: Object.assign({
@@ -155,6 +171,14 @@ function createSubWindow(args) {
             }
         })
 
+        browser.once('ready-to-show', () => {
+            onShowWindow(browser);
+        })
+
+        browser.webContents.once('dom-ready', () => {
+            onShowWindow(browser);
+        })
+
         subWindow.push({ name, browser })
     }
     const originalUA = browser.webContents.session.getUserAgent() || browser.webContents.getUserAgent()
@@ -169,15 +193,11 @@ function createSubWindow(args) {
 
     const hash = args.hash || args.path;
     if (/^https?:\/\//i.test(hash)) {
-        browser.loadURL(hash).then(_ => {
-
-        })
+        browser.loadURL(hash).then(_ => { }).catch(_ => { })
         return;
     }
     if (devloadUrl) {
-        browser.loadURL(devloadUrl + '#' + hash).then(_ => {
-
-        })
+        browser.loadURL(devloadUrl + '#' + hash).then(_ => { }).catch(_ => { })
         return;
     }
     browser.loadFile('./public/index.html', {
@@ -204,15 +224,11 @@ function updateSubWindow(browser, args) {
     const hash = args.hash || args.path;
     if (hash) {
         if (devloadUrl) {
-            browser.loadURL(devloadUrl + '#' + hash).then(_ => {
-
-            })
+            browser.loadURL(devloadUrl + '#' + hash).then(_ => { }).catch(_ => { })
         } else {
             browser.loadFile('./public/index.html', {
                 hash
-            }).then(_ => {
-
-            })
+            }).then(_ => { }).catch(_ => { })
         }
     }
     if (args.name) {
@@ -220,6 +236,284 @@ function updateSubWindow(browser, args) {
         if (er) {
             er.name = args.name;
         }
+    }
+}
+
+/**
+ * 创建内置浏览器
+ * @param args {url, ?}
+ */
+function createWebWindow(args) {
+    if (!args) {
+        return;
+    }
+
+    if (!utils.isJson(args)) {
+        args = {url: args}
+    }
+
+    if (!allowedUrls.test(args.url)) {
+        return;
+    }
+
+    // 创建父级窗口
+    if (!webWindow) {
+        let config = Object.assign(args.config || {}, userConf.get('webWindow', {}));
+        let webPreferences = args.webPreferences || {};
+        const titleBarOverlay = {
+            height: webTabHeight
+        }
+        if (nativeTheme.shouldUseDarkColors) {
+            titleBarOverlay.color = '#3B3B3D'
+            titleBarOverlay.symbolColor = '#C5C5C5'
+        }
+        webWindow = new BrowserWindow(Object.assign({
+            x: mainWindow.getBounds().x + webTabHeight,
+            y: mainWindow.getBounds().y + webTabHeight,
+            width: 1280,
+            height: 800,
+            minWidth: 360,
+            minHeight: 360,
+            center: true,
+            show: false,
+            autoHideMenuBar: true,
+            titleBarStyle: 'hidden',
+            titleBarOverlay,
+            webPreferences: Object.assign({
+                preload: path.join(__dirname, 'electron-preload.js'),
+                webSecurity: true,
+                nodeIntegration: true,
+                contextIsolation: true,
+                nativeWindowOpen: true
+            }, webPreferences),
+        }, config))
+
+        webWindow.on('resize', () => {
+            resizeWebTab(0)
+        })
+
+        webWindow.on('enter-full-screen', () => {
+            utils.onDispatchEvent(webWindow.webContents, {
+                event: 'enter-full-screen',
+            }).then(_ => { })
+        })
+
+        webWindow.on('leave-full-screen', () => {
+            utils.onDispatchEvent(webWindow.webContents, {
+                event: 'leave-full-screen',
+            }).then(_ => { })
+        })
+
+        webWindow.on('close', event => {
+            if (!willQuitApp) {
+                closeWebTab(0)
+                event.preventDefault()
+            } else {
+                userConf.set('webWindow', webWindow.getBounds())
+            }
+        })
+
+        webWindow.on('closed', () => {
+            webWindow = null
+        })
+
+        webWindow.once('ready-to-show', () => {
+            onShowWindow(webWindow);
+        })
+
+        webWindow.webContents.once('dom-ready', () => {
+            onShowWindow(webWindow);
+        })
+
+        webWindow.webContents.on('before-input-event', (event, input) => {
+            if (input.meta && input.key.toLowerCase() === 'r') {
+                reloadWebTab(0)
+                event.preventDefault()
+            }
+        })
+
+        webWindow.loadFile('./render/tabs/index.html', {}).then(_ => {
+
+        })
+    }
+    webWindow.focus();
+
+    // 创建子窗口
+    const browserView = new BrowserView({
+        useHTMLTitleAndIcon: true,
+        useLoadingView: true,
+        useErrorView: true,
+        webPreferences: {
+            type: 'browserView',
+            preload: path.join(__dirname, 'electron-preload.js'),
+            nodeIntegrationInSubFrames: true,
+        }
+    })
+    if (nativeTheme.shouldUseDarkColors) {
+        browserView.setBackgroundColor('#575757')
+    } else {
+        browserView.setBackgroundColor('#FFFFFF')
+    }
+    browserView.setBounds({
+        x: 0,
+        y: webTabHeight,
+        width: webWindow.getContentBounds().width || 1280,
+        height: (webWindow.getContentBounds().height || 800) - webTabHeight,
+    })
+    browserView.webContents.setWindowOpenHandler(({url}) => {
+        createWebWindow({url})
+        return {action: 'deny'}
+    })
+    browserView.webContents.on('page-title-updated', (event, title) => {
+        utils.onDispatchEvent(webWindow.webContents, {
+            event: 'title',
+            id: browserView.webContents.id,
+            title: title,
+            url: browserView.webContents.getURL(),
+        }).then(_ => { })
+    })
+    browserView.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+        if (!errorDescription) {
+            return
+        }
+        utils.onDispatchEvent(webWindow.webContents, {
+            event: 'title',
+            id: browserView.webContents.id,
+            title: errorDescription,
+            url: browserView.webContents.getURL(),
+        }).then(_ => { })
+    })
+    browserView.webContents.on('page-favicon-updated', (event, favicons) => {
+        utils.onDispatchEvent(webWindow.webContents, {
+            event: 'favicon',
+            id: browserView.webContents.id,
+            favicons
+        }).then(_ => { })
+    })
+    browserView.webContents.on('did-start-loading', _ => {
+        utils.onDispatchEvent(webWindow.webContents, {
+            event: 'start-loading',
+            id: browserView.webContents.id,
+        }).then(_ => { })
+    })
+    browserView.webContents.on('did-stop-loading', _ => {
+        utils.onDispatchEvent(webWindow.webContents, {
+            event: 'stop-loading',
+            id: browserView.webContents.id,
+        }).then(_ => { })
+    })
+    browserView.webContents.on('before-input-event', (event, input) => {
+        if (input.meta && input.key.toLowerCase() === 'r') {
+            browserView.webContents.reload()
+            event.preventDefault()
+        }
+    })
+    browserView.webContents.loadURL(args.url).then(_ => { }).catch(_ => { })
+
+    webWindow.addBrowserView(browserView)
+    webTabView.push({
+        id: browserView.webContents.id,
+        view: browserView
+    })
+
+    utils.onDispatchEvent(webWindow.webContents,  {
+        event: 'create',
+        id: browserView.webContents.id,
+        url: args.url,
+    }).then(_ => { })
+    switchWebTab(browserView.webContents.id)
+}
+
+/**
+ * 获取当前内置浏览器标签
+ * @returns {Electron.BrowserView|undefined}
+ */
+function currentWebTab() {
+    const views = webWindow.getBrowserViews()
+    const view = views.length ? views[views.length - 1] : undefined
+    if (!view) {
+        return undefined
+    }
+    return webTabView.find(item => item.id == view.webContents.id)
+}
+
+/**
+ * 重新加载内置浏览器标签
+ * @param id
+ */
+function reloadWebTab(id) {
+    const item = id === 0 ? currentWebTab() : webTabView.find(item => item.id == id)
+    if (!item) {
+        return
+    }
+    item.view.webContents.reload()
+}
+
+/**
+ * 调整内置浏览器标签尺寸
+ * @param id
+ */
+function resizeWebTab(id) {
+    const item = id === 0 ? currentWebTab() : webTabView.find(item => item.id == id)
+    if (!item) {
+        return
+    }
+    item.view.setBounds({
+        x: 0,
+        y: webTabHeight,
+        width: webWindow.getContentBounds().width || 1280,
+        height: (webWindow.getContentBounds().height || 800) - webTabHeight,
+    })
+}
+
+/**
+ * 切换内置浏览器标签
+ * @param id
+ */
+function switchWebTab(id) {
+    const item = id === 0 ? currentWebTab() : webTabView.find(item => item.id == id)
+    if (!item) {
+        return
+    }
+    resizeWebTab(item.id)
+    webWindow.setTopBrowserView(item.view)
+    item.view.webContents.focus()
+    utils.onDispatchEvent(webWindow.webContents,  {
+        event: 'switch',
+        id: item.id,
+    }).then(_ => { })
+}
+
+/**
+ * 关闭内置浏览器标签
+ * @param id
+ */
+function closeWebTab(id) {
+    const item = id === 0 ? currentWebTab() : webTabView.find(item => item.id == id)
+    if (!item) {
+        return
+    }
+    if (webTabView.length === 1) {
+        webWindow.hide()
+    }
+    webWindow.removeBrowserView(item.view)
+    item.view.webContents.close()
+
+    const index = webTabView.findIndex(({id}) => item.id == id)
+    if (index > -1) {
+        webTabView.splice(index, 1)
+    }
+
+    utils.onDispatchEvent(webWindow.webContents, {
+        event: 'close',
+        id: item.id,
+    }).then(_ => { })
+
+    if (webTabView.length === 0) {
+        userConf.set('webWindow', webWindow.getBounds())
+        webWindow.destroy()
+    } else {
+        switchWebTab(0)
     }
 }
 
@@ -352,6 +646,45 @@ ipcMain.on('windowRouter', (event, args) => {
 ipcMain.on('updateRouter', (event, args) => {
     const browser = BrowserWindow.fromWebContents(event.sender);
     updateSubWindow(browser, args)
+    event.returnValue = "ok"
+})
+
+/**
+ * 内置浏览器 - 打开创建
+ * @param args {url, ?}
+ */
+ipcMain.on('openWebWindow', (event, args) => {
+    createWebWindow(args)
+    event.returnValue = "ok"
+})
+
+/**
+ * 内置浏览器 - 激活标签
+ * @param id
+ */
+ipcMain.on('webTabSwitch', (event, id) => {
+    switchWebTab(id)
+    event.returnValue = "ok"
+})
+
+/**
+ * 内置浏览器 - 关闭标签
+ * @param id
+ */
+ipcMain.on('webTabClose', (event, id) => {
+    closeWebTab(id)
+    event.returnValue = "ok"
+})
+
+/**
+ * 内置浏览器 - 在外部浏览器打开
+ */
+ipcMain.on('webTabBrowser', (event) => {
+    const item = currentWebTab()
+    if (!item) {
+        return
+    }
+    openExternal(item.view.webContents.getURL())
     event.returnValue = "ok"
 })
 
@@ -512,9 +845,7 @@ ipcMain.on('storageBrowser', (event, args) => {
                 },
             })
         }
-        storageBrowser.loadURL(args.url).then(_ => {
-
-        })
+        storageBrowser.loadURL(args.url).then(_ => { }).catch(_ => { })
     }
     event.returnValue = "ok"
 })
@@ -682,6 +1013,9 @@ ipcMain.on('updateCheckAndDownload', (event, args) => {
         autoUpdater.setFeedURL(args)
     }
     autoUpdater.checkForUpdates().then(info => {
+        if (!info) {
+            return
+        }
         if (utils.compareVersion(config.version, info.updateInfo.version) >= 0) {
             return
         }

@@ -1,0 +1,269 @@
+:root {
+    --tab-font-family: -apple-system, 'Segoe UI', roboto, oxygen-sans, ubuntu, cantarell, 'Helvetica Neue', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+    --tab-font-size: 12px;
+    --tab-transition: background-color 200ms ease-out, color 200ms ease-out;
+    --tab-cursor: pointer; /* 设置鼠标指针为手型 */
+    --tab-color: #7f8792;
+    --tab-background: #EFF0F4;
+    --tab-active-color: #222529;
+    --tab-active-background: #FFFFFF;
+    --tab-close-color: #9DA3AC;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    color: #333;
+}
+
+.nav {
+    font-family: var(--tab-font-family);
+    font-feature-settings: 'clig', 'kern';
+    display: flex;
+    width: 100%;
+    cursor: default;
+    background-color: var(--tab-background);
+    -webkit-app-region: drag;
+}
+
+.nav ul {
+    display: flex;
+    height: 30px;
+    margin: 8px 46px 0 0;
+    user-select: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.nav ul::-webkit-scrollbar {
+    display: none;
+}
+
+.nav ul li {
+    display: inline-flex;
+    position: relative;
+    box-sizing: border-box;
+    align-items: center;
+    height: 100%;
+    padding: 7px 8px;
+    margin: 0 8px 0 0;
+    min-width: 100px;
+    max-width: 240px;
+    scroll-margin: 12px;
+    font-size: var(--tab-font-size);
+    color: var(--tab-color);
+    cursor: var(--tab-cursor);
+    transition: var(--tab-transition);
+    -webkit-app-region: none;
+}
+
+.nav ul li:first-child {
+    margin-left: 8px;
+    border-left: none;
+}
+
+
+.nav ul li.active {
+    color: var(--tab-active-color);
+    background: var(--tab-active-background);
+    border-radius: 6px 6px 0 0;
+}
+
+.nav ul li.active::before {
+    position: absolute;
+    bottom: 0;
+    left: -6px;
+    width: 6px;
+    height: 6px;
+    background-image: url(../image/select_left.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    content: '';
+}
+
+.nav ul li.active::after {
+    position: absolute;
+    right: -6px;
+    bottom: 0;
+    width: 6px;
+    height: 6px;
+    background-image: url(../image/select_right.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    content: '';
+}
+
+.nav ul li.active .tab-icon.background {
+    background-image: url(../image/link_normal_selected_icon.png);
+}
+
+
+.nav ul li:not(.active)::after {
+    position: absolute;
+    right: 0;
+    width: 1px;
+    height: 16px;
+    background: rgba(0, 0, 0, 0.08);
+    content: '';
+}
+
+.nav ul li:not(.active):last-child::after {
+    content: none;
+}
+
+/* 浏览器打开 */
+.browser {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    height: 38px;
+    padding: 0 14px;
+    cursor: pointer;
+    -webkit-app-region: none;
+}
+.browser span {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    background-size: cover;
+    background-image: url(../image/link_normal_selected_icon.png);
+}
+
+/* 图标 */
+.tab-icon {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    background-size: cover;
+}
+
+.tab-icon.background {
+    background-image: url(../image/link_normal_icon.png);
+}
+
+.tab-icon.loading {
+    background-image: none !important;
+}
+
+.tab-icon .tab-icon-loading {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #eeeeee;
+    border-bottom-color: #84C56A;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: spin 0.75s linear infinite;
+}
+
+.tab-icon:not(.loading) .tab-icon-loading {
+    display: none;
+}
+
+.tab-icon img {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+}
+
+@keyframes spin {
+    0% {
+        transform: scale(0.8) rotate(0deg);
+    }
+    100% {
+        transform: scale(0.8) rotate(360deg);
+    }
+}
+
+/* 标题 */
+.tab-title {
+    display: inline-block;
+    flex: 1;
+    margin-right: 8px;
+    margin-left: 6px;
+    overflow: hidden;
+    line-height: 150%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 关闭 */
+.tab-close {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-right: 2px;
+    position: relative;
+}
+
+.tab-close::after,
+.tab-close::before {
+    position: absolute;
+    top: 50%;
+    right: 50%;
+    transform: translate(50%, -50%) scale(0.9) rotate(45deg);
+    content: "";
+    width: 2px;
+    height: 11px;
+    border-radius: 3px;
+    background-color: var(--tab-close-color);
+}
+
+.tab-close::before {
+    transform: translate(50%, -50%) scale(0.9) rotate(-45deg);
+}
+
+/* 不同平台样式 */
+body.win32 .nav ul {
+    margin-left: 8px;
+    margin-right: 186px;
+}
+body.win32 .browser {
+    right: 140px;
+}
+body.darwin .nav ul {
+    margin-left: 76px;
+}
+body.darwin.full-screen .nav ul {
+    margin-left: 8px;
+}
+
+/* 暗黑模式 */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --tab-color: #C5C5C5;
+        --tab-background: #3B3B3D;
+        --tab-active-color: #E1E1E1;
+        --tab-active-background: #575757;
+        --tab-close-color: #E3E3E3;
+    }
+    .nav ul li.active::before {
+        background-image: url(../image/dark/select_left.png);
+    }
+
+    .nav ul li.active::after {
+        background-image: url(../image/dark/select_right.png);
+    }
+
+    .nav ul li.active .tab-icon.background {
+        background-image: url(../image/dark/link_normal_selected_icon.png);
+    }
+
+    .browser span {
+        background-image: url(../image/dark/link_normal_selected_icon.png);
+    }
+
+    .tab-icon.background {
+        background-image: url(../image/dark/link_normal_icon.png);
+    }
+}

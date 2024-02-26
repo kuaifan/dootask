@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Untitled</title>
+    <link rel="stylesheet" href="./assets/css/style.css">
+    <script src="./assets/js/vue.global.min.js"></script>
+</head>
+<body>
+<div id="app" class="app">
+    <div class="nav">
+        <ul>
+            <li v-for="item in tabs" :data-id="item.id" :class="{active: activeId === item.id}" @click="onSwitch(item)">
+                <div v-if="item.state === 'loading'" class="tab-icon loading">
+                    <div class="tab-icon-loading"></div>
+                </div>
+                <div v-else class="tab-icon background" :style="iconStyle(item)"></div>
+                <div class="tab-title" :title="item.title">{{tabTitle(item)}}</div>
+                <div class="tab-close" @click.stop="onClose(item)"></div>
+            </li>
+        </ul>
+    </div>
+    <div v-if="tabs.length > 0" class="browser" @click="onBrowser">
+        <span></span>
+    </div>
+</div>
+
+<script>
+    const App = {
+        data() {
+            return {
+                activeId: 0,
+                tabs: []
+            }
+        },
+        beforeCreate() {
+            document.body.classList.add(window.process.platform)
+        },
+        mounted() {
+            window.__onDispatchEvent = (detail) => {
+                const {id, event} = detail
+                switch (event) {
+                    case 'create':
+                        this.tabs.push(Object.assign({
+                            id,
+                            title: '',
+                            url: '',
+                            icon: '',
+                            state: 'loading'
+                        }, detail))
+                        break
+
+                    case 'close':
+                        const closeIndex = this.tabs.findIndex(item => item.id === id)
+                        if (closeIndex > -1) {
+                            this.tabs.splice(closeIndex, 1)
+                        }
+                        break
+
+                    case 'switch':
+                        this.activeId = id
+                        this.scrollTabActive()
+                        break
+
+                    case 'title':
+                        const titleItem = this.tabs.find(item => item.id === id)
+                        if (titleItem) {
+                            titleItem.title = detail.title
+                            titleItem.url = detail.url
+                        }
+                        break
+
+                    case 'favicon':
+                        const faviconItem = this.tabs.find(item => item.id === id)
+                        if (faviconItem) {
+                            faviconItem.icon = detail.favicons[detail.favicons.length - 1]
+                        }
+                        break
+
+                    case 'start-loading':
+                        const startItem = this.tabs.find(item => item.id === id)
+                        if (startItem) {
+                            startItem.state = 'loading'
+                        }
+                        break
+
+                    case 'stop-loading':
+                        const stopItem = this.tabs.find(item => item.id === id)
+                        if (stopItem) {
+                            stopItem.state = 'loaded'
+                        }
+                        break
+
+                    case 'enter-full-screen':
+                        document.body.classList.add('full-screen')
+                        break
+
+                    case 'leave-full-screen':
+                        document.body.classList.remove('full-screen')
+                        break
+                }
+            }
+        },
+        computed: {
+            pageTitle() {
+                const activeItem = this.tabs.find(item => item.id === this.activeId)
+                return activeItem ? activeItem.title : 'Untitled'
+            }
+        },
+        watch: {
+            pageTitle(title) {
+                document.title = title;
+            }
+        },
+        methods: {
+            onSwitch(item) {
+                this.sendMessage('webTabSwitch', item.id)
+            },
+
+            onClose(item) {
+                this.sendMessage('webTabClose', item.id);
+            },
+
+            onBrowser() {
+                this.sendMessage('webTabBrowser')
+            },
+
+            iconStyle(item) {
+                return item.icon ? `background-image: url(${item.icon})` : ''
+            },
+
+            tabTitle(item) {
+                if (item.title) {
+                    return item.title
+                }
+                if (item.state === 'loading') {
+                    return 'Loading...'
+                }
+                if (item.url) {
+                    return `${item.url}`.replace(/^https*:\/\//, '')
+                }
+            },
+
+            scrollTabActive() {
+                setTimeout(() => {
+                    try {
+                        const child = document.querySelector(`.nav ul li[data-id=${this.activeId}]`)
+                        if (child) {
+                            child.scrollIntoView({behavior: 'smooth', block: 'nearest'})
+                        }
+                    } catch (e) {
+                        //
+                    }
+                }, 0)
+            },
+
+            sendMessage(event, args) {
+                electron?.sendMessage(event, args)
+            }
+        },
+    }
+    Vue.createApp(App).mount('#app')
+</script>
+</body>
+</html>

@@ -72,6 +72,7 @@ contextBridge.exposeInMainWorld(
 contextBridge.exposeInMainWorld(
     'process', {
         type: process.type,
-        versions: process.versions
+        versions: process.versions,
+        platform: process.platform,
     }
 );
