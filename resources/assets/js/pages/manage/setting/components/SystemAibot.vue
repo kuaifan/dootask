@@ -73,6 +73,22 @@
                     </FormItem>
                 </div>
             </div>
+            <div class="block-setting-box" v-if="type=='all' || type=='Gemini'">
+                <h3>Gemini</h3>
+                <div class="form-box">
+                    <FormItem label="API Key" prop="gemini_key">
+                        <Input :maxlength="255" v-model="formData.gemini_key" type="password" placeholder="API Key"/>
+                        <div class="form-tip">{{$L('获取方式')}} <a href="https://ai.google.dev/tutorials/setup?hl=zh-cn" target="_blank">https://ai.google.dev/tutorials/setup?hl=zh-cn</a></div>
+                    </FormItem>
+                    <FormItem :label="$L('模型')" prop="gemini_model">
+                        <Select v-model="formData.gemini_model" placement="top">
+                            <Option value="gemini-1.0-pro">gemini-1.0-pro</Option>
+                            <!-- <Option value="gemini-pro-vision">gemini-pro-vision</Option> -->
+                        </Select>
+                        <div class="form-tip">{{$L('查看说明')}} <a href="https://ai.google.dev/models?hl=zh-cn" target="_blank">https://ai.google.dev/models?hl=zh-cn</a></div>
+                    </FormItem>
+                </div>
+            </div>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{ $L('提交') }}</Button>
