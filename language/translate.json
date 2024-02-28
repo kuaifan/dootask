@@ -19743,5 +19743,16 @@
         "de": "Browser",
         "fr": "Browser",
         "id": "Browser"
+    },
+    {
+        "key": "点击下载",
+        "zh": "",
+        "zh-CHT": "點擊下載",
+        "en": "Click to download",
+        "ko": "클릭하여 다운로드하다",
+        "ja": "ダウンロードをクリックします。",
+        "de": "Klick und download.",
+        "fr": "Cliquez pour télécharger",
+        "id": "Klik untuk mendownload"
     }
 ]
