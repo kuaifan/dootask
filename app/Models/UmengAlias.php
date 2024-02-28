@@ -32,6 +32,16 @@ class UmengAlias extends AbstractModel
     protected $table = 'umeng_alias';
 
     /**
+     * 推送内容处理
+     * @param $string
+     * @return string
+     */
+    private static function specialCharacters($string)
+    {
+        return str_replace(["\r\n", "\r", "\n"], '', $string);
+    }
+
+    /**
      * 获取推送配置
      * @return array|false
      */
@@ -73,9 +83,9 @@ class UmengAlias extends AbstractModel
             return false;
         }
         //
-        $title = $array['title'] ?: '';                                         // 标题
-        $subtitle = $array['subtitle'] ?: '';                                   // 副标题（iOS）
-        $body = $array['body'] ?: '';                                           // 通知内容
+        $title = self::specialCharacters($array['title'] ?: '');        // 标题
+        $subtitle = self::specialCharacters($array['subtitle'] ?: '');  // 副标题（iOS）
+        $body = self::specialCharacters($array['body'] ?: '');          // 通知内容
         $description = $array['description'] ?: 'no description';               // 描述
         $extra = is_array($array['extra']) ? $array['extra'] : [];              // 额外参数
         $seconds = intval($array['seconds']) ?: 86400;                          // 有效时间（单位：秒）
