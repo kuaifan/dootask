@@ -445,6 +445,7 @@ class BotReceiveMsgTask extends AbstractTask
                 $extras = [
                     'gemini_key' => $setting['gemini_key'],
                     'gemini_model' => $setting['gemini_model'],
+                    'gemini_agency' => $setting['gemini_agency'],
                     'server_url' => $serverUrl,
                 ];
                 if (empty($extras['gemini_key'])) {

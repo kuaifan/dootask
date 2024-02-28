@@ -87,6 +87,10 @@
                         </Select>
                         <div class="form-tip">{{$L('查看说明')}} <a href="https://ai.google.dev/models?hl=zh-cn" target="_blank">https://ai.google.dev/models?hl=zh-cn</a></div>
                     </FormItem>
+                    <FormItem :label="$L('使用代理')" prop="gemini_agency">
+                        <Input :maxlength="500" v-model="formData.gemini_agency" :placeholder="$L('支持 http 或 socks 代理')"/>
+                        <div class="form-tip">{{$L('例如：http://proxy.com 或 socks5://proxy.com')}}</div>
+                    </FormItem>
                 </div>
             </div>
         </Form>

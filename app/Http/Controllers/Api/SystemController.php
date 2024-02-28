@@ -274,6 +274,7 @@ class SystemController extends AbstractController
             'qianwen_model',
             'gemini_key',
             'gemini_model',
+            'gemini_agency',
         ];
 
         if ($type == 'save') {
