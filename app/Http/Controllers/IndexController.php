@@ -7,6 +7,7 @@ use Cache;
 use Request;
 use Redirect;
 use Response;
+use App\Module\Doo;
 use App\Models\File;
 use App\Module\Base;
 use App\Tasks\LoopTask;
@@ -355,15 +356,31 @@ class IndexController extends InvokeController
             $ext = strtolower(Arr::get($query, 'ext'));
             $userAgent = strtolower(Request::server('HTTP_USER_AGENT'));
             if ($ext === 'pdf') {
+                // 文件超过 10m 不支持在线预览，提示下载
+                if (filesize($file) > 10 * 1024 * 1024) {
+                    return view('download', [
+                        'name' => $name,
+                        'size' => Base::readableBytes(filesize($file)),
+                        'url' => Base::fillUrl($path),
+                        'button' => Doo::translate('点击下载'),
+                    ]);
+                }
+                // 浏览器类型
+                $browser = 'none';
+                if (str_contains($userAgent, 'chrome')) {
+                    $browser = str_contains($userAgent, 'android') || str_contains($userAgent, 'harmonyos') ? 'android-mobile' : 'chrome-desktop';
+                } elseif (str_contains($userAgent, 'safari')) {
+                    $browser = str_contains($userAgent, 'iphone') || str_contains($userAgent, 'ipad') ? 'safari-mobile' : 'safari-desktop';
+                }
                 // electron 直接在线预览查看
-                if (str_contains($userAgent, 'electron')) {
+                if (str_contains($userAgent, 'electron') || str_contains($browser, 'desktop')) {
                     return Response::download($file, $name, [
                         'Content-Type' => 'application/pdf'
                     ], 'inline');
                 }
                 // EEUI App 直接在线预览查看
                 if (str_contains($userAgent, 'eeui') && Base::judgeClientVersion("0.34.47")) {
-                    if (str_contains($userAgent, 'iphone') || str_contains($userAgent, 'ipad')) {
+                    if ($browser === 'safari-mobile') {
                         $message = Base::array2json([
                             'type' => 'currentOpen',
                             'url' => Base::fillUrl($path),
