@@ -73,6 +73,11 @@
                                 <SystemAibot type="ChatGPT" v-if="aibotTabAction == 'opanai'" />
                             </div>
                         </TabPane>
+                        <TabPane label="Gemini" name="gemini">
+                            <div class="aibot-warp">
+                                <SystemAibot type="Gemini" v-if="aibotTabAction == 'gemini'" />
+                            </div>
+                        </TabPane>
                         <TabPane label="Claude" name="claude">
                             <div class="aibot-warp">
                                 <SystemAibot type="Claude" v-if="aibotTabAction == 'claude'" />
@@ -86,11 +91,6 @@
                         <TabPane :label="$L('通义千问')" name="qianwen">
                             <div class="aibot-warp">
                                 <SystemAibot type="Qianwen" v-if="aibotTabAction == 'qianwen'" />
-                            </div>
-                        </TabPane>
-                        <TabPane label="Gemini" name="gemini">
-                            <div class="aibot-warp">
-                                <SystemAibot type="Gemini" v-if="aibotTabAction == 'gemini'" />
                             </div>
                         </TabPane>
                     </Tabs>
@@ -252,6 +252,12 @@ export default {
                     desc: this.$L('我是一个人工智能助手，为用户提供问题解答和指导。我没有具体的身份，只是一个程序。您有什么问题可以问我哦？')
                 },
                 {
+                    value: "gemini",
+                    label: "Gemini",
+                    src: $A.apiUrl('../images/avatar/default_gemini.png'),
+                    desc: this.$L('我是由Google开发的生成式人工智能聊天机器人。它基于同名的Gemini系列大型语言模型。是应对OpenAI公司开发的ChatGPT聊天机器人的崛起而开发的。')
+                },
+                {
                     value: "claude",
                     label: "Claude",
                     src: $A.apiUrl('../images/avatar/default_claude.png'),
@@ -268,12 +274,6 @@ export default {
                     label: "Qianwen",
                     src: $A.apiUrl('../avatar/%E9%80%9A%E4%B9%89%E5%8D%83%E9%97%AE.png'),
                     desc: this.$L('我是达摩院自主研发的超大规模语言模型，能够回答问题、创作文字，还能表达观点、撰写代码。')
-                },
-                {
-                    value: "gemini",
-                    label: "Gemini",
-                    src: $A.apiUrl('../images/avatar/default_gemini.png'),
-                    desc: this.$L('我是一个由 Google 训练的大型语言模型，旨在帮助人们并回答他们的问题。')
                 },
             ],
             aibotTabAction: "opanai",

@@ -423,6 +423,10 @@
 
                 .desc{
                     cursor: pointer;
+                    height: 84px;
+                    @media (max-width: 510px) {
+                        height: 42px;
+                    }
                 }
 
                 .btn {

@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.34.89]
+## [0.34.93]
 
 ### Bug Fixes
 
@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 ### Features
 
 - 优化内置浏览器
+- Gemini机器人添加代理参数
 - 发布接口只保留最近两个版本
 - 官网添加其他版本的按钮
 - 统一表为utf8mb4_unicode_ci
