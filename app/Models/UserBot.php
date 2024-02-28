@@ -57,6 +57,7 @@ class UserBot extends AbstractModel
             'ai-claude' => 'Claude',
             'ai-wenxin' => '文心一言',
             'ai-qianwen' => '通义千问',
+            'ai-gemini' => 'Gemini',
             'bot-manager' => '机器人管理',
             'meeting-alert' => '会议通知',
             'okr-alert' => 'OKR提醒',
@@ -117,6 +118,7 @@ class UserBot extends AbstractModel
             'ai-openai@bot.system',
             'ai-claude@bot.system',
             'ai-wenxin@bot.system',
+            'ai-gemini@bot.system',
             'ai-qianwen@bot.system' => [
                 [
                     'key' => '%3A.clear',

@@ -438,6 +438,23 @@ class BotReceiveMsgTask extends AbstractTask
                     $error = 'The client version is low (required version ≥ v0.29.12).';
                 }
                 break;
+            // Gemini 机器人
+            case 'ai-gemini@bot.system':
+                $setting = Base::setting('aibotSetting');
+                $webhookUrl = "{$serverUrl}/ai/gemini/send";
+                $extras = [
+                    'gemini_key' => $setting['gemini_key'],
+                    'gemini_model' => $setting['gemini_model'],
+                    'gemini_agency' => $setting['gemini_agency'],
+                    'server_url' => $serverUrl,
+                ];
+                if (empty($extras['gemini_key'])) {
+                    $error = 'Robot disabled.';
+                } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
+                    && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
+                    $error = 'The client version is low (required version ≥ v0.29.12).';
+                }
+                break;
             // 其他机器人
             default:
                 $userBot = UserBot::whereBotId($botUser->userid)->first();

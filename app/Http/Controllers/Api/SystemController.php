@@ -271,7 +271,10 @@ class SystemController extends AbstractController
             'wenxin_secret',
             'wenxin_model',
             'qianwen_key',
-            'qianwen_model'
+            'qianwen_model',
+            'gemini_key',
+            'gemini_model',
+            'gemini_agency',
         ];
 
         if ($type == 'save') {
@@ -311,11 +314,18 @@ class SystemController extends AbstractController
                     WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "设置成功"], $botUser->userid, true, false, true);
                 }
             }
+            if ($backup['gemini_key'] != $setting['gemini_key']) {
+                $botUser = User::botGetOrCreate('ai-gemini');
+                if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "设置成功"], $botUser->userid, true, false, true);
+                }
+            }
         }
         //
         $setting['openai_model'] = $setting['openai_model'] ?: 'gpt-3.5-turbo';
         $setting['wenxin_model'] = $setting['wenxin_model'] ?: 'eb-instant';
         $setting['qianwen_model'] = $setting['qianwen_model'] ?: 'qwen-v1';
+        $setting['gemini_model'] = $setting['gemini_model'] ?: 'gemini-1.0-pro';
         if (env("SYSTEM_SETTING") == 'disabled') {
             foreach ($keys as $item) {
                 if (strlen($setting[$item]) > 12) {

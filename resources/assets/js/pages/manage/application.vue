@@ -88,6 +88,11 @@
                                 <SystemAibot type="Qianwen" v-if="aibotTabAction == 'qianwen'" />
                             </div>
                         </TabPane>
+                        <TabPane label="Gemini" name="gemini">
+                            <div class="aibot-warp">
+                                <SystemAibot type="Gemini" v-if="aibotTabAction == 'gemini'" />
+                            </div>
+                        </TabPane>
                     </Tabs>
                 </div>
             </div>
@@ -255,7 +260,7 @@ export default {
                 {
                     value: "wenxin",
                     label: "Wenxin",
-                    src: $A.apiUrl('../avatar/Wenxin.png'),
+                    src: $A.apiUrl('../avatar/%E6%96%87%E5%BF%83.png'),
                     desc: this.$L('我是文心一言，英文名是ERNIE Bot。我能够与人对话互动，回答问题，协助创作，高效便捷地帮助人们获取信息、知识和灵感。')
                 },
                 {
@@ -263,6 +268,12 @@ export default {
                     label: "Qianwen",
                     src: $A.apiUrl('../avatar/%E9%80%9A%E4%B9%89%E5%8D%83%E9%97%AE.png'),
                     desc: this.$L('我是达摩院自主研发的超大规模语言模型，能够回答问题、创作文字，还能表达观点、撰写代码。')
+                },
+                {
+                    value: "gemini",
+                    label: "Gemini",
+                    src: $A.apiUrl('../images/avatar/default_gemini.png'),
+                    desc: this.$L('我是一个由 Google 训练的大型语言模型，旨在帮助人们并回答他们的问题。')
                 },
             ],
             aibotTabAction: "opanai",
