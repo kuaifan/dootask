@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.34.93]
+## [0.34.95]
 
 ### Bug Fixes
 
@@ -25,6 +25,7 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
+- 优化ai机器人
 - 优化pdf在线预览
 - 优化客户端打开服务器链接
 - 签到设置，有些客户服务器安全体系会拦截 curl -sSL 关键字，优化为cmd不传值

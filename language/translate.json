@@ -19756,14 +19756,36 @@
         "id": "Klik untuk mendownload"
     },
     {
-        "key": "我是由Google开发的生成式人工智能聊天机器人。它基于同名的Gemini系列大型语言模型。是应对OpenAI公司开发的ChatGPT聊天机器人的崛起而开发的。",
+        "key": "我是由Google开发的生成式人工智能聊天机器人。",
         "zh": "",
-        "zh-CHT": "我是由Google開發的生成式人工智能聊天機器人。它基於同名的Gemini系列大型語言模型。是應對OpenAI公司開發的ChatGPT聊天機器人的崛起而開發的。",
-        "en": "I'm a generative AI chatbot developed by Google. It is based on the Gemini family of large language models of the same name. It was developed in response to the rise of ChatGPT, a chatbot developed by OpenAI.",
-        "ko": "저는 구글에서 개발한 생성형 인공지능 챗봇입니다.이는 gemini 라는 이름의 대형 언어 모델들을 기반으로하고 있다.openai 가 개발한 chatgpt 챗봇의 부상에 대응하기 위해 개발됐다.",
-        "ja": "私はGoogleが開発している生成型チャットボットです。Geminiの大規模言語モデルに基づいていますOpenAI社が開発したチャットボット「ChatGPT」の台頭に対応するために開発されました。",
-        "de": "Ich bin ein gegenerierter künstlicher chat-roboter, entwickelt Von Google. Sondern basiert auf einem gleichnamigen modell der Gemini serie. Es wurde als antwort auf den aufstieg der chatgpt-kampfroboter entwickelt, die Von OpenAI entwickelt wurden.",
-        "fr": "Je suis un chatbot génératif d’ia développé par Google. Il est basé sur les grands modèles linguistiques de la série Gemini du même nom. Développé en réponse à la montée en puissance du chatbot ChatGPT développé par OpenAI.",
-        "id": "Aku robot chatting kecerdasan buatan buatan yang dikembangkan Google. Ini berdasarkan model Gemini rangkaian bahasa yang besar dari. Dikembangkan sebagai respon terhadap kemunculan robot ChatGPT di OpenAI corporation."
+        "zh-CHT": "我是由Google開發的生成式人工智能聊天機器人。",
+        "en": "I'm a generative AI chatbot developed by Google.",
+        "ko": "저는 구글에서 개발한 생성형 인공지능 챗봇입니다.",
+        "ja": "私はGoogleが開発している生成型チャットボットです。",
+        "de": "Ich bin ein gegenerierter künstlicher chat-roboter, entwickelt Von Google.",
+        "fr": "Je suis un chatbot génératif d’ia développé par Google.",
+        "id": "Aku robot chatting kecerdasan buatan buatan yang dikembangkan Google."
+    },
+    {
+        "key": "它基于同名的Gemini系列大型语言模型。",
+        "zh": "",
+        "zh-CHT": "它基於同名的Gemini系列大型語言模型。",
+        "en": "It is based on the Gemini family of large language models of the same name.",
+        "ko": "이는 gemini 라는 이름의 대형 언어 모델들을 기반으로하고 있다.",
+        "ja": "Geminiの大規模言語モデルに基づいています",
+        "de": "Sondern basiert auf einem gleichnamigen modell der Gemini serie.",
+        "fr": "Il est basé sur les grands modèles linguistiques de la série Gemini du même nom.",
+        "id": "Ini berdasarkan model Gemini rangkaian bahasa yang besar dari."
+    },
+    {
+        "key": "是应对OpenAI公司开发的ChatGPT聊天机器人的崛起而开发的。",
+        "zh": "",
+        "zh-CHT": "是應對OpenAI公司開發的ChatGPT聊天機器人的崛起而開發的。",
+        "en": "It was developed in response to the rise of ChatGPT, a chatbot developed by OpenAI.",
+        "ko": "Openai 가 개발한 chatgpt 챗봇의 부상에 대응하기 위해 개발됐다.",
+        "ja": "OpenAI社が開発したチャットボット「ChatGPT」の台頭に対応するために開発されました。",
+        "de": "Es wurde als antwort auf den aufstieg der chatgpt-kampfroboter entwickelt, die Von OpenAI entwickelt wurden.",
+        "fr": "Développé en réponse à la montée en puissance du chatbot ChatGPT développé par OpenAI.",
+        "id": "Dikembangkan sebagai respon terhadap kemunculan robot ChatGPT di OpenAI corporation."
     }
 ]

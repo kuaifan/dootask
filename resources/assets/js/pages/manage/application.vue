@@ -255,7 +255,7 @@ export default {
                     value: "gemini",
                     label: "Gemini",
                     src: $A.apiUrl('../images/avatar/default_gemini.png'),
-                    desc: this.$L('我是由Google开发的生成式人工智能聊天机器人。它基于同名的Gemini系列大型语言模型。是应对OpenAI公司开发的ChatGPT聊天机器人的崛起而开发的。')
+                    desc: `${this.$L('我是由Google开发的生成式人工智能聊天机器人。')}${this.$L('它基于同名的Gemini系列大型语言模型。')}${this.$L('是应对OpenAI公司开发的ChatGPT聊天机器人的崛起而开发的。')}`
                 },
                 {
                     value: "claude",
