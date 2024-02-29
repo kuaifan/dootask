@@ -170,7 +170,7 @@ services:
 
   ai:
     container_name: "dootask-ai-${APP_ID}"
-    image: "kuaifan/dooai:0.1.4"
+    image: "kuaifan/dooai:0.1.8"
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.12"
@@ -178,7 +178,7 @@ services:
 
   okr:
     container_name: "dootask-okr-${APP_ID}"
-    image: "kuaifan/doookr:0.0.35"
+    image: "kuaifan/doookr:0.0.37"
     environment:
       TZ: "${TIMEZONE:-PRC}"
       DOO_TASK_URL: "http://${APP_IPPR}.3"

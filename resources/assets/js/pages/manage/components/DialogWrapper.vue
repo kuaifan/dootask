@@ -762,6 +762,7 @@ export default {
             approvaUserStatus: '',
 
             observers: [],
+            msgChangeCache: {},
 
             unreadOne: 0,                       // 最早未读消息id
             topPosLoad: 0,                      // 置顶跳转加载中
@@ -1586,22 +1587,80 @@ export default {
             this.sendMsg(`<p><span data-quick-key="${item.key}">${item.label}</span></p>`)
         },
 
+        /**
+         * 消息变化处理
+         * @param data
+         */
         onMsgChange(data) {
             const item = this.allMsgs.find(({type, id}) => type == "text" && id == data.id)
             if (item) {
-                const {tail} = this.scrollInfo()
-                if (data.type === 'append') {
-                    item.msg.text += data.text
-                } else if (data.type === 'replace') {
-                    item.msg.text = data.text
+                if (typeof this.msgChangeCache[data.id] === "undefined") {
+                    this.msgChangeCache[data.id] = []
+                    this.msgChangeCache[`${data.id}_load`] = false
                 }
+                if (data.type === 'append') {
+                    this.msgChangeCache[data.id].push(...`${data.text}`.split("").map(text => {
+                        return {
+                            type: 'append',
+                            text
+                        }
+                    }))
+                } else if (data.type === 'replace') {
+                    this.msgChangeCache[data.id] = [{
+                        type: 'replace',
+                        text: data.text
+                    }]
+                }
+                this.onMsgOutput(data.id, item.msg)
+            }
+        },
+
+        /**
+         * 追加或替换消息
+         * @param id
+         * @param msg
+         */
+        onMsgOutput(id, msg) {
+            const load = `${id}_load`
+            const arr = this.msgChangeCache[id]
+            if (!arr || arr.length === 0) return
+
+            if (this.msgChangeCache[load] === true) return
+            this.msgChangeCache[load] = true
+
+            try {
+                const data = arr.shift()
+                if (!data) {
+                    this.msgChangeCache[load] = false
+                    return
+                }
+
+                const {type, text} = data
+                const {tail} = this.scrollInfo()
+                if (type === 'append') {
+                    msg.text += text
+                } else if (type === 'replace') {
+                    msg.text = text
+                }
+
                 this.$nextTick(_ => {
                     if (tail <= 10 && tail != this.scrollInfo().tail) {
                         this.operatePreventScroll++
                         this.$refs.scroller.scrollToBottom()
                         setTimeout(_ => this.operatePreventScroll--, 50)
                     }
+
+                    if (arr.length === 0) {
+                        this.msgChangeCache[load] = false
+                        return
+                    }
+                    setTimeout(_ => {
+                        this.msgChangeCache[load] = false
+                        this.onMsgOutput(id, msg)
+                    }, 5)
                 })
+            } catch (e) {
+                this.msgChangeCache[load] = false
             }
         },
 
