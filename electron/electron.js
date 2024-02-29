@@ -19,6 +19,7 @@ const spawn = require("child_process").spawn;
 const isMac = process.platform === 'darwin'
 const isWin = process.platform === 'win32'
 const allowedUrls = /^(?:https?|mailto|tel|callto):/i;
+const allowedCalls = /^(?:mailto|tel|callto):/i;
 let enableStoreBkp = true;
 let dialogOpen = false;
 let enablePlugins = false;
@@ -74,6 +75,9 @@ function createMainWindow() {
     const originalUA = mainWindow.webContents.session.getUserAgent() || mainWindow.webContents.getUserAgent()
     mainWindow.webContents.setUserAgent(originalUA + " MainTaskWindow/" + process.platform + "/" + os.arch() + "/1.0");
     mainWindow.webContents.setWindowOpenHandler(({url}) => {
+        if (allowedCalls.test(url)) {
+            return {action: 'allow'}
+        }
         utils.onBeforeOpenWindow(mainWindow.webContents, url).then(() => {
             openExternal(url)
         })
@@ -184,6 +188,9 @@ function createSubWindow(args) {
     const originalUA = browser.webContents.session.getUserAgent() || browser.webContents.getUserAgent()
     browser.webContents.setUserAgent(originalUA + " SubTaskWindow/" + process.platform + "/" + os.arch() + "/1.0" + (args.userAgent ? (" " + args.userAgent) : ""));
     browser.webContents.setWindowOpenHandler(({url}) => {
+        if (allowedCalls.test(url)) {
+            return {action: 'allow'}
+        }
         utils.onBeforeOpenWindow(browser.webContents, url).then(() => {
             openExternal(url)
         })
@@ -361,6 +368,9 @@ function createWebWindow(args) {
         height: (webWindow.getContentBounds().height || 800) - webTabHeight,
     })
     browserView.webContents.setWindowOpenHandler(({url}) => {
+        if (allowedCalls.test(url)) {
+            return {action: 'allow'}
+        }
         createWebWindow({url})
         return {action: 'deny'}
     })

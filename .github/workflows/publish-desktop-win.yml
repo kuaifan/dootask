@@ -1,0 +1,30 @@
+name: Publish Win
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  Build:
+    runs-on: windows-latest
+    environment: build
+
+    if: startsWith(github.event.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+
+      - name: Build
+        env:
+          DP_KEY: ${{ secrets.DP_KEY }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          ./cmd electron win

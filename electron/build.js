@@ -336,9 +336,11 @@ if (["dev"].includes(argv[2])) {
             notarize: false,
         }
     }, false, false)
-} else if (["all"].includes(argv[2])) {
+} else if (["all", "win", "mac"].includes(argv[2])) {
     // 自动编译
-    platforms.forEach(platform => {
+    platforms.filter(p => {
+        return argv[2] === "all" || p.indexOf(argv[2]) !== -1
+    }).forEach(platform => {
         config.app.forEach(data => {
             data.configure = {
                 platform,

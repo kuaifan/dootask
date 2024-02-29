@@ -509,6 +509,18 @@ function scrollHandler(){
             rm()
             let elementsWithDataId = document.querySelectorAll("[data-id='" + `section-${i}` + "']");
                 elementsWithDataId[1]?.classList?.add("active");
+                //滚动设置
+                const liHight = elementsWithDataId[1]?.offsetTop;
+                const pHihtt = elementsWithDataId[1]?.offsetHeight;
+                const ulElement = document.getElementById('help-l-ul'); // 替换为你的 <div> 元素的 id
+                const scrollHeight = ulElement.scrollTop;
+                const ulHeight = ulElement.offsetHeight;
+                if (liHight > scrollHeight + ulHeight) {
+                    ulElement.scrollTop += (pHihtt + pHihtt);
+                }
+                if (liHight < scrollHeight) {
+                    ulElement.scrollTop -= (pHihtt + pHihtt);
+                }
             return;
         }
     }

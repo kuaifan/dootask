@@ -1,4 +1,4 @@
-name: Publish Desktop
+name: Publish Mac
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 jobs:
-  build:
+  Build:
     runs-on: macos-latest
     environment: build
 
@@ -29,5 +29,6 @@ jobs:
           DP_KEY: ${{ secrets.DP_KEY }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GH_REPOSITORY: ${{ github.repository }}
-        run: ./cmd electron all
+        run: |
+          ./cmd electron mac
 
