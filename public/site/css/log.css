@@ -135,6 +135,11 @@
 .logs-sticky{
   position: sticky;
   top: 80px;
+  height: calc(100vh - 136px);
+}
+#help-l-ul{
+    overflow-y: auto;
+    height: calc(100% - 36px);
 }
 .footer-layut{
     border-top: var(--border-color) solid 1px;

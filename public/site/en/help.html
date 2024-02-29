@@ -2440,6 +2440,18 @@
                     "[data-id='" + `section-${i}` + "']"
                 );
                 elementsWithDataId[0]?.classList?.add("active");
+                //滚动设置
+                const liHight = elementsWithDataId[0]?.offsetTop;
+                const pHihtt = elementsWithDataId[0]?.parentNode.parentNode.offsetHeight;
+                const ulElement = document.getElementById('help-l-ul'); // 替换为你的 <div> 元素的 id
+                const scrollHeight = ulElement.scrollTop;
+                const ulHeight = ulElement.offsetHeight;
+                if (liHight > scrollHeight + ulHeight) {
+                    ulElement.scrollTop += (pHihtt + 24);
+                }
+                if (liHight < scrollHeight) {
+                    ulElement.scrollTop -= (pHihtt + 24);
+                }
                 return;
             }
         }
