@@ -470,7 +470,7 @@ class BotReceiveMsgTask extends AbstractTask
         }
         //
         try {
-            $res = Ihttp::ihttp_post($webhookUrl, [
+            $data = [
                 'text' => $command,
                 'token' => User::generateToken($botUser),
                 'dialog_id' => $dialog->id,
@@ -481,7 +481,8 @@ class BotReceiveMsgTask extends AbstractTask
                 'bot_uid' => $botUser->userid,
                 'version' => Base::getVersion(),
                 'extras' => Base::array2json($extras)
-            ], 10);
+            ];
+            $res = Ihttp::ihttp_post($webhookUrl, $data, 10);
             if ($userBot) {
                 $userBot->webhook_num++;
                 $userBot->save();
