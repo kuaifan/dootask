@@ -492,21 +492,22 @@ export default {
 
         // 列表点击事件
         clickList(item){
-            this.unreadList.map(h=>{ h._active = false; })
-            this.doneList.map(h=>{ h._active = false; })
-            this.notifyList.map(h=>{ h._active = false; })
-            this.initiatedList.map(h=>{ h._active = false; })
-            item._active = true;
+            this.unreadList.map(h => { h._active = false; })
+            this.doneList.map(h => { h._active = false; })
+            this.notifyList.map(h => { h._active = false; })
+            this.initiatedList.map(h => { h._active = false; })
             //
-            if( window.innerWidth < 426 ){
-                this.goForward({name: 'manage-approve-details', query: { id: item.id } });
+            if (window.innerWidth < 426) {
+                this.goForward({ name: 'manage-approve-details', query: { id: item.id } });
                 return;
             }
-            if( window.innerWidth < 1010 ){
+            if (window.innerWidth < 1010) {
                 this.detailsShow = true;
+            } else {
+                item._active = true;
             }
             this.details = {}
-            this.$nextTick(()=>{
+            this.$nextTick(() => {
                 this.details = item
             })
         },
@@ -649,19 +650,21 @@ export default {
         // 更新数据
         updateData(key,data,type) {
             let listKey = key + 'List'
-            let activeIndex = this[listKey].map((h, index) => h._active ? index : -1).filter(h => h > -1)[0] || 0
             this[key + 'Total'] = data.total;
             type != 'scroll' ? (this[listKey] = data.rows) : data.rows.map(h => {
                 if (this[listKey].map(item => { return item.id }).indexOf(h.id) == -1) {
                     this[listKey].push(h)
                 }
             });
-            if(this[listKey].length > 0){
-                this[listKey][activeIndex]._active = true;
-                if (this.tabsValue == key) {
-                    this.$nextTick(() => {
-                        this.details = this[listKey][activeIndex] || {}
-                    })
+            if (window.innerWidth > 1010){
+                let activeIndex = this[listKey].map((h, index) => h._active ? index : -1).filter(h => h > -1)[0] || 0
+                if (this[listKey].length > 0){
+                    this[listKey][activeIndex]._active = true;
+                    if (this.tabsValue == key) {
+                        this.$nextTick(() => {
+                            this.details = this[listKey][activeIndex] || {}
+                        })
+                    }
                 }
             }
         },

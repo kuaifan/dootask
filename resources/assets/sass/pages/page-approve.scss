@@ -166,6 +166,9 @@
 
                     .approve-list-active {
                         border: 1px solid #8bcf70;
+                        @media (max-width: 1010px) {
+                            border: 1px solid #eeeeee;
+                        }
                     }
                 }
 
@@ -405,9 +408,7 @@
         bottom: 1px;
         display: flex;
         z-index: 9;
-        // background: #ffffff;
         background: #00000005;
-        
     }
 
     .comment {
