@@ -83,9 +83,11 @@
                     <FormItem :label="$L('模型')" prop="gemini_model">
                         <Select v-model="formData.gemini_model" placement="top">
                             <Option value="gemini-1.0-pro">gemini-1.0-pro</Option>
-                            <!-- <Option value="gemini-pro-vision">gemini-pro-vision</Option> -->
                         </Select>
                         <div class="form-tip">{{$L('查看说明')}} <a href="https://ai.google.dev/models?hl=zh-cn" target="_blank">https://ai.google.dev/models?hl=zh-cn</a></div>
+                    </FormItem>
+                    <FormItem label="Timeout" prop="gemini_timeout">
+                        <Input :maxlength="255" v-model="formData.gemini_timeout" type="text" placeholder="Timeout"/>
                     </FormItem>
                     <FormItem :label="$L('使用代理')" prop="gemini_agency">
                         <Input :maxlength="500" v-model="formData.gemini_agency" :placeholder="$L('支持 http 或 socks 代理')"/>

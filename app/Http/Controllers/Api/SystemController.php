@@ -275,6 +275,7 @@ class SystemController extends AbstractController
             'gemini_key',
             'gemini_model',
             'gemini_agency',
+            'gemini_timeout'
         ];
 
         if ($type == 'save') {
@@ -326,6 +327,7 @@ class SystemController extends AbstractController
         $setting['wenxin_model'] = $setting['wenxin_model'] ?: 'eb-instant';
         $setting['qianwen_model'] = $setting['qianwen_model'] ?: 'qwen-v1';
         $setting['gemini_model'] = $setting['gemini_model'] ?: 'gemini-1.0-pro';
+        $setting['gemini_timeout'] = $setting['gemini_timeout'] ?: 20;
         if (env("SYSTEM_SETTING") == 'disabled') {
             foreach ($keys as $item) {
                 if (strlen($setting[$item]) > 12) {
