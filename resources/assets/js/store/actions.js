@@ -116,15 +116,17 @@ export default {
         } else {
             params.header = header
         }
-        if (params.encrypt === undefined && $A.inArray(params.url, [
-            'users/login',
-            'users/editpass',
-            'users/operation',
-            'users/delete/account',
-            'system/license',
-            'users/bot/*',
-            'dialog/msg/*',
-        ], true)) {
+        if (state.systemConfig.e2e_message === 'open'
+            && params.encrypt === undefined
+            && $A.inArray(params.url, [
+                'users/login',
+                'users/editpass',
+                'users/operation',
+                'users/delete/account',
+                'system/license',
+                'users/bot/*',
+                'dialog/msg/*',
+            ], true)) {
             params.encrypt = true
         }
         if (params.encrypt) {

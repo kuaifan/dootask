@@ -170,6 +170,14 @@
                         <div v-if="formDatum.anon_message == 'open'" class="form-tip">{{$L('允许匿名发送消息给其他成员。')}}</div>
                         <div v-else class="form-tip">{{$L('禁止匿名发送消息。')}}</div>
                     </FormItem>
+                    <FormItem :label="$L('端到端加密')" prop="e2eMessage">
+                        <RadioGroup v-model="formDatum.e2e_message">
+                            <Radio label="open">{{$L('开启')}}</Radio>
+                            <Radio label="close">{{$L('关闭')}}</Radio>
+                        </RadioGroup>
+                        <div v-if="formDatum.e2e_message == 'open'" class="form-tip">{{$L('使用端到端加密传输数据。')}}</div>
+                        <div v-else class="form-tip">{{$L('关闭端到端加密传输数据。')}}</div>
+                    </FormItem>
                 </div>
             </div>
             <div class="block-setting-box">
