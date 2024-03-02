@@ -1430,52 +1430,61 @@ class ProjectTask extends AbstractModel
         }
         //
         $array = [];
-        if (empty($data['parent_id'])) {
-            if (Arr::exists($data, 'owner') || Arr::exists($data, 'assist')) {
-                $taskUser = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($data['id'])->get();
-                // 负责人
-                $owners = $taskUser->where('owner', 1)->pluck('userid')->toArray();
-                $owners = array_intersect($userids, $owners);
-                if ($owners) {
-                    $array[] = [
-                        'userid' => array_values($owners),
-                        'data' => array_merge($data, [
-                            'owner' => 1,
-                            'assist' => 1,
-                        ])
-                    ];
-                }
-                // 协助人
-                $assists = $taskUser->where('owner', 0)->pluck('userid')->toArray();
-                $assists = array_intersect($userids, $assists);
-                if ($assists) {
-                    $array[] = [
-                        'userid' => array_values($assists),
-                        'data' => array_merge($data, [
-                            'owner' => 0,
-                            'assist' => 1,
-                        ])
-                    ];
-                }
-                // 项目成员（其他人）
-                if ($data['visibility'] == 1) {
-                    // 全部可见
+        if (Arr::exists($data, 'owner') || Arr::exists($data, 'assist')) {
+            $taskUser = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($data['id'])->get();
+            // 负责人
+            $owners = $taskUser->where('owner', 1)->pluck('userid')->toArray();
+            $owners = array_intersect($userids, $owners);
+            if ($owners) {
+                $array[] = [
+                    'userid' => array_values($owners),
+                    'data' => array_merge($data, [
+                        'owner' => 1,
+                        'assist' => 1,
+                    ])
+                ];
+            }
+            // 协助人
+            $assists = $taskUser->where('owner', 0)->pluck('userid')->toArray();
+            $assists = array_intersect($userids, $assists);
+            if ($assists) {
+                $array[] = [
+                    'userid' => array_values($assists),
+                    'data' => array_merge($data, [
+                        'owner' => 0,
+                        'assist' => 1,
+                    ])
+                ];
+            }
+            // 其他人
+            switch ($data['visibility']) {
+                case 1:
+                    // 项目人员，除了负责人、协助人项目其他人
                     $userids = array_diff($userids, $owners, $assists);
-                } else {
-                    // 指定可见
-                    $userids = $taskUser->pluck('userid')->toArray();
-                }
-                $data = array_merge($data, [
-                    'owner' => 0,
-                    'assist' => 0,
-                ]);
+                    break;
+                case 2:
+                    // 任务人员，除了负责人、协助人
+                    $userids = [];
+                    break;
+                case 3:
+                    // 指定成员
+                    $specifys = ProjectTaskVisibilityUser::select(['userid'])->whereTaskId($data['id'])->pluck('userid')->toArray();
+                    $userids = array_diff($specifys, $owners, $assists);
+                    break;
+                default:
+                    $userids = [];
+                    break;
+            }
+            if ($userids) {
+                $array[] = [
+                    'userid' => array_values($userids),
+                    'data' => array_merge($data, [
+                        'owner' => 0,
+                        'assist' => 0,
+                    ])
+                ];
             }
         }
-        //
-        $array[] = [
-            'userid' => array_values($userids),
-            'data' => $data
-        ];
         //
         foreach ($array as $item) {
             $params = [
