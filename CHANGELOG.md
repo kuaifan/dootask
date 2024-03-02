@@ -2,10 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.35.10]
+
+### Bug Fixes
+
+- 修改消息导致最后消息改变
+- 显示无关系的子任务、指定成员可见消息推送
+- 调整gemini机器人设置参数
+
+### Performance
+
+- 更新说明文档
+- 优化客户端
+- 默认关闭端到端加密传输
+
 ## [0.34.95]
 
 ### Bug Fixes
 
+- 调整发送参数逻辑
 - 推送标题存在换行时不显示
 - 修复下载文件大小为0时报错
 - 更改其他版本的链接
@@ -17,6 +32,7 @@ All notable changes to this project will be documented in this file.
 
 ### Features
 
+- 升级okr
 - 优化内置浏览器
 - Gemini机器人添加代理参数
 - 发布接口只保留最近两个版本
@@ -26,11 +42,11 @@ All notable changes to this project will be documented in this file.
 ### Performance
 
 - 优化ai机器人
+- Okr和审批优化
 - 优化pdf在线预览
 - 优化客户端打开服务器链接
 - 签到设置，有些客户服务器安全体系会拦截 curl -sSL 关键字，优化为cmd不传值
 - 签到设置，有些客户服务器安全体系会拦截 curl -sSL 关键字，优化为base64返回
-- 升级okr
 
 ## [0.34.66]
 

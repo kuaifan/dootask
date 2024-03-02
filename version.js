@@ -43,7 +43,7 @@ runExec("git rev-list --count HEAD $(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
         console.error(err);
         return;
     }
-    const num = 1238 + parseInt(response)
+    const num = 1240 + parseInt(response)
     if (isNaN(num) || Math.floor(num % 100) < 0) {
         console.error("get version error " + response);
         return;

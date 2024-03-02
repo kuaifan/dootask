@@ -483,7 +483,7 @@ class BotReceiveMsgTask extends AbstractTask
                 'version' => Base::getVersion(),
                 'extras' => Base::array2json($extras)
             ];
-            $res = Ihttp::ihttp_post($webhookUrl, $data, 10);
+            $res = Ihttp::ihttp_post($webhookUrl, $data);
             if ($userBot) {
                 $userBot->webhook_num++;
                 $userBot->save();
