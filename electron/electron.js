@@ -333,7 +333,7 @@ function createWebWindow(args) {
         })
 
         webWindow.webContents.on('before-input-event', (event, input) => {
-            if (input.meta && input.key.toLowerCase() === 'r') {
+            if (utils.isMetaOrControl(input) && input.key.toLowerCase() === 'r') {
                 reloadWebTab(0)
                 event.preventDefault()
             }
@@ -413,9 +413,11 @@ function createWebWindow(args) {
         }).then(_ => { })
     })
     browserView.webContents.on('before-input-event', (event, input) => {
-        if (input.meta && input.key.toLowerCase() === 'r') {
+        if (utils.isMetaOrControl(input) && input.key.toLowerCase() === 'r') {
             browserView.webContents.reload()
             event.preventDefault()
+        } else if (input.meta && input.shift && input.key.toLowerCase() === 'i') {
+            browserView.webContents.toggleDevTools()
         }
     })
     browserView.webContents.loadURL(args.url).then(_ => { }).catch(_ => { })
@@ -610,6 +612,9 @@ app.on('browser-window-focus', () => {
     if (mainWindow) {
         mainWindow.webContents.send("browserWindowFocus", {})
     }
+    if (storageBrowser) {
+        storageBrowser.webContents.reload()
+    }
 })
 
 /**
@@ -695,6 +700,18 @@ ipcMain.on('webTabBrowser', (event) => {
         return
     }
     openExternal(item.view.webContents.getURL())
+    event.returnValue = "ok"
+})
+
+/**
+ * 内置浏览器 - 打开开发者工具
+ */
+ipcMain.on('webTabOpenDevTools', (event) => {
+    const item = currentWebTab()
+    if (!item) {
+        return
+    }
+    item.view.webContents.openDevTools()
     event.returnValue = "ok"
 })
 
@@ -853,6 +870,9 @@ ipcMain.on('storageBrowser', (event, args) => {
                     contextIsolation: true,
                     nativeWindowOpen: true
                 },
+            })
+            storageBrowser.on('closed', () => {
+                storageBrowser = null
             })
         }
         storageBrowser.loadURL(args.url).then(_ => { }).catch(_ => { })

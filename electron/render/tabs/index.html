@@ -63,6 +63,9 @@
                         break
 
                     case 'title':
+                        if (["HitoseaTask", "DooTask", "about:blank"].includes(detail.title)) {
+                            return
+                        }
                         const titleItem = this.tabs.find(item => item.id === id)
                         if (titleItem) {
                             titleItem.title = detail.title
@@ -99,6 +102,9 @@
                         document.body.classList.remove('full-screen')
                         break
                 }
+            }
+            window.__openDevTools = () => {
+                this.sendMessage('webTabOpenDevTools')
             }
         },
         computed: {

@@ -421,5 +421,18 @@ module.exports = {
             }
             callback({responseHeaders: details.responseHeaders});
         });
+    },
+
+    /**
+     * win mac meta control
+     * @param input
+     * @returns {boolean | Point | HTMLElement}
+     */
+    isMetaOrControl(input) {
+        if (process.platform === 'win32') {
+            return input.control
+        } else {
+            return input.meta
+        }
     }
 }
