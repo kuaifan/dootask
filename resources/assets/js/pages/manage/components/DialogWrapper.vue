@@ -1061,10 +1061,6 @@ export default {
             return this.dialogData.extra_quote_id || 0
         },
 
-        quoteUpdate() {
-            return this.dialogData.extra_quote_type === 'update'
-        },
-
         quoteData() {
             return this.quoteId ? this.allMsgs.find(({id}) => id === this.quoteId) : null
         },
@@ -1437,7 +1433,7 @@ export default {
                     .replace(/(<span\s+class="mention"(.*?)>.*?<\/span>.*?<\/span>.*?<\/span>)(\x20)?/, "$1 ")
             }
             //
-            if (this.quoteUpdate) {
+            if (this.dialogData.extra_quote_type === 'update') {
                 // 修改
                 if (textType === "text") {
                     textBody = textBody.replace(new RegExp(`src=(["'])${$A.apiUrl('../')}`, "g"), "src=$1{{RemoteURL}}")
@@ -1462,7 +1458,7 @@ export default {
                     method: 'post',
                     complete: _ => this.$store.dispatch("cancelLoad", `msg-${update_id}`)
                 }).then(({data}) => {
-                    this.sendSuccess(data)
+                    this.sendSuccess(data, 0, true)
                     this.onPositionId(update_id)
                 }).catch(({msg}) => {
                     $A.modalError(msg)
@@ -2004,7 +2000,7 @@ export default {
             }
         },
 
-        sendSuccess(data, tempId = 0) {
+        sendSuccess(data, tempId = 0, isUpdate = false) {
             if ($A.isArray(data)) {
                 data.some(item => {
                     this.sendSuccess(item, tempId)
@@ -2022,7 +2018,7 @@ export default {
                 }, 1000)
             }
             this.$store.dispatch("saveDialogMsg", data);
-            if (!this.quoteUpdate) {
+            if (!isUpdate) {
                 this.$store.dispatch("increaseTaskMsgNum", data);
                 this.$store.dispatch("increaseMsgReplyNum", data);
                 this.$store.dispatch("updateDialogLastMsg", data);
