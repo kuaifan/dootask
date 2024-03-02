@@ -2,7 +2,7 @@
 
 **[English](./README.md)** | 中文文档
 
-- [截图预览](README_PREVIEW.md)
+- [截图预览](./README_PREVIEW.md)
 - [演示站点](http://www.dootask.com/)
 
 **QQ交流群**
@@ -12,8 +12,9 @@
 ## 安装程序
 
 - 必须安装：`Docker v20.10+` 和 `Docker Compose v2.0+`
-- 支持环境：`Centos/Debian/Ubuntu/macOS`
+- 支持环境：`Centos/Debian/Ubuntu/macOS/Windows`
 - 硬件建议：2核4G以上
+- 特别说明：Windows 用户请使用 `git bash` 或者 `cmder` 运行命令
 
 ### 部署项目（Pro版）
 
@@ -66,11 +67,13 @@ cd dootask
 
 ### 开发编译
 
+- 请确保你已经安装了 `NodeJs 18+`
+
 ```bash
-# 开发模式，仅限macOS
+# 开发模式
 ./cmd dev
    
-# 编译项目，仅限macOS
+# 编译项目（这是网页端的，App/Pc/Mac客户端请查看 README_CLIENT.md）
 ./cmd prod  
 ```
 

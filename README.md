@@ -2,7 +2,7 @@
 
 English | **[中文文档](./README_CN.md)**
 
-- [Screenshot Preview](README_PREVIEW.md)
+- [Screenshot preview](./README_PREVIEW.md)
 - [Demo site](http://www.dootask.com/)
 
 **QQ Group**
@@ -12,8 +12,9 @@ Group No.: `546574618`
 ## Setup
 
 - `Docker v20.10+` & `Docker Compose v2.0+` must be installed
-- System: `Centos/Debian/Ubuntu/macOS`
+- System: `Centos/Debian/Ubuntu/macOS/Windows`
 - Hardware suggestion: 2 cores and above 4G memory
+- Special note: Windows users please use `git bash` or `cmder` to run the command
 
 ### Deployment (Pro Edition)
 
@@ -66,11 +67,13 @@ cd dootask
 
 ### Development compilation
 
+- `NodeJs 18+` must be installed
+
 ```bash
-# Development mode, Mac OS only
+# Development
 ./cmd dev
    
-# Production projects, macOS only
+# Production (This is web client. For App/PC/Mac clients, Please read README-CLIENT.md)
 ./cmd prod  
 ```
 

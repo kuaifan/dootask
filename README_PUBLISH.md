@@ -22,5 +22,5 @@
 
 ## 编译App
 
-1. 执行 `./cmd appbuild` 或 `./cmd appbuild setting` 编译
+1. 执行 `./cmd appbuild [setting]` 编译
 2. 进入 `resources/mobile` eeui框架内打包Android或iOS应用
