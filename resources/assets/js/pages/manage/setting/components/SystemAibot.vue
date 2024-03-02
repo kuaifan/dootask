@@ -83,7 +83,6 @@
                     <FormItem :label="$L('模型')" prop="gemini_model">
                         <Select v-model="formData.gemini_model" placement="top">
                             <Option value="gemini-1.0-pro">gemini-1.0-pro</Option>
-                            <!-- <Option value="gemini-pro-vision">gemini-pro-vision</Option> -->
                         </Select>
                         <div class="form-tip">{{$L('查看说明')}} <a href="https://ai.google.dev/models?hl=zh-cn" target="_blank">https://ai.google.dev/models?hl=zh-cn</a></div>
                     </FormItem>
