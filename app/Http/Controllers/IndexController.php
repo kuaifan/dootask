@@ -252,7 +252,7 @@ class IndexController extends InvokeController
                 if ($uploadSuccessFileNum >= $fileNum){
                     $directoryPath = public_path("uploads/desktop");
                     $files = array_filter(scandir($directoryPath), function($file) use($directoryPath) {
-                        return is_dir($directoryPath . '/' . $file) && $file != '.' && $file != '..';
+                        return preg_match('/^\d+\.\d+\.\d+/', $file) && is_dir($directoryPath . '/' . $file) && $file != '.' && $file != '..';
                     });
                     sort($files);
                     foreach ($files as $key => $file) {
