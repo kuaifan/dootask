@@ -182,7 +182,7 @@ export default {
         openPrivacy() {
             const url = $A.apiUrl('privacy')
             if (this.$isEEUiApp) {
-                $A.eeuiAppOpenPage({
+                this.$store.dispatch('openAppChildPage', {
                     pageType: 'app',
                     pageTitle: ' ',
                     url: 'web.js',

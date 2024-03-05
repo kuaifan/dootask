@@ -111,7 +111,7 @@ export default {
                     width: Math.min(window.screen.availWidth, 1440),
                     height: Math.min(window.screen.availHeight, 900),
                 }
-                this.$Electron.sendMessage('windowRouter', {
+                this.$store.dispatch('openChildWindow', {
                     name: `report-detail-${row.id}`,
                     path: `/single/report/detail/${row.id}`,
                     force: false,
@@ -134,7 +134,7 @@ export default {
                     width: Math.min(window.screen.availWidth, 1440),
                     height: Math.min(window.screen.availHeight, 900),
                 }
-                this.$Electron.sendMessage('windowRouter', {
+                this.$store.dispatch('openChildWindow', {
                     name: `report-edit-${id}`,
                     path: `/single/report/edit/${id}`,
                     force: false,

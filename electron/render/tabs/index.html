@@ -120,7 +120,7 @@
         },
         methods: {
             onSwitch(item) {
-                this.sendMessage('webTabSwitch', item.id)
+                this.sendMessage('webTabActivate', item.id)
             },
 
             onClose(item) {
@@ -128,7 +128,7 @@
             },
 
             onBrowser() {
-                this.sendMessage('webTabBrowser')
+                this.sendMessage('webTabExternal')
             },
 
             iconStyle(item) {

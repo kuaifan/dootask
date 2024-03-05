@@ -2,6 +2,27 @@ const isElectron = !!(window && window.process && window.process.type);
 const isEEUiApp = window && window.navigator && /eeui/i.test(window.navigator.userAgent);
 const isSoftware = isElectron || isEEUiApp;
 
+const urlParams = $A.urlParameterAll()
+if (urlParams.language
+    || urlParams.theme
+    || urlParams.userid
+    || urlParams.token) {
+    if (urlParams.language) {
+        window.localStorage.setItem("__system:languageName__", urlParams.language)
+    }
+    if (urlParams.theme) {
+        window.localStorage.setItem("__system:themeConf__", urlParams.language)
+    }
+    if (urlParams.userid) {
+        window.localStorage.setItem("__system:userId__", urlParams.userid)
+    }
+    if (urlParams.token) {
+        window.localStorage.setItem("__system:userToken__", urlParams.token)
+    }
+    const newUrl = $A.removeURLParameter(window.location.href, ['theme', 'language', 'userid', 'token'])
+    window.history.replaceState(null, '', newUrl)
+}
+
 import microappInit from "./microapp"
 import {switchLanguage as $L} from "./language";
 

@@ -915,37 +915,6 @@ import {MarkdownPreview} from "../store/markdown";
             }
             return false;
         },
-
-        /**
-         * 通过结果存储同步本地数据
-         * @param json
-         */
-        storageByBrowser(json) {
-            if ($A.isSoftware) {
-                json = Object.assign({}, this.__storageByBrowser, json)
-                const obj = {}
-                Object.keys(json).sort().map(item => {
-                    obj[item] = json[item]
-                })
-                if (JSON.stringify(obj) == JSON.stringify(this.__storageByBrowser)) {
-                    return
-                }
-                this.__storageByBrowser = obj
-                const value = encodeURIComponent(JSON.stringify(this.__storageByBrowser))
-                const url = $A.apiUrl(`../storage/synch?value=${value}`)
-                if ($A.isEEUiApp) {
-                    $A.eeuiAppSendMessage({
-                        action: 'storageBrowser',
-                        url,
-                    });
-                } else {
-                    $A.Electron.sendMessage('storageBrowser', {
-                        url
-                    });
-                }
-            }
-        },
-        __storageByBrowser: {}
     });
 
     /**

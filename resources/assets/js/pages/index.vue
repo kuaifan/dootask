@@ -12,14 +12,21 @@ export default {
 
     mounted() {
         if (/^https*:/i.test(window.location.protocol)) {
+            let redirect = null
             if (this.$router.mode === "hash") {
                 if ($A.stringLength(window.location.pathname) > 2) {
-                    window.location.href = `${window.location.origin}/#${window.location.pathname}${window.location.search}`
+                    redirect = `${window.location.origin}/#${window.location.pathname}${window.location.search}`
                 }
             } else if (this.$router.mode === "history") {
                 if ($A.strExists(window.location.href, "/#/")) {
-                    window.location.href = window.location.href.replace("/#/", "/")
+                    redirect = window.location.href.replace("/#/", "/")
                 }
+            }
+            if (redirect) {
+                this.$store.dispatch("userUrl", redirect).then(redirect => {
+                    window.location.href = redirect
+                })
+                throw SyntaxError()
             }
         }
     },

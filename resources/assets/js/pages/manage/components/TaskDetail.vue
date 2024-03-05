@@ -1551,7 +1551,7 @@ export default {
                 config.minWidth = 800;
                 config.minHeight = 600;
             }
-            this.$Electron.sendMessage('windowRouter', {
+            this.$store.dispatch('openChildWindow', {
                 name: `task-${this.taskDetail.id}`,
                 path: `/single/task/${this.taskDetail.id}?navActive=${this.navActive}`,
                 force: false,
@@ -1609,7 +1609,7 @@ export default {
             }
             const path = `/single/file/task/${file.id}`;
             if (this.$Electron) {
-                this.$Electron.sendMessage('windowRouter', {
+                this.$store.dispatch('openChildWindow', {
                     name: `file-task-${file.id}`,
                     path: path,
                     userAgent: "/hideenOfficeTitle/",
@@ -1626,7 +1626,7 @@ export default {
                     },
                 });
             } else if (this.$isEEUiApp) {
-                $A.eeuiAppOpenPage({
+                this.$store.dispatch('openAppChildPage', {
                     pageType: 'app',
                     pageTitle: `${file.name} (${$A.bytesToSize(file.size)})`,
                     url: 'web.js',

@@ -537,7 +537,7 @@ export default {
             }
             if (/^https*:\/\//i.test(text)) {
                 // 打开链接
-                $A.eeuiAppOpenPage({
+                this.$store.dispatch('openAppChildPage', {
                     pageType: 'app',
                     pageTitle: ' ',
                     url: 'web.js',

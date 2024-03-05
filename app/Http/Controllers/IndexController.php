@@ -407,23 +407,6 @@ class IndexController extends InvokeController
     }
 
     /**
-     * 保存配置
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|string
-     */
-    public function storage__synch()
-    {
-        $key = Request::input('key');
-        $value = Request::input('value');
-        if ($key) {
-            $value = [$key => $value];
-        }
-        if (!is_array($value)) {
-            $value = Base::json2array($value);
-        }
-        return view('storage', ['value' => Base::array2json($value)]);
-    }
-
-    /**
      * 提取所有中文
      * @return array|string
      */

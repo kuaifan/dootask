@@ -26,8 +26,6 @@ let enablePlugins = false;
 
 let mainWindow = null,
     mainTray = null,
-    subWindow = [],
-    storageBrowser = null,
     isReady = false,
     willQuitApp = false,
     devloadUrl = "",
@@ -36,7 +34,8 @@ let mainWindow = null,
 let screenshotObj = null,
     screenshotKey = null;
 
-let webWindow = null,
+let childWindow = [],
+    webTabWindow = null,
     webTabView = [],
     webTabHeight = 38;
 
@@ -116,7 +115,7 @@ function createMainWindow() {
  * 创建子窗口
  * @param args {path, hash, title, titleFixed, force, userAgent, config, webPreferences}
  */
-function createSubWindow(args) {
+function createChildWindow(args) {
     if (!args) {
         return;
     }
@@ -126,7 +125,7 @@ function createSubWindow(args) {
     }
 
     let name = args.name || "auto_" + utils.randomString(6);
-    let item = subWindow.find(item => item.name == name);
+    let item = childWindow.find(item => item.name == name);
     let browser = item ? item.browser : null;
     if (browser) {
         browser.focus();
@@ -169,9 +168,9 @@ function createSubWindow(args) {
         })
 
         browser.on('closed', () => {
-            let index = subWindow.findIndex(item => item.name == name);
+            let index = childWindow.findIndex(item => item.name == name);
             if (index > -1) {
-                subWindow.splice(index, 1)
+                childWindow.splice(index, 1)
             }
         })
 
@@ -183,7 +182,7 @@ function createSubWindow(args) {
             onShowWindow(browser);
         })
 
-        subWindow.push({ name, browser })
+        childWindow.push({ name, browser })
     }
     const originalUA = browser.webContents.session.getUserAgent() || browser.webContents.getUserAgent()
     browser.webContents.setUserAgent(originalUA + " SubTaskWindow/" + process.platform + "/" + os.arch() + "/1.0" + (args.userAgent ? (" " + args.userAgent) : ""));
@@ -219,7 +218,7 @@ function createSubWindow(args) {
  * @param browser
  * @param args
  */
-function updateSubWindow(browser, args) {
+function updateChildWindow(browser, args) {
     if (!args) {
         return;
     }
@@ -239,7 +238,7 @@ function updateSubWindow(browser, args) {
         }
     }
     if (args.name) {
-        const er = subWindow.find(item => item.browser == browser);
+        const er = childWindow.find(item => item.browser == browser);
         if (er) {
             er.name = args.name;
         }
@@ -250,7 +249,7 @@ function updateSubWindow(browser, args) {
  * 创建内置浏览器
  * @param args {url, ?}
  */
-function createWebWindow(args) {
+function createWebTabWindow(args) {
     if (!args) {
         return;
     }
@@ -264,8 +263,8 @@ function createWebWindow(args) {
     }
 
     // 创建父级窗口
-    if (!webWindow) {
-        let config = Object.assign(args.config || {}, userConf.get('webWindow', {}));
+    if (!webTabWindow) {
+        let config = Object.assign(args.config || {}, userConf.get('webTabWindow', {}));
         let webPreferences = args.webPreferences || {};
         const titleBarOverlay = {
             height: webTabHeight
@@ -274,7 +273,7 @@ function createWebWindow(args) {
             titleBarOverlay.color = '#3B3B3D'
             titleBarOverlay.symbolColor = '#C5C5C5'
         }
-        webWindow = new BrowserWindow(Object.assign({
+        webTabWindow = new BrowserWindow(Object.assign({
             x: mainWindow.getBounds().x + webTabHeight,
             y: mainWindow.getBounds().y + webTabHeight,
             width: 1280,
@@ -295,55 +294,59 @@ function createWebWindow(args) {
             }, webPreferences),
         }, config))
 
-        webWindow.on('resize', () => {
+        webTabWindow.on('resize', () => {
             resizeWebTab(0)
         })
 
-        webWindow.on('enter-full-screen', () => {
-            utils.onDispatchEvent(webWindow.webContents, {
+        webTabWindow.on('enter-full-screen', () => {
+            utils.onDispatchEvent(webTabWindow.webContents, {
                 event: 'enter-full-screen',
             }).then(_ => { })
         })
 
-        webWindow.on('leave-full-screen', () => {
-            utils.onDispatchEvent(webWindow.webContents, {
+        webTabWindow.on('leave-full-screen', () => {
+            utils.onDispatchEvent(webTabWindow.webContents, {
                 event: 'leave-full-screen',
             }).then(_ => { })
         })
 
-        webWindow.on('close', event => {
+        webTabWindow.on('close', event => {
             if (!willQuitApp) {
                 closeWebTab(0)
                 event.preventDefault()
             } else {
-                userConf.set('webWindow', webWindow.getBounds())
+                userConf.set('webTabWindow', webTabWindow.getBounds())
             }
         })
 
-        webWindow.on('closed', () => {
-            webWindow = null
+        webTabWindow.on('closed', () => {
+            webTabView.forEach(({view}) => {
+                view.webContents.close()
+            })
+            webTabView = []
+            webTabWindow = null
         })
 
-        webWindow.once('ready-to-show', () => {
-            onShowWindow(webWindow);
+        webTabWindow.once('ready-to-show', () => {
+            onShowWindow(webTabWindow);
         })
 
-        webWindow.webContents.once('dom-ready', () => {
-            onShowWindow(webWindow);
+        webTabWindow.webContents.once('dom-ready', () => {
+            onShowWindow(webTabWindow);
         })
 
-        webWindow.webContents.on('before-input-event', (event, input) => {
+        webTabWindow.webContents.on('before-input-event', (event, input) => {
             if (utils.isMetaOrControl(input) && input.key.toLowerCase() === 'r') {
                 reloadWebTab(0)
                 event.preventDefault()
             }
         })
 
-        webWindow.loadFile('./render/tabs/index.html', {}).then(_ => {
+        webTabWindow.loadFile('./render/tabs/index.html', {}).then(_ => {
 
         })
     }
-    webWindow.focus();
+    webTabWindow.focus();
 
     // 创建子窗口
     const browserView = new BrowserView({
@@ -364,18 +367,18 @@ function createWebWindow(args) {
     browserView.setBounds({
         x: 0,
         y: webTabHeight,
-        width: webWindow.getContentBounds().width || 1280,
-        height: (webWindow.getContentBounds().height || 800) - webTabHeight,
+        width: webTabWindow.getContentBounds().width || 1280,
+        height: (webTabWindow.getContentBounds().height || 800) - webTabHeight,
     })
     browserView.webContents.setWindowOpenHandler(({url}) => {
         if (allowedCalls.test(url)) {
             return {action: 'allow'}
         }
-        createWebWindow({url})
+        createWebTabWindow({url})
         return {action: 'deny'}
     })
     browserView.webContents.on('page-title-updated', (event, title) => {
-        utils.onDispatchEvent(webWindow.webContents, {
+        utils.onDispatchEvent(webTabWindow.webContents, {
             event: 'title',
             id: browserView.webContents.id,
             title: title,
@@ -386,7 +389,7 @@ function createWebWindow(args) {
         if (!errorDescription) {
             return
         }
-        utils.onDispatchEvent(webWindow.webContents, {
+        utils.onDispatchEvent(webTabWindow.webContents, {
             event: 'title',
             id: browserView.webContents.id,
             title: errorDescription,
@@ -394,20 +397,20 @@ function createWebWindow(args) {
         }).then(_ => { })
     })
     browserView.webContents.on('page-favicon-updated', (event, favicons) => {
-        utils.onDispatchEvent(webWindow.webContents, {
+        utils.onDispatchEvent(webTabWindow.webContents, {
             event: 'favicon',
             id: browserView.webContents.id,
             favicons
         }).then(_ => { })
     })
     browserView.webContents.on('did-start-loading', _ => {
-        utils.onDispatchEvent(webWindow.webContents, {
+        utils.onDispatchEvent(webTabWindow.webContents, {
             event: 'start-loading',
             id: browserView.webContents.id,
         }).then(_ => { })
     })
     browserView.webContents.on('did-stop-loading', _ => {
-        utils.onDispatchEvent(webWindow.webContents, {
+        utils.onDispatchEvent(webTabWindow.webContents, {
             event: 'stop-loading',
             id: browserView.webContents.id,
         }).then(_ => { })
@@ -422,18 +425,18 @@ function createWebWindow(args) {
     })
     browserView.webContents.loadURL(args.url).then(_ => { }).catch(_ => { })
 
-    webWindow.addBrowserView(browserView)
+    webTabWindow.addBrowserView(browserView)
     webTabView.push({
         id: browserView.webContents.id,
         view: browserView
     })
 
-    utils.onDispatchEvent(webWindow.webContents,  {
+    utils.onDispatchEvent(webTabWindow.webContents,  {
         event: 'create',
         id: browserView.webContents.id,
         url: args.url,
     }).then(_ => { })
-    switchWebTab(browserView.webContents.id)
+    activateWebTab(browserView.webContents.id)
 }
 
 /**
@@ -441,7 +444,7 @@ function createWebWindow(args) {
  * @returns {Electron.BrowserView|undefined}
  */
 function currentWebTab() {
-    const views = webWindow.getBrowserViews()
+    const views = webTabWindow.getBrowserViews()
     const view = views.length ? views[views.length - 1] : undefined
     if (!view) {
         return undefined
@@ -473,8 +476,8 @@ function resizeWebTab(id) {
     item.view.setBounds({
         x: 0,
         y: webTabHeight,
-        width: webWindow.getContentBounds().width || 1280,
-        height: (webWindow.getContentBounds().height || 800) - webTabHeight,
+        width: webTabWindow.getContentBounds().width || 1280,
+        height: (webTabWindow.getContentBounds().height || 800) - webTabHeight,
     })
 }
 
@@ -482,15 +485,15 @@ function resizeWebTab(id) {
  * 切换内置浏览器标签
  * @param id
  */
-function switchWebTab(id) {
+function activateWebTab(id) {
     const item = id === 0 ? currentWebTab() : webTabView.find(item => item.id == id)
     if (!item) {
         return
     }
     resizeWebTab(item.id)
-    webWindow.setTopBrowserView(item.view)
+    webTabWindow.setTopBrowserView(item.view)
     item.view.webContents.focus()
-    utils.onDispatchEvent(webWindow.webContents,  {
+    utils.onDispatchEvent(webTabWindow.webContents,  {
         event: 'switch',
         id: item.id,
     }).then(_ => { })
@@ -506,9 +509,9 @@ function closeWebTab(id) {
         return
     }
     if (webTabView.length === 1) {
-        webWindow.hide()
+        webTabWindow.hide()
     }
-    webWindow.removeBrowserView(item.view)
+    webTabWindow.removeBrowserView(item.view)
     item.view.webContents.close()
 
     const index = webTabView.findIndex(({id}) => item.id == id)
@@ -516,16 +519,16 @@ function closeWebTab(id) {
         webTabView.splice(index, 1)
     }
 
-    utils.onDispatchEvent(webWindow.webContents, {
+    utils.onDispatchEvent(webTabWindow.webContents, {
         event: 'close',
         id: item.id,
     }).then(_ => { })
 
     if (webTabView.length === 0) {
-        userConf.set('webWindow', webWindow.getBounds())
-        webWindow.destroy()
+        userConf.set('webTabWindow', webTabWindow.getBounds())
+        webTabWindow.destroy()
     } else {
-        switchWebTab(0)
+        activateWebTab(0)
     }
 }
 
@@ -612,9 +615,6 @@ app.on('browser-window-focus', () => {
     if (mainWindow) {
         mainWindow.webContents.send("browserWindowFocus", {})
     }
-    if (storageBrowser) {
-        storageBrowser.webContents.reload()
-    }
 })
 
 /**
@@ -649,8 +649,8 @@ ipcMain.on('windowQuit', (event) => {
  * 创建路由窗口
  * @param args {path, ?}
  */
-ipcMain.on('windowRouter', (event, args) => {
-    createSubWindow(args)
+ipcMain.on('openChildWindow', (event, args) => {
+    createChildWindow(args)
     event.returnValue = "ok"
 })
 
@@ -658,9 +658,9 @@ ipcMain.on('windowRouter', (event, args) => {
  * 更新路由窗口
  * @param args {?name, ?path} // name: 不是要更改的窗口名，是要把窗口名改成什么， path: 地址
  */
-ipcMain.on('updateRouter', (event, args) => {
+ipcMain.on('updateChildWindow', (event, args) => {
     const browser = BrowserWindow.fromWebContents(event.sender);
-    updateSubWindow(browser, args)
+    updateChildWindow(browser, args)
     event.returnValue = "ok"
 })
 
@@ -668,8 +668,8 @@ ipcMain.on('updateRouter', (event, args) => {
  * 内置浏览器 - 打开创建
  * @param args {url, ?}
  */
-ipcMain.on('openWebWindow', (event, args) => {
-    createWebWindow(args)
+ipcMain.on('openWebTabWindow', (event, args) => {
+    createWebTabWindow(args)
     event.returnValue = "ok"
 })
 
@@ -677,8 +677,8 @@ ipcMain.on('openWebWindow', (event, args) => {
  * 内置浏览器 - 激活标签
  * @param id
  */
-ipcMain.on('webTabSwitch', (event, id) => {
-    switchWebTab(id)
+ipcMain.on('webTabActivate', (event, id) => {
+    activateWebTab(id)
     event.returnValue = "ok"
 })
 
@@ -694,7 +694,7 @@ ipcMain.on('webTabClose', (event, id) => {
 /**
  * 内置浏览器 - 在外部浏览器打开
  */
-ipcMain.on('webTabBrowser', (event) => {
+ipcMain.on('webTabExternal', (event) => {
     const item = currentWebTab()
     if (!item) {
         return
@@ -712,6 +712,16 @@ ipcMain.on('webTabOpenDevTools', (event) => {
         return
     }
     item.view.webContents.openDevTools()
+    event.returnValue = "ok"
+})
+
+/**
+ * 内置浏览器 - 销毁所有标签及窗口
+ */
+ipcMain.on('webTabDestroyAll', (event) => {
+    if (webTabWindow) {
+        webTabWindow.destroy()
+    }
     event.returnValue = "ok"
 })
 
@@ -748,8 +758,8 @@ ipcMain.on('windowDestroy', (event) => {
 /**
  * 关闭所有子窗口
  */
-ipcMain.on('subWindowCloseAll', (event) => {
-    subWindow.some(({browser}) => {
+ipcMain.on('childWindowCloseAll', (event) => {
+    childWindow.some(({browser}) => {
         browser && browser.close()
     })
     event.returnValue = "ok"
@@ -758,8 +768,8 @@ ipcMain.on('subWindowCloseAll', (event) => {
 /**
  * 销毁所有子窗口
  */
-ipcMain.on('subWindowDestroyAll', (event) => {
-    subWindow.some(({browser}) => {
+ipcMain.on('childWindowDestroyAll', (event) => {
+    childWindow.some(({browser}) => {
         browser && browser.destroy()
     })
     event.returnValue = "ok"
@@ -848,34 +858,6 @@ ipcMain.on('windowMax', (event) => {
         win.restore();
     } else {
         win.maximize();
-    }
-    event.returnValue = "ok"
-})
-
-/**
- * 创建子窗口存储浏览器
- * @param args {url}
- */
-ipcMain.on('storageBrowser', (event, args) => {
-    if (utils.isJson(args) && allowedUrls.test(args.url)) {
-        if (storageBrowser === null) {
-            storageBrowser = new BrowserWindow({
-                show: false,
-                frame: false,
-                transparent: true,
-                webPreferences: {
-                    preload: path.join(__dirname, 'electron-preload.js'),
-                    webSecurity: true,
-                    nodeIntegration: true,
-                    contextIsolation: true,
-                    nativeWindowOpen: true
-                },
-            })
-            storageBrowser.on('closed', () => {
-                storageBrowser = null
-            })
-        }
-        storageBrowser.loadURL(args.url).then(_ => { }).catch(_ => { })
     }
     event.returnValue = "ok"
 })
@@ -1087,7 +1069,7 @@ ipcMain.on('mainWindowActive', (event) => {
 ipcMain.on('updateQuitAndInstall', (event) => {
     event.returnValue = "ok"
     willQuitApp = true
-    subWindow.some(({browser}) => {
+    childWindow.some(({browser}) => {
         browser && browser.destroy()
     })
     setTimeout(_ => {

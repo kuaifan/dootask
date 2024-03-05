@@ -41,7 +41,6 @@ import NetworkException from "./components/NetworkException";
 import GuidePage from "./components/GuidePage";
 import TaskOperation from "./pages/manage/components/TaskOperation";
 import {mapState} from "vuex";
-import {languageName} from "./language";
 
 export default {
     components: {TaskOperation, NetworkException, PreviewImageState, RightBottom, FloatSpinner, GuidePage},
@@ -132,13 +131,6 @@ export default {
                         }
                     })
                 }
-                //
-                window.localStorage.setItem("__system:userId__", this.userId)
-                window.localStorage.setItem("__system:userToken__", this.userToken)
-                $A.storageByBrowser({
-                    userId: this.userId,
-                    userToken: this.userToken,
-                })
             },
             immediate: true
         },
@@ -273,7 +265,7 @@ export default {
                         }
                     } catch (e) { }
                 }
-                this.$Electron.sendMessage('openWebWindow', {url});
+                this.$store.dispatch("openWebTabWindow", url)
                 return true;
             }
             this.$Electron.registerMsgListener('dispatch', args => {

@@ -238,7 +238,8 @@ export default {
         this.getNeedStartHome();
         //
         if (this.$Electron) {
-            this.$Electron.sendMessage('subWindowDestroyAll')
+            this.$Electron.sendMessage('webTabDestroyAll')
+            this.$Electron.sendMessage('childWindowDestroyAll')
         }
     },
 

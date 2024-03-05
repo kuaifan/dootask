@@ -1121,7 +1121,7 @@ export default {
         openFileSingle(item) {
             const path = `/single/file/${item.id}`;
             if (this.$Electron) {
-                this.$Electron.sendMessage('windowRouter', {
+                this.$store.dispatch('openChildWindow', {
                     name: `file-${item.id}`,
                     path: path,
                     userAgent: "/hideenOfficeTitle/",
@@ -1138,7 +1138,7 @@ export default {
                     },
                 });
             } else if (this.$isEEUiApp) {
-                $A.eeuiAppOpenPage({
+                this.$store.dispatch('openAppChildPage', {
                     pageType: 'app',
                     pageTitle: $A.getFileName(item),
                     url: 'web.js',

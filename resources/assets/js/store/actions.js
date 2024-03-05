@@ -50,6 +50,16 @@ export default {
                 state.userToken = state.userInfo.token
                 state.userIsAdmin = $A.inArray("admin", state.userInfo.identity)
             }
+            const localId = $A.runNum(window.localStorage.getItem("__system:userId__"))
+            const localToken = window.localStorage.getItem("__system:userToken__") || ""
+            if (localId || localToken) {
+                if (!state.userId && !state.userToken) {
+                    state.userId = localId
+                    state.userToken = localToken
+                }
+                window.localStorage.removeItem("__system:userId__")
+                window.localStorage.removeItem("__system:userToken__")
+            }
 
             // ServerUrl
             if (state.cacheServerUrl) {
@@ -85,7 +95,6 @@ export default {
                 `language/web/key.js`,
                 `language/web/${languageName}.js`,
             ])
-            $A.storageByBrowser({languageName})
 
             resolve(action)
         })
@@ -365,6 +374,10 @@ export default {
      */
     needHome({dispatch, state}) {
         return new Promise((resolve, reject) => {
+            if ($A.isSoftware) {
+                reject()
+                return
+            }
             dispatch("systemSetting").then(data => {
                 if (data.start_home === 'open') {
                     resolve()
@@ -524,7 +537,6 @@ export default {
                 themeName: state.themeName,
             });
         }
-        $A.storageByBrowser({themeConf: state.themeConf})
     },
 
     /**
@@ -898,6 +910,66 @@ export default {
                 resolve()
             }
         });
+    },
+
+    /** *****************************************************************************************/
+    /** *************************************** 新窗口打开 ****************************************/
+    /** *****************************************************************************************/
+
+    /**
+     * 链接添加用户身份
+     * @param state
+     * @param url
+     * @returns {Promise<unknown>}
+     */
+    userUrl({state}, url) {
+        return new Promise(resolve => {
+            const newUrl = $A.urlAddParams(url, {
+                language: languageName,
+                theme: state.themeConf,
+                userid: state.userId,
+                token: state.userToken,
+            })
+            resolve(newUrl)
+        })
+    },
+
+    /**
+     * 打开子窗口（App）
+     * @param dispatch
+     * @param objects
+     */
+    openAppChildPage({dispatch}, objects) {
+        dispatch("userUrl", objects.params.url).then(url => {
+            objects.params.url = url
+            $A.eeuiAppOpenPage(objects)
+        })
+    },
+
+    /**
+     * 打开子窗口（客户端）
+     * @param dispatch
+     * @param params
+     */
+    openChildWindow({dispatch}, params) {
+        dispatch("userUrl", params.path).then(path => {
+            $A.Electron.sendMessage('openChildWindow', Object.assign(params, {path}))
+        })
+    },
+
+    /**
+     * 打开新标签窗口（客户端）
+     * @param dispatch
+     * @param url
+     */
+    openWebTabWindow({dispatch}, url) {
+        if ($A.getDomain(url) != $A.getDomain($A.apiUrl('../'))) {
+            $A.Electron.sendMessage('openWebTabWindow', {url})
+            return
+        }
+        dispatch("userUrl", url).then(url => {
+            $A.Electron.sendMessage('openWebTabWindow', {url})
+        })
     },
 
     /** *****************************************************************************************/
@@ -1900,7 +1972,7 @@ export default {
         }
         if ($A.isSubElectron) {
             if (task_id > 0) {
-                $A.Electron.sendMessage('updateRouter', {
+                $A.Electron.sendMessage('updateChildWindow', {
                     name: `task-${task_id}`,
                     path: `/single/task/${task_id}`,
                 });

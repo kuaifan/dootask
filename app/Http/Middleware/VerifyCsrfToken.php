@@ -15,9 +15,6 @@ class VerifyCsrfToken extends Middleware
         // 接口部分
         'api/*',
 
-        // 保存配置
-        'storage/synch/',
-
         // 发布桌面端
         'desktop/publish/',
     ];

@@ -2977,7 +2977,7 @@ export default {
             }
             const path = `/single/file/msg/${data.id}`;
             if (this.$Electron) {
-                this.$Electron.sendMessage('windowRouter', {
+                this.$store.dispatch('openChildWindow', {
                     name: `file-msg-${data.id}`,
                     path: path,
                     userAgent: "/hideenOfficeTitle/",
@@ -2994,7 +2994,7 @@ export default {
                     },
                 });
             } else if (this.$isEEUiApp) {
-                $A.eeuiAppOpenPage({
+                this.$store.dispatch('openAppChildPage', {
                     pageType: 'app',
                     pageTitle: `${msg.name} (${$A.bytesToSize(msg.size)})`,
                     url: 'web.js',
@@ -3003,7 +3003,7 @@ export default {
                         allowAccess: true,
                         url: $A.rightDelete(window.location.href, window.location.hash) + `#${path}`
                     },
-                });
+                })
             } else {
                 window.open($A.apiUrl(`..${path}`))
             }

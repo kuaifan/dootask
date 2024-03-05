@@ -180,7 +180,7 @@ export default {
                 case 'preview':
                     const path = `/single/file/${this.fileId}?history_id=${row.id}&history_at=${row.created_at}`;
                     if (this.$Electron) {
-                        this.$Electron.sendMessage('windowRouter', {
+                        this.$store.dispatch('openChildWindow', {
                             name: `file-${this.fileId}-${row.id}`,
                             path: path,
                             userAgent: "/hideenOfficeTitle/",
@@ -197,7 +197,7 @@ export default {
                             },
                         });
                     } else if (this.$isEEUiApp) {
-                        $A.eeuiAppOpenPage({
+                        this.$store.dispatch('openAppChildPage', {
                             pageType: 'app',
                             pageTitle: $A.getFileName(this.file) + ` [${row.created_at}]`,
                             url: 'web.js',
@@ -206,7 +206,7 @@ export default {
                                 allowAccess: true,
                                 url: $A.rightDelete(window.location.href, window.location.hash) + `#${path}`
                             },
-                        });
+                        })
                     } else {
                         window.open($A.apiUrl(`..${path}`))
                     }
