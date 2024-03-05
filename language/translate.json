@@ -19787,5 +19787,27 @@
         "de": "Es wurde als antwort auf den aufstieg der chatgpt-kampfroboter entwickelt, die Von OpenAI entwickelt wurden.",
         "fr": "Développé en réponse à la montée en puissance du chatbot ChatGPT développé par OpenAI.",
         "id": "Dikembangkan sebagai respon terhadap kemunculan robot ChatGPT di OpenAI corporation."
+    },
+    {
+        "key": "离最新版本只有一步之遥了！重新启动应用即可完成更新。",
+        "zh": "",
+        "zh-CHT": "離最新版本只有一步之遙了！重新啓動應用即可完成更新。",
+        "en": "Just one step away from the latest version! Restart the app to complete the update.",
+        "ko": "최신 버전이 얼마 남지 않았습니다!어플리케이션을 다시 시작하면 업데이트를 완료할 수 있습니다.",
+        "ja": "最新バージョンまであと一歩です!アプリを再起動するとアップデートが完了します。",
+        "de": "Nur ein schritt vor der aktuellen version! Mit dem erneuten start der anwendung kann die aktualisierung beendet werden",
+        "fr": "À deux pas de la dernière version! Redémarrez l’application pour terminer la mise à jour.",
+        "id": "Hanya satu langkah lagi untuk edisi terbaru! Restart aplikasi untuk menyelesaikan pembaruan."
+    },
+    {
+        "key": "重新启动",
+        "zh": "",
+        "zh-CHT": "重新啓動",
+        "en": "Restart",
+        "ko": "다시 시작",
+        "ja": "再起動します",
+        "de": "Mach's nochmal!",
+        "fr": "Redémarrer le",
+        "id": "Restart"
     }
 ]
