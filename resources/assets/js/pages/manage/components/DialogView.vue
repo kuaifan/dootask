@@ -101,18 +101,18 @@
                     </div>
                     <pre v-html="$A.formatTextMsg(msgData.msg.text, userId)"></pre>
                     <template v-if="(msgData.msg.votes || []).filter(h=>h.userid == userId).length == 0">
-                        <RadioGroup v-if="msgData.msg.multiple == 0" v-model="msgData.msg._vote" vertical>
+                        <RadioGroup v-if="msgData.msg.multiple == 0" v-model="voteData[msgData.msg.uuid]" vertical>
                             <Radio v-for="(item,index) in (msgData.msg.list || [])" :label="item.id" :key="index">
                                 {{item.text}}
                             </Radio>
                         </RadioGroup>
-                        <CheckboxGroup v-else v-model="msgData.msg._vote">
+                        <CheckboxGroup v-else v-model="voteData[msgData.msg.uuid]">
                             <Checkbox v-for="(item,index) in (msgData.msg.list || [])" :label="item.id" :key="index">
                                 {{item.text}}
                             </Checkbox>
                         </CheckboxGroup>
                         <div class="btn-row">
-                            <Button v-if="(msgData.msg._vote || []).length == 0" disabled>{{$L("请选择后投票")}}</Button>
+                            <Button v-if="(voteData[msgData.msg.uuid] || []).length == 0" disabled>{{$L("请选择后投票")}}</Button>
                             <Button v-else type="warning" :loading="msgData.msg._loadIng > 0"  @click="onVote('vote',msgData)">{{$L("立即投票")}}</Button>
                         </div>
                     </template>
@@ -316,12 +316,17 @@ export default {
             todoShow: false,
             todoList: [],
 
-            emojiUsersNum: 5
+            emojiUsersNum: 5,
+
+            voteData: {}
         }
     },
 
     mounted() {
         this.emojiUsersNum = Math.min(6, Math.max(2, Math.floor((this.windowWidth - 180) / 52)))
+        if (Object.keys(this.voteData).length === 0) {
+            this.voteData = JSON.parse(window.localStorage.getItem(`__cache:vote__`)) || {};
+        }
     },
 
     beforeDestroy() {
@@ -411,6 +416,18 @@ export default {
             if (val) {
                 setTimeout(_ => this.operateEnter = true, 500)
             }
+        },
+        voteData: {
+            handler(val) {
+                const voteData = JSON.parse(window.localStorage.getItem('__cache:vote__')) || {}
+                for (const key in val) {
+                    voteData[key] = val[key];
+                }
+                if (Object.keys(voteData).length > 0) {
+                    window.localStorage.setItem('__cache:vote__', JSON.stringify(voteData))
+                }
+            },
+            deep: true
         }
     },
 
@@ -614,7 +631,7 @@ export default {
                 data: {
                     dialog_id: msgData.dialog_id,
                     uuid: msgData.msg.uuid,
-                    vote: msgData.msg._vote || [],
+                    vote: this.voteData[msgData.msg.uuid] || [],
                     type: type
                 }
             }).then(({ data }) => {

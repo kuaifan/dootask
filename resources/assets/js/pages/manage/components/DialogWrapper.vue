@@ -1189,7 +1189,10 @@ export default {
                     //
                     this.getUserApproveStatus()
                 }
+                //
                 this.$store.dispatch('closeDialog', old_id)
+                //
+                window.localStorage.removeItem('__cache:vote__')
             },
             immediate: true
         },
