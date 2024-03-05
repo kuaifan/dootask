@@ -1210,7 +1210,7 @@ class SystemController extends AbstractController
         if (count($users) > 1) {
             $fileName .= "等" . count($userid) . "位成员";
         }
-        $fileName .= '签到记录_' . Base::time() . '.xls';
+        $fileName .= '签到记录_' . Base::time() . '.xlsx';
         $filePath = "temp/checkin/export/" . date("Ym", Base::time());
         $export = new BillMultipleExport($sheets);
         $res = $export->store($filePath . "/" . $fileName);
@@ -1218,7 +1218,7 @@ class SystemController extends AbstractController
             return Base::retError('导出失败，' . $fileName . '！');
         }
         $xlsPath = storage_path("app/" . $filePath . "/" . $fileName);
-        $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xls') . ".zip";
+        $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xlsx') . ".zip";
         $zipPath = storage_path($zipFile);
         if (file_exists($zipPath)) {
             Base::deleteDirAndFile($zipPath, true);

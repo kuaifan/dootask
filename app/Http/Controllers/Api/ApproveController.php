@@ -858,7 +858,7 @@ class ApproveController extends AbstractController
             BillExport::create()->setTitle($title)->setHeadings($headings)->setData($datas)->setStyles(["A1:Y1" => ["font" => ["bold" => true]]])
         ];
         //
-        $fileName = '审批记录_' . Base::time() . '.xls';
+        $fileName = '审批记录_' . Base::time() . '.xlsx';
         $filePath = "temp/approve/export/" . date("Ym", Base::time());
         $export = new BillMultipleExport($sheets);
         $res = $export->store($filePath . "/" . $fileName);
@@ -866,7 +866,7 @@ class ApproveController extends AbstractController
             return Base::retError('导出失败，' . $fileName . '！');
         }
         $xlsPath = storage_path("app/" . $filePath . "/" . $fileName);
-        $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xls') . ".zip";
+        $zipFile = "app/" . $filePath . "/" . Base::rightDelete($fileName, '.xlsx') . ".zip";
         $zipPath = storage_path($zipFile);
         if (file_exists($zipPath)) {
             Base::deleteDirAndFile($zipPath, true);
