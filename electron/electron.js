@@ -321,7 +321,11 @@ function createWebTabWindow(args) {
 
         webTabWindow.on('closed', () => {
             webTabView.forEach(({view}) => {
-                view.webContents.close()
+                try {
+                    view.webContents.close()
+                } catch (e) {
+                    //
+                }
             })
             webTabView = []
             webTabWindow = null
@@ -369,6 +373,9 @@ function createWebTabWindow(args) {
         y: webTabHeight,
         width: webTabWindow.getContentBounds().width || 1280,
         height: (webTabWindow.getContentBounds().height || 800) - webTabHeight,
+    })
+    browserView.webContents.on('destroyed', () => {
+        closeWebTab(browserView.webContents.id)
     })
     browserView.webContents.setWindowOpenHandler(({url}) => {
         if (allowedCalls.test(url)) {
@@ -512,7 +519,11 @@ function closeWebTab(id) {
         webTabWindow.hide()
     }
     webTabWindow.removeBrowserView(item.view)
-    item.view.webContents.close()
+    try {
+        item.view.webContents.close()
+    } catch (e) {
+        //
+    }
 
     const index = webTabView.findIndex(({id}) => item.id == id)
     if (index > -1) {

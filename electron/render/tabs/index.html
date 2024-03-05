@@ -30,7 +30,9 @@
         data() {
             return {
                 activeId: 0,
-                tabs: []
+                tabs: [],
+
+                stopTimer: null,
             }
         },
         beforeCreate() {
@@ -83,15 +85,18 @@
                     case 'start-loading':
                         const startItem = this.tabs.find(item => item.id === id)
                         if (startItem) {
+                            this.stopTimer && clearTimeout(this.stopTimer)
                             startItem.state = 'loading'
                         }
                         break
 
                     case 'stop-loading':
-                        const stopItem = this.tabs.find(item => item.id === id)
-                        if (stopItem) {
-                            stopItem.state = 'loaded'
-                        }
+                        this.stopTimer = setTimeout(_ => {
+                            const stopItem = this.tabs.find(item => item.id === id)
+                            if (stopItem) {
+                                stopItem.state = 'loaded'
+                            }
+                        }, 300)
                         break
 
                     case 'enter-full-screen':

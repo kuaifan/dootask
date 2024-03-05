@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.35.20]
+
+### Features
+
+- 发起投票功能添加缓存记录选中效果
+- 导出的签到数据和审批数据换成xlsx，因老版本的xls会出现兼容性问题
+
+### Performance
+
+- 默认映射443端口
+- 优化子窗口
+- 优化发布接口 删除目录的逻辑
+
 ## [0.35.10]
 
 ### Bug Fixes
