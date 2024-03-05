@@ -1153,6 +1153,9 @@ export default {
         dialogId: {
             handler(dialog_id, old_id) {
                 if (dialog_id) {
+                    //
+                    window.localStorage.removeItem('__cache:vote__')
+                    //
                     this.msgNew = 0
                     this.msgType = ''
                     this.unreadOne = 0
