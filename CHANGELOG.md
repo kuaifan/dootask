@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.35.23]
+
+### Performance
+
+- 优化消息时间格式
+- 优化app功能
+
 ## [0.35.20]
 
 ### Features

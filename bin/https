@@ -1,0 +1,169 @@
+#!/bin/sh
+
+#fonts color
+Green="\033[32m"
+Yellow="\033[33m"
+Red="\033[31m"
+GreenBG="\033[42;37m"
+YellowBG="\033[43;37m"
+RedBG="\033[41;37m"
+Font="\033[0m"
+
+#notification information
+OK="${Green}[OK]${Font}"
+Warn="${Yellow}[警告]${Font}"
+Error="${Red}[错误]${Font}"
+
+cd "$(
+    cd "$(dirname "$0")" || exit
+    pwd
+)" || exit
+
+#================================================================
+#================================================================
+
+success() {
+    echo -e "${OK} ${GreenBG}$1${Font}"
+}
+
+warning() {
+    echo -e "${Warn} ${YellowBG}$1${Font}"
+}
+
+error() {
+    echo -e "${Error} ${RedBG}$1${Font}"
+}
+
+info() {
+    echo -e "$1"
+}
+
+env_get() {
+    local key=$1
+    local value=`cat $(dirname "$PWD")/.env | grep "^$key=" | awk -F '=' '{print $2}'`
+    echo "$value"
+}
+
+env_set() {
+    local key=$1
+    local val=$2
+    local exist=`cat $(dirname "$PWD")/.env | grep "^$key="`
+    if [ -z "$exist" ]; then
+        echo "$key=$val" >> $(dirname "$PWD")/.env
+    else
+        sed -i "/^${key}=/c\\${key}=${val}" $(dirname "$PWD")/.env
+    fi
+}
+
+#================================================================
+#================================================================
+
+check() {
+    while [ -z "$domain" ]; do
+        read -rp "请输入你的域名: " domain
+        # 判断域名是否合法
+        if [ -z "$domain" ]; then
+            error "域名不能为空"
+        elif [ -z "$(echo "$domain" | grep -E '^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$')" ]; then
+            error "域名格式不正确"
+            domain=""
+        fi
+    done
+
+    success "正在域名DNS解析IP..."
+    local domain_ip=$(ping -c 1 "${domain}" 2>/dev/null | grep PING | cut -d "(" -f2 | cut -d ")" -f1)
+    local local_ip=$(curl -sk ip.sb)
+    info "域名DNS解析IP: ${domain_ip}"
+    info "本机IP: ${local_ip}"
+
+    sleep 2
+    if [[ "$(echo "${local_ip}" | tr '.' '+' | bc)" == "$(echo "${domain_ip}" | tr '.' '+' | bc)" ]]; then
+        success "域名DNS解析IP 与 本机IP 匹配"
+        sleep 2
+    else
+        warning "域名DNS解析IP 与 本机IP 不匹配，是否继续操作？ [Y/n]"
+        read -r continue_next
+        [[ -z ${continue_next} ]] && continue_next="Y"
+        case $continue_next in
+        [yY][eE][sS] | [yY])
+            success "继续操作"
+            sleep 2
+            ;;
+        *)
+            error "操作终止"
+            exit 2
+            ;;
+        esac
+    fi
+}
+
+install() {
+    local sitePath="$(dirname "$PWD")/docker/nginx/site"
+    local sslPath="$sitePath/ssl"
+    if [[ -f "$sslPath/$domain.key" && -f "$sslPath/$domain.crt" ]]; then
+        warning "$domain 证书文件已存在，是否删除并继续操作？ [Y/n]"
+        read -r continue_install
+        [[ -z ${continue_install} ]] && continue_install="Y"
+        case $continue_install in
+        [yY][eE][sS] | [yY])
+            rm -f "$sslPath/$domain.key"
+            rm -f "$sslPath/$domain.crt"
+            success "继续操作"
+            sleep 2
+            ;;
+        *)
+            error "操作终止"
+            exit 2
+            ;;
+        esac
+    fi
+
+    apk add --no-cache openssl socat
+    curl https://get.acme.sh | sh
+    if [[ 0 -ne $? ]]; then
+        error "安装证书生成脚本失败"
+        exit 1
+    fi
+
+    if /root/.acme.sh/acme.sh --issue -d "${domain}" -w "$(dirname "$PWD")/public" --standalone -k ec-256 --force --test; then
+        success "SSL 证书测试签发成功，开始正式签发"
+        rm -rf "/root/.acme.sh/${domain}_ecc"
+        sleep 2
+    else
+        error "SSL 证书测试签发失败"
+        rm -rf "root/.acme.sh/${domain}_ecc"
+        exit 1
+    fi
+
+    if /root/.acme.sh/acme.sh --issue -d "${domain}" -w "$(dirname "$PWD")/public" --server letsencrypt --standalone -k ec-256 --force; then
+        success "SSL 证书生成成功"
+        sleep 2
+        mkdir -p $sslPath
+        if /root/.acme.sh/acme.sh --installcert -d "${domain}" --fullchainpath "${sslPath}/${domain}.crt" --keypath "${sslPath}/${domain}.key" --ecc --force; then
+            success "SSL 证书配置成功"
+            sleep 2
+        fi
+    else
+        error "SSL 证书生成失败"
+        rm -rf "/root/.acme.sh/${domain}_ecc"
+        exit 1
+    fi
+
+    env_set "APP_URL" "https://${domain}"
+
+    cat >${sitePath}/ssl.conf <<EOF
+server_name ${domain};
+listen 443 ssl;
+ssl_certificate /etc/nginx/conf.d/site/ssl/${domain}.crt;
+ssl_certificate_key /etc/nginx/conf.d/site/ssl/${domain}.key;
+ssl_protocols TLSv1.1 TLSv1.2 TLSv1.3;
+ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:HIGH:!aNULL:!MD5:!RC4:!DHE;
+ssl_prefer_server_ciphers on;
+ssl_session_cache shared:SSL:10m;
+ssl_session_timeout 10m;
+error_page 497  https://\$host\$request_uri;
+EOF
+}
+
+check
+install

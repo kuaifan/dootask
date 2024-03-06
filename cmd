@@ -2,13 +2,16 @@
 
 #fonts color
 Green="\033[32m"
+Yellow="\033[33m"
 Red="\033[31m"
 GreenBG="\033[42;37m"
+YellowBG="\033[43;37m"
 RedBG="\033[41;37m"
 Font="\033[0m"
 
 #notification information
 OK="${Green}[OK]${Font}"
+Warn="${Yellow}[警告]${Font}"
 Error="${Red}[错误]${Font}"
 
 cur_path="$(pwd)"
@@ -23,6 +26,18 @@ judge() {
         echo -e "${Error} ${RedBG} $1 失败${Font}"
         exit 1
     fi
+}
+
+success() {
+    echo -e "${OK} ${GreenBG}$1${Font}"
+}
+
+warning() {
+    echo -e "${Warn} ${YellowBG}$1${Font}"
+}
+
+error() {
+    echo -e "${Error} ${RedBG}$1${Font}"
 }
 
 rand() {
@@ -201,6 +216,49 @@ run_mysql() {
     fi
 }
 
+https_auto() {
+    restart_nginx="n"
+    if [[ "$(env_get APP_PORT)" != "80" ]]; then
+        warning "HTTP服务端口不是80，是否修改并继续操作？ [Y/n]"
+        read -r continue_http
+        [[ -z ${continue_http} ]] && continue_http="Y"
+        case $continue_http in
+        [yY][eE][sS] | [yY])
+            success "继续操作"
+            env_set "APP_PORT" "80"
+            restart_nginx="y"
+            ;;
+        *)
+            error "操作终止"
+            exit 1
+            ;;
+        esac
+    fi
+    if [[ "$(env_get APP_SSL_PORT)" != "443" ]]; then
+        warning "HTTPS服务端口不是443，是否修改并继续操作？ [Y/n]"
+        read -r continue_https
+        [[ -z ${continue_https} ]] && continue_https="Y"
+        case $continue_https in
+        [yY][eE][sS] | [yY])
+            success "继续操作"
+            env_set "APP_SSL_PORT" "443"
+            restart_nginx="y"
+            ;;
+        *)
+            error "操作终止"
+            exit 1
+            ;;
+        esac
+    fi
+    if [[ "$restart_nginx" == "y" ]]; then
+        $COMPOSE up -d
+    fi
+    docker run -it --rm -v $(pwd):/work nginx:alpine sh "/work/bin/https"
+    if [[ 0 -eq $? ]]; then
+        run_exec nginx "nginx -s reload"
+    fi
+}
+
 env_get() {
     local key=$1
     local value=`cat ${cur_path}/.env | grep "^$key=" | awk -F '=' '{print $2}'`
@@ -323,7 +381,9 @@ if [ $# -gt 0 ]; then
         echo -e "$res"
     elif [[ "$1" == "update" ]]; then
         shift 1
-        run_mysql backup
+        if [[ "$@" != "nobackup" ]]; then
+            run_mysql backup
+        fi
         if [[ -z "$(arg_get local)" ]]; then
             git fetch --all
             git reset --hard origin/$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
@@ -401,10 +461,12 @@ if [ $# -gt 0 ]; then
         echo "success"
     elif [[ "$1" == "https" ]]; then
         shift 1
-        if [[ "$@" == "auto" ]]; then
+        if [[ "$1" == "agent" ]] || [[ "$1" == "true" ]]; then
+            env_set APP_SCHEME "true"
+        elif [[ "$1" == "close" ]] || [[ "$1" == "auto" ]]; then
             env_set APP_SCHEME "auto"
         else
-            env_set APP_SCHEME "true"
+            https_auto
         fi
         restart_php
     elif [[ "$1" == "artisan" ]]; then

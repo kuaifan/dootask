@@ -29,7 +29,7 @@ git clone -b pro --depth=1 https://gitee.com/aipaw/dootask.git
 # 2、进入目录
 cd dootask
 
-# 3、一键安装项目（自定义端口安装 ./cmd install --port 2222）
+# 3、一键安装项目（自定义端口安装，如：./cmd install --port 80）
 ./cmd install
 ```
 
@@ -43,7 +43,8 @@ cd dootask
 ### 更换端口
 
 ```bash
-./cmd port 2222
+# 此方法仅更换http端口，更换https端口请阅读下面SSL配置
+./cmd port 80
 ```
 
 ### 更换URL
@@ -92,7 +93,16 @@ cd dootask
 ./cmd mysql "your command"            # 运行 mysql 命令 (backup: 备份数据库，recovery: 还原数据库)
 ```
 
-### NGINX 代理 SSL
+### SSL 配置
+
+#### 方式一：自动配置
+
+```bash 
+# 在项目下运行命令，根据提示执行即可
+./cmd https
+```
+
+#### 方式二：Nginx 代理配置
 
 ```bash 
 # 1、Nginx 代理配置添加
@@ -100,8 +110,8 @@ proxy_set_header X-Forwarded-Host $http_host;
 proxy_set_header X-Forwarded-Proto $scheme;
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
-# 2、在项目下运行命令
-./cmd https
+# 2、在项目下运行命令（如果取消 Nginx 代理配置请运行：./cmd https close）
+./cmd https agent
 ```
 
 ## 升级更新
