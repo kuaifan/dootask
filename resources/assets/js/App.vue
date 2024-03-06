@@ -318,6 +318,19 @@ export default {
                     this.autoTheme()
                 }
             }
+            // 新窗口打开
+            window.__onCreateTarget = (url) => {
+                this.$store.dispatch('openAppChildPage', {
+                    pageType: 'app',
+                    pageTitle: ' ',
+                    url: 'web.js',
+                    params: {
+                        url,
+                        browser: true,
+                        showProgress: true,
+                    },
+                })
+            }
             // 会议事件
             window.__onMeetingEvent = ({act,uuid,meetingid}) => {
                 switch (act) {

@@ -407,6 +407,15 @@ class IndexController extends InvokeController
     }
 
     /**
+     * 保存配置 (已废弃 Deprecated)
+     * @return string
+     */
+    public function storage__synch()
+    {
+        return '<!-- Deprecated -->';
+    }
+
+    /**
      * 提取所有中文
      * @return array|string
      */
