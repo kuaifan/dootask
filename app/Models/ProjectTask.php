@@ -329,13 +329,7 @@ class ProjectTask extends AbstractModel
         $query->where(function ($q1) use ($start, $end, $type) {
             switch ($type) {
                 case 'createdTime':
-                    $q1->where(function ($q2) use ($start) {
-                        $q2->where('project_tasks.created_at', '>=', $start);
-                    })->orWhere(function ($q2) use ($end) {
-                        $q2->where('project_tasks.created_at', '<=', $end);
-                    })->orWhere(function ($q2) use ($start, $end) {
-                        $q2->where('project_tasks.created_at', '>', $start)->where('project_tasks.created_at', '<', $end);
-                    });
+                    $q1->where('project_tasks.created_at', '>=', $start)->where('project_tasks.created_at', '<=', $end);
                     break;
 
                 default:
