@@ -103,7 +103,7 @@
                                         </template>
                                         <span>{{dialog.name}}</span>
                                         <Icon v-if="dialog.type == 'user' && lastMsgReadDone(dialog.last_msg) && dialog.dialog_user.userid != userId" :type="lastMsgReadDone(dialog.last_msg)"/>
-                                        <em v-if="dialog.last_at">{{$A.formatTime(dialog.last_at)}}</em>
+                                        <em v-if="dialog.last_at">{{$A.formatTime(dialog.last_at, 23)}}</em>
                                     </div>
                                     <div class="dialog-text no-dark-content">
                                         <template v-if="dialog.extra_draft_has && dialog.id != dialogId">

@@ -88,13 +88,14 @@ import {MarkdownPreview} from "../store/markdown";
         /**
          * 格式化时间
          * @param date
+         * @param hiHours   小于多少小时只显示时间H:i
          * @returns {*|string}
          */
-        formatTime(date) {
+        formatTime(date, hiHours = 6) {
             let now = $A.Time(),
                 time = $A.Date(date, true),
                 string = '';
-            if (Math.abs(now - time) < 3600 * 6 || $A.formatDate('Ymd', now) === $A.formatDate('Ymd', time)) {
+            if (Math.abs(now - time) < 3600 * hiHours || $A.formatDate('Ymd', now) === $A.formatDate('Ymd', time)) {
                 string = $A.formatDate('H:i', time)
             } else if ($A.formatDate('Y', now) === $A.formatDate('Y', time)) {
                 string = $A.formatDate('m-d', time)
@@ -152,7 +153,7 @@ import {MarkdownPreview} from "../store/markdown";
             } else if (time == 0) {
                 return 0 + 's';
             }
-            return this.formatTime(date)
+            return this.formatTime(date, 6)
         },
 
         /**
