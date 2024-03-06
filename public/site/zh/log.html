@@ -291,9 +291,9 @@
     </footer>
   </div>
 </body>
+<script src="../js/common.js"></script>
 <script src="//cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
 <script src="//cdn.bootcdn.net/ajax/libs/axios/1.3.6/axios.js"></script>
-<script src="../js/common.js"></script>
 <script>
 const getItem = (key)=> {
   var record = JSON.parse(localStorage.getItem(key));
@@ -510,7 +510,7 @@ function scrollHandler(){
             let elementsWithDataId = document.querySelectorAll("[data-id='" + `section-${i}` + "']");
                 elementsWithDataId[1]?.classList?.add("active");
                 //滚动设置
-                const liHight = elementsWithDataId[1]?.offsetTop;
+                const liHight = elementsWithDataId[1]?.offsetTop - 20;
                 const pHihtt = elementsWithDataId[1]?.offsetHeight;
                 const ulElement = document.getElementById('help-l-ul'); // 替换为你的 <div> 元素的 id
                 const scrollHeight = ulElement.scrollTop;
@@ -518,8 +518,8 @@ function scrollHandler(){
                 if (liHight > scrollHeight + ulHeight) {
                     ulElement.scrollTop += (pHihtt + pHihtt);
                 }
-                if (liHight < scrollHeight) {
-                    ulElement.scrollTop -= (pHihtt + pHihtt);
+                if ((liHight - scrollHeight) <= 40) {
+                    ulElement.scrollTop -= (pHihtt );
                 }
             return;
         }
