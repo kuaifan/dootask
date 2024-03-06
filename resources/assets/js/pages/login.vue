@@ -151,8 +151,8 @@
             :title="$L('隐私协议')"
             :mask-closable="false">
             <div class="privacy-content">
-                <div>欢迎使用本软件！</div>
-                <p>在您使用本软件前，请您认真阅读并了解相应的<a target="_blank" :href="$A.apiUrl('privacy')">《{{ $L('隐私政策') }}》</a>，以了解我们的服务内容和您相关个人信息的处理规则。我们将严格的按照隐私服务协议为您提供服务，保护您的个人信息。</p>
+                <div>{{$L('欢迎使用本软件！')}}</div>
+                <p>{{$L('在您使用本软件前，请您认真阅读并了解相应的')}}<a target="_blank" :href="$A.apiUrl('privacy')">《{{ $L('隐私政策') }}》</a>, {{$L('以了解我们的服务内容和您相关个人信息的处理规则。')}}{{$L('我们将严格的按照隐私服务协议为您提供服务，保护您的个人信息。')}}</p>
             </div>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="onPrivacy(false)">{{$L('不同意')}}</Button>
@@ -451,9 +451,13 @@ export default {
                 this.$store.dispatch("call", {
                     url: `${url}system/setting`,
                     checkNetwork: false,
-                }).then(async () => {
-                    await this.setServerUrl(url)
-                    resolve()
+                }).then(async ({data}) => {
+                    if (typeof data.version === "undefined" && typeof data.all_group_mute === "undefined") {
+                        reject(`服务器（${$A.getDomain(value)}）版本过低`)
+                    } else {
+                        await this.setServerUrl(url)
+                        resolve()
+                    }
                 }).catch(({ret, msg}) => {
                     if (ret === -1001) {
                         if (!/^https*:\/\//i.test(value)) {
