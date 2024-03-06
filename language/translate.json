@@ -19558,17 +19558,6 @@
         "id": "Versi rendah"
     },
     {
-        "key": "服务器接口版本过低，部分功能可能无法正常使用。",
-        "zh": "",
-        "zh-CHT": "服務器接口版本過低，部分功能可能無法正常使用。",
-        "en": "The version of the server interface is too early, and some functions may be unavailable.",
-        "ko": "서버 인터페이스 버전이 너무 낮아 일부 기능을 정상적으로 사용할 수 없을 것 같다.",
-        "ja": "サーバーインターフェースのバージョンが低すぎて、一部の機能が正常に使用できない場合があります。",
-        "de": "Die server-version ist zu niedrig und teilweise unbrauchbar.",
-        "fr": "La version de l’interface du serveur est trop basse, certaines fonctions peuvent ne pas fonctionner correctement.",
-        "id": "Versi antarmuka server yang rendah, sebagian fungsinya mungkin tidak berfungsi dengan baik."
-    },
-    {
         "key": "没有任何联系人",
         "zh": "",
         "zh-CHT": "沒有任何聯繫人",
@@ -19809,5 +19798,71 @@
         "de": "Mach's nochmal!",
         "fr": "Redémarrer le",
         "id": "Restart"
+    },
+    {
+        "key": "欢迎使用本软件！",
+        "zh": "",
+        "zh-CHT": "歡迎使用本軟件！",
+        "en": "Welcome to use this software!",
+        "ko": "이 소프트웨어 사용을 환영합니다!",
+        "ja": "本ソフトの使用を歓迎します!",
+        "de": "Willkommen bei unserer software!",
+        "fr": "Bienvenue dans le logiciel!",
+        "id": "Selamat datang di perangkat lunak ini!"
+    },
+    {
+        "key": "在您使用本软件前，请您认真阅读并了解相应的",
+        "zh": "",
+        "zh-CHT": "在您使用本軟件前，請您認真閱讀並瞭解相應的",
+        "en": "Before you use this software, please read and understand the corresponding",
+        "ko": "이 소프트웨어를 사용하기 전에, 적절한 것을 읽고 이해하시기 바랍니다",
+        "ja": "本ソフトをご利用になる前に、該当するものをよくお読みになって、ご理解いただけますようお願いいたします。",
+        "de": "Bevor sie dieses programm verwenden, lesen sie es bitte sorgfältig und lernen sie es sich gut ein",
+        "fr": "Avant d’utiliser ce logiciel, veuillez lire attentivement et comprendre en conséquence",
+        "id": "Sebelum anda menggunakan perangkat lunak ini, silakan membaca dengan seksama dan memahami yang sesuai"
+    },
+    {
+        "key": "以了解我们的服务内容和您相关个人信息的处理规则。",
+        "zh": "",
+        "zh-CHT": "以瞭解我們的服務內容和您相關個人信息的處理規則。",
+        "en": "To understand the content of our services and your relevant personal information processing rules.",
+        "ko": "저희 서비스의 내용과 귀하 관련 개인 정보의 처리 방법을 알아보십시오.",
+        "ja": "私たちのサービス内容とあなたの箇人情報の取り扱いルールを理解するためです。",
+        "de": "Ich möchte sie fragen, welche regeln sie zur bearbeitung Von informationen haben.",
+        "fr": "Pour comprendre le contenu de nos services et les règles de traitement des informations personnelles vous concernant.",
+        "id": "Untuk mengetahui isi layanan kami dan aturan pengolahan untuk informasi pribadi anda."
+    },
+    {
+        "key": "我们将严格的按照隐私服务协议为您提供服务，保护您的个人信息。",
+        "zh": "",
+        "zh-CHT": "我們將嚴格的按照隱私服務協議爲您提供服務，保護您的個人信息。",
+        "en": "We will provide you with services in strict accordance with the privacy service agreement and protect your personal information.",
+        "ko": "당사는 귀하에게 서비스를 제공하고 귀하의 개인 정보를 보호하기 위해 엄격하게 개인 정보 보호 서비스 협의에 준할 것입니다.",
+        "ja": "プライバシーサービス契約に基づいて厳格なサービスを提供し、お客様の箇人情報を保護します。",
+        "de": "Wir werden ihre dienste strikt nach maßgabe der datenschutzbestimmungen anbieten und ihre persönlichen informationen schützen.",
+        "fr": "Nous vous fournirons nos services en stricte conformité avec notre accord de service de confidentialité pour protéger vos informations personnelles.",
+        "id": "Kami akan melayani anda dengan ketat sesuai dengan protokol privasi untuk melindungi informasi pribadi anda."
+    },
+    {
+        "key": "服务器（(*)）版本过低",
+        "zh": "",
+        "zh-CHT": "服務器（(*)）版本過低",
+        "en": "The server ((*)) version is too early",
+        "ko": "서버 (*) 버전이 너무 낮습니다",
+        "ja": "サーバー((*))のバージョンが低すぎます。",
+        "de": "Server (*) zu niedrig rüber gehen",
+        "fr": "Serveur ((*)) version trop basse",
+        "id": "Versi server (*) terlalu rendah"
+    },
+    {
+        "key": "服务器（(*)）接口版本过低，部分功能可能无法正常使用。",
+        "zh": "",
+        "zh-CHT": "服務器（(*)）接口版本過低，部分功能可能無法正常使用。",
+        "en": "The interface version of the server ((*)) is too early, and some functions may be unavailable.",
+        "ko": "서버 (*) 인터페이스 버전이 너무 낮아서 일부 기능을 제대로 사용할 수 없습니다.",
+        "ja": "サーバー((*))インターフェースのバージョンが低いため、一部の機能が正常に使用できない場合があります。",
+        "de": "Der server (*) ist bei zu niedrigen versionen möglicherweise nicht betriebsbereit",
+        "fr": "La version de l’interface du serveur ((*)) est trop basse et certaines fonctions peuvent ne pas fonctionner correctement.",
+        "id": "Server ((*) memiliki versi antarmuka yang lebih rendah sehingga sebagian fungsinya mungkin tidak berfungsi dengan baik."
     }
 ]

@@ -407,7 +407,7 @@ class IndexController extends InvokeController
     }
 
     /**
-     * 保存配置 (已废弃 Deprecated)
+     * 保存配置 (todo 已废弃)
      * @return string
      */
     public function storage__synch()

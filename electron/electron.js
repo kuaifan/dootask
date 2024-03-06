@@ -676,6 +676,25 @@ ipcMain.on('updateChildWindow', (event, args) => {
 })
 
 /**
+ * 创建路由窗口（todo 已废弃）
+ * @param args {path, ?}
+ */
+ipcMain.on('windowRouter', (event, args) => {
+    createChildWindow(args)
+    event.returnValue = "ok"
+})
+
+/**
+ * 更新路由窗口（todo 已废弃）
+ * @param args {?name, ?path} // name: 不是要更改的窗口名，是要把窗口名改成什么， path: 地址
+ */
+ipcMain.on('updateRouter', (event, args) => {
+    const browser = BrowserWindow.fromWebContents(event.sender);
+    updateChildWindow(browser, args)
+    event.returnValue = "ok"
+})
+
+/**
  * 内置浏览器 - 打开创建
  * @param args {url, ?}
  */

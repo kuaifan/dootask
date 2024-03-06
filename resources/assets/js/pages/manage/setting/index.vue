@@ -58,7 +58,9 @@ export default {
     },
 
     mounted() {
-
+        if (this.$isEEUiApp) {
+            this.version = `${window.systemInfo.version} (${$A.eeuiAppLocalVersion()})`
+        }
     },
 
     computed: {
@@ -205,19 +207,32 @@ export default {
         },
 
         onVersion() {
-            axios.get($A.apiUrl('system/version')).then(({status, data}) => {
-                if (status === 200) {
-                    let content = `${this.$L('服务器')}: ${$A.getDomain($A.apiUrl('../'))}`
-                    content += `<br/>${this.$L('服务器版本')}: v${data.version}`
-                    content += `<br/>${this.$L('客户端版本')}: v${this.version}`
-                    $A.modalInfo({
-                        language: false,
-                        title: this.$L('版本信息'),
-                        content
-                    })
-                }
-            }).catch(_ => { })
+            const array = []
+            this.getServerVersion().then(version => {
+                array.push(`${this.$L('服务器')}: ${$A.getDomain($A.apiUrl('../'))}`)
+                array.push(`${this.$L('服务器版本')}: v${version}`)
+                array.push(`${this.$L('客户端版本')}: v${this.version}`)
+                $A.modalInfo({
+                    language: false,
+                    title: this.$L('版本信息'),
+                    content: array.join('<br/>')
+                })
+            })
         },
+
+        getServerVersion() {
+            return new Promise(resolve => {
+                if (/^\d+\.\d+\.\d+$/.test(window.systemInfo.server_version)) {
+                    resolve(window.systemInfo.server_version)
+                    return;
+                }
+                axios.get($A.apiUrl('system/version')).then(({status, data}) => {
+                    if (status === 200) {
+                        resolve(data.version)
+                    }
+                }).catch(_ => { })
+            })
+        }
     }
 }
 </script>

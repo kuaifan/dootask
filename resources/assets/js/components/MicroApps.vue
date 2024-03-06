@@ -126,7 +126,17 @@ export default {
                 },
                 userInfo: this.userInfo,
                 path: this.path,
-                electron: this.$Electron
+                electron: this.$Electron,
+
+                openAppChildPage: (objects) => {
+                    this.$store.dispatch('openAppChildPage', objects);
+                },
+                openChildWindow: (params) => {
+                    this.$store.dispatch('openChildWindow', params);
+                },
+                openWebTabWindow: (url) => {
+                    this.$store.dispatch('openWebTabWindow', url);
+                },
             }
         }
     },

@@ -10,6 +10,16 @@
      * =============================================================================
      */
     $.extend({
+        eeuiAppVersion() {
+            if (!$A.isEEUiApp) return;
+            return requireModuleJs("eeui").getVersion();
+        },
+
+        eeuiAppLocalVersion() {
+            if (!$A.isEEUiApp) return;
+            return requireModuleJs("eeui").getLocalVersion();
+        },
+
         eeuiAppAlert(object, callback) {
             if (!$A.isEEUiApp) return;
             if (typeof callback !== "function") callback = _ => {};

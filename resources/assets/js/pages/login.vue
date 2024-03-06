@@ -452,7 +452,7 @@ export default {
                     url: `${url}system/setting`,
                     checkNetwork: false,
                 }).then(async ({data}) => {
-                    if (typeof data.version === "undefined" && typeof data.all_group_mute === "undefined") {
+                    if (typeof data.server_version === "undefined" && typeof data.all_group_mute === "undefined") {
                         reject(`服务器（${$A.getDomain(value)}）版本过低`)
                     } else {
                         await this.setServerUrl(url)
