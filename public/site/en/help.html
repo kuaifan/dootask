@@ -365,6 +365,13 @@
                         <a class="txt-4001620 txt" href="#section-19"
                         >Access Permissions</a
                         >
+                    </li>             <li
+                        class="l-ul-item"
+                        onclick="closeHelpDraweHandle()"
+                    >
+                        <a class="txt-4001620 txt" href="#section-20"
+                        >Document Display</a
+                        >
                     </li>
                 </ol>
             </li>
@@ -734,6 +741,13 @@
                                         >
                                             <a class="txt-4001620 txt help-a"
                                             >Access Permissions</a
+                                            >
+                                        </li>                           <li
+                                            class="l-ul-item"
+                                            data-id="section-20"
+                                        >
+                                            <a class="txt-4001620 txt help-a"
+                                            >Document Display</a
                                             >
                                         </li>
                                     </ol>
@@ -2180,7 +2194,9 @@
                                         alt="Access Authority"
                                     />
                                 </li>
-                                <li class="r-ul-item mb-36">
+                                <li class="r-ul-item mb-36"
+                                    id="section-20"
+                                >
                                     <h4
                                         class="txt-5002430 help-h4 mb-24"
                                     >
@@ -2453,6 +2469,10 @@
                     ulElement.scrollTop -= (pHihtt + 24);
                 }
                 return;
+            }
+            if(arrOffsetTop.length - 1 == i){
+                let elementsWithDataId = document.querySelectorAll("[data-id='" + `section-${i + 1}` + "']");
+                elementsWithDataId[0]?.classList?.add("active");
             }
         }
     }

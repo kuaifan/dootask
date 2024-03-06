@@ -177,10 +177,13 @@
               <a class="txt-4001620 txt" href="#section-17">文件类型</a>
             </li>
             <li class="l-ul-item" onclick="closeHelpDraweHandle()">
-              <a class="txt-4001620 txt" href="#section-18">共享的文件</a>
+              <a class="txt-4001620 txt" href="#section-18">文件共享</a>
             </li>
             <li class="l-ul-item" onclick="closeHelpDraweHandle()">
               <a class="txt-4001620 txt" href="#section-19">访问权限</a>
+            </li>
+            <li class="l-ul-item" onclick="closeHelpDraweHandle()">
+              <a class="txt-4001620 txt" href="#section-20">文件显示</a>
             </li>
           </ol>
         </li>
@@ -359,11 +362,15 @@
                         <a class="txt-4001620 txt help-a">文件类型</a>
                       </li>
                       <li class="l-ul-item" data-id="section-18">
-                        <a class="txt-4001620 txt help-a">共享的文件</a>
+                        <a class="txt-4001620 txt help-a">文件共享</a>
                       </li>
                       <li class="l-ul-item" data-id="section-19">
                         <a class="txt-4001620 txt help-a">访问权限</a>
                       </li>
+                        <li class="l-ul-item" data-id="section-20">
+                            <a class="txt-4001620 txt help-a">文件显示</a>
+                        </li>
+
                     </ol>
                   </li>
                 </ul>
@@ -650,7 +657,7 @@
                     <h6 class="txt-4001624 help-h6">(2) 根据需求选择所有人/指定成员可见，共享文件读写/只读，点击【共享】即可完成操作。</h6>
                     <img class="r-ul-item-pic1" id="help_pic_file4" src="../img/light/help_pic_file4.png" alt="访问权限">
                   </li>
-                  <li class="r-ul-item mb-36">
+                  <li class="r-ul-item mb-36" id="section-20">
                     <h4 class="txt-5002430 help-h4 mb-24">文件显示</h4>
                     <h6 class="txt-4001624 help-h6">在DooTask页面左侧点击【文件】，勾选页面右上角【仅显示我的】图标，即可分类查看个人关联文件。</h6>
                     <img class="r-ul-item-pic1" id="help_pic_file5" src="../img/light/help_pic_file5.png" alt="文件显示">
@@ -829,6 +836,10 @@ function scrollHandler(){
                     ulElement.scrollTop -= (pHihtt + 24);
                 }
             return;
+        }
+        if(arrOffsetTop.length - 1 == i){
+            let elementsWithDataId = document.querySelectorAll("[data-id='" + `section-${i + 1}` + "']");
+            elementsWithDataId[0]?.classList?.add("active");
         }
     }
 }
