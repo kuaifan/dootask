@@ -281,7 +281,6 @@ export default {
             this.$Electron.registerMsgListener('browserWindowFocus', _ => {
                 this.$store.state.windowActive = true;
             })
-            $A.loadIframe($A.apiUrl("../manifest")).catch(_ => {})
             $A.bindScreenshotKey(this.$store.state.cacheKeyboard);
             //
             this.$Electron.sendMessage('setMenuLanguage', {

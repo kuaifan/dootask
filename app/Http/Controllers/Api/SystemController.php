@@ -1276,8 +1276,14 @@ class SystemController extends AbstractController
      * @apiGroup system
      * @apiName version
      *
-     * @apiSuccess {String} version
-     * @apiSuccess {String} publish
+     * @apiSuccessExample {json} Success-Response:
+    {
+        "version": "0.0.1",
+        "publish": {
+            "provider": "generic",
+            "url": ""
+        }
+    }
      */
     public function version()
     {
@@ -1298,5 +1304,39 @@ class SystemController extends AbstractController
             }
         }
         return $array;
+    }
+
+    /**
+     * @api {get} api/system/prefetch          25. 预加载的资源
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName prefetch
+     *
+     * @apiSuccessExample {array} Success-Response:
+    [
+        "https://......",
+        "https://......",
+        "......",
+    ]
+     */
+    public function prefetch()
+    {
+        $file = base_path('.prefetch');
+        if (!file_exists($file)) {
+            return [];
+        }
+
+        $version = Base::getVersion();
+        $content = file_get_contents($file);
+
+        $array = explode("\n", $content);
+        $array = array_values(array_filter($array));
+
+        return array_map(function($item) use ($version) {
+            $url = trim($item);
+            $url = str_replace('{version}', $version, $url);
+            return url($url);
+        }, $array);
     }
 }

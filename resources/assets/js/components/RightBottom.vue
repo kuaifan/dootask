@@ -67,6 +67,7 @@ export default {
     },
 
     mounted() {
+        this.prefetchResources()
         this.checkVersion()
         //
         if (this.$Electron) {
@@ -115,6 +116,34 @@ export default {
         isNotServer() {
             let apiHome = $A.getDomain(window.systemInfo.apiUrl)
             return this.$isSoftware && (apiHome == "" || apiHome == "public")
+        },
+
+        prefetchResources() {
+            if (this.isNotServer()) {
+                return;
+            }
+            if (this.$Electron && $A.$isSubElectron) {
+                return; // 客户端子窗口 不预加载
+            }
+            if (this.$isEEUiApp) {
+                return; // 移动端 不预加载
+            }
+            axios.get($A.apiUrl('system/prefetch')).then(({status, data}) => {
+                if (status === 200) {
+                    data.forEach(url => {
+                        const script = document.createElement('link')
+                        script.rel = 'prefetch'
+                        script.href = url
+                        script.onload = () => {
+                            document.head.removeChild(script)
+                        }
+                        script.onerror = () => {
+                            document.head.removeChild(script)
+                        }
+                        document.head.appendChild(script)
+                    })
+                }
+            }).catch(_ => { })
         },
 
         checkVersion() {
