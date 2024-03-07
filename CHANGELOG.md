@@ -2,10 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.35.23]
+## [0.35.38]
+
+### Bug Fixes
+
+- 部分手机出现非正常滚动到底部的情况
+- Dootask官网标题
+- Dootask官网调整
+- 修复导出任务统计没有按创建时间来的bug
+
+### Features
+
+- 新增不显示会话功能
+- 升级okr
 
 ### Performance
 
+- 优化预加载资源
+- 优化pdf文件预览
+- 优化签到消息
+- 优化登录
+- 优化安装脚本
 - 优化消息时间格式
 - 优化app功能
 

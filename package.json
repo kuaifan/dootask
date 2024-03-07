@@ -1,11 +1,11 @@
 {
     "name": "DooTask",
-    "version": "0.35.20",
+    "version": "0.35.38",
     "description": "DooTask is task management system.",
     "scripts": {
         "start": "./cmd dev",
         "build": "./cmd prod",
-        "version": "node ./version.js",
+        "version": "node ./bin/version.js",
         "translate": "./cmd translate"
     },
     "author": {

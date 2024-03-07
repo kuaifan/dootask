@@ -19864,5 +19864,27 @@
         "de": "Die APP.",
         "fr": "Push par APP",
         "id": "Aplikasi push"
+    },
+    {
+        "key": "置顶会话无法隐藏",
+        "zh": "",
+        "zh-CHT": "置頂會話無法隱藏",
+        "en": "Top session cannot be hidden",
+        "ko": "머리 위 세션을 숨길 수 없습니다",
+        "ja": "トップダウンの会話は隠せません",
+        "de": "Selbstbedeckung lässt sich nicht verbergen",
+        "fr": "La session de toit ne peut pas être cachée",
+        "id": "Memuat sesi tertutup tak bisa disembunyikan"
+    },
+    {
+        "key": "不显示该会话",
+        "zh": "",
+        "zh-CHT": "不顯示該會話",
+        "en": "The session is not displayed",
+        "ko": "이 세션을 보여주지 않습니다",
+        "ja": "当該セッションは表示されません。",
+        "de": "Die sitzung wird nicht angezeigt",
+        "fr": "Ne pas afficher cette session",
+        "id": "Sesi ini tidak ditampilkan"
     }
 ]
