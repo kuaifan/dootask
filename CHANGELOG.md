@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.35.38]
+## [0.35.40]
 
 ### Bug Fixes
 
@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
+- 修改消息换行优化
 - 优化预加载资源
 - 优化pdf文件预览
 - 优化签到消息
