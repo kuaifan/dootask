@@ -185,6 +185,12 @@
                                         <i class="taskfont" v-html="operateItem.silence ? '&#xe7eb;' : '&#xe7d7;'"></i>
                                     </div>
                                 </DropdownItem>
+                                <DropdownItem @click.native="handleHideClick" :disabled="operateItem.top_at">
+                                    <div class="item">
+                                        {{ $L('不显示该会话') }}
+                                        <i class="taskfont">&#xe787;</i>
+                                    </div>
+                                </DropdownItem>
                                 <DropdownItem @click.native="handleColorClick(c.color)" v-for="(c, k) in taskColorList" :key="'c_' + k" :divided="k==0"  v-if="k<6" >
                                     <div class="item">
                                         {{$L(c.name)}}
@@ -353,11 +359,11 @@ export default {
             if (dialogActive == '' && dialogSearchKey == '') {
                 return this.cacheDialogs.filter(dialog => this.filterDialog(dialog)).sort(this.dialogSort);
             }
-            if(dialogActive == 'mark' && !dialogSearchKey){
+            if (dialogActive == 'mark' && !dialogSearchKey) {
                 const lists = [];
-                this.dialogMsgs.filter(h=>h.tag).forEach(h=>{
-                    let dialog = $A.cloneJSON(this.cacheDialogs).find(p=>p.id == h.dialog_id)
-                    if(dialog){
+                this.dialogMsgs.filter(h => h.tag).forEach(h => {
+                    let dialog = $A.cloneJSON(this.cacheDialogs).find(p => p.id == h.dialog_id)
+                    if (dialog) {
                         dialog.last_msg = h;
                         dialog.search_msg_id = h.id;
                         lists.push(dialog);
@@ -375,7 +381,7 @@ export default {
                     if (last_msg) {
                         switch (last_msg.type) {
                             case 'text':
-                                searchString += ` ${last_msg.msg.text.replace(/<[^>]+>/g,"")}`
+                                searchString += ` ${last_msg.msg.text.replace(/<[^>]+>/g, "")}`
                                 break
                             case 'meeting':
                             case 'file':
@@ -745,7 +751,7 @@ export default {
             if (dialog.name === undefined || dialog.dialog_delete === 1) {
                 return false;
             }
-            if (!dialog.last_at) {
+            if (dialog.hide || !dialog.last_at) {
                 return false;
             }
             if (dialog.type == 'group') {
@@ -1024,6 +1030,22 @@ export default {
                     type: this.operateItem.silence ? 'cancel' : 'set'
                 },
             }).then(({data}) => {
+                this.$store.dispatch("saveDialog", data);
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            });
+        },
+
+        handleHideClick() {
+            this.$store.dispatch("call", {
+                url: 'dialog/hide',
+                data: {
+                    dialog_id: this.operateItem.id,
+                },
+            }).then(({data}) => {
+                if (this.dialogId == this.operateItem.id) {
+                    this.$store.dispatch("openDialog", 0)
+                }
                 this.$store.dispatch("saveDialog", data);
             }).catch(({msg}) => {
                 $A.modalError(msg);

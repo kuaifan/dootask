@@ -81,7 +81,7 @@ class WebSocketDialog extends AbstractModel
      */
     public static function getDialogList($userid, $updated = "", $deleted = "")
     {
-        $builder = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.color', 'u.updated_at as user_at'])
+        $builder = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('u.userid', $userid);
         if ($updated) {
@@ -112,7 +112,7 @@ class WebSocketDialog extends AbstractModel
     public static function getDialogUnread($userid, $beforeAt, $take = 20)
     {
         DB::statement("SET SQL_MODE=''");
-        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.color', 'u.updated_at as user_at'])
+        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->join('web_socket_dialog_msg_reads as r', 'web_socket_dialogs.id', '=', 'r.dialog_id')
             ->where('u.userid', $userid)
@@ -147,6 +147,7 @@ class WebSocketDialog extends AbstractModel
         };
         //
         $time = Carbon::parse($this->user_at ?? $dialogUserFun('updated_at'));
+        $this->hide = $this->hide ?? $dialogUserFun('hide');
         $this->top_at = $this->top_at ?? $dialogUserFun('top_at');
         $this->user_at = $time->toDateTimeString('millisecond');
         $this->user_ms = $time->valueOf();

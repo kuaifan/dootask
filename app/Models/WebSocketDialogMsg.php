@@ -888,6 +888,11 @@ class WebSocketDialogMsg extends AbstractModel
             $dialogMsg->key = $dialogMsg->generateMsgKey();
             $dialogMsg->save();
             //
+            WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($sender)->whereHide(1)->change([
+                'hide' => 0,    // 修改消息时，显示会话（仅自己）
+                'updated_at' => Carbon::now()->toDateTimeString('millisecond'),
+            ]);
+            //
             $dialogMsg->msgJoinGroup($dialog);
             //
             $dialog->pushMsg('update', array_merge($updateData, [
@@ -924,7 +929,11 @@ class WebSocketDialogMsg extends AbstractModel
                 $dialogMsg->send = 1;
                 $dialogMsg->key = $dialogMsg->generateMsgKey();
                 $dialogMsg->save();
-                WebSocketDialogUser::whereDialogId($dialog->id)->change(['updated_at' => Carbon::now()->toDateTimeString('millisecond')]);
+                //
+                WebSocketDialogUser::whereDialogId($dialog->id)->change([
+                    'hide' => 0,    // 有新消息时，显示会话（会话内所有会员）
+                    'updated_at' => Carbon::now()->toDateTimeString('millisecond'),
+                ]);
             });
             //
             $task = new WebSocketDialogMsgTask($dialogMsg->id);

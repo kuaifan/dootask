@@ -2020,6 +2020,10 @@ export default {
                     this.forgetTempMsg(data.id)
                 }, 1000)
             }
+            this.$store.dispatch("saveDialog", {
+                id: this.dialogId,
+                hide: 0,
+            })
             this.$store.dispatch("saveDialogMsg", data);
             if (!isUpdate) {
                 this.$store.dispatch("increaseTaskMsgNum", data);
