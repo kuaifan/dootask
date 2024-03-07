@@ -67,6 +67,16 @@ import {MarkdownPreview} from "../store/markdown";
         },
 
         /**
+         * 预览文件地址
+         * @param name
+         * @param key
+         * @returns {*}
+         */
+        onlinePreviewUrl(name, key) {
+            return $A.apiUrl(`../online/preview/${name}?key=${key}&version=${window.systemInfo.version}&__=${new Date().getTime()}`)
+        },
+
+        /**
          * 项目配置模板
          * @param project_id
          * @returns {{showMy: boolean, showUndone: boolean, project_id, chat: boolean, showHelp: boolean, showCompleted: boolean, menuType: string, menuInit: boolean, completedTask: boolean}}

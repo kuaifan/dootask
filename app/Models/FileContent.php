@@ -70,7 +70,7 @@ class FileContent extends AbstractModel
             'name' => $name,
             'ext' => $fileExt
         ]));
-        return Base::fillUrl("online/preview/{$name}?key={$key}");
+        return Base::fillUrl("online/preview/{$name}?key={$key}&version=" . Base::getVersion() . "&__=" . Base::msecTime());
     }
 
     /**
