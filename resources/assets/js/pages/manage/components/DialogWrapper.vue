@@ -2155,16 +2155,10 @@ export default {
             this.__msgs_height = height;
         },
 
-        onScrollGroupResize({height}) {
-            const {offset, tail} = this.scrollInfo()
+        onScrollGroupResize() {
             if (this.stickToBottom) {
                 this.onToBottom()
-            } else if (tail > 0
-                && typeof this.__scroll_group_data !== "undefined"
-                && offset - this.__scroll_group_data.offset + tail === height - this.__scroll_group_data.height) {
-                this.onToBottom()
             }
-            this.__scroll_group_data = {height, offset, tail}
         },
 
         onActive() {
