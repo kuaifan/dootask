@@ -10472,17 +10472,6 @@
         "id": "Ekspor XLSX"
     },
     {
-        "key": "APP推送",
-        "zh": "",
-        "zh-CHT": "APP推送",
-        "en": "APP push",
-        "ko": "App 푸시",
-        "ja": "アプリでプッシュします",
-        "de": "Die APP.",
-        "fr": "Push par APP",
-        "id": "Aplikasi push"
-    },
-    {
         "key": "MAC地址",
         "zh": "",
         "zh-CHT": "MAC地址",
@@ -17105,17 +17094,6 @@
         "id": "Tipe ekspor"
     },
     {
-        "key": "AI机器人",
-        "zh": "",
-        "zh-CHT": "AI機器人",
-        "en": "AI robot",
-        "ko": "Ai 로봇",
-        "ja": "AIロボットです",
-        "de": "AI roboter",
-        "fr": "Le robot AI",
-        "id": "Robot al"
-    },
-    {
         "key": "任务相关",
         "zh": "",
         "zh-CHT": "任務相關",
@@ -17809,28 +17787,6 @@
         "id": "Waktu pengiriman"
     },
     {
-        "key": "OKR管理",
-        "zh": "",
-        "zh-CHT": "OKR管理",
-        "en": "OKR",
-        "ko": "Okr 매니지먼트",
-        "ja": "OKRマネジメントです",
-        "de": "Das ist OKR.",
-        "fr": "Gestion des OKR",
-        "id": "OKR manajemen"
-    },
-    {
-        "key": "OKR结果分析",
-        "zh": "",
-        "zh-CHT": "OKR結果分析",
-        "en": "Analysis of OKR results",
-        "ko": "Okr 결과 분석",
-        "ja": "OKR結果分析です",
-        "de": "Wenn die ergebnisse umgekehrt sind",
-        "fr": "Analyse des résultats OKR",
-        "id": "Analisis hasil OKR"
-    },
-    {
         "key": "应用",
         "zh": "",
         "zh-CHT": "應用",
@@ -17972,17 +17928,6 @@
         "de": "Neu installierte sitzung",
         "fr": "Nouvelle conférence créée",
         "id": "Konferensi bangunan baru"
-    },
-    {
-        "key": "LDAP设置",
-        "zh": "",
-        "zh-CHT": "LDAP設置",
-        "en": "LDAP Settings",
-        "ko": "Ldap 설정",
-        "ja": "LDAP設定です",
-        "de": "Das ist eine ldap-einstellung",
-        "fr": "Paramètres de LDAP",
-        "id": "Pengaturan LDAP"
     },
     {
         "key": "邮件管理",
@@ -18478,17 +18423,6 @@
         "de": "Ich kann das einfach nicht.",
         "fr": "Tolérance et refus",
         "id": "Punya hati untuk menolak"
-    },
-    {
-        "key": "OKR结果",
-        "zh": "",
-        "zh-CHT": "OKR結果",
-        "en": "OKR result",
-        "ko": "Okr 결과",
-        "ja": "OKRの結果です",
-        "de": "OKR bringt das ergebnis.",
-        "fr": "Résultats pour OKR",
-        "id": "Hasil OKR"
     },
     {
         "key": "开始聊天",
@@ -19864,5 +19798,71 @@
         "de": "Der server (*) ist bei zu niedrigen versionen möglicherweise nicht betriebsbereit",
         "fr": "La version de l’interface du serveur ((*)) est trop basse et certaines fonctions peuvent ne pas fonctionner correctement.",
         "id": "Server ((*) memiliki versi antarmuka yang lebih rendah sehingga sebagian fungsinya mungkin tidak berfungsi dengan baik."
+    },
+    {
+        "key": "OKR 管理",
+        "zh": "",
+        "zh-CHT": "OKR 管理",
+        "en": "OKR management",
+        "ko": "Okr 매니지먼트",
+        "ja": "OKRマネジメントです",
+        "de": "Das ist OKR.",
+        "fr": "Gestion des OKR",
+        "id": "OKR manajemen"
+    },
+    {
+        "key": "OKR 结果",
+        "zh": "",
+        "zh-CHT": "OKR 結果",
+        "en": "OKR result",
+        "ko": "Okr 결과",
+        "ja": "OKRの結果です",
+        "de": "OKR bringt das ergebnis.",
+        "fr": "Résultats pour OKR",
+        "id": "Hasil OKR"
+    },
+    {
+        "key": "OKR 结果分析",
+        "zh": "",
+        "zh-CHT": "OKR 結果分析",
+        "en": "Analysis of OKR results",
+        "ko": "Okr 결과 분석",
+        "ja": "OKR結果分析です",
+        "de": "Wenn die ergebnisse umgekehrt sind",
+        "fr": "Analyse des résultats OKR",
+        "id": "Analisis hasil OKR"
+    },
+    {
+        "key": "AI 机器人",
+        "zh": "",
+        "zh-CHT": "AI 機器人",
+        "en": "AI robot",
+        "ko": "Ai 로봇",
+        "ja": "AIロボットです",
+        "de": "AI roboter",
+        "fr": "Le robot AI",
+        "id": "Robot al"
+    },
+    {
+        "key": "LDAP 设置",
+        "zh": "",
+        "zh-CHT": "LDAP 設置",
+        "en": "LDAP Settings",
+        "ko": "Ldap 설정",
+        "ja": "LDAP設定です",
+        "de": "Das ist eine ldap-einstellung",
+        "fr": "Paramètres de LDAP",
+        "id": "Pengaturan LDAP"
+    },
+    {
+        "key": "APP 推送",
+        "zh": "",
+        "zh-CHT": "APP 推送",
+        "en": "APP push",
+        "ko": "App 푸시",
+        "ja": "プッシュアプリです",
+        "de": "Die APP.",
+        "fr": "Push par APP",
+        "id": "Aplikasi push"
     }
 ]

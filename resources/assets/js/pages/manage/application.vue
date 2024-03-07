@@ -46,11 +46,11 @@
             <Report v-if="workReportShow" v-model="workReportTabs" @on-read="$store.dispatch('getReportUnread', 1000)" />
         </DrawerOverlay>
 
-        <!--AI机器人-->
+        <!--AI 机器人-->
         <DrawerOverlay v-model="aibotShow" placement="right" :size="600">
             <div class="ivu-modal-wrap-apply">
                 <div class="ivu-modal-wrap-apply-title">
-                    {{ $L('AI机器人') }}
+                    {{ $L('AI 机器人') }}
                     <p @click="aibotType = aibotType == 1 ? 2 : 1" v-if="userIsAdmin">
                         {{ aibotType == 1 ? $L('机器人设置') : $L('返回') }}
                     </p>
@@ -147,7 +147,7 @@
         <DrawerOverlay v-model="ldapShow" placement="right" :size="700">
             <div class="ivu-modal-wrap-apply">
                 <div class="ivu-modal-wrap-apply-title">
-                    {{ $L('LDAP设置') }}
+                    {{ $L('LDAP 设置') }}
                 </div>
                 <div class="ivu-modal-wrap-apply-body">
                     <SystemThirdAccess />
@@ -171,7 +171,7 @@
         <DrawerOverlay v-model="appPushShow" placement="right" :size="700">
             <div class="ivu-modal-wrap-apply">
                 <div class="ivu-modal-wrap-apply-title">
-                    {{ $L('APP推送') }}
+                    {{ $L('APP 推送') }}
                 </div>
                 <div class="ivu-modal-wrap-apply-body">
                     <SystemAppPush />
@@ -333,8 +333,8 @@ export default {
             let applyList = [
                 { value: "approve", label: "审批中心", sort: 3 },
                 { value: "report", label: "工作报告", sort: 5 },
-                { value: "okr", label: "OKR管理", sort: 4 },
-                { value: "robot", label: "AI机器人", sort: 6 },
+                { value: "okr", label: "OKR 管理", sort: 4 },
+                { value: "robot", label: "AI 机器人", sort: 6 },
                 { value: "signin", label: "签到打卡", sort: 7 },
                 { value: "meeting", label: "在线会议", sort: 8 },
                 { value: "word-chain", label: "群接龙", sort: 9 },
@@ -359,14 +359,14 @@ export default {
             let adminApplyList = [];
             if (!this.userIsAdmin) {
                 if (this.userInfo.department_owner) {
-                    adminApplyList.push({ value: "okrAnalyze", label: "OKR结果", sort: 15 })
+                    adminApplyList.push({ value: "okrAnalyze", label: "OKR 结果", sort: 15 })
                 }
             } else {
                 adminApplyList.push(...[
-                    { value: "okrAnalyze", label: "OKR结果", sort: 15 },
+                    { value: "okrAnalyze", label: "OKR 结果", sort: 15 },
                     { value: "ldap", label: "LDAP", sort: 16 },
                     { value: "mail", label: "邮件通知", sort: 17 },
-                    { value: "appPush", label: "APP推送", sort: 18 },
+                    { value: "appPush", label: "APP 推送", sort: 18 },
                     { value: "allUser", label: "团队管理", sort: 19 }
                 ])
             }

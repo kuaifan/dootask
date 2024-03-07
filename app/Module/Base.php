@@ -133,7 +133,8 @@ class Base
 
     /**
      * 判断客户端版本
-     * @param $min
+     * @param $min // 最小版本（满足此版本返回true）
+     * @param null $clientVersion
      * @return bool
      */
     public static function judgeClientVersion($min, $clientVersion = null)
