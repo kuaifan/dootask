@@ -17,7 +17,10 @@ use Carbon\Carbon;
  */
 class JokeSoupTask extends AbstractTask
 {
-    private $keyPrefix = "JokeSoupTask-v2";
+    public static function keyName($key)
+    {
+        return "JokeSoupTask-v2:{$key}";
+    }
 
     public function __construct()
     {
@@ -27,24 +30,24 @@ class JokeSoupTask extends AbstractTask
     public function start()
     {
         // 判断每分钟执行一次
-        if (Cache::get("{$this->keyPrefix}:YmdHi") == date("YmdHi")) {
+        if (Cache::get(self::keyName("YmdHi")) == date("YmdHi")) {
             return;
         }
-        Cache::put("{$this->keyPrefix}:YmdHi", date("YmdHi"), Carbon::now()->addDay());
+        Cache::put(self::keyName("YmdHi"), date("YmdHi"), Carbon::now()->addDay());
         //
-        $array = Base::json2array(Cache::get("{$this->keyPrefix}:jokes"));
+        $array = Base::json2array(Cache::get(self::keyName("jokes")));
         $data = Extranet::randJoke();
         if ($data) {
             $array[] = $data;
         }
-        Cache::forever("{$this->keyPrefix}:jokes", Base::array2json(array_slice($array, -200)));
+        Cache::forever(self::keyName("jokes"), Base::array2json(array_slice($array, -200)));
         //
-        $array = Base::json2array(Cache::get("{$this->keyPrefix}:soups"));
+        $array = Base::json2array(Cache::get(self::keyName("soups")));
         $data = Extranet::soups();
         if ($data) {
             $array[] = $data;
         }
-        Cache::forever("{$this->keyPrefix}:soups", Base::array2json(array_slice($array, -200)));
+        Cache::forever(self::keyName("soups"), Base::array2json(array_slice($array, -200)));
     }
 
     public function end()

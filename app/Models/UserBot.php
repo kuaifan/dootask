@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Module\Base;
 use App\Module\Doo;
 use App\Module\Extranet;
+use App\Tasks\JokeSoupTask;
 use Cache;
 use Carbon\Carbon;
 
@@ -229,8 +230,8 @@ class UserBot extends AbstractModel
         if ($checkins && $botUser = User::botGetOrCreate('check-in')) {
             $getJokeSoup = function($type) {
                 $pre = $type == "up" ? "每日开心：" : "心灵鸡汤：";
-                $key = $type == "up" ? "JokeSoupTask:jokes" : "JokeSoupTask:soups";
-                $array = Base::json2array(Cache::get($key));
+                $key = $type == "up" ? "jokes" : "soups";
+                $array = Base::json2array(Cache::get(JokeSoupTask::keyName($key)));
                 if ($array) {
                     $item = $array[array_rand($array)];
                     if ($item) {
