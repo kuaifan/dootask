@@ -2827,6 +2827,7 @@ export default {
                     text = text.replace(/<img[^>]*>/gi, match => {
                         return match.replace(/(width|height)="\d+"\s*/ig, "");
                     })
+                    text = text.replace(/<p><\/p>/g, '<p><br/></p>')
                     this.msgText = $A.formatMsgBasic(text)
                 }
                 this.$nextTick(_ => this.$refs.input.setPasteMode(true))
