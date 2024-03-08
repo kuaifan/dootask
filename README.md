@@ -68,7 +68,7 @@ cd dootask
 
 ### Development compilation
 
-- `NodeJs 18+` must be installed
+- `NodeJs 20+` must be installed
 
 ```bash
 # Development
