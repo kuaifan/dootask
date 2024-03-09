@@ -302,60 +302,78 @@ class IndexController extends InvokeController
             abort(404);
         }
         //
-        if (file_exists($file)) {
-            parse_str($data['query'], $query);
-            $name = Arr::get($query, 'name');
-            $ext = strtolower(Arr::get($query, 'ext'));
-            $userAgent = strtolower(Request::server('HTTP_USER_AGENT'));
-            if ($ext === 'pdf') {
-                // 文件超过 10m 不支持在线预览，提示下载
-                if (filesize($file) > 10 * 1024 * 1024) {
-                    return view('download', [
-                        'name' => $name,
-                        'size' => Base::readableBytes(filesize($file)),
-                        'url' => Base::fillUrl($path),
-                        'button' => Doo::translate('点击下载'),
-                    ]);
-                }
-                // 浏览器类型
-                $browser = 'none';
-                if (str_contains($userAgent, 'chrome')) {
-                    $browser = str_contains($userAgent, 'android') || str_contains($userAgent, 'harmonyos') ? 'android-mobile' : 'chrome-desktop';
-                } elseif (str_contains($userAgent, 'safari') || str_contains($userAgent, 'iphone') || str_contains($userAgent, 'ipad')) {
-                    $browser = str_contains($userAgent, 'iphone') || str_contains($userAgent, 'ipad') ? 'safari-mobile' : 'safari-desktop';
-                }
-                // electron 直接在线预览查看
-                if (str_contains($userAgent, 'electron') || str_contains($browser, 'desktop')) {
-                    return Response::download($file, $name, [
-                        'Content-Type' => 'application/pdf'
-                    ], 'inline');
-                }
-                // EEUI App 直接在线预览查看
-                if (str_contains($userAgent, 'eeui') && Base::judgeClientVersion("0.34.47")) {
-                    if ($browser === 'safari-mobile') {
-                        $message = Base::array2json([
-                            'type' => 'currentOpen',
-                            'url' => Base::fillUrl($path),
-                        ]);
-                        return "<script>window.top.postMessage($message, '*')</script>";
-                    }
-                }
-            }
-            //
-            if (in_array($ext, File::localExt)) {
-                $url = Base::fillUrl($path);
-            } else {
-                $url = 'http://' . env('APP_IPPR') . '.3/' . $path;
-            }
-            if ($ext !== 'pdf') {
-                $url = Base::urlAddparameter($url, [
-                    'fullfilename' => $name . '.' . $ext
+        if (!file_exists($file)) {
+            abort(404);
+        }
+        //
+        parse_str($data['query'], $query);
+        $name = Arr::get($query, 'name');
+        $ext = strtolower(Arr::get($query, 'ext'));
+        $userAgent = strtolower(Request::server('HTTP_USER_AGENT'));
+        if ($ext === 'pdf') {
+            // 文件超过 10m 不支持在线预览，提示下载
+            if (filesize($file) > 10 * 1024 * 1024) {
+                return view('download', [
+                    'name' => $name,
+                    'size' => Base::readableBytes(filesize($file)),
+                    'url' => Base::fillUrl($path),
+                    'button' => Doo::translate('点击下载'),
                 ]);
             }
-            $toUrl = Base::fillUrl("fileview/onlinePreview?url=" . urlencode(base64_encode($url)));
-            return Redirect::to($toUrl, 301);
+            // 浏览器类型
+            $browser = 'none';
+            if (str_contains($userAgent, 'chrome')) {
+                $browser = str_contains($userAgent, 'android') || str_contains($userAgent, 'harmonyos') ? 'android-mobile' : 'chrome-desktop';
+            } elseif (str_contains($userAgent, 'safari') || str_contains($userAgent, 'iphone') || str_contains($userAgent, 'ipad')) {
+                $browser = str_contains($userAgent, 'iphone') || str_contains($userAgent, 'ipad') ? 'safari-mobile' : 'safari-desktop';
+            }
+            // electron 直接在线预览查看
+            if (str_contains($userAgent, 'electron') || str_contains($browser, 'desktop')) {
+                return Response::download($file, $name, [
+                    'Content-Type' => 'application/pdf'
+                ], 'inline');
+            }
+            // EEUI App 直接在线预览查看
+            if (str_contains($userAgent, 'eeui') && Base::judgeClientVersion("0.34.47")) {
+                if ($browser === 'safari-mobile') {
+                    $redirectUrl = Base::fillUrl($path);
+                    return <<<EOF
+                        <script>
+                            let t = window.top
+                            let \$A = null
+                            while (t) {
+                                if (t.\$A) {
+                                    \$A = t.\$A
+                                    break
+                                }
+                                t = t.top
+                            }
+                            if (\$A) {
+                                \$A.eeuiAppSendMessage({
+                                    action: 'setPageData',
+                                    data: {
+                                        titleFixed: true,
+                                        urlFixed: true,
+                                    }
+                                });
+                            }
+                            t.location.href = "{$redirectUrl}"
+                        </script>
+                        EOF;
+                }
+            }
         }
-        abort(404);
+        //
+        if (in_array($ext, File::localExt)) {
+            $url = Base::fillUrl($path);
+        } else {
+            $url = 'http://' . env('APP_IPPR') . '.3/' . $path;
+        }
+        $url = Base::urlAddparameter($url, [
+            'fullfilename' => Base::rightDelete($name, '.' . $ext) . '_' . filemtime($file) . '.' . $ext
+        ]);
+        $redirectUrl = Base::fillUrl("fileview/onlinePreview?url=" . urlencode(base64_encode($url)));
+        return Redirect::to($redirectUrl, 301);
     }
 
     /**
