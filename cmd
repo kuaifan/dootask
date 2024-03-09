@@ -465,6 +465,16 @@ if [ $# -gt 0 ]; then
     elif [[ "$1" == "electron" ]]; then
         shift 1
         run_electron $@
+    elif [[ "$1" == "eeui" ]]; then
+        shift 1
+        cli="$@"
+        por=""
+        if [[ "$cli" == "build" ]]; then
+            cli="build --simple"
+        elif [[ "$cli" == "dev" ]]; then
+            por="-p 8880:8880"
+        fi
+        docker run -it --rm -v ${cur_path}/resources/mobile:/work -w /work ${por} kuaifan/eeui-cli:0.0.1 eeui ${cli}
     elif [[ "$1" == "doc" ]]; then
         shift 1
         run_exec php "php app/Http/Controllers/Api/apidoc.php"

@@ -52,7 +52,6 @@
                 window._disableDownload = setInterval(function() {
                     var downloadBtn = document.getElementById("slot-hbtn-download")
                     if(downloadBtn) {
-                        console.log(1)
                         clearInterval(window._disableDownload);
                         document.getElementById("slot-hbtn-download")?.remove()
                         document.getElementById("fm-btn-download")?.remove()

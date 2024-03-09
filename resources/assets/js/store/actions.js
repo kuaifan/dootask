@@ -117,7 +117,7 @@ export default {
             'version': window.systemInfo.version || "0.0.1",
             'platform': $A.Platform,
         }
-        if(!state.userToken && state.meetingWindow?.meetingSharekey){
+        if (!state.userToken && state.meetingWindow?.meetingSharekey) {
             header.sharekey = state.meetingWindow.meetingSharekey;
         }
         if ($A.isJson(params.header)) {
@@ -4017,11 +4017,13 @@ export default {
     },
 
     /**
-    * 显示会议窗口
-    * @param state
-    * @param type
-    * @param meetingid
-    */
+     * 显示会议窗口
+     * @param state
+     * @param type
+     * @param meetingid
+     * @param meetingdisabled
+     * @param meetingSharekey
+     */
     showMeetingWindow({state}, {type, meetingid, meetingdisabled, meetingSharekey}) {
         state.meetingWindow = {
             show: true,

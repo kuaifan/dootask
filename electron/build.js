@@ -229,14 +229,16 @@ function startBuild(data) {
     fs.writeFileSync(indexFile, indexString, 'utf8');
     //
     if (data.id === 'app') {
+        const eeuiDir = path.resolve(__dirname, "../resources/mobile");
+        const eeuiCli = "kuaifan/eeui-cli:0.0.1"
         const publicDir = path.resolve(__dirname, "../resources/mobile/src/public");
         fse.removeSync(publicDir)
         fse.copySync(electronDir, publicDir)
         if (argv[3] === "setting") {
-            child_process.spawnSync("eeui", ["setting"], {stdio: "inherit", cwd: "resources/mobile"});
+            child_process.spawnSync("docker", `run -it --rm -v ${eeuiDir}:/work -w /work ${eeuiCli} eeui setting`.split(" "), {stdio: "inherit", cwd: "resources/mobile"});
         }
         if (['setting', 'build'].includes(argv[3])) {
-            child_process.spawnSync("eeui", ["build", "--simple"], {stdio: "inherit", cwd: "resources/mobile"});
+            child_process.spawnSync("docker", `run -it --rm -v ${eeuiDir}:/work -w /work ${eeuiCli} eeui build --simple`.split(" "), {stdio: "inherit", cwd: "resources/mobile"});
         } else {
             [
                 path.resolve(publicDir, "../../platforms/ios/eeuiApp/bundlejs/eeui/public"),
