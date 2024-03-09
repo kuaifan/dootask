@@ -19886,5 +19886,16 @@
         "de": "Die sitzung wird nicht angezeigt",
         "fr": "Ne pas afficher cette session",
         "id": "Sesi ini tidak ditampilkan"
+    },
+    {
+        "key": "昨天",
+        "zh": "",
+        "zh-CHT": "昨天",
+        "en": "Yesterday",
+        "ko": "어제",
+        "ja": "昨日です",
+        "de": "Yesterday",
+        "fr": "Yesterday",
+        "id": "Yesterday"
     }
 ]

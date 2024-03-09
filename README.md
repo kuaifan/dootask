@@ -88,7 +88,6 @@ cd dootask
 ./cmd redis "your command"            # To run a redis command
 ./cmd composer "your command"         # To run a composer command
 ./cmd supervisorctl "your command"    # To run a supervisorctl command
-./cmd test "your command"             # To run a phpunit command
 ./cmd mysql "your command"            # To run a mysql command (backup: Backup database, recovery: Restore database)
 ```
 
@@ -101,7 +100,7 @@ cd dootask
 ./cmd https
 ```
 
-#### Method 2: Nginx Agent Configuration
+#### Or Method 2: Nginx Agent Configuration
 
 ```bash 
 # 1、Nginx config add

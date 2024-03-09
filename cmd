@@ -20,10 +20,10 @@ COMPOSE="docker-compose"
 
 judge() {
     if [[ 0 -eq $? ]]; then
-        echo -e "${OK} ${GreenBG} $1 完成 ${Font}"
+        success "$1 完成"
         sleep 1
     else
-        echo -e "${Error} ${RedBG} $1 失败${Font}"
+        error "$1 失败"
         exit 1
     fi
 }
@@ -38,6 +38,10 @@ warning() {
 
 error() {
     echo -e "${Error} ${RedBG}$1${Font}"
+}
+
+info() {
+    echo -e "$1"
 }
 
 rand() {
@@ -66,7 +70,7 @@ restart_php() {
         $COMPOSE stop php
         $COMPOSE start php
     else
-        echo -e "$RES"
+        info "$RES"
     fi
 }
 
@@ -84,21 +88,21 @@ switch_debug() {
 check_docker() {
     docker --version &> /dev/null
     if [ $? -ne  0 ]; then
-        echo -e "${Error} ${RedBG} 未安装 Docker！${Font}"
+        error "未安装 Docker！"
         exit 1
     fi
     docker-compose version &> /dev/null
     if [ $? -ne  0 ]; then
         docker compose version &> /dev/null
         if [ $? -ne  0 ]; then
-            echo -e "${Error} ${RedBG} 未安装 Docker-compose！${Font}"
+            error "未安装 Docker-compose！"
             exit 1
         fi
         COMPOSE="docker compose"
     fi
-    if [[ -n `$COMPOSE version | grep -E "\sv*1"` ]]; then
+    if [[ -n `$COMPOSE version | grep -E "\sv1"` ]]; then
         $COMPOSE version
-        echo -e "${Error} ${RedBG} Docker-compose 版本过低，请升级至v2+！${Font}"
+        error "Docker-compose 版本过低，请升级至v2+！"
         exit 1
     fi
 }
@@ -106,7 +110,17 @@ check_docker() {
 check_node() {
     npm --version &> /dev/null
     if [ $? -ne  0 ]; then
-        echo -e "${Error} ${RedBG} 未安装nodejs！${Font}"
+        error "未安装 npm！"
+        exit 1
+    fi
+    node --version &> /dev/null
+    if [ $? -ne  0 ]; then
+        error "未安装 Node.js！"
+        exit 1
+    fi
+    if [[ -n `node --version | grep -E "v1"` ]]; then
+        node --version
+        error "Node.js 版本过低，请升级至v20+！"
         exit 1
     fi
 }
@@ -169,7 +183,7 @@ run_exec() {
     local cmd=$2
     local name=`docker_name $container`
     if [ -z "$name" ]; then
-        echo -e "${Error} ${RedBG} 没有找到 $container 容器! ${Font}"
+        error "没有找到 $container 容器!"
         exit 1
     fi
     docker exec -it "$name" /bin/sh -c "$cmd"
@@ -185,7 +199,7 @@ run_mysql() {
         filename="${cur_path}/docker/mysql/backup/${database}_$(date "+%Y%m%d%H%M%S").sql.gz"
         run_exec mariadb "exec mysqldump --databases $database -u$username -p$password" | gzip > $filename
         judge "备份数据库"
-        [ -f "$filename" ] && echo -e "备份文件：$filename"
+        [ -f "$filename" ] && info "备份文件：$filename"
     elif [ "$1" = "recovery" ]; then
         database=$(env_get DB_DATABASE)
         username=$(env_get DB_USERNAME)
@@ -194,19 +208,19 @@ run_mysql() {
         mkdir -p ${cur_path}/docker/mysql/backup
         list=`ls -1 "${cur_path}/docker/mysql/backup" | grep ".sql.gz"`
         if [ -z "$list" ]; then
-            echo -e "${Error} ${RedBG} 没有备份文件！${Font}"
+            error "没有备份文件！"
             exit 1
         fi
         echo "$list"
         read -rp "请输入备份文件名称还原：" inputname
         filename="${cur_path}/docker/mysql/backup/${inputname}"
         if [ ! -f "$filename" ]; then
-            echo -e "${Error} ${RedBG} 备份文件：${inputname} 不存在！ ${Font}"
+            error "备份文件：${inputname} 不存在！"
             exit 1
         fi
         container_name=`docker_name mariadb`
         if [ -z "$container_name" ]; then
-            echo -e "${Error} ${RedBG} 没有找到 mariadb 容器! ${Font}"
+            error "没有找到 mariadb 容器!"
             exit 1
         fi
         docker cp $filename $container_name:/
@@ -278,7 +292,7 @@ env_set() {
             docker run -it --rm -v ${cur_path}:/www alpine sh -c "sed -i "/^${key}=/c\\${key}=${val}" /www/.env"
         fi
         if [ $? -ne  0 ]; then
-            echo -e "${Error} ${RedBG} 设置env参数失败！${Font}"
+            error "设置env参数失败！"
             exit 1
         fi
     fi
@@ -351,7 +365,7 @@ if [ $# -gt 0 ]; then
             run_exec php "composer config --unset repos.packagist"
         fi
         if [ ! -f "${cur_path}/vendor/autoload.php" ]; then
-            echo -e "${Error} ${RedBG}composer install 失败，请重试！ ${Font}"
+            error "composer install 失败，请重试！"
             exit 1
         fi
         [[ -z "$(env_get APP_KEY)" ]] && run_exec php "php artisan key:generate"
@@ -361,7 +375,7 @@ if [ $# -gt 0 ]; then
         while [ ! -f "${cur_path}/docker/mysql/data/$(env_get DB_DATABASE)/db.opt" ]; do
             ((remaining=$remaining-1))
             if [ $remaining -lt 0 ]; then
-                echo -e "${Error} ${RedBG} 数据库初始化失败! ${Font}"
+                error "数据库初始化失败!"
                 exit 1
             fi
             chmod -R 775 "${cur_path}/docker/mysql/data"
@@ -369,16 +383,16 @@ if [ $# -gt 0 ]; then
         done
         run_exec php "php artisan migrate --seed"
         if [ ! -f "${cur_path}/docker/mysql/data/$(env_get DB_DATABASE)/$(env_get DB_PREFIX)migrations.ibd" ]; then
-            echo -e "${Error} ${RedBG} 数据库安装失败! ${Font}"
+            error "数据库安装失败!"
             exit 1
         fi
         # 设置初始化密码
         res=`run_exec mariadb "sh /etc/mysql/repassword.sh"`
         $COMPOSE up -d
         restart_php
-        echo -e "${OK} ${GreenBG} 安装完成 ${Font}"
-        echo -e "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
-        echo -e "$res"
+        success "安装完成"
+        info "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
+        info "$res"
     elif [[ "$1" == "update" ]]; then
         shift 1
         if [[ "$@" != "nobackup" ]]; then
@@ -400,10 +414,10 @@ if [ $# -gt 0 ]; then
         [[ -z ${uninstall} ]] && uninstall="Y"
         case $uninstall in
         [yY][eE][sS] | [yY])
-            echo -e "${RedBG} 开始卸载... ${Font}"
+            info "${RedBG}开始卸载...${Font}"
             ;;
         *)
-            echo -e "${GreenBG} 终止卸载。 ${Font}"
+            info "${GreenBG}终止卸载。${Font}"
             exit 2
             ;;
         esac
@@ -412,7 +426,7 @@ if [ $# -gt 0 ]; then
         rm -rf "./docker/mysql/data"
         rm -rf "./docker/log/supervisor"
         find "./storage/logs" -name "*.log" | xargs rm -rf
-        echo -e "${OK} ${GreenBG} 卸载完成 ${Font}"
+        success "卸载完成"
     elif [[ "$1" == "reinstall" ]]; then
         shift 1
         ./cmd uninstall $@
@@ -422,20 +436,20 @@ if [ $# -gt 0 ]; then
         shift 1
         env_set APP_PORT "$1"
         $COMPOSE up -d
-        echo -e "${OK} ${GreenBG} 修改成功 ${Font}"
-        echo -e "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
+        success "修改成功"
+        info "地址: http://${GreenBG}127.0.0.1:$(env_get APP_PORT)${Font}"
     elif [[ "$1" == "url" ]]; then
         shift 1
         env_set APP_URL "$1"
         restart_php
-        echo -e "${OK} ${GreenBG} 修改成功 ${Font}"
+        success "修改成功"
     elif [[ "$1" == "env" ]]; then
         shift 1
         if [ -n "$1" ]; then
             env_set $1 "$2"
         fi
         restart_php
-        echo -e "${OK} ${GreenBG} 修改成功 ${Font}"
+        success "修改成功"
     elif [[ "$1" == "repassword" ]]; then
         shift 1
         run_exec mariadb "sh /etc/mysql/repassword.sh \"$@\""
@@ -458,7 +472,7 @@ if [ $# -gt 0 ]; then
     elif [[ "$1" == "debug" ]]; then
         shift 1
         switch_debug "$@"
-        echo "success"
+        info "success"
     elif [[ "$1" == "https" ]]; then
         shift 1
         if [[ "$1" == "agent" ]] || [[ "$1" == "true" ]]; then

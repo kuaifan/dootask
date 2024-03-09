@@ -89,20 +89,19 @@ cd dootask
 ./cmd redis "your command"            # 运行 redis 命令
 ./cmd composer "your command"         # 运行 composer 命令
 ./cmd supervisorctl "your command"    # 运行 supervisorctl 命令
-./cmd test "your command"             # 运行 phpunit 命令
 ./cmd mysql "your command"            # 运行 mysql 命令 (backup: 备份数据库，recovery: 还原数据库)
 ```
 
 ### SSL 配置
 
-#### 方式一：自动配置
+#### 方法1：自动配置
 
 ```bash 
 # 在项目下运行命令，根据提示执行即可
 ./cmd https
 ```
 
-#### 方式二：Nginx 代理配置
+#### （或者）方法2：Nginx 代理配置
 
 ```bash 
 # 1、Nginx 代理配置添加
