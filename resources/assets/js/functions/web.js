@@ -98,21 +98,22 @@ import {MarkdownPreview} from "../store/markdown";
         /**
          * 格式化时间
          * @param date
-         * @param hiHours   小于多少小时只显示时间H:i
          * @returns {*|string}
          */
-        formatTime(date, hiHours = 6) {
+        formatTime(date) {
             let now = $A.Time(),
                 time = $A.Date(date, true),
                 string = '';
-            if (Math.abs(now - time) < 3600 * hiHours || $A.formatDate('Ymd', now) === $A.formatDate('Ymd', time)) {
-                string = $A.formatDate('H:i', time)
-            } else if ($A.formatDate('Y', now) === $A.formatDate('Y', time)) {
-                string = $A.formatDate('m-d', time)
-            } else {
-                string = $A.formatDate('Y-m-d', time)
+            if ($A.formatDate('Ymd', now) === $A.formatDate('Ymd', time)) {
+                return $A.formatDate('H:i', time)
             }
-            return string || '';
+            if ($A.formatDate('Ymd', now - 86400) === $A.formatDate('Ymd', time)) {
+                return `${$A.L('昨天')} ${$A.formatDate('H:i', time)}`
+            }
+            if ($A.formatDate('Y', now) === $A.formatDate('Y', time)) {
+                return $A.formatDate('m-d', time)
+            }
+            return $A.formatDate('Y-m-d', time);
         },
 
         /**
@@ -163,7 +164,7 @@ import {MarkdownPreview} from "../store/markdown";
             } else if (time == 0) {
                 return 0 + 's';
             }
-            return this.formatTime(date, 6)
+            return this.formatTime(date)
         },
 
         /**

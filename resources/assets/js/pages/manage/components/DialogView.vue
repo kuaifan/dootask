@@ -219,7 +219,7 @@
             <template v-else>
                 <!--时间-->
                 <div v-if="timeShow" class="time" @click="timeShow=false">{{msgData.created_at}}</div>
-                <div v-else class="time" :title="msgData.created_at" @click="timeShow=true">{{$A.formatTime(msgData.created_at, 23)}}</div>
+                <div v-else class="time" :title="msgData.created_at" @click="timeShow=true">{{$A.formatTime(msgData.created_at)}}</div>
                 <!--阅读-->
                 <template v-if="!hidePercentage">
                     <div v-if="msgData.send > 1 || dialogType === 'group'" class="percent" @click="openReadPercentage">
