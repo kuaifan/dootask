@@ -11,7 +11,7 @@
                 </Input>
             </div>
         </div>
-        <ul @scroll="operateVisible = false">
+        <ul @touchstart="onTouchStart" @scroll="onScroll">
             <template v-if="projectLists.length === 0">
                 <li v-if="projectKeyLoading > 0" class="loading"><Loading/></li>
                 <li v-else class="nothing">
@@ -151,6 +151,17 @@ export default {
                 return
             }
             this.goForward({name: 'manage-' + path, params: params || {}});
+        },
+
+        onTouchStart(e) {
+            const focusedElement = document.activeElement;
+            if (focusedElement) {
+                focusedElement.blur();
+            }
+        },
+
+        onScroll(e) {
+            this.operateVisible = false
         },
 
         modalPercent(item) {

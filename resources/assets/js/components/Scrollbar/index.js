@@ -244,6 +244,17 @@ export default {
         },
 
         /**
+         * 内容区域触摸开始事件
+         * @param e
+         */
+        onContentTouchStart(e) {
+            const focusedElement = document.activeElement;
+            if (focusedElement) {
+                focusedElement.blur();
+            }
+        },
+
+        /**
          * 滚动区域滚动事件
          * @param e
          */
@@ -383,6 +394,7 @@ export default {
                 ref: 'content',
                 class: this.contentClass,
                 on: {
+                    touchstart: this.onContentTouchStart,
                     scroll: this.onContentScroll,
                     mouseenter: this.onContentMouseenter,
                 }
