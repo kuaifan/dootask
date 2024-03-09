@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.35.48]
+
+### Features
+
+- 升级okr
+
+### Performance
+
+- 优化文件预览
+- 滑动列表自动隐藏键盘
+- 优化时间格式
+- 适配nodejs 20
+
 ## [0.35.40]
 
 ### Bug Fixes
