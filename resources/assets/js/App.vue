@@ -317,6 +317,11 @@ export default {
                 } else {
                     this.autoTheme()
                 }
+                $A.eeuiAppSendMessage({
+                    action: 'outerSize',
+                    outerWidth: window.outerWidth,
+                    outerHeight: window.outerHeight,
+                });
             }
             // 新窗口打开
             window.__onCreateTarget = (url) => {
@@ -393,6 +398,12 @@ export default {
             window.__handleLink = (path) => {
                 this.goForward({ path: (path || '').indexOf('/') !==0 ? "/" + path : path });
             }
+            // 发送网页尺寸
+            $A.eeuiAppSendMessage({
+                action: 'outerSize',
+                outerWidth: window.outerWidth,
+                outerHeight: window.outerHeight,
+            });
             // 取消长按振动
             $A.eeuiAppSetHapticBackEnabled(false)
             // 设置语言
