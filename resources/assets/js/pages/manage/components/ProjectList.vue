@@ -3,12 +3,11 @@
         <PageTitle :title="$L('项目')"/>
         <div class="list-search">
             <div class="search-wrapper">
-                <Input v-model="projectKeyValue" :placeholder="$L(loadProjects > 0 ? '更新中...' : '搜索')" clearable>
-                    <div class="search-pre" slot="prefix">
-                        <Loading v-if="loadProjects > 0"/>
-                        <Icon v-else type="ios-search" />
-                    </div>
-                </Input>
+                <div class="search-pre">
+                    <Loading v-if="loadProjects > 0"/>
+                    <Icon v-else type="ios-search" />
+                </div>
+                <Input v-model="projectKeyValue" :placeholder="$L(loadProjects > 0 ? '更新中...' : '搜索')" clearable/>
             </div>
         </div>
         <ul @touchstart="onTouchStart" @scroll="onScroll">

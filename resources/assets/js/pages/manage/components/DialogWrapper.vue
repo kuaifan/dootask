@@ -122,13 +122,12 @@
                             <i class="taskfont" @click="onSearchSwitch('next')">&#xe705;</i>
                         </div>
                         <div class="search-input">
-                            <Input ref="searchInput" v-model="searchKey" :placeholder="$L('搜索消息')" @on-keyup="onSearchKeyup" clearable>
-                                <div class="search-pre" slot="prefix">
-                                    <Loading v-if="searchLoad > 0"/>
-                                    <Icon v-else type="ios-search" />
-                                </div>
-                            </Input>
-                            <div v-if="searchLoad === 0 && searchResult.length > 0" class="search-total" slot="append">{{searchLocation}}/{{searchResult.length}}</div>
+                            <div class="search-pre">
+                                <Loading v-if="searchLoad > 0"/>
+                                <Icon v-else type="ios-search" />
+                            </div>
+                            <Input ref="searchInput" v-model="searchKey" :placeholder="$L('搜索消息')" @on-keyup="onSearchKeyup" clearable/>
+                            <div v-if="searchLoad === 0 && searchResult.length > 0" class="search-total">{{searchLocation}}/{{searchResult.length}}</div>
                         </div>
                         <div class="search-cancel" @click="onSearchKeyup(null)">{{$L('取消')}}</div>
                     </div>

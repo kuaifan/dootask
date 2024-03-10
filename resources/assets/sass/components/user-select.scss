@@ -152,15 +152,21 @@
                 }
 
                 .search-input {
-                    .ivu-input {
-                        height: 36px;
-                        border-color: #f4f5f7;
-                        background-color: #f4f5f7;
-                    }
+                    flex: 1;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background-color: #f4f5f7;
+                    border-radius: 6px;
+                    height: 36px;
+                    padding: 0 6px;
 
                     .search-pre {
-                        width: 100%;
-                        height: 100%;
+                        width: 32px;
+                        height: 32px;
+                        margin-right: -6px;
+                        font-size: 16px;
+                        color: #808695;
                         display: flex;
                         align-items: center;
                         justify-content: center;
@@ -169,6 +175,15 @@
                             width: 14px;
                             height: 14px;
                             margin: 0;
+                        }
+                    }
+
+                    .ivu-input {
+                        border-color: transparent;
+                        background-color: transparent;
+                        &:hover,
+                        &:focus {
+                            box-shadow: none;
                         }
                     }
                 }

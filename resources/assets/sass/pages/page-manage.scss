@@ -216,23 +216,20 @@
         }
         .manage-project-search {
             width: 80%;
-            padding: 0 3px;
+            padding: 0 6px;
             margin: 8px 0 -2px;
             border-radius: 12px;
             background-color: #ffffff;
             overflow: hidden;
-            .ivu-input {
-                padding-left: 30px;
-                border-color: transparent;
-                background-color: transparent;
-                &:hover,
-                &:focus {
-                    box-shadow: none;
-                }
-            }
+            display: flex;
+            align-items: center;
+            justify-content: center;
             .search-pre {
-                width: 100%;
-                height: 100%;
+                width: 32px;
+                height: 32px;
+                margin-right: -6px;
+                font-size: 16px;
+                color: #808695;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -240,6 +237,14 @@
                     width: 14px;
                     height: 14px;
                     margin: 0;
+                }
+            }
+            .ivu-input {
+                border-color: transparent;
+                background-color: transparent;
+                &:hover,
+                &:focus {
+                    box-shadow: none;
                 }
             }
         }

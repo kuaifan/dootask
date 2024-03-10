@@ -173,12 +173,11 @@
             <div
                 v-if="(projectSearchShow || projectTotal > 20) && windowHeight > 600"
                 class="manage-project-search">
-                <Input v-model="projectKeyValue" :placeholder="$L(`共${projectTotal || cacheProjects.length}个项目，搜索...`)" clearable>
-                    <div class="search-pre" slot="prefix">
-                        <Loading v-if="projectKeyLoading > 0"/>
-                        <Icon v-else type="ios-search" />
-                    </div>
-                </Input>
+                <div class="search-pre">
+                    <Loading v-if="projectKeyLoading > 0"/>
+                    <Icon v-else type="ios-search" />
+                </div>
+                <Input v-model="projectKeyValue" :placeholder="$L(`共${projectTotal || cacheProjects.length}个项目，搜索...`)" clearable/>
             </div>
             <ButtonGroup class="manage-box-new-group">
                 <Button class="manage-box-new" type="primary" icon="md-add" @click="onAddShow">{{$L('新建项目')}}</Button>

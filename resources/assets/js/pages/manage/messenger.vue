@@ -5,30 +5,24 @@
             <div class="messenger-select">
                 <div class="messenger-search">
                     <div class="search-wrapper">
+                        <div class="search-pre">
+                            <Loading v-if="searchLoading"/>
+                            <Icon v-else type="ios-search" />
+                        </div>
                         <Input
                             v-if="tabActive==='dialog'"
                             v-model="dialogSearchKey"
                             ref="searchInput"
                             :placeholder="$L(loadDialogs > 0 ? '更新中...' : '搜索')"
                             @on-keydown="onKeydown"
-                            clearable>
-                            <div class="search-pre" slot="prefix">
-                                <Loading v-if="dialogLoading"/>
-                                <Icon v-else type="ios-search" />
-                            </div>
-                        </Input>
+                            clearable/>
                         <Input
                             v-else
                             v-model="contactsKey"
                             ref="contactInput"
                             :placeholder="$L('搜索')"
                             @on-keydown="onKeydown"
-                            clearable>
-                            <div class="search-pre" slot="prefix">
-                                <Loading v-if="contactsLoad"/>
-                                <Icon v-else type="ios-search" />
-                            </div>
-                        </Input>
+                            clearable/>
                     </div>
                 </div>
                 <div v-if="tabActive==='dialog' && !dialogSearchKey" class="messenger-nav">
@@ -496,9 +490,13 @@ export default {
             }
         },
 
-        dialogLoading({loadDialogs, dialogSearchLoad}) {
-            return loadDialogs > 0 || dialogSearchLoad > 0
-        }
+        searchLoading({tabActive, loadDialogs, dialogSearchLoad, contactsLoad}) {
+            if (tabActive==='dialog') {
+                return loadDialogs > 0 || dialogSearchLoad > 0
+            } else {
+                return contactsLoad > 0
+            }
+        },
     },
 
     watch: {

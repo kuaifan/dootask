@@ -52,12 +52,13 @@
                         </li>
                     </ul>
                 </Scrollbar>
-                <Input class="search-input" v-model="searchKey" :placeholder="localPlaceholder" clearable>
-                    <div class="search-pre" slot="prefix">
+                <div class="search-input">
+                    <div class="search-pre">
                         <Loading v-if="loadIng > 0"/>
                         <Icon v-else type="ios-search" />
                     </div>
-                </Input>
+                    <Input v-model="searchKey" :placeholder="localPlaceholder" clearable/>
+                </div>
             </div>
 
             <!-- 切换 -->
