@@ -339,25 +339,22 @@ class IndexController extends InvokeController
                     $redirectUrl = Base::fillUrl($path);
                     return <<<EOF
                         <script>
-                            let t = window.top
-                            let \$A = null
-                            while (t) {
-                                if (t.\$A) {
-                                    \$A = t.\$A
-                                    break
-                                }
-                                t = t.top
-                            }
-                            if (\$A) {
-                                \$A.eeuiAppSendMessage({
-                                    action: 'setPageData',
-                                    data: {
-                                        titleFixed: true,
-                                        urlFixed: true,
+                            window.top.postMessage({
+                                action: "eeuiAppSendMessage",
+                                data: [
+                                    {
+                                        action: 'setPageData',
+                                        data: {
+                                            titleFixed: true,
+                                            urlFixed: true,
+                                        }
+                                    },
+                                    {
+                                        action: 'createTarget',
+                                        url: "{$redirectUrl}",
                                     }
-                                });
-                            }
-                            t.location.href = "{$redirectUrl}"
+                                ]
+                            }, "*")
                         </script>
                         EOF;
                 }

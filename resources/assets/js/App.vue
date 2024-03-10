@@ -61,12 +61,14 @@ export default {
     mounted() {
         window.addEventListener('resize', this.windowSizeListener);
         window.addEventListener('scroll', this.windowScrollListener);
+        window.addEventListener('message', this.windowHandleMessage)
         this.searchInter = setInterval(this.searchEnter, 1000);
     },
 
     beforeDestroy() {
         window.removeEventListener('resize', this.windowSizeListener);
         window.removeEventListener('scroll', this.windowScrollListener);
+        window.removeEventListener('message', this.windowHandleMessage)
         this.searchInter && clearInterval(this.searchInter);
     },
 
@@ -234,6 +236,16 @@ export default {
 
         windowScrollListener() {
             this.$store.state.windowScrollY = window.scrollY
+        },
+
+        windowHandleMessage({data}) {
+            data = $A.jsonParse(data);
+            if (data.action === 'eeuiAppSendMessage') {
+                const items = $A.isArray(data.data) ? data.data : [data.data];
+                items.forEach(item => {
+                    $A.eeuiAppSendMessage(item);
+                })
+            }
         },
 
         electronEvents() {
