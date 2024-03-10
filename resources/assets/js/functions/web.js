@@ -102,8 +102,7 @@ import {MarkdownPreview} from "../store/markdown";
          */
         formatTime(date) {
             let now = $A.Time(),
-                time = $A.Date(date, true),
-                string = '';
+                time = $A.Date(date, true);
             if ($A.formatDate('Ymd', now) === $A.formatDate('Ymd', time)) {
                 return $A.formatDate('H:i', time)
             }
@@ -113,7 +112,7 @@ import {MarkdownPreview} from "../store/markdown";
             if ($A.formatDate('Y', now) === $A.formatDate('Y', time)) {
                 return $A.formatDate('m-d', time)
             }
-            return $A.formatDate('Y-m-d', time);
+            return $A.formatDate('Y-m-d', time) || '';
         },
 
         /**
