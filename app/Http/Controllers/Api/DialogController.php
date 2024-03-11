@@ -2198,6 +2198,10 @@ class DialogController extends AbstractController
             $list = array_reverse(array_values($list));
         }
         //
+        usort($list, function($a, $b) {
+            return $a['id'] - $b['id'];
+        });
+        //
         $msgData = [
             'text' => $text,
             'list' => $list,
