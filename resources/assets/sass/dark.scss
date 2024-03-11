@@ -1,8 +1,15 @@
 body.dark-mode-reverse {
     .ivu-btn-primary,
     .ivu-badge-count,
+    .ivu-btn-error,
+    .ivu-btn-warning,
     .common-right-bottom .common-right-bottom-link {
         color: #000;
+    }
+
+    .ivu-btn-error {
+        background-color: #ff6943;
+        border-color: #ff6943;
     }
 
     .ivu-modal-mask {

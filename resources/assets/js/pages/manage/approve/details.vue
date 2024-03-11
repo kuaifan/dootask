@@ -177,10 +177,10 @@
 
         <!--审批操作-->
         <div class="approve-operation">
-            <Button type="success" v-if="isShowAgreeBtn && !loadIng" @click="approve(1)">{{$L('同意')}}</Button>
+            <Button type="primary" v-if="isShowAgreeBtn && !loadIng" @click="approve(1)">{{$L('同意')}}</Button>
             <Button type="error" v-if="isShowAgreeBtn && !loadIng"  @click="approve(2)">{{$L('拒绝')}}</Button>
             <Button type="warning" v-if="isShowWarningBtn && !loadIng" @click="revocation">{{$L('撤销')}}</Button>
-            <Button type="success" @click="comment" :loading="loadIng > 0" ghost>+{{$L('添加评论')}}</Button>
+            <Button type="primary" @click="comment" :loading="loadIng > 0" ghost>+{{$L('添加评论')}}</Button>
         </div>
 
         <!--加载中-->
