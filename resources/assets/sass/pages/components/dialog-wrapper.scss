@@ -1840,6 +1840,19 @@ body:not(.window-touch) {
                                     .dialog-foot {
                                         display: none;
                                     }
+
+                                    .dialog-content {
+                                        .content-file.file {
+                                            width: 100%;
+                                            .file-box{
+                                                width: 100%;
+                                            }
+                                        }
+                                        .content-meeting {
+                                            color: #303133;
+                                        }
+                                    }
+
                                 }
 
                                 .dialog-avatar {
