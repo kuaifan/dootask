@@ -33,7 +33,7 @@
                             <Radio label="close">{{ $L('关闭') }}</Radio>
                         </RadioGroup>
                         <div v-if="formData.reg_verify == 'open'" class="form-tip">
-                            {{$L('开启后：')}}<br/>
+                            {{$L('开启后')}}:<br/>
                             ① {{$L('帐号需验证通过才可登录')}}<br/>
                             ② {{$L('修改邮箱和删除帐号需要邮箱验证码')}}
                         </div>

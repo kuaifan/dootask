@@ -3916,15 +3916,15 @@
         "id": "Harus mengisi: anda harus mengatur nama panggilan, panggilan sebelum anda mengirim obrolan."
     },
     {
-        "key": "进入路由器终端执行以下命令即可完成安装：",
+        "key": "进入路由器终端执行以下命令即可完成安装",
         "zh": "",
-        "zh-CHT": "進入路由器終端執行以下命令即可完成安裝：",
-        "en": "Log in to the router terminal and run the following command to complete the installation:",
-        "ko": "라우터 터미널에 들어가서 다음 명령을 실행하면 설치가 완료됩니다:",
+        "zh-CHT": "進入路由器終端執行以下命令即可完成安裝",
+        "en": "Log in to the router terminal and run the following command to complete the installation",
+        "ko": "라우터 터미널에 들어가서 다음 명령을 실행하면 설치가 완료됩니다",
         "ja": "ルーター端末に入って以下のコマンドを実行すればインストール完了です。",
-        "de": "Um die installation abzuschließen, müssen sie die folgenden befehle ausführen:",
-        "fr": "Allez dans le terminal du routeur et exécutez les commandes suivantes pour terminer l’installation:",
-        "id": "Memasuki terminal router untuk melakukan instalasi selesai dengan perintah berikut:"
+        "de": "Um die installation abzuschließen, müssen sie die folgenden befehle ausführen",
+        "fr": "Allez dans le terminal du routeur et exécutez les commandes suivantes pour terminer l’installation",
+        "id": "Memasuki terminal router untuk melakukan instalasi selesai dengan perintah berikut"
     },
     {
         "key": "设备连接上指定路由器（WiFi）后自动签到。",
@@ -4411,15 +4411,15 @@
         "id": "Melalui sinergi menghasilkan dokumen awan yang kuat dan mudah digunakan"
     },
     {
-        "key": "注销前，请确认一下事项：",
+        "key": "注销前，请确认一下事项",
         "zh": "",
-        "zh-CHT": "註銷前，請確認一下事項：",
-        "en": "Before cancellation, please confirm the following:",
+        "zh-CHT": "註銷前，請確認一下事項",
+        "en": "Before cancellation, please confirm the following",
         "ko": "로그아웃하기 전에 다음 사항을 확인하시기 바랍니다.",
         "ja": "登録を抹消する前に、確認事項をお願いします。",
-        "de": "Vor der abschreibung überprüfen sie bitte den auftrag:",
-        "fr": "Avant de vous déconnecter, veuillez vérifier les choses:",
-        "id": "Pastikan hal sebelum log keluar:"
+        "de": "Vor der abschreibung überprüfen sie bitte den auftrag",
+        "fr": "Avant de vous déconnecter, veuillez vérifier les choses",
+        "id": "Pastikan hal sebelum log keluar"
     },
     {
         "key": "签到前后时间收到消息通知",
@@ -5203,15 +5203,15 @@
         "id": "Harap masukkan ID saluran pertemuan"
     },
     {
-        "key": "第二次任务提醒:",
+        "key": "第二次任务提醒",
         "zh": "",
-        "zh-CHT": "第二次任務提醒:",
-        "en": "Second mission reminder:",
-        "ko": "두 번째 작업 알람:",
-        "ja": "2回目のタスクリマインダーです:",
+        "zh-CHT": "第二次任務提醒",
+        "en": "Second mission reminder",
+        "ko": "두 번째 작업 알람",
+        "ja": "2回目のタスクリマインダーです",
         "de": "Das war unser auftrag.",
-        "fr": "Deuxième rappel de mission:",
-        "id": "Pengingat untuk tugas kedua:"
+        "fr": "Deuxième rappel de mission",
+        "id": "Pengingat untuk tugas kedua"
     },
     {
         "key": "请输入职位\/职称",
@@ -7480,15 +7480,15 @@
         "id": "Server SMTP"
     },
     {
-        "key": "任务提醒:",
+        "key": "任务提醒",
         "zh": "",
-        "zh-CHT": "任務提醒:",
-        "en": "Task reminder:",
-        "ko": "작업 알람:",
-        "ja": "タスクリマインダーです:",
+        "zh-CHT": "任務提醒",
+        "en": "Task reminder",
+        "ko": "작업 알람",
+        "ja": "タスクリマインダーです",
         "de": "Das beruhigt mich.",
-        "fr": "Rappel des tâches:",
-        "id": "Peringatan misi:"
+        "fr": "Rappel des tâches",
+        "id": "Peringatan misi"
     },
     {
         "key": "职位\/职称",
@@ -8558,15 +8558,15 @@
         "id": "Laporan pekerjaan"
     },
     {
-        "key": "开启后：",
+        "key": "开启后",
         "zh": "",
-        "zh-CHT": "開啓後：",
-        "en": "After opening:",
-        "ko": "켜진 후:",
-        "ja": "オンにします:",
-        "de": "Aktivierung:",
-        "fr": "Après ouverture:",
-        "id": "Setelah di buka:"
+        "zh-CHT": "開啓後",
+        "en": "After opening",
+        "ko": "켜진 후",
+        "ja": "オンにします",
+        "de": "Aktivierung",
+        "fr": "Après ouverture",
+        "id": "Setelah di buka"
     },
     {
         "key": "开启推送",
@@ -17116,15 +17116,15 @@
         "id": "Nama, silakan!"
     },
     {
-        "key": "访问OpenAI网站查看：",
+        "key": "访问OpenAI网站查看",
         "zh": "",
-        "zh-CHT": "訪問OpenAI網站查看：",
-        "en": "Visit the OpenAI website to see:",
-        "ko": "Openai 사이트를 방문하십시오:",
+        "zh-CHT": "訪問OpenAI網站查看",
+        "en": "Visit the OpenAI website to see",
+        "ko": "Openai 사이트를 방문하십시오",
         "ja": "OpenAIのウェブサイトをご覧ください。",
-        "de": "Besuch der website OpenAI:",
-        "fr": "Visitez le site OpenAI pour voir:",
-        "id": "Kunjungi tampilan situs OpenAI:"
+        "de": "Besuch der website OpenAI",
+        "fr": "Visitez le site OpenAI pour voir",
+        "id": "Kunjungi tampilan situs OpenAI"
     },
     {
         "key": "使用代理",
@@ -18766,15 +18766,15 @@
         "id": "Tidak menunjukkan pesan asli"
     },
     {
-        "key": "转发给:",
+        "key": "转发给",
         "zh": "",
-        "zh-CHT": "轉發給:",
-        "en": "Forward to:",
-        "ko": "다음으로 전달:",
-        "ja": "転送します:",
+        "zh-CHT": "轉發給",
+        "en": "Forward to",
+        "ko": "다음으로 전달",
+        "ja": "転送します",
         "de": "Und an scotty.",
-        "fr": "Envoyer à:",
-        "id": "Teruskan ke:"
+        "fr": "Envoyer à",
+        "id": "Teruskan ke"
     },
     {
         "key": "留言",

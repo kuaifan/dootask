@@ -81,7 +81,7 @@
                             <p>2. {{ $L('设备连接上指定路由器（WiFi）后自动签到。') }}</p>
                             <p>3. {{ $L('仅支持Openwrt系统的路由器。') }}</p>
                             <p>4. {{ $L('关闭签到功能再开启需要重新安装。') }}</p>
-                            <p>5. {{ $L('进入路由器终端执行以下命令即可完成安装：') }}</p>
+                            <p>5. {{ $L('进入路由器终端执行以下命令即可完成安装') }}:</p>
                             <Input ref="cmd" @on-focus="clickCmd" style="margin-top:6px" type="textarea" readonly :value="formData.cmd"/>
                         </FormItem>
                     </div>

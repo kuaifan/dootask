@@ -6,7 +6,7 @@
                 <div class="form-box">
                     <FormItem label="API Key" prop="openai_key">
                         <Input :maxlength="255" v-model="formData.openai_key" type="password" placeholder="OpenAI API Key"/>
-                        <div class="form-tip">{{$L('访问OpenAI网站查看：')}}<a href="https://platform.openai.com/account/api-keys" target="_blank">https://platform.openai.com/account/api-keys</a></div>
+                        <div class="form-tip">{{$L('访问OpenAI网站查看')}}: <a href="https://platform.openai.com/account/api-keys" target="_blank">https://platform.openai.com/account/api-keys</a></div>
                     </FormItem>
                     <FormItem :label="$L('模型')" prop="openai_model">
                         <Select v-model="formData.openai_model" placement="top">
