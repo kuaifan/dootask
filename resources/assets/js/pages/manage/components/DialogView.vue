@@ -128,7 +128,7 @@
                                     <Progress :percent="Number(getVoteProgress(msgData.msg,item.id).progress)" :stroke-width="5" hide-info/>
                                     <div v-if="msgData.msg.anonymous == 0" class="avatar-row">
                                         <template v-for="votes in (msgData.msg.votes || []).filter(h=>h.votes.indexOf(item.id) != -1)">
-                                            <UserAvatar  :userid="votes.userid" :size="18" />
+                                            <UserAvatar :userid="votes.userid" :size="18" />
                                         </template>
                                     </div>
                                 </li>
