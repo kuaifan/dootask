@@ -165,6 +165,11 @@
             if (!$A.isEEUiApp) return;
             return $A.eeuiModuleSync("webview").setDisabledUserLongClickSelect(val);
         },
+
+        eeuiAppCopyText(text) {
+            if (!$A.isEEUiApp) return;
+            $A.eeuiModule("eeui").copyText(text)
+        },
     });
 
     window.$A = $;

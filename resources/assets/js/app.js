@@ -161,6 +161,27 @@ Vue.prototype.goBack = function () {
     }
 };
 
+// 复制文本
+Vue.prototype.copyText = function (obj) {
+    if (!$A.isJson(obj)) {
+        obj = {
+            text: obj,
+            success: "复制成功",
+            error: "复制失败"
+        }
+    }
+    if ($A.isEEUiApp) {
+        $A.eeuiAppCopyText(obj.text)
+        obj.success && $A.messageSuccess(obj.success)
+        return
+    }
+    app.$copyText(text).then(_ => {
+        obj.success && $A.messageSuccess(obj.success)
+    }).catch(_ => {
+        obj.error && $A.messageError(obj.error)
+    })
+};
+
 // 全局对象/变量
 $A.L = $L;
 $A.Electron = null;

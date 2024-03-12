@@ -2872,18 +2872,18 @@ export default {
                     break;
 
                 case 'link':
-                    this.$copyText(value).then(_ => $A.messageSuccess('复制成功')).catch(_ => $A.messageError('复制失败'))
+                    this.copyText(value);
                     break;
 
                 case 'selected':
-                    this.$copyText(value).then(_ => $A.messageSuccess('复制成功')).catch(_ => $A.messageError('复制失败'))
+                    this.copyText(value);
                     break;
 
                 case 'text':
                     const copyEl = $A(this.$refs.scroller.$el).find(`[data-id="${this.operateItem.id}"]`).find('.dialog-content')
                     if (copyEl.length > 0) {
                         const text = copyEl[0].innerText.replace(/\n\n/g, "\n").replace(/(^\s*)|(\s*$)/g, "")
-                        this.$copyText(text).then(_ => $A.messageSuccess('复制成功')).catch(_ => $A.messageError('复制失败'))
+                        this.copyText(text)
                     } else {
                         $A.messageWarning('不可复制的内容');
                     }

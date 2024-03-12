@@ -46,13 +46,13 @@ export default {
                         if (navigator.clipboard?.writeText)
                             navigator.clipboard.writeText(codeBlock.textContent ?? '')
                         else
-                            this.copyText({text: codeBlock.textContent ?? '', origin: true})
+                            this.copyContent({text: codeBlock.textContent ?? '', origin: true})
                     })
                 }
             })
         },
 
-        copyText(options) {
+        copyContent(options) {
             const props = {origin: true, ...options}
 
             let input

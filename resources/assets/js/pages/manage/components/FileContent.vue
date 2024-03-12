@@ -562,11 +562,7 @@ export default {
                 return;
             }
             this.linkFocus();
-            this.$copyText(this.linkData.url).then(_ => {
-                $A.messageSuccess('复制成功');
-            }).catch(_ => {
-                $A.messageError('复制失败');
-            });
+            this.copyText(this.linkData.url);
         },
 
         linkFocus() {

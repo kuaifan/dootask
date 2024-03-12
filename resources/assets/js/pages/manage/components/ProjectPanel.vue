@@ -1420,11 +1420,7 @@ export default {
                 return;
             }
             this.inviteFocus();
-            this.$copyText(this.inviteData.url).then(_ => {
-                $A.messageSuccess('复制成功');
-            }).catch(_ => {
-                $A.messageError('复制失败');
-            });
+            this.copyText(this.inviteData.url);
         },
 
         inviteFocus() {

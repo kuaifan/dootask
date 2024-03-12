@@ -548,10 +548,10 @@ export default {
                     sharekey: this.addData.sharekey
                 },
             }).then(({ data }) => {
-                this.$copyText(data).then(_ => {
-                    $A.messageSuccess('已复制会议邀请链接');
-                }).catch(_ => {
-                    $A.messageError('复制失败');
+                this.copyText({
+                    text: data,
+                    success: '已复制会议邀请链接',
+                    error: "复制失败"
                 });
                 this.invitationShow = false;
             }).catch(({ msg }) => {
