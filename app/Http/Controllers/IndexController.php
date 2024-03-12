@@ -322,10 +322,10 @@ class IndexController extends InvokeController
             }
             // 浏览器类型
             $browser = 'none';
-            if (str_contains($userAgent, 'chrome')) {
-                $browser = str_contains($userAgent, 'android') || str_contains($userAgent, 'harmonyos') ? 'android-mobile' : 'chrome-desktop';
-            } elseif (str_contains($userAgent, 'safari') || str_contains($userAgent, 'iphone') || str_contains($userAgent, 'ipad')) {
-                $browser = str_contains($userAgent, 'iphone') || str_contains($userAgent, 'ipad') ? 'safari-mobile' : 'safari-desktop';
+            if (str_contains($userAgent, 'chrome') || str_contains($userAgent, 'android_kuaifan_eeui')) {
+                $browser = str_contains($userAgent, 'android_kuaifan_eeui') ? 'android-mobile' : 'chrome-desktop';
+            } elseif (str_contains($userAgent, 'safari') || str_contains($userAgent, 'ios_kuaifan_eeui')) {
+                $browser = str_contains($userAgent, 'ios_kuaifan_eeui') ? 'safari-mobile' : 'safari-desktop';
             }
             // electron 直接在线预览查看
             if (str_contains($userAgent, 'electron') || str_contains($browser, 'desktop')) {
@@ -345,6 +345,7 @@ class IndexController extends InvokeController
                                     {
                                         action: 'setPageData',
                                         data: {
+                                            showProgress: true,
                                             titleFixed: true,
                                             urlFixed: true,
                                         }
