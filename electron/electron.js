@@ -358,9 +358,7 @@ function createWebTabWindow(args) {
         useLoadingView: true,
         useErrorView: true,
         webPreferences: {
-            type: 'browserView',
             preload: path.join(__dirname, 'electron-preload.js'),
-            nodeIntegrationInSubFrames: true,
         }
     })
     if (nativeTheme.shouldUseDarkColors) {
