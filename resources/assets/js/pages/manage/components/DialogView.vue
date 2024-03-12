@@ -433,6 +433,9 @@ export default {
 
     methods: {
         handleLongpress(event, el) {
+            if (!this.msgData.created_at) {
+                return;
+            }
             this.$emit("on-longpress", {event, el, msgData: this.msgData})
         },
 
