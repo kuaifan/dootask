@@ -2253,8 +2253,6 @@ class DialogController extends AbstractController
         WebSocketDialog::checkDialog($dialog_id);
         //
         $action = null;
-        $userid = $user->userid;
-        $result = [];
         if ($type != 'create') {
             if ($type == 'vote' && empty($votes)) {
                 return Base::retError('参数错误');
@@ -2262,42 +2260,50 @@ class DialogController extends AbstractController
             if (empty($uuid)) {
                 return Base::retError('参数错误');
             }
-            $dialogMsgs = WebSocketDialogMsg::whereDialogId($dialog_id)
-                ->whereType('vote')
-                ->orderByDesc('created_at')
-                ->where('msg', 'like', "%$uuid%")
-                ->get();
-            //
-            if ($type == 'again') {
-                $res = WebSocketDialogMsg::sendMsg(null, $dialog_id, 'vote', $dialogMsgs[0]->msg, $user->userid);
-                if (Base::isError($res)) {
-                    return $res;
-                }
-                $result[] = $res['data'];
-            } else {
-                foreach ($dialogMsgs as $dialogMsg) {
-                    $action = "change-{$dialogMsg->id}";
-                    $msgData = $dialogMsg->msg;
-                    if ($type == 'finish') {
-                        $msgData['state'] = 0;
-                    } else {
-                        $msgDataVotes = $msgData['votes'] ?? [];
-                        if (in_array($userid, array_column($msgDataVotes, 'userid'))) {
-                            return Base::retError('不能重复投票');
-                        }
-                        $msgDataVotes[] = [
-                            'userid' => $userid,
-                            'votes' => $votes,
-                        ];
-                        $msgData['votes'] = $msgDataVotes;
-                    }
-                    $res = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'vote', $msgData, $user->userid);
+            return AbstractModel::transaction(function () use ($user, $uuid, $dialog_id, $type, $votes) {
+                //
+                $dialogMsgs = WebSocketDialogMsg::whereDialogId($dialog_id)
+                    ->lockForUpdate()
+                    ->whereType('vote')
+                    ->orderByDesc('created_at')
+                    ->where('msg', 'like', "%$uuid%")
+                    ->get();
+                //
+                $result = [];
+                if ($type == 'again') {
+                    $res = WebSocketDialogMsg::sendMsg(null, $dialog_id, 'vote', $dialogMsgs[0]->msg, $user->userid);
                     if (Base::isError($res)) {
                         return $res;
                     }
                     $result[] = $res['data'];
+                } else {
+                    foreach ($dialogMsgs as $dialogMsg) {
+                        $action = "change-{$dialogMsg->id}";
+                        $msgData = $dialogMsg->msg;
+                        if ($type == 'finish') {
+                            $msgData['state'] = 0;
+                        } else {
+                            $msgDataVotes = $msgData['votes'] ?? [];
+                            if (in_array($user->userid, array_column($msgDataVotes, 'userid'))) {
+                                return Base::retError('不能重复投票');
+                            }
+                            $msgDataVotes[] = [
+                                'userid' => $user->userid,
+                                'votes' => $votes,
+                            ];
+                            $msgData['votes'] = $msgDataVotes;
+                        }
+                        //
+                        $res = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'vote', $msgData, $user->userid);
+                        if (Base::isError($res)) {
+                            return $res;
+                        }
+                        $result[] = $res['data'];
+                    }
                 }
-            }
+                //
+                return Base::retSuccess('发送成功', $result);
+            });
         } else {
             $strlen = mb_strlen($text);
             $noimglen = mb_strlen(preg_replace("/<img[^>]*?>/i", "", $text));
@@ -2310,7 +2316,7 @@ class DialogController extends AbstractController
             $msgData = [
                 'text' => $text,
                 'list' => $list,
-                'userid' => $userid,
+                'userid' => $user->userid,
                 'uuid' => $uuid ?: Base::generatePassword(36),
                 'multiple' => $multiple,
                 'anonymous' => $anonymous,
@@ -2321,9 +2327,8 @@ class DialogController extends AbstractController
             if (Base::isError($res)) {
                 return $res;
             }
-            $result[] = $res['data'];
+            return Base::retSuccess('发送成功', [$res['data']]);
         }
-        return Base::retSuccess('发送成功', $result);
     }
 
     /**
