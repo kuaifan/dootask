@@ -2180,35 +2180,39 @@ class DialogController extends AbstractController
             return Base::retError('内容最大不能超过200000字');
         }
         //
-        $userid = $user->userid;
-        if ($uuid) {
-            $dialogMsg = WebSocketDialogMsg::whereDialogId($dialog_id)
-                ->whereType('word-chain')
-                ->orderByDesc('created_at')
-                ->where('msg', 'like', "%$uuid%")
-                ->value('msg');
-            $list = array_reverse(array_merge($dialogMsg['list'] ?? [], $list));
-            $list = array_reduce($list, function ($result, $item) {
-                $fieldValue = $item['id'];  // 指定字段名
-                if (!isset($result[$fieldValue])) {
-                    $result[$fieldValue] = $item;
-                }
-                return $result;
-            }, []);
-            $list = array_reverse(array_values($list));
-        }
-        //
-        usort($list, function($a, $b) {
-            return $a['id'] - $b['id'];
+        return AbstractModel::transaction(function () use ($user, $uuid, $dialog_id, $list, $text) {
+            if ($uuid) {
+                $dialogMsg = WebSocketDialogMsg::whereDialogId($dialog_id)
+                    ->lockForUpdate()
+                    ->whereType('word-chain')
+                    ->orderByDesc('created_at')
+                    ->where('msg', 'like', "%$uuid%")
+                    ->value('msg');
+                $list = array_reverse(array_merge($dialogMsg['list'] ?? [], $list));
+                $list = array_reduce($list, function ($result, $item) {
+                    $fieldValue = $item['id'];  // 指定字段名
+                    if (!isset($result[$fieldValue])) {
+                        $result[$fieldValue] = $item;
+                    }
+                    return $result;
+                }, []);
+                $list = array_reverse(array_values($list));
+            } else {
+                $uuid = Base::generatePassword(36);
+            }
+            //
+            usort($list, function ($a, $b) {
+                return $a['id'] - $b['id'];
+            });
+            //
+            $msgData = [
+                'text' => $text,
+                'list' => $list,
+                'userid' => $user->userid,
+                'uuid' => $uuid,
+            ];
+            return WebSocketDialogMsg::sendMsg(null, $dialog_id, 'word-chain', $msgData, $user->userid);
         });
-        //
-        $msgData = [
-            'text' => $text,
-            'list' => $list,
-            'userid' => $userid,
-            'uuid' => $uuid ?: Base::generatePassword(36),
-        ];
-        return WebSocketDialogMsg::sendMsg(null, $dialog_id, 'word-chain', $msgData, $user->userid);
     }
 
     /**
