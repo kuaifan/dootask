@@ -162,6 +162,7 @@
                     padding: 0 6px;
 
                     .search-pre {
+                        flex-shrink: 0;
                         width: 32px;
                         height: 32px;
                         margin-right: -6px;

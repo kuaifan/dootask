@@ -27,6 +27,7 @@
             justify-content: center;
 
             .search-pre {
+                flex-shrink: 0;
                 width: 32px;
                 height: 32px;
                 margin-right: -6px;
