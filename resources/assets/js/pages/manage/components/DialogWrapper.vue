@@ -433,7 +433,7 @@
         <!-- 转发确认 -->
         <Modal
             v-model="forwardhow"
-            :title="$L('转发给:')"
+            :title="`${$L('转发给')}:`"
             class-name="common-user-select-modal dialog-forward-message-modal"
             :mask-closable="false"
             width="420">
@@ -459,10 +459,16 @@
             </div>
             <div class="twice-affirm-body-extend">
                 <div class="dialog-wrapper-forward-body">
-                    <div class="dialog-wrapper">
-                        <div class="dialog-scroller">
-                            <DialogItem :source="operateItem" simpleView :dialogAvatar="false"/>
-                        </div>
+                    <div class="dialog-wrapper inde-list">
+                        <Scrollbar class-name="dialog-scroller">
+                            <DialogItem
+                                :source="operateItem"
+                                @on-view-text="onViewText"
+                                @on-view-file="onViewFile"
+                                @on-down-file="onDownFile"
+                                @on-emoji="onEmoji"
+                                simpleView/>
+                        </Scrollbar>
                     </div>
                     <div class="leave-message">
                         <Input type="textarea" :autosize="{minRows: 1,maxRows: 3}" v-model="forwardMessage" :placeholder="$L('留言')" clearable />
@@ -548,7 +554,7 @@
                 v-if="replyListShow"
                 :dialogId="dialogId"
                 :msgId="replyListId"
-                class="drawer-list">
+                class="inde-list">
                 <div slot="head" class="drawer-title">{{$L('回复消息')}}</div>
             </DialogWrapper>
         </DrawerOverlay>
@@ -567,7 +573,7 @@
             placement="right"
             class-name="dialog-wrapper-drawer-list"
             :size="500">
-            <div class="dialog-wrapper drawer-list">
+            <div class="dialog-wrapper inde-list">
                 <div class="dialog-nav">
                     <div class="drawer-title">{{$L('待办消息')}}</div>
                 </div>

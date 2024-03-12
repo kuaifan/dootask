@@ -13,7 +13,7 @@
         overflow: hidden;
     }
 
-    &.drawer-list {
+    &.inde-list {
         border-radius: 18px 0 0 18px;
         overflow: hidden;
 
@@ -1822,6 +1822,10 @@ body:not(.window-touch) {
                     .dialog-wrapper {
                         position: relative;
 
+                        &.inde-list {
+                            border-radius: 0;
+                        }
+
                         .dialog-scroller {
                             position: relative;
                             padding: 0;
@@ -1835,66 +1839,27 @@ body:not(.window-touch) {
                                     .dialog-head {
                                         width: 100%;
                                         border-radius: 8px;
+
+                                        .dialog-content {
+                                            .content-file.file {
+                                                width: 100%;
+
+                                                .file-box {
+                                                    width: 100%;
+                                                }
+                                            }
+                                        }
                                     }
 
                                     .dialog-foot {
                                         display: none;
                                     }
-
-                                    .dialog-content {
-                                        .content-file.file {
-                                            width: 100%;
-                                            .file-box{
-                                                width: 100%;
-                                            }
-                                        }
-                                        .content-meeting {
-                                            color: #303133;
-                                        }
-                                    }
-
                                 }
 
                                 .dialog-avatar {
                                     display: none;
                                 }
 
-                                &.self {
-                                    .dialog-head {
-                                        background-color: #F4F5F7;
-
-                                        .content-text {
-                                            color: #303133;
-
-                                            .markdown-body {
-                                                color: #303133;
-                                            }
-                                        }
-
-                                        .dialog-reply {
-                                            &:after {
-                                                background-color: rgba(132, 197, 106, 0.7);
-                                            }
-
-                                            .reply-avatar {
-                                                .bot,
-                                                .common-avatar {
-                                                    color: #84C56A;
-                                                }
-                                            }
-                                        }
-
-                                        .dialog-emoji {
-                                            .avatar-name {
-                                                color: #818181;
-                                            }
-
-                                            > li.hasme {
-                                                background-color: #e1e1e1;
-                                            }
-                                        }
-                                    }
-                                }
                             }
                         }
                     }
@@ -2209,7 +2174,7 @@ body.window-touch {
 body.window-portrait {
     .dialog-wrapper {
         background-color: #f8f8f8;
-        &.drawer-list {
+        &.inde-list {
             .dialog-nav {
                 .drawer-title {
                     height: 52px;
