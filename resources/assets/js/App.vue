@@ -232,6 +232,12 @@ export default {
 
             this.$store.state.formLabelPosition = windowWidth > 576 ? 'right' : 'top'
             this.$store.state.formLabelWidth = windowWidth > 576 ? 'auto' : ''
+
+            $A.eeuiAppSendMessage({
+                action: 'windowSize',
+                width: windowWidth,
+                height: windowHeight,
+            });
         },
 
         windowScrollListener() {
@@ -317,11 +323,6 @@ export default {
                 } else {
                     this.autoTheme()
                 }
-                $A.eeuiAppSendMessage({
-                    action: 'outerSize',
-                    outerWidth: window.outerWidth,
-                    outerHeight: window.outerHeight,
-                });
             }
             // 新窗口打开
             window.__onCreateTarget = (url) => {
@@ -400,9 +401,9 @@ export default {
             }
             // 发送网页尺寸
             $A.eeuiAppSendMessage({
-                action: 'outerSize',
-                outerWidth: window.outerWidth,
-                outerHeight: window.outerHeight,
+                action: 'windowSize',
+                width: this.windowWidth,
+                height: this.windowHeight,
             });
             // 取消长按振动
             $A.eeuiAppSetHapticBackEnabled(false)
