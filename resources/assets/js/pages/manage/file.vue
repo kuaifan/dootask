@@ -42,7 +42,7 @@
                     <Button :disabled="shearFirst.pid == pid" size="small" type="primary" @click="shearTo" :style="{marginLeft: showBtnText ? '12px' : 0}">
                         <div class="file-shear">
                             <span>{{$L('粘贴')}}</span>
-                            <span v-show="showBtnText">"<em>{{shearFirst.name}}</em>"</span>
+                            <template v-show="showBtnText">"<em>{{shearFirst.name}}</em>"</template>
                             <span v-if="shearIds.length > 1">{{$L('等')}}{{shearIds.length}}{{$L('个文件')}}</span>
                         </div>
                     </Button>
@@ -50,16 +50,22 @@
                 </template>
                 <template v-else-if="selectIds.length > 0">
                     <Button size="small" type="info" @click="handleContextClick('shearSelect')" :style="{marginLeft: showBtnText ? '12px' : 0}">
-                        <Icon type="ios-cut" />
-                        <span v-show="showBtnText">{{$L('剪切')}}</span>
+                        <div class="tool-box">
+                            <Icon type="ios-cut" />
+                            <span v-show="showBtnText">{{$L('剪切')}}</span>
+                        </div>
                     </Button>
                     <Button :disabled="compressedSownloadDisabled" size="small" type="info" @click="downloadZipFile(selectIds)">
-                        <Icon type="ios-download" />
-                        <span v-show="showBtnText">{{$L('打包下载')}}</span>
+                        <div class="tool-box">
+                            <Icon type="ios-download" />
+                            <span v-show="showBtnText">{{$L('打包下载')}}</span>
+                        </div>
                     </Button>
                     <Button size="small" type="error" @click="deleteFile(selectIds)">
-                        <Icon type="ios-trash" />
-                        <span v-show="showBtnText">{{$L('删除')}}</span>
+                        <div class="tool-box">
+                            <Icon type="ios-trash" />
+                            <span v-show="showBtnText">{{$L('删除')}}</span>
+                        </div>
                     </Button>
                     <Button type="primary" size="small" @click="clearSelect">
                         {{showBtnText ? $L('取消选择') : $L('取消')}}

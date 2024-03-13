@@ -163,6 +163,16 @@
             .ivu-btn {
                 font-size: 12px;
                 margin-left: 12px;
+                .tool-box {
+                    display: flex;
+                    align-items: center;
+                    > i {
+                        font-size: 14px;
+                    }
+                    > span {
+                        margin-left: 2px;
+                    }
+                }
             }
             .file-shear {
                 display: flex;
