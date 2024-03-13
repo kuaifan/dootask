@@ -1524,7 +1524,7 @@ export default {
                 dialog_id: this.dialogData.id,
                 reply_id: this.quoteId,
                 reply_data: this.quoteData,
-                type: 'loading',
+                type: 'record',
                 userid: this.userId,
                 msg,
             }
@@ -1987,9 +1987,9 @@ export default {
                         id: file.tempId,
                         dialog_id: this.dialogData.id,
                         reply_id: this.quoteId,
-                        type: 'loading',
+                        type: 'file',
                         userid: this.userId,
-                        msg: { },
+                        msg: file.msg || {},
                     }
                     this.tempMsgs.push(tempMsg)
                     this.msgType = ''

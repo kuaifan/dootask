@@ -2473,13 +2473,18 @@ class Base
      */
     public static function extIcon($ext)
     {
-        return match ($ext) {
-            "docx" => 'images/ext/doc.png',
-            "xlsx" => 'images/ext/xls.png',
-            "pptx" => 'images/ext/ppt.png',
-            "ai", "avi", "bmp", "cdr", "doc", "eps", "gif", "mov", "mp3", "mp4", "pdf", "ppt", "pr", "psd", "rar", "svg", "tif", "txt", "xls", "zip" => 'images/ext/' . $ext . '.png',
-            default => 'images/ext/file.png',
-        };
+        if ($ext == "docx") {
+            $ext = 'doc';
+        } elseif ($ext == "xlsx") {
+            $ext = 'xls';
+        } elseif ($ext == "pptx") {
+            $ext = 'ppt';
+        }
+        if (in_array($ext, ["ai", "avi", "bmp", "cdr", "doc", "eps", "gif", "mov", "mp3", "mp4", "pdf", "ppt", "pr", "psd", "rar", "svg", "tif", "txt", "xls", "zip"])) {
+            return 'images/ext/' . $ext . '.png';
+        } else {
+            return 'images/ext/file.png';
+        }
     }
 
     /**

@@ -536,6 +536,9 @@ export default {
             if (this.operateVisible) {
                 return
             }
+            if (!this.msgData.created_at) {
+                return;
+            }
             this.$store.dispatch("audioPlay", this.msgData.msg.path)
         },
 
@@ -571,10 +574,16 @@ export default {
         },
 
         viewFile() {
+            if (!this.msgData.created_at) {
+                return;
+            }
             this.$emit("on-view-file", this.msgData)
         },
 
         downFile() {
+            if (!this.msgData.created_at) {
+                return;
+            }
             this.$emit("on-down-file", this.msgData)
         },
 
