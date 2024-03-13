@@ -536,8 +536,7 @@ export default {
             if (this.tabActive === 'dialog') {
                 // todo 日志输出对话详情信息
                 if (/^info\.\d+$/.test(val)) {
-                    const dialogItem = this.dialogList.find(item => item.id == val.replace('info.', ''));
-                    console.log(dialogItem);
+                    console.log(this.cacheDialogs.find(item => item.id == val.replace('info.', '')));
                 }
             }
             //
