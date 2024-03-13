@@ -699,6 +699,9 @@ class FileController extends AbstractController
      * @apiName content__upload
      *
      * @apiParam {Number} [pid]             父级ID
+     * @apiParam {Number} [cover]           覆盖已存在的文件
+     * - 0：不覆盖，保留两者（默认）
+     * - 1：覆盖
      * @apiParam {String} [files]           文件名
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -709,8 +712,9 @@ class FileController extends AbstractController
     {
         $user = User::auth();
         $pid = intval(Request::input('pid'));
+        $overwrite = intval(Request::input('cover'));
         $webkitRelativePath = Request::input('webkitRelativePath');
-        $data = (new File)->contentUpload($user, $pid, $webkitRelativePath);
+        $data = (new File)->contentUpload($user, $pid, $webkitRelativePath, $overwrite);
         return Base::retSuccess($data['data']['name'] . ' 上传成功', $data['addItem']);
     }
 

@@ -552,12 +552,17 @@
                 overflow-x: hidden;
                 overflow-y: auto;
                 > li {
+                    cursor: pointer;
                     list-style: none;
                     padding: 4px 0;
                     position: relative;
                     .file-name {
                         line-height: 18px;
                         padding-right: 16px;
+                        .overwrite {
+                            font-style: normal;
+                            color: $flow-status-end-color;
+                        }
                     }
                     .file-error {
                         font-size: 12px;

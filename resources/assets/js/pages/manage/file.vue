@@ -233,8 +233,10 @@
                     <em v-if="uploadList.find(({status}) => status === 'finished')" @click="uploadClear">{{$L('清空已完成')}}</em>
                 </div>
                 <ul class="content">
-                    <li v-for="(item, index) in uploadList" :key="index" v-if="index < 100">
-                        <AutoTip class="file-name">{{uploadName(item)}}</AutoTip>
+                    <li v-for="(item, index) in uploadList" :key="index" v-if="index < 100" @click="uploadClick(item)">
+                        <AutoTip class="file-name">
+                            <span v-html="uploadName(item)"></span>
+                        </AutoTip>
                         <AutoTip v-if="item.status === 'finished' && item.response && item.response.ret !== 1" class="file-error">{{item.response.msg}}</AutoTip>
                         <Progress v-else :percent="uploadPercentageParse(item.percentage)" :stroke-width="5" />
                         <Icon class="file-close" type="ios-close-circle-outline" @click="uploadList.splice(index, 1)"/>
@@ -536,6 +538,7 @@ export default {
             uploadList: [],
             uploadFormat: [],   // 不限制上传文件类型
             uploadAccept: '',
+            uploadCover: false,
 
             contextMenuItem: {},
             contextMenuVisible: false,
@@ -781,7 +784,7 @@ export default {
         },
 
         actionUrl() {
-            return $A.apiUrl('file/content/upload?pid=' + this.pid)
+            return $A.apiUrl('file/content/upload?pid=' + this.pid + '&cover=' + (this.uploadCover ? 1 : 0))
         },
 
         headers() {
@@ -879,7 +882,7 @@ export default {
         },
 
         compressedSownloadDisabled() {
-            return this.fileList?.find((res)=> res._checked && res.permission < 1) ? true : false
+            return !!this.fileList?.find((res) => res._checked && res.permission < 1)
         },
 
         maxSize() {
@@ -1057,6 +1060,10 @@ export default {
 
         browseFolder(id, shakeId = null) {
             if (id > 0) {
+                if (this.$route.params.folderId == id) {
+                    this.shakeFile(shakeId);
+                    return;
+                }
                 this.goForward({name: 'manage-file', params: {folderId: id, fileId: null, shakeId}});
             } else {
                 this.searchKey = '';
@@ -1744,8 +1751,30 @@ export default {
             })
         },
 
+        uploadData(item) {
+            const data = $A.getObject(item, 'response.data')
+            if ($A.isArray(data)) {
+                return data[0]
+            } else if ($A.isJson(data)) {
+                return data
+            }
+        },
+
         uploadName(item) {
-            return $A.getObject(item, 'response.data.full_name') || item.name
+            const data = this.uploadData(item)
+            if (!data) {
+                return item.name
+            }
+            const fullName = data.full_name || item.name
+            return data.overwrite ? `<em class="overwrite">[${this.$L('替换')}]</em> ${fullName}` : fullName
+        },
+
+        uploadClick(item) {
+            const data = this.uploadData(item)
+            if (!data) {
+                return
+            }
+            this.browseFolder(data.pid, data.id)
         },
 
         handleTableSort({key, order}) {
@@ -1948,12 +1977,45 @@ export default {
             });
         },
 
-        handleBeforeUpload() {
+        handleBeforeUpload(file) {
             //上传前判断
+            this.uploadCover = false
+            if (this.uploadDir) {
+                this.handleUploadNext();
+                return true;
+            }
+            return new Promise(resolve => {
+                if (this.fileList.findIndex(item => $A.getFileName(item) === file.name) > -1) {
+                    $A.modalConfirm({
+                        wait: true,
+                        title: '文件已存在',
+                        content: '文件 ' + file.name + ' 已存在，是否替换？',
+                        cancelText: '保留两者',
+                        okText: '替换',
+                        closable: true,
+                        onOk: () => {
+                            this.uploadCover = true
+                            this.handleUploadNext();
+                            resolve();
+                        },
+                        onCancel: (isButton) => {
+                            if (isButton) {
+                                this.handleUploadNext();
+                                resolve();
+                            }
+                        }
+                    });
+                } else {
+                    this.handleUploadNext();
+                    resolve();
+                }
+            })
+        },
+
+        handleUploadNext() {
             this.uploadShow = true;
             this.packShow = false;
-            return true;
-        },
+        }
     }
 }
 </script>

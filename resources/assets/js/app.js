@@ -175,7 +175,7 @@ Vue.prototype.copyText = function (obj) {
         obj.success && $A.messageSuccess(obj.success)
         return
     }
-    app.$copyText(text).then(_ => {
+    app.$copyText(obj.text).then(_ => {
         obj.success && $A.messageSuccess(obj.success)
     }).catch(_ => {
         obj.error && $A.messageError(obj.error)
