@@ -97,7 +97,7 @@
                         <i class="taskfont">&#xe7fd;</i>
                         <em>{{ $L('投票') }}</em>
                         <span>{{ msgData.msg.multiple == 1 ? $L('多选') : $L('单选')}}</span>
-                        <span>{{ msgData.msg.multiple == 1 ? $L('匿名') : $L('实名')}}</span>
+                        <span>{{ msgData.msg.anonymous == 1 ? $L('匿名') : $L('实名')}}</span>
                     </div>
                     <pre v-html="$A.formatTextMsg(msgData.msg.text, userId)"></pre>
                     <template v-if="(msgData.msg.votes || []).filter(h=>h.userid == userId).length == 0">
@@ -126,9 +126,9 @@
                                         <span>{{ getVoteProgress(msgData.msg,item.id).progress + '%' }}</span>
                                     </div>
                                     <Progress :percent="Number(getVoteProgress(msgData.msg,item.id).progress)" :stroke-width="5" hide-info/>
-                                    <div v-if="msgData.msg.anonymous" class="avatar-row">
+                                    <div v-if="msgData.msg.anonymous == 0" class="avatar-row">
                                         <template v-for="votes in (msgData.msg.votes || []).filter(h=>h.votes.indexOf(item.id) != -1)">
-                                            <UserAvatar  :userid="votes.userid" :size="18" />
+                                            <UserAvatar :userid="votes.userid" :size="18" />
                                         </template>
                                     </div>
                                 </li>
