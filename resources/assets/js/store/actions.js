@@ -257,7 +257,7 @@ export default {
                     setTimeout(_ => {
                         cloneParams.__networkFailureRetry = true
                         dispatch("call", cloneParams).then(resolve).catch(reject)
-                    }, 300)
+                    }, 1000)
                     return
                 }
                 if (params.checkNetwork !== false) {

@@ -53,23 +53,24 @@ export default {
     },
 
     created() {
-        this.electronEvents();
-        this.eeuiEvents();
-        this.otherEvents();
+        this.electronEvents()
+        this.eeuiEvents()
+        this.otherEvents()
     },
 
     mounted() {
-        window.addEventListener('resize', this.windowSizeListener);
-        window.addEventListener('scroll', this.windowScrollListener);
+        window.addEventListener('resize', this.windowSizeListener)
+        window.addEventListener('scroll', this.windowScrollListener)
         window.addEventListener('message', this.windowHandleMessage)
-        this.searchInter = setInterval(this.searchEnter, 1000);
+        this.searchInter = setInterval(this.searchEnter, 1000)
+        $A.loadVConsole()
     },
 
     beforeDestroy() {
-        window.removeEventListener('resize', this.windowSizeListener);
-        window.removeEventListener('scroll', this.windowScrollListener);
+        window.removeEventListener('resize', this.windowSizeListener)
+        window.removeEventListener('scroll', this.windowScrollListener)
         window.removeEventListener('message', this.windowHandleMessage)
-        this.searchInter && clearInterval(this.searchInter);
+        this.searchInter && clearInterval(this.searchInter)
     },
 
     computed: {
@@ -112,24 +113,6 @@ export default {
                             });
                         }, 6000)
                     }
-                    //
-                    $A.IDBString("logOpen").then(r => {
-                        $A.openLog = r === "open"
-                        if ($A.openLog) {
-                            $A.loadScript('js/vconsole.min.js').then(_ => {
-                                window.vConsole = new window.VConsole({
-                                    onReady: () => {
-                                        console.log('vConsole: onReady');
-                                    },
-                                    onClearLog: () => {
-                                        console.log('vConsole: onClearLog');
-                                    }
-                                });
-                            }).catch(_ => {
-                                $A.modalError("vConsole 组件加载失败！");
-                            })
-                        }
-                    })
                 }
             },
             immediate: true

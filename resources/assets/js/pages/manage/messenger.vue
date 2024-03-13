@@ -529,17 +529,9 @@ export default {
 
         dialogSearchKey(val) {
             this.$store.state.messengerSearchKey.dialog = val
-            switch (val) {
-                case 'log.o':
-                    $A.IDBSet("logOpen", "open").then(_ => {
-                        $A.reloadUrl()
-                    });
-                    break;
-                case 'log.c':
-                    $A.IDBSet("logOpen", "close").then(_ => {
-                        $A.reloadUrl()
-                    });
-                    break;
+            if ($A.loadVConsole(val)) {
+                this.dialogSearchKey = '';
+                return;
             }
             //
             this.dialogSearchList = [];

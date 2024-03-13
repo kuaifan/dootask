@@ -926,6 +926,49 @@ import {MarkdownPreview} from "../store/markdown";
             }
             return false;
         },
+
+        /**
+         * 加载 VConsole 日志组件
+         * @param key
+         */
+        loadVConsole(key = undefined) {
+            if (typeof key === "string") {
+                switch (key) {
+                    case 'log.o':
+                        $A.IDBSet("logOpen", "open").then(_ => {
+                            $A.loadVConsole()
+                        });
+                        return true;
+                    case 'log.c':
+                        $A.IDBSet("logOpen", "close").then(_ => {
+                            $A.loadVConsole()
+                        });
+                        return true;
+                }
+                return false
+            }
+            $A.IDBString("logOpen").then(r => {
+                if (typeof window.vConsole !== "undefined") {
+                    window.vConsole.destroy();
+                    window.vConsole = null;
+                }
+                $A.openLog = r === "open"
+                if ($A.openLog) {
+                    $A.loadScript('js/vconsole.min.js').then(_ => {
+                        window.vConsole = new window.VConsole({
+                            onReady: () => {
+                                console.log('VConsole: onReady');
+                            },
+                            onClearLog: () => {
+                                console.log('VConsole: onClearLog');
+                            }
+                        });
+                    }).catch(_ => {
+                        $A.modalError("VConsole 组件加载失败！");
+                    })
+                }
+            })
+        }
     });
 
     /**

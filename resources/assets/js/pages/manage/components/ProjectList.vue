@@ -123,6 +123,10 @@ export default {
             if (val == '') {
                 return;
             }
+            if ($A.loadVConsole(val)) {
+                this.projectKeyValue = '';
+                return;
+            }
             this.projectKeyLoading++;
             setTimeout(() => {
                 if (this.projectKeyValue == val) {
