@@ -846,10 +846,10 @@ class WebSocketDialogMsg extends AbstractModel
             $push_silence = !in_array($type, ["text", "file", "record", "meeting"]);
         }
         //
-        $update_id = preg_match("/^update-(\d+)$/", $action, $match) ? $match[1] : 0;
-        $change_id = preg_match("/^change-(\d+)$/", $action, $match) ? $match[1] : 0;
-        $reply_id = preg_match("/^reply-(\d+)$/", $action, $match) ? $match[1] : 0;
-        $forward_id = preg_match("/^forward-(\d+)-(\d+)$/", $action, $match) ? $match[2] : 0;
+        $update_id = intval(preg_match("/^update-(\d+)$/", $action, $match) ? $match[1] : 0);
+        $change_id = intval(preg_match("/^change-(\d+)$/", $action, $match) ? $match[1] : 0);
+        $reply_id = intval(preg_match("/^reply-(\d+)$/", $action, $match) ? $match[1] : 0);
+        $forward_id = intval(preg_match("/^forward-(\d+)-(\d+)$/", $action, $match) ? $match[2] : 0);
         $sender = $sender === null ? User::userid() : $sender;
         //
         $dialog = WebSocketDialog::find($dialog_id);
