@@ -7486,9 +7486,9 @@
         "en": "Task reminder",
         "ko": "작업 알람",
         "ja": "タスクリマインダーです",
-        "de": "Das beruhigt mich.",
+        "de": "Ich brauche eine bestätigung.",
         "fr": "Rappel des tâches",
-        "id": "Peringatan misi"
+        "id": "Pengingat tugas"
     },
     {
         "key": "职位\/职称",
@@ -7698,17 +7698,6 @@
         "de": "Beschreibung der mission",
         "fr": "Description des tâches",
         "id": "Deskripsi tugas"
-    },
-    {
-        "key": "任务提醒",
-        "zh": "",
-        "zh-CHT": "任務提醒",
-        "en": "Task reminder",
-        "ko": "작업 알람",
-        "ja": "タスクリマインダーです",
-        "de": "Ich brauche eine bestätigung.",
-        "fr": "Rappel des tâches",
-        "id": "Pengingat tugas"
     },
     {
         "key": "任务时间",
@@ -19897,5 +19886,49 @@
         "de": "Yesterday",
         "fr": "Yesterday",
         "id": "Yesterday"
+    },
+    {
+        "key": "文件已存在",
+        "zh": "",
+        "zh-CHT": "文件已存在",
+        "en": "File already exists",
+        "ko": "파일이 이미 존재합니다",
+        "ja": "ファイルは存在します",
+        "de": "Die datei existiert.",
+        "fr": "Le fichier existe déjà",
+        "id": "File telah ada"
+    },
+    {
+        "key": "文件(*)已存在，是否替换？",
+        "zh": "",
+        "zh-CHT": "文件(*)已存在，是否替換？",
+        "en": "File (*) already exists. Do you want to replace it?",
+        "ko": "파일 (*)이 이미 존재합니다. 바꾸시겠습니까?",
+        "ja": "ファイル(*)が存在しますが、差し替えますか?",
+        "de": "Die datei * existiert bereits. Wird sie ersetzt?",
+        "fr": "Le fichier (*) existe déjà, est-il remplacé?",
+        "id": "Berkas (*) telah ada, apakah diganti?"
+    },
+    {
+        "key": "保留两者",
+        "zh": "",
+        "zh-CHT": "保留兩者",
+        "en": "Retain both",
+        "ko": "둘다 보류하다",
+        "ja": "両方を留保します",
+        "de": "Er bewahrt beide.",
+        "fr": "Conserver les deux",
+        "id": "Simpan keduanya"
+    },
+    {
+        "key": "替换",
+        "zh": "",
+        "zh-CHT": "替換",
+        "en": "Replace",
+        "ko": "교체",
+        "ja": "置き換えます",
+        "de": "Ersetzung",
+        "fr": "Remplacer",
+        "id": "Pengganti"
     }
 ]
