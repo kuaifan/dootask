@@ -1,15 +1,29 @@
 body.dark-mode-reverse {
     .ivu-btn-primary,
     .ivu-badge-count,
+    .ivu-btn-grey,
     .ivu-btn-error,
     .ivu-btn-warning,
     .common-right-bottom .common-right-bottom-link {
         color: #000;
     }
 
+    .ivu-btn-grey {
+        background-color: #d0d0d0;
+        border-color: #868686;
+        &:hover {
+            background-color: #d5d5d5;
+            border-color: #999999;
+        }
+    }
+
     .ivu-btn-error {
         background-color: #ff9d84;
         border-color: #ff9d84;
+        &:hover {
+            background-color: #ffbdab;
+            border-color: #ffbdab;
+        }
     }
 
     .ivu-modal-mask {
