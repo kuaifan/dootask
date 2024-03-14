@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.35.84]
+
+### Bug Fixes
+
+- 回复消息点击到原文无效
+
+### Performance
+
+- 优化接口时间
+- 优化审批对话按钮配色
+
 ## [0.35.76]
 
 ### Bug Fixes
