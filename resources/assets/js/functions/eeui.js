@@ -168,7 +168,7 @@
 
         eeuiAppCopyText(text) {
             if (!$A.isEEUiApp) return;
-            $A.eeuiModule("eeui").copyText(text)
+            $A.eeuiModuleSync("eeui").copyText(text)
         },
     });
 
