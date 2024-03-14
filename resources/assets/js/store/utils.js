@@ -27,7 +27,7 @@ function __callData(key, requestData, state) {
      * @returns {*}
      */
     this.get = () => {
-        requestData.timerange = requestData.timerange || `${callData.updated ? $A.formatDate("Y-m-d H:i:s", callData.updated) : 0},${callData.deleted ? $A.formatDate("Y-m-d H:i:s", callData.deleted) : 0}`
+        requestData.timerange = requestData.timerange || `${callData.updated || 0},${callData.deleted || 0}`
         return requestData
     }
 
