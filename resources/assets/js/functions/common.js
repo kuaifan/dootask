@@ -1739,8 +1739,7 @@ const localforage = require("localforage");
             }
             // JSONP
             if (options.dataType === 'json' && options.url.indexOf('callback=') >= 0) {
-
-                let callbackName = 'f7jsonp_' + Date.now() + ($._jsonpRequests++);
+                let callbackName = '__jsonp_' + Date.now() + ($._jsonpRequests++);
                 let abortTimeout;
                 let callbackSplit = options.url.split('callback=');
                 let requestUrl = callbackSplit[0] + 'callback=' + callbackName;

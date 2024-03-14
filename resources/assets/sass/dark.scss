@@ -15,6 +15,9 @@ body.dark-mode-reverse {
             background-color: #d5d5d5;
             border-color: #999999;
         }
+        &:focus {
+            box-shadow: none;
+        }
     }
 
     .ivu-btn-error {
@@ -23,6 +26,9 @@ body.dark-mode-reverse {
         &:hover {
             background-color: #ffbdab;
             border-color: #ffbdab;
+        }
+        &:focus {
+            box-shadow: none;
         }
     }
 
