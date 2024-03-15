@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.35.90]
+
+### Bug Fixes
+
+- 子窗口出现重新登录的情况
+
+### Performance
+
+- 拨打电话确认提示
+- 优化预加载文件
+
 ## [0.35.84]
 
 ### Bug Fixes

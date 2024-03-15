@@ -19930,5 +19930,104 @@
         "de": "Ersetzung",
         "fr": "Remplacer",
         "id": "Pengganti"
+    },
+    {
+        "key": "端到端加密",
+        "zh": "",
+        "zh-CHT": "端到端加密",
+        "en": "End-to-end encryption",
+        "ko": "종간 암호화",
+        "ja": "エンドツーエンド暗号化です",
+        "de": "Ende an ende verschlüsselt",
+        "fr": "Chiffrement de bout en bout",
+        "id": "End-to-end enkripsi"
+    },
+    {
+        "key": "关闭端到端加密传输数据。",
+        "zh": "",
+        "zh-CHT": "關閉端到端加密傳輸數據。",
+        "en": "Disable end-to-end encryption for data transmission.",
+        "ko": "엔드 투 엔드 암호화된 전송 데이터",
+        "ja": "エンド・ツー・エンドでのデータの暗号化を停止します。",
+        "de": "Daten Von einem ende zum anderen verschlüsselt.",
+        "fr": "Désactivez le transfert crypté de bout en bout des données.",
+        "id": "Tutup end to end transmisi data dienkripsi."
+    },
+    {
+        "key": "等(*)个文件",
+        "zh": "",
+        "zh-CHT": "等(*)個文件",
+        "en": "Wait for (*) files",
+        "ko": "등 (*) 개 문건을 제출하였다",
+        "ja": "(*)のファイルです。",
+        "de": "Etc. (*) ein dokument",
+        "fr": "Etc. (*) fichiers",
+        "id": "Tunggu (*) berkas"
+    },
+    {
+        "key": "你确定要删除【(*)】等2个文件吗？",
+        "zh": "",
+        "zh-CHT": "你確定要刪除【(*)】等2個文件嗎？",
+        "en": "Are you sure you want to delete [(*)] etc. 2 files?",
+        "ko": "[(*)] 등 2개의 파일을 삭제하시겠습니까?",
+        "ja": "【(*)】などの2つのファイルを削除しますか?",
+        "de": "Sollen wirklich zwei dateien gelöscht werden? (*)",
+        "fr": "Êtes-vous sûr de vouloir supprimer 2 fichiers comme [(*)]?",
+        "id": "Apakah anda yakin ingin menghapus ((*) dan menunggu 2 file?"
+    },
+    {
+        "key": "审批详情",
+        "zh": "",
+        "zh-CHT": "審批詳情",
+        "en": "Approval details",
+        "ko": "심사 정보",
+        "ja": "承認の詳細です",
+        "de": "Lektion 4 prüfung",
+        "fr": "Détails des approbations",
+        "id": "Detail persetujuan"
+    },
+    {
+        "key": "天前",
+        "zh": "",
+        "zh-CHT": "天前",
+        "en": "Days ago",
+        "ko": "일 전",
+        "ja": "先日です",
+        "de": "Äh vortag.",
+        "fr": "Jours",
+        "id": "Hari yang lalu"
+    },
+    {
+        "key": "月前",
+        "zh": "",
+        "zh-CHT": "月前",
+        "en": "Month before",
+        "ko": "1 개월 전에",
+        "ja": "月の前です",
+        "de": "Vor dem monat.",
+        "fr": "Il y a",
+        "id": "Bulan lalu"
+    },
+    {
+        "key": "请输入用户名",
+        "zh": "",
+        "zh-CHT": "請輸入用戶名",
+        "en": "Please enter your username",
+        "ko": "사용자 이름을 입력하십시오",
+        "ja": "ユーザー名の入力をお願いします",
+        "de": "Bitte geben sie einen benutzernamen ein",
+        "fr": "Veuillez entrer votre nom d’utilisateur",
+        "id": "Nama pengguna, silakan"
+    },
+    {
+        "key": "是否拨打电话给(*)？",
+        "zh": "",
+        "zh-CHT": "是否撥打電話給(*)？",
+        "en": "Do you call (*)?",
+        "ko": "(*)에게 전화를 걸어야 합니까?",
+        "ja": "(*)に電話しますか?",
+        "de": "Soll ich anrufen (*)?",
+        "fr": "Est-ce que vous appelez à (*)?",
+        "id": "Apakah ada panggilan untuk (*)?"
     }
 ]
