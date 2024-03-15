@@ -125,9 +125,6 @@ export default {
             if (this.$Electron && $A.$isSubElectron) {
                 return; // 客户端子窗口 不预加载
             }
-            if (this.$isEEUiApp) {
-                return; // 移动端 不预加载
-            }
             axios.get($A.apiUrl('system/prefetch')).then(({status, data}) => {
                 if (status === 200) {
                     data.forEach(url => {

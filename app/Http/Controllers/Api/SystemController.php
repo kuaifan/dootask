@@ -1322,21 +1322,35 @@ class SystemController extends AbstractController
      */
     public function prefetch()
     {
-        $file = base_path('.prefetch');
-        if (!file_exists($file)) {
-            return [];
+        $userAgent = strtolower(Request::server('HTTP_USER_AGENT'));
+        $isMain = str_contains($userAgent, 'maintaskwindow');
+        $isApp = str_contains($userAgent, 'kuaifan_eeui');
+        $version = Base::getVersion();
+        $array = [];
+
+        if ($isMain || $isApp) {
+            $path = 'js/build/';
+            $list = Base::readDir(public_path($path), false);
+            foreach ($list as $item) {
+                if (is_file($item) && filesize($item) > 50 * 1024) {
+                    $array[] = $path . basename($item);
+                }
+            }
         }
 
-        $version = Base::getVersion();
-        $content = file_get_contents($file);
-
-        $array = explode("\n", $content);
-        $array = array_values(array_filter($array));
+        if ($isMain) {
+            $file = base_path('.prefetch');
+            if (file_exists($file)) {
+                $content = file_get_contents($file);
+                $items = explode("\n", $content);
+                $array = array_merge($array, $items);
+            }
+        }
 
         return array_map(function($item) use ($version) {
             $url = trim($item);
             $url = str_replace('{version}', $version, $url);
             return url($url);
-        }, $array);
+        }, array_values(array_filter($array)));
     }
 }
