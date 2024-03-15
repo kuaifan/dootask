@@ -43,7 +43,7 @@
                         <div class="file-shear">
                             <span>{{$L('粘贴')}}</span>
                             <template v-show="showBtnText">"<em>{{shearFirst.name}}</em>"</template>
-                            <span v-if="shearIds.length > 1">{{$L('等')}}{{shearIds.length}}{{$L('个文件')}}</span>
+                            <span v-if="shearIds.length > 1">{{ $L(`等${shearIds.length}个文件`) }}</span>
                         </div>
                     </Button>
                     <Button type="primary" size="small" @click="clearShear">{{ $L('取消剪切') }}</Button>

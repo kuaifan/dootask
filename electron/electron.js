@@ -343,6 +343,8 @@ function createWebTabWindow(args) {
             if (utils.isMetaOrControl(input) && input.key.toLowerCase() === 'r') {
                 reloadWebTab(0)
                 event.preventDefault()
+            } else if (utils.isMetaOrControl(input) && input.shift && input.key.toLowerCase() === 'i') {
+                devToolsWebTab(0)
             }
         })
 
@@ -424,7 +426,7 @@ function createWebTabWindow(args) {
         if (utils.isMetaOrControl(input) && input.key.toLowerCase() === 'r') {
             browserView.webContents.reload()
             event.preventDefault()
-        } else if (input.meta && input.shift && input.key.toLowerCase() === 'i') {
+        } else if (utils.isMetaOrControl(input) && input.shift && input.key.toLowerCase() === 'i') {
             browserView.webContents.toggleDevTools()
         }
     })
@@ -467,6 +469,18 @@ function reloadWebTab(id) {
         return
     }
     item.view.webContents.reload()
+}
+
+/**
+ * 内置浏览器标签打开开发者工具
+ * @param id
+ */
+function devToolsWebTab(id) {
+    const item = id === 0 ? currentWebTab() : webTabView.find(item => item.id == id)
+    if (!item) {
+        return
+    }
+    item.view.webContents.toggleDevTools()
 }
 
 /**

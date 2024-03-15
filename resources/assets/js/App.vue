@@ -99,20 +99,18 @@ export default {
             handler() {
                 this.$store.dispatch("websocketConnection");
                 //
-                if (this.userId > 0) {
-                    if (this.$isEEUiApp) {
+                if (this.userId > 0 && this.$isEEUiApp) {
+                    $A.eeuiAppSendMessage({
+                        action: 'intiUmeng',
+                    });
+                    setTimeout(_ => {
                         $A.eeuiAppSendMessage({
-                            action: 'intiUmeng',
+                            action: 'setUmengAlias',
+                            userid: this.userId,
+                            token: this.userToken,
+                            url: $A.apiUrl('users/umeng/alias')
                         });
-                        setTimeout(_ => {
-                            $A.eeuiAppSendMessage({
-                                action: 'setUmengAlias',
-                                userid: this.userId,
-                                token: this.userToken,
-                                url: $A.apiUrl('users/umeng/alias')
-                            });
-                        }, 6000)
-                    }
+                    }, 6000)
                 }
             },
             immediate: true
