@@ -937,6 +937,26 @@
                         }
 
                         .content-file {
+                            position: relative;
+
+                            .file-percentage {
+                                position: absolute;
+                                top: 0;
+                                left: 0;
+                                right: 0;
+                                bottom: 0;
+                                border-radius: 3px;
+                                overflow: hidden;
+                                > span {
+                                    position: absolute;
+                                    top: 0;
+                                    right: 0;
+                                    bottom: 0;
+                                    width: 0;
+                                    background-color: rgba(170, 170, 170, 0.2);
+                                }
+                            }
+
                             &.file {
                                 display: inline-block;
 

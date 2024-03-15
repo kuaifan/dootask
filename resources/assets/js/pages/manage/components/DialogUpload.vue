@@ -140,8 +140,8 @@ export default {
                     file.msg = this.fileMsgCaches[msgName]
                     delete this.fileMsgCaches[msgName]
                 }
-                this.$emit('on-progress', file)
             }
+            this.$emit('on-progress', file)
         },
 
         handleSuccess(res, file) {

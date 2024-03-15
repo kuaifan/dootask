@@ -1983,13 +1983,19 @@ export default {
         chatFile(type, file) {
             switch (type) {
                 case 'progress':
+                    const percentage = file.showProgress ? Math.max(file.percentage, 0.01) : false
+                    const temp = this.tempMsgs.find(({id}) => id == file.tempId);
+                    if (temp) {
+                        temp.msg.percentage = percentage
+                        return;
+                    }
                     const tempMsg = {
                         id: file.tempId,
                         dialog_id: this.dialogData.id,
                         reply_id: this.quoteId,
                         type: 'file',
                         userid: this.userId,
-                        msg: file.msg || {},
+                        msg: Object.assign(file.msg || {}, {percentage}),
                     }
                     this.tempMsgs.push(tempMsg)
                     this.msgType = ''

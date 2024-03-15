@@ -40,6 +40,9 @@
                                 <div class="file-size">{{$A.bytesToSize(msgData.msg.size)}}</div>
                             </div>
                         </div>
+                        <div v-if="msgData.msg.percentage" class="file-percentage">
+                            <span :style="fileStyle(msgData.msg.percentage)"></span>
+                        </div>
                     </div>
                 </div>
                 <!--录音-->
@@ -506,6 +509,15 @@ export default {
                 return `${minute}:${seconds}″`
             }
             return `${Math.max(1, seconds)}″`
+        },
+
+        fileStyle(percentage) {
+            if (percentage) {
+                return {
+                    width: (100 - percentage) + '%'
+                };
+            }
+            return {};
         },
 
         imageStyle(info) {
