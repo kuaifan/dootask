@@ -52,13 +52,9 @@ export default {
             }
             const localId = $A.runNum(window.localStorage.getItem("__system:userId__"))
             const localToken = window.localStorage.getItem("__system:userToken__") || ""
-            if (localId || localToken) {
-                if (!state.userId && !state.userToken) {
-                    state.userId = localId
-                    state.userToken = localToken
-                }
-                window.localStorage.removeItem("__system:userId__")
-                window.localStorage.removeItem("__system:userToken__")
+            if (state.userId === 0 && localId && localToken) {
+                state.userId = localId
+                state.userToken = localToken
             }
 
             // ServerUrl
