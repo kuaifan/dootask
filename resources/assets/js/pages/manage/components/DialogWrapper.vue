@@ -2079,26 +2079,31 @@ export default {
         },
 
         onCallTel() {
-            this.$store.dispatch("call", {
-                url: 'dialog/tel',
-                data: {
-                    dialog_id: this.dialogId,
-                },
-                spinner: 600,
-            }).then(({data}) => {
-                if (data.tel) {
-                    $A.eeuiAppSendMessage({
-                        action: 'callTel',
-                        tel: data.tel
+            $A.modalConfirm({
+                content: `是否拨打电话给 ${this.dialogData.name}？`,
+                onOk: () => {
+                    this.$store.dispatch("call", {
+                        url: 'dialog/tel',
+                        data: {
+                            dialog_id: this.dialogId,
+                        },
+                        spinner: 600,
+                    }).then(({data}) => {
+                        if (data.tel) {
+                            $A.eeuiAppSendMessage({
+                                action: 'callTel',
+                                tel: data.tel
+                            });
+                        }
+                        if (data.add) {
+                            this.$store.dispatch("saveDialogMsg", data.add);
+                            this.$store.dispatch("updateDialogLastMsg", data.add);
+                            this.onActive();
+                        }
+                    }).catch(({msg}) => {
+                        $A.modalError(msg);
                     });
                 }
-                if (data.add) {
-                    this.$store.dispatch("saveDialogMsg", data.add);
-                    this.$store.dispatch("updateDialogLastMsg", data.add);
-                    this.onActive();
-                }
-            }).catch(({msg}) => {
-                $A.modalError(msg);
             });
         },
 
