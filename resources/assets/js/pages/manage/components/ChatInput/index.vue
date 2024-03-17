@@ -27,7 +27,7 @@
             <!-- 回复、修改 -->
             <div v-if="quoteData" class="chat-quote">
                 <div v-if="quoteUpdate" class="quote-label">{{$L('编辑消息')}}</div>
-                <UserAvatar v-else :userid="quoteData.userid" :show-icon="false" :show-name="true"/>
+                <UserAvatar v-else :userid="quoteData.userid" :userResult="onQuoteUserResult" :show-icon="false" :show-name="true"/>
                 <div class="quote-desc no-dark-content">{{$A.getMsgSimpleDesc(quoteData)}}</div>
                 <i class="taskfont" @click.stop="cancelQuote">&#xe6e5;</i>
             </div>
@@ -1274,6 +1274,26 @@ export default {
                 this.$emit('input', '')
             }
             this.setQuote(0)
+        },
+
+        onQuoteUserResult(data) {
+            if (this.dialogData.type !== 'group') {
+                return
+            }
+            if (this.quoteUpdate || !this.quoteData) {
+                return
+            }
+            if (this.userId === data.userid || this.quoteData.userid !== data.userid) {
+                return
+            }
+            if (new RegExp(`<span[^>]*?class="mention"[^>]*?data-id="${data.userid}"[^>]*?>`).test(this.$refs.editor.firstChild.innerHTML)) {
+                return
+            }
+            this.addMention({
+                denotationChar: "@",
+                id: data.userid,
+                value: data.nickname,
+            })
         },
 
         openMenu(char) {
