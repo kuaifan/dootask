@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.35.96]
+
+### Performance
+
+- 优化iOS端数据读取失败的情况
+- 回复消息时自动@提及
+- 优化会话数据结构
+
 ## [0.35.90]
 
 ### Bug Fixes
@@ -10,6 +18,7 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
+- 聊天文件发送进度
 - 拨打电话确认提示
 - 优化预加载文件
 

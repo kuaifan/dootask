@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Models\WebSocketDialog;
+use App\Models\WebSocketDialogUser;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
@@ -30,7 +31,6 @@ class WebSocketDialogsTableSeeder extends Seeder
                 'type' => 'user',
                 'group_type' => '',
                 'name' => '',
-                'last_at' => seeders_at('2021-07-01 17:12:52'),
                 'created_at' => seeders_at('2021-07-01 10:46:37'),
                 'updated_at' => seeders_at('2021-07-01 17:12:52'),
                 'deleted_at' => NULL,
@@ -41,7 +41,6 @@ class WebSocketDialogsTableSeeder extends Seeder
                 'type' => 'group',
                 'group_type' => 'project',
                 'name' => '',
-                'last_at' => NULL,
                 'created_at' => seeders_at('2021-07-01 10:46:47'),
                 'updated_at' => seeders_at('2021-07-01 17:31:03'),
                 'deleted_at' => seeders_at('2021-07-01 17:31:03'),
@@ -52,7 +51,6 @@ class WebSocketDialogsTableSeeder extends Seeder
                 'type' => 'group',
                 'group_type' => 'project',
                 'name' => '',
-                'last_at' => NULL,
                 'created_at' => seeders_at('2021-07-01 10:46:47'),
                 'updated_at' => seeders_at('2021-07-01 10:46:55'),
                 'deleted_at' => seeders_at('2021-07-01 10:46:55'),
@@ -63,7 +61,6 @@ class WebSocketDialogsTableSeeder extends Seeder
                 'type' => 'group',
                 'group_type' => 'project',
                 'name' => '',
-                'last_at' => NULL,
                 'created_at' => seeders_at('2021-07-01 10:47:45'),
                 'updated_at' => seeders_at('2021-07-01 17:30:05'),
                 'deleted_at' => seeders_at('2021-07-01 17:30:05'),
@@ -74,7 +71,6 @@ class WebSocketDialogsTableSeeder extends Seeder
                 'type' => 'group',
                 'group_type' => 'project',
                 'name' => '',
-                'last_at' => seeders_at('2021-07-01 16:31:58'),
                 'created_at' => seeders_at('2021-07-01 10:47:45'),
                 'updated_at' => seeders_at('2021-07-01 16:31:58'),
                 'deleted_at' => NULL,
@@ -85,7 +81,6 @@ class WebSocketDialogsTableSeeder extends Seeder
                 'type' => 'group',
                 'group_type' => 'project',
                 'name' => '',
-                'last_at' => NULL,
                 'created_at' => seeders_at('2021-07-01 11:02:57'),
                 'updated_at' => seeders_at('2021-07-01 17:31:28'),
                 'deleted_at' => seeders_at('2021-07-01 17:31:28'),
@@ -96,7 +91,6 @@ class WebSocketDialogsTableSeeder extends Seeder
                 'type' => 'group',
                 'group_type' => 'project',
                 'name' => '',
-                'last_at' => seeders_at('2021-07-01 16:32:50'),
                 'created_at' => seeders_at('2021-07-01 11:02:57'),
                 'updated_at' => seeders_at('2021-07-01 16:32:50'),
                 'deleted_at' => NULL,
@@ -107,7 +101,6 @@ class WebSocketDialogsTableSeeder extends Seeder
                 'type' => 'group',
                 'group_type' => 'project',
                 'name' => '',
-                'last_at' => NULL,
                 'created_at' => seeders_at('2021-07-01 11:43:01'),
                 'updated_at' => seeders_at('2021-07-01 17:31:28'),
                 'deleted_at' => seeders_at('2021-07-01 17:31:28'),
@@ -118,7 +111,6 @@ class WebSocketDialogsTableSeeder extends Seeder
                 'type' => 'group',
                 'group_type' => 'project',
                 'name' => '',
-                'last_at' => seeders_at('2021-07-01 14:02:57'),
                 'created_at' => seeders_at('2021-07-01 11:43:01'),
                 'updated_at' => seeders_at('2021-07-01 14:02:57'),
                 'deleted_at' => NULL,
@@ -129,7 +121,6 @@ class WebSocketDialogsTableSeeder extends Seeder
                 'type' => 'group',
                 'group_type' => 'project',
                 'name' => '',
-                'last_at' => NULL,
                 'created_at' => seeders_at('2021-07-01 15:33:23'),
                 'updated_at' => seeders_at('2021-07-01 17:31:28'),
                 'deleted_at' => seeders_at('2021-07-01 17:31:28'),
@@ -140,7 +131,6 @@ class WebSocketDialogsTableSeeder extends Seeder
                 'type' => 'group',
                 'group_type' => 'project',
                 'name' => '',
-                'last_at' => seeders_at('2021-07-01 16:31:40'),
                 'created_at' => seeders_at('2021-07-01 15:33:23'),
                 'updated_at' => seeders_at('2021-07-01 16:31:40'),
                 'deleted_at' => NULL,
@@ -151,7 +141,6 @@ class WebSocketDialogsTableSeeder extends Seeder
                 'type' => 'group',
                 'group_type' => 'project',
                 'name' => '',
-                'last_at' => NULL,
                 'created_at' => seeders_at('2021-07-01 15:37:06'),
                 'updated_at' => seeders_at('2021-07-01 17:31:28'),
                 'deleted_at' => seeders_at('2021-07-01 17:31:28'),
@@ -162,7 +151,6 @@ class WebSocketDialogsTableSeeder extends Seeder
                 'type' => 'group',
                 'group_type' => 'project',
                 'name' => '',
-                'last_at' => seeders_at('2021-07-01 15:44:09'),
                 'created_at' => seeders_at('2021-07-01 15:37:06'),
                 'updated_at' => seeders_at('2021-07-01 15:44:09'),
                 'deleted_at' => NULL,
@@ -173,7 +161,6 @@ class WebSocketDialogsTableSeeder extends Seeder
                 'type' => 'group',
                 'group_type' => 'project',
                 'name' => '',
-                'last_at' => NULL,
                 'created_at' => seeders_at('2021-07-01 16:15:28'),
                 'updated_at' => seeders_at('2021-07-01 17:31:28'),
                 'deleted_at' => seeders_at('2021-07-01 17:31:28'),
@@ -184,7 +171,6 @@ class WebSocketDialogsTableSeeder extends Seeder
                 'type' => 'group',
                 'group_type' => 'project',
                 'name' => '',
-                'last_at' => seeders_at('2021-07-01 16:37:59'),
                 'created_at' => seeders_at('2021-07-01 16:15:28'),
                 'updated_at' => seeders_at('2021-07-01 16:37:59'),
                 'deleted_at' => NULL,
@@ -195,7 +181,6 @@ class WebSocketDialogsTableSeeder extends Seeder
                 'type' => 'group',
                 'group_type' => 'task',
                 'name' => '',
-                'last_at' => seeders_at('2021-07-01 16:58:02'),
                 'created_at' => seeders_at('2021-07-01 16:56:05'),
                 'updated_at' => seeders_at('2021-07-01 16:58:02'),
                 'deleted_at' => NULL,
@@ -206,7 +191,6 @@ class WebSocketDialogsTableSeeder extends Seeder
                 'type' => 'group',
                 'group_type' => 'task',
                 'name' => '',
-                'last_at' => seeders_at('2021-07-01 16:57:58'),
                 'created_at' => seeders_at('2021-07-01 16:56:35'),
                 'updated_at' => seeders_at('2021-07-01 16:57:58'),
                 'deleted_at' => NULL,
@@ -217,7 +201,6 @@ class WebSocketDialogsTableSeeder extends Seeder
                 'type' => 'group',
                 'group_type' => 'task',
                 'name' => '',
-                'last_at' => seeders_at('2021-07-01 16:57:52'),
                 'created_at' => seeders_at('2021-07-01 16:56:57'),
                 'updated_at' => seeders_at('2021-07-01 16:57:52'),
                 'deleted_at' => NULL,
@@ -228,8 +211,7 @@ class WebSocketDialogsTableSeeder extends Seeder
         if ($botUser) {
             $dialog = WebSocketDialog::checkUserDialog($botUser, 1);
             if ($dialog) {
-                $dialog->last_at = Carbon::now();
-                $dialog->save();
+                WebSocketDialogUser::whereDialogId($dialog->id)->change(['last_at' => Carbon::now()->subSecond()]);
             }
         }
         User::botGetOrCreate('ai-openai');
