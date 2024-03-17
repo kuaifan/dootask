@@ -541,7 +541,7 @@ const localforage = require("localforage");
                 if (height !== tmpHeight || width !== tmpWidth) {
                     height = tmpHeight;
                     width = tmpWidth;
-                    console.log(width, height);
+                    $A.openLog && console.log(width, height);
                     if (typeof callback === 'function') callback();
                 }
             }, 250);
@@ -1370,6 +1370,17 @@ const localforage = require("localforage");
      */
     $.extend({
         __IDBTimer: {},
+
+        async IDBTest() {
+            try {
+                if ($A.isIos()) {
+                    await localforage.setItem('__test__', $A.Time())
+                }
+                $A.openLog && console.log('IDBTest OK',)
+            } catch (error) {
+                $A.openLog && console.error('IDBTest Error: ', error)
+            }
+        },
 
         IDBSave(key, value, delay = 100) {
             if (typeof this.__IDBTimer[key] !== "undefined") {

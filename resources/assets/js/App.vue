@@ -290,6 +290,7 @@ export default {
             // APP进入前台
             window.__onAppActive = () => {
                 this.autoTheme()
+                $A.IDBTest()
             }
             // 页面失活
             window.__onPagePause = () => {

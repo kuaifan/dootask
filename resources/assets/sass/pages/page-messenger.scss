@@ -224,6 +224,7 @@
                                     .ivu-tag {
                                         margin: 0 4px 0 0;
                                         padding: 0 5px;
+                                        box-sizing: content-box;
                                         &.ivu-tag-success {
                                             padding: 0 6px;
                                         }
