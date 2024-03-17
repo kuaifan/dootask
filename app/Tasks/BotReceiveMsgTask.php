@@ -316,12 +316,12 @@ class BotReceiveMsgTask extends AbstractTask
                     $nameKey = $isManager ? $array[2] : $array[1];
                     $data = $this->botManagerOne($botId, $msg->userid);
                     if ($data) {
-                        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
+                        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
                             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
                             ->where('web_socket_dialogs.name', 'LIKE', "%{$nameKey}%")
                             ->where('u.userid', $data->userid)
                             ->orderByDesc('u.top_at')
-                            ->orderByDesc('web_socket_dialogs.last_at')
+                            ->orderByDesc('u.last_at')
                             ->take(20)
                             ->get();
                         if ($list->isEmpty()) {

@@ -11,8 +11,10 @@ use Carbon\Carbon;
  * @property int|null $dialog_id 对话ID
  * @property int|null $userid 会员ID
  * @property string|null $top_at 置顶时间
+ * @property string|null $last_at 最后消息时间
  * @property int|null $mark_unread 是否标记为未读：0否，1是
  * @property int|null $silence 是否免打扰：0否，1是
+ * @property int|null $hide 不显示会话：0否，1是
  * @property int|null $inviter 邀请人
  * @property int|null $important 是否不可移出（项目、任务人员）
  * @property string|null $color 颜色
@@ -25,9 +27,11 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereColor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereDialogId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereHide($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereImportant($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereInviter($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereLastAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereMarkUnread($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereSilence($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereTopAt($value)
@@ -45,5 +49,18 @@ class WebSocketDialogUser extends AbstractModel
     public function webSocketDialog(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(WebSocketDialog::class, 'id', 'dialog_id');
+    }
+
+    /**
+     * 更新对话最后消息时间
+     * @return WebSocketDialogMsg|\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model|\Illuminate\Database\Query\Builder|object|null
+     */
+    public static function updateMsgLastAt($dialogId)
+    {
+        $lastMsg = WebSocketDialogMsg::whereDialogId($dialogId)->orderByDesc('id')->first();
+        if ($lastMsg) {
+            WebSocketDialogUser::whereDialogId($dialogId)->change(['last_at' => $lastMsg->created_at]);
+        }
+        return $lastMsg;
     }
 }

@@ -20,9 +20,9 @@ use Illuminate\Support\Facades\DB;
  * @property string|null $group_type 聊天室类型
  * @property string|null $name 对话名称
  * @property string $avatar 头像（群）
- * @property string|null $last_at 最后消息时间
  * @property int|null $owner_id 群主用户ID
  * @property int|null $link_id 关联id
+ * @property int|null $top_userid 置顶的用户ID
  * @property int|null $top_msg_id 置顶的消息ID
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -38,11 +38,11 @@ use Illuminate\Support\Facades\DB;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereGroupType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereLastAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereLinkId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereOwnerId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereTopMsgId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereTopUserid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog withTrashed()
@@ -81,7 +81,7 @@ class WebSocketDialog extends AbstractModel
      */
     public static function getDialogList($userid, $updated = "", $deleted = "")
     {
-        $builder = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
+        $builder = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('u.userid', $userid);
         if ($updated) {
@@ -89,7 +89,7 @@ class WebSocketDialog extends AbstractModel
         }
         $list = $builder
             ->orderByDesc('u.top_at')
-            ->orderByDesc('web_socket_dialogs.last_at')
+            ->orderByDesc('u.last_at')
             ->paginate(Base::getPaginate(100, 50));
         $list->transform(function (WebSocketDialog $item) use ($userid) {
             return $item->formatData($userid);
@@ -112,15 +112,15 @@ class WebSocketDialog extends AbstractModel
     public static function getDialogUnread($userid, $beforeAt, $take = 20)
     {
         DB::statement("SET SQL_MODE=''");
-        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
+        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->join('web_socket_dialog_msg_reads as r', 'web_socket_dialogs.id', '=', 'r.dialog_id')
             ->where('u.userid', $userid)
             ->where('r.userid', $userid)
             ->where('r.silence', 0)
             ->where('r.read_at')
-            ->where('web_socket_dialogs.last_at', '>', $beforeAt)
-            ->groupBy('web_socket_dialogs.id')
+            ->where('u.last_at', '>', $beforeAt)
+            ->groupBy('u.dialog_id')
             ->take(min(100, $take))
             ->get();
         $list->transform(function (WebSocketDialog $item) use ($userid) {
@@ -149,6 +149,7 @@ class WebSocketDialog extends AbstractModel
         $time = Carbon::parse($this->user_at ?? $dialogUserFun('updated_at'));
         $this->hide = $this->hide ?? $dialogUserFun('hide');
         $this->top_at = $this->top_at ?? $dialogUserFun('top_at');
+        $this->last_at = $this->last_at ?? $dialogUserFun('last_at');
         $this->user_at = $time->toDateTimeString('millisecond');
         $this->user_ms = $time->valueOf();
         //
@@ -553,20 +554,6 @@ class WebSocketDialog extends AbstractModel
     }
 
     /**
-     * 更新对话最后消息时间
-     * @return WebSocketDialogMsg|\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Model|\Illuminate\Database\Query\Builder|object|null
-     */
-    public function updateMsgLastAt()
-    {
-        $lastMsg = WebSocketDialogMsg::whereDialogId($this->id)->orderByDesc('id')->first();
-        if ($lastMsg) {
-            $this->last_at = $lastMsg->created_at;
-            $this->save();
-        }
-        return $lastMsg;
-    }
-
-    /**
      * 获取对话（同时检验对话身份）
      * @param $dialog_id
      * @param bool|string $checkOwner 是否校验群组身份，'auto'时有群主为true无群主为false
@@ -622,7 +609,6 @@ class WebSocketDialog extends AbstractModel
                 'name' => $name ?: '',
                 'group_type' => $group_type,
                 'owner_id' => $owner_id,
-                'last_at' => in_array($group_type, ['user', 'department', 'all']) ? Carbon::now() : null,
             ]);
             $dialog->save();
             foreach (is_array($userid) ? $userid : [$userid] as $value) {
@@ -630,7 +616,8 @@ class WebSocketDialog extends AbstractModel
                     WebSocketDialogUser::createInstance([
                         'dialog_id' => $dialog->id,
                         'userid' => $value,
-                        'important' => !in_array($group_type, ['user', 'all'])
+                        'important' => !in_array($group_type, ['user', 'all']),
+                        'last_at' => in_array($group_type, ['user', 'department', 'all']) ? Carbon::now() : null,
                     ])->save();
                 }
             }

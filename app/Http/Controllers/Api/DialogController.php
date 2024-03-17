@@ -108,12 +108,12 @@ class DialogController extends AbstractController
             return Base::retError('请输入搜索关键词');
         }
         // 搜索会话
-        $dialogs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
+        $dialogs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('web_socket_dialogs.name', 'LIKE', "%{$key}%")
             ->where('u.userid', $user->userid)
             ->orderByDesc('u.top_at')
-            ->orderByDesc('web_socket_dialogs.last_at')
+            ->orderByDesc('u.last_at')
             ->take(20)
             ->get();
         $dialogs->transform(function (WebSocketDialog $item) use ($user) {
@@ -145,7 +145,7 @@ class DialogController extends AbstractController
         }
         // 搜索消息会话
         if (count($list) < 20) {
-            $msgs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at', 'm.id as search_msg_id'])
+            $msgs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at', 'm.id as search_msg_id'])
                 ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
                 ->join('web_socket_dialog_msgs as m', 'web_socket_dialogs.id', '=', 'm.dialog_id')
                 ->where('u.userid', $user->userid)
@@ -178,7 +178,7 @@ class DialogController extends AbstractController
     {
         $user = User::auth();
         // 搜索会话
-        $msgs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at', 'm.id as search_msg_id'])
+        $msgs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at', 'm.id as search_msg_id'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->join('web_socket_dialog_msgs as m', 'web_socket_dialogs.id', '=', 'm.dialog_id')
             ->where('u.userid', $user->userid)
@@ -213,7 +213,7 @@ class DialogController extends AbstractController
         //
         $dialog_id = intval(Request::input('dialog_id'));
         //
-        $item = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
+        $item = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('web_socket_dialogs.id', $dialog_id)
             ->where('u.userid', $user->userid)

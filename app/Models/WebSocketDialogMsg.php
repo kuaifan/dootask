@@ -458,9 +458,8 @@ class WebSocketDialogMsg extends AbstractModel
             WebSocketDialogMsgTodo::whereIn('msg_id', $ids)->delete();
             self::whereIn('id', $ids)->delete();
             //
-            $dialogDatas = WebSocketDialog::whereIn('id', $dialogIds)->get();
-            foreach ($dialogDatas as $dialogData) {
-                $dialogData->updateMsgLastAt();
+            foreach ($dialogIds as $dialogId) {
+                WebSocketDialogUser::updateMsgLastAt($dialogId);
             }
             foreach ($replyIds as $id) {
                 self::whereId($id)->update(['reply_num' => self::whereReplyId($id)->count()]);
@@ -501,7 +500,7 @@ class WebSocketDialogMsg extends AbstractModel
                         'data' => [
                             'id' => $this->id,
                             'dialog_id' => $this->dialog_id,
-                            'last_msg' => $dialogData->updateMsgLastAt(),
+                            'last_msg' => WebSocketDialogUser::updateMsgLastAt($this->dialog_id),
                             'update_read' => $deleteRead ? 1 : 0
                         ],
                     ]
@@ -923,15 +922,14 @@ class WebSocketDialogMsg extends AbstractModel
                 'forward_id' => $forward_id,
                 'forward_show' => $forward_id ? $match[1] : 1,
             ]);
-            AbstractModel::transaction(function () use ($dialog, $dialogMsg) {
-                $dialog->last_at = Carbon::now();
-                $dialog->save();
+            AbstractModel::transaction(function () use ($dialogMsg) {
                 $dialogMsg->send = 1;
                 $dialogMsg->key = $dialogMsg->generateMsgKey();
                 $dialogMsg->save();
                 //
-                WebSocketDialogUser::whereDialogId($dialog->id)->change([
+                WebSocketDialogUser::whereDialogId($dialogMsg->dialog_id)->change([
                     'hide' => 0,    // 有新消息时，显示会话（会话内所有会员）
+                    'last_at' => Carbon::now(),
                     'updated_at' => Carbon::now()->toDateTimeString('millisecond'),
                 ]);
             });
