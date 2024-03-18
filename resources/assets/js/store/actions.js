@@ -2544,7 +2544,7 @@ export default {
                     dispatch("getDialogs", requestData).then(resolve).catch(reject)
                 } else {
                     resolve()
-                    dispatch("getDialogUnreads").catch(() => {})
+                    dispatch("getDialogBeyonds")
                 }
             }).catch(e => {
                 console.warn(e);
@@ -2559,30 +2559,38 @@ export default {
      * @param dispatch
      * @returns {Promise<unknown>}
      */
-    getDialogUnreads({state, dispatch}) {
-        return new Promise(async resolve => {
-            const key = await $A.IDBString("dialogUnread")
-            const val = "v2:" + $A.formatDate("Y-m-d")
-            if (key == val) {
-                return  // 一天取一次
+    async getDialogBeyonds({state, dispatch}) {
+        const key = await $A.IDBString("dialogBeyond")
+        const val = $A.formatDate("Y-m-d H")
+        if (key == val) {
+            return  // 一小时取一次
+        }
+        await $A.IDBSet("dialogBeyond", val)
+        //
+        const filter = (func) => {
+            return state.cacheDialogs
+                .filter(func)
+                .sort((a, b) => {
+                    return $A.Date(a.last_at) - $A.Date(b.last_at);
+                })
+                .find(({id}) => id > 0)
+        }
+        const unreadDialog = filter(({unread, last_at}) => {
+            return unread > 0 && last_at
+        });
+        const todoDialog = filter(({todo_num, last_at}) => {
+            return todo_num > 0 && last_at
+        });
+        //
+        dispatch("call", {
+            url: 'dialog/beyond',
+            data: {
+                unread_at: unreadDialog ? unreadDialog.last_at : $A.Time(),
+                todo_at: todoDialog ? todoDialog.last_at : $A.Time()
             }
-            await $A.IDBSet("dialogUnread", val)
-            //
-            const dialog = $A.cloneJSON(state.cacheDialogs).filter(({last_at}) => last_at).sort((a, b) => {
-                return $A.Date(a.last_at) - $A.Date(b.last_at);
-            }).find(({id}) => id > 0);
-            if (dialog) {
-                dispatch("call", {
-                    url: 'dialog/unread',
-                    data: {
-                        before_at: dialog.last_at,
-                    }
-                }).then(({data}) => {
-                    dispatch("saveDialog", data);
-                });
-            }
-            resolve()
-        })
+        }).then(({data}) => {
+            dispatch("saveDialog", data);
+        });
     },
 
     /**

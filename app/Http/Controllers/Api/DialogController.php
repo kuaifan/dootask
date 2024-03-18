@@ -58,29 +58,33 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/unread          02. 未读对话列表
+     * @api {get} api/dialog/beyond          02. 列表外对话
      *
-     * @apiDescription 需要token身份
+     * @apiDescription 需要token身份，列表外的未读对话 和 列表外的待办对话
      * @apiVersion 1.0.0
      * @apiGroup dialog
-     * @apiName lists
+     * @apiName beyond
      *
-     * @apiParam {String} before_at            在这个时间之前未读的数据
+     * @apiParam {String} unread_at         在这个时间之前未读的数据
+     * - 格式1：2021-01-01 00:00:00
+     * - 格式2：1612051200
+     * @apiParam {String} todo_at           在这个时间之前待办的数据
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      */
-    public function unread()
+    public function beyond()
     {
         $user = User::auth();
         //
-        $beforeAt = Request::input('before_at');
-        if (empty($beforeAt)) {
-            return Base::retError('参数错误');
-        }
+        $unreadAt = Request::input('unread_at');
+        $todoAt = Request::input('todo_at');
         //
-        $data = WebSocketDialog::getDialogUnread($user->userid, Carbon::parse($beforeAt));
+        $unreadAt = Carbon::parse($unreadAt)->setTimezone(config('app.timezone'));
+        $todoAt = Carbon::parse($todoAt)->setTimezone(config('app.timezone'));
+        //
+        $data = WebSocketDialog::getDialogBeyond($user->userid, $unreadAt, $todoAt);
         //
         return Base::retSuccess('success', $data);
     }

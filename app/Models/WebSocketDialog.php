@@ -103,31 +103,70 @@ class WebSocketDialog extends AbstractModel
     }
 
     /**
-     * 获取未读对话列表
+     * 列表外的未读对话 和 列表外的待办对话
      * @param $userid
-     * @param $beforeAt
-     * @param $take
+     * @param $unreadAt
+     * @param $todoAt
      * @return WebSocketDialog[]
      */
-    public static function getDialogUnread($userid, $beforeAt, $take = 20)
+    public static function getDialogBeyond($userid, $unreadAt, $todoAt)
     {
         DB::statement("SET SQL_MODE=''");
-        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
-            ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
-            ->join('web_socket_dialog_msg_reads as r', 'web_socket_dialogs.id', '=', 'r.dialog_id')
-            ->where('u.userid', $userid)
-            ->where('r.userid', $userid)
-            ->where('r.silence', 0)
-            ->where('r.read_at')
-            ->where('u.last_at', '>', $beforeAt)
-            ->groupBy('u.dialog_id')
-            ->take(min(100, $take))
-            ->get();
-        $list->transform(function (WebSocketDialog $item) use ($userid) {
-            return $item->formatData($userid);
-        });
-        //
-        return $list;
+        $ids = [];
+        $array = [];
+        if ($unreadAt) {
+            // 未读对话
+            $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
+                ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
+                ->join('web_socket_dialog_msg_reads as r', 'web_socket_dialogs.id', '=', 'r.dialog_id')
+                ->where('u.userid', $userid)
+                ->where('r.userid', $userid)
+                ->where('r.read_at')
+                ->where('u.last_at', '<', $unreadAt)
+                ->groupBy('u.dialog_id')
+                ->take(20)
+                ->get();
+            $list->transform(function (WebSocketDialog $item) use ($userid, &$ids, &$array) {
+                if (!in_array($item->id, $ids)) {
+                    $ids[] = $item->id;
+                    $array[] = $item->formatData($userid);
+                }
+            });
+            // 标记未读会话
+            $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
+                ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
+                ->where('u.userid', $userid)
+                ->where('u.mark_unread', 1)
+                ->where('u.last_at', '<', $unreadAt)
+                ->take(20)
+                ->get();
+            $list->transform(function (WebSocketDialog $item) use ($userid, &$ids, &$array) {
+                if (!in_array($item->id, $ids)) {
+                    $ids[] = $item->id;
+                    $array[] = $item->formatData($userid);
+                }
+            });
+        }
+        if ($todoAt) {
+            // 待办会话
+            $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
+                ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
+                ->join('web_socket_dialog_msg_todos as t', 'web_socket_dialogs.id', '=', 't.dialog_id')
+                ->where('u.userid', $userid)
+                ->where('t.userid', $userid)
+                ->where('t.done_at')
+                ->where('u.last_at', '<', $todoAt)
+                ->groupBy('u.dialog_id')
+                ->take(20)
+                ->get();
+            $list->transform(function (WebSocketDialog $item) use ($userid, &$ids, &$array) {
+                if (!in_array($item->id, $ids)) {
+                    $ids[] = $item->id;
+                    $array[] = $item->formatData($userid);
+                }
+            });
+        }
+        return $array;
     }
 
 
