@@ -7,28 +7,28 @@
                     <div class="common-nav-back" @click="goBack()"><i class="taskfont">&#xe676;</i></div>
                     <h1>{{$L('审批中心')}}</h1>
                 </div>
-                
+
                 <Button v-show="showType == 1 && isShowIcon" @click="addApply" :loading="addLoadIng" type="primary" shape="circle" icon="md-add" class="ivu-btn-icon-only"></Button>
-                <Button v-if="showType == 1 && !isShowIcon" :loading="addLoadIng" type="primary" @click="addApply"> 
-                    <span> {{$L("添加申请")}} </span> 
+                <Button v-if="showType == 1 && !isShowIcon" :loading="addLoadIng" type="primary" @click="addApply">
+                    <span> {{$L("添加申请")}} </span>
                 </Button>
 
                 <Button v-show="showType == 1 && userIsAdmin && !isShowIcon" @click="exportApproveShow = true">
-                    <span> {{$L("导出审批数据")}} </span> 
+                    <span> {{$L("导出审批数据")}} </span>
                 </Button>
                 <Button v-if="showType == 1 && userIsAdmin && isShowIcon" @click="exportApproveShow = true" shape="circle" class="ivu-btn-icon-only">
                     <i class="taskfont">&#xe7a8;</i>
                 </Button>
 
                 <Button v-if="userIsAdmin && !isShowIcon" @click="showType = showType == 1 ? 2 : 1">
-                    <span> {{ showType == 1 ? $L("流程设置") : $L("返回") }} </span> 
+                    <span> {{ showType == 1 ? $L("流程设置") : $L("返回") }} </span>
                 </Button>
                 <Button v-if="userIsAdmin && isShowIcon" @click="showType = showType == 1 ? 2 : 1" shape="circle" class="ivu-btn-icon-only">
                     <i v-if="showType == 1" class="taskfont">&#xe67b;</i>
                     <i v-if="showType == 2" class="taskfont">&#xe637;</i>
                 </Button>
             </div>
-            
+
             <Tabs class="page-approve-tabs" v-show="showType==1" :value="tabsValue" @on-click="tabsClick" size="small">
                 <TabPane :label="$L('待办') + (unreadTotal > 0 ? ('('+unreadTotal+')') : '')" name="unread" style="height: 100%;">
                     <div class="approve-main-search">
@@ -253,13 +253,13 @@ import ApproveExport from "../components/ApproveExport";
 import {mapState} from 'vuex'
 
 export default {
-    components:{list,listDetails,DrawerOverlay,ImgUpload,ApproveSetting,ApproveExport},
+    components: {list, listDetails, DrawerOverlay, ImgUpload, ApproveSetting, ApproveExport},
     name: "approve",
     data() {
         return {
             showType: 1,
             exportApproveShow: false,
-            isShowIcon: false, 
+            isShowIcon: false,
             modalTransferIndex: window.modalTransferIndex,
 
             minDate: new Date(2020, 0, 1),
@@ -279,15 +279,15 @@ export default {
             approvalType: "all",
             approvalName: "",
             approvalList: [
-                { value: "all", label: this.$L("全部审批") },
+                {value: "all", label: this.$L("全部审批")},
             ],
             searchState: "all",
             searchStateList: [
-                { value: "all", label: this.$L("全部状态") },
-                { value: 1, label: this.$L("审批中") },
-                { value: 2, label: this.$L("已通过") },
-                { value: 3, label: this.$L("已拒绝") },
-                { value: 4, label: this.$L("已撤回") }
+                {value: "all", label: this.$L("全部状态")},
+                {value: 1, label: this.$L("审批中")},
+                {value: 2, label: this.$L("已通过")},
+                {value: 3, label: this.$L("已拒绝")},
+                {value: 4, label: this.$L("已撤回")}
             ],
             //
             unreadList: [],
@@ -330,12 +330,12 @@ export default {
                 other: ""
             },
             addRule: {
-                department_id: { type: 'number', required: true, message: this.$L('请选择部门！'), trigger: 'change' },
-                applyType: { type: 'string', required: true, message: this.$L('请选择申请类型！'), trigger: 'change' },
-                type: { type: 'string', required: true, message: this.$L('请选择假期类型！'), trigger: 'change' },
-                startTime: { type: 'string', required: true, message: this.$L('请选择开始时间！'), trigger: 'change' },
-                endTime: { type: 'string', required: true, message: this.$L('请选择结束时间！'), trigger: 'change' },
-                description: { type: 'string', required: true, message: this.$L('请输入事由！'), trigger: 'change' },
+                department_id: {type: 'number', required: true, message: this.$L('请选择部门！'), trigger: 'change'},
+                applyType: {type: 'string', required: true, message: this.$L('请选择申请类型！'), trigger: 'change'},
+                type: {type: 'string', required: true, message: this.$L('请选择假期类型！'), trigger: 'change'},
+                startTime: {type: 'string', required: true, message: this.$L('请选择开始时间！'), trigger: 'change'},
+                endTime: {type: 'string', required: true, message: this.$L('请选择结束时间！'), trigger: 'change'},
+                description: {type: 'string', required: true, message: this.$L('请输入事由！'), trigger: 'change'},
             },
             selectTypes: ["年假", "事假", "病假", "调休", "产假", "陪产假", "婚假", "丧假", "哺乳假"],
 
@@ -344,20 +344,20 @@ export default {
         }
     },
     computed: {
-        ...mapState([ 'wsMsg','userInfo','userIsAdmin','windowWidth' ]),
-        departmentList(){
+        ...mapState(['wsMsg', 'userInfo', 'userIsAdmin', 'windowWidth']),
+        departmentList() {
             let departmentNames = (this.userInfo.department_name || '').split(',');
-            return (this.userInfo.department || []).map((h,index)=>{
+            return (this.userInfo.department || []).map((h, index) => {
                 return {
-                    id:h,
-                    name:departmentNames[index]
+                    id: h,
+                    name: departmentNames[index]
                 };
             })
         }
     },
     watch: {
-        '$route' (to) {
-            if(to.name == 'manage-approve'){
+        '$route'(to) {
+            if (to.name == 'manage-approve') {
                 this.init()
             }
         },
@@ -379,17 +379,17 @@ export default {
             },
             deep: true,
         },
-        addShow(val){
-            if(!val){
+        addShow(val) {
+            if (!val) {
                 this.addData.other = ""
             }
         },
-        showType(val){
-            if(val == 1){
+        showType(val) {
+            if (val == 1) {
                 this.init()
             }
         },
-        windowWidth(val){
+        windowWidth(val) {
             this.isShowIcon = val < 515
         }
     },
@@ -400,12 +400,11 @@ export default {
         this.tabsValue = "unread"
         this.init()
     },
-    methods:{
-
+    methods: {
         init() {
             this.tabsClick()
             this.getProcdefList()
-            if(this.tabsValue != 'unread'){
+            if (this.tabsValue != 'unread') {
                 this.getUnreadList();
             }
             this.addData.department_id = this.userInfo.department[0] || 0;
@@ -421,10 +420,10 @@ export default {
                     method: 'post',
                 }).then(({data}) => {
                     this.procdefList = data.rows || [];
-                    this.approvalList = this.procdefList.map(h=>{
-                        return { value: h.name, label: h.name }
+                    this.approvalList = this.procdefList.map(h => {
+                        return {value: h.name, label: h.name}
                     })
-                    this.approvalList.unshift({ value: "all", label: this.$L("全部审批") })
+                    this.approvalList.unshift({value: "all", label: this.$L("全部审批")})
                     resolve()
                 }).catch(({msg}) => {
                     $A.modalError(msg);
@@ -432,7 +431,7 @@ export default {
                 });
             });
         },
-        
+
         // 获取当前时间
         getCurrentDate() {
             const today = new Date();
@@ -443,62 +442,69 @@ export default {
         },
 
         // tab切换事件
-        tabsClick(val,time= 1000){
-            if(!val && this.__tabsClick && time>0){
+        tabsClick(val, time = 1000) {
+            if (!val && this.__tabsClick && time > 0) {
                 return;
             }
-            this.__tabsClick = setTimeout(() => {  this.__tabsClick =null; },time)
-            if(time == 0){
-                this.loadIng = true;
-            }
+            this.__tabsClick = setTimeout(() => {
+                this.__tabsClick = null;
+            }, time)
             this.tabsValue = val || this.tabsValue
-            if(val){
+            if (val) {
                 this.approvalType = this.searchState = "all"
                 this.approvalName = ""
             }
             //
-            this.detailsShow = false; 
+            this.detailsShow = false;
+            this.loadIng = true;
             //
-            if(this.tabsValue == 'unread'){
-                if(val === false){
+            if (this.tabsValue == 'unread') {
+                if (val === false) {
                     this.unreadPage = 1;
                     this.unreadList = [];
                 }
                 this.getUnreadList();
             }
-            if(this.tabsValue == 'done'){
-                if(val === false){
+            if (this.tabsValue == 'done') {
+                if (val === false) {
                     this.donePage = 1;
                     this.doneList = [];
                 }
                 this.getDoneList();
             }
-            if(this.tabsValue == 'notify'){
-                if(val === false){
+            if (this.tabsValue == 'notify') {
+                if (val === false) {
                     this.notifyPage = 1;
                     this.notifyList = [];
                 }
                 this.getNotifyList();
             }
-            if(this.tabsValue == 'initiated'){
-                if(val === false){
+            if (this.tabsValue == 'initiated') {
+                if (val === false) {
                     this.initiatedPage = 1;
                     this.initiatedList = [];
                 }
                 this.getInitiatedList();
             }
-            
         },
 
         // 列表点击事件
-        clickList(item){
-            this.unreadList.map(h => { h._active = false; })
-            this.doneList.map(h => { h._active = false; })
-            this.notifyList.map(h => { h._active = false; })
-            this.initiatedList.map(h => { h._active = false; })
+        clickList(item) {
+            this.unreadList.map(h => {
+                h._active = false;
+            })
+            this.doneList.map(h => {
+                h._active = false;
+            })
+            this.notifyList.map(h => {
+                h._active = false;
+            })
+            this.initiatedList.map(h => {
+                h._active = false;
+            })
             //
             if (window.innerWidth < 426) {
-                this.goForward({ name: 'manage-approve-details', query: { id: item.id } });
+                this.goForward({name: 'manage-approve-details', query: {id: item.id}});
                 return;
             }
             if (window.innerWidth < 1010) {
@@ -513,24 +519,24 @@ export default {
         },
 
         // 下拉加载
-        handleScroll(e){
+        handleScroll(e) {
             if (e.target.scrollTop + e.target.clientHeight >= e.target.scrollHeight) {
-                if(this.tabsValue == 'unread' && !this.unreadLoad && this.unreadList.length < this.unreadTotal){
+                if (this.tabsValue == 'unread' && !this.unreadLoad && this.unreadList.length < this.unreadTotal) {
                     this.unreadLoad = true;
                     this.unreadPage = this.unreadPage + 1;
                     this.getUnreadList('scroll');
                 }
-                if(this.tabsValue == 'done' && !this.doneLoad && this.doneList.length < this.doneTotal){
+                if (this.tabsValue == 'done' && !this.doneLoad && this.doneList.length < this.doneTotal) {
                     this.doneLoad = true;
                     this.donePage = this.donePage + 1;
                     this.getDoneList('scroll');
                 }
-                if(this.tabsValue == 'notify' && !this.notifyLoad && this.notifyList.length < this.notifyTotal){
+                if (this.tabsValue == 'notify' && !this.notifyLoad && this.notifyList.length < this.notifyTotal) {
                     this.notifyLoad = true;
                     this.notifyPage = this.notifyPage + 1;
                     this.getNotifyList('scroll');
                 }
-                if(this.tabsValue == 'initiated' && !this.initiatedLoad && this.initiatedList.length < this.initiatedTotal){
+                if (this.tabsValue == 'initiated' && !this.initiatedLoad && this.initiatedList.length < this.initiatedTotal) {
                     this.initiatedLoad = true;
                     this.initiatedPage = this.initiatedPage + 1;
                     this.getInitiatedList('scroll');
@@ -539,7 +545,7 @@ export default {
         },
 
         // 获取待办列表
-        getUnreadList(type='init'){
+        getUnreadList(type = 'init') {
             this.$store.dispatch("call", {
                 method: 'get',
                 url: 'approve/process/findTask',
@@ -550,7 +556,7 @@ export default {
                     username: this.approvalName,
                 }
             }).then(({data}) => {
-                this.updateData('unread',data,type)
+                this.updateData('unread', data, type)
             }).catch((msg) => {
                 $A.modalError(msg);
             }).finally(_ => {
@@ -560,7 +566,7 @@ export default {
         },
 
         // 获取已办列表
-        getDoneList(type='init'){
+        getDoneList(type = 'init') {
             this.$store.dispatch("call", {
                 method: 'get',
                 url: 'approve/procHistory/findTask',
@@ -571,7 +577,7 @@ export default {
                     username: this.approvalName,
                 }
             }).then(({data}) => {
-                this.updateData('done',data,type)
+                this.updateData('done', data, type)
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
@@ -581,7 +587,7 @@ export default {
         },
 
         // 获取抄送列表
-        getNotifyList(type){
+        getNotifyList(type) {
             this.$store.dispatch("call", {
                 method: 'get',
                 url: 'approve/procHistory/findProcNotify',
@@ -592,7 +598,7 @@ export default {
                     username: this.approvalName,
                 }
             }).then(({data}) => {
-                this.updateData('notify',data,type)
+                this.updateData('notify', data, type)
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
@@ -602,7 +608,7 @@ export default {
         },
 
         // 获取我发起的
-        getInitiatedList(type){
+        getInitiatedList(type) {
             this.$store.dispatch("call", {
                 method: 'post',
                 url: 'approve/process/startByMyselfAll',
@@ -614,7 +620,7 @@ export default {
                     username: this.approvalName,
                 }
             }).then(({data}) => {
-                this.updateData('initiated',data,type)
+                this.updateData('initiated', data, type)
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {
@@ -624,12 +630,12 @@ export default {
         },
 
         // 添加申请
-        addApply(){
+        addApply() {
             this.addLoadIng = true;
             this.$store.dispatch("call", {
                 url: 'users/basic',
                 data: {
-                    userid: [ this.userInfo.userid]
+                    userid: [this.userInfo.userid]
                 },
                 skipAuthError: true
             }).then(({data}) => {
@@ -648,17 +654,19 @@ export default {
         },
 
         // 更新数据
-        updateData(key,data,type) {
+        updateData(key, data, type) {
             let listKey = key + 'List'
             this[key + 'Total'] = data.total;
             type != 'scroll' ? (this[listKey] = data.rows) : data.rows.map(h => {
-                if (this[listKey].map(item => { return item.id }).indexOf(h.id) == -1) {
+                if (this[listKey].map(item => {
+                    return item.id
+                }).indexOf(h.id) == -1) {
                     this[listKey].push(h)
                 }
             });
-            if (window.innerWidth > 1010){
+            if (window.innerWidth > 1010) {
                 let activeIndex = this[listKey].map((h, index) => h._active ? index : -1).filter(h => h > -1)[0] || 0
-                if (this[listKey].length > 0){
+                if (this[listKey].length > 0) {
                     this[listKey][activeIndex]._active = true;
                     if (this.tabsValue == key) {
                         this.$nextTick(() => {
@@ -670,17 +678,17 @@ export default {
         },
 
         // 提交发起
-        onInitiate(){
+        onInitiate() {
             this.$refs.initiateRef.validate((valid) => {
                 if (valid) {
                     this.loadIng = true;
                     var obj = JSON.parse(JSON.stringify(this.addData))
 
-                    obj.startTime = obj.startTime +" "+ obj.startTimeHour + ":" + obj.startTimeMinute;
-                    obj.endTime = obj.endTime +" "+ obj.endTimeHour + ":" + obj.endTimeMinute;
+                    obj.startTime = obj.startTime + " " + obj.startTimeHour + ":" + obj.startTimeMinute;
+                    obj.endTime = obj.endTime + " " + obj.endTimeHour + ":" + obj.endTimeMinute;
 
-                    if(this.addData.other){
-                        obj.other = this.addData.other.map((o) =>{
+                    if (this.addData.other) {
+                        obj.other = this.addData.other.map((o) => {
                             return o.path
                         }).join(',')
                     }
@@ -698,9 +706,11 @@ export default {
                         this.addShow = false;
                         this.$refs.initiateRef.resetFields();
                         this.tabsValue = 'initiated';
-                        this.initiatedList.map(h=>{ h._active = false; })
-                        this.$nextTick(()=>{
-                            this.tabsClick(false,0);
+                        this.initiatedList.map(h => {
+                            h._active = false;
+                        })
+                        this.$nextTick(() => {
+                            this.tabsClick(false, 0);
                         })
                     }).catch(({msg}) => {
                         $A.modalError(msg);
@@ -715,22 +725,25 @@ export default {
 </script>
 
 <style lang="scss">
-    .page-approve .approve-details{
-        border-radius: 8px;
+.page-approve .approve-details {
+    border-radius: 8px;
+}
+
+.page-approve .ivu-tabs-nav {
+    display: flex;
+    width: 350px;
+    @media (max-width: 1010px) {
+        width: 100%;
     }
-    .page-approve .ivu-tabs-nav {
-        display: flex;
-        width: 350px;
-        @media (max-width: 1010px) {
-            width: 100%;
-        }
-        .ivu-tabs-tab{
-            font-size: 15px;
-            flex:1;
-            text-align: center;
-        }
+
+    .ivu-tabs-tab {
+        font-size: 15px;
+        flex: 1;
+        text-align: center;
     }
-    .page-approve-initiate .ivu-modal-body{
-        padding: 16px 22px 2px !important;
-    }
+}
+
+.page-approve-initiate .ivu-modal-body {
+    padding: 16px 22px 2px !important;
+}
 </style>
