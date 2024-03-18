@@ -15356,17 +15356,6 @@
         "id": "Diam kirim"
     },
     {
-        "key": "Markdown 格式发送",
-        "zh": "",
-        "zh-CHT": "Markdown 格式發送",
-        "en": "It is sent in Markdown format",
-        "ko": "마크다운 포맷 전송",
-        "ja": "Markdownフォーマット送信します",
-        "de": "Das format in der glauben glauben spielt",
-        "fr": "Envoyer au format Markdown",
-        "id": "Markdown format kirim"
-    },
-    {
         "key": "编辑消息",
         "zh": "",
         "zh-CHT": "編輯消息",

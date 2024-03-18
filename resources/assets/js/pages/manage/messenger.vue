@@ -154,6 +154,7 @@
                     <div class="operate-position" :style="operateStyles" v-show="operateVisible">
                         <Dropdown
                             trigger="custom"
+                            transferClassName="scrollbar-hidden"
                             :placement="windowLandscape ? 'bottom' : 'top'"
                             :visible="operateVisible"
                             @on-clickoutside="operateVisible = false"
@@ -182,7 +183,7 @@
                                 <DropdownItem @click.native="handleHideClick" :disabled="operateItem.top_at">
                                     <div class="item">
                                         {{ $L('不显示该会话') }}
-                                        <i class="taskfont">&#xe787;</i>
+                                        <i class="taskfont">&#xe881;</i>
                                     </div>
                                 </DropdownItem>
                                 <DropdownItem @click.native="handleColorClick(c.color)" v-for="(c, k) in taskColorList" :key="'c_' + k" :divided="k==0"  v-if="k<6" >
