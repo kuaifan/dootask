@@ -20018,5 +20018,27 @@
         "de": "Soll ich anrufen (*)?",
         "fr": "Est-ce que vous appelez à (*)?",
         "id": "Apakah ada panggilan untuk (*)?"
+    },
+    {
+        "key": "MD 格式发送",
+        "zh": "",
+        "zh-CHT": "MD 格式發送",
+        "en": "Send in MD format",
+        "ko": "Md 포맷 전송",
+        "ja": "MDフォーマットでお送りします。",
+        "de": "Molt-format raus. Und zwar jetzt.",
+        "fr": "Envoi au format MD",
+        "id": "MD format kirim"
+    },
+    {
+        "key": "正常发送",
+        "zh": "",
+        "zh-CHT": "正常發送",
+        "en": "Normal transmission",
+        "ko": "정상적으로 보내기",
+        "ja": "正常に送ります",
+        "de": "Sende normal.",
+        "fr": "Envoyer comme normal",
+        "id": "Kirim normal"
     }
 ]

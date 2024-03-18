@@ -2,10 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.35.96]
+## [0.36.15]
+
+### Bug Fixes
+
+- 消息太长导致菜单无法正常显示
+- 项目数量不正确的情况
+- 部分未读和待办信息不显示的情况
+- 审批中心修复loadIng效果
 
 ### Performance
 
+- 自动识别md格式发送
+- 优化回复、转发消息数据结构
 - 优化iOS端数据读取失败的情况
 - 回复消息时自动@提及
 - 优化会话数据结构
