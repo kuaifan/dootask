@@ -1478,12 +1478,12 @@ export default {
                     id: this.getTempId(),
                     dialog_id: this.dialogData.id,
                     reply_id: this.quoteId,
-                    reply_data: this.quoteData,
                     type: typeLoad ? 'loading' : 'text',
                     userid: this.userId,
                     msg: {
-                        text: typeLoad ? '' : textBody,
                         type: textType,
+                        text: typeLoad ? '' : textBody,
+                        reply_data: this.quoteData,
                     },
                 }
                 this.tempMsgs.push(tempMsg)
@@ -1523,10 +1523,11 @@ export default {
                 id: this.getTempId(),
                 dialog_id: this.dialogData.id,
                 reply_id: this.quoteId,
-                reply_data: this.quoteData,
                 type: 'record',
                 userid: this.userId,
-                msg,
+                msg: Object.assign(msg, {
+                    reply_data: this.quoteData,
+                }),
             }
             this.tempMsgs.push(tempMsg)
             this.msgType = ''

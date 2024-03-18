@@ -10,16 +10,16 @@
             :class="headClass"
             v-longpress="{callback: handleLongpress, delay: 300}">
             <!--回复-->
-            <div v-if="!hideReply && msgData.reply_data" class="dialog-reply no-dark-content" @click="viewReply">
+            <div v-if="!hideReply && msgData.reply_id && showReplyData(msgData.msg.reply_data)" class="dialog-reply no-dark-content" @click="viewReply">
                 <div class="reply-avatar">
-                    <UserAvatar :userid="msgData.reply_data.userid" :show-icon="false" :show-name="true"/>
+                    <UserAvatar :userid="msgData.msg.reply_data.userid" :show-icon="false" :show-name="true"/>
                 </div>
-                <div class="reply-desc" v-html="$A.getMsgSimpleDesc(msgData.reply_data, 'image-preview')"></div>
+                <div class="reply-desc" v-html="$A.getMsgSimpleDesc(msgData.msg.reply_data, 'image-preview')"></div>
             </div>
             <!--转发-->
-            <div v-if="msgData.forward_show && msgData.forward_data && msgData.forward_data.userid" class="dialog-reply no-dark-content" @click="openDialog(msgData.forward_data.userid)">
+            <div v-if="!hideForward && msgData.forward_id && showForwardData(msgData.msg.forward_data)" class="dialog-reply no-dark-content" @click="openDialog(msgData.msg.forward_data.userid)">
                 <div class="reply-avatar">
-                    <UserAvatar :userid="msgData.forward_data.userid" :show-icon="false" :show-name="true"/>
+                    <UserAvatar :userid="msgData.msg.forward_data.userid" :show-icon="false" :show-name="true"/>
                 </div>
             </div>
             <!--详情-->
@@ -292,6 +292,10 @@ export default {
             type: Boolean,
             default: false
         },
+        hideForward: {
+            type: Boolean,
+            default: false
+        },
         operateVisible: {
             type: Boolean,
             default: false
@@ -352,9 +356,6 @@ export default {
             const array = [];
             if (msgData.type) {
                 array.push(msgData.type)
-            }
-            if (msgData.reply_data) {
-                array.push('reply-view')
             }
             if (operateAction) {
                 array.push('operate-action')
@@ -572,6 +573,20 @@ export default {
             }).catch(({msg}) => {
                 $A.modalError(msg)
             });
+        },
+
+        showReplyData(data) {
+            if (!$A.isJson(data)) {
+                return false
+            }
+            return data.userid
+        },
+
+        showForwardData(data) {
+            if (!$A.isJson(data)) {
+                return false
+            }
+            return data.show && data.userid
         },
 
         viewReply() {

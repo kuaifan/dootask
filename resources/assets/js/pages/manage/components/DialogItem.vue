@@ -41,6 +41,7 @@
                 :dialog-type="dialogData.type"
                 :hide-percentage="hidePercentage"
                 :hide-reply="hideReply"
+                :hide-forward="hideForward"
                 :operate-visible="operateVisible"
                 :operate-action="operateVisible && source.id === operateItem.id"
                 :is-right-msg="isRightMsg"
@@ -139,6 +140,10 @@ export default {
         },
 
         hideReply() {
+            return this.simpleView || this.msgId > 0
+        },
+
+        hideForward() {
             return this.simpleView || this.msgId > 0
         },
 
