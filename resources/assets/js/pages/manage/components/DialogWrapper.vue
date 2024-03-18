@@ -2748,10 +2748,20 @@ export default {
             }
             this.$nextTick(() => {
                 const rect = el.getBoundingClientRect();
+                const scrollerRect = this.$refs.scroller.$el.getBoundingClientRect();
+                let top = rect.top + this.windowScrollY,
+                    height = rect.height;
+                if (rect.top < scrollerRect.top) {
+                    top = scrollerRect.top
+                    height -= scrollerRect.top - rect.top
+                }
+                if (rect.bottom > scrollerRect.bottom) {
+                    height -= rect.bottom - scrollerRect.bottom
+                }
                 this.operateStyles = {
                     left: `${event.clientX}px`,
-                    top: `${rect.top + this.windowScrollY}px`,
-                    height: rect.height + 'px',
+                    top: `${top}px`,
+                    height: `${height}px`,
                 }
                 this.operateClient = {x: event.clientX, y: event.clientY};
                 this.operateVisible = true;
