@@ -171,7 +171,7 @@
                 </Dropdown>
             </div>
             <div
-                v-if="(projectSearchShow || projectTotal > 20) && windowHeight > 600"
+                v-if="projectKeyValue || ((projectSearchShow || projectTotal > 20) && windowHeight > 600)"
                 class="manage-project-search">
                 <div class="search-pre">
                     <Loading v-if="projectKeyLoading > 0"/>

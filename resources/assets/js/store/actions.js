@@ -1198,9 +1198,9 @@ export default {
                 url: 'project/lists',
                 data: callData.get()
             }).then(({data}) => {
-                state.projectTotal = data.total_all;
                 dispatch("saveProject", data.data);
                 callData.save(data).then(ids => dispatch("forgetProject", ids))
+                state.projectTotal = data.total_all;
                 //
                 resolve(data)
             }).catch(e => {
