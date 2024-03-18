@@ -448,16 +448,14 @@ export default {
                 return;
             }
             this.__tabsClick = setTimeout(() => {  this.__tabsClick =null; },time)
-            if(time == 0){
-                this.loadIng = true;
-            }
             this.tabsValue = val || this.tabsValue
             if(val){
                 this.approvalType = this.searchState = "all"
                 this.approvalName = ""
             }
             //
-            this.detailsShow = false; 
+            this.detailsShow = false;
+            this.loadIng = true;
             //
             if(this.tabsValue == 'unread'){
                 if(val === false){
