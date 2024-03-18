@@ -51,3 +51,32 @@ export function MarkdownPreview(text) {
     }
     return MarkdownUtils.mds.render(text)
 }
+
+export function isMarkdownFormat(html) {
+    if (html === '') {
+        return false
+    }
+    if (/<\/(strong|s|em|u|ol|ul|li|blockquote|pre|img|a)>/i.test(html)) {
+        return false
+    }
+    if (/<span[^>]+?class="mention"[^>]*?>/i.test(html)) {
+        return false
+    }
+    //
+    const text = html.replace(/<[^>]+?>/g, '')
+    if (
+        /(^|\s+)#+\s(.*)$/m.test(text)       // 标题
+        || /\*\*(.*)\*\*/m.test(text)        // 粗体
+        || /__(.*)__/m.test(text)            // 粗体
+        || /\*(.*)\*/m.test(text)            // 斜体
+        || /_(.*)_/m.test(text)              // 斜体
+        || /~~(.*)~~/m.test(text)            // 删除线
+        || /\[(.*?)\]\((.*?)\)/m.test(text)  // 链接
+        || /!\[(.*?)\]\((.*?)\)/m.test(text) // 图片
+        || /`(.*?)`/m.test(text)             // 行内代码
+        || /```([\s\S]*?)```/m.test(text)    // 代码块
+    ) {
+        return true
+    }
+    return false
+}

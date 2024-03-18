@@ -156,7 +156,11 @@
                         </div>
                         <div class="chat-input-popover-item" @click="onSend('md')">
                             <i class="taskfont">&#xe647;</i>
-                            {{$L('Markdown 格式发送')}}
+                            {{$L('MD 格式发送')}}
+                        </div>
+                        <div class="chat-input-popover-item" @click="onSend('normal')">
+                            <i class="taskfont">&#xe71b;</i>
+                            {{$L('正常发送')}}
                         </div>
                     </EPopover>
                 </li>
@@ -214,6 +218,7 @@ import touchmouse from "../../../../directives/touchmouse";
 import TransferDom from "../../../../directives/transfer-dom";
 import clickoutside from "../../../../directives/clickoutside";
 import longpress from "../../../../directives/longpress";
+import {isMarkdownFormat} from "../../../../store/markdown";
 import {Store} from "le5le-store";
 
 export default {
@@ -356,6 +361,7 @@ export default {
     },
     beforeDestroy() {
         if (this.quill) {
+            this.quill.getModule("mention")?.hideMentionList();
             this.quill = null
         }
         if (this.recordRec) {
@@ -1036,7 +1042,7 @@ export default {
             this.showMenu = true;
         },
 
-        onSend(type) {
+        onSend(type = 'auto') {
             this.emojiTimer && clearTimeout(this.emojiTimer)
             this.emojiQuickShow = false;
             //
@@ -1047,6 +1053,13 @@ export default {
                 this.hidePopover('send')
                 this.rangeIndex = 0
                 this.clearSearchKey()
+                //
+                if (type === 'auto') {
+                    type = isMarkdownFormat(this.value) ? 'md' : ''
+                }
+                if (type === 'normal') {
+                    type = ''
+                }
                 if (type) {
                     this.$emit('on-send', null, type)
                 } else {
@@ -1286,7 +1299,7 @@ export default {
             if (this.userId === data.userid || this.quoteData.userid !== data.userid) {
                 return
             }
-            if (new RegExp(`<span[^>]*?class="mention"[^>]*?data-id="${data.userid}"[^>]*?>`).test(this.$refs.editor.firstChild.innerHTML)) {
+            if (new RegExp(`<span[^>]+?class="mention"[^>]+?data-id="${data.userid}"[^>]*?>`).test(this.$refs.editor.firstChild.innerHTML)) {
                 return
             }
             this.addMention({
