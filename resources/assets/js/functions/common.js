@@ -1376,9 +1376,19 @@ const localforage = require("localforage");
                 if ($A.isIos()) {
                     await localforage.setItem('__test__', $A.Time())
                 }
-                $A.openLog && console.log('IDBTest OK',)
+                $A.openLog && console.log('IDBTest OK')
             } catch (error) {
-                $A.openLog && console.error('IDBTest Error: ', error)
+                if ($A.openLog) {
+                    console.error('IDBTest Error: ', error)
+                    $A.modalWarning({
+                        content: error.message,
+                        onOk: () => {
+                            $A.reloadUrl();
+                        }
+                    });
+                } else {
+                    $A.reloadUrl();
+                }
             }
         },
 
