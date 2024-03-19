@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.36.22]
+
+### Bug Fixes
+
+- 关闭文件后无法再次打开
+
+### Performance
+
+- 支持取消发送中的消息
+- 1. 强化接龙接口本地时间戳问题   2. 接龙消息点展开按钮后做缓存处理
+
 ## [0.36.15]
 
 ### Bug Fixes

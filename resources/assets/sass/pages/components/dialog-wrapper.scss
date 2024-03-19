@@ -2080,6 +2080,8 @@ body:not(.window-touch) {
             align-items: center;
             justify-content: center;
             width: auto;
+            margin-top: 2px;
+            margin-bottom: -14px;
         }
         > li {
             list-style: none;
@@ -2424,6 +2426,9 @@ body.window-portrait {
         .dialog-wrapper-operate {
             .operate-action {
                 width: 376px;
+                &.cancel {
+                    width: auto;
+                }
             }
             .operate-emoji {
                 width: 376px;

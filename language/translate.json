@@ -20040,5 +20040,38 @@
         "de": "Sende normal.",
         "fr": "Envoyer comme normal",
         "id": "Kirim normal"
+    },
+    {
+        "key": "你确定要取消发送吗？",
+        "zh": "",
+        "zh-CHT": "你確定要取消發送嗎？",
+        "en": "Are you sure you want to cancel?",
+        "ko": "발송을 취소하시겠습니까?",
+        "ja": "送信をキャンセルすることは確実ですか?",
+        "de": "Willst du die lieferung wirklich absagen?",
+        "fr": "Êtes-vous sûr de vouloir annuler l’envoi?",
+        "id": "Apakah anda yakin ingin membatalkan pengiriman?"
+    },
+    {
+        "key": "消息已发送，不可取消",
+        "zh": "",
+        "zh-CHT": "消息已發送，不可取消",
+        "en": "The message has been sent and cannot be cancelled",
+        "ko": "메시지가 전송되었습니다. 취소할 수 없습니다",
+        "ja": "メッセージは送信済みですので,キャンセルは不可です",
+        "de": "Die nachricht wurde gesendet, du darfst sie nicht absagen",
+        "fr": "Message envoyé et non annulable",
+        "id": "Pesan terkirim dan tidak dapat dibatalkan"
+    },
+    {
+        "key": "取消发送失败",
+        "zh": "",
+        "zh-CHT": "取消發送失敗",
+        "en": "Unsend failed",
+        "ko": "보내기 취소 실패",
+        "ja": "送信キャンセルに失敗しました",
+        "de": "Sagen sie das ab.",
+        "fr": "Annuler l’envoi a échoué",
+        "id": "Batal kirim"
     }
 ]
