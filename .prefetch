@@ -20,3 +20,8 @@ office/7.5.1-23/web-apps/apps/documenteditor/main/resources/css/app.css
 office/7.5.1-23/web-apps/apps/documenteditor/main/app.js
 office/7.5.1-23/sdkjs/word/sdk-all-min.js
 office/7.5.1-23/sdkjs/word/sdk-all.js
+drawio/webapp/js/app.min.js
+drawio/webapp/js/stencils.min.js
+drawio/webapp/js/extensions.min.js
+drawio/webapp/js/shapes-14-6-5.min.js
+drawio/webapp/math/es5/output/svg/fonts/tex.js

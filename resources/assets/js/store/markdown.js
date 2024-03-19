@@ -63,7 +63,11 @@ export function isMarkdownFormat(html) {
         return false
     }
     //
-    const text = html.replace(/<[^>]+?>/g, '')
+    let el = document.createElement('div')
+    el.innerHTML = html
+    const text = el.innerText
+    el = null
+    //
     if (
         /(^|\s+)#+\s(.*)$/m.test(text)       // 标题
         || /\*\*(.*)\*\*/m.test(text)        // 粗体

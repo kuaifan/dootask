@@ -941,19 +941,20 @@
 
                             .file-percentage {
                                 position: absolute;
-                                top: 0;
-                                left: 0;
-                                right: 0;
-                                bottom: 0;
+                                left: 2px;
+                                right: 2px;
+                                bottom: 2px;
+                                height: 2px;
                                 border-radius: 3px;
                                 overflow: hidden;
+
                                 > span {
                                     position: absolute;
                                     top: 0;
-                                    right: 0;
+                                    left: 0;
                                     bottom: 0;
                                     width: 0;
-                                    background-color: rgba(170, 170, 170, 0.2);
+                                    background-color: $flow-status-end-color;
                                 }
                             }
 
@@ -2074,6 +2075,12 @@ body:not(.window-touch) {
         display: grid;
         justify-content: space-between;
         grid-template-columns: repeat(auto-fill, 60px);
+        &.cancel {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: auto;
+        }
         > li {
             list-style: none;
             width: 60px;

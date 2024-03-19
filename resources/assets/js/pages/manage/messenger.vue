@@ -180,7 +180,7 @@
                                         <i class="taskfont" v-html="operateItem.silence ? '&#xe7eb;' : '&#xe7d7;'"></i>
                                     </div>
                                 </DropdownItem>
-                                <DropdownItem @click.native="handleHideClick" :disabled="operateItem.top_at">
+                                <DropdownItem @click.native="handleHideClick" :disabled="!!operateItem.top_at">
                                     <div class="item">
                                         {{ $L('不显示该会话') }}
                                         <i class="taskfont">&#xe881;</i>
