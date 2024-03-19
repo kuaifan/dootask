@@ -66,6 +66,7 @@
 
 <script>
 import {mapState} from "vuex";
+
 export default {
     name: 'DialogDroupWordChain',
 
@@ -85,46 +86,46 @@ export default {
     computed: {
         ...mapState(['dialogDroupWordChain', 'userInfo', 'dialogMsgs', 'cacheDialogs']),
 
-        isFullscreen({ windowWidth }) {
+        isFullscreen({windowWidth}) {
             return windowWidth < 576;
         },
 
-        num(){
-            return this.list.filter(h=>h.type != 'case')?.length || 0;
+        num() {
+            return this.list.filter(h => h.type != 'case')?.length || 0;
         },
 
-        allList(){
+        allList() {
             const msg = this.dialogDroupWordChain.msgData?.msg || {};
             let list = JSON.parse(JSON.stringify(msg.list || []));
-            this.dialogMsgs.filter(h=>{
+            this.dialogMsgs.filter(h => {
                 return h.type == "word-chain" && h.msg?.uuid == msg.uuid
-            }).forEach((h)=>{
-                (h.msg.list || []).forEach(k=>{
-                    if (k.type != 'case' && list.map(j=>j.id).indexOf(k.id) == -1) {
+            }).forEach((h) => {
+                (h.msg.list || []).forEach(k => {
+                    if (k.type != 'case' && list.map(j => j.id).indexOf(k.id) == -1) {
                         list.push(k)
                     }
                 })
             });
-            return list.filter(h=>(h.text || '').trim());
+            return list.filter(h => (h.text || '').trim());
         },
 
-        isEdit(){
+        isEdit() {
             return this.oldData != JSON.stringify(this.list);
         },
 
-        dialog(){
-            return this.cacheDialogs.find(h=>h.id == this.dialogDroupWordChain.dialog_id) || {}
+        dialog() {
+            return this.cacheDialogs.find(h => h.id == this.dialogDroupWordChain.dialog_id) || {}
         },
     },
 
     watch: {
-        show(val){
-            if(!val){
+        show(val) {
+            if (!val) {
                 this.value = "#" + this.$L('接龙') + " \n";
                 this.list = [];
-            }else{
-                if(this.dialogDroupWordChain.type == 'create'){
-                    this.$nextTick(()=>{
+            } else {
+                if (this.dialogDroupWordChain.type == 'create') {
+                    this.$nextTick(() => {
                         this.$refs.wordChainTextareaRef.focus()
                     })
                 }
@@ -133,7 +134,7 @@ export default {
         },
 
         dialogDroupWordChain(data) {
-            if(data.type == 'create' && data.dialog_id){
+            if (data.type == 'create' && data.dialog_id) {
                 this.show = true;
                 this.createId = this.userId;
                 this.list = [];
@@ -150,18 +151,18 @@ export default {
                     text: this.userInfo.nickname
                 });
             }
-            if(data.type == 'participate' && data.dialog_id && data.msgData){
+            if (data.type == 'participate' && data.dialog_id && data.msgData) {
                 this.show = true;
                 this.createId = data.msgData.msg.createid || data.msgData.msg.userid;
                 this.value = data.msgData.msg.text;
-                this.list =  this.allList;
+                this.list = this.allList;
                 this.oldData = JSON.stringify(this.list);
             }
         }
     },
 
     methods: {
-        onAdd(){
+        onAdd() {
             this.list.push({
                 id: Date.now(),
                 type: 'text',
@@ -171,8 +172,8 @@ export default {
             this.scrollTo();
         },
 
-        scrollTo(){
-            this.$nextTick(()=>{
+        scrollTo() {
+            this.$nextTick(() => {
                 this.$refs.wordChainListRef.scrollTo(0, 99999);
             });
         },
@@ -186,14 +187,14 @@ export default {
                 return;
             }
             //
-            const texts = this.list.map(h=> h.text);
-            if( texts.length != [...new Set(texts)].length ){
+            const texts = this.list.map(h => h.text);
+            if (texts.length != [...new Set(texts)].length) {
                 $A.modalConfirm({
                     content: '重复内容将不再计入接龙结果',
                     cancelText: '返回编辑',
                     okText: '继续发送',
                     onOk: () => {
-                       this.send()
+                        this.send()
                     }
                 })
                 return;
@@ -206,8 +207,8 @@ export default {
          */
         send() {
             const list = [];
-            this.list.forEach(h=>{
-                if ((h.text || h.type != "case") && list.map(h=> h.text).indexOf(h.text) == -1) {
+            this.list.forEach(h => {
+                if ((h.text || h.type != "case") && list.map(h => h.text).indexOf(h.text) == -1) {
                     list.push(h);
                 }
             });

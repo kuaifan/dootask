@@ -1101,10 +1101,17 @@ class UsersController extends AbstractController
         ];
         $row = UmengAlias::where($inArray);
         if ($row->exists()) {
-            $row->update(['updated_at' => Carbon::now()]);
+            $row->update([
+                'ua' => $data['userAgent'],
+                'device' => $data['deviceModel'],
+                'updated_at' => Carbon::now()
+            ]);
             return Base::retSuccess('别名已存在');
         }
-        $row = UmengAlias::createInstance($inArray);
+        $row = UmengAlias::createInstance(array_merge($inArray, [
+            'ua' => $data['userAgent'],
+            'device' => $data['deviceModel'],
+        ]));
         if ($row->save()) {
             return Base::retSuccess('添加成功');
         } else {

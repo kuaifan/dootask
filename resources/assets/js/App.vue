@@ -101,13 +101,15 @@ export default {
                 //
                 if (this.userId > 0 && this.$isEEUiApp) {
                     $A.eeuiAppSendMessage({
-                        action: 'intiUmeng',
+                        action: 'initApp',
+                        apiUrl: $A.apiUrl(''),
+                        userid: this.userId,
+                        token: this.userToken,
+                        userAgent: window.navigator.userAgent,
                     });
                     setTimeout(_ => {
                         $A.eeuiAppSendMessage({
                             action: 'setUmengAlias',
-                            userid: this.userId,
-                            token: this.userToken,
                             url: $A.apiUrl('users/umeng/alias')
                         });
                     }, 6000)
