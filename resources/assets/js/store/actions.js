@@ -326,6 +326,22 @@ export default {
     },
 
     /**
+     * 取消请求
+     * @param state
+     * @param requestId
+     * @returns {Promise<unknown>}
+     */
+    callCancel({state}, requestId) {
+        return new Promise((resolve, reject) => {
+            if ($A.ajaxcCancel(requestId)) {
+                resolve()
+            } else {
+                reject()
+            }
+        })
+    },
+
+    /**
      * 获取系统设置
      * @param dispatch
      * @param state

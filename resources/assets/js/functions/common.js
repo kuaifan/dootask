@@ -1970,30 +1970,57 @@ const localforage = require("localforage");
             if (typeof params.success === 'undefined') params.success = () => { };
             if (typeof params.error === 'undefined') params.error = () => { };
             if (typeof params.header == 'undefined') params.header = {};
+            const key = $A.randomString(16);
             //
             params.before();
-            $A.ihttp({
+            $A.__ajaxList.push({
+                key,
+                id: params.requestId || null,
                 url: params.url,
-                data: params.data,
-                cache: params.cache,
-                headers: params.header,
-                method: params.method.toUpperCase(),
-                contentType: "OPTIONS",
-                crossDomain: true,
-                dataType: params.dataType,
-                timeout: params.timeout,
-                success: function (data, status, xhr) {
-                    params.complete();
-                    params.success(data, status, xhr);
-                    params.after(true);
-                },
-                error: function (xhr, status) {
-                    params.complete();
-                    params.error(xhr, status);
-                    params.after(false);
+                request: $A.ihttp({
+                    url: params.url,
+                    data: params.data,
+                    cache: params.cache,
+                    headers: params.header,
+                    method: params.method.toUpperCase(),
+                    contentType: "OPTIONS",
+                    crossDomain: true,
+                    dataType: params.dataType,
+                    timeout: params.timeout,
+                    success: function (data, status, xhr) {
+                        $A.__ajaxList = $A.__ajaxList.filter(val => val.key !== key);
+                        params.complete();
+                        params.success(data, status, xhr);
+                        params.after(true);
+                    },
+                    error: function (xhr, status) {
+                        $A.__ajaxList = $A.__ajaxList.filter(val => val.key !== key);
+                        params.complete();
+                        params.error(xhr, status);
+                        params.after(false);
+                    }
+                })
+            });
+        },
+        ajaxcCancel(requestId) {
+            if (!requestId) {
+                return 0;
+            }
+            let num = 0;
+            $A.__ajaxList.forEach((val, index) => {
+                if (val.id === requestId) {
+                    num++;
+                    if (val.request) {
+                        val.request.abort();
+                    }
                 }
             });
-        }
+            if (num > 0) {
+                $A.__ajaxList = $A.__ajaxList.filter(val => val.id !== requestId);
+            }
+            return num;
+        },
+        __ajaxList: [],
     });
 
     window.$A = $;

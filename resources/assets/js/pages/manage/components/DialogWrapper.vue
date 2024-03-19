@@ -273,74 +273,86 @@
                 transfer>
                 <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
                 <DropdownMenu slot="list">
-                    <DropdownItem name="action">
-                        <ul class="operate-action">
-                            <li v-if="msgId === 0" @click="onOperate('reply')">
-                                <i class="taskfont">&#xe6eb;</i>
-                                <span>{{ $L('回复') }}</span>
-                            </li>
-                            <li v-if="operateItem.userid == userId && operateItem.type === 'text'" @click="onOperate('update')">
-                                <i class="taskfont">&#xe779;</i>
-                                <span>{{ $L('编辑') }}</span>
-                            </li>
-                            <li v-for="item in operateCopys" @click="onOperate('copy', item)">
-                                <i class="taskfont" v-html="item.icon"></i>
-                                <span>{{ $L(item.label) }}</span>
-                            </li>
-                            <li v-if="operateItem.type !== 'word-chain' && operateItem.type !== 'vote'" @click="onOperate('forward')">
-                                <i class="taskfont">&#xe638;</i>
-                                <span>{{ $L('转发') }}</span>
-                            </li>
-                            <li v-if="operateItem.userid == userId" @click="onOperate('withdraw')">
-                                <i class="taskfont">&#xe637;</i>
-                                <span>{{ $L('撤回') }}</span>
-                            </li>
-                            <template v-if="operateItem.type === 'file'">
-                                <li @click="onOperate('view')">
-                                    <i class="taskfont">&#xe77b;</i>
-                                    <span>{{ $L('查看') }}</span>
+                    <template v-if="!operateItem.created_at">
+                        <DropdownItem name="action">
+                            <ul class="operate-action cancel">
+                                <li @click="onOperate('cancel')">
+                                    <i class="taskfont">&#xe6eb;</i>
+                                    <span>{{ $L('取消发送') }}</span>
                                 </li>
-                                <li @click="onOperate('down')">
-                                    <i class="taskfont">&#xe7a8;</i>
-                                    <span>{{ $L('下载') }}</span>
+                            </ul>
+                        </DropdownItem>
+                    </template>
+                    <template v-else>
+                        <DropdownItem name="action">
+                            <ul class="operate-action">
+                                <li v-if="msgId === 0" @click="onOperate('reply')">
+                                    <i class="taskfont">&#xe6eb;</i>
+                                    <span>{{ $L('回复') }}</span>
                                 </li>
-                            </template>
-                            <li @click="onOperate('tag')">
-                                <i class="taskfont">&#xe61e;</i>
-                                <span>{{ $L(operateItem.tag ? '取消标注' : '标注') }}</span>
-                            </li>
-                            <li v-if="operateItem.type === 'text'" @click="onOperate('newTask')">
-                                <i class="taskfont">&#xe7b8;</i>
-                                <span>{{ $L('新任务') }}</span>
-                            </li>
-                            <li @click="onOperate('todo')">
-                                <i class="taskfont">&#xe7b7;</i>
-                                <span>{{ $L(operateItem.todo ? '取消待办' : '设待办') }}</span>
-                            </li>
-                            <li @click="onOperate('top')">
-                                <i class="taskfont" v-html="dialogData.top_msg_id == operateItem.id ? '&#xe7e3;' : '&#xe7e6;'"></i>
-                                <span>{{ $L(dialogData.top_msg_id == operateItem.id ? '取消置顶' : '置顶') }}</span>
-                            </li>
-                            <li v-if="msgType !== ''" @click="onOperate('pos')">
-                                <i class="taskfont">&#xee15;</i>
-                                <span>{{ $L('完整对话') }}</span>
-                            </li>
-                        </ul>
-                    </DropdownItem>
-                    <DropdownItem name="emoji" class="dropdown-emoji">
-                        <ul class="operate-emoji scrollbar-hidden">
-                            <li
-                                v-for="(emoji, key) in operateEmojis"
-                                :key="key"
-                                v-html="emoji"
-                                class="no-dark-content"
-                                @click="onOperate('emoji', emoji)"></li>
-                            <li></li>
-                            <li class="more-emoji" @click="onOperate('emoji', 'more')">
-                                <i class="taskfont">&#xe790;</i>
-                            </li>
-                        </ul>
-                    </DropdownItem>
+                                <li v-if="operateItem.userid == userId && operateItem.type === 'text'" @click="onOperate('update')">
+                                    <i class="taskfont">&#xe779;</i>
+                                    <span>{{ $L('编辑') }}</span>
+                                </li>
+                                <li v-for="item in operateCopys" @click="onOperate('copy', item)">
+                                    <i class="taskfont" v-html="item.icon"></i>
+                                    <span>{{ $L(item.label) }}</span>
+                                </li>
+                                <li v-if="operateItem.type !== 'word-chain' && operateItem.type !== 'vote'" @click="onOperate('forward')">
+                                    <i class="taskfont">&#xe638;</i>
+                                    <span>{{ $L('转发') }}</span>
+                                </li>
+                                <li v-if="operateItem.userid == userId" @click="onOperate('withdraw')">
+                                    <i class="taskfont">&#xe637;</i>
+                                    <span>{{ $L('撤回') }}</span>
+                                </li>
+                                <template v-if="operateItem.type === 'file'">
+                                    <li @click="onOperate('view')">
+                                        <i class="taskfont">&#xe77b;</i>
+                                        <span>{{ $L('查看') }}</span>
+                                    </li>
+                                    <li @click="onOperate('down')">
+                                        <i class="taskfont">&#xe7a8;</i>
+                                        <span>{{ $L('下载') }}</span>
+                                    </li>
+                                </template>
+                                <li @click="onOperate('tag')">
+                                    <i class="taskfont">&#xe61e;</i>
+                                    <span>{{ $L(operateItem.tag ? '取消标注' : '标注') }}</span>
+                                </li>
+                                <li v-if="operateItem.type === 'text'" @click="onOperate('newTask')">
+                                    <i class="taskfont">&#xe7b8;</i>
+                                    <span>{{ $L('新任务') }}</span>
+                                </li>
+                                <li @click="onOperate('todo')">
+                                    <i class="taskfont">&#xe7b7;</i>
+                                    <span>{{ $L(operateItem.todo ? '取消待办' : '设待办') }}</span>
+                                </li>
+                                <li @click="onOperate('top')">
+                                    <i class="taskfont" v-html="dialogData.top_msg_id == operateItem.id ? '&#xe7e3;' : '&#xe7e6;'"></i>
+                                    <span>{{ $L(dialogData.top_msg_id == operateItem.id ? '取消置顶' : '置顶') }}</span>
+                                </li>
+                                <li v-if="msgType !== ''" @click="onOperate('pos')">
+                                    <i class="taskfont">&#xee15;</i>
+                                    <span>{{ $L('完整对话') }}</span>
+                                </li>
+                            </ul>
+                        </DropdownItem>
+                        <DropdownItem name="emoji" class="dropdown-emoji">
+                            <ul class="operate-emoji scrollbar-hidden">
+                                <li
+                                    v-for="(emoji, key) in operateEmojis"
+                                    :key="key"
+                                    v-html="emoji"
+                                    class="no-dark-content"
+                                    @click="onOperate('emoji', emoji)"></li>
+                                <li></li>
+                                <li class="more-emoji" @click="onOperate('emoji', 'more')">
+                                    <i class="taskfont">&#xe790;</i>
+                                </li>
+                            </ul>
+                        </DropdownItem>
+                    </template>
                 </DropdownMenu>
             </Dropdown>
         </div>
@@ -1493,6 +1505,7 @@ export default {
                 this.$nextTick(this.onToBottom)
                 //
                 this.$store.dispatch("call", {
+                    requestId: tempMsg.id,
                     url: 'dialog/msg/sendtext',
                     data: {
                         dialog_id: tempMsg.dialog_id,
@@ -1536,6 +1549,7 @@ export default {
             this.$nextTick(this.onToBottom)
             //
             this.$store.dispatch("call", {
+                requestId: tempMsg.id,
                 url: 'dialog/msg/sendrecord',
                 data: Object.assign(msg, {
                     dialog_id: this.dialogId,
@@ -1992,6 +2006,7 @@ export default {
                     }
                     const tempMsg = {
                         id: file.tempId,
+                        file_uid: file.uid,
                         dialog_id: this.dialogData.id,
                         reply_id: this.quoteId,
                         type: 'file',
@@ -2772,6 +2787,10 @@ export default {
             this.operateVisible = false;
             this.$nextTick(_ => {
                 switch (action) {
+                    case "cancel":
+                        this.onCancelSend()
+                        break;
+
                     case "reply":
                         this.onReply()
                         break;
@@ -2831,6 +2850,39 @@ export default {
                         break;
                 }
             })
+        },
+
+        onCancelSend() {
+            $A.modalConfirm({
+                title: '取消发送',
+                content: '你确定要取消发送吗？',
+                loading: true,
+                onOk: () => {
+                    return new Promise((resolve, reject) => {
+                        if (this.operateItem.created_at) {
+                            reject("消息已发送，不可取消");
+                            return
+                        }
+                        if (this.operateItem.type === 'file') {
+                            // 取消文件上传
+                            if (this.$refs.chatUpload.cancel(this.operateItem.file_uid)) {
+                                this.forgetTempMsg(this.operateItem.id)
+                                resolve();
+                            } else {
+                                reject("取消失败");
+                            }
+                        } else {
+                            // 取消消息发送
+                            this.$store.dispatch('callCancel', this.operateItem.id).then(() => {
+                                this.forgetTempMsg(this.operateItem.id)
+                                resolve();
+                            }).catch(() => {
+                                reject("取消失败");
+                            });
+                        }
+                    })
+                }
+            });
         },
 
         onReply(type) {

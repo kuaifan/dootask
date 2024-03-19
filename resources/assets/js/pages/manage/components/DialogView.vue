@@ -437,9 +437,6 @@ export default {
 
     methods: {
         handleLongpress(event, el) {
-            if (!this.msgData.created_at) {
-                return;
-            }
             this.$emit("on-longpress", {event, el, msgData: this.msgData})
         },
 
@@ -515,7 +512,7 @@ export default {
         fileStyle(percentage) {
             if (percentage) {
                 return {
-                    width: (100 - percentage) + '%'
+                    width: `${percentage}%`
                 };
             }
             return {};

@@ -187,6 +187,11 @@ export default {
             //手动传file
             this.$refs.upload.upload(file);
         },
+
+        cancel(uid) {
+            //取消上传
+            return this.$refs.upload.cancel(uid);
+        }
     }
 }
 </script>

@@ -55,7 +55,7 @@
         "stylus-loader": "^7.1.0",
         "tinymce": "^5.10.3",
         "tui-calendar-hi": "^1.15.1-5",
-        "view-design-hi": "^4.7.0-49",
+        "view-design-hi": "^4.7.0-50",
         "vite": "^2.9.15",
         "vite-plugin-file-copy": "^1.0.0",
         "vite-plugin-require": "^1.1.10",
