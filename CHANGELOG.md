@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.36.22]
+## [0.36.26]
 
 ### Bug Fixes
 
@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
+- 优化数据结构
+- 接龙优化为清空内容默认删除
 - 支持取消发送中的消息
 - 1. 强化接龙接口本地时间戳问题   2. 接龙消息点展开按钮后做缓存处理
 
