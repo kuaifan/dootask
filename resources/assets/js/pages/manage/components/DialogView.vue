@@ -80,7 +80,7 @@
                         <li v-for="(item) in (msgData.msg.list || []).filter(h=>h.type == 'case')">
                             {{ $L('例') }} {{ item.text }}
                         </li>
-                        <li v-for="(item,index) in (msgData.msg.list || []).filter(h=>h.type != 'case')">
+                        <li v-for="(item,index) in (msgData.msg.list || []).filter(h=>h.type != 'case' && h.text)">
                             <span class="expand" v-if="index == 2 && msgData.msg.list.length > 4" @click="unfoldWordChain(msgData)">
                                 ...{{$L('展开')}}...
                             </span>

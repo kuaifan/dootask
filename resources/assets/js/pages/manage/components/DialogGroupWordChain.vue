@@ -100,12 +100,12 @@ export default {
                 return h.type == "word-chain" && h.msg?.uuid == msg.uuid
             }).forEach((h)=>{
                 (h.msg.list || []).forEach(k=>{
-                    if( k.type != 'case' && list.map(j=>j.id).indexOf(k.id) == -1 ){
+                    if (k.type != 'case' && list.map(j=>j.id).indexOf(k.id) == -1) {
                         list.push(k)
                     }
                 })
             });
-            return list;
+            return list.filter(h=>(h.text || '').trim());
         },
 
         isEdit(){
@@ -152,7 +152,7 @@ export default {
             }
             if(data.type == 'participate' && data.dialog_id && data.msgData){
                 this.show = true;
-                this.createId = data.msgData.msg.userid;
+                this.createId = data.msgData.msg.createid || data.msgData.msg.userid;
                 this.value = data.msgData.msg.text;
                 this.list =  this.allList;
                 this.oldData = JSON.stringify(this.list);
@@ -178,16 +178,11 @@ export default {
         },
 
         onSend() {
-            if( !this.isEdit ){
+            if (!this.isEdit) {
                 return;
             }
-            //
-            if(!this.value){
+            if (!this.value) {
                 $A.messageError("请输入接龙主题");
-                return;
-            }
-            if( this.list.find(h=> !h.text && h.type != "case") ){
-                $A.messageError("请输入接龙内容");
                 return;
             }
             //
@@ -212,7 +207,7 @@ export default {
         send() {
             const list = [];
             this.list.forEach(h=>{
-                if(h.text && list.map(h=> h.text).indexOf(h.text) == -1){
+                if ((h.text || h.type != "case") && list.map(h=> h.text).indexOf(h.text) == -1) {
                     list.push(h);
                 }
             });
@@ -231,7 +226,7 @@ export default {
                 this.show = false;
                 this.$store.dispatch("saveDialogMsg", data);
             }).catch(({msg}) => {
-                if( msg.indexOf("System error") !== -1){
+                if (msg.indexOf("System error") !== -1) {
                     $A.modalInfo({
                         title: '版本过低',
                         content: '服务器版本过低，请升级服务器。',
