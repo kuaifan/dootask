@@ -2195,6 +2195,8 @@ class DialogController extends AbstractController
                     ->orderByDesc('created_at')
                     ->where('msg', 'like', "%$uuid%")
                     ->value('msg');
+                //
+                $createId = $dialogMsg['createid'] ?? $user->userid;
                 // 新增
                 $msgList = $dialogMsg['list'] ?? [];
                 $addList = array_udiff($list, $msgList, function($a, $b) {
@@ -2213,6 +2215,7 @@ class DialogController extends AbstractController
                 }
                 $list = $msgList;
             } else {
+                $createId = $user->userid;
                 $uuid = Base::generatePassword(36);
                 foreach ($list as $key => $item) {
                     $list[$key]['id'] = intval(round(microtime(true) * 1000)) + $key;
@@ -2227,6 +2230,7 @@ class DialogController extends AbstractController
                 'text' => $text,
                 'list' => $list,
                 'userid' => $user->userid,
+                'createid' => $createId,
                 'uuid' => $uuid,
             ];
             return WebSocketDialogMsg::sendMsg(null, $dialog_id, 'word-chain', $msgData, $user->userid);
