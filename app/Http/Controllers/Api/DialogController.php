@@ -2175,12 +2175,12 @@ class DialogController extends AbstractController
         $dialog_id = intval(Request::input('dialog_id'));
         $uuid = trim(Request::input('uuid'));
         $text = trim(Request::input('text'));
-        $list = Request::input('list');
+        $list = Request::input('list') ?? [];
         //
         WebSocketDialog::checkDialog($dialog_id);
         $strlen = mb_strlen($text);
         $noimglen = mb_strlen(preg_replace("/<img[^>]*?>/i", "", $text));
-        if ($strlen < 1) {
+        if ($strlen < 1 || empty($list)) {
             return Base::retError('内容不能为空');
         }
         if ($noimglen > 200000) {
@@ -2195,17 +2195,28 @@ class DialogController extends AbstractController
                     ->orderByDesc('created_at')
                     ->where('msg', 'like', "%$uuid%")
                     ->value('msg');
-                $list = array_reverse(array_merge($dialogMsg['list'] ?? [], $list));
-                $list = array_reduce($list, function ($result, $item) {
-                    $fieldValue = $item['id'];  // 指定字段名
-                    if (!isset($result[$fieldValue])) {
-                        $result[$fieldValue] = $item;
+                // 新增
+                $msgList = $dialogMsg['list'] ?? [];
+                $addList = array_udiff($list, $msgList, function($a, $b) {
+                    return ($a['id'] ?? 0) - $b['id'];
+                });
+                foreach ($addList as $key => $item) {
+                    $item['id'] = intval(round(microtime(true) * 1000)) + $key;
+                    $msgList[] = $item;
+                }
+                // 编辑更新
+                $lists = array_column($list,null,'id');
+                foreach ($msgList as $key => $item) {
+                    if (isset($lists[$item['id']]) && $item['userid'] == $user->userid) {
+                        $msgList[$key] = $lists[$item['id']];
                     }
-                    return $result;
-                }, []);
-                $list = array_reverse(array_values($list));
+                }
+                $list = $msgList;
             } else {
                 $uuid = Base::generatePassword(36);
+                foreach ($list as $key => $item) {
+                    $list[$key]['id'] = intval(round(microtime(true) * 1000)) + $key;
+                }
             }
             //
             usort($list, function ($a, $b) {

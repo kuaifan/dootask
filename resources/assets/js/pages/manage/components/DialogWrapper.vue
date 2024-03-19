@@ -1198,6 +1198,7 @@ export default {
                 this.$store.dispatch('closeDialog', old_id)
                 //
                 window.localStorage.removeItem('__cache:vote__')
+                window.localStorage.removeItem('__cache:unfoldWordChain__')
             },
             immediate: true
         },
