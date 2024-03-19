@@ -76,12 +76,12 @@
                 <!--接龙-->
                 <div v-else-if="msgData.type === 'word-chain'" class="content-text content-word-chain no-dark-content">
                     <pre v-html="$A.formatTextMsg(msgData.msg.text, userId)"></pre>
-                    <ul>
+                    <ul :class="{'expand': unfoldWordChainData.indexOf(msgData.id) !== -1 }">
                         <li v-for="(item) in (msgData.msg.list || []).filter(h=>h.type == 'case')">
                             {{ $L('例') }} {{ item.text }}
                         </li>
                         <li v-for="(item,index) in (msgData.msg.list || []).filter(h=>h.type != 'case')">
-                            <span class="expand" v-if="index == 2 && msgData.msg.list.length > 4" @click="unfoldWordChain">
+                            <span class="expand" v-if="index == 2 && msgData.msg.list.length > 4" @click="unfoldWordChain(msgData)">
                                 ...{{$L('展开')}}...
                             </span>
                             <span :class="{'shrink': index >= 2 && msgData.msg.list.length > 4 } ">
@@ -325,7 +325,8 @@ export default {
 
             emojiUsersNum: 5,
 
-            voteData: {}
+            voteData: {},
+            unfoldWordChainData: []
         }
     },
 
@@ -333,6 +334,9 @@ export default {
         this.emojiUsersNum = Math.min(6, Math.max(2, Math.floor((this.windowWidth - 180) / 52)))
         if (Object.keys(this.voteData).length === 0) {
             this.voteData = JSON.parse(window.localStorage.getItem(`__cache:vote__`)) || {};
+        }
+        if (this.unfoldWordChainData.length === 0) {
+            this.unfoldWordChainData = JSON.parse(window.localStorage.getItem(`__cache:unfoldWordChain__`)) || [];
         }
     },
 
@@ -640,8 +644,13 @@ export default {
             }
         },
 
-        unfoldWordChain(e) {
-            e.target.parentNode?.parentNode?.classList.add('expand')
+        unfoldWordChain(msg) {
+            if (this.unfoldWordChainData.indexOf(msg.id) == -1) {
+                const data = JSON.parse(window.localStorage.getItem('__cache:unfoldWordChain__')) || [];
+                data.push(msg.id);
+                window.localStorage.setItem('__cache:unfoldWordChain__', JSON.stringify(data));
+                this.unfoldWordChainData.push(msg.id);
+            }
         },
 
         onVote(type, msgData) {

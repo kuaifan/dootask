@@ -1210,6 +1210,7 @@ export default {
                 this.$store.dispatch('closeDialog', old_id)
                 //
                 window.localStorage.removeItem('__cache:vote__')
+                window.localStorage.removeItem('__cache:unfoldWordChain__')
             },
             immediate: true
         },
@@ -2869,7 +2870,7 @@ export default {
                                 this.forgetTempMsg(this.operateItem.id)
                                 resolve();
                             } else {
-                                reject("取消失败");
+                                reject("取消发送失败");
                             }
                         } else {
                             // 取消消息发送
@@ -2877,7 +2878,7 @@ export default {
                                 this.forgetTempMsg(this.operateItem.id)
                                 resolve();
                             }).catch(() => {
-                                reject("取消失败");
+                                reject("取消发送失败");
                             });
                         }
                     })
