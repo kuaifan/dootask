@@ -1066,7 +1066,7 @@ export default {
 
         browseFolder(id, shakeId = null) {
             if (id > 0) {
-                if (this.$route.params.folderId == id) {
+                if (this.pid == id && this.fid == 0 && shakeId) {
                     this.shakeFile(shakeId);
                     return;
                 }
