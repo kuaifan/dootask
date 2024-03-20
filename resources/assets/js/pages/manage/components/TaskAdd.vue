@@ -93,50 +93,53 @@
                     border/>
             </FormItem>
             <FormItem>
-                <div slot="label">
-                    <EDropdown ref="eDropdownRef" trigger="click" placement="bottom" @command="dropVisible">
-                        <span class="visibility-text">{{$L('可见性')}}
-                            <i class="taskfont">&#xe740;</i>
-                        </span>
-                        <EDropdownMenu slot="dropdown">
-                            <EDropdownItem :command="1">
-                                <div class="task-menu-icon" >
-                                    <Icon v-if="addData.visibility_appoint == 1" class="completed" :type="'md-checkmark-circle'"/>
-                                    <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
-                                    {{$L('项目人员')}}
-                                </div>
-                            </EDropdownItem>
-                            <EDropdownItem :command="2">
-                                <div class="task-menu-icon" >
-                                    <Icon v-if="addData.visibility_appoint == 2" class="completed" :type="'md-checkmark-circle'"/>
-                                    <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
-                                    {{$L('任务人员')}}
-                                </div>
-                            </EDropdownItem>
-                            <EDropdownItem :command="3">
-                                <div class="task-menu-icon" >
-                                    <Icon v-if="addData.visibility_appoint == 3" class="completed" :type="'md-checkmark-circle'"/>
-                                    <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
-                                    {{$L('指定成员')}}
-                                </div>
-                            </EDropdownItem>
-                        </EDropdownMenu>
-                    </EDropdown>
+                <div slot="label" class="visibility-text" @click="showCisibleDropdown">
+                    {{ $L('可见性') }}
+                    <i class="taskfont">&#xe740;</i>
                 </div>
-                <div class="ivu-input task-add-visibility" v-if="addData.visibility_appoint < 3" @click="showCisibleDropdown">
-                    <span v-if="addData.visibility_appoint == 1">{{$L('项目人员可见')}}</span>
-                    <span v-else-if="addData.visibility_appoint == 2">{{$L('任务人员可见')}}</span>
+                <div
+                    v-if="addData.visibility_appoint == 1 || addData.visibility_appoint == 2"
+                    ref="visibilityText"
+                    class="ivu-input task-add-visibility"
+                    @click="showCisibleDropdown">
+                    {{ addData.visibility_appoint == 1 ? $L('项目人员可见') : $L('任务人员可见') }}
                 </div>
-                <UserSelect v-else
+                <UserSelect
+                    v-else
                     ref="visibleUserSelectRef"
                     v-model="addData.visibility_appointor"
                     :avatar-size="24"
                     :title="$L('选择指定人员')"
                     :project-id="addData.project_id"
                     @on-show-change="visibleUserSelectShowChange"
-                    border
-                />
+                    border/>
             </FormItem>
+            <EDropdown ref="eDropdownRef" class="calculate-dropdown" trigger="click" placement="bottom" @command="dropVisible">
+                <div class="calculate-content"></div>
+                <EDropdownMenu slot="dropdown">
+                    <EDropdownItem :command="1">
+                        <div class="task-menu-icon" >
+                            <Icon v-if="addData.visibility_appoint == 1" class="completed" :type="'md-checkmark-circle'"/>
+                            <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
+                            {{$L('项目人员')}}
+                        </div>
+                    </EDropdownItem>
+                    <EDropdownItem :command="2">
+                        <div class="task-menu-icon" >
+                            <Icon v-if="addData.visibility_appoint == 2" class="completed" :type="'md-checkmark-circle'"/>
+                            <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
+                            {{$L('任务人员')}}
+                        </div>
+                    </EDropdownItem>
+                    <EDropdownItem :command="3">
+                        <div class="task-menu-icon" >
+                            <Icon v-if="addData.visibility_appoint == 3" class="completed" :type="'md-checkmark-circle'"/>
+                            <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
+                            {{$L('指定成员')}}
+                        </div>
+                    </EDropdownItem>
+                </EDropdownMenu>
+            </EDropdown>
             <div class="subtasks">
                 <div v-if="addData.subtasks.length > 0" class="sublist">
                     <Row>
@@ -559,8 +562,29 @@ export default {
             this.$emit("input", !this.value)
         },
 
-        showCisibleDropdown(){
-            this.$refs.eDropdownRef.show()
+        showCisibleDropdown(e){
+            let eRect = null
+            if (e === null) {
+                eRect = this.$refs.visibilityText?.getBoundingClientRect()
+            } else {
+                eRect = e.target.getBoundingClientRect()
+            }
+            if (eRect === null) {
+                return
+            }
+            const boxRect = this.$el.getBoundingClientRect()
+            const refEl = this.$refs.eDropdownRef.$el
+            refEl.style.top = (eRect.top - boxRect.top) + 'px'
+            refEl.style.left = (eRect.left - boxRect.left) + 'px'
+            refEl.style.width = eRect.width + 'px'
+            refEl.style.height = eRect.height + 'px'
+            //
+            if (this.$refs.eDropdownRef.visible) {
+                this.$refs.eDropdownRef.hide()
+            }
+            setTimeout(() => {
+                this.$refs.eDropdownRef.show()
+            }, 0)
         },
 
         visibleUserSelectShowChange(isShow){
