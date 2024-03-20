@@ -142,7 +142,12 @@ class UmengAlias extends AbstractModel
                     'mi_activity' => 'app.eeui.umeng.activity.MfrMessageActivity',
                     'policy' => [
                         'expire_time' => Carbon::now()->addSeconds($seconds)->toDateTimeString(),
-                    ]
+                    ],
+                    'channel_properties' => [
+                        'vivo_category' => 'IM',
+                        'huawei_channel_importance' => 'NORMAL',
+                        'huawei_channel_category' => 'IM',
+                    ],
                 ]);
 
             default:
