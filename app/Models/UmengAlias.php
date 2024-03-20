@@ -147,6 +147,7 @@ class UmengAlias extends AbstractModel
                         'vivo_category' => 'IM',
                         'huawei_channel_importance' => 'NORMAL',
                         'huawei_channel_category' => 'IM',
+                        'channel_fcm' => 1,
                     ],
                 ]);
 
