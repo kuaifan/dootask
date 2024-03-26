@@ -871,10 +871,11 @@ class WebSocketDialogMsg extends AbstractModel
                 throw new ApiException('仅支持修改自己的消息');
             }
             //
+            $oldMsg = Base::json2array($dialogMsg->getRawOriginal('msg'));
             $updateData = [
                 'mtype' => $mtype,
                 'link' => $link,
-                'msg' => $msg,
+                'msg' => array_merge($oldMsg, $msg),
                 'modify' => $modify,
             ];
             $dialogMsg->updateInstance($updateData);
