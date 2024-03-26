@@ -779,7 +779,20 @@ class WebSocketDialogMsg extends AbstractModel
         }
         // 过滤标签
         $text = strip_tags($text, '<blockquote> <strong> <pre> <ol> <ul> <li> <em> <p> <s> <u> <a>');
-        $text = preg_replace("/\<(blockquote|strong|pre|ol|ul|li|em|p|s|u).*?\>/is", "<$1>", $text);    // 不用去除a标签，上面已经处理过了
+        $text = preg_replace_callback("/\<(blockquote|strong|pre|ol|ul|li|em|p|s|u)(.*?)\>/is", function (array $match) {    // 不用去除a标签，上面已经处理过了
+            preg_match("/<[^>]*?style=([\"'])(.*?)\\1[^>]*?>/is", $match[0], $matchs);
+            $attach = '';
+            if ($matchs) {
+                $styleArray = explode(';', $matchs[2]);
+                $validStyles = array_filter($styleArray, function ($styleItem) {
+                    return preg_match('/\s*(?:color|font-size|background-color|font-weight|font-family|text-decoration|font-style)\s*:/i', $styleItem); // 只保留指定样式
+                });
+                if ($validStyles) {
+                    $attach = ' style="' . implode(';', $validStyles) . '"';
+                }
+            }
+            return "<{$match[1]}{$attach}>";
+        }, $text);
         $text = preg_replace_callback("/\[:LINK:(.*?):(.*?):\]/i", function (array $match) {
             return "<a href=\"" . base64_decode($match[1]) . "\" target=\"_blank\">" . base64_decode($match[2]) . "</a>";
         }, $text);
