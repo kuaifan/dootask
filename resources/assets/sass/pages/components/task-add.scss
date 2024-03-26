@@ -7,6 +7,21 @@
         margin-bottom: 20px;
         position: relative;
         .ivu-cascader {
+            .ivu-cascader-menu-item {
+                max-width: 300px;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                @media (max-width: 600px) {
+                    max-width: 200px;
+                }
+                @media (max-width: 400px) {
+                    max-width: 160px;
+                }
+                @media (max-width: 320px) {
+                    max-width: 100px;
+                }
+            }
             .ivu-cascader-label {
                 width: auto;
                 padding: 0;
