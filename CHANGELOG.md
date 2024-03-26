@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.36.36]
+
+### Bug Fixes
+
+- 修改回复、转发消息后引用的部分消失
+
+### Performance
+
+- 优化任务日志内容
+- 查看版本免请求接口
+- 添加任务时选择任务位置内容溢出
+- 消息支持style
+- 回复消息列表隐藏顶部loading
+- 支持FCM推送
+- 设置华为推送自分类
+- 优化添加任务可见性点击效果
+
 ## [0.36.26]
 
 ### Bug Fixes

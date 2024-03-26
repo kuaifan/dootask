@@ -20073,5 +20073,16 @@
         "de": "Sagen sie das ab.",
         "fr": "Annuler l’envoi a échoué",
         "id": "Batal kirim"
+    },
+    {
+        "key": "注册失败",
+        "zh": "",
+        "zh-CHT": "註冊失敗",
+        "en": "Registration failure",
+        "ko": "등록 실패",
+        "ja": "登録に失敗しました",
+        "de": "Antrag abgelehnt.",
+        "fr": "L’inscription a échoué",
+        "id": "Gagal mendaftar"
     }
 ]

@@ -877,14 +877,22 @@ class WebSocketDialogMsg extends AbstractModel
             if (empty($dialogMsg)) {
                 throw new ApiException('消息不存在');
             }
-            if ($dialogMsg->type !== 'text' && $dialogMsg->type !== 'vote') {
-                throw new ApiException('此消息不支持此操作');
-            }
-            if ($dialogMsg->userid != $sender && $dialogMsg->type !== 'vote') {
-                throw new ApiException('仅支持修改自己的消息');
+            $oldMsg = Base::json2array($dialogMsg->getRawOriginal('msg'));
+            if ($dialogMsg->type === 'vote') {
+                if ($dialogMsg->userid != $sender) {
+                    $msg = [
+                        'votes' => $msg['votes'],
+                    ];
+                }
+            } else {
+                if ($dialogMsg->type !== 'text') {
+                    throw new ApiException('此消息不支持此操作');
+                }
+                if ($dialogMsg->userid != $sender) {
+                    throw new ApiException('仅支持修改自己的消息');
+                }
             }
             //
-            $oldMsg = Base::json2array($dialogMsg->getRawOriginal('msg'));
             $updateData = [
                 'mtype' => $mtype,
                 'link' => $link,
