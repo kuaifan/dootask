@@ -198,7 +198,7 @@
                 @on-error="onError"
                 @on-emoji="onEmoji"
                 @on-show-emoji-user="onShowEmojiUser">
-                <template #header>
+                <template #header v-if="headShowBox">
                     <div class="dialog-item head-box">
                         <div v-if="loadIng > 0 || prevId > 0" class="loading" :class="{filled: allMsgs.length === 0}">
                             <span v-if="scrollOffset < 100"></span>
@@ -566,6 +566,7 @@
                 v-if="replyListShow"
                 :dialogId="dialogId"
                 :msgId="replyListId"
+                :headShowBox="false"
                 class="inde-list">
                 <div slot="head" class="drawer-title">{{$L('回复消息')}}</div>
             </DialogWrapper>
@@ -674,6 +675,10 @@ export default {
         isMessenger: {
             type: Boolean,
             default: false
+        },
+        headShowBox: {
+            type: Boolean,
+            default: true
         },
         beforeBack: Function
     },
