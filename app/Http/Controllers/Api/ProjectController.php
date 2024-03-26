@@ -2463,6 +2463,21 @@ class ProjectController extends AbstractController
                 'week' => Doo::translate("周" . Base::getTimeWeek($timestamp)),
                 'segment' => Doo::translate(Base::getTimeDayeSegment($timestamp)),
             ];
+            $record = Base::json2array($log->record);
+            if (is_array($record['change'])) {
+                foreach ($record['change'] as &$item) {
+                    $item = preg_replace_callback('/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/', function ($matches) {
+                        $time = strtotime($matches[0]);
+                        $second = date("s", $time);
+                        $second = $second === "00" ? "" : ":$second";
+                        if (date("Y") === date("Y", $time)) {
+                            return date("m-d H:i", $time) . $second;
+                        }
+                        return date("Y-m-d H:i", $time) . $second;
+                    }, $item);
+                }
+                $log->record = $record;
+            }
             return $log;
         });
         //
