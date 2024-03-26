@@ -420,27 +420,33 @@ export default {
         // 提交评论
         confirmComment() {
             this.commentLoad++;
-            this.$store.dispatch("call", {
-                method: 'post',
-                url: 'approve/process/addGlobalComment',
-                data: {
-                    proc_inst_id: this.$route.query.id || this.data.id,
-                    content: JSON.stringify({
-                        'content': this.commentData.content,
-                        'pictures': this.commentData.pictures.map(h => {
-                            return h.path;
-                        })
-                    })
+            this.$refs["initiateRef"].validate((valid) => {
+                if (valid) {
+                    this.$store.dispatch("call", {
+                        method: 'post',
+                        url: 'approve/process/addGlobalComment',
+                        data: {
+                            proc_inst_id: this.$route.query.id || this.data.id,
+                            content: JSON.stringify({
+                                'content': this.commentData.content,
+                                'pictures': this.commentData.pictures.map(h => {
+                                    return h.path;
+                                })
+                            })
+                        }
+                    }).then(({msg}) => {
+                        $A.messageSuccess("添加成功");
+                        this.getInfo(true)
+                        this.commentShow = false;
+                    }).catch(({msg}) => {
+                        $A.modalError(msg);
+                    }).finally(_ => {
+                        this.commentLoad--;
+                    });
+                } else {
+                    this.commentLoad--;
                 }
-            }).then(({msg}) => {
-                $A.messageSuccess("添加成功");
-                this.getInfo(true)
-                this.commentShow = false;
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-            }).finally(_ => {
-                this.commentLoad--;
-            });
+            })
         },
         // 滚动到容器底部
         scrollToBottom() {

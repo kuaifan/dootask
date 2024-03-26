@@ -155,6 +155,9 @@
     <div class="cause"><span>申请人：<span style="color:#84c56a">{{'@'}}{{$data->nickname}}</span> {{$data->department}}</span>
         <b>评论内容</b>
         <span>{{$data->comment_content}}</span>
+        @if ($data->comment_pictures)
+        <span>[图片]</span>
+        @endif
     </div><div class="btn-raw no-dark-content">
         @if ($is_finished == 1)
         <button class="ivu-btn ivu-btn-grey">已同意</button>

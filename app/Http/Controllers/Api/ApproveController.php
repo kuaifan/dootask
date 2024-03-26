@@ -207,7 +207,7 @@ class ApproveController extends AbstractController
             if ($id != $user->userid) {
                 $dialog = WebSocketDialog::checkUserDialog($botUser, $id);
                 $processInst['comment_user_id'] = $user->userid;
-                $processInst['comment_content'] = json_decode($data['content'], true)['content'];
+                $processInst['comment_contents'] = json_decode($data['content'], true) ?? [];
                 $this->approveMsg('approve_comment_notifier', $dialog, $botUser, $processInst, $processInst);
             }
         }
@@ -983,7 +983,8 @@ class ApproveController extends AbstractController
             'end_day_of_week' => '周' . Base::getTimeWeek(Carbon::parse($process['var']['end_time'])->timestamp),
             'description' => $process['var']['description'],
             'comment_nickname' => $process['comment_user_id'] ? User::userid2nickname($process['comment_user_id']) : '',
-            'comment_content' => $process['comment_content'] ?? ''
+            'comment_content' => $process['comment_contents']['content'] ?? '',
+            'comment_pictures' => $process['comment_contents']['pictures'] ?? []
         ];
         $text = view('push.bot', ['type' => $type, 'action' => $action, 'is_finished' => $process['is_finished'], 'data' => (object)$data])->render();
         $text = preg_replace("/^\x20+/", "", $text);
