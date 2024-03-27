@@ -1,5 +1,5 @@
 <template>
-    <div class="meeting-warp">
+    <div class="meeting-main">
         <!-- 加入/新建 -->
         <Modal
             v-model="addShow"
@@ -311,6 +311,27 @@ export default {
                                     }
                                 }
                             });
+                        } else if ($A.isMainElectron) {
+                            $A.IDBSet('single-meeting', data).then(_ => {
+                                this.$store.dispatch('openChildWindow', {
+                                    name: `single-meeting`,
+                                    path: `/single/meeting/${data.meetingid}`,
+                                    force: false,
+                                    config: {
+                                        title: this.addData.name,
+                                        titleFixed: true,
+                                        parent: null,
+                                        width: Math.min(window.screen.availWidth, 1440),
+                                        height: Math.min(window.screen.availHeight, 900),
+                                    }
+                                });
+                                setTimeout(_ => {
+                                    this.loadIng--;
+                                }, 600)
+                            }).catch(_ => {
+                                $A.modalError("打开会议失败！");
+                                this.loadIng--;
+                            })
                         } else {
                             $A.loadScript('js/AgoraRTC_N-4.17.0.js').then(_ => {
                                 this.join(data)
@@ -325,7 +346,6 @@ export default {
                         $A.modalError(msg);
                     });
                 }
-
             });
         },
 
