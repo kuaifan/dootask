@@ -799,11 +799,14 @@ export default {
     },
 
     mounted() {
+        this.subMsgListener()
         this.msgSubscribe = Store.subscribe('dialogMsgChange', this.onMsgChange);
         document.addEventListener('selectionchange', this.onSelectionchange);
     },
 
     beforeDestroy() {
+        this.subMsgListener(true)
+        //
         this.$store.dispatch('forgetInDialog', this._uid)
         this.$store.dispatch('closeDialog', this.dialogId)
         //
@@ -1427,6 +1430,29 @@ export default {
     },
 
     methods: {
+        /**
+         * 订阅消息（用于独立窗口）
+         * @param unsubscribe
+         */
+        subMsgListener(unsubscribe = false) {
+            if (!$A.isSubElectron) {
+                return
+            }
+            if (unsubscribe) {
+                this.$store.dispatch('websocketMsgListener', 'DialogWrapper')
+            } else {
+                this.$store.dispatch('websocketMsgListener', {
+                    name: 'DialogWrapper',
+                    callback: (msgDetail) => {
+                        const {type, mode, data} = msgDetail;
+                        if (type === 'dialog' && mode === 'add') {
+                            this.tempMsgs.push(data)
+                        }
+                    }
+                })
+            }
+        },
+
         /**
          * 发送消息
          * @param text

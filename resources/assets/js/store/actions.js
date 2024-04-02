@@ -3878,6 +3878,10 @@ export default {
      * @param params {name, callback}
      */
     websocketMsgListener({state}, params) {
+        if (typeof params === "string") {
+            state.wsListener[params] && delete state.wsListener[params];
+            return;
+        }
         const {name, callback} = params;
         if (typeof callback === "function") {
             state.wsListener[name] = callback;
