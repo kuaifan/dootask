@@ -1717,6 +1717,12 @@ class DialogController extends AbstractController
                 if (Base::isSuccess($res)) {
                     $add = $res['data'];
                 }
+                //
+                $msg->webSocketDialog?->pushMsg('update', [
+                    'id' => $msg->id,
+                    'todo' => $msg->todo,
+                    'dialog_id' => $msg->dialog_id,
+                ]);
             }
         }
         //
