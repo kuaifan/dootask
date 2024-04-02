@@ -62,6 +62,7 @@ class WebSocketService implements WebSocketHandlerInterface
                             'type' => 'open',
                             'data' => [
                                 'fd' => $fd,
+                                'ud' => $user->userid,
                             ],
                         ]));
                         // 通知上线

@@ -14,7 +14,7 @@ export default {
         return new Promise(async resolve => {
             let action = null
 
-            // 清理缓存
+            // 清理缓存、读取缓存
             const clearCache = await $A.IDBString("clearCache")
             if (clearCache) {
                 if (clearCache === "handle") {
@@ -26,40 +26,8 @@ export default {
             const cacheVersion = await $A.IDBString("cacheVersion")
             if (cacheVersion !== state.cacheVersion) {
                 await dispatch("handleClearCache")
-            }
-
-            // 读取缓存
-            state.clientId = await $A.IDBString("clientId")
-            state.cacheServerUrl = await $A.IDBString("cacheServerUrl")
-            state.cacheUserBasic = await $A.IDBArray("cacheUserBasic")
-            state.cacheDialogs = (await $A.IDBArray("cacheDialogs")).map(item => Object.assign(item, {loading: false, extra_draft_has: item.extra_draft_content ? 1 : 0}))
-            state.cacheProjects = await $A.IDBArray("cacheProjects")
-            state.cacheColumns = await $A.IDBArray("cacheColumns")
-            state.cacheTasks = await $A.IDBArray("cacheTasks")
-            state.cacheProjectParameter = await $A.IDBArray("cacheProjectParameter")
-            state.cacheTaskBrowse = await $A.IDBArray("cacheTaskBrowse")
-            state.dialogMsgs = await $A.IDBArray("dialogMsgs")
-            state.fileLists = await $A.IDBArray("fileLists")
-            state.userInfo = await $A.IDBJson("userInfo")
-            state.callAt = await $A.IDBArray("callAt")
-            state.cacheEmojis = await $A.IDBArray("cacheEmojis")
-
-            // 会员信息
-            if (state.userInfo.userid) {
-                state.userId = state.userInfo.userid = $A.runNum(state.userInfo.userid)
-                state.userToken = state.userInfo.token
-                state.userIsAdmin = $A.inArray("admin", state.userInfo.identity)
-            }
-            const localId = $A.runNum(window.localStorage.getItem("__system:userId__"))
-            const localToken = window.localStorage.getItem("__system:userToken__") || ""
-            if (state.userId === 0 && localId && localToken) {
-                state.userId = localId
-                state.userToken = localToken
-            }
-
-            // ServerUrl
-            if (state.cacheServerUrl) {
-                window.systemInfo.apiUrl = state.cacheServerUrl
+            } else {
+                await dispatch("handleReadCache")
             }
 
             // 主题皮肤
@@ -887,41 +855,87 @@ export default {
      */
     handleClearCache({state, dispatch}, userData) {
         return new Promise(async resolve => {
-            try {
-                // localStorage
-                const themeConf = window.localStorage.getItem("__system:themeConf__");
-                const languageName = window.localStorage.getItem("__system:languageName__");
-                const keyboardConf = window.localStorage.getItem("__system:keyboardConf__");
-                window.localStorage.clear();
-                window.localStorage.setItem("__system:themeConf__", themeConf)
-                window.localStorage.setItem("__system:languageName__", languageName)
-                window.localStorage.setItem("__system:keyboardConf__", keyboardConf)
+            // localStorage
+            const themeConf = window.localStorage.getItem("__system:themeConf__");
+            const languageName = window.localStorage.getItem("__system:languageName__");
+            const keyboardConf = window.localStorage.getItem("__system:keyboardConf__");
+            window.localStorage.clear();
+            window.localStorage.setItem("__system:themeConf__", themeConf)
+            window.localStorage.setItem("__system:languageName__", languageName)
+            window.localStorage.setItem("__system:keyboardConf__", keyboardConf)
 
-                // localForage
-                const clientId = await $A.IDBString("clientId")
-                const cacheServerUrl = await $A.IDBString("cacheServerUrl")
-                const cacheProjectParameter = await $A.IDBArray("cacheProjectParameter")
-                const cacheLoginEmail = await $A.IDBString("cacheLoginEmail");
-                const cacheFileSort = await $A.IDBJson("cacheFileSort");
-                const cacheTaskBrowse = await $A.IDBArray("cacheTaskBrowse")
-                const cacheEmojis = await $A.IDBArray("cacheEmojis")
-                const userInfo = await $A.IDBJson("userInfo")
-                await $A.IDBClear();
-                await $A.IDBSet("clientId", clientId);
-                await $A.IDBSet("cacheServerUrl", cacheServerUrl);
-                await $A.IDBSet("cacheProjectParameter", cacheProjectParameter);
-                await $A.IDBSet("cacheLoginEmail", cacheLoginEmail);
-                await $A.IDBSet("cacheFileSort", cacheFileSort);
-                await $A.IDBSet("cacheTaskBrowse", cacheTaskBrowse);
-                await $A.IDBSet("cacheEmojis", cacheEmojis);
-                await $A.IDBSet("cacheVersion", state.cacheVersion)
+            // localForage
+            const clientId = await $A.IDBString("clientId")
+            const cacheServerUrl = await $A.IDBString("cacheServerUrl")
+            const cacheProjectParameter = await $A.IDBArray("cacheProjectParameter")
+            const cacheLoginEmail = await $A.IDBString("cacheLoginEmail");
+            const cacheFileSort = await $A.IDBJson("cacheFileSort");
+            const cacheTaskBrowse = await $A.IDBArray("cacheTaskBrowse")
+            const cacheEmojis = await $A.IDBArray("cacheEmojis")
+            const userInfo = await $A.IDBJson("userInfo")
+            await $A.IDBClear();
+            await $A.IDBSet("clientId", clientId);
+            await $A.IDBSet("cacheServerUrl", cacheServerUrl);
+            await $A.IDBSet("cacheProjectParameter", cacheProjectParameter);
+            await $A.IDBSet("cacheLoginEmail", cacheLoginEmail);
+            await $A.IDBSet("cacheFileSort", cacheFileSort);
+            await $A.IDBSet("cacheTaskBrowse", cacheTaskBrowse);
+            await $A.IDBSet("cacheEmojis", cacheEmojis);
+            await $A.IDBSet("cacheVersion", state.cacheVersion)
 
-                // userInfo
-                dispatch("saveUserInfoBase", $A.isJson(userData) ? userData : userInfo).then(resolve);
-            } catch (e) {
-                resolve()
-            }
+            // userInfo
+            await dispatch("saveUserInfoBase", $A.isJson(userData) ? userData : userInfo)
+
+            // readCache
+            await dispatch("handleReadCache")
+
+            resolve()
         });
+    },
+
+    /**
+     * 读取缓存
+     * @param state
+     * @param dispatch
+     * @returns {Promise<unknown>}
+     */
+    handleReadCache({state}) {
+        return new Promise(async resolve => {
+            state.clientId = await $A.IDBString("clientId")
+            state.cacheServerUrl = await $A.IDBString("cacheServerUrl")
+            state.cacheUserBasic = await $A.IDBArray("cacheUserBasic")
+            state.cacheDialogs = (await $A.IDBArray("cacheDialogs")).map(item => Object.assign(item, {loading: false, extra_draft_has: item.extra_draft_content ? 1 : 0}))
+            state.cacheProjects = await $A.IDBArray("cacheProjects")
+            state.cacheColumns = await $A.IDBArray("cacheColumns")
+            state.cacheTasks = await $A.IDBArray("cacheTasks")
+            state.cacheProjectParameter = await $A.IDBArray("cacheProjectParameter")
+            state.cacheTaskBrowse = await $A.IDBArray("cacheTaskBrowse")
+            state.dialogMsgs = await $A.IDBArray("dialogMsgs")
+            state.fileLists = await $A.IDBArray("fileLists")
+            state.userInfo = await $A.IDBJson("userInfo")
+            state.callAt = await $A.IDBArray("callAt")
+            state.cacheEmojis = await $A.IDBArray("cacheEmojis")
+
+            // 会员信息
+            if (state.userInfo.userid) {
+                state.userId = state.userInfo.userid = $A.runNum(state.userInfo.userid)
+                state.userToken = state.userInfo.token
+                state.userIsAdmin = $A.inArray("admin", state.userInfo.identity)
+            }
+            const localId = $A.runNum(window.localStorage.getItem("__system:userId__"))
+            const localToken = window.localStorage.getItem("__system:userToken__") || ""
+            if (state.userId === 0 && localId && localToken) {
+                state.userId = localId
+                state.userToken = localToken
+            }
+
+            // ServerUrl
+            if (state.cacheServerUrl) {
+                window.systemInfo.apiUrl = state.cacheServerUrl
+            }
+
+            resolve()
+        })
     },
 
     /** *****************************************************************************************/
