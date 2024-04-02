@@ -565,6 +565,10 @@ export default {
             }, 600);
         },
 
+        windowActive(val) {
+            this.updateDialogs(val ? 1000 : -1);
+        },
+
         tabActive: {
             handler(val) {
                 if (val == 'contacts') {
@@ -1067,7 +1071,7 @@ export default {
             this.__updateDialogs && clearTimeout(this.__updateDialogs)
             if (timeout > -1) {
                 this.__updateDialogs = setTimeout(_ => {
-                    if (this.tabActive === 'dialog') {
+                    if (this.tabActive === 'dialog' && this.routeName === 'manage-messenger') {
                         this.$store.dispatch("getDialogAuto").catch(() => {});
                     }
                 }, timeout)

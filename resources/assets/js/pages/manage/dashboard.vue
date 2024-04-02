@@ -123,6 +123,10 @@ export default {
 
         ...mapGetters(['dashboardTask', 'assistTask', 'transforTasks']),
 
+        routeName() {
+            return this.$route.name
+        },
+
         columns() {
             const list = [];
             ['today', 'overdue', 'all'].some(type => {
@@ -159,8 +163,14 @@ export default {
 
     watch: {
         windowActive(active) {
+            if (this.routeName !== 'manage-dashboard') {
+                return
+            }
             this.loadInterval(active)
-            this.loadLicense(active);
+            this.loadLicense(active)
+            if (active) {
+                this.$store.dispatch("getTaskForDashboard", 600)
+            }
         }
     },
 
