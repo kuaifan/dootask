@@ -352,7 +352,11 @@ function createWebTabWindow(args) {
 
         })
     }
+    if (webTabWindow.isMinimized()) {
+        webTabWindow.restore()
+    }
     webTabWindow.focus();
+    webTabWindow.show();
 
     // 创建子窗口
     const browserView = new BrowserView({
