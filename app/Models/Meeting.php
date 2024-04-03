@@ -44,12 +44,12 @@ class Meeting extends AbstractModel
     public function getShareLink()
     {
         $code = base64_encode("{$this->meetingid}" . Base::generatePassword());
-        Cache::put(self::CACHE_KEY.'_'.$code, [
+        Cache::put(self::CACHE_KEY . '_' . $code, [
             'id' => $this->id,
             'meetingid' => $this->meetingid,
             'channel' => $this->channel,
         ], Carbon::now()->addHours(self::CACHE_EXPIRED_TIME));
-        return Base::fillUrl("meeting/{$this->meetingid}/".$code);
+        return Base::fillUrl("meeting/{$this->meetingid}/" . $code);
     }
 
     /**
@@ -58,19 +58,19 @@ class Meeting extends AbstractModel
      */
     public static function getShareInfo($code)
     {
-        if(Cache::has(self::CACHE_KEY.'_'.$code)){
-            return Cache::get(self::CACHE_KEY.'_'.$code);
+        if (Cache::has(self::CACHE_KEY . '_' . $code)) {
+            return Cache::get(self::CACHE_KEY . '_' . $code);
         }
         return null;
     }
 
     /**
      * 保存访客信息
-     * @return mixed
+     * @return void
      */
     public static function setTouristInfo($data)
     {
-        Cache::put(Meeting::CACHE_KEY.'_'.$data['uid'], [
+        Cache::put(Meeting::CACHE_KEY . '_' . $data['uid'], [
             'uid' => $data['uid'],
             'userimg' => $data['userimg'],
             'nickname' => $data['nickname'],
@@ -83,8 +83,8 @@ class Meeting extends AbstractModel
      */
     public static function getTouristInfo($touristId)
     {
-        if(Cache::has(Meeting::CACHE_KEY.'_'.$touristId)){
-            return Cache::get(Meeting::CACHE_KEY.'_'.$touristId);
+        if (Cache::has(Meeting::CACHE_KEY . '_' . $touristId)) {
+            return Cache::get(Meeting::CACHE_KEY . '_' . $touristId);
         }
         return null;
     }

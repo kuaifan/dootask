@@ -615,7 +615,7 @@ class UsersController extends AbstractController
     public function basic()
     {
         $sharekey = Request::header('sharekey');
-        if(empty($sharekey) || !Meeting::getShareInfo($sharekey)){
+        if (empty($sharekey) || !Meeting::getShareInfo($sharekey)) {
             User::auth();
         }
         //
@@ -768,7 +768,7 @@ class UsersController extends AbstractController
         //
         if ($getCheckinMac) {
             $list->transform(function (User $user) use ($getCheckinMac) {
-                if($getCheckinMac){
+                if ($getCheckinMac) {
                     $user->checkin_macs = UserCheckinMac::select(['id', 'mac', 'remark'])->whereUserid($user->userid)->orderBy('id')->get();
                 }
                 return $user;
@@ -1149,11 +1149,11 @@ class UsersController extends AbstractController
         $sharekey = trim(Request::input('sharekey'));
         $username = trim(Request::input('username'));
         $user = null;
-        if(!empty($sharekey) && $type === 'join'){
-            if(!Meeting::getShareInfo($sharekey)){
+        if (!empty($sharekey) && $type === 'join') {
+            if (!Meeting::getShareInfo($sharekey)) {
                 return Base::retError('分享链接已过期');
             }
-        }else{
+        } else {
             $user = User::auth();
         }
         $isCreate = false;
@@ -1187,9 +1187,9 @@ class UsersController extends AbstractController
         if (empty($meetingSetting['appid']) || empty($meetingSetting['app_certificate'])) {
             return Base::retError('会议功能配置错误，请联系管理员');
         }
-        $uid = intval(str_pad(Base::generatePassword(4,1), 9, 8, STR_PAD_LEFT));
-        if($user){
-            $uid = intval(str_pad(Base::generatePassword(5,1), 6, 9, STR_PAD_LEFT).$user->userid);
+        $uid = intval(str_pad(Base::generatePassword(4, 1), 9, 8, STR_PAD_LEFT));
+        if ($user) {
+            $uid = intval(str_pad(Base::generatePassword(5, 1), 6, 9, STR_PAD_LEFT) . $user->userid);
         }
         try {
             $service = new AgoraTokenGenerator($meetingSetting['appid'], $meetingSetting['app_certificate'], $meeting->channel, $uid);
@@ -1220,7 +1220,7 @@ class UsersController extends AbstractController
         //
         $data['appid'] = $meetingSetting['appid'];
         $data['uid'] = $uid;
-        $data['userimg'] = $sharekey ? Base::fillUrl('avatar/'.$username.'.png') : $user?->userimg;
+        $data['userimg'] = $sharekey ? Base::fillUrl('avatar/' . $username . '.png') : $user?->userimg;
         $data['nickname'] = $sharekey ? $username : $user?->nickname;
         $data['token'] = $token;
         $data['msgs'] = $msgs;
@@ -1249,7 +1249,7 @@ class UsersController extends AbstractController
     {
         $meetingid = trim(Request::input('meetingid'));
         $sharekey = trim(Request::input('sharekey'));
-        if(empty($sharekey) || !Meeting::getShareInfo($sharekey)){
+        if (empty($sharekey) || !Meeting::getShareInfo($sharekey)) {
             User::auth();
         }
         $meeting = Meeting::whereMeetingid($meetingid)->first();
@@ -1970,7 +1970,7 @@ class UsersController extends AbstractController
                 }
             }
         } else {
-            if($type == 'file'){
+            if ($type == 'file') {
                 $lists[] = [
                     'type' => 'children',
                     'url' => Base::fillUrl("api/users/share/list") . "?pid=0",

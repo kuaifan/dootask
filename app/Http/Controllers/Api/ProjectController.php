@@ -2301,7 +2301,7 @@ class ProjectController extends AbstractController
         $project = Project::userProject($task->project_id);
         ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_MOVE, $task);
         //
-        if( $task->project_id == $project_id && $task->column_id == $column_id){
+        if ($task->project_id == $project_id && $task->column_id == $column_id) {
             return Base::retSuccess('移动成功', ['id' => $task_id]);
         }
         //
@@ -2310,7 +2310,7 @@ class ProjectController extends AbstractController
         if (empty($column)) {
             return Base::retError('列表不存在');
         }
-        if($flow_item_id){
+        if ($flow_item_id) {
             $flowItem = projectFlowItem::whereProjectId($project->id)->whereId($flow_item_id)->first();
             if (empty($flowItem)) {
                 return Base::retError('任务状态不存在');
