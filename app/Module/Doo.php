@@ -228,6 +228,14 @@ class Doo
         if (Base::isError($data)) {
             throw new ApiException($data['msg'] ?: '注册失败');
         }
+        if (\DB::transactionLevel() > 0) {
+            try {
+                \DB::commit();
+                \DB::beginTransaction();
+            } catch (\Throwable) {
+                // do nothing
+            }
+        }
         $user = User::whereEmail($email)->first();
         if (empty($user)) {
             throw new ApiException('注册失败');
