@@ -202,7 +202,7 @@ class SystemController extends AbstractController
      *
      * @apiParam {String} type
      * - get: 获取（默认）
-     * - save: 保存设置（参数：['open', 'appid', 'app_certificate']）
+     * - save: 保存设置（参数：['open', 'appid', 'app_certificate', 'api_key', 'api_secret']）
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
@@ -222,12 +222,14 @@ class SystemController extends AbstractController
                     'open',
                     'appid',
                     'app_certificate',
+                    'api_key',
+                    'api_secret',
                 ])) {
                     unset($all[$key]);
                 }
             }
             if ($all['open'] === 'open' && (!$all['appid'] || !$all['app_certificate'])) {
-                return Base::retError('请填写完整的参数');
+                return Base::retError('请填写基本配置');
             }
             $setting = Base::setting('meetingSetting', Base::newTrim($all));
         } else {
@@ -238,6 +240,8 @@ class SystemController extends AbstractController
         if (env("SYSTEM_SETTING") == 'disabled') {
             $setting['appid'] = substr($setting['appid'], 0, 4) . str_repeat('*', strlen($setting['appid']) - 8) . substr($setting['appid'], -4);
             $setting['app_certificate'] = substr($setting['app_certificate'], 0, 4) . str_repeat('*', strlen($setting['app_certificate']) - 8) . substr($setting['app_certificate'], -4);
+            $setting['api_key'] = substr($setting['api_key'], 0, 4) . str_repeat('*', strlen($setting['api_key']) - 8) . substr($setting['api_key'], -4);
+            $setting['api_secret'] = substr($setting['api_secret'], 0, 4) . str_repeat('*', strlen($setting['api_secret']) - 8) . substr($setting['api_secret'], -4);
         }
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
