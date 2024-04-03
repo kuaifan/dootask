@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.36.44]
+
+### Bug Fixes
+
+- 部分情况出现注册失败
+- 最小化阅读窗口新建窗口不自动激活
+- 独立窗口不更新消息
+
+### Performance
+
+- 优化数据读取机制
+- 优化缓存规则
+- 优化完成待办数据推送
+- 评论审批图片和投票深色按钮
+
 ## [0.36.36]
 
 ### Bug Fixes
