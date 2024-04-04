@@ -10,18 +10,19 @@ use Response;
 use App\Module\Doo;
 use App\Models\File;
 use App\Module\Base;
-use App\Tasks\LoopTask;
 use App\Module\Extranet;
-use App\Tasks\AppPushTask;
 use App\Module\RandomColor;
+use App\Tasks\LoopTask;
+use App\Tasks\AppPushTask;
 use App\Tasks\JokeSoupTask;
 use App\Tasks\DeleteTmpTask;
 use App\Tasks\EmailNoticeTask;
 use App\Tasks\AutoArchivedTask;
 use App\Tasks\DeleteBotMsgTask;
 use App\Tasks\CheckinRemindTask;
-use Hhxsv5\LaravelS\Swoole\Task\Task;
+use App\Tasks\CloseMeetingRoomTask;
 use App\Tasks\UnclaimedTaskRemindTask;
+use Hhxsv5\LaravelS\Swoole\Task\Task;
 use LasseRafn\InitialAvatarGenerator\InitialAvatar;
 
 
@@ -165,6 +166,8 @@ class IndexController extends InvokeController
         Task::deliver(new JokeSoupTask());
         // 未领取任务通知
         Task::deliver(new UnclaimedTaskRemindTask());
+        // 关闭会议室
+        Task::deliver(new CloseMeetingRoomTask());
 
         return "success";
     }

@@ -1143,7 +1143,7 @@ class UsersController extends AbstractController
     public function meeting__open()
     {
         $type = trim(Request::input('type'));
-        $meetingid = trim(Request::input('meetingid'));
+        $meetingid = str_replace(' ', '', trim(Request::input('meetingid')));
         $name = trim(Request::input('name'));
         $userids = Request::input('userids');
         $sharekey = trim(Request::input('sharekey'));
@@ -1163,6 +1163,11 @@ class UsersController extends AbstractController
             if (empty($meeting)) {
                 return Base::retError('频道ID不存在');
             }
+            if ($meeting->end_at) {
+                return Base::retError('会议已结束');
+            }
+            $meeting->updated_at = Carbon::now();
+            $meeting->save();
         } elseif ($type === 'create') {
             $meetingid = strtoupper(Base::generatePassword(11, 1));
             $name = $name ?: "{$user?->nickname} 发起的会议";

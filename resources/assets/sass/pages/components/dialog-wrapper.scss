@@ -1071,6 +1071,15 @@
                             color: $primary-title-color;
                             .dialog-meeting {
                                 min-width: 220px;
+                                &.meeting-end {
+                                    opacity: .7;
+                                    > li {
+                                        &.meeting-operation {
+                                            justify-content: center;
+                                            cursor: default;
+                                        }
+                                    }
+                                }
                                 > li {
                                     list-style: none;
                                     display: flex;

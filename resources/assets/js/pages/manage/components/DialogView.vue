@@ -54,7 +54,7 @@
                 </div>
                 <!--会议-->
                 <div v-else-if="msgData.type === 'meeting'" class="content-meeting no-dark-content">
-                    <ul class="dialog-meeting">
+                    <ul class="dialog-meeting" :class="{'meeting-end':!!msgData.msg.end_at}">
                         <li>
                             <em>{{$L('会议主题')}}</em>
                             {{msgData.msg.name}}
@@ -67,7 +67,10 @@
                             <em>{{$L('频道ID')}}</em>
                             {{msgData.msg.meetingid.replace(/^(.{3})(.{3})(.*)$/, '$1 $2 $3')}}
                         </li>
-                        <li class="meeting-operation" @click="openMeeting">
+                        <li v-if="msgData.msg.end_at" class="meeting-operation">
+                            {{$L('会议已结束')}}
+                        </li>
+                        <li v-else class="meeting-operation" @click="openMeeting">
                             {{$L('点击加入会议')}}
                             <i class="taskfont">&#xe68b;</i>
                         </li>
