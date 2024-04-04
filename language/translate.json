@@ -15279,17 +15279,6 @@
         "id": "Download sekarang"
     },
     {
-        "key": "请填写完整的参数",
-        "zh": "",
-        "zh-CHT": "請填寫完整的參數",
-        "en": "Please fill in the complete parameters",
-        "ko": "완벽한 파라메터를 기입해 주십시오",
-        "ja": "完全なパラメータをお願いします。",
-        "de": "Füllen sie bitte die vollständige parameter aus",
-        "fr": "Veuillez remplir tous les paramètres",
-        "id": "Silahkan isi seluruh parameter"
-    },
-    {
         "key": "图片优化",
         "zh": "",
         "zh-CHT": "圖片優化",
@@ -20084,5 +20073,82 @@
         "de": "Antrag abgelehnt.",
         "fr": "L’inscription a échoué",
         "id": "Gagal mendaftar"
+    },
+    {
+        "key": "请填写基本配置",
+        "zh": "",
+        "zh-CHT": "請填寫基本配置",
+        "en": "Please fill in the basic configuration",
+        "ko": "기본 사양을 기재해 주세요",
+        "ja": "基本仕様をお願いします。",
+        "de": "Füllen sie die grundeinstellungen aus",
+        "fr": "Veuillez remplir la configuration de base",
+        "id": "Silahkan mengisi konfigurasi dasar"
+    },
+    {
+        "key": "会议已结束",
+        "zh": "",
+        "zh-CHT": "會議已結束",
+        "en": "The meeting is over",
+        "ko": "회의는 이미 끝났다",
+        "ja": "会議は終わりました",
+        "de": "Das Treffen ist vorbei.",
+        "fr": "La conférence est terminée",
+        "id": "Pertemuan selesai."
+    },
+    {
+        "key": "基本配置",
+        "zh": "",
+        "zh-CHT": "基本配置",
+        "en": "Basic configuration",
+        "ko": "기본 설정",
+        "ja": "基本的な仕様です",
+        "de": "Grundausstattung. - grundausstattung.",
+        "fr": "La configuration basique",
+        "id": "Konfigurasi dasar"
+    },
+    {
+        "key": "用于生成会议频道。",
+        "zh": "",
+        "zh-CHT": "用於生成會議頻道。",
+        "en": "Used to generate conference channels.",
+        "ko": "회의 채널을 만드는 데 사용합니다.",
+        "ja": "会議のチャンネルを生成します。",
+        "de": "Damit kriegt ihr konferenzkanäle.",
+        "fr": "Utilisé pour générer le canal de conférence.",
+        "id": "Untuk mendapatkan saluran pertemuan."
+    },
+    {
+        "key": "用于频道管理。",
+        "zh": "",
+        "zh-CHT": "用於頻道管理。",
+        "en": "Used for channel management.",
+        "ko": "채널 관리용.",
+        "ja": "チャンネル管理に使われます。",
+        "de": "Du arbeitest für die nachrichtenverwaltung.",
+        "fr": "Pour la gestion des canaux.",
+        "id": "Untuk manajemen saluran."
+    },
+    {
+        "key": "比如",
+        "zh": "",
+        "zh-CHT": "比如",
+        "en": "For example",
+        "ko": "례를들면",
+        "ja": "たとえばです",
+        "de": "Es gibt drei möglichkeiten.",
+        "fr": "Comme",
+        "id": "Seperti"
+    },
+    {
+        "key": "结束会议室",
+        "zh": "",
+        "zh-CHT": "結束會議室",
+        "en": "End meeting room",
+        "ko": "회의실을 마치다",
+        "ja": "会議室を終了します",
+        "de": "Konferenzraum zu ende.",
+        "fr": "Clôture salle de Réunion",
+        "id": "Ruang pertemuan selesai"
     }
 ]

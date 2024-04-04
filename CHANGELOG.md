@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.36.49]
+
+### Performance
+
+- 优化会议室
+
 ## [0.36.44]
 
 ### Bug Fixes
