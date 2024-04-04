@@ -18,10 +18,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|FileContent newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|FileContent newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|FileContent onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|FileContent query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|FileContent whereContent($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FileContent whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FileContent whereDeletedAt($value)

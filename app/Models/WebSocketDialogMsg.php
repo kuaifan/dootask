@@ -38,10 +38,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read int|mixed $percentage
  * @property-read \App\Models\WebSocketDialog|null $webSocketDialog
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDialogId($value)

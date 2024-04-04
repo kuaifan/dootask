@@ -13,9 +13,15 @@ use App\Module\Base;
  * @property string $permissions 权限
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectPermission newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectPermission newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectPermission query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectPermission whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectPermission whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectPermission wherePermissions($value)

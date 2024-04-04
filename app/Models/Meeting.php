@@ -18,9 +18,15 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property string|null $end_at
  * @property Carbon|null $deleted_at
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|Meeting newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Meeting newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Meeting query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|Meeting whereChannel($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Meeting whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Meeting whereDeletedAt($value)

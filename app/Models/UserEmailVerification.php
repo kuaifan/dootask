@@ -19,9 +19,15 @@ use Guanguans\Notify\Messages\EmailMessage;
  * @property int|null $type 邮件类型：1-邮箱认证，2-修改邮箱
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|UserEmailVerification newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|UserEmailVerification newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|UserEmailVerification query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|UserEmailVerification whereCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserEmailVerification whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserEmailVerification whereEmail($value)

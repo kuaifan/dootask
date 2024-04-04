@@ -22,10 +22,16 @@ use Request;
  * @property-read \App\Models\Project|null $project
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProjectTask> $projectTask
  * @property-read int|null $project_task_count
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectColumn newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectColumn newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectColumn onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectColumn query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectColumn whereColor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectColumn whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectColumn whereDeletedAt($value)

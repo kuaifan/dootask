@@ -29,9 +29,15 @@ use JetBrains\PhpStorm\Pure;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $receivesUser
  * @property-read int|null $receives_user_count
  * @property-read \App\Models\User|null $sendUser
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static Builder|Report newModelQuery()
  * @method static Builder|Report newQuery()
  * @method static Builder|Report query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static Builder|Report whereContent($value)
  * @method static Builder|Report whereCreatedAt($value)
  * @method static Builder|Report whereId($value)

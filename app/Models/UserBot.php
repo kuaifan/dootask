@@ -21,9 +21,15 @@ use Carbon\Carbon;
  * @property int|null $webhook_num 消息webhook请求次数
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|UserBot newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|UserBot newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|UserBot query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|UserBot whereBotId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserBot whereClearAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserBot whereClearDay($value)

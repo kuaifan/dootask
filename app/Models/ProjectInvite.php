@@ -13,9 +13,15 @@ namespace App\Models;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read bool $already
  * @property-read \App\Models\Project|null $project
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectInvite newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectInvite newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectInvite query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectInvite whereCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectInvite whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectInvite whereId($value)

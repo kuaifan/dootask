@@ -8,16 +8,22 @@ use App\Module\Base;
  * App\Models\FileLink
  *
  * @property int $id
- * @property int|null $file_id 项目ID
+ * @property int|null $file_id 文件ID
  * @property int|null $num 累计访问
  * @property string|null $code 链接码
  * @property int|null $userid 会员ID
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\File|null $file
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|FileLink newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|FileLink newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|FileLink query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|FileLink whereCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FileLink whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FileLink whereFileId($value)

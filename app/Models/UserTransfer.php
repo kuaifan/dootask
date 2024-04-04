@@ -16,9 +16,15 @@ use Guanguans\Notify\Messages\EmailMessage;
  * @property int|null $new_userid 交接人
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|UserTransfer newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|UserTransfer newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|UserTransfer query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|UserTransfer whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserTransfer whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserTransfer whereNewUserid($value)

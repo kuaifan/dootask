@@ -12,9 +12,15 @@ namespace App\Models;
  * @property int|null $create_id 所属会员ID
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketTmpMsg newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketTmpMsg newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketTmpMsg query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketTmpMsg whereCreateId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketTmpMsg whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketTmpMsg whereId($value)

@@ -14,9 +14,15 @@ namespace App\Models;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\ProjectTask|null $projectTask
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskUser newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskUser newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskUser query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskUser whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskUser whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskUser whereOwner($value)

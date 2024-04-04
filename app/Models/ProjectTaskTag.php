@@ -12,9 +12,15 @@ namespace App\Models;
  * @property string|null $color 颜色
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTag newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTag newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTag query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTag whereColor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTag whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTag whereId($value)

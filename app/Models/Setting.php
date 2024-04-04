@@ -13,9 +13,15 @@ use App\Module\Base;
  * @property string|null $setting
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|Setting newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Setting newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Setting query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|Setting whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Setting whereDesc($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Setting whereId($value)

@@ -10,7 +10,7 @@ use App\Module\Base;
  * @property int $id
  * @property int|null $project_id 项目ID
  * @property int|null $column_id 列表ID
- * @property int|null $task_id 项目ID
+ * @property int|null $task_id 任务ID
  * @property int|null $userid 会员ID
  * @property string|null $detail 详细信息
  * @property array $record 记录数据
@@ -18,9 +18,15 @@ use App\Module\Base;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\ProjectTask|null $projectTask
  * @property-read \App\Models\User|null $user
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog whereColumnId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog whereDetail($value)

@@ -13,7 +13,7 @@ use App\Module\Base;
  * @property string|null $name 名称
  * @property string|null $status 状态
  * @property array $turns 可流转
- * @property array $userids 自动负责人ID
+ * @property array $userids 状态负责人ID
  * @property string|null $usertype 流转模式
  * @property int|null $userlimit 限制负责人
  * @property int|null $columnid 对应的项目列表
@@ -21,9 +21,15 @@ use App\Module\Base;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\ProjectFlow|null $projectFlow
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereColumnid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlowItem whereFlowId($value)

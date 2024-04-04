@@ -15,10 +15,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|TaskWorker newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|TaskWorker newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|TaskWorker onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|TaskWorker query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|TaskWorker whereArgs($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TaskWorker whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|TaskWorker whereDeletedAt($value)

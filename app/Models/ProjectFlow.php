@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Module\Base;
-
 /**
  * App\Models\ProjectFlow
  *
@@ -14,9 +12,15 @@ use App\Module\Base;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ProjectFlowItem> $projectFlowItem
  * @property-read int|null $project_flow_item_count
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlow newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlow newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlow query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlow whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlow whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectFlow whereName($value)

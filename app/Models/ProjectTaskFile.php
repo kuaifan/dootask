@@ -22,9 +22,15 @@ use Cache;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read int $height
  * @property-read int $width
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskFile newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskFile newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskFile query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskFile whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskFile whereDownload($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskFile whereExt($value)

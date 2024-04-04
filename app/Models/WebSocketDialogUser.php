@@ -16,14 +16,20 @@ use Carbon\Carbon;
  * @property int|null $silence 是否免打扰：0否，1是
  * @property int|null $hide 不显示会话：0否，1是
  * @property int|null $inviter 邀请人
- * @property int|null $important 是否不可移出（项目、任务人员）
+ * @property int|null $important 是否不可移出（项目、任务、部门人员）
  * @property string|null $color 颜色
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\WebSocketDialog|null $webSocketDialog
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereColor($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogUser whereDialogId($value)

@@ -14,9 +14,15 @@ use App\Exceptions\ApiException;
  * @property string|null $content 内容
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskContent newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskContent newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskContent query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskContent whereContent($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskContent whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskContent whereId($value)

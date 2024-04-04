@@ -16,9 +16,15 @@ use App\Module\Base;
  * @property string $cache 会员资料缓存
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|UserDelete newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|UserDelete newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|UserDelete query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|UserDelete whereCache($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserDelete whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserDelete whereEmail($value)

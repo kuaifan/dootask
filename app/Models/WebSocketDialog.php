@@ -29,10 +29,16 @@ use Illuminate\Support\Facades\DB;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\WebSocketDialogUser> $dialogUser
  * @property-read int|null $dialog_user_count
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereAvatar($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialog whereDeletedAt($value)

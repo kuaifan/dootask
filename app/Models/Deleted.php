@@ -12,9 +12,15 @@ use Carbon\Carbon;
  * @property int|null $did 删除的数据ID
  * @property int|null $userid 关系会员ID
  * @property \Illuminate\Support\Carbon|null $created_at
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|Deleted newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Deleted newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Deleted query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|Deleted whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Deleted whereDid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Deleted whereId($value)
