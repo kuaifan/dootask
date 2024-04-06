@@ -14,9 +14,10 @@ class CreateMeetingMsgsTable extends Migration
      */
     public function up()
     {
+        Schema::dropIfExists('meeting_msgs');
         Schema::create('meeting_msgs', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('meetingid')->nullable()->default('')->unique()->comment('会议ID');
+            $table->string('meetingid')->nullable()->default('')->comment('会议ID');
             $table->bigInteger('dialog_id')->nullable()->default(0)->comment('对话ID');
             $table->bigInteger('msg_id')->nullable()->default(0)->comment('消息ID');
         });
