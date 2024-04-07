@@ -41,18 +41,20 @@ body {
                                             margin-left: 8px;
                                         }
                                     }
-                                    .common-avatar {
+                                    .meeting-avatar {
                                         position: absolute;
                                         bottom: -8px;
                                         right: -8px;
                                         z-index: 2;
                                     }
-                                    .avatar-box{
-                                        em{
+
+                                    .avatar-box {
+                                        em {
                                             transform: scale(1.0625);
                                         }
-                                        .el-avatar--circle{
-                                            border: 2px solid #FFFFFF;
+
+                                        .el-avatar--circle {
+                                            border: 1px solid #FFFFFF;
                                         }
                                     }
                                 }
@@ -104,7 +106,7 @@ body.window-portrait {
     padding: 6px 12px;
     white-space: nowrap;
     border-radius: 4px;
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 3px rgba(45, 45, 45, 0.3);
     cursor: pointer;
     display: flex;
     align-items: center;

@@ -1,13 +1,20 @@
 <template>
     <div class="meeting-player">
         <div :id="id" class="player" :style="playerStyle"></div>
-        <UserAvatar v-if="userid" :userid="userid" :size="36" :borderWitdh="2"/>
-        <div v-else-if="tourist.userimg" class="common-avatar avatar-wrapper">
-            <div class="avatar-box online">
-                <em></em>
-                <EAvatar :size="36" :src="tourist.userimg"></EAvatar>
+        <ETooltip :disabled="$isEEUiApp || windowTouch || !username">
+            <div slot="content">
+                {{username}}
             </div>
-        </div>
+            <div class="meeting-avatar">
+                <UserAvatar v-if="userid" :userid="userid" :size="36" :borderWitdh="2"/>
+                <div v-else-if="tourist.userimg" class="common-avatar avatar-wrapper">
+                    <div class="avatar-box online">
+                        <em></em>
+                        <EAvatar :size="36" :src="tourist.userimg"></EAvatar>
+                    </div>
+                </div>
+            </div>
+        </ETooltip>
         <div class="player-state">
             <i v-if="!audio" class="taskfont">&#xe7c7;</i>
             <i v-if="!video" class="taskfont">&#xe7c8;</i>
@@ -70,6 +77,16 @@ export default {
                 return parseInt( (this.player.uid+"").substring(6) ) || 0
             }
             return 0
+        },
+        username() {
+            if (this.userid) {
+                const user = this.cacheUserBasic.find(({userid}) => userid == this.userid);
+                if (user) {
+                    return user.nickname
+                }
+                return ''
+            }
+            return this.tourist.nickname || ''
         },
         playerStyle() {
             const user = this.cacheUserBasic.find(({userid}) => userid == this.userid);
