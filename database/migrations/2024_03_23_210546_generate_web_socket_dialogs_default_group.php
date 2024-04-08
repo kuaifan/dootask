@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use App\Models\WebSocketDialog;
+use App\Models\WebSocketDialogUser;
 use Carbon\Carbon;
 use Illuminate\Database\Migrations\Migration;
 
@@ -19,8 +20,7 @@ class GenerateWebSocketDialogsDefaultGroup extends Migration
             if ($botUser) {
                 $dialog = WebSocketDialog::checkUserDialog($botUser, 1);
                 if ($dialog) {
-                    $dialog->last_at = Carbon::now();
-                    $dialog->save();
+                    WebSocketDialogUser::whereDialogId($dialog->id)->update(['last_at' => Carbon::now()]);
                 }
             }
 

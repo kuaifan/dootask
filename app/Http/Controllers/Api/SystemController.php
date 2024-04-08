@@ -40,7 +40,7 @@ class SystemController extends AbstractController
      * @apiParam {String} type
      * - get: 获取（默认）
      * - all: 获取所有（需要管理员权限）
-     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'e2e_message', 'auto_archived', 'archived_day', 'task_visible', 'task_default_time', 'all_group_mute', 'all_group_autoin', 'user_private_chat_mute', 'user_group_chat_mute', 'image_compress', 'image_save_local', 'start_home']）
+     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'temp_account_alias', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'e2e_message', 'auto_archived', 'archived_day', 'task_visible', 'task_default_time', 'all_group_mute', 'all_group_autoin', 'user_private_chat_mute', 'user_group_chat_mute', 'image_compress', 'image_save_local', 'start_home']）
 
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -60,6 +60,7 @@ class SystemController extends AbstractController
                     'reg',
                     'reg_identity',
                     'reg_invite',
+                    'temp_account_alias',
                     'login_code',
                     'password_policy',
                     'project_invite',
@@ -99,13 +100,14 @@ class SystemController extends AbstractController
         //
         if ($type == 'all' || $type == 'save') {
             User::auth('admin');
-            $setting['reg_invite'] = $setting['reg_invite'] ?: Base::generatePassword(8);
+            $setting['reg_invite'] = $setting['reg_invite'] ?: Base::generatePassword();
         } else {
             if (isset($setting['reg_invite'])) unset($setting['reg_invite']);
         }
         //
         $setting['reg'] = $setting['reg'] ?: 'open';
         $setting['reg_identity'] = $setting['reg_identity'] ?: 'normal';
+        $setting['temp_account_alias'] = $setting['temp_account_alias'] ?: '';
         $setting['login_code'] = $setting['login_code'] ?: 'auto';
         $setting['password_policy'] = $setting['password_policy'] ?: 'simple';
         $setting['project_invite'] = $setting['project_invite'] ?: 'open';

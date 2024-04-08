@@ -534,6 +534,16 @@ class User extends AbstractModel
     }
 
     /**
+     * 临时帐号别名
+     * @return mixed|string
+     */
+    public static function tempAccountAlias()
+    {
+        $alias = Base::settingFind('system', 'temp_account_alias');
+        return $alias ?: Doo::translate("临时帐号");
+    }
+
+    /**
      * 获取头像
      * @param $userid
      * @param $userimg

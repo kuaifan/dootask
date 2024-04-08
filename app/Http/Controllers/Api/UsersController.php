@@ -582,7 +582,7 @@ class UsersController extends AbstractController
                     $tags[] = Doo::translate("系统管理员");
                 }
                 if ($userInfo->isTemp()) {
-                    $tags[] = Doo::translate("临时帐号");
+                    $tags[] = User::tempAccountAlias(); // 临时帐号
                 }
                 if ($userInfo->userid > 3 && Carbon::parse($userInfo->created_at)->isAfter(Carbon::now()->subDays(30))) {
                     $tags[] = Doo::translate("新帐号");

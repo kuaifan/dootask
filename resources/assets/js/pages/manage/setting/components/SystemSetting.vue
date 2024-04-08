@@ -23,6 +23,13 @@
                             <Radio label="normal">{{$L('正常帐号')}}</Radio>
                             <Radio label="temp">{{$L('临时帐号')}}</Radio>
                         </RadioGroup>
+                        <Input
+                            v-if="formDatum.reg_identity == 'temp'"
+                            v-model="formDatum.temp_account_alias"
+                            style="width:220px;margin-top:6px"
+                            :placeholder="$L('临时帐号')">
+                            <span slot="prepend">{{$L('临时帐号')}} {{$L('别名')}}</span>
+                        </Input>
                         <div class="form-tip form-list">
                             <p>{{$L('临时帐号')}}：</p>
                             <ol>
@@ -270,6 +277,7 @@ export default {
             this.loadIng++;
             this.$store.dispatch("call", {
                 url: 'system/setting?type=' + (save ? 'save' : 'all'),
+                method: 'post',
                 data: this.formDatum,
             }).then(({data}) => {
                 if (save) {
@@ -277,6 +285,9 @@ export default {
                 }
                 this.formDatum = data;
                 this.formDatum_bak = $A.cloneJSON(this.formDatum);
+                this.$store.state.systemConfig = Object.assign(this.formDatum_bak, {
+                    __state: "success",
+                })
             }).catch(({msg}) => {
                 if (save) {
                     $A.modalError(msg);
