@@ -48,17 +48,43 @@ export default {
     },
 
     computed: {
-        ...mapState([ 'ajaxNetworkException' ]),
+        ...mapState(['ajaxNetworkException']),
     },
 
     watch: {
         ajaxNetworkException: {
             handler(v) {
                 this.show = v;
+                if (v) {
+                    this.checkNetwork();
+                }
             },
             immediate: true
         }
-    }
+    },
 
-};
+    methods: {
+        isNotServer() {
+            let apiHome = $A.getDomain(window.systemInfo.apiUrl)
+            return this.$isSoftware && (apiHome == "" || apiHome == "public")
+        },
+
+        checkNetwork() {
+            this.__timer && clearTimeout(this.__timer);
+            this.__timer = setTimeout(() => {
+                if (!this.ajaxNetworkException) {
+                    return; // 已经恢复
+                }
+                if (this.isNotServer()) {
+                    return; // 没有配置服务器地址
+                }
+                this.$store.dispatch("call", {
+                    url: "system/setting",
+                }).finally(() => {
+                    this.checkNetwork();
+                });
+            }, 3000);
+        }
+    }
+}
 </script>
