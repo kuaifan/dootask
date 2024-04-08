@@ -957,6 +957,14 @@ class WebSocketDialogMsg extends AbstractModel
                 $dialogMsg->key = $dialogMsg->generateMsgKey();
                 $dialogMsg->save();
                 //
+                if ($dialogMsg->type === 'meeting') {
+                    MeetingMsg::createInstance([
+                        'meetingid' => $dialogMsg->msg['meetingid'],
+                        'dialog_id' => $dialogMsg->dialog_id,
+                        'msg_id' => $dialogMsg->id,
+                    ])->save();
+                }
+                //
                 WebSocketDialogUser::whereDialogId($dialogMsg->dialog_id)->change([
                     'hide' => 0,    // 有新消息时，显示会话（会话内所有会员）
                     'last_at' => Carbon::now(),

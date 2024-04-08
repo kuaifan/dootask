@@ -64,7 +64,8 @@ class CloseMeetingRoomTask extends AbstractTask
                 ->chunk(100, function ($msgs) use ($newMsg, &$dialogIds) {
                     /** @var WebSocketDialogMsg $msg */
                     foreach ($msgs as $msg) {
-                        $msg->msg = Base::array2json($newMsg);
+                        $msgData = Base::json2array($msg->getRawOriginal('msg'));
+                        $msg->msg = Base::array2json(array_merge($msgData, $newMsg));
                         $msg->save();
                         //
                         if (!isset($dialogIds[$msg->dialog_id])) {

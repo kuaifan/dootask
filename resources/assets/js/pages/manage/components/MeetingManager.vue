@@ -401,7 +401,7 @@ export default {
                 if (changedDevice.state === "ACTIVE") {
                     this.localUser.audioTrack?.setDevice(changedDevice.device.deviceId);
                     // Switch to an existing device when the current device is unplugged.
-                } else if (changedDevice.device.label === this.localUser.audioTrack.getTrackLabel()) {
+                } else if (changedDevice.device.label === this.localUser.audioTrack?.getTrackLabel()) {
                     const oldMicrophones = await AgoraRTC.getMicrophones();
                     oldMicrophones[0] && this.localUser.audioTrack?.setDevice(oldMicrophones[0].deviceId);
                 }
@@ -412,7 +412,7 @@ export default {
                 if (changedDevice.state === "ACTIVE") {
                     this.localUser.videoTrack?.setDevice(changedDevice.device.deviceId);
                     // Switch to an existing device when the current device is unplugged.
-                } else if (changedDevice.device.label === this.localUser.videoTrack.getTrackLabel()) {
+                } else if (changedDevice.device.label === this.localUser.videoTrack?.getTrackLabel()) {
                     const oldCameras = await AgoraRTC.getCameras();
                     oldCameras[0] && this.localUser.videoTrack?.setDevice(oldCameras[0].deviceId);
                 }
