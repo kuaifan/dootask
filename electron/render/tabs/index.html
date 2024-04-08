@@ -79,6 +79,12 @@
                         const faviconItem = this.tabs.find(item => item.id === id)
                         if (faviconItem) {
                             faviconItem.icon = detail.favicons[detail.favicons.length - 1]
+                            //
+                            const img = new Image();
+                            img.onerror = () => {
+                                faviconItem.icon = ''
+                            };
+                            img.src = faviconItem.icon
                         }
                         break
 
