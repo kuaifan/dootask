@@ -246,7 +246,7 @@ export default {
                         dialog_id: data.dialog_id
                     }
                 }).then(({data}) => {
-                    this.$set(this.addData, 'userids', data.map(item => item.userid))
+                    this.$set(this.addData, 'userids', data.filter(item => !item.bot).map(item => item.userid))
                 }).finally(_ => {
                     this.loadIng--;
                 });

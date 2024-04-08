@@ -256,8 +256,8 @@ class DialogController extends AbstractController
         //
         $dialog = WebSocketDialog::checkDialog($dialog_id);
         //
-        $data = $dialog->dialogUser->toArray();
         if ($getuser === 1) {
+            $data = $dialog->dialogUser->toArray();
             $array = [];
             foreach ($data as $item) {
                 $res = User::userid2basic($item['userid']);
@@ -265,14 +265,16 @@ class DialogController extends AbstractController
                     $array[] = array_merge($item, $res->toArray());
                 }
             }
-            $data = $array;
-        }
-        //
-        $array = [];
-        foreach ($data as $item) {
-            if ($item['userid'] > 0) {
-                $array[] = $item;
-            }
+            $array = array_filter($array, function ($item) {
+                return $item['userid'] > 0;
+            });
+        } else {
+            $data = WebSocketDialogUser::select(['web_socket_dialog_users.*', 'users.bot'])
+                ->join('users', 'web_socket_dialog_users.userid', '=', 'users.userid')
+                ->where('web_socket_dialog_users.dialog_id', $dialog_id)
+                ->orderBy('web_socket_dialog_users.id')
+                ->get();
+            $array = $data->toArray();
         }
         return Base::retSuccess('success', $array);
     }
