@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.36.58]
+
+### Performance
+
+- 临时帐号别名
+- Tab icon load error
+- 优化会议
+- 创建会议不需要加入机器人
+- 暗黑模式下窗口背景色兼容问题
+- 优化网络检查
+- 客户端会议优化
+
 ## [0.36.49]
 
 ### Performance
