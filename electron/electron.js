@@ -294,6 +294,12 @@ function createWebTabWindow(args) {
             }, webPreferences),
         }, config))
 
+        if (nativeTheme.shouldUseDarkColors) {
+            webTabWindow.setBackgroundColor('#3B3B3D')
+        } else {
+            webTabWindow.setBackgroundColor('#EFF0F4')
+        }
+
         webTabWindow.on('resize', () => {
             resizeWebTab(0)
         })
@@ -425,6 +431,10 @@ function createWebTabWindow(args) {
             event: 'stop-loading',
             id: browserView.webContents.id,
         }).then(_ => { })
+        // 加载完成暗黑模式下把窗口背景色改成白色，避免透明网站背景色穿透
+        if (nativeTheme.shouldUseDarkColors) {
+            browserView.setBackgroundColor('#FFFFFF')
+        }
     })
     browserView.webContents.on('before-input-event', (event, input) => {
         if (utils.isMetaOrControl(input) && input.key.toLowerCase() === 'r') {
