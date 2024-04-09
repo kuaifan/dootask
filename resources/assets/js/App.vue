@@ -237,6 +237,22 @@ export default {
             }
         },
 
+        isUseDefaultBrowser(url) {
+            if (/web\.zoom\.us/i.test(url)
+                || /meeting\.tencent\.com/i.test(url)
+                || /meet\.google\.com/i.test(url)) {
+                return true;
+            }
+            if ($A.getDomain(url) == $A.getDomain($A.apiUrl('../'))) {
+                try {
+                    if (/^\/uploads\//i.test(new URL(url).pathname)) {
+                        return true;
+                    }
+                } catch (e) { }
+            }
+            return false;
+        },
+
         electronEvents() {
             if (!this.$Electron) {
                 return;
@@ -247,16 +263,11 @@ export default {
                 }
             }
             window.__onBeforeOpenWindow = ({url}) => {
-                if ($A.getDomain(url) == $A.getDomain($A.apiUrl('../'))) {
-                    try {
-                        // 下载文件不使用内置浏览器打开
-                        if (/^\/uploads\//i.test(new URL(url).pathname)) {
-                            return false;
-                        }
-                    } catch (e) { }
+                if (this.isUseDefaultBrowser(url)) {
+                    return false;   // 使用默认浏览器打开
                 }
                 this.$store.dispatch("openWebTabWindow", url)
-                return true;
+                return true;        // 阻止默认打开
             }
             this.$Electron.registerMsgListener('dispatch', args => {
                 if (!$A.isJson(args)) {
@@ -310,6 +321,10 @@ export default {
             }
             // 新窗口打开
             window.__onCreateTarget = (url) => {
+                if (this.isUseDefaultBrowser(url)) {
+                    $A.eeuiAppOpenWeb(url);
+                    return;
+                }
                 this.$store.dispatch('openAppChildPage', {
                     pageType: 'app',
                     pageTitle: ' ',
