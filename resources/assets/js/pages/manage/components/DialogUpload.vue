@@ -104,21 +104,13 @@ export default {
             return new Promise((resolve) => {
                 this.fileMsgData(file)
                 if (/\.(jpe?g|webp|png|gif)$/i.test(file.name)) {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onload = ({target}) => {
-                        const image = new Image();
-                        image.onload = () => {
-                            this.fileMsgData(file, {
-                                type: 'img',
-                                thumb: target.result,
-                                width: image.width,
-                                height: image.height,
-                            })
-                            resolve();
-                        };
-                        image.src = target.result;
-                    }
+                    this.$store.dispatch("showSpinner", 600)
+                    this.imageFileToObject(file).then(data => {
+                        this.fileMsgData(file, data)
+                        resolve();
+                    }).finally(() => {
+                        this.$store.dispatch("hiddenSpinner")
+                    });
                     return
                 }
                 resolve();
@@ -191,7 +183,55 @@ export default {
         cancel(uid) {
             //取消上传
             return this.$refs.upload.cancel(uid);
-        }
+        },
+
+        /**
+         * 获取图片文件详情（缩略图、宽、高）
+         * @param file
+         * @returns {Promise<unknown>}
+         */
+        imageFileToObject(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = ({target}) => {
+                    const image = new Image();
+                    image.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        const originWidth = image.width, originHeight = image.height;
+                        const maxWidth = 500, maxHeight = 500;
+                        let targetWidth = originWidth, targetHeight = originHeight;
+                        if (originWidth > maxWidth || originHeight > maxHeight) {
+                            if (originWidth / originHeight > maxWidth / maxHeight) {
+                                targetWidth = maxWidth;
+                                targetHeight = Math.round(maxWidth * (originHeight / originWidth));
+                            } else {
+                                targetHeight = maxHeight;
+                                targetWidth = Math.round(maxHeight * (originWidth / originHeight));
+                            }
+                        }
+                        canvas.width = targetWidth;
+                        canvas.height = targetHeight;
+                        context.clearRect(0, 0, targetWidth, targetHeight);
+                        context.drawImage(image, 0, 0, targetWidth, targetHeight);
+                        resolve({
+                            type: 'img',
+                            thumb: canvas.toDataURL('image/webp', 0.92),
+                            width: canvas.width,
+                            height: canvas.height,
+                        });
+                    };
+                    image.onerror = () => {
+                        reject();
+                    }
+                    image.src = target.result;
+                }
+                reader.onerror = () => {
+                    reject();
+                }
+                reader.readAsDataURL(file);
+            })
+        },
     }
 }
 </script>
