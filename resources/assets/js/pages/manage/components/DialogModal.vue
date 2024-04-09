@@ -8,7 +8,7 @@
         :beforeClose="onBeforeClose"
         class-name="dialog-modal"
         fullscreen>
-        <DialogWrapper v-if="windowPortrait && dialogId > 0" :dialogId="dialogId" :beforeBack="onBeforeClose"/>
+        <DialogWrapper v-if="windowPortrait && dialogId > 0" :dialogId="dialogId" :beforeBack="onBeforeClose" location="modal"/>
     </Modal>
 </template>
 

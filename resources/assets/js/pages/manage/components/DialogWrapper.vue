@@ -672,9 +672,9 @@ export default {
             type: Boolean,
             default: false
         },
-        isMessenger: {
-            type: Boolean,
-            default: false
+        location: {
+            type: String,
+            default: ""
         },
         headShowBox: {
             type: Boolean,
@@ -1030,14 +1030,14 @@ export default {
             return [];
         },
 
-        footerPaddingBottom({keyboardType, keyboardHeight, safeAreaBottom, windowScrollY, isMessenger, focusLazy}) {
-            if (windowScrollY === 0
+        footerPaddingBottom({keyboardType, keyboardHeight, safeAreaBottom, windowScrollY, location, focusLazy}) {
+            if (windowScrollY < 2
+                && location
                 && focusLazy
-                && isMessenger
                 && keyboardType === "show"
                 && keyboardHeight > 0
                 && keyboardHeight < 120) {
-                return keyboardHeight + safeAreaBottom;
+                return keyboardHeight + safeAreaBottom + (location === 'modal' ? 15 : 0);
             }
             return 0;
         },

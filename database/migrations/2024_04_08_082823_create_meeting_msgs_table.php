@@ -21,6 +21,7 @@ class CreateMeetingMsgsTable extends Migration
             $table->bigInteger('dialog_id')->nullable()->default(0)->comment('对话ID');
             $table->bigInteger('msg_id')->nullable()->default(0)->comment('消息ID');
         });
+        \DB::table('meetings')->update(['end_at' => null]);
         WebSocketDialogMsg::whereType('meeting')->chunk(100, function ($msgs) {
             /** @var WebSocketDialogMsg $msg */
             foreach ($msgs as $msg) {

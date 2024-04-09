@@ -12,7 +12,7 @@ default_storage_engine = InnoDB
 performance_schema_max_table_instances = 400
 table_definition_cache = 400
 key_buffer_size = 1024M
-max_allowed_packet = 4096M
+max_allowed_packet = 8192M
 table_open_cache = 2048
 sort_buffer_size = 4096K
 net_buffer_length = 4K
@@ -47,7 +47,7 @@ innodb_write_io_threads = 2
 
 [mysqldump]
 quick
-max_allowed_packet = 4096M
+max_allowed_packet = 8192M
 
 [mysql]
 no-auto-rehash

@@ -212,7 +212,7 @@
                     <div class="msg-dialog-bg-icon"><Icon type="ios-chatbubbles" /></div>
                     <div class="msg-dialog-bg-text">{{$L('选择一个会话开始聊天')}}</div>
                 </div>
-                <DialogWrapper v-if="windowLandscape && dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive" :auto-focus="$A.isDesktop()" is-messenger/>
+                <DialogWrapper v-if="windowLandscape && dialogId > 0" :dialogId="dialogId" @on-active="scrollIntoActive" :auto-focus="$A.isDesktop()" location="messenger"/>
             </div>
         </div>
     </div>

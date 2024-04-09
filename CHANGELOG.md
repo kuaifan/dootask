@@ -2,10 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.36.58]
+## [0.36.60]
 
 ### Performance
 
+- 优化聊天图片上传
 - 临时帐号别名
 - Tab icon load error
 - 优化会议
