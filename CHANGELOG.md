@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
+- 优化使用默认浏览器打开规则
 - 优化聊天图片上传
 - 临时帐号别名
 - Tab icon load error

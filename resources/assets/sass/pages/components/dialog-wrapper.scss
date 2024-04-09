@@ -729,6 +729,11 @@
                         align-items: flex-start;
                         position: relative;
 
+                        a,
+                        img {
+                            -webkit-user-drag: none;
+                        }
+
                         &.an-emoji {
                             .content-text {
                                 > pre {

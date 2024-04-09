@@ -919,7 +919,7 @@ import {MarkdownPreview} from "../store/markdown";
             const {items} = data;
             if (items) {
                 for (const item of items) {
-                    if (!(item.kind === "file" && item.webkitGetAsEntry().isFile)) {
+                    if (item.kind === "directory" || (item.kind === "file" && item.webkitGetAsEntry().isDirectory)) {
                         return true;
                     }
                 }
