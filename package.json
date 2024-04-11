@@ -24,6 +24,7 @@
         "axios": "^0.24.0",
         "cross-env": "^7.0.3",
         "css-loader": "^6.7.2",
+        "default-passive-events": "^2.0.0",
         "dexie": "^3.2.3",
         "echarts": "^5.2.2",
         "element-sea": "^2.15.10-7",

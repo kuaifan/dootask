@@ -39,6 +39,7 @@ import VueClipboard from 'vue-clipboard2'
 import ViewUI from 'view-design-hi'
 import store from './store/index'
 import mixin from "./store/mixin"
+import 'default-passive-events'
 
 import "../sass/app.scss";
 
