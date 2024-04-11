@@ -475,6 +475,13 @@ if [ $# -gt 0 ]; then
             por="-p 8880:8880"
         fi
         docker run -it --rm -v ${cur_path}/resources/mobile:/work -w /work ${por} kuaifan/eeui-cli:0.0.1 eeui ${cli}
+    elif [[ "$1" == "npm" ]]; then
+        shift 1
+        npm $@
+        cd electron
+        npm $@
+        cd ..
+        docker run --rm -it -v ${cur_path}/resources/mobile:/work -w /work --entrypoint=/bin/bash node:16 -c "npm $@"
     elif [[ "$1" == "doc" ]]; then
         shift 1
         run_exec php "php app/Http/Controllers/Api/apidoc.php"
