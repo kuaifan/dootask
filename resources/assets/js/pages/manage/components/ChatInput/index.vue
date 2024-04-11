@@ -29,7 +29,7 @@
                 <div v-if="quoteUpdate" class="quote-label">{{$L('编辑消息')}}</div>
                 <UserAvatar v-else :userid="quoteData.userid" :userResult="onQuoteUserResult" :show-icon="false" :show-name="true"/>
                 <div class="quote-desc no-dark-content">{{$A.getMsgSimpleDesc(quoteData)}}</div>
-                <i class="taskfont" @click.stop="cancelQuote">&#xe6e5;</i>
+                <i class="taskfont" v-touchclick="cancelQuote">&#xe6e5;</i>
             </div>
 
             <!-- 输入框 -->
@@ -215,6 +215,7 @@ import Quill from 'quill';
 import "quill-mention-hi";
 import ChatEmoji from "./emoji";
 import touchmouse from "../../../../directives/touchmouse";
+import touchclick from "../../../../directives/touchclick";
 import TransferDom from "../../../../directives/transfer-dom";
 import clickoutside from "../../../../directives/clickoutside";
 import longpress from "../../../../directives/longpress";
@@ -224,7 +225,7 @@ import {Store} from "le5le-store";
 export default {
     name: 'ChatInput',
     components: {ChatEmoji},
-    directives: {touchmouse, TransferDom, clickoutside, longpress},
+    directives: {touchmouse, touchclick, TransferDom, clickoutside, longpress},
     props: {
         value: {
             type: [String, Number],

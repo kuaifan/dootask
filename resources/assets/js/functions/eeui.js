@@ -153,18 +153,28 @@
 
         eeuiAppSetVariate(key, value) {
             if (!$A.isEEUiApp) return;
-            return $A.eeuiModuleSync("eeui").setVariate(key, value);
+            $A.eeuiModuleSync("eeui").setVariate(key, value);
         },
 
         eeuiAppSetHapticBackEnabled(val) {
             if (!$A.isEEUiApp) return;
-            return $A.eeuiModuleSync("webview").setHapticBackEnabled(val);
+            $A.eeuiModuleSync("webview").setHapticBackEnabled(val);
         },
 
         eeuiAppSetDisabledUserLongClickSelect(val) {
             if (!$A.isEEUiApp) return;
-            return $A.eeuiModuleSync("webview").setDisabledUserLongClickSelect(val);
+            $A.__disabledUserLongClickSelectTimer && clearTimeout($A.__disabledUserLongClickSelectTimer);
+            if (/^\d+$/.test(val)) {
+                $A.eeuiModuleSync("webview").setDisabledUserLongClickSelect(true);
+                $A.__disabledUserLongClickSelectTimer = setTimeout(() => {
+                    $A.__disabledUserLongClickSelectTimer = null;
+                    $A.eeuiModuleSync("webview").setDisabledUserLongClickSelect(false);
+                }, val);
+            } else {
+                $A.eeuiModuleSync("webview").setDisabledUserLongClickSelect(val);
+            }
         },
+        __disabledUserLongClickSelectTimer: null,
 
         eeuiAppCopyText(text) {
             if (!$A.isEEUiApp) return;

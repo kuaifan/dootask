@@ -214,7 +214,7 @@
             <div
                 v-if="scrollTail > 500 || (msgNew > 0 && allMsgs.length > 0)"
                 class="dialog-goto"
-                @click="onToBottom">
+                v-touchclick="onToBottom">
                 <Badge :overflow-count="999" :count="msgNew">
                     <i class="taskfont">&#xe72b;</i>
                 </Badge>
@@ -630,7 +630,7 @@ import DialogGroupInfo from "./DialogGroupInfo";
 import DialogRespond from "./DialogRespond";
 import ChatInput from "./ChatInput";
 
-import VirtualList from 'vue-virtual-scroll-list-hi'
+import VirtualList from "vue-virtual-scroll-list-hi"
 import {Store} from "le5le-store";
 import ImgUpload from "../../../components/ImgUpload.vue";
 import {choiceEmojiOne} from "./ChatInput/one";
@@ -640,6 +640,7 @@ import UserSelect from "../../../components/UserSelect.vue";
 import UserAvatarTip from "../../../components/UserAvatar/tip.vue";
 import DialogGroupWordChain from "./DialogGroupWordChain";
 import DialogGroupVote from "./DialogGroupVote";
+import touchclick from "../../../directives/touchclick";
 
 export default {
     name: "DialogWrapper",
@@ -658,6 +659,7 @@ export default {
         DialogGroupWordChain,
         DialogGroupVote,
     },
+    directives: {touchclick},
 
     props: {
         dialogId: {
@@ -1427,6 +1429,12 @@ export default {
         readLoadNum() {
             this.positionShow = true
         },
+
+        operateVisible(val) {
+            if (!val) {
+                document.getSelection().removeAllRanges();
+            }
+        },
     },
 
     methods: {
@@ -1958,6 +1966,9 @@ export default {
         },
 
         onTouchStart(e) {
+            if ($A.isAndroid() && $A.eeuiAppKeyboardStatus()) {
+                $A.eeuiAppSetDisabledUserLongClickSelect(500);
+            }
             this.wrapperStart = null;
             if (this.selectedTextStatus) {
                 this.wrapperStart = window.scrollY
