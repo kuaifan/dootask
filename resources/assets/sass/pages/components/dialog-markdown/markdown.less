@@ -74,14 +74,19 @@ body {
         }
 
         .input-blink {
-            position: absolute;
-            content: '';
-            display: inline-block;
-            width: 2px;
-            height: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            animation: blink-animate 1.2s infinite steps(1, start);
+            width: 10px;
+            height: 20px;
+            position: relative;
+            &:before {
+                position: absolute;
+                content: '';
+                display: inline-block;
+                width: 2px;
+                height: 16px;
+                top: 50%;
+                transform: translateY(-50%);
+                animation: blink-animate 1.2s infinite steps(1, start);
+            }
         }
     }
 

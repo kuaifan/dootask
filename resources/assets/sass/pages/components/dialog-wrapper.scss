@@ -578,7 +578,9 @@
         }
 
         .item-leave {
-            pre, code {
+            pre,
+            code,
+            .markdown-body {
                 visibility: hidden;
             }
         }
@@ -774,6 +776,7 @@
                             }
 
                             .markdown-body {
+                                min-height: 20px;
                                 line-height: 20px;
                             }
 

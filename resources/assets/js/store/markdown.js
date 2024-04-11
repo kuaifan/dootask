@@ -25,7 +25,7 @@ const MarkdownUtils = {
 
 export function MarkdownConver(text) {
     if (text === '...') {
-        return '<p><span class="input-blink"></span>&nbsp;</p>'
+        return '<div class="input-blink"></div>'
     }
     if (MarkdownUtils.mdi === null) {
         MarkdownUtils.mdi = new MarkdownIt({
