@@ -15,6 +15,7 @@
                     ref="emojiWrapper"
                     :enable-x="true"
                     :enable-y="false"
+                    :touch-content-blur="false"
                     class-name="chat-quick-emoji-wrapper scrollbar-hidden">
                     <li v-for="item in emojiQuickItems" @click="onEmojiQuick(item)">
                         <img :title="item.name" :alt="item.name" :src="item.src"/>

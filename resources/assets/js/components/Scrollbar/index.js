@@ -28,6 +28,10 @@ export default {
             type: Number,
             default: 20
         },
+        touchContentBlur: {
+            type: Boolean,
+            default: true
+        },
     },
     data() {
         return {
@@ -248,6 +252,9 @@ export default {
          * @param e
          */
         onContentTouchStart(e) {
+            if (!this.touchContentBlur) {
+                return;
+            }
             const focusedElement = document.activeElement;
             if (focusedElement) {
                 focusedElement.blur();
