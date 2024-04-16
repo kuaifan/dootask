@@ -1,5 +1,5 @@
-@import "~quill/dist/quill.bubble.css";
-@import "~quill-mention-hi/dist/quill.mention.min.css";
+@import "~quill-hitosea/dist/quill.bubble.css";
+@import "~quill-mention-hitosea/dist/quill.mention.min.css";
 
 .chat-input-box {
     display: inline-block;
@@ -224,6 +224,21 @@
             float: right;
             width: 170px;
             height: 30px;
+            .space-input {
+                border: none;
+                outline: none;
+                box-shadow: none;
+                background: transparent;
+                height: 1px;
+                width: 1px;
+                overflow: hidden;
+                &:focus,
+                &:active {
+                    border: none;
+                    outline: none;
+                    box-shadow: none;
+                }
+            }
         }
 
         .chat-toolbar {

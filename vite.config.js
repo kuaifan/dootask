@@ -49,8 +49,8 @@ export default defineConfig(({command, mode}) => {
         resolve: {
             alias: {
                 '~element-sea': resolve(__dirname, 'node_modules/element-sea'),
-                '~quill': resolve(__dirname, 'node_modules/quill'),
-                '~quill-mention-hi': resolve(__dirname, 'node_modules/quill-mention-hi'),
+                '~quill-hitosea': resolve(__dirname, 'node_modules/quill-hitosea'),
+                '~quill-mention-hitosea': resolve(__dirname, 'node_modules/quill-mention-hitosea'),
                 '../images': resolve(__dirname, command === 'serve' ? '/images' : 'resources/assets/statics/public/images'),
                 '../css': resolve(__dirname, command === 'serve' ? '/css' : 'resources/assets/statics/public/css')
             },

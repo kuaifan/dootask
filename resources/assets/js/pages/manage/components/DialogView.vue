@@ -501,7 +501,7 @@ export default {
 
         recordStyle(info) {
             const {duration} = info;
-            const width = 50 + Math.min(180, Math.floor(duration / 150));
+            const width = 50 + Math.min(180, Math.floor(duration / 200));
             return {
                 width: width + 'px',
             };

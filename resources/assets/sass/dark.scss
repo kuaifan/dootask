@@ -194,6 +194,12 @@ body.dark-mode-reverse {
             }
         }
 
+        .dialog-position {
+            .position-label {
+                color: #000000;
+            }
+        }
+
         .dialog-scroller {
             .dialog-item {
                 .dialog-view {
@@ -538,6 +544,12 @@ body.dark-mode-reverse {
                     }
                 }
             }
+        }
+    }
+
+    .chat-input-record-transfer {
+        &.cancel {
+            color: #000000;
         }
     }
 

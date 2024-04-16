@@ -40,7 +40,9 @@
                 @paste="handlePaste"></div>
 
             <!-- 工具栏占位 -->
-            <div class="chat-space"></div>
+            <div class="chat-space">
+                <input class="space-input" @focus="onSpaceInputFocus"/>
+            </div>
 
             <!-- 工具栏 -->
             <ul class="chat-toolbar" @click.stop>
@@ -211,8 +213,8 @@
 
 <script>
 import {mapState} from "vuex";
-import Quill from 'quill';
-import "quill-mention-hi";
+import Quill from 'quill-hitosea';
+import "quill-mention-hitosea";
 import ChatEmoji from "./emoji";
 import touchmouse from "../../../../directives/touchmouse";
 import touchclick from "../../../../directives/touchclick";
@@ -324,10 +326,11 @@ export default {
 
             emojiTimer: null,
             scrollTimer: null,
-            selectTimer: null,
             textTimer: null,
             fileTimer: null,
             moreTimer: null,
+            selectTimer: null,
+            selectRange: null,
 
             fullInput: false,
             fullQuill: null,
@@ -640,7 +643,7 @@ export default {
                     keyboard: {
                         bindings: {
                             'short enter': {
-                                key: 13,
+                                key: "Enter",
                                 shortKey: true,
                                 handler: _ => {
                                     if (!this.isEnterSend) {
@@ -651,7 +654,7 @@ export default {
                                 }
                             },
                             'enter': {
-                                key: 13,
+                                key: "Enter",
                                 shiftKey: false,
                                 handler: _ => {
                                     if (this.isEnterSend) {
@@ -662,7 +665,7 @@ export default {
                                 }
                             },
                             'esc': {
-                                key: 27,
+                                key: "Escape",
                                 shiftKey: false,
                                 handler: _ => {
                                     if (this.emojiQuickShow) {
@@ -691,15 +694,15 @@ export default {
 
             // Mark model as touched if editor lost focus
             this.quill.on('selection-change', range => {
-                if (!range && document.activeElement) {
-                    // 修复光标会超出的问题
-                    if (['ql-editor', 'ql-clipboard'].includes(document.activeElement.className)) {
-                        this.selectTimer && clearTimeout(this.selectTimer)
-                        this.selectTimer = setTimeout(_ => {
-                            this.quill.setSelection(document.activeElement.className === 'ql-editor' ? 0 : this.quill.getLength())
-                        }, 100)
-                        return
-                    }
+                if (range) {
+                    this.selectRange = range
+                } else if (this.selectRange && document.activeElement && /(ql-editor|ql-clipboard)/.test(document.activeElement.className)) {
+                    // 修复iOS光标会超出的问题
+                    this.selectTimer && clearTimeout(this.selectTimer)
+                    this.selectTimer = setTimeout(_ => {
+                        this.quill.setSelection(this.selectRange.index, this.selectRange.length)
+                    }, 100)
+                    return
                 }
                 this.isFocus = !!range;
             })
@@ -765,8 +768,8 @@ export default {
             this.$nextTick(_ => {
                 this.quill.root.addEventListener('keydown', e => {
                     if (e.key === '\r\r' && e.keyCode === 229) {
-                        const length = this.quill.getSelection(true).index;
-                        this.quill.insertText(length, "\r\n");
+                        const {index} = this.quill.getSelection(true);
+                        this.quill.insertText(index, "\r\n");
                         //
                         this.keyTimer && clearTimeout(this.keyTimer)
                         this.keyTimer = setTimeout(_ => {
@@ -950,7 +953,7 @@ export default {
 
         setContent(value) {
             if (this.quill) {
-                this.quill.setContents(this.quill.clipboard.convert(value))
+                this.quill.setContents(this.quill.clipboard.convert({html: value}))
             }
         },
 
@@ -1310,6 +1313,13 @@ export default {
             })
         },
 
+        onSpaceInputFocus() {
+            if (this.selectRange) {
+                // 修复Android光标会超出的问题
+                this.quill?.setSelection(this.selectRange.index, this.selectRange.length)
+            }
+        },
+
         openMenu(char) {
             if (!this.quill) {
                 return;
@@ -1330,7 +1340,10 @@ export default {
             if (!this.quill) {
                 return;
             }
-            this.quill.getModule("mention").insertItem(data, true);
+            const {index} = this.quill.getSelection(true);
+            this.quill.insertEmbed(index, "mention", data, Quill.sources.USER);
+            this.quill.insertText(index + 1, " ", Quill.sources.USER);
+            this.quill.setSelection(index + 2, Quill.sources.USER);
         },
 
         getProjectId() {
@@ -1665,9 +1678,9 @@ export default {
                         array.forEach(image => {
                             const t = new FileReader;
                             t.onload = ({target}) => {
-                                const length = this.quill.getSelection(true).index;
-                                this.quill.insertEmbed(length, "image", target.result);
-                                this.quill.setSelection(length + 1)
+                                const {index} = this.quill.getSelection(true);
+                                this.quill.insertEmbed(index, "image", target.result);
+                                this.quill.setSelection(index + 1)
                             };
                             t.readAsDataURL(image)
                         })
