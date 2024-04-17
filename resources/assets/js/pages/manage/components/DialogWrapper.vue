@@ -207,6 +207,11 @@
                     </div>
                 </template>
             </VirtualList>
+
+            <!-- 浮动加载中 -->
+            <div v-if="!headShowBox && loadIng > 0 && allMsgs.length === 0" class="dialog-float-loading">
+                <Loading/>
+            </div>
         </div>
 
         <!--底部输入-->
