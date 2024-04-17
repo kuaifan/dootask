@@ -73,6 +73,22 @@
     if (themeConf === 'dark') {
         document.body.classList.add("dark");
     }
+    //
+    const isEEUiApp = window && window.navigator && /eeui/i.test(window.navigator.userAgent);
+    if (isEEUiApp) {
+        document.querySelector(".link").addEventListener('click', function (e) {
+            e.preventDefault();
+            window.top.postMessage({
+                action: "eeuiAppSendMessage",
+                data: [
+                    {
+                        action: 'openUrl',
+                        url: "{{ $url }}",
+                    }
+                ]
+            }, "*")
+        });
+    }
 </script>
 </body>
 </html>
