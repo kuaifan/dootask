@@ -298,7 +298,7 @@
                                     <i class="taskfont" v-html="item.icon"></i>
                                     <span>{{ $L(item.label) }}</span>
                                 </li>
-                                <li v-if="operateItem.type !== 'word-chain' && operateItem.type !== 'vote'" @click="onOperate('forward')">
+                                <li v-if="actionPermission(operateItem, 'forward')" @click="onOperate('forward')">
                                     <i class="taskfont">&#xe638;</i>
                                     <span>{{ $L('转发') }}</span>
                                 </li>
@@ -320,7 +320,7 @@
                                     <i class="taskfont">&#xe61e;</i>
                                     <span>{{ $L(operateItem.tag ? '取消标注' : '标注') }}</span>
                                 </li>
-                                <li v-if="operateItem.type === 'text'" @click="onOperate('newTask')">
+                                <li v-if="actionPermission(operateItem, 'newTask')" @click="onOperate('newTask')">
                                     <i class="taskfont">&#xe7b8;</i>
                                     <span>{{ $L('新任务') }}</span>
                                 </li>
@@ -3435,6 +3435,23 @@ export default {
             this.onPositionId(id).finally(_ => {
                 this.positionLoad--
             })
+        },
+
+        actionPermission(item, permission) {
+            if (permission === 'forward') {
+                if (['word-chain', 'vote'].includes(item.type)) {
+                    return false    // 投票、接龙 不支持转发
+                }
+                if (item.type === 'text') {
+                    return typeof item.msg.approve_type === 'undefined' // 审批消息不支持转发
+                }
+            } else if (permission === 'newTask') {
+                if (item.type === 'text') {
+                    return typeof item.msg.approve_type === 'undefined' // 审批消息不支持新建任务
+                }
+                return false
+            }
+            return true // 返回 true 允许操作
         },
 
         findOperateFile(msgId, link) {

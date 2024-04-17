@@ -993,14 +993,14 @@ class ApproveController extends AbstractController
         if ($action == 'withdraw' || $action == 'pass' || $action == 'refuse') {
             // 任务完成，给发起人发送消息
             if ($type == 'approve_submitter' && $action != 'withdraw') {
-                return WebSocketDialogMsg::sendMsg($msg_action, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
+                return WebSocketDialogMsg::sendMsg($msg_action, $dialog->id, 'text', ['text' => $text, 'approve_type' => $type], $botUser->userid, false, false, true);
             }
             // 查找最后一条消息msg_id
             $msg_action = 'change-' . $toUser['msg_id'];
         }
         //
         try {
-            $msg = WebSocketDialogMsg::sendMsg($msg_action, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
+            $msg = WebSocketDialogMsg::sendMsg($msg_action, $dialog->id, 'text', ['text' => $text, 'approve_type' => $type], $botUser->userid, false, false, true);
             // 关联信息
             if ($action == 'start') {
                 $proc_msg = new ApproveProcMsg();
