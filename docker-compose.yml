@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   php:
     container_name: "dootask-php-${APP_ID}"

@@ -19,14 +19,13 @@ const devloadCachePath = path.resolve(__dirname, ".devload");
 const packageFile = path.resolve(__dirname, "package.json");
 const packageBakFile = path.resolve(__dirname, "package-bak.json");
 const platforms = ["build-mac", "build-win"];
-const comSuffix = os.type() == 'Windows_NT' ? '.cmd' : '';
 
 /**
  * 克隆 Drawio
  * @param systemInfo
  */
 function cloneDrawio(systemInfo) {
-    child_process.spawnSync("git", ["submodule", "update", "--quiet", "--init", "--depth=1"], {stdio: "inherit"});
+    child_process.execSync("git submodule update --quiet --init --depth=1", {stdio: "inherit"});
     const drawioSrcDir = path.resolve(__dirname, "../resources/drawio/src/main/webapp");
     const drawioCoverDir = path.resolve(__dirname, "../docker/drawio/webapp");
     const drawioDestDir = path.resolve(electronDir, "drawio/webapp");
@@ -122,6 +121,10 @@ function genericPublish({url, key, version, output}) {
         return
     }
     const filePath = path.resolve(__dirname, output)
+    if (!fs.existsSync(filePath)) {
+        console.warn("Publish output not found: " + filePath)
+        return
+    }
     fs.readdir(filePath, async (err, files) => {
         if (err) {
             console.warn(err)
@@ -235,10 +238,10 @@ function startBuild(data) {
         fse.removeSync(publicDir)
         fse.copySync(electronDir, publicDir)
         if (argv[3] === "setting") {
-            child_process.spawnSync("docker", `run -it --rm -v ${eeuiDir}:/work -w /work ${eeuiCli} eeui setting`.split(" "), {stdio: "inherit", cwd: "resources/mobile"});
+            child_process.execSync(`docker run -it --rm -v ${eeuiDir}:/work -w /work ${eeuiCli} eeui setting`, {stdio: "inherit", cwd: "resources/mobile"});
         }
         if (['setting', 'build'].includes(argv[3])) {
-            child_process.spawnSync("docker", `run -it --rm -v ${eeuiDir}:/work -w /work ${eeuiCli} eeui build --simple`.split(" "), {stdio: "inherit", cwd: "resources/mobile"});
+            child_process.execSync(`docker run -it --rm -v ${eeuiDir}:/work -w /work ${eeuiCli} eeui build --simple`, {stdio: "inherit", cwd: "resources/mobile"});
         } else {
             [
                 path.resolve(publicDir, "../../platforms/ios/eeuiApp/bundlejs/eeui/public"),
@@ -291,13 +294,13 @@ function startBuild(data) {
         }
         econfig.build.directories.output = `${output}-github`;
         fs.writeFileSync(packageFile, JSON.stringify(econfig, null, 2), 'utf8');
-        child_process.spawnSync("npm" + comSuffix, ["run", `${platform}-publish`], {stdio: "inherit", cwd: "electron"});
+        child_process.execSync(`npm run ${platform}-publish`, {stdio: "inherit", cwd: "electron"});
     }
     // generic (build || publish)
     econfig.build.publish = data.publish
     econfig.build.directories.output = `${output}-generic`;
     fs.writeFileSync(packageFile, JSON.stringify(econfig, null, 2), 'utf8');
-    child_process.spawnSync("npm" + comSuffix, ["run", platform], {stdio: "inherit", cwd: "electron"});
+    child_process.execSync(`npm run ${platform}`, {stdio: "inherit", cwd: "electron"});
     if (publish === true && DP_KEY) {
         genericPublish({
             url: econfig.build.publish.url,

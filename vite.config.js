@@ -1,6 +1,6 @@
 import {resolve} from "path";
 import {writeFileSync, existsSync, unlinkSync} from "fs";
-import {spawnSync} from "child_process";
+import {execSync} from "child_process";
 import {defineConfig, loadEnv} from 'vite'
 import {createVuePlugin} from 'vite-plugin-vue2';
 import vitePluginRequire from 'vite-plugin-require'
@@ -12,7 +12,7 @@ const basePath = argv.includes('electronBuild') ? './' : '/';
 const publicPath = argv.includes('electronBuild') ? 'electron/public' : 'public';
 
 if (!argv.includes('fromcmd')) {
-    spawnSync("npx", [resolve(__dirname, 'cmd'), argv.includes("build") ? "build" : "dev"], {stdio: "inherit"});
+    execSync(`npx ${resolve(__dirname, 'cmd')} ${argv.includes("build") ? "build" : "dev"}`, {stdio: "inherit"});
     process.exit()
 }
 

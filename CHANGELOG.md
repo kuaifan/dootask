@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.36.75]
+
+### Bug Fixes
+
+- Added non-passive event listener to a scroll-blocking 'touchstart' event
+
+### Performance
+
+- 下载pdf使用自带浏览器
+- 优化消息加载中效果
+- 审批内容禁止转发
+- 滑动快捷表情选择
+- 优化聊天输入框
+- Update chat editor
+- 优化机器人回复
+- 优化android体验
+
 ## [0.36.60]
 
 ### Performance
