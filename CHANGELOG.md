@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.36.78]
+
+### Bug Fixes
+
+- 解决 Unable to preventDefault inside passive event listener 报错
+- 截图粘贴出现两张图的情况
+- 聊天输入中文过程跟placeholder内容叠加的问题
+
 ## [0.36.75]
 
 ### Bug Fixes
