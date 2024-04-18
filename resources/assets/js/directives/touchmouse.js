@@ -25,7 +25,7 @@ export default {
             el.addEventListener('touchmove', el.__touchEvent__.move);
             el.addEventListener('touchend', el.__touchEvent__.end);
         } else {
-            el.addEventListener('mousedown', el.__touchEvent__.start);
+            el.addEventListener('mousedown', el.__touchEvent__.start, { passive: false });
             document.addEventListener('mousemove', el.__touchEvent__.move);
             document.addEventListener('mouseup', el.__touchEvent__.end);
         }
