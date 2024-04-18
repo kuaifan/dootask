@@ -214,8 +214,8 @@
 
 <script>
 import {mapState} from "vuex";
-import Quill from 'quill-hitosea';
-import "quill-mention-hitosea";
+import Quill from 'quill-hi';
+import "quill-mention-hi";
 import ChatEmoji from "./emoji";
 import touchmouse from "../../../../directives/touchmouse";
 import touchclick from "../../../../directives/touchclick";
@@ -1651,45 +1651,7 @@ export default {
             if (postFiles.length > 0) {
                 e.preventDefault()
                 this.$emit('on-file', files)
-            } else if (this.pasteRtf(e)) {
-                e.preventDefault()
             }
-        },
-
-        pasteRtf(e) {
-            if (e && e.clipboardData && e.clipboardData.items) {
-                const imgHtml = (new DOMParser).parseFromString(e.clipboardData.getData("text/html") || "", "text/html").querySelector("img");
-                if (!imgHtml) {
-                    const array = [];
-                    let image = null;
-                    if (e.clipboardData.types && -1 != [].indexOf.call(e.clipboardData.types, "text/rtf") || e.clipboardData.getData("text/rtf")) {
-                        image = e.clipboardData.items[0].getAsFile();
-                        if (image) {
-                            array.push(image)
-                        }
-                    } else {
-                        for (let s = 0; s < e.clipboardData.items.length; s++) {
-                            image = e.clipboardData.items[s].getAsFile()
-                            if (image) {
-                                array.push(image)
-                            }
-                        }
-                    }
-                    if (array.length > 0) {
-                        array.forEach(image => {
-                            const t = new FileReader;
-                            t.onload = ({target}) => {
-                                const {index} = this.quill.getSelection(true);
-                                this.quill.insertEmbed(index, "image", target.result);
-                                this.quill.setSelection(index + 1)
-                            };
-                            t.readAsDataURL(image)
-                        })
-                        return true
-                    }
-                }
-            }
-            return false
         },
 
         filterInvalidLine(content) {
