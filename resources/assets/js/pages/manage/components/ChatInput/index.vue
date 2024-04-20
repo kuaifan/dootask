@@ -163,7 +163,7 @@
                         </div>
                         <div class="chat-input-popover-item" @click="onSend('normal')">
                             <i class="taskfont">&#xe71b;</i>
-                            {{$L('正常发送')}}
+                            {{$L('普通格式发送')}}
                         </div>
                     </EPopover>
                 </li>
@@ -273,7 +273,7 @@ export default {
         toolbar: {
             type: Array,
             default: () => {
-                return ['bold', 'strike', 'italic', 'underline', {'list': 'ordered'}, {'list': 'bullet'}, 'blockquote', 'code-block']
+                return ['bold', 'strike', 'italic', 'underline', 'blockquote', {'list': 'ordered'}, {'list': 'bullet'}]
             },
         },
         maxlength: {
@@ -637,6 +637,7 @@ export default {
             // Options
             this._options = Object.assign({
                 theme: 'bubble',
+                formats: ['bold', 'strike', 'italic', 'underline', 'blockquote', 'list', 'link', 'image'],
                 readOnly: false,
                 placeholder: this.placeholder,
                 modules: {
