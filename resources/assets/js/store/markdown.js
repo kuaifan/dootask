@@ -56,29 +56,39 @@ export function isMarkdownFormat(html) {
     if (html === '') {
         return false
     }
-    if (/<\/(strong|s|em|u|ol|ul|li|blockquote|pre|img|a)>/i.test(html)) {
+    const tmp = html.replace(/<p>/g, '\n').replace(/(^|\s+)```([\s\S]*)```/gm, '')
+    if (/<\/(strong|s|em|u|ol|ul|li|blockquote|pre|img|a)>/i.test(tmp)) {
         return false
     }
-    if (/<span[^>]+?class="mention"[^>]*?>/i.test(html)) {
+    if (/<span[^>]+?class="mention"[^>]*?>/i.test(tmp)) {
         return false
     }
     //
-    let el = document.createElement('div')
+    const el = document.createElement('div')
+    el.style.position = 'fixed'
+    el.style.top = '0'
+    el.style.left = '0'
+    el.style.width = '10px'
+    el.style.height = '10px'
+    el.style.overflow = 'hidden'
+    el.style.zIndex = '-9999'
+    el.style.opacity = '0'
     el.innerHTML = html
+    document.body.appendChild(el)
     const text = el.innerText
-    el = null
+    document.body.removeChild(el)
     //
     if (
-        /(^|\s+)#+\s(.*)$/m.test(text)       // 标题
-        || /\*\*(.*)\*\*/m.test(text)        // 粗体
-        || /__(.*)__/m.test(text)            // 粗体
-        || /\*(.*)\*/m.test(text)            // 斜体
-        || /_(.*)_/m.test(text)              // 斜体
-        || /~~(.*)~~/m.test(text)            // 删除线
-        || /\[(.*?)\]\((.*?)\)/m.test(text)  // 链接
-        || /!\[(.*?)\]\((.*?)\)/m.test(text) // 图片
-        || /`(.*?)`/m.test(text)             // 行内代码
-        || /```([\s\S]*?)```/m.test(text)    // 代码块
+        /(^|\s+)#+\s(.*)$/m.test(text)              // 标题
+        || /(^|\s+)\*\*(.*)\*\*/m.test(text)        // 粗体
+        || /(^|\s+)__(.*)__/m.test(text)            // 粗体
+        || /(^|\s+)\*(.*)\*/m.test(text)            // 斜体
+        || /(^|\s+)_(.*)_/m.test(text)              // 斜体
+        || /(^|\s+)~~(.*)~~/m.test(text)            // 删除线
+        || /(^|\s+)\[(.*?)\]\((.*?)\)/m.test(text)  // 链接
+        || /(^|\s+)!\[(.*?)\]\((.*?)\)/m.test(text) // 图片
+        || /(^|\s+)`(.*?)`/m.test(text)             // 行内代码
+        || /(^|\s+)```([\s\S]*?)```/m.test(text)    // 代码块
     ) {
         return true
     }
