@@ -833,6 +833,72 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {get} api/dialog/msg/checked          16. 设置消息checked
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__checked
+     *
+     * @apiParam {Number} dialog_id         对话ID
+     * @apiParam {Number} msg_id            消息ID
+     * @apiParam {Number} index             li 位置
+     * @apiParam {Number} checked           标记、取消标记
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     * @apiSuccessExample {json} data:
+    {
+        "id": 43,
+        "msg": {
+            // ....
+        },
+    }
+     */
+    public function msg__checked()
+    {
+        $user = User::auth();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        $msg_id = intval(Request::input('msg_id'));
+        $index = intval(Request::input('index'));
+        $checked = intval(Request::input('checked'));
+        //
+        $dialogMsg = WebSocketDialogMsg::whereId($msg_id)->whereDialogId($dialog_id)->first();
+        if (empty($dialogMsg)) {
+            return Base::retError('消息不存在');
+        }
+        if ($dialogMsg->userid != $user->userid) {
+            return Base::retError('仅支持修改自己的消息');
+        }
+        if ($dialogMsg->type !== 'text') {
+            return Base::retError('仅支持文本消息');
+        }
+        //
+        $oldMsg = Base::json2array($dialogMsg->getRawOriginal('msg'));
+        $oldText = $oldMsg['text'] ?? '';
+        $newText = preg_replace_callback('/<li[^>]*>/i', function ($matches) use ($index, $checked) {
+            static $i = 0;
+            if ($i++ == $index) {
+                $checked = $checked ? 'checked' : 'unchecked';
+                return '<li data-list="' . $checked . '">';
+            }
+            return $matches[0];
+        }, $oldText);
+        //
+        $dialogMsg->updateInstance([
+            'msg' => array_merge($oldMsg, ['text' => $newText]),
+        ]);
+        $dialogMsg->save();
+        //
+        return Base::retSuccess('success', [
+            'id' => $dialogMsg->id,
+            'msg' => $dialogMsg->msg,
+        ]);
+    }
+
+    /**
      * @api {post} api/dialog/msg/stream          17. 通知成员监听消息
      *
      * @apiDescription 通知指定会员EventSource监听流动消息

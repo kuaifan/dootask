@@ -176,6 +176,22 @@
                             width: auto;
                             min-width: 1.2em;
                         }
+                        &[data-list=checked],
+                        &[data-list=unchecked] {
+                            > .ql-ui:before {
+                                font-family: "taskfont", "serif" !important;
+                                font-size: 14px;
+                                content: "\e6ed";
+                                font-weight: normal;
+                                transform: scale(1.12);
+                            }
+                        }
+
+                        &[data-list=unchecked] {
+                            > .ql-ui:before {
+                                content: "\e6f1";
+                            }
+                        }
                     }
                 }
 

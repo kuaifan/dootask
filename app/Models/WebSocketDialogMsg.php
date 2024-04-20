@@ -751,6 +751,15 @@ class WebSocketDialogMsg extends AbstractModel
                 $text = str_replace($str, "[:QUICK:{$quickKey}:{$quickLabel}:]", $text);
             }
         }
+        // 处理 li 标签
+        preg_match_all("/<li[^>]*?>/i", $text, $matchs);
+        foreach ($matchs[0] as $str) {
+            if (preg_match("/data-list=['\"](bullet|ordered|checked|unchecked)['\"]/i", $str, $match)) {
+                $text = str_replace($str, '<li data-list="' . $match[1] . '">', $text);
+            } else {
+                $text = str_replace($str, '<li>', $text);
+            }
+        }
         // 处理链接标签
         preg_match_all("/<a[^>]*?href=([\"'])(.*?)\\1[^>]*?>(.*?)<\/a>/is", $text, $matchs);
         foreach ($matchs[0] as $key => $str) {
@@ -785,7 +794,7 @@ class WebSocketDialogMsg extends AbstractModel
         }
         // 过滤标签
         $text = strip_tags($text, '<blockquote> <strong> <pre> <ol> <ul> <li> <em> <p> <s> <u> <a>');
-        $text = preg_replace_callback("/\<(blockquote|strong|pre|ol|ul|li|em|p|s|u)(.*?)\>/is", function (array $match) {    // 不用去除a标签，上面已经处理过了
+        $text = preg_replace_callback("/\<(blockquote|strong|pre|ol|ul|em|p|s|u)(.*?)\>/is", function (array $match) {    // 不用去除 li 和 a 标签，上面已经处理过了
             preg_match("/<[^>]*?style=([\"'])(.*?)\\1[^>]*?>/is", $match[0], $matchs);
             $attach = '';
             if ($matchs) {

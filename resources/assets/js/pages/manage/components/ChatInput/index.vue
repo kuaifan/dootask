@@ -273,7 +273,7 @@ export default {
         toolbar: {
             type: Array,
             default: () => {
-                return ['bold', 'strike', 'italic', 'underline', 'blockquote', {'list': 'ordered'}, {'list': 'bullet'}]
+                return ['bold', 'strike', 'italic', 'underline', 'blockquote', {'list': 'ordered'}, {'list': 'bullet'}, {'list': 'check'}]
             },
         },
         maxlength: {

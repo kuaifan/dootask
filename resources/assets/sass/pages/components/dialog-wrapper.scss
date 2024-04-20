@@ -830,6 +830,31 @@
                                             min-width: 1.2em;
                                             content: counter(list-0, decimal) '. ';
                                         }
+
+                                        &[data-list=bullet] {
+                                            &:before {
+                                                content: '\2022';
+                                                font-weight: 900;
+                                                text-align: center;
+                                            }
+                                        }
+
+                                        &[data-list=checked],
+                                        &[data-list=unchecked] {
+                                            &:before {
+                                                font-family: "taskfont", "serif" !important;
+                                                font-size: 14px;
+                                                content: "\e6ed";
+                                                font-weight: normal;
+                                                transform: scale(1.12);
+                                            }
+                                        }
+
+                                        &[data-list=unchecked] {
+                                            &:before {
+                                                content: "\e6f1";
+                                            }
+                                        }
                                     }
                                 }
 

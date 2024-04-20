@@ -3051,6 +3051,9 @@ export default {
             // 打开审批详情
             let approveElement = target;
             while (approveElement) {
+                if (approveElement.classList.contains('dialog-scroller')) {
+                    break;
+                }
                 if (approveElement.classList.contains('open-approve-details')) {
                     const dataId = approveElement.getAttribute("data-id")
                     if (window.innerWidth < 426) {
@@ -3061,15 +3064,13 @@ export default {
                             this.approveDetails = {id: dataId};
                         })
                     }
-                    break;
-                }
-                if (approveElement.classList.contains('dialog-item')) {
-                    break;
+                    return;
                 }
                 approveElement = approveElement.parentElement;
             }
 
             switch (target.nodeName) {
+                // 打开图片
                 case "IMG":
                     if (target.classList.contains('browse')) {
                         this.onViewPicture(target.currentSrc);
@@ -3080,6 +3081,7 @@ export default {
                     }
                     break;
 
+                // 打开任务、打开OKR
                 case "SPAN":
                     if (target.classList.contains('mention') && target.classList.contains('task')) {
                         this.$store.dispatch("openTask", $A.runNum(target.getAttribute("data-id")));
@@ -3089,6 +3091,48 @@ export default {
                     }
                     break;
 
+                // 更新待办列表
+                case "LI":
+                    const dataClass = target.getAttribute('data-list')
+                    if (['checked', 'unchecked'].includes(dataClass)) {
+                        let listElement = el.parentElement;
+                        while (listElement) {
+                            if (listElement.classList.contains('dialog-scroller')) {
+                                break;
+                            }
+                            if (listElement.classList.contains('dialog-view')) {
+                                const dataId = listElement.getAttribute("data-id")
+                                const dataIndex = [].indexOf.call(el.querySelectorAll(target.tagName), target);
+                                if (dataClass === 'checked') {
+                                    target.setAttribute('data-list', 'unchecked')
+                                } else {
+                                    target.setAttribute('data-list', 'checked')
+                                }
+                                this.$store.dispatch("setLoad", {
+                                    key: `msg-${dataId}`,
+                                    delay: 600
+                                })
+                                this.$store.dispatch("call", {
+                                    url: 'dialog/msg/checked',
+                                    data: {
+                                        dialog_id: this.dialogId,
+                                        msg_id: dataId,
+                                        index: dataIndex,
+                                        checked: dataClass === 'checked' ? 0 : 1
+                                    },
+                                }).then(({data}) => {
+                                    this.$store.dispatch("saveDialogMsg", data);
+                                }).catch(({msg}) => {
+                                    $A.modalError(msg);
+                                }).finally(_ => {
+                                    this.$store.dispatch("cancelLoad", `msg-${dataId}`)
+                                });
+                                break;
+                            }
+                            listElement = listElement.parentElement;
+                        }
+                    }
+                    break;
             }
         },
 
