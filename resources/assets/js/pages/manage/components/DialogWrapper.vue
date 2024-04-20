@@ -198,7 +198,7 @@
                 @on-error="onError"
                 @on-emoji="onEmoji"
                 @on-show-emoji-user="onShowEmojiUser">
-                <template #header v-if="headShowBox">
+                <template #header v-if="!isChildComponent">
                     <div class="dialog-item head-box">
                         <div v-if="loadIng > 0 || prevId > 0" class="loading" :class="{filled: allMsgs.length === 0}">
                             <span v-if="scrollOffset < 100"></span>
@@ -207,11 +207,6 @@
                     </div>
                 </template>
             </VirtualList>
-
-            <!-- 浮动加载中 -->
-            <div v-if="!headShowBox && loadIng > 0 && allMsgs.length === 0" class="dialog-float-loading">
-                <Loading/>
-            </div>
         </div>
 
         <!--底部输入-->
@@ -571,7 +566,7 @@
                 v-if="replyListShow"
                 :dialogId="dialogId"
                 :msgId="replyListId"
-                :headShowBox="false"
+                isChildComponent
                 class="inde-list">
                 <div slot="head" class="drawer-title">{{$L('回复消息')}}</div>
             </DialogWrapper>
@@ -596,15 +591,19 @@
                     <div class="drawer-title">{{$L('待办消息')}}</div>
                 </div>
                 <Scrollbar class-name="dialog-scroller">
-                    <DialogItem
-                        v-if="todoViewMsg"
-                        :source="todoViewMsg"
-                        @on-view-text="onViewText"
-                        @on-view-file="onViewFile"
-                        @on-down-file="onDownFile"
-                        @on-emoji="onEmoji"
-                        simpleView/>
-                    <Button class="original-button" icon="md-exit" type="text" :loading="todoViewPosLoad" @click="onPosTodo">{{ $L("回到原文") }}</Button>
+                    <template v-if="todoViewMsg">
+                        <DialogItem
+                            :source="todoViewMsg"
+                            @on-view-text="onViewText"
+                            @on-view-file="onViewFile"
+                            @on-down-file="onDownFile"
+                            @on-emoji="onEmoji"
+                            simpleView/>
+                        <Button class="original-button" icon="md-exit" type="text" :loading="todoViewPosLoad" @click="onPosTodo">{{ $L("回到原文") }}</Button>
+                    </template>
+                    <div v-else class="dialog-float-loading">
+                        <Loading/>
+                    </div>
                 </Scrollbar>
                 <div class="todo-button">
                     <Button type="primary" size="large" icon="md-checkbox-outline" @click="onDoneTodo" :loading="todoViewLoad" long>{{ $L("完成") }}</Button>
@@ -683,9 +682,10 @@ export default {
             type: String,
             default: ""
         },
-        headShowBox: {
+        // 当做子组件用，非正常聊天窗口
+        isChildComponent: {
             type: Boolean,
-            default: true
+            default: false
         },
         beforeBack: Function
     },
@@ -814,8 +814,10 @@ export default {
     beforeDestroy() {
         this.subMsgListener(true)
         //
-        this.$store.dispatch('forgetInDialog', this._uid)
-        this.$store.dispatch('closeDialog', this.dialogId)
+        if (!this.isChildComponent) {
+            this.$store.dispatch('forgetInDialog', this._uid)
+            this.$store.dispatch('closeDialog', this.dialogId)
+        }
         //
         if (this.msgSubscribe) {
             this.msgSubscribe.unsubscribe();
