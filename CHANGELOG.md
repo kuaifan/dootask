@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.36.84]
+
+### Bug Fixes
+
+- 修复关闭侧边回复窗口导致会话不正常的情况
+
+### Performance
+
+- 消息内容支持待办列表
+- 优化自动识别发送消息类型
+- 聊天输入框粘贴格式优化
+- 优化网络错误提示
+
 ## [0.36.78]
 
 ### Bug Fixes

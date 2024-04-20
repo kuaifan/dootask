@@ -20020,17 +20020,6 @@
         "id": "MD format kirim"
     },
     {
-        "key": "正常发送",
-        "zh": "",
-        "zh-CHT": "正常發送",
-        "en": "Normal transmission",
-        "ko": "정상적으로 보내기",
-        "ja": "正常に送ります",
-        "de": "Sende normal.",
-        "fr": "Envoyer comme normal",
-        "id": "Kirim normal"
-    },
-    {
         "key": "你确定要取消发送吗？",
         "zh": "",
         "zh-CHT": "你確定要取消發送嗎？",
@@ -20150,5 +20139,16 @@
         "de": "Konferenzraum zu ende.",
         "fr": "Clôture salle de Réunion",
         "id": "Ruang pertemuan selesai"
+    },
+    {
+        "key": "普通格式发送",
+        "zh": "",
+        "zh-CHT": "普通格式發送",
+        "en": "Plain format sending",
+        "ko": "일반 형식으로 보내기",
+        "ja": "通常のフォーマットで送ります。",
+        "de": "Senden in formaten",
+        "fr": "Envoyer en format normal",
+        "id": "Kirim format umum"
     }
 ]
