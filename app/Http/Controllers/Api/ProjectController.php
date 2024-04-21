@@ -1945,7 +1945,7 @@ class ProjectController extends AbstractController
                     $task->pushMsgVisibleAdd($data);
                 }
                 if ($param['visibility_appointor']) {
-                    $newVisibleUserIds = $param['visibility_appointor'] ?? [];
+                    $newVisibleUserIds = is_array($param['visibility_appointor']) ? $param['visibility_appointor'] : [];
                     $deleteUserIds = array_diff($visible, $newVisibleUserIds, $subUserids);
                     $addUserIds = array_diff($newVisibleUserIds, $visible);
                     $task->pushMsgVisibleUpdate($data, $deleteUserIds, $addUserIds);

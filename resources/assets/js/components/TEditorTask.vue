@@ -69,7 +69,7 @@ export default {
             content: this.value,
 
             plugins: [
-                'advlist autolink lists link image charmap print preview hr anchor pagebreak',
+                'advlist autolink lists checklist link image charmap print preview hr anchor pagebreak',
                 'searchreplace visualblocks visualchars code',
                 'insertdatetime media nonbreaking save table directionality',
                 'emoticons paste codesample',
@@ -81,16 +81,17 @@ export default {
                 autoresize_bottom_margin: 2,
                 min_height: 200,
                 max_height: 380,
-                contextmenu: 'bold italic underline forecolor backcolor | link | codesample | uploadImages imagePreview | preview screenload',
-                valid_elements: 'a[href|title|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|witdh|height],pre[class],code',
+                contextmenu: 'checklist | bold italic underline forecolor backcolor | link | uploadImages imagePreview | screenload',
+                valid_elements: 'a[href|title|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|witdh|height],pre[class],code,ol[class],ul[class],li[class]',
                 extended_valid_elements: 'a[href|title|target=_blank]',
                 toolbar: false
             },
             optionFull: {
                 menubar: 'file edit view',
-                valid_elements: 'a[href|title|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|witdh|height],pre[class],code',
+                removed_menuitems: 'preview,print',
+                valid_elements: 'a[href|title|target=_blank],em,strong/b,div[align],span[style],a,br,p,img[src|alt|witdh|height],pre[class],code,ol[class],ul[class],li[class]',
                 extended_valid_elements: 'a[href|title|target=_blank]',
-                toolbar: 'uploadImages | bold italic underline | forecolor backcolor'
+                toolbar: 'uploadImages | checklist | bold italic underline | forecolor backcolor'
             },
 
             operateStyles: {},

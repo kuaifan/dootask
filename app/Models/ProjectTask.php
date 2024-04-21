@@ -353,6 +353,25 @@ class ProjectTask extends AbstractModel
     }
 
     /**
+     * 生成描述
+     * @param $content
+     * @return string
+     */
+    public static function generateDesc($content)
+    {
+        $content = preg_replace_callback('/<ul class="tox-checklist">(.+?)<\/ul>/is', function ($matches) {
+            return preg_replace_callback('/<li([^>]*)>(.+?)<\/li>/is', function ($m) {
+                if (str_contains($m[1], 'tox-checklist--checked')) {
+                    return "<li{$m[1]}>[√]{$m[2]} </li>";
+                } else {
+                    return "<li{$m[1]}>[ ]{$m[2]} </li>";
+                }
+            }, $matches[0]);
+        }, $content);
+        return Base::cutStr(strip_tags($content), 100, 0, "...");
+    }
+
+    /**
      * 添加任务
      * @param $data
      * @return self
@@ -407,7 +426,7 @@ class ProjectTask extends AbstractModel
             'visibility' => $visibility ?: 1
         ]);
         if ($content) {
-            $task->desc = Base::getHtml($content, 100);
+            $task->desc = self::generateDesc($content);
         }
         // 标题
         if (empty($name)) {
@@ -901,7 +920,7 @@ class ProjectTask extends AbstractModel
                             'url' => ProjectTaskContent::saveContent($this->id, $data['content'])
                         ],
                     ])->save();
-                    $this->desc = Base::getHtml($data['content'], 100);
+                    $this->desc = self::generateDesc($data['content']);
                     $this->addLog("修改{任务}详细描述");
                     $updateMarking['is_update_content'] = true;
                 }

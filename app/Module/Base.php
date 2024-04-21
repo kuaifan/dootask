@@ -360,17 +360,6 @@ class Base
     }
 
     /**
-     * 去除html
-     * @param $text
-     * @param int $length
-     * @return string
-     */
-    public static function getHtml($text, $length = 250)
-    {
-        return Base::cutStr(strip_tags($text), $length, 0, "...");
-    }
-
-    /**
      *
      * 截取字符串
      * @param string $string 字符串
