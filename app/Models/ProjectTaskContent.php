@@ -34,7 +34,6 @@ use App\Exceptions\ApiException;
 class ProjectTaskContent extends AbstractModel
 {
     protected $hidden = [
-        'created_at',
         'updated_at',
     ];
 

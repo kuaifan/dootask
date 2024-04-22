@@ -180,6 +180,16 @@ export default {
                         vNode.push(h('span', {class:'change-value'}, now || '-'))
                     }
                 }
+                if ($A.isJson(record.link)) {
+                    let {title, url} = record.link
+                    vNode.push(h('span', ': '))
+                    vNode.push(h('a', {
+                        attrs: {
+                            href: $A.baseUrl(url),
+                            target: '_blank'
+                        }
+                    }, this.$L(title)))
+                }
                 if (record.userid) {
                     let userids = $A.isArray(record.userid) ? record.userid : [record.userid]
                     let userNode = [];

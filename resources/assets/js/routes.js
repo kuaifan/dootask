@@ -144,6 +144,11 @@ export default [
         component: () => import('./pages/single/file.vue'),
     },
     {
+        name: 'single-task-content',
+        path: '/single/task/content/:taskId',
+        component: () => import('./pages/single/taskContent.vue'),
+    },
+    {
         name: 'single-task',
         path: '/single/task/:taskId',
         component: () => import('./pages/single/task.vue'),
@@ -154,17 +159,17 @@ export default [
         component: () => import('./pages/single/apps.vue')
     },
     {
-        name: 'valid-email',
+        name: 'single-valid-email',
         path: '/single/valid/email',
         component: () => import('./pages/single/validEmail.vue')
     },
     {
-        name: 'report-edit',
+        name: 'single-report-edit',
         path: '/single/report/edit/:reportEditId',
         component: () => import('./pages/single/reportEdit.vue')
     },
     {
-        name: 'report-detail',
+        name: 'single-report-detail',
         path: '/single/report/detail/:reportDetailId',
         component: () => import('./pages/single/reportDetail.vue')
     },

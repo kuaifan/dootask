@@ -393,7 +393,7 @@ class ProjectTask extends AbstractModel
         $p_color    = $data['p_color'];
         $top        = intval($data['top']);
         $userid     = User::userid();
-        $visibility = isset($data['visibility_appoint']) ? $data['visibility_appoint'] : $data['visibility'];
+        $visibility = $data['visibility_appoint'] ?? $data['visibility'];
         $visibility_userids = $data['visibility_appointor'] ?: [];
         //
         if (ProjectTask::whereProjectId($project_id)
@@ -527,6 +527,8 @@ class ProjectTask extends AbstractModel
                 ProjectTaskContent::createInstance([
                     'project_id' => $task->project_id,
                     'task_id' => $task->id,
+                    'userid' => $task->userid,
+                    'desc' => $task->desc,
                     'content' => [
                         'url' => ProjectTaskContent::saveContent($task->id, $content)
                     ],
@@ -913,15 +915,25 @@ class ProjectTask extends AbstractModel
                 }
                 // 内容
                 if (Arr::exists($data, 'content')) {
+                    $logRecord = [];
+                    $logContent = ProjectTaskContent::whereTaskId($this->id)->orderByDesc('id')->first();
+                    if ($logContent) {
+                        $logRecord['link'] = [
+                            'title' => '查看历史',
+                            'url' => 'single/task/content/' . $this->id . '?history_id=' . $logContent->id,
+                        ];
+                    }
+                    $this->desc = self::generateDesc($data['content']);
                     ProjectTaskContent::createInstance([
                         'project_id' => $this->project_id,
                         'task_id' => $this->id,
+                        'userid' => User::userid(),
+                        'desc' => $this->desc,
                         'content' => [
                             'url' => ProjectTaskContent::saveContent($this->id, $data['content'])
                         ],
                     ])->save();
-                    $this->desc = self::generateDesc($data['content']);
-                    $this->addLog("修改{任务}详细描述");
+                    $this->addLog("修改{任务}详细描述", $logRecord);
                     $updateMarking['is_update_content'] = true;
                 }
                 // 优先级

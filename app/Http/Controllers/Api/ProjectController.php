@@ -32,6 +32,7 @@ use App\Models\ProjectTaskUser;
 use App\Models\WebSocketDialog;
 use App\Exceptions\ApiException;
 use App\Models\ProjectPermission;
+use App\Models\ProjectTaskContent;
 use App\Models\WebSocketDialogMsg;
 use App\Module\BillMultipleExport;
 use Illuminate\Support\Facades\DB;
@@ -1576,7 +1577,8 @@ class ProjectController extends AbstractController
      * @apiGroup project
      * @apiName task__content
      *
-     * @apiParam {Number} task_id            任务ID
+     * @apiParam {Number} task_id               任务ID
+     * @apiParam {Number} [history_id]          历史ID（获取历史版本）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1587,13 +1589,55 @@ class ProjectController extends AbstractController
         User::auth();
         //
         $task_id = intval(Request::input('task_id'));
+        $history_id = intval(Request::input('history_id'));
         //
         $task = ProjectTask::userTask($task_id, null);
         //
+        if ($history_id > 0) {
+            $taskContent = ProjectTaskContent::whereTaskId($task->id)->whereId($history_id)->first();
+            if (empty($taskContent)) {
+                return Base::retError('历史版本不存在');
+            }
+            return Base::retSuccess('success', array_merge($taskContent->getContentInfo(), [
+                'name' => $task->name,
+            ]));
+        }
         if (empty($task->content)) {
             return Base::retSuccess('success', json_decode('{}'));
         }
         return Base::retSuccess('success', $task->content->getContentInfo());
+    }
+
+    /**
+     * @api {get} api/project/task/content_history          25. 获取任务详细历史描述
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__content_history
+     *
+     * @apiParam {Number} task_id            任务ID
+     *
+     * @apiParam {Number} [page]            当前页，默认:1
+     * @apiParam {Number} [pagesize]        每页显示数量，默认:20，最大:100
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__content_history()
+    {
+        User::auth();
+        //
+        $task_id = intval(Request::input('task_id'));
+        //
+        $task = ProjectTask::userTask($task_id, null);
+        //
+        $data = ProjectTaskContent::select(['id', 'task_id', 'desc', 'userid', 'created_at'])
+            ->whereTaskId($task->id)
+            ->orderByDesc('id')
+            ->paginate(Base::getPaginate(100, 20));
+        return Base::retSuccess('success', $data);
     }
 
     /**

@@ -354,6 +354,7 @@ export default {
                         }
                     });
                     editor.ui.registry.addMenuItem('imagePreview', {
+                        icon: 'preview',
                         text: this.$L('预览图片'),
                         onAction: () => {
                             this.operateImg = null
@@ -394,6 +395,7 @@ export default {
                             }
                         });
                         editor.ui.registry.addMenuItem('screenload', {
+                            icon: 'fullscreen',
                             text: this.$L('退出全屏'),
                             onAction: () => {
                                 this.closeFull();
@@ -418,6 +420,7 @@ export default {
                             }
                         });
                         editor.ui.registry.addMenuItem('screenload', {
+                            icon: 'fullscreen',
                             text: this.$L('全屏'),
                             onAction: () => {
                                 this.onFull();

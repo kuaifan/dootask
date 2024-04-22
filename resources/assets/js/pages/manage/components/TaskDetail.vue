@@ -140,6 +140,7 @@
                     class="desc"
                     :value="taskContent"
                     :placeholder="$L('详细描述...')"
+                    @on-history="onHistory"
                     @on-blur="updateBlur('content')"/>
                 <Form class="items" label-position="left" label-width="auto" @submit.native.prevent>
                     <FormItem v-if="taskDetail.p_name">
@@ -496,6 +497,20 @@
                 <Button type="primary" @click="onDelay" :loading="delayTaskLoading">{{$L('确定')}}</Button>
             </div>
         </Modal>
+        <!--任务描述历史记录-->
+        <Modal
+            v-model="historyShow"
+            :title="$L('任务描述历史记录')"
+            :mask-closable="false"
+            :styles="{
+                width: '90%',
+                maxWidth: '700px'
+            }">
+            <TaskContentHistory v-if="historyShow" :task-id="taskDetail.id" :task-name="taskDetail.name"/>
+            <div slot="footer">
+                <Button @click="historyShow=false">{{$L('关闭')}}</Button>
+            </div>
+        </Modal>
     </div>
 </template>
 
@@ -511,10 +526,12 @@ import ChatInput from "./ChatInput";
 import UserSelect from "../../../components/UserSelect.vue";
 import TaskExistTips from "./TaskExistTips.vue";
 import TEditorTask from "../../../components/TEditorTask.vue";
+import TaskContentHistory from "./TaskContentHistory.vue";
 
 export default {
     name: "TaskDetail",
     components: {
+        TaskContentHistory,
         TEditorTask,
         UserSelect,
         TaskExistTips,
@@ -621,7 +638,9 @@ export default {
                 remark: [
                     { required: true, message: this.$L('请输入备注'), trigger: 'blur' },
                 ],
-            }
+            },
+
+            historyShow: false,
         }
     },
 
@@ -991,6 +1010,10 @@ export default {
                 }
             })
             return isModify;
+        },
+
+        onHistory() {
+            this.historyShow = true;
         },
 
         updateBlur(action, params) {
