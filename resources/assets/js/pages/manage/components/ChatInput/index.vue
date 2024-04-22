@@ -903,7 +903,7 @@ export default {
                     && $A.isArray(window.emoticonData)) {
                     // 显示快捷选择表情窗口
                     this.emojiQuickItems = [];
-                    const baseUrl = $A.apiUrl("../images/emoticon")
+                    const baseUrl = $A.mainUrl("images/emoticon")
                     window.emoticonData.some(data => {
                         let j = 0
                         data.list.some(item => {

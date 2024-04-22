@@ -243,7 +243,7 @@ export default {
                 || /meet\.google\.com/i.test(url)) {
                 return true;
             }
-            if ($A.getDomain(url) == $A.getDomain($A.apiUrl('../'))) {
+            if ($A.getDomain(url) == $A.getDomain($A.mainUrl())) {
                 try {
                     if (/^\/uploads\//i.test(new URL(url).pathname)) {
                         return true;

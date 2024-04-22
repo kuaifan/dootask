@@ -28,7 +28,7 @@ export default {
                 if (to.name == 'single-apps') {
                     this.$nextTick(() => {
                         this.loading = false;
-                        this.appUrl = import.meta.env.VITE_OKR_WEB_URL || $A.apiUrl("../apps/okr")
+                        this.appUrl = import.meta.env.VITE_OKR_WEB_URL || $A.mainUrl("apps/okr")
                         this.path = this.$route.query.path || '';
                     })
                 }else{

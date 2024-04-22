@@ -138,7 +138,7 @@ export default {
                 'js/emoji.all.js',
                 'js/emoticon.all.js',
             ]).then(_ => {
-                const baseUrl = $A.apiUrl("../images/emoticon")
+                const baseUrl = $A.mainUrl("images/emoticon")
                 if ($A.isArray(window.emojiData)) {
                     this.emojiData = window.emojiData.sort(function (a, b) {
                         return a.emoji_order - b.emoji_order;
@@ -228,7 +228,7 @@ export default {
             const container = this.$refs['chatEmojiMenuRef'];
             container?.addEventListener("wheel", (event) =>{
                 event.preventDefault();
-                container.scrollLeft += event.deltaY;
+                container.scrollLeft = container.scrollLeft + event.deltaY;
             });
         },
 
@@ -242,7 +242,6 @@ export default {
         onHandleScroll(event) {
             this.emojiMenuScrollLeft = event.target.scrollLeft;
         }
-        
     }
 }
 </script>

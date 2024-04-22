@@ -209,7 +209,7 @@ export default {
         onVersion() {
             const array = []
             this.getServerVersion().then(version => {
-                array.push(`${this.$L('服务器')}: ${$A.getDomain($A.apiUrl('../'))}`)
+                array.push(`${this.$L('服务器')}: ${$A.getDomain($A.mainUrl())}`)
                 array.push(`${this.$L('服务器版本')}: v${version}`)
                 array.push(`${this.$L('客户端版本')}: v${this.version}`)
                 $A.modalInfo({

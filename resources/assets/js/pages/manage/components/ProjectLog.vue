@@ -185,7 +185,7 @@ export default {
                     vNode.push(h('span', ': '))
                     vNode.push(h('a', {
                         attrs: {
-                            href: $A.baseUrl(url),
+                            href: $A.mainUrl(url),
                             target: '_blank'
                         }
                     }, this.$L(title)))

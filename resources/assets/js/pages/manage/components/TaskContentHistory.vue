@@ -168,7 +168,20 @@ export default {
                 case 'preview':
                     const title = (this.taskName || `ID: ${this.taskId}`) + ` [${row.created_at}]`;
                     const path = `/single/task/content/${this.taskId}?history_id=${row.id}&history_title=${title}`;
-                    if (this.$isEEUiApp) {
+                    if (this.$Electron) {
+                        this.$store.dispatch('openChildWindow', {
+                            name: `task-content-${this.taskId}-${row.id}`,
+                            path: path,
+                            force: false,
+                            config: {
+                                title: title,
+                                titleFixed: true,
+                                parent: null,
+                                width: Math.min(window.screen.availWidth, 1440),
+                                height: Math.min(window.screen.availHeight, 900),
+                            },
+                        });
+                    } else if (this.$isEEUiApp) {
                         this.$store.dispatch('openAppChildPage', {
                             pageType: 'app',
                             pageTitle: title,
@@ -180,7 +193,7 @@ export default {
                             },
                         })
                     } else {
-                        window.open($A.apiUrl(`..${path}`))
+                        window.open($A.mainUrl(path.substring(1)))
                     }
                     break;
             }

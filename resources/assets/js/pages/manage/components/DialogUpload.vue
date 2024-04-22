@@ -92,9 +92,9 @@ export default {
                 ext = 'ppt'
             }
             if (["ai", "avi", "bmp", "cdr", "doc", "eps", "gif", "mov", "mp3", "mp4", "pdf", "ppt", "pr", "psd", "rar", "svg", "tif", "txt", "xls", "zip"].includes(ext)) {
-                data.thumb = $A.apiUrl(`../images/ext/${ext}.png`)
+                data.thumb = $A.mainUrl(`images/ext/${ext}.png`)
             } else {
-                data.thumb = $A.apiUrl(`../images/ext/file.png`)
+                data.thumb = $A.mainUrl(`images/ext/file.png`)
             }
             this.fileMsgCaches[cacheName] = data
         },

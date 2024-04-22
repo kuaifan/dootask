@@ -307,7 +307,7 @@
         },
         computed: {
             url() {
-                return $A.apiUrl(`../minder/index.html?type=manual&readonly=${this.readOnly ? 'yes' : 'no'}`)
+                return $A.mainUrl(`minder/index.html?type=manual&readonly=${this.readOnly ? 'yes' : 'no'}`)
             }
         },
         watch: {

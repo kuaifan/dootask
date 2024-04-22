@@ -291,7 +291,7 @@ export default {
         },
 
         qrcodeUrl() {
-            return $A.apiUrl('../login?qrcode=' + this.qrcodeVal)
+            return $A.mainUrl('login?qrcode=' + this.qrcodeVal)
         },
     },
 

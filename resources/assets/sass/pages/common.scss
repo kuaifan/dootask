@@ -127,6 +127,13 @@ body {
             .ivu-table-cell {
                 padding-left: 12px;
                 padding-right: 12px;
+
+                .common-avatar {
+                    .avatar-name {
+                        width: 0;
+                        flex: 1;
+                    }
+                }
             }
 
             thead {

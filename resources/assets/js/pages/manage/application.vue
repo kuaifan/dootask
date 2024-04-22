@@ -248,31 +248,31 @@ export default {
                 {
                     value: "openai",
                     label: "ChatGPT",
-                    src: $A.apiUrl('../images/avatar/default_openai.png'),
+                    src: $A.mainUrl('images/avatar/default_openai.png'),
                     desc: this.$L('我是一个人工智能助手，为用户提供问题解答和指导。我没有具体的身份，只是一个程序。您有什么问题可以问我哦？')
                 },
                 {
                     value: "gemini",
                     label: "Gemini",
-                    src: $A.apiUrl('../images/avatar/default_gemini.png'),
+                    src: $A.mainUrl('images/avatar/default_gemini.png'),
                     desc: `${this.$L('我是由Google开发的生成式人工智能聊天机器人。')}${this.$L('它基于同名的Gemini系列大型语言模型。')}${this.$L('是应对OpenAI公司开发的ChatGPT聊天机器人的崛起而开发的。')}`
                 },
                 {
                     value: "claude",
                     label: "Claude",
-                    src: $A.apiUrl('../images/avatar/default_claude.png'),
+                    src: $A.mainUrl('images/avatar/default_claude.png'),
                     desc: this.$L('我是Claude,一个由Anthropic公司创造出来的AI助手机器人。我的工作是帮助人类,与人对话并给出解答。')
                 },
                 {
                     value: "wenxin",
                     label: "Wenxin",
-                    src: $A.apiUrl('../avatar/%E6%96%87%E5%BF%83.png'),
+                    src: $A.mainUrl('avatar/%E6%96%87%E5%BF%83.png'),
                     desc: this.$L('我是文心一言，英文名是ERNIE Bot。我能够与人对话互动，回答问题，协助创作，高效便捷地帮助人们获取信息、知识和灵感。')
                 },
                 {
                     value: "qianwen",
                     label: "Qianwen",
-                    src: $A.apiUrl('../avatar/%E9%80%9A%E4%B9%89%E5%8D%83%E9%97%AE.png'),
+                    src: $A.mainUrl('avatar/%E9%80%9A%E4%B9%89%E5%8D%83%E9%97%AE.png'),
                     desc: this.$L('我是达摩院自主研发的超大规模语言模型，能够回答问题、创作文字，还能表达观点、撰写代码。')
                 },
             ],
@@ -520,10 +520,10 @@ export default {
             const arr = (text + "").match(/^https*:\/\/(.*?)\/login\?qrcode=(.*?)$/)
             if (arr) {
                 // 扫码登录
-                if ($A.getDomain(text) != $A.getDomain($A.apiUrl('../'))) {
+                if ($A.getDomain(text) != $A.getDomain($A.mainUrl())) {
                     let content = this.$L('请确认扫码的服务器与当前服务器一致')
                     content += `<br/>${this.$L('二维码服务器')}: ${$A.getDomain(text)}`
-                    content += `<br/>${this.$L('当前服务器')}: ${$A.getDomain($A.apiUrl('../'))}`
+                    content += `<br/>${this.$L('当前服务器')}: ${$A.getDomain($A.mainUrl())}`
                     $A.modalWarning({
                         language: false,
                         title: this.$L('扫码登录'),

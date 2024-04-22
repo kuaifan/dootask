@@ -156,7 +156,7 @@ export default {
                 }
                 this.loading = true;
                 this.loadError = false;
-                $A.loadScript($A.apiUrl("../office/web-apps/apps/api/documents/api.js")).then(_ => {
+                $A.loadScript($A.mainUrl("office/web-apps/apps/api/documents/api.js")).then(_ => {
                     if (!this.documentKey) {
                         this.handleClose();
                         return

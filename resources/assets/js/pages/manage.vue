@@ -472,7 +472,7 @@ export default {
 
         // okr路由
         okrUrl() {
-            return import.meta.env.VITE_OKR_WEB_URL || $A.apiUrl("../apps/okr")
+            return import.meta.env.VITE_OKR_WEB_URL || $A.mainUrl("apps/okr")
         },
 
         /**

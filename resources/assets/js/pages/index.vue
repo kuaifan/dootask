@@ -54,9 +54,9 @@ export default {
 
         goIndex() {
             if (languageName === "zh" || languageName === "zh-CHT") {
-                window.location.href = $A.apiUrl("../site/zh/index.html")
+                window.location.href = $A.mainUrl("site/zh/index.html")
             } else {
-                window.location.href = $A.apiUrl("../site/en/index.html")
+                window.location.href = $A.mainUrl("site/en/index.html")
             }
         },
 

@@ -43,6 +43,25 @@ import {MarkdownPreview} from "../store/markdown";
         },
 
         /**
+         * 主页地址
+         * @param str
+         * @returns {string}
+         */
+        mainUrl(str = null) {
+            if (!str) {
+                str = ""
+            }
+            if (str.substring(0, 2) === "//" ||
+                str.substring(0, 7) === "http://" ||
+                str.substring(0, 8) === "https://" ||
+                str.substring(0, 6) === "ftp://" ||
+                str.substring(0, 1) === "/") {
+                return str;
+            }
+            return $A.apiUrl(`../${str}`)
+        },
+
+        /**
          * 服务地址
          * @param str
          * @returns {string}
@@ -73,7 +92,7 @@ import {MarkdownPreview} from "../store/markdown";
          * @returns {*}
          */
         onlinePreviewUrl(name, key) {
-            return $A.apiUrl(`../online/preview/${name}?key=${key}&version=${window.systemInfo.version}&__=${new Date().getTime()}`)
+            return $A.mainUrl(`online/preview/${name}?key=${key}&version=${window.systemInfo.version}&__=${new Date().getTime()}`)
         },
 
         /**
@@ -759,7 +778,7 @@ import {MarkdownPreview} from "../store/markdown";
             text = text.trim().replace(/(\n\x20*){3,}/g, "\n\n");
             text = text.replace(/&nbsp;/g, ' ')
             text = text.replace(/<p><\/p>/g, '<p><br/></p>')
-            text = text.replace(/\{\{RemoteURL\}\}/g, $A.apiUrl('../'))
+            text = text.replace(/\{\{RemoteURL\}\}/g, $A.mainUrl())
             text = text.replace(atReg, `<span class="mention me" data-id="${userid}">`)
             // 处理内容连接
             if (/https*:\/\//.test(text)) {
@@ -801,7 +820,7 @@ import {MarkdownPreview} from "../store/markdown";
          * @returns {*[]}
          */
         getTextImagesInfo(text) {
-            const baseUrl = $A.apiUrl('../');
+            const baseUrl = $A.mainUrl();
             const array = text.match(new RegExp(`<img[^>]*?>`, "g"));
             const list = [];
             if (array) {
@@ -890,7 +909,7 @@ import {MarkdownPreview} from "../store/markdown";
          * @returns {boolean}
          */
         isDooServer() {
-            const u = $A.getDomain($A.apiUrl('../'))
+            const u = $A.getDomain($A.mainUrl())
             return /dootask\.com$/.test(u)
                 || /hitosea\.com$/.test(u)
                 || /^127\.0\.0\.1/.test(u)

@@ -48,7 +48,7 @@ export default {
     watch: {
         approvalSettingShow(val) {
             if (val) {
-                this.iframeSrc = $A.apiUrl(`../approve/#/?name=${this.name}&token=${store.userToken}&lang=${languageName}`)
+                this.iframeSrc = $A.mainUrl(`approve/#/?name=${this.name}&token=${store.userToken}&lang=${languageName}`)
             }
         }
     },

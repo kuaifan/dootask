@@ -1503,7 +1503,7 @@ export default {
             if (this.dialogData.extra_quote_type === 'update') {
                 // 修改
                 if (textType === "text") {
-                    textBody = textBody.replace(new RegExp(`src=(["'])${$A.apiUrl('../')}`, "g"), "src=$1{{RemoteURL}}")
+                    textBody = textBody.replace(new RegExp(`src=(["'])${$A.mainUrl()}`, "g"), "src=$1{{RemoteURL}}")
                 }
                 const update_id = this.quoteId
                 this.$store.dispatch("setLoad", {
@@ -3180,7 +3180,7 @@ export default {
                     },
                 })
             } else {
-                window.open($A.apiUrl(`..${path}`))
+                window.open($A.mainUrl(path.substring(1)))
             }
         },
 

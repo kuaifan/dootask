@@ -366,7 +366,7 @@
 
             browseStyle(thumb) {
                 if (!/https*:\/\//.test(thumb) && !/^\//.test(thumb)) {
-                    thumb = $A.apiUrl(`../${thumb}`);
+                    thumb = $A.mainUrl(thumb);
                 }
                 return {
                     'background-image': `url("${thumb}")`

@@ -24,7 +24,7 @@ export default {
                 src.substring(0, 1) === "/") {
                 return src;
             }
-            return $A.apiUrl(`../${src}`)
+            return $A.mainUrl(src)
         }
     }
 }

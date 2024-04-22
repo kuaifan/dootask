@@ -1162,7 +1162,7 @@ export default {
                     },
                 });
             } else {
-                window.open($A.apiUrl(`..${path}`))
+                window.open($A.mainUrl(path.substring(1)))
             }
             this.browseFile(0);
         },

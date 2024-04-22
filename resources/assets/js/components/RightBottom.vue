@@ -154,7 +154,7 @@ export default {
                     if (this.compareVersion(this.apiVersion, '0.19.0') === -1) {
                         $A.modalWarning({
                             title: '温馨提示',
-                            message: `服务器（${$A.getDomain($A.apiUrl('../'))}）接口版本过低，部分功能可能无法正常使用。`,
+                            message: `服务器（${$A.getDomain($A.mainUrl())}）接口版本过低，部分功能可能无法正常使用。`,
                         });
                     }
                     if (this.$Electron) {

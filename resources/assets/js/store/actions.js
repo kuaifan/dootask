@@ -644,13 +644,13 @@ export default {
             $A.eeuiAppSendMessage({
                 action: 'userChatList',
                 token: state.userToken,
-                url: $A.apiUrl('../api/users/share/list') + `?token=${state.userToken}`
+                url: $A.mainUrl('api/users/share/list') + `?token=${state.userToken}`
             });
             $A.eeuiAppSendMessage({
                 action:"userUploadUrl",
                 token: state.userToken,
-                dirUrl: $A.apiUrl('../api/file/content/upload') + `?token=${state.userToken}`,
-                chatUrl: $A.apiUrl('../api/dialog/msg/sendfiles') + `?token=${state.userToken}`,
+                dirUrl: $A.mainUrl('api/file/content/upload') + `?token=${state.userToken}`,
+                chatUrl: $A.mainUrl('api/dialog/msg/sendfiles') + `?token=${state.userToken}`,
             });
             //
             resolve()
@@ -991,7 +991,7 @@ export default {
      * @param url
      */
     openWebTabWindow({dispatch}, url) {
-        if ($A.getDomain(url) != $A.getDomain($A.apiUrl('../'))) {
+        if ($A.getDomain(url) != $A.getDomain($A.mainUrl())) {
             $A.Electron.sendMessage('openWebTabWindow', {url})
             return
         }
@@ -3298,7 +3298,7 @@ export default {
      */
     streamDialogMsg({state, dispatch}, streamUrl) {
         if (!/^https*:\/\//i.test(streamUrl)) {
-            streamUrl = $A.apiUrl(`..${streamUrl}`)
+            streamUrl = $A.mainUrl(streamUrl.substring(1))
         }
         if (state.dialogSseList.find(item => item.streamUrl == streamUrl)) {
             return
@@ -3488,7 +3488,7 @@ export default {
             return;
         }
         //
-        let url = $A.apiUrl('../ws');
+        let url = $A.mainUrl('ws');
         url = url.replace("https://", "wss://");
         url = url.replace("http://", "ws://");
         url += `?action=web&token=${state.userToken}&language=${languageName}`;

@@ -117,7 +117,7 @@
                     <TimelineItem :key="key" :color="item.is_finished ? 'green' : '#ccc'" v-if="item.type == 'notifier' && item._show">
                         <p class="timeline-title">{{$L('抄送')}}</p>
                         <div class="timeline-body">
-                            <Avatar :src="$A.apiUrl('../images/avatar/default_approval.png')" size="38"/>
+                            <Avatar :src="$A.mainUrl('images/avatar/default_approval.png')" size="38"/>
                             <div class="approve-process-left">
                                 <p class="approve-process-name">{{$L('系统')}}</p>
                                 <p class="approve-process-desc">{{$L('自动抄送')}}
@@ -134,7 +134,7 @@
                     <TimelineItem class="finish" :key="key" :color="item.is_finished ? 'green' : '#ccc'" v-if="item.aprover_type == 'end'">
                         <p class="timeline-title">{{$L('结束')}}</p>
                         <div class="timeline-body">
-                            <Avatar :src="$A.apiUrl('../images/avatar/default_approval.png')" size="38"/>
+                            <Avatar :src="$A.mainUrl('images/avatar/default_approval.png')" size="38"/>
                             <div class="approve-process-left">
                                 <p class="approve-process-name">{{$L('系统')}}</p>
                                 <p class="approve-process-desc"> {{  datas.is_finished ? $L('已结束') : $L('未结束')  }}</p>
@@ -476,7 +476,7 @@ export default {
         },
         // 打开图片
         onViewPicture(currentUrl) {
-            this.$store.dispatch("previewImage", $A.apiUrl('../' + currentUrl))
+            this.$store.dispatch("previewImage", $A.mainUrl(currentUrl))
         }
     }
 }

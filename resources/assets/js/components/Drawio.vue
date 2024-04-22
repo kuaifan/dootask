@@ -81,7 +81,7 @@ export default {
         if (this.$Electron) {
             this.url = $A.originUrl(`drawio/webapp/index.html${query}`);
         } else {
-            this.url = $A.apiUrl(`../drawio/webapp/${query}`);
+            this.url = $A.mainUrl(`drawio/webapp/${query}`);
         }
     },
     mounted() {
