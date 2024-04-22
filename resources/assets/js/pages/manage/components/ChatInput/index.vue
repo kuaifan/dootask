@@ -637,7 +637,7 @@ export default {
             // Options
             this._options = Object.assign({
                 theme: 'bubble',
-                formats: ['bold', 'strike', 'italic', 'underline', 'blockquote', 'list', 'link', 'image'],
+                formats: ['bold', 'strike', 'italic', 'underline', 'blockquote', 'list', 'link', 'image', 'mention'],
                 readOnly: false,
                 placeholder: this.placeholder,
                 modules: {
