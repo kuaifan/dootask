@@ -195,7 +195,7 @@ class IndexController extends InvokeController
                 $publishPath = "uploads/desktop/{$publishVersion}/";
                 $res = Base::upload([
                     "file" => Request::file('file'),
-                    "type" => 'desktop',
+                    "type" => 'publish',
                     "path" => $publishPath,
                     "fileName" => true
                 ]);
@@ -239,29 +239,6 @@ class IndexController extends InvokeController
                 ];
             }
             //
-            $path = "uploads/android";
-            $dirPath = public_path($path);
-            $lists = Base::readDir($dirPath);
-            $apkFile = null;
-            foreach ($lists as $file) {
-                if (!str_ends_with($file, '.apk')) {
-                    continue;
-                }
-                if ($apkFile && strtotime($apkFile['time']) > filemtime($file)) {
-                    continue;
-                }
-                $fileName = Base::leftDelete($file, $dirPath);
-                $fileSize = filesize($file);
-                $apkFile = [
-                    'name' => substr($fileName, 1),
-                    'time' => date("Y-m-d H:i:s", filemtime($file)),
-                    'size' => $fileSize > 0 ? Base::readableBytes($fileSize) : 0,
-                    'url' => Base::fillUrl($path . $fileName),
-                ];
-            }
-            if ($apkFile) {
-                $files = array_merge([$apkFile], $files);
-            }
             return view('desktop', ['version' => $name, 'files' => $files]);
         }
         // 下载

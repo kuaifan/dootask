@@ -2241,8 +2241,8 @@ class Base
                 case 'md':
                     $type = ['md'];
                     break;
-                case 'desktop':
-                    $type = ['yml', 'yaml', 'dmg', 'pkg', 'blockmap', 'zip', 'exe', 'msi'];
+                case 'publish':
+                    $type = ['yml', 'yaml', 'dmg', 'pkg', 'blockmap', 'zip', 'exe', 'msi', 'apk'];
                     break;
                 case 'more':
                     $type = []; // 不限制上传文件类型

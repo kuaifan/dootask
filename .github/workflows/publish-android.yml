@@ -1,0 +1,55 @@
+name: Publish Android
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  Build:
+    name: Build Android
+    runs-on: ubuntu-latest
+    environment: build
+
+    if: startsWith(github.event.ref, 'refs/tags/v')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 20.x
+
+      - name: Build Js
+        run: |
+          git submodule init
+          git submodule update --remote "resources/mobile"
+          ./cmd appbuild
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+
+      - name: Build Android
+        run: |
+          cd resources/mobile/platforms/android/eeuiApp
+          chmod +x ./gradlew
+          ./gradlew assembleRelease --quiet
+
+      - name: Upload File
+        env:
+          DP_KEY: ${{ secrets.DP_KEY }}
+        run: |
+          node ./electron/build.js android-upload
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        with:
+          files: |
+            resources/mobile/platforms/android/eeuiApp/app/build/outputs/apk/release/*.apk

@@ -1,4 +1,3 @@
-const os = require('os')
 const fs = require('fs');
 const fse = require('fs-extra');
 const path = require('path')
@@ -109,6 +108,78 @@ function axiosAutoTry(data) {
 }
 
 /**
+ * 上传app应用
+ * @param url
+ */
+function androidUpload(url) {
+    if (!DP_KEY) {
+        console.error("Missing Deploy Key or GitHub Token and Repository!");
+        process.exit()
+    }
+    const releaseDir = path.resolve(__dirname, "../resources/mobile/platforms/android/eeuiApp/app/build/outputs/apk/release");
+    if (!fs.existsSync(releaseDir)) {
+        console.error("Release not found");
+        process.exit()
+    }
+    fs.readdir(releaseDir, async (err, files) => {
+        if (err) {
+            console.warn(err)
+        } else {
+            const uploadOras = {}
+            for (const filename of files) {
+                const localFile = path.join(releaseDir, filename)
+                if (/\.apk$/.test(filename) && fs.existsSync(localFile)) {
+                    const fileStat = fs.statSync(localFile)
+                    if (fileStat.isFile()) {
+                        uploadOras[filename] = ora(`Upload [0%] ${filename}`).start()
+                        const formData = new FormData()
+                        formData.append("file", fs.createReadStream(localFile));
+                        formData.append("file_num", 1);
+                        await axiosAutoTry({
+                            axios: {
+                                method: 'post',
+                                url: url,
+                                data: formData,
+                                headers: {
+                                    'Publish-Version': config.version,
+                                    'Publish-Key': DP_KEY,
+                                    'Content-Type': 'multipart/form-data;boundary=' + formData.getBoundary(),
+                                },
+                                onUploadProgress: progress => {
+                                    const complete = Math.min(99, Math.round(progress.loaded / progress.total * 100 | 0)) + '%'
+                                    uploadOras[filename].text = `Upload [${complete}] ${filename}`
+                                },
+                            },
+                            onRetry: _ => {
+                                uploadOras[filename].warn(`Upload [retry] ${filename}`)
+                                uploadOras[filename] = ora(`Upload [0%] ${filename}`).start()
+                            },
+                            retryNumber: 3
+                        }).then(({status, data}) => {
+                            if (status !== 200) {
+                                uploadOras[filename].fail(`Upload [fail:${status}] ${filename}`)
+                                return
+                            }
+                            if (!utils.isJson(data)) {
+                                uploadOras[filename].fail(`Upload [fail:not json] ${filename}`)
+                                return
+                            }
+                            if (data.ret !== 1) {
+                                uploadOras[filename].fail(`Upload [fail:ret ${data.ret}] ${filename}`)
+                                return
+                            }
+                            uploadOras[filename].succeed(`Upload [100%] ${filename}`)
+                        }).catch(_ => {
+                            uploadOras[filename].fail(`Upload [fail] ${filename}`)
+                        })
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
  * 通用发布
  * @param url
  * @param key
@@ -169,7 +240,19 @@ function genericPublish({url, key, version, output}) {
                                 uploadOras[filename] = ora(`Upload [0%] ${filename}`).start()
                             },
                             retryNumber: 3
-                        }).then(_ => {
+                        }).then(({status, data}) => {
+                            if (status !== 200) {
+                                uploadOras[filename].fail(`Upload [fail:${status}] ${filename}`)
+                                return
+                            }
+                            if (!utils.isJson(data)) {
+                                uploadOras[filename].fail(`Upload [fail:not json] ${filename}`)
+                                return
+                            }
+                            if (data.ret !== 1) {
+                                uploadOras[filename].fail(`Upload [fail:ret ${data.ret}] ${filename}`)
+                                return
+                            }
                             uploadOras[filename].succeed(`Upload [100%] ${filename}`)
                         }).catch(_ => {
                             uploadOras[filename].fail(`Upload [fail] ${filename}`)
@@ -341,6 +424,12 @@ if (["dev"].includes(argv[2])) {
             notarize: false,
         }
     }, false, false)
+} else if (["android-upload"].includes(argv[2])) {
+    config.app.forEach(({publish}) => {
+        if (publish.provider === 'generic') {
+            androidUpload(publish.url)
+        }
+    })
 } else if (["all", "win", "mac"].includes(argv[2])) {
     // 自动编译
     platforms.filter(p => {
