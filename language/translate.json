@@ -20150,5 +20150,60 @@
         "de": "Senden in formaten",
         "fr": "Envoyer en format normal",
         "id": "Kirim format umum"
+    },
+    {
+        "key": "查看历史",
+        "zh": "",
+        "zh-CHT": "查看歷史",
+        "en": "View history",
+        "ko": "과거 기록 보기",
+        "ja": "歴史を調べます",
+        "de": "Sie untersuchen die geschichte.",
+        "fr": "Voir l’histoire",
+        "id": "Lihat riwayat"
+    },
+    {
+        "key": "历史记录",
+        "zh": "",
+        "zh-CHT": "歷史記錄",
+        "en": "Historical record",
+        "ko": "역사 기록",
+        "ja": "歴史的記録です",
+        "de": "Die geschichte.",
+        "fr": "Un record historique",
+        "id": "Catatan sejarah"
+    },
+    {
+        "key": "任务描述历史记录",
+        "zh": "",
+        "zh-CHT": "任務描述歷史記錄",
+        "en": "Task Description Historical record",
+        "ko": "작업 설명 과거 기록",
+        "ja": "任務記述履歴書です",
+        "de": "Mission beschreibt historische aufzeichnungen",
+        "fr": "Description des tâches historique",
+        "id": "Catatan sejarah deskripsi tugas"
+    },
+    {
+        "key": "描述",
+        "zh": "",
+        "zh-CHT": "描述",
+        "en": "Desc",
+        "ko": "Desc",
+        "ja": "Desc",
+        "de": "Desc",
+        "fr": "Desc",
+        "id": "Desc"
+    },
+    {
+        "key": "数据加载失败",
+        "zh": "",
+        "zh-CHT": "數據加載失敗",
+        "en": "Data loading failure",
+        "ko": "데이터 불러오기 실패",
+        "ja": "データ読み込み失敗です",
+        "de": "Datenproblem nicht geladen.",
+        "fr": "Échec du chargement des données",
+        "id": "Pemuatan data gagal"
     }
 ]

@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.36.91]
+
+### Bug Fixes
+
+- 上一版本导致的无法@
+
+### Performance
+
+- 优化代码
+- 优化查看文件历史
+- 支持查看任务描述修改历史
+- 任务描述支持清单
+
 ## [0.36.84]
 
 ### Bug Fixes
