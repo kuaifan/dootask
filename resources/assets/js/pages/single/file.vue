@@ -46,11 +46,13 @@ export default {
             return this.windowPortrait || this.code || this.historyId > 0 || (this.fileInfo && this.fileInfo.permission === 0)
         },
         pageName() {
-            let name = this.fileInfo ? this.fileInfo.name : '';
-            if (this.$route.query && this.$route.query.history_at) {
-                name += ` [${this.$route.query.history_at}]`
+            if (this.$route.query && this.$route.query.history_title) {
+                return this.$route.query.history_title
             }
-            return name;
+            if (this.fileInfo) {
+                return `${this.fileInfo.name} [${this.fileInfo.created_at}]`;
+            }
+            return '';
         }
     },
     watch: {

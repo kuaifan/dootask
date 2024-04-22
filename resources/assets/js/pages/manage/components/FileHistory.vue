@@ -178,7 +178,8 @@ export default {
                     break;
 
                 case 'preview':
-                    const path = `/single/file/${this.fileId}?history_id=${row.id}&history_at=${row.created_at}`;
+                    const title = $A.getFileName(this.file) + ` [${row.created_at}]`;
+                    const path = `/single/file/${this.fileId}?history_id=${row.id}&history_title=${title}`;
                     if (this.$Electron) {
                         this.$store.dispatch('openChildWindow', {
                             name: `file-${this.fileId}-${row.id}`,
@@ -186,7 +187,7 @@ export default {
                             userAgent: "/hideenOfficeTitle/",
                             force: false,
                             config: {
-                                title: $A.getFileName(this.file) + ` [${row.created_at}]`,
+                                title,
                                 titleFixed: true,
                                 parent: null,
                                 width: Math.min(window.screen.availWidth, 1440),
@@ -199,7 +200,7 @@ export default {
                     } else if (this.$isEEUiApp) {
                         this.$store.dispatch('openAppChildPage', {
                             pageType: 'app',
-                            pageTitle: $A.getFileName(this.file) + ` [${row.created_at}]`,
+                            pageTitle: title,
                             url: 'web.js',
                             params: {
                                 titleFixed: true,

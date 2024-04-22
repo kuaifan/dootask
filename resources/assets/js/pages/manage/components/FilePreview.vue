@@ -11,17 +11,6 @@
                         <Icon v-else type="ios-refresh" @click="getContent" />
                     </div>
                 </div>
-                <!-- <Dropdown
-                    v-if="file.type=='mind'"
-                    trigger="click"
-                    class="header-hint"
-                    @on-click="exportMenu">
-                    <a href="javascript:void(0)">{{$L('导出')}}<Icon type="ios-arrow-down"></Icon></a>
-                    <DropdownMenu slot="list">
-                        <DropdownItem name="png">{{$L('导出PNG图片')}}</DropdownItem>
-                        <DropdownItem name="pdf">{{$L('导出PDF文件')}}</DropdownItem>
-                    </DropdownMenu>
-                </Dropdown> -->
             </div>
             <div class="content-body">
                 <template v-if="file.type=='document'">
