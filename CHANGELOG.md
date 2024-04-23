@@ -2,7 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.36.94]
+## [0.36.97]
+
+### Bug Fixes
+
+- 任务描述保存图片失败
 
 ### Performance
 
