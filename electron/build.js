@@ -316,15 +316,34 @@ function startBuild(data) {
     //
     if (data.id === 'app') {
         const eeuiDir = path.resolve(__dirname, "../resources/mobile");
-        const eeuiCli = "kuaifan/eeui-cli:0.0.1"
+        const eeuiRun = `--rm -v ${eeuiDir}:/work -w /work kuaifan/eeui-cli:0.0.1`
         const publicDir = path.resolve(__dirname, "../resources/mobile/src/public");
         fse.removeSync(publicDir)
         fse.copySync(electronDir, publicDir)
         if (argv[3] === "setting") {
-            child_process.execSync(`docker run -it --rm -v ${eeuiDir}:/work -w /work ${eeuiCli} eeui setting`, {stdio: "inherit", cwd: "resources/mobile"});
+            child_process.execSync(`docker run -it ${eeuiRun} eeui setting`, {stdio: "inherit", cwd: "resources/mobile"});
         }
-        if (['setting', 'build'].includes(argv[3])) {
-            child_process.execSync(`docker run -it --rm -v ${eeuiDir}:/work -w /work ${eeuiCli} eeui build --simple`, {stdio: "inherit", cwd: "resources/mobile"});
+        if (argv[3] === "publish") {
+            const gradleFile = path.resolve(eeuiDir, "platforms/android/eeuiApp/build.gradle")
+            if (fs.existsSync(gradleFile)) {
+                let gradleResult = fs.readFileSync(gradleFile, 'utf8')
+                gradleResult = gradleResult.replace(/versionCode\s*=\s*(.+?)(\n|$)/, `versionCode = ${config.codeVerson}\n`)
+                gradleResult = gradleResult.replace(/versionName\s*=\s*(.+?)(\n|$)/, `versionName = "${config.version}"\n`)
+                fs.writeFileSync(gradleFile, gradleResult, 'utf8')
+            }
+            const xcconfigFile = path.resolve(eeuiDir, "platforms/ios/eeuiApp/Config/IdentityConfig.xcconfig")
+            if (fs.existsSync(xcconfigFile)) {
+                let xcconfigResult = fs.readFileSync(xcconfigFile, 'utf8')
+                xcconfigResult = xcconfigResult.replace(/BASE_CODE_VERSON\s*=\s*(.+?)(\n|$)/, `BASE_CODE_VERSON = ${config.codeVerson}\n`)
+                xcconfigResult = xcconfigResult.replace(/BASE_SHORT_VERSON\s*=\s*(.+?)(\n|$)/, `BASE_SHORT_VERSON = ${config.version}\n`)
+                fs.writeFileSync(xcconfigFile, xcconfigResult, 'utf8')
+            }
+        }
+        if (['setting', 'build', 'publish'].includes(argv[3])) {
+            if (!fs.existsSync(path.resolve(eeuiDir, "node_modules"))) {
+                child_process.execSync(`docker run ${eeuiRun} npm install`, {stdio: "inherit", cwd: "resources/mobile"});
+            }
+            child_process.execSync(`docker run ${eeuiRun} eeui build --simple`, {stdio: "inherit", cwd: "resources/mobile"});
         } else {
             [
                 path.resolve(publicDir, "../../platforms/ios/eeuiApp/bundlejs/eeui/public"),

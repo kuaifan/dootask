@@ -25,7 +25,7 @@ jobs:
         run: |
           git submodule init
           git submodule update --remote "resources/mobile"
-          ./cmd appbuild
+          ./cmd appbuild publish
 
       - name: Set up JDK 11
         uses: actions/setup-java@v3

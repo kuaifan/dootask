@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.36.94]
+
+### Performance
+
+- 转发消息至群聊时支持@留言
+- 自动发布Android
+
 ## [0.36.91]
 
 ### Bug Fixes
