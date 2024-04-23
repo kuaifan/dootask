@@ -483,7 +483,23 @@
                         </Scrollbar>
                     </div>
                     <div class="leave-message">
-                        <Input type="textarea" :autosize="{minRows: 1,maxRows: 3}" v-model="forwardMessage" :placeholder="$L('留言')" clearable />
+                        <ChatInput
+                            v-if="forwardDialogId > 0"
+                            v-model="forwardMessage"
+                            :dialog-id="forwardDialogId"
+                            :emoji-bottom="windowPortrait"
+                            :maxlength="200000"
+                            :placeholder="$L('留言')"
+                            disabled-record
+                            simple-mode/>
+                        <Input
+                            v-else
+                            type="textarea"
+                            :autosize="{minRows: 1,maxRows: 3}"
+                            v-model="forwardMessage"
+                            :maxlength="200000"
+                            :placeholder="$L('留言')"
+                            clearable/>
                     </div>
                 </div>
             </div>
@@ -731,6 +747,7 @@ export default {
             forwardhow: false,
             forwardData: [],
             forwardLoad: 0,
+            forwardDialogId: 0,
             forwardMessage: '',
             forwardSource: true,
 
@@ -2598,6 +2615,13 @@ export default {
                 if (this.forwardData.length === 0) {
                     $A.messageError("请选择转发对话或成员");
                 } else {
+                    this.forwardDialogId = 0;
+                    if (this.forwardData.length === 1) {
+                        const {type, userid} = this.forwardData[0];
+                        if (type === "group" && /^d:/.test(userid)) {
+                            this.forwardDialogId = parseInt(userid.replace(/^d:/, ''));
+                        }
+                    }
                     this.forwardMessage = '';
                     this.forwardSource = true;
                     this.forwardhow = true;

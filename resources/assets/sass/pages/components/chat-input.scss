@@ -43,6 +43,20 @@
         }
     }
 
+    &.simple-mode {
+        .chat-input-wrapper {
+            border: 1px solid #e8e8e8;
+            border-radius: 4px;
+            .ql-container {
+                width: 100%;
+            }
+            .chat-space,
+            .chat-toolbar {
+                display: none;
+            }
+        }
+    }
+
     &.show-menu,
     &.show-more,
     &.show-emoji {

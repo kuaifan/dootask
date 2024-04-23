@@ -410,7 +410,10 @@ class WebSocketDialogMsg extends AbstractModel
                         $already[] = $dialogid;
                     }
                     if ($leaveMessage) {
-                        self::sendMsg(null, $dialogid, 'text', ['text' => $leaveMessage], $user->userid);
+                        $res = self::sendMsg(null, $dialogid, 'text', ['text' => $leaveMessage], $user->userid);
+                        if (Base::isSuccess($res)) {
+                            $msgs[] = $res['data'];
+                        }
                     }
                 }
             }
@@ -429,7 +432,10 @@ class WebSocketDialogMsg extends AbstractModel
                             $msgs[] = $res['data'];
                         }
                         if ($leaveMessage) {
-                            self::sendMsg(null, $dialog->id, 'text', ['text' => $leaveMessage], $user->userid);
+                            $res = self::sendMsg(null, $dialog->id, 'text', ['text' => $leaveMessage], $user->userid);
+                            if (Base::isSuccess($res)) {
+                                $msgs[] = $res['data'];
+                            }
                         }
                     }
                 }

@@ -266,6 +266,10 @@ export default {
             type: Boolean,
             default: true
         },
+        simpleMode: {
+            type: Boolean,
+            default: false
+        },
         options: {
             type: Object,
             default: () => ({})
@@ -420,6 +424,9 @@ export default {
                     array.push('record-ready');
                 }
             }
+            if (this.simpleMode) {
+                array.push('simple-mode');
+            }
             if (this.showMenu) {
                 array.push('show-menu');
             }
@@ -496,7 +503,9 @@ export default {
                     this.quill.setText('')
                 }
             }
-            this.$store.dispatch("saveDialogDraft", {id: this.dialogId, extra_draft_content: this.filterInvalidLine(val)})
+            if (!this.simpleMode) {
+                this.$store.dispatch("saveDialogDraft", {id: this.dialogId, extra_draft_content: this.filterInvalidLine(val)})
+            }
         },
 
         // Watch disabled change
@@ -642,7 +651,7 @@ export default {
                 placeholder: this.placeholder,
                 modules: {
                     toolbar: this.$isEEUiApp || this.windowTouch ? false : this.toolbar,
-                    keyboard: {
+                    keyboard: this.simpleMode ? {} : {
                         bindings: {
                             'short enter': {
                                 key: "Enter",
@@ -965,13 +974,13 @@ export default {
 
         loadInputDraft() {
             const {extra_draft_content} = this.dialogData;
-            if (extra_draft_content) {
-                this.pasteClean = false
-                this.$emit('input', extra_draft_content)
-                this.$nextTick(_ => this.pasteClean = true)
-            } else {
+            if (this.simpleMode || !extra_draft_content) {
                 this.$emit('input', '')
+                return
             }
+            this.pasteClean = false
+            this.$emit('input', extra_draft_content)
+            this.$nextTick(_ => this.pasteClean = true)
         },
 
         onClickEditor() {
