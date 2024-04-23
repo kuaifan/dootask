@@ -495,7 +495,7 @@ export default {
 
         transferChange(visible) {
             if (!visible && this.editorT != null) {
-                this.content = this.editorT.getBody().innerHTML;
+                this.content = this.editorT.getContent();
                 this.$emit('input', this.content);
                 this.editorT.destroy();
                 this.editorT = null;
@@ -547,13 +547,13 @@ export default {
             if (this.getEditor() === null) {
                 return "";
             }
-            return this.getEditor().getBody().innerHTML;
+            return this.getEditor().getContent();
         },
 
         setContent(content) {
             if (this.getEditor() === null) {
                 this.content = content;
-            } else if (content != this.getEditor().getBody().innerHTML) {
+            } else if (content != this.getEditor().getContent()) {
                 this.getEditor().setContent(content);
             }
         },
