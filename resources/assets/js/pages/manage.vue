@@ -281,6 +281,14 @@
             <ProjectManagement v-if="allProjectShow"/>
         </DrawerOverlay>
 
+        <!--举报投诉管理-->
+        <DrawerOverlay
+            v-model="reportShow"
+            placement="right"
+            :size="1200">
+            <ComplaintManagement v-if="reportShow"/>
+        </DrawerOverlay>
+
         <!--查看归档项目-->
         <DrawerOverlay
             v-model="archivedProjectShow"
@@ -325,6 +333,7 @@ import ApproveExport from "./manage/components/ApproveExport";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
 import MicroApps from "../components/MicroApps.vue";
+import ComplaintManagement from "./manage/components/ComplaintManagement";
 import {MarkdownPreview} from "../store/markdown";
 
 export default {
@@ -344,7 +353,8 @@ export default {
         ProjectManagement,
         TeamManagement,
         ProjectArchived,
-        MicroApps
+        MicroApps,
+        ComplaintManagement
     },
     directives: {longpress},
     data() {
@@ -399,6 +409,8 @@ export default {
             operateItem: {},
 
             needStartHome: false,
+
+            reportShow: false,
         }
     },
 
@@ -572,6 +584,7 @@ export default {
                     {path: 'archivedProject', name: '已归档的项目'},
 
                     {path: 'team', name: '团队管理', divided: true},
+                    {path: 'report', name: '举报管理', divided: true},
                 ])
             } else {
                 array.push(...[
@@ -768,6 +781,9 @@ export default {
                     this.goForward({
                         path:'/manage/apps/' + ( path == 'okrManage' ? '/#/list' : '/#/analysis'),
                     });
+                    return;
+                case 'report':
+                    this.reportShow = true;
                     return;
                 case 'logout':
                     $A.modalConfirm({

@@ -8,8 +8,9 @@ use App\Http\Controllers\Api\DialogController;
 use App\Http\Controllers\Api\PublicController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SystemController;
-use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\ApproveController;
+use App\Http\Controllers\Api\ProjectController;
+use App\Http\Controllers\Api\ComplaintController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,6 +52,9 @@ Route::prefix('api')->middleware(['webapi'])->group(function () {
     // 审批
     Route::any('approve/{method}',                  ApproveController::class);
     Route::any('approve/{method}/{action}',         ApproveController::class);
+    // 投诉
+    Route::any('complaint/{method}',                  ComplaintController::class);
+    Route::any('complaint/{method}/{action}',         ComplaintController::class);
 });
 
 /**

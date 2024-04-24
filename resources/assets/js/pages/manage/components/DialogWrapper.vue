@@ -80,6 +80,9 @@
                             <EDropdownItem command="searchMsg">
                                 <div>{{$L('搜索消息')}}</div>
                             </EDropdownItem>
+                            <EDropdownItem v-if="dialogData.bot == 0" command="report">
+                                <div>{{$L('举报投诉')}}</div>
+                            </EDropdownItem>
                             <template v-if="dialogData.type === 'user'">
                                 <EDropdownItem v-if="isManageBot" command="modifyNormal">
                                     <div>{{$L('修改资料')}}</div>
@@ -556,6 +559,14 @@
             <DialogGroupInfo v-if="groupInfoShow" :dialogId="dialogId" @on-close="groupInfoShow=false"/>
         </DrawerOverlay>
 
+        <!--举报投诉-->
+        <DrawerOverlay
+            v-model="reportShow"
+            placement="right"
+            :size="500">
+            <DialogComplaint v-if="reportShow" :dialogId="dialogId" @on-close="reportShow=false"/>
+        </DrawerOverlay>
+
         <!--群转让-->
         <Modal
             v-model="groupTransferShow"
@@ -660,6 +671,7 @@ import UserSelect from "../../../components/UserSelect.vue";
 import UserAvatarTip from "../../../components/UserAvatar/tip.vue";
 import DialogGroupWordChain from "./DialogGroupWordChain";
 import DialogGroupVote from "./DialogGroupVote";
+import DialogComplaint from "./DialogComplaint";
 import touchclick from "../../../directives/touchclick";
 
 export default {
@@ -678,6 +690,7 @@ export default {
         ApproveDetails,
         DialogGroupWordChain,
         DialogGroupVote,
+        DialogComplaint,
     },
     directives: {touchclick},
 
@@ -754,6 +767,7 @@ export default {
             openId: 0,
             dialogDrag: false,
             groupInfoShow: false,
+            reportShow: false,
 
             groupTransferShow: false,
             groupTransferLoad: 0,
@@ -2466,6 +2480,10 @@ export default {
 
                 case "exit":
                     this.onExitGroup()
+                    break;
+
+                case "report":
+                    this.reportShow = true
                     break;
             }
         },

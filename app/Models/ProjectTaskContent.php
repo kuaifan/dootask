@@ -11,6 +11,8 @@ use App\Exceptions\ApiException;
  * @property int $id
  * @property int|null $project_id 项目ID
  * @property int|null $task_id 任务ID
+ * @property int|null $userid 用户ID
+ * @property string|null $desc 内容描述
  * @property string|null $content 内容
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -25,10 +27,12 @@ use App\Exceptions\ApiException;
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskContent whereContent($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskContent whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskContent whereDesc($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskContent whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskContent whereProjectId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskContent whereTaskId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskContent whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskContent whereUserid($value)
  * @mixin \Eloquent
  */
 class ProjectTaskContent extends AbstractModel
