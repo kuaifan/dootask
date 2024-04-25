@@ -1474,6 +1474,17 @@
                 }
             }
 
+            &.self {
+                .dialog-view{
+                    .open-approve-details {
+                        .ivu-btn-grey {
+                            background-color: #efefef;
+                            border-color: #f3f3f3;
+                        }
+                    }
+                }
+            }
+
             .dialog-action {
                 align-self: flex-start;
                 display: flex;

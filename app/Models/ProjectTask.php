@@ -1667,7 +1667,9 @@ class ProjectTask extends AbstractModel
         if (empty($receivers)) {
             return;
         }
-
+        //
+        $userid = User::userid();
+        //
         $botUser = User::botGetOrCreate('task-alert');
         if (empty($botUser)) {
             return;
@@ -1699,7 +1701,7 @@ class ProjectTask extends AbstractModel
                 ProjectTaskPushLog::createInstance($data)->save();
                 WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', [
                     'text' => str_replace("您的任务", $replace, $text) . $suffix
-                ], $botUser->userid);
+                ], in_array($type, [0, 3]) ? $userid : $botUser->userid);
             }
         }
     }
