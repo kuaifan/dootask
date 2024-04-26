@@ -21,6 +21,11 @@
         }
     }
 
+    .group-complaint-warp {
+        height: calc(100% - 107px);
+        overflow: auto;
+    }
+
     .group-complaint-list {
         margin: 0 24px 0;
         .ivu-list-item {
