@@ -15,9 +15,13 @@ class SettingsTableSeeder extends Seeder
     public function run()
     {
 
-
-        if (\DB::table('settings')->where('name', 'system')->count() > 0) {
-            return;
+        $system = \DB::table('settings')->where('name', 'system')->first();
+        if ($system) {
+            $system = json_decode($system->setting, true);
+            if (isset($system['reg'])) {
+                return;
+            }
+            \DB::table('settings')->delete();
         }
 
         \DB::table('settings')->insert(array (
