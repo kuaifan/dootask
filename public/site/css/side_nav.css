@@ -1,0 +1,142 @@
+@font-face {
+  font-family: "official.iconfont";
+  src: url("../../css/fonts/side_nav_font.woff");
+  font-weight: normal;
+  font-style: normal
+}
+
+.side_nav{
+  position: fixed;
+  right: 20px;
+  bottom: 135px;
+  z-index: 100;
+}
+.side_nav .side_toolbars{
+  width: 48px;
+  padding: 4px;
+  box-sizing: border-box;
+  border-radius: 60px;
+  background-color: var(--pop-bg-color);
+  color: var(--text-color);
+  box-shadow: var(--pop-box-shadow);
+}
+.side_nav .side_toolbars .side_toolbar_item{
+  display: flex;
+  width: 40px;
+  height: 40px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+}
+.side_nav .side_toolbars .side_toolbar_item .toolbar_font{
+  font-size: 24px;
+  height: 24px;
+  color: var(--text-color);
+}
+.side_nav .side_toolbars .side_toolbar_item .toolbar_font::after{
+  display: inline-block;
+  font-family: "official.iconfont";
+  font-style: normal;
+  font-weight: normal;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+}
+.side_nav .side_toolbars .side_toolbar_item .font_phone::after{
+  content: "\EA25";
+}
+.side_nav .side_toolbars .side_toolbar_item .font_qrcode::after{
+  content: "\EA28";
+}
+.side_nav .side_toolbars .side_toolbar_item .toolbar_tooltip{
+  position: absolute;
+  right: 40px;
+  top: 2px;
+  transform-origin: right center;
+  white-space: nowrap;
+  width: fit-content;
+  display: none;
+  background-color: var(--code-bg-color);
+  color: #fff;
+  margin-right: 12px;
+  border-radius: 4px;
+  padding: 10px;
+  z-index: 2000;
+  font-size: 12px;
+  line-height: 1.2;
+  min-width: 10px;
+  word-wrap: break-word;
+  text-align: center;
+}
+.side_nav .side_toolbars .side_toolbar_item .toolbar_tooltip .toolbar_whtasapp{
+  width: 120px;
+  height: 120px;
+  background-image: url('../img/side_nav_whatsapp.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+} 
+.side_nav .side_toolbars .side_toolbar_item .toolbar_tooltip .toolbar_qrcode{
+  width: 120px;
+  height: 120px;
+  background-image: url('../img/side_nav_wechat.png');
+  background-repeat: no-repeat;
+  background-size: cover;
+} 
+.side_nav .side_toolbars .side_toolbar_item .toolbar_tooltip .tooltip_arrow{
+  position: absolute;
+  display: block;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  right: -5px;
+  top: 11px;
+  border-width: 6px;
+  border-right-width: 0;
+  border-left-color: var(--code-bg-color);
+}
+.side_nav .side_to_top{
+  width: 48px;
+  height: 48px;
+  background: #fff;
+  margin-top: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  display: none;
+  background-color: var(--pop-bg-color);
+  color: var(--text-color);
+  box-shadow: var(--pop-box-shadow);
+}
+.side_nav .side_to_top .side_to_top_wrapper{
+  height: 40px;
+  width: 40px;
+  padding: 4px;
+  display: flex;
+  box-sizing: border-box;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.side_nav .side_to_top .side_to_top_wrapper svg{
+  transform: rotate(180deg);
+  fill: var(--text-color);
+  height: 24px;
+  width: 24px;
+}
+.font_whatsapp svg{
+  fill: var(--text-color);
+}
+.side_nav .side_toolbars .side_toolbar_item:hover,.side_nav .side_to_top .side_to_top_wrapper:hover{
+  background-color: var(--bg-hover-color);
+}
+.side_nav .side_toolbars .side_toolbar_item_whtasapp:hover .toolbar_tooltip_qq,
+.side_nav .side_toolbars .side_toolbar_item_phone:hover .toolbar_tooltip_phone,
+.side_nav .side_toolbars .side_toolbar_item_qrcode:hover .toolbar_tooltip_qrcode{
+  display: block;
+}

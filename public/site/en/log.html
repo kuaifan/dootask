@@ -289,6 +289,8 @@
         </div>
       </div>
     </footer>
+    <!-- 侧边导航 -->
+    <div id="nav_wrap"></div>
   </div>
 </body>
 <script src="../js/common.js"></script>
@@ -527,5 +529,31 @@ function scrollHandler(){
         }
     }
 }
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('./sideNav.html')
+      .then(response => response.text())
+        .then(data => {
+            document.getElementById('nav_wrap').innerHTML = data;
+            // 回到顶部
+            const back_top_button = document.getElementById('back_to_top');
+            window.addEventListener('scroll', () => {
+              if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                back_top_button.style.display = 'block';
+              } else {
+                back_top_button.style.display = 'none';
+              }
+            });
+            back_top_button.addEventListener('click', () => {
+              window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+              });
+            });
+            // 检查页面加载时的滚动位置以决定是否显示回到顶部按钮
+            if (document.documentElement.scrollTop > 20) {
+              back_top_button.style.display = 'block'; // 显示回到顶部按钮
+            }
+        });
+  });
 </script>
 </html>
