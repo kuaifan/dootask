@@ -243,6 +243,13 @@
         .ql-bubble {
             .ql-tooltip {
                 z-index: 1;
+                button {
+                    &.ql-active {
+                        position: relative;
+                        background: #3d3d3d;
+                        border-radius: 6px;
+                    }
+                }
                 .ql-formats {
                     display: flex;
                     align-items: center;

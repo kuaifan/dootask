@@ -277,7 +277,7 @@ export default {
         toolbar: {
             type: Array,
             default: () => {
-                return ['bold', 'strike', 'italic', 'underline', 'blockquote', {'list': 'ordered'}, {'list': 'bullet'}, {'list': 'check'}]
+                return ['bold', 'strike', 'italic', 'underline', 'blockquote', 'link', {'list': 'ordered'}, {'list': 'bullet'}, {'list': 'check'}]
             },
         },
         maxlength: {
@@ -646,6 +646,7 @@ export default {
             // Options
             this._options = Object.assign({
                 theme: 'bubble',
+                bubbleTooltipTop: true,
                 formats: ['bold', 'strike', 'italic', 'underline', 'blockquote', 'list', 'link', 'image', 'mention'],
                 readOnly: false,
                 placeholder: this.placeholder,
