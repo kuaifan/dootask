@@ -124,6 +124,9 @@ export default {
             if (task.complete_at && chackCompleted === true) {
                 return false;
             }
+            if (task.start_at && $A.Date(task.start_at) > todayNow) {
+                return false;
+            }
             return task.owner == 1;
         }
         let array = state.cacheTasks.filter(task => filterTask(task));
