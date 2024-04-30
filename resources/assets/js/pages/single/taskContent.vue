@@ -3,7 +3,7 @@
         <PageTitle :title="pageName"/>
         <Loading v-if="loadIng > 0"/>
         <div v-else-if="info" class="file-preview">
-            <div class="edit-header">
+            <div v-if="showHeader" class="edit-header">
                 <div class="header-title">
                     <div class="title-name">{{pageName}}</div>
                     <Tag color="default">{{$L('只读')}}</Tag>
@@ -28,6 +28,7 @@ export default {
         return {
             loadIng: 0,
             info: null,
+            showHeader: !$A.isEEUiApp,
         }
     },
     mounted() {

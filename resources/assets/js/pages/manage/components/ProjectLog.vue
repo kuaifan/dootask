@@ -181,12 +181,43 @@ export default {
                     }
                 }
                 if ($A.isJson(record.link)) {
-                    let {title, url} = record.link
+                    const {title, url} = record.link
                     vNode.push(h('span', ': '))
                     vNode.push(h('a', {
                         attrs: {
-                            href: $A.mainUrl(url),
+                            href: url,
                             target: '_blank'
+                        },
+                        on: {
+                            click: e => {
+                                e.preventDefault()
+                                const path = `/${url}`
+                                if (this.$Electron) {
+                                    this.$store.dispatch('openChildWindow', {
+                                        name: `project-log-${record.id}`,
+                                        path: path,
+                                        force: false,
+                                        config: {
+                                            title: this.$L(title),
+                                            parent: null,
+                                            width: Math.min(window.screen.availWidth, 1440),
+                                            height: Math.min(window.screen.availHeight, 900),
+                                        },
+                                    });
+                                } else if (this.$isEEUiApp) {
+                                    this.$store.dispatch('openAppChildPage', {
+                                        pageType: 'app',
+                                        pageTitle: this.$L(title),
+                                        url: 'web.js',
+                                        params: {
+                                            allowAccess: true,
+                                            url: $A.rightDelete(window.location.href, window.location.hash) + `#${path}`
+                                        },
+                                    })
+                                } else {
+                                    window.open($A.mainUrl(path.substring(1)))
+                                }
+                            }
                         }
                     }, this.$L(title)))
                 }
