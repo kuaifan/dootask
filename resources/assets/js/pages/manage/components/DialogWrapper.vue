@@ -3128,6 +3128,10 @@ export default {
                             }
                             if (listElement.classList.contains('dialog-view')) {
                                 const dataId = listElement.getAttribute("data-id")
+                                const dataMsg = this.allMsgs.find(item => item.id == dataId) || {}
+                                if (dataMsg.userid != this.userId) {
+                                    return;
+                                }
                                 const dataIndex = [].indexOf.call(el.querySelectorAll(target.tagName), target);
                                 if (dataClass === 'checked') {
                                     target.setAttribute('data-list', 'unchecked')
@@ -3149,7 +3153,12 @@ export default {
                                 }).then(({data}) => {
                                     this.$store.dispatch("saveDialogMsg", data);
                                 }).catch(({msg}) => {
-                                    $A.modalError(msg);
+                                    if (dataClass === 'checked') {
+                                        target.setAttribute('data-list', 'checked')
+                                    } else {
+                                        target.setAttribute('data-list', 'unchecked')
+                                    }
+                                    $A.modalError(msg)
                                 }).finally(_ => {
                                     this.$store.dispatch("cancelLoad", `msg-${dataId}`)
                                 });
