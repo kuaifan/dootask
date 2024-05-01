@@ -8,7 +8,7 @@ on:
 jobs:
   Build:
     name: Build Mac
-    runs-on: macos-latest
+    runs-on: macos-12
     environment: build
 
     if: startsWith(github.event.ref, 'refs/tags/v')

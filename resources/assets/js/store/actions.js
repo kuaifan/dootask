@@ -3454,7 +3454,7 @@ export default {
         if (old) {
             // 删除已存在
             old.pause()
-            old.src = null
+            old.src = ""
             old.parentNode.removeChild(old);
         }
         if (!src || src === state.audioPlaying) {
@@ -3488,7 +3488,7 @@ export default {
         }
         if (old.src === src || src === true) {
             old.pause()
-            old.src = null
+            old.src = ""
             old.parentNode.removeChild(old);
             state.audioPlaying = null
         }

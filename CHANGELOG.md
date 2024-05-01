@@ -2,15 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.37.7]
+## [0.37.17]
 
 ### Bug Fixes
 
+- 修复官网帮助中心英文页面头部导航缺失问题
 - 安装系统部分情况没有数据
+- 修复举报样式错乱
 
 ### Features
 
 - 语音消息未阅读红点提示
+- 修复移动任务中选完成进行移动没有设置完成时间的bug
+- 新增右侧底部导航
+- 添加举报功能
 
 ### Performance
 
@@ -21,6 +26,8 @@ All notable changes to this project will be documented in this file.
 - 优化聊天工具栏样式
 - 优化更新聊天中的待办
 - 优化图标功能提示
+- 审批和任务通知优化
+- 优化按钮没有对应类型，控制台报错
 
 ## [0.36.97]
 

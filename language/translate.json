@@ -20436,5 +20436,49 @@
         "de": "Bitte geben sie einen detaillierten hinweis ein, warum sie ihre probleme lösen sollen",
         "fr": "S’il vous plaît entrer la raison de remplir les détails pour nous permettre de mieux vous aider à résoudre le problème",
         "id": "Silakan ketik alasan kami mengisi laporan lengkap untuk memberikan bantuan yang lebih baik dalam memecahkan masalah anda"
+    },
+    {
+        "key": "请输入举报原因",
+        "zh": "",
+        "zh-CHT": "請輸入舉報原因",
+        "en": "Please enter the reason for reporting",
+        "ko": "제보 이유를 입력해 주세요",
+        "ja": "通報原因を入力していただきます。",
+        "de": "Bitte geben sie den grund ein",
+        "fr": "Veuillez saisir la raison du signalement",
+        "id": "Silakan masukkan alasan pelaporan"
+    },
+    {
+        "key": "举报原因",
+        "zh": "",
+        "zh-CHT": "舉報原因",
+        "en": "Reason for reporting",
+        "ko": "고발 원인",
+        "ja": "原因を通報します",
+        "de": "Meld dich, warum.",
+        "fr": "Raison du signalement",
+        "id": "Melaporkan alasan"
+    },
+    {
+        "key": "举报图",
+        "zh": "",
+        "zh-CHT": "舉報圖",
+        "en": "Report chart",
+        "ko": "고발도",
+        "ja": "通報図です",
+        "de": "Ein screenshot.",
+        "fr": "Diagramme des signalements",
+        "id": "Foto laporan"
+    },
+    {
+        "key": "举报投诉",
+        "zh": "",
+        "zh-CHT": "舉報投訴",
+        "en": "Report and complaint",
+        "ko": "고발 고발하다",
+        "ja": "クレームを通報します。",
+        "de": "Beschwerden wurden gesichtet",
+        "fr": "Signaler une plainte",
+        "id": "Laporkan keluhan"
     }
 ]
