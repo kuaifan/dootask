@@ -951,23 +951,27 @@ export default {
         },
 
         scrollIntoActive() {
+            if (this.windowPortrait || this.windowScrollY > 0) {
+                return;
+            }
             this.$nextTick(() => {
-                if (this.windowLandscape && this.$refs.list) {
-                    const active = this.$refs.list.querySelector(".active")
-                    if (active) {
-                        $A.scrollIntoViewIfNeeded(active);
-                    } else {
-                        const dialog = this.cacheDialogs.find(({id}) => id == this.dialogId)
-                        if (dialog && this.dialogActive) {
-                            this.dialogActive = '';
-                            this.$nextTick(() => {
-                                const active = this.$refs.list.querySelector(".active")
-                                if (active) {
-                                    $A.scrollIntoViewIfNeeded(active);
-                                }
-                            });
+                if (!this.$refs.list) {
+                    return;
+                }
+                const active = this.$refs.list.querySelector(".active")
+                if (active) {
+                    $A.scrollIntoViewIfNeeded(active);
+                    return;
+                }
+                const dialog = this.cacheDialogs.find(({id}) => id == this.dialogId)
+                if (dialog && this.dialogActive) {
+                    this.dialogActive = '';
+                    this.$nextTick(() => {
+                        const active = this.$refs.list.querySelector(".active")
+                        if (active) {
+                            $A.scrollIntoViewIfNeeded(active);
                         }
-                    }
+                    });
                 }
             })
         },
