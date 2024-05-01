@@ -10,7 +10,6 @@ use App\Module\Base;
 use App\Tasks\PushTask;
 use App\Exceptions\ApiException;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
-use App\Models\ProjectTaskVisibilityUser;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
