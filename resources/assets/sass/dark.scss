@@ -261,6 +261,21 @@ body.dark-mode-reverse {
                                         }
                                     }
                                 }
+
+                                .open-approve-details {
+                                    .ivu-btn-primary {
+                                        background-color: #d34521;
+                                        border-color: #d34521;
+                                    }
+                                    .ivu-btn-grey {
+                                        background-color: #9e9e9e;
+                                        border-color: #969696;
+                                        &:hover {
+                                            background-color: #959595;
+                                            border-color: #959595;
+                                        }
+                                    }
+                                }
                             }
 
                             .dialog-emoji {

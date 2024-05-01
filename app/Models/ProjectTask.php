@@ -1666,7 +1666,9 @@ class ProjectTask extends AbstractModel
         if (empty($receivers)) {
             return;
         }
-
+        //
+        $userid = User::userid();
+        //
         $botUser = User::botGetOrCreate('task-alert');
         if (empty($botUser)) {
             return;
@@ -1698,7 +1700,7 @@ class ProjectTask extends AbstractModel
                 ProjectTaskPushLog::createInstance($data)->save();
                 WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', [
                     'text' => str_replace("您的任务", $replace, $text) . $suffix
-                ], $botUser->userid);
+                ], in_array($type, [0, 3]) ? $userid : $botUser->userid);
             }
         }
     }
@@ -1714,41 +1716,48 @@ class ProjectTask extends AbstractModel
      */
     public function moveTask(int $projectId, int $columnId,int $flowItemId = 0,array $owner = [], array $assist = [])
     {
-        AbstractModel::transaction(function () use($projectId, $columnId, $flowItemId, $owner, $assist) {
+        AbstractModel::transaction(function () use ($projectId, $columnId, $flowItemId, $owner, $assist) {
             $newTaskUser =  array_merge($owner, $assist);
             //
             $this->project_id = $projectId;
             $this->column_id = $columnId;
-            $this->flow_item_id = $flowItemId;
             // 任务内容
-            if($this->content){
+            if ($this->content) {
                 $this->content->project_id = $projectId;
                 $this->content->save();
             }
             // 任务文件
-            foreach ($this->taskFile as $taskFile){
+            foreach ($this->taskFile as $taskFile) {
                 $taskFile->project_id = $projectId;
                 $taskFile->save();
             }
             // 任务标签
-            foreach ($this->taskTag as $taskTag){
+            foreach ($this->taskTag as $taskTag) {
                 $taskTag->project_id = $projectId;
                 $taskTag->save();
             }
             // 任务用户
-            $this->updateTask(['owner' => $owner]);
-            $this->updateTask(['assist' => $assist]);
-            foreach ($this->taskUser as $taskUser){
-                if( in_array($taskUser->id, $newTaskUser) ){
+            $this->updateTask([
+                'owner' => $owner,
+                'assist' => $assist
+            ]);
+            foreach ($this->taskUser as $taskUser) {
+                if (in_array($taskUser->id, $newTaskUser)) {
                     $taskUser->project_id = $projectId;
                     $taskUser->save();
                 }
             }
             //
-            if($flowItemId){
+            if ($flowItemId) {
                 $flowItem = projectFlowItem::whereProjectId($projectId)->whereId($flowItemId)->first();
+                $this->flow_item_id = $flowItemId;
                 $this->flow_item_name = $flowItem->status . "|" . $flowItem->name;
-            }else{
+                if ($flowItem->status == 'end') {
+                    $this->completeTask(Carbon::now(), $flowItem->name);
+                } else {
+                    $this->completeTask(null);
+                }
+            } else {
                 $this->flow_item_name = '';
             }
             //

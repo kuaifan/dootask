@@ -119,7 +119,7 @@
                             </Checkbox>
                         </CheckboxGroup>
                         <div class="btn-row">
-                            <Button v-if="(voteData[msgData.msg.uuid] || []).length == 0" type="grey" disabled>{{$L("请选择后投票")}}</Button>
+                            <Button v-if="(voteData[msgData.msg.uuid] || []).length == 0" class="ivu-btn-grey" disabled>{{$L("请选择后投票")}}</Button>
                             <Button v-else type="warning" :loading="msgData.msg._loadIng > 0" class="no-dark-content" @click="onVote('vote',msgData)">{{$L("立即投票")}}</Button>
                         </div>
                     </template>

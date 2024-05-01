@@ -1000,7 +1000,7 @@ class ApproveController extends AbstractController
         }
         //
         try {
-            $msg = WebSocketDialogMsg::sendMsg($msg_action, $dialog->id, 'text', ['text' => $text, 'approve_type' => $type], $botUser->userid, false, false, true);
+            $msg = WebSocketDialogMsg::sendMsg($msg_action, $dialog->id, 'text', ['text' => $text, 'approve_type' => $type], $process['start_user_id'], false, false, true);
             // 关联信息
             if ($action == 'start') {
                 $proc_msg = new ApproveProcMsg();

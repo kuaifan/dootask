@@ -1,0 +1,66 @@
+.dialog-complaint-info {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 10px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    .group-complaint-title {
+        margin: 18px 24px 0;
+        color: #303133;
+        &.required:after {
+            content: "*";
+            color: #e61f1f;
+            font-size: 22px;
+        }
+        &.underline {
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e8eaec;
+            text-decoration: none;
+        }
+    }
+
+    .group-complaint-warp {
+        height: calc(100% - 107px);
+        overflow: auto;
+    }
+
+    .group-complaint-list {
+        margin: 0 24px 0;
+        .ivu-list-item {
+            border-bottom: 1px solid #f9f9f9;
+            padding: 0;
+            &:active {
+                background-color: #fbfbfb;
+            }
+            .text {
+                width: calc(100% - 32px);
+                height: 100%;
+                padding: 12px 0;
+            }
+        }
+    }
+
+    .group-complaint-reason {
+        margin: 12px 24px 18px;
+        padding: auto;
+    }
+
+    .group-complaint-img {
+        margin: 12px 24px 18px;
+    }
+
+    .group-info-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 18px 24px;
+        cursor: pointer;
+
+        > button {
+            margin: 0 8px;
+        }
+    }
+}
