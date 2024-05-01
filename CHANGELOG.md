@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.37.7]
+
+### Bug Fixes
+
+- 安装系统部分情况没有数据
+
+### Features
+
+- 语音消息未阅读红点提示
+
+### Performance
+
+- 优化转发消息数据显示
+- Ipad 发送消息后出现页面跳动的情况
+- 仪表盘隐藏未到开始时间的任务
+- 优化查看任务修改历史
+- 优化聊天工具栏样式
+- 优化更新聊天中的待办
+- 优化图标功能提示
+
 ## [0.36.97]
 
 ### Bug Fixes

@@ -1,7 +1,7 @@
 {
     "name": "DooTask",
-    "version": "0.36.97",
-    "codeVerson": 128,
+    "version": "0.37.7",
+    "codeVerson": 129,
     "description": "DooTask is task management system.",
     "scripts": {
         "start": "./cmd dev",
@@ -48,8 +48,8 @@
         "openpgp_hi": "^5.7.0-1",
         "photoswipe": "^5.2.8",
         "postcss": "^8.4.5",
-        "quill-hi": "2.0.0-1",
-        "quill-mention-hi": "4.0.0-7",
+        "quill-hi": "^2.0.0-rc1",
+        "quill-mention-hi": "^4.0.0-8",
         "resolve-url-loader": "^4.0.0",
         "sass": "^1.71.1",
         "sass-loader": "^14.1.1",
