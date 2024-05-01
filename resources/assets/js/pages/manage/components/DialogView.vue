@@ -8,6 +8,7 @@
         <div
             class="dialog-head"
             :class="headClass"
+            @click="handleClick"
             v-longpress="{callback: handleLongpress, delay: 300}">
             <!--回复-->
             <div v-if="!hideReply && msgData.reply_id && showReplyData(msgData.msg.reply_data)" class="dialog-reply no-dark-content" @click="viewReply">
@@ -329,7 +330,8 @@ export default {
             emojiUsersNum: 5,
 
             voteData: {},
-            unfoldWordChainData: []
+            dotClicks: [],
+            unfoldWordChainData: [],
         }
     },
 
@@ -390,8 +392,11 @@ export default {
         },
 
         headClass() {
-            const {reply_id, type, msg, emoji} = this.msgData;
+            const {id, reply_id, type, msg, emoji, dot} = this.msgData;
             const array = [];
+            if (dot && !this.dotClicks.includes(id)) {
+                array.push('dot')
+            }
             if (reply_id === 0 && $A.arrayLength(emoji) === 0) {
                 if (type === 'text') {
                     if (/^<img\s+class="emoticon"[^>]*?>$/.test(msg.text)
@@ -445,6 +450,13 @@ export default {
     methods: {
         handleLongpress(event, el) {
             this.$emit("on-longpress", {event, el, msgData: this.msgData})
+        },
+
+        handleClick() {
+            if (this.msgData.dot) {
+                this.dotClicks.push(this.msgData.id);
+                this.$store.dispatch("dialogMsgDot", this.msgData);
+            }
         },
 
         openTodo() {

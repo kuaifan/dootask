@@ -685,6 +685,21 @@
                         background-color: transparent !important;
                     }
 
+                    &.dot {
+                        position: relative;
+                        &:after {
+                            content: "";
+                            position: absolute;
+                            top: 50%;
+                            right: -16px;
+                            width: 8px;
+                            height: 8px;
+                            border-radius: 50%;
+                            background-color: #ed4014;
+                            transform: translateY(-50%);
+                        }
+                    }
+
                     .dialog-reply {
                         position: relative;
                         padding-left: 9px;
@@ -1552,6 +1567,13 @@
                     .dialog-head {
                         background-color: $primary-color;
                         border-radius: 8px 2px 8px 8px;
+
+                        &.dot {
+                            &:after {
+                                left: -16px;
+                                right: unset;
+                            }
+                        }
 
                         .dialog-reply {
                             color: #ffffff;

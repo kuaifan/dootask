@@ -112,24 +112,28 @@ class WebSocketDialogMsgTask extends AbstractTask
             if ($userid == $msg->userid) {
                 $array[$userid] = [
                     'userid' => $userid,
-                    'mention' => false,
+                    'mention' => 0,
                     'silence' => $silence,
+                    'dot' => 0,
                     'updated' => $updated,
                 ];
             } else {
                 $mention = array_intersect([0, $userid], $mentions) ? 1 : 0;
                 $silence = $mention ? false : $silence;
+                $dot = $msg->type === 'record' ? 1 : 0;
                 WebSocketDialogMsgRead::createInstance([
                     'dialog_id' => $msg->dialog_id,
                     'msg_id' => $msg->id,
                     'userid' => $userid,
                     'mention' => $mention,
                     'silence' => $silence,
+                    'dot' => $dot,
                 ])->saveOrIgnore();
                 $array[$userid] = [
                     'userid' => $userid,
                     'mention' => $mention,
                     'silence' => $silence,
+                    'dot' => $dot,
                     'updated' => $updated,
                 ];
                 // 机器人收到消处理
@@ -169,6 +173,7 @@ class WebSocketDialogMsgTask extends AbstractTask
                     'silence' => $item['silence'] ? 1 : 0,
                     'data' => array_merge($msg->toArray(), [
                         'mention' => $item['mention'],
+                        'dot' => $item['dot'],
                         'user_at' => Carbon::parse($item['updated'])->toDateTimeString('millisecond'),
                         'user_ms' => Carbon::parse($item['updated'])->valueOf(),
                     ]),

@@ -3263,6 +3263,31 @@ export default {
     },
 
     /**
+     * 消息去除点
+     * @param state
+     * @param dispatch
+     * @param data
+     */
+    dialogMsgDot({state, dispatch}, data) {
+        if (!$A.isJson(data)) {
+            return;
+        }
+        if (!data.dot) {
+            return;
+        }
+        data.dot = 0;
+        //
+        dispatch("call", {
+            url: 'dialog/msg/dot',
+            data: {
+                id: data.id
+            }
+        }).then(({data}) => {
+            dispatch("saveDialog", data)
+        });
+    },
+
+    /**
      * 标记已读、未读
      * @param state
      * @param dispatch

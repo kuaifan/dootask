@@ -503,6 +503,7 @@ class DialogController extends AbstractController
         $builder = WebSocketDialogMsg::select([
             'web_socket_dialog_msgs.*',
             'read.mention',
+            'read.dot',
             'read.read_at',
         ])->leftJoin('web_socket_dialog_msg_reads as read', function ($leftJoin) use ($user) {
             $leftJoin
@@ -620,6 +621,7 @@ class DialogController extends AbstractController
         $builder = WebSocketDialogMsg::select([
             'web_socket_dialog_msgs.*',
             'read.mention',
+            'read.dot',
             'read.read_at',
         ])->leftJoin('web_socket_dialog_msg_reads as read', function ($leftJoin) use ($user) {
             $leftJoin
@@ -716,6 +718,39 @@ class DialogController extends AbstractController
         WebSocketDialog::checkDialog($msg->dialog_id);
         //
         return Base::retSuccess('success', $msg);
+    }
+
+    /**
+     * @api {get} api/dialog/msg/dot          16. 聊天消息去除点
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__dot
+     *
+     * @apiParam {Number} id         消息ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__dot()
+    {
+        $user = User::auth();
+        //
+        $id = intval(Request::input('id'));
+        //
+        $msg = WebSocketDialogMsg::find($id);
+        if (empty($msg)) {
+            return Base::retError("消息不存在或已被删除");
+        }
+        //
+        WebSocketDialogMsgRead::whereMsgId($id)->whereUserid($user->userid)->change(['dot' => 0]);
+        //
+        return Base::retSuccess('success', [
+            'id' => $msg->id,
+            'dot' => 0,
+        ]);
     }
 
     /**
