@@ -1935,6 +1935,10 @@ body:not(.window-touch) {
                                     max-width: 100%;
                                     margin: 0;
 
+                                    &.record {
+                                        width: auto;
+                                    }
+
                                     .dialog-head {
                                         width: 100%;
                                         border-radius: 8px;

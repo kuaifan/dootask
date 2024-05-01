@@ -390,6 +390,11 @@ class WebSocketDialogMsg extends AbstractModel
             $forwardData = is_array($msgData['forward_data']) ? $msgData['forward_data'] : [];
             $forwardId = $forwardData['id'] ?: $this->id;
             $forwardUserid = $forwardData['userid'] ?: $this->userid;
+            if ($forwardData['show'] === 0) {
+                // 如果上一条消息不显示原发送者信息，则转发的消息原始数据为当前消息
+                $forwardId = $this->id;
+                $forwardUserid = $this->userid;
+            }
             $msgData['forward_data'] = [
                 'id' => $forwardId,                 // 转发的消息ID（原始）
                 'userid' => $forwardUserid,         // 转发的消息会员ID（原始）
