@@ -74,7 +74,7 @@
                         text-overflow: ellipsis;
                         display: -webkit-box;
                         -webkit-box-orient: vertical;
-                        -webkit-line-clamp: 2;
+                        -webkit-line-clamp: 1;
                     }
 
                     .apply-box-top-report {
@@ -243,9 +243,8 @@
         flex: 1;
         padding: 8px 30px;
 
-        //
-        .setting-component-item,
-        .setting-item {
+        .setting-item,
+        .setting-component-item {
             position: absolute;
             top: 0;
             left: 0;
@@ -261,7 +260,6 @@
                 flex: 1;
 
                 .ivu-form-item {
-                    padding: 12px 0 0 0;
                     .ivu-form-item .ivu-form-item-content {
                         display: flex;
 
@@ -270,56 +268,6 @@
 
                         }
                     }
-
-                }
-
-            }
-
-
-            .block-setting-box {
-                position: relative;
-                padding: 24px 24px 4px;
-                margin: 24px 0 12px;
-                border-radius: 8px;
-                border: 1px solid #eeeeee;
-                transition: box-shadow 0.3s;
-
-                @media (max-width: 420px) {
-                    .block-setting-advance{
-                        >.ivu-form-item{
-                            display: flex;
-                            flex-direction: column;
-                            .ivu-form-item-label{
-                                text-align: left;
-                            }
-                        }
-                    }
-                }
-
-                @media (max-width: 460px) {
-                    .block-setting-msg-unread{
-                        >.ivu-form-item{
-                            display: flex;
-                            flex-direction: column;
-                            .ivu-form-item-label{
-                                text-align: left;
-                            }
-                        }
-                    }
-                }
-
-                h3 {
-                    position: absolute;
-                    top: 0;
-                    left: 24px;
-                    padding: 4px 10px;
-                    border-radius: 4px;
-                    display: inline-block;
-                    background-color: #ffffff;
-                    border: 1px solid #eeeeee;
-                    font-size: 15px;
-                    font-weight: 500;
-                    transform: translateY(-50%)
                 }
             }
 
@@ -455,13 +403,7 @@
         .aibot-warp {
             position: relative;
             height: 100%;
-            .ivu-form {
-                overflow: hidden;
-                padding: 0;
-                margin: 0 30px;
-            }
         }
-
     }
 }
 

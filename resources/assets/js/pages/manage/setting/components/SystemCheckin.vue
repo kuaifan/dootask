@@ -72,7 +72,7 @@
             </div>
 
             <template v-if="formData.open === 'open' && formData.modes.includes('auto')">
-                <div class="block-setting-placeholder"></div>
+                <div class="block-setting-space"></div>
                 <div class="block-setting-box">
                     <h3>{{ $L('自动签到') }}</h3>
                     <div class="form-box">

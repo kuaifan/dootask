@@ -267,51 +267,6 @@
                             .setting-footer {
                                 margin: 0 -32px;
                             }
-                            .block-setting-box {
-                                position: relative;
-                                padding: 44px 24px 4px;
-                                margin: 24px 0 12px;
-                                border-radius: 8px;
-                                border: 1px solid #eeeeee;
-                                transition: box-shadow 0.3s;
-                                &:hover {
-                                    box-shadow: 0 0 10px #e6ecfa;
-                                }
-                                h3 {
-                                    position: absolute;
-                                    top: 0;
-                                    left: 24px;
-                                    padding: 4px 10px;
-                                    border-radius: 4px;
-                                    display: inline-block;
-                                    background-color: #ffffff;
-                                    border: 1px solid #eeeeee;
-                                    font-size: 15px;
-                                    font-weight: 500;
-                                    transform: translateY(-50%);
-                                }
-
-                                .form-box {
-                                    overflow: auto;
-                                }
-
-                                .ivu-form-item {
-                                    .ivu-form {
-                                        padding: 12px 0 0 0;
-                                        .ivu-form-item {
-                                            margin-bottom: 8px;
-                                            .ivu-form-item-content {
-                                                display: flex;
-                                                align-items: center;
-                                            }
-                                        }
-                                    }
-                                }
-
-                            }
-                            .block-setting-placeholder {
-                                height: 8px;
-                            }
                             .export-data {
                                 margin-top: 6px;
                                 > p {

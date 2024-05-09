@@ -22,7 +22,7 @@
                 </div>
             </div>
 
-            <div class="block-setting-placeholder"></div>
+            <div class="block-setting-space"></div>
 
             <div class="block-setting-box">
                 <h3>{{ $L('邮件通知设置') }}</h3>
@@ -62,7 +62,7 @@
                 </div>
             </div>
 
-            <div class="block-setting-placeholder"></div>
+            <div class="block-setting-space"></div>
 
             <div class="block-setting-box">
                 <h3>{{ $L('忽略邮箱地址') }}</h3>
