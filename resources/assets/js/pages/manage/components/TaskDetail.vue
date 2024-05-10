@@ -482,9 +482,12 @@
             }">
             <Form ref="formDelayTaskRef" :model="delayTaskForm" :rules="delayTaskRule" label-position="left" label-width="auto" @submit.native.prevent>
                 <FormItem :label="$L('延期时长')" prop="time">
-                    <Input type="number" v-model="delayTaskForm.time" :placeholder="$L('请输入时长')" >
+                    <Input type="number" v-model="delayTaskForm.time" :placeholder="$L('请输入时长')">
                         <template #append>
-                            {{$L('小时')}}
+                            <Select v-model="delayTaskForm.type" style="width:auto">
+                                <Option value="hour">{{$L('小时')}}</Option>
+                                <Option value="day">{{$L('天')}}</Option>
+                            </Select>
                         </template>
                     </Input>
                 </FormItem>
@@ -628,8 +631,9 @@ export default {
             delayTaskShow: false,
             delayTaskLoading: false,
             delayTaskForm: {
+                type: "hour",
                 time: "24",
-                remark: ''
+                remark: ""
             },
             delayTaskRule: {
                 time: [
@@ -1763,7 +1767,11 @@ export default {
                 }
                 this.delayTaskLoading = true;
                 var date = new Date(this.taskDetail.end_at);
-                date.setHours(date.getHours() + Number(this.delayTaskForm.time));
+                if (this.delayTaskForm.type === 'day') {
+                    date.setDate(date.getDate() + Number(this.delayTaskForm.time));
+                } else {
+                    date.setHours(date.getHours() + Number(this.delayTaskForm.time));
+                }
                 this.$store.dispatch("taskUpdate", {
                     task_id: this.taskDetail.id,
                     times: [
@@ -1775,6 +1783,7 @@ export default {
                     $A.messageSuccess(msg);
                     this.delayTaskLoading = false;
                     this.delayTaskShow = false;
+                    this.delayTaskForm.type = 'hour';
                     this.delayTaskForm.time = '24';
                     this.delayTaskForm.remark = '';
                     this.$store.dispatch("getTaskOne", this.taskDetail.id).catch(() => {})
