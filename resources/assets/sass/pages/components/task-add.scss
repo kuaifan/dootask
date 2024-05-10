@@ -269,5 +269,10 @@ body.window-portrait {
                 }
             }
         }
+        .adaption {
+            > button {
+                padding: 0;
+            }
+        }
     }
 }
