@@ -297,6 +297,10 @@
                                     <i class="taskfont">&#xe779;</i>
                                     <span>{{ $L('编辑') }}</span>
                                 </li>
+                                <li v-if="actionPermission(operateItem, 'voice2text')" @click="onOperate('voice2text')">
+                                    <i class="taskfont">&#xe628;</i>
+                                    <span>{{ $L('转文字') }}</span>
+                                </li>
                                 <li v-for="item in operateCopys" @click="onOperate('copy', item)">
                                     <i class="taskfont" v-html="item.icon"></i>
                                     <span>{{ $L(item.label) }}</span>
@@ -2891,6 +2895,10 @@ export default {
                         this.onUpdate()
                         break;
 
+                    case "voice2text":
+                        this.onVoice2text()
+                        break;
+
                     case "copy":
                         this.onCopy(value)
                         break;
@@ -3003,6 +3011,26 @@ export default {
                 }
                 this.$nextTick(_ => this.$refs.input.setPasteMode(true))
             }
+        },
+
+        onVoice2text() {
+            if (!this.actionPermission(this.operateItem, 'voice2text')) {
+                return;
+            }
+            const {id: msg_id} = this.operateItem
+            this.$store.dispatch("setLoad", `msg-${msg_id}`)
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/voice2text',
+                data: {
+                    msg_id
+                },
+            }).then(({data}) => {
+                this.$store.dispatch("saveDialogMsg", data);
+            }).catch(({msg}) => {
+                $A.messageError(msg);
+            }).finally(_ => {
+                this.$store.dispatch("cancelLoad", `msg-${msg_id}`)
+            });
         },
 
         onCopy(data) {
@@ -3552,6 +3580,16 @@ export default {
                     return typeof item.msg.approve_type === 'undefined' // 审批消息不支持新建任务
                 }
                 return false
+            } else if (permission === 'voice2text') {
+                if (item.type !== 'record') {
+                    return false;
+                }
+                if (item.msg.text) {
+                    return false;
+                }
+                if (this.isLoad(`msg-${item.id}`)) {
+                    return false;
+                }
             }
             return true // 返回 true 允许操作
         },

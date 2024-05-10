@@ -654,7 +654,8 @@
                 margin: 0 0 0 8px;
                 position: relative;
 
-                &.text {
+                &.text,
+                &.record {
                     max-width: 70%;
                 }
 
@@ -1067,7 +1068,10 @@
 
                         .content-record {
                             display: flex;
+                            flex-direction: column;
+                            align-items: flex-start;
                             color: $primary-title-color;
+                            max-width: 100%;
 
                             .dialog-record {
                                 display: flex;
@@ -1075,6 +1079,7 @@
                                 justify-content: flex-end;
                                 align-content: center;
                                 line-height: 24px;
+                                max-width: 100%;
                                 cursor: pointer;
 
                                 .record-time {
@@ -1110,6 +1115,22 @@
                                     100% {
                                         content: "\E793";
                                     }
+                                }
+                            }
+
+                            .dialog-record-text {
+                                position: relative;
+                                margin-top: 8px;
+                                padding-top: 8px;
+                                &:before {
+                                    content: "";
+                                    position: absolute;
+                                    top: 0;
+                                    left: 0;
+                                    right: 0;
+                                    height: 1px;
+                                    background-color: rgba(255, 255, 255, 0.2);
+                                    transform: scaleY(0.5);
                                 }
                             }
                         }
@@ -1607,6 +1628,7 @@
                             }
 
                             .content-record {
+                                align-items: flex-end;
                                 color: #ffffff;
 
                                 .dialog-record {

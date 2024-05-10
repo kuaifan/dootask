@@ -35,8 +35,12 @@ class Ihttp
             if($post) {
                 if (is_array($post)) {
                     $filepost = false;
-                    foreach ($post as $name => $value) {
-                        if (is_string($value) && substr($value, 0, 1) == '@') {
+                    foreach ($post as $value) {
+                        if (is_string($value) && str_starts_with($value, '@')) {
+                            $filepost = true;
+                            break;
+                        }
+                        if ($value instanceof \CURLFile) {
                             $filepost = true;
                             break;
                         }

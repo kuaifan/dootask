@@ -52,6 +52,9 @@
                         <div class="record-time">{{recordDuration(msgData.msg.duration)}}</div>
                         <div class="record-icon taskfont"></div>
                     </div>
+                    <div v-if="msgData.msg.text" class="dialog-record-text">
+                        {{msgData.msg.text}}
+                    </div>
                 </div>
                 <!--会议-->
                 <div v-else-if="msgData.type === 'meeting'" class="content-meeting no-dark-content">

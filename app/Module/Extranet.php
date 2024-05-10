@@ -13,6 +13,49 @@ use Illuminate\Support\Facades\Config;
 class Extranet
 {
     /**
+     * 通过 openAI 语音转文字
+     * @param string $filePath
+     * @return array
+     */
+    public static function openAItranscriptions($filePath)
+    {
+        if (!file_exists($filePath)) {
+            return Base::retError("语音文件不存在");
+        }
+        $systemSetting = Base::setting('system');
+        $aibotSetting = Base::setting('aibotSetting');
+        if ($systemSetting['voice2text'] !== 'open' || empty($aibotSetting['openai_key'])) {
+            return Base::retError("语音转文字功能未开启");
+        }
+        //
+        $extra = [
+            'Content-Type' => 'multipart/form-data',
+            'Authorization' => 'Bearer ' . $aibotSetting['openai_key'],
+        ];
+        if ($aibotSetting['openai_agency']) {
+            $extra['CURLOPT_PROXY'] = $aibotSetting['openai_agency'];
+            if (str_contains($aibotSetting['openai_agency'], 'socks')) {
+                $extra['CURLOPT_PROXYTYPE'] = CURLPROXY_SOCKS5;
+            } else {
+                $extra['CURLOPT_PROXYTYPE'] = CURLPROXY_HTTP;
+            }
+        }
+        $res = Ihttp::ihttp_request('https://api.openai.com/v1/audio/transcriptions', [
+            'file' => new \CURLFile($filePath),
+            'model' => 'whisper-1'
+        ], $extra, 15);
+        if (Base::isError($res)) {
+            return Base::retError("语音转文字失败", $res);
+        }
+        $resData = Base::json2array($res['data']);
+        if (empty($resData['text'])) {
+            return Base::retError("语音转文字失败", $resData);
+        }
+        //
+        return Base::retSuccess("success", $resData['text']);
+    }
+
+    /**
      * 获取IP地址经纬度
      * @param string $ip
      * @return array

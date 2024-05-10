@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use App\Models\File;
 use App\Models\User;
 use App\Module\Base;
+use App\Module\Extranet;
 use App\Module\TimeRange;
 use App\Models\FileContent;
 use App\Models\AbstractModel;
@@ -1474,6 +1475,50 @@ class DialogController extends AbstractController
         }
         $msg->withdrawMsg();
         return Base::retSuccess("success");
+    }
+
+    /**
+     * @api {get} api/dialog/msg/voice2text          29. 语音消息转文字
+     *
+     * @apiDescription 将语音消息转文字，需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__voice2text
+     *
+     * @apiParam {Number} msg_id            消息ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__voice2text()
+    {
+        User::auth();
+        //
+        $msg_id = intval(Request::input("msg_id"));
+        $msg = WebSocketDialogMsg::whereId($msg_id)->first();
+        if (empty($msg)) {
+            return Base::retError("消息不存在或已被删除");
+        }
+        if ($msg->type !== 'record') {
+            return Base::retError("仅支持语音消息");
+        }
+        if ($msg['msg']['text']) {
+            return Base::retSuccess("success", $msg);
+        }
+        WebSocketDialog::checkDialog($msg->dialog_id);
+        //
+        $msgData = Base::json2array($msg->getRawOriginal('msg'));
+        $res = Extranet::openAItranscriptions(public_path($msgData['path']));
+        if (Base::isError($res)) {
+            return $res;
+        }
+        //
+        $msg->updateInstance([
+            'msg' => array_merge($msgData, ['text' => $res['data']]),
+        ]);
+        $msg->save();
+        return Base::retSuccess("success", $msg);
     }
 
     /**
