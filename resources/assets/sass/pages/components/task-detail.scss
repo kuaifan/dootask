@@ -879,6 +879,34 @@ body.window-portrait {
                 .scrollbar-content {
                     overflow-x: auto;
                 }
+                .items {
+                    .ivu-form-item {
+                        &.item-subtask {
+                            display: flex;
+                            flex-direction: column;
+                            .ivu-form-item-content {
+                                margin-left: 0 !important;
+                                > ul {
+                                    margin-left: 0;
+                                }
+                                &.nosub {
+                                    margin-top: 14px;
+                                    > li {
+                                        .add-input,
+                                        .add-button {
+                                            margin-top: -2px;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .item-content {
+                        &.nosub {
+                            margin-top: 14px;
+                        }
+                    }
+                }
             }
         }
     }

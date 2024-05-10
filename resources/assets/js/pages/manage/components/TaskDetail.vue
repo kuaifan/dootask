@@ -307,7 +307,7 @@
                             </li>
                         </ul>
                     </FormItem>
-                    <FormItem v-if="subList.length > 0 || addsubForce">
+                    <FormItem v-if="subList.length > 0 || addsubForce" className="item-subtask">
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe6f0;</i>{{$L('子任务')}}
                         </div>
