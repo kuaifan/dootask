@@ -824,6 +824,12 @@
                                             text-align: left;
                                             margin-right: 0.2em;
                                         }
+
+                                        &[data-list=unchecked] {
+                                            &::before {
+                                                color: #777;
+                                            }
+                                        }
                                     }
                                 }
 

@@ -3115,7 +3115,7 @@ export default {
             this.onPositionId(data.reply_id, data.msg_id)
         },
 
-        onViewText({target}, el) {
+        onViewText({target, clientX}, el) {
             if (this.operateVisible) {
                 return
             }
@@ -3167,6 +3167,9 @@ export default {
                 case "LI":
                     const dataClass = target.getAttribute('data-list')
                     if (['checked', 'unchecked'].includes(dataClass)) {
+                        if (clientX - target.getBoundingClientRect().x > 18) {
+                            return;
+                        }
                         let listElement = el.parentElement;
                         while (listElement) {
                             if (listElement.classList.contains('dialog-scroller')) {
