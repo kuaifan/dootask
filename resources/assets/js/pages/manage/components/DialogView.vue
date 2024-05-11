@@ -196,7 +196,10 @@
                     :placement="isRightMsg ? 'bottom-end' : 'bottom-start'">
                     <div class="read-poptip-content">
                         <Scrollbar class-name="read">
-                            <div class="read-title"><em>{{ todoDoneList.length }}</em>{{ $L('完成') }}</div>
+                            <div class="read-title">
+                                <em>{{ todoDoneList.length }}</em>
+                                {{ $L('完成') }}
+                            </div>
                             <ul>
                                 <li v-for="item in todoDoneList">
                                     <UserAvatar :userid="item.userid" :size="26" showName/>
@@ -204,7 +207,12 @@
                             </ul>
                         </Scrollbar>
                         <Scrollbar class-name="unread">
-                            <div class="read-title"><em>{{ todoUndoneList.length }}</em>{{ $L('待办') }}</div>
+                            <div class="read-title">
+                                <em>{{ todoUndoneList.length }}</em>
+                                {{ $L('待办') }}
+                                <span class="space"></span>
+                                <Button type="primary" size="small" @click="handleTodoAdd">{{ $L('添加') }}</Button>
+                            </div>
                             <ul>
                                 <li v-for="item in todoUndoneList">
                                     <UserAvatar :userid="item.userid" :size="26" showName/>
@@ -240,7 +248,10 @@
                             :placement="isRightMsg ? 'bottom-end' : 'bottom-start'">
                             <div class="read-poptip-content">
                                 <Scrollbar class-name="read">
-                                    <div class="read-title"><em>{{ readList.length }}</em>{{ $L('已读') }}</div>
+                                    <div class="read-title">
+                                        <em>{{ readList.length }}</em>
+                                        {{ $L('已读') }}
+                                    </div>
                                     <ul>
                                         <li v-for="item in readList">
                                             <UserAvatar :userid="item.userid" :size="26" showName/>
@@ -248,7 +259,10 @@
                                     </ul>
                                 </Scrollbar>
                                 <Scrollbar class-name="unread">
-                                    <div class="read-title"><em>{{ unreadList.length }}</em>{{ $L('未读') }}</div>
+                                    <div class="read-title">
+                                        <em>{{ unreadList.length }}</em>
+                                        {{ $L('未读') }}
+                                    </div>
                                     <ul>
                                         <li v-for="item in unreadList">
                                             <UserAvatar :userid="item.userid" :size="26" showName/>
@@ -486,6 +500,17 @@ export default {
                     this.todoShow = true
                 }, 100)
             });
+        },
+
+        handleTodoAdd() {
+            this.$refs.todo.doClose();
+            this.$emit("on-other", {
+                event: 'todoAdd',
+                data: {
+                    msg_id: this.msgData.id,
+                    userids: this.todoList.map(({userid}) => userid)
+                }
+            })
         },
 
         openReadPercentage() {

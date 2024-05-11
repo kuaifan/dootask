@@ -1765,7 +1765,9 @@ class DialogController extends AbstractController
      * @apiParam {String} type              设待办对象
      * - all: 会话全部成员（默认）
      * - user: 会话指定成员
-     * @apiParam {Array} userids            会员ID组（type=user有效，格式: [userid1, userid2, userid3]）
+     * @apiParam {Array} userids            会员ID组
+     * - type=user 有效，格式: [userid1, userid2, userid3]
+     * - 可通过 type=user 及 userids:[] 一起使用来清除所有人的待办
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1773,26 +1775,24 @@ class DialogController extends AbstractController
      */
     public function msg__todo()
     {
+        Base::checkClientVersion('0.37.18');
         $user = User::auth();
         //
         $msg_id = intval(Request::input("msg_id"));
         $type = trim(Request::input("type", "all"));
         $userids = Request::input('userids');
         //
-        if ($type === 'user') {
-            if (empty($userids)) {
-                return Base::retError("选择指定成员");
-            }
-        } else {
-            $userids = [];
-        }
-        //
         $msg = WebSocketDialogMsg::whereId($msg_id)->first();
         if (empty($msg)) {
             return Base::retError("消息不存在或已被删除");
         }
-        WebSocketDialog::checkDialog($msg->dialog_id);
+        $dialog = WebSocketDialog::checkDialog($msg->dialog_id);
         //
+        if ($type === 'all') {
+            $userids = $dialog->dialogUser->pluck('userid')->toArray();
+        } else {
+            $userids = is_array($userids) ? $userids : [];
+        }
         return $msg->toggleTodoMsg($user->userid, $userids);
     }
 

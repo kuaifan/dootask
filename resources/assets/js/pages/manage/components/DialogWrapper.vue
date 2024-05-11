@@ -200,6 +200,7 @@
                 @on-reply-list="onReplyList"
                 @on-error="onError"
                 @on-emoji="onEmoji"
+                @on-other="onOther"
                 @on-show-emoji-user="onShowEmojiUser">
                 <template #header v-if="!isChildComponent">
                     <div class="dialog-item head-box">
@@ -486,6 +487,7 @@
                                 @on-view-file="onViewFile"
                                 @on-down-file="onDownFile"
                                 @on-emoji="onEmoji"
+                                @on-other="onOther"
                                 simpleView/>
                         </Scrollbar>
                     </div>
@@ -554,6 +556,15 @@
                 <Button type="primary" :loading="todoSettingLoad > 0" @click="onTodo('submit')">{{$L('确定')}}</Button>
             </div>
         </Modal>
+        <UserSelect
+            v-if="todoSpecifyShow"
+            ref="todoSpecifySelect"
+            v-model="todoSpecifyData.userids"
+            :dialog-id="dialogId"
+            :title="$L('选择指定成员')"
+            module
+            border
+            :before-submit="onTodoSpecify"/>
 
         <!--群设置-->
         <DrawerOverlay
@@ -629,6 +640,7 @@
                             @on-view-file="onViewFile"
                             @on-down-file="onDownFile"
                             @on-emoji="onEmoji"
+                            @on-other="onOther"
                             simpleView/>
                         <Button class="original-button" icon="md-exit" type="text" :loading="todoViewPosLoad" @click="onPosTodo">{{ $L("回到原文") }}</Button>
                     </template>
@@ -805,6 +817,11 @@ export default {
                 type: 'all',
                 userids: [],
                 quick_value: [],
+            },
+            todoSpecifyShow: false,
+            todoSpecifyData: {
+                type: 'user',
+                userids: [],
             },
 
             todoViewLoad: false,
@@ -3395,6 +3412,19 @@ export default {
             this.respondShow = true
         },
 
+        onOther({event, data}) {
+            if (this.operateVisible) {
+                return
+            }
+            if (event === 'todoAdd') {
+                this.todoSpecifyData = Object.assign(this.todoSpecifyData, data)
+                this.todoSpecifyShow = true
+                this.$nextTick(_ => {
+                    this.$refs.todoSpecifySelect.onSelection()
+                })
+            }
+        },
+
         onTag() {
             if (this.operateVisible) {
                 return
@@ -3460,43 +3490,59 @@ export default {
                     this.todoSettingLoad--
                 })
             } else {
-                const quickList = {}
-                quickList[this.userId] = this.userId
-                const userid = this.dialogData.dialog_user?.userid
-                if (userid && userid != this.userId && !this.dialogData.bot) {
-                    quickList[userid] = userid
-                }
-                if (this.operateItem.type === 'text') {
-                    const atReg = /<span class="mention user" data-id="(\d+)">([^<]+)<\/span>/g
-                    const atList = this.operateItem.msg.text.match(atReg)
-                    if (atList) {
-                        atList.forEach(item => {
-                            const userid = parseInt(item.replace(atReg, '$1'))
-                            if (userid && userid != this.userId) {
-                                quickList[userid] = userid
-                            }
-                        })
-                    }
-                }
-                this.todoSettingData = {
-                    type: 'all',
-                    userids: [],
-                    msg_id: this.operateItem.id,
-                    quick_value: [],
-                    quick_list: Object.values(quickList),
-                }
                 if (this.operateItem.todo) {
                     $A.modalConfirm({
                         content: "你确定取消待办吗？",
                         cancelText: '取消',
                         okText: '确定',
                         loading: true,
-                        onOk: () => this.onTodoSubmit(this.todoSettingData)
+                        onOk: () => this.onTodoSubmit({
+                            type: 'user',
+                            userids: [],
+                            msg_id: this.operateItem.id,
+                        })
                     });
                 } else {
+                    const quickList = {}
+                    quickList[this.userId] = this.userId
+                    const userid = this.dialogData.dialog_user?.userid
+                    if (userid && userid != this.userId && !this.dialogData.bot) {
+                        quickList[userid] = userid
+                    }
+                    if (this.operateItem.type === 'text') {
+                        const atReg = /<span class="mention user" data-id="(\d+)">([^<]+)<\/span>/g
+                        const atList = this.operateItem.msg.text.match(atReg)
+                        if (atList) {
+                            atList.forEach(item => {
+                                const userid = parseInt(item.replace(atReg, '$1'))
+                                if (userid && userid != this.userId) {
+                                    quickList[userid] = userid
+                                }
+                            })
+                        }
+                    }
+                    this.todoSettingData = {
+                        type: 'all',
+                        userids: [],
+                        msg_id: this.operateItem.id,
+                        quick_value: [],
+                        quick_list: Object.values(quickList),
+                    }
                     this.todoSettingShow = true
                 }
             }
+        },
+
+        onTodoSpecify() {
+            return new Promise((resolve, reject) => {
+                this.onTodoSubmit(this.todoSpecifyData).then(msg => {
+                    $A.messageSuccess(msg)
+                    resolve()
+                }).catch(e => {
+                    $A.messageError(e)
+                    reject()
+                })
+            });
         },
 
         onTodoSubmit(data) {
@@ -3506,6 +3552,7 @@ export default {
                     delay: 600
                 })
                 this.$store.dispatch("call", {
+                    method: 'post',
                     url: 'dialog/msg/todo',
                     data,
                 }).then(({data, msg}) => {

@@ -320,41 +320,54 @@ class WebSocketDialogMsg extends AbstractModel
         if (in_array($this->type, ['tag', 'todo', 'notice'])) {
             return Base::retError('此消息不支持设待办');
         }
-        if ($this->todo && $this->todo != $sender) {
-            return Base::retError('仅支持设此待办人员【' . User::userid2nickname($this->todo) . '】取消');
-        }
-        $before = $this->todo;
-        $this->todo = $before ? 0 : $sender;
+        $current = WebSocketDialogMsgTodo::whereMsgId($this->id)->pluck('userid')->toArray();
+        $cancel = array_diff($current, $userids);
+        $setup = array_diff($userids, $current);
+        //
+        $this->todo = $setup || count($current) > count($cancel) ? $sender : 0;
         $this->save();
-        $resData = [
+        $upData = [
             'id' => $this->id,
             'todo' => $this->todo,
+            'dialog_id' => $this->dialog_id,
         ];
+        $dialog = WebSocketDialog::find($this->dialog_id);
+        $dialog->pushMsg('update', $upData);
         //
-        $data = [
-            'update' => $resData
+        $retData = [
+            'add' => [],
+            'update' => $upData
         ];
-        $res = self::sendMsg(null, $this->dialog_id, 'todo', [
-            'action' => $this->todo ? 'add' : 'remove',
-            'data' => [
-                'id' => $this->id,
-                'type' => $this->type,
-                'msg' => $this->quoteTextMsg(),
-                'userids' => implode(",", $userids),
-            ]
-        ], $sender);
-        if (Base::isSuccess($res)) {
-            $data['add'] = $res['data'];
-            $dialog = WebSocketDialog::find($this->dialog_id);
-            $dialog->pushMsg('update', array_merge($resData, ['dialog_id' => $this->dialog_id]));
-            //
-            if ($this->todo) {
+        if ($cancel) {
+            $res = self::sendMsg(null, $this->dialog_id, 'todo', [
+                'action' => 'remove',
+                'data' => [
+                    'id' => $this->id,
+                    'type' => $this->type,
+                    'msg' => $this->quoteTextMsg(),
+                    'userids' => implode(",", $cancel),
+                ]
+            ], $sender);
+            if (Base::isSuccess($res)) {
+                $retData['add'][] = $res['data'];
+                WebSocketDialogMsgTodo::whereMsgId($this->id)->whereIn('userid', $cancel)->delete();
+            }
+        }
+        if ($setup) {
+            $res = self::sendMsg(null, $this->dialog_id, 'todo', [
+                'action' => 'add',
+                'data' => [
+                    'id' => $this->id,
+                    'type' => $this->type,
+                    'msg' => $this->quoteTextMsg(),
+                    'userids' => implode(",", $setup),
+                ]
+            ], $sender);
+            if (Base::isSuccess($res)) {
+                $retData['add'][] = $res['data'];
                 $useridList = $dialog->dialogUser->pluck('userid')->toArray();
-                foreach ($useridList as $userid) {
-                    if ($userids && !in_array($userid, $userids)) {
-                        continue;
-                    }
-                    if (empty($userid)) {
+                foreach ($setup as $userid) {
+                    if (!in_array($userid, $useridList)) {
                         continue;
                     }
                     WebSocketDialogMsgTodo::createInstance([
@@ -363,15 +376,10 @@ class WebSocketDialogMsg extends AbstractModel
                         'userid' => $userid,
                     ])->saveOrIgnore();
                 }
-            } else {
-                WebSocketDialogMsgTodo::whereMsgId($this->id)->delete();
             }
-        } else {
-            $this->todo = $before;
-            $this->save();
         }
         //
-        return Base::retSuccess($this->todo ? '设置成功' : '取消成功', $data);
+        return Base::retSuccess($this->todo ? '设置成功' : '取消成功', $retData);
     }
 
     /**

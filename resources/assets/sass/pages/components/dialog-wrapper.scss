@@ -2068,11 +2068,21 @@ body:not(.window-touch) {
                 top: 0;
                 z-index: 10;
                 background: #ffffff;
+                display: flex;
+                align-items: center;
                 > em {
                     font-size: 18px;
                     font-weight: 600;
                     font-style: normal;
                     padding-right: 6px;
+                }
+                > span.space {
+                    flex: 1;
+                    height: 1px;
+                }
+                > button {
+                    transform: scale(0.96);
+                    transform-origin: right center;
                 }
             }
 
