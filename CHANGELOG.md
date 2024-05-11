@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.37.32]
+
+### Performance
+
+- 优化查看任务附件菜单
+- 独立窗口未激活阅读逻辑
+- 新消息在会话列表时间与消息里不一致
+- 优化Android点击发送按钮效果
+- 支持修改消息待办
+- 延期任务时间支持按天
+- 优化待办消息样式
+- 优化移动端子任务列表显示
+- 语音消息转文字
+- 更新语音消息插件
+- 优化设置样式
+
 ## [0.37.17]
 
 ### Bug Fixes

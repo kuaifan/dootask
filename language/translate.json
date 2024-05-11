@@ -20480,5 +20480,137 @@
         "de": "Beschwerden wurden gesichtet",
         "fr": "Signaler une plainte",
         "id": "Laporkan keluhan"
+    },
+    {
+        "key": "当前客户端版本 (*) 过低，最低版本要求 (*)。",
+        "zh": "",
+        "zh-CHT": "當前客戶端版本 (*) 過低，最低版本要求 (*)。",
+        "en": "The current client version (*) is too low. The minimum version (*) is required.",
+        "ko": "현재 클라이언트 버전 (*)은 너무 낮습니다. 최소 버전 요구 사항 (*)입니다.",
+        "ja": "現在のクライアントのバージョン(*)は低すぎる、最低バージョンの要件(*)です。",
+        "de": "Derzeit ist die kundenversion (*) zu niedrig, die mindestauflage (*) ist zu niedrig",
+        "fr": "La version actuelle du client (*) est trop basse. Version minimale requise (*).",
+        "id": "Versi klien saat ini (*) terlalu rendah dan versi terbawah dibutuhkan (*)."
+    },
+    {
+        "key": "开启语音转文字功能需要在应用中开启 ChatGPT AI 机器人。",
+        "zh": "",
+        "zh-CHT": "開啓語音轉文字功能需要在應用中開啓 ChatGPT AI 機器人。",
+        "en": "To enable the speech-to-text function, you need to enable the ChatGPT AI robot in the application.",
+        "ko": "음성 문자 변환 기능을 켜려면 애플리케이션 내에서 chatgpt ai 로봇을 켜야 한다.",
+        "ja": "音声変換機能をオンにするには、アプリ内でChatGPTのAIロボットをオンにする必要があります。",
+        "de": "Das ausschalten der sprachübertragung und-text verlangt das öffnen der AI in der anwendung.",
+        "fr": "Pour activer la fonction speech to word, le robot ChatGPT AI doit être activé dans l’application.",
+        "id": "Untuk mengaktifkan fitur pengubah suara, perlu dilakukan robot ChatGPT AI."
+    },
+    {
+        "key": "语音转文字功能未开启",
+        "zh": "",
+        "zh-CHT": "語音轉文字功能未開啓",
+        "en": "The voice to text function is disabled",
+        "ko": "음성 문자 변환 기능이 켜져 있지 않습니다",
+        "ja": "音声文字変換機能はオンになっていません。",
+        "de": "Die funktion akustischer text ist nicht aktiviert",
+        "fr": "La fonction phone-to-text n’est pas activée",
+        "id": "Fungsi transmografi tidak aktif"
+    },
+    {
+        "key": "语音文件不存在",
+        "zh": "",
+        "zh-CHT": "語音文件不存在",
+        "en": "The voice file does not exist",
+        "ko": "음성 파일이 존재하지 않습니다",
+        "ja": "音声ファイルは存在しません",
+        "de": "Die mailbox existiert nicht",
+        "fr": "Le fichier voix n’existe pas",
+        "id": "File suara itu tidak ada"
+    },
+    {
+        "key": "语音转文字失败",
+        "zh": "",
+        "zh-CHT": "語音轉文字失敗",
+        "en": "Description Failed to convert voice to text",
+        "ko": "음성을 문자화할 수 없습니다",
+        "ja": "音声文字変換に失敗します",
+        "de": "Die sprachausgabe ist fehlgeschlagen",
+        "fr": "La parole au texte échoue",
+        "id": "Transmografi gagal"
+    },
+    {
+        "key": "仅支持语音消息",
+        "zh": "",
+        "zh-CHT": "僅支持語音消息",
+        "en": "Only voice messages are supported",
+        "ko": "음성 메시지만 지원합니다",
+        "ja": "音声メッセージのみサポートします。",
+        "de": "Nur die mailbox",
+        "fr": "Messages vocaux uniquement",
+        "id": "Hanya pesan suara"
+    },
+    {
+        "key": "转文字",
+        "zh": "",
+        "zh-CHT": "轉文字",
+        "en": "Convert into text",
+        "ko": "문자를 옮기다",
+        "ja": "文字回しです",
+        "de": "Text übersetzen",
+        "fr": "Aller au texte",
+        "id": "Transword"
+    },
+    {
+        "key": "语音转文字",
+        "zh": "",
+        "zh-CHT": "語音轉文字",
+        "en": "Speech-to-text",
+        "ko": "음성 문자 변환",
+        "ja": "音声文字変換",
+        "de": "Mailbox.",
+        "fr": "Voix au texte",
+        "id": "Transcriptions fonetik"
+    },
+    {
+        "key": "长按语音消息可转换成文字。",
+        "zh": "",
+        "zh-CHT": "長按語音消息可轉換成文字。",
+        "en": "Long press a voice message to convert it to text.",
+        "ko": "음성메시지를 길게 누르면 문자로 전환할수 있다.",
+        "ja": "音声メッセージを長押しするとテキストに変換できます。",
+        "de": "Eine sprachnachricht kann lange in text umgewandelt werden.",
+        "fr": "Appuyez longuement sur les messages vocaux pour les convertir en texte.",
+        "id": "Pesan-pesan suara yang panjang dapat dikonversi ke teks."
+    },
+    {
+        "key": "需要在应用中开启 ChatGPT AI 机器人",
+        "zh": "",
+        "zh-CHT": "需要在應用中開啓 ChatGPT AI 機器人",
+        "en": "The ChatGPT AI robot needs to be enabled in the application",
+        "ko": "응용 프로그램 안에서 chatgpt ai 로봇을 켜야 한다",
+        "ja": "ChatGPTを起動する必要があります",
+        "de": "Es ist notwendig, das AI - roboter in der anwendung offen zu halten",
+        "fr": "ChatGPT AI bot doit être activé dans l’application",
+        "id": "Kita perlu membukanya di aplikasi ChatGPT AI"
+    },
+    {
+        "key": "关闭语音转文字功能。",
+        "zh": "",
+        "zh-CHT": "關閉語音轉文字功能。",
+        "en": "Disable the speech-to-text function.",
+        "ko": "음성문자변환 기능을 끄다.",
+        "ja": "文字変換機能をオフにします。",
+        "de": "Schaltet die funktion sprachübertragung aus",
+        "fr": "Désactivez la fonction phone-to-text.",
+        "id": "Matikan fungsi tombol suara."
+    },
+    {
+        "key": "你确定要删除文件【(*)】吗？",
+        "zh": "",
+        "zh-CHT": "你確定要刪除文件【(*)】嗎？",
+        "en": "Are you sure you want to delete the file [(*)]?",
+        "ko": "파일 [(*)]을 삭제하시겠습니까?",
+        "ja": "あなたはファイル【(*)】を削除しますか?",
+        "de": "Möchten sie die datei wirklich löschen? (*)",
+        "fr": "Êtes-vous sûr de vouloir supprimer le fichier [(*)]?",
+        "id": "Apakah anda yakin ingin menghapus berkas ((*)?"
     }
 ]
