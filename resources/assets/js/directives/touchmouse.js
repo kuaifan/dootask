@@ -18,6 +18,9 @@ export default {
                     isTouch = false;
                     binding.value("up");
                 }
+            },
+            click: e => {
+                binding.value("click", e);
             }
         };
         if (isSupportTouch) {
@@ -29,6 +32,7 @@ export default {
             document.addEventListener('mousemove', el.__touchEvent__.move);
             document.addEventListener('mouseup', el.__touchEvent__.end);
         }
+        el.addEventListener('click', el.__touchEvent__.click);
     },
     update () {
 
@@ -43,6 +47,7 @@ export default {
             document.removeEventListener('mousemove', el.__touchEvent__.move);
             document.removeEventListener('mouseup', el.__touchEvent__.end);
         }
+        el.removeEventListener('click', el.__touchEvent__.click);
         delete el.__touchEvent__;
     }
 };

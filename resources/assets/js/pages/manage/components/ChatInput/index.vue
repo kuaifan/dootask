@@ -320,6 +320,7 @@ export default {
             recordDuration: 0,
 
             touchStart: {},
+            touchFocus: false,
             touchLimitX: false,
             touchLimitY: false,
 
@@ -1019,6 +1020,7 @@ export default {
             }
             switch (action) {
                 case 'down':
+                    this.touchFocus = this.quill?.hasFocus();
                     this.touchLimitX = false;
                     this.touchLimitY = false;
                     this.touchStart = event.type === "touchstart" ? event.touches[0] : event;
@@ -1047,6 +1049,13 @@ export default {
                         return; // 移动了 X、Y 轴
                     }
                     this.onSend()
+                    break;
+
+                case 'click':
+                    if (this.touchFocus) {
+                        this.quill.blur();
+                        this.quill.focus();
+                    }
                     break;
             }
         },
