@@ -834,3 +834,13 @@ body.window-portrait {
 .block-setting-space {
     height: 8px;
 }
+.confirm-popover {
+    max-width: 200px;
+    .buttons {
+        text-align: right;
+        margin-top: 12px;
+        .ivu-btn-small {
+            font-size: 12px
+        }
+    }
+}
