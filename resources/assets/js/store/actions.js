@@ -2484,7 +2484,7 @@ export default {
                 const updateData = {
                     id: data.dialog_id,
                     last_msg: data,
-                    last_at: $A.formatDate("Y-m-d H:i:s")
+                    last_at: data.created_at || $A.formatDate("Y-m-d H:i:s")
                 }
                 if (data.mtype == 'tag') {
                     updateData.has_tag = true;
