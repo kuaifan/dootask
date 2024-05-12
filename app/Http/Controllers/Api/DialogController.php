@@ -1493,7 +1493,7 @@ class DialogController extends AbstractController
      */
     public function msg__voice2text()
     {
-        User::auth();
+        $user = User::auth();
         //
         $msg_id = intval(Request::input("msg_id"));
         $msg = WebSocketDialogMsg::whereId($msg_id)->first();
@@ -1503,19 +1503,27 @@ class DialogController extends AbstractController
         if ($msg->type !== 'record') {
             return Base::retError("仅支持语音消息");
         }
-        if ($msg['msg']['text']) {
+        $msgData = Base::json2array($msg->getRawOriginal('msg'));
+        if ($msgData['text']) {
+            $textUserid = is_array($msgData['text_userid']) ? $msgData['text_userid'] : [];
+            if (!in_array($user->userid, $textUserid)) {
+                $textUserid[] = $user->userid;
+                $msg->updateInstance([
+                    'msg' => array_merge($msgData, ['text_userid' => $textUserid]),
+                ]);
+                $msg->save();
+            }
             return Base::retSuccess("success", $msg);
         }
         WebSocketDialog::checkDialog($msg->dialog_id);
         //
-        $msgData = Base::json2array($msg->getRawOriginal('msg'));
         $res = Extranet::openAItranscriptions(public_path($msgData['path']));
         if (Base::isError($res)) {
             return $res;
         }
         //
         $msg->updateInstance([
-            'msg' => array_merge($msgData, ['text' => $res['data']]),
+            'msg' => array_merge($msgData, ['text' => $res['data'], 'text_userid' => [$user->userid]]),
         ]);
         $msg->save();
         return Base::retSuccess("success", $msg);

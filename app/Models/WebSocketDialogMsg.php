@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use App\Module\Base;
+use App\Module\Doo;
 use App\Module\Image;
 use App\Tasks\PushTask;
 use App\Exceptions\ApiException;
@@ -154,6 +155,13 @@ class WebSocketDialogMsg extends AbstractModel
             $msg['thumb'] = Base::fillUrl($msg['thumb'] ?: Base::extIcon($msg['ext']));
         } else if ($type === 'record') {
             $msg['path'] = Base::fillUrl($msg['path']);
+            $textUserid = is_array($msg['text_userid']) ? $msg['text_userid'] : [];
+            if (isset($msg['text_userid'])) {
+                unset($msg['text_userid']);
+            }
+            if ($msg['text'] && !in_array(Doo::userId(), $textUserid)) {
+                $msg['text'] = "";
+            }
         }
         return $msg;
     }
