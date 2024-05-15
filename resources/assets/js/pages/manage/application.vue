@@ -284,7 +284,7 @@ export default {
                     value: "zhipu",
                     label: "Zhipu",
                     src: $A.mainUrl('images/avatar/default_zhipu.png'),
-                    desc: `${this.$L('我是ChatGLM，是基于智谱 AI 公司于2023年训练的语言模型开发的')}${this.$L('我的任务是针对用户的问题和要求提供适当的答复和支持。')}`
+                    desc: `${this.$L('我是智谱清言，是智谱 AI 公司于2023训练的语言模型。')}${this.$L('我的任务是针对用户的问题和要求提供适当的答复和支持。')}`
                 },
             ],
             aibotTabAction: "opanai",
