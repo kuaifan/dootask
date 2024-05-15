@@ -92,6 +92,23 @@
                     </FormItem>
                 </div>
             </div>
+            <div class="block-setting-box" v-if="type=='all' || type=='Zhipu'">
+                <h3>智谱清言</h3>
+                <div class="form-box">
+                    <FormItem label="API Key" prop="zhipu_key">
+                        <Input :maxlength="255" v-model="formData.zhipu_key" type="password" placeholder="API Key"/>
+                        <div class="form-tip">{{$L('获取方式')}} <a href="https://open.bigmodel.cn/usercenter/apikeys" target="_blank">https://open.bigmodel.cn/usercenter/apikeys</a></div>
+                    </FormItem>
+                    <FormItem :label="$L('模型')" prop="zhipu_model">
+                        <Select v-model="formData.zhipu_model" placement="top">
+                            <Option value="glm-4">glm-4</Option>
+                            <Option value="glm-4v">glm-4v</Option>
+                            <Option value="glm-3-turbo">glm-3-turbo</Option>
+                        </Select>
+                        <div class="form-tip">{{$L('查看说明')}} <a href="https://open.bigmodel.cn/dev/howuse/model" target="_blank">https://open.bigmodel.cn/dev/howuse/model</a></div>
+                    </FormItem>
+                </div>
+            </div>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{ $L('提交') }}</Button>
