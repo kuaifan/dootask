@@ -144,7 +144,7 @@
   padding-top: 120px;
 }
 .btn-padding{
-  padding: 0;
+  padding: 0 !important;
 }
 .btn-padding a{
   display: block;

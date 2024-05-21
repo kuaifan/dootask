@@ -53,6 +53,7 @@
                 @on-reply-list="onReplyList"
                 @on-error="onError"
                 @on-emoji="onEmoji"
+                @on-other="onOther"
                 @on-show-emoji-user="onShowEmojiUser"/>
         </template>
     </div>
@@ -256,6 +257,10 @@ export default {
 
         onEmoji(data) {
             this.dispatch("on-emoji", data)
+        },
+
+        onOther(data) {
+            this.dispatch("on-other", data)
         },
 
         onShowEmojiUser(data) {

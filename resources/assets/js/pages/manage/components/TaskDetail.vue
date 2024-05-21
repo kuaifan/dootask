@@ -277,25 +277,11 @@
                         </div>
                         <ul class="item-content file">
                             <li v-if="taskDetail.file_num > 50" class="tip">{{$L(`共${taskDetail.file_num}个文件，仅显示最新50个`)}}</li>
-                            <li v-for="file in fileList">
+                            <li v-for="file in fileList" @click="showFileDropdown(file, $event)">
                                 <img v-if="file.id" class="file-ext" :src="file.thumb"/>
                                 <Loading v-else class="file-load"/>
                                 <div class="file-name">{{file.name}}</div>
                                 <div class="file-size">{{$A.bytesToSize(file.size)}}</div>
-                                <div class="file-menu" :class="{show:file._show_menu}">
-                                    <Icon @click="viewFile(file)" type="md-eye" />
-                                    <Icon @click="downFile(file)" type="md-arrow-round-down" />
-                                    <EPopover v-model="file._show_menu" class="file-delete">
-                                        <div class="task-detail-delete-file-popover">
-                                            <p>{{$L('你确定要删除这个文件吗？')}}</p>
-                                            <div class="buttons">
-                                                <Button size="small" type="text" @click="file._show_menu=false">{{$L('取消')}}</Button>
-                                                <Button size="small" type="primary" @click="deleteFile(file)">{{$L('确定')}}</Button>
-                                            </div>
-                                        </div>
-                                        <i slot="reference" class="taskfont del">&#xe6ea;</i>
-                                    </EPopover>
-                                </div>
                             </li>
                         </ul>
                         <ul class="item-content">
@@ -307,7 +293,7 @@
                             </li>
                         </ul>
                     </FormItem>
-                    <FormItem v-if="subList.length > 0 || addsubForce">
+                    <FormItem v-if="subList.length > 0 || addsubForce" className="item-subtask">
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe6f0;</i>{{$L('子任务')}}
                         </div>
@@ -365,21 +351,21 @@
                     <div class="calculate-content"></div>
                     <EDropdownMenu slot="dropdown">
                         <EDropdownItem :command="1">
-                            <div class="task-menu-icon" >
+                            <div class="task-menu-icon">
                                 <Icon v-if="taskDetail.visibility == 1" class="completed" :type="'md-checkmark-circle'"/>
                                 <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
                                 {{$L('项目人员')}}
                             </div>
                         </EDropdownItem>
                         <EDropdownItem :command="2">
-                            <div class="task-menu-icon" >
+                            <div class="task-menu-icon">
                                 <Icon v-if="taskDetail.visibility == 2" class="completed" :type="'md-checkmark-circle'"/>
                                 <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
                                 {{$L('任务人员')}}
                             </div>
                         </EDropdownItem>
                         <EDropdownItem :command="3">
-                            <div class="task-menu-icon" >
+                            <div class="task-menu-icon">
                                 <Icon v-if="taskDetail.visibility == 3" class="completed" :type="'md-checkmark-circle'"/>
                                 <Icon v-else class="uncomplete" :type="'md-radio-button-off'"/>
                                 {{$L('指定成员')}}
@@ -391,14 +377,24 @@
                     <div class="calculate-content"></div>
                     <EDropdownMenu slot="dropdown">
                         <EDropdownItem :command="1">
-                            <div class="task-menu-icon" >
-                                {{$L('任务延期')}}
-                            </div>
+                            {{$L('任务延期')}}
                         </EDropdownItem>
                         <EDropdownItem :command="2">
-                            <div class="task-menu-icon" >
-                                {{$L('修改时间')}}
-                            </div>
+                            {{$L('修改时间')}}
+                        </EDropdownItem>
+                    </EDropdownMenu>
+                </EDropdown>
+                <EDropdown ref="eFileRef" class="calculate-dropdown" trigger="click" placement="bottom" @command="dropFile">
+                    <div class="calculate-content"></div>
+                    <EDropdownMenu slot="dropdown">
+                        <EDropdownItem :command="1">
+                            {{$L('查看附件')}}
+                        </EDropdownItem>
+                        <EDropdownItem :command="2">
+                            {{$L('下载附件')}}
+                        </EDropdownItem>
+                        <EDropdownItem :command="3" class="task-calc-warn-text">
+                            {{$L('删除附件')}}
                         </EDropdownItem>
                     </EDropdownMenu>
                 </EDropdown>
@@ -482,9 +478,12 @@
             }">
             <Form ref="formDelayTaskRef" :model="delayTaskForm" :rules="delayTaskRule" label-position="left" label-width="auto" @submit.native.prevent>
                 <FormItem :label="$L('延期时长')" prop="time">
-                    <Input type="number" v-model="delayTaskForm.time" :placeholder="$L('请输入时长')" >
+                    <Input type="number" v-model="delayTaskForm.time" :placeholder="$L('请输入时长')">
                         <template #append>
-                            {{$L('小时')}}
+                            <Select v-model="delayTaskForm.type" style="width:auto">
+                                <Option value="hour">{{$L('小时')}}</Option>
+                                <Option value="day">{{$L('天')}}</Option>
+                            </Select>
                         </template>
                     </Input>
                 </FormItem>
@@ -628,8 +627,9 @@ export default {
             delayTaskShow: false,
             delayTaskLoading: false,
             delayTaskForm: {
+                type: "hour",
                 time: "24",
-                remark: ''
+                remark: ""
             },
             delayTaskRule: {
                 time: [
@@ -1675,6 +1675,22 @@ export default {
             });
         },
 
+        showDropdown(ref, eRect){
+            const boxRect = this.$refs.scroller.$el.getBoundingClientRect()
+            const refEl = ref.$el
+            refEl.style.top = (eRect.top - boxRect.top) + 'px'
+            refEl.style.left = (eRect.left - boxRect.left) + 'px'
+            refEl.style.width = eRect.width + 'px'
+            refEl.style.height = eRect.height + 'px'
+            //
+            if (ref.visible) {
+                ref.hide()
+            }
+            setTimeout(() => {
+                ref.show()
+            }, 0)
+        },
+
         showCisibleDropdown(e){
             let eRect = null
             if (e === null) {
@@ -1685,37 +1701,12 @@ export default {
             if (eRect === null) {
                 return
             }
-            const boxRect = this.$refs.scroller.$el.getBoundingClientRect()
-            const refEl = this.$refs.eDropdownRef.$el
-            refEl.style.top = (eRect.top - boxRect.top) + 'px'
-            refEl.style.left = (eRect.left - boxRect.left) + 'px'
-            refEl.style.width = eRect.width + 'px'
-            refEl.style.height = eRect.height + 'px'
-            //
-            if (this.$refs.eDropdownRef.visible) {
-                this.$refs.eDropdownRef.hide()
-            }
-            setTimeout(() => {
-                this.$refs.eDropdownRef.show()
-            }, 0)
+            this.showDropdown(this.$refs.eDropdownRef, eRect)
         },
 
         showAtDropdown({target}){
             this.timeOpen = false
-            const eRect = target.getBoundingClientRect()
-            const boxRect = this.$refs.scroller.$el.getBoundingClientRect()
-            const refEl = this.$refs.eDeadlineRef.$el
-            refEl.style.top = (eRect.top - boxRect.top) + 'px'
-            refEl.style.left = (eRect.left - boxRect.left) + 'px'
-            refEl.style.width = eRect.width + 'px'
-            refEl.style.height = eRect.height + 'px'
-            //
-            if (this.$refs.eDeadlineRef.visible) {
-                this.$refs.eDeadlineRef.hide()
-            }
-            setTimeout(() => {
-                this.$refs.eDeadlineRef.show()
-            }, 0)
+            this.showDropdown(this.$refs.eDeadlineRef, target.getBoundingClientRect())
         },
 
         visibleUserSelectShowChange(isShow){
@@ -1763,7 +1754,11 @@ export default {
                 }
                 this.delayTaskLoading = true;
                 var date = new Date(this.taskDetail.end_at);
-                date.setHours(date.getHours() + Number(this.delayTaskForm.time));
+                if (this.delayTaskForm.type === 'day') {
+                    date.setDate(date.getDate() + Number(this.delayTaskForm.time));
+                } else {
+                    date.setHours(date.getHours() + Number(this.delayTaskForm.time));
+                }
                 this.$store.dispatch("taskUpdate", {
                     task_id: this.taskDetail.id,
                     times: [
@@ -1775,6 +1770,7 @@ export default {
                     $A.messageSuccess(msg);
                     this.delayTaskLoading = false;
                     this.delayTaskShow = false;
+                    this.delayTaskForm.type = 'hour';
                     this.delayTaskForm.time = '24';
                     this.delayTaskForm.remark = '';
                     this.$store.dispatch("getTaskOne", this.taskDetail.id).catch(() => {})
@@ -1783,6 +1779,31 @@ export default {
                     this.delayTaskLoading = false;
                 })
             })
+        },
+
+        showFileDropdown(file, {target}){
+            this.operationFile = file
+            this.showDropdown(this.$refs.eFileRef, target.getBoundingClientRect())
+        },
+
+        dropFile(command) {
+            switch (command) {
+                case 1:
+                    this.viewFile(this.operationFile)
+                    break;
+                case 2:
+                    this.downFile(this.operationFile)
+                    break;
+                case 3:
+                    $A.modalConfirm({
+                        title: '删除文件',
+                        content: `你确定要删除文件【${this.operationFile.name}】吗？`,
+                        onOk: () => {
+                            this.deleteFile(this.operationFile)
+                        }
+                    });
+                    break;
+            }
         },
 
         updateVisible() {

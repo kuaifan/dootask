@@ -1,7 +1,7 @@
 {
     "name": "DooTask",
-    "version": "0.37.17",
-    "codeVerson": 131,
+    "version": "0.37.32",
+    "codeVerson": 132,
     "description": "DooTask is task management system.",
     "scripts": {
         "start": "./cmd dev",
@@ -57,7 +57,7 @@
         "stylus-loader": "^7.1.0",
         "tinymce": "^5.10.3",
         "tui-calendar-hi": "^1.15.1-5",
-        "view-design-hi": "^4.7.0-53",
+        "view-design-hi": "^4.7.0-55",
         "vite": "^2.9.15",
         "vite-plugin-file-copy": "^1.0.0",
         "vite-plugin-require": "^1.1.10",

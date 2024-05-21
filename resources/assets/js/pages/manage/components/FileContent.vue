@@ -14,7 +14,7 @@
             <div v-else class="edit-header">
                 <div class="header-title">
                     <EPopover v-if="!equalContent" v-model="unsaveTip" class="file-unsave-tip">
-                        <div class="task-detail-delete-file-popover">
+                        <div class="confirm-popover">
                             <p>{{$L('未保存当前修改内容？')}}</p>
                             <div class="buttons">
                                 <Button size="small" type="text" @click="unSaveGive">{{$L('放弃')}}</Button>

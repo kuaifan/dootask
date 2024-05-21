@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\TestController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\IndexController;
 use App\Http\Controllers\Api\FileController;
@@ -53,8 +54,11 @@ Route::prefix('api')->middleware(['webapi'])->group(function () {
     Route::any('approve/{method}',                  ApproveController::class);
     Route::any('approve/{method}/{action}',         ApproveController::class);
     // 投诉
-    Route::any('complaint/{method}',                  ComplaintController::class);
-    Route::any('complaint/{method}/{action}',         ComplaintController::class);
+    Route::any('complaint/{method}',                ComplaintController::class);
+    Route::any('complaint/{method}/{action}',       ComplaintController::class);
+    // 测试
+    Route::any('test/{method}',                     TestController::class);
+    Route::any('test/{method}/{action}',            TestController::class);
 });
 
 /**

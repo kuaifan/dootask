@@ -251,6 +251,7 @@
                     &.file {
                         margin-bottom: -3px;
                         > li {
+                            cursor: pointer;
                             margin-bottom: 2px;
                             &.tip {
                                 color: #999;
@@ -281,38 +282,12 @@
                                 font-size: 12px;
                                 color: #bbbbbb;
                             }
-                            .file-menu {
-                                display: flex;
-                                align-items: center;
-                                opacity: 0;
-                                transition: all 0.3s;
-                                padding-left: 12px;
-                                &.show {
-                                    opacity: 1;
-                                }
-                                i {
-                                    font-size: 14px;
-                                    color: #aaaaaa;
-                                    transition: color 0.3s;
-                                    cursor: pointer;
-                                    padding: 0 4px;
-                                    &:hover {
-                                        color: #777777;
-                                    }
-                                    &.del {
-                                        font-size: 13px;
-                                        &:hover {
-                                            color: #ff0000;
-                                        }
-                                    }
-                                }
-                            }
                             &:hover {
                                 .file-name {
                                     color: $primary-title-color;
                                 }
-                                .file-menu {
-                                    opacity: 1;
+                                .file-size {
+                                    color: $primary-text-color;
                                 }
                             }
                         }
@@ -527,6 +502,9 @@
                     bottom: 0;
                     width: 100%;
                     height: 100%;
+                }
+                .calculate-text {
+                    color: $flow-status-start-color;
                 }
             }
         }
@@ -855,21 +833,14 @@
     }
 }
 
-.task-detail-delete-file-popover {
-    max-width: 200px;
-    .buttons {
-        text-align: right;
-        margin-top: 12px;
-        .ivu-btn-small {
-            font-size: 12px
-        }
-    }
-}
-
 .task-detail-loop {
     > li {
         text-align: center;
     }
+}
+
+.task-calc-warn-text {
+    color: $flow-status-start-color !important;
 }
 
 body.window-portrait {
@@ -878,6 +849,34 @@ body.window-portrait {
             .scroller {
                 .scrollbar-content {
                     overflow-x: auto;
+                }
+                .items {
+                    .ivu-form-item {
+                        &.item-subtask {
+                            display: flex;
+                            flex-direction: column;
+                            .ivu-form-item-content {
+                                margin-left: 0 !important;
+                                > ul {
+                                    margin-left: 0;
+                                }
+                                &.nosub {
+                                    margin-top: 14px;
+                                    > li {
+                                        .add-input,
+                                        .add-button {
+                                            margin-top: -2px;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    .item-content {
+                        &.nosub {
+                            margin-top: 14px;
+                        }
+                    }
                 }
             }
         }

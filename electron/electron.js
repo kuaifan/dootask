@@ -96,6 +96,14 @@ function createMainWindow() {
         }
     })
 
+    mainWindow.on('focus', () => {
+        mainWindow.webContents.send("browserWindowFocus", {})
+    })
+
+    mainWindow.on('blur', () => {
+        mainWindow.webContents.send("browserWindowBlur", {})
+    })
+
     mainWindow.on('close', event => {
         if (!willQuitApp) {
             utils.onBeforeUnload(event, mainWindow).then(() => {
@@ -157,6 +165,14 @@ function createChildWindow(args) {
             if (title == "index.html" || config.titleFixed === true) {
                 event.preventDefault()
             }
+        })
+
+        browser.on('focus', () => {
+            browser.webContents.send("browserWindowFocus", {})
+        })
+
+        browser.on('blur', () => {
+            browser.webContents.send("browserWindowBlur", {})
         })
 
         browser.on('close', event => {
@@ -640,18 +656,6 @@ app.on('before-quit', () => {
 
 app.on("will-quit",function(){
     globalShortcut.unregisterAll();
-})
-
-app.on('browser-window-blur', () => {
-    if (mainWindow) {
-        mainWindow.webContents.send("browserWindowBlur", {})
-    }
-})
-
-app.on('browser-window-focus', () => {
-    if (mainWindow) {
-        mainWindow.webContents.send("browserWindowFocus", {})
-    }
 })
 
 /**

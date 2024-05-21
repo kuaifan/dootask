@@ -124,14 +124,6 @@
             <div class="block-setting-box">
                 <h3>{{ $L('消息相关') }}</h3>
                 <div class="form-box">
-                    <FormItem :label="$L('全员群组禁言')" prop="allGroupMute">
-                        <RadioGroup v-model="formDatum.all_group_mute">
-                            <Radio label="open">{{$L('开放')}}</Radio>
-                            <Radio label="close">{{$L('禁言')}}</Radio>
-                        </RadioGroup>
-                        <div v-if="formDatum.all_group_mute == 'open'" class="form-tip">{{$L('开放：所有人都可以在全员群组发言。')}}</div>
-                        <div v-else-if="formDatum.all_group_mute == 'close'" class="form-tip">{{$L('禁言：除管理员外所有人都禁止在全员群组发言。')}}</div>
-                    </FormItem>
                     <FormItem :label="$L('自动进入全员群')" prop="allGroupAutoin">
                         <RadioGroup v-model="formDatum.all_group_autoin">
                             <Radio label="yes">{{$L('自动')}}</Radio>
@@ -139,6 +131,14 @@
                         </RadioGroup>
                         <div v-if="formDatum.all_group_autoin == 'yes'" class="form-tip">{{$L('自动：注册成功后自动进入全员群。')}}</div>
                         <div v-else-if="formDatum.all_group_autoin == 'no'" class="form-tip">{{$L('关闭：其他成员通过@邀请进入。')}}</div>
+                    </FormItem>
+                    <FormItem :label="$L('全员群组禁言')" prop="allGroupMute">
+                        <RadioGroup v-model="formDatum.all_group_mute">
+                            <Radio label="open">{{$L('开放')}}</Radio>
+                            <Radio label="close">{{$L('禁言')}}</Radio>
+                        </RadioGroup>
+                        <div v-if="formDatum.all_group_mute == 'open'" class="form-tip">{{$L('开放：所有人都可以在全员群组发言。')}}</div>
+                        <div v-else-if="formDatum.all_group_mute == 'close'" class="form-tip">{{$L('禁言：除管理员外所有人都禁止在全员群组发言。')}}</div>
                     </FormItem>
                     <FormItem :label="$L('私聊禁言')" prop="userPrivateChatMute">
                         <RadioGroup v-model="formDatum.user_private_chat_mute">
@@ -176,6 +176,14 @@
                         </RadioGroup>
                         <div v-if="formDatum.anon_message == 'open'" class="form-tip">{{$L('允许匿名发送消息给其他成员。')}}</div>
                         <div v-else class="form-tip">{{$L('禁止匿名发送消息。')}}</div>
+                    </FormItem>
+                    <FormItem :label="$L('语音转文字')" prop="voice2text">
+                        <RadioGroup v-model="formDatum.voice2text">
+                            <Radio label="open">{{$L('开启')}}</Radio>
+                            <Radio label="close">{{$L('关闭')}}</Radio>
+                        </RadioGroup>
+                        <div v-if="formDatum.voice2text == 'open'" class="form-tip">{{$L('长按语音消息可转换成文字。')}} ({{$L('需要在应用中开启 ChatGPT AI 机器人')}})</div>
+                        <div v-else class="form-tip">{{$L('关闭语音转文字功能。')}}</div>
                     </FormItem>
                     <FormItem :label="$L('端到端加密')" prop="e2eMessage">
                         <RadioGroup v-model="formDatum.e2e_message">

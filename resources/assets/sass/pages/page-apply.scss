@@ -24,7 +24,7 @@
                 display: flex;
                 align-items: center;
 
-                >h1 {
+                > h1 {
                     color: $primary-title-color;
                     font-size: 28px;
                     font-weight: 600;
@@ -37,19 +37,19 @@
             padding: 16px 30px;
             overflow: auto;
 
-            .apply-row-title{
+            .apply-row-title {
                 margin-bottom: 16px;
 
             }
 
-            >div.apply-row-title:nth-last-child(2){
+            > div.apply-row-title:nth-last-child(2) {
                 margin-top: 22px !important;
             }
 
             .apply-col {
                 margin-bottom: 16px;
 
-                >div {
+                > div {
                     font-size: 14px;
                     font-weight: normal;
                     background: #FFFFFF;
@@ -63,18 +63,18 @@
                     position: relative;
                     border: 1px solid #f1f1f1;
 
-                    >.logo {
+                    > .logo {
                         width: 40px;
                         height: 40px;
                         display: inline-block;
                     }
 
-                    >p{
+                    > p {
                         overflow: hidden;
                         text-overflow: ellipsis;
                         display: -webkit-box;
                         -webkit-box-orient: vertical;
-                        -webkit-line-clamp: 2;
+                        -webkit-line-clamp: 1;
                     }
 
                     .apply-box-top-report {
@@ -90,13 +90,13 @@
         @media (max-width: 510px) {
             background-color: #FFFFFF;
 
-            .apply-row-title{
+            .apply-row-title {
                 margin-bottom: 8px !important;
             }
 
-            .apply-content{
+            .apply-content {
 
-                .ivu-row{
+                .ivu-row {
                     margin-left: -12px !important;
                     margin-right: -12px !important;
                 }
@@ -104,10 +104,10 @@
                 .apply-col {
                     margin-bottom: 6px;
 
-                    >div {
+                    > div {
                         display: block;
                         text-align: center;
-                        padding:12px 0;
+                        padding: 12px 0;
                         background: none;
                         border-color: #ffffff;
 
@@ -116,7 +116,7 @@
                             position: relative;
                         }
 
-                        >p{
+                        > p {
                             -webkit-line-clamp: 1;
                         }
 
@@ -138,72 +138,95 @@
     background-repeat: no-repeat;
     background-size: contain;
     background-position: center center;
+
     &.approve {
         background-image: url("../images/application/approve.svg");
     }
+
     &.add-project {
         background-image: url("../images/application/add-project.svg");
     }
+
     &.add-task {
         background-image: url("../images/application/add-task.svg");
     }
+
     &.all-user {
         background-image: url("../images/application/all-user.svg");
     }
+
     &.complaint {
         background-image: url("../images/application/complaint.svg");
     }
+
     &.app-push {
         background-image: url("../images/application/app-push.svg");
     }
+
     &.approve {
         background-image: url("../images/application/approve.svg");
     }
+
     &.calendar {
         background-image: url("../images/application/calendar.svg");
     }
+
     &.file {
         background-image: url("../images/application/file.svg");
     }
+
     &.ldap {
         background-image: url("../images/application/ldap.svg");
     }
+
     &.mail {
         background-image: url("../images/application/mail.svg");
     }
+
     &.meeting {
         background-image: url("../images/application/meeting.svg");
     }
+
     &.meeting-create {
         background-image: url("../images/application/meeting-create.svg");
     }
+
     &.meeting-join {
         background-image: url("../images/application/meeting-join.svg");
     }
+
     &.okr {
         background-image: url("../images/application/okr.svg");
     }
+
     &.okr-analyze {
         background-image: url("../images/application/okr-analyze.svg");
     }
+
     &.report {
         background-image: url("../images/application/report.svg");
     }
+
     &.robot {
         background-image: url("../images/application/robot.svg");
     }
+
     &.scan {
         background-image: url("../images/application/scan.svg");
     }
+
     &.setting {
         background-image: url("../images/application/setting.svg");
     }
+
     &.signin {
         background-image: url("../images/application/signin.svg");
     }
+
     &.vote {
         background-image: url("../images/application/vote.svg");
     }
+
     &.word-chain {
         background-image: url("../images/application/word-chain.svg");
     }
@@ -225,7 +248,7 @@
         padding: 12px 30px;
         color: #303133;
 
-        >p {
+        > p {
             float: right;
             cursor: pointer;
             color: #2b85e4;
@@ -243,9 +266,8 @@
         flex: 1;
         padding: 8px 30px;
 
-        //
-        .setting-component-item,
-        .setting-item {
+        .setting-item,
+        .setting-component-item {
             position: absolute;
             top: 0;
             left: 0;
@@ -255,83 +277,21 @@
             display: flex;
             flex-direction: column;
 
-            >.ivu-form {
+            .ivu-form {
                 padding: 8px 30px;
                 overflow: auto;
                 flex: 1;
-
-                .ivu-form-item {
-                    padding: 12px 0 0 0;
-                    .ivu-form-item .ivu-form-item-content {
-                        display: flex;
-
-                        >.ivu-form {
-                            margin-bottom: 8px;
-
-                        }
-                    }
-
-                }
-
-            }
-
-
-            .block-setting-box {
-                position: relative;
-                padding: 24px 24px 4px;
-                margin: 24px 0 12px;
-                border-radius: 8px;
-                border: 1px solid #eeeeee;
-                transition: box-shadow 0.3s;
-
-                @media (max-width: 420px) {
-                    .block-setting-advance{
-                        >.ivu-form-item{
-                            display: flex;
-                            flex-direction: column;
-                            .ivu-form-item-label{
-                                text-align: left;
-                            }
-                        }
-                    }
-                }
-
-                @media (max-width: 460px) {
-                    .block-setting-msg-unread{
-                        >.ivu-form-item{
-                            display: flex;
-                            flex-direction: column;
-                            .ivu-form-item-label{
-                                text-align: left;
-                            }
-                        }
-                    }
-                }
-
-                h3 {
-                    position: absolute;
-                    top: 0;
-                    left: 24px;
-                    padding: 4px 10px;
-                    border-radius: 4px;
-                    display: inline-block;
-                    background-color: #ffffff;
-                    border: 1px solid #eeeeee;
-                    font-size: 15px;
-                    font-weight: 500;
-                    transform: translateY(-50%)
-                }
             }
 
             .setting-template {
                 margin-bottom: 12px;
 
-                >div {
+                > div {
                     padding-right: 12px;
                 }
             }
 
-            .export-data>p {
+            .export-data > p {
                 cursor: pointer;
                 color: #2b85e4;
             }
@@ -344,7 +304,8 @@
                 display: flex;
                 align-items: center;
                 gap: 8px;
-                .ivu-btn{
+
+                .ivu-btn {
                     min-width: 120px;
                     height: 38px;
                     line-height: 36px;
@@ -361,9 +322,11 @@
             flex-direction: column;
             height: 100%;
             margin: 0 -30px;
-            .ivu-tabs-bar{
+
+            .ivu-tabs-bar {
                 padding: 0 10px;
             }
+
             .ivu-tabs-content {
                 height: 100%;
                 flex: 1;
@@ -424,7 +387,7 @@
                     }
                 }
 
-                .desc{
+                .desc {
                     cursor: pointer;
                     height: 84px;
                     @media (max-width: 510px) {
@@ -455,21 +418,17 @@
         .aibot-warp {
             position: relative;
             height: 100%;
-            .ivu-form {
-                overflow: hidden;
-                padding: 0;
-                margin: 0 30px;
-            }
         }
-
     }
 }
 
 .mobile-scan-login-box {
     margin: 2px 0 12px;
+
     .mobile-scan-login-title {
         font-size: 20px;
     }
+
     .mobile-scan-login-subtitle {
         padding-top: 8px;
     }
@@ -477,13 +436,15 @@
 
 body.window-portrait {
     .page-apply {
-        .apply-head{
+        .apply-head {
             margin: 24px 24px 0 24px;
         }
-        .apply-content{
+
+        .apply-content {
             padding: 16px 20px;
+
             .apply-col {
-                >div {
+                > div {
                     font-size: 12px;
                     font-weight: 500;
                 }

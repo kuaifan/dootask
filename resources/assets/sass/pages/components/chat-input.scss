@@ -190,6 +190,14 @@
                             width: auto;
                             min-width: 1.2em;
                         }
+                        > .ql-ui:before {
+                            color: #0088ff;
+                        }
+                        &[data-list=bullet] {
+                            > .ql-ui:before {
+                                font-weight: 900;
+                            }
+                        }
                         &[data-list=checked],
                         &[data-list=unchecked] {
                             > .ql-ui:before {
@@ -204,6 +212,7 @@
                         &[data-list=unchecked] {
                             > .ql-ui:before {
                                 content: "\e6f1";
+                                color: #777;
                             }
                         }
                     }
