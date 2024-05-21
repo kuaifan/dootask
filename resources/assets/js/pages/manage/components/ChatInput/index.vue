@@ -222,6 +222,7 @@ import touchclick from "../../../../directives/touchclick";
 import TransferDom from "../../../../directives/transfer-dom";
 import clickoutside from "../../../../directives/clickoutside";
 import longpress from "../../../../directives/longpress";
+import {inputLoadAdd, inputLoadIsLast, inputLoadRemove} from "./one";
 import {isMarkdownFormat} from "../../../../store/markdown";
 import {Store} from "le5le-store";
 
@@ -342,6 +343,9 @@ export default {
             fullQuill: null,
         };
     },
+    created() {
+        inputLoadAdd(this.dialogId, this._uid)
+    },
     mounted() {
         this.init();
         //
@@ -370,6 +374,7 @@ export default {
         $A.loadScript('js/emoticon.all.js')
     },
     beforeDestroy() {
+        inputLoadRemove(this.dialogId, this._uid)
         if (this.quill) {
             this.quill.getModule("mention")?.hideMentionList();
             this.quill = null
@@ -1359,6 +1364,9 @@ export default {
 
         addMention(data) {
             if (!this.quill) {
+                return;
+            }
+            if (!inputLoadIsLast(this.dialogId, this._uid)) {
                 return;
             }
             const {index} = this.quill.getSelection(true);

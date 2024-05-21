@@ -2,6 +2,29 @@ import Vue from 'vue';
 import Emoji from "./emoji.vue";
 import {Modal} from "view-design-hi";
 
+const inputLoadUid = {}
+
+function inputLoadAdd(dialogId, uid) {
+    if (typeof inputLoadUid[dialogId] === "undefined") {
+        inputLoadUid[dialogId] = [];
+    }
+    inputLoadUid[dialogId].push(uid)
+}
+
+function inputLoadRemove(dialogId, uid) {
+    if (typeof inputLoadUid[dialogId] === "undefined") {
+        return;
+    }
+    inputLoadUid[dialogId] = inputLoadUid[dialogId].filter(v => v !== uid)
+}
+
+function inputLoadIsLast(dialogId, uid) {
+    if (typeof inputLoadUid[dialogId] === "undefined") {
+        return false;
+    }
+    return inputLoadUid[dialogId][inputLoadUid[dialogId].length - 1] === uid
+}
+
 function choiceEmojiOne() {
     return new Promise(resolve => {
         const Instance = new Vue({
@@ -53,4 +76,4 @@ function choiceEmojiOne() {
     })
 }
 
-export {choiceEmojiOne}
+export {choiceEmojiOne, inputLoadAdd, inputLoadRemove, inputLoadIsLast}
