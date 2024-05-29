@@ -46,29 +46,9 @@
     .notification-body {
         max-height: 210px;
         margin-bottom: 16px;
-        .markdown-preview {
-            margin: -20px -12px;
-            h1 {
-                font-size: 24px;
-                margin-bottom: 12px;
-                &:first-child {
-                    padding-top: 0;
-                }
-            }
-            h2 {
-                font-size: 18px !important;
-                padding-top: 2px !important;
-            }
-            ul {
-                li {
-                    padding: 2px 0 2px 2px !important;
-                    &:after {
-                        top: 10px !important;
-                        width: 6px !important;
-                        height: 6px !important;
-                    }
-                }
-            }
+        .vuepress-markdown-body {
+            padding: 4px;
+            font-size: 14px;
         }
     }
     .notification-tip {

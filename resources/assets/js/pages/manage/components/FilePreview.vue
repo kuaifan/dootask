@@ -14,7 +14,7 @@
             </div>
             <div class="content-body">
                 <template v-if="file.type=='document'">
-                    <MDPreview v-if="contentDetail.type=='md'" :initialValue="contentDetail.content"/>
+                    <VMPreview v-if="contentDetail.type=='md'" :value="contentDetail.content"/>
                     <TEditor v-else :value="contentDetail.content" height="100%" readOnly/>
                 </template>
                 <Drawio v-else-if="file.type=='drawio'" ref="myFlow" :value="contentDetail" :title="file.name" readOnly/>
@@ -30,7 +30,7 @@
 <script>
 import IFrame from "./IFrame";
 
-const MDPreview = () => import('../../../components/MDEditor/preview');
+const VMPreview = () => import('../../../components/VMEditor/preview');
 const TEditor = () => import('../../../components/TEditor');
 const AceEditor = () => import('../../../components/AceEditor');
 const OnlyOffice = () => import('../../../components/OnlyOffice');
@@ -39,7 +39,7 @@ const Minder = () => import('../../../components/Minder');
 
 export default {
     name: "FilePreview",
-    components: {IFrame, AceEditor, TEditor, MDPreview, OnlyOffice, Drawio, Minder},
+    components: {IFrame, AceEditor, TEditor, VMPreview, OnlyOffice, Drawio, Minder},
     props: {
         code: {
             type: String,

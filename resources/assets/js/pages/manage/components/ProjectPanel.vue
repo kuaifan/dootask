@@ -75,7 +75,7 @@
         </div>
         <div class="project-subbox">
             <div class="project-subtitle" @click="showDesc">
-                <MarkdownPreviewNostyle ref="descPreview" :initialValue="projectData.desc"/>
+                <VMPreviewNostyle ref="descPreview" :value="projectData.desc"/>
             </div>
             <div class="project-switch">
                 <div v-if="completedCount > 0" class="project-checkbox">
@@ -487,16 +487,16 @@ import ProjectPermission from "./ProjectPermission";
 import TaskMenu from "./TaskMenu";
 import TaskDeleted from "./TaskDeleted";
 import ProjectGantt from "./ProjectGantt";
-import MarkdownPreviewNostyle from "../../../components/MDEditor/components/preview/nostyle.vue";
 import UserSelect from "../../../components/UserSelect.vue";
 import UserAvatarTip from "../../../components/UserAvatar/tip.vue";
+import VMPreviewNostyle from "../../../components/VMEditor/nostyle.vue";
 
 export default {
     name: "ProjectPanel",
     components: {
+        VMPreviewNostyle,
         UserAvatarTip,
         UserSelect,
-        MarkdownPreviewNostyle,
         TaskMenu,
         ProjectWorkflow,
         ProjectPermission,

@@ -3,7 +3,7 @@
         <PageTitle :title="title"/>
         <Loading v-if="loadIng > 0"/>
         <template v-else-if="!isWait">
-            <MDPreview v-if="isType('md')" :initialValue="msgDetail.content.content"/>
+            <VMPreview v-if="isType('md')" :value="msgDetail.content.content"/>
             <TEditor v-else-if="isType('text')" :value="msgDetail.content.content" height="100%" readOnly/>
             <Drawio v-else-if="isType('drawio')" v-model="msgDetail.content" :title="msgDetail.msg.name" readOnly/>
             <Minder v-else-if="isType('mind')" :value="msgDetail.content" readOnly/>
@@ -24,7 +24,7 @@
     align-items: center;
     .preview-iframe,
     .ace_editor,
-    .markdown-preview-warp,
+    .vmpreview-wrapper,
     .teditor-wrapper,
     .no-support,
     .view-code {
@@ -38,7 +38,7 @@
         outline: 0;
         padding: 0;
     }
-    .markdown-preview-warp {
+    .vmpreview-wrapper {
         overflow: auto;
     }
     .preview-iframe {
@@ -68,7 +68,7 @@
 import {mapState} from "vuex";
 import IFrame from "../manage/components/IFrame";
 
-const MDPreview = () => import('../../components/MDEditor/preview');
+const VMPreview = () => import('../../components/VMEditor/preview');
 const TEditor = () => import('../../components/TEditor');
 const AceEditor = () => import('../../components/AceEditor');
 const OnlyOffice = () => import('../../components/OnlyOffice');
@@ -76,7 +76,7 @@ const Drawio = () => import('../../components/Drawio');
 const Minder = () => import('../../components/Minder');
 
 export default {
-    components: {IFrame, AceEditor, TEditor, MDPreview, OnlyOffice, Drawio, Minder},
+    components: {IFrame, AceEditor, TEditor, VMPreview, OnlyOffice, Drawio, Minder},
     data() {
         return {
             loadIng: 0,

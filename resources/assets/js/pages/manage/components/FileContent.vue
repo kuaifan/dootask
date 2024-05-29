@@ -79,8 +79,8 @@
                 <div v-if="historyShow" class="content-mask"></div>
                 <template v-if="file.type=='document'">
                     <template v-if="contentDetail.type=='md'">
-                        <MDEditor v-if="edit" v-model="contentDetail.content" height="100%" :toolbars="toolbars"/>
-                        <MDPreview v-else :initialValue="contentDetail.content"/>
+                        <VMEditor v-if="edit" v-model="contentDetail.content"/>
+                        <VMPreview v-else :value="contentDetail.content"/>
                     </template>
                     <TEditor v-else :readOnly="!edit" v-model="contentDetail.content" height="100%" @editorSave="handleClick('saveBefore')"/>
                 </template>
@@ -129,8 +129,8 @@ import {mapState} from "vuex";
 import FileHistory from "./FileHistory";
 import IFrame from "./IFrame";
 
-const MDEditor = () => import('../../../components/MDEditor/index');
-const MDPreview = () => import('../../../components/MDEditor/preview');
+const VMEditor = () => import('../../../components/VMEditor/index');
+const VMPreview = () => import('../../../components/VMEditor/preview');
 const TEditor = () => import('../../../components/TEditor');
 const AceEditor = () => import('../../../components/AceEditor');
 const OnlyOffice = () => import('../../../components/OnlyOffice');
@@ -139,7 +139,7 @@ const Minder = () => import('../../../components/Minder');
 
 export default {
     name: "FileContent",
-    components: {IFrame, FileHistory, AceEditor, TEditor, MDEditor, OnlyOffice, Drawio, Minder, MDPreview},
+    components: {IFrame, FileHistory, AceEditor, TEditor, VMEditor, OnlyOffice, Drawio, Minder, VMPreview},
     props: {
         value: {
             type: Boolean,
@@ -299,81 +299,6 @@ export default {
             }
             return '';
         },
-
-        toolbars() {
-            return this.windowPortrait ? {
-                strong: true,
-                italic: true,
-                overline: true,
-                h1: true,
-                h2: true,
-                h3: true,
-                h4: false,
-                h5: false,
-                h6: false,
-                hr: true,
-                quote: false,
-                ul: true,
-                ol: true,
-                code: true,
-                link: true,
-                image: false,
-                uploadImage: false,
-                table: true,
-                checked: false,
-                notChecked: false,
-                split: true,
-                preview: false,
-                fullscreen: false,
-                theme: false,
-                exportmd: false,
-                importmd: false,
-                save: false,
-                clear: false,
-                scrolling: false,
-                html_to_markdown: false,
-                custom_image: false,
-                custom_uploadImage: false,
-                custom_uploadFile: false,
-                custom_fullscreen: false,
-            } : {
-                strong: true,
-                italic: true,
-                overline: true,
-                h1: true,
-                h2: true,
-                h3: true,
-                h4: false,
-                h5: false,
-                h6: false,
-                hr: true,
-                quote: true,
-                ul: true,
-                ol: true,
-                code: true,
-                link: true,
-                image: false,
-                uploadImage: false,
-                table: true,
-                checked: true,
-                notChecked: true,
-                split: true,
-                preview: true,
-                fullscreen: false,
-                theme: false,
-                exportmd: false,
-                importmd: false,
-                save: false,
-                clear: false,
-                scrolling: true,
-                html_to_markdown: true,
-
-                custom_image: true,
-                custom_uploadImage: true,
-                custom_uploadFile: true,
-                custom_fullscreen: true,
-            }
-        }
     },
 
     methods: {

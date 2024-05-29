@@ -36,6 +36,7 @@
     }
 
     .edit-header {
+        flex-shrink: 0;
         display: flex;
         flex-direction: row;
         align-items: center;
@@ -133,39 +134,24 @@
         display: flex;
         position: relative;
 
-        .teditor-wrapper,
-        .mdeditor-wrapper {
-            flex: 1;
-            display: flex;
+        .vmeditor-wrapper,
+        .vmpreview-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .vmpreview-wrapper {
+            overflow: auto;
         }
 
         .teditor-wrapper {
+            flex: 1;
+            display: flex;
             .tox-editor-header {
                 .tox-toolbar--scrolling {
                     flex-wrap: wrap;
-                }
-            }
-        }
-
-        .mdeditor-box {
-            position: relative;
-            width: 100%;
-
-            .markdown {
-                position: absolute;
-                top: 0;
-                left: 0;
-                bottom: 0;
-                right: 0;
-                overflow: auto;
-                transform: translateZ(0);
-
-                .markdown-toolbars {
-                    border-bottom: 1px solid #eeeeee;
-                }
-
-                &.border {
-                    border: 0 !important;
                 }
             }
         }
@@ -307,10 +293,6 @@
                 margin: 0;
                 border: 0;
             }
-        }
-        .markdown-preview-warp {
-            flex: 1;
-            overflow: auto;
         }
     }
 }

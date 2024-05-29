@@ -30,7 +30,7 @@
                 <div v-if="$Platform === 'mac'" class="notification-tip">{{$L('离最新版本只有一步之遥了！重新启动应用即可完成更新。')}}</div>
             </div>
             <Scrollbar class-name="notification-body">
-                <MarkdownPreview :initialValue="updateNote"/>
+                <VMPreview :value="updateNote"/>
             </Scrollbar>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="updateShow=false">{{$L('稍后')}}</Button>
@@ -41,13 +41,13 @@
 </template>
 
 <script>
-import MarkdownPreview from "./MDEditor/components/preview";
+const VMPreview = () => import('./VMEditor/preview');
 import axios from "axios";
 import {Store} from "le5le-store";
 
 export default {
     name: 'RightBottom',
-    components: {MarkdownPreview},
+    components: {VMPreview},
     data() {
         return {
             loadIng: 0,
