@@ -47,7 +47,7 @@
         </DrawerOverlay>
 
         <!--AI 机器人-->
-        <DrawerOverlay v-model="aibotShow" placement="right" :size="600">
+        <DrawerOverlay v-model="aibotShow" placement="right" :size="650">
             <div class="ivu-modal-wrap-apply">
                 <div class="ivu-modal-wrap-apply-title">
                     {{ $L('AI 机器人') }}
@@ -91,6 +91,11 @@
                         <TabPane :label="$L('通义千问')" name="qianwen">
                             <div class="aibot-warp">
                                 <SystemAibot type="Qianwen" v-if="aibotTabAction == 'qianwen'" />
+                            </div>
+                        </TabPane>
+                        <TabPane :label="$L('智谱清言')" name="zhipu">
+                            <div class="aibot-warp">
+                                <SystemAibot type="Zhipu" v-if="aibotTabAction == 'zhipu'" />
                             </div>
                         </TabPane>
                     </Tabs>
@@ -274,6 +279,12 @@ export default {
                     label: "Qianwen",
                     src: $A.mainUrl('avatar/%E9%80%9A%E4%B9%89%E5%8D%83%E9%97%AE.png'),
                     desc: this.$L('我是达摩院自主研发的超大规模语言模型，能够回答问题、创作文字，还能表达观点、撰写代码。')
+                },
+                {
+                    value: "zhipu",
+                    label: "Zhipu",
+                    src: $A.mainUrl('images/avatar/default_zhipu.png'),
+                    desc: `${this.$L('我是智谱清言，是智谱 AI 公司于2023训练的语言模型。')}${this.$L('我的任务是针对用户的问题和要求提供适当的答复和支持。')}`
                 },
             ],
             aibotTabAction: "opanai",
