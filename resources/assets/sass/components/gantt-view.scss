@@ -33,20 +33,27 @@
         }
 
         .gantt-title {
+            display: flex;
+            align-items: center;
             height: 76px;
             flex-grow: 0;
             flex-shrink: 0;
             background-color: #F9FAFB;
             padding-left: 12px;
+            padding-top: 26px;
             overflow: hidden;
 
             .gantt-title-text {
-                line-height: 100px;
-                max-width: 200px;
+                flex: 1;
+                line-height: 22px;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 font-weight: 600;
+            }
+
+            .gantt-title-right {
+                flex-shrink: 0;
             }
         }
 
@@ -121,6 +128,28 @@
         background-color: #ffffff;
         position: relative;
         overflow: hidden;
+
+        .gantt-size {
+            position: absolute;
+            top: 76px;
+            left: 0;
+            z-index: 2;
+            overflow: hidden;
+            cursor: pointer;
+            user-select: none;
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.502);
+            transition: all 250ms;
+            box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+            border-bottom-right-radius: 9px;
+            &:hover {
+                box-shadow: 0 0 6px rgba(0, 0, 0, 0.15);
+                background: #fff;
+            }
+            > i {
+                font-size: 20px;
+            }
+        }
 
         .gantt-chart {
             position: absolute;

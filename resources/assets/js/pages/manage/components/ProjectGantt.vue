@@ -5,24 +5,27 @@
             :menuWidth="menuWidth"
             :itemWidth="80"
             @on-change="onChange"
-            @on-click="onClick"/>
-        <Dropdown class="project-gstc-dropdown-filtr" :style="dropStyle" trigger="click" @on-click="onSwitchColumn">
-            <Icon class="project-gstc-dropdown-icon" :class="{filtr:filtrProjectId > 0}" type="md-funnel" />
-            <DropdownMenu slot="list">
-                <DropdownItem :name="0" :class="{'dropdown-active':filtrProjectId == 0}">{{ $L('全部') }}</DropdownItem>
-                <DropdownItem
-                    v-for="(item, index) in projectColumn"
-                    :key="index"
-                    :name="item.id"
-                    :class="{'dropdown-active':filtrProjectId == item.id}">
-                    {{ item.name }}
-                    <span v-if="item.tasks">({{ filtrLength(item.tasks) }})</span>
-                </DropdownItem>
-            </DropdownMenu>
-        </Dropdown>
+            @on-click="onClick">
+            <template #titleTool>
+                <Dropdown class="project-gstc-dropdown-filtr" trigger="click" @on-click="onSwitchColumn">
+                    <Icon class="project-gstc-dropdown-icon" :class="{filtr:filtrProjectId > 0}" type="md-funnel" />
+                    <DropdownMenu slot="list">
+                        <DropdownItem :name="0" :class="{'dropdown-active':filtrProjectId == 0}">{{ $L('全部') }}</DropdownItem>
+                        <DropdownItem
+                            v-for="(item, index) in projectColumn"
+                            :key="index"
+                            :name="item.id"
+                            :class="{'dropdown-active':filtrProjectId == item.id}">
+                            {{ item.name }}
+                            <span v-if="item.tasks">({{ filtrLength(item.tasks) }})</span>
+                        </DropdownItem>
+                    </DropdownMenu>
+                </Dropdown>
+            </template>
+        </GanttView>
         <div class="project-gstc-edit" :class="{info:editShowInfo, visible:editData && editData.length > 0}">
             <div class="project-gstc-edit-info">
-                <Table size="small" max-height="600" :columns="editColumns" :data="editData"></Table>
+                <Table max-height="600" :columns="editColumns" :data="editData"></Table>
                 <div class="project-gstc-edit-btns">
                     <Button :loading="editLoad > 0" size="small" type="text" @click="editSubmit(false)">{{$L('取消')}}</Button>
                     <Button :loading="editLoad > 0" size="small" type="primary" @click="editSubmit(true)">{{$L('保存')}}</Button>
@@ -112,10 +115,6 @@ export default {
 
         menuWidth() {
             return this.windowWidth < 1440 ? 180 : 260;
-        },
-
-        dropStyle() {
-            return this.windowWidth < 1440 ? {left: '142px'} : {};
         },
 
         completedTask() {

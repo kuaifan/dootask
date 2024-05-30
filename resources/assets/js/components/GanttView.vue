@@ -1,28 +1,37 @@
 <template>
     <div class="common-gantt">
-        <div class="gantt-left" :style="{width:menuWidth+'px'}">
+        <div class="gantt-left" :style="leftStyle">
             <div class="gantt-title">
                 <div class="gantt-title-text">{{$L('任务名称')}}</div>
+                <div class="gantt-title-right"><slot name="titleTool"/></div>
             </div>
             <ul ref="ganttItem"
                 class="gantt-item"
                 @scroll="itemScrollListener"
                 @mouseenter="mouseType='item'">
-                <li v-for="(item, key) in lists" :key="key">
-                    <div v-if="item.overdue" class="item-overdue" @click="clickItem(item)">{{$L('已超期')}}</div>
-                    <div class="item-title" :class="{complete:item.complete, overdue:item.overdue}" @click="clickItem(item)">{{item.label}}</div>
-                    <Icon class="item-icon" type="ios-locate-outline" @click="scrollPosition(key)"/>
+                <li v-for="(item, key) in lists" :key="key" @click="clickItem(item, key)">
+                    <div v-if="item.overdue" class="item-overdue">{{$L('已超期')}}</div>
+                    <div class="item-title" :class="{complete:item.complete, overdue:item.overdue}">{{item.label}}</div>
+                    <Icon class="item-icon" type="ios-locate-outline" @click.stop="scrollPosition(key)"/>
                 </li>
             </ul>
         </div>
         <div ref="ganttRight" class="gantt-right">
+            <div class="gantt-size" @click="maximize=!maximize">
+                <i v-if="maximize" class="taskfont">&#xe7d4;</i>
+                <i v-else class="taskfont">&#xe7d3;</i>
+            </div>
             <div class="gantt-chart">
                 <ul class="gantt-month">
                     <li v-for="(item, key) in monthNum" :key="key" :style="monthStyle(key)">
                         <div class="month-format">{{monthFormat(key)}}</div>
                     </li>
                 </ul>
-                <ul class="gantt-date" @mousedown="dateMouseDown">
+                <ul class="gantt-date"
+                    @touchstart="dateTouchstart"
+                    @touchmove="dateTouchmove"
+                    @touchend="dateTouchend"
+                    @mousedown="dateMouseDown">
                     <li v-for="(item, key) in dateNum" :key="key" :style="dateStyle(key)">
                         <div class="date-format">
                             <div class="format-day">{{dateFormat(key, 'day')}}</div>
@@ -77,10 +86,13 @@ export default {
             mouseItem: null,
             mouseBak: {},
 
-            dateMove: null
+            dateMove: null,
+
+            maximize: false,
         }
     },
     mounted() {
+        this.maximize = this.windowPortrait;
         this.dateWidth = this.itemWidth;
         this.$refs.ganttRight.addEventListener('mousewheel', this.handleScroll, false);
         document.addEventListener('mousemove', this.itemMouseMove);
@@ -97,9 +109,21 @@ export default {
     watch: {
         itemWidth(val) {
             this.dateWidth = val;
+        },
+        maximize() {
+            this.$nextTick(() => {
+                this.handleResize();
+            })
         }
     },
     computed: {
+        leftStyle({menuWidth, maximize}) {
+            const style = {width: menuWidth + 'px'}
+            if (maximize) {
+                style.display = 'none';
+            }
+            return style
+        },
         monthNum() {
             const {ganttWidth, dateWidth} = this;
             return Math.floor(ganttWidth / dateWidth / 30) + 2
@@ -271,6 +295,31 @@ export default {
         handleResize() {
             this.ganttWidth = this.$refs.ganttTimeline.clientWidth;
         },
+        dateTouchstart(e) {
+            if (this.windowPortrait) {
+                this.maximize = true
+            }
+            this.mouseItem = null;
+            this.dateMove = {
+                clientX: e.touches[0].clientX
+            };
+        },
+        dateTouchmove(e) {
+            if (this.mouseItem != null) {
+                return
+            }
+            if (this.dateMove != null) {
+                let moveX = (this.dateMove.clientX - e.touches[0].clientX) * 5;
+                this.dateMove.clientX = e.touches[0].clientX;
+                this.mouseWidth+= moveX;
+                this.mouseScaleWidth+= moveX * (100 / this.dateWidth);
+            }
+        },
+        dateTouchend() {
+            if (this.dateMove != null) {
+                this.dateMove = null;
+            }
+        },
         dateMouseDown(e) {
             e.preventDefault();
             this.mouseItem = null;
@@ -308,7 +357,9 @@ export default {
                     }
                 }
                 this.$set(this.mouseItem, this.mouseBak.type, diff);
-            } else if (this.dateMove != null) {
+                return;
+            }
+            if (this.dateMove != null) {
                 e.preventDefault();
                 let moveX = (this.dateMove.clientX - e.clientX) * 5;
                 this.dateMove.clientX = e.clientX;
@@ -344,7 +395,9 @@ export default {
                     this.clickItem(this.mouseItem);
                 }
                 this.mouseItem = null;
-            } else if (this.dateMove != null) {
+                return
+            }
+            if (this.dateMove != null) {
                 this.dateMove = null;
             }
         },
@@ -359,7 +412,11 @@ export default {
             this.mouseWidth+= moveWidth;
             this.mouseScaleWidth+= moveWidth * (100 / this.dateWidth);
         },
-        clickItem(item) {
+        clickItem(item, key = undefined) {
+            if (key !== undefined && this.windowPortrait) {
+                this.scrollPosition(key)
+                return
+            }
             this.$emit("on-click", item)
         }
     }
