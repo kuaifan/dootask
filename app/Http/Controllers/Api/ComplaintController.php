@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Module\Base;
 use App\Models\Complaint;
 use App\Models\WebSocketDialog;
+use App\Models\WebSocketDialogMsg;
 
 /**
  * @apiDefine dialog
@@ -103,6 +104,19 @@ class ComplaintController extends AbstractController
             'reason' => $reason,
             'imgs' => $report_imgs,
         ])->save();
+        // 通知管理员
+        $botUser = User::botGetOrCreate('system-msg');
+        User::where("identity", "like", "%,admin,%")
+            ->orderByDesc('line_at')
+            ->take(10)
+            ->get()
+            ->each(function ($adminUser) use ($reason, $botUser) {
+                $dialog = WebSocketDialog::checkUserDialog($botUser, $adminUser->userid);
+                if ($dialog) {
+                    $text = "<p>收到新的举报信息：{$reason} (请前往应用查看详情)</p>";
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid);   // todo 未能在任务end事件来发送任务
+                }
+            });
         //
         return Base::retSuccess('success');
     }

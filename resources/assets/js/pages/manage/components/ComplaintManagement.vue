@@ -94,61 +94,89 @@ export default {
                 {
                     title: this.$L('举报类型'),
                     key: 'type',
-                    minWidth: 80,
+                    minWidth: 120,
                     render: (h, { row }) => {
-                        const arr = [h('AutoTip', this.$L(typeList.find(h => h.id == row.type).label))];
-                        return h('div', arr)
+                        const label = this.$L(typeList.find(h => h.id == row.type).label)
+                        return h('div', {
+                            style: {
+                                'overflow': 'hidden',
+                                'text-overflow': 'ellipsis',
+                                'white-space': 'nowrap'
+                            },
+                            on: {
+                                click: () => {
+                                    $A.modalInfo({
+                                        language: false,
+                                        title: this.$L('举报类型'),
+                                        content: label
+                                    })
+                                }
+                            }
+                        }, label)
                     }
                 },
                 {
                     title: this.$L('状态'),
                     key: 'status',
-                    minWidth: 60,
+                    minWidth: 80,
                     render: (h, { row }) => {
                         let  text = row.status == 0 ? '未处理': '已处理';
-                        return h('div', this.$L(text))
+                        return h('div', {
+                            style: {
+                                color: row.status == 0 ? '#f00' : 'inherit',
+                            }
+                        }, [h('AutoTip', this.$L(text))])
                     }
                 },
                 {
                     title: this.$L('举报原因'),
-                    minWidth: 120,
+                    minWidth: 150,
                     render: (h, { row }) => {
-                        return h('div', [h('AutoTip', row.reason)])
+                        return h('div', {
+                            style: {
+                                'overflow': 'hidden',
+                                'text-overflow': 'ellipsis',
+                                'white-space': 'nowrap'
+                            },
+                            on: {
+                                click: () => {
+                                    $A.modalInfo({
+                                        language: false,
+                                        title: this.$L('举报原因'),
+                                        content: row.reason
+                                    })
+                                }
+                            }
+                        }, row.reason)
                     }
                 },
                 {
                     title: this.$L('举报图'),
-                    minWidth: 100,
+                    minWidth: 85,
                     render: (h, { row }) => {
-                        const arr = [];
-                        const imgs = JSON.parse(row.imgs)?.map(path => {
+                        const list = JSON.parse(row.imgs)?.map(path => {
                             return {
                                 src: $A.apiUrl("../" + path),
                             }
                         });
-                        imgs.forEach((item, index) => {
-                            arr.push(h('img', {
-                                attrs: {
-                                    src: item.src,
-                                    width: 70
-                                },
-                                on: {
-                                    click: () => {
-                                        this.$store.dispatch("previewImage", { index: index, list: imgs })
-                                    }
-                                }
-                            }))
-                        });
+                        if (list.length === 0) {
+                            return h('div', '-')
+                        }
                         return h('div', {
-                            attrs: {
-                                style: "display: flex;padding: 4px 0;gap: 10px;"
+                            style: {
+                                color: '#1890ff',
+                            },
+                            on: {
+                                click: () => {
+                                    this.$store.dispatch("previewImage", { index: 0, list })
+                                }
                             }
-                        }, arr)
+                        }, [h('AutoTip', this.$L('点击查看'))])
                     }
                 },
                 {
                     title: this.$L('举报人'),
-                    minWidth: 60,
+                    minWidth: 100,
                     render: (h, { row }) => {
                         return h('UserAvatar', {
                             props: {
@@ -200,7 +228,7 @@ export default {
                                     cancelText: this.$L('取消'),
                                 },
                                 style: {
-                                    marginLeft: '8px',
+                                    marginLeft: params.row.status == 0 ? '8px' : '0',
                                     fontSize: '13px',
                                     cursor: 'pointer',
                                     color: '#f00',
