@@ -649,6 +649,10 @@ export default {
         if (['dialog', 'log'].includes(navActive)) {
             this.navActive = navActive;
         }
+        $A.IDBJson('delayTaskForm').then(data => {
+            data.type && this.$set(this.delayTaskForm, 'type', data.type);
+            data.time && this.$set(this.delayTaskForm, 'time', data.time);
+        });
     },
 
     mounted() {
@@ -1753,7 +1757,7 @@ export default {
                     return;
                 }
                 this.delayTaskLoading = true;
-                var date = new Date(this.taskDetail.end_at);
+                let date = new Date(this.taskDetail.end_at);
                 if (this.delayTaskForm.type === 'day') {
                     date.setDate(date.getDate() + Number(this.delayTaskForm.time));
                 } else {
@@ -1770,10 +1774,9 @@ export default {
                     $A.messageSuccess(msg);
                     this.delayTaskLoading = false;
                     this.delayTaskShow = false;
-                    this.delayTaskForm.type = 'hour';
-                    this.delayTaskForm.time = '24';
                     this.delayTaskForm.remark = '';
                     this.$store.dispatch("getTaskOne", this.taskDetail.id).catch(() => {})
+                    $A.IDBSet('delayTaskForm', this.delayTaskForm);
                 }).catch(({msg}) => {
                     $A.modalError(msg);
                     this.delayTaskLoading = false;

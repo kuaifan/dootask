@@ -375,9 +375,9 @@
 
             __thumb(url) {
                 if ($A.strExists(url, "?", false)) {
-                    return url + "&__thumb=true";
+                    return $A.mainUrl(url) + "&__thumb=true";
                 }else{
-                    return url + "?__thumb=true";
+                    return $A.mainUrl(url) + "?__thumb=true";
                 }
             },
 

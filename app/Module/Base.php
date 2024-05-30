@@ -2419,7 +2419,8 @@ class Base
      */
     public static function isThumb($file): bool
     {
-        return str_ends_with($file, '_thumb.jpg')
+        return str_ends_with($file, '_thumb.jpeg')
+            || str_ends_with($file, '_thumb.jpg')
             || str_ends_with($file, '_thumb.png');
     }
 
@@ -2430,7 +2431,9 @@ class Base
      */
     public static function getThumbExt($file): string
     {
-        if (file_exists($file . '_thumb.jpg')) {
+        if (file_exists($file . '_thumb.jpeg')) {
+            return 'jpeg';
+        } elseif (file_exists($file . '_thumb.jpg')) {
             return 'jpg';
         } elseif (file_exists($file . '_thumb.png')) {
             return 'png';
@@ -2446,7 +2449,9 @@ class Base
      */
     public static function thumbRestore($file): mixed
     {
-        if (str_ends_with($file, '_thumb.jpg')) {
+        if (str_ends_with($file, '_thumb.jpeg')) {
+            return Base::rightDelete($file, '_thumb.jpeg');
+        } elseif (str_ends_with($file, '_thumb.jpg')) {
             return Base::rightDelete($file, '_thumb.jpg');
         } elseif (str_ends_with($file, '_thumb.png')) {
             return Base::rightDelete($file, '_thumb.png');
