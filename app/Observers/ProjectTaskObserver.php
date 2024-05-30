@@ -4,6 +4,8 @@ namespace App\Observers;
 
 use App\Models\Deleted;
 use App\Models\ProjectTask;
+use App\Models\ProjectTaskUser;
+use App\Models\ProjectTaskVisibilityUser;
 use App\Models\ProjectUser;
 
 class ProjectTaskObserver
@@ -27,11 +29,14 @@ class ProjectTaskObserver
      */
     public function updated(ProjectTask $projectTask)
     {
+        if ($projectTask->isDirty('visibility')) {
+            self::visibilityUpdate($projectTask);
+        }
         if ($projectTask->isDirty('archived_at')) {
             if ($projectTask->archived_at) {
-                Deleted::record('projectTask', $projectTask->id, $this->userids($projectTask));
+                Deleted::record('projectTask', $projectTask->id, self::userids($projectTask));
             } else {
-                Deleted::forget('projectTask', $projectTask->id, $this->userids($projectTask));
+                Deleted::forget('projectTask', $projectTask->id, self::userids($projectTask));
             }
         }
     }
@@ -44,7 +49,7 @@ class ProjectTaskObserver
      */
     public function deleted(ProjectTask $projectTask)
     {
-        Deleted::record('projectTask', $projectTask->id, $this->userids($projectTask));
+        Deleted::record('projectTask', $projectTask->id, self::userids($projectTask));
     }
 
     /**
@@ -55,7 +60,7 @@ class ProjectTaskObserver
      */
     public function restored(ProjectTask $projectTask)
     {
-        Deleted::forget('projectTask', $projectTask->id, $this->userids($projectTask));
+        Deleted::forget('projectTask', $projectTask->id, self::userids($projectTask));
     }
 
     /**
@@ -71,10 +76,46 @@ class ProjectTaskObserver
 
     /**
      * @param ProjectTask $projectTask
+     * @param string[]|string $dataType
      * @return array
      */
-    private function userids(ProjectTask $projectTask)
+    public static function userids(ProjectTask $projectTask, array|string $dataType = 'project')
     {
-        return ProjectUser::whereProjectId($projectTask->project_id)->pluck('userid')->toArray();
+        if (!is_array($dataType)) {
+            $dataType = [$dataType];
+        }
+        if (in_array('project', $dataType)) {
+            return ProjectUser::whereProjectId($projectTask->project_id)->pluck('userid')->toArray();
+        }
+        $array = [];
+        if (in_array('task', $dataType)) {
+            $array = array_merge($array, ProjectTaskUser::whereTaskId($projectTask->id)->pluck('userid')->toArray());
+        }
+        if (in_array('visibility', $dataType)) {
+            $array = array_merge($array, ProjectTaskVisibilityUser::whereTaskId($projectTask->id)->pluck('userid')->toArray());
+        }
+        return array_values(array_filter(array_unique($array)));
+    }
+
+    /**
+     * 可见性更新
+     * @param ProjectTask $projectTask
+     */
+    public static function visibilityUpdate(ProjectTask $projectTask)
+    {
+        $projectUserids = self::userids($projectTask);
+        switch ($projectTask->visibility) {
+            case 1:
+                Deleted::forget('projectTask', $projectTask->id, $projectUserids);
+                break;
+            case 2:
+            case 3:
+                $dataType = $projectTask->visibility == 2 ? ['task'] : ['task', 'visibility'];
+                $forgetUserids = self::userids($projectTask, $dataType);
+                $recordUserids = array_diff($projectUserids, $forgetUserids);
+                Deleted::record('projectTask', $projectTask->id, $recordUserids);
+                Deleted::forget('projectTask', $projectTask->id, $forgetUserids);
+                break;
+        }
     }
 }

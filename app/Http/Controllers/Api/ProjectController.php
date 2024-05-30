@@ -1553,12 +1553,12 @@ class ProjectController extends AbstractController
         // 项目可见性
         $project_userid = ProjectUser::whereProjectId($task->project_id)->whereOwner(1)->value('userid');     // 项目负责人
         if ($task->visibility != 1 && $user->userid != $project_userid) {
-            $taskUserids = ProjectTaskUser::whereTaskId($task_id)->pluck('userid')->toArray();                //任务负责人、协助人
-            $subTaskUserids = ProjectTaskUser::whereTaskPid($task_id)->pluck('userid')->toArray();            //子任务负责人、协助人
-            $visibleUserids = ProjectTaskVisibilityUser::whereTaskId($task_id)->pluck('userid')->toArray();   //可见人
+            $taskUserids = ProjectTaskUser::whereTaskId($task_id)->pluck('userid')->toArray();                      //任务负责人、协助人
+            $subTaskUserids = ProjectTaskUser::whereTaskPid($task_id)->pluck('userid')->toArray();                  //子任务负责人、协助人
+            $visibleUserids = ProjectTaskVisibilityUser::whereTaskId($task_id)->pluck('userid')->toArray();         //可见人
             $visibleUserids = array_merge($taskUserids, $subTaskUserids, $visibleUserids);
             if (!in_array($user->userid, $visibleUserids)) {
-                return Base::retError('无任务权限');
+                return Base::retError('无任务权限', ['task_id' => $task_id, 'force' => 1], -4002);
             }
         }
         //
@@ -1940,6 +1940,7 @@ class ProjectController extends AbstractController
      * @apiParam {String} [content]             任务详情（子任务不支持）
      * @apiParam {String} [color]               背景色（子任务不支持）
      * @apiParam {Array} [assist]               修改协助人员（子任务不支持）
+     * @apiParam {Number} [visibility]          修改可见性
      * @apiParam {Array} [visibility_appointor] 修改可见性人员
      *
      * @apiParam {Number} [p_level]             优先级相关（子任务不支持）

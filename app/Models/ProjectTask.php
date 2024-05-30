@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use App\Module\Base;
 use App\Tasks\PushTask;
 use App\Exceptions\ApiException;
+use App\Observers\ProjectTaskObserver;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -744,8 +745,8 @@ class ProjectTask extends AbstractModel
             // 可见性
             if (Arr::exists($data, 'visibility') || Arr::exists($data, 'visibility_appointor')) {
                 if (Arr::exists($data, 'visibility')) {
-                    ProjectTask::whereId($data['task_id'])->update(['visibility' => $data["visibility"]]);
-                    ProjectTask::whereParentId($data['task_id'])->update(['visibility' => $data["visibility"]]);
+                    $this->visibility = $data["visibility"];
+                    ProjectTask::whereParentId($data['task_id'])->change(['visibility' => $data["visibility"]]);
                 }
                 ProjectTaskVisibilityUser::whereTaskId($data['task_id'])->delete();
                 if (Arr::exists($data, 'visibility_appointor')) {
@@ -757,6 +758,9 @@ class ProjectTask extends AbstractModel
                                 'userid' => $uid
                             ])->save();
                         }
+                    }
+                    if (!Arr::exists($data, 'visibility')) {
+                        ProjectTaskObserver::visibilityUpdate($this);
                     }
                 }
             }

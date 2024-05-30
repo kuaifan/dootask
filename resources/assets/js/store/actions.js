@@ -208,6 +208,9 @@ export default {
                     if (ret === -4001) {
                         dispatch("forgetProject", data.project_id)
                     } else if (ret === -4002) {
+                        if (data.force === 1) {
+                            state.taskArchiveView = 0
+                        }
                         dispatch("forgetTask", data.task_id)
                     } else if (ret === -4003) {
                         dispatch("forgetDialog", data.dialog_id)
