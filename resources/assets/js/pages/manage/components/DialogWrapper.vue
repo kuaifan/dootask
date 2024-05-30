@@ -781,6 +781,7 @@ export default {
             forwardSource: true,
 
             openId: 0,
+            errorId: 0,
             dialogDrag: false,
             groupInfoShow: false,
             reportShow: false,
@@ -1238,43 +1239,7 @@ export default {
 
         dialogId: {
             handler(dialog_id, old_id) {
-                if (dialog_id) {
-                    this.msgNew = 0
-                    this.msgType = ''
-                    this.unreadOne = 0
-                    this.scrollTail = 0
-                    this.scrollOffset = 0
-                    this.searchShow = false
-                    this.positionShow = false
-                    this.msgPrepared = false
-                    this.scrollToBottomRefresh = false
-                    this.allMsgs = this.allMsgList
-                    //
-                    this.getMsgs({
-                        dialog_id,
-                        msg_id: this.msgId,
-                        msg_type: this.msgType,
-                    }).then(_ => {
-                        this.openId = dialog_id
-                        this.msgPrepared = true
-                        //
-                        setTimeout(_ => {
-                            this.onSearchMsgId()
-                            this.positionShow = this.readTimeout === null
-                        }, 100)
-                    }).catch(_ => {});
-                    //
-                    this.$store.dispatch('saveInDialog', {
-                        uid: this._uid,
-                        dialog_id,
-                    })
-                    //
-                    if (this.autoFocus) {
-                        this.inputFocus()
-                    }
-                    //
-                    this.getUserApproveStatus()
-                }
+                this.getDialogBase(dialog_id)
                 //
                 this.$store.dispatch('closeDialog', old_id)
                 //
@@ -1408,7 +1373,11 @@ export default {
                 return;
             }
             // 开始请求重新获取消息
-            this.onReGetMsg()
+            if (this.errorId === this.dialogId) {
+                this.getDialogBase(this.dialogId)
+            } else {
+                this.onReGetMsg()
+            }
         },
 
         allMsgList(list) {
@@ -1497,6 +1466,55 @@ export default {
     },
 
     methods: {
+        /**
+         * 获取会话基本信息
+         * @param dialog_id
+         */
+        getDialogBase(dialog_id) {
+            if (!dialog_id) {
+                return
+            }
+
+            this.msgNew = 0
+            this.msgType = ''
+            this.unreadOne = 0
+            this.scrollTail = 0
+            this.scrollOffset = 0
+            this.searchShow = false
+            this.positionShow = false
+            this.msgPrepared = false
+            this.scrollToBottomRefresh = false
+            this.allMsgs = this.allMsgList
+            this.errorId = 0
+            //
+            this.getMsgs({
+                dialog_id,
+                msg_id: this.msgId,
+                msg_type: this.msgType,
+            }).then(_ => {
+                this.openId = dialog_id
+                this.msgPrepared = true
+                //
+                setTimeout(_ => {
+                    this.onSearchMsgId()
+                    this.positionShow = this.readTimeout === null
+                }, 100)
+            }).catch(_ => {
+                this.errorId = dialog_id
+            });
+            //
+            this.$store.dispatch('saveInDialog', {
+                uid: this._uid,
+                dialog_id,
+            })
+            //
+            if (this.autoFocus) {
+                this.inputFocus()
+            }
+            //
+            this.getUserApproveStatus()
+        },
+
         /**
          * 订阅消息（用于独立窗口）
          * @param unsubscribe
