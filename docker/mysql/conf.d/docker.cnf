@@ -47,7 +47,7 @@ innodb_write_io_threads = 2
 
 [mysqldump]
 quick
-max_allowed_packet = 8192M
+max_allowed_packet = 2048M
 
 [mysql]
 no-auto-rehash

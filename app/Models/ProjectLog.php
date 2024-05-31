@@ -40,6 +40,9 @@ use App\Module\Base;
  */
 class ProjectLog extends AbstractModel
 {
+    protected $hidden = [
+        'task_only',
+    ];
 
     /**
      * @param $value

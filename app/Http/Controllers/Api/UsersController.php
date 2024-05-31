@@ -28,6 +28,7 @@ use App\Models\WebSocketDialogMsg;
 use Illuminate\Support\Facades\DB;
 use App\Models\UserEmailVerification;
 use App\Module\AgoraIO\AgoraTokenGenerator;
+use Swoole\Coroutine;
 
 /**
  * @apiDefine users
@@ -826,25 +827,30 @@ class UsersController extends AbstractController
         }
         $userInfo->checkSystem(1);
         //
+        $msg = '修改成功';
         $upArray = [];
         $upLdap = [];
         $transferUser = null;
         switch ($type) {
             case 'setadmin':
+                $msg = '设置成功';
                 $upArray['identity'] = array_diff($userInfo->identity, ['admin']);
                 $upArray['identity'][] = 'admin';
                 break;
 
             case 'clearadmin':
+                $msg = '取消成功';
                 $upArray['identity'] = array_diff($userInfo->identity, ['admin']);
                 break;
 
             case 'settemp':
+                $msg = '设置成功';
                 $upArray['identity'] = array_diff($userInfo->identity, ['temp']);
                 $upArray['identity'][] = 'temp';
                 break;
 
             case 'cleartemp':
+                $msg = '取消成功';
                 $upArray['identity'] = array_diff($userInfo->identity, ['temp']);
                 break;
 
@@ -878,6 +884,7 @@ class UsersController extends AbstractController
                 break;
 
             case 'setdisable':
+                $msg = '操作成功';
                 if ($userInfo->userid === $user->userid) {
                     return Base::retError('不能操作自己离职');
                 }
@@ -898,11 +905,13 @@ class UsersController extends AbstractController
                 break;
 
             case 'cleardisable':
+                $msg = '操作成功';
                 $upArray['identity'] = array_diff($userInfo->identity, ['disable']);
                 $upArray['disable_at'] = null;
                 break;
 
             case 'delete':
+                $msg = '删除成功';
                 if ($userInfo->userid === $user->userid) {
                     return Base::retError('不能删除自己');
                 }
@@ -1004,7 +1013,10 @@ class UsersController extends AbstractController
                         'new_userid' => $transferUser->userid,
                     ]);
                     $userTransfer->save();
-                    $userTransfer->start();
+                    go(function () use ($userTransfer) {
+                        Coroutine::sleep(0.1);
+                        $userTransfer->start();
+                    });
                 } elseif ($type === 'cleardisable') {
                     // 取消离职重新加入全员群组
                     if (Base::settingFind('system', 'all_group_autoin', 'yes') === 'yes') {
@@ -1015,7 +1027,7 @@ class UsersController extends AbstractController
             });
         }
         //
-        return Base::retSuccess('修改成功', $userInfo);
+        return Base::retSuccess($msg, $userInfo);
     }
 
     /**

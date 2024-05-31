@@ -13,6 +13,9 @@ class CreateComplaintsTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('complaints'))
+            return;
+
         Schema::create('complaints', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('dialog_id')->nullable()->default(0)->comment('对话ID');

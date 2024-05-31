@@ -52,7 +52,7 @@ class ProjectTaskUser extends AbstractModel
      */
     public static function transfer($originalUserid, $newUserid)
     {
-        self::whereUserid($originalUserid)->chunk(100, function ($list) use ($originalUserid, $newUserid) {
+        self::whereUserid($originalUserid)->chunkById(100, function ($list) use ($originalUserid, $newUserid) {
             $tastIds = [];
             /** @var self $item */
             foreach ($list as $item) {
@@ -68,7 +68,7 @@ class ProjectTaskUser extends AbstractModel
                     $item->save();
                 }
                 if ($item->projectTask) {
-                    $item->projectTask->addLog("移交{任务}身份", ['userid' => [$originalUserid, ' => ', $newUserid]]);
+                    $item->projectTask->addLog("移交{任务}身份", ['userid' => [$originalUserid, ' => ', $newUserid]], 0, 1);
                     if (!in_array($item->task_pid, $tastIds)) {
                         $tastIds[] = $item->task_pid;
                         $item->projectTask->syncDialogUser();

@@ -1413,7 +1413,7 @@ class ProjectTask extends AbstractModel
      * @param int $userid
      * @return ProjectLog
      */
-    public function addLog($detail, $record = [], $userid = 0)
+    public function addLog($detail, $record = [], $userid = 0, $taskOnly = 0)
     {
         $detail = str_replace("{任务}", $this->parent_id ? "子任务" : "任务", $detail);
         $array = [
@@ -1428,6 +1428,9 @@ class ProjectTask extends AbstractModel
         }
         if ($record) {
             $array['record'] = $record;
+        }
+        if ($taskOnly) {
+            $array['task_only'] = $taskOnly;
         }
         $log = ProjectLog::createInstance($array);
         $log->save();
