@@ -22,10 +22,11 @@
                 transfer>
                 <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
                 <DropdownMenu slot="list">
+                    <DropdownItem v-if="operateMenu.checked" @click.native="onLiPreview">{{ $L(operateMenu.checked === 'checked' ? '标记未选' : '标记已选') }}</DropdownItem>
+                    <DropdownItem v-if="operateMenu.link" @click.native="onLinkPreview">{{ $L('打开链接') }}</DropdownItem>
+                    <DropdownItem v-if="operateMenu.img" @click.native="onImagePreview">{{ $L('查看图片') }}</DropdownItem>
                     <DropdownItem @click.native="onEditing">{{ $L('编辑描述') }}</DropdownItem>
                     <DropdownItem @click.native="onHistory">{{ $L('历史记录') }}</DropdownItem>
-                    <DropdownItem v-if="operateLink" @click.native="onLinkPreview">{{ $L('打开链接') }}</DropdownItem>
-                    <DropdownItem v-if="operateImg" @click.native="onImagePreview">{{ $L('查看图片') }}</DropdownItem>
                 </DropdownMenu>
             </Dropdown>
         </div>
@@ -101,8 +102,12 @@ export default {
 
             operateStyles: {},
             operateVisible: false,
-            operateLink: null,
-            operateImg: null,
+            operateMenu: {
+                target: null,
+                checked: null,
+                link: null,
+                img: null,
+            },
 
             listener: null,
         };
@@ -185,8 +190,13 @@ export default {
             }
             event.stopPropagation()
             this.operateVisible = false;
-            this.operateLink = event.target.tagName === "A" ? event.target.href : null;
-            this.operateImg = event.target.tagName === "IMG" ? event.target.src : null;
+            this.operateMenu.target = event.target;
+            this.operateMenu.checked = null;
+            if (event.target.tagName === "LI" && event.target.parentNode.classList.contains("tox-checklist")) {
+                this.operateMenu.checked = event.target.classList.contains("tox-checklist--checked") ? 'checked' : 'unchecked';
+            }
+            this.operateMenu.link = event.target.tagName === "A" ? event.target.href : null;
+            this.operateMenu.img = event.target.tagName === "IMG" ? event.target.src : null;
             this.$nextTick(() => {
                 const rect = this.$el.getBoundingClientRect();
                 this.operateStyles = {
@@ -257,9 +267,21 @@ export default {
             });
         },
 
+        onLiPreview() {
+            if (!this.operateMenu.checked) {
+                return;
+            }
+            if (this.operateMenu.checked === 'checked') {
+                this.operateMenu.target.classList.remove("tox-checklist--checked");
+            } else {
+                this.operateMenu.target.classList.add("tox-checklist--checked");
+            }
+            this.$emit('on-blur', 'force');
+        },
+
         onLinkPreview() {
-            if (this.operateLink) {
-                window.open(this.operateLink);
+            if (this.operateMenu.link) {
+                window.open(this.operateMenu.link);
             }
         },
 
@@ -269,7 +291,7 @@ export default {
                 $A.messageWarning("没有可预览的图片")
                 return;
             }
-            let index = Math.max(0, array.findIndex(item => item.src === this.operateImg));
+            let index = Math.max(0, array.findIndex(item => item.src === this.operateMenu.img));
             this.$store.dispatch("previewImage", {index, list: array})
         },
     }

@@ -141,7 +141,7 @@
                     :value="taskContent"
                     :placeholder="$L('详细描述...')"
                     @on-history="onHistory"
-                    @on-blur="updateBlur('content')"/>
+                    @on-blur="updateBlur('content', $event)"/>
                 <Form class="items" label-position="left" label-width="auto" @submit.native.prevent>
                     <FormItem v-if="taskDetail.p_name">
                         <div class="item-label" slot="label">
@@ -1083,20 +1083,20 @@ export default {
                     if (content == this.taskContent.replace(/\s+original-(width|height)="[^"]*"/g, "")) {
                         return;
                     }
-                    if (this.windowTouch) {
-                        $A.modalConfirm({
-                            title: '温馨提示',
-                            content: '是否保存编辑内容？',
-                            onOk: () => {
-                                this.updateData("contentSave", {content})
-                            },
-                            onCancel: () => {
-                                this.$refs.desc.updateContent(this.taskContent);
-                            }
-                        });
-                    } else {
+                    if (!this.windowTouch || params === 'force') {
                         this.updateData("contentSave", {content})
+                        return;
                     }
+                    $A.modalConfirm({
+                        title: '温馨提示',
+                        content: '是否保存编辑内容？',
+                        onOk: () => {
+                            this.updateData("contentSave", {content})
+                        },
+                        onCancel: () => {
+                            this.$refs.desc.updateContent(this.taskContent);
+                        }
+                    });
                     return;
 
                 case 'contentSave':
