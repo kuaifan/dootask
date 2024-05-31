@@ -16,7 +16,7 @@ class FilesUpdateExt extends Migration
      */
     public function up()
     {
-        File::whereIn('type', ['mind', 'drawio', 'document'])->where('ext', '')->orderBy('id')->chunk(100, function($files) {
+        File::whereIn('type', ['mind', 'drawio', 'document'])->where('ext', '')->chunkById(100, function($files) {
             /** @var File $file */
             foreach ($files as $file) {
                 $fileContent = FileContent::whereFid($file->id)->orderByDesc('id')->first();

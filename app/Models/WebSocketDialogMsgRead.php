@@ -15,6 +15,7 @@ use Carbon\Carbon;
  * @property int|null $silence 是否免打扰：0否，1是
  * @property int|null $email 是否发了邮件
  * @property int|null $after 在阅读之后才添加的记录
+ * @property int|null $dot 红点标记
  * @property string|null $read_at 阅读时间
  * @property-read \App\Models\WebSocketDialogMsg|null $webSocketDialogMsg
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
@@ -28,6 +29,7 @@ use Carbon\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgRead whereAfter($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgRead whereDialogId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgRead whereDot($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgRead whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgRead whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsgRead whereMention($value)

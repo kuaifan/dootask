@@ -378,8 +378,8 @@ export default {
                     { value: "ldap", label: "LDAP", sort: 16 },
                     { value: "mail", label: "邮件通知", sort: 17 },
                     { value: "appPush", label: "APP 推送", sort: 18 },
-                    { value: "allUser", label: "团队管理", sort: 19 },
-                    { value: "complaint", label: "举报管理", sort: 20 }
+                    { value: "complaint", label: "举报管理", sort: 19 },
+                    { value: "allUser", label: "团队管理", sort: 20 },
                 ])
             }
             adminApplyList = adminApplyList.map((h) => {

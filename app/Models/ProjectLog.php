@@ -11,6 +11,7 @@ use App\Module\Base;
  * @property int|null $project_id 项目ID
  * @property int|null $column_id 列表ID
  * @property int|null $task_id 任务ID
+ * @property int|null $task_only 仅任务日志：0否，1是
  * @property int|null $userid 会员ID
  * @property string|null $detail 详细信息
  * @property array $record 记录数据
@@ -34,6 +35,7 @@ use App\Module\Base;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog whereProjectId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog whereRecord($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog whereTaskId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog whereTaskOnly($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectLog whereUserid($value)
  * @mixin \Eloquent
