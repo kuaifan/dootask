@@ -318,6 +318,7 @@ export default {
 
             keys: {},
             keyIs: false,
+            keyDisable: false,
 
             columns: [
                 {
@@ -503,9 +504,34 @@ export default {
                     },
                 },
                 {
-                    title: this.$L('最后在线'),
                     key: 'line_at',
                     width: 168,
+                    renderHeader: (h) => {
+                        const arr = [];
+                        if (this.keyDisable) {
+                            arr.push(h('span', {
+                                style: {
+                                    color: '#f90'
+                                }
+                            }, this.$L('离职时间')))
+                            arr.push(h('span', '/'))
+                        }
+                        arr.push(h('span', this.$L('最后在线')))
+                        return h('div', arr)
+                    },
+                    render: (h, params) => {
+                        const {line_at, disable_at} = params.row;
+                        const arr = [];
+                        if (this.keyDisable) {
+                            arr.push(h('div', {
+                                style: {
+                                    color: '#f90'
+                                }
+                            }, disable_at || '-'))
+                        }
+                        arr.push(h('div', line_at || '-'))
+                        return h('div', arr);
+                    }
                 },
                 {
                     title: this.$L('操作'),
@@ -815,6 +841,7 @@ export default {
         getLists() {
             this.loadIng++;
             this.keyIs = $A.objImplode(this.keys) != "";
+            this.keyDisable = this.keys.disable === "yes";
             let keys = $A.cloneJSON(this.keys)
             if (this.departmentSelect > -1) {
                 keys = Object.assign(keys, {

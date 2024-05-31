@@ -724,6 +724,7 @@ class UsersController extends AbstractController
                 }
             }
             if ($keys['disable'] === 'yes') {
+                $builder->orderByDesc('disable_at');
                 $builder->whereNotNull('disable_at');
             } elseif ($keys['disable'] !== 'all') {
                 $builder->whereNull('disable_at');
