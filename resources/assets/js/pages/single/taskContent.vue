@@ -19,6 +19,11 @@
     </div>
 </template>
 
+<style lang="scss" scoped>
+.file-preview {
+    border-radius: 0;
+}
+</style>
 <script>
 import TEditor from "../../components/TEditor.vue";
 

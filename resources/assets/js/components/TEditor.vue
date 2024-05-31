@@ -407,6 +407,7 @@ export default {
                             const readOnly = this.readOnlyFull === null ? this.readOnly : this.readOnlyFull;
                             if (readOnly) {
                                 this.editorT.setMode('readonly');
+                                this.addClickEvent(e, true);
                             } else {
                                 this.editorT.setMode('design');
                             }
@@ -432,6 +433,7 @@ export default {
                             this.editor.setContent(this.content);
                             if (this.readOnly) {
                                 this.editor.setMode('readonly');
+                                this.addClickEvent(e, false);
                             } else {
                                 this.editor.setMode('design');
                             }
@@ -610,6 +612,25 @@ export default {
             }
             let index = Math.max(0, array.findIndex(item => item.src === this.operateImg));
             this.$store.dispatch("previewImage", {index, list: array})
+        },
+
+        addClickEvent({target}, isFull) {
+            target.getBody().addEventListener('click', (e) => {
+                if (isFull) {
+                    const readOnly = this.readOnlyFull === null ? this.readOnly : this.readOnlyFull;
+                    if (!readOnly) {
+                        return;
+                    }
+                } else {
+                    if (!this.readOnly) {
+                        return;
+                    }
+                }
+                if (e.target.nodeName === 'IMG') {
+                    this.operateImg = e.target.src;
+                    this.onImagePreview();
+                }
+            });
         },
 
         /********************文件上传部分************************/

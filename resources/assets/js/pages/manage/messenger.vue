@@ -131,7 +131,7 @@
                                 <div class="label">{{items.az}}</div>
                                 <ul>
                                     <li v-for="(user, index) in items.list" :key="index" @click="openContacts(user)">
-                                        <div class="avatar"><UserAvatar :userid="user.userid" :size="30"/></div>
+                                        <div class="avatar"><UserAvatar :userid="user.userid" :size="contactAvatarSize"/></div>
                                         <div class="nickname">
                                             <em>{{user.nickname}}</em>
                                             <div v-if="user.tags" class="tags">
@@ -312,6 +312,10 @@ export default {
 
         routeName() {
             return this.$route.name
+        },
+
+        contactAvatarSize() {
+            return this.windowPortrait ? 36 : 30
         },
 
         typeItems() {

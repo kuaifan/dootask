@@ -394,9 +394,13 @@
                                 padding-left: 4px;
                                 margin-top: 6px;
                                 margin-bottom: 6px;
+                                margin-right: 2px;
                                 height: 34px;
                                 line-height: 34px;
-                                position: relative;
+                                position: sticky;
+                                top: 0;
+                                z-index: 3;
+                                background: #ffffff;
                                 &:after {
                                     content: "";
                                     position: absolute;
@@ -680,6 +684,20 @@ body.window-portrait {
                         }
                         &.contacts {
                             user-select: none;
+                            > li {
+                                &.loaded {
+                                    height: 58px;
+                                }
+                                > ul {
+                                    > li {
+                                        height: 58px;
+                                        .avatar {
+                                            width: 36px;
+                                            height: 36px;
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
