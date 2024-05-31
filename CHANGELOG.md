@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.37.50]
+
+### Bug Fixes
+
+- 更新可见性后仍存在对话会话列表
+- 消息输入框回复冲突
+
+### Features
+
+- 更新approve容器
+- 添加智谱清言机器人
+
+### Performance
+
+- 团队管理选择离职时根据离职时间排序
+- 移动端支持快速编辑描述选择
+- 优化离职数据移交
+- 优化举报功能
+- 优化网络重连后会话数据逻辑
+- 优化甘特图移动端交互
+- 优化md编辑器
+
 ## [0.37.32]
 
 ### Performance

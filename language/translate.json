@@ -20612,5 +20612,60 @@
         "de": "Möchten sie die datei wirklich löschen? (*)",
         "fr": "Êtes-vous sûr de vouloir supprimer le fichier [(*)]?",
         "id": "Apakah anda yakin ingin menghapus berkas ((*)?"
+    },
+    {
+        "key": "查看附件",
+        "zh": "",
+        "zh-CHT": "查看附件",
+        "en": "Check the attachment",
+        "ko": "첨부파일 보기",
+        "ja": "添付ファイルを見ます。",
+        "de": "Check den anhang.",
+        "fr": "Voir les accessoires",
+        "id": "Tampilkan lampiran"
+    },
+    {
+        "key": "下载附件",
+        "zh": "",
+        "zh-CHT": "下載附件",
+        "en": "Download attachment",
+        "ko": "첨부 파일을 다운로드하다",
+        "ja": "添付ファイルをダウンロードします",
+        "de": "Download beginnen.",
+        "fr": "Télécharger les accessoires",
+        "id": "Lampiran download"
+    },
+    {
+        "key": "删除附件",
+        "zh": "",
+        "zh-CHT": "刪除附件",
+        "en": "Delete attachment",
+        "ko": "첨부 파일 삭제",
+        "ja": "添付ファイルを削除します",
+        "de": "Löschen sie den anhang.",
+        "fr": "Supprimer un accessoire",
+        "id": "Hapus lampiran"
+    },
+    {
+        "key": "我是智谱清言，是智谱 AI 公司于2023训练的语言模型。",
+        "zh": "",
+        "zh-CHT": "我是智譜清言，是智譜 AI 公司於2023訓練的語言模型。",
+        "en": "I am Zhipu Qingyan, a language model trained by Zhipu AI Company in 2023.",
+        "ko": "저는 지보 ai 가 2023년부터 훈련할 언어 모델 지보 청언입니다.",
+        "ja": "智譜清言と申します、智譜AI社が2023年に訓練した言語モデルです。",
+        "de": "Ich bin intelligente noten, ein sprachmodell Von AI, das wir im jahr 2023 entwickeln.",
+        "fr": "Je suis zhizhuang qingyan, un modèle de langage formé par zhizhuang AI company en 2023.",
+        "id": "Aku kyagami kyagami, model bahasa untuk pelatihan company di 2023."
+    },
+    {
+        "key": "我的任务是针对用户的问题和要求提供适当的答复和支持。",
+        "zh": "",
+        "zh-CHT": "我的任務是針對用戶的問題和要求提供適當的答覆和支持。",
+        "en": "My task is to provide appropriate responses and support to users' questions and requests.",
+        "ko": "사용자의 질문과 요구에 맞추어 적절한 답변과 지지를 제공하는 것이 나의 임무이다.",
+        "ja": "私の役割は、ユーザーの質問や要望に適切な回答とサポートを提供することです。",
+        "de": "Ich sollte eine angemessene antwort und unterstützung auf die fragen und ersuchen der nutzer bereitstellen.",
+        "fr": "Ma mission est de fournir des réponses et un soutien appropriés aux questions et demandes des utilisateurs.",
+        "id": "Tugas saya adalah memberikan jawaban dan dukungan yang sesuai kepada pengguna dan meminta jawaban yang sesuai."
     }
 ]

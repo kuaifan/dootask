@@ -112,8 +112,6 @@ import Codemirror from 'codemirror';
 import 'codemirror/mode/markdown/markdown';
 import 'codemirror/mode/javascript/javascript';
 import 'codemirror/mode/css/css';
-import 'codemirror/mode/htmlmixed/htmlmixed';
-import 'codemirror/mode/vue/vue';
 import 'codemirror/addon/edit/closebrackets';
 import 'codemirror/addon/edit/closetag';
 import 'codemirror/addon/edit/matchbrackets';
