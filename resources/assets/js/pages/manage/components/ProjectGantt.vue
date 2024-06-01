@@ -27,8 +27,8 @@
             <div class="project-gstc-edit-info">
                 <Table max-height="600" :columns="editColumns" :data="editData"></Table>
                 <div class="project-gstc-edit-btns">
-                    <Button :loading="editLoad > 0" size="small" type="text" @click="editSubmit(false)">{{$L('取消')}}</Button>
-                    <Button :loading="editLoad > 0" size="small" type="primary" @click="editSubmit(true)">{{$L('保存')}}</Button>
+                    <Button :loading="editLoad > 0" type="text" @click="editSubmit(false)">{{$L('取消')}}</Button>
+                    <Button :loading="editLoad > 0" type="primary" @click="editSubmit(true)">{{$L('保存')}}</Button>
                     <Icon type="md-arrow-dropright" class="zoom" @click="editShowInfo=false"/>
                 </div>
             </div>
@@ -67,11 +67,11 @@ export default {
                 {
                     title: this.$L('任务名称'),
                     key: 'label',
-                    minWidth: 150,
+                    minWidth: 100,
                     ellipsis: true,
                 }, {
                     title: this.$L('原计划时间'),
-                    minWidth: 135,
+                    width: 140,
                     align: 'center',
                     render: (h, {row}) => {
                         if (row.notime === true) {
@@ -86,7 +86,7 @@ export default {
                     }
                 }, {
                     title: this.$L('新计划时间'),
-                    minWidth: 135,
+                    width: 140,
                     align: 'center',
                     render: (h, {row}) => {
                         return h('div', {

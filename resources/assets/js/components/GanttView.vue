@@ -21,17 +21,18 @@
                 <i v-if="maximize" class="taskfont">&#xe7d4;</i>
                 <i v-else class="taskfont">&#xe7d3;</i>
             </div>
-            <div class="gantt-chart">
+            <div
+                ref="ganttChart"
+                class="gantt-chart"
+                @touchstart="dateTouchstart"
+                @touchmove="dateTouchmove"
+                @touchend="dateTouchend">
                 <ul class="gantt-month">
                     <li v-for="(item, key) in monthNum" :key="key" :style="monthStyle(key)">
                         <div class="month-format">{{monthFormat(key)}}</div>
                     </li>
                 </ul>
-                <ul class="gantt-date"
-                    @touchstart="dateTouchstart"
-                    @touchmove="dateTouchmove"
-                    @touchend="dateTouchend"
-                    @mousedown="dateMouseDown">
+                <ul class="gantt-date" @mousedown="dateMouseDown">
                     <li v-for="(item, key) in dateNum" :key="key" :style="dateStyle(key)">
                         <div class="date-format">
                             <div class="format-day">{{dateFormat(key, 'day')}}</div>
@@ -43,7 +44,7 @@
                     class="gantt-timeline"
                     @scroll="timelineScrollListener"
                     @mouseenter="mouseType='timeline'">
-                    <li v-for="(item, key) in lists" :key="key">
+                    <li v-for="(item, key) in lists" :key="key" :data-id="item.id">
                         <div
                             class="timeline-item"
                             :style="itemStyle(item)"
@@ -299,38 +300,58 @@ export default {
             if (this.windowPortrait) {
                 this.maximize = true
             }
-            this.mouseItem = null;
-            this.dateMove = {
-                clientX: e.touches[0].clientX
-            };
-        },
-        dateTouchmove(e) {
-            if (this.mouseItem != null) {
+            let parent = e.target.parentNode
+            let item = null
+            while (parent) {
+                if (!parent || parent === this.$refs.ganttChart) {
+                    break
+                }
+                if (parent.tagName === 'LI') {
+                    const itemId = parent.getAttribute('data-id')
+                    if (itemId) {
+                        item = this.lists.find(({id}) =>  itemId == id)
+                    }
+                }
+                parent = parent.parentNode
+            }
+            if (!item) {
+                this.onDateMove(e.touches[0].clientX);
                 return
             }
-            if (this.dateMove != null) {
-                let moveX = (this.dateMove.clientX - e.touches[0].clientX) * 5;
-                this.dateMove.clientX = e.touches[0].clientX;
-                this.mouseWidth+= moveX;
-                this.mouseScaleWidth+= moveX * (100 / this.dateWidth);
-            }
+            this.onItemMove(item, e.target, e.touches[0].clientX);
+        },
+        dateTouchmove(e) {
+            this.onMoving(e.touches[0].clientX)
         },
         dateTouchend() {
-            if (this.dateMove != null) {
-                this.dateMove = null;
-            }
+            this.onMoveOver(null);
         },
         dateMouseDown(e) {
             e.preventDefault();
-            this.mouseItem = null;
-            this.dateMove = {
-                clientX: e.clientX
-            };
+            this.onDateMove(e.clientX);
         },
         itemMouseDown(e, item) {
             e.preventDefault();
+            this.onItemMove(item, e.target, e.clientX);
+        },
+        itemMouseMove(e) {
+            if (this.mouseItem != null || this.dateMove != null) {
+                e.preventDefault();
+                this.onMoving(e.clientX);
+            }
+        },
+        itemMouseUp(e) {
+            this.onMoveOver(e.target);
+        },
+        onDateMove(clientX) {
+            this.mouseItem = null;
+            this.dateMove = {
+                clientX
+            };
+        },
+        onItemMove(item, target, clientX) {
             let type = 'moveX';
-            if (e.target.className == 'timeline-resizer') {
+            if (target.classList.contains('timeline-resizer')) {
                 type = 'moveW';
             }
             if (typeof item[type] !== "number") {
@@ -338,16 +359,15 @@ export default {
             }
             this.mouseBak = {
                 type: type,
-                clientX: e.clientX,
+                clientX: clientX,
                 value: item[type],
             };
             this.mouseItem = item;
             this.dateMove = null;
         },
-        itemMouseMove(e) {
+        onMoving(clientX) {
             if (this.mouseItem != null) {
-                e.preventDefault();
-                const diff = this.mouseBak.value + (e.clientX - this.mouseBak.clientX);
+                const diff = this.mouseBak.value + (clientX - this.mouseBak.clientX);
                 if (this.mouseBak.type === 'moveW') {
                     const oneWidthTime = 86400000 / this.dateWidth;
                     const {start, end} = this.mouseItem.time;
@@ -360,14 +380,13 @@ export default {
                 return;
             }
             if (this.dateMove != null) {
-                e.preventDefault();
-                let moveX = (this.dateMove.clientX - e.clientX) * 5;
-                this.dateMove.clientX = e.clientX;
+                let moveX = (this.dateMove.clientX - clientX) * 5;
+                this.dateMove.clientX = clientX;
                 this.mouseWidth+= moveX;
                 this.mouseScaleWidth+= moveX * (100 / this.dateWidth);
             }
         },
-        itemMouseUp(e) {
+        onMoveOver(target) {
             if (this.mouseItem != null) {
                 const {start, end} = this.mouseItem.time;
                 let isM = false;
@@ -391,7 +410,7 @@ export default {
                 //
                 if (isM) {
                     this.$emit("on-change", this.mouseItem)
-                } else if (e.target.className == 'timeline-title') {
+                } else if (target && target.className == 'timeline-title') {
                     this.clickItem(this.mouseItem);
                 }
                 this.mouseItem = null;
