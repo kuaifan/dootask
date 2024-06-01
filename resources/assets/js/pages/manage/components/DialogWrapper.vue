@@ -263,6 +263,7 @@
                 :emoji-bottom="windowPortrait"
                 :maxlength="200000"
                 :placeholder="$L('输入消息...')"
+                :reply-msg-auto-mention="replyMsgAutoMention"
                 @on-focus="onEventFocus"
                 @on-blur="onEventBlur"
                 @on-more="onEventMore"
@@ -861,6 +862,7 @@ export default {
             selectedTextStatus: false,          // 是否选择文本
             scrollToBottomRefresh: false,       // 滚动到底部重新获取消息
             androidKeyboardVisible: false,      // Android键盘是否可见
+            replyMsgAutoMention: false,         // 允许回复消息后自动@
         }
     },
 
@@ -1490,6 +1492,7 @@ export default {
             this.positionShow = false
             this.msgPrepared = false
             this.scrollToBottomRefresh = false
+            this.replyMsgAutoMention = false
             this.allMsgs = this.allMsgList
             this.errorId = 0
             //
@@ -3030,6 +3033,7 @@ export default {
         },
 
         onReply(type) {
+            this.replyMsgAutoMention = true
             this.setQuote(this.operateItem.id, type)
             this.inputFocus()
         },

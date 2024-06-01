@@ -288,6 +288,10 @@ export default {
             type: String,
             default: "top"
         },
+        replyMsgAutoMention: {
+            type: Boolean,
+            default: true
+        },
     },
     data() {
         return {
@@ -1314,7 +1318,22 @@ export default {
 
         cancelQuote() {
             if (this.quoteUpdate) {
+                // 取消修改
                 this.$emit('input', '')
+            } else {
+                // 取消回复
+                if (this.$refs.editor.firstChild.querySelectorAll('img').length === 0) {
+                    const quoteDiv = document.createElement('div')
+                    quoteDiv.innerHTML = this.$refs.editor.firstChild.innerHTML
+                    quoteDiv.querySelectorAll("span.mention").forEach(span => {
+                        if (span.getAttribute("data-id") == this.quoteData.userid) {
+                            span.innerHTML = "";
+                        }
+                    })
+                    if (!quoteDiv.innerText.replace(/\s/g, '')) {
+                        this.$emit('input', '')
+                    }
+                }
             }
             this.setQuote(0)
         },
@@ -1323,7 +1342,10 @@ export default {
             if (this.dialogData.type !== 'group') {
                 return
             }
-            if (this.quoteUpdate || !this.quoteData) {
+            if (this.quoteUpdate || !this.quoteData || !this.replyMsgAutoMention) {
+                return
+            }
+            if (data.bot && !$A.rightExists(data.email, '@bot.system')) {
                 return
             }
             if (this.userId === data.userid || this.quoteData.userid !== data.userid) {
