@@ -15620,17 +15620,6 @@
         "id": "Upload gambar lokal"
     },
     {
-        "key": "浏览已上传图片",
-        "zh": "",
-        "zh-CHT": "瀏覽已上傳圖片",
-        "en": "View the uploaded images",
-        "ko": "업로드한 그림 찾아보기",
-        "ja": "アップロードされた画像を見ます",
-        "de": "Das foto ist hochgeladen",
-        "fr": "Voir les images téléchargées",
-        "id": "Mengunggah gambar"
-    },
-    {
         "key": "终端SN与License不匹配",
         "zh": "",
         "zh-CHT": "終端SN與License不匹配",
@@ -20667,5 +20656,38 @@
         "de": "Ich sollte eine angemessene antwort und unterstützung auf die fragen und ersuchen der nutzer bereitstellen.",
         "fr": "Ma mission est de fournir des réponses et un soutien appropriés aux questions et demandes des utilisateurs.",
         "id": "Tugas saya adalah memberikan jawaban dan dukungan yang sesuai kepada pengguna dan meminta jawaban yang sesuai."
+    },
+    {
+        "key": "上传本地文件",
+        "zh": "",
+        "zh-CHT": "上傳本地文件",
+        "en": "Upload local files",
+        "ko": "로컬 파일 업로드",
+        "ja": "ローカルファイルをアップロードします",
+        "de": "Lokalen dateien hochladen",
+        "fr": "Téléchargez vos fichiers locaux",
+        "id": "Mengunggah berkas lokal."
+    },
+    {
+        "key": "智谱清言",
+        "zh": "",
+        "zh-CHT": "智譜清言",
+        "en": "Wisdom and clear speech",
+        "ko": "지보가 맑고 바른 말",
+        "ja": "智譜清言です",
+        "de": "Sein: intelligent",
+        "fr": "Zizu chuan claire parole",
+        "id": "Kyousuke kun"
+    },
+    {
+        "key": "已超期",
+        "zh": "",
+        "zh-CHT": "已超期",
+        "en": "Have expired",
+        "ko": "이미 기한을 넘겼다",
+        "ja": "期限を過ぎました",
+        "de": "Die frist wurde überschritten.",
+        "fr": "Dépassement du délai",
+        "id": "Lebih dari periode"
     }
 ]

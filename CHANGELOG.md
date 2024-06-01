@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.37.55]
+
+### Performance
+
+- 优化回复消息自动@逻辑
+- 甘特图兼容移动端
+
 ## [0.37.50]
 
 ### Bug Fixes
