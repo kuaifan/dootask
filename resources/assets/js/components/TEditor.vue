@@ -141,6 +141,10 @@ export default {
         readOnlyFull: {
             default: null
         },
+        readOnlyImagePreview: {
+            type: Boolean,
+            default: true
+        },
         autoSize: {
             type: Boolean,
             default: false
@@ -326,7 +330,7 @@ export default {
                                 }
                             }, {
                                 type: 'menuitem',
-                                text: this.$L('浏览已上传图片'),
+                                text: this.$L('浏览图片空间'),
                                 onAction: () => {
                                     this.$refs.myUpload.browsePicture();
                                 }
@@ -346,7 +350,7 @@ export default {
                                 }
                             }, {
                                 type: 'menuitem',
-                                text: this.$L('浏览已上传图片'),
+                                text: this.$L('浏览图片空间'),
                                 onAction: () => {
                                     this.$refs.myUpload.browsePicture();
                                 }
@@ -615,6 +619,9 @@ export default {
         },
 
         addClickEvent({target}, isFull) {
+            if (!this.readOnlyImagePreview) {
+                return;
+            }
             target.getBody().addEventListener('click', (e) => {
                 if (isFull) {
                     const readOnly = this.readOnlyFull === null ? this.readOnly : this.readOnlyFull;
