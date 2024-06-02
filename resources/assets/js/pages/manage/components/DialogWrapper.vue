@@ -395,28 +395,6 @@
             </ul>
         </Modal>
 
-        <!--创建群组-->
-        <Modal
-            v-model="createGroupShow"
-            :title="$L('创建群组')"
-            :mask-closable="false">
-            <Form :model="createGroupData" label-width="auto" @submit.native.prevent>
-                <FormItem prop="avatar" :label="$L('群头像')">
-                    <ImgUpload v-model="createGroupData.avatar" :num="1" :width="512" :height="512" :whcut="1"/>
-                </FormItem>
-                <FormItem prop="userids" :label="$L('群成员')">
-                    <UserSelect v-model="createGroupData.userids" :uncancelable="createGroupData.uncancelable" :multiple-max="100" show-bot :title="$L('选择项目成员')"/>
-                </FormItem>
-                <FormItem prop="chat_name" :label="$L('群名称')">
-                    <Input v-model="createGroupData.chat_name" :placeholder="$L('输入群名称（选填）')"/>
-                </FormItem>
-            </Form>
-            <div slot="footer" class="adaption">
-                <Button type="default" @click="createGroupShow=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="createGroupLoad > 0" @click="onCreateGroup">{{$L('创建')}}</Button>
-            </div>
-        </Modal>
-
         <!--修改资料-->
         <Modal
             v-model="modifyShow"
@@ -771,10 +749,6 @@ export default {
             searchLoad: 0,
             searchLocation: 1,
             searchResult: [],
-
-            createGroupShow: false,
-            createGroupData: {},
-            createGroupLoad: 0,
 
             modifyShow: false,
             modifyData: {},
@@ -2460,8 +2434,7 @@ export default {
                     if (this.dialogData.dialog_user && this.userId != this.dialogData.dialog_user.userid) {
                         userids.push(this.dialogData.dialog_user.userid)
                     }
-                    this.createGroupData = {userids, uncancelable: [this.userId]}
-                    this.createGroupShow = true
+                    Store.set('createGroup', userids);
                     break;
 
                 case "modifyNormal":
@@ -2603,24 +2576,6 @@ export default {
                         });
                     })
                 },
-            });
-        },
-
-        onCreateGroup() {
-            this.createGroupLoad++;
-            this.$store.dispatch("call", {
-                url: 'dialog/group/add',
-                data: this.createGroupData
-            }).then(({data, msg}) => {
-                $A.messageSuccess(msg);
-                this.createGroupShow = false;
-                this.createGroupData = {};
-                this.$store.dispatch("saveDialog", data);
-                this.$store.dispatch('openDialog', data.id)
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-            }).finally(_ => {
-                this.createGroupLoad--;
             });
         },
 
