@@ -427,6 +427,7 @@
                                     align-items: center;
                                     height: 52px;
                                     cursor: pointer;
+                                    position: relative;
                                     .avatar {
                                         flex-grow: 0;
                                         flex-shrink: 0;
@@ -469,6 +470,23 @@
                                         display: flex;
                                         align-items: center;
                                         justify-content: center;
+                                    }
+                                    &:before {
+                                        display: none;
+                                        position: absolute;
+                                        content: "";
+                                        top: 0;
+                                        left: -24px;
+                                        right: 0;
+                                        bottom: 0;
+                                        z-index: 1;
+                                        border: 2px solid $primary-color;
+                                        pointer-events: none;
+                                    }
+                                    &.operate {
+                                        &:before {
+                                            display: block;
+                                        }
                                     }
                                 }
                             }
