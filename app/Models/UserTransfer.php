@@ -53,6 +53,7 @@ class UserTransfer extends AbstractModel
         WebSocketDialog::select(['web_socket_dialogs.*'])
             ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
             ->where('web_socket_dialogs.type', 'group')
+            ->where('web_socket_dialogs.group_type', '!=', 'okr')
             ->where('u.userid', $this->original_userid)
             ->orderByDesc('web_socket_dialogs.id')
             ->chunk(100, function($list) {
