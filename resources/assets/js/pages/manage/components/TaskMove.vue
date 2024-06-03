@@ -248,12 +248,8 @@ export default {
         },
 
         async onConfirm() {
-            if( this.task.project_id == this.cascader[0] && this.task.column_id == this.cascader[1]){
+            if (this.task.project_id == this.cascader[0] && this.task.column_id == this.cascader[1]) {
                 $A.messageError("未变更移动项");
-                return;
-            }
-            if( !this.updateData.flow.flow_item_id ){
-                $A.messageError("请选择移动后状态");
                 return;
             }
             this.loadIng++;
@@ -263,7 +259,8 @@ export default {
                     task_id: this.task.id,
                     project_id: this.cascader[0],
                     column_id: this.cascader[1],
-                    flow_item_id: this.updateData.flow.flow_item_id,
+                    flow_item_id: this.updateData.flow.flow_item_id || 0,
+                    complete_at: this.updateData.flow.complete_at || '',
                     owner: this.updateData.owner_userids,
                     assist: this.updateData.assist_userids,
                 }
@@ -274,9 +271,13 @@ export default {
                 this.$store.dispatch("saveTask", data);
                 $A.messageSuccess(msg);
                 this.close()
-            }).catch(({msg}) => {
+            }).catch(({msg, ret}) => {
                 this.loadIng--;
-                $A.modalError(msg);
+                if (ret == 102) {
+                    $A.messageError("请选择移动后状态");
+                } else {
+                    $A.modalError(msg);
+                }
             })
         },
 
@@ -290,6 +291,9 @@ export default {
         },
 
         onStatusUpdate(val) {
+            if (val.complete_at && !val.flow_item_id) {
+                val.flow_item_name = this.$L('已完成');
+            }
             this.tasks.flow_item_id = val.flow_item_id;
             this.updateData.flow = val
         }
