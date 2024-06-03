@@ -3439,7 +3439,7 @@ export default {
      * @param data
      */
     previewImage({state}, data) {
-        if (!$A.isJson(data)) {
+        if (!$A.isJson(data) || !$A.isArray(data.list)) {
             data = {index:0, list: [data]}
         }
         state.previewImageIndex = data.index;

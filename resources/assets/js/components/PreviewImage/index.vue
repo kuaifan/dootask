@@ -8,8 +8,9 @@
         :class-name="viewMode === 'desktop' ? 'common-preview-image-view' : 'common-preview-image-swipe'"
         fullscreen>
         <template v-if="list.length > 0">
-            <PreviewImageView v-if="viewMode === 'desktop'" :initial-index="index" :url-list="list" infinite/>
-            <PreviewImageSwipe v-if="viewMode === 'mobile'" :initial-index="index" :url-list="list" @on-destroy="show=false"/>
+            <PreviewVideoView v-if="viewVideo" :item="viewVideo"/>
+            <PreviewImageView v-else-if="viewMode === 'desktop'" :initial-index="index" :url-list="list" infinite/>
+            <PreviewImageSwipe v-else-if="viewMode === 'mobile'" :initial-index="index" :url-list="list" @on-destroy="show=false"/>
         </template>
     </Modal>
 </template>
@@ -64,12 +65,13 @@ body {
 </style>
 
 <script>
+const PreviewVideoView = () => import('./components/video');
 const PreviewImageView = () => import('./components/view');
 const PreviewImageSwipe = () => import('./components/swipe');
 
 export default {
     name: 'PreviewImage',
-    components: {PreviewImageSwipe, PreviewImageView},
+    components: {PreviewVideoView, PreviewImageSwipe, PreviewImageView},
     props: {
         value: {
             type: Boolean,
@@ -104,6 +106,15 @@ export default {
         }
     },
     computed: {
+        viewVideo() {
+            if (this.list.length === 0) {
+                return false
+            }
+            const item = this.list.find(({src}) => {
+                return /\.mp4$/i.test(src)
+            })
+            return item || false
+        },
         viewMode() {
             if (this.mode) {
                 return this.mode

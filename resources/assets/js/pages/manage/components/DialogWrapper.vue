@@ -3231,6 +3231,14 @@ export default {
                 data = this.operateItem
             }
             const {msg} = data;
+            if (msg.ext === 'mp4') {
+                this.$store.dispatch("previewImage", {
+                    src: msg.path,
+                    width: msg.width,
+                    height: msg.height,
+                })
+                return
+            }
             if (['jpg', 'jpeg', 'webp', 'gif', 'png'].includes(msg.ext)) {
                 this.onViewPicture(msg.path);
                 return

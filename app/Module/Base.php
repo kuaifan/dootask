@@ -2218,7 +2218,7 @@ class Base
                     $type = ['jpg', 'jpeg', 'webp', 'gif', 'png'];
                     break;
                 case 'video':
-                    $type = ['rm', 'rmvb', 'wmv', 'avi', 'mpg', 'mpeg', 'mp4'];
+                    $type = ['rm', 'rmvb', 'wmv', 'avi', 'mpg', 'mpeg', 'mp4', 'webm'];
                     break;
                 case 'audio':
                     $type = ['mp3', 'wma', 'wav', 'amr'];
@@ -2233,7 +2233,7 @@ class Base
                     $type = ['zip'];
                     break;
                 case 'file':
-                    $type = ['jpg', 'jpeg', 'webp', 'png', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'esp', 'pdf', 'rar', 'zip', 'gz', 'ai', 'avi', 'bmp', 'cdr', 'eps', 'mov', 'mp3', 'mp4', 'pr', 'psd', 'svg', 'tif'];
+                    $type = ['jpg', 'jpeg', 'webp', 'png', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'esp', 'pdf', 'rar', 'zip', 'gz', 'ai', 'avi', 'bmp', 'cdr', 'eps', 'mov', 'mp3', 'mp4', 'webm', 'pr', 'psd', 'svg', 'tif'];
                     break;
                 case 'firmware':
                     $type = ['img', 'tar', 'bin'];
@@ -2320,6 +2320,17 @@ class Base
                 }
             }
             //
+            if (in_array($extension, ['mp4', 'webm'])) {
+                // 视频尺寸
+                $thumbFile = $array['file'] . '_thumb.jpg';
+                shell_exec("ffmpeg -i {$array['file']} -ss 1 -vframes 1 {$thumbFile} 2>&1");
+                if (file_exists($thumbFile)) {
+                    $paramet = getimagesize($thumbFile);
+                    $array['width'] = $paramet[0];
+                    $array['height'] = $paramet[1];
+                    $array['thumb'] = $array['path'] . '_thumb.jpg';
+                }
+            }
             if (in_array($extension, ['jpg', 'jpeg', 'webp', 'gif', 'png'])) {
                 //图片尺寸
                 $paramet = getimagesize($array['file']);

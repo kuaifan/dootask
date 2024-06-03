@@ -34,6 +34,17 @@
                 <div v-else-if="msgData.type === 'file'" :class="`content-file ${msgData.msg.type}`">
                     <div class="dialog-file">
                         <img v-if="msgData.msg.type === 'img'" class="file-img" :style="imageStyle(msgData.msg)" :src="msgData.msg.thumb" @click="viewFile"/>
+                        <div v-else-if="isVideoFile(msgData.msg)" class="file-video" :style="imageStyle(msgData.msg)" @click="viewFile">
+                            <img v-if="msgData.msg.thumb" :src="msgData.msg.thumb">
+                            <video v-else :width="imageStyle(msgData.msg, 'width')" :height="imageStyle(msgData.msg, 'height')">
+                                <source :src="msgData.msg.path" type="video/mp4">
+                            </video>
+                            <div class="file-play">
+                                <div class="play-icon">
+                                    <i class="taskfont">&#xe745;</i>
+                                </div>
+                            </div>
+                        </div>
                         <div v-else class="file-box" @click="downFile">
                             <img class="file-thumb" :src="msgData.msg.thumb"/>
                             <div class="file-info">
@@ -565,7 +576,7 @@ export default {
             return {};
         },
 
-        imageStyle(info) {
+        imageStyle(info, type = 'style') {
             const {width, height} = info;
             if (width && height) {
                 let maxW = 220,
@@ -581,12 +592,28 @@ export default {
                         tempH = maxH;
                     }
                 }
+                if (type === 'width') {
+                    return tempW
+                }
+                if (type === 'height') {
+                    return tempH
+                }
                 return {
                     width: tempW + 'px',
                     height: tempH + 'px',
                 };
             }
+            if (type === 'width' || type === 'height') {
+                return 0
+            }
             return {};
+        },
+
+        isVideoFile(msg) {
+            return msg.type === 'file'
+                && msg.ext === 'mp4'
+                && msg.width > 0
+                && msg.height > 0;
         },
 
         playRecord() {
