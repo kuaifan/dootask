@@ -3530,7 +3530,7 @@ export default {
             wgLog && console.log("[WS] Open", e, $A.formatDate())
             state.wsOpenNum++;
             //
-            if (window.systemInfo.debug === "yes") {
+            if (window.systemInfo.debug === "yes" || state.systemConfig.e2e_message !== 'open') {
                 return  // 测试环境不发送加密信息
             }
             dispatch("websocketSend", {
