@@ -75,7 +75,7 @@
                                     dialog_msg_id: dialog.search_msg_id,
                                     search_msg_id: dialog.search_msg_id,
                                 })"
-                                v-longpress="handleLongpress"
+                                v-longpress="handleDialogLongpress"
                                 :style="{'background-color':dialog.color}">
                                 <template v-if="dialog.type=='group'">
                                     <EAvatar v-if="dialog.avatar" class="img-avatar" :src="dialog.avatar" :size="42"></EAvatar>
@@ -130,8 +130,14 @@
                             <li v-for="items in contactsList">
                                 <div class="label">{{items.az}}</div>
                                 <ul>
-                                    <li v-for="(user, index) in items.list" :key="index" @click="openContacts(user)">
-                                        <div class="avatar"><UserAvatar :userid="user.userid" :size="30"/></div>
+                                    <li
+                                        v-for="(user, index) in items.list"
+                                        :key="index"
+                                        :data-id="user.userid"
+                                        :class="userClass(user)"
+                                        @click="openContacts(user)"
+                                        v-longpress="handleUserLongpress">
+                                        <div class="avatar"><UserAvatar :userid="user.userid" :size="contactAvatarSize"/></div>
                                         <div class="nickname">
                                             <em>{{user.nickname}}</em>
                                             <div v-if="user.tags" class="tags">
@@ -161,37 +167,59 @@
                             transfer>
                             <div :style="{userSelect:operateVisible ? 'none' : 'auto', height: operateStyles.height}"></div>
                             <DropdownMenu slot="list" class="messenger-dialog-operation">
-                                <DropdownItem @click.native="handleTopClick">
-                                    <div class="item">
-                                        {{ $L(operateItem.top_at ? '取消置顶' : '置顶') }}
-                                        <i class="taskfont" v-html="operateItem.top_at ? '&#xe7e3;' : '&#xe7e6;'"></i>
-                                    </div>
-                                </DropdownItem>
-                                <DropdownItem @click.native="handleReadClick">
-                                    <div class="item">
-                                        {{ $L($A.getDialogUnread(operateItem, true) > 0 ? '标记已读' : '标记未读') }}
-                                        <i class="taskfont" v-html="$A.getDialogUnread(operateItem, true) > 0 ? '&#xe7e8;' : '&#xe7e9;'"></i>
-                                    </div>
+                                <template v-if="operateType==='dialog'">
+                                    <DropdownItem @click.native="handleDialogClick('top')">
+                                        <div class="item">
+                                            {{ $L(operateItem.top_at ? '取消置顶' : '置顶') }}
+                                            <i class="taskfont" v-html="operateItem.top_at ? '&#xe7e3;' : '&#xe7e6;'"></i>
+                                        </div>
+                                    </DropdownItem>
+                                    <DropdownItem @click.native="handleDialogClick('read')">
+                                        <div class="item">
+                                            {{ $L($A.getDialogUnread(operateItem, true) > 0 ? '标记已读' : '标记未读') }}
+                                            <i class="taskfont" v-html="$A.getDialogUnread(operateItem, true) > 0 ? '&#xe7e8;' : '&#xe7e9;'"></i>
+                                        </div>
 
-                                </DropdownItem>
-                                <DropdownItem @click.native="handleSilenceClick" :disabled="silenceDisabled(operateItem)">
-                                    <div class="item">
-                                        {{ $L(operateItem.silence ? '允许消息通知' : '消息免打扰') }}
-                                        <i class="taskfont" v-html="operateItem.silence ? '&#xe7eb;' : '&#xe7d7;'"></i>
-                                    </div>
-                                </DropdownItem>
-                                <DropdownItem @click.native="handleHideClick" :disabled="!!operateItem.top_at">
-                                    <div class="item">
-                                        {{ $L('不显示该会话') }}
-                                        <i class="taskfont">&#xe881;</i>
-                                    </div>
-                                </DropdownItem>
-                                <DropdownItem @click.native="handleColorClick(c.color)" v-for="(c, k) in taskColorList" :key="'c_' + k" :divided="k==0"  v-if="k<6" >
-                                    <div class="item">
-                                        {{$L(c.name)}}
-                                        <i class="taskfont color" :style="{color:c.primary||'#ddd'}" v-html="c.color == (operateItem.color||'') ? '&#xe61d;' : '&#xe61c;'"></i>
-                                    </div>
-                                </DropdownItem>
+                                    </DropdownItem>
+                                    <DropdownItem @click.native="handleDialogClick('silence')" :disabled="silenceDisabled(operateItem)">
+                                        <div class="item">
+                                            {{ $L(operateItem.silence ? '允许消息通知' : '消息免打扰') }}
+                                            <i class="taskfont" v-html="operateItem.silence ? '&#xe7eb;' : '&#xe7d7;'"></i>
+                                        </div>
+                                    </DropdownItem>
+                                    <DropdownItem @click.native="handleDialogClick('hide')" :disabled="!!operateItem.top_at">
+                                        <div class="item">
+                                            {{ $L('不显示该会话') }}
+                                            <i class="taskfont">&#xe881;</i>
+                                        </div>
+                                    </DropdownItem>
+                                    <DropdownItem @click.native="handleDialogClick('color', c.color)" v-for="(c, k) in taskColorList" :key="'c_' + k" :divided="k==0"  v-if="k<6" >
+                                        <div class="item">
+                                            {{$L(c.name)}}
+                                            <i class="taskfont color" :style="{color:c.primary||'#ddd'}" v-html="c.color == (operateItem.color||'') ? '&#xe61d;' : '&#xe61c;'"></i>
+                                        </div>
+                                    </DropdownItem>
+                                </template>
+                                <template v-else>
+                                    <DropdownItem @click.native="handleUserClick('msg')">
+                                        <div class="item">
+                                            {{ $L('发送消息') }}
+                                            <i class="taskfont">&#xe6eb;</i>
+                                        </div>
+                                    </DropdownItem>
+                                    <DropdownItem @click.native="handleUserClick('group')">
+                                        <div class="item">
+                                            {{ $L('创建群组') }}
+                                            <i class="taskfont">&#xe63f;</i>
+                                        </div>
+                                    </DropdownItem>
+                                    <DropdownItem @click.native="handleUserClick('avatar')">
+                                        <div class="item">
+                                            {{ $L('查看头像') }}
+                                            <i class="taskfont">&#xe7bc;</i>
+                                        </div>
+                                    </DropdownItem>
+                                </template>
                             </DropdownMenu>
                         </Dropdown>
                     </div>
@@ -263,6 +291,7 @@ export default {
             operateItem: {},
             operateStyles: {},
             operateVisible: false,
+            operateType: 'dialog',
 
             clickAgainSubscribe: null,
         }
@@ -312,6 +341,10 @@ export default {
 
         routeName() {
             return this.$route.name
+        },
+
+        contactAvatarSize() {
+            return this.windowPortrait ? 36 : 30
         },
 
         typeItems() {
@@ -680,7 +713,7 @@ export default {
             return {
                 top: dialog.top_at,
                 active: dialog.id == this.dialogId && (dialog.search_msg_id == this.dialogMsgId || !this.dialogMsgId),
-                operate: this.operateVisible && dialog.id == this.operateItem.id,
+                operate: this.operateVisible && this.operateType === 'dialog' && dialog.id == this.operateItem.id,
                 completed: $A.dialogCompleted(dialog)
             }
         },
@@ -700,6 +733,12 @@ export default {
             }
             // 根据最后会话时间排序
             return $A.Date(b.last_at) - $A.Date(a.last_at);
+        },
+
+        userClass(user) {
+            return {
+                operate: this.operateVisible && this.operateType === 'contacts' && user.userid == this.operateItem.userid
+            }
         },
 
         openDialog(dialogId) {
@@ -976,7 +1015,7 @@ export default {
             })
         },
 
-        handleLongpress(event, el) {
+        handleDialogLongpress(event, el) {
             if (this.dialogSearchKey) {
                 return;
             }
@@ -985,12 +1024,28 @@ export default {
             if (!dialogItem) {
                 return
             }
+            this.handleLongpress(dialogItem, el.getBoundingClientRect(), event.clientX)
+        },
+
+        handleUserLongpress(event, el) {
+            if (this.contactsKey) {
+                return;
+            }
+            const userId = $A.getAttr(el, 'data-id')
+            const userItem = this.contactsFilter.find(item => item.userid == userId)
+            if (!userItem) {
+                return
+            }
+            this.handleLongpress(userItem, el.getBoundingClientRect(), event.clientX)
+        },
+
+        handleLongpress(item, rect, clientX) {
+            this.operateType = this.tabActive;
             this.operateVisible = false;
-            this.operateItem = $A.isJson(dialogItem) ? dialogItem : {};
+            this.operateItem = $A.isJson(item) ? item : {};
             this.$nextTick(() => {
-                const rect = el.getBoundingClientRect();
                 this.operateStyles = {
-                    left: `${event.clientX}px`,
+                    left: `${clientX}px`,
                     top: `${rect.top + this.windowScrollY}px`,
                     height: rect.height + 'px',
                 }
@@ -998,77 +1053,101 @@ export default {
             })
         },
 
-        handleTopClick() {
-            this.$store.dispatch("call", {
-                url: 'dialog/top',
-                data: {
-                    dialog_id: this.operateItem.id,
-                },
-            }).then(({data}) => {
-                this.$store.dispatch("saveDialog", data);
-                this.$nextTick(this.scrollIntoActive);
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-            });
-        },
+        handleDialogClick(act, value = undefined) {
+            switch (act) {
+                case 'top':
+                    this.$store.dispatch("call", {
+                        url: 'dialog/top',
+                        data: {
+                            dialog_id: this.operateItem.id,
+                        },
+                    }).then(({data}) => {
+                        this.$store.dispatch("saveDialog", data);
+                        this.$nextTick(this.scrollIntoActive);
+                    }).catch(({msg}) => {
+                        $A.modalError(msg);
+                    });
+                    break;
 
-        handleReadClick() {
-            this.$store.dispatch("showSpinner", 600)
-            this.$store.dispatch("dialogMsgMark", {
-                type: $A.getDialogUnread(this.operateItem, true) > 0 ? 'read' : 'unread',
-                dialog_id: this.operateItem.id,
-            }).catch(({msg}) => {
-                $A.modalError(msg)
-            }).finally(_ => {
-                this.$store.dispatch("hiddenSpinner")
-            })
-        },
+                case 'read':
+                    this.$store.dispatch("showSpinner", 600)
+                    this.$store.dispatch("dialogMsgMark", {
+                        type: $A.getDialogUnread(this.operateItem, true) > 0 ? 'read' : 'unread',
+                        dialog_id: this.operateItem.id,
+                    }).catch(({msg}) => {
+                        $A.modalError(msg)
+                    }).finally(_ => {
+                        this.$store.dispatch("hiddenSpinner")
+                    })
+                    break;
 
-        handleSilenceClick() {
-            if (this.silenceDisabled(this.operateItem)) {
-                return
+                case 'silence':
+                    if (this.silenceDisabled(this.operateItem)) {
+                        return
+                    }
+                    this.$store.dispatch("call", {
+                        url: 'dialog/msg/silence',
+                        data: {
+                            dialog_id: this.operateItem.id,
+                            type: this.operateItem.silence ? 'cancel' : 'set'
+                        },
+                    }).then(({data}) => {
+                        this.$store.dispatch("saveDialog", data);
+                    }).catch(({msg}) => {
+                        $A.modalError(msg);
+                    });
+                    break;
+
+                case 'hide':
+                    this.$store.dispatch("call", {
+                        url: 'dialog/hide',
+                        data: {
+                            dialog_id: this.operateItem.id,
+                        },
+                    }).then(({data}) => {
+                        if (this.dialogId == this.operateItem.id) {
+                            this.$store.dispatch("openDialog", 0)
+                        }
+                        this.$store.dispatch("saveDialog", data);
+                    }).catch(({msg}) => {
+                        $A.modalError(msg);
+                    });
+                    break;
+
+                case 'color':
+                    this.$store.dispatch("call", {
+                        url: 'dialog/msg/color',
+                        data: {
+                            dialog_id: this.operateItem.id,
+                            color: value
+                        },
+                    }).then(({data}) => {
+                        this.$store.dispatch("saveDialog", data);
+                    }).catch(({msg}) => {
+                        $A.modalError(msg);
+                    });
+                    break;
             }
-            this.$store.dispatch("call", {
-                url: 'dialog/msg/silence',
-                data: {
-                    dialog_id: this.operateItem.id,
-                    type: this.operateItem.silence ? 'cancel' : 'set'
-                },
-            }).then(({data}) => {
-                this.$store.dispatch("saveDialog", data);
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-            });
         },
 
-        handleHideClick() {
-            this.$store.dispatch("call", {
-                url: 'dialog/hide',
-                data: {
-                    dialog_id: this.operateItem.id,
-                },
-            }).then(({data}) => {
-                if (this.dialogId == this.operateItem.id) {
-                    this.$store.dispatch("openDialog", 0)
-                }
-                this.$store.dispatch("saveDialog", data);
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-            });
-        },
+        handleUserClick(act) {
+            switch (act) {
+                case 'msg':
+                    this.openContacts(this.operateItem);
+                    break;
 
-        handleColorClick(color) {
-            this.$store.dispatch("call", {
-                url: 'dialog/msg/color',
-                data: {
-                    dialog_id: this.operateItem.id,
-                    color: color
-                },
-            }).then(({data}) => {
-                this.$store.dispatch("saveDialog", data);
-            }).catch(({msg}) => {
-                $A.modalError(msg);
-            });
+                case 'group':
+                    const userids = [this.userId]
+                    if (this.operateItem.userid && this.userId != this.operateItem.userid) {
+                        userids.push(this.operateItem.userid)
+                    }
+                    Store.set('createGroup', userids);
+                    break;
+
+                case 'avatar':
+                    this.$store.dispatch("previewImage", this.operateItem.userimg)
+                    break;
+            }
         },
 
         updateDialogs(timeout) {

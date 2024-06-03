@@ -186,7 +186,9 @@
                         <Icon type="ios-arrow-down"></Icon>
                     </Button>
                     <DropdownMenu slot="list">
+                        <DropdownItem name="project">{{$L('新建项目')}} ({{mateName}}+B)</DropdownItem>
                         <DropdownItem name="task">{{$L('新建任务')}} ({{mateName}}+K)</DropdownItem>
+                        <DropdownItem name="group">{{$L('创建群组')}} ({{mateName}}+U)</DropdownItem>
                         <DropdownItem name="createMeeting">{{$L('新会议')}} ({{mateName}}+J)</DropdownItem>
                         <DropdownItem name="joinMeeting">{{$L('加入会议')}}</DropdownItem>
                     </DropdownMenu>
@@ -240,6 +242,28 @@
             }"
             footer-hide>
             <TaskAdd ref="addTask" v-model="addTaskShow"/>
+        </Modal>
+
+        <!--创建群组-->
+        <Modal
+            v-model="createGroupShow"
+            :title="$L('创建群组')"
+            :mask-closable="false">
+            <Form :model="createGroupData" label-width="auto" @submit.native.prevent>
+                <FormItem prop="avatar" :label="$L('群头像')">
+                    <ImgUpload v-model="createGroupData.avatar" :num="1" :width="512" :height="512" :whcut="1"/>
+                </FormItem>
+                <FormItem prop="userids" :label="$L('群成员')">
+                    <UserSelect v-model="createGroupData.userids" :uncancelable="createGroupData.uncancelable" :multiple-max="100" show-bot :title="$L('选择项目成员')"/>
+                </FormItem>
+                <FormItem prop="chat_name" :label="$L('群名称')">
+                    <Input v-model="createGroupData.chat_name" :placeholder="$L('输入群名称（选填）')"/>
+                </FormItem>
+            </Form>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="createGroupShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="createGroupLoad > 0" @click="submitCreateGroup">{{$L('创建')}}</Button>
+            </div>
         </Modal>
 
         <!--导出任务统计-->
@@ -335,9 +359,12 @@ import MicroApps from "../components/MicroApps.vue";
 import notificationKoro from "notification-koro1";
 import {Store} from "le5le-store";
 import {MarkdownPreview} from "../store/markdown";
+import UserSelect from "../components/UserSelect.vue";
+import ImgUpload from "../components/ImgUpload.vue";
 
 export default {
     components: {
+        ImgUpload, UserSelect,
         TaskExport,
         CheckinExport,
         ApproveExport,
@@ -379,6 +406,11 @@ export default {
             addTaskShow: false,
             addTaskSubscribe: null,
 
+            createGroupShow: false,
+            createGroupData: {},
+            createGroupLoad: 0,
+            createGroupSubscribe: null,
+
             exportTaskShow: false,
             exportCheckinShow: false,
             exportApproveShow: false,
@@ -418,6 +450,7 @@ export default {
         this.notificationInit();
         //
         this.addTaskSubscribe = Store.subscribe('addTask', this.onAddTask);
+        this.createGroupSubscribe = Store.subscribe('createGroup', this.onCreateGroup);
         this.dialogMsgSubscribe = Store.subscribe('dialogMsgPush', this.addDialogMsg);
         //
         document.addEventListener('keydown', this.shortcutEvent);
@@ -440,6 +473,10 @@ export default {
         if (this.addTaskSubscribe) {
             this.addTaskSubscribe.unsubscribe();
             this.addTaskSubscribe = null;
+        }
+        if (this.createGroupSubscribe) {
+            this.createGroupSubscribe.unsubscribe();
+            this.createGroupSubscribe = null;
         }
         if (this.dialogMsgSubscribe) {
             this.dialogMsgSubscribe.unsubscribe();
@@ -846,8 +883,16 @@ export default {
 
         onAddMenu(name) {
             switch (name) {
+                case 'project':
+                    this.onAddShow()
+                    break;
+
                 case 'task':
                     this.onAddTask(0)
+                    break;
+
+                case 'group':
+                    this.onCreateGroup([this.userId])
                     break;
 
                 case 'createMeeting':
@@ -922,15 +967,19 @@ export default {
                         this.onAddShow()
                         break;
 
+                    case 75:
+                    case 78: // K/N - 新建任务
+                        e.preventDefault();
+                        this.onAddMenu('task')
+                        break;
+
+                    case 85: // U - 创建群组
+                        this.onCreateGroup([this.userId])
+                        break;
+
                     case 74: // J - 新会议
                         e.preventDefault();
                         this.onAddMenu('createMeeting')
-                        break;
-
-                    case 75:
-                    case 78: // K/N - 加入会议
-                        e.preventDefault();
-                        this.onAddMenu('task')
                         break;
 
                     case 83: // S - 保存任务
@@ -964,6 +1013,33 @@ export default {
 
         openTask(task) {
             this.$store.dispatch("openTask", task)
+        },
+
+        onCreateGroup(userids) {
+            if (!$A.isArray(userids)) {
+                userids = []
+            }
+            this.createGroupData = {userids, uncancelable: [this.userId]}
+            this.createGroupShow = true
+        },
+
+        submitCreateGroup() {
+            this.createGroupLoad++;
+            this.$store.dispatch("call", {
+                url: 'dialog/group/add',
+                data: this.createGroupData
+            }).then(({data, msg}) => {
+                $A.messageSuccess(msg);
+                this.createGroupShow = false;
+                this.createGroupData = {};
+                this.$store.dispatch("saveDialog", data);
+                this.$store.dispatch('openDialog', data.id)
+                this.toggleRoute('messenger', {dialogAction: 'dialog'})
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            }).finally(_ => {
+                this.createGroupLoad--;
+            });
         },
 
         addDialogMsg(data) {

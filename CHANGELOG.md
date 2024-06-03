@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.37.62]
+
+### Bug Fixes
+
+- 如果项目没有流程，无法选择移动后的状态，也没办法确定移动
+
+### Performance
+
+- 优化视频播放
+- 新增通讯录菜单
+- 优化快捷创建群组
+- 优化回复消息自动@逻辑
+- 甘特图兼容移动端
+
 ## [0.37.50]
 
 ### Bug Fixes

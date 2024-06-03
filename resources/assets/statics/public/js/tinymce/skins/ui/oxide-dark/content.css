@@ -712,3 +712,4 @@ body {
 table {
   border-collapse: collapse;
 }
+.mce-content-body img{max-width:100%}
