@@ -1721,9 +1721,9 @@ class ProjectTask extends AbstractModel
      * @param array $assist
      * @return bool
      */
-    public function moveTask(int $projectId, int $columnId,int $flowItemId = 0,array $owner = [], array $assist = [])
+    public function moveTask(int $projectId, int $columnId,int $flowItemId = 0,array $owner = [], array $assist = [], string $completeAt='')
     {
-        AbstractModel::transaction(function () use ($projectId, $columnId, $flowItemId, $owner, $assist) {
+        AbstractModel::transaction(function () use ($projectId, $columnId, $flowItemId, $owner, $assist, $completeAt) {
             $newTaskUser =  array_merge($owner, $assist);
             //
             $this->project_id = $projectId;
@@ -1765,7 +1765,12 @@ class ProjectTask extends AbstractModel
                     $this->completeTask(null);
                 }
             } else {
+                $this->flow_item_id = 0;
                 $this->flow_item_name = '';
+            }
+            //
+            if ($completeAt) {
+                $this->complete_at = $completeAt;
             }
             //
             $this->save();

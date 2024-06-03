@@ -2340,6 +2340,7 @@ class ProjectController extends AbstractController
         $flow_item_id = intval(Request::input('flow_item_id'));
         $owner = Request::input('owner', []);
         $assist = Request::input('assist', []);
+        $completeAt = trim(Request::input('complete_at', ''));
         //
         $task = ProjectTask::userTask($task_id);
         //
@@ -2360,9 +2361,13 @@ class ProjectController extends AbstractController
             if (empty($flowItem)) {
                 return Base::retError('任务状态不存在');
             }
+        } else if (!$flow_item_id && !$completeAt) {
+            if (projectFlowItem::whereProjectId($project->id)->count() > 0) {
+                return Base::retError('请选择移动后状态', [], 102);
+            }
         }
         //
-        $task->moveTask($project_id, $column_id, $flow_item_id, $owner, $assist);
+        $task->moveTask($project_id, $column_id, $flow_item_id, $owner, $assist, $completeAt);
         //
         $task = ProjectTask::userTask($task_id);
         //
