@@ -2,11 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.37.62]
+## [0.37.65]
 
 ### Bug Fixes
 
 - 如果项目没有流程，无法选择移动后的状态，也没办法确定移动
+
+### Features
+
+- 操作人员离职对okr的移交处理
 
 ### Performance
 
