@@ -394,9 +394,13 @@
                                 padding-left: 4px;
                                 margin-top: 6px;
                                 margin-bottom: 6px;
+                                margin-right: 2px;
                                 height: 34px;
                                 line-height: 34px;
-                                position: relative;
+                                position: sticky;
+                                top: 0;
+                                z-index: 3;
+                                background: #ffffff;
                                 &:after {
                                     content: "";
                                     position: absolute;
@@ -423,6 +427,7 @@
                                     align-items: center;
                                     height: 52px;
                                     cursor: pointer;
+                                    position: relative;
                                     .avatar {
                                         flex-grow: 0;
                                         flex-shrink: 0;
@@ -465,6 +470,23 @@
                                         display: flex;
                                         align-items: center;
                                         justify-content: center;
+                                    }
+                                    &:before {
+                                        display: none;
+                                        position: absolute;
+                                        content: "";
+                                        top: 0;
+                                        left: -24px;
+                                        right: 0;
+                                        bottom: 0;
+                                        z-index: 1;
+                                        border: 2px solid $primary-color;
+                                        pointer-events: none;
+                                    }
+                                    &.operate {
+                                        &:before {
+                                            display: block;
+                                        }
                                     }
                                 }
                             }
@@ -680,6 +702,20 @@ body.window-portrait {
                         }
                         &.contacts {
                             user-select: none;
+                            > li {
+                                &.loaded {
+                                    height: 58px;
+                                }
+                                > ul {
+                                    > li {
+                                        height: 58px;
+                                        .avatar {
+                                            width: 36px;
+                                            height: 36px;
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

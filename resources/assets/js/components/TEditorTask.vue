@@ -10,6 +10,7 @@
             :placeholderFull="placeholderFull"
             :readOnly="windowTouch"
             :readOnlyFull="false"
+            :readOnlyImagePreview="false"
             @on-blur="onBlur"
             @on-editor-init="onEditorInit"
             @on-transfer-change="onTransferChange"

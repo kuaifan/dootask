@@ -57,6 +57,16 @@ export default {
                         position = newPaths.findIndex(item => item === paths[position]);
                         paths = newPaths;
                     }
+                    const videoPath = paths.find(src => {
+                        return /\.mp4$/i.test(src)
+                    });
+                    if (videoPath) {
+                        $A.eeuiAppSendMessage({
+                            action: 'videoPreview',
+                            path: videoPath
+                        });
+                        return
+                    }
                     $A.eeuiAppSendMessage({
                         action: 'picturePreview',
                         position,

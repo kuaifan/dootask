@@ -1,5 +1,5 @@
 <template>
-    <div class="vmpreview-wrapper">
+    <div class="vmpreview-wrapper" @click="handleClick">
         <v-md-preview :text="value"/>
     </div>
 </template>
@@ -70,6 +70,19 @@ export default {
                 // md.set(option).use(plugin);
             },
         });
+    },
+
+    methods: {
+        handleClick({target}) {
+            if (target.nodeName === 'IMG') {
+                const list = [...this.$el.querySelectorAll('img').values()].map(img => img.src)
+                if (list.length === 0) {
+                    return
+                }
+                const index = Math.max(0, list.indexOf(target.src))
+                this.$store.dispatch("previewImage", {index, list})
+            }
+        }
     }
 }
 </script>

@@ -141,6 +141,10 @@ export default {
         readOnlyFull: {
             default: null
         },
+        readOnlyImagePreview: {
+            type: Boolean,
+            default: true
+        },
         autoSize: {
             type: Boolean,
             default: false
@@ -326,7 +330,7 @@ export default {
                                 }
                             }, {
                                 type: 'menuitem',
-                                text: this.$L('浏览已上传图片'),
+                                text: this.$L('浏览图片空间'),
                                 onAction: () => {
                                     this.$refs.myUpload.browsePicture();
                                 }
@@ -346,7 +350,7 @@ export default {
                                 }
                             }, {
                                 type: 'menuitem',
-                                text: this.$L('浏览已上传图片'),
+                                text: this.$L('浏览图片空间'),
                                 onAction: () => {
                                     this.$refs.myUpload.browsePicture();
                                 }
@@ -407,6 +411,7 @@ export default {
                             const readOnly = this.readOnlyFull === null ? this.readOnly : this.readOnlyFull;
                             if (readOnly) {
                                 this.editorT.setMode('readonly');
+                                this.addClickEvent(e, true);
                             } else {
                                 this.editorT.setMode('design');
                             }
@@ -432,6 +437,7 @@ export default {
                             this.editor.setContent(this.content);
                             if (this.readOnly) {
                                 this.editor.setMode('readonly');
+                                this.addClickEvent(e, false);
                             } else {
                                 this.editor.setMode('design');
                             }
@@ -610,6 +616,28 @@ export default {
             }
             let index = Math.max(0, array.findIndex(item => item.src === this.operateImg));
             this.$store.dispatch("previewImage", {index, list: array})
+        },
+
+        addClickEvent({target}, isFull) {
+            if (!this.readOnlyImagePreview) {
+                return;
+            }
+            target.getBody().addEventListener('click', (e) => {
+                if (isFull) {
+                    const readOnly = this.readOnlyFull === null ? this.readOnly : this.readOnlyFull;
+                    if (!readOnly) {
+                        return;
+                    }
+                } else {
+                    if (!this.readOnly) {
+                        return;
+                    }
+                }
+                if (e.target.nodeName === 'IMG') {
+                    this.operateImg = e.target.src;
+                    this.onImagePreview();
+                }
+            });
         },
 
         /********************文件上传部分************************/

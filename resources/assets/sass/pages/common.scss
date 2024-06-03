@@ -749,6 +749,11 @@ body {
         &.common-drawer-modal{
             .ivu-modal-body{
                 padding: 0 !important;
+                .dialog-wrapper{
+                    &.inde-list{
+                        border-radius: 0
+                    }
+                }
             }
             .ivu-modal-close{
                 z-index: 3;

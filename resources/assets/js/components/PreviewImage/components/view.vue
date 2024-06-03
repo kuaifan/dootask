@@ -114,6 +114,7 @@
             padding: 0 23px;
             transform: translateX(-50%);
             width: 282px;
+            user-select: none;
 
             .actions-inner {
                 align-items: center;
