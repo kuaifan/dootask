@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.37.71]
+
+### Bug Fixes
+
+- 切换对话之后无法通过右键@
+
+### Performance
+
+- 通讯录菜单添加会议
+- 优化文件里预览图片
+- 优化消息描述
+
 ## [0.37.65]
 
 ### Bug Fixes
