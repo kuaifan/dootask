@@ -415,12 +415,6 @@
             <FileContent v-else ref="fileContent" v-model="fileShow" :file="fileInfo"/>
         </DrawerOverlay>
 
-        <!--预览文件-->
-        <PreviewImage
-            v-model="imageShow"
-            :index="imageIndex"
-            :list="imageList"/>
-
         <!--拖动上传提示-->
         <Modal
             v-model="pasteShow"
@@ -443,7 +437,6 @@
 import {mapState} from "vuex";
 import {sortBy} from "lodash";
 import DrawerOverlay from "../../components/DrawerOverlay";
-import PreviewImage from "../../components/PreviewImage";
 import longpress from "../../directives/longpress";
 import UserSelect from "../../components/UserSelect.vue";
 import UserAvatarTip from "../../components/UserAvatar/tip.vue";
@@ -453,7 +446,7 @@ const FileContent = () => import('./components/FileContent');
 const FileObject = {sort: null, mode: null, shared: null};
 
 export default {
-    components: {UserAvatarTip, UserSelect, PreviewImage, FilePreview, DrawerOverlay, FileContent},
+    components: {UserAvatarTip, UserSelect, FilePreview, DrawerOverlay, FileContent},
     directives: {longpress},
     data() {
         return {
@@ -533,10 +526,6 @@ export default {
 
             fileShow: false,
             fileInfo: {permission: -1},
-
-            imageShow: false,
-            imageIndex: 0,
-            imageList:[],
 
             uploadDir: false,
             uploadIng: 0,
@@ -931,12 +920,6 @@ export default {
             }
         },
 
-        imageShow(val) {
-            if (!val) {
-                this.browseFile(0)
-            }
-        },
-
         navigator: {
             handler() {
                 this.$nextTick(_ => {
@@ -1088,38 +1071,16 @@ export default {
         openFileJudge() {
             if (this.$route.name !== 'manage-file') {
                 this.fileShow = false;
-                this.imageShow = false;
                 return;
             }
             if (this.fid <= 0) {
                 this.fileShow = false;
-                this.imageShow = false;
                 return;
             }
             const item = this.fileList.find(({id}) => id === this.fid)
             if (!item) {
                 this.fileShow = false;
-                this.imageShow = false;
                 return;
-            }
-            // 图片直接浏览
-            if (item.image_url) {
-                const list = this.fileList.filter(({image_url}) => !!image_url)
-                if (list.length > 0) {
-                    this.imageIndex = list.findIndex(({id}) => item.id === id)
-                    this.imageList = list.map(item => {
-                        if (item.image_width) {
-                            return {
-                                src: item.image_url,
-                                width: item.image_width,
-                                height: item.image_height,
-                            }
-                        }
-                        return item.image_url;
-                    })
-                    this.imageShow = true
-                    return;
-                }
             }
             // 客户端打开独立窗口
             if (this.$Electron || this.$isEEUiApp) {
@@ -1220,9 +1181,28 @@ export default {
                     }
                     if (item.type == 'folder') {
                         this.browseFolder(item.id)
-                    } else {
-                        this.browseFile(item.id)
+                        return;
                     }
+                    if (item.image_url) {
+                        // 图片直接浏览
+                        const list = this.fileList.filter(({image_url}) => !!image_url)
+                        if (list.length > 0) {
+                            const index = list.findIndex(({id}) => item.id === id)
+                            const array = list.map(item => {
+                                if (item.image_width) {
+                                    return {
+                                        src: item.image_url,
+                                        width: item.image_width,
+                                        height: item.image_height,
+                                    }
+                                }
+                                return item.image_url;
+                            })
+                            this.$store.dispatch("previewImage", {index, list: array})
+                            return;
+                        }
+                    }
+                    this.browseFile(item.id)
                     break;
 
                 case 'upperFolder':
