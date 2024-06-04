@@ -573,12 +573,6 @@ export default {
                 this.dialogSearchKey = '';
                 return;
             }
-            if (this.tabActive === 'dialog') {
-                // todo 日志输出对话详情信息
-                if (/^info\.\d+$/.test(val)) {
-                    console.log(this.cacheDialogs.find(item => item.id == val.replace('info.', '')));
-                }
-            }
             //
             this.dialogSearchList = [];
             if (val == '') {
