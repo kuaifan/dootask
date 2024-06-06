@@ -1320,7 +1320,7 @@ export default {
             if (this.quoteUpdate) {
                 // 取消修改
                 this.$emit('input', '')
-            } else {
+            } else if (this.quoteData) {
                 // 取消回复
                 if (this.$refs.editor.firstChild.querySelectorAll('img').length === 0) {
                     const quoteDiv = document.createElement('div')

@@ -2,6 +2,7 @@
 
 use App\Models\ProjectLog;
 use App\Models\ProjectTaskUser;
+use App\Models\User;
 use App\Models\UserTransfer;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -35,7 +36,9 @@ class ProjectLogsAddTaskOnly extends Migration
                 UserTransfer::chunkById(100, function ($lists) {
                     /** @var UserTransfer $item */
                     foreach ($lists as $item) {
-                        ProjectTaskUser::transfer($item->original_userid, $item->new_userid);
+                        if (User::whereUserid($item->original_userid)->where("identity", "like", "%,disable,%")->exists()) {
+                            ProjectTaskUser::transfer($item->original_userid, $item->new_userid);
+                        }
                     }
                 });
             });
