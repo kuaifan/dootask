@@ -2229,8 +2229,26 @@ class Base
 
     /**
      * 上传文件
-     * @param array $param [ type=[文件类型], file=>Request::file, path=>文件路径, fileName=>文件名称, scale=>[压缩原图宽,高, 压缩方式], size=>限制大小KB, autoThumb=>false不要自动生成缩略图, chmod=>权限(默认0644), 'compress'=>是否压缩图片(默认true) ]
-     * @return array [name=>原文件名, size=>文件大小(单位KB),file=>绝对地址, path=>相对地址, url=>全路径地址, ext=>文件后缀名]
+     * @param array $param [
+        type=[文件类型],
+        file=>Request::file,
+        path=>文件路径,
+        fileName=>文件名称,
+        scale=>[压缩原图宽,高, 压缩方式],
+        size=>限制大小KB,
+        autoThumb=>false不要自动生成缩略图,
+        chmod=>权限(默认0644),
+        compress=>是否压缩图片(默认true) ,
+        convertVideo=>转换视频格式(默认false) ,
+     ]
+     * @return array [
+        name=>原文件名,
+        size=>文件大小(单位KB),
+        file=>绝对地址,
+        path=>相对地址,
+        url=>全路径地址,
+        ext=>文件后缀名,
+     ]
      */
     public static function upload($param)
     {
@@ -2352,7 +2370,7 @@ class Base
                 }
             }
             //
-            if (in_array($array['ext'], ['mov', 'webm'])) {
+            if ($param['convertVideo'] && in_array($array['ext'], ['mov', 'webm'])) {
                 // 转换视频格式
                 $output = Base::rightReplace($array['file'], ".{$array['ext']}", '.mp4');
                 if ($array['ext'] === 'webm') {
@@ -2372,7 +2390,7 @@ class Base
                     ]);
                 }
             }
-            if ($array['ext'] == 'mp4') {
+            if (in_array($array['ext'], ['mov', 'webm', 'mp4'])) {
                 // 视频尺寸
                 $thumbFile = $array['file'] . '_thumb.jpg';
                 shell_exec("ffmpeg -y -i {$array['file']} -ss 1 -vframes 1 {$thumbFile} 2>&1");

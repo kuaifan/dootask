@@ -748,7 +748,8 @@ class WebSocketDialog extends AbstractModel
                     "type" => 'more',
                     "path" => $path,
                     "fileName" => $fileName,
-                    "size" => ($setting['file_upload_limit'] ?: 0) * 1024
+                    "size" => ($setting['file_upload_limit'] ?: 0) * 1024,
+                    "convertVideo" => true
                 ]);
             }
             //
