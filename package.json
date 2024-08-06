@@ -1,7 +1,7 @@
 {
     "name": "DooTask",
-    "version": "0.37.71",
-    "codeVerson": 136,
+    "version": "0.37.76",
+    "codeVerson": 137,
     "description": "DooTask is task management system.",
     "scripts": {
         "start": "./cmd dev",
@@ -53,8 +53,8 @@
         "quill-hi": "^2.0.0-rc1",
         "quill-mention-hi": "^4.0.0-8",
         "resolve-url-loader": "^4.0.0",
-        "sass": "^1.71.1",
-        "sass-loader": "^14.1.1",
+        "sass": "1.77.4",
+        "sass-loader": "14.2.1",
         "stylus": "^0.59.0",
         "stylus-loader": "^7.1.0",
         "tinymce": "^5.10.3",

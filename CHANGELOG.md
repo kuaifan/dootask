@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.37.76]
+
+### Bug Fixes
+
+- 无法下载大文件
+
+### Performance
+
+- 优化聊天视频预览
+- 优化打包下载
+- 支持上传mov、webm视频
+
 ## [0.37.71]
 
 ### Bug Fixes
