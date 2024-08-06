@@ -2966,15 +2966,8 @@ class Base
      */
     public static function streamDownload($file, $name = null)
     {
-        $contentType = 'application/octet-stream';
         if ($name && !str_contains($name, '.')) {
             $name .= ".";
-        }
-        //
-        if ($file instanceof \Closure) {
-            return Response::streamDownload($file, $name, [
-                'Content-Type' => $contentType,
-            ]);
         }
         //
         if (!$file instanceof File) {
@@ -2987,12 +2980,23 @@ class Base
         if (!$file->isReadable()) {
             throw new FileException('File must be readable.');
         }
-        $contentType = $file->getMimeType() ?: $contentType;
-        $content = $file->getContent();
-        return Response::streamDownload(function() use ($content) {
-            echo $content;
-        }, $name, [
-            'Content-Type' => $contentType,
+        // 大于100M直接下载
+        if ($file->getSize() > 100 * 1024 * 1024) {
+            return Response::download($file->getPathname(), $name);
+        }
+        //
+        $filePath = $file->getPathname();
+        return Response::stream(function () use ($filePath) {
+            $fileStream = fopen($filePath, 'r');
+            while (!feof($fileStream)) {
+                echo fread($fileStream, 1024);
+                flush();
+            }
+            fclose($fileStream);
+        }, 200, [
+            'Content-Type' => 'application/octet-stream',
+            'Content-Disposition' => 'attachment; filename="'.$name.'"',
+            'Content-Length' => $file->getSize(),
         ]);
     }
 
