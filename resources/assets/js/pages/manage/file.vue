@@ -55,7 +55,7 @@
                             <span v-show="showBtnText">{{$L('剪切')}}</span>
                         </div>
                     </Button>
-                    <Button :disabled="compressedSownloadDisabled" size="small" type="info" @click="downloadZipFile(selectIds)">
+                    <Button v-if="selectIds.length > 1" :disabled="compressedSownloadDisabled" size="small" type="info" @click="downloadZipFile(selectIds)">
                         <div class="tool-box">
                             <Icon type="ios-download" />
                             <span v-show="showBtnText">{{$L('打包下载')}}</span>
@@ -213,7 +213,7 @@
                             <DropdownItem name="send" :disabled="contextMenuItem.type == 'folder'">{{$L('发送')}}</DropdownItem>
                             <DropdownItem name="link" :divided="contextMenuItem.userid != userId && !contextMenuItem.share" :disabled="contextMenuItem.type == 'folder'">{{$L('链接')}}</DropdownItem>
                             <DropdownItem name="download" :disabled="contextMenuItem.ext == '' || (contextMenuItem.userid != userId && contextMenuItem.permission == 0)">{{$L('下载')}}</DropdownItem>
-                            <DropdownItem name="downloadzip" :disabled="contextMenuItem.userid != userId && contextMenuItem.permission == 0">{{$L('打包下载')}}</DropdownItem>
+                            <DropdownItem v-if="selectIds.length > 1" name="downloadzip" :disabled="contextMenuItem.userid != userId && contextMenuItem.permission == 0">{{$L('打包下载')}}</DropdownItem>
 
                             <DropdownItem name="delete" divided style="color:red">{{$L('删除')}}</DropdownItem>
                         </template>
