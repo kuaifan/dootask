@@ -207,7 +207,6 @@ scriptElement.src = 'https://www.googletagmanager.com/gtag/js?id=AW-16660800396"
  
 // 在 script 元素加载完成后执行的回调函数
 scriptElement.onload = function() {
-    console.log('The gtag.js script has been loaded successfully.');
       let customScript = document.createElement('script');
       customScript.textContent = `
         window.dataLayer = window.dataLayer || [];
