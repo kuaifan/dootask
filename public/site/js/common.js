@@ -200,5 +200,23 @@ const openInNewTab = (url)=> {
   const win = window.open(url, '_blank');
   win.focus();
 }
+// 引入谷歌分析代码
+let scriptElement = document.createElement('script');
+scriptElement.async = true;
+scriptElement.src = 'https://www.googletagmanager.com/gtag/js?id=AW-16660800396"';
+ 
+// 在 script 元素加载完成后执行的回调函数
+scriptElement.onload = function() {
+    console.log('The gtag.js script has been loaded successfully.');
+      let customScript = document.createElement('script');
+      customScript.textContent = `
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'AW-16660800396');`
+      document.head.appendChild(customScript);
+};
+// 将 script 元素插入到文档的 head 元素中
+document.head.appendChild(scriptElement);
 
 
