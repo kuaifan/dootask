@@ -203,19 +203,32 @@ const openInNewTab = (url)=> {
 // 引入谷歌分析代码
 let scriptElement = document.createElement('script');
 scriptElement.async = true;
-scriptElement.src = 'https://www.googletagmanager.com/gtag/js?id=AW-16660800396"';
+scriptElement.src = 'https://www.googletagmanager.com/gtag/js?id=AW-16660800396';
+let scriptElement1 = document.createElement('script');
+scriptElement1.async = true;
+scriptElement1.src = 'https://www.googletagmanager.com/gtag/js?id=G-PE77P6491J';
  
 // 在 script 元素加载完成后执行的回调函数
 scriptElement.onload = function() {
-      let customScript = document.createElement('script');
-      customScript.textContent = `
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'AW-16660800396');`
-      document.head.appendChild(customScript);
+  let customScript = document.createElement('script');
+  customScript.textContent = `
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'AW-16660800396');`
+  document.head.appendChild(customScript);
+};
+scriptElement1.onload = function() {
+  let customScript = document.createElement('script');
+  customScript.textContent = `
+  window.dataLayer = window.dataLayer || []; 
+  function gtag(){dataLayer.push(arguments);} 
+  gtag('js', new Date()); 
+  gtag('config', 'G-PE77P6491J'); `
+  document.head.appendChild(customScript);
 };
 // 将 script 元素插入到文档的 head 元素中
 document.head.appendChild(scriptElement);
+document.head.appendChild(scriptElement1);
 
 
