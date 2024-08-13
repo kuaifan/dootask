@@ -854,10 +854,10 @@ import {MarkdownPreview} from "../store/markdown";
                 switch (data.type) {
                     case 'text':
                         return $A.getMsgTextPreview(data.msg.type === 'md' ? MarkdownPreview(data.msg.text) : data.msg.text, imgClassName)
-                    case 'word-chain':
-                        return `[${$A.L('接龙')}]` + $A.getMsgTextPreview(data.msg.text, imgClassName)
                     case 'vote':
                         return `[${$A.L('投票')}]` + $A.getMsgTextPreview(data.msg.text, imgClassName)
+                    case 'word-chain':
+                        return `[${$A.L('接龙')}]` + $A.getMsgTextPreview(data.msg.text, imgClassName)
                     case 'record':
                         return `[${$A.L('语音')}]`
                     case 'meeting':
@@ -865,14 +865,16 @@ import {MarkdownPreview} from "../store/markdown";
                     case 'file':
                         if (data.msg.type == 'img') {
                             if (imgClassName) {
+                                // 缩略图，主要用于回复消息预览
                                 const width = parseInt(data.msg.width),
                                     height = parseInt(data.msg.height),
                                     maxSize = 40;
                                 const scale = $A.scaleToScale(width, height, maxSize, maxSize);
                                 return `<img class="${imgClassName}" style="width:${scale.width}px;height:${scale.height}px" src="${data.msg.thumb}">`
-                            } else {
-                                return `[${$A.L('图片')}]`
                             }
+                            return `[${$A.L('图片')}]`
+                        } else if (data.msg.ext == 'mp4') {
+                            return `[${$A.L('视频')}]`
                         }
                         return `[${$A.L('文件')}] ${data.msg.name}`
                     case 'tag':

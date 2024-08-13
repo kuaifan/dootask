@@ -75,7 +75,7 @@ export default {
                 this.lightbox = new PhotoSwipeLightbox({
                     dataSource,
                     escKey: false,
-                    mainClass: this.className,
+                    mainClass: this.className + ' no-dark-content',
                     showHideAnimationType: 'none',
                     pswpModule: () => import('photoswipe'),
                 });

@@ -554,31 +554,53 @@ class WebSocketDialogMsg extends AbstractModel
         }
         switch ($data['type']) {
             case 'text':
-            case 'word-chain':
-            case 'vote':
                 return $this->previewTextMsg($data['msg']['text'], $preserveHtml);
+
+            case 'vote':
+                $action = Doo::translate("投票");
+                return "[{$action}] {$this->previewTextMsg($data['msg']['text'], $preserveHtml)}";
+
+            case 'word-chain':
+                $action = Doo::translate("接龙");
+                return "[{$action}] {$this->previewTextMsg($data['msg']['text'], $preserveHtml)}";
+
             case 'record':
-                return "[语音]";
+                $action = Doo::translate("语音");
+                return "[{$action}]";
+
             case 'meeting':
-                return "[会议] ${$data['msg']['name']}";
+                $action = Doo::translate("会议");
+                return "[{$action}] ${$data['msg']['name']}";
+
             case 'file':
                 if ($data['msg']['type'] == 'img') {
-                    return "[图片]";
+                    $action = Doo::translate("图片");
+                    return "[{$action}]";
+                } elseif ($data['msg']['ext'] == 'mp4') {
+                    $action = Doo::translate("视频");
+                    return "[{$action}]";
                 }
-                return "[文件] {$data['msg']['name']}";
+                $action = Doo::translate("文件");
+                return "[{$action}] {$data['msg']['name']}";
+
             case 'tag':
-                $action = $data['msg']['action'] === 'remove' ? '取消标注' : '标注';
+                $action = Doo::translate($data['msg']['action'] === 'remove' ? '取消标注' : '标注');
                 return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
+
             case 'top':
-                $action = $data['msg']['action'] === 'remove' ? '取消置顶' : '置顶';
+                $action = Doo::translate($data['msg']['action'] === 'remove' ? '取消置顶' : '置顶');
                 return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
+
             case 'todo':
-                $action = $data['msg']['action'] === 'remove' ? '取消待办' : ($data['msg']['action'] === 'done' ? '完成' : '设待办');
+                $action = Doo::translate($data['msg']['action'] === 'remove' ? '取消待办' : ($data['msg']['action'] === 'done' ? '完成' : '设待办'));
                 return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
+
             case 'notice':
                 return $data['msg']['notice'];
+
             default:
-                return "[未知的消息]";
+                $action = Doo::translate("未知的消息");
+                return "[{$action}]";
         }
     }
 

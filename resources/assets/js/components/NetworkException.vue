@@ -40,11 +40,13 @@ export default {
     data() {
         return {
             show: false,
+            timeShow: null,
+            timeCheck: null,
         }
     },
 
     beforeDestroy() {
-        this.show = false
+        this.clearTimer()
     },
 
     computed: {
@@ -54,9 +56,12 @@ export default {
     watch: {
         ajaxNetworkException: {
             handler(v) {
-                this.show = v;
+                this.clearTimer()
                 if (v) {
                     this.checkNetwork();
+                    this.timeShow = setTimeout(_ => {
+                        this.show = true;
+                    }, 5000)
                 }
             },
             immediate: true
@@ -70,8 +75,8 @@ export default {
         },
 
         checkNetwork() {
-            this.__timer && clearTimeout(this.__timer);
-            this.__timer = setTimeout(() => {
+            this.timeCheck && clearTimeout(this.timeCheck);
+            this.timeCheck = setTimeout(() => {
                 if (!this.ajaxNetworkException) {
                     return; // 已经恢复
                 }
@@ -84,6 +89,11 @@ export default {
                     this.checkNetwork();
                 });
             }, 3000);
+        },
+
+        clearTimer() {
+            this.timeShow && clearTimeout(this.timeShow)
+            this.show = false
         }
     }
 }

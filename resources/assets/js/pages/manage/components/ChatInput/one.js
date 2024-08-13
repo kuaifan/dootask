@@ -5,14 +5,16 @@ import {Modal} from "view-design-hi";
 const inputLoadUid = {}
 
 function inputLoadAdd(dialogId, uid) {
-    if (typeof inputLoadUid[dialogId] === "undefined") {
+    if (!dialogId || typeof inputLoadUid[dialogId] === "undefined") {
         inputLoadUid[dialogId] = [];
+    } else {
+        inputLoadUid[dialogId] = inputLoadUid[dialogId].filter(v => v !== uid)
     }
     inputLoadUid[dialogId].push(uid)
 }
 
 function inputLoadRemove(dialogId, uid) {
-    if (typeof inputLoadUid[dialogId] === "undefined") {
+    if (!dialogId || typeof inputLoadUid[dialogId] === "undefined") {
         return;
     }
     inputLoadUid[dialogId] = inputLoadUid[dialogId].filter(v => v !== uid)

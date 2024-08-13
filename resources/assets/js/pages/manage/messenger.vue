@@ -207,6 +207,12 @@
                                             <i class="taskfont">&#xe6eb;</i>
                                         </div>
                                     </DropdownItem>
+                                    <DropdownItem @click.native="handleUserClick('meet')">
+                                        <div class="item">
+                                            {{ $L('发起会议') }}
+                                            <i class="taskfont">&#xe794;</i>
+                                        </div>
+                                    </DropdownItem>
                                     <DropdownItem @click.native="handleUserClick('group')">
                                         <div class="item">
                                             {{ $L('创建群组') }}
@@ -566,12 +572,6 @@ export default {
             if ($A.loadVConsole(val)) {
                 this.dialogSearchKey = '';
                 return;
-            }
-            if (this.tabActive === 'dialog') {
-                // todo 日志输出对话详情信息
-                if (/^info\.\d+$/.test(val)) {
-                    console.log(this.cacheDialogs.find(item => item.id == val.replace('info.', '')));
-                }
             }
             //
             this.dialogSearchList = [];
@@ -1136,12 +1136,20 @@ export default {
                     this.openContacts(this.operateItem);
                     break;
 
+                case 'meet':
                 case 'group':
                     const userids = [this.userId]
                     if (this.operateItem.userid && this.userId != this.operateItem.userid) {
                         userids.push(this.operateItem.userid)
                     }
-                    Store.set('createGroup', userids);
+                    if (act === 'meet') {
+                        Store.set('addMeeting', {
+                            type: 'create',
+                            userids,
+                        });
+                    } else {
+                        Store.set('createGroup', userids);
+                    }
                     break;
 
                 case 'avatar':

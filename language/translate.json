@@ -20689,5 +20689,27 @@
         "de": "Die frist wurde überschritten.",
         "fr": "Dépassement du délai",
         "id": "Lebih dari periode"
+    },
+    {
+        "key": "视频",
+        "zh": "",
+        "zh-CHT": "視頻",
+        "en": "Video",
+        "ko": "동영상",
+        "ja": "ビデオです",
+        "de": "Na video.",
+        "fr": "La vidéo",
+        "id": "Video"
+    },
+    {
+        "key": "发起会议",
+        "zh": "",
+        "zh-CHT": "發起會議",
+        "en": "Initiate a meeting",
+        "ko": "회의를 발기하다",
+        "ja": "会議を発足させます",
+        "de": "Leiten sie das meeting.",
+        "fr": "Initier une Réunion",
+        "id": "Pertemuan awal"
     }
 ]

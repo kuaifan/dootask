@@ -524,12 +524,14 @@ export default {
         },
 
         // Reset lists
-        dialogId() {
+        dialogId(id1, id2) {
             this.userList = null;
             this.userCache = null;
             this.taskList = null;
             this.fileList = {};
             this.loadInputDraft()
+            inputLoadAdd(id1, this._uid)
+            inputLoadRemove(id2, this._uid)
         },
         taskId() {
             this.userList = null;

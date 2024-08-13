@@ -1253,6 +1253,38 @@ class Base
     }
 
     /**
+     * 替换开头指定字符串
+     * @param $string
+     * @param $find
+     * @param $replace
+     * @param $lower
+     * @return mixed|string
+     */
+    public static function leftReplace($string, $find, $replace, $lower = false)
+    {
+        if (Base::leftExists($string, $find, $lower)) {
+            $string = $replace . substr($string, strlen($find));
+        }
+        return $string;
+    }
+
+    /**
+     * 替换结尾指定字符串
+     * @param $string
+     * @param $find
+     * @param $replace
+     * @param $lower
+     * @return mixed|string
+     */
+    public static function rightReplace($string, $find, $replace, $lower = false)
+    {
+        if (Base::rightExists($string, $find, $lower)) {
+            $string = substr($string, 0, strlen($find) * -1) . $replace;
+        }
+        return $string;
+    }
+
+    /**
      * 截取指定字符串
      * @param $str
      * @param string $ta
@@ -2197,8 +2229,26 @@ class Base
 
     /**
      * 上传文件
-     * @param array $param [ type=[文件类型], file=>Request::file, path=>文件路径, fileName=>文件名称, scale=>[压缩原图宽,高, 压缩方式], size=>限制大小KB, autoThumb=>false不要自动生成缩略图, chmod=>权限(默认0644), 'compress'=>是否压缩图片(默认true) ]
-     * @return array [name=>原文件名, size=>文件大小(单位KB),file=>绝对地址, path=>相对地址, url=>全路径地址, ext=>文件后缀名]
+     * @param array $param [
+        type=[文件类型],
+        file=>Request::file,
+        path=>文件路径,
+        fileName=>文件名称,
+        scale=>[压缩原图宽,高, 压缩方式],
+        size=>限制大小KB,
+        autoThumb=>false不要自动生成缩略图,
+        chmod=>权限(默认0644),
+        compress=>是否压缩图片(默认true) ,
+        convertVideo=>转换视频格式(默认false) ,
+     ]
+     * @return array [
+        name=>原文件名,
+        size=>文件大小(单位KB),
+        file=>绝对地址,
+        path=>相对地址,
+        url=>全路径地址,
+        ext=>文件后缀名,
+     ]
      */
     public static function upload($param)
     {
@@ -2218,7 +2268,7 @@ class Base
                     $type = ['jpg', 'jpeg', 'webp', 'gif', 'png'];
                     break;
                 case 'video':
-                    $type = ['rm', 'rmvb', 'wmv', 'avi', 'mpg', 'mpeg', 'mp4', 'webm'];
+                    $type = ['rm', 'rmvb', 'wmv', 'avi', 'mpg', 'mpeg', 'mp4', 'mov', 'webm'];
                     break;
                 case 'audio':
                     $type = ['mp3', 'wma', 'wav', 'amr'];
@@ -2233,7 +2283,7 @@ class Base
                     $type = ['zip'];
                     break;
                 case 'file':
-                    $type = ['jpg', 'jpeg', 'webp', 'png', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'esp', 'pdf', 'rar', 'zip', 'gz', 'ai', 'avi', 'bmp', 'cdr', 'eps', 'mov', 'mp3', 'mp4', 'webm', 'pr', 'psd', 'svg', 'tif'];
+                    $type = ['jpg', 'jpeg', 'webp', 'png', 'gif', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'esp', 'pdf', 'rar', 'zip', 'gz', 'ai', 'avi', 'bmp', 'cdr', 'eps', 'mp3', 'mp4', 'mov', 'webm', 'pr', 'psd', 'svg', 'tif'];
                     break;
                 case 'firmware':
                     $type = ['img', 'tar', 'bin'];
@@ -2304,7 +2354,7 @@ class Base
             }
             @chmod($array['file'], $chmod);
             //iOS照片颠倒处理
-            if (in_array($extension, ['jpg', 'jpeg']) && function_exists('exif_read_data')) {
+            if (in_array($array['ext'], ['jpg', 'jpeg']) && function_exists('exif_read_data')) {
                 $data = imagecreatefromstring(file_get_contents($array['file']));
                 $exif = @exif_read_data($array['file']);
                 if (!empty($exif['Orientation'])) {
@@ -2320,18 +2370,38 @@ class Base
                 }
             }
             //
-            if (in_array($extension, ['mp4', 'webm'])) {
+            if ($param['convertVideo'] && in_array($array['ext'], ['mov', 'webm'])) {
+                // 转换视频格式
+                $output = Base::rightReplace($array['file'], ".{$array['ext']}", '.mp4');
+                if ($array['ext'] === 'webm') {
+                    shell_exec("ffmpeg -y -i {$array['file']} -strict experimental {$output} 2>&1");
+                } else {
+                    shell_exec("ffmpeg -y -i {$array['file']} -c:v copy -c:a copy {$output} 2>&1");
+                }
+                if (file_exists($output) && filesize($output) > 0) {
+                    @unlink($array['file']);
+                    $array = array_merge($array, [
+                        "name" => Base::rightReplace($array['name'], ".{$array['ext']}", '.mp4'),
+                        "size" => Base::twoFloat(filesize($output) / 1024, true),
+                        "file" => $output,
+                        "path" => Base::rightReplace($array['path'], ".{$array['ext']}", '.mp4'),
+                        "url" => Base::rightReplace($array['url'], ".{$array['ext']}", '.mp4'),
+                        "ext" => 'mp4',
+                    ]);
+                }
+            }
+            if (in_array($array['ext'], ['mov', 'webm', 'mp4'])) {
                 // 视频尺寸
                 $thumbFile = $array['file'] . '_thumb.jpg';
-                shell_exec("ffmpeg -i {$array['file']} -ss 1 -vframes 1 {$thumbFile} 2>&1");
-                if (file_exists($thumbFile)) {
+                shell_exec("ffmpeg -y -i {$array['file']} -ss 1 -vframes 1 {$thumbFile} 2>&1");
+                if (file_exists($thumbFile) && filesize($thumbFile) > 0) {
                     $paramet = getimagesize($thumbFile);
                     $array['width'] = $paramet[0];
                     $array['height'] = $paramet[1];
                     $array['thumb'] = $array['path'] . '_thumb.jpg';
                 }
             }
-            if (in_array($extension, ['jpg', 'jpeg', 'webp', 'gif', 'png'])) {
+            if (in_array($array['ext'], ['jpg', 'jpeg', 'webp', 'gif', 'png'])) {
                 //图片尺寸
                 $paramet = getimagesize($array['file']);
                 $array['width'] = $paramet[0];
@@ -2370,12 +2440,12 @@ class Base
                 }
                 //生成缩略图
                 $array['thumb'] = $array['path'];
-                if ($extension === 'gif' && !isset($param['autoThumb'])) {
+                if ($array['ext'] === 'gif' && !isset($param['autoThumb'])) {
                     $param['autoThumb'] = false;
                 }
                 if ($param['autoThumb'] !== false) {
-                    if ($extension = Image::thumbImage($array['file'], $array['file'] . "_thumb.{*}", 320, 0)) {
-                        $array['thumb'] .= "_thumb.{$extension}";
+                    if ($array['ext'] = Image::thumbImage($array['file'], $array['file'] . "_thumb.{*}", 320, 0)) {
+                        $array['thumb'] .= "_thumb.{$array['ext']}";
                     }
                 }
                 $array['thumb'] = Base::fillUrl($array['thumb']);
@@ -2914,15 +2984,8 @@ class Base
      */
     public static function streamDownload($file, $name = null)
     {
-        $contentType = 'application/octet-stream';
         if ($name && !str_contains($name, '.')) {
             $name .= ".";
-        }
-        //
-        if ($file instanceof \Closure) {
-            return Response::streamDownload($file, $name, [
-                'Content-Type' => $contentType,
-            ]);
         }
         //
         if (!$file instanceof File) {
@@ -2935,12 +2998,23 @@ class Base
         if (!$file->isReadable()) {
             throw new FileException('File must be readable.');
         }
-        $contentType = $file->getMimeType() ?: $contentType;
-        $content = $file->getContent();
-        return Response::streamDownload(function() use ($content) {
-            echo $content;
-        }, $name, [
-            'Content-Type' => $contentType,
+        // 大于100M直接下载
+        if ($file->getSize() > 100 * 1024 * 1024) {
+            return Response::download($file->getPathname(), $name);
+        }
+        //
+        $filePath = $file->getPathname();
+        return Response::stream(function () use ($filePath) {
+            $fileStream = fopen($filePath, 'r');
+            while (!feof($fileStream)) {
+                echo fread($fileStream, 1024);
+                flush();
+            }
+            fclose($fileStream);
+        }, 200, [
+            'Content-Type' => 'application/octet-stream',
+            'Content-Disposition' => 'attachment; filename="'.$name.'"',
+            'Content-Length' => $file->getSize(),
         ]);
     }
 
