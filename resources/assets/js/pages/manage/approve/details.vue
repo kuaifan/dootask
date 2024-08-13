@@ -54,7 +54,7 @@
             <div class="approve-details-text"  v-if="datas.var?.other">
                 <h4>{{$L('图片')}}</h4>
                 <div class="img-body">
-                    <div v-for="(src,key) in (datas.var.other).split(',') " @click="onViewPicture(src)">
+                    <div v-for="(src,key) in (datas.var.other).split(',')" @click="onViewPicture(src, datas.var.other, 1)">
                         <ImgView :src="src" :key="key" class="img-view"/>
                     </div>
                 </div>
@@ -164,7 +164,7 @@
                                     {{ getContent(item.content) }}
                                 </div>
                                 <div class="content" style="display: flex; gap: 10px;">
-                                    <div v-for="(src,k) in getPictures(item.content)" :key="k"  @click="onViewPicture(src)">
+                                    <div v-for="(src,k) in getPictures(item.content)" :key="k"  @click="onViewPicture(src, item.content, 2)">
                                         <ImgView :src="src" class="img-view"/>
                                     </div>
                                 </div>
@@ -475,8 +475,20 @@ export default {
             }
         },
         // 打开图片
-        onViewPicture(currentUrl) {
-            this.$store.dispatch("previewImage", $A.mainUrl(currentUrl))
+        onViewPicture(currentUrl, datas, type) {
+            if (type == 1) {
+                datas = datas.split(',')
+            }
+            if (type == 2) {
+                datas = this.getPictures(datas)
+            }
+            const list = datas.map(src => {
+                return {
+                    src: $A.mainUrl(src)
+                }
+            });
+            const index = list.findIndex(({ src }) => src === $A.mainUrl(currentUrl));
+            this.$store.dispatch("previewImage", { index, list })
         }
     }
 }

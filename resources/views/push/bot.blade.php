@@ -159,11 +159,7 @@
         <span>[图片]</span>
         @endif
     </div><div class="btn-raw no-dark-content">
-        @if ($is_finished == 1)
-        <button class="ivu-btn ivu-btn-grey">已同意</button>
-        @else
         <button class="ivu-btn ivu-btn-grey">查看详情</button>
-        @endif
     </div></span>
 @elseif ($type === 'approve_submitter')
     <span class="open-approve-details" data-id="{{$data->id}}"><b>@if ($action === 'pass')您发起的「{{$data->proc_def_name}}」已通过 @else您发起的「{{$data->proc_def_name}}」被{{$data->nickname}}拒绝 @endif</b>
