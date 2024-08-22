@@ -394,6 +394,47 @@
             if (document.documentElement.scrollTop > 20) {
               back_top_button.style.display = 'block'; // 显示回到顶部按钮
             }
+            let toolbarPhone = document.getElementById("side_toolbar_item_phone");
+            let tooltipPhone = document.getElementById("toolbar_tooltip_phone");
+            let toolbarWhtasapp = document.getElementById("side_toolbar_item_whtasapp");
+            let tooltipWhtasapp = document.getElementById("toolbar_tooltip_whtasapp");
+            let toolbarQrcode = document.getElementById("side_toolbar_item_qrcode");
+            let tooltipQrcode = document.getElementById("toolbar_tooltip_qrcode");
+
+            function toggleTooltip(dom) {
+                if (dom.style.display === "block") {
+                  dom.style.display = "none";
+                } else {
+                  dom.style.display = "block";
+                }
+            }
+            if(toolbarPhone){
+              toolbarPhone.addEventListener("click", ()=>{
+                event.stopPropagation();
+                toggleTooltip(tooltipPhone)
+                tooltipWhtasapp.style.display = "none";
+                tooltipQrcode.style.display = "none";
+                if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                  window.location.href = 'tel:0771-3164099';
+                }
+              });
+            }
+            if(toolbarWhtasapp){
+              toolbarWhtasapp.addEventListener("click", ()=>{
+                event.stopPropagation();
+                toggleTooltip(tooltipWhtasapp)
+                tooltipPhone.style.display = "none";
+                tooltipQrcode.style.display = "none";
+              });
+            }
+            if(toolbarQrcode){
+              toolbarQrcode.addEventListener("click", ()=>{
+                event.stopPropagation();
+                toggleTooltip(tooltipQrcode)
+                tooltipPhone.style.display = "none";
+                tooltipWhtasapp.style.display = "none";
+              });
+            }
         });
   });
 </script>
