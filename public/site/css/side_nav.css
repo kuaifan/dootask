@@ -135,8 +135,6 @@
 .side_nav .side_toolbars .side_toolbar_item:hover,.side_nav .side_to_top .side_to_top_wrapper:hover{
   background-color: var(--bg-hover-color);
 }
-.side_nav .side_toolbars .side_toolbar_item_whtasapp:hover .toolbar_tooltip_qq,
-.side_nav .side_toolbars .side_toolbar_item_phone:hover .toolbar_tooltip_phone,
-.side_nav .side_toolbars .side_toolbar_item_qrcode:hover .toolbar_tooltip_qrcode{
-  display: block;
+#toolbar_tooltip_phone,#toolbar_tooltip_whtasapp,#toolbar_tooltip_qrcode{
+  display: none;
 }

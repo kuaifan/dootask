@@ -200,5 +200,22 @@ const openInNewTab = (url)=> {
   const win = window.open(url, '_blank');
   win.focus();
 }
-
+// 点击其他地方置为none
+document.addEventListener('click', function(event) {
+  let toolbarPhone = document.getElementById("side_toolbar_item_phone");
+  let tooltipPhone = document.getElementById("toolbar_tooltip_phone");
+  let toolbarWhtasapp = document.getElementById("side_toolbar_item_whtasapp");
+  let tooltipWhtasapp = document.getElementById("toolbar_tooltip_whtasapp");
+  let toolbarQrcode = document.getElementById("side_toolbar_item_qrcode");
+  let tooltipQrcode = document.getElementById("toolbar_tooltip_qrcode");
+  if (!toolbarPhone.contains(event.target)) {
+    tooltipPhone.style.display = "none";
+  }
+  if (!toolbarWhtasapp.contains(event.target)) {
+    tooltipWhtasapp.style.display = "none";
+  }
+  if (!toolbarQrcode.contains(event.target)) {
+    tooltipQrcode.style.display = "none";
+  }
+})
 
