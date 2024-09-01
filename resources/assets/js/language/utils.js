@@ -8,6 +8,7 @@ export default {
         "en": "English",
         "ko": "한국어",
         "ja": "日本語",
+        "ru": "俄语",
         "de": "Deutsch",
         "fr": "Français",
         "id": "Indonesia",

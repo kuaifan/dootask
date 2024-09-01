@@ -244,6 +244,7 @@ try {
             $DES = explode("\n", $YD->translate($text, "zh-CHS", "de"));        // 德语
             $FRS = explode("\n", $YD->translate($text, "zh-CHS", "fr"));        // 法语
             $IDS = explode("\n", $YD->translate($text, "zh-CHS", "id"));        // 印度尼西亚
+            $RUS = explode("\n", $YD->translate($text, "zh-CHS", "ru"));        // 俄语
             $index = 0;
             foreach ($items as $key => $item) {
                 $tmp = [];
@@ -256,6 +257,7 @@ try {
                 $tmp["de"] = $func($DES[$index]);
                 $tmp["fr"] = $func($FRS[$index]);
                 $tmp["id"] = $func($IDS[$index]);
+                $tmp["ru"] = $func($RUS[$index]);
                 $datas[] = $translations[$key] = $tmp;
                 $index++;
             }

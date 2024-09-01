@@ -85,7 +85,7 @@ class UserBot extends AbstractModel
                 [
                     'key' => 'checkin',
                     'label' => Doo::translate('我要打卡')
-                ], [
+                ], /*[
                     'key' => 'it',
                     'label' => Doo::translate('IT资讯')
                 ], [
@@ -100,7 +100,7 @@ class UserBot extends AbstractModel
                 ], [
                     'key' => 'soup',
                     'label' => Doo::translate('心灵鸡汤')
-                ]
+                ]*/
             ],
             'anon-msg@bot.system' => [
                 [

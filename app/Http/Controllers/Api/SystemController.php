@@ -401,8 +401,15 @@ class SystemController extends AbstractController
             }
             if ($all['open'] === 'close') {
                 $all['key'] = md5(Base::generatePassword(32));
+            } else {
+                $botUser = User::botGetOrCreate('check-in');
+                if (!$botUser) {
+                    return Base::retError('创建签到机器人失败');
+                }
             }
-            $all['modes'] = array_intersect($all['modes'], ['auto', 'manual', 'location']);
+            if ($all['modes']) {
+                $all['modes'] = array_intersect($all['modes'], ['auto', 'manual', 'location']);
+            }
             $setting = Base::setting('checkinSetting', Base::newTrim($all));
         } else {
             $setting = Base::setting('checkinSetting');

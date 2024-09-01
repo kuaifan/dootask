@@ -2,11 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.37.98]
+
+### Bug Fixes
+
+- 修复任务可见性为非项目人员时项目负责人不可见的bug
+- 修改谷歌分析以及谷歌推广文件命名
+- 修改谷歌分析代码
+- 删除打印
+- 修改关于我们页面公司介绍文案
+
+### Features
+
+- 网页右下角导航改为点击显示以及手机端点击拨打电话直接拨号
+- 更改审批版本
+- 官网新增谷歌分析代码
+- 页面新增谷歌分析
+
+### Performance
+
+- 1.优化审批流程-审批人审核过后自动通过  2. 优化审批评论图片可以左右滑动查看
+
 ## [0.37.76]
 
 ### Bug Fixes
 
 - 无法下载大文件
+- 修改关于我们页面公司介绍文案
 
 ### Performance
 
@@ -28,13 +50,15 @@ All notable changes to this project will be documented in this file.
 
 ## [0.37.65]
 
-### Bug Fixes
-
-- 如果项目没有流程，无法选择移动后的状态，也没办法确定移动
-
 ### Features
 
 - 操作人员离职对okr的移交处理
+
+## [0.37.62]
+
+### Bug Fixes
+
+- 如果项目没有流程，无法选择移动后的状态，也没办法确定移动
 
 ### Performance
 
@@ -544,6 +568,12 @@ All notable changes to this project will be documented in this file.
 ### Performance
 
 - 优化任务修改
+
+## [0.33.37]
+
+### Bug Fixes
+
+- 更新导致的小问题
 
 ## [0.33.34]
 
