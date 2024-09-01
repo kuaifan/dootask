@@ -1609,14 +1609,18 @@ class ProjectTask extends AbstractModel
             'dialog_id' => $this->dialog_id,
         ];
         //
+        $projectOwnerids = ProjectUser::whereProjectId($this->project_id)->whereOwner(1)->pluck('userid')->toArray();  // 项目负责人
+        //
         $array = [];
         if (empty($userids)) {
             // 默认 项目成员 与 项目负责人，任务负责人、协助人的差集
             $projectUserids = ProjectUser::whereProjectId($this->project_id)->pluck('userid')->toArray();  // 项目成员
-            $projectOwner = ProjectUser::whereProjectId($this->project_id)->whereOwner(1)->pluck('userid')->toArray();  // 项目负责人
             $taskOwnerAndAssists = ProjectTaskUser::select(['userid', 'owner'])->whereIn('owner', [0, 1])->whereTaskId($this->id)->pluck('userid')->toArray();
             $subUserids = ProjectTaskUser::whereTaskPid($this->id)->pluck('userid')->toArray();
-            $userids = array_diff($projectUserids, $projectOwner, $taskOwnerAndAssists, $subUserids);
+            $userids = array_diff($projectUserids, $projectOwnerids, $taskOwnerAndAssists, $subUserids);
+        } else {
+            // 保证项目负责人都能看到
+            $userids = array_diff($userids, $projectOwnerids);
         }
         //
         $array[] = [

@@ -87,6 +87,9 @@ class ProjectTaskObserver
         if (in_array('project', $dataType)) {
             return ProjectUser::whereProjectId($projectTask->project_id)->pluck('userid')->toArray();
         }
+        if (in_array('projectOwnerUser', $dataType)) {
+            return ProjectUser::whereProjectId($projectTask->project_id)->where('owner', 1)->pluck('userid')->toArray();
+        }
         $array = [];
         if (in_array('task', $dataType)) {
             $array = array_merge($array, ProjectTaskUser::whereTaskId($projectTask->id)->pluck('userid')->toArray());
@@ -112,7 +115,8 @@ class ProjectTaskObserver
             case 3:
                 $dataType = $projectTask->visibility == 2 ? ['task'] : ['task', 'visibility'];
                 $forgetUserids = self::userids($projectTask, $dataType);
-                $recordUserids = array_diff($projectUserids, $forgetUserids);
+                $projectOwnerUserIds = self::userids($projectTask, 'projectOwnerUser');
+                $recordUserids = array_diff($projectUserids, $forgetUserids, $projectOwnerUserIds);
                 Deleted::record('projectTask', $projectTask->id, $recordUserids);
                 Deleted::forget('projectTask', $projectTask->id, $forgetUserids);
                 break;
