@@ -2530,6 +2530,13 @@
             if(toolbarPhone){
               toolbarPhone.addEventListener("click", ()=>{
                 event.stopPropagation();
+                // 谷歌分析事件追踪
+                if(gtag){
+                  gtag('event', 'click', {
+                    'event_category': 'button',
+                    'event_label': 'right_side_toolbar_phone'
+                  });
+                }
                 toggleTooltip(tooltipPhone)
                 tooltipWhtasapp.style.display = "none";
                 tooltipQrcode.style.display = "none";
@@ -2541,6 +2548,13 @@
             if(toolbarWhtasapp){
               toolbarWhtasapp.addEventListener("click", ()=>{
                 event.stopPropagation();
+                // 谷歌分析事件追踪
+                if(gtag){
+                  gtag('event', 'click', {
+                    'event_category': 'button',
+                    'event_label': 'right_side_toolbar_Whtasapp'
+                  });
+                }
                 toggleTooltip(tooltipWhtasapp)
                 tooltipPhone.style.display = "none";
                 tooltipQrcode.style.display = "none";
@@ -2549,6 +2563,13 @@
             if(toolbarQrcode){
               toolbarQrcode.addEventListener("click", ()=>{
                 event.stopPropagation();
+                // 谷歌分析事件追踪
+                if(gtag){
+                  gtag('event', 'click', {
+                    'event_category': 'button',
+                    'event_label': 'right_side_toolbar_WeChat'
+                  });
+                }
                 toggleTooltip(tooltipQrcode)
                 tooltipPhone.style.display = "none";
                 tooltipWhtasapp.style.display = "none";
