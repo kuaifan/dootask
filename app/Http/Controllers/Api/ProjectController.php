@@ -1692,7 +1692,7 @@ class ProjectController extends AbstractController
         //
         $task = ProjectTask::userTask($file->task_id);
         //
-        ProjectPermission::userTaskPermission(Project::userProject($task->project_id), ProjectPermission::TASK_UPDATE, $task);
+        ProjectPermission::userTaskPermission(Project::userProject($task->project_id), ProjectPermission::TASK_REMOVE, $task);
         //
         $task->pushMsg('filedelete', $file);
         $file->delete();
@@ -1964,11 +1964,13 @@ class ProjectController extends AbstractController
         $task = ProjectTask::userTask($task_id);
         //
         $project = Project::userProject($task->project_id);
-        if (Arr::exists($param, 'flow_item_id')) {
-            ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_STATUS, $task);
-        }else{
-            ProjectPermission::userTaskPermission($project, ProjectPermission::TASK_UPDATE, $task);
+        $permissionKey = ProjectPermission::TASK_UPDATE;
+        if (Arr::exists($param, 'times')) {
+            $permissionKey = ProjectPermission::TASK_TIME;
+        } else if (Arr::exists($param, 'flow_item_id')) {
+            $permissionKey = ProjectPermission::TASK_STATUS;
         }
+        ProjectPermission::userTaskPermission($project, $permissionKey, $task);
         //
         $taskUser = ProjectTaskUser::select(['userid', 'owner'])->whereTaskId($task_id)->get();
         $owners = $taskUser->where('owner', 1)->pluck('userid')->toArray();
@@ -2625,8 +2627,9 @@ class ProjectController extends AbstractController
             ProjectPermission::TASK_LIST_SORT,
             ProjectPermission::TASK_ADD,
             ProjectPermission::TASK_UPDATE,
-            ProjectPermission::TASK_REMOVE,
+            ProjectPermission::TASK_TIME,
             ProjectPermission::TASK_STATUS,
+            ProjectPermission::TASK_REMOVE,
             ProjectPermission::TASK_ARCHIVED,
             ProjectPermission::TASK_MOVE,
         ]);

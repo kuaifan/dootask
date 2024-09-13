@@ -51,6 +51,14 @@
                         <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
                     </CheckboxGroup>
                 </FormItem>
+                <FormItem :label="$L('修改时间')">
+                    <CheckboxGroup v-model="formData.task_time">
+                        <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
+                        <Checkbox :label="3">{{ $L('任务负责人') }}</Checkbox>
+                        <Checkbox :label="4">{{ $L('任务协助人') }}</Checkbox>
+                        <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
+                    </CheckboxGroup>
+                </FormItem>
                 <FormItem :label="$L('修改状态')">
                     <CheckboxGroup v-model="formData.task_status">
                         <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
@@ -109,6 +117,7 @@ export default {
                 project_task_list: [],
                 task_add: [],
                 task_update: [],
+                task_time: [],
                 task_status: [],
                 task_archived: [],
                 task_remove: [],

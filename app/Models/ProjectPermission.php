@@ -10,7 +10,7 @@ use App\Module\Base;
  *
  * @property int $id
  * @property int|null $project_id 项目ID
- * @property string $permissions 权限
+ * @property array|string $permissions 权限
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
@@ -38,6 +38,7 @@ class ProjectPermission extends AbstractModel
     const TASK_LIST_SORT = 'task_list_sort';           // 列表排序
     const TASK_ADD = 'task_add';                       // 任务添加
     const TASK_UPDATE = 'task_update';                 // 任务更新
+    const TASK_TIME = 'task_time';                     // 任务时间
     const TASK_STATUS = 'task_status';                 // 任务状态
     const TASK_REMOVE = 'task_remove';                 // 任务删除
     const TASK_ARCHIVED = 'task_archived';             // 任务归档
@@ -69,7 +70,7 @@ class ProjectPermission extends AbstractModel
     /**
      * 权限
      * @param $value
-     * @return string
+     * @return array
      */
     public function getPermissionsAttribute($value)
     {
@@ -110,7 +111,8 @@ class ProjectPermission extends AbstractModel
             self::TASK_LIST_REMOVE => [self::PERMISSIONS['project_leader']],
             self::TASK_LIST_SORT => $projectTaskList,
             self::TASK_ADD => $projectTaskList,
-            self::TASK_UPDATE => [self::PERMISSIONS['project_leader'], self::PERMISSIONS['task_leader'], self::PERMISSIONS['task_assist']],
+            self::TASK_UPDATE => $taskUpdate = [self::PERMISSIONS['project_leader'], self::PERMISSIONS['task_leader'], self::PERMISSIONS['task_assist']],
+            self::TASK_TIME => $taskUpdate,
             self::TASK_STATUS => $taskStatus = [self::PERMISSIONS['project_leader'], self::PERMISSIONS['task_leader']],
             self::TASK_REMOVE => $taskStatus,
             self::TASK_ARCHIVED => $taskStatus,
@@ -153,13 +155,14 @@ class ProjectPermission extends AbstractModel
         $userid = User::userid();
         $permissions = self::getPermission($project->id, $action);
         switch ($action) {
-                // 任务添加，任务更新, 任务状态, 任务删除, 任务完成, 任务归档, 任务移动
+            // 任务添加，任务更新, 任务状态, 任务删除, 任务完成, 任务归档, 任务移动
             case self::TASK_LIST_ADD:
             case self::TASK_LIST_UPDATE:
             case self::TASK_LIST_REMOVE:
             case self::TASK_LIST_SORT:
             case self::TASK_ADD:
             case self::TASK_UPDATE:
+            case self::TASK_TIME:
             case self::TASK_STATUS:
             case self::TASK_REMOVE:
             case self::TASK_ARCHIVED:
