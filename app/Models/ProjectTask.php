@@ -1278,7 +1278,9 @@ class ProjectTask extends AbstractModel
                 // 标记已完成
                 if ($this->parent_id == 0) {
                     if (self::whereParentId($this->id)->whereCompleteAt(null)->exists()) {
-                        throw new ApiException('子任务未完成');
+                        throw new ApiException('子任务未完成', [
+                            'task_id' => $this->id
+                        ], -4004);
                     }
                 }
                 if (!$this->hasOwner()) {

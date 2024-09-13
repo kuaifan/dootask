@@ -214,6 +214,8 @@ export default {
                         dispatch("forgetTask", data.task_id)
                     } else if (ret === -4003) {
                         dispatch("forgetDialog", data.dialog_id)
+                    } else if (ret === -4004) {
+                        dispatch("getTaskForParent", data.task_id).catch(() => {})
                     }
                 }
             }
