@@ -194,6 +194,12 @@ class WebSocketService implements WebSocketHandlerInterface
         Cache::put("User::fd:" . $fd, "on", Carbon::now()->addDay());
         Cache::put("User::online:" . $userid, "on", Carbon::now()->addDay());
         //
+        $all = Base::json2array(Cache::get("User::online:all"));
+        if (!isset($all[$userid])) {
+            $all[$userid] = $userid;
+            Cache::forever("User::online:all", Base::array2json($all));
+        }
+        //
         WebSocket::updateInsert([
             'key' => md5($fd . '@' . $userid)
         ], [

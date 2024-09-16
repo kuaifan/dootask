@@ -257,11 +257,11 @@
                             font-style: normal;
                             margin-left: 4px;
                         }
-                        &.overdue {
-                            color: #ed4014;
-                        }
                         &.today {
                             color: #ff9900;
+                        }
+                        &.overdue {
+                            color: #ed4014;
                         }
                     }
                 }

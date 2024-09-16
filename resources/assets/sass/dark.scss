@@ -133,13 +133,13 @@ body.dark-mode-reverse {
                         .task-item {
                             .task-progress {
                                 .task-time {
-                                    &.overdue {
-                                        color: #ed4014;
+                                    &.today {
+                                        color: #ff9900;
                                         background-color: transparent;
                                     }
 
-                                    &.today {
-                                        color: #ff9900;
+                                    &.overdue {
+                                        color: #ed4014;
                                         background-color: transparent;
                                     }
                                 }
@@ -156,13 +156,13 @@ body.dark-mode-reverse {
                     > div {
                         &.row-time {
                             .task-time {
-                                &.overdue {
-                                    color: #ed4014;
+                                &.today {
+                                    color: #ff9900;
                                     background-color: transparent;
                                 }
 
-                                &.today {
-                                    color: #ff9900;
+                                &.overdue {
+                                    color: #ed4014;
                                     background-color: transparent;
                                 }
                             }

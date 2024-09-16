@@ -380,13 +380,13 @@
                                     height: 26px;
                                     line-height: 26px;
                                     cursor: pointer;
-                                    &.overdue {
-                                        font-weight: 600;
-                                        color: #ed4014;
-                                    }
                                     &.today {
                                         font-weight: 500;
                                         color: #ff9900;
+                                    }
+                                    &.overdue {
+                                        font-weight: 600;
+                                        color: #ed4014;
                                     }
                                 }
                                 .clock {
