@@ -118,7 +118,34 @@
         width: 100%;
 
         h2 {
+            font-size: 20px;
             margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+
+            th, td {
+                line-height: 20px;
+                padding: 10px;
+                border: 1px solid #e8e8e8;
+            }
+
+            th {
+                background: #f8f8f8;
+                padding: 10px 16px;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                text-align: center;
+            }
+
+            td {
+                background: #fff;
+                text-align: left;
+            }
         }
 
         ol {

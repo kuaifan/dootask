@@ -259,6 +259,7 @@ class ReportController extends AbstractController
         $offset = abs(intval(Request::input("offset", 0)));
         $id = intval(Request::input("offset", 0));
         $now_dt = trim(Request::input("date")) ? Carbon::parse(Request::input("date")) : Carbon::now();
+
         // 获取开始时间
         if ($type === Report::DAILY) {
             $start_time = Carbon::today();
@@ -280,9 +281,11 @@ class ReportController extends AbstractController
             $start_time->startOfWeek();
             $end_time = Carbon::instance($start_time)->endOfWeek();
         }
+
         // 生成唯一标识
         $sign = Report::generateSign($type, 0, Carbon::instance($start_time));
         $one = Report::whereSign($sign)->whereType($type)->first();
+
         // 如果已经提交了相关汇报
         if ($one && $id > 0) {
             return Base::retSuccess('success', [
@@ -293,8 +296,16 @@ class ReportController extends AbstractController
             ]);
         }
 
+        // 表格头部
+        $labels = [
+            Doo::translate('项目'),
+            Doo::translate('任务'),
+            Doo::translate('负责人'),
+            Doo::translate('备注'),
+        ];
+
         // 已完成的任务
-        $completeContent = "";
+        $completeDatas = [];
         $complete_task = ProjectTask::query()
             ->whereNotNull("complete_at")
             ->whereBetween("complete_at", [$start_time->toDateTimeString(), $end_time->toDateTimeString()])
@@ -306,15 +317,18 @@ class ReportController extends AbstractController
         if ($complete_task->isNotEmpty()) {
             foreach ($complete_task as $task) {
                 $complete_at = Carbon::parse($task->complete_at);
-                $pre = $type == Report::WEEKLY ? ('<span>[' . Doo::translate('周' . ['日', '一', '二', '三', '四', '五', '六'][$complete_at->dayOfWeek]) . ']</span>&nbsp;') : '';
-                $completeContent .= "<li>{$pre}[{$task->project->name}] {$task->name}</li>";
+                $remark = $type == Report::WEEKLY ? ('<div style="text-align:center">[' . Doo::translate('周' . ['日', '一', '二', '三', '四', '五', '六'][$complete_at->dayOfWeek]) . ']</div>') : '&nbsp;';
+                $completeDatas[] = [
+                    $task->project->name,
+                    $task->name,
+                    '-',    // todo 负责人
+                    $remark,
+                ];
             }
-        } else {
-            $completeContent = '<li>&nbsp;</li>';
         }
 
         // 未完成的任务
-        $unfinishedContent = "";
+        $unfinishedDatas = [];
         $unfinished_task = ProjectTask::query()
             ->join("projects", "projects.id", "=", "project_tasks.project_id")
             ->whereNull("projects.archived_at")
@@ -330,12 +344,18 @@ class ReportController extends AbstractController
         if ($unfinished_task->isNotEmpty()) {
             foreach ($unfinished_task as $task) {
                 empty($task->end_at) || $end_at = Carbon::parse($task->end_at);
-                $pre = (!empty($end_at) && $end_at->lt($now_dt)) ? '<span style="color:#ff0000;">[' . Doo::translate('超期') . ']</span>&nbsp;' : '';
-                $unfinishedContent .= "<li>{$pre}[{$task->project->name}] {$task->name}</li>";
+                $remark = (!empty($end_at) && $end_at->lt($now_dt)) ? '<div style="color:#ff0000;text-align:center">[' . Doo::translate('超期') . ']</div>' : '&nbsp;';
+                $unfinishedDatas[] = [
+                    $task->project->name,
+                    $task->name,
+                    $task->taskUser->where("owner", 1)->map(function ($item) {
+                        return User::userid2nickname($item->userid);
+                    })->implode(", "),
+                    $remark,
+                ];
             }
-        } else {
-            $unfinishedContent = '<li>&nbsp;</li>';
         }
+
         // 生成标题
         if ($type === Report::WEEKLY) {
             $title = $user->nickname . "的周报[" . $start_time->format("m/d") . "-" . $end_time->format("m/d") . "]";
@@ -343,22 +363,44 @@ class ReportController extends AbstractController
         } else {
             $title = $user->nickname . "的日报[" . $start_time->format("Y/m/d") . "]";
         }
+
         // 生成内容
-        $content = '<h2>' . Doo::translate('已完成工作') . '</h2><ol>' .
-            $completeContent . '</ol><h2>' .
-            Doo::translate('未完成的工作') . '</h2><ol>' .
-            $unfinishedContent . '</ol>';
+        $contents = [];
+        $contents[] = '<h2>' . Doo::translate('已完成工作') . '</h2>';
+        $contents[] = view('report', [
+            'labels' => $labels,
+            'datas' => $completeDatas,
+        ])->render();
+
+        $contents[] = '<p>&nbsp;</p>';
+        $contents[] = '<h2>' . Doo::translate('未完成的工作') . '</h2>';
+        $contents[] = view('report', [
+            'labels' => $labels,
+            'datas' => $unfinishedDatas,
+        ])->render();
+
         if ($type === Report::WEEKLY) {
-            $content .= "<h2>" . Doo::translate("下周拟定计划") . "[" . $start_time->addWeek()->format("m/d") . "-" . $end_time->addWeek()->format("m/d") . "]</h2><ol><li>&nbsp;</li></ol>";
+            $contents[] = '<p>&nbsp;</p>';
+            $contents[] = "<h2>" . Doo::translate("下周拟定计划") . "[" . $start_time->addWeek()->format("m/d") . "-" . $end_time->addWeek()->format("m/d") . "]</h2>";
+            $contents[] = view('report', [
+                'labels' => [
+                    Doo::translate('计划描述'),
+                    Doo::translate('计划时间'),
+                    Doo::translate('负责人'),
+                ],
+                'datas' => [],
+            ])->render();
         }
+
         $data = [
             "time" => $start_time->toDateTimeString(),
             "sign" => $sign,
             "title" => $title,
-            "content" => $content,
+            "content" => implode("", $contents),
             "complete_task" => $complete_task,
             "unfinished_task" => $unfinished_task,
         ];
+
         if ($one) {
             $data['id'] = $one->id;
         }
