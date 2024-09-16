@@ -44,7 +44,7 @@
                     </li>
                 </ul>
                 <DatePicker
-                    v-if="taskDays > 0"
+                    v-if="taskDays > 0 || taskTimeOpen"
                     :open="taskTimeOpen"
                     v-model="addData.times"
                     :options="timeOptions"
