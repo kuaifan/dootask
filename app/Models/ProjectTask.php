@@ -740,6 +740,7 @@ class ProjectTask extends AbstractModel
                     }
                 }
                 $updateMarking['is_update_project'] = true;
+                $this->updated_at = Carbon::now();
                 $this->syncDialogUser();
             }
             // 可见性
@@ -895,6 +896,7 @@ class ProjectTask extends AbstractModel
                             $row->delete();
                         }
                     }
+                    $this->updated_at = Carbon::now();
                     $this->syncDialogUser();
                 }
                 // 背景色
