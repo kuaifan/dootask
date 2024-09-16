@@ -134,11 +134,31 @@
                 font-weight: 600;
                 font-size: 15px;
                 background-color: #ffffff;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                > i {
+                    font-weight: normal;
+                    margin-right: 4px;
+                    opacity: 0.8;
+                    transform: rotate(180deg);
+                    transition: transform 0.3s;
+                }
+                &.title-close {
+                    > i {
+                        opacity: 1;
+                        transform: rotate(90deg);
+                    }
+                }
             }
             .dashboard-ul {
                 margin: 0 auto 18px;
                 padding: 6px 12px 0;
                 overflow: hidden;
+                &.ul-hidden {
+                    margin: 0;
+                    max-height: 0;
+                }
                 > li {
                     position: relative;
                     list-style: none;

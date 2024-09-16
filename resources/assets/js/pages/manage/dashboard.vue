@@ -40,8 +40,16 @@
                     v-for="column in columns"
                     v-if="column.list.length > 0">
                     <div :ref="`type_${column.type}`" class="dashboard-ref"></div>
-                    <div class="dashboard-title">{{column.title}}</div>
-                    <ul class="dashboard-ul">
+                    <div class="dashboard-title" :class="{'title-close': column.hidden}" @click="onDashboardHidden(column.type)">
+                        <span>
+                            {{column.title}}
+                            <template v-if="column.hidden">
+                                ({{column.list.length}})
+                            </template>
+                        </span>
+                        <i class="taskfont">&#xe702;</i>
+                    </div>
+                    <ul class="dashboard-ul" :class="{'ul-hidden': column.hidden}">
                         <li
                             v-for="(item, index) in column.list"
                             :key="index"
@@ -103,6 +111,8 @@ export default {
             dashboard: 'today',
 
             warningMsg: '',
+
+            hiddenColumns: [],
         }
     },
 
@@ -127,13 +137,14 @@ export default {
             return this.$route.name
         },
 
-        columns() {
+        columns({hiddenColumns}) {
             const list = [];
             ['today', 'overdue', 'all'].some(type => {
                 let data = this.transforTasks(this.dashboardTask[type]);
                 list.push({
                     type,
                     title: this.getTitle(type),
+                    hidden: hiddenColumns.includes(type),
                     list: data.sort((a, b) => {
                         return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
                     })
@@ -142,6 +153,7 @@ export default {
             list.push({
                 type: 'assist',
                 title: this.getTitle('assist'),
+                hidden: hiddenColumns.includes('assist'),
                 list: this.assistTask.sort((a, b) => {
                     return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
                 })
@@ -197,6 +209,15 @@ export default {
                     behavior: 'smooth',
                     inline: 'end',
                 });
+            }
+        },
+
+        onDashboardHidden(type) {
+            let index = this.hiddenColumns.indexOf(type);
+            if (index === -1) {
+                this.hiddenColumns.push(type)
+            } else {
+                this.hiddenColumns.splice(index, 1)
             }
         },
 
