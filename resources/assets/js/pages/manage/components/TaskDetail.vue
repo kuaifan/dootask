@@ -1049,23 +1049,26 @@ export default {
                                     return `请输入修改备注`
                                 }
                                 this.updateParams = Object.assign(params, {desc})
-                                if (params.start_at && params.end_at && this.$refs.taskExistTipsRef) {
-                                    this.$refs.taskExistTipsRef.isExistTask({
-                                        taskid: this.taskDetail.id,
-                                        userids: this.taskDetail.owner_userid,
-                                        timerange: [params.start_at, params.end_at]
-                                    }).then(res => {
-                                        if (!res) {
-                                            this.updateData("times", this.updateParams)
-                                        }
-                                    });
-                                } else {
-                                    this.updateData("times", this.updateParams)
-                                }
+                                this.updateData("times", this.updateParams)
                                 return false
                             },
                         });
                         return;
+                    }
+                    if (typeof params.existTips === "undefined") {
+                        this.updateParams = Object.assign(params, {existTips: true})
+                        if (params.start_at && params.end_at && this.$refs.taskExistTipsRef) {
+                            this.$refs.taskExistTipsRef.isExistTask({
+                                taskid: this.taskDetail.id,
+                                userids: this.taskDetail.owner_userid,
+                                timerange: [params.start_at, params.end_at]
+                            }).then(res => {
+                                if (!res) {
+                                    this.updateData("times", this.updateParams)
+                                }
+                            });
+                            return;
+                        }
                     }
                     this.$set(this.taskDetail, 'times', [params.start_at, params.end_at, params.desc])
                     break;
