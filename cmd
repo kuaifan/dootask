@@ -227,6 +227,55 @@ run_mysql() {
         run_exec mariadb "gunzip < /$inputname | mysql -u$username -p$password $database"
         run_exec php "php artisan migrate"
         judge "还原数据库"
+    elif [ "$1" = "open" ]; then
+        container_name=`docker_name mariadb`
+        if [ -z "$container_name" ]; then
+            error "没有找到 mariadb 容器!"
+            exit 1
+        fi
+        mkdir -p ${cur_path}/docker/mysql/tmp
+        cat > ${cur_path}/docker/mysql/tmp/${container_name}.conf <<EOF
+user nginx;
+worker_processes auto;
+error_log /var/log/nginx/error.log notice;
+pid /var/run/nginx.pid;
+events {
+    worker_connections 1024;
+}
+stream {
+    upstream mysql {
+        server ${container_name}:3306 max_fails=1 fail_timeout=30s;
+    }
+    server {
+        listen 3306;
+        proxy_pass mysql;
+        proxy_connect_timeout 5s;
+    }
+}
+EOF
+        read -rp "请输入代理端口（3300-65500）：" inputport
+        if [ $inputport -lt 3300 ] || [ $inputport -gt 65500 ]; then
+            error "端口范围不正确！"
+            exit 1
+        fi
+        run_mysql rm-port
+        docker run --name ${container_name}-port \
+            --network dootask-networks-$(env_get APP_ID) \
+            -p ${inputport}:3306 \
+            -v ${cur_path}/docker/mysql/tmp/${container_name}.conf:/etc/nginx/nginx.conf \
+            -d nginx:alpine > /dev/null
+        judge "开启代理"
+    elif [ "$1" = "close" ]; then
+        container_name=`docker_name mariadb`
+        if [ -z "$container_name" ]; then
+            error "没有找到 mariadb 容器!"
+            exit 1
+        fi
+        docker stop ${container_name}-port > /dev/null
+        docker rm ${container_name}-port > /dev/null
+        judge "关闭代理"
+    elif [ "$1" = "rm-port" ]; then
+        docker rm -f $(docker_name mariadb)-port &> /dev/null
     fi
 }
 
@@ -421,6 +470,7 @@ if [ $# -gt 0 ]; then
             exit 2
             ;;
         esac
+        run_mysql rm-port
         $COMPOSE down
         env_set APP_DEBUG "false"
         rm -rf "./docker/mysql/data"
@@ -518,6 +568,10 @@ if [ $# -gt 0 ]; then
             run_mysql backup
         elif [[ "$1" == "recovery" ]] || [[ "$1" == "r" ]]; then
             run_mysql recovery
+        elif [[ "$1" == "agent" ]] || [[ "$1" == "open" ]]; then
+            run_mysql open
+        elif [[ "$1" == "unagent" ]] || [[ "$1" == "close" ]]; then
+            run_mysql close
         else
             e="mysql $@" && run_exec mariadb "$e"
         fi
@@ -545,6 +599,9 @@ if [ $# -gt 0 ]; then
         $COMPOSE stop "$@"
         $COMPOSE start "$@"
     else
+        if [[ "$1" == "down" ]]; then
+            run_mysql rm-port
+        fi
         $COMPOSE "$@"
     fi
 else

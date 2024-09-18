@@ -63,8 +63,6 @@ services:
   mariadb:
     container_name: "dootask-mariadb-${APP_ID}"
     image: "mariadb:10.7.3"
-    ports:
-      - "${DB_OPEN_PORT:-}:3306"
     volumes:
       - ./docker/mysql/repassword.sh:/etc/mysql/repassword.sh
       - ./docker/mysql/conf.d:/etc/mysql/conf.d

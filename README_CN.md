@@ -89,7 +89,7 @@ cd dootask
 ./cmd redis "your command"            # 运行 redis 命令
 ./cmd composer "your command"         # 运行 composer 命令
 ./cmd supervisorctl "your command"    # 运行 supervisorctl 命令
-./cmd mysql "your command"            # 运行 mysql 命令 (backup: 备份数据库，recovery: 还原数据库)
+./cmd mysql "your command"            # 运行 mysql 命令 (backup: 备份数据库，recovery: 还原数据库，open: 开启数据库外部端口访问，close: 关闭数据库外部端口访问)
 ```
 
 ### SSL 配置

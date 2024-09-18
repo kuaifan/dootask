@@ -88,7 +88,7 @@ cd dootask
 ./cmd redis "your command"            # To run a redis command
 ./cmd composer "your command"         # To run a composer command
 ./cmd supervisorctl "your command"    # To run a supervisorctl command
-./cmd mysql "your command"            # To run a mysql command (backup: Backup database, recovery: Restore database)
+./cmd mysql "your command"            # To run a mysql command (backup: Backup database, recovery: Restore database, open: Open database external port access, close: Close database external port access)
 ```
 
 ### SSL configuration
