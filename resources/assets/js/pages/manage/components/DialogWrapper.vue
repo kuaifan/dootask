@@ -2874,12 +2874,13 @@ export default {
                 if (rect.bottom > scrollerRect.bottom) {
                     height -= rect.bottom - scrollerRect.bottom
                 }
+                const left = this.windowWidth < 500 ? (this.windowWidth / 2) : event.clientX
                 this.operateStyles = {
-                    left: `${event.clientX}px`,
+                    left: `${left}px`,
                     top: `${top}px`,
                     height: `${height}px`,
                 }
-                this.operateClient = {x: event.clientX, y: event.clientY};
+                this.operateClient = {x: left, y: event.clientY};
                 this.operateVisible = true;
             })
         },
