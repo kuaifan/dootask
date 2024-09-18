@@ -44,6 +44,7 @@
                 :hide-forward="hideForward"
                 :operate-visible="operateVisible"
                 :operate-action="operateVisible && source.id === operateItem.id"
+                :pointer-mouse="pointerMouse"
                 :is-right-msg="isRightMsg"
                 @on-longpress="onLongpress"
                 @on-view-reply="onViewReply"
@@ -90,6 +91,10 @@ export default {
             default() {
                 return {}
             }
+        },
+        pointerMouse: {
+            type: Boolean,
+            default: false
         },
         simpleView: {
             type: Boolean,

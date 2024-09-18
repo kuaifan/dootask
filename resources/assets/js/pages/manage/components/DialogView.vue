@@ -336,6 +336,10 @@ export default {
             type: Boolean,
             default: false
         },
+        pointerMouse: {
+            type: Boolean,
+            default: false
+        },
         isRightMsg: {
             type: Boolean,
             default: false
@@ -389,7 +393,7 @@ export default {
         },
 
         viewClass() {
-            const {msgData, operateAction, operateEnter} = this;
+            const {msgData, operateAction, operateEnter, pointerMouse} = this;
             const array = [];
             if (msgData.type) {
                 array.push(msgData.type)
@@ -399,6 +403,9 @@ export default {
                 if (operateEnter) {
                     array.push('operate-enter')
                 }
+            }
+            if (pointerMouse && array.indexOf('pointer-mouse') === -1) {
+                array.push('pointer-mouse')
             }
             return array
         },

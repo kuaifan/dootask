@@ -8,7 +8,8 @@
         @dragleave.prevent="chatDragOver(false, $event)"
         @touchstart="onTouchStart"
         @touchmove="onTouchMove"
-        @touchend="onTouchEnd">
+        @touchend="onTouchEnd"
+        @pointerover="onPointerover">
         <!--顶部导航-->
         <div ref="nav" class="dialog-nav">
             <slot name="head">
@@ -188,7 +189,7 @@
                 :data-sources="allMsgs"
                 :data-component="msgItem"
 
-                :extra-props="{dialogData, operateVisible, operateItem, isMyDialog, msgId, unreadOne, scrollIng, readEnabled}"
+                :extra-props="{dialogData, operateVisible, operateItem, pointerMouse, isMyDialog, msgId, unreadOne, scrollIng, readEnabled}"
                 :estimate-size="dialogData.type=='group' ? 105 : 77"
                 :keeps="dialogMsgKeep"
                 :disabled="scrollDisabled"
@@ -783,6 +784,7 @@ export default {
 
             recordState: '',
             wrapperStart: null,
+            pointerMouse: false,
 
             scrollTail: 0,
             scrollOffset: 0,
@@ -941,9 +943,9 @@ export default {
             const array = [];
             array.push(...this.dialogMsgList.filter(item => this.msgFilter(item)));
             if (this.msgId > 0) {
-                const msgItem = this.dialogMsgs.find(item => item.id == this.msgId)
-                if (msgItem) {
-                    array.unshift(msgItem)
+                const dialogMsg = this.dialogMsgs.find(item => item.id == this.msgId)
+                if (dialogMsg) {
+                    array.unshift(dialogMsg)
                 }
             }
             if (this.tempMsgList.length > 0) {
@@ -1441,7 +1443,7 @@ export default {
         },
 
         operateVisible(val) {
-            if (!val) {
+            if (!val && !this.pointerMouse) {
                 document.getSelection().removeAllRanges();
             }
         },
@@ -2083,6 +2085,10 @@ export default {
             if (typeof this.wrapperStart === 'number' && $A.isIos()) {
                 $A.scrollToView(this.$refs.footer, false)
             }
+        },
+
+        onPointerover({pointerType}) {
+            this.pointerMouse = pointerType === 'mouse';
         },
 
         pasteSend() {
