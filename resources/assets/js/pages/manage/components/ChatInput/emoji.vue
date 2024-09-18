@@ -85,7 +85,7 @@ export default {
     },
     mounted() {
         this.initData()
-        if(!this.$store.state.windowPortrait){
+        if(!this.$store?.state.windowPortrait){
             this.onMonitorWheel()
         }
     },
