@@ -1612,6 +1612,30 @@ export default {
     },
 
     /**
+     * 更新任务“今日任务”、“过期任务”
+     * @param state
+     * @param dispatch
+     */
+    todayAndOverdue({state, dispatch}) {
+        state.cacheTasks.some(task => {
+            if (!task.end_at) {
+                return false;
+            }
+            const data = {today: false, overdue: false};
+            const endAt = $A.Date(task.end_at, true)
+            if (!task.today) {
+                data.today = $A.formatDate('Y-m-d', endAt) == $A.formatDate('Y-m-d')
+            }
+            if (!task.overdue) {
+                data.overdue = endAt < $A.Time();
+            }
+            if (data.today || data.overdue) {
+                dispatch("saveTask", Object.assign(task, data));
+            }
+        })
+    },
+
+    /**
      * 增加任务消息数量
      * @param state
      * @param data {id, dialog_id}

@@ -48,7 +48,8 @@ export default {
     data() {
         return {
             routePath: null,
-            searchInter: null,
+            appInter: null,
+            countDown: Math.min(30, 60 - $A.Date().getSeconds()),
         }
     },
 
@@ -62,7 +63,7 @@ export default {
         window.addEventListener('resize', this.windowSizeListener)
         window.addEventListener('scroll', this.windowScrollListener)
         window.addEventListener('message', this.windowHandleMessage)
-        this.searchInter = setInterval(this.searchEnter, 1000)
+        this.appInter = setInterval(this.appTimerHandler, 1000)
         $A.loadVConsole()
     },
 
@@ -70,7 +71,7 @@ export default {
         window.removeEventListener('resize', this.windowSizeListener)
         window.removeEventListener('scroll', this.windowScrollListener)
         window.removeEventListener('message', this.windowHandleMessage)
-        this.searchInter && clearInterval(this.searchInter)
+        this.appInter && clearInterval(this.appInter)
     },
 
     computed: {
@@ -161,6 +162,15 @@ export default {
     },
 
     methods: {
+        appTimerHandler() {
+            this.searchEnter()
+            //
+            this.countDown--
+            if (this.countDown <= 0) {
+                this.countDown = Math.min(30, 60 - $A.Date().getSeconds())
+                this.$store.dispatch("todayAndOverdue")
+            }
+        },
         searchEnter() {
             let row = $A(".sreachBox");
             if (row.length === 0) {

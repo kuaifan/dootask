@@ -289,19 +289,20 @@ const localforage = require("localforage");
 
         /**
          * 返回 时间对象|时间戳
-         * @param v
-         * @param stamp 是否返回时间戳
+         * @param v 支持时间戳|时间格式字符串|时间对象|空
+         * @param timestamp 是否返回时间戳
          * @returns {Date|number}
          * @constructor
          */
-        Date(v, stamp = false) {
+        Date(v = undefined, timestamp = false) {
             if (typeof v === "string" && this.strExists(v, "-")) {
                 v = v.replace(/-/g, '/');
             }
-            if (stamp === true) {
-                return Math.round(new Date(v).getTime() / 1000)
+            const d = v === undefined || v === null ? new Date() : new Date(v);
+            if (timestamp === true) {
+                return Math.round(d.getTime() / 1000)
             }
-            return new Date(v);
+            return d;
         },
 
         /**
