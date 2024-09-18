@@ -69,9 +69,13 @@ export default {
             return string
         },
 
-        isExistTask({ userids, timerange, taskid }) {
+        isExistTask({userids, timerange, taskid}) {
             this.isExist = false;
             return new Promise(async resolve => {
+                if ($A.isArray(timerange) && (!timerange[0] || !timerange[1])) {
+                    resolve(this.isExist)
+                    return false;
+                }
                 this.$store.dispatch("call", {
                     url: 'project/task/easylists',
                     data: {
@@ -80,7 +84,7 @@ export default {
                         taskid: taskid
                     },
                     method: 'get',
-                }).then(({ data }) => {
+                }).then(({data}) => {
                     if (data.data.length > 0) {
                         this.show = true;
                         let taskObj = {}

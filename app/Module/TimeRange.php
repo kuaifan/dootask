@@ -15,12 +15,17 @@ class TimeRange
     public function __construct($data)
     {
         if (is_array($data)) {
-            $range = $this->format($data['timerange']);
-            if ($data['updated_at'] || $data['at_after']) {
-                $range[0] = $data['updated_at'] ?: $data['at_after'];
-            }
-            if ($data['deleted_at']) {
-                $range[1] = $data['deleted_at'];
+            $keys = array_keys($data);
+            if (count($keys) === 2 && $keys[0] === 0 && $keys[1] === 1) {
+                $range = $data;
+            } else {
+                $range = $this->format($data['timerange']);
+                if ($data['updated_at'] || $data['at_after']) {
+                    $range[0] = $data['updated_at'] ?: $data['at_after'];
+                }
+                if ($data['deleted_at']) {
+                    $range[1] = $data['deleted_at'];
+                }
             }
         } else {
             $range = $this->format($data);
@@ -32,6 +37,30 @@ class TimeRange
         $timezone = config('app.timezone');
         $this->updated = $updated ? Carbon::parse($updated)->setTimezone($timezone) : null;
         $this->deleted = $deleted ? Carbon::parse($deleted)->setTimezone($timezone) : null;
+    }
+
+    /**
+     * @return Carbon|null
+     */
+    public function firstTime(): ?Carbon
+    {
+        return $this->updated;
+    }
+
+    /**
+     * @return Carbon|null
+     */
+    public function lastTime(): ?Carbon
+    {
+        return $this->deleted;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isExist(): bool
+    {
+        return $this->updated && $this->deleted;
     }
 
     /**

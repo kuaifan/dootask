@@ -1048,7 +1048,7 @@ export default {
                                 if (!desc) {
                                     return `请输入修改备注`
                                 }
-                                this.updateParams = Object.assign(params, { desc })
+                                this.updateParams = Object.assign(params, {desc})
                                 if (params.start_at && params.end_at && this.$refs.taskExistTipsRef) {
                                     this.$refs.taskExistTipsRef.isExistTask({
                                         taskid: this.taskDetail.id,

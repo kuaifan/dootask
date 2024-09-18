@@ -1111,7 +1111,7 @@ class ProjectController extends AbstractController
     /**
      * @api {get} api/project/task/easylists          20. 任务列表-简单的
      *
-     * @apiDescription 需要token身份
+     * @apiDescription 需要token身份，主要用于判断是否有时间冲突的任务
      * @apiVersion 1.0.0
      * @apiGroup project
      * @apiName task__easylists
@@ -1130,23 +1130,24 @@ class ProjectController extends AbstractController
         //
         $taskid = trim(Request::input('taskid'));
         $userid = Request::input('userid');
-        $timerange = Request::input('timerange');
+        $timerange = TimeRange::parse(Request::input('timerange'));
         //
         $list = ProjectTask::with(['taskUser'])
-            ->select('projects.name as project_name', 'project_tasks.id', 'project_tasks.name', 'project_tasks.start_at', 'project_tasks.end_at')
+            ->select([
+                'projects.name as project_name',
+                'project_tasks.id',
+                'project_tasks.name',
+                'project_tasks.start_at',
+                'project_tasks.end_at'
+            ])
             ->join('projects','project_tasks.project_id','=','projects.id')
             ->leftJoin('project_task_users', function ($query) {
                 $query->on('project_tasks.id', '=', 'project_task_users.task_id')->where('project_task_users.owner', '=', 1);
             })
             ->whereIn('project_task_users.userid', is_array($userid) ? $userid : explode(',', $userid) )
-            ->when(!empty($timerange), function ($query) use ($timerange) {
-                if (!is_array($timerange)) {
-                    $timerange = explode(',', $timerange);
-                }
-                if (Base::isDateOrTime($timerange[0]) && Base::isDateOrTime($timerange[1])) {
-                    $query->where('project_tasks.start_at', '<=', Carbon::parse($timerange[1])->endOfDay());
-                    $query->where('project_tasks.end_at', '>=', Carbon::parse($timerange[0])->startOfDay());
-                }
+            ->when($timerange->isExist(), function ($query) use ($timerange) {
+                $query->where('project_tasks.start_at', '<=', $timerange->lastTime()->endOfDay());
+                $query->where('project_tasks.end_at', '>=', $timerange->firstTime()->startOfDay());
             })
             ->when(!empty($taskid), function ($query) use ($taskid) {
                 $query->where('project_tasks.id', "!=", $taskid);

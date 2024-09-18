@@ -502,7 +502,7 @@ export default {
             this.addData = Object.assign({}, this.addData, data);
         },
 
-        async onAdd(again,affirm=false) {
+        async onAdd(again, affirm = false) {
             if (!this.addData.name) {
                 $A.messageError("任务描述不能为空");
                 return;
@@ -512,7 +512,7 @@ export default {
 
             // 存在任务提示
             if (!affirm && this.addData.owner.length > 0) {
-                this.$refs['taskExistTipsRef'].isExistTask({
+                this.$refs.taskExistTipsRef.isExistTask({
                     userids: this.addData.owner,
                     timerange: this.addData.times
                 }).then(res => {
