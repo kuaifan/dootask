@@ -103,6 +103,7 @@ export default {
 
             operateStyles: {},
             operateVisible: false,
+            operateHiddenTime: 0,
             operateMenu: {
                 target: null,
                 checked: null,
@@ -142,7 +143,12 @@ export default {
         },
         content(val) {
             this.$emit('input', val);
-        }
+        },
+        operateVisible(val) {
+            if (!val) {
+                this.operateHiddenTime = Date.now();
+            }
+        },
     },
 
     methods: {
@@ -188,6 +194,9 @@ export default {
         onClickWrap(event) {
             if (!this.windowTouch) {
                 return
+            }
+            if (Date.now() - this.operateHiddenTime < 300) {
+                return;
             }
             event.stopPropagation()
             this.operateVisible = false;
