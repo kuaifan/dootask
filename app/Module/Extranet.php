@@ -331,17 +331,65 @@ class Extranet
     }
 
     /**
+     * 获取搜狗表情包
+     * @param $keyword
+     * @return array
+     */
+    public static function sticker($keyword)
+    {
+        $data = self::curl("https://pic.sogou.com/napi/wap/searchlist", 1800, 15, [], [
+            'CURLOPT_CUSTOMREQUEST' => 'POST',
+            'CURLOPT_POSTFIELDS' => json_encode([
+                "initQuery" => $keyword . " 表情",
+                "queryFrom" => "wap",
+                "ie" => "utf8",
+                "keyword" => $keyword . " 表情",
+                // "mode" => 20,
+                "showMode" => 0,
+                "start" => 1,
+                "reqType" => "client",
+                "reqFrom" => "wap_result",
+                "prevIsRedis" => "n",
+                "pagetype" => 0,
+                "amsParams" => []
+            ]),
+            'CURLOPT_HTTPHEADER' => [
+                'Content-Type: application/json',
+                'Referer: https://pic.sogou.com/'
+            ]
+        ]);
+        $data = Base::json2array($data);
+        if ($data['status'] === 0 && $data['data']['picResult']['items']) {
+            $data = $data['data']['picResult']['items'];
+            $data = array_filter($data, function ($item) {
+                return intval($item['thumbHeight']) > 10 && intval($item['thumbWidth']) > 10;
+            });
+            return array_map(function ($item) {
+                return [
+                    'name' => $item['title'],
+                    'src' => $item['thumbUrl'],
+                    'height' => $item['thumbHeight'],
+                    'width' => $item['thumbWidth'],
+                ];
+            }, $data);
+        }
+        return [];
+    }
+
+    /**
      * @param $url
      * @param int $cacheSecond 缓存时间（秒），如果结果为空则缓存有效30秒
      * @param int $timeout
+     * @param array $post
+     * @param array $extra
      * @return string
      */
-    private static function curl($url, int $cacheSecond = 0, int $timeout = 15): string
+    private static function curl($url, int $cacheSecond = 0, int $timeout = 15, array $post = [], array $extra = []): string
     {
         if ($cacheSecond > 0) {
-            $key = "curlCache::" . md5($url);
-            $content = Cache::remember($key, Carbon::now()->addSeconds($cacheSecond), function () use ($cacheSecond, $key, $timeout, $url) {
-                $result = Ihttp::ihttp_request($url, [], [], $timeout);
+            $key = "curlCache::" . md5($url) . "::" . md5(json_encode($post)) . "::" . md5(json_encode($extra));
+            $content = Cache::remember($key, Carbon::now()->addSeconds($cacheSecond), function () use ($extra, $post, $cacheSecond, $key, $timeout, $url) {
+                $result = Ihttp::ihttp_request($url, $post, $extra, $timeout);
                 $content = Base::isSuccess($result) ? trim($result['data']) : '';
                 if (empty($content) && $cacheSecond > 30) {
                     Cache::put($key, "", Carbon::now()->addSeconds(30));
@@ -349,7 +397,7 @@ class Extranet
                 return $content;
             });
         } else {
-            $result = Ihttp::ihttp_request($url, [], [], $timeout);
+            $result = Ihttp::ihttp_request($url, $post, $extra, $timeout);
             $content = Base::isSuccess($result) ? trim($result['data']) : '';
         }
         //

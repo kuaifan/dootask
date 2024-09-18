@@ -2601,4 +2601,28 @@ class DialogController extends AbstractController
         //
         return Base::retSuccess('success', $topMsg);
     }
+
+    /**
+     * @api {get} api/dialog/sticker/search          54. 搜索在线表情
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName sticker__search
+     *
+     * @apiParam {String} key            关键词
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function sticker__search()
+    {
+        User::auth();
+        //
+        $key = trim(Request::input('key'));
+        return Base::retSuccess('success', [
+            'list' => Extranet::sticker($key)
+        ]);
+    }
 }

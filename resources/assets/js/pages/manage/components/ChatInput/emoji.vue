@@ -177,31 +177,32 @@ export default {
             this.emosearchLoad = true;
             this.emosearchTimer && clearTimeout(this.emosearchTimer)
             this.emosearchTimer = setTimeout(_ => {
-                jsonp('https://pic.sogou.com/napi/wap/pic', {
-                    query: this.emosearchKey + ' 表情'
-                }).then(data => {
+                this.$store.dispatch("call", {
+                    url: 'dialog/sticker/search',
+                    data: {
+                        key: this.emosearchKey,
+                    },
+                }).then(({data}) => {
                     this.emosearchList = []
-                    if (data.status === 0) {
-                        const items = data.data.items
-                        if (items.length > 0) {
-                            this.emosearchList = items.map(item => {
-                                return {
-                                    type: 'emoticon',
-                                    asset: 'emosearch',
-                                    name: item.title,
-                                    src: item.thumbUrl,
-                                    height: item.thumbHeight,
-                                    width: item.thumbWidth,
-                                }
-                            })
-                        }
+                    const items = data.list
+                    if (items.length > 0) {
+                        this.emosearchList = items.map(item => {
+                            return {
+                                type: 'emoticon',
+                                asset: 'emosearch',
+                                name: item.name,
+                                src: item.src,
+                                height: item.height,
+                                width: item.width,
+                            }
+                        })
                     }
                     if (this.emosearchList.length === 0) {
-                        $A.noticeWarning("没有搜索到任何表情")
+                        $A.messageWarning("没有搜索到任何表情")
                     }
                 }).catch(_ => {
                     this.emosearchList = []
-                    $A.noticeWarning("搜索结果为空")
+                    $A.messageWarning("搜索结果为空")
                 }).finally(_ => {
                     this.emosearchLoad = false;
                 })
