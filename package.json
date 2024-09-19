@@ -59,7 +59,7 @@
         "stylus-loader": "^7.1.0",
         "tinymce": "^5.10.3",
         "tui-calendar-hi": "^1.15.1-5",
-        "view-design-hi": "^4.7.0-55",
+        "view-design-hi": "^4.7.0-56",
         "vite": "^2.9.15",
         "vite-plugin-file-copy": "^1.0.0",
         "vite-plugin-require": "^1.1.10",
@@ -72,7 +72,7 @@
         "vue-resize-observer": "^2.0.16",
         "vue-router": "^3.6.5",
         "vue-template-compiler": "~2.6.14",
-        "vue-virtual-scroll-list-hi": "^2.3.5-10",
+        "vue-virtual-scroll-list-hi": "^2.3.5-12",
         "vuedraggable": "^2.24.3",
         "vuex": "^3.6.2"
     },

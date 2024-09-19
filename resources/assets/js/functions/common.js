@@ -289,16 +289,16 @@ const localforage = require("localforage");
 
         /**
          * 返回 时间对象|时间戳
-         * @param v 支持时间戳|时间格式字符串|时间对象|空
+         * @param v 支持时间戳|时间格式字符串|时间对象|boolean(当前时间)
          * @param timestamp 是否返回时间戳
          * @returns {Date|number}
          * @constructor
          */
-        Date(v = undefined, timestamp = false) {
+        Date(v, timestamp = false) {
             if (typeof v === "string" && this.strExists(v, "-")) {
                 v = v.replace(/-/g, '/');
             }
-            const d = v === undefined || v === null ? new Date() : new Date(v);
+            const d = typeof v === "boolean" ? new Date() : new Date(v);
             if (timestamp === true) {
                 return Math.round(d.getTime() / 1000)
             }
