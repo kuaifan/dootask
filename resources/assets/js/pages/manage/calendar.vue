@@ -46,7 +46,6 @@
 <script>
 import {mapState, mapGetters} from "vuex";
 import Calendar from "./components/Calendar";
-import moment from "moment";
 import {Store} from "le5le-store";
 import TaskMenu from "./components/TaskMenu";
 import {addLanguage} from "../../language";
@@ -172,8 +171,8 @@ export default {
                     body: data.desc,
                     isAllDay: isAllday,
                     category: isAllday ? 'allday' : 'time',
-                    start: $A.Date(data.start_at).toISOString(),
-                    end: $A.Date(data.end_at).toISOString(),
+                    start: $A.dayjs(data.start_at).toISOString(),
+                    end: $A.dayjs(data.end_at).toISOString(),
                     color: "#515a6e",
                     bgColor: data.color || '#E3EAFD',
                     borderColor: data.p_color,
@@ -283,34 +282,39 @@ export default {
                     (!options.month.visibleWeeksCount || options.month.visibleWeeksCount > 4)) {
                     html.push(this.currentCalendarDate('YYYY.MM'));
                 } else {
-                    html.push(moment(cal.getDateRangeStart().getTime()).format('YYYY.MM.DD'));
+                    html.push($A.dayjs(cal.getDateRangeStart().getTime()).format('YYYY.MM.DD'));
                     html.push(' ~ ');
-                    html.push(moment(cal.getDateRangeEnd().getTime()).format(' MM.DD'));
+                    html.push($A.dayjs(cal.getDateRangeEnd().getTime()).format(' MM.DD'));
                 }
                 this.rangeText = html.join('');
-                this.rangeTime = [moment(cal.getDateRangeStart().getTime()).format('YYYY-MM-DD'), moment(cal.getDateRangeEnd().getTime()).format('YYYY-MM-DD')];
+                this.rangeTime = [$A.dayjs(cal.getDateRangeStart().getTime()).format('YYYY-MM-DD'), $A.dayjs(cal.getDateRangeEnd().getTime()).format('YYYY-MM-DD')];
             })
         },
 
         currentCalendarDate(format) {
             const cal = this.$refs.cal.getInstance();
-            let currentDate = moment([cal.getDate().getFullYear(), cal.getDate().getMonth(), cal.getDate().getDate()]);
+            let currentDate = $A.dayjs([cal.getDate().getFullYear(), cal.getDate().getMonth(), cal.getDate().getDate()]);
             return currentDate.format(format);
         },
 
         onBeforeCreateSchedule({start, end, isAllDay, guide}) {
             if (isAllDay || this.calendarView == 'month') {
-                start = $A.date2string(start.toDate(), "Y-m-d 00:00:00")
-                end = $A.date2string(end.toDate(), "Y-m-d 23:59:59")
+                start = $A.dayjs(start.toDate()).startOf('day')
+                end = $A.dayjs(end.toDate()).endOf('day')
             } else {
-                start = $A.date2string(start.toDate(), "Y-m-d H:i:s")
-                end = $A.date2string(end.toDate(), "Y-m-d H:i:s")
+                start = $A.dayjs(start.toDate())
+                end = $A.dayjs(end.toDate())
             }
-            Store.set('addTask', {
-                times: [start, end],
-                owner: [this.userId],
-                beforeClose: () => guide.clearGuideElement()
-            });
+            this.$store.dispatch("taskDefaultTime", [
+                start.format('YYYY-MM-DD HH:mm:ss'),
+                end.format('YYYY-MM-DD HH:mm:ss')
+            ]).then(times => {
+                Store.set('addTask', {
+                    times,
+                    owner: [this.userId],
+                    beforeClose: () => guide.clearGuideElement()
+                });
+            })
         },
 
         onBeforeClickSchedule(event) {

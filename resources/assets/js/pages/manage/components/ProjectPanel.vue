@@ -506,7 +506,7 @@ export default {
         return {
             loading: false,
 
-            nowTime: $A.Time(),
+            nowTime: $A.dayjs().unix(),
             nowInterval: null,
 
             columnLoad: {},
@@ -555,7 +555,7 @@ export default {
 
     mounted() {
         this.nowInterval = setInterval(() => {
-            this.nowTime = $A.Time();
+            this.nowTime = $A.dayjs().unix();
         }, 1000);
     },
 
@@ -686,7 +686,7 @@ export default {
                     return task.column_id == column.id;
                 })).sort((a, b) => {
                     if (a.complete_at || b.complete_at) {
-                        return $A.Date(a.complete_at) - $A.Date(b.complete_at);
+                        return $A.dayjs(a.complete_at) - $A.dayjs(b.complete_at);
                     }
                     if (a.sort != b.sort) {
                         return a.sort - b.sort;
@@ -717,7 +717,7 @@ export default {
                     if (a.end_at == b.end_at) {
                         return a.p_level - b.p_level;
                     }
-                    return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
+                    return $A.dayjs(a.end_at || "2099-12-31 23:59:59") - $A.dayjs(b.end_at || "2099-12-31 23:59:59");
                 }
             });
         },
@@ -742,7 +742,7 @@ export default {
                     if (a.end_at == b.end_at) {
                         return a.p_level - b.p_level;
                     }
-                    return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
+                    return $A.dayjs(a.end_at || "2099-12-31 23:59:59") - $A.dayjs(b.end_at || "2099-12-31 23:59:59");
                 }
             });
         },
@@ -773,7 +773,7 @@ export default {
                     if (a.end_at == b.end_at) {
                         return a.p_level - b.p_level;
                     }
-                    return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
+                    return $A.dayjs(a.end_at || "2099-12-31 23:59:59") - $A.dayjs(b.end_at || "2099-12-31 23:59:59");
                 }
             });
         },
@@ -795,9 +795,7 @@ export default {
                 return task.complete_at;
             });
             return array.sort((a, b) => {
-                let at1 = $A.Date(a.complete_at),
-                    at2 = $A.Date(b.complete_at);
-                return at2 - at1;
+                return $A.dayjs(b.complete_at) - $A.dayjs(a.complete_at);
             });
         },
 

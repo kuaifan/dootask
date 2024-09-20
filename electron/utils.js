@@ -1,7 +1,26 @@
 const fs = require("fs");
+const dayjs = require("dayjs");
 const {shell, dialog, session} = require("electron");
 
 module.exports = {
+    /**
+     * 时间对象
+     * @param v
+     * @returns {*|dayjs.Dayjs}
+     */
+    dayjs(v = undefined) {
+        if (/^\d{13,}$/.test(v)) {
+            return dayjs(Number(v));
+        }
+        if (/^\d{10,}$/.test(v)) {
+            return dayjs(Number(v) * 1000);
+        }
+        if (v === null) {
+            v = 0
+        }
+        return dayjs(v);
+    },
+
     /**
      * 是否数组
      * @param obj
@@ -251,23 +270,6 @@ module.exports = {
         let urlReg = /http(s)?:\/\/([^\/]+)/i;
         let domain = (weburl + "").match(urlReg);
         return ((domain != null && domain.length > 0) ? domain[2] : "");
-    },
-
-    /**
-     * 返回10位数时间戳
-     * @param v
-     * @returns {number}
-     * @constructor
-     */
-    Time(v = undefined) {
-        let time
-        if (typeof v === "string" && this.strExists(v, "-")) {
-            v = v.replace(/-/g, '/');
-            time = new Date(v).getTime();
-        } else {
-            time = new Date().getTime();
-        }
-        return Math.round(time / 1000)
     },
 
     /**

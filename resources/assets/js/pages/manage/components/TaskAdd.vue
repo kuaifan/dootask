@@ -155,7 +155,7 @@
                                 clearable
                                 @on-clear="addData.subtasks.splice(key, 1)"/>
                         </Col>
-                        <Col span="8" :title="formatDate(item.times)">
+                        <Col span="8" :title="timeTitle(item.times)">
                             <DatePicker
                                 v-model="item.times"
                                 :options="timeOptions"
@@ -282,9 +282,9 @@ export default {
 
         taskDays() {
             const {times} = this.addData;
-            let temp = $A.date2string(times, "Y-m-d H:i");
+            const temp = $A.date2string(times, "YYYY-MM-DD HH:mm");
             if (temp[0] && temp[1]) {
-                let d = Math.ceil(($A.Date(temp[1], true) - $A.Date(temp[0], true)) / 86400);
+                const d = Math.ceil($A.dayjs(temp[1]).diff(temp[0], 'day', true));
                 if (d > 0) {
                     return d;
                 }
@@ -327,7 +327,7 @@ export default {
         initCascaderData() {
             const data = $A.cloneJSON(this.cacheProjects).sort((a, b) => {
                 if (a.top_at || b.top_at) {
-                    return $A.Date(b.top_at) - $A.Date(a.top_at);
+                    return $A.dayjs(b.top_at) - $A.dayjs(a.top_at);
                 }
                 return b.id - a.id;
             });
@@ -384,8 +384,8 @@ export default {
         },
 
         async taskTimeChange(data) {
-            const times = $A.date2string(data.times, "Y-m-d H:i");
-            if ($A.rightExists(times[0], '00:00') && $A.rightExists(times[1], '00:00')) {
+            const times = $A.date2string(data.times, "YYYY-MM-DD HH:mm");
+            if ($A.rightExists(times[0], '00:00') && $A.rightExists(times[1], '23:59')) {
                 this.$set(data, 'times', await this.$store.dispatch("taskDefaultTime", times))
             }
         },
@@ -394,7 +394,7 @@ export default {
             this.taskTimeOpen = val;
         },
 
-        formatDate(value) {
+        timeTitle(value) {
             return value ? $A.date2string(value) : null
         },
 
@@ -428,10 +428,10 @@ export default {
         },
 
         async choosePriority(item) {
-            const start = new Date();
+            const start = $A.dayjs();
             const days = $A.runNum(item.days);
             if (days > 0) {
-                const end = new Date(new Date().setDate(start.getDate() + days));
+                const end = start.clone().add(days, 'day');
                 this.$set(this.addData, 'times', await this.$store.dispatch("taskDefaultTime", $A.date2string([start, end])))
             } else {
                 this.$set(this.addData, 'times', [])

@@ -1565,7 +1565,7 @@ export default {
                         let dataA = this.$store.getters.transforTasks(this.$store.getters.dashboardTask['all']);
                         if (dataA.length > 0) {
                             dataA = dataA.sort((a, b) => {
-                                return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
+                                return $A.dayjs(a.end_at || "2099-12-31 23:59:59") - $A.dayjs(b.end_at || "2099-12-31 23:59:59");
                             }).splice(0, 100)
                             this.taskList.push({
                                 label: [{id: 0, value: this.$L('我的待完成任务'), disabled: true}],
@@ -1581,7 +1581,7 @@ export default {
                         let dataB = this.$store.getters.assistTask;
                         if (dataB.length > 0) {
                             dataB = dataB.sort((a, b) => {
-                                return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
+                                return $A.dayjs(a.end_at || "2099-12-31 23:59:59") - $A.dayjs(b.end_at || "2099-12-31 23:59:59");
                             }).splice(0, 100)
                             this.taskList.push({
                                 label: [{id: 0, value: this.$L('我协助的任务'), disabled: true}],
@@ -1607,7 +1607,7 @@ export default {
                                     && task.parent_id === 0
                                     && !task.archived_at
                             }).sort((a, b) => {
-                                return $A.Date(b.complete_at || "2099-12-31 23:59:59") - $A.Date(a.complete_at || "2099-12-31 23:59:59")
+                                return $A.dayjs(b.complete_at || "2099-12-31 23:59:59") - $A.dayjs(a.complete_at || "2099-12-31 23:59:59")
                             })
                             if (tasks.length > 0) {
                                 taskCallback(tasks)

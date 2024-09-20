@@ -605,7 +605,7 @@ export default {
         tabActive: {
             handler(val) {
                 if (val == 'contacts') {
-                    if ($A.Time() - this.contactsLastTime > 24 * 3600) {
+                    if ($A.dayjs().unix() - this.contactsLastTime > 24 * 3600) {
                         this.contactsData = null;   // 24个小时重新加载列表
                     }
                     if (this.contactsData === null) {
@@ -721,7 +721,7 @@ export default {
         dialogSort(a, b) {
             // 根据置顶时间排序
             if (a.top_at || b.top_at) {
-                return $A.Date(b.top_at) - $A.Date(a.top_at);
+                return $A.dayjs(b.top_at) - $A.dayjs(a.top_at);
             }
             // 根据未读数排序
             if (a.todo_num > 0 || b.todo_num > 0) {
@@ -732,7 +732,7 @@ export default {
                 return b.extra_draft_has - a.extra_draft_has;
             }
             // 根据最后会话时间排序
-            return $A.Date(b.last_at) - $A.Date(a.last_at);
+            return $A.dayjs(b.last_at) - $A.dayjs(a.last_at);
         },
 
         userClass(user) {
@@ -798,22 +798,22 @@ export default {
                 if (['project', 'task'].includes(dialog.group_type) && $A.isJson(dialog.group_info)) {
                     if (dialog.group_type == 'task' && dialog.group_info.complete_at) {
                         // 已完成5天后隐藏对话
-                        let time = Math.max($A.Date(dialog.last_at, true), $A.Date(dialog.group_info.complete_at, true))
-                        if (5 * 86400 + time < $A.Time()) {
+                        let time = Math.max($A.dayjs(dialog.last_at).unix(), $A.dayjs(dialog.group_info.complete_at).unix())
+                        if (5 * 86400 + time < $A.dayjs().unix()) {
                             return false
                         }
                     }
                     if (dialog.group_info.deleted_at) {
                         // 已删除2天后隐藏对话
-                        let time = Math.max($A.Date(dialog.last_at, true), $A.Date(dialog.group_info.deleted_at, true))
-                        if (2 * 86400 + time < $A.Time()) {
+                        let time = Math.max($A.dayjs(dialog.last_at).unix(), $A.dayjs(dialog.group_info.deleted_at).unix())
+                        if (2 * 86400 + time < $A.dayjs().unix()) {
                             return false
                         }
                     }
                     if (dialog.group_info.archived_at) {
                         // 已归档3天后隐藏对话
-                        let time = Math.max($A.Date(dialog.last_at, true), $A.Date(dialog.group_info.archived_at, true))
-                        if (3 * 86400 + time < $A.Time()) {
+                        let time = Math.max($A.dayjs(dialog.last_at).unix(), $A.dayjs(dialog.group_info.archived_at).unix())
+                        if (3 * 86400 + time < $A.dayjs().unix()) {
                             return false
                         }
                     }
@@ -921,7 +921,7 @@ export default {
                 this.contactsHasMorePages = false;
             }).finally(_ => {
                 this.contactsLoad--;
-                this.contactsLastTime = $A.Time()
+                this.contactsLastTime = $A.dayjs().unix()
             });
         },
 
@@ -955,7 +955,7 @@ export default {
                                 }
                             });
                         }).finally(_ => {
-                            this.contactsLastTime = $A.Time()
+                            this.contactsLastTime = $A.dayjs().unix()
                         });
                     }
                 }, timeout)

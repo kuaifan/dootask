@@ -114,9 +114,9 @@ export default {
      * @returns {{overdue: *, today: *,all:*}}
      */
     dashboardTask(state) {
-        const todayStart = $A.Date($A.formatDate("Y-m-d 00:00:00")),
-            todayEnd = $A.Date($A.formatDate("Y-m-d 23:59:59")),
-            todayNow = $A.Date($A.formatDate("Y-m-d H:i:s"));
+        const todayStart = $A.dayjs().startOf('day'),
+            todayEnd = $A.dayjs().endOf('day'),
+            todayNow = $A.dayjs();
         const filterTask = (task, chackCompleted = true) => {
             if (task.archived_at) {
                 return false;
@@ -124,7 +124,7 @@ export default {
             if (task.complete_at && chackCompleted === true) {
                 return false;
             }
-            if (task.start_at && $A.Date(task.start_at) > todayNow) {
+            if (task.start_at && $A.dayjs(task.start_at) > todayNow) {
                 return false;
             }
             return task.owner == 1;
@@ -140,11 +140,11 @@ export default {
             }
         }
         const todayTasks = array.filter(task => {
-            const end = $A.Date(task.end_at);
+            const end = $A.dayjs(task.end_at);
             return todayStart <= end && end <= todayEnd;
         })
         const overdueTasks = array.filter(task => {
-            return task.end_at && $A.Date(task.end_at) <= todayNow;
+            return task.end_at && $A.dayjs(task.end_at) <= todayNow;
         })
         const result = {
             today: todayTasks,

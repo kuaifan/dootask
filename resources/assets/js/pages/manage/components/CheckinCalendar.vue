@@ -75,9 +75,9 @@ export default {
         };
     },
     created() {
-        const today = new Date()
-        this.year = today.getFullYear();
-        this.month = today.getMonth() + 1;
+        const today = $A.dayjs()
+        this.year = today.year();
+        this.month = today.month() + 1;
 
         this.generateCalendar();
     },
@@ -100,7 +100,8 @@ export default {
     computed: {
         hasNextMonth() {
             const {year, month} = this;
-            return parseInt(year) != $A.formatDate("Y") || parseInt(month) < $A.formatDate("m");
+            const today = $A.dayjs()
+            return parseInt(year) != today.year() || parseInt(month) < today.month() + 1;
         }
     },
     methods: {
@@ -120,20 +121,20 @@ export default {
             }).join('<br/>')
         },
         generateCalendar() {
-            let today = new Date($A.formatDate("Y/m/d"))
-            let one = new Date(this.year, this.month - 1, 1)
-            let calcTime = one.getTime() - one.getDay() * 86400 * 1000
+            let today = $A.dayjs().startOf('day')
+            let one = $A.dayjs([this.year, this.month, 1])
+            let calcTime = one.valueOf() - one.day() * 86400 * 1000
             let array = []
             for (let i = 0; i < 6; i++) {
                 array[i] = []
                 for (let j = 0; j < 7; j++) {
-                    let curDate = new Date(calcTime)
-                    let curMonth = curDate.getMonth() + 1
+                    let curDate = $A.dayjs(calcTime)
+                    let curMonth = curDate.month() + 1
                     array[i][j] = {
-                        day: curDate.getDate(),
-                        date: `${curDate.getFullYear()}/${curMonth}/${curDate.getDate()}`,
-                        today: today.getTime() == curDate.getTime(),
-                        future: today.getTime() < curDate.getTime(),
+                        day: curDate.date(),
+                        date: `${curDate.year()}/${curMonth}/${curDate.date()}`,
+                        today: today.unix() == curDate.unix(),
+                        future: today.unix() < curDate.unix(),
                         month: curMonth == this.month
                     }
                     calcTime += 86400 * 1000
@@ -165,8 +166,9 @@ export default {
             this.$emit('changeMonth', this.ym())
         },
         nowMonth() {
-            this.year = parseInt($A.formatDate("Y"));
-            this.month = parseInt($A.formatDate("m"));
+            const today = $A.dayjs()
+            this.year = today.year();
+            this.month = today.month() + 1;
             this.generateCalendar();
             this.$emit('changeMonth', this.ym())
         }

@@ -80,8 +80,8 @@ export default {
                         return h('div', {
                             style: {},
                         }, [
-                            h('div', $A.formatDate('Y-m-d H:i', Math.round(row.baktime.start / 1000))),
-                            h('div', $A.formatDate('Y-m-d H:i', Math.round(row.baktime.end / 1000)))
+                            h('div', $A.dayjs(row.baktime.start).format("YYYY-MM-DD HH:mm")),
+                            h('div', $A.dayjs(row.baktime.end).format("YYYY-MM-DD HH:mm"))
                         ]);
                     }
                 }, {
@@ -92,8 +92,8 @@ export default {
                         return h('div', {
                             style: {},
                         }, [
-                            h('div', $A.formatDate('Y-m-d H:i', Math.round(row.newTime.start / 1000))),
-                            h('div', $A.formatDate('Y-m-d H:i', Math.round(row.newTime.end / 1000)))
+                            h('div', $A.dayjs(row.newTime.start).format("YYYY-MM-DD HH:mm")),
+                            h('div', $A.dayjs(row.newTime.end).format("YYYY-MM-DD HH:mm"))
                         ]);
                     }
                 }
@@ -242,8 +242,8 @@ export default {
                 let task = this.lists.find(({id}) => id == item.id)
                 if (save) {
                     this.editLoad++;
-                    let timeStart = $A.formatDate('Y-m-d H:i', Math.round(item.newTime.start / 1000));
-                    let timeEnd = $A.formatDate('Y-m-d H:i', Math.round(item.newTime.end / 1000));
+                    let timeStart = $A.dayjs(item.newTime.start).format("YYYY-MM-DD HH:mm");
+                    let timeEnd = $A.dayjs(item.newTime.end).format("YYYY-MM-DD HH:mm");
                     let dataJson = {
                         task_id: item.id,
                         times: [timeStart, timeEnd],
@@ -265,15 +265,15 @@ export default {
         },
 
         getTimeObj(taskData) {
-            let start = $A.Time(taskData.start_at) || $A.Time(taskData.created_at);
-            let end = $A.Time(taskData.end_at) || ($A.Time(taskData.created_at) + 86400);
-            if (end == start) {
-                end = Math.round(new Date($A.formatDate('Y-m-d 23:59:59', end)).getTime() / 1000);
+            let start = taskData.start_at ? $A.dayjs(taskData.start_at) : $A.dayjs(taskData.created_at).startOf('day');
+            let end = taskData.end_at ? $A.dayjs(taskData.end_at) : start.clone();
+            if (end.unix() == start.unix()) {
+                end = end.endOf('day');
             }
-            end = Math.max(end, start + 60);
-            start *= 1000;
-            end *= 1000;
-            return {start, end};
+            return {
+                start: start.valueOf(),
+                end: Math.max(end.valueOf(), start.valueOf() + 60000)
+            };
         },
 
         onSwitchColumn(e) {

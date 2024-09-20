@@ -541,7 +541,7 @@ export default {
             return
         }
         //
-        const tmpKey = state.userId + $A.Time()
+        const tmpKey = state.userId + $A.dayjs().unix()
         if (window.__getBasicDataKey === tmpKey) {
             return
         }
@@ -694,7 +694,7 @@ export default {
             return;
         }
         //
-        let time = $A.Time();
+        let time = $A.dayjs().unix();
         let list = $A.cloneJSON(state.cacheUserWait);
         if (data && data.userid) {
             list.push(data)
@@ -729,7 +729,7 @@ export default {
             },
             skipAuthError: true
         }).then(result => {
-            time = $A.Time();
+            time = $A.dayjs().unix();
             array.forEach(value => {
                 let data = result.data.find(({userid}) => userid == value.userid) || Object.assign(value, {email: ""});
                 data._time = time;
@@ -1197,7 +1197,7 @@ export default {
         if (ids.includes(state.projectId)) {
             const project = $A.cloneJSON(state.cacheProjects).sort((a, b) => {
                 if (a.top_at || b.top_at) {
-                    return $A.Date(b.top_at) - $A.Date(a.top_at);
+                    return $A.dayjs(b.top_at) - $A.dayjs(a.top_at);
                 }
                 return b.id - a.id;
             }).find(({id}) => id && id != project_id);
@@ -1513,7 +1513,7 @@ export default {
                 dispatch("saveTask", task)
             });
         } else if ($A.isJson(data)) {
-            data._time = $A.Time();
+            data._time = $A.dayjs().unix();
             if (data.flow_item_name && data.flow_item_name.indexOf("|") !== -1) {
                 [data.flow_item_status, data.flow_item_name] = data.flow_item_name.split("|")
             }
@@ -1617,19 +1617,21 @@ export default {
      * @param dispatch
      */
     todayAndOverdue({state, dispatch}) {
+        const now = $A.dayjs();
+        const today = now.format("YYYY-MM-DD");
         state.cacheTasks.some(task => {
             if (!task.end_at) {
                 return false;
             }
-            const data = {today: false, overdue: false};
-            const endAt = $A.Date(task.end_at, true)
-            if (!task.today) {
-                data.today = $A.formatDate('Y-m-d', endAt) == $A.formatDate('Y-m-d')
+            const data = {};
+            const endAt = $A.dayjs(task.end_at)
+            if (!task.today && endAt.format("YYYY-MM-DD") == today) {
+                data.today = true
             }
-            if (!task.overdue) {
-                data.overdue = endAt < $A.Time();
+            if (!task.overdue && endAt < now) {
+                data.overdue = true;
             }
-            if (data.today || data.overdue) {
+            if (Object.keys(data).length > 0) {
                 dispatch("saveTask", Object.assign(task, data));
             }
         })
@@ -2188,10 +2190,10 @@ export default {
                                     content = "主任务没有设置时间，设置子任务将同步设置主任务"
                                     return true;
                                 }
-                                let n1 = $A.Date(post.times[0], true),
-                                    n2 = $A.Date(post.times[1], true),
-                                    o1 = $A.Date(parentTask.start_at, true),
-                                    o2 = $A.Date(parentTask.end_at, true);
+                                let n1 = $A.dayjs(post.times[0]).unix(),
+                                    n2 = $A.dayjs(post.times[1]).unix(),
+                                    o1 = $A.dayjs(parentTask.start_at).unix(),
+                                    o2 = $A.dayjs(parentTask.end_at).unix();
                                 if (n1 < o1) {
                                     content = "新设置的子任务开始时间在主任务时间之外，修改后将同步修改主任务" // 子任务开始时间 < 主任务开始时间
                                     return true;
@@ -2211,12 +2213,12 @@ export default {
                             if (!subTask.end_at) {
                                 return false;
                             }
-                            let n1 = $A.Date(post.times[0], true),
-                                n2 = $A.Date(post.times[1], true),
-                                c1 = $A.Date(currentTask.start_at, true),
-                                c2 = $A.Date(currentTask.end_at, true),
-                                o1 = $A.Date(subTask.start_at, true),
-                                o2 = $A.Date(subTask.end_at, true);
+                            let n1 = $A.dayjs(post.times[0]).unix(),
+                                n2 = $A.dayjs(post.times[1]).unix(),
+                                c1 = $A.dayjs(currentTask.start_at).unix(),
+                                c2 = $A.dayjs(currentTask.end_at).unix(),
+                                o1 = $A.dayjs(subTask.start_at).unix(),
+                                o2 = $A.dayjs(subTask.end_at).unix();
                             if (c1 == o1 && c2 == o2) {
                                 return false;
                             }
@@ -2513,7 +2515,7 @@ export default {
                 const updateData = {
                     id: data.dialog_id,
                     last_msg: data,
-                    last_at: data.created_at || $A.formatDate("Y-m-d H:i:s")
+                    last_at: data.created_at || $A.dayjs().format("YYYY-MM-DD HH:mm:ss")
                 }
                 if (data.mtype == 'tag') {
                     updateData.has_tag = true;
@@ -2622,7 +2624,7 @@ export default {
      */
     async getDialogBeyonds({state, dispatch}) {
         const key = await $A.IDBString("dialogBeyond")
-        const val = $A.formatDate("Y-m-d H")
+        const val = $A.dayjs().format("YYYY-MM-DD HH")
         if (key == val) {
             return  // 一小时取一次
         }
@@ -2632,7 +2634,7 @@ export default {
             return state.cacheDialogs
                 .filter(func)
                 .sort((a, b) => {
-                    return $A.Date(a.last_at) - $A.Date(b.last_at);
+                    return $A.dayjs(a.last_at) - $A.dayjs(b.last_at);
                 })
                 .find(({id}) => id > 0)
         }
@@ -2646,8 +2648,8 @@ export default {
         dispatch("call", {
             url: 'dialog/beyond',
             data: {
-                unread_at: unreadDialog ? unreadDialog.last_at : $A.Time(),
-                todo_at: todoDialog ? todoDialog.last_at : $A.Time()
+                unread_at: unreadDialog ? unreadDialog.last_at : $A.dayjs().unix(),
+                todo_at: todoDialog ? todoDialog.last_at : $A.dayjs().unix()
             }
         }).then(({data}) => {
             dispatch("saveDialog", data);
@@ -3132,7 +3134,7 @@ export default {
                 if ($A.isJson(resData.dialog)) {
                     const ids = resData.list.map(({id}) => id)
                     state.dialogMsgs = state.dialogMsgs.filter(item => {
-                        return item.dialog_id != data.dialog_id || ids.includes(item.id) || $A.Time(item.created_at) >= resData.time
+                        return item.dialog_id != data.dialog_id || ids.includes(item.id) || $A.dayjs(item.created_at).unix() >= resData.time
                     });
                     $A.IDBSave("dialogMsgs", state.dialogMsgs, 600)
                     dispatch("saveDialog", resData.dialog)
@@ -3230,7 +3232,7 @@ export default {
         if ($A.isJson(data)) {
             if (data.userid == state.userId) return;
             if (data.read_at) return;
-            data.read_at = $A.formatDate();
+            data.read_at = $A.dayjs().format("YYYY-MM-DD HH:mm:ss");
             state.readWaitData[data.id] = state.readWaitData[data.id] || 0
             //
             const dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
@@ -3277,7 +3279,7 @@ export default {
                     if (ids.hasOwnProperty(id) && /^\d+$/.test(ids[id])) {
                         state.dialogMsgs.some(item => {
                             if (item.dialog_id == ids[id] && item.id >= id) {
-                                item.read_at = $A.formatDate()
+                                item.read_at = $A.dayjs().format("YYYY-MM-DD HH:mm:ss")
                             }
                         })
                     }
@@ -3332,7 +3334,7 @@ export default {
                 if (typeof data.after_msg_id !== "undefined") {
                     state.dialogMsgs.some(item => {
                         if (item.dialog_id == data.dialog_id && item.id >= data.after_msg_id) {
-                            item.read_at = $A.formatDate()
+                            item.read_at = $A.dayjs().format("YYYY-MM-DD HH:mm:ss")
                         }
                     })
                 }
@@ -3385,7 +3387,7 @@ export default {
                     break;
             }
         })
-        state.dialogSseList.push({sse, streamUrl, time: $A.Time()})
+        state.dialogSseList.push({sse, streamUrl, time: $A.dayjs().unix()})
         if (state.dialogSseList.length > 10) {
             state.dialogSseList.shift().sse.close()
         }
@@ -3553,7 +3555,7 @@ export default {
         //
         state.ws = new WebSocket(url);
         state.ws.onopen = async (e) => {
-            wgLog && console.log("[WS] Open", e, $A.formatDate())
+            wgLog && console.log("[WS] Open", e, $A.dayjs().format("YYYY-MM-DD HH:mm:ss"))
             state.wsOpenNum++;
             //
             if (window.systemInfo.debug === "yes" || state.systemConfig.e2e_message !== 'open') {
@@ -3568,7 +3570,7 @@ export default {
             })
         };
         state.ws.onclose = async (e) => {
-            wgLog && console.log("[WS] Close", e, $A.formatDate())
+            wgLog && console.log("[WS] Close", e, $A.dayjs().format("YYYY-MM-DD HH:mm:ss"))
             state.ws = null;
             //
             clearTimeout(state.wsTimeout);
@@ -3577,7 +3579,7 @@ export default {
             }, 3000);
         };
         state.ws.onerror = async (e) => {
-            wgLog && console.log("[WS] Error", e, $A.formatDate())
+            wgLog && console.log("[WS] Error", e, $A.dayjs().format("YYYY-MM-DD HH:mm:ss"))
             state.ws = null;
             //
             clearTimeout(state.wsTimeout);

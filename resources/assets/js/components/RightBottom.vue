@@ -190,7 +190,7 @@ export default {
                         let key = "cacheAppdown::" + this.apiVersion
                         let cache = await $A.IDBJson(key);
                         let timeout = 600;
-                        if (cache.time && cache.time + timeout > Math.round(new Date().getTime() / 1000)) {
+                        if (cache.time && cache.time + timeout > $A.dayjs().unix()) {
                             this.downloadUrl = cache.data.html_url;
                             return;
                         }
@@ -202,7 +202,7 @@ export default {
                         axios.get(`https://api.github.com/repos/${publish.owner}/${publish.repo}/releases`).then(({status, data}) => {
                             this.loadIng--;
                             if (status === 200 && $A.isArray(data)) {
-                                cache.time = Math.round(new Date().getTime() / 1000)
+                                cache.time = $A.dayjs().unix()
                                 cache.data = data.find(({tag_name}) => this.compareVersion(this.tagVersion(tag_name), this.apiVersion) === 0) || {}
                                 $A.IDBSave(key, cache);
                                 this.downloadUrl = cache.data.html_url;

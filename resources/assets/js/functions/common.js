@@ -1,4 +1,7 @@
 const localforage = require("localforage");
+const dayjs = require("dayjs");
+const utc = require("dayjs/plugin/utc")
+const timezone = require("dayjs/plugin/timezone");
 
 /**
  * 基础函数
@@ -8,12 +11,33 @@ const localforage = require("localforage");
     window.modalTransferIndex = 1000;
     localforage.config({name: 'DooTask', storeName: 'common'});
 
+    dayjs.extend(utc);
+    dayjs.extend(timezone);
+    dayjs.tz.setDefault("Asia/Shanghai");
     /**
      * =============================================================================
      * *******************************   基础函数类   *******************************
      * =============================================================================
      */
     $.extend({
+        /**
+         * 时间对象
+         * @param v
+         * @returns {*|dayjs.Dayjs}
+         */
+        dayjs(v = undefined) {
+            if (/^\d{13,}$/.test(v)) {
+                return dayjs(Number(v));
+            }
+            if (/^\d{10,}$/.test(v)) {
+                return dayjs(Number(v) * 1000);
+            }
+            if (v === null) {
+                v = 0
+            }
+            return dayjs(v);
+        },
+
         /**
          * 是否数组
          * @param obj
@@ -250,62 +274,6 @@ const localforage = require("localforage");
         },
 
         /**
-         * 返回10位数时间戳
-         * @param v
-         * @returns {number}
-         * @constructor
-         */
-        Time(v = undefined) {
-            let time
-            if (typeof v === "string" && this.strExists(v, "-")) {
-                v = v.replace(/-/g, '/');
-                time = new Date(v).getTime();
-            } else {
-                time = new Date().getTime();
-            }
-            return Math.round(time / 1000)
-        },
-
-        /**
-         * 返回毫秒时间戳
-         * @param v
-         * @param cm  使用当前的毫秒
-         * @returns {number}
-         * @constructor
-         */
-        TimeM(v = undefined, cm = true) {
-            let time
-            if (typeof v === "string" && this.strExists(v, "-")) {
-                v = v.replace(/-/g, '/');
-                time = new Date(v).getTime();
-                if (cm && v.indexOf('.') === -1) {
-                    time = parseInt(`${Math.round(time / 1000)}${new Date().getMilliseconds()}`)
-                }
-            } else {
-                time = new Date().getTime();
-            }
-            return time
-        },
-
-        /**
-         * 返回 时间对象|时间戳
-         * @param v 支持时间戳|时间格式字符串|时间对象|boolean(当前时间)
-         * @param timestamp 是否返回时间戳
-         * @returns {Date|number}
-         * @constructor
-         */
-        Date(v, timestamp = false) {
-            if (typeof v === "string" && this.strExists(v, "-")) {
-                v = v.replace(/-/g, '/');
-            }
-            const d = typeof v === "boolean" ? new Date() : new Date(v);
-            if (timestamp === true) {
-                return Math.round(d.getTime() / 1000)
-            }
-            return d;
-        },
-
-        /**
          * 补零
          * @param str
          * @param length
@@ -330,47 +298,6 @@ const localforage = require("localforage");
         },
 
         /**
-         * 时间戳转时间格式
-         * @param format
-         * @param v
-         * @returns {string}
-         */
-        formatDate(format, v) {
-            if (typeof format === 'undefined' || format === '') {
-                format = 'Y-m-d H:i:s';
-            }
-            let dateObj;
-            if (v instanceof Date) {
-                dateObj = v;
-            }else {
-                if (typeof v === 'undefined') {
-                    v = new Date().getTime();
-                }else if (/^(-)?\d{1,10}$/.test(v)) {
-                    v = v * 1000;
-                } else if (/^(-)?\d{1,13}$/.test(v)) {
-                    v = v * 1000;
-                } else if (/^(-)?\d{1,14}$/.test(v)) {
-                    v = v * 100;
-                } else if (/^(-)?\d{1,15}$/.test(v)) {
-                    v = v * 10;
-                } else if (/^(-)?\d{1,16}$/.test(v)) {
-                    v = v * 1;
-                } else {
-                    return v;
-                }
-                dateObj = $A.Date(v);
-            }
-            //
-            format = format.replace(/Y/g, dateObj.getFullYear());
-            format = format.replace(/m/g, this.zeroFill(dateObj.getMonth() + 1, 2));
-            format = format.replace(/d/g, this.zeroFill(dateObj.getDate(), 2));
-            format = format.replace(/H/g, this.zeroFill(dateObj.getHours(), 2));
-            format = format.replace(/i/g, this.zeroFill(dateObj.getMinutes(), 2));
-            format = format.replace(/s/g, this.zeroFill(dateObj.getSeconds(), 2));
-            return format;
-        },
-
-        /**
          * 租用时间差(不够1个小时算一个小时)
          * @param s
          * @param e
@@ -378,7 +305,7 @@ const localforage = require("localforage");
          */
         timeDiff(s, e) {
             if (typeof e === 'undefined') {
-                e = $A.Time();
+                e = $A.dayjs().unix();
             }
             let d = e - s;
             if (d > 86400) {
@@ -793,7 +720,7 @@ const localforage = require("localforage");
                 let url = window.location.href;
                 let key = '_='
                 let reg = new RegExp(key + '\\d+');
-                let timestamp = this.Time();
+                let timestamp = $A.dayjs().valueOf();
                 if (url.indexOf(key) > -1) {
                     url = url.replace(reg, key + timestamp);
                 } else {
@@ -1117,7 +1044,7 @@ const localforage = require("localforage");
         /**
          *  对象中有Date格式的转成指定格式
          * @param params
-         * @param format  默认格式：Y-m-d H:i:s
+         * @param format  默认格式：YYYY-MM-DD HH:mm:ss
          * @returns {*}
          */
         date2string(params, format) {
@@ -1125,10 +1052,12 @@ const localforage = require("localforage");
                 return params;
             }
             if (typeof format === "undefined") {
-                format = "Y-m-d H:i:s";
+                format = "YYYY-MM-DD HH:mm:ss";
             }
-            if (params instanceof Date) {
-                params = $A.formatDate(format, params);
+            if (params instanceof dayjs) {
+                params = params.format(format);
+            } else if (params instanceof Date) {
+                params = $A.dayjs(params).format(format);
             } else if ($A.isJson(params)) {
                 params = Object.assign({}, params)
                 for (let key in params) {
@@ -1375,7 +1304,7 @@ const localforage = require("localforage");
         async IDBTest() {
             try {
                 if ($A.isIos()) {
-                    await localforage.setItem('__test__', $A.Time())
+                    await localforage.setItem('__test__', $A.dayjs().valueOf())
                 }
                 $A.openLog && console.log('IDBTest OK')
             } catch (error) {

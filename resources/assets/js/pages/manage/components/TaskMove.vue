@@ -207,7 +207,7 @@ export default {
             //
             const data = $A.cloneJSON(this.cacheProjects).sort((a, b) => {
                 if (a.top_at || b.top_at) {
-                    return $A.Date(b.top_at) - $A.Date(a.top_at);
+                    return $A.dayjs(b.top_at) - $A.dayjs(a.top_at);
                 }
                 return b.id - a.id;
             });

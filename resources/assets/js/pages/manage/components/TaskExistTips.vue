@@ -47,23 +47,22 @@ export default {
     },
 
     methods: {
-
         onAdd() {
             this.$emit('onAdd', {})
             this.show = false;
         },
 
         getCutTime(item) {
-            let start_at = $A.Date(item.start_at, true);
-            let end_at = $A.Date(item.end_at, true);
+            let start_at = $A.dayjs(item.start_at);
+            let end_at = $A.dayjs(item.end_at);
             let string = "";
-            if ($A.formatDate('Y/m/d', start_at) == $A.formatDate('Y/m/d', end_at)) {
-                string = $A.formatDate('Y/m/d H:i', start_at) + " ~ " + $A.formatDate('H:i', end_at)
-            } else if ($A.formatDate('Y', start_at) == $A.formatDate('Y', end_at)) {
-                string = $A.formatDate('Y/m/d H:i', start_at) + " ~ " + $A.formatDate('m/d H:i', end_at)
+            if (start_at.format('YYYY/MM/DD') == end_at.format('YYYY/MM/DD')) {
+                string = start_at.format('YYYY/MM/DD HH:mm') + " ~ " + end_at.format('HH:mm')
+            } else if (start_at.year() == end_at.year()) {
+                string = start_at.format('YYYY/MM/DD HH:mm') + " ~ " + end_at.format('MM/DD HH:mm')
                 string = string.replace(/( 00:00| 23:59)/g, "")
             } else {
-                string = $A.formatDate('Y/m/d H:i', start_at) + " ~ " + $A.formatDate('Y/m/d H:i', end_at)
+                string = start_at.format('YYYY/MM/DD HH:mm') +end_at.format('YYYY/MM/DD HH:mm')
                 string = string.replace(/( 00:00| 23:59)/g, "")
             }
             return string

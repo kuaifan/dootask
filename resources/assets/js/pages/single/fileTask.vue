@@ -163,7 +163,7 @@ export default {
                         only_update_at: 'yes'
                     },
                 }).then(({data}) => {
-                    resolve(`${data.id}-${$A.Time(data.update_at)}`)
+                    resolve(`${data.id}-${$A.dayjs(data.update_at).unix()}`)
                 }).catch((res) => {
                     reject(res)
                 });

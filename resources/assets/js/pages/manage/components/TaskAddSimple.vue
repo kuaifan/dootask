@@ -240,8 +240,8 @@ export default {
 
         choosePriority(item) {
             if ($A.runNum(item.days) > 0) {
-                let start = new Date();
-                let end = new Date(new Date().setDate(start.getDate() + $A.runNum(item.days)));
+                let start = $A.dayjs();
+                let end = start.clone().add($A.runNum(item.days), 'day');
                 this.$set(this.addData, 'times', $A.date2string([start, end]))
             } else {
                 this.$set(this.addData, 'times', [])

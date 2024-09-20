@@ -124,7 +124,7 @@ export default {
                 if (a.userid === dialogData.owner_id || b.userid === dialogData.owner_id) {
                     return (a.userid === dialogData.owner_id ? 0 : 1) - (b.userid === dialogData.owner_id ? 0 : 1);
                 }
-                return $A.Date(a.created_at) - $A.Date(b.created_at);
+                return $A.dayjs(a.created_at) - $A.dayjs(b.created_at);
             })
         }
     },

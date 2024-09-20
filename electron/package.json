@@ -41,6 +41,7 @@
     "dependencies": {
         "axios": "^1.6.2",
         "crc": "^3.8.0",
+        "dayjs": "^1.11.13",
         "electron-config": "^2.0.0",
         "electron-log": "^5.1.1",
         "electron-screenshots-tool": "^1.1.2",

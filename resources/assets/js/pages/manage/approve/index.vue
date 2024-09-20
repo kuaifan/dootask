@@ -262,10 +262,6 @@ export default {
             isShowIcon: false,
             modalTransferIndex: window.modalTransferIndex,
 
-            minDate: new Date(2020, 0, 1),
-            maxDate: new Date(2025, 10, 1),
-            currentDate: new Date(2021, 0, 17),
-
             procdefList: [],
             page: 1,
             pageSize: 10,
@@ -408,7 +404,7 @@ export default {
                 this.getUnreadList();
             }
             this.addData.department_id = this.userInfo.department[0] || 0;
-            this.addData.startTime = this.addData.endTime = this.getCurrentDate();
+            this.addData.startTime = this.addData.endTime = $A.dayjs().format('YYYY-MM-DD');
             this.isShowIcon = this.windowWidth < 515
         },
 
@@ -430,15 +426,6 @@ export default {
                     reject()
                 });
             });
-        },
-
-        // 获取当前时间
-        getCurrentDate() {
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const date = String(today.getDate()).padStart(2, '0');
-            return `${year}-${month}-${date}`;
         },
 
         // tab切换事件

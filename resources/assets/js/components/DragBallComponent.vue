@@ -152,7 +152,7 @@ export default {
 
         mouseDown(e) {
             this.record = {
-                time: new Date().getTime(),
+                time: $A.dayjs().valueOf(),
                 top: this.floatDrag.offsetTop,
                 left: this.floatDrag.offsetLeft,
                 x: e.clientX - this.floatDrag.offsetLeft,
@@ -183,7 +183,7 @@ export default {
                 this.checkDraggablePosition();
                 this.floatDrag.style.transition = "all 0.3s";
                 // 点击事件
-                if ((Math.abs(this.record.top - this.floatDrag.offsetTop) < 5 && Math.abs(this.record.left - this.floatDrag.offsetLeft) < 5) || new Date().getTime() - this.record.time < 200) {
+                if ((Math.abs(this.record.top - this.floatDrag.offsetTop) < 5 && Math.abs(this.record.left - this.floatDrag.offsetLeft) < 5) || $A.dayjs().valueOf() - this.record.time < 200) {
                     this.$emit("on-click")
                 }
             }

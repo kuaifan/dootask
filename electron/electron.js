@@ -1078,7 +1078,7 @@ autoUpdater.on('update-downloaded', info => {
  */
 ipcMain.on('updateCheckAndDownload', (event, args) => {
     event.returnValue = "ok"
-    if (autoUpdating + 3600 > utils.Time()) {
+    if (autoUpdating + 3600 > utils.dayjs().unix()) {
         return  // 限制1小时仅执行一次
     }
     if (args.provider) {
@@ -1094,11 +1094,11 @@ ipcMain.on('updateCheckAndDownload', (event, args) => {
         if (args.apiVersion) {
             if (utils.compareVersion(info.updateInfo.version, args.apiVersion) <= 0) {
                 // 客户端版本 <= 接口版本
-                autoUpdating = utils.Time()
+                autoUpdating = utils.dayjs().unix()
                 autoUpdater.downloadUpdate().then(_ => {}).catch(_ => {})
             }
         } else {
-            autoUpdating = utils.Time()
+            autoUpdating = utils.dayjs().unix()
             autoUpdater.downloadUpdate().then(_ => {}).catch(_ => {})
         }
     })

@@ -102,7 +102,7 @@ export default {
     components: {TaskMenu},
     data() {
         return {
-            nowTime: $A.Time(),
+            nowTime: $A.dayjs().unix(),
             nowInter: null,
 
             licenseTimer: null,
@@ -146,7 +146,7 @@ export default {
                     title: this.getTitle(type),
                     hidden: hiddenColumns.includes(type),
                     list: data.sort((a, b) => {
-                        return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
+                        return $A.dayjs(a.end_at || "2099-12-31 23:59:59") - $A.dayjs(b.end_at || "2099-12-31 23:59:59");
                     })
                 })
             })
@@ -155,7 +155,7 @@ export default {
                 title: this.getTitle('assist'),
                 hidden: hiddenColumns.includes('assist'),
                 list: this.assistTask.sort((a, b) => {
-                    return $A.Date(a.end_at || "2099-12-31 23:59:59") - $A.Date(b.end_at || "2099-12-31 23:59:59");
+                    return $A.dayjs(a.end_at || "2099-12-31 23:59:59") - $A.dayjs(b.end_at || "2099-12-31 23:59:59");
                 })
             })
             return list;
@@ -242,7 +242,7 @@ export default {
                 return
             }
             this.nowInter = setInterval(_ => {
-                this.nowTime = $A.Time()
+                this.nowTime = $A.dayjs().unix()
             }, 1000)
         },
 

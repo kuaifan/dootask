@@ -239,8 +239,10 @@
                                         <div v-if="!taskDetail.end_at" @click="timeOpen = true" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
                                         <div v-else @click="showAtDropdown" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
                                         <template v-if="!taskDetail.complete_at && taskDetail.end_at">
-                                            <Tag v-if="within24Hours(taskDetail.end_at)" color="blue"><i class="taskfont">&#xe71d;</i>{{expiresFormat(taskDetail.end_at)}}</Tag>
-                                            <Tag v-if="isOverdue(taskDetail)" color="red">{{$L('超期未完成')}}</Tag>
+                                            <Tag v-if="within24Hours(taskDetail.end_at)" :color="tagColor(taskDetail)">
+                                                <i class="taskfont">&#xe71d;</i>{{expiresFormat(taskDetail.end_at)}}
+                                            </Tag>
+                                            <Tag v-if="taskDetail.overdue" color="red">{{$L('超期未完成')}}</Tag>
                                         </template>
                                     </div>
                                 </DatePicker>
@@ -595,7 +597,7 @@ export default {
 
             loopForce: false,
 
-            nowTime: $A.Time(),
+            nowTime: $A.dayjs().unix(),
             nowInterval: null,
 
             msgText: '',
@@ -657,7 +659,7 @@ export default {
 
     mounted() {
         this.nowInterval = setInterval(() => {
-            this.nowTime = $A.Time();
+            this.nowTime = $A.dayjs().unix();
         }, 1000);
         //
         this.receiveTaskSubscribe = Store.subscribe('receiveTask', () => {
@@ -774,16 +776,16 @@ export default {
 
         cutTime() {
             const {taskDetail} = this;
-            let start_at = $A.Date(taskDetail.start_at, true);
-            let end_at = $A.Date(taskDetail.end_at, true);
+            let start_at = $A.dayjs(taskDetail.start_at);
+            let end_at = $A.dayjs(taskDetail.end_at);
             let string = "";
-            if ($A.formatDate('Y/m/d', start_at) == $A.formatDate('Y/m/d', end_at)) {
-                string = $A.formatDate('Y/m/d H:i', start_at) + " ~ " + $A.formatDate('H:i', end_at)
-            } else if ($A.formatDate('Y', start_at) == $A.formatDate('Y', end_at)) {
-                string = $A.formatDate('Y/m/d H:i', start_at) + " ~ " + $A.formatDate('m/d H:i', end_at)
+            if (start_at.format('YYYY/MM/DD') == end_at.format('YYYY/MM/DD')) {
+                string = start_at.format('YYYY/MM/DD HH:mm') + " ~ " + end_at.format('HH:mm')
+            } else if (start_at.year() == end_at.year()) {
+                string = start_at.format('YYYY/MM/DD HH:mm') + " ~ " + end_at.format('MM/DD HH:mm')
                 string = string.replace(/( 00:00| 23:59)/g, "")
             } else {
-                string = $A.formatDate('Y/m/d H:i', start_at) + " ~ " + $A.formatDate('Y/m/d H:i', end_at)
+                string = start_at.format('YYYY/MM/DD HH:mm') +end_at.format('YYYY/MM/DD HH:mm')
                 string = string.replace(/( 00:00| 23:59)/g, "")
             }
             return string
@@ -948,18 +950,21 @@ export default {
 
     methods: {
         within24Hours(date) {
-            return $A.Date(date, true) - this.nowTime < 86400
+            return ($A.dayjs(date).unix() - this.nowTime) < 86400
         },
 
         expiresFormat(date) {
             return $A.countDownFormat(date, this.nowTime)
         },
 
-        isOverdue(taskDetail) {
+        tagColor(taskDetail) {
             if (taskDetail.overdue) {
-                return true;
+                return 'red';
             }
-            return $A.Date(taskDetail.end_at, true) < this.nowTime;
+            if (taskDetail.today) {
+                return 'orange';
+            }
+            return 'blue'
         },
 
         loopLabel(loop) {
@@ -1038,7 +1043,7 @@ export default {
 
                 case 'times':
                     if (this.taskDetail.start_at
-                        && (Math.abs($A.Time(this.taskDetail.start_at) - $A.Time(params.start_at)) > 60 || Math.abs($A.Time(this.taskDetail.end_at) - $A.Time(params.end_at)) > 60)
+                        && (Math.abs($A.dayjs(this.taskDetail.start_at).unix() - $A.dayjs(params.start_at).unix()) > 60 || Math.abs($A.dayjs(this.taskDetail.end_at).unix() - $A.dayjs(params.end_at).unix()) > 60)
                         && typeof params.desc === "undefined") {
                         $A.modalInput({
                             title: `修改${this.taskDetail.parent_id > 0 ? '子任务' : '任务'}时间`,
@@ -1179,8 +1184,8 @@ export default {
         },
 
         async taskTimeChange() {
-            const times = $A.date2string(this.timeValue, "Y-m-d H:i");
-            if ($A.rightExists(times[0], '00:00') && $A.rightExists(times[1], '00:00')) {
+            const times = $A.date2string(this.timeValue, "YYYY-MM-DD HH:mm");
+            if ($A.rightExists(times[0], '00:00') && $A.rightExists(times[1], '23:59')) {
                 this.timeValue = await this.$store.dispatch("taskDefaultTime", times)
             }
         },
@@ -1197,7 +1202,7 @@ export default {
                     $A.messageError("任务已被领取");
                     return;
                 }
-                const times = $A.date2string(this.timeValue, "Y-m-d H:i");
+                const times = $A.date2string(this.timeValue, "YYYY-MM-DD HH:mm");
                 if (!(times[0] && times[1])) {
                     $A.messageError("请设置计划时间");
                     return;
@@ -1295,7 +1300,7 @@ export default {
         },
 
         timeOk() {
-            const times = $A.date2string(this.timeValue, "Y-m-d H:i");
+            const times = $A.date2string(this.timeValue, "YYYY-MM-DD HH:mm");
             this.updateData('times', {
                 start_at: times[0],
                 end_at: times[1],
@@ -1448,7 +1453,7 @@ export default {
                         if (this.windowPortrait) {
                             $A.onBlur();
                             const transferData = {
-                                time: $A.Time() + 10,
+                                time: $A.dayjs().unix() + 10,
                                 msgRecord: this.msgRecord,
                                 msgFile: this.msgFile,
                                 msgText: typeof msgText === 'string' && msgText ? msgText : this.msgText,
@@ -1755,22 +1760,22 @@ export default {
         },
 
         onDelay(){
-            this.$refs['formDelayTaskRef'].validate((valid) => {
+            this.$refs.formDelayTaskRef.validate((valid) => {
                 if (!valid) {
                     return;
                 }
                 this.delayTaskLoading = true;
-                let date = new Date(this.taskDetail.end_at);
+                let date = $A.dayjs(this.taskDetail.end_at);
                 if (this.delayTaskForm.type === 'day') {
-                    date.setDate(date.getDate() + Number(this.delayTaskForm.time));
+                    date = date.add(this.delayTaskForm.time, 'day');
                 } else {
-                    date.setHours(date.getHours() + Number(this.delayTaskForm.time));
+                    date = date.add(this.delayTaskForm.time, 'hour');
                 }
                 this.$store.dispatch("taskUpdate", {
                     task_id: this.taskDetail.id,
                     times: [
                         this.taskDetail.start_at,
-                        $A.formatDate('Y-m-d H:i:s', date),
+                        date.format('YYYY-MM-DD HH:mm:ss'),
                         this.delayTaskForm.remark,
                     ],
                 }).then(({msg}) => {

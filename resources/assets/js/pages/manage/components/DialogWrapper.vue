@@ -916,12 +916,12 @@ export default {
                 return !(dialog.name === undefined || dialog.dialog_delete === 1);
             }).sort((a, b) => {
                 if (a.top_at || b.top_at) {
-                    return $A.Date(b.top_at) - $A.Date(a.top_at);
+                    return $A.dayjs(b.top_at) - $A.dayjs(a.top_at);
                 }
                 if (a.todo_num > 0 || b.todo_num > 0) {
                     return b.todo_num - a.todo_num;
                 }
-                return $A.Date(b.last_at) - $A.Date(a.last_at);
+                return $A.dayjs(b.last_at) - $A.dayjs(a.last_at);
             });
         },
 
@@ -1329,7 +1329,7 @@ export default {
 
         dialogMsgTransfer: {
             handler({time, msgFile, msgRecord, msgText, dialogId}) {
-                if (time > $A.Time() && dialogId == this.dialogId) {
+                if (time > $A.dayjs().unix() && dialogId == this.dialogId) {
                     this.$store.state.dialogMsgTransfer.time = 0;
                     this.$nextTick(() => {
                         if ($A.isArray(msgFile) && msgFile.length > 0) {
@@ -1962,7 +1962,7 @@ export default {
             }).then(({data}) => {
                 this.$store.dispatch("saveDialogTodo", {
                     id: this.todoViewId,
-                    done_at: $A.formatDate("Y-m-d H:i:s")
+                    done_at: $A.dayjs().format("YYYY-MM-DD HH:mm:ss")
                 })
                 this.$store.dispatch("saveDialog", {
                     id: this.dialogId,

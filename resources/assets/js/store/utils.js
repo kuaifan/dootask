@@ -41,7 +41,7 @@ function __callData(key, requestData, state) {
         return new Promise(resolve => {
             if (current_page === 1) {
                 let hasUpdate = false
-                const time = $A.Time()
+                const time = $A.dayjs().unix()
                 if (total > 0) {
                     callData.updated = time
                     hasUpdate = true

@@ -133,20 +133,19 @@ export default {
             const {mouseWidth, dateWidth} = this;
             return function(index) {
                 let mouseDay = mouseWidth == 0 ? 0 : mouseWidth / dateWidth;
-                let date = new Date();
                 //今天00:00:00
-                let nowDay = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0);
+                let nowDay = $A.dayjs().startOf('day');
                 //当前时间
-                let curDay = new Date(nowDay.getTime() + mouseDay * 86400000);
+                let curDay = nowDay.clone().add(mouseDay, 'day');
                 //当月最后一天
-                let lastDay = new Date(curDay.getFullYear(), curDay.getMonth() + 1, 0, 23, 59, 59);
+                let lastDay = curDay.clone().endOf('month');
                 //相差天数
                 let diffDay = (lastDay - curDay)  / 1000 / 60 / 60 / 24;
                 //
                 let width = dateWidth * diffDay;
                 if (index > 0) {
-                    lastDay = new Date(curDay.getFullYear(), curDay.getMonth() + 1 + index, 0);
-                    width = lastDay.getDate() * dateWidth;
+                    lastDay = curDay.clone().add(index + 1, 'month').endOf('month');
+                    width = lastDay.date() * dateWidth;
                 }
                 return {
                     width: width + 'px',
@@ -157,16 +156,15 @@ export default {
             const {mouseWidth, dateWidth} = this;
             return function(index) {
                 let mouseDay = mouseWidth == 0 ? 0 : mouseWidth / dateWidth;
-                let date = new Date();
                 //开始位置时间（今天00:00:00）
-                let nowDay = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0);
+                let nowDay = $A.dayjs().startOf('day');
                 //当前时间
-                let curDay = new Date(nowDay.getTime() + mouseDay * 86400000);
+                let curDay = nowDay.clone().add(mouseDay, 'day');
                 //
                 if (index > 0) {
-                    curDay = new Date(curDay.getFullYear(), curDay.getMonth() + 1 + index, 0);
+                    curDay = curDay.add(index + 1, 'month');
                 }
-                return $A.formatDate("Y-m", curDay)
+                return curDay.format('YYYY-MM')
             }
         },
         dateNum() {
@@ -184,8 +182,8 @@ export default {
                     mouseData--;
                 }
                 let j = mouseWidth == 0 ? index - 1 : mouseData;
-                let date = new Date(new Date().getTime() + j * 86400000);
-                if ([0, 6].indexOf(date.getDay()) !== -1) {
+                let date = $A.dayjs().add(j, 'day');
+                if ([0, 6].indexOf(date.day()) !== -1) {
                     style.backgroundColor = '#f9fafb';
                 }
                 //
@@ -206,11 +204,11 @@ export default {
                     mouseData--;
                 }
                 let j = mouseWidth == 0 ? index - 1 : mouseData;
-                let date = new Date(new Date().getTime() + j * 86400000)
+                let date = $A.dayjs().add(j, 'day');
                 if (type == 'day') {
-                    return date.getDate();
+                    return date.date();
                 } else if (type == 'week') {
-                    return this.$L(`星期${'日一二三四五六'.charAt(date.getDay())}`);
+                    return this.$L(`星期${'日一二三四五六'.charAt(date.day())}`);
                 } else {
                     return date;
                 }
@@ -221,9 +219,8 @@ export default {
             return function(item) {
                 const {start, end} = item.time;
                 const {style, moveX, moveW} = item;
-                let date = new Date();
                 //开始位置时间戳（今天00:00:00时间戳）
-                let nowTime = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0).getTime();
+                let nowTime = $A.dayjs().startOf('day').valueOf();
                 //距离开始位置多少天
                 let diffStartDay = (start - nowTime) / 1000 / 60 / 60 / 24;
                 let diffEndDay = (end - nowTime) / 1000 / 60 / 60 / 24;
@@ -421,9 +418,8 @@ export default {
             }
         },
         scrollPosition(pos) {
-            let date = new Date();
             //今天00:00:00
-            let nowDay = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0);
+            let nowDay = $A.dayjs().startOf('day').valueOf();
             //一个宽度的时间
             let oneWidthTime = 86400000 / this.dateWidth;
             //

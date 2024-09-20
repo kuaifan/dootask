@@ -142,7 +142,7 @@ export default {
     },
     data() {
         return {
-            nowTime: $A.Time(),
+            nowTime: $A.dayjs().unix(),
             nowInterval: null,
 
             taskLoad: {},
@@ -151,7 +151,7 @@ export default {
     },
     mounted() {
         this.nowInterval = setInterval(() => {
-            this.nowTime = $A.Time();
+            this.nowTime = $A.dayjs().unix();
         }, 1000)
     },
 
@@ -267,11 +267,11 @@ export default {
         },
 
         completeAtFormat(date) {
-            let time = $A.Date(date, true);
-            if ($A.formatDate('Y') === $A.formatDate('Y', time)) {
-                return $A.formatDate('m-d H:i', time)
+            let time = $A.dayjs(date);
+            if ($A.dayjs().year() === time.year()) {
+                return time.format('MM-DD HH:mm')
             } else {
-                return $A.formatDate('Y-m-d', time)
+                return time.format('YYYY-MM-DD')
             }
         }
     }

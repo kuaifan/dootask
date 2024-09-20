@@ -12,7 +12,7 @@ export default {
                 start: e => {
                     e.preventDefault();
                     touchData.move = false;
-                    touchData.time = new Date().getTime();
+                    touchData.time = $A.dayjs().valueOf();
                     touchData.x = e.touches ? e.touches[0].clientX : e.clientX;
                     touchData.y = e.touches ? e.touches[0].clientY : e.clientY;
                 },
@@ -27,7 +27,7 @@ export default {
                 },
                 end: _ => {
                     if (touchData.time > 0) {
-                        if (!touchData.move && new Date().getTime() - touchData.time < 300) {
+                        if (!touchData.move && $A.dayjs().valueOf() - touchData.time < 300) {
                             binding.value();
                         }
                         touchData.time = 0;

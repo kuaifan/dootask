@@ -109,9 +109,9 @@ export default {
             if (this.user.online || this.$store.state.userId === this.userid) {
                 this.$emit('update:online', true)
             } else {
-                const now = $A.Time()
-                const line = $A.Time(this.user.line_at)
-                const seconds = now - line
+                const now = $A.dayjs()
+                const line = $A.dayjs(this.user.line_at)
+                const seconds = now.unix() - line.unix()
                 let stats = '最后在线于很久以前';
                 if (seconds < 60) {
                     stats = `最后在线于刚刚`
@@ -120,12 +120,12 @@ export default {
                 } else if (seconds < 3600 * 6) {
                     stats = `最后在线于 ${Math.floor(seconds / 3600)} 小时前`
                 } else {
-                    const nowYmd = $A.formatDate('Y-m-d', now)
-                    const lineYmd = $A.formatDate('Y-m-d', line)
-                    const lineHi = $A.formatDate('H:i', line)
+                    const nowYmd = now.format('YYYY-MM-DD')
+                    const lineYmd = line.format('YYYY-MM-DD')
+                    const lineHi = line.format('HH:mm')
                     if (nowYmd === lineYmd) {
                         stats = `最后在线于今天 ${lineHi}`
-                    } else if ($A.formatDate('Y-m-d', now - 86400) === lineYmd) {
+                    } else if (now.clone().subtract(1, 'day').format('YYYY-MM-DD') === lineYmd) {
                         stats = `最后在线于昨天 ${lineHi}`
                     } else if (seconds < 3600 * 24 * 365) {
                         stats = `最后在线于 ${lineYmd}`

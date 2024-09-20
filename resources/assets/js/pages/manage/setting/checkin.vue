@@ -163,7 +163,7 @@ export default {
             this.$store.dispatch("call", {
                 url: 'users/checkin/list',
                 data: {
-                    ym: $A.formatDate("Y-m"),
+                    ym: $A.dayjs().format("YYYY-MM"),
                     before: 1
                 }
             }).then(({data}) => {
@@ -174,10 +174,9 @@ export default {
         },
 
         latelyFormat(data) {
-            const time = $A.Time();
             this.latelyData = [];
             for (let i = 0; i < 5; i++) {
-                const ymd = $A.formatDate("Y-m-d", time - i * 86400)
+                const ymd = $A.dayjs().subtract(i, 'day').format("YYYY-MM-DD")
                 const item = data.find(({date}) => date == ymd) || {date: ymd, section: []}
                 this.latelyData.push(item)
             }
@@ -205,7 +204,7 @@ export default {
                 }
                 this.calendarData = data;
                 //
-                if (ym == $A.formatDate("Y-m")) {
+                if (ym == $A.dayjs().format("YYYY-MM")) {
                     this.latelyFormat(data)
                 }
             }).catch(({msg}) => {

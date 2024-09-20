@@ -281,8 +281,7 @@ export default {
         },
         // 把时间转成几小时前
         getTimeAgo(time, type) {
-            const currentTime = new Date();
-            const timeDiff = (currentTime - new Date((time + '').replace(/-/g, "/"))) / 1000; // convert to seconds
+            const timeDiff = $A.dayjs().unix() - $A.dayjs(time).unix(); // convert to seconds
             if (timeDiff < 60) {
                 return type == 2 ? "0" + this.$L('分钟') : this.$L('刚刚');
             } else if (timeDiff < 3600) {
@@ -301,23 +300,23 @@ export default {
         },
         // 时间转为周几
         getWeekday(dateString) {
-            return ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][new Date(dateString).getDay()];
+            return ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][$A.dayjs(dateString).day()];
         },
         // 获取时间差
         getTimeDifference(startTime, endTime) {
-            const currentTime = new Date((endTime + '').replace(/-/g, "/"));
-            const endTimes = new Date((startTime + '').replace(/-/g, "/"));
-            const timeDiff = (currentTime - endTimes) / 1000; // convert to seconds
+            const currentTime = $A.dayjs(endTime);
+            const endTimes = $A.dayjs(startTime);
+            const timeDiff = currentTime.unix() - endTimes.unix(); // convert to seconds
             if (timeDiff < 60) {
                 return {time: timeDiff, unit: this.$L('秒')};
             } else if (timeDiff < 3600) {
                 const minutes = Math.floor(timeDiff / 60);
                 return {time: minutes, unit: this.$L('分钟')};
             } else if (timeDiff < 3600 * 24) {
-                const hours = (currentTime - endTimes) / (1000 * 60 * 60);
+                const hours = Math.floor(timeDiff / 60 / 60);
                 return {time: hours, unit: this.$L('小时')};
             } else {
-                const days = Math.floor(timeDiff / 3600 / 24);
+                const days = Math.floor(timeDiff / 60 / 60 / 24);
                 return {time: days + 1, unit: this.$L('天')};
             }
         },

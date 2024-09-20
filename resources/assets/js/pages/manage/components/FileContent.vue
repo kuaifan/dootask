@@ -246,7 +246,7 @@ export default {
                             if (this.value && data.id == this.fileId) {
                                 $A.modalConfirm({
                                     title: "更新提示",
-                                    content: '团队成员（' + info.nickname + '）更新了内容，<br/>更新时间：' + $A.formatDate("Y-m-d H:i:s", info.time) + '。<br/><br/>点击【确定】加载最新内容。',
+                                    content: '团队成员（' + info.nickname + '）更新了内容，<br/>更新时间：' + $A.dayjs(info.time).format("YYYY-MM-DD HH:mm:ss") + '。<br/><br/>点击【确定】加载最新内容。',
                                     onOk: () => {
                                         this.getContent();
                                     }
@@ -528,7 +528,7 @@ export default {
                         only_update_at: 'yes'
                     },
                 }).then(({data}) => {
-                    resolve(`${data.id}-${$A.Time(data.update_at)}`)
+                    resolve(`${data.id}-${$A.dayjs(data.update_at).unix()}`)
                 }).catch((res) => {
                     reject(res)
                 });

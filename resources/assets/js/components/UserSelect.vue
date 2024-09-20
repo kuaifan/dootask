@@ -485,12 +485,12 @@ export default {
                 return this.showDialog || dialog.type === 'user'
             }).sort((a, b) => {
                 if (a.top_at || b.top_at) {
-                    return $A.Date(b.top_at) - $A.Date(a.top_at);
+                    return $A.dayjs(b.top_at) - $A.dayjs(a.top_at);
                 }
                 if (a.todo_num > 0 || b.todo_num > 0) {
                     return b.todo_num - a.todo_num;
                 }
-                return $A.Date(b.last_at) - $A.Date(a.last_at);
+                return $A.dayjs(b.last_at) - $A.dayjs(a.last_at);
             }).map(({id, name, type, group_type, avatar, dialog_user}) => {
                 return {
                     name,
@@ -536,7 +536,7 @@ export default {
                     this.contacts = data
                     //
                     const index = this.searchCache.findIndex(item => item.key == key);
-                    const tmpData = {type: 'contact', key, data, time: $A.Time()};
+                    const tmpData = {type: 'contact', key, data, time: $A.dayjs().unix()};
                     if (index > -1) {
                         this.searchCache.splice(index, 1, tmpData)
                     } else {
@@ -583,7 +583,7 @@ export default {
                     this.projects = data
                     //
                     const index = this.searchCache.findIndex(item => item.key == key);
-                    const tmpData = {type: 'project', key, data, time: $A.Time()};
+                    const tmpData = {type: 'project', key, data, time: $A.dayjs().unix()};
                     if (index > -1) {
                         this.searchCache.splice(index, 1, tmpData)
                     } else {

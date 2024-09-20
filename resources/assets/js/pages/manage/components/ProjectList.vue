@@ -94,26 +94,13 @@ export default {
             const {projectKeyValue, cacheProjects} = this;
             const data = $A.cloneJSON(cacheProjects).sort((a, b) => {
                 if (a.top_at || b.top_at) {
-                    return $A.Date(b.top_at) - $A.Date(a.top_at);
+                    return $A.dayjs(b.top_at) - $A.dayjs(a.top_at);
                 }
                 return b.id - a.id;
             });
             if (projectKeyValue) {
                 return data.filter(item => $A.strExists(`${item.name} ${item.desc}`, projectKeyValue));
             }
-            /*return data.map(item => {
-                if (!$A.isArray(item.user_simple)) {
-                    const arr = (item.user_simple || "").split("|");
-                    if (arr.length > 1) {
-                        item.user_count = arr[0];
-                        item.user_simple = arr[1].split(",");
-                    } else {
-                        item.user_count = 0;
-                        item.user_simple = [];
-                    }
-                }
-                return item;
-            });*/
             return data;
         },
     },
