@@ -282,7 +282,7 @@ export default {
 
         taskDays() {
             const {times} = this.addData;
-            const temp = $A.date2string(times, "YYYY-MM-DD HH:mm");
+            const temp = $A.newDateString(times, "YYYY-MM-DD HH:mm");
             if (temp[0] && temp[1]) {
                 const d = Math.ceil($A.dayjs(temp[1]).diff(temp[0], 'day', true));
                 if (d > 0) {
@@ -384,7 +384,7 @@ export default {
         },
 
         async taskTimeChange(data) {
-            const times = $A.date2string(data.times, "YYYY-MM-DD HH:mm");
+            const times = $A.newDateString(data.times, "YYYY-MM-DD HH:mm");
             if ($A.rightExists(times[0], '00:00') && $A.rightExists(times[1], '23:59')) {
                 this.$set(data, 'times', await this.$store.dispatch("taskDefaultTime", times))
             }
@@ -395,7 +395,7 @@ export default {
         },
 
         timeTitle(value) {
-            return value ? $A.date2string(value) : null
+            return value ? $A.newDateString(value) : null
         },
 
         onKeydown(e) {
@@ -432,7 +432,7 @@ export default {
             const days = $A.runNum(item.days);
             if (days > 0) {
                 const end = start.clone().add(days, 'day');
-                this.$set(this.addData, 'times', await this.$store.dispatch("taskDefaultTime", $A.date2string([start, end])))
+                this.$set(this.addData, 'times', await this.$store.dispatch("taskDefaultTime", $A.newDateString([start, end])))
             } else {
                 this.$set(this.addData, 'times', [])
             }

@@ -113,7 +113,7 @@ export default {
             }
         }
         params.url = $A.apiUrl(params.url)
-        params.data = $A.date2string(params.data)
+        params.data = $A.newDateString(params.data)
         //
         const cloneParams = $A.cloneJSON(params)
         return new Promise(async (resolve, reject) => {
@@ -2073,7 +2073,7 @@ export default {
      */
     taskAdd({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
-            const post = $A.cloneJSON($A.date2string(data));
+            const post = $A.cloneJSON($A.newDateString(data));
             if ($A.isArray(post.column_id)) post.column_id = post.column_id.find((val) => val)
             //
             dispatch("call", {
@@ -2168,7 +2168,7 @@ export default {
      */
     taskBeforeUpdate({state, dispatch}, data) {
         return new Promise(function (resolve, reject) {
-            let post = $A.cloneJSON($A.date2string(data));
+            let post = $A.cloneJSON($A.newDateString(data));
             let title = "温馨提示";
             let content = null;
             // 修改时间前置判断

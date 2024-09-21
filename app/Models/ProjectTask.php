@@ -963,8 +963,6 @@ class ProjectTask extends AbstractModel
                 }
             }
             $this->save();
-            if ($this->start_at instanceof \DateTimeInterface) $this->start_at = $this->start_at->format('Y-m-d H:i:s');
-            if ($this->end_at instanceof \DateTimeInterface) $this->end_at = $this->end_at->format('Y-m-d H:i:s');
         });
         return true;
     }

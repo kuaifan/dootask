@@ -409,8 +409,8 @@ const timezone = require("dayjs/plugin/timezone");
          * @returns {*}
          */
         cloneJSON(myObj) {
-            if(typeof(myObj) !== 'object') return myObj;
-            if(myObj === null) return myObj;
+            if (typeof (myObj) !== 'object') return myObj;
+            if (myObj === null) return myObj;
             //
             return $A.jsonParse($A.jsonStringify(myObj))
         },
@@ -1043,34 +1043,65 @@ const timezone = require("dayjs/plugin/timezone");
 
         /**
          *  对象中有Date格式的转成指定格式
-         * @param params
+         * @param value
          * @param format  默认格式：YYYY-MM-DD HH:mm:ss
          * @returns {*}
          */
-        date2string(params, format) {
-            if (params === null) {
-                return params;
+        newDateString(value, format = "YYYY-MM-DD HH:mm:ss") {
+            if (value === null) {
+                return value;
             }
-            if (typeof format === "undefined") {
-                format = "YYYY-MM-DD HH:mm:ss";
-            }
-            if (params instanceof dayjs) {
-                params = params.format(format);
-            } else if (params instanceof Date) {
-                params = $A.dayjs(params).format(format);
-            } else if ($A.isJson(params)) {
-                params = Object.assign({}, params)
-                for (let key in params) {
-                    if (!params.hasOwnProperty(key)) continue;
-                    params[key] = $A.date2string(params[key], format);
+            if (value instanceof dayjs || value instanceof Date) {
+                value = $A.dayjs(value).format(format);
+            } else if ($A.isJson(value)) {
+                value = Object.assign({}, value)
+                for (let key in value) {
+                    if (!value.hasOwnProperty(key)) continue;
+                    value[key] = $A.newDateString(value[key], format);
                 }
-            } else if ($A.isArray(params)) {
-                params = Object.assign([], params)
-                params.forEach((val, index) => {
-                    params[index] = $A.date2string(val, format);
+            } else if ($A.isArray(value)) {
+                value = Object.assign([], value)
+                value.forEach((val, index) => {
+                    value[index] = $A.newDateString(val, format);
                 });
             }
-            return params;
+            return value;
+        },
+
+        /**
+         * 对象中有Date格式的转成时间戳
+         * @param value
+         * @returns {number|*}
+         */
+        newTimestamp(value) {
+            if (value === null) {
+                return value;
+            }
+            if (value instanceof dayjs || value instanceof Date || $A.isDateString(value)) {
+                value = $A.dayjs(value).unix();
+            } else if ($A.isJson(value)) {
+                value = Object.assign({}, value)
+                for (let key in value) {
+                    if (!value.hasOwnProperty(key)) continue;
+                    value[key] = $A.newTimestamp(value[key]);
+                }
+            } else if ($A.isArray(value)) {
+                value = Object.assign([], value)
+                value.forEach((val, index) => {
+                    value[index] = $A.newTimestamp(val);
+                });
+            }
+            return value;
+        },
+
+        /**
+         * 判断是否是日期格式
+         * 支持格式：YYYY-MM-DD HH:mm:ss、YYYY-MM-DD HH:mm、YYYY-MM-DD HH、YYYY-MM-DD
+         * @param value
+         * @returns {boolean}
+         */
+        isDateString(value) {
+            return typeof value === "string" && /^\d{4}-\d{2}-\d{2}( \d{2}(:\d{2}(:\d{2})?)?)?$/i.test(value);
         },
 
         /**

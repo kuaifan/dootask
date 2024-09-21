@@ -134,7 +134,7 @@ export default {
                 width: 90,
             }, {
                 title: this.$L("接收时间"),
-                key: 'receive_time',
+                key: 'receive_at',
                 align: 'center',
                 sortable: true,
                 width: 180,

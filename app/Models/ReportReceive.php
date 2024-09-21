@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property int $id
  * @property int $rid
- * @property string|null $receive_time 接收时间
+ * @property string|null $receive_at 接收时间
  * @property int $userid 接收人
  * @property int $read 是否已读
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|ReportReceive whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ReportReceive whereRead($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ReportReceive whereReceiveTime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ReportReceive whereReceiveAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ReportReceive whereRid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ReportReceive whereUserid($value)
  * @mixin \Eloquent
@@ -38,7 +38,7 @@ class ReportReceive extends AbstractModel
 
     protected $fillable = [
         "rid",
-        "receive_time",
+        "receive_at",
         "userid",
         "read",
     ];

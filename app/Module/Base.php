@@ -6,6 +6,7 @@ use App\Exceptions\ApiException;
 use App\Models\Setting;
 use App\Models\Tmp;
 use Cache;
+use Carbon\Carbon;
 use Overtrue\Pinyin\Pinyin;
 use Redirect;
 use Request;
@@ -1661,7 +1662,7 @@ class Base
     public static function forumDate($date)
     {
         $dur = time() - $date;
-        if ($date > strtotime(date("Y-m-d"))) {
+        if ($date > Carbon::now()->startOf('day')->timestamp) {
             //今天
             if ($dur < 60) {
                 return max($dur, 1) . '秒前';
@@ -1672,10 +1673,10 @@ class Base
             } else {
                 return date("H:i", $date);
             }
-        } elseif ($date > strtotime(date("Y-m-d", strtotime("-1 day")))) {
+        } elseif ($date > Carbon::now()->subDays()->startOf('day')->timestamp) {
             //昨天
             return '昨天';
-        } elseif ($date > strtotime(date("Y-m-d", strtotime("-2 day")))) {
+        } elseif ($date > Carbon::now()->subDays(2)->startOf('day')->timestamp) {
             //前天
             return '前天';
         } elseif ($dur > 86400) {
@@ -1686,23 +1687,22 @@ class Base
     }
 
     /**
-     * 获取时间戳今天的第一秒时间戳
-     * @param $time
-     * @return false|int
+     * 创建Carbon对象
+     * @param $var
+     * @return Carbon
      */
-    public static function dayTimeF($time)
+    public static function newCarbon($var)
     {
-        return strtotime(date("Y-m-d 00:00:00", self::isNumber($time) ? $time : strtotime($time)));
-    }
-
-    /**
-     * 获取时间戳今天的最后一秒时间戳
-     * @param $time
-     * @return false|int
-     */
-    public static function dayTimeE($time)
-    {
-        return strtotime(date("Y-m-d 23:59:59", self::isNumber($time) ? $time : strtotime($time)));
+        if (self::isNumber($var)) {
+            if (preg_match("/^\d{13,}$/", $var)) {
+                $var = $var / 1000;
+            }
+            return Carbon::createFromTimestamp($var);
+        } elseif (is_string($var)) {
+            return Carbon::parse(trim($var));
+        } else {
+            return Carbon::now();
+        }
     }
 
     /**
@@ -2629,18 +2629,6 @@ class Base
         }
         $key = count($arr) - 1;
         return array_values($arr[$key]);
-    }
-
-    /**
-     * 获取当前是本月第几个星期
-     * @return float
-     */
-    public static function getMonthWeek()
-    {
-        $time = strtotime(date("Y-m-01"));
-        $w = date('w', $time);
-        $j = date("j");
-        return ceil(($j . $w) / 7);
     }
 
     /**

@@ -71,7 +71,7 @@ class UserDelete extends AbstractModel
         }
         $cache = $row->cache;
         $cache = array_intersect_key($cache, array_flip(array_merge(User::$basicField, ['department_name'])));
-        $cache['delete_at'] = $row->created_at->format($row->dateFormat ?: 'Y-m-d H:i:s');
+        $cache['delete_at'] = $row->created_at->toDateTimeString();
         return $cache;
     }
 }

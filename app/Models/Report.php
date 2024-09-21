@@ -74,7 +74,7 @@ class Report extends AbstractModel
     public function receivesUser(): BelongsToMany
     {
         return $this->belongsToMany(User::class, ReportReceive::class, "rid", "userid")
-            ->withPivot("receive_time", "read");
+            ->withPivot("receive_at", "read");
     }
 
     public function sendUser()

@@ -53,8 +53,8 @@ class ReportController extends AbstractController
                 $builder->whereType($keys['type']);
             }
             if (is_array($keys['created_at'])) {
-                if ($keys['created_at'][0] > 0) $builder->where('created_at', '>=', date('Y-m-d H:i:s', Base::dayTimeF($keys['created_at'][0])));
-                if ($keys['created_at'][1] > 0) $builder->where('created_at', '<=', date('Y-m-d H:i:s', Base::dayTimeE($keys['created_at'][1])));
+                if ($keys['created_at'][0] > 0) $builder->where('created_at', '>=', Base::newCarbon($keys['created_at'][0])->startOfDay());
+                if ($keys['created_at'][1] > 0) $builder->where('created_at', '<=', Base::newCarbon($keys['created_at'][1])->endOfDay());
             }
         }
         $list = $builder->orderByDesc('created_at')->paginate(Base::getPaginate(50, 20));
@@ -99,14 +99,14 @@ class ReportController extends AbstractController
                 $builder->whereType($keys['type']);
             }
             if (is_array($keys['created_at'])) {
-                if ($keys['created_at'][0] > 0) $builder->where('created_at', '>=', date('Y-m-d H:i:s', Base::dayTimeF($keys['created_at'][0])));
-                if ($keys['created_at'][1] > 0) $builder->where('created_at', '<=', date('Y-m-d H:i:s', Base::dayTimeE($keys['created_at'][1])));
+                if ($keys['created_at'][0] > 0) $builder->where('created_at', '>=', Base::newCarbon($keys['created_at'][0])->startOfDay());
+                if ($keys['created_at'][1] > 0) $builder->where('created_at', '<=', Base::newCarbon($keys['created_at'][1])->endOfDay());
             }
         }
         $list = $builder->orderByDesc('created_at')->paginate(Base::getPaginate(50, 20));
         if ($list->items()) {
             foreach ($list->items() as $item) {
-                $item->receive_time = ReportReceive::query()->whereRid($item["id"])->whereUserid($user->userid)->value("receive_time");
+                $item->receive_at = ReportReceive::query()->whereRid($item["id"])->whereUserid($user->userid)->value("receive_at");
             }
         }
         return Base::retSuccess('success', $list);
@@ -174,7 +174,7 @@ class ReportController extends AbstractController
 
             foreach ($input["receive"] as $userid) {
                 $input["receive_content"][] = [
-                    "receive_time" => Carbon::now()->toDateTimeString(),
+                    "receive_at" => Carbon::now()->toDateTimeString(),
                     "userid" => $userid,
                     "read" => 0,
                 ];

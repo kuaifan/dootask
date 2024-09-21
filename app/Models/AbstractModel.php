@@ -34,6 +34,26 @@ class AbstractModel extends Model
     const ID = 'id';
 
     protected $dates = [
+        'top_at',
+        'last_at',
+
+        'start_at',
+        'end_at',
+
+        'archived_at',
+        'complete_at',
+        'loop_at',
+
+        'receive_at',
+
+        'line_at',
+        'disable_at',
+
+        'clear_at',
+
+        'read_at',
+        'done_at',
+
         'created_at',
         'updated_at',
         'deleted_at',

@@ -1184,7 +1184,7 @@ export default {
         },
 
         async taskTimeChange() {
-            const times = $A.date2string(this.timeValue, "YYYY-MM-DD HH:mm");
+            const times = $A.newDateString(this.timeValue, "YYYY-MM-DD HH:mm");
             if ($A.rightExists(times[0], '00:00') && $A.rightExists(times[1], '23:59')) {
                 this.timeValue = await this.$store.dispatch("taskDefaultTime", times)
             }
@@ -1202,7 +1202,7 @@ export default {
                     $A.messageError("任务已被领取");
                     return;
                 }
-                const times = $A.date2string(this.timeValue, "YYYY-MM-DD HH:mm");
+                const times = $A.newDateString(this.timeValue, "YYYY-MM-DD HH:mm");
                 if (!(times[0] && times[1])) {
                     $A.messageError("请设置计划时间");
                     return;
@@ -1300,7 +1300,7 @@ export default {
         },
 
         timeOk() {
-            const times = $A.date2string(this.timeValue, "YYYY-MM-DD HH:mm");
+            const times = $A.newDateString(this.timeValue, "YYYY-MM-DD HH:mm");
             this.updateData('times', {
                 start_at: times[0],
                 end_at: times[1],

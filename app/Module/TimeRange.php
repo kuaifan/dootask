@@ -31,12 +31,8 @@ class TimeRange
             $range = $this->format($data);
         }
         //
-        $updated = Base::isNumber($range[0]) ? intval($range[0]) : trim($range[0]);
-        $deleted = Base::isNumber($range[1]) ? intval($range[1]) : trim($range[1]);
-        //
-        $timezone = config('app.timezone');
-        $this->updated = $updated ? Carbon::parse($updated)->setTimezone($timezone) : null;
-        $this->deleted = $deleted ? Carbon::parse($deleted)->setTimezone($timezone) : null;
+        $this->updated = $range[0] ? Base::newCarbon($range[0]) : null;
+        $this->deleted = $range[1] ? Base::newCarbon($range[1]) : null;
     }
 
     /**
@@ -72,7 +68,7 @@ class TimeRange
     private function format($timerange)
     {
         $search = str_contains($timerange, ":") ? ["|"] : ["|", "-"];
-        return explode(",", str_replace($search, ",", $timerange));
+        return Base::newTrim(explode(",", str_replace($search, ",", $timerange)));
     }
 
     /**

@@ -201,7 +201,7 @@ class WebSocketDialog extends AbstractModel
         if (isset($this->search_msg_id)) {
             // 最后消息 (搜索预览消息)
             $this->last_msg = WebSocketDialogMsg::whereDialogId($this->id)->find($this->search_msg_id);
-            $this->last_at = $this->last_msg ? Carbon::parse($this->last_msg->created_at)->format('Y-m-d H:i:s') : null;
+            $this->last_at = $this->last_msg ? Carbon::parse($this->last_msg->created_at)->toDateTimeString() : null;
         } else {
             // 未读信息
             if (Base::judgeClientVersion("0.34.0")) {

@@ -82,13 +82,7 @@ class DialogController extends AbstractController
         $unreadAt = Request::input('unread_at');
         $todoAt = Request::input('todo_at');
         //
-        $unreadAt = Base::isNumber($unreadAt) ? intval($unreadAt) : trim($unreadAt);
-        $unreadAt = Carbon::parse($unreadAt)->setTimezone(config('app.timezone'));
-        //
-        $todoAt = Base::isNumber($todoAt) ? intval($todoAt) : trim($todoAt);
-        $todoAt = Carbon::parse($todoAt)->setTimezone(config('app.timezone'));
-        //
-        $data = WebSocketDialog::getDialogBeyond($user->userid, $unreadAt, $todoAt);
+        $data = WebSocketDialog::getDialogBeyond($user->userid, Base::newCarbon($unreadAt), Base::newCarbon($todoAt));
         //
         return Base::retSuccess('success', $data);
     }

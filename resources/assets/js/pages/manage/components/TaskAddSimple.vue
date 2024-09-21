@@ -242,7 +242,7 @@ export default {
             if ($A.runNum(item.days) > 0) {
                 let start = $A.dayjs();
                 let end = start.clone().add($A.runNum(item.days), 'day');
-                this.$set(this.addData, 'times', $A.date2string([start, end]))
+                this.$set(this.addData, 'times', $A.newDateString([start, end]))
             } else {
                 this.$set(this.addData, 'times', [])
             }
