@@ -341,7 +341,7 @@ export default {
                         url: "system/setting",
                     }).then(({data}) => {
                         state.systemConfig = Object.assign(data, {
-                            timezoneDifference: $A.setTimezone(data.server_timezone),
+                            timezoneDifference: $A.updateTimezone(data.server_timezone),
                             __state: "success",
                         })
                         resolve(state.systemConfig)

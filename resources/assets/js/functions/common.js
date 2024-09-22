@@ -1888,19 +1888,35 @@ const timezone = require("dayjs/plugin/timezone");
         },
 
         /**
-         * 设置时区
-         * @param tz
-         * @returns {number}
+         * 时间对象（减去时区差）
+         * @param v
+         * @returns {*|dayjs.Dayjs}
          */
-        setTimezone(tz) {
-            const local = $A.dayjs().startOf('hour');
-            const server = local.tz(tz);
-            return $A.timezoneDifference = local.startOf('hour').diff(server.format("YYYY-MM-DD HH:mm:ss"), 'hour')
+        daytz(v = undefined) {
+            const t = $A.dayjs(v)
+            if ($A.timezoneDifference) {
+                return t.subtract($A.timezoneDifference, "hour")
+            }
+            return t;
         },
 
         /**
-         * 本地时间与服务器时间差（小时）
+         * 更新时区
+         * @param tz
+         * @returns {number}
          */
+        updateTimezone(tz = undefined) {
+            if (typeof tz !== "undefined") {
+                $A.timezoneName = tz;
+            }
+            if (!$A.timezoneName) {
+                return $A.timezoneDifference = 0;
+            }
+            const local = $A.dayjs().startOf('hour');
+            const server = local.tz($A.timezoneName);
+            return $A.timezoneDifference = local.startOf('hour').diff(server.format("YYYY-MM-DD HH:mm:ss"), 'hour')
+        },
+        timezoneName: null,
         timezoneDifference: 0,
 
         /**
@@ -2000,7 +2016,7 @@ const timezone = require("dayjs/plugin/timezone");
          * @returns {string}
          */
         timeFormat(date) {
-            const local = $A.dayjs().subtract($A.timezoneDifference, "hour"),
+            const local = $A.daytz(),
                 time = $A.dayjs(date);
             if (local.format("YYYY-MM-DD") === time.format("YYYY-MM-DD")) {
                 return time.format("HH:mm")
@@ -2021,7 +2037,7 @@ const timezone = require("dayjs/plugin/timezone");
          * @returns {string}
          */
         countDownFormat(s, e) {
-            s = $A.dayjs(s).subtract($A.timezoneDifference, "hour")
+            s = $A.daytz(s)
             e = $A.dayjs(e)
             const diff = e.diff(s, 'second');
             if (diff == 0) {

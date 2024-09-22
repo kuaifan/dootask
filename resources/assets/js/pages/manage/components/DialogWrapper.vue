@@ -1395,7 +1395,7 @@ export default {
 
         windowScrollY(val) {
             if ($A.isIos() && !this.$slots.head) {
-                this.$refs.nav.style.marginTop = `${val}px`
+                this.$refs.nav.style.marginTop = `${Math.max(0, val)}px`
             }
         },
 

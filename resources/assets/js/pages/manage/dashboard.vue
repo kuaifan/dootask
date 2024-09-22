@@ -7,8 +7,11 @@
         <div class="dashboard-wrapper" :style="wrapperStyle">
             <div class="dashboard-hello">{{$L('欢迎您，' + userInfo.nickname)}}</div>
             <div class="dashboard-desc">
-                {{$L('以下是你当前的任务统计数据')}}
-                <template v-if="systemConfig.timezoneDifference">, {{$L('服务器时间')}}: {{$A.dayjs().subtract(systemConfig.timezoneDifference, 'hour').format('YYYY-MM-DD HH:mm:ss')}}</template>
+                <span>{{$L('以下是你当前的任务统计数据')}}</span>
+                <template v-if="systemConfig.timezoneDifference">,
+                    <span class="dashboard-time">{{$L('服务器时间')}}:</span>
+                    <span class="dashboard-time">{{$A.daytz().format('YYYY-MM-DD HH:mm:ss')}}</span>
+                </template>
                 <transition name="dashboard-load">
                     <div v-if="loadDashboardTasks" class="dashboard-load"><Loading/></div>
                 </transition>

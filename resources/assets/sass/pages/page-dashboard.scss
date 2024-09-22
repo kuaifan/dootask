@@ -51,6 +51,9 @@
             padding: 0 12px;
             color: #888888;
             font-size: 13px;
+            .dashboard-time {
+                padding-left: 4px;
+            }
             .dashboard-load {
                 display: flex;
                 align-items: center;

@@ -141,6 +141,7 @@ export default {
         windowActive(active) {
             if (active) {
                 this.autoTheme()
+                $A.updateTimezone()
                 this.__windowTimer && clearTimeout(this.__windowTimer)
                 this.__windowTimer = setTimeout(_ => {
                     this.$store.dispatch("call", {
@@ -313,6 +314,7 @@ export default {
             // APP进入前台
             window.__onAppActive = () => {
                 this.autoTheme()
+                $A.updateTimezone()
                 $A.IDBTest()
             }
             // 页面失活
