@@ -1890,12 +1890,17 @@ const timezone = require("dayjs/plugin/timezone");
         /**
          * 设置时区
          * @param tz
+         * @returns {number}
          */
         setTimezone(tz) {
             const local = $A.dayjs().startOf('hour');
             const server = local.tz(tz);
-            $A.timezoneDifference = local.startOf('hour').diff(server.format("YYYY-MM-DD HH:mm:ss"), 'hour')
+            return $A.timezoneDifference = local.startOf('hour').diff(server.format("YYYY-MM-DD HH:mm:ss"), 'hour')
         },
+
+        /**
+         * 本地时间与服务器时间差（小时）
+         */
         timezoneDifference: 0,
 
         /**

@@ -340,8 +340,8 @@ export default {
                     dispatch("call", {
                         url: "system/setting",
                     }).then(({data}) => {
-                        $A.setTimezone(data.server_timezone);
                         state.systemConfig = Object.assign(data, {
+                            timezoneDifference: $A.setTimezone(data.server_timezone),
                             __state: "success",
                         })
                         resolve(state.systemConfig)

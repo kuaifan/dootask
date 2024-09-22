@@ -8,6 +8,7 @@
             <div class="dashboard-hello">{{$L('欢迎您，' + userInfo.nickname)}}</div>
             <div class="dashboard-desc">
                 {{$L('以下是你当前的任务统计数据')}}
+                <template v-if="systemConfig.timezoneDifference">, {{$L('服务器时间')}}: {{$A.dayjs().subtract(systemConfig.timezoneDifference, 'hour').format('YYYY-MM-DD HH:mm:ss')}}</template>
                 <transition name="dashboard-load">
                     <div v-if="loadDashboardTasks" class="dashboard-load"><Loading/></div>
                 </transition>
@@ -129,7 +130,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userInfo', 'userIsAdmin', 'cacheTasks', 'taskCompleteTemps', 'loadDashboardTasks']),
+        ...mapState(['systemConfig', 'userInfo', 'userIsAdmin', 'cacheTasks', 'taskCompleteTemps', 'loadDashboardTasks']),
 
         ...mapGetters(['dashboardTask', 'assistTask', 'transforTasks']),
 
@@ -203,17 +204,23 @@ export default {
         },
 
         scrollTo(type) {
-            let refs = this.$refs[`type_${type}`]
+            const refs = this.$refs[`type_${type}`]
             if (refs) {
-                $A.scrollToView(refs[0], {
-                    behavior: 'smooth',
-                    inline: 'end',
-                });
+                const index = this.hiddenColumns.indexOf(type);
+                if (index !== -1) {
+                    this.hiddenColumns.splice(index, 1)
+                }
+                this.$nextTick(_ => {
+                    $A.scrollToView(refs[0], {
+                        behavior: 'smooth',
+                        inline: 'end',
+                    });
+                })
             }
         },
 
         onDashboardHidden(type) {
-            let index = this.hiddenColumns.indexOf(type);
+            const index = this.hiddenColumns.indexOf(type);
             if (index === -1) {
                 this.hiddenColumns.push(type)
             } else {
