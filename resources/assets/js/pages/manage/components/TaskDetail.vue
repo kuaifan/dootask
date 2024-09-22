@@ -954,7 +954,7 @@ export default {
         },
 
         expiresFormat(date) {
-            return $A.countDownFormat(date, this.nowTime)
+            return $A.countDownFormat(this.nowTime, date)
         },
 
         tagColor(taskDetail) {

@@ -11,33 +11,12 @@ const timezone = require("dayjs/plugin/timezone");
     window.modalTransferIndex = 1000;
     localforage.config({name: 'DooTask', storeName: 'common'});
 
-    dayjs.extend(utc);
-    dayjs.extend(timezone);
-    dayjs.tz.setDefault("Asia/Shanghai");
     /**
      * =============================================================================
      * *******************************   基础函数类   *******************************
      * =============================================================================
      */
     $.extend({
-        /**
-         * 时间对象
-         * @param v
-         * @returns {*|dayjs.Dayjs}
-         */
-        dayjs(v = undefined) {
-            if (/^\d{13,}$/.test(v)) {
-                return dayjs(Number(v));
-            }
-            if (/^\d{10,}$/.test(v)) {
-                return dayjs(Number(v) * 1000);
-            }
-            if (v === null) {
-                v = 0
-            }
-            return dayjs(v);
-        },
-
         /**
          * 是否数组
          * @param obj
@@ -280,51 +259,11 @@ const timezone = require("dayjs/plugin/timezone");
          * @param after
          * @returns {*}
          */
-        zeroFill(str, length, after) {
-            str+= "";
-            if (str.length >= length) {
-                return str;
+        zeroFill(str, length, after = false) {
+            if (after) {
+                return `${str}`.padEnd(length, '0')
             }
-            let _str = '', _ret = '';
-            for (let i = 0; i < length; i++) {
-                _str += '0';
-            }
-            if (after || typeof after === 'undefined') {
-                _ret = (_str + "" + str).substr(length * -1);
-            } else {
-                _ret = (str + "" + _str).substr(0, length);
-            }
-            return _ret;
-        },
-
-        /**
-         * 租用时间差(不够1个小时算一个小时)
-         * @param s
-         * @param e
-         * @returns {*}
-         */
-        timeDiff(s, e) {
-            if (typeof e === 'undefined') {
-                e = $A.dayjs().unix();
-            }
-            let d = e - s;
-            if (d > 86400) {
-                let day = Math.floor(d / 86400);
-                let hour = Math.ceil((d - (day * 86400)) / 3600);
-                if (hour > 0) {
-                    return day + '天' + hour + '小时';
-                } else {
-                    return day + '天';
-                }
-            } else if (d > 3600) {
-                return Math.ceil(d / 3600) + '小时';
-            } else if (d > 60) {
-                return Math.ceil(d / 60) + '分钟';
-            } else if (d > 10) {
-                return d + '秒';
-            } else {
-                return '刚刚';
-            }
+            return `${str}`.padStart(length, '0')
         },
 
         /**
@@ -1040,69 +979,6 @@ const timezone = require("dayjs/plugin/timezone");
             })
         },
         __loadIframe: {},
-
-        /**
-         *  对象中有Date格式的转成指定格式
-         * @param value
-         * @param format  默认格式：YYYY-MM-DD HH:mm:ss
-         * @returns {*}
-         */
-        newDateString(value, format = "YYYY-MM-DD HH:mm:ss") {
-            if (value === null) {
-                return value;
-            }
-            if (value instanceof dayjs || value instanceof Date) {
-                value = $A.dayjs(value).format(format);
-            } else if ($A.isJson(value)) {
-                value = Object.assign({}, value)
-                for (let key in value) {
-                    if (!value.hasOwnProperty(key)) continue;
-                    value[key] = $A.newDateString(value[key], format);
-                }
-            } else if ($A.isArray(value)) {
-                value = Object.assign([], value)
-                value.forEach((val, index) => {
-                    value[index] = $A.newDateString(val, format);
-                });
-            }
-            return value;
-        },
-
-        /**
-         * 对象中有Date格式的转成时间戳
-         * @param value
-         * @returns {number|*}
-         */
-        newTimestamp(value) {
-            if (value === null) {
-                return value;
-            }
-            if (value instanceof dayjs || value instanceof Date || $A.isDateString(value)) {
-                value = $A.dayjs(value).unix();
-            } else if ($A.isJson(value)) {
-                value = Object.assign({}, value)
-                for (let key in value) {
-                    if (!value.hasOwnProperty(key)) continue;
-                    value[key] = $A.newTimestamp(value[key]);
-                }
-            } else if ($A.isArray(value)) {
-                value = Object.assign([], value)
-                value.forEach((val, index) => {
-                    value[index] = $A.newTimestamp(val);
-                });
-            }
-            return value;
-        },
-
-        /**
-         * 判断是否是日期格式
-         * 支持格式：YYYY-MM-DD HH:mm:ss、YYYY-MM-DD HH:mm、YYYY-MM-DD HH、YYYY-MM-DD
-         * @param value
-         * @returns {boolean}
-         */
-        isDateString(value) {
-            return typeof value === "string" && /^\d{4}-\d{2}-\d{2}( \d{2}(:\d{2}(:\d{2})?)?)?$/i.test(value);
-        },
 
         /**
          * 字节转换
@@ -1982,6 +1858,175 @@ const timezone = require("dayjs/plugin/timezone");
             return num;
         },
         __ajaxList: [],
+    });
+
+    /**
+     * =============================================================================
+     * ***********************************   time   ********************************
+     * =============================================================================
+     */
+
+    dayjs.extend(utc);
+    dayjs.extend(timezone);
+    $.extend({
+        /**
+         * 时间对象
+         * @param v
+         * @returns {*|dayjs.Dayjs}
+         */
+        dayjs(v = undefined) {
+            if (/^\d{13,}$/.test(v)) {
+                return dayjs(Number(v));
+            }
+            if (/^\d{10,}$/.test(v)) {
+                return dayjs(Number(v) * 1000);
+            }
+            if (v === null) {
+                v = 0
+            }
+            return dayjs(v);
+        },
+
+        /**
+         * 设置时区
+         * @param tz
+         */
+        setTimezone(tz) {
+            const local = $A.dayjs().startOf('hour');
+            const server = local.tz(tz);
+            $A.timezoneDifference = local.startOf('hour').diff(server.format("YYYY-MM-DD HH:mm:ss"), 'hour')
+        },
+        timezoneDifference: 0,
+
+        /**
+         *  对象中有Date格式的转成指定格式
+         * @param value
+         * @param format  默认格式：YYYY-MM-DD HH:mm:ss
+         * @returns {*}
+         */
+        newDateString(value, format = "YYYY-MM-DD HH:mm:ss") {
+            if (value === null) {
+                return value;
+            }
+            if (value instanceof dayjs || value instanceof Date) {
+                value = $A.dayjs(value).format(format);
+            } else if ($A.isJson(value)) {
+                value = Object.assign({}, value)
+                for (let key in value) {
+                    if (!value.hasOwnProperty(key)) continue;
+                    value[key] = $A.newDateString(value[key], format);
+                }
+            } else if ($A.isArray(value)) {
+                value = Object.assign([], value)
+                value.forEach((val, index) => {
+                    value[index] = $A.newDateString(val, format);
+                });
+            }
+            return value;
+        },
+
+        /**
+         * 对象中有Date格式的转成时间戳
+         * @param value
+         * @returns {number|*}
+         */
+        newTimestamp(value) {
+            if (value === null) {
+                return value;
+            }
+            if (value instanceof dayjs || value instanceof Date || $A.isDateString(value)) {
+                value = $A.dayjs(value).unix();
+            } else if ($A.isJson(value)) {
+                value = Object.assign({}, value)
+                for (let key in value) {
+                    if (!value.hasOwnProperty(key)) continue;
+                    value[key] = $A.newTimestamp(value[key]);
+                }
+            } else if ($A.isArray(value)) {
+                value = Object.assign([], value)
+                value.forEach((val, index) => {
+                    value[index] = $A.newTimestamp(val);
+                });
+            }
+            return value;
+        },
+
+        /**
+         * 判断是否是日期格式
+         * 支持格式：YYYY-MM-DD HH:mm:ss、YYYY-MM-DD HH:mm、YYYY-MM-DD HH、YYYY-MM-DD
+         * @param value
+         * @returns {boolean}
+         */
+        isDateString(value) {
+            return typeof value === "string" && /^\d{4}-\d{2}-\d{2}( \d{2}(:\d{2}(:\d{2})?)?)?$/i.test(value);
+        },
+
+        /**
+         * 秒数倒计时，格式：00:00:00, 00:00, 0s
+         * @param s
+         * @returns {string}
+         */
+        secondsToTime(s) {
+            let pre = '';
+            if (s < 0) {
+                pre = '-';
+                s = -s;
+            }
+            let duration
+            const days = Math.floor(s / 86400);
+            const hours = Math.floor((s % 86400) / 3600);
+            const minutes = Math.floor(((s % 86400) % 3600) / 60);
+            const seconds = Math.floor(((s % 86400) % 3600) % 60);
+            if (days > 0) {
+                if (hours > 0) duration = days + "d," + $A.zeroFill(hours, 2) + "h";
+                else if (minutes > 0) duration = days + "d," + $A.zeroFill(minutes, 2) + "min";
+                else if (seconds > 0) duration = days + "d," + $A.zeroFill(seconds, 2) + "s";
+                else duration = days + "d";
+            }
+            else if (hours > 0) duration = $A.zeroFill(hours, 2) + ":" + $A.zeroFill(minutes, 2) + ":" + $A.zeroFill(seconds, 2);
+            else if (minutes > 0) duration = $A.zeroFill(minutes, 2) + ":" + $A.zeroFill(seconds, 2);
+            else if (seconds > 0) duration = $A.zeroFill(seconds, 2) + "s";
+            return pre + duration;
+        },
+
+        /**
+         * 格式化时间（本地时间自动减去时区差）
+         * @param date
+         * @returns {string}
+         */
+        timeFormat(date) {
+            const local = $A.dayjs().subtract($A.timezoneDifference, "hour"),
+                time = $A.dayjs(date);
+            if (local.format("YYYY-MM-DD") === time.format("YYYY-MM-DD")) {
+                return time.format("HH:mm")
+            }
+            if (local.clone().subtract(1, 'day').format('YYYY-MM-DD') === time.format("YYYY-MM-DD")) {
+                return `${$A.L('昨天')} ${time.format("HH:mm")}`
+            }
+            if (local.year() === time.year()) {
+                return time.format("MM-DD")
+            }
+            return time.format("YYYY-MM-DD") || '';
+        },
+
+        /**
+         * 倒计时
+         * @param s 开始时间自动减去时区差
+         * @param e
+         * @returns {string}
+         */
+        countDownFormat(s, e) {
+            s = $A.dayjs(s).subtract($A.timezoneDifference, "hour")
+            e = $A.dayjs(e)
+            const diff = e.diff(s, 'second');
+            if (diff == 0) {
+                return '0s';
+            }
+            if (Math.abs(diff) < 86400 * 7) {
+                return $A.secondsToTime(diff);
+            }
+            return $A.timeFormat(e)
+        },
     });
 
     window.$A = $;

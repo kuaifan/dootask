@@ -133,6 +133,7 @@ class SystemController extends AbstractController
         $setting['file_upload_limit'] = $setting['file_upload_limit'] ?: '';
         $setting['unclaimed_task_reminder'] = $setting['unclaimed_task_reminder'] ?: 'close';
         $setting['unclaimed_task_reminder_time'] = $setting['unclaimed_task_reminder_time'] ?: '';
+        $setting['server_timezone'] = config('app.timezone');
         $setting['server_version'] = Base::getVersion();
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
