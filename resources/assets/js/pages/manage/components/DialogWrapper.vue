@@ -1962,7 +1962,7 @@ export default {
             }).then(({data}) => {
                 this.$store.dispatch("saveDialogTodo", {
                     id: this.todoViewId,
-                    done_at: $A.dayjs().format("YYYY-MM-DD HH:mm:ss")
+                    done_at: $A.daytz().format("YYYY-MM-DD HH:mm:ss")
                 })
                 this.$store.dispatch("saveDialog", {
                     id: this.dialogId,

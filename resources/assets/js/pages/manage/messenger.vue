@@ -795,25 +795,26 @@ export default {
                 return false;
             }
             if (dialog.type == 'group') {
+                const timestamp = $A.dayjs().unix()
                 if (['project', 'task'].includes(dialog.group_type) && $A.isJson(dialog.group_info)) {
                     if (dialog.group_type == 'task' && dialog.group_info.complete_at) {
                         // 已完成5天后隐藏对话
                         let time = Math.max($A.dayjs(dialog.last_at).unix(), $A.dayjs(dialog.group_info.complete_at).unix())
-                        if (5 * 86400 + time < $A.dayjs().unix()) {
+                        if (5 * 86400 + time < timestamp) {
                             return false
                         }
                     }
                     if (dialog.group_info.deleted_at) {
                         // 已删除2天后隐藏对话
                         let time = Math.max($A.dayjs(dialog.last_at).unix(), $A.dayjs(dialog.group_info.deleted_at).unix())
-                        if (2 * 86400 + time < $A.dayjs().unix()) {
+                        if (2 * 86400 + time < timestamp) {
                             return false
                         }
                     }
                     if (dialog.group_info.archived_at) {
                         // 已归档3天后隐藏对话
                         let time = Math.max($A.dayjs(dialog.last_at).unix(), $A.dayjs(dialog.group_info.archived_at).unix())
-                        if (3 * 86400 + time < $A.dayjs().unix()) {
+                        if (3 * 86400 + time < timestamp) {
                             return false
                         }
                     }

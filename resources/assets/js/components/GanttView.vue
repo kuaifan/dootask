@@ -134,9 +134,9 @@ export default {
             return function(index) {
                 let mouseDay = mouseWidth == 0 ? 0 : mouseWidth / dateWidth;
                 //今天00:00:00
-                let nowDay = $A.dayjs().startOf('day');
+                let nowDay = $A.daytz().startOf('day');
                 //当前时间
-                let curDay = nowDay.clone().add(mouseDay, 'day');
+                let curDay = nowDay.clone().add(mouseDay * 86400, 'second');
                 //当月最后一天
                 let lastDay = curDay.clone().endOf('month');
                 //相差天数
@@ -157,7 +157,7 @@ export default {
             return function(index) {
                 let mouseDay = mouseWidth == 0 ? 0 : mouseWidth / dateWidth;
                 //开始位置时间（今天00:00:00）
-                let nowDay = $A.dayjs().startOf('day');
+                let nowDay = $A.daytz().startOf('day');
                 //当前时间
                 let curDay = nowDay.clone().add(mouseDay, 'day');
                 //
@@ -182,7 +182,7 @@ export default {
                     mouseData--;
                 }
                 let j = mouseWidth == 0 ? index - 1 : mouseData;
-                let date = $A.dayjs().add(j, 'day');
+                let date = $A.daytz().add(j, 'day');
                 if ([0, 6].indexOf(date.day()) !== -1) {
                     style.backgroundColor = '#f9fafb';
                 }
@@ -204,7 +204,7 @@ export default {
                     mouseData--;
                 }
                 let j = mouseWidth == 0 ? index - 1 : mouseData;
-                let date = $A.dayjs().add(j, 'day');
+                let date = $A.daytz().add(j, 'day');
                 if (type == 'day') {
                     return date.date();
                 } else if (type == 'week') {
@@ -220,13 +220,13 @@ export default {
                 const {start, end} = item.time;
                 const {style, moveX, moveW} = item;
                 //开始位置时间戳（今天00:00:00时间戳）
-                let nowTime = $A.dayjs().startOf('day').valueOf();
+                let nowTime = $A.daytz().startOf('day').valueOf();
                 //距离开始位置多少天
                 let diffStartDay = (start - nowTime) / 1000 / 60 / 60 / 24;
                 let diffEndDay = (end - nowTime) / 1000 / 60 / 60 / 24;
                 //
                 let left = dateWidth * diffStartDay + (mouseWidth * -1);
-                let width = dateWidth * (diffEndDay - diffStartDay);
+                let width = Math.max(10, dateWidth * (diffEndDay - diffStartDay));
                 if (typeof moveX === "number") {
                     left+= moveX;
                 }
@@ -419,7 +419,7 @@ export default {
         },
         scrollPosition(pos) {
             //今天00:00:00
-            let nowDay = $A.dayjs().startOf('day').valueOf();
+            let nowDay = $A.daytz().startOf('day').valueOf();
             //一个宽度的时间
             let oneWidthTime = 86400000 / this.dateWidth;
             //

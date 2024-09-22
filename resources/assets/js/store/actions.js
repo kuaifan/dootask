@@ -1618,7 +1618,7 @@ export default {
      * @param dispatch
      */
     todayAndOverdue({state, dispatch}) {
-        const now = $A.dayjs();
+        const now = $A.daytz();
         const today = now.format("YYYY-MM-DD");
         state.cacheTasks.some(task => {
             if (!task.end_at) {
@@ -2516,7 +2516,7 @@ export default {
                 const updateData = {
                     id: data.dialog_id,
                     last_msg: data,
-                    last_at: data.created_at || $A.dayjs().format("YYYY-MM-DD HH:mm:ss")
+                    last_at: data.created_at || $A.daytz().format("YYYY-MM-DD HH:mm:ss")
                 }
                 if (data.mtype == 'tag') {
                     updateData.has_tag = true;
@@ -2625,7 +2625,7 @@ export default {
      */
     async getDialogBeyonds({state, dispatch}) {
         const key = await $A.IDBString("dialogBeyond")
-        const val = $A.dayjs().format("YYYY-MM-DD HH")
+        const val = $A.daytz().format("YYYY-MM-DD HH")
         if (key == val) {
             return  // 一小时取一次
         }
@@ -3233,7 +3233,7 @@ export default {
         if ($A.isJson(data)) {
             if (data.userid == state.userId) return;
             if (data.read_at) return;
-            data.read_at = $A.dayjs().format("YYYY-MM-DD HH:mm:ss");
+            data.read_at = $A.daytz().format("YYYY-MM-DD HH:mm:ss");
             state.readWaitData[data.id] = state.readWaitData[data.id] || 0
             //
             const dialog = state.cacheDialogs.find(({id}) => id == data.dialog_id);
@@ -3280,7 +3280,7 @@ export default {
                     if (ids.hasOwnProperty(id) && /^\d+$/.test(ids[id])) {
                         state.dialogMsgs.some(item => {
                             if (item.dialog_id == ids[id] && item.id >= id) {
-                                item.read_at = $A.dayjs().format("YYYY-MM-DD HH:mm:ss")
+                                item.read_at = $A.daytz().format("YYYY-MM-DD HH:mm:ss")
                             }
                         })
                     }
@@ -3335,7 +3335,7 @@ export default {
                 if (typeof data.after_msg_id !== "undefined") {
                     state.dialogMsgs.some(item => {
                         if (item.dialog_id == data.dialog_id && item.id >= data.after_msg_id) {
-                            item.read_at = $A.dayjs().format("YYYY-MM-DD HH:mm:ss")
+                            item.read_at = $A.daytz().format("YYYY-MM-DD HH:mm:ss")
                         }
                     })
                 }
@@ -3556,7 +3556,7 @@ export default {
         //
         state.ws = new WebSocket(url);
         state.ws.onopen = async (e) => {
-            wgLog && console.log("[WS] Open", e, $A.dayjs().format("YYYY-MM-DD HH:mm:ss"))
+            wgLog && console.log("[WS] Open", e, $A.daytz().format("YYYY-MM-DD HH:mm:ss"))
             state.wsOpenNum++;
             //
             if (window.systemInfo.debug === "yes" || state.systemConfig.e2e_message !== 'open') {
@@ -3571,7 +3571,7 @@ export default {
             })
         };
         state.ws.onclose = async (e) => {
-            wgLog && console.log("[WS] Close", e, $A.dayjs().format("YYYY-MM-DD HH:mm:ss"))
+            wgLog && console.log("[WS] Close", e, $A.daytz().format("YYYY-MM-DD HH:mm:ss"))
             state.ws = null;
             //
             clearTimeout(state.wsTimeout);
@@ -3580,7 +3580,7 @@ export default {
             }, 3000);
         };
         state.ws.onerror = async (e) => {
-            wgLog && console.log("[WS] Error", e, $A.dayjs().format("YYYY-MM-DD HH:mm:ss"))
+            wgLog && console.log("[WS] Error", e, $A.daytz().format("YYYY-MM-DD HH:mm:ss"))
             state.ws = null;
             //
             clearTimeout(state.wsTimeout);

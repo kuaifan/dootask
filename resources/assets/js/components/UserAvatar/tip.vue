@@ -109,7 +109,7 @@ export default {
             if (this.user.online || this.$store.state.userId === this.userid) {
                 this.$emit('update:online', true)
             } else {
-                const now = $A.dayjs()
+                const now = $A.daytz()
                 const line = $A.dayjs(this.user.line_at)
                 const seconds = now.unix() - line.unix()
                 let stats = '最后在线于很久以前';

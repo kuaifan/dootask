@@ -257,7 +257,7 @@ export default {
                         completeTemp(true)
                     }
                     this.updateTask({
-                        complete_at: $A.dayjs().format('YYYY-MM-DD HH:mm:ss')
+                        complete_at: $A.daytz().format('YYYY-MM-DD HH:mm:ss')
                     }).then(() => {
                         completeTemp(true)
                     }).catch(() => {

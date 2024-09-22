@@ -404,7 +404,7 @@ export default {
                 this.getUnreadList();
             }
             this.addData.department_id = this.userInfo.department[0] || 0;
-            this.addData.startTime = this.addData.endTime = $A.dayjs().format('YYYY-MM-DD');
+            this.addData.startTime = this.addData.endTime = $A.daytz().format('YYYY-MM-DD');
             this.isShowIcon = this.windowWidth < 515
         },
 

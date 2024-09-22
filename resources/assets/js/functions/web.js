@@ -119,41 +119,41 @@ import {MarkdownPreview} from "../store/markdown";
          * @returns {(*)[]|[{text, value(): [Date,*]},{text, value(): [Date,*]},{text, value(): [*,*]},{text, value(): [*,*]},{text, value(): [Date,*]},null,null]|(Date|*)[]}
          */
         timeOptionShortcuts() {
-            const startSecond = $A.dayjs().startOf('day').toDate();
+            const startSecond = $A.daytz().startOf('day').toDate();
             return [{
                 text: $A.L('今天'),
                 value() {
-                    return [startSecond, $A.dayjs().endOf('day').toDate()];
+                    return [startSecond, $A.daytz().endOf('day').toDate()];
                 }
             }, {
                 text: $A.L('明天'),
                 value() {
-                    return [startSecond, $A.dayjs().add(1, 'day').endOf('day').toDate()];
+                    return [startSecond, $A.daytz().add(1, 'day').endOf('day').toDate()];
                 }
             }, {
                 text: $A.L('本周'),
                 value() {
-                    return [startSecond, $A.dayjs().endOf('week').toDate()];
+                    return [startSecond, $A.daytz().endOf('week').toDate()];
                 }
             }, {
                 text: $A.L('本月'),
                 value() {
-                    return [startSecond, $A.dayjs().endOf('month').toDate()];
+                    return [startSecond, $A.daytz().endOf('month').toDate()];
                 }
             }, {
                 text: $A.L('3天'),
                 value() {
-                    return [startSecond, $A.dayjs().add(2, 'day').endOf('day').toDate()];
+                    return [startSecond, $A.daytz().add(2, 'day').endOf('day').toDate()];
                 }
             }, {
                 text: $A.L('5天'),
                 value() {
-                    return [startSecond, $A.dayjs().add(4, 'day').endOf('day').toDate()];
+                    return [startSecond, $A.daytz().add(4, 'day').endOf('day').toDate()];
                 }
             }, {
                 text: $A.L('7天'),
                 value() {
-                    return [startSecond, $A.dayjs().add(6, 'day').endOf('day').toDate()];
+                    return [startSecond, $A.daytz().add(6, 'day').endOf('day').toDate()];
                 }
             }];
         },

@@ -679,7 +679,7 @@ export default {
                     {
                         text: '12:00',
                         value () {
-                            return $A.dayjs().startOf('day').add(12, 'hour').toDate();
+                            return $A.daytz().startOf('day').add(12, 'hour').toDate();
                         },
                         onClick: (picker) => {
                             picker.handlePickSuccess();
@@ -688,7 +688,7 @@ export default {
                     {
                         text: '17:00',
                         value () {
-                            return $A.dayjs().startOf('day').add(17, 'hour').toDate();
+                            return $A.daytz().startOf('day').add(17, 'hour').toDate();
                         },
                         onClick: (picker) => {
                             picker.handlePickSuccess();
@@ -697,7 +697,7 @@ export default {
                     {
                         text: '18:00',
                         value () {
-                            return $A.dayjs().startOf('day').add(18, 'hour').toDate();
+                            return $A.daytz().startOf('day').add(18, 'hour').toDate();
                         },
                         onClick: (picker) => {
                             picker.handlePickSuccess();
@@ -706,7 +706,7 @@ export default {
                     {
                         text: '19:00',
                         value () {
-                            return $A.dayjs().startOf('day').add(19, 'hour').toDate();
+                            return $A.daytz().startOf('day').add(19, 'hour').toDate();
                         },
                         onClick: (picker) => {
                             picker.handlePickSuccess();
@@ -715,7 +715,7 @@ export default {
                     {
                         text: this.$L('现在'),
                         value () {
-                            return $A.dayjs().toDate();
+                            return $A.daytz().toDate();
                         },
                         onClick: (picker) => {
                             picker.handlePickSuccess();

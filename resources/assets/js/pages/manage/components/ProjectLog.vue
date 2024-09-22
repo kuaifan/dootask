@@ -93,7 +93,7 @@ export default {
 
     methods: {
         logDate(itemA) {
-            let md = $A.dayjs().format("MM-DD");
+            let md = $A.daytz().format("MM-DD");
             return md == itemA.ymd ? (itemA.ymd + ' ' + this.$L('今天')) : itemA.key;
         },
 

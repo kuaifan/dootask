@@ -49,7 +49,7 @@ export default {
         return {
             routePath: null,
             appInter: null,
-            countDown: Math.min(30, 60 - $A.dayjs().second()),
+            countDown: Math.min(30, 60 - $A.daytz().second()),
         }
     },
 
@@ -168,7 +168,7 @@ export default {
             //
             this.countDown--
             if (this.countDown <= 0) {
-                this.countDown = Math.min(30, 60 - $A.dayjs().second())
+                this.countDown = Math.min(30, 60 - $A.daytz().second())
                 this.$store.dispatch("todayAndOverdue")
             }
         },

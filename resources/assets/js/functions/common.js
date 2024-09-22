@@ -1912,7 +1912,7 @@ const timezone = require("dayjs/plugin/timezone");
             if (!$A.timezoneName) {
                 return $A.timezoneDifference = 0;
             }
-            const local = $A.dayjs().startOf('hour');
+            const local = $A.daytz().startOf('hour');
             const server = local.tz($A.timezoneName);
             return $A.timezoneDifference = local.startOf('hour').diff(server.format("YYYY-MM-DD HH:mm:ss"), 'hour')
         },

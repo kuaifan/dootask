@@ -75,7 +75,7 @@ export default {
         };
     },
     created() {
-        const today = $A.dayjs()
+        const today = $A.daytz()
         this.year = today.year();
         this.month = today.month() + 1;
 
@@ -100,7 +100,7 @@ export default {
     computed: {
         hasNextMonth() {
             const {year, month} = this;
-            const today = $A.dayjs()
+            const today = $A.daytz()
             return parseInt(year) != today.year() || parseInt(month) < today.month() + 1;
         }
     },
@@ -121,7 +121,7 @@ export default {
             }).join('<br/>')
         },
         generateCalendar() {
-            let today = $A.dayjs().startOf('day')
+            let today = $A.daytz().startOf('day')
             let one = $A.dayjs([this.year, this.month, 1])
             let calcTime = one.valueOf() - one.day() * 86400 * 1000
             let array = []
@@ -166,7 +166,7 @@ export default {
             this.$emit('changeMonth', this.ym())
         },
         nowMonth() {
-            const today = $A.dayjs()
+            const today = $A.daytz()
             this.year = today.year();
             this.month = today.month() + 1;
             this.generateCalendar();

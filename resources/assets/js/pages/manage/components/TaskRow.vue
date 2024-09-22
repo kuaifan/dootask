@@ -268,7 +268,7 @@ export default {
 
         completeAtFormat(date) {
             let time = $A.dayjs(date);
-            if ($A.dayjs().year() === time.year()) {
+            if ($A.daytz().year() === time.year()) {
                 return time.format('MM-DD HH:mm')
             } else {
                 return time.format('YYYY-MM-DD')

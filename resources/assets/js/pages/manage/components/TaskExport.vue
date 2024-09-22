@@ -87,13 +87,13 @@ export default {
         dateShortcuts(act) {
             if (act === 'prev') {
                 return [
-                    $A.dayjs().subtract(1, 'month').startOf('day').format('YYYY-MM-DD'),
-                    $A.dayjs().subtract(1, 'month').endOf('day').format('YYYY-MM-DD'),
+                    $A.daytz().subtract(1, 'month').startOf('day').format('YYYY-MM-DD'),
+                    $A.daytz().subtract(1, 'month').endOf('day').format('YYYY-MM-DD'),
                 ];
             } else if (act === 'this') {
                 return [
-                    $A.dayjs().startOf('day').format('YYYY-MM-DD'),
-                    $A.dayjs().endOf('day').format('YYYY-MM-DD'),
+                    $A.daytz().startOf('day').format('YYYY-MM-DD'),
+                    $A.daytz().endOf('day').format('YYYY-MM-DD'),
                 ]
             }
         },

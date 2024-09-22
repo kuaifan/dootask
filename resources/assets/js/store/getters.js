@@ -114,9 +114,9 @@ export default {
      * @returns {{overdue: *, today: *,all:*}}
      */
     dashboardTask(state) {
-        const todayStart = $A.dayjs().startOf('day'),
-            todayEnd = $A.dayjs().endOf('day'),
-            todayNow = $A.dayjs();
+        const todayStart = $A.daytz().startOf('day'),
+            todayEnd = $A.daytz().endOf('day'),
+            todayNow = $A.daytz();
         const filterTask = (task, chackCompleted = true) => {
             if (task.archived_at) {
                 return false;

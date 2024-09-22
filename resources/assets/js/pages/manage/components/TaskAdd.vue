@@ -428,7 +428,7 @@ export default {
         },
 
         async choosePriority(item) {
-            const start = $A.dayjs();
+            const start = $A.daytz();
             const days = $A.runNum(item.days);
             if (days > 0) {
                 const end = start.clone().add(days, 'day');
