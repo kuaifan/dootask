@@ -253,7 +253,7 @@ class UserBot extends AbstractModel
                 $typeDesc = $type == "up" ? "上班" : "下班";
                 if (Cache::get($cacheKey) === "yes") {
                     if ($alreadyTip && $dialog = WebSocketDialog::checkUserDialog($botUser, $checkin['userid'])) {
-                        $text = "<p>今日已{$typeDesc}打卡，无需重复打卡。</p>";
+                        $text = "<p>" . Doo::translate("今日已{$typeDesc}打卡，无需重复打卡。") . "</p>";
                         WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, $type != "up");
                     }
                     return;
@@ -263,7 +263,7 @@ class UserBot extends AbstractModel
                 if ($dialog = WebSocketDialog::checkUserDialog($botUser, $checkin['userid'])) {
                     $hi = date("H:i");
                     $remark = $checkin['remark'] ? " ({$checkin['remark']})": "";
-                    $text = "<p>{$typeDesc}打卡成功，打卡时间: {$hi}{$remark}</p>";
+                    $text = "<p>{$typeDesc}" . Doo::translate("打卡成功，打卡时间") . ": {$hi}{$remark}</p>";
                     $suff = $getJokeSoup($type);
                     if ($suff) {
                         $text = "{$text}<p>----------</p><p>{$suff}</p>";

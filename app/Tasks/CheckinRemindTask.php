@@ -7,6 +7,7 @@ use App\Models\UserCheckinRecord;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
+use App\Module\Doo;
 use App\Module\Extranet;
 use Cache;
 use Carbon\Carbon;
@@ -83,9 +84,9 @@ class CheckinRemindTask extends AbstractTask
                 $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid);
                 if ($dialog) {
                     if ($type === 'exceed') {
-                        $text = "<p><strong style='color:red'>缺卡提醒：</strong>上班时间到了，你还没有打卡哦~</p>";
+                        $text = "<p><strong style='color:red'>" . Doo::translate("缺卡提醒") . "：</strong>" . Doo::translate("上班时间到了，你还没有打卡哦~") . "</p>";
                     } else {
-                        $text = "<p><strong>打卡提醒：</strong>快到上班时间了，别忘了打卡哦~</p>";
+                        $text = "<p><strong>" . Doo::translate("打卡提醒") . "：</strong>" . Doo::translate("快到上班时间了，别忘了打卡哦~") . "</p>";
                     }
                     WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid);
                 }

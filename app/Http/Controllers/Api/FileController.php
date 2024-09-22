@@ -12,6 +12,7 @@ use App\Models\FileLink;
 use App\Models\FileUser;
 use App\Models\User;
 use App\Module\Base;
+use App\Module\Doo;
 use App\Module\Ihttp;
 use Response;
 use Session;
@@ -1089,13 +1090,13 @@ class FileController extends AbstractController
                 ]);
             }
             //
-            $text = "<b>文件下载打包已完成。</b>";
+            $text = "<b>" . Doo::translate("文件下载打包已完成。") . "</b>";
             $text .= "\n\n";
-            $text .= "文件名：{$fileName}";
+            $text .= Doo::translate("文件名") . ": {$fileName}";
             $text .= "\n";
-            $text .= "文件大小：".Base::twoFloat(filesize($zipPath) / 1024, true)."KB";
+            $text .= Doo::translate("文件大小") . ": ".Base::twoFloat(filesize($zipPath) / 1024, true)."KB";
             $text .= "\n";
-            $text .= '<a href="' . $fileUrl . '" target="_blank"><button type="button" class="ivu-btn ivu-btn-warning" style="margin-top: 10px;"><span>立即下载</span></button></a>';
+            $text .= '<a href="' . $fileUrl . '" target="_blank"><button type="button" class="ivu-btn ivu-btn-warning" style="margin-top: 10px;"><span>' . Doo::translate("立即下载") . '</span></button></a>';
             WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
         });
         return Base::retSuccess('success', [
