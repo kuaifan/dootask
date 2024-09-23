@@ -401,7 +401,7 @@ export default {
             if (operateAction) {
                 array.push('operate-action')
                 if (operateEnter) {
-                    array.push('operate-enter')
+                    array.push('pointer-mouse')
                 }
             }
             if (pointerMouse && array.indexOf('pointer-mouse') === -1) {

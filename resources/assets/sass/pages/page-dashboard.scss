@@ -29,8 +29,9 @@
         align-items: center;
 
         .dashboard-hello,
-        .dashboard-desc ,
-        .dashboard-block ,
+        .dashboard-time,
+        .dashboard-desc,
+        .dashboard-block,
         .dashboard-list .dashboard-title,
         .dashboard-list .dashboard-ul {
             width: 660px;
@@ -44,6 +45,7 @@
             font-weight: 600;
             word-wrap: break-word;
         }
+        .dashboard-time,
         .dashboard-desc {
             display: flex;
             align-items: center;
@@ -51,9 +53,14 @@
             padding: 0 12px;
             color: #888888;
             font-size: 13px;
-            .dashboard-time {
-                padding-left: 4px;
+        }
+        .dashboard-time {
+            margin-bottom: -14px;
+            > span {
+                margin-right: 4px;
             }
+        }
+        .dashboard-desc {
             .dashboard-load {
                 display: flex;
                 align-items: center;
@@ -330,7 +337,8 @@ body.window-portrait {
         .dashboard-wrapper {
             display: block;
             .dashboard-hello,
-            .dashboard-desc ,
+            .dashboard-time,
+            .dashboard-desc,
             .dashboard-block ,
             .dashboard-list .dashboard-title,
             .dashboard-list .dashboard-ul {
@@ -338,7 +346,7 @@ body.window-portrait {
             }
             .dashboard-block {
                 display: block;
-                margin-top: 10px;
+                margin-top: 12px;
                 > li {
                     margin: 0 0 10px;
                     padding: 8px 12px;
