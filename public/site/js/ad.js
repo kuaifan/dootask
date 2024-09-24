@@ -28,6 +28,8 @@ document.addEventListener("DOMContentLoaded", function () {
     fetchAdIntro(language);
 
     manageAnimate();
+
+    handleDialog();
   } else {
     // 如果不是广告页面，插入广告样式表并获取广告栏
     insertAdStylesheet();
@@ -370,8 +372,7 @@ async function handleAdPlanPlans(plans) {
       const planItemEl = document.createElement("div");
       planItemEl.className = `plan-item ${plan.activated ? "active" : ""
         }`;
-      planItemEl.innerHTML =
-        `
+      planItemEl.innerHTML = `
           <div class="plan-item-title">
               <span>${plan.title}</span>
           </div>
@@ -382,12 +383,14 @@ async function handleAdPlanPlans(plans) {
                       ${plan.price.payment ?? ""}
                   </span>
               </span>
-              <span class="plan-item-price-original ${plan.price.isPrice ? "price" : ""}">
+              <span class="plan-item-price-original ${plan.price.isPrice ? "price" : ""
+        }">
                   ${plan.price.original ?? ""}
               </span>
           </div>
           <div class="plan-item-button">
-              <a href="${plan.button.href}" ${plan.button.target === "_blank" ? 'target="_blank"' : ""}>
+              <a href="${plan.button.href}" ${plan.button.target === "_blank" ? 'target="_blank"' : ""
+        }>
                   <button class="btn-primary">
                       ${plan.button.label}
                   </button>
@@ -395,21 +398,24 @@ async function handleAdPlanPlans(plans) {
           </div>
           <div class="plan-item-description">
               <ul class="plan-item-description-list">
-                ${plan.features.map((feature) => {
-          const iconUrl = feature.icon.data
-            ? getMediaUrl(feature.icon)
-            : "../img/ad/checked.svg";
-          return `
+                ${plan.features
+          .map((feature) => {
+            const iconUrl = feature.icon.data
+              ? getMediaUrl(feature.icon)
+              : "../img/ad/checked.svg";
+            return `
                     <li class="plan-item-description-item">
                       <i class="plan-item-description-item-icon">
                         <img src="${iconUrl}" alt="${feature.title}" />
                       </i>
-                      <span class="plan-item-description-item-content ${feature.activated ? "" : "disabled"}">
+                      <span class="plan-item-description-item-content ${feature.activated ? "" : "disabled"
+              }">
                         ${feature.text}
                       </span>
                     </li>
                   `;
-        }).join("")}
+          })
+          .join("")}
                 </ul>
             </div>
           `;
@@ -420,16 +426,26 @@ async function handleAdPlanPlans(plans) {
         "animate__faster",
         "animate__delay-1s"
       );
-      couldAdPlanElAnimate[`${plan.id}`] = false
-      planItemEl.addEventListener("animationend", () => {
-        planItemEl.classList.remove("animate__backInUp", "animate__faster", "animate__delay-1s")
-        couldAdPlanElAnimate[`${plan.id}`] = true
-      }, { once: true })
+      couldAdPlanElAnimate[`${plan.id}`] = false;
+      planItemEl.addEventListener(
+        "animationend",
+        () => {
+          planItemEl.classList.remove(
+            "animate__backInUp",
+            "animate__faster",
+            "animate__delay-1s"
+          );
+          couldAdPlanElAnimate[`${plan.id}`] = true;
+        },
+        { once: true }
+      );
 
       await new Promise((resolve) => {
         setTimeout(resolve, 150);
       });
     }
+
+    overridePlanButton();
   }
 }
 
@@ -493,8 +509,7 @@ async function handleAdIntroIntros(intros) {
         ? getMediaUrl(intro.cover)
         : `../img/ad/intro-card-img${intro.priority + 1}.svg`;
       introItemEl.className = "ad-intro-item";
-      introItemEl.innerHTML =
-        `
+      introItemEl.innerHTML = `
           <div class="ad-intro-item-header">
               <img src="${barUrl}" alt="intro-bar" />
           </div>
@@ -514,13 +529,19 @@ async function handleAdIntroIntros(intros) {
         "animate__zoomIn",
         "animate__delay-1s"
       );
-      couldAdIntroElAnimate[`${intro.id}`] = false
+      couldAdIntroElAnimate[`${intro.id}`] = false;
 
-
-      introItemEl.addEventListener("animationend", () => {
-        introItemEl.classList.remove("animate__zoomIn", "animate__delay-1s")
-        couldAdIntroElAnimate[`${intro.id}`] = true
-      }, { once: true })
+      introItemEl.addEventListener(
+        "animationend",
+        () => {
+          introItemEl.classList.remove(
+            "animate__zoomIn",
+            "animate__delay-1s"
+          );
+          couldAdIntroElAnimate[`${intro.id}`] = true;
+        },
+        { once: true }
+      );
       await new Promise((resolve) => {
         setTimeout(resolve, 150);
       });
@@ -535,8 +556,7 @@ function handleError(error) {
 
 // 插入广告栏元素
 function insertAdBarElement() {
-  const adBarHTML =
-    `
+  const adBarHTML = `
       <div id="ad" class="ad">
           <div class="ad-content">
               <div class="ad-content-left">
@@ -620,63 +640,73 @@ function manageAnimate() {
 
   window.addEventListener("scroll", () => {
     throttle(() => {
-      console.log("scroll")
-      detectAdPlanEl()
-      detectAdIntroEl()
-    }, 200)
+      detectAdPlanEl();
+      detectAdIntroEl();
+    }, 200);
   });
 }
 
-const couldAdPlanElAnimate = {}
-const couldAdIntroElAnimate = {}
+const couldAdPlanElAnimate = {};
+const couldAdIntroElAnimate = {};
 
 function detectAdPlanEl() {
-  const adPlanEl = document.querySelector(".ad-plan")
+  const adPlanEl = document.querySelector(".ad-plan");
   if (isElementOutOfViewport(adPlanEl)) {
-    const els = document.querySelectorAll(".plan-item")
+    const els = document.querySelectorAll(".plan-item");
     for (const el of els) {
-      couldAdPlanElAnimate[`${el.id}`] = true
+      couldAdPlanElAnimate[`${el.id}`] = true;
     }
-    return
+    return;
   }
 
-  const _couldAdPlanElAnimate = Object.values(couldAdPlanElAnimate).every(Boolean)
+  const _couldAdPlanElAnimate =
+    Object.values(couldAdPlanElAnimate).every(Boolean);
   if (!_couldAdPlanElAnimate) return;
   if (isElementPartiallyInViewport(adPlanEl)) {
-    const els = document.querySelectorAll(".plan-item")
+    const els = document.querySelectorAll(".plan-item");
     for (const el of els) {
-      el.classList.add("animate__flipInX")
-      couldAdPlanElAnimate[`${el.id}`] = false
-      el.addEventListener("animationend", () => {
-        el.classList.remove("animate__flipInX")
-      }, { once: true })
+      el.classList.add("animate__flipInX");
+      couldAdPlanElAnimate[`${el.id}`] = false;
+      el.addEventListener(
+        "animationend",
+        () => {
+          el.classList.remove("animate__flipInX");
+        },
+        { once: true }
+      );
     }
-    return
+    return;
   }
 }
 
 function detectAdIntroEl() {
-  const adIntroEl = document.querySelector(".ad-intro")
+  const adIntroEl = document.querySelector(".ad-intro");
   if (isElementOutOfViewport(adIntroEl)) {
-    const els = document.querySelectorAll(".ad-intro-item")
+    const els = document.querySelectorAll(".ad-intro-item");
     for (const el of els) {
-      couldAdIntroElAnimate[`${el.id}`] = true
+      couldAdIntroElAnimate[`${el.id}`] = true;
     }
-    return
+    return;
   }
 
-  const _couldAdIntroElAnimate = Object.values(couldAdIntroElAnimate).every(Boolean)
+  const _couldAdIntroElAnimate = Object.values(couldAdIntroElAnimate).every(
+    Boolean
+  );
   if (!_couldAdIntroElAnimate) return;
   if (isElementPartiallyInViewport(adIntroEl)) {
-    const els = document.querySelectorAll(".ad-intro-item")
+    const els = document.querySelectorAll(".ad-intro-item");
     for (const el of els) {
-      el.classList.add("animate__zoomIn")
-      couldAdIntroElAnimate[`${el.id}`] = false
-      el.addEventListener("animationend", () => {
-        el.classList.remove("animate__zoomIn")
-      }, { once: true })
+      el.classList.add("animate__zoomIn");
+      couldAdIntroElAnimate[`${el.id}`] = false;
+      el.addEventListener(
+        "animationend",
+        () => {
+          el.classList.remove("animate__zoomIn");
+        },
+        { once: true }
+      );
     }
-    return
+    return;
   }
 }
 
@@ -684,9 +714,11 @@ function isElementPartiallyInViewport(el) {
   if (!el) return false;
   const rect = el.getBoundingClientRect();
   return (
-    rect.top < (window.innerHeight || document.documentElement.clientHeight) &&
+    rect.top <
+    (window.innerHeight || document.documentElement.clientHeight) &&
     rect.bottom > 0 &&
-    rect.left < (window.innerWidth || document.documentElement.clientWidth) &&
+    rect.left <
+    (window.innerWidth || document.documentElement.clientWidth) &&
     rect.right > 0
   );
 }
@@ -696,8 +728,80 @@ function isElementOutOfViewport(el) {
   const rect = el.getBoundingClientRect();
   return (
     rect.bottom < 0 ||
-    rect.top > (window.innerHeight || document.documentElement.clientHeight) ||
+    rect.top >
+    (window.innerHeight || document.documentElement.clientHeight) ||
     rect.right < 0 ||
     rect.left > (window.innerWidth || document.documentElement.clientWidth)
   );
+}
+
+function handleDialog() {
+  const dialogEl = document.querySelector(".ad-dialog");
+  if (!dialogEl) return;
+
+  lockBodyScroll(dialogEl.classList.contains("show"));
+  overridePlanButton();
+
+  const dialogBackdropEl = dialogEl.querySelector(".ad-dialog-backdrop");
+  if (dialogBackdropEl) {
+    dialogBackdropEl.addEventListener("click", () => {
+      dialogEl.classList.remove("show");
+      lockBodyScroll(false);
+      handleDialogAnimate(false)
+    });
+  }
+
+  const dialogFooterBtnEl = dialogEl.querySelector(".ad-dialog-footer-btn");
+  if (dialogFooterBtnEl) {
+    dialogFooterBtnEl.addEventListener("click", () => {
+      dialogEl.classList.remove("show");
+      lockBodyScroll(false);
+      handleDialogAnimate(false)
+    });
+  }
+}
+
+function lockBodyScroll(bool) {
+  document.body.style.overflowY = bool ? "hidden" : "auto";
+}
+
+function overridePlanButton() {
+  function showDialog(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const dialogEl = document.querySelector(".ad-dialog");
+    if (!dialogEl) return;
+    dialogEl.classList.add("show");
+    lockBodyScroll(true);
+    handleDialogAnimate(true)
+  }
+
+  const planButtonEl = document.querySelectorAll(".plan-item-button");
+  planButtonEl.forEach((el) => {
+    el.removeEventListener("click", showDialog);
+
+    const aEl = el.querySelector("a");
+    if (!aEl.href || aEl.href.includes("#")) {
+      aEl.removeAttribute("href");
+      el.addEventListener("click", showDialog);
+    }
+  });
+}
+
+function handleDialogAnimate(bool) {
+  const dialogEl = document.querySelector(".ad-dialog");
+  if (!dialogEl) return;
+
+  const dialogWrapperEl = dialogEl.querySelector(".ad-dialog-wrapper");
+  if (!dialogWrapperEl) return;
+
+  if (bool) {
+    dialogWrapperEl.classList.add("animate__animated", "animate__bounceIn", "animate__faster");
+    dialogWrapperEl.addEventListener("animationend", () => {
+      dialogWrapperEl.classList.remove("animate__animated", "animate__bounceIn", "animate__faster")
+    })
+  } else {
+    dialogWrapperEl.classList.remove("animate__animated", "animate__bounceIn", "animate__faster")
+  }
 }
