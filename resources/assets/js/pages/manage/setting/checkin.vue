@@ -41,6 +41,19 @@
                 </Row>
             </div>
             <Button type="default" icon="md-add" @click="addDatum">{{$L('添加设备')}}</Button>
+            <div class="setting-checkin-row">
+                <Row class="setting-template">
+                    <Col span="12">{{$L('人脸图片')}}</Col>
+                    <Col span="12"></Col>
+                </Row>
+                
+                <Row class="setting-template">
+                    <Col span="12">
+                        <ImgUpload v-model="faceimgs" :num="1" :width="512" :height="512" :whcut="1"></ImgUpload>
+                        <span class="form-tip">{{$L('建议尺寸：200x200')}}</span>
+                    </Col>
+                </Row>
+            </div>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('提交')}}</Button>
@@ -59,15 +72,18 @@
 
 <script>
 import CheckinCalendar from "../components/CheckinCalendar";
+import ImgUpload from "../../../components/ImgUpload";
 export default {
     name: "ManageCheckin",
-    components: {CheckinCalendar},
+    components: {CheckinCalendar, ImgUpload},
 
     data() {
         return {
             loadIng: 0,
 
             formData: [],
+
+            faceimgs: [],
 
             nullDatum: {
                 'mac': '',
@@ -104,7 +120,8 @@ export default {
             this.$store.dispatch("call", {
                 url: 'users/checkin/get',
             }).then(({data}) => {
-                this.formData = data.length > 0 ? data : [$A.cloneJSON(this.nullDatum)];
+                this.formData = data.list.length > 0 ? data.list : [$A.cloneJSON(this.nullDatum)];
+                this.faceimgs = data.faceimg
                 this.formData_bak = $A.cloneJSON(this.formData);
             }).catch(({msg}) => {
                 $A.modalError(msg);
@@ -124,14 +141,16 @@ export default {
                                 remark: item.remark.trim()
                             }
                         });
+                    const faceimg = this.faceimgs ? this.faceimgs[0].url : ''
                     //
                     this.loadIng++;
                     this.$store.dispatch("call", {
                         url: 'users/checkin/save',
-                        data: {list},
+                        data: {list, faceimg},
                         method: 'post',
                     }).then(({data}) => {
-                        this.formData = data;
+                        this.formData = data.list;
+                        this.faceimgs = data.faceimg
                         this.formData_bak = $A.cloneJSON(this.formData);
                         $A.messageSuccess('修改成功');
                     }).catch(({msg}) => {

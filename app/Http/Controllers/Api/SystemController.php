@@ -393,6 +393,7 @@ class SystemController extends AbstractController
                     'remindin',
                     'remindexceed',
                     'edit',
+                    'faceupload',
                     'modes',
                     'key',
                 ])) {
@@ -414,6 +415,7 @@ class SystemController extends AbstractController
         }
         //
         $setting['open'] = $setting['open'] ?: 'close';
+        $setting['faceupload'] = $setting['faceupload'] ?: 'close';
         $setting['time'] = $setting['time'] ? Base::json2array($setting['time']) : ['09:00', '18:00'];
         $setting['advance'] = intval($setting['advance']) ?: 120;
         $setting['delay'] = intval($setting['delay']) ?: 120;
