@@ -788,12 +788,21 @@ export default {
     created() {
         if (this.checkinMac) {
             this.columns.splice(5, 0, {
-                title: this.$L('MAC地址'),
+                title: this.$L('设备情况'),
                 key: 'checkin_mac',
                 minWidth: 80,
                 render: (h, {row}) => {
                     let checkin_macs = $A.cloneJSON(row.checkin_macs || [])
+                    let checkin_face = $A.cloneJSON(row.checkin_face || '')
+                    const tmp = []
+                    const checkin_face_desc = checkin_face ? "已上传(人脸)" : "未上传(人脸)"
                     if (checkin_macs.length === 0) {
+                        if (checkin_face){
+                            tmp.push(h('AutoTip', checkin_face_desc))
+                            return h('div', {
+                                class: 'team-table-department-warp'
+                            }, tmp);
+                        }
                         return h('div', '-');
                     } else {
                         const desc = (item) => {
@@ -802,24 +811,28 @@ export default {
                             }
                             return item.mac
                         }
-                        const tmp = []
+                        const checkin_devices_desc = []
                         tmp.push(h('AutoTip', desc(checkin_macs[0])))
                         if (checkin_macs.length > 1) {
                             checkin_macs = checkin_macs.splice(1)
+                            checkin_devices_desc.push(...checkin_macs.map(item => {
+                                return desc(item)
+                            }))
+                            if (checkin_face) {
+                                checkin_devices_desc.push(checkin_face_desc)
+                            }
                             tmp.push(h('ETooltip', [
                                 h('div', {
                                     slot: 'content',
                                     domProps: {
-                                        innerHTML: checkin_macs.map(item => {
-                                            return desc(item)
-                                        }).join("<br/>")
+                                        innerHTML: checkin_devices_desc.join("<br/>")
                                     }
                                 }),
                                 h('div', {
                                     class: 'department-tag-num'
-                                }, ` +${checkin_macs.length}`)
+                                }, ` +${checkin_devices_desc.length}`)
                             ]))
-                        }
+                        } 
                         return h('div', {
                             class: 'team-table-department-warp'
                         }, tmp);
