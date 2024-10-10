@@ -56,6 +56,11 @@
                                 <Radio label="close">{{ $L('禁止') }}</Radio>
                             </RadioGroup>
                             <div class="form-tip">{{$L('允许成员自己修改MAC地址')}}</div>
+                            <RadioGroup v-model="formData.faceupload">
+                                <Radio label="open">{{ $L('允许') }}</Radio>
+                                <Radio label="close">{{ $L('禁止') }}</Radio>
+                            </RadioGroup>
+                            <div class="form-tip">{{$L('允许成员自己上传人脸图片')}}</div>
                         </FormItem>
                         <FormItem :label="$L('签到方式')" prop="modes">
                             <CheckboxGroup v-model="formData.modes">
@@ -119,6 +124,7 @@ export default {
 
             formData: {
                 open: '',
+                faceupload: '',
                 edit: '',
                 cmd: '',
                 modes: [],
