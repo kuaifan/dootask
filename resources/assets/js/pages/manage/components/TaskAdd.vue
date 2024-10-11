@@ -202,7 +202,7 @@
             </div>
         </div>
 
-        <TaskExistTips ref="taskExistTipsRef" @onAdd="onAdd(again,true)"/>
+        <TaskExistTips ref="taskExistTipsRef" @onContinue="onAdd(again, true)"/>
     </div>
 </template>
 
@@ -224,6 +224,7 @@ export default {
     data() {
         return {
             addData: {
+                // 基本信息
                 cascader: [],
                 name: "",
                 content: "",
@@ -233,6 +234,7 @@ export default {
                 column_id: 0,
                 times: [],
                 subtasks: [],
+                // 优先级
                 p_level: 0,
                 p_name: '',
                 p_color: '',
@@ -240,6 +242,7 @@ export default {
                 visibility_appoint: 1,
                 visibility_appointor: [],
             },
+            addDefault: {},
 
             cascaderShow: false,
             cascaderData: [],
@@ -261,6 +264,10 @@ export default {
 
             again: false
         }
+    },
+
+    created() {
+        this.addDefault = $A.cloneJSON(this.addData);
     },
 
     async mounted() {
@@ -515,7 +522,7 @@ export default {
                 this.$refs.taskExistTipsRef.isExistTask({
                     userids: this.addData.owner,
                     timerange: this.addData.times
-                }).then(res => {
+                }, 600).then(res => {
                     if (!res) {
                         this.onAdd(again, true)
                     } else {
@@ -537,19 +544,7 @@ export default {
                     });
                     this.$refs.input.focus();
                 } else {
-                    this.addData = {
-                        cascader: [],
-                        name: "",
-                        content: "",
-                        owner: [],
-                        assist: [],
-                        column_id: 0,
-                        times: [],
-                        subtasks: [],
-                        p_level: 0,
-                        p_name: '',
-                        p_color: '',
-                    };
+                    this.addData = $A.cloneJSON(this.addDefault);
                     this.close()
                 }
             }).catch(({msg}) => {

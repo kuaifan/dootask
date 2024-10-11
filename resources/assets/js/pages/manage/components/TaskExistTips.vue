@@ -23,7 +23,7 @@
         </List>
         <div slot="footer">
             <Button type="default" @click="show = false">{{ $L('取消') }}</Button>
-            <Button type="primary" @click="onAdd">{{ $L('忽略并继续') }}</Button>
+            <Button type="primary" @click="onContinue">{{ $L('忽略并继续') }}</Button>
         </div>
     </Modal>
 </template>
@@ -39,16 +39,14 @@ export default {
     },
     data() {
         return {
-            isExist: false,
             show: false,
             tipsTask: [],
-            loadIng: false,
         }
     },
 
     methods: {
-        onAdd() {
-            this.$emit('onAdd', {})
+        onContinue() {
+            this.$emit('onContinue')
             this.show = false;
         },
 
@@ -68,12 +66,11 @@ export default {
             return string
         },
 
-        isExistTask({userids, timerange, taskid}) {
-            this.isExist = false;
+        isExistTask({userids, timerange, taskid}, spinner) {
             return new Promise(async resolve => {
                 if ($A.isArray(timerange) && (!timerange[0] || !timerange[1])) {
-                    resolve(this.isExist)
-                    return false;
+                    resolve(false)
+                    return
                 }
                 this.$store.dispatch("call", {
                     url: 'project/task/easylists',
@@ -83,24 +80,26 @@ export default {
                         taskid: taskid
                     },
                     method: 'get',
+                    spinner,
                 }).then(({data}) => {
-                    if (data.data.length > 0) {
-                        this.show = true;
-                        let taskObj = {}
-                        userids.map(userid => {
-                            data.data.map(h => {
-                                if ((h.task_user || []).map(k => k.owner ? k.userid : 0).indexOf(userid) !== -1) {
-                                    if (!taskObj[userid]) {
-                                        taskObj[userid] = [];
-                                    }
-                                    taskObj[userid].push(h);
-                                }
-                            });
-                        });
-                        this.tipsTask = taskObj
-                        this.isExist = true;
+                    if (data.data.length <= 0) {
+                        resolve(false)
+                        return
                     }
-                    resolve(this.isExist)
+                    this.show = true;
+                    let taskObj = {}
+                    userids.map(userid => {
+                        data.data.map(h => {
+                            if ((h.task_user || []).map(k => k.owner ? k.userid : 0).indexOf(userid) !== -1) {
+                                if (!taskObj[userid]) {
+                                    taskObj[userid] = [];
+                                }
+                                taskObj[userid].push(h);
+                            }
+                        });
+                    });
+                    this.tipsTask = taskObj
+                    resolve(true)
                 });
             });
         }

@@ -468,7 +468,7 @@
         </div>
         <div v-if="!taskDetail.id" class="task-load"><Loading/></div>
         <!-- 提示  -->
-        <TaskExistTips ref="taskExistTipsRef" @onAdd="updateData('times', updateParams)"/>
+        <TaskExistTips ref="taskExistTipsRef" @onContinue="updateData('timesSave', updateParams)"/>
         <!--任务延期-->
         <Modal
             v-model="delayTaskShow"
@@ -495,7 +495,7 @@
             </Form>
             <div slot="footer">
                 <Button @click="delayTaskShow=false">{{$L('关闭')}}</Button>
-                <Button type="primary" @click="onDelay" :loading="delayTaskLoading">{{$L('确定')}}</Button>
+                <Button type="primary" @click="onDelay">{{$L('确定')}}</Button>
             </div>
         </Modal>
         <!--任务描述历史记录-->
@@ -627,7 +627,6 @@ export default {
             updateParams: {},
 
             delayTaskShow: false,
-            delayTaskLoading: false,
             delayTaskForm: {
                 type: "hour",
                 time: "24",
@@ -1042,39 +1041,44 @@ export default {
                     break;
 
                 case 'times':
-                    if (this.taskDetail.start_at
-                        && (Math.abs($A.dayjs(this.taskDetail.start_at).unix() - $A.dayjs(params.start_at).unix()) > 60 || Math.abs($A.dayjs(this.taskDetail.end_at).unix() - $A.dayjs(params.end_at).unix()) > 60)
-                        && typeof params.desc === "undefined") {
-                        $A.modalInput({
-                            title: `修改${this.taskDetail.parent_id > 0 ? '子任务' : '任务'}时间`,
-                            placeholder: `请输入修改备注`,
-                            okText: "确定",
-                            onOk: (desc) => {
-                                if (!desc) {
-                                    return `请输入修改备注`
-                                }
-                                this.updateParams = Object.assign(params, {desc})
-                                this.updateData("times", this.updateParams)
-                                return false
-                            },
+                    // 没有开始时间，直接保存
+                    if (!this.taskDetail.start_at) {
+                        this.isExistTask(params).then(() => {
+                            this.updateData("timesSave", params)
                         });
                         return;
                     }
-                    if (typeof params.existTips === "undefined") {
-                        this.updateParams = Object.assign(params, {existTips: true})
-                        if (params.start_at && params.end_at && this.$refs.taskExistTipsRef) {
-                            this.$refs.taskExistTipsRef.isExistTask({
-                                taskid: this.taskDetail.id,
-                                userids: this.taskDetail.owner_userid,
-                                timerange: [params.start_at, params.end_at]
-                            }).then(res => {
-                                if (!res) {
-                                    this.updateData("times", this.updateParams)
-                                }
-                            });
-                            return;
-                        }
+                    // 时间变化未超过1分钟，不保存
+                    if (Math.abs($A.dayjs(this.taskDetail.start_at).unix() - $A.dayjs(params.start_at).unix()) < 60 && Math.abs($A.dayjs(this.taskDetail.end_at).unix() - $A.dayjs(params.end_at).unix()) < 60) {
+                        return;
                     }
+                    // 已经有备注，直接保存
+                    if (params.desc) {
+                        this.isExistTask(params).then(() => {
+                            this.updateData("timesSave", params)
+                        });
+                        return;
+                    }
+                    // 弹出修改备注
+                    $A.modalInput({
+                        title: `修改${this.taskDetail.parent_id > 0 ? '子任务' : '任务'}时间`,
+                        placeholder: `请输入修改备注`,
+                        okText: "确定",
+                        onOk: (desc) => {
+                            if (!desc) {
+                                return `请输入修改备注`
+                            }
+                            params.desc = desc;
+                            this.isExistTask(params).then(() => {
+                                this.updateData("timesSave", params)
+                            })
+                            return false
+                        },
+                    })
+                    return;
+
+                case 'timesSave':
+                    action = 'times';
                     this.$set(this.taskDetail, 'times', [params.start_at, params.end_at, params.desc])
                     break;
 
@@ -1135,6 +1139,22 @@ export default {
                 if (typeof successCallback === "function") successCallback();
             }).catch(({msg}) => {
                 $A.modalError(msg);
+            })
+        },
+
+        isExistTask(params) {
+            if (!params.start_at || !params.end_at) {
+                return
+            }
+            return new Promise(resolve => {
+                this.updateParams = Object.assign({}, params)
+                this.$refs.taskExistTipsRef?.isExistTask({
+                    taskid: this.taskDetail.id,
+                    userids: this.taskDetail.owner_userid,
+                    timerange: [params.start_at, params.end_at]
+                }, 600).then(res => {
+                    !res && resolve()
+                })
             })
         },
 
@@ -1762,33 +1782,17 @@ export default {
         onDelay(){
             this.$refs.formDelayTaskRef.validate((valid) => {
                 if (!valid) {
-                    return;
+                    return
                 }
-                this.delayTaskLoading = true;
-                let date = $A.dayjs(this.taskDetail.end_at);
-                if (this.delayTaskForm.type === 'day') {
-                    date = date.add(this.delayTaskForm.time, 'day');
-                } else {
-                    date = date.add(this.delayTaskForm.time, 'hour');
-                }
-                this.$store.dispatch("taskUpdate", {
-                    task_id: this.taskDetail.id,
-                    times: [
-                        this.taskDetail.start_at,
-                        date.format('YYYY-MM-DD HH:mm:ss'),
-                        this.delayTaskForm.remark,
-                    ],
-                }).then(({msg}) => {
-                    $A.messageSuccess(msg);
-                    this.delayTaskLoading = false;
-                    this.delayTaskShow = false;
-                    this.delayTaskForm.remark = '';
-                    this.$store.dispatch("getTaskOne", this.taskDetail.id).catch(() => {})
-                    $A.IDBSet('delayTaskForm', this.delayTaskForm);
-                }).catch(({msg}) => {
-                    $A.modalError(msg);
-                    this.delayTaskLoading = false;
+                const endAt = $A.dayjs(this.taskDetail.end_at).add(this.delayTaskForm.time, this.delayTaskForm.type)
+                this.updateData('times', {
+                    start_at: this.taskDetail.start_at,
+                    end_at: endAt.format('YYYY-MM-DD HH:mm:ss'),
+                    desc: this.delayTaskForm.remark,
                 })
+                this.delayTaskShow = false
+                this.delayTaskForm.remark = ''
+                $A.IDBSet('delayTaskForm', this.delayTaskForm)
             })
         },
 
