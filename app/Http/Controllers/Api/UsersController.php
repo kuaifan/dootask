@@ -882,7 +882,7 @@ class UsersController extends AbstractController
 
             case 'checkin_face':
                 $faceimg = $data['checkin_face'] ? $data['checkin_face'] : '';
-                
+
                 return UserCheckinFace::saveFace($userInfo->userid, $userInfo->nickname, $faceimg, "管理员上传");
 
             case 'department':
@@ -1660,12 +1660,10 @@ class UsersController extends AbstractController
         //
         $list = UserCheckinMac::whereUserid($user->userid)->orderBy('id')->get();
         $userface = UserCheckinFace::whereUserid($user->userid)->first();
-        
-        // 组装数据
-        // TODO 如何获取http连接
+
         $data = [
             'list' => $list,
-            'faceimg'=> $userface ? Base::fillUrl($userface->faceimg) : ''
+            'faceimg' => $userface ? Base::fillUrl($userface->faceimg) : ''
         ];
         //
         return Base::retSuccess('success', $data);
@@ -1693,54 +1691,53 @@ class UsersController extends AbstractController
         if ($setting['open'] !== 'open') {
             return Base::retError('此功能未开启，请联系管理员开启');
         }
-        if ($setting['edit'] !== 'open') {
+        if ($setting['edit'] !== 'open' && $setting['faceupload'] !== 'open') {
             return Base::retError('未开放修改权限，请联系管理员');
         }
         //
         $list = Request::input('list');
         $faceimg = Request::input('faceimg');
-        $array = [];
-        if (empty($list) || !is_array($list)) {
-            return Base::retError('参数错误');
-        }
-        foreach ($list AS $item) {
-            $item = Base::newTrim($item);
-            if (Base::isMac($item['mac'])) {
-                $mac = strtoupper($item['mac']);
-                $array[$mac] = [
-                    'mac' => $mac,
-                    'remark' => substr($item['remark'], 0, 50),
-                ];
-            }
-        }
-        if (count($array) > 3) {
-            return Base::retError('最多只能添加3个MAC地址');
-        }
-        // TODO 后续考虑是否单独写一个接口
-        if ($setting['faceupload'] !== 'open' && $faceimg != '') {
-            return Base::retError('未开放修改权限，请联系管理员');
-        }
-        if ($setting['faceupload'] === 'open') {
-            try{
-                $saveFaceRes = UserCheckinFace::saveFace($user->userid, $user->nickname(), $faceimg, "用户上传");
-                if ($saveFaceRes['ret'] == 0) {
-                    return $saveFaceRes;
-                }
-            } catch(\Throwable) {
-
-            }
-            
-        }
-        $saveMacRes = UserCheckinMac::saveMac($user->userid, $array);
-
-        
+        // 默认返回值，使用用户传递数据
         $data = [
-            'list' => $saveMacRes['data'],
+            'list' => $list,
             'faceimg' =>  $faceimg
         ];
-        $saveMacRes['data'] = $data;
-        return $saveMacRes;
-        
+        // 当mac允许修改
+        if ($setting['edit' === 'open']) {
+            $array = [];
+            if (empty($list) || !is_array($list)) {
+                return Base::retError('参数错误');
+            }
+            foreach ($list AS $item) {
+                $item = Base::newTrim($item);
+                if (Base::isMac($item['mac'])) {
+                    $mac = strtoupper($item['mac']);
+                    $array[$mac] = [
+                        'mac' => $mac,
+                        'remark' => substr($item['remark'], 0, 50),
+                    ];
+                }
+            }
+            if (count($array) > 3) {
+                return Base::retError('最多只能添加3个MAC地址');
+            }
+            $saveMacRes = UserCheckinMac::saveMac($user->userid, $array);
+            $data['list'] = $saveMacRes['data'];
+        } else {
+            $list = UserCheckinMac::whereUserid($user->userid)->orderBy('id')->get();
+            $data['list'] = $list;
+        }
+
+
+        // 当图片允许修改
+        if ($setting['faceupload'] === 'open') {
+            UserCheckinFace::saveFace($user->userid, $user->nickname(), $faceimg, "用户上传");            
+        } else {
+            $userface = UserCheckinFace::whereUserid($user->userid)->first();
+            $data['faceimg'] = $userface;
+        }
+
+        return Base::retSuccess('修改成功', $data);
     }
 
     /**

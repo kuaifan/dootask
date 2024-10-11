@@ -133,7 +133,6 @@ class SystemController extends AbstractController
         $setting['file_upload_limit'] = $setting['file_upload_limit'] ?: '';
         $setting['unclaimed_task_reminder'] = $setting['unclaimed_task_reminder'] ?: 'close';
         $setting['unclaimed_task_reminder_time'] = $setting['unclaimed_task_reminder_time'] ?: '';
-        $setting['server_timezone'] = config('app.timezone');
         $setting['server_version'] = Base::getVersion();
         //
         return Base::retSuccess('success', $setting ?: json_decode('{}'));
@@ -403,15 +402,10 @@ class SystemController extends AbstractController
             }
             if ($all['open'] === 'close') {
                 $all['key'] = md5(Base::generatePassword(32));
-            } else {
-                $botUser = User::botGetOrCreate('check-in');
-                if (!$botUser) {
-                    return Base::retError('创建签到机器人失败');
-                }
+                $all['face_key'] = md5(Base::generatePassword(32));
             }
-            if ($all['modes']) {
-                $all['modes'] = array_intersect($all['modes'], ['auto', 'manual', 'location']);
-            }
+
+            $all['modes'] = array_intersect($all['modes'], ['auto', 'manual', 'location', 'face']);
             $setting = Base::setting('checkinSetting', Base::newTrim($all));
         } else {
             $setting = Base::setting('checkinSetting');
@@ -419,6 +413,10 @@ class SystemController extends AbstractController
         //
         if (empty($setting['key'])) {
             $setting['key'] = md5(Base::generatePassword(32));
+            Base::setting('checkinSetting', $setting);
+        }
+        if (empty($setting['face_key'])) {
+            $setting['face_key'] = md5(Base::generatePassword(32));
             Base::setting('checkinSetting', $setting);
         }
         //

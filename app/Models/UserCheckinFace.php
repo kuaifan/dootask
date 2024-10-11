@@ -52,21 +52,15 @@ class UserCheckinFace extends AbstractModel
             $data['record'] = $record;
         }
         
-        $res = Ihttp::ihttp_post($url, json_encode($data));
+        $res = Ihttp::ihttp_post($url, json_encode($data), 15);
         if($res['data'] && $data = json_decode($res['data'])){
             if($data->ret != 1 && $data->msg){
-                return Base::retError($data->msg);
+                throw new ApiException($data->msg);
             }
         }
         
         
         return AbstractModel::transaction(function() use ($userid, $faceimg, $remark) {
-            // self::updateInsert([
-            //     'userid' => $userid,
-            //     'faceimg' => $faceimg,
-            //     'status' => 1,
-            //     'remark' => $remark
-            // ]);
             $checkinFace = self::query()->whereUserid($userid)->first();
             if ($checkinFace) {
                 self::updateData(['id' => $checkinFace->id], [
@@ -87,7 +81,7 @@ class UserCheckinFace extends AbstractModel
                     return $res;
                 }
             }
-            return Base::retSuccess('上传成功');
+            return Base::retSuccess('设置成功');
         });
     }
 
@@ -95,13 +89,14 @@ class UserCheckinFace extends AbstractModel
         $url = 'http://' . env('APP_IPPR') . '.55' . ":7788/user/delete";
         $data = [
             'enrollid' => $userid,
-            'backupnum' => 50,
+            'backupnum' => 50, // 13 删除整个用户  50 删除图片
         ];
         
         $res = Ihttp::ihttp_post($url, json_encode($data));
         if($res['data'] && $data = json_decode($res['data'])){
             if($data->ret != 1 && $data->msg){
-                return Base::retError($data->msg);
+                throw new ApiException($data->msg);
+                // return Base::retError($data->msg);
             }
         }
     }

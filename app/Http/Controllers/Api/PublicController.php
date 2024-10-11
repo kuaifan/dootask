@@ -78,17 +78,28 @@ class PublicController extends AbstractController
         $key = trim(Request::input('key'));
         $mac = trim(Request::input('mac'));
         $time = intval(Request::input('time'));
+        $type = trim(Request::input('type'));
         //
         $setting = Base::setting('checkinSetting');
         if ($setting['open'] !== 'open') {
             return 'function off';
         }
-        if (!in_array('auto', $setting['modes'])) {
-            return 'mode off';
+        if ($type && $type === 'face') {
+            if (!in_array('face', $setting['modes'])) {
+                return 'mode off';
+            }
+            if ($key != $setting['face_key']) {
+                return 'key error';
+            }
+        } else {
+            if (!in_array('auto', $setting['modes'])) {
+                return 'mode off';
+            }
+            if ($key != $setting['key']) {
+                return 'key error';
+            }
         }
-        if ($key != $setting['key']) {
-            return 'key error';
-        }
+       
         if ($error = UserBot::checkinBotCheckin($mac, $time)) {
             return $error;
         }

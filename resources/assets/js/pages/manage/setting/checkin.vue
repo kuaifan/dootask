@@ -23,7 +23,7 @@
             </Alert>
             <div class="setting-checkin-row">
             <Tabs v-model="checkinTabs" style="margin: 0;">
-                <TabPane :label="$L('mac地址')" name="mac">
+                <TabPane :label="$L('设备MAC地址')" name="mac">
                     <Row class="setting-template">
                         <Col span="12">{{$L('设备MAC地址')}}</Col>
                         <Col span="12">{{$L('备注')}}</Col>
