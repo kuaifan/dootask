@@ -402,8 +402,10 @@ class SystemController extends AbstractController
             }
             if ($all['open'] === 'close') {
                 $all['key'] = md5(Base::generatePassword(32));
+                $all['face_key'] = md5(Base::generatePassword(32));
             }
-            $all['modes'] = array_intersect($all['modes'], ['auto', 'manual', 'location']);
+
+            $all['modes'] = array_intersect($all['modes'], ['auto', 'manual', 'location', 'face']);
             $setting = Base::setting('checkinSetting', Base::newTrim($all));
         } else {
             $setting = Base::setting('checkinSetting');
@@ -411,6 +413,10 @@ class SystemController extends AbstractController
         //
         if (empty($setting['key'])) {
             $setting['key'] = md5(Base::generatePassword(32));
+            Base::setting('checkinSetting', $setting);
+        }
+        if (empty($setting['face_key'])) {
+            $setting['face_key'] = md5(Base::generatePassword(32));
             Base::setting('checkinSetting', $setting);
         }
         //
