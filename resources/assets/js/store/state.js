@@ -88,8 +88,6 @@ export default {
     cacheKeyboard: {},
 
     // Ajax
-    ajaxWsReady: false,
-    ajaxWsListener: [],
     ajaxNetworkException: false,
 
     // Websocket

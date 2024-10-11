@@ -229,6 +229,25 @@ $A.bindScreenshotKey = (data) => {
     $A.Electron.sendMessage('bindScreenshotKey', {key});
 };
 
+// 翻译
+$A.apiTranslate = (data) => {
+    if ($A.isJson(data)) {
+        for (let key in data) {
+            if (!data.hasOwnProperty(key)) continue;
+            data[key] = $A.apiTranslate(data[key]);
+        }
+    } else if ($A.isArray(data)) {
+        data.forEach((val, index) => {
+            data[index] = $A.apiTranslate(val);
+        });
+    } else if (typeof data === 'string' && /__L\((.*?)\)__/.test(data)) {
+        data = data.replace(/__L\((.*?)\)__/g, (match, p1) => {
+            return $L(p1)
+        })
+    }
+    return data
+}
+
 Vue.prototype.$A = $A;
 Vue.prototype.$L = $L;
 Vue.prototype.$Electron = $A.Electron;

@@ -161,12 +161,13 @@ export default {
                 state.ajaxNetworkException = false
                 if (!$A.isJson(result)) {
                     console.log(result, status, xhr)
-                    reject({ret: -1, data: {}, msg: "Return error"})
+                    reject({ret: -1, data: {}, msg: $A.L('返回参数错误')})
                     return
                 }
                 if (params.encrypt === true && result.encrypted) {
                     result = await dispatch("pgpDecryptApi", result.encrypted)
                 }
+                result = $A.apiTranslate(result)
                 const {ret, data, msg} = result
                 if (ret === -1) {
                     state.userId = 0
@@ -203,7 +204,7 @@ export default {
                 if (ret === 1) {
                     resolve({data, msg})
                 } else {
-                    reject({ret, data, msg: msg || "Unknown error"})
+                    reject({ret, data, msg: msg || $A.L('未知错误')})
                     //
                     if (ret === -4001) {
                         dispatch("forgetProject", data.project_id)
@@ -235,65 +236,11 @@ export default {
                     state.ajaxNetworkException = networkException
                 }
                 if (networkException) {
-                    reject({ret: -1001, data: {}, msg: "Network exception"})
+                    reject({ret: -1001, data: {}, msg: $A.L('网络异常')})
                 } else {
-                    reject({ret: -1, data: {}, msg: "System error"})
+                    reject({ret: -1, data: {}, msg: $A.L('请求失败')})
                 }
                 console.error(xhr, status);
-            }
-            // WebSocket
-            if (params.websocket === true) {
-                const apiWebsocket = $A.randomString(16)
-                const apiTimeout = setTimeout(() => {
-                    const WListener = state.ajaxWsListener.find((item) => item.apiWebsocket == apiWebsocket)
-                    if (WListener) {
-                        WListener.complete()
-                        WListener.error("timeout")
-                        WListener.after()
-                    }
-                    state.ajaxWsListener = state.ajaxWsListener.filter((item) => item.apiWebsocket != apiWebsocket)
-                }, params.timeout || 30000)
-                state.ajaxWsListener.push({
-                    apiWebsocket: apiWebsocket,
-                    complete: typeof params.complete === "function" ? params.complete : () => { },
-                    success: typeof params.success === "function" ? params.success : () => { },
-                    error: typeof params.error === "function" ? params.error : () => { },
-                    after: typeof params.after === "function" ? params.after : () => { },
-                })
-                //
-                params.complete = () => { }
-                params.success = () => { }
-                params.error = () => { }
-                params.after = () => { }
-                params.header['Api-Websocket'] = apiWebsocket
-                //
-                if (state.ajaxWsReady === false) {
-                    state.ajaxWsReady = true
-                    dispatch("websocketMsgListener", {
-                        name: "apiWebsocket",
-                        callback: (msg) => {
-                            switch (msg.type) {
-                                case 'apiWebsocket':
-                                    clearTimeout(apiTimeout)
-                                    const apiWebsocket = msg.apiWebsocket
-                                    const apiSuccess = msg.apiSuccess
-                                    const apiResult = msg.data
-                                    const WListener = state.ajaxWsListener.find((item) => item.apiWebsocket == apiWebsocket)
-                                    if (WListener) {
-                                        WListener.complete()
-                                        if (apiSuccess) {
-                                            WListener.success(apiResult)
-                                        } else {
-                                            WListener.error(apiResult)
-                                        }
-                                        WListener.after()
-                                    }
-                                    state.ajaxWsListener = state.ajaxWsListener.filter((item) => item.apiWebsocket != apiWebsocket)
-                                    break
-                            }
-                        }
-                    })
-                }
             }
             //
             $A.ajaxc(params)
@@ -3594,7 +3541,7 @@ export default {
             if (result.type === "encrypt" && result.encrypted) {
                 result = await dispatch("pgpDecryptApi", result.encrypted)
             }
-            const msgDetail = $A.formatMsgBasic(result);
+            const msgDetail = $A.apiTranslate($A.formatMsgBasic(result));
             const {type, msgId} = msgDetail;
             switch (type) {
                 case "open":

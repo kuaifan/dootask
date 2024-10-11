@@ -269,12 +269,32 @@ class Doo
     /**
      * 翻译
      * @param $text
-     * @param string $type
      * @return string
      */
-    public static function translate($text, string $type = ""): string
+    public static function translate($text): string
     {
-        return self::string(self::doo()->translate($text, $type));
+        // 存在版本号 且 低于0.38.28时 使用原文
+        $version = Base::headerOrInput('version');
+        if ($version && !Base::judgeClientVersion('0.38.28', $version)) {
+            return $text;
+        }
+
+        if (is_string($text)) {
+            // 等于success、error、warning、info、(为空)时不处理
+            if (in_array($text, ['success', 'error', 'warning', 'info', ''])) {
+                return $text;
+            }
+            // 以__L(开头，)__结尾的不处理
+            if (str_starts_with($text, "__L(") && str_ends_with($text, ")__")) {
+                return $text;
+            }
+            $text = "__L(" . $text . ")__";
+        } elseif (is_array($text)) {
+            foreach ($text as $key => $val) {
+                $text[$key] = self::translate($val);
+            }
+        }
+        return $text;
     }
 
     /**
