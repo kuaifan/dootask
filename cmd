@@ -428,13 +428,18 @@ if [ $# -gt 0 ]; then
                 exit 1
             fi
             chmod -R 775 "${cur_path}/docker/mysql/data"
-            sleep 3
         done
-        run_exec php "php artisan migrate --seed"
-        if [ ! -f "${cur_path}/docker/mysql/data/$(env_get DB_DATABASE)/$(env_get DB_PREFIX)migrations.ibd" ]; then
-            error "数据库安装失败!"
-            exit 1
-        fi
+        # 数据库迁移
+        remaining=20
+        while [ ! -f "${cur_path}/docker/mysql/data/$(env_get DB_DATABASE)/$(env_get DB_PREFIX)migrations.ibd" ]; do
+            ((remaining=$remaining-1))
+            if [ $remaining -lt 0 ]; then
+                error "数据库安装失败!"
+                exit 1
+            fi
+            sleep 3
+            run_exec php "php artisan migrate --seed"
+        done
         # 设置初始化密码
         res=`run_exec mariadb "sh /etc/mysql/repassword.sh"`
         $COMPOSE up -d
