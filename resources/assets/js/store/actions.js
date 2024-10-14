@@ -167,7 +167,6 @@ export default {
                 if (params.encrypt === true && result.encrypted) {
                     result = await dispatch("pgpDecryptApi", result.encrypted)
                 }
-                result = $A.apiTranslate(result)
                 const {ret, data, msg} = result
                 if (ret === -1) {
                     state.userId = 0
@@ -3541,7 +3540,7 @@ export default {
             if (result.type === "encrypt" && result.encrypted) {
                 result = await dispatch("pgpDecryptApi", result.encrypted)
             }
-            const msgDetail = $A.apiTranslate($A.formatMsgBasic(result));
+            const msgDetail = $A.formatMsgBasic(result);
             const {type, msgId} = msgDetail;
             switch (type) {
                 case "open":
