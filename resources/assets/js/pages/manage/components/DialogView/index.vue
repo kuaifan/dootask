@@ -26,148 +26,21 @@
             <!--详情-->
             <div ref="content" class="dialog-content" :class="contentClass">
                 <!--文本-->
-                <div v-if="msgData.type === 'text'" class="content-text no-dark-content">
-                    <DialogMarkdown v-if="msgData.msg.type === 'md'" @click="viewText" :text="msgData.msg.text"/>
-                    <pre v-else @click="viewText" v-html="$A.formatTextMsg(msgData.msg.text, userId)"></pre>
-                </div>
+                <TextMsg v-if="msgData.type === 'text'" :msg="msgData.msg" @click="viewText"/>
                 <!--文件-->
-                <div v-else-if="msgData.type === 'file'" :class="`content-file ${msgData.msg.type}`">
-                    <div class="dialog-file">
-                        <img v-if="msgData.msg.type === 'img'" class="file-img" :style="imageStyle(msgData.msg)" :src="msgData.msg.thumb" @click="viewFile"/>
-                        <div v-else-if="isVideoFile(msgData.msg)" class="file-video" :style="imageStyle(msgData.msg)" @click="viewFile">
-                            <img v-if="msgData.msg.thumb" :src="msgData.msg.thumb">
-                            <video v-else :width="imageStyle(msgData.msg, 'width')" :height="imageStyle(msgData.msg, 'height')">
-                                <source :src="msgData.msg.path" type="video/mp4">
-                            </video>
-                            <div class="file-play">
-                                <div class="play-icon">
-                                    <i class="taskfont">&#xe745;</i>
-                                </div>
-                            </div>
-                        </div>
-                        <div v-else class="file-box" @click="downFile">
-                            <img class="file-thumb" :src="msgData.msg.thumb"/>
-                            <div class="file-info">
-                                <div class="file-name">{{msgData.msg.name}}</div>
-                                <div class="file-size">{{$A.bytesToSize(msgData.msg.size)}}</div>
-                            </div>
-                        </div>
-                        <div v-if="msgData.msg.percentage" class="file-percentage">
-                            <span :style="fileStyle(msgData.msg.percentage)"></span>
-                        </div>
-                    </div>
-                </div>
+                <FileMsg v-else-if="msgData.type === 'file'" :msg="msgData.msg" @viewFile="viewFile" @downFile="downFile"/>
                 <!--录音-->
-                <div v-else-if="msgData.type === 'record'" class="content-record no-dark-content">
-                    <div class="dialog-record" :class="{playing: audioPlaying === msgData.msg.path}" :style="recordStyle(msgData.msg)" @click="playRecord">
-                        <div class="record-time">{{recordDuration(msgData.msg.duration)}}</div>
-                        <div class="record-icon taskfont"></div>
-                    </div>
-                    <div v-if="msgData.msg.text" class="dialog-record-text">
-                        {{msgData.msg.text}}
-                    </div>
-                </div>
+                <RecordMsg v-else-if="msgData.type === 'record'" :msg="msgData.msg" @playRecord="playRecord"/>
                 <!--会议-->
-                <div v-else-if="msgData.type === 'meeting'" class="content-meeting no-dark-content">
-                    <ul class="dialog-meeting" :class="{'meeting-end':!!msgData.msg.end_at}">
-                        <li>
-                            <em>{{$L('会议主题')}}</em>
-                            {{msgData.msg.name}}
-                        </li>
-                        <li>
-                            <em>{{$L('会议创建人')}}</em>
-                            <UserAvatar :userid="msgData.msg.userid" :show-icon="false" :show-name="true"/>
-                        </li>
-                        <li>
-                            <em>{{$L('频道ID')}}</em>
-                            {{msgData.msg.meetingid.replace(/^(.{3})(.{3})(.*)$/, '$1 $2 $3')}}
-                        </li>
-                        <li v-if="msgData.msg.end_at" class="meeting-operation">
-                            {{$L('会议已结束')}}
-                        </li>
-                        <li v-else class="meeting-operation" @click="openMeeting">
-                            {{$L('点击加入会议')}}
-                            <i class="taskfont">&#xe68b;</i>
-                        </li>
-                    </ul>
-                </div>
+                <MeetingMsg v-else-if="msgData.type === 'meeting'" :msg="msgData.msg" @openMeeting="openMeeting"/>
                 <!--接龙-->
-                <div v-else-if="msgData.type === 'word-chain'" class="content-text content-word-chain no-dark-content">
-                    <pre v-html="$A.formatTextMsg(msgData.msg.text, userId)"></pre>
-                    <ul :class="{'expand': unfoldWordChainData.indexOf(msgData.id) !== -1 }">
-                        <li v-for="(item) in (msgData.msg.list || []).filter(h=>h.type == 'case')">
-                            {{ $L('例') }} {{ item.text }}
-                        </li>
-                        <li v-for="(item,index) in (msgData.msg.list || []).filter(h=>h.type != 'case' && h.text)">
-                            <span class="expand" v-if="index == 2 && msgData.msg.list.length > 4" @click="unfoldWordChain(msgData)">
-                                ...{{$L('展开')}}...
-                            </span>
-                            <span :class="{'shrink': index >= 2 && msgData.msg.list.length > 4 } ">
-                                {{index + 1}}. {{item.text}}
-                            </span>
-                        </li>
-                        <li @click="onWordChain" class="participate">
-                            {{ $L('参与接龙') }}
-                            <i class="taskfont">&#xe703;</i>
-                        </li>
-                    </ul>
-                </div>
+                <WordChainMsg v-else-if="msgData.type === 'word-chain'" :msg="msgData.msg" :msgId="msgData.id" :unfoldWordChainData="unfoldWordChainData" @unfoldWordChain="unfoldWordChain(msgData)" @onWordChain="onWordChain"/>
                 <!--投票-->
-                <div v-else-if="msgData.type === 'vote'" class="content-text content-word-vote no-dark-content">
-                    <div class="vote-msg-head">
-                        <i class="taskfont">&#xe7fd;</i>
-                        <em>{{ $L('投票') }}</em>
-                        <span>{{ msgData.msg.multiple == 1 ? $L('多选') : $L('单选')}}</span>
-                        <span>{{ msgData.msg.anonymous == 1 ? $L('匿名') : $L('实名')}}</span>
-                    </div>
-                    <pre v-html="$A.formatTextMsg(msgData.msg.text, userId)"></pre>
-                    <template v-if="(msgData.msg.votes || []).filter(h=>h.userid == userId).length == 0">
-                        <RadioGroup v-if="msgData.msg.multiple == 0" v-model="voteData[msgData.msg.uuid]" vertical>
-                            <Radio v-for="(item,index) in (msgData.msg.list || [])" :label="item.id" :key="index">
-                                {{item.text}}
-                            </Radio>
-                        </RadioGroup>
-                        <CheckboxGroup v-else v-model="voteData[msgData.msg.uuid]">
-                            <Checkbox v-for="(item,index) in (msgData.msg.list || [])" :label="item.id" :key="index">
-                                {{item.text}}
-                            </Checkbox>
-                        </CheckboxGroup>
-                        <div class="btn-row">
-                            <Button v-if="(voteData[msgData.msg.uuid] || []).length == 0" class="ivu-btn-grey" disabled>{{$L("请选择后投票")}}</Button>
-                            <Button v-else type="warning" :loading="msgData.msg._loadIng > 0" class="no-dark-content" @click="onVote('vote',msgData)">{{$L("立即投票")}}</Button>
-                        </div>
-                    </template>
-                    <template v-else>
-                        <div class="vote-result-body">
-                            <ul>
-                                <li v-for="item in (msgData.msg.list || [])">
-                                    <div class="vote-option-title">{{ item.text }}</div>
-                                    <div class="ticket-num">
-                                        <span>{{ getVoteProgress(msgData.msg,item.id).num }}{{$L('票')}}</span>
-                                        <span>{{ getVoteProgress(msgData.msg,item.id).progress + '%' }}</span>
-                                    </div>
-                                    <Progress :percent="Number(getVoteProgress(msgData.msg,item.id).progress)" :stroke-width="5" hide-info/>
-                                    <div v-if="msgData.msg.anonymous == 0" class="avatar-row">
-                                        <template v-for="votes in (msgData.msg.votes || []).filter(h=>h.votes.indexOf(item.id) != -1)">
-                                            <UserAvatar :userid="votes.userid" :size="18" />
-                                        </template>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="btn-row" v-if="msgData.msg.state == 1 && msgData.msg.userid == userId">
-                            <Button type="warning" :loading="msgData.msg._loadIng > 0" @click="onVote('again',msgData)">{{$L("再次发送")}}</Button>
-                            <Button type="warning" :loading="msgData.msg._loadIng > 0" @click="onVote('finish',msgData)">{{$L("结束投票")}}</Button>
-                        </div>
-                    </template>
-                </div>
+                <VoteMsg v-else-if="msgData.type === 'vote'" :msg="msgData.msg" :voteData="voteData" @onVote="onVote($event, msgData)"/>
                 <!--等待-->
-                <div v-else-if="msgData.type === 'loading'" class="content-loading">
-                    <Icon v-if="msgData.error === true" type="ios-alert-outline" />
-                    <Loading v-else/>
-                </div>
+                <LoadMsg v-else-if="isLoading" :error="msgData.error"/>
                 <!--未知-->
-                <div v-else class="content-unknown">{{$L("未知的消息类型")}}</div>
+                <UnknownMsg v-else/>
             </div>
             <!--emoji-->
             <ul v-if="$A.arrayLength(msgData.emoji) > 0" class="dialog-emoji">
@@ -295,15 +168,33 @@
 </template>
 
 <script>
-import WCircle from "../../../components/WCircle";
+import WCircle from "../../../../components/WCircle";
 import {mapGetters, mapState} from "vuex";
 import {Store} from "le5le-store";
-import longpress from "../../../directives/longpress";
-import DialogMarkdown from "./DialogMarkdown.vue";
+import longpress from "../../../../directives/longpress";
+
+import TextMsg from "./text.vue";
+import FileMsg from "./file.vue";
+import RecordMsg from "./record.vue";
+import MeetingMsg from "./meet.vue";
+import WordChainMsg from "./word-chain.vue";
+import VoteMsg from "./vote.vue";
+import LoadMsg from "./load.vue";
+import UnknownMsg from "./unknown.vue";
 
 export default {
     name: "DialogView",
-    components: {DialogMarkdown, WCircle},
+    components: {
+        UnknownMsg,
+        LoadMsg,
+        VoteMsg,
+        WordChainMsg,
+        MeetingMsg,
+        RecordMsg,
+        TextMsg,
+        FileMsg,
+        WCircle
+    },
     directives: {longpress},
     props: {
         msgData: {
@@ -382,7 +273,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['loads', 'audioPlaying']),
+        ...mapState(['loads']),
         ...mapGetters(['isLoad']),
 
         isLoading() {
@@ -557,72 +448,6 @@ export default {
             });
         },
 
-        recordStyle(info) {
-            const {duration} = info;
-            const width = 50 + Math.min(180, Math.floor(duration / 200));
-            return {
-                width: width + 'px',
-            };
-        },
-
-        recordDuration(duration) {
-            const minute = Math.floor(duration / 60000),
-                seconds = Math.floor(duration / 1000) % 60;
-            if (minute > 0) {
-                return `${minute}:${seconds}″`
-            }
-            return `${Math.max(1, seconds)}″`
-        },
-
-        fileStyle(percentage) {
-            if (percentage) {
-                return {
-                    width: `${percentage}%`
-                };
-            }
-            return {};
-        },
-
-        imageStyle(info, type = 'style') {
-            const {width, height} = info;
-            if (width && height) {
-                let maxW = 220,
-                    maxH = 220,
-                    tempW = width,
-                    tempH = height;
-                if (width > maxW || height > maxH) {
-                    if (width > height) {
-                        tempW = maxW;
-                        tempH = height * (maxW / width);
-                    } else {
-                        tempW = width * (maxH / height);
-                        tempH = maxH;
-                    }
-                }
-                if (type === 'width') {
-                    return tempW
-                }
-                if (type === 'height') {
-                    return tempH
-                }
-                return {
-                    width: tempW + 'px',
-                    height: tempH + 'px',
-                };
-            }
-            if (type === 'width' || type === 'height') {
-                return 0
-            }
-            return {};
-        },
-
-        isVideoFile(msg) {
-            return msg.type === 'file'
-                && msg.ext === 'mp4'
-                && msg.width > 0
-                && msg.height > 0;
-        },
-
         playRecord() {
             if (this.operateVisible) {
                 return
@@ -737,15 +562,15 @@ export default {
                     cancelText: '取消',
                     okText: '确定',
                     onOk: () => {
-                        this.vote(type, msgData);
+                        this.submitVote(type, msgData);
                     }
                 });
                 return;
             }
-            this.vote(type, msgData);
+            this.submitVote(type, msgData);
         },
 
-        vote(type, msgData) {
+        submitVote(type, msgData) {
             this.$set(msgData.msg, '_loadIng', 1)
             this.$store.dispatch("call", {
                 url: 'dialog/msg/vote',
@@ -769,12 +594,6 @@ export default {
                 this.$set(msgData.msg, '_loadIng', 0)
             });
         },
-
-        getVoteProgress(msgData, id) {
-            const num = msgData.votes.filter(h => (h.votes || '').indexOf(id) != -1).length
-            const progress = !num ? '0.00' : (num / msgData.votes.length * 100).toFixed(2);
-            return { num, progress };
-        }
     }
 }
 </script>

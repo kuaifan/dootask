@@ -655,7 +655,8 @@
                 position: relative;
 
                 &.text,
-                &.record {
+                &.record,
+                &.word-chain {
                     max-width: 70%;
                 }
 
@@ -1317,7 +1318,7 @@
 
                         .content-word-vote {
                             min-width: 200px;
-                            max-width: 260px;
+                            max-width: 300px;
 
                             .vote-msg-head {
                                 display: flex;
