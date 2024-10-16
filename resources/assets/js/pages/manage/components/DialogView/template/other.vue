@@ -17,7 +17,7 @@ export default {
     },
     computed: {
         isBot() {
-            return this.msg.type.startsWith('/');
+            return /^\//.test(this.msg.type);
         },
     },
     methods: {},

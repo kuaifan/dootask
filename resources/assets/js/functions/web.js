@@ -386,46 +386,106 @@ import {MarkdownPreview} from "../store/markdown";
          * @returns {string|*}
          */
         getMsgSimpleDesc(data, imgClassName = null) {
-            if ($A.isJson(data)) {
-                switch (data.type) {
-                    case 'text':
-                        return $A.getMsgTextPreview(data.msg.type === 'md' ? MarkdownPreview(data.msg.text) : data.msg.text, imgClassName)
-                    case 'vote':
-                        return `[${$A.L('投票')}]` + $A.getMsgTextPreview(data.msg.text, imgClassName)
-                    case 'word-chain':
-                        return `[${$A.L('接龙')}]` + $A.getMsgTextPreview(data.msg.text, imgClassName)
-                    case 'record':
-                        return `[${$A.L('语音')}]`
-                    case 'meeting':
-                        return `[${$A.L('会议')}] ${data.msg.name}`
-                    case 'file':
-                        if (data.msg.type == 'img') {
-                            if (imgClassName) {
-                                // 缩略图，主要用于回复消息预览
-                                const width = parseInt(data.msg.width),
-                                    height = parseInt(data.msg.height),
-                                    maxSize = 40;
-                                const scale = $A.scaleToScale(width, height, maxSize, maxSize);
-                                return `<img class="${imgClassName}" style="width:${scale.width}px;height:${scale.height}px" src="${data.msg.thumb}">`
-                            }
-                            return `[${$A.L('图片')}]`
-                        } else if (data.msg.ext == 'mp4') {
-                            return `[${$A.L('视频')}]`
-                        }
-                        return `[${$A.L('文件')}] ${data.msg.name}`
-                    case 'tag':
-                        return `[${$A.L(data.msg.action === 'remove' ? '取消标注' : '标注')}] ${$A.getMsgSimpleDesc(data.msg.data)}`
-                    case 'top':
-                        return `[${$A.L(data.msg.action === 'remove' ? '取消置顶' : '置顶')}] ${$A.getMsgSimpleDesc(data.msg.data)}`
-                    case 'todo':
-                        return `[${$A.L(data.msg.action === 'remove' ? '取消待办' : (data.msg.action === 'done' ? '完成' : '设待办'))}] ${$A.getMsgSimpleDesc(data.msg.data)}`
-                    case 'notice':
-                        return data.msg.notice
-                    default:
-                        return `[${$A.L('未知的消息')}]`
-                }
+            if (!$A.isJson(data)) {
+                return '';
             }
-            return '';
+            switch (data.type) {
+                case 'text':
+                    return $A.getMsgTextPreview(data.msg.type === 'md' ? MarkdownPreview(data.msg.text) : data.msg.text, imgClassName)
+                case 'vote':
+                    return `[${$A.L('投票')}]` + $A.getMsgTextPreview(data.msg.text, imgClassName)
+                case 'word-chain':
+                    return `[${$A.L('接龙')}]` + $A.getMsgTextPreview(data.msg.text, imgClassName)
+                case 'record':
+                    return `[${$A.L('语音')}]`
+                case 'meeting':
+                    return `[${$A.L('会议')}] ${data.msg.name}`
+                case 'file':
+                    return $A.fileMsgSimpleDesc(data.msg, imgClassName)
+                case 'tag':
+                    return `[${$A.L(data.msg.action === 'remove' ? '取消标注' : '标注')}] ${$A.getMsgSimpleDesc(data.msg.data)}`
+                case 'top':
+                    return `[${$A.L(data.msg.action === 'remove' ? '取消置顶' : '置顶')}] ${$A.getMsgSimpleDesc(data.msg.data)}`
+                case 'todo':
+                    return `[${$A.L(data.msg.action === 'remove' ? '取消待办' : (data.msg.action === 'done' ? '完成' : '设待办'))}] ${$A.getMsgSimpleDesc(data.msg.data)}`
+                case 'notice':
+                    return data.msg.notice
+                case 'template':
+                    return $A.tempMsgSimpleDesc(data.msg)
+                default:
+                    return `[${$A.L('未知的消息')}]`
+            }
+        },
+
+        /**
+         * 文件消息简单描述
+         * @param msg
+         * @param imgClassName
+         * @returns {string}
+         */
+        fileMsgSimpleDesc(msg, imgClassName = null) {
+            if (msg.type == 'img') {
+                if (imgClassName) {
+                    // 缩略图，主要用于回复消息预览
+                    const width = parseInt(msg.width),
+                        height = parseInt(msg.height),
+                        maxSize = 40;
+                    const scale = $A.scaleToScale(width, height, maxSize, maxSize);
+                    return `<img class="${imgClassName}" style="width:${scale.width}px;height:${scale.height}px" src="${msg.thumb}">`
+                }
+                return `[${$A.L('图片')}]`
+            } else if (msg.ext == 'mp4') {
+                return `[${$A.L('视频')}]`
+            }
+            return `[${$A.L('文件')}] ${msg.name}`
+        },
+
+        /**
+         * 模板消息简单描述
+         * @param msg
+         * @returns {string|*}
+         */
+        tempMsgSimpleDesc(msg) {
+            switch (msg.type) {
+                case '/help':
+                    return $A.L('帮助指令');
+                case '/list':
+                    return $A.L('我的机器人');
+                case '/info':
+                    return $A.L('机器人信息');
+                case '/newbot':
+                    return $A.L('新建机器人');
+                case '/setname':
+                    return $A.L('设置名称');
+                case '/deletebot':
+                    return $A.L('删除机器人');
+                case '/token':
+                    return $A.L('机器人Token');
+                case '/revoke':
+                    return $A.L('更新Token');
+                case '/webhook':
+                    return $A.L('设置Webhook');
+                case '/clearday':
+                    return $A.L('设置保留消息时间');
+                case '/dialog':
+                    return $A.L('对话列表');
+                case '/api':
+                    return $A.L('API接口文档');
+
+                case 'approve_reviewer':
+                    return $A.L('待你审批');
+                case 'approve_notifier':
+                    return $A.L('审批通知');
+                case 'approve_comment_notifier':
+                    return $A.L('审批评论通知');
+                case 'approve_submitter':
+                    return $A.L('审批结果');
+
+                case 'notice':
+                    return msg.notice;
+                default:
+                    return $A.L(/^\//.test(msg.type) ? '帮助菜单' : '未知消息类型');
+            }
         },
 
         /**

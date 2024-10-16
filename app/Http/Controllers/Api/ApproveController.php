@@ -1012,7 +1012,7 @@ class ApproveController extends AbstractController
                 $proc_msg->userid = $toUser['userid'];
                 $proc_msg->save();
             }
-            // 更新工作报告 未读数量
+            // 更新审批 未读数量
             if ($type == 'approve_reviewer' && $toUser['userid']) {
                 $params = [
                     'userid' => [$toUser['userid'], User::auth()->userid()],
