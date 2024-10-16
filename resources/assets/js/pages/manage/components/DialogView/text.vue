@@ -14,8 +14,8 @@ export default {
         msg: Object,
     },
     methods: {
-        viewText() {
-            this.$emit('viewText');
+        viewText(e) {
+            this.$emit('viewText', e);
         },
     },
 }

@@ -949,7 +949,7 @@ class WebSocketDialogMsg extends AbstractModel
                     ];
                 }
             } else {
-                if ($dialogMsg->type !== 'text') {
+                if (!in_array($dialogMsg->type, ['text', 'template'])) {
                     throw new ApiException('此消息不支持此操作');
                 }
                 if ($dialogMsg->userid != $sender) {

@@ -340,19 +340,13 @@ class BotReceiveMsgTask extends AbstractTask
                     break;
             }
             //
-            $text = view('push.bot', [
+            WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'template', [
                 'type' => $type,
                 'data' => $data,
                 'notice' => $notice,
                 'manager' => $isManager,
                 'version' => Base::getVersion()
-            ])->render();
-            if (!$isManager) {
-                $text = preg_replace("/\s*\{机器人ID\}/", "", $text);
-            }
-            $text = preg_replace("/^\x20+/", "", $text);
-            $text = preg_replace("/\n\x20+/", "\n", $text);
-            WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $text], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
+            ], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
         }
     }
 
@@ -471,7 +465,7 @@ class BotReceiveMsgTask extends AbstractTask
                     && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
                     $error = 'The client version is low (required version ≥ v0.29.12).';
                 }
-                break;    
+                break;
             // 其他机器人
             default:
                 $userBot = UserBot::whereBotId($botUser->userid)->first();

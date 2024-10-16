@@ -262,7 +262,7 @@ class ApproveController extends AbstractController
             $this->approveMsg('approve_reviewer', $dialog, $botUser, $val, $process, $pass);
         }
         // 发起人
-        if ($process['is_finished'] == true) {
+        if ($process['is_finished']) {
             $dialog = WebSocketDialog::checkUserDialog($botUser, $process['start_user_id']);
             if (!empty($dialog)) {
                 $this->approveMsg('approve_submitter', $dialog, $botUser, ['userid' => $data['userid']], $process, $pass);
@@ -284,7 +284,7 @@ class ApproveController extends AbstractController
         }
 
         // 抄送人
-        $notifier = $this->handleProcessNode($process, $task['step']);
+        $notifier = $this->handleProcessNode($process);
         if ($notifier && $pass == 'pass') {
             foreach ($notifier as $val) {
                 $dialog = WebSocketDialog::checkUserDialog($botUser, $val['target_id']);
@@ -899,7 +899,7 @@ class ApproveController extends AbstractController
             3 => '拒绝',
             4 => '撤回'
         );
-        return isset($state_map[$state]) ? $state_map[$state] : '';
+        return $state_map[$state] ?? '';
     }
 
     /**
@@ -986,21 +986,24 @@ class ApproveController extends AbstractController
             'comment_content' => $process['comment_contents']['content'] ?? '',
             'comment_pictures' => $process['comment_contents']['pictures'] ?? []
         ];
-        $text = view('push.bot', ['type' => $type, 'action' => $action, 'is_finished' => $process['is_finished'], 'data' => (object)$data])->render();
-        $text = preg_replace("/^\x20+/", "", $text);
-        $text = preg_replace("/\n\x20+/", "\n", $text);
         $msg_action = null;
+        $msg_data = [
+            'type' => $type,
+            'action' => $action,
+            'is_finished' => $process['is_finished'],
+            'data' => $data
+        ];
         if ($action == 'withdraw' || $action == 'pass' || $action == 'refuse') {
             // 任务完成，给发起人发送消息
             if ($type == 'approve_submitter' && $action != 'withdraw') {
-                return WebSocketDialogMsg::sendMsg($msg_action, $dialog->id, 'text', ['text' => $text, 'approve_type' => $type], $botUser->userid, false, false, true);
+                return WebSocketDialogMsg::sendMsg($msg_action, $dialog->id, 'template', $msg_data, $botUser->userid, false, false, true);
             }
             // 查找最后一条消息msg_id
             $msg_action = 'change-' . $toUser['msg_id'];
         }
         //
         try {
-            $msg = WebSocketDialogMsg::sendMsg($msg_action, $dialog->id, 'text', ['text' => $text, 'approve_type' => $type], $process['start_user_id'], false, false, true);
+            $msg = WebSocketDialogMsg::sendMsg($msg_action, $dialog->id, 'template', $msg_data, $process['start_user_id'], false, false, true);
             // 关联信息
             if ($action == 'start') {
                 $proc_msg = new ApproveProcMsg();
@@ -1022,7 +1025,7 @@ class ApproveController extends AbstractController
                 Task::deliver(new PushTask($params, false));
             }
         } catch (\Throwable $th) {
-            //throw $th;
+            info($th->getMessage());
         }
         return true;
     }
@@ -1126,7 +1129,7 @@ class ApproveController extends AbstractController
         $ret = Ihttp::ihttp_get($this->flow_url . '/api/v1/workflow/process/getUserApprovalStatus?' . http_build_query($data));
         $procdef = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
         if (isset($procdef['status']) && $procdef['status'] == 200) {
-            return Base::retSuccess('success', isset($procdef['data']["proc_def_name"]) ? $procdef['data']["proc_def_name"] : '');
+            return Base::retSuccess('success', $procdef['data']["proc_def_name"] ?? '');
         }
         return Base::retSuccess('success', '');
     }

@@ -26,7 +26,7 @@
             <!--详情-->
             <div ref="content" class="dialog-content" :class="contentClass">
                 <!--文本-->
-                <TextMsg v-if="msgData.type === 'text'" :msg="msgData.msg" @click="viewText"/>
+                <TextMsg v-if="msgData.type === 'text'" :msg="msgData.msg" @viewText="viewText"/>
                 <!--文件-->
                 <FileMsg v-else-if="msgData.type === 'file'" :msg="msgData.msg" @viewFile="viewFile" @downFile="downFile"/>
                 <!--录音-->
@@ -37,6 +37,8 @@
                 <WordChainMsg v-else-if="msgData.type === 'word-chain'" :msg="msgData.msg" :msgId="msgData.id" :unfoldWordChainData="unfoldWordChainData" @unfoldWordChain="unfoldWordChain(msgData)" @onWordChain="onWordChain"/>
                 <!--投票-->
                 <VoteMsg v-else-if="msgData.type === 'vote'" :msg="msgData.msg" :voteData="voteData" @onVote="onVote($event, msgData)"/>
+                <!--模板-->
+                <TemplateMsg v-else-if="msgData.type === 'template'" :msg="msgData.msg" @clickTemplate="clickTemplate"/>
                 <!--等待-->
                 <LoadMsg v-else-if="isLoading" :error="msgData.error"/>
                 <!--未知-->
@@ -179,6 +181,7 @@ import RecordMsg from "./record.vue";
 import MeetingMsg from "./meet.vue";
 import WordChainMsg from "./word-chain.vue";
 import VoteMsg from "./vote.vue";
+import TemplateMsg from "./template";
 import LoadMsg from "./load.vue";
 import UnknownMsg from "./unknown.vue";
 
@@ -187,6 +190,7 @@ export default {
     components: {
         UnknownMsg,
         LoadMsg,
+        TemplateMsg,
         VoteMsg,
         WordChainMsg,
         MeetingMsg,
@@ -538,20 +542,20 @@ export default {
             this.$emit("on-show-emoji-user", item)
         },
 
-        onWordChain() {
-            this.$store.state.dialogDroupWordChain = {
-                type: 'participate',
-                dialog_id: this.msgData.dialog_id,
-                msgData: this.msgData,
-            }
-        },
-
         unfoldWordChain(msg) {
             if (this.unfoldWordChainData.indexOf(msg.id) == -1) {
                 const data = JSON.parse(window.localStorage.getItem('__cache:unfoldWordChain__')) || [];
                 data.push(msg.id);
                 window.localStorage.setItem('__cache:unfoldWordChain__', JSON.stringify(data));
                 this.unfoldWordChainData.push(msg.id);
+            }
+        },
+
+        onWordChain() {
+            this.$store.state.dialogDroupWordChain = {
+                type: 'participate',
+                dialog_id: this.msgData.dialog_id,
+                msgData: this.msgData,
             }
         },
 
@@ -593,6 +597,10 @@ export default {
             }).finally(_ => {
                 this.$set(msgData.msg, '_loadIng', 0)
             });
+        },
+
+        clickTemplate(e) {
+            this.$emit("on-click-template", e)
         },
     }
 }

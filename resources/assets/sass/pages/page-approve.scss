@@ -60,13 +60,13 @@
             .ivu-input-wrapper{
                 max-width: 200px;
             }
-            
+
             @media (max-width: 515px) {
                 .ivu-btn{
                     min-width: 45px;
                 }
             }
-            
+
         }
 
         .approve-load {
@@ -200,6 +200,8 @@
     display: flex;
     flex-direction: column;
     border: 1px solid #eeeeee;
+    height: 100%;
+    border-radius: 10px;
     background: #fff;
 
     .approve-details-nav{
@@ -466,7 +468,7 @@
                     font-weight: 500;
                     color: #135de6;
                 }
-                
+
                 .divider{
                     margin: 12px 0;
                     margin-bottom: 9px;
@@ -502,7 +504,7 @@
     }
 }
 
-// 
+//
 body.window-portrait {
     .page-approve{
         .approve-head {

@@ -578,7 +578,7 @@ class User extends AbstractModel
             case 'ai-gemini@bot.system':
                 return url("images/avatar/default_gemini.png");
             case 'ai-zhipu@bot.system':
-                return url("images/avatar/default_zhipu.png");    
+                return url("images/avatar/default_zhipu.png");
             case 'bot-manager@bot.system':
                 return url("images/avatar/default_bot.png");
             case 'meeting-alert@bot.system':
@@ -651,7 +651,9 @@ class User extends AbstractModel
                 ])->save();
             }
             //
-            $update['nickname'] = UserBot::systemBotName($email);
+            if (empty($update['nickname'])) {
+                $update['nickname'] = UserBot::systemBotName($email);
+            }
         }
         if ($update) {
             $botUser->updateInstance($update);

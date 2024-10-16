@@ -204,6 +204,7 @@
                 @on-view-text="onViewText"
                 @on-view-file="onViewFile"
                 @on-down-file="onDownFile"
+                @on-click-template="onClickTemplate"
                 @on-reply-list="onReplyList"
                 @on-error="onError"
                 @on-emoji="onEmoji"
@@ -640,11 +641,6 @@
             </div>
         </DrawerOverlay>
 
-        <!--审批详情-->
-        <DrawerOverlay v-model="approveDetailsShow" placement="right" :size="600">
-            <ApproveDetails v-if="approveDetailsShow" :data="approveDetails" style="height: 100%;border-radius: 10px;"></ApproveDetails>
-        </DrawerOverlay>
-
         <!-- 群接龙 -->
         <DialogGroupWordChain/>
 
@@ -668,7 +664,6 @@ import {Store} from "le5le-store";
 import ImgUpload from "../../../components/ImgUpload.vue";
 import {choiceEmojiOne} from "./ChatInput/one";
 
-import ApproveDetails from "../../../pages/manage/approve/details.vue";
 import UserSelect from "../../../components/UserSelect.vue";
 import UserAvatarTip from "../../../components/UserAvatar/tip.vue";
 import DialogGroupWordChain from "./DialogGroupWordChain";
@@ -689,7 +684,6 @@ export default {
         DialogGroupInfo,
         DrawerOverlay,
         DialogUpload,
-        ApproveDetails,
         DialogGroupWordChain,
         DialogGroupVote,
         DialogComplaint,
@@ -822,8 +816,6 @@ export default {
             scrollIng: 0,
             scrollGroup: null,
 
-            approveDetails: {id: 0},
-            approveDetailsShow: false,
             approvaUserStatus: '',
 
             observers: [],
@@ -3130,25 +3122,8 @@ export default {
                 return
             }
 
-            // 打开审批详情
-            let approveElement = target;
-            while (approveElement) {
-                if (approveElement.classList.contains('dialog-scroller')) {
-                    break;
-                }
-                if (approveElement.classList.contains('open-approve-details')) {
-                    const dataId = approveElement.getAttribute("data-id")
-                    if (window.innerWidth < 426) {
-                        this.goForward({name: 'manage-approve-details', query: {id: approveElement.getAttribute("data-id")}});
-                    } else {
-                        this.approveDetailsShow = true;
-                        this.$nextTick(() => {
-                            this.approveDetails = {id: dataId};
-                        })
-                    }
-                    return;
-                }
-                approveElement = approveElement.parentElement;
+            if (this.onClickTemplate({target})) {
+                return;
             }
 
             switch (target.nodeName) {
@@ -3330,6 +3305,26 @@ export default {
                     this.$store.dispatch('downUrl', $A.apiUrl(`dialog/msg/download?msg_id=${data.id}`))
                 }
             });
+        },
+
+        onClickTemplate({target}) {
+            if (this.operateVisible) {
+                return false
+            }
+
+            // 打开审批详情
+            let approveElement = target;
+            while (approveElement) {
+                if (approveElement.classList.contains('dialog-scroller')) {
+                    break;
+                }
+                if (approveElement.classList.contains('open-approve-details')) {
+                    Store.set('approveDetails', approveElement.getAttribute("data-id"));
+                    return true;
+                }
+                approveElement = approveElement.parentElement;
+            }
+            return false
         },
 
         onReplyList(data) {
@@ -3619,28 +3614,27 @@ export default {
         },
 
         actionPermission(item, permission) {
-            if (permission === 'forward') {
-                if (['word-chain', 'vote'].includes(item.type)) {
-                    return false    // 投票、接龙 不支持转发
-                }
-                if (item.type === 'text') {
-                    return typeof item.msg.approve_type === 'undefined' // 审批消息不支持转发
-                }
-            } else if (permission === 'newTask') {
-                if (item.type === 'text') {
-                    return typeof item.msg.approve_type === 'undefined' // 审批消息不支持新建任务
-                }
-                return false
-            } else if (permission === 'voice2text') {
-                if (item.type !== 'record') {
-                    return false;
-                }
-                if (item.msg.text) {
-                    return false;
-                }
-                if (this.isLoad(`msg-${item.id}`)) {
-                    return false;
-                }
+            switch (permission) {
+                case 'forward':
+                    if (['word-chain', 'vote', 'template'].includes(item.type)) {
+                        return false    // 投票、接龙、模板消息 不支持转发
+                    }
+                    break;
+
+                case 'newTask':
+                    return item.type === 'text' // 只有 文本消息 才支持新建任务
+
+                case 'voice2text':
+                    if (item.type !== 'record') {
+                        return false;
+                    }
+                    if (item.msg.text) {
+                        return false;
+                    }
+                    if (this.isLoad(`msg-${item.id}`)) {
+                        return false;
+                    }
+                    break;
             }
             return true // 返回 true 允许操作
         },

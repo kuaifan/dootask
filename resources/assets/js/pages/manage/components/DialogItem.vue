@@ -51,6 +51,7 @@
                 @on-view-text="onViewText"
                 @on-view-file="onViewFile"
                 @on-down-file="onDownFile"
+                @on-click-template="onClickTemplate"
                 @on-reply-list="onReplyList"
                 @on-error="onError"
                 @on-emoji="onEmoji"
@@ -250,6 +251,10 @@ export default {
 
         onDownFile(data) {
             this.dispatch("on-down-file", data)
+        },
+
+        onClickTemplate(e) {
+            this.dispatch("on-click-template", e)
         },
 
         onReplyList(data) {

@@ -333,6 +333,11 @@
 
         <!-- okr明细 -->
         <MicroApps v-show="false" v-if="$route.name != 'manage-apps'" name="okr-details" :url="okrUrl" :datas="okrWindow"/>
+
+        <!--审批详情-->
+        <DrawerOverlay v-model="approveDetailsShow" placement="right" :size="600">
+            <ApproveDetails v-if="approveDetailsShow" :data="approveDetails" @onBack="approveDetailsShow=false"/>
+        </DrawerOverlay>
     </div>
 </template>
 
@@ -361,10 +366,13 @@ import {Store} from "le5le-store";
 import {MarkdownPreview} from "../store/markdown";
 import UserSelect from "../components/UserSelect.vue";
 import ImgUpload from "../components/ImgUpload.vue";
+import ApproveDetails from "./manage/approve/details.vue";
 
 export default {
     components: {
-        ImgUpload, UserSelect,
+        ApproveDetails,
+        ImgUpload,
+        UserSelect,
         TaskExport,
         CheckinExport,
         ApproveExport,
@@ -443,6 +451,10 @@ export default {
             needStartHome: false,
 
             complaintShow: false,
+
+            approveDetails: {id: 0},
+            approveDetailsShow: false,
+            approveDetailsSubscribe: null,
         }
     },
 
@@ -452,6 +464,7 @@ export default {
         this.addTaskSubscribe = Store.subscribe('addTask', this.onAddTask);
         this.createGroupSubscribe = Store.subscribe('createGroup', this.onCreateGroup);
         this.dialogMsgSubscribe = Store.subscribe('dialogMsgPush', this.addDialogMsg);
+        this.approveDetailsSubscribe = Store.subscribe('approveDetails', this.openApproveDetails);
         //
         document.addEventListener('keydown', this.shortcutEvent);
     },
@@ -481,6 +494,10 @@ export default {
         if (this.dialogMsgSubscribe) {
             this.dialogMsgSubscribe.unsubscribe();
             this.dialogMsgSubscribe = null;
+        }
+        if (this.approveDetailsSubscribe) {
+            this.approveDetailsSubscribe.unsubscribe();
+            this.approveDetailsSubscribe = null;
         }
         //
         document.removeEventListener('keydown', this.shortcutEvent);
@@ -1133,6 +1150,13 @@ export default {
             } else {
                 this.$store.dispatch("getDialogOne", dialog_id).then(({data}) => notificationFuncA(data.name)).catch(() => {})
             }
+        },
+
+        openApproveDetails(id) {
+            this.approveDetailsShow = true;
+            this.$nextTick(() => {
+                this.approveDetails = {id};
+            })
         },
 
         handleLongpress(event, el) {

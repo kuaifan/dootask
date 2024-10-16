@@ -40,11 +40,6 @@ export default [
                 component: () => import('./pages/manage/approve/index.vue'),
             },
             {
-                name: 'manage-approve-details',
-                path: 'approve/details',
-                component: () => import('./pages/manage/approve/details.vue'),
-            },
-            {
                 name: 'manage-apps',
                 path: 'apps/*',
                 component: () => import('./pages/manage/apps.vue')

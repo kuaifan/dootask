@@ -949,52 +949,6 @@
                                         background-color: $primary-color;
                                     }
                                 }
-
-                                .open-approve-details {
-                                    width: 260px;
-                                    display: inline-block;
-                                    max-width: 100%;
-
-                                    .cause {
-                                        border-bottom: 1px solid #e3e3e3;
-                                        border-top: 1px solid #e3e3e3;
-                                        padding-bottom: 10px;
-                                        margin-top: 10px;
-
-                                        > span:first-child {
-                                            display: inline-block;
-                                            padding: 15px 0;
-                                        }
-
-                                        > b {
-                                            display: inline-block;
-                                            margin-bottom: 5px;
-                                        }
-
-                                        > span {
-                                            display: inline-block;
-                                            margin-bottom: 3px;
-                                        }
-                                    }
-
-                                    .btn-raw {
-                                        display: flex;
-                                        text-align: center;
-                                        padding: 12px 0 5px 0;
-
-                                        > button {
-                                            &.ivu-btn {
-                                                flex: 1;
-                                            }
-                                            &.ivu-btn-primary {
-                                                margin-right: 12px;
-                                            }
-                                            &.ivu-btn-small {
-                                                height: 32px;
-                                            }
-                                        }
-                                    }
-                                }
                             }
                         }
 
@@ -1250,6 +1204,13 @@
                             }
                         }
 
+                        .content-template {
+                            color: #ffffff;
+                            .mark-color {
+                                color: $primary-color;
+                            }
+                        }
+
                         .content-loading {
                             display: flex;
                             align-items: center;
@@ -1419,6 +1380,58 @@
 
                                 .ivu-btn {
                                     flex: 1;
+                                }
+                            }
+                        }
+
+                        .open-approve-details {
+                            width: 260px;
+                            display: inline-block;
+                            max-width: 100%;
+
+                            .cause {
+                                border-bottom: 1px solid #e3e3e3;
+                                border-top: 1px solid #e3e3e3;
+                                padding-bottom: 10px;
+                                margin-top: 10px;
+
+                                > b {
+                                    display: inline-block;
+                                    margin-bottom: 5px;
+                                }
+
+                                > p {
+                                    display: block;
+                                    margin-bottom: 3px;
+                                    &:first-child {
+                                        padding: 15px 0;
+                                    }
+                                }
+
+                                > span {
+                                    display: inline-block;
+                                    margin-bottom: 3px;
+                                    &:first-child {
+                                        padding: 15px 0;
+                                    }
+                                }
+                            }
+
+                            .btn-raw {
+                                display: flex;
+                                text-align: center;
+                                padding: 12px 0 5px 0;
+
+                                > button {
+                                    &.ivu-btn {
+                                        flex: 1;
+                                    }
+                                    &.ivu-btn-primary {
+                                        margin-right: 12px;
+                                    }
+                                    &.ivu-btn-small {
+                                        height: 32px;
+                                    }
                                 }
                             }
                         }
@@ -1737,6 +1750,13 @@
                                     color: #23241f;
                                 }
                             }
+
+                            .open-approve-details {
+                                .ivu-btn-grey {
+                                    background-color: #efefef;
+                                    border-color: #f3f3f3;
+                                }
+                            }
                         }
 
                         .dialog-emoji {
@@ -1766,13 +1786,6 @@
 
                         .percent {
                             display: flex;
-                        }
-                    }
-
-                    .open-approve-details {
-                        .ivu-btn-grey {
-                            background-color: #efefef;
-                            border-color: #f3f3f3;
                         }
                     }
                 }

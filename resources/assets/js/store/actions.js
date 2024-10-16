@@ -235,9 +235,9 @@ export default {
                     state.ajaxNetworkException = networkException
                 }
                 if (networkException) {
-                    reject({ret: -1001, data: {}, msg: $A.L('网络异常')})
+                    reject({ret: -1001, data: {}, msg: $A.L('网络异常，请重试。')})
                 } else {
-                    reject({ret: -1, data: {}, msg: $A.L('请求失败')})
+                    reject({ret: -1, data: {}, msg: $A.L('请求失败，请重试。')})
                 }
                 console.error(xhr, status);
             }

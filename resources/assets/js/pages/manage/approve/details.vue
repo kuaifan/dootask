@@ -2,7 +2,7 @@
     <div class="approve-details" :style="{'z-index':modalTransferIndex}">
         <!-- 导航 -->
         <div class="approve-details-nav">
-            <div class="common-nav-back" @click="goBack()">
+            <div class="common-nav-back" @click="onBack">
                 <i class="taskfont">&#xe676;</i>
             </div>
             <h2>{{$L('审批详情')}}</h2>
@@ -278,6 +278,10 @@ export default {
             if (this.$route.query.id) {
                 this.getInfo()
             }
+        },
+        // 返回
+        onBack() {
+            this.$emit('onBack')
         },
         // 把时间转成几小时前
         getTimeAgo(time, type) {
