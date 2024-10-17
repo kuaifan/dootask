@@ -117,7 +117,7 @@ class UserBot extends AbstractModel
                     'label' => Doo::translate('帮助指令')
                 ], [
                     'key' => '/api',
-                    'label' => Doo::translate('Api接口文档')
+                    'label' => Doo::translate('API接口文档')
                 ], [
                     'key' => '/list',
                     'label' => Doo::translate('我的机器人')

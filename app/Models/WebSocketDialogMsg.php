@@ -591,7 +591,7 @@ class WebSocketDialogMsg extends AbstractModel
                 return $data['msg']['notice'];
 
             case 'template':
-                return $this->previewTemplateMsg($data['msg']);
+                return Doo::translate($data['msg']['desc'] ?: '未知消息类型');
 
             default:
                 $action = Doo::translate("未知的消息");
@@ -615,55 +615,6 @@ class WebSocketDialogMsg extends AbstractModel
         }
         $action = Doo::translate("文件");
         return "[{$action}] {$msg['name']}";
-    }
-
-    /**
-     * 预览模板消息
-     * @param $msg
-     * @return string
-     */
-    private function previewTemplateMsg($msg)
-    {
-        switch ($msg['type']) {
-            case '/help':
-                return Doo::translate('帮助指令');
-            case '/list':
-                return Doo::translate('我的机器人');
-            case '/info':
-                return Doo::translate('机器人信息');
-            case '/newbot':
-                return Doo::translate('新建机器人');
-            case '/setname':
-                return Doo::translate('设置名称');
-            case '/deletebot':
-                return Doo::translate('删除机器人');
-            case '/token':
-                return Doo::translate('机器人Token');
-            case '/revoke':
-                return Doo::translate('更新Token');
-            case '/webhook':
-                return Doo::translate('设置Webhook');
-            case '/clearday':
-                return Doo::translate('设置保留消息时间');
-            case '/dialog':
-                return Doo::translate('对话列表');
-            case '/api':
-                return Doo::translate('API接口文档');
-
-            case 'approve_reviewer':
-                return Doo::translate('待你审批');
-            case 'approve_notifier':
-                return Doo::translate('审批通知');
-            case 'approve_comment_notifier':
-                return Doo::translate('审批评论通知');
-            case 'approve_submitter':
-                return Doo::translate('审批结果');
-
-            case 'notice':
-                return $msg['notice'];
-            default:
-                return Doo::translate(preg_match("/^\//", $msg['type']) ? '帮助菜单' : '未知消息类型');
-            }
     }
 
     /**

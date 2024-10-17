@@ -95,14 +95,20 @@ class BotReceiveMsgTask extends AbstractTask
         if ($botUser->email === 'check-in@bot.system') {
             $text = UserBot::checkinBotQuickMsg($command, $msg->userid);
             if ($text) {
-                WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $text], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
+                WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'template', [
+                    'type' => 'desc',
+                    'desc' => $text,
+                ], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
             }
         }
         // 隐私机器人
         if ($botUser->email === 'anon-msg@bot.system') {
             $text = UserBot::anonBotQuickMsg($command);
             if ($text) {
-                WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $text], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
+                WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'template', [
+                    'type' => 'desc',
+                    'desc' => $text,
+                ], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
             }
         }
         // 管理机器人
@@ -113,14 +119,17 @@ class BotReceiveMsgTask extends AbstractTask
                 $isManager = false;
             } else {
                 $text = "非常抱歉，我不是你的机器人，无法完成你的指令。";
-                WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $text], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
+                WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'template', [
+                    'type' => 'desc',
+                    'desc' => $text,
+                ], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
                 return;
             }
             //
             $array = Base::newTrim(explode(" ", "{$command}    "));
             $type = $array[0];
             $data = [];
-            $notice = "";
+            $desc = "";
             if (!$isManager && in_array($type, ['/list', '/newbot'])) {
                 return; // 这些操作仅支持【机器人管理】机器人
             }
@@ -143,20 +152,19 @@ class BotReceiveMsgTask extends AbstractTask
                         ->orderByDesc('id')
                         ->get();
                     if ($data->isEmpty()) {
-                        $type = "notice";
-                        $notice = "您没有创建机器人。";
+                        $desc = "您没有创建机器人。";
                     }
                     break;
 
                 /**
                  * 详情
                  */
+                case '/hello':
                 case '/info':
                     $botId = $isManager ? $array[1] : $botUser->userid;
                     $data = $this->botManagerOne($botId, $msg->userid);
                     if (!$data) {
-                        $type = "notice";
-                        $notice = "机器人不存在。";
+                        $desc = "机器人不存在。";
                     }
                     break;
 
@@ -169,27 +177,27 @@ class BotReceiveMsgTask extends AbstractTask
                             ->where('users.bot', 1)
                             ->where('user_bots.userid', $msg->userid)
                             ->count() >= 50) {
-                        $type = "notice";
-                        $notice = "超过最大创建数量。";
+                        $desc = "超过最大创建数量。";
                         break;
                     }
                     if (strlen($array[1]) < 2 || strlen($array[1]) > 20) {
-                        $type = "notice";
-                        $notice = "机器人名称由2-20个字符组成。";
+                        $desc = "机器人名称由2-20个字符组成。";
                         break;
                     }
                     $data = User::botGetOrCreate("user-" . Base::generatePassword(), [
                         'nickname' => $array[1]
                     ], $msg->userid);
                     if (empty($data)) {
-                        $type = "notice";
-                        $notice = "创建失败。";
+                        $desc = "创建失败。";
                         break;
                     }
                     $dialog = WebSocketDialog::checkUserDialog($data, $msg->userid);
                     if ($dialog) {
-                        $text = "<p>您好，我是机器人：{$data->nickname}，我的机器人ID是：{$data->userid}，</p><p>你可以发送 <u><b>/help</b></u> 查看我支持什么命令。</p>";
-                        WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $data->userid);   // todo 未能在任务end事件来发送任务
+                        WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                            'type' => '/hello',
+                            'desc' => '创建成功。',
+                            'data' => $data,
+                        ], $data->userid);    // todo 未能在任务end事件来发送任务
                     }
                     break;
 
@@ -200,8 +208,7 @@ class BotReceiveMsgTask extends AbstractTask
                     $botId = $isManager ? $array[1] : $botUser->userid;
                     $nameString = $isManager ? $array[2] : $array[1];
                     if (strlen($nameString) < 2 || strlen($nameString) > 20) {
-                        $type = "notice";
-                        $notice = "机器人名称由2-20个字符组成。";
+                        $desc = "机器人名称由2-20个字符组成。";
                         break;
                     }
                     $data = $this->botManagerOne($botId, $msg->userid);
@@ -211,8 +218,7 @@ class BotReceiveMsgTask extends AbstractTask
                         $data->pinyin = Base::cn2pinyin($nameString);
                         $data->save();
                     } else {
-                        $type = "notice";
-                        $notice = "机器人不存在。";
+                        $desc = "机器人不存在。";
                     }
                     break;
 
@@ -226,8 +232,7 @@ class BotReceiveMsgTask extends AbstractTask
                     if ($data) {
                         $data->deleteUser('delete bot');
                     } else {
-                        $type = "notice";
-                        $notice = "机器人不存在。";
+                        $desc = "机器人不存在。";
                     }
                     break;
 
@@ -240,8 +245,7 @@ class BotReceiveMsgTask extends AbstractTask
                     if ($data) {
                         User::generateToken($data);
                     } else {
-                        $type = "notice";
-                        $notice = "机器人不存在。";
+                        $desc = "机器人不存在。";
                     }
                     break;
 
@@ -256,8 +260,7 @@ class BotReceiveMsgTask extends AbstractTask
                         $data->password = Doo::md5s(Base::generatePassword(32), $data->encrypt);
                         $data->save();
                     } else {
-                        $type = "notice";
-                        $notice = "机器人不存在。";
+                        $desc = "机器人不存在。";
                     }
                     break;
 
@@ -278,8 +281,7 @@ class BotReceiveMsgTask extends AbstractTask
                         $data->clear_day = $userBot->clear_day;
                         $data->clear_at = $userBot->clear_at;   // 这两个参数只是作为输出，所以不保存
                     } else {
-                        $type = "notice";
-                        $notice = "机器人不存在。";
+                        $desc = "机器人不存在。";
                     }
                     break;
 
@@ -291,8 +293,7 @@ class BotReceiveMsgTask extends AbstractTask
                     $webhookUrl = $isManager ? $array[2] : $array[1];
                     $data = $this->botManagerOne($botId, $msg->userid);
                     if (strlen($webhookUrl) > 255) {
-                        $type = "notice";
-                        $notice = "webhook地址最长仅支持255个字符。";
+                        $desc = "webhook地址最长仅支持255个字符。";
                     } elseif ($data) {
                         $userBot = UserBot::whereBotId($botId)->whereUserid($msg->userid)->first();
                         if ($userBot) {
@@ -303,8 +304,7 @@ class BotReceiveMsgTask extends AbstractTask
                         $data->webhook_url = $userBot->webhook_url ?: '-';
                         $data->webhook_num = $userBot->webhook_num;   // 这两个参数只是作为输出，所以不保存
                     } else {
-                        $type = "notice";
-                        $notice = "机器人不存在。";
+                        $desc = "机器人不存在。";
                     }
                     break;
 
@@ -325,8 +325,7 @@ class BotReceiveMsgTask extends AbstractTask
                             ->take(20)
                             ->get();
                         if ($list->isEmpty()) {
-                            $type = "notice";
-                            $notice = "没有搜索到相关会话。";
+                            $desc = "没有搜索到相关会话。";
                         } else {
                             $list->transform(function (WebSocketDialog $item) use ($data) {
                                 return $item->formatData($data->userid);
@@ -334,19 +333,45 @@ class BotReceiveMsgTask extends AbstractTask
                             $data->list = $list;   // 这个参数只是作为输出，所以不保存
                         }
                     } else {
-                        $type = "notice";
-                        $notice = "机器人不存在。";
+                        $desc = "机器人不存在。";
                     }
                     break;
             }
             //
-            WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'template', [
-                'type' => $type,
-                'data' => $data,
-                'notice' => $notice,
-                'manager' => $isManager,
-                'version' => Base::getVersion()
-            ], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
+
+            if ($desc) {
+                $msgData = [
+                    'type' => 'desc',
+                    'desc' => $desc,
+                ];
+            } else {
+                $msgData = [
+                    'type' => $type,
+                    'data' => $data,
+                ];
+                $msgData['desc'] = match ($type) {
+                    '/hello' => '您好',
+                    '/help' => '帮助指令',
+                    '/list' => '我的机器人',
+                    '/info' => '机器人信息',
+                    '/newbot' => '新建机器人',
+                    '/setname' => '设置名称',
+                    '/deletebot' => '删除机器人',
+                    '/token' => '机器人Token',
+                    '/revoke' => '更新Token',
+                    '/webhook' => '设置Webhook',
+                    '/clearday' => '设置保留消息时间',
+                    '/dialog' => '对话列表',
+                    '/api' => 'API接口文档',
+                    default => '不支持的指令',
+                };
+                if ($type == '/api') {
+                    $msgData['version'] = Base::getVersion();
+                } elseif ($type == '/help') {
+                    $msgData['manager'] = $isManager;
+                }
+            }
+            WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'template', $msgData, $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
         }
     }
 
@@ -363,7 +388,7 @@ class BotReceiveMsgTask extends AbstractTask
         $serverUrl = 'http://' . env('APP_IPPR') . '.3';
         $userBot = null;
         $extras = [];
-        $error = null;
+        $errorDesc = null;
         switch ($botUser->email) {
             // ChatGPT 机器人
             case 'ai-openai@bot.system':
@@ -377,10 +402,10 @@ class BotReceiveMsgTask extends AbstractTask
                     'chunk_size' => 7,
                 ];
                 if (empty($extras['openai_key'])) {
-                    $error = 'Robot disabled.';
+                    $errorDesc = '机器人未启用。';
                 } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
                     && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
-                    $error = 'The client version is low (required version ≥ v0.29.11).';
+                    $errorDesc = '当前客户端版本低（所需版本≥v0.29.11）。';
                 }
                 break;
             // Claude 机器人
@@ -393,10 +418,10 @@ class BotReceiveMsgTask extends AbstractTask
                     'server_url' => $serverUrl,
                 ];
                 if (empty($extras['claude_token'])) {
-                    $error = 'Robot disabled.';
+                    $errorDesc = '机器人未启用。';
                 } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
                     && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
-                    $error = 'The client version is low (required version ≥ v0.29.11).';
+                    $errorDesc = '当前客户端版本低（所需版本≥v0.29.11）。';
                 }
                 break;
             // Wenxin 机器人
@@ -410,10 +435,10 @@ class BotReceiveMsgTask extends AbstractTask
                     'server_url' => $serverUrl,
                 ];
                 if (empty($extras['wenxin_key'])) {
-                    $error = 'Robot disabled.';
+                    $errorDesc = '机器人未启用。';
                 } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
                     && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
-                    $error = 'The client version is low (required version ≥ v0.29.12).';
+                    $errorDesc = '当前客户端版本低（所需版本≥v0.29.12）。';
                 }
                 break;
             // QianWen 机器人
@@ -426,10 +451,10 @@ class BotReceiveMsgTask extends AbstractTask
                     'server_url' => $serverUrl,
                 ];
                 if (empty($extras['qianwen_key'])) {
-                    $error = 'Robot disabled.';
+                    $errorDesc = '机器人未启用。';
                 } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
                     && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
-                    $error = 'The client version is low (required version ≥ v0.29.12).';
+                    $errorDesc = '当前客户端版本低（所需版本≥v0.29.12）。';
                 }
                 break;
             // Gemini 机器人
@@ -444,10 +469,10 @@ class BotReceiveMsgTask extends AbstractTask
                     'server_url' => $serverUrl,
                 ];
                 if (empty($extras['gemini_key'])) {
-                    $error = 'Robot disabled.';
+                    $errorDesc = '机器人未启用。';
                 } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
                     && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
-                    $error = 'The client version is low (required version ≥ v0.29.12).';
+                    $errorDesc = '当前客户端版本低（所需版本≥v0.29.12）。';
                 }
                 break;
             // 智谱清言 机器人
@@ -460,10 +485,10 @@ class BotReceiveMsgTask extends AbstractTask
                     'server_url' => $serverUrl,
                 ];
                 if (empty($extras['zhipu_key'])) {
-                    $error = 'Robot disabled.';
+                    $errorDesc = '机器人未启用。';
                 } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
                     && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
-                    $error = 'The client version is low (required version ≥ v0.29.12).';
+                    $errorDesc = '当前客户端版本低（所需版本≥v0.29.12）。';
                 }
                 break;
             // 其他机器人
@@ -472,8 +497,11 @@ class BotReceiveMsgTask extends AbstractTask
                 $webhookUrl = $userBot?->webhook_url;
                 break;
         }
-        if ($error) {
-            WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $error], $botUser->userid, false, false, true); // todo 未能在任务end事件来发送任务
+        if ($errorDesc) {
+            WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'template', [
+                'type' => 'desc',
+                'desc' => $errorDesc,
+            ], $botUser->userid, false, false, true); // todo 未能在任务end事件来发送任务
             return;
         }
         if (!preg_match("/^https*:\/\//", $webhookUrl)) {
@@ -498,13 +526,13 @@ class BotReceiveMsgTask extends AbstractTask
                 $userBot->webhook_num++;
                 $userBot->save();
             }
-            if($res['data'] && $data = json_decode($res['data'])){
-                if($data['code'] != 200 && $data['message']){
+            if ($res['data'] && $data = json_decode($res['data'])) {
+                if ($data['code'] != 200 && $data['message']) {
                     WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $res['data']['message']], $botUser->userid, false, false, true);
                 }
             }
         } catch (\Throwable $th) {
-            //throw $th;
+            info($th->getMessage());
         }
     }
 

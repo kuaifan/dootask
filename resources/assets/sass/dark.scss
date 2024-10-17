@@ -250,15 +250,6 @@ body.dark-mode-reverse {
                                         a {
                                             color: #0027a1;
                                         }
-
-                                        .mention {
-                                            color: #000000;
-
-                                            &.file,
-                                            &[data-denotation-char="~"] {
-                                                color: #0027a1 !important;
-                                            }
-                                        }
                                     }
                                 }
 
@@ -274,6 +265,15 @@ body.dark-mode-reverse {
                                             background-color: #959595;
                                             border-color: #959595;
                                         }
+                                    }
+                                }
+
+                                .mention {
+                                    color: #000000;
+
+                                    &.file,
+                                    &[data-denotation-char="~"] {
+                                        color: #0027a1 !important;
                                     }
                                 }
                             }

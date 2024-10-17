@@ -16,7 +16,7 @@
         <p><span class="mark-color">/setname{{IDLabel}} {机器人名称}</span> - 修改机器人名称</p>
         <p><span class="mark-color">/deletebot{{IDLabel}}</span> - 删除机器人</p>
         <p><span class="mark-color">/clearday{{IDLabel}} {天数}</span> - 设置保留消息时间（默认30天）</p>
-        <p><span class="mark-color">/webhook{{IDLabel}} [url]</span> - 设置消息Webhook（详情请看 <u>Api接口文档</u>）</p>
+        <p><span class="mark-color">/webhook{{IDLabel}} [url]</span> - 设置消息Webhook（详情请看 <u>API接口文档</u>）</p>
         <p>&nbsp;</p>
 
         <p><b>机器人设置</b></p>
@@ -28,7 +28,7 @@
         <p><span class="mark-color">/dialog{{IDLabel}} [搜索关键词]</span> - 查看会话ID</p>
         <p>&nbsp;</p>
 
-        <p><b>Api接口文档</b></p>
+        <p><b>API接口文档</b></p>
         <p><span class="mark-color">/api</span> - 查看接口列表</p>
     </div>
 </template>

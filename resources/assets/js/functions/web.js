@@ -411,7 +411,7 @@ import {MarkdownPreview} from "../store/markdown";
                 case 'notice':
                     return data.msg.notice
                 case 'template':
-                    return $A.tempMsgSimpleDesc(data.msg)
+                    return $A.L(data.msg.desc || '未知消息类型')
                 default:
                     return `[${$A.L('未知的消息')}]`
             }
@@ -438,54 +438,6 @@ import {MarkdownPreview} from "../store/markdown";
                 return `[${$A.L('视频')}]`
             }
             return `[${$A.L('文件')}] ${msg.name}`
-        },
-
-        /**
-         * 模板消息简单描述
-         * @param msg
-         * @returns {string|*}
-         */
-        tempMsgSimpleDesc(msg) {
-            switch (msg.type) {
-                case '/help':
-                    return $A.L('帮助指令');
-                case '/list':
-                    return $A.L('我的机器人');
-                case '/info':
-                    return $A.L('机器人信息');
-                case '/newbot':
-                    return $A.L('新建机器人');
-                case '/setname':
-                    return $A.L('设置名称');
-                case '/deletebot':
-                    return $A.L('删除机器人');
-                case '/token':
-                    return $A.L('机器人Token');
-                case '/revoke':
-                    return $A.L('更新Token');
-                case '/webhook':
-                    return $A.L('设置Webhook');
-                case '/clearday':
-                    return $A.L('设置保留消息时间');
-                case '/dialog':
-                    return $A.L('对话列表');
-                case '/api':
-                    return $A.L('API接口文档');
-
-                case 'approve_reviewer':
-                    return $A.L('待你审批');
-                case 'approve_notifier':
-                    return $A.L('审批通知');
-                case 'approve_comment_notifier':
-                    return $A.L('审批评论通知');
-                case 'approve_submitter':
-                    return $A.L('审批结果');
-
-                case 'notice':
-                    return msg.notice;
-                default:
-                    return $A.L(/^\//.test(msg.type) ? '帮助菜单' : '未知消息类型');
-            }
         },
 
         /**

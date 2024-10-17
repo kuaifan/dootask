@@ -204,7 +204,6 @@
                 @on-view-text="onViewText"
                 @on-view-file="onViewFile"
                 @on-down-file="onDownFile"
-                @on-click-template="onClickTemplate"
                 @on-reply-list="onReplyList"
                 @on-error="onError"
                 @on-emoji="onEmoji"
@@ -3122,8 +3121,17 @@ export default {
                 return
             }
 
-            if (this.onClickTemplate({target})) {
-                return;
+            // 打开审批详情
+            let approveElement = target;
+            while (approveElement) {
+                if (approveElement.classList.contains('dialog-scroller')) {
+                    break;
+                }
+                if (approveElement.classList.contains('open-approve-details')) {
+                    Store.set('approveDetails', approveElement.getAttribute("data-id"));
+                    return;
+                }
+                approveElement = approveElement.parentElement;
             }
 
             switch (target.nodeName) {
@@ -3305,26 +3313,6 @@ export default {
                     this.$store.dispatch('downUrl', $A.apiUrl(`dialog/msg/download?msg_id=${data.id}`))
                 }
             });
-        },
-
-        onClickTemplate({target}) {
-            if (this.operateVisible) {
-                return false
-            }
-
-            // 打开审批详情
-            let approveElement = target;
-            while (approveElement) {
-                if (approveElement.classList.contains('dialog-scroller')) {
-                    break;
-                }
-                if (approveElement.classList.contains('open-approve-details')) {
-                    Store.set('approveDetails', approveElement.getAttribute("data-id"));
-                    return true;
-                }
-                approveElement = approveElement.parentElement;
-            }
-            return false
         },
 
         onReplyList(data) {

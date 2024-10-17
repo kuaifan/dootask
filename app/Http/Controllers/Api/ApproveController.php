@@ -966,7 +966,6 @@ class ApproveController extends AbstractController
         return $res;
     }
 
-
     // 审批机器人消息
     public function approveMsg($type, $dialog, $botUser, $toUser, $process, $action = null)
     {
@@ -986,24 +985,31 @@ class ApproveController extends AbstractController
             'comment_content' => $process['comment_contents']['content'] ?? '',
             'comment_pictures' => $process['comment_contents']['pictures'] ?? []
         ];
-        $msg_action = null;
-        $msg_data = [
+        $msgAction = null;
+        $msgData = [
             'type' => $type,
             'action' => $action,
             'is_finished' => $process['is_finished'],
             'data' => $data
         ];
+        $msgData['desc'] = match ($type) {
+            'approve_reviewer' => '待你审批',
+            'approve_notifier' => '审批通知',
+            'approve_comment_notifier' => '审批评论通知',
+            'approve_submitter' => '审批结果',
+            default => '不支持的指令',
+        };
         if ($action == 'withdraw' || $action == 'pass' || $action == 'refuse') {
             // 任务完成，给发起人发送消息
             if ($type == 'approve_submitter' && $action != 'withdraw') {
-                return WebSocketDialogMsg::sendMsg($msg_action, $dialog->id, 'template', $msg_data, $botUser->userid, false, false, true);
+                return WebSocketDialogMsg::sendMsg($msgAction, $dialog->id, 'template', $msgData, $botUser->userid, false, false, true);
             }
             // 查找最后一条消息msg_id
-            $msg_action = 'change-' . $toUser['msg_id'];
+            $msgAction = 'change-' . $toUser['msg_id'];
         }
         //
         try {
-            $msg = WebSocketDialogMsg::sendMsg($msg_action, $dialog->id, 'template', $msg_data, $process['start_user_id'], false, false, true);
+            $msg = WebSocketDialogMsg::sendMsg($msgAction, $dialog->id, 'template', $msgData, $process['start_user_id'], false, false, true);
             // 关联信息
             if ($action == 'start') {
                 $proc_msg = new ApproveProcMsg();

@@ -1,10 +1,11 @@
 <template>
-    <div :class="`content-template no-dark-content ${msg.type}`" @click="onClick">
+    <div :class="`content-template no-dark-content ${msg.type}`" @click="viewText">
         <component :is="currentTemplate" :msg="msg"/>
     </div>
 </template>
 
 <script lang="ts">
+import BotHello from "./bot-hello.vue";
 import BotHelp from "./bot-help.vue";
 import BotList from "./bot-list.vue";
 import BotInfo from "./bot-info.vue";
@@ -17,11 +18,15 @@ import BotWebhook from "./bot-webhook.vue";
 import BotClearday from "./bot-clearday.vue";
 import BotDialog from "./bot-dialog.vue";
 import BotApi from "./bot-api.vue";
-import Notice from "./notice.vue";
+
 import ApproveReviewer from "./approve-reviewer.vue";
 import ApproveNotifier from "./approve-notifier.vue";
 import ApproveCommentNotifier from "./approve-comment-notifier.vue";
 import ApproveSubmitter from "./approve-submitter.vue";
+
+import TaskUnclaimed from "./task-unclaimed.vue";
+
+import Desc from "./desc.vue";
 import Other from "./other.vue";
 
 export default {
@@ -34,6 +39,8 @@ export default {
     computed: {
         currentTemplate() {
             switch (this.msg.type) {
+                case '/hello':
+                    return BotHello;
                 case '/help':
                     return BotHelp;
                 case '/list':
@@ -68,16 +75,19 @@ export default {
                 case 'approve_submitter':
                     return ApproveSubmitter;
 
-                case 'notice':
-                    return Notice;
+                case 'task_unclaimed':
+                    return TaskUnclaimed;
+
+                case 'desc':
+                    return Desc;
                 default:
                     return Other;
             }
         },
     },
     methods: {
-        onClick(e) {
-            this.$emit('clickTemplate', e);
+        viewText(e) {
+            this.$emit('viewText', e);
         },
     },
 }

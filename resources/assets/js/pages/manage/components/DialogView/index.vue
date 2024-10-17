@@ -38,7 +38,7 @@
                 <!--投票-->
                 <VoteMsg v-else-if="msgData.type === 'vote'" :msg="msgData.msg" :voteData="voteData" @onVote="onVote($event, msgData)"/>
                 <!--模板-->
-                <TemplateMsg v-else-if="msgData.type === 'template'" :msg="msgData.msg" @clickTemplate="clickTemplate"/>
+                <TemplateMsg v-else-if="msgData.type === 'template'" :msg="msgData.msg" @viewText="viewText"/>
                 <!--等待-->
                 <LoadMsg v-else-if="isLoading" :error="msgData.error"/>
                 <!--未知-->
@@ -597,10 +597,6 @@ export default {
             }).finally(_ => {
                 this.$set(msgData.msg, '_loadIng', 0)
             });
-        },
-
-        clickTemplate(e) {
-            this.$emit("on-click-template", e)
         },
     }
 }

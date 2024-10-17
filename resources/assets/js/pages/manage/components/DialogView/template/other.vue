@@ -1,6 +1,6 @@
 <template>
     <div v-if="isBot">
-        你好，我是你的机器人助理，你可以发送 <span class="mark-color">/help</span> 查看帮助菜单。
+        不支持的指令 <span class="warning-color">{{msg.type}}</span>，你可以发送 <span class="mark-color">/help</span> 查看帮助菜单。
     </div>
     <div v-else>
         未知消息类型

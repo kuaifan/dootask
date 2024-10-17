@@ -1,6 +1,6 @@
 <template>
     <div>
-        {{msg.notice}}
+        {{$L(msg.desc)}}
     </div>
 </template>
 <script lang="ts">

@@ -915,40 +915,6 @@
                                         max-height: 150px;
                                     }
                                 }
-
-                                .mention {
-                                    color: $flow-status-end-color;
-                                    background-color: transparent;
-                                    user-select: inherit;
-                                    padding: 0;
-                                    margin: 0;
-
-                                    > span {
-                                        margin: 0;
-                                    }
-
-                                    &.task,&.okr {
-                                        cursor: pointer;
-                                    }
-
-                                    &.file,
-                                    &[data-denotation-char="~"]  {
-                                        color: #436FF6 !important;
-                                    }
-
-                                    &.user {
-                                        white-space: nowrap;
-                                    }
-
-                                    &.me {
-                                        font-size: 13px;
-                                        font-weight: 600;
-                                        padding: 3px 4px;
-                                        color: #ffffff;
-                                        white-space: nowrap;
-                                        background-color: $primary-color;
-                                    }
-                                }
                             }
                         }
 
@@ -1206,6 +1172,9 @@
 
                         .content-template {
                             color: #ffffff;
+                            .warning-color {
+                                color: $flow-status-start-color;
+                            }
                             .mark-color {
                                 color: $primary-color;
                             }
@@ -1433,6 +1402,40 @@
                                         height: 32px;
                                     }
                                 }
+                            }
+                        }
+
+                        .mention {
+                            color: $flow-status-end-color;
+                            background-color: transparent;
+                            user-select: inherit;
+                            padding: 0;
+                            margin: 0;
+
+                            > span {
+                                margin: 0;
+                            }
+
+                            &.task,&.okr {
+                                cursor: pointer;
+                            }
+
+                            &.file,
+                            &[data-denotation-char="~"]  {
+                                color: #436FF6 !important;
+                            }
+
+                            &.user {
+                                white-space: nowrap;
+                            }
+
+                            &.me {
+                                font-size: 13px;
+                                font-weight: 600;
+                                padding: 3px 4px;
+                                color: #ffffff;
+                                white-space: nowrap;
+                                background-color: $primary-color;
                             }
                         }
                     }
@@ -1680,19 +1683,6 @@
                         .dialog-content {
                             .content-text {
                                 color: #ffffff;
-
-                                > pre {
-                                    .mention {
-                                        color: $primary-title-color;
-
-                                        &.me {
-                                            font-size: inherit;
-                                            font-weight: inherit;
-                                            padding: inherit;
-                                            background-color: inherit;
-                                        }
-                                    }
-                                }
                             }
 
                             .content-record {
@@ -1755,6 +1745,17 @@
                                 .ivu-btn-grey {
                                     background-color: #efefef;
                                     border-color: #f3f3f3;
+                                }
+                            }
+
+                            .mention {
+                                color: $primary-title-color;
+
+                                &.me {
+                                    font-size: inherit;
+                                    font-weight: inherit;
+                                    padding: inherit;
+                                    background-color: inherit;
                                 }
                             }
                         }

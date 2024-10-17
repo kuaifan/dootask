@@ -5,7 +5,7 @@
 
         <p><b>发送文本消息：</b></p>
         <p>curl --request POST '{{ $A.apiUrl('dialog/msg/sendtext') }}' \</p>
-        <p>--header 'version: {{ $version }}' \</p>
+        <p>--header 'version: {{ msg.version }}' \</p>
         <p>--header 'token: <span class="mark-color">{机器人Token}</span>' \</p>
         <p>--form 'dialog_id="<span class="mark-color">{对话ID}</span>"' \</p>
         <p>--form 'text="<span class="mark-color">{消息内容}</span>"'</p>
