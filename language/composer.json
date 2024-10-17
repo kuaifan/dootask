@@ -1,0 +1,9 @@
+{
+    "name": "dootask/language",
+    "require": {
+        "php": ">=7.4",
+        "ext-curl": "*",
+        "ext-json": "*",
+        "orhanerday/open-ai": "^5.2"
+    }
+}

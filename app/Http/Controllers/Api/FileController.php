@@ -1090,14 +1090,13 @@ class FileController extends AbstractController
                 ]);
             }
             //
-            $text = "<b>" . Doo::translate("文件下载打包已完成。") . "</b>";
-            $text .= "\n\n";
-            $text .= Doo::translate("文件名") . ": {$fileName}";
-            $text .= "\n";
-            $text .= Doo::translate("文件大小") . ": ".Base::twoFloat(filesize($zipPath) / 1024, true)."KB";
-            $text .= "\n";
-            $text .= '<a href="' . $fileUrl . '" target="_blank"><button type="button" class="ivu-btn ivu-btn-warning" style="margin-top: 10px;"><span>' . Doo::translate("立即下载") . '</span></button></a>';
-            WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
+            WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                'type' => 'file_download',
+                'desc' => '文件下载打包已完成',
+                'name' => $fileName,
+                'size' => filesize($zipPath),
+                'url' => $fileUrl,
+            ], $botUser->userid, false, false, true);
         });
         return Base::retSuccess('success', [
             'name' => $fileName,
