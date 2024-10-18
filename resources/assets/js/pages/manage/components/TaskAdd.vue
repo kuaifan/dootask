@@ -301,7 +301,10 @@ export default {
     },
 
     watch: {
-        'addData.owner'(owner) {
+        'addData.owner'(owner, newOwner) {
+            if (JSON.stringify(owner) === JSON.stringify(newOwner)) {
+                return;
+            }
             this.addData.assist = this.addData.assist.filter(item => {
                 return owner.indexOf(item) === -1;
             })
