@@ -10,8 +10,10 @@
                     </FormItem>
                     <FormItem :label="$L('模型')" prop="openai_model">
                         <Select v-model="formData.openai_model" placement="top" transfer>
+                            <Option value="gpt-4o">gpt-4o</Option>
+                            <Option value="gpt-4o-mini">gpt-4o-mini</Option>
+                            <Option value="gpt-4-turbo">gpt-4-turbo</Option>
                             <Option value="gpt-3.5-turbo">gpt-3.5-turbo</Option>
-                            <Option value="gpt-4">gpt-4</Option>
                         </Select>
                         <div class="form-tip">{{$L('查看说明')}} <a href="https://platform.openai.com/docs/models" target="_blank">https://platform.openai.com/docs/models</a></div>
                     </FormItem>
