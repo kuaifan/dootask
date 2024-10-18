@@ -173,7 +173,7 @@ export default {
             }
         },
         searchEnter() {
-            let row = $A(".sreachBox");
+            let row = $A(".search-container");
             if (row.length === 0) {
                 return;
             }
