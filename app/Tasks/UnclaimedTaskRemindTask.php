@@ -63,11 +63,6 @@ class UnclaimedTaskRemindTask extends AbstractTask
                         if (empty($botUser)) {
                             return;
                         }
-                        if (!ProjectUser::whereUserid($botUser->userid)->whereProjectId($project->id)->exists()) {
-                            $project->joinProject($botUser->userid);
-                            $project->syncDialogUser();
-                        }
-                        //
                         WebSocketDialogMsg::sendMsg(null, $project->dialog_id, 'template', [
                             'type' => 'task_unclaimed',
                             'desc' => '任务待领取',
