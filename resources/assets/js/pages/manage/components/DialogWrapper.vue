@@ -3306,9 +3306,10 @@ export default {
                 data = this.operateItem
             }
             $A.modalConfirm({
-                title: '下载文件',
+                language: false,
+                title: this.$L('下载文件'),
+                okText: this.$L('立即下载'),
                 content: `${data.msg.name} (${$A.bytesToSize(data.msg.size)})`,
-                okText: '立即下载',
                 onOk: () => {
                     this.$store.dispatch('downUrl', $A.apiUrl(`dialog/msg/download?msg_id=${data.id}`))
                 }

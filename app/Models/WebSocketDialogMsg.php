@@ -591,7 +591,7 @@ class WebSocketDialogMsg extends AbstractModel
                 return $data['msg']['notice'];
 
             case 'template':
-                return Doo::translate($data['msg']['desc'] ?: '未知消息类型');
+                return $this->previewTemplateMsg($data['msg']);
 
             default:
                 $action = Doo::translate("未知的消息");
@@ -615,6 +615,26 @@ class WebSocketDialogMsg extends AbstractModel
         }
         $action = Doo::translate("文件");
         return "[{$action}] {$msg['name']}";
+    }
+
+    /**
+     * 预览模板消息
+     * @param $msg
+     * @return string
+     */
+    private function previewTemplateMsg($msg)
+    {
+        if (!empty($msg['title_raw'])) {
+            return $msg['title_raw'];
+        }
+        if (!empty($msg['title'])) {
+            return Doo::translate($msg['title']);
+        }
+        if ($msg['type'] === 'content' && is_string($msg['content']) && $msg['content'] !== '') {
+            return Doo::translate($msg['content']);
+        }
+        return Doo::translate('未知的消息');
+
     }
 
     /**

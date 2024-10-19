@@ -1688,12 +1688,11 @@ class ProjectTask extends AbstractModel
         }
 
         $dataId = $this->parent_id ?: $this->id;
-        $taskHtml = "<span class=\"mention task\" data-id=\"{$dataId}\">#{$this->name}</span>";
         $text = match ($type) {
-            1 => "您的任务 {$taskHtml} 即将超时。",
-            2 => "您的任务 {$taskHtml} 已经超时。",
-            3 => "您的任务 {$taskHtml} 时间已修改。",
-            default => "您有一个新任务 {$taskHtml}。",
+            1 => "(*)即将超时",
+            2 => "(*)已经超时",
+            3 => "(*)时间已修改",
+            default => "您有一个新任务",
         };
 
         /** @var User $user */
@@ -1711,8 +1710,15 @@ class ProjectTask extends AbstractModel
             $dialog = WebSocketDialog::checkUserDialog($botUser, $receiver->userid);
             if ($dialog) {
                 ProjectTaskPushLog::createInstance($data)->save();
-                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', [
-                    'text' => str_replace("您的任务", $replace, $text) . $suffix
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                    'type' => 'task_list',
+                    'title' => str_replace("(*)", $replace, $text) . $suffix,
+                    'list' => [
+                        [
+                            'id' => $dataId,
+                            'name' => $this->name,
+                        ]
+                    ],
                 ], in_array($type, [0, 3]) ? $userid : $botUser->userid);
             }
         }
@@ -1720,11 +1726,12 @@ class ProjectTask extends AbstractModel
 
     /**
      * 移动任务
-     * @param int $project_id
-     * @param int $column_id
+     * @param int $projectId
+     * @param int $columnId
      * @param int $flowItemId
      * @param array $owner
      * @param array $assist
+     * @param string $completeAt
      * @return bool
      */
     public function moveTask(int $projectId, int $columnId,int $flowItemId = 0,array $owner = [], array $assist = [], string $completeAt='')

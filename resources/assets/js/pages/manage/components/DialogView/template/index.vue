@@ -24,10 +24,10 @@ import ApproveNotifier from "./approve-notifier.vue";
 import ApproveCommentNotifier from "./approve-comment-notifier.vue";
 import ApproveSubmitter from "./approve-submitter.vue";
 
-import TaskUnclaimed from "./task-unclaimed.vue";
+import TaskList from "./task-list.vue";
 import FileDownload from "./file-download.vue";
 
-import Desc from "./desc.vue";
+import Content from "./content.vue";
 import Other from "./other.vue";
 
 export default {
@@ -76,13 +76,13 @@ export default {
                 case 'approve_submitter':
                     return ApproveSubmitter;
 
-                case 'task_unclaimed':
-                    return TaskUnclaimed;
+                case 'task_list':
+                    return TaskList;
                 case 'file_download':
                     return FileDownload;
 
-                case 'desc':
-                    return Desc;
+                case 'content':
+                    return Content;
                 default:
                     return Other;
             }

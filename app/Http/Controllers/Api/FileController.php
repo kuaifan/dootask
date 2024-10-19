@@ -1092,7 +1092,7 @@ class FileController extends AbstractController
             //
             WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
                 'type' => 'file_download',
-                'desc' => '文件下载打包已完成',
+                'title' => '文件下载打包已完成',
                 'name' => $fileName,
                 'size' => filesize($zipPath),
                 'url' => $fileUrl,

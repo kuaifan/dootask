@@ -1300,9 +1300,10 @@ export default {
                         return;
                     }
                     $A.modalConfirm({
-                        title: '下载文件',
+                        language: false,
+                        title: this.$L('下载文件'),
+                        okText: this.$L('立即下载'),
                         content: `${item.name}.${item.ext} (${$A.bytesToSize(item.size)})`,
-                        okText: '立即下载',
                         onOk: () => {
                             this.$store.dispatch('downUrl', $A.apiUrl(`file/content?id=${item.id}&down=yes`))
                         }

@@ -411,7 +411,7 @@ import {MarkdownPreview} from "../store/markdown";
                 case 'notice':
                     return data.msg.notice
                 case 'template':
-                    return $A.L(data.msg.desc || '未知消息类型')
+                    return $A.templateMsgSimpleDesc(data.msg)
                 default:
                     return `[${$A.L('未知的消息')}]`
             }
@@ -438,6 +438,24 @@ import {MarkdownPreview} from "../store/markdown";
                 return `[${$A.L('视频')}]`
             }
             return `[${$A.L('文件')}] ${msg.name}`
+        },
+
+        /**
+         * 模板消息简单描述
+         * @param msg
+         * @returns {string|*}
+         */
+        templateMsgSimpleDesc(msg) {
+            if (msg.title_raw) {
+                return msg.title_raw
+            }
+            if (msg.title) {
+                return $A.L(msg.title)
+            }
+            if (msg.type === 'content' && typeof msg.content === 'string' && msg.content !== '') {
+                return $A.L(msg.content)
+            }
+            return $A.L('未知的消息')
         },
 
         /**

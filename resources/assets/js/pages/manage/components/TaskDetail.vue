@@ -1698,9 +1698,10 @@ export default {
 
         downFile(file) {
             $A.modalConfirm({
-                title: '下载文件',
+                language: false,
+                title: this.$L('下载文件'),
+                okText: this.$L('立即下载'),
                 content: `${file.name} (${$A.bytesToSize(file.size)})`,
-                okText: '立即下载',
                 onOk: () => {
                     this.$store.dispatch('downUrl', $A.apiUrl(`project/task/filedown?file_id=${file.id}`))
                 }

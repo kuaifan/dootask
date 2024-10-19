@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Module\Base;
 use App\Models\Project;
 use App\Models\ProjectTask;
-use App\Models\ProjectUser;
 use Carbon\Carbon;
 use App\Models\WebSocketDialogMsg;
 use Illuminate\Support\Facades\Cache;
@@ -64,8 +63,8 @@ class UnclaimedTaskRemindTask extends AbstractTask
                             return;
                         }
                         WebSocketDialogMsg::sendMsg(null, $project->dialog_id, 'template', [
-                            'type' => 'task_unclaimed',
-                            'desc' => '任务待领取',
+                            'type' => 'task_list',
+                            'title' => '任务待领取',
                             'list' => $projectTasks->map(function ($item) {
                                 return [
                                     'id' => $item->id,

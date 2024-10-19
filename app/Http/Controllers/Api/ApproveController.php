@@ -992,7 +992,7 @@ class ApproveController extends AbstractController
             'is_finished' => $process['is_finished'],
             'data' => $data
         ];
-        $msgData['desc'] = match ($type) {
+        $msgData['title'] = match ($type) {
             'approve_reviewer' => '待你审批',
             'approve_notifier' => '审批通知',
             'approve_comment_notifier' => '审批评论通知',

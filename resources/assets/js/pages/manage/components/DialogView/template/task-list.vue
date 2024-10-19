@@ -1,6 +1,6 @@
 <template>
     <div>
-        <p>{{$L("任务待领取")}}</p>
+        <p>{{$L(msg.desc)}}</p>
         <p>&nbsp;</p>
 
         <p v-for="item in msg.list">

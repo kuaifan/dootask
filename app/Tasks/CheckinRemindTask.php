@@ -84,11 +84,28 @@ class CheckinRemindTask extends AbstractTask
                 $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid);
                 if ($dialog) {
                     if ($type === 'exceed') {
-                        $text = "<p><strong style='color:red'>" . Doo::translate("缺卡提醒") . "：</strong>" . Doo::translate("上班时间到了，你还没有打卡哦~") . "</p>";
+                        $title = '缺卡提醒';
+                        $style = 'color:#f55;';
+                        $content = '上班时间到了，你还没有打卡哦~';
                     } else {
-                        $text = "<p><strong>" . Doo::translate("打卡提醒") . "：</strong>" . Doo::translate("快到上班时间了，别忘了打卡哦~") . "</p>";
+                        $title = '打卡提醒';
+                        $style = '';
+                        $content = '快到上班时间了，别忘了打卡哦~';
                     }
-                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid);
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                        'type' => 'content',
+                        'title' => $title,
+                        'content' => [
+                            [
+                                'content' => $title,
+                                'style' => $style . 'font-weight:bold',
+                            ],
+                            [
+                                'content' => $content,
+                                'style' => 'padding-top:4px;opacity:0.4',
+                            ],
+                        ],
+                    ], $botUser->userid);
                 }
             }
         });

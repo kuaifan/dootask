@@ -250,11 +250,14 @@ class UserBot extends AbstractModel
             };
             $sendMsg = function($type, $checkin) use ($alreadyTip, $getJokeSoup, $botUser, $nowDate) {
                 $cacheKey = "Checkin::sendMsg-{$nowDate}-{$type}:" . $checkin['userid'];
-                $typeDesc = $type == "up" ? "上班" : "下班";
+                $typeContent = $type == "up" ? "上班" : "下班";
                 if (Cache::get($cacheKey) === "yes") {
                     if ($alreadyTip && $dialog = WebSocketDialog::checkUserDialog($botUser, $checkin['userid'])) {
-                        $text = "<p>" . Doo::translate("今日已{$typeDesc}打卡，无需重复打卡。") . "</p>";
-                        WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, $type != "up");
+                        $text = "今日已{$typeContent}打卡，无需重复打卡。";
+                        WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                            'type' => 'content',
+                            'content' => $text,
+                        ], $botUser->userid, false, false, $type != "up");
                     }
                     return;
                 }
@@ -263,12 +266,19 @@ class UserBot extends AbstractModel
                 if ($dialog = WebSocketDialog::checkUserDialog($botUser, $checkin['userid'])) {
                     $hi = date("H:i");
                     $remark = $checkin['remark'] ? " ({$checkin['remark']})": "";
-                    $text = "<p>{$typeDesc}" . Doo::translate("打卡成功，打卡时间") . ": {$hi}{$remark}</p>";
-                    $suff = $getJokeSoup($type);
-                    if ($suff) {
-                        $text = "{$text}<p>----------</p><p>{$suff}</p>";
-                    }
-                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, $type != "up");
+                    $subcontent = $getJokeSoup($type);
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                        'type' => 'content',
+                        'content' => [
+                            [
+                                'content' => "{$typeContent}打卡成功，打卡时间: {$hi}{$remark}"
+                            ], [
+                                'content' => $subcontent,
+                                'language' => false,
+                                'style' => 'padding-top:4px;opacity:0.4',
+                            ]
+                        ],
+                    ], $botUser->userid, false, false, $type != "up");
                 }
             };
             if ($timeAdvance <= Base::time() && Base::time() < $timeEnd) {
