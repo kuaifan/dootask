@@ -621,6 +621,10 @@
                 .todo-users {
                     display: inline-block;
 
+                    > span {
+                        padding-right: 4px;
+                    }
+
                     > div + div {
                         padding-left: 8px;
                         position: relative;

@@ -180,7 +180,7 @@
                 </FormItem>
                 <FormItem prop="applyType" :label="$L('申请类型')">
                     <Select v-model="addData.applyType" :placeholder="$L('请选择申请类型')">
-                        <Option v-for="(item, index) in procdefList" :value="item.name" :key="index">{{ item.name }}</Option>
+                        <Option v-for="(item, index) in procdefList" :value="item.name" :key="index">{{ $L(item.name) }}</Option>
                     </Select>
                 </FormItem>
                 <FormItem v-if="(addData.applyType || '').indexOf('请假') !== -1" prop="type" :label="$L('假期类型')">
@@ -418,7 +418,7 @@ export default {
                 }).then(({data}) => {
                     this.procdefList = data.rows || [];
                     this.approvalList = this.procdefList.map(h => {
-                        return {value: h.name, label: h.name}
+                        return {value: h.name, label: this.$L(h.name)}
                     })
                     this.approvalList.unshift({value: "all", label: this.$L("全部审批")})
                     resolve()

@@ -5,8 +5,8 @@
         :mask-closable="false">
         <Form ref="exportTask" :model="formData" label-width="auto" @submit.native.prevent>
             <FormItem :label="$L('审批类型')">
-                <Select v-model="formData.proc_def_name" @on-open-change="getProcName">
-                    <Option v-for="(item, key) in procList" :value="item.name" :key="key" >{{ item.name }}</Option>
+                <Select v-model="formData.proc_def_name" @on-open-change="getProcName" :placeholder="$L('请选择类型')">
+                    <Option v-for="(item, key) in procList" :value="item.name" :key="key" >{{ $L(item.name) }}</Option>
                 </Select>
             </FormItem>
             <FormItem :label="$L('时间范围')">
@@ -105,7 +105,6 @@ export default {
                 method: 'post'
             }).then(({data}) => {
                 this.procList = data['rows'];
-
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {

@@ -24,7 +24,7 @@ if (urlParams.language
 }
 
 import microappInit from "./microapp"
-import {switchLanguage as $L} from "./language";
+import {languageName, switchLanguage as $L} from "./language";
 
 import './functions/common'
 import './functions/eeui'
@@ -261,5 +261,9 @@ store.dispatch("init").then(action => {
 
     if (action === "handleClearCache") {
         $A.messageSuccess("清除成功");
+    }
+
+    if (typeof window.LANGUAGE_DATA[`i_${languageName}`] !== "undefined") {
+        ViewUI.locale(window.LANGUAGE_DATA[`i_${languageName}`]);
     }
 })

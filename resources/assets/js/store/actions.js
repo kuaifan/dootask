@@ -58,6 +58,7 @@ export default {
             await $A.loadScriptS([
                 `language/web/key.js`,
                 `language/web/${languageName}.js`,
+                `language/iview/${languageName}.js`,
             ])
 
             resolve(action)

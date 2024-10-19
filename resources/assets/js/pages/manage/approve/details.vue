@@ -121,10 +121,8 @@
                             <div class="approve-process-left">
                                 <p class="approve-process-name">{{$L('系统')}}</p>
                                 <p class="approve-process-desc">{{$L('自动抄送')}}
-                                    <span style="color: #486fed;">
-                                            {{ item.node_user_list?.map(h=>h.name).join(',') }}
-                                            {{$L('等'+item.node_user_list?.length+'人')}}
-                                        </span>
+                                    <span style="color: #486fed;">{{ item.node_user_list?.map(h=>h.name).join(',') }}</span>
+                                    {{$L('共'+item.node_user_list?.length+'人')}}
                                 </p>
                             </div>
                         </div>
@@ -304,7 +302,7 @@ export default {
         },
         // 时间转为周几
         getWeekday(dateString) {
-            return ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][$A.dayjs(dateString).day()];
+            return this.$L(['周日', '周一', '周二', '周三', '周四', '周五', '周六'][$A.dayjs(dateString).day()]);
         },
         // 获取时间差
         getTimeDifference(startTime, endTime) {
