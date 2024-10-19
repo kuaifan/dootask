@@ -308,7 +308,7 @@ try {
         }
         print_r("[$type] translate success\ntotal: " . count($results['key']) . "\nadd: " . count($needs) . "\n\n");
     }
-    file_put_contents("translate.json", json_encode(array_values($translations), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+    file_put_contents("translate.json", json_encode(array_values($translations), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . "\n");
 
 } catch (Exception $e) {
     print_r("[$type] error, " . $e->getMessage());

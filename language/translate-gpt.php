@@ -40,9 +40,11 @@ try {
                 $needs[$key] = $value;
             }
         }
-        $waits = array_chunk($needs, 200, true);
+        $waits = array_chunk($needs, 100, true);
         // 分组翻译
         foreach ($waits as $items) {
+            print_r(implode("\n", array_values($items)));
+            print_r("\n\n-------------------\n\n");
             $content = implode("\n", $items);
             $open_ai = new OpenAi(OPEN_AI_KEY);
             $open_ai->setProxy(OPEN_AI_PROXY);
@@ -56,7 +58,7 @@ try {
 
 ------
 
-帮我翻译以上内容，每行一个，按照下面的格式翻译成对应的语言，原内容放到key，zh留空，zh-CHT为繁体中文，en为英语，ko为韩语，ja为日语，de为德语，fr为法语，id为印度尼西亚语，ru为俄语。 另外要注意的是其中的(*)为占位符，翻译时不要删除，也不要翻译这个占位符。 请帮我一次性翻译完。
+请帮我翻译以上内容，翻译的结果尽量符合“项目任务管理系统”的使用，每行一个，按照下面的格式翻译成对应的语言，原内容放到key，zh留空，zh-CHT为繁体中文，en为英语，ko为韩语，ja为日语，de为德语，fr为法语，id为印度尼西亚语，ru为俄语。 另外要注意的是其中的(*)为占位符，翻译时不要删除，也不要翻译这个占位符。 请帮我一次性翻译完。
 
 [
     {
