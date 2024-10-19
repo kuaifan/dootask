@@ -1183,7 +1183,7 @@ class UsersController extends AbstractController
             $meeting->save();
         } elseif ($type === 'create') {
             $meetingid = strtoupper(Base::generatePassword(11, 1));
-            $name = $name ?: "{$user?->nickname} 发起的会议";
+            $name = $name ?: Doo::translate("{$user?->nickname} 发起的会议");
             $channel = "DooTask:" . substr(md5($meetingid . env("APP_KEY")), 16);
             $meeting = Meeting::createInstance([
                 'meetingid' => $meetingid,

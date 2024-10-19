@@ -95,7 +95,13 @@ class User extends AbstractModel
      */
     public function getNicknameAttribute($value)
     {
-        return $value ?: Base::cardFormat($this->email);
+        if ($value) {
+            if (UserBot::isSystemBot($this->email)) {
+                return Doo::translate($value);
+            }
+            return $value;
+        }
+        return Base::formatName($this->email);
     }
 
     /**

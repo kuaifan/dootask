@@ -1710,9 +1710,9 @@ class Base
      * @param $str
      * @return string
      */
-    public static function cardFormat($str)
+    public static function formatName($str)
     {
-        if (strpos($str, '@')) {
+        if (str_contains($str, "@")) {
             $email_array = explode("@", $str);
             $prevfix = substr($str, 0, strlen($email_array[0]) < 4 ? 1 : 3); //邮箱前缀
             $count = 0;

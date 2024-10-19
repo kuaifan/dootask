@@ -48,7 +48,7 @@ class UserDelete extends AbstractModel
             $value = Base::json2array($value);
             // 昵称
             if (!$value['nickname']) {
-                $value['nickname'] = Base::cardFormat($value['email']);
+                $value['nickname'] = Base::formatName($value['email']);
             }
             // 头像
             $value['userimg'] = User::getAvatar($value['userid'], $value['userimg'], $value['email'], $value['nickname']);

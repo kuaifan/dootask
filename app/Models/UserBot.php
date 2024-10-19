@@ -45,6 +45,16 @@ class UserBot extends AbstractModel
 {
 
     /**
+     * 判断是否系统机器人
+     * @param $email
+     * @return bool
+     */
+    public static function isSystemBot($email)
+    {
+        return str_ends_with($email, '@bot.system') && self::systemBotName($email);
+    }
+
+    /**
      * 系统机器人名称
      * @param $name string 邮箱 或 邮箱前缀
      * @return string
