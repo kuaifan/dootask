@@ -1,6 +1,6 @@
 <template>
     <div>
-        <p>{{$L(msg.desc)}}</p>
+        <p>{{$L(msg.title)}}</p>
         <p>&nbsp;</p>
 
         <p v-for="item in msg.list">

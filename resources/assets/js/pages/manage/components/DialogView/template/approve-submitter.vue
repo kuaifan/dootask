@@ -1,6 +1,6 @@
 <template>
     <div class="open-approve-details" :data-id="msg.data.id">
-        <b>{{ $L(desc) }}</b>
+        <b>{{ $L(title) }}</b>
         <div class="cause">
             <p>{{$L("申请人")}}：<span class="mark-color">@{{ msg.data.start_nickname }}</span> {{ msg.data.department }}</p>
             <b>{{$L("详情")}}</b>
@@ -26,7 +26,7 @@ export default {
         return {};
     },
     computed: {
-        desc({msg}) {
+        title({msg}) {
             return msg.action === 'pass' ? `您发起的「${msg.data.proc_def_name}」已通过` : `您发起的「${msg.data.proc_def_name}」被${msg.data.nickname}拒绝`
         }
     },

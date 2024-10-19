@@ -1,6 +1,6 @@
 <template>
     <div>
-        <p><b>{{$L(msg.desc)}}</b></p>
+        <p><b>{{$L(msg.title)}}</b></p>
         <p>&nbsp;</p>
 
         <p>{{$L('文件名')}}: {{msg.name}}</p>

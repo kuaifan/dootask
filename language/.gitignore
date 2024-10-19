@@ -2,3 +2,4 @@ config.php
 undefined-*.txt
 error.log
 vendor
+translate-gpt.md

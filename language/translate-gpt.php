@@ -40,7 +40,7 @@ try {
                 $needs[$key] = $value;
             }
         }
-        $waits = array_chunk($needs, 100, true);
+        $waits = array_chunk($needs, 200, true);
         // 分组翻译
         foreach ($waits as $items) {
             $content = implode("\n", $items);
@@ -81,7 +81,7 @@ try {
             ]);
 
             $d = json_decode($chat);
-            file_put_contents('translate-gpt.md', $d->choices[0]->message->content . "\n -------------------------------------------", FILE_APPEND);
+            file_put_contents('translate-gpt.md', $d->choices[0]->message->content . "\n\n\n", FILE_APPEND);
         }
     }
 
