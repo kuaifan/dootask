@@ -1229,8 +1229,11 @@ class ProjectController extends AbstractController
             $headings[] = '状态';
             $datas = [];
             //
-            $text = '<b>导出任务统计已完成。</b>';
-            $text .= "\n\n";
+            $content = [];
+            $content[] = [
+                'content' => '导出任务统计已完成',
+                'style' => 'font-weight: bold;padding-bottom: 4px;',
+            ];
             //
             $builder = ProjectTask::select(['project_tasks.*', 'project_task_users.userid as ownerid'])
                 ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_id')
@@ -1329,8 +1332,15 @@ class ProjectController extends AbstractController
                 }
             });
             if (empty($datas)) {
-                $text .= '没有任何数据';
-                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
+                $content[] = [
+                    'content' => '没有任何数据',
+                    'style' => 'color: #ff0000;',
+                ];
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                    'type' => 'content',
+                    'title' => $content[0]['content'],
+                    'content' => $content,
+                ], $botUser->userid, false, false, true);
                 return;
             }
             //
@@ -1354,8 +1364,15 @@ class ProjectController extends AbstractController
             $export = new BillMultipleExport($sheets);
             $res = $export->store($filePath . "/" . $fileName);
             if ($res != 1) {
-                $text .= "导出失败，{$fileName}！";
-                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
+                $content[] = [
+                    'content' => "导出失败，{$fileName}！",
+                    'style' => 'color: #ff0000;',
+                ];
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                    'type' => 'content',
+                    'title' => $content[0]['content'],
+                    'content' => $content,
+                ], $botUser->userid, false, false, true);
                 return;
             }
             //
@@ -1376,17 +1393,26 @@ class ProjectController extends AbstractController
                 ]));
                 $fileUrl = Base::fillUrl('api/project/task/down?key=' . urlencode($base64));
                 Session::put('task::export:userid', $user->userid);
-                $text .= "文件名：{$fileName}";
-                $text .= "\n";
-                $text .= "文件大小：" . Base::twoFloat(filesize($zipPath) / 1024, true) . "KB";
-                $text .= "\n";
-                $text .= '<a href="' . $fileUrl . '" target="_blank"><button type="button" class="ivu-btn ivu-btn-warning" style="margin-top: 10px;"><span>立即下载</span></button></a>';
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                    'type' => 'file_download',
+                    'title' => '导出任务统计已完成',
+                    'name' => $fileName,
+                    'size' => filesize($zipPath),
+                    'url' => $fileUrl,
+                ], $botUser->userid, false, false, true);
             } else {
-                $text .= '打包失败，请稍后再试...';
+                $content[] = [
+                    'content' => "打包失败，请稍后再试...",
+                    'style' => 'color: #ff0000;',
+                ];
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                    'type' => 'content',
+                    'title' => $content[0]['content'],
+                    'content' => $content,
+                ], $botUser->userid, false, false, true);
             }
-            WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid, false, false, true);
         });
-        return Base::retSuccess('success', ['msg' => '正在打包，请留意系统消息。']);
+        return Base::retSuccess('success');
     }
 
     /**

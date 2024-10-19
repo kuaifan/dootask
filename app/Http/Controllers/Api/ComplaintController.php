@@ -113,8 +113,11 @@ class ComplaintController extends AbstractController
             ->each(function ($adminUser) use ($reason, $botUser) {
                 $dialog = WebSocketDialog::checkUserDialog($botUser, $adminUser->userid);
                 if ($dialog) {
-                    $text = "<p>收到新的举报信息：{$reason} (请前往应用查看详情)</p>";
-                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => $text], $botUser->userid);   // todo 未能在任务end事件来发送任务
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                        'type' => 'content',
+                        'title' => '收到新的举报信息',
+                        'content' => "收到新的举报信息：{$reason} (请前往应用查看详情)"
+                    ], $botUser->userid);   // todo 未能在任务end事件来发送任务
                 }
             });
         //

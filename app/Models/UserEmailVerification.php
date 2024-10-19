@@ -93,7 +93,7 @@ class UserEmailVerification extends AbstractModel
                 ->send();
         } catch (\Throwable $e) {
             if (str_contains($e->getMessage(), "Timed Out")) {
-                throw new ApiException("language.TimedOut");
+                throw new ApiException("邮件发送超时，请检查邮箱配置是否正确");
             } elseif ($e->getCode() === 550) {
                 throw new ApiException('邮件内容被拒绝，请检查邮箱是否开启接收功能');
             } else {

@@ -300,14 +300,20 @@ class UserBot extends AbstractModel
     /**
      * 隐私机器人
      * @param $command
-     * @return string
+     * @return array
      */
     public static function anonBotQuickMsg($command)
     {
         return match ($command) {
-            "help" => "使用说明：打开你想要发匿名消息的个人对话，点击输入框右边的 ⊕ 号，选择 <u>匿名消息</u> 即可输入你想要发送的匿名消息内容。",
-            "privacy" => "匿名消息将通过 <u>匿名消息（机器人）</u> 发送给对方，不会记录你的身份信息。",
-            default => '',
+            "help" => [
+                "title" => "匿名消息使用说明",
+                "content" => "使用说明：打开你想要发匿名消息的个人对话，点击输入框右边的 ⊕ 号，选择「匿名消息」即可输入你想要发送的匿名消息内容。"
+            ],
+            "privacy" => [
+                "title" => "匿名消息隐私说明",
+                "content" => "匿名消息将通过「匿名消息（机器人）」发送给对方，不会记录你的身份信息。"
+            ],
+            default => [],
         };
     }
 }

@@ -93,21 +93,22 @@ class BotReceiveMsgTask extends AbstractTask
         }
         // 签到机器人
         if ($botUser->email === 'check-in@bot.system') {
-            $text = UserBot::checkinBotQuickMsg($command, $msg->userid);
-            if ($text) {
+            $content = UserBot::checkinBotQuickMsg($command, $msg->userid);
+            if ($content) {
                 WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'template', [
                     'type' => 'content',
-                    'content' => $text,
+                    'content' => $content,
                 ], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
             }
         }
         // 隐私机器人
         if ($botUser->email === 'anon-msg@bot.system') {
-            $text = UserBot::anonBotQuickMsg($command);
-            if ($text) {
+            $array = UserBot::anonBotQuickMsg($command);
+            if ($array) {
                 WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'template', [
                     'type' => 'content',
-                    'content' => $text,
+                    'title' => $array['title'],
+                    'content' => $array['content'],
                 ], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
             }
         }
@@ -118,10 +119,9 @@ class BotReceiveMsgTask extends AbstractTask
             } elseif (UserBot::whereBotId($botUser->userid)->whereUserid($msg->userid)->exists()) {
                 $isManager = false;
             } else {
-                $text = "非常抱歉，我不是你的机器人，无法完成你的指令。";
                 WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'template', [
                     'type' => 'content',
-                    'content' => $text,
+                    'content' => "非常抱歉，我不是你的机器人，无法完成你的指令。",
                 ], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
                 return;
             }

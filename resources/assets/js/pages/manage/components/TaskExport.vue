@@ -106,9 +106,9 @@ export default {
             this.$store.dispatch("call", {
                 url: 'project/task/export',
                 data: this.formData,
-            }).then(({data}) => {
+            }).then(() => {
                 this.show = false;
-                $A.modalSuccess(data.msg);
+                $A.modalSuccess('正在打包，请留意系统消息。');
             }).catch(({msg}) => {
                 $A.modalError(msg);
             }).finally(_ => {

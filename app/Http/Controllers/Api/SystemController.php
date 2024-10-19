@@ -306,41 +306,45 @@ class SystemController extends AbstractController
             }
             $backup = $setting;
             $setting = Base::setting('aibotSetting', Base::newTrim($all));
+            $tempMsg = [
+                'type' => 'content',
+                'content' => '设置成功'
+            ];
             //
             if ($backup['openai_key'] != $setting['openai_key']) {
                 $botUser = User::botGetOrCreate('ai-openai');
                 if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
-                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "设置成功"], $botUser->userid, true, false, true);
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', $tempMsg, $botUser->userid, true, false, true);
                 }
             }
             if ($backup['claude_token'] != $setting['claude_token']) {
                 $botUser = User::botGetOrCreate('ai-claude');
                 if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
-                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "设置成功"], $botUser->userid, true, false, true);
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', $tempMsg, $botUser->userid, true, false, true);
                 }
             }
             if ($backup['wenxin_key'] != $setting['wenxin_key']) {
                 $botUser = User::botGetOrCreate('ai-wenxin');
                 if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
-                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "设置成功"], $botUser->userid, true, false, true);
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', $tempMsg, $botUser->userid, true, false, true);
                 }
             }
             if ($backup['qianwen_key'] != $setting['qianwen_key']) {
                 $botUser = User::botGetOrCreate('ai-qianwen');
                 if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
-                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "设置成功"], $botUser->userid, true, false, true);
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', $tempMsg, $botUser->userid, true, false, true);
                 }
             }
             if ($backup['gemini_key'] != $setting['gemini_key']) {
                 $botUser = User::botGetOrCreate('ai-gemini');
                 if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
-                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "设置成功"], $botUser->userid, true, false, true);
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', $tempMsg, $botUser->userid, true, false, true);
                 }
             }
             if ($backup['zhipu_key'] != $setting['zhipu_key']) {
                 $botUser = User::botGetOrCreate('ai-zhipu');
                 if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
-                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'text', ['text' => "设置成功"], $botUser->userid, true, false, true);
+                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', $tempMsg, $botUser->userid, true, false, true);
                 }
             }
         }
@@ -1095,7 +1099,7 @@ class SystemController extends AbstractController
         } catch (\Throwable $e) {
             // 一般是请求超时
             if (str_contains($e->getMessage(), "Timed Out")) {
-                return Base::retError("language.TimedOut");
+                return Base::retError("邮件发送超时，请检查邮箱配置是否正确");
             } elseif ($e->getCode() === 550) {
                 return Base::retError('邮件内容被拒绝，请检查邮箱是否开启接收功能');
             } else {
