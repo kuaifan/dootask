@@ -503,10 +503,13 @@ export default {
         },
 
         searchContact() {
-            let key = this.searchKey;
+            const key = this.searchKey;
             const cache = this.searchCache.find(item => item.type === 'contact' && item.key == key);
             if (cache) {
                 this.contacts = cache.data
+                if (!cache.more) {
+                    return
+                }
             }
             //
             this.waitIng++
@@ -518,45 +521,80 @@ export default {
                 setTimeout(() => {
                     this.loadIng++
                 }, 300)
-                this.$store.dispatch("call", {
-                    url: 'users/search',
-                    data: {
-                        keys: {
-                            key,
-                            project_id: this.projectId,
-                            no_project_id: this.noProjectId,
-                            dialog_id: this.dialogId,
-                            bot: this.showBot && key ? 2 : 0,
-                            disable: this.showDisable && key ? 2 : 0,
-                        },
-                        take: 50
-                    },
-                }).then(({data}) => {
-                    data = data.map(item => Object.assign(item, {type: 'user'}))
-                    this.contacts = data
-                    //
-                    const index = this.searchCache.findIndex(item => item.key == key);
-                    const tmpData = {type: 'contact', key, data, time: $A.dayjs().unix()};
-                    if (index > -1) {
-                        this.searchCache.splice(index, 1, tmpData)
-                    } else {
-                        this.searchCache.push(tmpData)
-                    }
-                }).catch(({msg}) => {
-                    this.contacts = []
-                    $A.messageWarning(msg)
-                }).finally(_ => {
+                this.searchRequest(key, 1, () => {
                     this.loadIng--;
                     this.waitIng--;
-                });
+                })
             }, this.searchCache.length > 0 ? 300 : 0)
         },
 
+        searchRequest(key, page, cb) {
+            this.$store.dispatch("call", {
+                url: 'users/search',
+                data: {
+                    keys: {
+                        key,
+                        project_id: this.projectId,
+                        no_project_id: this.noProjectId,
+                        dialog_id: this.dialogId,
+                        bot: this.showBot && key ? 2 : 0,
+                        disable: this.showDisable && key ? 2 : 0,
+                    },
+                    page,
+                    pagesize: 50
+                },
+            }).then(({data}) => {
+                if (this.searchKey != key) {
+                    cb()
+                    return
+                }
+                const items = data.data.map(item => Object.assign(item, {type: 'user'}))
+                if (data.current_page > 1) {
+                    items.unshift(...this.contacts)
+                }
+                this.contacts = items
+                //
+                const index = this.searchCache.findIndex(item => item.type === 'contact' && item.key == key);
+                const tmpData = {type: 'contact', key, data: items, time: $A.dayjs().unix(), more: data.current_page < data.last_page};
+                if (index > -1) {
+                    this.searchCache.splice(index, 1, tmpData)
+                } else {
+                    this.searchCache.push(tmpData)
+                }
+                //
+                if (!tmpData.more) {
+                    cb()
+                    return;
+                }
+                if (data.current_page % 5 === 0) {
+                    $A.modalConfirm({
+                        content: "数据已超过" + data.to + "条，是否继续加载？",
+                        onOk: () => {
+                            this.searchRequest(key, data.current_page + 1, cb)
+                        },
+                        onCancel: cb
+                    });
+                } else {
+                    this.searchRequest(key, data.current_page + 1, cb)
+
+                }
+            }).catch(({msg}) => {
+                if (page === 1) {
+                    this.contacts = []
+                }
+                $A.messageWarning(msg)
+                cb()
+            });
+        },
+
         searchProject() {
-            let key = this.searchKey;
+            const key = this.searchKey;
             const cache = this.searchCache.find(item => item.type === 'project' && item.key == key);
             if (cache) {
                 this.projects = cache.data
+                if (!cache.more) {
+                    return
+                }
             }
             //
             this.waitIng++
@@ -579,11 +617,15 @@ export default {
                         getstatistics: 'no'
                     },
                 }).then(({data}) => {
-                    data = data.data.map(item => Object.assign(item, {type: 'project'}))
-                    this.projects = data
+                    if (this.searchKey != key) {
+                        return
+                    }
                     //
-                    const index = this.searchCache.findIndex(item => item.key == key);
-                    const tmpData = {type: 'project', key, data, time: $A.dayjs().unix()};
+                    const items = data.data.map(item => Object.assign(item, {type: 'project'}))
+                    this.projects = items
+                    //
+                    const index = this.searchCache.findIndex(item => item.type === 'project' && item.key == key);
+                    const tmpData = {type: 'project', key, data: items, time: $A.dayjs().unix(), more: false};
                     if (index > -1) {
                         this.searchCache.splice(index, 1, tmpData)
                     } else {

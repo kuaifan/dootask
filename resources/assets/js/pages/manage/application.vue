@@ -323,6 +323,7 @@ export default {
     },
     computed: {
         ...mapState([
+            'systemConfig',
             'userInfo',
             'userIsAdmin',
             'reportUnreadNumber',
@@ -351,6 +352,9 @@ export default {
                 { value: "word-chain", label: "群接龙", sort: 9 },
                 { value: "vote", label: "群投票", sort: 10 },
             ];
+            if (this.systemConfig.server_closeai === 'close') {
+                applyList = applyList.filter(h => h.value !== 'robot');
+            }
             // wap模式
             if (this.windowOrientation == 'landscape') {
                 // 横屏模式

@@ -343,7 +343,17 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs', 'loadDialogs', 'dialogId', 'dialogMsgId', 'dialogMsgs', 'messengerSearchKey', 'appNotificationPermission', 'taskColorList']),
+        ...mapState([
+            'systemConfig',
+            'cacheDialogs',
+            'loadDialogs',
+            'dialogId',
+            'dialogMsgId',
+            'dialogMsgs',
+            'messengerSearchKey',
+            'appNotificationPermission',
+            'taskColorList'
+        ]),
 
         routeName() {
             return this.$route.name
@@ -818,6 +828,10 @@ export default {
                             return false
                         }
                     }
+                }
+            } else if (dialog.type == 'user') {
+                if (this.systemConfig.server_closeai === 'close' && /^ai-(.*?)@bot.system/.test(dialog.email)) {
+                    return false
                 }
             }
             return true;
