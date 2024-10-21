@@ -671,9 +671,13 @@ class UsersController extends AbstractController
      *   - all:     全部
      *   - 其他值:   非机器人（默认）
      * - keys.department        部门ID（0表示默认部门，不赋值获取所有部门）
-     * - keys.checkin_mac       签到mac地址（get_checkin_mac=1时有效）
+     * - keys.checkin_face      人脸图片（get_checkin_data=1时有效）
+     * - yes:     仅有人脸图片
+     * - no:      无人脸图片
+     * - all:     全部
+     * - keys.checkin_mac       签到mac地址（get_checkin_data=1时有效）
      *
-     * @apiParam {Number} [get_checkin_mac]     获取签到mac地址
+     * @apiParam {Number} [get_checkin_data]     获取签到mac地址
      * - 0: 不获取（默认）
      * - 1: 获取
      * @apiParam {Number} [page]                当前页，默认:1
@@ -690,7 +694,7 @@ class UsersController extends AbstractController
         $builder = User::select(['*', 'nickname as nickname_original']);
         //
         $keys = Request::input('keys');
-        $getCheckinMac = intval(Request::input('get_checkin_mac')) === 1;
+        $getCheckinData = intval(Request::input('get_checkin_data')) === 1;
         if (is_array($keys)) {
             if ($keys['key']) {
                 if (str_contains($keys['key'], "@")) {
@@ -758,10 +762,17 @@ class UsersController extends AbstractController
                     $builder->orderBy("is_principal","desc");
                 }
             }
-            if ($getCheckinMac && isset($keys['checkin_mac'])) {
-                $builder->whereIn('userid', function ($query) use ($keys) {
-                    $query->select('userid')->from('user_checkin_macs')->where("mac", "like", "%{$keys['checkin_mac']}%");
-                });
+            if ($getCheckinData) {
+                if (isset($keys['checkin_face'])) {
+                    $builder->whereIn('userid', function ($query) use ($keys) {
+                        $query->select('userid')->from('user_checkin_faces')->whereNotNull("faceimg");
+                    });
+                }
+                if (isset($keys['checkin_mac'])) {
+                    $builder->whereIn('userid', function ($query) use ($keys) {
+                        $query->select('userid')->from('user_checkin_macs')->where("mac", "like", "%{$keys['checkin_mac']}%");
+                    });
+                }
             }
         } else {
             $builder->whereNull('disable_at');
@@ -769,19 +780,11 @@ class UsersController extends AbstractController
         }
         $list = $builder->orderByDesc('userid')->paginate(Base::getPaginate(50, 20));
         //
-        if ($getCheckinMac) {
-            $list->transform(function (User $user) use ($getCheckinMac) {
-                if ($getCheckinMac) {
-                    $user->checkin_macs = UserCheckinMac::select(['id', 'mac', 'remark'])->whereUserid($user->userid)->orderBy('id')->get();
-                }
-                return $user;
-            });
-            // user_face
-            $list->transform(function (User $user) use ($getCheckinMac) {
-                if ($getCheckinMac) {
-                    $checkinFace = UserCheckinFace::query()->whereUserid($user->userid)->first();
-                    $user->checkin_face = $checkinFace ? Base::fillUrl($checkinFace->faceimg) : '';
-                }
+        if ($getCheckinData) {
+            $list->transform(function (User $user) {
+                $checkinFace = UserCheckinFace::select(['faceimg'])->whereUserid($user->userid)->first();
+                $user->checkin_face = $checkinFace ? Base::fillUrl($checkinFace->faceimg) : '';
+                $user->checkin_macs = UserCheckinMac::select(['id', 'mac', 'remark'])->whereUserid($user->userid)->orderBy('id')->get();
                 return $user;
             });
         }
@@ -1731,7 +1734,7 @@ class UsersController extends AbstractController
 
         // 当图片允许修改
         if ($setting['faceupload'] === 'open') {
-            UserCheckinFace::saveFace($user->userid, $user->nickname(), $faceimg, "用户上传");            
+            UserCheckinFace::saveFace($user->userid, $user->nickname(), $faceimg, "用户上传");
         } else {
             $userface = UserCheckinFace::whereUserid($user->userid)->first();
             $data['faceimg'] = $userface;

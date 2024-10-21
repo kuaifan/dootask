@@ -212,7 +212,7 @@ services:
       - mariadb
     networks:
       extnetwork:
-        ipv4_address: "${APP_IPPR}.55"
+        ipv4_address: "${APP_IPPR}.14"
     restart: unless-stopped
 
 networks:

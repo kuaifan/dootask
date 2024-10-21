@@ -10,7 +10,7 @@
                             <Radio label="close">{{ $L('关闭') }}</Radio>
                         </RadioGroup>
                         <div class="export-data">
-                            <p @click="allUserShow=true">{{$L('管理成员MAC地址')}}</p>
+                            <p @click="allUserShow=true">{{$L('会员签到设置')}}</p>
                             <p @click="exportShow=true">{{$L('导出签到数据')}}</p>
                         </div>
                     </FormItem>
@@ -51,27 +51,27 @@
                             </Form>
                         </FormItem>
                         <FormItem :label="$L('允许修改')" prop="edit">
-                            <RadioGroup v-model="formData.edit">
-                                <Radio label="open">{{ $L('允许') }}</Radio>
-                                <Radio label="close">{{ $L('禁止') }}</Radio>
-                            </RadioGroup>
-                            <div class="form-tip">{{$L('允许成员自己修改MAC地址')}}</div>
                             <RadioGroup v-model="formData.faceupload">
                                 <Radio label="open">{{ $L('允许') }}</Radio>
                                 <Radio label="close">{{ $L('禁止') }}</Radio>
                             </RadioGroup>
                             <div class="form-tip">{{$L('允许成员自己上传人脸图片')}}</div>
+                            <RadioGroup v-model="formData.edit">
+                                <Radio label="open">{{ $L('允许') }}</Radio>
+                                <Radio label="close">{{ $L('禁止') }}</Radio>
+                            </RadioGroup>
+                            <div class="form-tip">{{$L('允许成员自己修改MAC地址')}} ({{$L('WiFi签到')}})</div>
                         </FormItem>
                         <FormItem :label="$L('签到方式')" prop="modes">
                             <CheckboxGroup v-model="formData.modes">
-                                <Checkbox label="auto">{{$L('自动签到')}}</Checkbox>
-                                <Checkbox label="manual">{{$L('手动签到')}}</Checkbox>
+                                <Checkbox label="auto">{{$L('WiFi签到')}}</Checkbox>
                                 <Checkbox label="face">{{$L('人脸签到')}}</Checkbox>
+                                <Checkbox label="manual">{{$L('手动签到')}}</Checkbox>
                                 <Checkbox v-if="false" label="location">{{$L('定位签到')}}</Checkbox>
                             </CheckboxGroup>
-                            <div v-if="formData.modes.includes('auto')" class="form-tip">{{$L('自动签到')}}: {{$L('详情看下文安装说明')}}</div>
+                            <div v-if="formData.modes.includes('auto')" class="form-tip">{{$L('WiFi签到')}}: {{$L('详情看下文安装说明')}}</div>
+                            <div v-if="formData.modes.includes('face')" class="form-tip">{{$L('人脸签到')}}: {{$L('通过人脸识别机签到')}}</div>
                             <div v-if="formData.modes.includes('manual')" class="form-tip">{{$L('手动签到')}}: {{$L('通过在签到打卡机器人发送指令签到')}}</div>
-                            <div v-if="formData.modes.includes('face')" class="form-tip">{{$L('人脸签到')}}: {{$L('')}}</div>
                             <div v-if="formData.modes.includes('location')" class="form-tip">{{$L('定位签到')}}: {{$L('通过在签到打卡机器人发送位置签到')}}</div>
                         </FormItem>
                     </template>
@@ -81,10 +81,10 @@
             <template v-if="formData.open === 'open' && formData.modes.includes('auto')">
                 <div class="block-setting-space"></div>
                 <div class="block-setting-box">
-                    <h3>{{ $L('自动签到') }}</h3>
+                    <h3>{{ $L('WiFi签到') }}</h3>
                     <div class="form-box">
                         <FormItem :label="$L('安装说明')" prop="explain">
-                            <p>1. {{ $L('自动签到延迟时长为±1分钟。') }}</p>
+                            <p>1. {{ $L('WiFi签到延迟时长为±1分钟。') }}</p>
                             <p>2. {{ $L('设备连接上指定路由器（WiFi）后自动签到。') }}</p>
                             <p>3. {{ $L('仅支持Openwrt系统的路由器。') }}</p>
                             <p>4. {{ $L('关闭签到功能再开启需要重新安装。') }}</p>
@@ -108,7 +108,7 @@
             v-model="allUserShow"
             placement="right"
             :size="1380">
-            <TeamManagement v-if="allUserShow" checkin-mac/>
+            <TeamManagement v-if="allUserShow" checkin-mode/>
         </DrawerOverlay>
     </div>
 </template>

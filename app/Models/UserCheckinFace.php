@@ -40,8 +40,8 @@ class UserCheckinFace extends AbstractModel
             $faceFile = public_path($faceimg);
             $record = base64_encode(file_get_contents($faceFile));
         }
-       
-        $url = 'http://' . env('APP_IPPR') . '.55' . ":7788/user";
+
+        $url = 'http://' . env('APP_IPPR') . '.14' . ":7788/user";
         $data = [
             'name' => $nickname,
             'enrollid' => $userid,
@@ -51,15 +51,15 @@ class UserCheckinFace extends AbstractModel
         if ($record != '') {
             $data['record'] = $record;
         }
-        
+
         $res = Ihttp::ihttp_post($url, json_encode($data), 15);
         if($res['data'] && $data = json_decode($res['data'])){
             if($data->ret != 1 && $data->msg){
                 throw new ApiException($data->msg);
             }
         }
-        
-        
+
+
         return AbstractModel::transaction(function() use ($userid, $faceimg, $remark) {
             $checkinFace = self::query()->whereUserid($userid)->first();
             if ($checkinFace) {
@@ -86,12 +86,12 @@ class UserCheckinFace extends AbstractModel
     }
 
     public static function deleteDeviceUser($userid) {
-        $url = 'http://' . env('APP_IPPR') . '.55' . ":7788/user/delete";
+        $url = 'http://' . env('APP_IPPR') . '.14' . ":7788/user/delete";
         $data = [
             'enrollid' => $userid,
             'backupnum' => 50, // 13 删除整个用户  50 删除图片
         ];
-        
+
         $res = Ihttp::ihttp_post($url, json_encode($data));
         if($res['data'] && $data = json_decode($res['data'])){
             if($data->ret != 1 && $data->msg){

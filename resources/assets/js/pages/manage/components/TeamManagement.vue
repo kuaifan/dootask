@@ -97,14 +97,28 @@
                                 </Select>
                             </div>
                         </li>
-                        <li v-if="checkinMac">
-                            <div class="search-label">
-                                {{$L("MAC地址")}}
-                            </div>
-                            <div class="search-content">
-                                <Input v-model="keys.checkin_mac" :placeholder="$L('MAC地址')" clearable/>
-                            </div>
-                        </li>
+                        <template v-if="checkinMode">
+                            <li>
+                                <div class="search-label">
+                                    {{$L("人脸图片")}}
+                                </div>
+                                <div class="search-content">
+                                    <Select v-model="keys.checkin_face" :placeholder="$L('全部')">
+                                        <Option value="">{{$L('全部')}}</Option>
+                                        <Option value="yes">{{$L('已上传')}}</Option>
+                                        <Option value="no">{{$L('未上传')}}</Option>
+                                    </Select>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="search-label">
+                                    {{$L("MAC地址")}}
+                                </div>
+                                <div class="search-content">
+                                    <Input v-model="keys.checkin_mac" :placeholder="$L('MAC地址')" clearable/>
+                                </div>
+                            </li>
+                        </template>
                         <li v-else>
                             <div class="search-label">
                                 {{$L("邮箱认证")}}
@@ -251,13 +265,10 @@
                 <Row class="team-department-checkin-item">
                     <Col span="12">
                         <ImgUpload v-model="checkinFaceEditData.faceimg" :num="1" :width="512" :height="512" :whcut="1"></ImgUpload>
-                    <span class="form-tip">{{$L('建议尺寸：200x200')}}</span>
-                    </Col>
-                    <Col span="12">
-                        <!-- <Input v-model="item.remark" :maxlength="100" :placeholder="$L('备注')"/> -->
+                        <span class="form-tip">{{$L('建议尺寸：500x500')}}</span>
                     </Col>
                 </Row>
-                
+
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="checkinFaceEditShow=false">{{$L('取消')}}</Button>
@@ -334,7 +345,7 @@ export default {
     name: "TeamManagement",
     components: {UserAvatarTip, UserSelect, ImgUpload},
     props: {
-        checkinMac: {
+        checkinMode: {
             type: Boolean,
             default: false
         },
@@ -550,7 +561,7 @@ export default {
                             arr.push(h('span', '/'))
                         }
                         arr.push(h('span', this.$L('最后在线')))
-                        return h('div', arr)
+                        return h('AutoTip', arr)
                     },
                     render: (h, params) => {
                         const {line_at, disable_at} = params.row;
@@ -573,21 +584,43 @@ export default {
                     render: (h, params) => {
                         const identity = params.row.identity;
                         const dropdownItems = [];
+                        if (this.checkinMode) {
+                            dropdownItems.push(...[
+                                h('EDropdownItem', {
+                                    props: {
+                                        command: 'checkin_face',
+                                    },
+                                    style: {
+                                        color: '#f90',
+                                        fontWeight: 'bold'
+                                    }
+                                }, [h('div', this.$L('修改人脸图片'))]),
+                                h('EDropdownItem', {
+                                    props: {
+                                        command: 'checkin_mac',
+                                    },
+                                    style: {
+                                        color: '#f90',
+                                        fontWeight: 'bold'
+                                    }
+                                }, [h('div', this.$L('修改MAC地址'))])
+                            ])
+                        }
                         if (identity.includes('admin')) {
                             dropdownItems.push(h('EDropdownItem', {
                                 props: {
                                     command: 'clearadmin',
+                                    divided: this.checkinMode
                                 },
                             }, [h('div', this.$L('取消管理员'))]));
                         } else {
                             dropdownItems.push(h('EDropdownItem', {
                                 props: {
                                     command: 'setadmin',
+                                    divided: this.checkinMode
                                 },
                             }, [h('div', this.$L('设为管理员'))]));
                         }
-
-
                         if (identity.includes('temp')) {
                             dropdownItems.push(h('EDropdownItem', {
                                 props: {
@@ -601,46 +634,30 @@ export default {
                                 },
                             }, [h('div', this.$L('设为临时帐号'))]));
                         }
-
-                        dropdownItems.push(h('EDropdownItem', {
-                            props: {
-                                command: 'email',
-                            },
-                        }, [h('div', this.$L('修改邮箱'))]))
-
-                        dropdownItems.push(h('EDropdownItem', {
-                            props: {
-                                command: 'password',
-                            },
-                        }, [h('div', this.$L('修改密码'))]))
-
-                        if (this.checkinMac) {
-                            dropdownItems.push(h('EDropdownItem', {
+                        dropdownItems.push(...[
+                            h('EDropdownItem', {
                                 props: {
-                                    command: 'checkin_mac',
+                                    command: 'email',
                                 },
-                            }, [h('div', this.$L('修改MAC'))]))
-
-                            dropdownItems.push(h('EDropdownItem', {
+                            }, [h('div', this.$L('修改邮箱'))]),
+                            h('EDropdownItem', {
                                 props: {
-                                    command: 'checkin_face',
+                                    command: 'password',
                                 },
-                            }, [h('div', this.$L('修改人脸图片'))]))
-                        }
-
-                        dropdownItems.push(h('EDropdownItem', {
-                            props: {
-                                command: 'department',
-                            },
-                        }, [h('div', this.$L('修改部门'))]))
-
+                            }, [h('div', this.$L('修改密码'))]),
+                            h('EDropdownItem', {
+                                props: {
+                                    command: 'department',
+                                },
+                            }, [h('div', this.$L('修改部门'))])
+                        ])
                         if (identity.includes('disable')) {
                             dropdownItems.push(h('EDropdownItem', {
                                 props: {
                                     command: 'cleardisable',
                                 },
                                 style: {
-                                    color: '#f90'
+                                    color: 'red'
                                 }
                             }, [h('div', this.$L('恢复帐号（已离职）'))]));
                         } else {
@@ -649,7 +666,7 @@ export default {
                                     command: 'setdisable',
                                 },
                                 style: {
-                                    color: '#f90'
+                                    color: 'red'
                                 }
                             }, [h('div', this.$L('操作离职'))]));
                         }
@@ -790,59 +807,68 @@ export default {
         }
     },
     created() {
-        if (this.checkinMac) {
-            this.columns.splice(5, 0, {
-                title: this.$L('设备情况'),
-                key: 'checkin_mac',
-                minWidth: 80,
-                render: (h, {row}) => {
-                    let checkin_macs = $A.cloneJSON(row.checkin_macs || [])
-                    let checkin_face = $A.cloneJSON(row.checkin_face || '')
-                    const tmp = []
-                    const checkin_face_desc = checkin_face ? "已上传(人脸)" : "未上传(人脸)"
-                    if (checkin_macs.length === 0) {
-                        if (checkin_face){
-                            tmp.push(h('AutoTip', checkin_face_desc))
+        if (this.checkinMode) {
+            this.columns.splice(5, 0, ...[
+                {
+                    key: 'checkin_face',
+                    minWidth: 80,
+                    renderHeader: (h) => {
+                        return h('AutoTip', {
+                            style: {
+                                color: '#f90'
+                            }
+                        }, this.$L('人脸图片'))
+                    },
+                    render: (h, {row}) => {
+                        const checkin_face = $A.cloneJSON(row.checkin_face || '')
+                        return h('div', checkin_face ? this.$L('已上传') : '-');
+                    },
+                }, {
+                    key: 'checkin_mac',
+                    minWidth: 80,
+                    renderHeader: (h) => {
+                        return h('AutoTip', {
+                            style: {
+                                color: '#f90'
+                            }
+                        }, this.$L('MAC地址'))
+                    },
+                    render: (h, {row}) => {
+                        let checkin_macs = $A.cloneJSON(row.checkin_macs || [])
+                        if (checkin_macs.length === 0) {
+                            return h('div', '-');
+                        } else {
+                            const desc = (item) => {
+                                if (item.remark) {
+                                    return `${item.mac} (${item.remark})`
+                                }
+                                return item.mac
+                            }
+                            const tmp = []
+                            tmp.push(h('AutoTip', desc(checkin_macs[0])))
+                            if (checkin_macs.length > 1) {
+                                checkin_macs = checkin_macs.splice(1)
+                                tmp.push(h('ETooltip', [
+                                    h('div', {
+                                        slot: 'content',
+                                        domProps: {
+                                            innerHTML: checkin_macs.map(item => {
+                                                return desc(item)
+                                            }).join("<br/>")
+                                        }
+                                    }),
+                                    h('div', {
+                                        class: 'department-tag-num'
+                                    }, ` +${checkin_macs.length}`)
+                                ]))
+                            }
                             return h('div', {
                                 class: 'team-table-department-warp'
                             }, tmp);
                         }
-                        return h('div', '-');
-                    } else {
-                        const desc = (item) => {
-                            if (item.remark) {
-                                return `${item.mac} (${item.remark})`
-                            }
-                            return item.mac
-                        }
-                        const checkin_devices_desc = []
-                        tmp.push(h('AutoTip', desc(checkin_macs[0])))
-                        if (checkin_macs.length > 1) {
-                            checkin_macs = checkin_macs.splice(1)
-                            checkin_devices_desc.push(...checkin_macs.map(item => {
-                                return desc(item)
-                            }))
-                            if (checkin_face) {
-                                checkin_devices_desc.push(checkin_face_desc)
-                            }
-                            tmp.push(h('ETooltip', [
-                                h('div', {
-                                    slot: 'content',
-                                    domProps: {
-                                        innerHTML: checkin_devices_desc.join("<br/>")
-                                    }
-                                }),
-                                h('div', {
-                                    class: 'department-tag-num'
-                                }, ` +${checkin_devices_desc.length}`)
-                            ]))
-                        } 
-                        return h('div', {
-                            class: 'team-table-department-warp'
-                        }, tmp);
-                    }
-                },
-            })
+                    },
+                }
+            ])
         }
     },
     mounted() {
@@ -908,7 +934,7 @@ export default {
                 url: 'users/lists',
                 data: {
                     keys,
-                    get_checkin_mac: this.checkinMac ? 1 : 0,
+                    get_checkin_data: this.checkinMode ? 1 : 0,
                     page: Math.max(this.page, 1),
                     pagesize: Math.max($A.runNum(this.pageSize), 10),
                 },
@@ -1014,7 +1040,7 @@ export default {
                         nickname: row.nickname,
                         faceimg: row.checkin_face
                     };
-                   
+
                     this.checkinFaceEditShow = true;
                     break;
 
