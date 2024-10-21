@@ -24526,5 +24526,17 @@
         "fr": "Échec de la récupération des informations de l'appareil",
         "id": "Gagal Mengambil Informasi Perangkat",
         "ru": "Не удалось получить информацию об устройстве"
+    },
+    {
+        "key": "没有上次的汇报对象",
+        "zh": "",
+        "zh-CHT": "沒有上次的匯報對象",
+        "en": "No previous report target",
+        "ko": "이전 보고 대상이 없습니다",
+        "ja": "前回の報告対象がありません",
+        "de": "Kein vorheriges Berichtsziel",
+        "fr": "Pas de cible de rapport précédente",
+        "id": "Tidak ada target laporan sebelumnya",
+        "ru": "Нет предыдущего объекта отчета"
     }
 ]

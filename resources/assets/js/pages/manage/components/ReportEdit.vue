@@ -226,6 +226,9 @@ export default {
                 url: 'report/last_submitter',
             }).then(({data}) => {
                 this.reportData.receive = data;
+                if (data.length === 0) {
+                    $A.messageWarning("没有上次的汇报对象");
+                }
             }).catch(({msg}) => {
                 $A.messageError(msg);
             }).finally(_ => {
