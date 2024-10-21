@@ -259,16 +259,14 @@
             <Form :model="checkinMacEditData" label-width="auto" @submit.native.prevent>
                 <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${checkinFaceEditData.userid}，${checkinFaceEditData.nickname}】人脸图片修改。`)}}</Alert>
                 <Row class="team-department-checkin-item">
-                    <Col span="12">{{$L('人脸图片')}}</Col>
-                    <Col span="12"></Col>
+                    <Col span="24">{{$L('人脸图片')}}</Col>
                 </Row>
                 <Row class="team-department-checkin-item">
-                    <Col span="12">
+                    <Col span="24">
                         <ImgUpload v-model="checkinFaceEditData.faceimg" :num="1" :width="512" :height="512" :whcut="1"></ImgUpload>
-                        <span class="form-tip">{{$L('建议尺寸：500x500')}}</span>
+                        <div class="form-tip">{{$L('建议尺寸：500x500')}}</div>
                     </Col>
                 </Row>
-
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="checkinFaceEditShow=false">{{$L('取消')}}</Button>

@@ -288,6 +288,9 @@
 
                 > div {
                     padding-right: 12px;
+                    &:last-child {
+                        padding-right: 0;
+                    }
                 }
             }
 

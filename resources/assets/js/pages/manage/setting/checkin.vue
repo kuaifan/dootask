@@ -1,7 +1,7 @@
 <template>
-    <div class="setting-item submit">
+    <div class="setting-item">
         <Form ref="formData" label-width="auto" @submit.native.prevent>
-            <Divider orientation="left" style="margin-top:0">{{$L('签到记录')}}</Divider>
+            <Divider orientation="left" style="margin-top:0">{{ $L('签到记录') }}</Divider>
             <div v-if="latelyLoad > 0" class="setting-checkin-load">
                 <Loading/>
             </div>
@@ -11,62 +11,55 @@
                     :key="key"
                     :color="item.section.length > 0 ? 'blue' :'#F29D38'">
                     <Icon :type="item.section.length > 0 ? 'md-checkmark-circle' : 'md-close-circle'" slot="dot"></Icon>
-                    <p class="time">{{item.date}}</p>
+                    <p class="time">{{ item.date }}</p>
                     <p class="content" v-html="item.section.length > 0 ? latelySection(item.section) : $L('未签到')"></p>
                 </TimelineItem>
             </Timeline>
-            <div class="setting-checkin-button" @click="calendarShow=true">{{$L('查看更多签到数据')}}</div>
+            <div class="setting-checkin-button" @click="calendarShow=true">{{ $L('查看更多签到数据') }}</div>
 
-            <Divider orientation="left">{{$L('签到设置')}}</Divider>
+            <Divider orientation="left">{{ $L('签到设置') }}</Divider>
             <div class="setting-checkin-row">
-            <Tabs v-model="checkinTabs" style="margin: 0;">
-                <TabPane :label="$L('人脸签到')" name="receive">
-                    <div class="setting-checkin-row">
+                <Tabs v-model="checkinTabs" style="margin: 0;">
+                    <TabPane :label="$L('人脸签到')" name="receive">
                         <Row class="setting-template">
-                            <Col span="12">{{$L('人脸图片')}}</Col>
-                            <Col span="12"></Col>
+                            <Col span="24">{{ $L('人脸图片') }}</Col>
                         </Row>
-
                         <Row class="setting-template">
-                            <Col span="12">
+                            <Col span="24">
                                 <ImgUpload v-model="faceimgs" :num="1" :width="512" :height="512" :whcut="1"></ImgUpload>
-                                <span class="form-tip">{{$L('建议尺寸：500x500')}}</span>
+                                <div class="form-tip">{{ $L('建议尺寸：500x500') }}</div>
                             </Col>
                         </Row>
-                    </div>
-                </TabPane>
-                <TabPane :label="$L('WiFi签到')" name="mac">
-                    <Alert type="success">
-                        {{$L('设备连接上指定路由器（WiFi）后自动签到。')}}
-                    </Alert>
-                    <Row class="setting-template">
-                        <Col span="12">{{$L('设备MAC地址')}}</Col>
-                        <Col span="12">{{$L('备注')}}</Col>
-                    </Row>
-                    <Row v-for="(item, key) in formData" :key="key" class="setting-template">
-                        <Col span="12">
-                            <Input
-                                v-model="item.mac"
-                                :maxlength="20"
-                                :placeholder="$L('请输入设备MAC地址')"
-                                clearable
-                                @on-clear="delDatum(key)"/>
-                        </Col>
-                        <Col span="12">
-                            <Input v-model="item.remark" :maxlength="100" :placeholder="$L('备注')"/>
-                        </Col>
-                    </Row>
-                    <Button type="default" icon="md-add" @click="addDatum">{{$L('添加设备')}}</Button>
-                </TabPane>
-            </Tabs>
-    </div>
-
-
-
+                    </TabPane>
+                    <TabPane :label="$L('WiFi签到')" name="mac">
+                        <Alert type="success">
+                            {{ $L('设备连接上指定路由器（WiFi）后自动签到。') }}
+                        </Alert>
+                        <Row class="setting-template">
+                            <Col span="12">{{ $L('设备MAC地址') }}</Col>
+                            <Col span="12">{{ $L('备注') }}</Col>
+                        </Row>
+                        <Row v-for="(item, key) in formData" :key="key" class="setting-template">
+                            <Col span="12">
+                                <Input
+                                    v-model="item.mac"
+                                    :maxlength="20"
+                                    :placeholder="$L('请输入设备MAC地址')"
+                                    clearable
+                                    @on-clear="delDatum(key)"/>
+                            </Col>
+                            <Col span="12">
+                                <Input v-model="item.remark" :maxlength="100" :placeholder="$L('备注')"/>
+                            </Col>
+                        </Row>
+                        <Button type="default" icon="md-add" @click="addDatum">{{ $L('添加设备') }}</Button>
+                    </TabPane>
+                </Tabs>
+            </div>
         </Form>
         <div class="setting-footer">
-            <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{$L('提交')}}</Button>
-            <Button :loading="loadIng > 0" @click="resetForm" style="margin-left: 8px">{{$L('重置')}}</Button>
+            <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{ $L('提交') }}</Button>
+            <Button :loading="loadIng > 0" @click="resetForm" style="margin-left: 8px">{{ $L('重置') }}</Button>
         </div>
 
         <Modal

@@ -2,6 +2,40 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.38.70]
+
+### Bug Fixes
+
+- 推送失败的情况
+- 导出签到数据快速选择时间
+- 搜索区域无法回车搜索的问题
+- 未领任务提醒机器人无须加入项目
+- 日历中总是显示时间相差一个月
+
+### Documentation
+
+- 更新docker-compose
+
+### Features
+
+- 支持人脸打卡设备
+
+### Performance
+
+- 升级onlyoffice
+- 优化人脸签到功能
+- 优化加载通讯录数量
+- 优化继续添加任务数据处理
+- 优化翻译
+- 更新gpt的一些模型
+- 优化消息组件
+- 优化后端翻译
+- 优化创建任务提示时间冲突的逻辑
+- 人脸打卡配置
+- 签到设置保存
+- 签到设备显示
+- 打卡标签页
+
 ## [0.38.27]
 
 ### Bug Fixes
@@ -13,6 +47,7 @@ All notable changes to this project will be documented in this file.
 - 添加任务时不设置时间无须提示任务冲突
 - 负责人修改后不显示在仪表盘的情况
 - 添加任务选择今天时间无效的情况
+- 修复url-token登录异常问题
 
 ### Features
 
