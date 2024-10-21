@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>DooTask - 最受欢迎的开源项目协助工具</title>
+  <meta name="google" value="notranslate" />
+  <meta name="description"
+    content="DooTask是一款轻量级的开源在线项目任务管理工具，提供各类文档协作工具、在线思维导图、在线流程图、项目管理、任务分发、即时IM，文件管理等工具。助力团队高效推进项目，让工作更简单。" />
+  <meta name="keywords" content="中国 DooTask 开源在线项目 任务管理工具 任务管理 轻量级 海豚有海 团队协作" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" href="../img/favicon.ico" />
+  <link rel="stylesheet" type="text/css" href="../css/common.css" />
+  <link rel="stylesheet" type="text/css" href="../css/rem.css" />
+  <link rel="stylesheet" type="text/css" href="../css/home.css" />
+  <link rel="stylesheet" type="text/css" href="../css/ad.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css">
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-16660800396"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PE77P6491J"></script>
+  <script src="../js/googleAds.js"></script>
+  <script src="../js/googleAnalyze.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/qs@6.13.0/dist/qs.min.js"></script>
+</head>
+
+<body>
+
+  <div class="ad-dialog">
+    <div class="ad-dialog-backdrop"></div>
+    <div class="ad-dialog-wrapper">
+      <div id="ad-dialog-header" class="ad-dialog-header">
+        <div id="ad-dialog-header-img" class="ad-dialog-header-img"></div>
+      </div>
+      <div id="ad-dialog-content" class="ad-dialog-content">
+        如需购买请扫码添加微信客服专员
+      </div>
+      <div class="ad-dialog-footer">
+        <button id="ad-dialog-footer-btn" class="ad-dialog-footer-btn">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="layout" class="ad-wrapper">
+    <!-- 同意cookie弹框 -->
+    <div id="cookieConsent">
+      <div>
+        我们使用第一方 cookie
+        来改善您在我们网站上的浏览体验、分析我们的网站流量并了解我们的访问者来自哪里。如果您选择退出，则只会使用绝对必要的
+        cookie。<a href="../zh/cookie.html" id="cookie_a" target="_blank">我们的 cookie 政策</a>
+      </div>
+      <div id="buttonBox">
+        <button id="rejectButton" class="btn btn-primary">
+          我拒绝
+        </button>
+        <button id="agreeButton" class="btn btn-primary">
+          允许cookies
+        </button>
+      </div>
+    </div>
+    <!-- 页头区域 -->
+    <header id="ad-banner" class="head">
+      <div class="nav">
+        <div class="nav-layout">
+          <a href="../zh/index.html" class="logo">
+            <img id="logo" src="../img/light/logo.svg" alt="DooTask,Logo" />
+            <i class="dootask txt-7002027">DooTask</i>
+          </a>
+          <ul class="nav-ul">
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-product" href="../zh/product.html">产品</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-solutions" href="../zh/solutions.html">解决方案</a>
+            </li>
+            <li class="nav-ul-item">
+              <i class="txt-4001620 txt nav-support" id="support-txt" onclick="showMenuPopHandle()">
+                支持
+                <img src="../img/vector.svg" alt="支持" class="nav-vector" id="drop-down-svg" />
+              </i>
+              <ol class="submenu-pop" id="submenu-pop">
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../zh/download.html">下载中心</a>
+                </li>
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../zh/help.html">帮助中心</a>
+                </li>
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../zh/privacy.html" target="_blank">隐私政策</a>
+                </li>
+                <li class="submenu-pop-item" onclick="changeMenu()">
+                  <a class="txt-4001418 txt-sub" href="../../docs/index.html" target="_blank">API 文档</a>
+                </li>
+              </ol>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-price" href="../zh/price.html">服务价格</a>
+            </li>
+            <li class="nav-ul-item">
+              <a class="txt-4001620 txt nav-about" href="../zh/about.html">关于我们</a>
+            </li>
+          </ul>
+          <div class="nav-r">
+            <div class="lang" id="lang-img">
+              <img src="../img/lang-select.svg" alt="语言切换" onclick="shouLangPopHandle()" />
+              <ul class="lang-pop" id="lang-pop">
+                <li class="lang-pop-item" onclick="changeLanguage('zh')">
+                  <i class="lang-txt">简体中文</i>
+                </li>
+                <li class="lang-pop-item" onclick="changeLanguage('en')">
+                  <i class="lang-txt">English</i>
+                </li>
+              </ul>
+            </div>
+            <i class="nav-r-icon theme_dark" onclick="setTheme('light')">
+              <img src="../img/light.svg" alt="明亮主题" />
+            </i>
+            <i class="nav-r-icon theme_light" onclick="setTheme('dark')">
+              <img src="../img/drak.svg" alt="暗黑主题" />
+            </i>
+            <a href="https://github.com/kuaifan/dootask" target="_blank">
+              <i class="nav-r-icon">
+                <img src="../img/github.svg" alt="github" />
+              </i>
+            </a>
+            <i class="line-1"></i>
+            <span class="get-started">
+              <a href="../../manage/dashboard">
+                <button class="btn btn-primary">
+                  立即体验
+                </button>
+              </a>
+            </span>
+          </div>
+          <div class="menuBtn">
+            <img id="menuBtn" src="../img/menu.svg" alt="菜单" />
+          </div>
+        </div>
+      </div>
+      <div class="topics">
+        <div class="topics-con">
+          <div class="topics-layout">
+            <div class="topics-tit mb-32" style="width: auto !important">
+              <span class="txt-6007290 topics-h1-green">
+                <span id="ad-banner-title-part1">DooTask</span>
+                <span id="ad-banner-title-underline">
+                  <svg class="arcs ad" width="303" height="47" viewBox="0 0 303 47" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path id="arc" fill-rule="evenodd" clip-rule="evenodd"
+                      d="M80.7308 27.6815C67.7286 31.9281 52.7004 36.1573 38.2511 37.2015C25.8945 38.1065 13.9833 36.7142 4.20939 30.762C2.82903 29.9266 1.1147 30.501 0.357722 32.0499C-0.0101685 32.7819 -0.0965865 33.582 0.10908 34.3518C0.314747 35.1217 0.803546 35.8278 1.51545 36.3835C12.1576 42.8752 25.1376 44.5634 38.6073 43.5192C53.3238 42.4401 68.6192 38.1935 81.8885 33.8773C83.6989 37.8717 87.4059 41.1683 92.2413 43.0841C100.857 46.7911 112.635 46.7389 125.036 44.6504C143.048 41.7788 162.395 34.4691 174.841 29.3175C175.353 29.1086 176.11 28.778 177.067 28.3429C177.357 29.0564 177.668 29.7352 178.024 30.4313C181.075 36.3661 186.485 41.187 191.984 42.8926C226.872 53.7876 267.682 40.7345 300.788 30.1181C301.651 29.7251 302.32 29.1168 302.688 28.3908C303.055 27.6648 303.1 26.8633 302.814 26.1151C302.391 24.3747 300.833 23.4349 299.319 23.9048C266.969 34.295 227.384 47.3133 193.476 36.7316C189.29 35.4437 185.238 31.7366 182.923 27.229C182.655 26.7243 182.433 26.2196 182.21 25.6975C187.266 23.0647 191.627 19.6969 195.056 15.7772C196.586 14.0321 197.496 12.0005 197.691 9.89049C197.887 7.78043 197.362 5.66764 196.17 3.76837C193.943 0.409393 190.581 0.113524 187.041 1.87133C183.305 4.06681 180.259 6.90026 178.136 10.1556C175.877 13.9037 174.947 18.0569 175.442 22.1818C174.329 22.704 173.438 23.1042 172.881 23.3305C160.703 28.3429 141.712 35.5133 124.19 38.4024C112.858 40.3168 102.104 40.5779 94.2228 37.1841C91.376 36.0727 89.0418 34.2967 87.5436 32.1021L94.4009 29.7526C98.7201 28.2732 107.759 25.8193 114.171 21.4335C116.839 19.7188 118.973 17.5523 120.412 15.098C121.85 12.6436 122.556 9.96562 122.476 7.26658C122.554 6.03434 122.211 4.80805 121.484 3.71325C120.756 2.61846 119.669 1.69448 118.335 1.03594C114.594 -0.704466 108.138 0.148332 105.733 0.722665C98.4529 2.46307 88.7235 9.66834 83.9145 17.7786C82.0105 20.8782 80.9276 24.2466 80.7308 27.6815ZM86.7198 25.68L92.6865 23.6438C96.7163 22.2515 105.154 20.0585 111.166 15.9686C112.881 14.9958 114.287 13.7263 115.271 12.2591C116.256 10.7919 116.794 9.16669 116.843 7.51024C116.843 7.21437 116.576 7.12735 116.353 7.02292C115.993 6.83692 115.593 6.70146 115.173 6.62263C112.42 6.17995 109.567 6.29984 106.891 6.97071C100.791 8.43265 92.642 14.5241 88.6122 21.329C87.7647 22.7162 87.1295 24.1766 86.7198 25.68ZM181.075 19.2406C183.881 17.6547 186.45 15.8274 188.733 13.7931C189.864 12.7944 190.795 11.6678 191.494 10.4515C191.774 10.0044 191.919 9.51331 191.919 9.01569C191.919 8.51807 191.774 8.027 191.494 7.57985C191.411 7.43237 191.257 7.3166 191.065 7.25789C190.873 7.19917 190.659 7.2023 190.47 7.26658C190.026 7.35576 189.605 7.50286 189.223 7.70168C186.481 9.31936 184.243 11.402 182.678 13.7931C181.692 15.5093 181.147 17.3602 181.075 19.2406Z"
+                      fill="url(#paint0_linear_1346_204)" opacity="0.8" />
+                    <defs>
+                      <linearGradient id="paint0_linear_1346_204" x1="22.5372" y1="-10.882" x2="116.024" y2="144.196"
+                        gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#FF7155" />
+                        <stop offset="0.497468" stop-color="#EF3E56" />
+                        <stop offset="1" stop-color="#EE61D4" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </span>
+              </span>
+              <span class="txt-6007290 topics-h1">
+                <span id="ad-banner-title-part2">,轻量级</span>
+                <br />
+                <span id="ad-banner-title-part3">任务管理工具</span>
+              </span>
+            </div>
+            <h4 class="txt-4001830 topics-h4 mb-32">
+              <span id="ad-banner-description">助力团队高效推进项目，让工作更简单。</span>
+            </h4>
+            <div class="flex-cc topics-btn">
+              <div id="ad-banner-sign-up-button">
+                <a href="./price.html">
+                  <button class="btn btn-primary">
+                    免费注册
+                  </button>
+                </a>
+              </div>
+              <div id="ad-banner-self-host-button">
+                <a href="https://github.com/kuaifan/dootask/tree/pro" target="_blank">
+                  <button class="btn btn-default">
+                    私有化部署
+                  </button>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- 菜单抽屉 -->
+    <div class="drawer">
+      <div class="drawer-t mb-36">
+        <a href="../zh/index.html" class="logo">
+          <img id="logo" src="../img/light/logo.svg" alt="DooTaskLogo" />
+          <i class="dootask txt-7002027">DooTask</i>
+        </a>
+        <i class="close-drawer" onclick="closeDraweHandle()">✕</i>
+      </div>
+      <ul class="drawer-ul">
+        <li class="drawer-item-t mb-16">
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../zh/product.html">产品</a>
+          </div>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../zh/solutions.html">解决方案</a>
+          </div>
+          <div class="drawer-item" onclick="expandMenuHandle('support')">
+            <i class="txt-4001620 txt">
+              支持
+              <img src="../img/vector.svg" class="nav-vector" alt="支持" id="drawer-down-support-svg" />
+            </i>
+          </div>
+          <ol class="drawer-active" id="support" style="display: none">
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../zh/download.html">下载中心</a>
+            </li>
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../zh/help.html">帮助中心</a>
+            </li>
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../zh/privacy.html" target="_blank">隐私政策</a>
+            </li>
+            <li class="drawer-item" onclick="changeMenu()">
+              <a class="txt-4001620 txt" href="../../docs/index.html" target="_blank">API 文档</a>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../zh/price.html">服务价格</a>
+          </div>
+          <div class="drawer-item mb-16" onclick="closeDraweHandle()">
+            <a class="txt-4001620 txt" href="../zh/about.html">关于我们</a>
+          </div>
+        </li>
+        <li class="drawer-item-c">
+          <div class="drawer-item" onclick="expandMenuHandle('theme')">
+            <i class="txt-4001620 txt">
+              主题
+              <img src="../img/vector.svg" alt="主题" class="nav-vector" id="drawer-down-theme-svg" />
+            </i>
+          </div>
+          <ol class="drawer-active" id="theme" style="display: none">
+            <li class="drawer-item" onclick="setTheme('light')">
+              <i class="txt-4001620 txt">Light</i>
+            </li>
+            <li class="drawer-item" onclick="setTheme('dark')">
+              <i class="txt-4001620 txt">Dark</i>
+            </li>
+          </ol>
+          <div class="drawer-item" onclick="expandMenuHandle('language')">
+            <i class="txt-4001620 txt">
+              语言
+              <img src="../img/vector.svg" alt="语言" class="nav-vector" id="drawer-down-language-svg" />
+            </i>
+          </div>
+          <ol class="drawer-active" id="language" style="display: none">
+            <li class="drawer-item" onclick="changeLanguage('zh')">
+              <i class="txt-4001620 txt">简体中文</i>
+            </li>
+            <li class="drawer-item" onclick="changeLanguage('en')">
+              <i class="txt-4001620 txt">English</i>
+            </li>
+          </ol>
+        </li>
+        <li class="drawer-item-b">
+          <div class="drawer-item">
+            <a class="txt-4001620 txt" href="../../manage/dashboard">立即体验</a>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <!-- 内容区域 -->
+    <main>
+      <section class="ad-plan">
+        <div class="section-wrapper">
+          <div class="section-title animate__animated animate__fadeInDown animate__fast animate__delay-1s">
+            <span id="ad-plan-title"> 9月双重钜惠来袭！ </span>
+          </div>
+          <div class="section-description animate__animated animate__fadeInDown animate__fast animate__delay-1s">
+            <span id="ad-plan-description"> 让生活变轻松，让工作变高效 </span>
+          </div>
+          <div id="ad-plan-content" class="section-content">
+            <div class="plan-item ">
+              <div class="plan-item-title">
+                <span>无限专业版</span>
+              </div>
+              <div class="plan-item-price">
+                <span class="plan-item-price-current">
+                  ¥16,800
+                  <span class="plan-item-price-payment">
+
+                  </span>
+                </span>
+                <span class="plan-item-price-original price">
+                  ¥18,888
+                </span>
+              </div>
+              <div class="plan-item-button">
+                <a href="#">
+                  <button class="btn-primary">
+                    立即购买
+                  </button>
+                </a>
+              </div>
+              <div class="plan-item-description">
+                <ul class="plan-item-description-list">
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="https://cms.hitosea.com/uploads/plan_checked_ea40b42593.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      支持私有化部署
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="https://cms.hitosea.com/uploads/plan_checked_ea40b42593.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      技术咨询服务
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="https://cms.hitosea.com/uploads/plan_checked_ea40b42593.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      LOGO定制
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="https://cms.hitosea.com/uploads/plan_checked_ea40b42593.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      专属运营客服
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="https://cms.hitosea.com/uploads/plan_checked_ea40b42593.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      12小时服务响应
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="https://cms.hitosea.com/uploads/plan_checked_ea40b42593.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      赠1年免费技术维护
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="plan-item ">
+              <div class="plan-item-title">
+                <span>50人专业版</span>
+              </div>
+              <div class="plan-item-price">
+                <span class="plan-item-price-current">
+                  ¥13,800
+                  <span class="plan-item-price-payment">
+
+                  </span>
+                </span>
+                <span class="plan-item-price-original price">
+                  ￥16,800
+                </span>
+              </div>
+              <div class="plan-item-button">
+                <a href="#">
+                  <button class="btn-primary">
+                    立即购买
+                  </button>
+                </a>
+              </div>
+              <div class="plan-item-description">
+                <ul class="plan-item-description-list">
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="https://cms.hitosea.com/uploads/plan_checked_ea40b42593.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      支持私有化部署
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="https://cms.hitosea.com/uploads/plan_checked_ea40b42593.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      技术咨询服务
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="https://cms.hitosea.com/uploads/plan_checked_ea40b42593.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      LOGO定制
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="https://cms.hitosea.com/uploads/plan_checked_ea40b42593.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      专属运营客服
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="https://cms.hitosea.com/uploads/plan_checked_ea40b42593.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      12小时服务响应
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="https://cms.hitosea.com/uploads/plan_checked_ea40b42593.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      赠1年免费技术维护
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="plan-item active">
+              <div class="plan-item-title">
+                <span>30人专业版</span>
+              </div>
+              <div class="plan-item-price">
+                <span class="plan-item-price-current">
+                  ¥11,800
+                  <span class="plan-item-price-payment">
+
+                  </span>
+                </span>
+                <span class="plan-item-price-original price">
+                  ￥15,800
+                </span>
+              </div>
+              <div class="plan-item-button">
+                <a href="#">
+                  <button class="btn-primary">
+                    立即购买
+                  </button>
+                </a>
+              </div>
+              <div class="plan-item-description">
+                <ul class="plan-item-description-list">
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      支持私有化部署
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      技术咨询服务
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      LOGO定制
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      专属运营客服
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      12小时服务响应
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      赠1年免费技术维护
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="plan-item ">
+              <div class="plan-item-title">
+                <span>10人专业版</span>
+              </div>
+              <div class="plan-item-price">
+                <span class="plan-item-price-current">
+                  ￥5,800
+                  <span class="plan-item-price-payment">
+
+                  </span>
+                </span>
+                <span class="plan-item-price-original price">
+                  ¥8,800
+                </span>
+              </div>
+              <div class="plan-item-button">
+                <a href="#">
+                  <button class="btn-primary">
+                    立即购买
+                  </button>
+                </a>
+              </div>
+              <div class="plan-item-description">
+                <ul class="plan-item-description-list">
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      支持私有化部署
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      技术咨询服务
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      专属运营客服
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      12小时服务响应
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      赠1年免费技术维护
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="plan-item ">
+              <div class="plan-item-title">
+                <span>5人专业版</span>
+              </div>
+              <div class="plan-item-price">
+                <span class="plan-item-price-current">
+                  ¥3,800
+                  <span class="plan-item-price-payment">
+
+                  </span>
+                </span>
+                <span class="plan-item-price-original price">
+                  ¥6,800
+                </span>
+              </div>
+              <div class="plan-item-button">
+                <a href="#">
+                  <button class="btn-primary">
+                    立即购买
+                  </button>
+                </a>
+              </div>
+              <div class="plan-item-description">
+                <ul class="plan-item-description-list">
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      支持私有化部署
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      技术咨询服务
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      专属运营客服
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      12小时服务响应
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      赠1年免费技术维护
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="plan-item ">
+              <div class="plan-item-title">
+                <span>年度专业版</span>
+              </div>
+              <div class="plan-item-price">
+                <span class="plan-item-price-current">
+                  ¥200
+                  <span class="plan-item-price-payment">
+                    /人/年
+                  </span>
+                </span>
+                <span class="plan-item-price-original price">
+                  ¥288
+                </span>
+              </div>
+              <div class="plan-item-button">
+                <a href="#">
+                  <button class="btn-primary">
+                    立即购买
+                  </button>
+                </a>
+              </div>
+              <div class="plan-item-description">
+                <ul class="plan-item-description-list">
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      支持私有化部署
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      技术咨询服务
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      专属运营客服
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      12小时服务响应
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      赠1年免费技术维护
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="plan-item ">
+              <div class="plan-item-title">
+                <span>扶持专业版</span>
+              </div>
+              <div class="plan-item-price">
+                <span class="plan-item-price-current">
+                  ¥600
+                  <span class="plan-item-price-payment">
+                    /人/年
+                  </span>
+                </span>
+                <span class="plan-item-price-original price">
+                  ¥680
+                </span>
+              </div>
+              <div class="plan-item-button">
+                <a href="#">
+                  <button class="btn-primary">
+                    立即购买
+                  </button>
+                </a>
+              </div>
+              <div class="plan-item-description">
+                <ul class="plan-item-description-list">
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      适用于成立1年内企业
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      限5人内（含）免费
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      有效期一年
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      支持私有化部署
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      专属运营客服
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="plan-item ">
+              <div class="plan-item-title">
+                <span>免费版</span>
+              </div>
+              <div class="plan-item-price">
+                <span class="plan-item-price-current">
+                  0
+                  <span class="plan-item-price-payment">
+                    /月
+                  </span>
+                </span>
+                <span class="plan-item-price-original ">
+                  最多3人
+                </span>
+              </div>
+              <div class="plan-item-button">
+                <a href="#">
+                  <button class="btn-primary">
+                    立即部署
+                  </button>
+                </a>
+              </div>
+              <div class="plan-item-description">
+                <ul class="plan-item-description-list">
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      支持私有化部署
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      技术咨询服务
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      专属运营客服
+                    </span>
+                  </li>
+                  <li class="plan-item-description-item">
+                    <i class="plan-item-description-item-icon">
+                      <img src="../img/ad/checked.svg" alt="undefined">
+                    </i>
+                    <span class="plan-item-description-item-content ">
+                      12小时服务响应
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="ad-intro">
+        <div class="section-wrapper">
+          <div class="section-title animate__animated animate__fadeInDown animate__fast animate__delay-1s">
+            <span id="ad-intro-title"> 为何选择DooTask？ </span>
+          </div>
+          <div class="section-description animate__animated animate__fadeInDown animate__fast animate__delay-1s">
+            <span id="ad-intro-description"> &nbsp; </span>
+          </div>
+          <div id="ad-intro-content" class="section-content">
+            <div class="ad-intro-item">
+              <div class="ad-intro-item-header">
+                <img src="../img/ad/intro-card-head.png" alt="head" />
+              </div>
+              <div class="ad-intro-item-image">
+                <img src="../img/ad/intro-card-img01.svg" alt="img" />
+              </div>
+              <div class="ad-intro-item-title">
+                <span> 项目管理 </span>
+              </div>
+              <div class="ad-intro-item-description">
+                <span>支持多种项目管理模式，如敏捷开发、水晶计划、看板等，适用于各种规模和类型的项目管理。用户可以使用DooTask里的项目管理工具，例如任务分配、进度跟踪、资源分配等来管理整个项目。 </span>
+              </div>
+            </div>
+            <div class="ad-intro-item">
+              <div class="ad-intro-item-header">
+                <img src="../img/ad/intro-card-head.png" alt="head" />
+              </div>
+              <div class="ad-intro-item-image">
+                <img src="../img/ad/intro-card-img02.svg" alt="img" />
+              </div>
+              <div class="ad-intro-item-title">
+                <span> 团队协作 </span>
+              </div>
+              <div class="ad-intro-item-description">
+                <span>DooTask的丰富实用的工具可以方便团队成员之间的沟通和协作，提高工作效率。例如，团队成员可以使用DooTask里的文档协作工具、在线思维导图、流程图等工具进行协作。 </span>
+              </div>
+            </div>
+            <div class="ad-intro-item">
+              <div class="ad-intro-item-header">
+                <img src="../img/ad/intro-card-head.png" alt="head" />
+              </div>
+              <div class="ad-intro-item-image">
+                <img src="../img/ad/intro-card-img03.svg" alt="img" />
+              </div>
+              <div class="ad-intro-item-title">
+                <span> 数据安全保护 </span>
+              </div>
+              <div class="ad-intro-item-description">
+                <span>DooTask在消息功能上使用非对称加密技术，确保用户的信息得到最大程度的保护。此外，它还提供了强大的权限管理系统，能够根据不同用户的角色和职责，灵活地设置他们在项目管理中的权限和操作范围。
+                </span>
+              </div>
+            </div>
+            <div class="ad-intro-item">
+              <div class="ad-intro-item-header">
+                <img src="../img/ad/intro-card-head.png" alt="head" />
+              </div>
+              <div class="ad-intro-item-image">
+                <img src="../img/ad/intro-card-img04.svg" alt="img" />
+              </div>
+              <div class="ad-intro-item-title">
+                <span> 自由定制 </span>
+              </div>
+              <div class="ad-intro-item-description">
+                <span>DooTask是一款完全开源的工具，用户可以自由修改和定制，避免了商业软件订阅费用带来的额外成本。 </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <!-- 页脚区域 -->
+    <footer class="ad-footer">
+      <div class="footer-con">
+        <div class="footer-layout">
+          <div class="footer-l">
+            <a href="../zh/index.html" class="logo">
+              <img id="logo" src="../img/light/logo.svg" alt="DooTask,Logo" />
+              <i class="dootask txt-7002027">DooTask</i>
+            </a>
+            <i class="txt txt-4001624">帮助团队有效地推进项目，使工作更轻松。</i>
+          </div>
+          <div class="footer-r">
+            <ul class="footer-r-ul">
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">
+                    链接
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/product.html">产品</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/solutions.html">解决方案</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/price.html">服务价格</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../zh/about.html">关于我们</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ol class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">
+                    支持
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/download.html">下载中心</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/help.html">帮助中心</a>
+                  </li>
+                  <li class="footer-ol-item mb-16">
+                    <a class="txt-4001624 txt" href="../zh/privacy.html" target="_blank">隐私政策</a>
+                  </li>
+                  <li class="footer-ol-item">
+                    <a class="txt-4001624 txt" href="../../docs/index.html" target="_blank">API 文档</a>
+                  </li>
+                </ol>
+              </li>
+              <li class="footer-r-item">
+                <ul class="footer-r-ol">
+                  <li class="footer-ol-item txt-5001624 mb-24">
+                    社区
+                  </li>
+                  <li class="footer-ol-item">
+                    <div class="footer-ol-item mb-16">
+                      <i class="txt-4001624 txt" onclick="openInNewTab('https://github.com/kuaifan/dootask')">Github</i>
+                    </div>
+                    <div class="footer-ol-item mb-16">
+                      <i class="txt-4001624 txt" onclick="openInNewTab('https://gitee.com/aipaw/dootask')">Gitee</i>
+                    </div>
+                    <div class="footer-ol-item" id="qq_group">
+                      <i class="txt-4001624 txt">QQ 群</i>
+                      <div class="group_code">
+                        <img class="code-svg" id="home_code" src="../img/qq_code.jpg" alt="群号：546574618" />
+                        <i class="group_num">群号：546574618</i>
+                        <i class="lower_triangle"></i>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="txt-4001624 filings footer_copyright">
+          <span>
+            Copyright © 2022-2023 DooTask. All rights reserved.
+          </span>
+          <div class="footer_beian" style="display: flex">
+            <img src="../img/beian.png" alt="" /><span style="padding-left: 3px">桂公网安备 45010802000393号</span>
+          </div>
+          <a class="footer_beian_a" href="http://beian.miit.gov.cn">桂ICP备2021003642号-5</a>
+        </div>
+      </div>
+    </footer>
+    <!-- 侧边导航 -->
+    <div id="nav_wrap"></div>
+  </div>
+</body>
+<script src="../js/common.js"></script>
+<script>
+  // cookie弹框
+  document.addEventListener("DOMContentLoaded", function () {
+    let cookieConsent = document.getElementById("cookieConsent");
+    let cookieA = document.getElementById("cookie_a");
+    let buttonBox = document.getElementById("buttonBox");
+    let rejectButton = document.getElementById("rejectButton");
+    let agreeButton = document.getElementById("agreeButton");
+    // 检查localStorage中的同意状态
+    let hasConsented = sessionStorage.getItem("cookieConsent");
+    if (!hasConsented) {
+      cookieConsent.style.display = "block";
+      cookieConsent.style.maxWidth = "24em";
+      cookieConsent.style.height = "auto";
+      cookieConsent.style.flexDirection = "column";
+      cookieConsent.style.backgroundColor = "rgb(249,250,251)";
+      cookieConsent.style.color = "rgb(30,30,30)";
+      cookieConsent.style.padding = "1.2em";
+      cookieConsent.style.borderRadius = "5px";
+      cookieConsent.style.bottom = "1em";
+      cookieConsent.style.right = "1em";
+      cookieConsent.style.position = "fixed";
+      cookieConsent.style.overflow = "hidden";
+      cookieConsent.style.boxSizing = "border-box";
+      cookieConsent.style.fontFamily =
+        "Helvetica,Calibri,Arial,sans-serif";
+      cookieConsent.style.zIndex = "9999";
+      cookieConsent.style.textAlign = "left";
+      cookieConsent.style.fontSize = "16px";
+      cookieConsent.style.lineHeight = "1.5em";
+      cookieConsent.style.boxShadow = "0 4px 12px rgba(0,0,0,.15)";
+
+      cookieA.style.padding = "0.2em";
+      cookieA.style.display = "inline-block";
+      cookieA.style.color = "rgb(30,30,30)";
+      cookieA.style.textDecoration = "underline";
+
+      buttonBox.style.textAlign = "right";
+      buttonBox.style.flex = "1 0 auto";
+      buttonBox.style.alignItems = "center";
+      buttonBox.style.alignContent = "space-between";
+      buttonBox.style.flexDirection = "row";
+      buttonBox.style.display = "flex";
+      buttonBox.style.fontSize = "16px";
+      buttonBox.style.margin = "1em 0 0";
+
+      agreeButton.style.position = "static";
+      agreeButton.style.display = "block";
+      agreeButton.style.padding = "0.7em 0.4em";
+      agreeButton.style.fontSize = ".9em";
+      agreeButton.style.fontWeight = "700";
+      agreeButton.style.textAlign = "center";
+      agreeButton.style.width = "100%";
+      agreeButton.style.borderRadius = "5px";
+      agreeButton.style.marginLeft = "0.5em";
+
+      rejectButton.style.backgroundColor = "transparent";
+      rejectButton.style.borderColor = "transparent";
+      rejectButton.style.color = "rgb(30,30,30)";
+      rejectButton.style.display = "block";
+      rejectButton.style.padding = "0.7em 0.4em";
+      rejectButton.style.fontSize = ".9em";
+      rejectButton.style.fontWeight = "700";
+    }
+    agreeButton.addEventListener("click", handleAgreeButtonClick);
+    rejectButton.addEventListener("click", handleRejectButtonClick);
+    function hideCookieConsent() {
+      cookieConsent.style.display = "none";
+    }
+    function handleAgreeButtonClick() {
+      // 存储同意状态到localStorage
+      sessionStorage.setItem("cookieConsent", "true");
+      hideCookieConsent();
+    }
+    function handleRejectButtonClick() {
+      // 存储拒绝状态到localStorage
+      sessionStorage.setItem("cookieConsent", "false");
+      hideCookieConsent();
+    }
+  });
+
+  document.addEventListener("DOMContentLoaded", function () {
+    fetch("./sideNav.html")
+      .then((response) => response.text())
+      .then((data) => {
+        document.getElementById("nav_wrap").innerHTML = data;
+        // 回到顶部
+        const back_top_button =
+          document.getElementById("back_to_top");
+        let throttleTimer;
+        const throttle = (callback, time) => {
+          if (throttleTimer) return;
+          throttleTimer = true;
+          setTimeout(() => {
+            callback();
+            throttleTimer = false;
+          }, time);
+        };
+
+        window.addEventListener("scroll", () => {
+          throttle(() => {
+            if (
+              document.body.scrollTop > 20 ||
+              document.documentElement.scrollTop > 20
+            ) {
+              back_top_button.style.display = "block";
+            } else {
+              back_top_button.style.display = "none";
+            }
+          }, 200);
+        });
+        back_top_button.addEventListener("click", () => {
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+          });
+        });
+        // 检查页面加载时的滚动位置以决定是否显示回到顶部按钮
+        if (document.documentElement.scrollTop > 20) {
+          back_top_button.style.display = "block"; // 显示回到顶部按钮
+        }
+        let toolbarPhone = document.getElementById(
+          "side_toolbar_item_phone"
+        );
+        let tooltipPhone = document.getElementById(
+          "toolbar_tooltip_phone"
+        );
+        let toolbarWhtasapp = document.getElementById(
+          "side_toolbar_item_whtasapp"
+        );
+        let tooltipWhtasapp = document.getElementById(
+          "toolbar_tooltip_whtasapp"
+        );
+        let toolbarQrcode = document.getElementById(
+          "side_toolbar_item_qrcode"
+        );
+        let tooltipQrcode = document.getElementById(
+          "toolbar_tooltip_qrcode"
+        );
+
+        function toggleTooltip(dom) {
+          if (dom.style.display === "block") {
+            dom.style.display = "none";
+          } else {
+            dom.style.display = "block";
+          }
+        }
+        if (toolbarPhone) {
+          toolbarPhone.addEventListener("click", () => {
+            event.stopPropagation();
+            // 谷歌分析事件追踪
+            if (gtag) {
+              gtag("event", "click", {
+                event_category: "button",
+                event_label: "right_side_toolbar_phone",
+              });
+            }
+            toggleTooltip(tooltipPhone);
+            tooltipWhtasapp.style.display = "none";
+            tooltipQrcode.style.display = "none";
+            if (
+              /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                navigator.userAgent
+              )
+            ) {
+              window.location.href = "tel:0771-3164099";
+            }
+          });
+        }
+        if (toolbarWhtasapp) {
+          toolbarWhtasapp.addEventListener("click", () => {
+            event.stopPropagation();
+            // 谷歌分析事件追踪
+            if (gtag) {
+              gtag("event", "click", {
+                event_category: "button",
+                event_label: "right_side_toolbar_Whtasapp",
+              });
+            }
+            toggleTooltip(tooltipWhtasapp);
+            tooltipPhone.style.display = "none";
+            tooltipQrcode.style.display = "none";
+          });
+        }
+        if (toolbarQrcode) {
+          toolbarQrcode.addEventListener("click", () => {
+            event.stopPropagation();
+            // 谷歌分析事件追踪
+            if (gtag) {
+              gtag("event", "click", {
+                event_category: "button",
+                event_label: "right_side_toolbar_WeChat",
+              });
+            }
+            toggleTooltip(tooltipQrcode);
+            tooltipPhone.style.display = "none";
+            tooltipWhtasapp.style.display = "none";
+          });
+        }
+      });
+  });
+</script>
+
+<script src="../js/ad.js"></script>
+
+</html>
