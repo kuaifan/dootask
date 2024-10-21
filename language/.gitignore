@@ -3,3 +3,5 @@ undefined-*.txt
 error.log
 vendor
 translate-gpt.md
+test*
+temp

@@ -727,6 +727,7 @@ class WebSocketDialog extends AbstractModel
     {
         $filePath = '';
         $result = [];
+        $data = [];
         foreach ($dialogIds as $dialog_id) {
             $dialog = WebSocketDialog::checkDialog($dialog_id);
             //

@@ -64,7 +64,7 @@ class UserBot extends AbstractModel
         if (str_contains($name, "@")) {
             $name = explode("@", $name)[0];
         }
-        return match ($name) {
+        $name = match ($name) {
             'system-msg' => '系统消息',
             'task-alert' => '任务提醒',
             'check-in' => '签到打卡',
@@ -81,6 +81,7 @@ class UserBot extends AbstractModel
             'okr-alert' => 'OKR提醒',
             default => '',  // 不是系统机器人时返回空（也可以拿来判断是否是系统机器人）
         };
+        return Doo::translate($name);
     }
 
     /**

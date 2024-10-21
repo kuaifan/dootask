@@ -41,8 +41,11 @@ function setLanguage(language, silence = false) {
         return
     }
     if (silence) {
-        utils.saveLanguage(language)
-        $A.reloadUrl()
+        utils.saveLanguage(language);
+        (async () => {
+            await $A.IDBDel("callAt")
+            $A.reloadUrl()
+        })()
     } else {
         $A.modalConfirm({
             content: '切换语言需要刷新后生效，是否确定刷新？',

@@ -341,7 +341,11 @@ export default {
                     key: 'email',
                     minWidth: 160,
                     render: (h, {row}) => {
-                        const arr = [h('AutoTip', row.email)];
+                        const arr = [h('AutoTip', {
+                            style: {
+                                minWidth: '50px'
+                            }
+                        }, row.email)];
                         const {email_verity, identity, disable_at, is_principal} = row;
                         if (email_verity) {
                             arr.push(h('Icon', {
@@ -475,7 +479,7 @@ export default {
                             }
                         })
                         if (departments.length === 0) {
-                            return h('div', this.$L('默认部门'));
+                            return h('AutoTip', this.$L('默认部门'));
                         } else {
                             const tmp = []
                             tmp.push(h('span', {
