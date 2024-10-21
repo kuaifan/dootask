@@ -399,6 +399,7 @@ class SystemController extends AbstractController
                     'remindin',
                     'remindexceed',
                     'edit',
+                    'faceupload',
                     'modes',
                     'key',
                 ])) {
@@ -407,6 +408,7 @@ class SystemController extends AbstractController
             }
             if ($all['open'] === 'close') {
                 $all['key'] = md5(Base::generatePassword(32));
+                $all['face_key'] = md5(Base::generatePassword(32));
             } else {
                 $botUser = User::botGetOrCreate('check-in');
                 if (!$botUser) {
@@ -414,7 +416,7 @@ class SystemController extends AbstractController
                 }
             }
             if ($all['modes']) {
-                $all['modes'] = array_intersect($all['modes'], ['auto', 'manual', 'location']);
+                $all['modes'] = array_intersect($all['modes'], ['auto', 'manual', 'location', 'face']);
             }
             $setting = Base::setting('checkinSetting', Base::newTrim($all));
         } else {
@@ -425,8 +427,13 @@ class SystemController extends AbstractController
             $setting['key'] = md5(Base::generatePassword(32));
             Base::setting('checkinSetting', $setting);
         }
+        if (empty($setting['face_key'])) {
+            $setting['face_key'] = md5(Base::generatePassword(32));
+            Base::setting('checkinSetting', $setting);
+        }
         //
         $setting['open'] = $setting['open'] ?: 'close';
+        $setting['faceupload'] = $setting['faceupload'] ?: 'close';
         $setting['time'] = $setting['time'] ? Base::json2array($setting['time']) : ['09:00', '18:00'];
         $setting['advance'] = intval($setting['advance']) ?: 120;
         $setting['delay'] = intval($setting['delay']) ?: 120;

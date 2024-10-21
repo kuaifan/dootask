@@ -234,7 +234,20 @@ class UserBot extends AbstractModel
                         'remark' => '手动签到',
                     ];
                 }
-            }
+            } elseif (Base::leftExists($mac, "checkin-", true)) {
+                $mac = Base::leftDelete($mac, "checkin-", true);
+                if ($UserInfo = User::whereUserid($mac)->whereBot(0)->first()) {
+                    $array = [
+                        'userid' => $UserInfo->userid,
+                        'mac' => '00:00:00:00:00:00',
+                        'date' => $nowDate,
+                    ];
+                    $checkins[] = [
+                        'userid' => $UserInfo->userid,
+                        'remark' => '考勤机',
+                    ];
+                }
+            } 
             if ($array) {
                 $record = UserCheckinRecord::where($array)->first();
                 if (empty($record)) {

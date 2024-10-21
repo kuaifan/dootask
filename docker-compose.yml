@@ -193,6 +193,27 @@ services:
     depends_on:
       - mariadb
     restart: unless-stopped
+  face:
+    container_name: "dootask-face-${APP_ID}"
+    image: "hitosea2020/dooface:0.0.1"
+    ports:
+      - "7788:7788"
+    environment:
+      TZ: "${TIMEZONE:-PRC}"
+      STORAGE: mysql
+      MYSQL_HOST: "${DB_HOST}"
+      MYSQL_PORT: "${DB_PORT}"
+      MYSQL_USERNAME: "${DB_USERNAME}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+      MYSQL_DB_NAME: "${DB_DATABASE}"
+      DB_PREFIX: "${DB_PREFIX}"
+      REPORT_API: "http://${APP_IPPR}.3:80/api/public/checkin/report"
+    depends_on:
+      - mariadb
+    networks:
+      extnetwork:
+        ipv4_address: "${APP_IPPR}.55"
+    restart: unless-stopped
 
 networks:
   extnetwork:

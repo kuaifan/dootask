@@ -56,15 +56,22 @@
                                 <Radio label="close">{{ $L('禁止') }}</Radio>
                             </RadioGroup>
                             <div class="form-tip">{{$L('允许成员自己修改MAC地址')}}</div>
+                            <RadioGroup v-model="formData.faceupload">
+                                <Radio label="open">{{ $L('允许') }}</Radio>
+                                <Radio label="close">{{ $L('禁止') }}</Radio>
+                            </RadioGroup>
+                            <div class="form-tip">{{$L('允许成员自己上传人脸图片')}}</div>
                         </FormItem>
                         <FormItem :label="$L('签到方式')" prop="modes">
                             <CheckboxGroup v-model="formData.modes">
                                 <Checkbox label="auto">{{$L('自动签到')}}</Checkbox>
                                 <Checkbox label="manual">{{$L('手动签到')}}</Checkbox>
+                                <Checkbox label="face">{{$L('人脸签到')}}</Checkbox>
                                 <Checkbox v-if="false" label="location">{{$L('定位签到')}}</Checkbox>
                             </CheckboxGroup>
                             <div v-if="formData.modes.includes('auto')" class="form-tip">{{$L('自动签到')}}: {{$L('详情看下文安装说明')}}</div>
                             <div v-if="formData.modes.includes('manual')" class="form-tip">{{$L('手动签到')}}: {{$L('通过在签到打卡机器人发送指令签到')}}</div>
+                            <div v-if="formData.modes.includes('face')" class="form-tip">{{$L('人脸签到')}}: {{$L('')}}</div>
                             <div v-if="formData.modes.includes('location')" class="form-tip">{{$L('定位签到')}}: {{$L('通过在签到打卡机器人发送位置签到')}}</div>
                         </FormItem>
                     </template>
@@ -119,6 +126,7 @@ export default {
 
             formData: {
                 open: '',
+                faceupload: '',
                 edit: '',
                 cmd: '',
                 modes: [],

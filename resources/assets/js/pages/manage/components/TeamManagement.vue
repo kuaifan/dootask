@@ -237,6 +237,34 @@
             </div>
         </Modal>
 
+
+         <!--修改Face-->
+         <Modal
+            v-model="checkinFaceEditShow"
+            :title="$L('修改签到人脸图片')">
+            <Form :model="checkinMacEditData" label-width="auto" @submit.native.prevent>
+                <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${checkinFaceEditData.userid}，${checkinFaceEditData.nickname}】人脸图片修改。`)}}</Alert>
+                <Row class="team-department-checkin-item">
+                    <Col span="12">{{$L('人脸图片')}}</Col>
+                    <Col span="12"></Col>
+                </Row>
+                <Row class="team-department-checkin-item">
+                    <Col span="12">
+                        <ImgUpload v-model="checkinFaceEditData.faceimg" :num="1" :width="512" :height="512" :whcut="1"></ImgUpload>
+                    <span class="form-tip">{{$L('建议尺寸：200x200')}}</span>
+                    </Col>
+                    <Col span="12">
+                        <!-- <Input v-model="item.remark" :maxlength="100" :placeholder="$L('备注')"/> -->
+                    </Col>
+                </Row>
+                
+            </Form>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="checkinFaceEditShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="checkinFaceEditLoading > 0" @click="operationUser(checkinFaceEditData, true)">{{$L('确定修改')}}</Button>
+            </div>
+        </Modal>
+
         <!--修改部门-->
         <Modal
             v-model="departmentEditShow"
@@ -300,10 +328,11 @@
 <script>
 import UserSelect from "../../../components/UserSelect.vue";
 import UserAvatarTip from "../../../components/UserAvatar/tip.vue";
+import ImgUpload from "../../../components/ImgUpload";
 
 export default {
     name: "TeamManagement",
-    components: {UserAvatarTip, UserSelect},
+    components: {UserAvatarTip, UserSelect, ImgUpload},
     props: {
         checkinMac: {
             type: Boolean,
@@ -591,6 +620,12 @@ export default {
                                     command: 'checkin_mac',
                                 },
                             }, [h('div', this.$L('修改MAC'))]))
+
+                            dropdownItems.push(h('EDropdownItem', {
+                                props: {
+                                    command: 'checkin_face',
+                                },
+                            }, [h('div', this.$L('修改人脸图片'))]))
                         }
 
                         dropdownItems.push(h('EDropdownItem', {
@@ -670,6 +705,10 @@ export default {
             checkinMacEditShow: false,
             checkinMacEditLoading: 0,
             checkinMacEditData: {},
+
+            checkinFaceEditShow: false,
+            checkinFaceEditLoading: 0,
+            checkinFaceEditData: {},
 
             departmentEditShow: false,
             departmentEditLoading: 0,
@@ -753,12 +792,21 @@ export default {
     created() {
         if (this.checkinMac) {
             this.columns.splice(5, 0, {
-                title: this.$L('MAC地址'),
+                title: this.$L('设备情况'),
                 key: 'checkin_mac',
                 minWidth: 80,
                 render: (h, {row}) => {
                     let checkin_macs = $A.cloneJSON(row.checkin_macs || [])
+                    let checkin_face = $A.cloneJSON(row.checkin_face || '')
+                    const tmp = []
+                    const checkin_face_desc = checkin_face ? "已上传(人脸)" : "未上传(人脸)"
                     if (checkin_macs.length === 0) {
+                        if (checkin_face){
+                            tmp.push(h('AutoTip', checkin_face_desc))
+                            return h('div', {
+                                class: 'team-table-department-warp'
+                            }, tmp);
+                        }
                         return h('div', '-');
                     } else {
                         const desc = (item) => {
@@ -767,24 +815,28 @@ export default {
                             }
                             return item.mac
                         }
-                        const tmp = []
+                        const checkin_devices_desc = []
                         tmp.push(h('AutoTip', desc(checkin_macs[0])))
                         if (checkin_macs.length > 1) {
                             checkin_macs = checkin_macs.splice(1)
+                            checkin_devices_desc.push(...checkin_macs.map(item => {
+                                return desc(item)
+                            }))
+                            if (checkin_face) {
+                                checkin_devices_desc.push(checkin_face_desc)
+                            }
                             tmp.push(h('ETooltip', [
                                 h('div', {
                                     slot: 'content',
                                     domProps: {
-                                        innerHTML: checkin_macs.map(item => {
-                                            return desc(item)
-                                        }).join("<br/>")
+                                        innerHTML: checkin_devices_desc.join("<br/>")
                                     }
                                 }),
                                 h('div', {
                                     class: 'department-tag-num'
-                                }, ` +${checkin_macs.length}`)
+                                }, ` +${checkin_devices_desc.length}`)
                             ]))
-                        }
+                        } 
                         return h('div', {
                             class: 'team-table-department-warp'
                         }, tmp);
@@ -955,6 +1007,16 @@ export default {
                     }
                     this.checkinMacEditShow = true;
                     break;
+                case 'checkin_face':
+                    this.checkinFaceEditData = {
+                        type: 'checkin_face',
+                        userid: row.userid,
+                        nickname: row.nickname,
+                        faceimg: row.checkin_face
+                    };
+                   
+                    this.checkinFaceEditShow = true;
+                    break;
 
                 case 'department':
                     let departments = []
@@ -1026,6 +1088,14 @@ export default {
             return new Promise((resolve, reject) => {
                 if (data.type == 'checkin_macs') {
                     this.checkinMacEditLoading++;
+                } else if (data.type == 'checkin_face') {
+                    this.checkinFaceEditLoading++;
+                    data = {
+                        type: data.type,
+                        userid: data.userid,
+                        nickname: data.nickname,
+                        checkin_face: data.faceimg[0] ? data.faceimg[0].url : ''
+                    }
                 } else if (data.type == 'department') {
                     this.departmentEditLoading++;
                 } else if (data.type == 'setdisable') {
@@ -1042,6 +1112,8 @@ export default {
                     resolve()
                     if (data.type == 'checkin_macs') {
                         this.checkinMacEditShow = false;
+                    } else if (data.type == 'checkin_face') {
+                        this.checkinFaceEditShow = false;
                     } else if (data.type == 'department') {
                         this.departmentEditShow = false;
                     } else if (data.type == 'setdisable') {
@@ -1056,6 +1128,8 @@ export default {
                 }).finally(_ => {
                     if (data.type == 'checkin_macs') {
                         this.checkinMacEditLoading--;
+                    } else if (data.type == 'checkin_face') {
+                        this.checkinFaceEditLoading--;
                     } else if (data.type == 'department') {
                         this.departmentEditLoading--;
                     } else if (data.type == 'setdisable') {

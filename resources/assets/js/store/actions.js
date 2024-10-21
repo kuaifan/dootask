@@ -24,7 +24,7 @@ export default {
                 await $A.IDBRemove("cacheVersion")
             }
             const cacheVersion = await $A.IDBString("cacheVersion")
-            if (cacheVersion !== state.cacheVersion) {
+            if (cacheVersion && cacheVersion !== state.cacheVersion) {
                 await dispatch("handleClearCache")
             } else {
                 await dispatch("handleReadCache")
