@@ -225,7 +225,7 @@
             v-model="checkinMacEditShow"
             :title="$L('修改签到MAC地址')">
             <Form :model="checkinMacEditData" label-width="auto" @submit.native.prevent>
-                <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${checkinMacEditData.userid}，${checkinMacEditData.nickname}】MAC地址修改。`)}}</Alert>
+                <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${checkinMacEditData.userid}, ${checkinMacEditData.nickname}】MAC地址修改。`)}}</Alert>
                 <Row class="team-department-checkin-item">
                     <Col span="12">{{$L('设备MAC地址')}}</Col>
                     <Col span="12">{{$L('备注')}}</Col>
@@ -257,7 +257,7 @@
             v-model="checkinFaceEditShow"
             :title="$L('修改签到人脸图片')">
             <Form :model="checkinMacEditData" label-width="auto" @submit.native.prevent>
-                <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${checkinFaceEditData.userid}，${checkinFaceEditData.nickname}】人脸图片修改。`)}}</Alert>
+                <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${checkinFaceEditData.userid}, ${checkinFaceEditData.nickname}】人脸图片修改。`)}}</Alert>
                 <Row class="team-department-checkin-item">
                     <Col span="24">{{$L('人脸图片')}}</Col>
                 </Row>
@@ -279,7 +279,7 @@
             v-model="departmentEditShow"
             :title="$L('修改部门')">
             <Form :model="departmentEditData" label-width="auto" @submit.native.prevent>
-                <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${departmentEditData.userid}，${departmentEditData.nickname}】部门修改。`)}}</Alert>
+                <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${departmentEditData.userid}, ${departmentEditData.nickname}】部门修改。`)}}</Alert>
                 <FormItem :label="$L('修改部门')">
                     <Select v-model="departmentEditData.department" multiple :multiple-max="10" :placeholder="$L('留空为默认部门')">
                         <Option v-for="(item, index) in departmentList" :value="item.id" :key="index">{{ item.name }}</Option>
@@ -297,7 +297,7 @@
             v-model="disableShow"
             :title="$L('操作离职')">
             <Form :model="disableData" label-width="auto" @submit.native.prevent>
-                <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${disableData.userid}，${disableData.nickname}】离职操作。`)}}</Alert>
+                <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${disableData.userid}, ${disableData.nickname}】离职操作。`)}}</Alert>
                 <FormItem :label="$L('离职时间')">
                     <DatePicker
                         ref="disableTime"
@@ -961,9 +961,57 @@ export default {
 
         dropUser(name, row) {
             switch (name) {
+                case 'checkin_mac':
+                    this.checkinMacEditData = {
+                        type: 'checkin_macs',
+                        userid: row.userid,
+                        nickname: row.nickname,
+                        checkin_macs: row.checkin_macs,
+                    };
+                    if (this.checkinMacEditData.checkin_macs.length === 0) {
+                        this.addCheckinDatum();
+                    }
+                    this.checkinMacEditShow = true;
+                    break;
+                case 'checkin_face':
+                    this.checkinFaceEditData = {
+                        type: 'checkin_face',
+                        userid: row.userid,
+                        nickname: row.nickname,
+                        faceimg: row.checkin_face
+                    };
+                    this.checkinFaceEditShow = true;
+                    break;
+
+                case 'setadmin':
+                    $A.modalConfirm({
+                        content: `你确定将【ID:${row.userid}, ${row.nickname}】设为管理员吗？`,
+                        loading: true,
+                        onOk: () => {
+                            return this.operationUser({
+                                userid: row.userid,
+                                type: name
+                            });
+                        }
+                    });
+                    break;
+
+                case 'clearadmin':
+                    $A.modalConfirm({
+                        content: `你确定取消【ID:${row.userid}, ${row.nickname}】管理员身份吗？`,
+                        loading: true,
+                        onOk: () => {
+                            return this.operationUser({
+                                userid: row.userid,
+                                type: name
+                            });
+                        }
+                    });
+                    break;
+
                 case 'settemp':
                     $A.modalConfirm({
-                        content: `你确定将【ID:${row.userid}，${row.nickname}】设为临时帐号吗？（注：临时帐号限制请查看系统设置）`,
+                        content: `你确定将【ID:${row.userid}, ${row.nickname}】设为临时帐号吗？（注：临时帐号限制请查看系统设置）`,
                         loading: true,
                         onOk: () => {
                             return this.operationUser({
@@ -976,7 +1024,7 @@ export default {
 
                 case 'cleartemp':
                     $A.modalConfirm({
-                        content: `你确定取消【ID:${row.userid}，${row.nickname}】临时身份吗？`,
+                        content: `你确定取消【ID:${row.userid}, ${row.nickname}】临时身份吗？`,
                         loading: true,
                         onOk: () => {
                             return this.operationUser({
@@ -1019,29 +1067,6 @@ export default {
                     });
                     break;
 
-                case 'checkin_mac':
-                    this.checkinMacEditData = {
-                        type: 'checkin_macs',
-                        userid: row.userid,
-                        nickname: row.nickname,
-                        checkin_macs: row.checkin_macs,
-                    };
-                    if (this.checkinMacEditData.checkin_macs.length === 0) {
-                        this.addCheckinDatum();
-                    }
-                    this.checkinMacEditShow = true;
-                    break;
-                case 'checkin_face':
-                    this.checkinFaceEditData = {
-                        type: 'checkin_face',
-                        userid: row.userid,
-                        nickname: row.nickname,
-                        faceimg: row.checkin_face
-                    };
-
-                    this.checkinFaceEditShow = true;
-                    break;
-
                 case 'department':
                     let departments = []
                     row.department.some(did => {
@@ -1070,7 +1095,7 @@ export default {
 
                 case 'cleardisable':
                     $A.modalConfirm({
-                        content: `你确定恢复已离职帐号【ID:${row.userid}，${row.nickname}】吗？（注：此操作仅恢复帐号状态，无法恢复操作离职时移交的数据）`,
+                        content: `你确定恢复已离职帐号【ID:${row.userid}, ${row.nickname}】吗？（注：此操作仅恢复帐号状态，无法恢复操作离职时移交的数据）`,
                         loading: true,
                         onOk: () => {
                             return this.operationUser({
@@ -1083,7 +1108,7 @@ export default {
 
                 case 'delete':
                     $A.modalInput({
-                        title: `删除帐号【ID:${row.userid}，${row.nickname}】`,
+                        title: `删除帐号【ID:${row.userid}, ${row.nickname}】`,
                         placeholder: "请输入删除原因",
                         okText: "确定删除",
                         onOk: (value) => {

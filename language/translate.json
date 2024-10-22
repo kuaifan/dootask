@@ -60,40 +60,40 @@
         "ru": "В каждой папке можно создать максимум (*) файлов или папок"
     },
     {
-        "key": "正在进行帐号【ID:(*)】MAC地址修改。",
+        "key": "正在进行帐号【(*)】MAC地址修改。",
         "zh": "",
-        "zh-CHT": "正在進行帳號【ID:(*)】MAC地址修改。",
-        "en": "Modifying MAC address for account [ID:(*)] .",
-        "ko": "계정 [ID:(*)]의 MAC 주소를 수정하고 있습니다.",
-        "ja": "アカウント【ID:(*)】のMACアドレスを変更中です。",
-        "de": "Die MAC-Adresse für das Konto [ID:(*)] wird geändert.",
-        "fr": "Modification de l'adresse MAC pour le compte [ID:(*)] .",
-        "id": "Memodifikasi alamat MAC untuk akun [ID:(*)] .",
-        "ru": "Изменение MAC-адреса для учетной записи [ID:(*)] ."
+        "zh-CHT": "正在進行帳號【(*)】MAC地址修改。",
+        "en": "Modifying MAC address for account [(*)] .",
+        "ko": "계정 [(*)]의 MAC 주소를 수정하고 있습니다.",
+        "ja": "アカウント【(*)】のMACアドレスを変更中です。",
+        "de": "Die MAC-Adresse für das Konto [(*)] wird geändert.",
+        "fr": "Modification de l'adresse MAC pour le compte [(*)] .",
+        "id": "Memodifikasi alamat MAC untuk akun [(*)] .",
+        "ru": "Изменение MAC-адреса для учетной записи [(*)] ."
     },
     {
-        "key": "正在进行帐号【ID:(*)】离职操作。",
+        "key": "正在进行帐号【(*)】离职操作。",
         "zh": "",
-        "zh-CHT": "正在進行帳號【ID:(*)】離職操作。",
-        "en": "Performing resignation operation for account [ID:(*)] .",
-        "ko": "계정 [ID:(*)]의 퇴사 처리를 진행 중입니다.",
-        "ja": "アカウント【ID:(*)】の退職処理を行っています。",
-        "de": "Durchführung des Kündigungsvorgangs für das Konto [ID:(*)] .",
-        "fr": "Exécution de l'opération de démission pour le compte [ID:(*)] .",
-        "id": "Melakukan operasi pengunduran diri untuk akun [ID:(*)] .",
-        "ru": "Выполнение операции увольнения для учетной записи [ID:(*)] ."
+        "zh-CHT": "正在進行帳號【(*)】離職操作。",
+        "en": "Performing resignation operation for account [(*)] .",
+        "ko": "계정 [(*)]의 퇴사 처리를 진행 중입니다.",
+        "ja": "アカウント【(*)】の退職処理を行っています。",
+        "de": "Durchführung des Kündigungsvorgangs für das Konto [(*)] .",
+        "fr": "Exécution de l'opération de démission pour le compte [(*)] .",
+        "id": "Melakukan operasi pengunduran diri untuk akun [(*)] .",
+        "ru": "Выполнение операции увольнения для учетной записи [(*)] ."
     },
     {
-        "key": "正在进行帐号【ID:(*)】部门修改。",
+        "key": "正在进行帐号【(*)】部门修改。",
         "zh": "",
-        "zh-CHT": "正在進行帳號【ID:(*)】部門修改。",
-        "en": "Modifying department for account [ID:(*)] .",
-        "ko": "계정 [ID:(*)]의 부서를 수정하고 있습니다.",
-        "ja": "アカウント【ID:(*)】の部署を変更中です。",
-        "de": "Die Abteilung für das Konto [ID:(*)] wird geändert.",
-        "fr": "Modification du département pour le compte [ID:(*)] .",
-        "id": "Memodifikasi departemen untuk akun [ID:(*)] .",
-        "ru": "Изменение отдела для учетной записи [ID:(*)] ."
+        "zh-CHT": "正在進行帳號【(*)】部門修改。",
+        "en": "Modifying department for account [(*)] .",
+        "ko": "계정 [(*)]의 부서를 수정하고 있습니다.",
+        "ja": "アカウント【(*)】の部署を変更中です。",
+        "de": "Die Abteilung für das Konto [(*)] wird geändert.",
+        "fr": "Modification du département pour le compte [(*)] .",
+        "id": "Memodifikasi departemen untuk akun [(*)] .",
+        "ru": "Изменение отдела для учетной записи [(*)] ."
     },
     {
         "key": "你确定要将【(*)】移出群组吗？",
@@ -24420,12 +24420,12 @@
         "ru": "Изменить изображение лица для регистрации"
     },
     {
-        "key": "正在进行帐号【（*）】人脸图片修改。",
+        "key": "正在进行帐号【(*)】人脸图片修改。",
         "zh": "",
-        "zh-CHT": "正在進行帳號【（*）】人臉圖片修改。",
+        "zh-CHT": "正在進行帳號【(*)】人臉圖片修改。",
         "en": "Modifying face image for account [(*)】.",
         "ko": "계정 [(*)】의 얼굴 이미지를 수정 중입니다.",
-        "ja": "アカウント【（*）】の顔写真を変更中です。",
+        "ja": "アカウント【(*)】の顔写真を変更中です。",
         "de": "Gesichtsbild für Konto [(*)】 wird geändert.",
         "fr": "Modification de l'image faciale pour le compte [(*)】 en cours.",
         "id": "Sedang mengubah gambar wajah untuk akun [(*)】.",
@@ -24562,5 +24562,29 @@
         "fr": "Rapport quotidien de (*) [(*)]",
         "id": "Laporan Harian (*) [(*)]",
         "ru": "Ежедневный отчет (*) [(*)]"
+    },
+    {
+        "key": "你确定将【(*)】设为管理员吗？",
+        "zh": "",
+        "zh-CHT": "你確定將【(*)】設為管理員嗎？",
+        "en": "Are you sure you want to set 【(*)】 as an administrator?",
+        "ko": "【(*)】을(를) 관리자로 설정하시겠습니까?",
+        "ja": "【(*)】を管理者に設定してもよろしいですか？",
+        "de": "Sind Sie sicher, dass Sie 【(*)】 zum Administrator machen möchten?",
+        "fr": "Êtes-vous sûr de vouloir définir 【(*)】 comme administrateur ?",
+        "id": "Apakah Anda yakin ingin menetapkan 【(*)】 sebagai administrator?",
+        "ru": "Вы уверены, что хотите назначить 【(*)】 администратором?"
+    },
+    {
+        "key": "你确定取消【(*)】管理员身份吗？",
+        "zh": "",
+        "zh-CHT": "你確定取消【(*)】管理員身份嗎？",
+        "en": "Are you sure you want to revoke 【(*)】's administrator status?",
+        "ko": "【(*)】의 관리자 권한을 취소하시겠습니까?",
+        "ja": "【(*)】の管理者権限を取り消してもよろしいですか？",
+        "de": "Sind Sie sicher, dass Sie den Administratorstatus von 【(*)】 aufheben möchten?",
+        "fr": "Êtes-vous sûr de vouloir révoquer le statut d'administrateur de 【(*)】 ?",
+        "id": "Apakah Anda yakin ingin mencabut status administrator 【(*)】?",
+        "ru": "Вы уверены, что хотите отменить статус администратора для 【(*)】?"
     }
 ]
