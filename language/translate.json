@@ -24538,5 +24538,29 @@
         "fr": "Pas de cible de rapport précédente",
         "id": "Tidak ada target laporan sebelumnya",
         "ru": "Нет предыдущего объекта отчета"
+    },
+    {
+        "key": "(*)的周报[(*)][(*)月第(*)周]",
+        "zh": "",
+        "zh-CHT": "(*)的週報[(*)][(*)月第(*)週]",
+        "en": "(*) Weekly Report [(*)][(*) Month Week (*)]",
+        "ko": "(*)의 주간 보고서[(*)][(*)월 (*)주차]",
+        "ja": "(*)の週次レポート[(*)][(*)月第(*)週]",
+        "de": "(*)s Wochenbericht [(*)][(*) Monat Woche (*)]",
+        "fr": "Rapport hebdomadaire de (*) [(*)][(*) Mois Semaine (*)]",
+        "id": "Laporan Mingguan (*) [(*)][(*) Bulan Minggu ke-(*)]",
+        "ru": "Еженедельный отчет (*) [(*)][(*) Месяц Неделя (*)]"
+    },
+    {
+        "key": "(*)的日报[(*)]",
+        "zh": "",
+        "zh-CHT": "(*)的日報[(*)]",
+        "en": "(*) Daily Report [(*)]",
+        "ko": "(*)의 일일 보고서[(*)]",
+        "ja": "(*)の日次レポート[(*)]",
+        "de": "(*)s Tagesbericht [(*)]",
+        "fr": "Rapport quotidien de (*) [(*)]",
+        "id": "Laporan Harian (*) [(*)]",
+        "ru": "Ежедневный отчет (*) [(*)]"
     }
 ]
