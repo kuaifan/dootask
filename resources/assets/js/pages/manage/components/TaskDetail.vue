@@ -384,6 +384,9 @@
                         <EDropdownItem :command="2">
                             {{$L('修改时间')}}
                         </EDropdownItem>
+                        <EDropdownItem :command="3">
+                            {{$L('清除时间')}}
+                        </EDropdownItem>
                     </EDropdownMenu>
                 </EDropdown>
                 <EDropdown ref="eFileRef" class="calculate-dropdown" trigger="click" placement="bottom" @command="dropFile">
@@ -1060,13 +1063,21 @@ export default {
                         return;
                     }
                     // 弹出修改备注
+                    let isClear = !params.start_at || !params.end_at;
+                    let title = `修改${this.taskDetail.parent_id > 0 ? '子任务' : '任务'}时间`
+                    let placeholder = `请输入修改备注`
+                    if (isClear) {
+                        title = `清除${this.taskDetail.parent_id > 0 ? '子任务' : '任务'}时间`
+                        placeholder = `请输入清除备注`
+                    }
                     $A.modalInput({
-                        title: `修改${this.taskDetail.parent_id > 0 ? '子任务' : '任务'}时间`,
-                        placeholder: `请输入修改备注`,
+                        title,
+                        placeholder,
                         okText: "确定",
+                        okType: isClear ? "warning" : "primary",
                         onOk: (desc) => {
                             if (!desc) {
-                                return `请输入修改备注`
+                                return placeholder
                             }
                             params.desc = desc;
                             this.isExistTask(params).then(() => {
@@ -1143,10 +1154,11 @@ export default {
         },
 
         isExistTask(params) {
-            if (!params.start_at || !params.end_at) {
-                return
-            }
             return new Promise(resolve => {
+                if (!params.start_at || !params.end_at) {
+                    resolve()
+                    return
+                }
                 this.updateParams = Object.assign({}, params)
                 this.$refs.taskExistTipsRef?.isExistTask({
                     taskid: this.taskDetail.id,
@@ -1776,6 +1788,9 @@ export default {
                     break;
                 case 2:
                     this.openTime()
+                    break;
+                case 3:
+                    this.updateData('times', {start_at: false, end_at: false})
                     break;
             }
         },
