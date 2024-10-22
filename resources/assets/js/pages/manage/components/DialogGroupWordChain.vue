@@ -13,7 +13,7 @@
                     {{ $L('取消') }}
                 </div>
                 <div class="chain-modal-title">
-                    {{ dialogDroupWordChain.type == 'create' ? $L('发起接龙') : $L('接龙结果') }}
+                    <span>{{ dialogDroupWordChain.type == 'create' ? $L('发起接龙') : $L('接龙结果') }}</span>
                 </div>
                 <div class="chain-modal-submit" :class="{'disabled': !isEdit}" @click="onSend" >
                     <div v-if="loadIng > 0" class="submit-loading"><Loading /></div>

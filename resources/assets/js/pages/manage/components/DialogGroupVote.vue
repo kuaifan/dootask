@@ -13,7 +13,7 @@
                     {{ $L('取消') }}
                 </div>
                 <div class="chain-modal-title">
-                    {{ dialogGroupVote.type == 'create' ? $L('发起投票') : $L('投票结果') }}
+                    <span>{{ dialogGroupVote.type == 'create' ? $L('发起投票') : $L('投票结果') }}</span>
                 </div>
                 <div class="chain-modal-submit" :class="{'disabled': !isEdit}" @click="onSend" >
                     <div v-if="loadIng > 0" class="submit-loading"><Loading /></div>

@@ -3564,18 +3564,6 @@
         "ru": "Отправить и продолжить добавление"
     },
     {
-        "key": "提示所有成员",
-        "zh": "",
-        "zh-CHT": "提示所有成員",
-        "en": "Notify all members",
-        "ko": "모든 구성원에게 알림",
-        "ja": "すべてのメンバーに通知",
-        "de": "Alle Mitglieder benachrichtigen",
-        "fr": "Notifier tous les membres",
-        "id": "Beri tahu semua anggota",
-        "ru": "Уведомить всех участников"
-    },
-    {
         "key": "是否启动首页",
         "zh": "",
         "zh-CHT": "是否啟動首頁",
@@ -8914,6 +8902,18 @@
         "fr": "Tout le monde",
         "id": "Semua Orang",
         "ru": "Все"
+    },
+    {
+        "key": "所有人.All",
+        "zh": "所有人",
+        "zh-CHT": "所有人",
+        "en": "All",
+        "ko": "All",
+        "ja": "All",
+        "de": "Alle",
+        "fr": "All",
+        "id": "All",
+        "ru": "All"
     },
     {
         "key": "所有者",
@@ -19224,18 +19224,6 @@
         "ru": "Пожалуйста, выберите время напоминания"
     },
     {
-        "key": "仅提示会话内成员",
-        "zh": "",
-        "zh-CHT": "僅提示會話內成員",
-        "en": "Only notify members in the conversation",
-        "ko": "대화 내 구성원에게만 알림",
-        "ja": "会話内のメンバーにのみ通知",
-        "de": "Nur Mitglieder im Gespräch benachrichtigen",
-        "fr": "Notifier uniquement les membres de la conversation",
-        "id": "Hanya beritahu anggota dalam percakapan",
-        "ru": "Уведомлять только участников разговора"
-    },
-    {
         "key": "您负责的任务即将超时",
         "zh": "",
         "zh-CHT": "您負責的任務即將超時",
@@ -24586,5 +24574,161 @@
         "fr": "Êtes-vous sûr de vouloir révoquer le statut d'administrateur de 【(*)】 ?",
         "id": "Apakah Anda yakin ingin mencabut status administrator 【(*)】?",
         "ru": "Вы уверены, что хотите отменить статус администратора для 【(*)】?"
+    },
+    {
+        "key": "你确定要取消任务时间吗？",
+        "zh": "",
+        "zh-CHT": "你確定要取消任務時間嗎？",
+        "en": "Are you sure you want to cancel the task time?",
+        "ko": "작업 시간을 취소하시겠습니까?",
+        "ja": "タスクの時間を取り消してもよろしいですか？",
+        "de": "Sind Sie sicher, dass Sie die Aufgabenzeit stornieren möchten?",
+        "fr": "Êtes-vous sûr de vouloir annuler le temps de la tâche ?",
+        "id": "Apakah Anda yakin ingin membatalkan waktu tugas?",
+        "ru": "Вы уверены, что хотите отменить время задачи?"
+    },
+    {
+        "key": "更新子任务",
+        "zh": "",
+        "zh-CHT": "更新子任務",
+        "en": "Update subtask",
+        "ko": "하위 작업 업데이트",
+        "ja": "サブタスクを更新",
+        "de": "Unteraufgabe aktualisieren",
+        "fr": "Mettre à jour la sous-tâche",
+        "id": "Perbarui subtugas",
+        "ru": "Обновить подзадачу"
+    },
+    {
+        "key": "更新主任务",
+        "zh": "",
+        "zh-CHT": "更新主任務",
+        "en": "Update main task",
+        "ko": "주 작업 업데이트",
+        "ja": "メインタスクを更新",
+        "de": "Hauptaufgabe aktualisieren",
+        "fr": "Mettre à jour la tâche principale",
+        "id": "Perbarui tugas utama",
+        "ru": "Обновить основную задачу"
+    },
+    {
+        "key": "主任务没有设置时间，设置子任务将同步设置主任务",
+        "zh": "",
+        "zh-CHT": "主任務沒有設置時間，設置子任務將同步設置主任務",
+        "en": "The main task has no time set. Setting the subtask will synchronize the main task's time",
+        "ko": "주 작업에 시간이 설정되지 않았습니다. 하위 작업을 설정하면 주 작업 시간이 동기화됩니다",
+        "ja": "メインタスクに時間が設定されていません。サブタスクを設定するとメインタスクの時間が同期されます",
+        "de": "Für die Hauptaufgabe wurde keine Zeit festgelegt. Das Festlegen der Unteraufgabe synchronisiert die Zeit der Hauptaufgabe",
+        "fr": "La tâche principale n'a pas de temps défini. La définition de la sous-tâche synchronisera le temps de la tâche principale",
+        "id": "Tugas utama tidak memiliki waktu yang ditetapkan. Mengatur subtugas akan menyinkronkan waktu tugas utama",
+        "ru": "Для основной задачи не установлено время. Установка подзадачи синхронизирует время основной задачи"
+    },
+    {
+        "key": "新设置的子任务开始时间在主任务时间之外，修改后将同步修改主任务",
+        "zh": "",
+        "zh-CHT": "新設置的子任務開始時間在主任務時間之外，修改後將同步修改主任務",
+        "en": "The newly set subtask start time is outside the main task time. After modification, it will synchronize and modify the main task",
+        "ko": "새로 설정된 하위 작업 시작 시간이 주 작업 시간을 벗어났습니다. 수정 후 주 작업이 동기화되어 수정됩니다",
+        "ja": "新しく設定されたサブタスクの開始時間がメインタスクの時間外です。修正後、メインタスクが同期して修正されます",
+        "de": "Die neu festgelegte Startzeit der Unteraufgabe liegt außerhalb der Zeit der Hauptaufgabe. Nach der Änderung wird die Hauptaufgabe synchronisiert und geändert",
+        "fr": "L'heure de début de la sous-tâche nouvellement définie est en dehors du temps de la tâche principale. Après modification, elle synchronisera et modifiera la tâche principale",
+        "id": "Waktu mulai subtugas yang baru ditetapkan berada di luar waktu tugas utama. Setelah dimodifikasi, ini akan menyinkronkan dan memodifikasi tugas utama",
+        "ru": "Вновь установленное время начала подзадачи находится за пределами времени основной задачи. После изменения оно синхронизирует и изменит основную задачу"
+    },
+    {
+        "key": "新设置的子任务结束时间在主任务时间之外，修改后将同步修改主任务",
+        "zh": "",
+        "zh-CHT": "新設置的子任務結束時間在主任務時間之外，修改後將同步修改主任務",
+        "en": "The newly set subtask end time is outside the main task time. After modification, it will synchronize and modify the main task",
+        "ko": "새로 설정된 하위 작업 종료 시간이 주 작업 시간을 벗어났습니다. 수정 후 주 작업이 동기화되어 수정됩니다",
+        "ja": "新しく設定されたサブタスクの終了時間がメインタスクの時間外です。修正後、メインタスクが同期して修正されます",
+        "de": "Die neu festgelegte Endzeit der Unteraufgabe liegt außerhalb der Zeit der Hauptaufgabe. Nach der Änderung wird die Hauptaufgabe synchronisiert und geändert",
+        "fr": "L'heure de fin de la sous-tâche nouvellement définie est en dehors du temps de la tâche principale. Après modification, elle synchronisera et modifiera la tâche principale",
+        "id": "Waktu selesai subtugas yang baru ditetapkan berada di luar waktu tugas utama. Setelah dimodifikasi, ini akan menyinkronkan dan memodifikasi tugas utama",
+        "ru": "Вновь установленное время окончания подзадачи находится за пределами времени основной задачи. После изменения оно синхронизирует и изменит основную задачу"
+    },
+    {
+        "key": "子任务（(*)）已设置时间，清除主任务时间后将同步清除子任务的时间",
+        "zh": "",
+        "zh-CHT": "子任務（(*)）已設置時間，清除主任務時間後將同步清除子任務的時間",
+        "en": "Subtask ((*)) has set time. Clearing the main task time will synchronously clear the subtask time",
+        "ko": "하위 작업((*))에 시간이 설정되었습니다. 주 작업 시간을 지우면 하위 작업 시간도 동기화되어 지워집니다",
+        "ja": "サブタスク（(*)）に時間が設定されています。メインタスクの時間をクリアすると、サブタスクの時間も同期してクリアされます",
+        "de": "Für die Unteraufgabe ((*)) wurde eine Zeit festgelegt. Das Löschen der Hauptaufgabenzeit löscht synchron die Zeit der Unteraufgabe",
+        "fr": "La sous-tâche ((*)) a un temps défini. L'effacement du temps de la tâche principale effacera de manière synchrone le temps de la sous-tâche",
+        "id": "Subtugas ((*)) telah ditetapkan waktunya. Menghapus waktu tugas utama akan secara sinkron menghapus waktu subtugas",
+        "ru": "Для подзадачи ((*)) установлено время. Очистка времени основной задачи синхронно очистит время подзадачи"
+    },
+    {
+        "key": "新设置的开始时间在子任务（(*)）时间之内，修改后将同步修改子任务",
+        "zh": "",
+        "zh-CHT": "新設置的開始時間在子任務（(*)）時間之內，修改後將同步修改子任務",
+        "en": "The newly set start time is within the subtask ((*)) time. After modification, it will synchronize and modify the subtask",
+        "ko": "새로 설정된 시작 시간이 하위 작업((*)) 시간 내에 있습니다. 수정 후 하위 작업이 동기화되어 수정됩니다",
+        "ja": "新しく設定された開始時間がサブタスク（(*)）の時間内です。修正後、サブタスクが同期して修正されます",
+        "de": "Die neu festgelegte Startzeit liegt innerhalb der Zeit der Unteraufgabe ((*)). Nach der Änderung wird die Unteraufgabe synchronisiert und geändert",
+        "fr": "L'heure de début nouvellement définie est dans le temps de la sous-tâche ((*)). Après modification, elle synchronisera et modifiera la sous-tâche",
+        "id": "Waktu mulai yang baru ditetapkan berada dalam waktu subtugas ((*)). Setelah dimodifikasi, ini akan menyinkronkan dan memodifikasi subtugas",
+        "ru": "Вновь установленное время начала находится в пределах времени подзадачи ((*)). После изменения оно синхронизирует и изменит подзадачу"
+    },
+    {
+        "key": "新设置的结束时间在子任务（(*)）时间之内，修改后将同步修改子任务",
+        "zh": "",
+        "zh-CHT": "新設置的結束時間在子任務（(*)）時間之內，修改後將同步修改子任務",
+        "en": "The newly set end time is within the subtask ((*)) time. After modification, it will synchronize and modify the subtask",
+        "ko": "새로 설정된 종료 시간이 하위 작업((*)) 시간 내에 있습니다. 수정 후 하위 작업이 동기화되어 수정됩니다",
+        "ja": "新しく設定された終了時間がサブタスク（(*)）の時間内です。修正後、サブタスクが同期して修正されます",
+        "de": "Die neu festgelegte Endzeit liegt innerhalb der Zeit der Unteraufgabe ((*)). Nach der Änderung wird die Unteraufgabe synchronisiert und geändert",
+        "fr": "L'heure de fin nouvellement définie est dans le temps de la sous-tâche ((*)). Après modification, elle synchronisera et modifiera la sous-tâche",
+        "id": "Waktu selesai yang baru ditetapkan berada dalam waktu subtugas ((*)). Setelah dimodifikasi, ini akan menyinkronkan dan memodifikasi subtugas",
+        "ru": "Вновь установленное время окончания находится в пределах времени подзадачи ((*)). После изменения оно синхронизирует и изменит подзадачу"
+    },
+    {
+        "key": "清除时间",
+        "zh": "",
+        "zh-CHT": "清除時間",
+        "en": "Clear time",
+        "ko": "시간 지우기",
+        "ja": "時間をクリア",
+        "de": "Zeit löschen",
+        "fr": "Effacer le temps",
+        "id": "Hapus waktu",
+        "ru": "Очистить время"
+    },
+    {
+        "key": "清除子任务时间",
+        "zh": "",
+        "zh-CHT": "清除子任務時間",
+        "en": "Clear subtask time",
+        "ko": "하위 작업 시간 지우기",
+        "ja": "サブタスクの時間をクリア",
+        "de": "Unteraufgabenzeit löschen",
+        "fr": "Effacer le temps de la sous-tâche",
+        "id": "Hapus waktu subtugas",
+        "ru": "Очистить время подзадачи"
+    },
+    {
+        "key": "清除任务时间",
+        "zh": "",
+        "zh-CHT": "清除任務時間",
+        "en": "Clear task time",
+        "ko": "작업 시간 지우기",
+        "ja": "タスクの時間をクリア",
+        "de": "Aufgabenzeit löschen",
+        "fr": "Effacer le temps de la tâche",
+        "id": "Hapus waktu tugas",
+        "ru": "Очистить время задачи"
+    },
+    {
+        "key": "请输入清除备注",
+        "zh": "",
+        "zh-CHT": "請輸入清除備註",
+        "en": "Please enter clear note",
+        "ko": "지우기 메모를 입력하세요",
+        "ja": "クリアの備考を入力してください",
+        "de": "Bitte geben Sie eine Löschnotiz ein",
+        "fr": "Veuillez saisir une note d'effacement",
+        "id": "Silakan masukkan catatan penghapusan",
+        "ru": "Пожалуйста, введите примечание для очистки"
     }
 ]
