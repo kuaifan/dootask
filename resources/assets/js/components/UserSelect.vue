@@ -20,8 +20,10 @@
             <template #header>
                 <div v-if="isFullscreen" class="user-modal-header">
                     <div class="user-modal-close" @click="showModal=false">{{$L('关闭')}}</div>
-                    <div class="user-modal-title"><span>{{localTitle}}</span></div>
-                    <div class="user-modal-submit" @click="onSubmit">
+                    <div class="user-modal-title">
+                        <span ref="headerTitle">{{localTitle}}</span>
+                    </div>
+                    <div ref="headerSubmit" class="user-modal-submit" @click="onSubmit">
                         <div v-if="submittIng > 0" class="submit-loading"><Loading /></div>
                         {{$L('确定')}}
                         <template v-if="selects.length > 0">
@@ -324,6 +326,7 @@ export default {
         showModal(value) {
             if (value) {
                 this.searchBefore()
+                this.upTitleWidth()
             } else {
                 this.searchKey = ""
             }
@@ -336,6 +339,12 @@ export default {
 
         switchActive() {
             this.searchBefore()
+        },
+
+        isFullscreen(value) {
+            if (value) {
+                this.upTitleWidth()
+            }
         },
     },
     computed: {
@@ -406,6 +415,19 @@ export default {
         }
     },
     methods: {
+        upTitleWidth() {
+            if (!this.isFullscreen) {
+                return
+            }
+            this.$nextTick(() => {
+                const headerTitle = this.$refs.headerTitle;
+                const headerSubmit = this.$refs.headerSubmit;
+                if (headerTitle && headerSubmit) {
+                    headerTitle.style.width = (this.windowWidth - headerSubmit.clientWidth * 2) + 'px';
+                }
+            })
+        },
+
         isUncancelable(value) {
             if (this.uncancelable.length === 0) {
                 return false;

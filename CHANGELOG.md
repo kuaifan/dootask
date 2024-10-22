@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.38.73]
+
+### Performance
+
+- 优化显示效果
+
 ## [0.38.70]
 
 ### Bug Fixes

@@ -149,7 +149,6 @@
                 justify-content: space-between;
                 > i {
                     font-weight: normal;
-                    margin-right: 4px;
                     opacity: 0.8;
                     transform: rotate(180deg);
                     transition: transform 0.3s;
@@ -354,13 +353,21 @@ body.window-portrait {
             }
             .dashboard-list {
                 height: auto;
-                padding-bottom: 2px;
+                padding-bottom: 20px;
                 .scrollbar-content {
                     overflow: visible;
+                    > ul {
+                        &:last-child {
+                            margin-bottom: 0;
+                        }
+                    }
                 }
                 .dashboard-ul {
-                    margin-bottom: 36px;
+                    margin-bottom: 20px;
                     user-select: none;
+                    &.ul-hidden {
+                        margin-bottom: 0;
+                    }
                 }
             }
         }

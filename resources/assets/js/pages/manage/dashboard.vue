@@ -102,6 +102,7 @@
 import {mapGetters, mapState} from "vuex";
 import TaskMenu from "./components/TaskMenu";
 
+const hiddenCaches = []
 export default {
     components: {TaskMenu},
     data() {
@@ -116,8 +117,13 @@ export default {
 
             warningMsg: '',
 
-            hiddenColumns: [],
+            hiddenColumns: hiddenCaches,
         }
+    },
+
+    async beforeRouteEnter(to, from, next) {
+        hiddenCaches.push(...(await $A.IDBArray("dashboardHiddenColumns")))
+        next()
     },
 
     activated() {
@@ -227,8 +233,9 @@ export default {
             if (index === -1) {
                 this.hiddenColumns.push(type)
             } else {
-                this.hiddenColumns.splice(index, 1)
+                this.hiddenColumns = this.hiddenColumns.filter(item => item !== type)
             }
+            $A.IDBSave("dashboardHiddenColumns", this.hiddenColumns)
         },
 
         openTask(task) {
