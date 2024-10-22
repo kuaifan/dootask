@@ -1205,7 +1205,7 @@ export default {
 
         async taskTimeChange() {
             const times = $A.newDateString(this.timeValue, "YYYY-MM-DD HH:mm");
-            if ($A.rightExists(times[0], '00:00') && $A.rightExists(times[1], '23:59')) {
+            if (/\s+(00:00|23:59)$/.test(times[0]) && /\s+(00:00|23:59)$/.test(times[1])) {
                 this.timeValue = await this.$store.dispatch("taskDefaultTime", times)
             }
         },
