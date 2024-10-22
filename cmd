@@ -560,7 +560,11 @@ if [ $# -gt 0 ]; then
         e="php artisan $@" && run_exec php "$e"
     elif [[ "$1" == "php" ]]; then
         shift 1
-        e="php $@" && run_exec php "$e"
+        if [[ "$1" == "restart" ]] || [[ "$1" == "reboot" ]]; then
+            restart_php
+        else
+            e="php $@" && run_exec php "$e"
+        fi
     elif [[ "$1" == "nginx" ]]; then
         shift 1
         e="nginx $@" && run_exec nginx "$e"
