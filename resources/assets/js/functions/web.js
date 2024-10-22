@@ -571,10 +571,10 @@ import {MarkdownPreview} from "../store/markdown";
             } else if (typeof config === "string") {
                 config = {content: config};
             }
-            config.title = config.title || (typeof config.render === 'undefined' ? '温馨提示' : '');
+            config.title = config.title || (typeof config.render === 'undefined' ? $A.modalTranslation('温馨提示', config.language) : '');
             config.content = config.content || '';
-            config.okText = config.okText || '确定';
-            config.cancelText = config.cancelText || '取消';
+            config.okText = config.okText || $A.modalTranslation('确定', config.language);
+            config.cancelText = config.cancelText || $A.modalTranslation('取消', config.language);
             if (config.language !== false) {
                 delete config.language;
                 config.title = $A.L(config.title);
@@ -583,6 +583,14 @@ import {MarkdownPreview} from "../store/markdown";
                 config.cancelText = $A.L(config.cancelText);
             }
             return config;
+        },
+
+        modalTranslation(title, language) {
+            if (language !== false) {
+                return title;
+            } else {
+                return $A.L(title)
+            }
         },
 
         modalInput(config, millisecond = 0) {

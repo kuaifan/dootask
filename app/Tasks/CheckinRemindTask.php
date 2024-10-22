@@ -102,7 +102,7 @@ class CheckinRemindTask extends AbstractTask
                             ],
                             [
                                 'content' => $content,
-                                'style' => 'padding-top:4px;opacity:0.4',
+                                'style' => 'padding-top:4px;opacity:0.6',
                             ],
                         ],
                     ], $botUser->userid);

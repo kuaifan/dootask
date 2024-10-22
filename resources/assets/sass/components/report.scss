@@ -190,7 +190,8 @@
 
     .report-users {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
+        line-height: 34px;
 
         .common-user-select {
             margin-right: 12px;

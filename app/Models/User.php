@@ -156,7 +156,7 @@ class User extends AbstractModel
         });
         $array = [];
         foreach ($list as $item) {
-            $array[] = $item['name'] . ($item['owner_userid'] === $this->userid ? '(M)' : '');
+            $array[] = $item['name'] . ($item['owner_userid'] === $this->userid ? ' (M)' : '');
         }
         return implode(', ', $array);
     }

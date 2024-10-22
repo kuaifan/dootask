@@ -805,7 +805,7 @@ body.window-portrait {
         position: sticky;
         top: 0;
         left: 24px;
-        z-index: 2;
+        z-index: 9;
         line-height: 32px;
         box-sizing: content-box;
         padding: 0 10px;
@@ -838,6 +838,11 @@ body.window-portrait {
 }
 .block-setting-space {
     height: 8px;
+}
+.form-label-weight-bold {
+    .ivu-form-item-label {
+        font-weight: bold;
+    }
 }
 .confirm-popover {
     max-width: 200px;

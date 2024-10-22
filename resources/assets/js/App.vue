@@ -224,6 +224,7 @@ export default {
             this.$store.state.windowLandscape = windowOrientation === 'landscape'
             this.$store.state.windowPortrait = windowOrientation === 'portrait'
 
+            this.$store.state.formLabelClassName = windowWidth > 576 ? '' : 'form-label-weight-bold'
             this.$store.state.formLabelPosition = windowWidth > 576 ? 'right' : 'top'
             this.$store.state.formLabelWidth = windowWidth > 576 ? 'auto' : ''
 

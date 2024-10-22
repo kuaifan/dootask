@@ -1175,10 +1175,13 @@
                         }
 
                         .content-template {
-                            color: #ffffff;
+                            color: $primary-title-color;
+                            max-width: 100%;
+
                             .warning-color {
                                 color: $flow-status-start-color;
                             }
+
                             .mark-color {
                                 color: $primary-color;
                             }
@@ -1717,6 +1720,14 @@
                                             }
                                         }
                                     }
+                                }
+                            }
+
+                            .content-template {
+                                color: #ffffff;
+
+                                .mark-color {
+                                    color: $primary-title-color;
                                 }
                             }
 

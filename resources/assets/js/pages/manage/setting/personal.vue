@@ -1,6 +1,13 @@
 <template>
     <div class="setting-item submit">
-        <Form ref="formData" :model="formData" :rules="ruleData" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
+        <Form
+            ref="formData"
+            :model="formData"
+            :rules="ruleData"
+            :class="formLabelClassName"
+            :labelPosition="formLabelPosition"
+            :labelWidth="formLabelWidth"
+            @submit.native.prevent>
             <FormItem :label="$L('头像')" prop="userimg">
                 <ImgUpload v-model="formData.userimg" :num="1" :width="512" :height="512" :whcut="1"></ImgUpload>
                 <span class="form-tip">{{$L('建议尺寸：200x200')}}</span>
@@ -61,7 +68,7 @@ export default {
         this.initData();
     },
     computed: {
-        ...mapState(['userInfo', 'formLabelPosition', 'formLabelWidth']),
+        ...mapState(['userInfo', 'formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
     },
     watch: {
         userInfo() {

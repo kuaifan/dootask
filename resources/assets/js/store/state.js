@@ -28,6 +28,7 @@ export default {
     windowPortrait: windowOrientation === 'portrait',   // 竖屏
 
     // 表单布局
+    formLabelClassName: windowWidth > 576 ? '' : 'form-label-weight-bold',
     formLabelPosition: windowWidth > 576 ? 'right' : 'top',
     formLabelWidth: windowWidth > 576 ? 'auto' : '',
 

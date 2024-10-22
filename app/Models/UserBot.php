@@ -247,7 +247,7 @@ class UserBot extends AbstractModel
                         'remark' => '考勤机',
                     ];
                 }
-            } 
+            }
             if ($array) {
                 $record = UserCheckinRecord::where($array)->first();
                 if (empty($record)) {
@@ -299,7 +299,7 @@ class UserBot extends AbstractModel
                             ], [
                                 'content' => $subcontent,
                                 'language' => false,
-                                'style' => 'padding-top:4px;opacity:0.4',
+                                'style' => 'padding-top:4px;opacity:0.6',
                             ]
                         ],
                     ], $botUser->userid, false, false, $type != "up");

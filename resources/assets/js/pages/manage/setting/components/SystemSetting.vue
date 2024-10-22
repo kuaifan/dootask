@@ -1,6 +1,12 @@
 <template>
     <div class="setting-component-item">
-        <Form ref="formDatum" :model="formDatum" label-width="auto" @submit.native.prevent>
+        <Form
+            ref="formDatum"
+            :model="formDatum"
+            :class="formLabelClassName"
+            :labelPosition="formLabelPosition"
+            :labelWidth="formLabelWidth"
+            @submit.native.prevent>
             <div class="block-setting-box">
                 <h3>{{ $L('帐号相关') }}</h3>
                 <div class="form-box">
@@ -28,7 +34,7 @@
                             v-model="formDatum.temp_account_alias"
                             style="width:220px;margin-top:6px"
                             :placeholder="$L('临时帐号')">
-                            <span slot="prepend">{{$L('临时帐号')}} {{$L('别名')}}</span>
+                            <span slot="prepend">{{$L('别名')}}</span>
                         </Input>
                         <div class="form-tip form-list">
                             <p>{{$L('临时帐号')}}：</p>
@@ -245,6 +251,8 @@
 </template>
 
 <script>
+import {mapState} from "vuex";
+
 export default {
     name: 'SystemSetting',
 
@@ -258,6 +266,10 @@ export default {
 
     mounted() {
         this.systemSetting();
+    },
+
+    computed: {
+        ...mapState(['formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
     },
 
     methods: {

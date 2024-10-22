@@ -1,7 +1,7 @@
 <template>
     <div class="setting-item submit">
         <Loading v-if="configLoad > 0"/>
-        <Form v-else ref="formDatum" :model="formDatum" :rules="ruleDatum" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
+        <Form v-else ref="formDatum" :model="formDatum" :rules="ruleDatum" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
             <Alert v-if="isLdap" type="warning">{{$L('LDAP 用户禁止修改邮箱地址')}}</Alert>
             <FormItem :label="$L('新邮箱地址')" prop="newEmail">
                 <Input v-if="isRegVerify == 1" v-model="formDatum.newEmail"
@@ -66,7 +66,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['formLabelPosition', 'formLabelWidth']),
+        ...mapState(['formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
 
         isLdap() {
             return this.$store.state.userInfo.identity.includes("ldap")

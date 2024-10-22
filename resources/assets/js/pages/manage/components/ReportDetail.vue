@@ -24,7 +24,7 @@
             </Form>
         </div>
         <div v-else class="report-detail-context">
-            <Form class="report-form" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth">
+            <Form class="report-form" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth">
                 <template v-if="formLabelWidth !== 'auto'">
                     <FormItem :label="$L('汇报人')">
                         <UserAvatar :userid="data.userid" :size="28"/>
@@ -61,7 +61,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['formLabelPosition', 'formLabelWidth']),
+        ...mapState(['formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
     },
     watch: {
         'data.id': {

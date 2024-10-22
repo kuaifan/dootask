@@ -35,21 +35,24 @@
                         <div class="nav-icon"><i class="taskfont">&#xe634;</i></div>
                         <EDropdownMenu slot="dropdown" class="messenger-nav-menu">
                             <EDropdownItem v-for="(item, key) in dialogMenus" :key="key" :command="item.type">
-                                <div class="messenger-nav-item" :class="{active: dialogActive==item.type}">
+                                <div class="nav-item" :class="{active: dialogActive==item.type}">
                                     <div class="nav-title">{{$L(item.name)}}</div>
                                     <Badge class="nav-num" :overflow-count="999" :count="msgUnread(item.type)"/>
                                 </div>
                             </EDropdownItem>
                         </EDropdownMenu>
                     </EDropdown>
-                    <div
-                        v-for="(item, key) in typeItems"
-                        :key="key"
-                        :class="{active:dialogActive==item.type}"
-                        @click="onActive(item.type)">
-                        <div class="nav-title">
-                            <em>{{$L(item.name)}}</em>
-                            <Badge class="nav-num" :overflow-count="999" :count="msgUnread(item.type)"/>
+                    <div class="nav-list" ref="navList">
+                        <div
+                            v-for="(item, key) in dialogHistorys"
+                            :key="key"
+                            class="nav-item"
+                            :class="{active:dialogActive==item.type}"
+                            @click="onActive(item.type)">
+                            <div class="nav-title">
+                                <em>{{$L(item.name)}}</em>
+                                <Badge class="nav-num" :overflow-count="999" :count="msgUnread(item.type)"/>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -258,7 +261,19 @@ import DialogWrapper from "./components/DialogWrapper";
 import longpress from "../../directives/longpress";
 import {Store} from "le5le-store";
 
-const MessengerObject = {menuHistory: []};
+const navDatas = {
+    menus: [
+        {type: '', name: '全部'},
+        {type: 'project', name: '项目'},
+        {type: 'task', name: '任务'},
+        {type: 'user', name: '单聊'},
+        {type: 'group', name: '群聊'},
+        {type: 'bot', name: '机器人'},
+        {type: 'mark', name: '标注'},
+        {type: '@', name: '@我'},
+    ],
+    historys: []
+};
 
 export default {
     components: {DialogWrapper},
@@ -274,17 +289,8 @@ export default {
             dialogSearchList: [],
 
             dialogActive: '',
-            dialogMenus: [
-                {type: '', name: '全部'},
-                {type: 'project', name: '项目'},
-                {type: 'task', name: '任务'},
-                {type: 'user', name: '单聊'},
-                {type: 'group', name: '群聊'},
-                {type: 'bot', name: '机器人'},
-                {type: 'mark', name: '标注'},
-                {type: '@', name: '@我'},
-            ],
-            dialogHistory: MessengerObject.menuHistory,
+            dialogMenus: navDatas.menus,
+            dialogHistorys: navDatas.historys,
 
             contactsKey: '',
             contactsLoad: 0,
@@ -304,7 +310,10 @@ export default {
     },
 
     async beforeRouteEnter(to, from, next) {
-        MessengerObject.menuHistory = await $A.IDBArray("dialogMenuHistory")
+        navDatas.historys = (await $A.IDBArray("dialogMenuHistorys"))
+        if (navDatas.historys.length === 0) {
+            navDatas.historys = navDatas.menus.map(item => Object.assign(item, {time: 0}))
+        }
         next()
     },
 
@@ -328,6 +337,7 @@ export default {
 
     activated() {
         this.updateDialogs(this.firstLoad ? 0 : 1000);
+        this.scrollToNav();
         this.firstLoad = false;
         //
         this.$nextTick(_ => this.activeNum++)
@@ -361,35 +371,6 @@ export default {
 
         contactAvatarSize() {
             return this.windowPortrait ? 36 : 30
-        },
-
-        typeItems() {
-            const {dialogActive, dialogMenus, dialogHistory} = this
-            const types = []
-            if (this.dialogHistory.includes(dialogActive)) {
-                types.push(...this.dialogHistory)
-            } else {
-                types.push('')
-                if (dialogActive) {
-                    types.push(dialogActive)
-                }
-                dialogHistory.some(item => {
-                    if (!types.includes(item)) {
-                        types.push(item)
-                    }
-                });
-                ['project', 'task', 'user'].some(item => {
-                    if (!types.includes(item)) {
-                        types.push(item)
-                    }
-                })
-                this.dialogHistory = types.slice(0, 4)
-                $A.IDBSave("dialogMenuHistory", this.dialogHistory)
-            }
-            //
-            return this.dialogHistory.map(type => {
-                return dialogMenus.find(item => item.type == type)
-            })
         },
 
         dialogList() {
@@ -625,6 +606,7 @@ export default {
                     }
                 } else {
                     this.updateDialogs(1000);
+                    this.scrollToNav();
                 }
             },
             immediate: true
@@ -639,11 +621,20 @@ export default {
             immediate: true
         },
 
-        dialogActive(){
+        dialogActive(active) {
             this.dialogSearchList = [];
-            if(this.dialogActive == 'mark' && !this.dialogSearchKey){
+            if (active == 'mark' && !this.dialogSearchKey) {
                 this.searchTagDialog()
             }
+            //
+            this.dialogHistorys.forEach(item => {
+                if (item.type == '') {
+                    item.time = $A.dayjs().unix() + 1
+                } else if (item.type == active) {
+                    item.time = $A.dayjs().unix()
+                }
+            })
+            $A.IDBSave("dialogMenuHistorys", $A.cloneJSON(this.dialogHistorys).sort((a, b) => b.time - a.time))
         }
     },
 
@@ -689,6 +680,16 @@ export default {
             } else {
                 this.dialogActive = type
             }
+            this.scrollToNav()
+        },
+
+        scrollToNav() {
+            if (this.tabActive != 'dialog') {
+                return
+            }
+            this.$nextTick(_ => {
+                $A.scrollToView(this.$refs.navList?.querySelector('.active'), { behavior: "auto", block: "nearest", inline: "nearest" });
+            })
         },
 
         shakeUnread() {

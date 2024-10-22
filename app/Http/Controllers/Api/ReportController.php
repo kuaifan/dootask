@@ -363,6 +363,7 @@ class ReportController extends AbstractController
         } else {
             $title = $user->nickname . "的日报[" . $start_time->format("Y/m/d") . "]";
         }
+        $title = Doo::translate($title);
 
         // 生成内容
         $contents = [];

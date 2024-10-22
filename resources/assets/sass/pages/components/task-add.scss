@@ -200,6 +200,9 @@
         .task-add-visibility {
             cursor: pointer;
             color: rgba($primary-desc-color, 0.7);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
     }
     .task-add-advanced {

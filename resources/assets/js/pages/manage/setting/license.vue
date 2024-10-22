@@ -1,6 +1,6 @@
 <template>
     <div class="setting-item submit">
-        <Form ref="formData" :model="formData" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
+        <Form ref="formData" :model="formData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
             <FormItem label="License" prop="license">
                 <Input v-model="formData.license" type="textarea" :autosize="{minRows: 2,maxRows: 5}" :placeholder="$L('请输入License...')" />
             </FormItem>
@@ -136,7 +136,7 @@ export default {
         this.systemSetting();
     },
     computed: {
-        ...mapState(['userInfo', 'formLabelPosition', 'formLabelWidth']),
+        ...mapState(['userInfo', 'formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
     },
     methods: {
         submitForm() {
