@@ -1445,7 +1445,7 @@ export default {
                                 if (list.length > 2) {
                                     this.userCache.push({
                                         label: null,
-                                        list: [{id: 0, value: this.$L('所有人'), tip: this.$L('仅提示会话内成员')}]
+                                        list: [{id: 0, value: this.$L('所有人'), tip: ''}]
                                     })
                                 }
                                 this.userCache.push(...[{
@@ -1459,7 +1459,7 @@ export default {
                                 if (list.length > 2) {
                                     this.userCache.push(...[{
                                         label: null,
-                                        list: [{id: 0, value: this.$L('所有人'), tip: this.$L('提示所有成员')}]
+                                        list: [{id: 0, value: this.$L('所有人'), tip: ''}]
                                     }, {
                                         label: [{id: 0, value: this.$L('会话内成员'), disabled: true}],
                                         list,

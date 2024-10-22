@@ -207,7 +207,14 @@
             v-model="addShow"
             :title="$L('新建项目')"
             :mask-closable="false">
-            <Form ref="addProject" :model="addData" :rules="addRule" label-width="auto" @submit.native.prevent>
+            <Form
+                ref="addProject"
+                :model="addData"
+                :rules="addRule"
+                :class="formLabelClassName"
+                :labelPosition="formLabelPosition"
+                :labelWidth="formLabelWidth"
+                @submit.native.prevent>
                 <FormItem prop="name" :label="$L('项目名称')">
                     <Input ref="projectName" type="text" v-model="addData.name"></Input>
                 </FormItem>
@@ -527,7 +534,11 @@ export default {
             'reportUnreadNumber',
             'approveUnreadNumber',
 
-            'okrWindow'
+            'okrWindow',
+
+            'formLabelPosition',
+            'formLabelWidth',
+            'formLabelClassName'
         ]),
 
         ...mapGetters(['dashboardTask']),

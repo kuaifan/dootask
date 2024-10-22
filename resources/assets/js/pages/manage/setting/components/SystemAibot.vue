@@ -1,6 +1,13 @@
 <template>
     <div class="setting-component-item">
-        <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
+        <Form
+            ref="formData"
+            :model="formData"
+            :rules="ruleData"
+            :class="formLabelClassName"
+            :labelPosition="formLabelPosition"
+            :labelWidth="formLabelWidth"
+            @submit.native.prevent>
             <div class="block-setting-box" v-if="type=='all' || type=='ChatGPT'">
                 <h3>ChatGPT</h3>
                 <div class="form-box">
@@ -120,6 +127,8 @@
 </template>
 
 <script>
+import {mapState} from "vuex";
+
 export default {
     name: "SystemAibot",
     props: {
@@ -137,6 +146,10 @@ export default {
 
     mounted() {
         this.systemSetting();
+    },
+
+    computed: {
+        ...mapState(['formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
     },
 
     methods: {

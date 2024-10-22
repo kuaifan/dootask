@@ -388,6 +388,9 @@
                     @media (max-width: 510px) {
                         -webkit-line-clamp: 2;
                     }
+                    &.btn {
+                        -webkit-line-clamp: 1;
+                    }
                 }
 
                 .desc {

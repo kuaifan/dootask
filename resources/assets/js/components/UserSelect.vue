@@ -346,6 +346,10 @@ export default {
                 this.upTitleWidth()
             }
         },
+
+        'selects.length'() {
+            this.upTitleWidth()
+        }
     },
     computed: {
         ...mapState([

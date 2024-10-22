@@ -1,6 +1,13 @@
 <template>
     <div class="setting-component-item">
-        <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
+        <Form
+            ref="formData"
+            :model="formData"
+            :rules="ruleData"
+            :class="formLabelClassName"
+            :labelPosition="formLabelPosition"
+            :labelWidth="formLabelWidth"
+            @submit.native.prevent>
             <div class="block-setting-box">
                 <h3>AgoraIO 声网</h3>
                 <div class="form-box">
@@ -50,6 +57,8 @@
 </template>
 
 <script>
+import {mapState} from "vuex";
+
 export default {
     name: "SystemMeeting",
     data() {
@@ -66,6 +75,10 @@ export default {
 
     mounted() {
         this.systemSetting();
+    },
+
+    computed: {
+        ...mapState(['formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
     },
 
     methods: {

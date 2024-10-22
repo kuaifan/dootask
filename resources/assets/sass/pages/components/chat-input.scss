@@ -888,6 +888,10 @@
             font-size: 12px;
             padding: 0 4px;
             line-height: 40px;
+            max-width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
     }
 }

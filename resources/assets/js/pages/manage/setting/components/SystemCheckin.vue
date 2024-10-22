@@ -1,6 +1,13 @@
 <template>
     <div class="setting-component-item">
-        <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
+        <Form
+            ref="formData"
+            :model="formData"
+            :rules="ruleData"
+            :class="formLabelClassName"
+            :labelPosition="formLabelPosition"
+            :labelWidth="formLabelWidth"
+            @submit.native.prevent>
             <div class="block-setting-box">
                 <h3>{{ $L('签到设置') }}</h3>
                 <div class="form-box">
@@ -117,6 +124,7 @@
 import DrawerOverlay from "../../../../components/DrawerOverlay";
 import TeamManagement from "../../components/TeamManagement";
 import CheckinExport from "../../components/CheckinExport";
+import {mapState} from "vuex";
 export default {
     name: "SystemCheckin",
     components: {CheckinExport, TeamManagement, DrawerOverlay},
@@ -140,6 +148,10 @@ export default {
 
     mounted() {
         this.systemSetting();
+    },
+
+    computed: {
+        ...mapState(['formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
     },
 
     methods: {

@@ -481,7 +481,14 @@
                 width: '90%',
                 maxWidth: '450px'
             }">
-            <Form ref="formDelayTaskRef" :model="delayTaskForm" :rules="delayTaskRule" label-position="left" label-width="auto" @submit.native.prevent>
+            <Form
+                ref="formDelayTaskRef"
+                :model="delayTaskForm"
+                :rules="delayTaskRule"
+                :class="formLabelClassName"
+                :labelPosition="formLabelPosition.replace('right', 'left')"
+                :labelWidth="formLabelWidth"
+                @submit.native.prevent>
                 <FormItem :label="$L('延期时长')" prop="time">
                     <Input type="number" v-model="delayTaskForm.time" :placeholder="$L('请输入时长')">
                         <template #append>
@@ -691,6 +698,10 @@ export default {
             'taskPriority',
 
             'dialogId',
+
+            'formLabelPosition',
+            'formLabelWidth',
+            'formLabelClassName'
         ]),
 
         projectName() {
