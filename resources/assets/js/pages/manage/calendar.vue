@@ -293,7 +293,7 @@ export default {
 
         currentCalendarDate(format) {
             const cal = this.$refs.cal.getInstance();
-            let currentDate = $A.dayjs([cal.getDate().getFullYear(), cal.getDate().getMonth() + 1, cal.getDate().getDate()]);
+            const currentDate = $A.dayjs(cal.getDate().toDate());
             return currentDate.format(format);
         },
 

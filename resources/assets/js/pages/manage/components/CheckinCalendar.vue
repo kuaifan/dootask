@@ -122,7 +122,7 @@ export default {
         },
         generateCalendar() {
             let today = $A.daytz().startOf('day')
-            let one = $A.dayjs([this.year, this.month, 1])
+            let one = $A.dayjs(`${this.year}-${this.month}-1`)
             let calcTime = one.valueOf() - one.day() * 86400 * 1000
             let array = []
             for (let i = 0; i < 6; i++) {
@@ -190,6 +190,7 @@ export default {
         .calendar-header-menu {
             position: relative;
             flex: 1;
+            width: 0;
         }
         .calendar-header-back {
             margin-right: 14px;
@@ -208,6 +209,10 @@ export default {
         justify-content: center;
     }
     h4 {
+        padding: 0 50px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
         line-height: 40px;
         background-color: #fff;
         text-align: center;

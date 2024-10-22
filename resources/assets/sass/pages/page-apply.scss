@@ -239,7 +239,6 @@
     display: flex;
     flex-direction: column;
     max-width: 100vw;
-    overflow: auto;
 
     .ivu-modal-wrap-apply-title {
         line-height: 40px;
@@ -253,6 +252,7 @@
             cursor: pointer;
             color: #2b85e4;
             font-size: 14px;
+            padding-left: 8px;
         }
 
         @media (max-width: 500px) {
