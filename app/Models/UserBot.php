@@ -291,11 +291,13 @@ class UserBot extends AbstractModel
                     $hi = date("H:i");
                     $remark = $checkin['remark'] ? " ({$checkin['remark']})": "";
                     $subcontent = $getJokeSoup($type);
+                    $title = "{$typeContent}打卡成功，打卡时间: {$hi}{$remark}";
                     WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
                         'type' => 'content',
+                        'title' => $title,
                         'content' => [
                             [
-                                'content' => "{$typeContent}打卡成功，打卡时间: {$hi}{$remark}"
+                                'content' => $title
                             ], [
                                 'content' => $subcontent,
                                 'language' => false,
