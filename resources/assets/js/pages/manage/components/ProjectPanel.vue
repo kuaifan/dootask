@@ -331,7 +331,7 @@
             v-model="settingShow"
             :title="$L('项目设置')"
             :mask-closable="false">
-            <Form :model="settingData" label-width="auto" @submit.native.prevent>
+            <Form :model="settingData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
                 <FormItem prop="name" :label="$L('项目名称')">
                     <Input ref="projectName" type="text" v-model="settingData.name" :maxlength="32" :placeholder="$L('必填')"></Input>
                 </FormItem>
@@ -358,7 +358,7 @@
             v-model="userShow"
             :title="$L('成员管理')"
             :mask-closable="false">
-            <Form :model="userData" label-width="auto" @submit.native.prevent>
+            <Form :model="userData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
                 <FormItem prop="userids" :label="$L('项目成员')">
                     <UserSelect v-model="userData.userids" :uncancelable="userData.uncancelable" :multiple-max="100" :title="$L('选择项目成员')"/>
                 </FormItem>
@@ -395,7 +395,7 @@
             v-model="inviteShow"
             :title="$L('邀请链接')"
             :mask-closable="false">
-            <Form :model="inviteData" label-width="auto" @submit.native.prevent>
+            <Form :model="inviteData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
                 <FormItem :label="$L('链接地址')">
                     <Input ref="inviteInput" v-model="inviteData.url" type="textarea" :rows="3" @on-focus="inviteFocus" readonly/>
                     <div class="form-tip">
@@ -426,7 +426,7 @@
             v-model="transferShow"
             :title="$L('移交项目')"
             :mask-closable="false">
-            <Form :model="transferData" label-width="auto" @submit.native.prevent>
+            <Form :model="transferData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
                 <FormItem prop="owner_userid" :label="$L('新项目负责人')">
                     <UserSelect v-model="transferData.owner_userid" :multiple-max="1" :title="$L('选择项目负责人')"/>
                 </FormItem>
@@ -575,6 +575,10 @@ export default {
             'taskCompleteTemps',
 
             'cacheUserBasic',
+
+            'formLabelPosition',
+            'formLabelWidth',
+            'formLabelClassName',
         ]),
 
         ...mapGetters(['projectData', 'transforTasks']),

@@ -1,6 +1,13 @@
 <template>
     <div class="setting-component-item">
-        <Form ref="formData" :model="formData" :rules="ruleData" label-width="auto" @submit.native.prevent>
+        <Form
+            ref="formData"
+            :model="formData"
+            :rules="ruleData"
+            :class="formLabelClassName"
+            :labelPosition="formLabelPosition"
+            :labelWidth="formLabelWidth"
+            @submit.native.prevent>
             <div class="block-setting-box">
                 <h3>{{ $L('邮箱服务器设置') }}</h3>
                 <div class="form-box">
@@ -82,6 +89,8 @@
 </template>
 
 <script>
+import {mapState} from "vuex";
+
 export default {
     name: "SystemEmailSetting",
     data() {
@@ -104,6 +113,10 @@ export default {
 
     mounted() {
         this.systemSetting();
+    },
+
+    computed: {
+        ...mapState(['formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
     },
 
     methods: {

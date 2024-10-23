@@ -256,7 +256,7 @@
             v-model="createGroupShow"
             :title="$L('创建群组')"
             :mask-closable="false">
-            <Form :model="createGroupData" label-width="auto" @submit.native.prevent>
+            <Form :model="createGroupData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth"  @submit.native.prevent>
                 <FormItem prop="avatar" :label="$L('群头像')">
                     <ImgUpload v-model="createGroupData.avatar" :num="1" :width="512" :height="512" :whcut="1"/>
                 </FormItem>

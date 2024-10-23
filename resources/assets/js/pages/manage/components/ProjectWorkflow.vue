@@ -155,7 +155,7 @@
             }"
             :title="`${$L('状态设置')} (${settingData.name})`"
             :mask-closable="false">
-            <Form :model="settingData" label-width="auto" @submit.native.prevent>
+            <Form :model="settingData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
                 <div class="workflow-setting-box">
                     <h3>{{ $L('状态负责人') }}</h3>
                     <div class="form-box">
@@ -233,7 +233,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheColumns']),
+        ...mapState(['cacheColumns', 'formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
 
         columnList({projectId, cacheColumns}) {
             return cacheColumns.filter(({project_id}) => {

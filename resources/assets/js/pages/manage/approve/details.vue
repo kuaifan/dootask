@@ -188,7 +188,7 @@
 
         <!--评论-->
         <Modal v-model="commentShow" :title="$L('评论')" :mask-closable="false" class="page-approve-initiate">
-            <Form ref="initiateRef" :model="commentData" :rules="commentRule" label-width="auto" @submit.native.prevent>
+            <Form ref="initiateRef" :model="commentData" :rules="commentRule" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
                 <FormItem prop="content" :label="$L('内容')">
                     <Input type="textarea" v-model="commentData.content"></Input>
                 </FormItem>
@@ -207,6 +207,7 @@
 <script>
 import ImgView from "../../../components/ImgView";
 import ImgUpload from "../../../components/ImgUpload";
+import {mapState} from "vuex";
 
 export default {
     name: "ApproveDetails",
@@ -254,6 +255,8 @@ export default {
         },
     },
     computed: {
+        ...mapState(['formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
+
         isShowAgreeBtn() {
             return (this.datas.candidate || '').split(',').indexOf(this.userId + '') != -1 && !this.datas.is_finished
         },

@@ -3,7 +3,7 @@
         v-model="show"
         :title="$L('导出审批数据')"
         :mask-closable="false">
-        <Form ref="exportTask" :model="formData" label-width="auto" @submit.native.prevent>
+        <Form ref="exportTask" :model="formData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
             <FormItem :label="$L('审批类型')">
                 <Select v-model="formData.proc_def_name" @on-open-change="getProcName" :placeholder="$L('请选择类型')">
                     <Option v-for="(item, key) in procList" :value="item.name" :key="key" >{{ $L(item.name) }}</Option>
@@ -53,6 +53,8 @@
 }
 </style>
 <script>
+import {mapState} from "vuex";
+
 export default {
     name: "ApproveExport",
     props: {
@@ -81,6 +83,10 @@ export default {
         show(v) {
             this.value !== v && this.$emit("input", v)
         }
+    },
+
+    computed: {
+        ...mapState(['formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
     },
 
     methods: {

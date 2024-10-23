@@ -1,5 +1,5 @@
 <template>
-    <Form class="report-edit" label-width="auto" @submit.native.prevent>
+    <Form class="report-edit" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
         <FormItem :label="$L('汇报类型')">
             <RadioGroup
                 type="button"
@@ -49,6 +49,7 @@
 
 <script>
 import UserSelect from "../../../components/UserSelect.vue";
+import {mapState} from "vuex";
 
 const TEditor = () => import('../../../components/TEditor');
 export default {
@@ -95,8 +96,8 @@ export default {
             immediate: true
         },
     },
-    mounted() {
-        //
+    computed: {
+        ...mapState(['formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
     },
     methods: {
         handleSubmit() {

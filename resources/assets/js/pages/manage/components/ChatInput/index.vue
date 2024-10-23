@@ -1425,7 +1425,7 @@ export default {
                     this.mentionMode = "user-mention";
                     const atCallback = (list) => {
                         this.getMoreUser(searchTerm, list.map(item => item.id)).then(moreUser => {
-                            // 会话以外成员 排序 -> 前5名为最近联系的人
+                            // 群外成员 排序 -> 前5名为最近联系的人
                             let cacheDialogs = this.cacheDialogs.filter((h, index) => h.type == "user" && h.bot == 0 && h.last_at)
                             cacheDialogs.sort((a, b) => a.last_at > b.last_at ? -1 : (a.last_at < b.last_at ? 1 : 0));
                             cacheDialogs = cacheDialogs.filter((h, index) => index < 5)
@@ -1449,10 +1449,10 @@ export default {
                                     })
                                 }
                                 this.userCache.push(...[{
-                                    label: [{id: 0, value: this.$L('会话内成员'), disabled: true}],
+                                    label: [{id: 0, value: this.$L('群内成员'), disabled: true}],
                                     list,
                                 }, {
-                                    label: [{id: 0, value: this.$L('会话以外成员'), disabled: true}],
+                                    label: [{id: 0, value: this.$L('群外成员'), disabled: true}],
                                     list: moreUser,
                                 }])
                             } else {
@@ -1461,7 +1461,7 @@ export default {
                                         label: null,
                                         list: [{id: 0, value: this.$L('所有人.All'), tip: ''}]
                                     }, {
-                                        label: [{id: 0, value: this.$L('会话内成员'), disabled: true}],
+                                        label: [{id: 0, value: this.$L('群成员'), disabled: true}],
                                         list,
                                     }])
                                 } else {

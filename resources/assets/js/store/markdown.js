@@ -19,7 +19,7 @@ const MarkdownUtils = {
         return text
     },
     highlightBlock: (str, lang = '') => {
-        return `<pre class="code-block-wrapper"><div class="code-block-header"><span class="code-block-header__lang">${lang}</span><span class="code-block-header__copy">${$A.L('复制代码')}</span></div><code class="hljs code-block-body ${lang}">${str}</code></pre>`
+        return `<pre class="code-block-wrapper"><div class="code-block-header"><span class="code-block-header__lang">${lang}</span><span class="code-block-header__copy">${$A.L('复制')}</span></div><code class="hljs code-block-body ${lang}">${str}</code></pre>`
     },
 }
 

@@ -3,7 +3,7 @@
         v-model="show"
         :title="$L('导出签到数据')"
         :mask-closable="false">
-        <Form ref="export" :model="formData" label-width="auto" @submit.native.prevent>
+        <Form ref="export" :model="formData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
             <FormItem :label="$L('导出成员')">
                 <UserSelect v-model="formData.userid" :multiple-max="100" avatar-name show-disable :title="$L('请选择成员')"/>
                 <div class="form-tip">{{$L('每次最多选择导出100个成员')}}</div>
@@ -61,6 +61,7 @@
 </style>
 <script>
 import UserSelect from "../../../components/UserSelect.vue";
+import {mapState} from "vuex";
 export default {
     name: "CheckinExport",
     components: {UserSelect},
@@ -89,6 +90,10 @@ export default {
         show(v) {
             this.value !== v && this.$emit("input", v)
         }
+    },
+
+    computed: {
+        ...mapState(['formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
     },
 
     methods: {
