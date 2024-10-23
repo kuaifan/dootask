@@ -321,7 +321,9 @@ class ReportController extends AbstractController
                 $completeDatas[] = [
                     $task->project->name,
                     $task->name,
-                    '-',    // todo 负责人
+                    $task->taskUser->where("owner", 1)->map(function ($item) {
+                        return User::userid2nickname($item->userid);
+                    })->implode(", "),
                     $remark,
                 ];
             }
@@ -398,8 +400,6 @@ class ReportController extends AbstractController
             "sign" => $sign,
             "title" => $title,
             "content" => implode("", $contents),
-            "complete_task" => $complete_task,
-            "unfinished_task" => $unfinished_task,
         ];
 
         if ($one) {
