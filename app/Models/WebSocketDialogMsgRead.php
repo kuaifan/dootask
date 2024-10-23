@@ -16,7 +16,7 @@ use Carbon\Carbon;
  * @property int|null $email 是否发了邮件
  * @property int|null $after 在阅读之后才添加的记录
  * @property int|null $dot 红点标记
- * @property string|null $read_at 阅读时间
+ * @property \Illuminate\Support\Carbon|null $read_at 阅读时间
  * @property-read \App\Models\WebSocketDialogMsg|null $webSocketDialogMsg
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()

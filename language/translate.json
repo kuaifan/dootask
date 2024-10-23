@@ -3240,18 +3240,6 @@
         "ru": "Время завершения задачи"
     },
     {
-        "key": "会话以外成员",
-        "zh": "",
-        "zh-CHT": "會話以外成員",
-        "en": "Members outside the conversation",
-        "ko": "대화 외 구성원",
-        "ja": "会話外のメンバー",
-        "de": "Mitglieder außerhalb des Gesprächs",
-        "fr": "Membres en dehors de la conversation",
-        "id": "Anggota di luar percakapan",
-        "ru": "Участники вне разговора"
-    },
-    {
         "key": "修改任务时间",
         "zh": "",
         "zh-CHT": "修改任務時間",
@@ -4114,18 +4102,6 @@
         "fr": "Créateur de la réunion",
         "id": "Pembuat rapat",
         "ru": "Создатель встречи"
-    },
-    {
-        "key": "会话内成员",
-        "zh": "",
-        "zh-CHT": "會話內成員",
-        "en": "Members in conversation",
-        "ko": "대화 내 멤버",
-        "ja": "会話内のメンバー",
-        "de": "Mitglieder im Gespräch",
-        "fr": "Membres dans la conversation",
-        "id": "Anggota dalam percakapan",
-        "ru": "Участники в разговоре"
     },
     {
         "key": "使用现有群",
@@ -6070,18 +6046,6 @@
         "fr": "Statut d'emploi",
         "id": "Status kepegawaian",
         "ru": "Статус занятости"
-    },
-    {
-        "key": "复制代码",
-        "zh": "",
-        "zh-CHT": "複製代碼",
-        "en": "Copy code",
-        "ko": "코드 복사",
-        "ja": "コードをコピー",
-        "de": "Code kopieren",
-        "fr": "Copier le code",
-        "id": "Salin kode",
-        "ru": "Копировать код"
     },
     {
         "key": "复制成功",
@@ -9267,13 +9231,13 @@
         "key": "群成员",
         "zh": "",
         "zh-CHT": "群成員",
-        "en": "Group Members",
+        "en": "Group members",
         "ko": "그룹 멤버",
         "ja": "グループメンバー",
         "de": "Gruppenmitglieder",
         "fr": "Membres du groupe",
-        "id": "Anggota Grup",
-        "ru": "Участники группы"
+        "id": "Anggota grup",
+        "ru": "Члены группы"
     },
     {
         "key": "群类型",
@@ -24730,5 +24694,29 @@
         "fr": "Veuillez saisir une note d'effacement",
         "id": "Silakan masukkan catatan penghapusan",
         "ru": "Пожалуйста, введите примечание для очистки"
+    },
+    {
+        "key": "群内成员",
+        "zh": "",
+        "zh-CHT": "群內成員",
+        "en": "Group members",
+        "ko": "그룹 멤버",
+        "ja": "グループメンバー",
+        "de": "Gruppenmitglieder",
+        "fr": "Membres du groupe",
+        "id": "Anggota grup",
+        "ru": "Члены группы"
+    },
+    {
+        "key": "群外成员",
+        "zh": "",
+        "zh-CHT": "群外成員",
+        "en": "External members",
+        "ko": "그룹 외 멤버",
+        "ja": "グループ外メンバー",
+        "de": "Externe Mitglieder",
+        "fr": "Membres externes",
+        "id": "Anggota luar grup",
+        "ru": "Внешние участники"
     }
 ]

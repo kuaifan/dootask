@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property int $id
  * @property int $rid
- * @property string|null $receive_at 接收时间
+ * @property \Illuminate\Support\Carbon|null $receive_at 接收时间
  * @property int $userid 接收人
  * @property int $read 是否已读
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()

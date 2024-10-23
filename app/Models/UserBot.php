@@ -16,7 +16,7 @@ use Carbon\Carbon;
  * @property int|null $userid 所属人ID
  * @property int|null $bot_id 机器人ID
  * @property int|null $clear_day 消息自动清理天数
- * @property string|null $clear_at 下一次清理时间
+ * @property \Illuminate\Support\Carbon|null $clear_at 下一次清理时间
  * @property string|null $webhook_url 消息webhook地址
  * @property int|null $webhook_num 消息webhook请求次数
  * @property \Illuminate\Support\Carbon|null $created_at

@@ -10,8 +10,8 @@ use Carbon\Carbon;
  * @property int $id
  * @property int|null $dialog_id 对话ID
  * @property int|null $userid 会员ID
- * @property string|null $top_at 置顶时间
- * @property string|null $last_at 最后消息时间
+ * @property \Illuminate\Support\Carbon|null $top_at 置顶时间
+ * @property \Illuminate\Support\Carbon|null $last_at 最后消息时间
  * @property int|null $mark_unread 是否标记为未读：0否，1是
  * @property int|null $silence 是否免打扰：0否，1是
  * @property int|null $hide 不显示会话：0否，1是

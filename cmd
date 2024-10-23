@@ -253,11 +253,19 @@ stream {
     }
 }
 EOF
-        read -rp "请输入代理端口（3300-65500）：" inputport
+        default_value="$(env_get DB_PORT_OPEN)"
+        if [ -n "$default_value" ]; then
+            read_tip="请输入代理端口 (3300-65500, 默认: ${default_value}): "
+        else
+            read_tip="请输入代理端口 (3300-65500): "
+        fi
+        read -rp "$read_tip" inputport
+        inputport=${inputport:-$default_value}
         if [ $inputport -lt 3300 ] || [ $inputport -gt 65500 ]; then
             error "端口范围不正确！"
             exit 1
         fi
+        env_set DB_PORT_OPEN $inputport
         run_mysql rm-port
         docker run --name ${container_name}-port \
             --network dootask-networks-$(env_get APP_ID) \

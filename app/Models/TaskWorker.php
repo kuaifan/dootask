@@ -10,8 +10,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $id
  * @property string|null $args
  * @property string|null $error
- * @property string|null $start_at 开始时间
- * @property string|null $end_at 结束时间
+ * @property \Illuminate\Support\Carbon|null $start_at 开始时间
+ * @property \Illuminate\Support\Carbon|null $end_at 结束时间
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at

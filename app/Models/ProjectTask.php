@@ -26,12 +26,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $name 标题
  * @property string|null $color 颜色
  * @property string|null $desc 描述
- * @property string|null $start_at 计划开始时间
- * @property string|null $end_at 计划结束时间
- * @property string|null $archived_at 归档时间
+ * @property \Illuminate\Support\Carbon|null $start_at 计划开始时间
+ * @property \Illuminate\Support\Carbon|null $end_at 计划结束时间
+ * @property \Illuminate\Support\Carbon|null $archived_at 归档时间
  * @property int|null $archived_userid 归档会员
  * @property int|null $archived_follow 跟随项目归档（项目取消归档时任务也取消归档）
- * @property string|null $complete_at 完成时间
+ * @property \Illuminate\Support\Carbon|null $complete_at 完成时间
  * @property int|null $userid 创建人
  * @property int|null $visibility 任务可见性：1-项目人员 2-任务人员 3-指定成员
  * @property int|null $p_level 优先级
@@ -39,7 +39,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $p_color 优先级颜色
  * @property int|null $sort 排序(ASC)
  * @property string|null $loop 重复周期
- * @property string|null $loop_at 下一次重复时间
+ * @property \Illuminate\Support\Carbon|null $loop_at 下一次重复时间
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at

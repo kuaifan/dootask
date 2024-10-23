@@ -9,7 +9,7 @@ namespace App\Models;
  * @property int|null $dialog_id 对话ID
  * @property int|null $msg_id 消息ID
  * @property int|null $userid 接收会员ID
- * @property string|null $done_at 完成时间
+ * @property \Illuminate\Support\Carbon|null $done_at 完成时间
  * @property-read array|mixed $msg_data
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()

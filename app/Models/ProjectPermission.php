@@ -10,7 +10,7 @@ use App\Module\Base;
  *
  * @property int $id
  * @property int|null $project_id 项目ID
- * @property array|string $permissions 权限
+ * @property array $permissions 权限
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()

@@ -16,7 +16,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $userid 创建人
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property string|null $end_at
+ * @property Carbon|null $end_at
  * @property Carbon|null $deleted_at
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()

@@ -13,26 +13,26 @@ use Carbon\Carbon;
  * App\Models\User
  *
  * @property int $userid
- * @property array $identity 身份
- * @property array $department 所属部门
+ * @property array $identity
+ * @property array $department
  * @property string|null $az A-Z
  * @property string|null $pinyin 拼音（主要用于搜索）
- * @property string|null $email 邮箱
+ * @property string|null $email
  * @property string|null $tel 联系电话
- * @property string $nickname 昵称
- * @property string|null $profession 职位/职称
- * @property string $userimg 头像
+ * @property string $nickname
+ * @property string|null $profession
+ * @property string $userimg
  * @property string|null $encrypt
  * @property string|null $password 登录密码
  * @property int|null $changepass 登录需要修改密码
  * @property int|null $login_num 累计登录次数
  * @property string|null $last_ip 最后登录IP
- * @property string|null $last_at 最后登录时间
+ * @property \Illuminate\Support\Carbon|null $last_at 最后登录时间
  * @property string|null $line_ip 最后在线IP（接口）
- * @property string|null $line_at 最后在线时间（接口）
+ * @property \Illuminate\Support\Carbon|null $line_at 最后在线时间（接口）
  * @property int|null $task_dialog_id 最后打开的任务会话ID
  * @property string|null $created_ip 注册IP
- * @property string|null $disable_at 禁用时间（离职时间）
+ * @property \Illuminate\Support\Carbon|null $disable_at
  * @property int|null $email_verity 邮箱是否已验证
  * @property int|null $bot 是否机器人
  * @property \Illuminate\Support\Carbon|null $created_at

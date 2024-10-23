@@ -22,7 +22,7 @@ use Request;
  * @property int|null $personal 是否个人项目
  * @property string|null $user_simple 成员总数|1,2,3
  * @property int|null $dialog_id 聊天会话ID
- * @property string|null $archived_at 归档时间
+ * @property \Illuminate\Support\Carbon|null $archived_at 归档时间
  * @property int|null $archived_userid 归档会员
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at

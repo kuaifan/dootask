@@ -16,9 +16,15 @@ use App\Module\Ihttp;
  * @property string|null $remark 备注
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel getKeyValue()
  * @method static \Illuminate\Database\Eloquent\Builder|UserCheckinFace newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|UserCheckinFace newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|UserCheckinFace query()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
+ * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|UserCheckinFace whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserCheckinFace whereFaceimg($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UserCheckinFace whereId($value)
