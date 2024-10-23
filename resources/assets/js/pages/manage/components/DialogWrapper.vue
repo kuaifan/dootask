@@ -501,7 +501,7 @@
             <template #footer>
                 <div class="dialog-wrapper-forward-footer" :class="{selected: !forwardSource}" @click="forwardSource = !forwardSource">
                     <Icon class="user-modal-icon" :type="forwardSource ? 'ios-radio-button-off' : 'ios-checkmark-circle'" />
-                    {{$L('不显示原发送者信息')}}
+                    <span class="forward-text-tip">{{$L('不显示原发送者信息')}}</span>
                 </div>
                 <Button type="primary" :loading="forwardLoad > 0" @click="onForwardAffirm">
                     {{$L('确定')}}

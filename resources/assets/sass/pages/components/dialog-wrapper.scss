@@ -2099,6 +2099,8 @@ body:not(.window-touch) {
             gap: 20px;
 
             .dialog-wrapper-forward-footer {
+                flex: 1;
+                width: 0;
                 display: flex;
                 line-height: 34px;
                 cursor: pointer;
@@ -2109,6 +2111,12 @@ body:not(.window-touch) {
                     margin-right: 5px;
                     color: rgba($primary-desc-color, 0.7);
                     margin-top: 6px;
+                }
+
+                .forward-text-tip {
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
                 }
 
                 &.selected {

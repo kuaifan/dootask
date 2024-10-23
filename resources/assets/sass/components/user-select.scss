@@ -49,6 +49,16 @@
             position: relative;
             font-weight: 500;
 
+            .user-modal-close,
+            .user-modal-title,
+            .user-modal-submit {
+                height: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                line-height: normal;
+            }
+
             .user-modal-close {
                 padding: 0 24px;
                 color: $primary-text-color;
@@ -60,10 +70,8 @@
                 bottom: 0;
                 left: 100px;
                 right: 100px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
                 > span {
+                    text-align: center;
                     font-size: 16px;
                     color: $primary-title-color;
                     overflow: hidden;
@@ -75,8 +83,6 @@
             .user-modal-submit {
                 padding: 0 24px;
                 color: $primary-color;
-                display: flex;
-                align-items: center;
 
                 .submit-loading {
                     width: 14px;

@@ -149,11 +149,35 @@
                     }
                 }
             }
+            @media (max-width: 320px) {
+                .nav {
+                    margin-right: 20px;
+                }
+                .function {
+                    display: none;
+                }
+            }
         }
         .scroller {
             margin-right: -5px;
             .scrollbar-content {
                 padding: 0 5px;
+            }
+            .receive-box {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-top: 18px;
+                padding: 8px 16px;
+                line-height: 18px;
+                .receive-text {
+                    padding-right: 8px;
+                    vertical-align: middle;
+                }
+                .receive-button {
+                    display: inline-block;
+                    margin: 4px 0;
+                }
             }
             .title {
                 margin-top: 18px;

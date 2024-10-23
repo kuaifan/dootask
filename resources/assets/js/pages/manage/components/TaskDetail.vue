@@ -80,9 +80,27 @@
                     <p v-if="taskDetail.id"><span>{{taskDetail.id}}</span></p>
                 </div>
                 <div class="function">
+                    <ETooltip v-if="$Electron" :disabled="$isEEUiApp || windowTouch" :content="$L('新窗口打开')">
+                        <i class="taskfont open" @click="openNewWin">&#xe776;</i>
+                    </ETooltip>
+                    <div class="menu">
+                        <TaskMenu
+                            :disabled="taskId === 0"
+                            :task="taskDetail"
+                            icon="ios-more"
+                            completed-icon="ios-more"
+                            size="medium"
+                            :color-show="false"
+                            @on-update="getLogLists"/>
+                    </div>
+                </div>
+            </div>
+            <Scrollbar ref="scroller" class="scroller">
+                <Alert v-if="getOwner.length === 0" class="receive-box" type="warning">
+                    <span class="receive-text">{{$L('该任务尚未被领取，点击这里')}}</span>
                     <EPopover
-                        v-if="getOwner.length === 0"
                         v-model="receiveShow"
+                        class="receive-button"
                         placement="bottom">
                         <div class="task-detail-receive">
                             <div class="receive-title">
@@ -101,28 +119,13 @@
                                     @on-change="taskTimeChange"/>
                             </div>
                             <div class="receive-bottom">
-                                <Button size="small" type="text" @click="receiveShow=false">取消</Button>
-                                <Button :loading="ownerLoad > 0" size="small" type="primary" @click="onOwner(true)">确定</Button>
+                                <Button size="small" type="text" @click="receiveShow=false">{{$L('取消')}}</Button>
+                                <Button :loading="ownerLoad > 0" size="small" type="primary" @click="onOwner(true)">{{$L('确定')}}</Button>
                             </div>
                         </div>
-                        <Button slot="reference" :loading="ownerLoad > 0" class="pick" type="primary">{{$L('我要领取任务')}}</Button>
+                        <Button slot="reference" :loading="ownerLoad > 0" size="small" type="primary">{{$L('领取任务')}}</Button>
                     </EPopover>
-                    <ETooltip v-if="$Electron" :disabled="$isEEUiApp || windowTouch" :content="$L('新窗口打开')">
-                        <i class="taskfont open" @click="openNewWin">&#xe776;</i>
-                    </ETooltip>
-                    <div class="menu">
-                        <TaskMenu
-                            :disabled="taskId === 0"
-                            :task="taskDetail"
-                            icon="ios-more"
-                            completed-icon="ios-more"
-                            size="medium"
-                            :color-show="false"
-                            @on-update="getLogLists"/>
-                    </div>
-                </div>
-            </div>
-            <Scrollbar ref="scroller" class="scroller">
+                </Alert>
                 <div class="title">
                     <Input
                         v-model="taskDetail.name"
