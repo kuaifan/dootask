@@ -171,10 +171,11 @@ class Image
      * @param string $savePath  保存路径
      * @param int $width        宽度
      * @param int $height       高度
+     * @param int $quality      压缩质量（0-100）, 0 为不压缩
      * @param string $mode      模式（percentage|cover|contain）
      * @return string|null      成功返回图片后缀，失败返回 false
      */
-    public static function thumbImage(string $imagePath, string $savePath, int $width, int $height, string $mode = 'percentage'): ?string
+    public static function thumbImage(string $imagePath, string $savePath, int $width, int $height, int $quality = 0, string $mode = 'percentage'): ?string
     {
         if (!file_exists($imagePath)) {
             return null;
@@ -187,6 +188,9 @@ class Image
             $image = new Image($imagePath);
             $image->thumb($width, $height, $mode);
             $image->saveTo($savePath);
+            if ($quality > 0) {
+                Image::compressImage($savePath, null, $quality);
+            }
             return $extension;
         } catch (\ImagickException) {
             return null;
@@ -194,14 +198,14 @@ class Image
     }
 
     /**
-     * 压缩图片
+     * 压缩图片（如果压缩后的图片比原图还大那就直接使用原图）
      * @param string $imagePath     图片路径
      * @param string|null $savePath 保存路径（默认覆盖原图）
      * @param int $quality          压缩质量（0-100）
-     * @param float $minSize        最小尺寸（单位：KB）
+     * @param float $minSize        最小尺寸，小于这个尺寸不压缩（单位：KB）
      * @return bool
      */
-    public static function compressImage(string $imagePath, string $savePath = null, int $quality = 100, float $minSize = 10): bool
+    public static function compressImage(string $imagePath, string $savePath = null, int $quality = 100, float $minSize = 5): bool
     {
         if (Base::settingFind("system", "image_compress") === 'close') {
             return false;
@@ -209,6 +213,7 @@ class Image
         if (!file_exists($imagePath)) {
             return false;
         }
+        $quality = min(max($quality, 1), 100);
         $imageSize = filesize($imagePath);
         if ($minSize > 0 && $imageSize < $minSize * 1024) {
             return false;
@@ -217,16 +222,39 @@ class Image
             $savePath = $imagePath;
         }
         $tmpPath = $imagePath . '.compress.tmp';
-        try {
-            $image = new Image($imagePath);
-            $image->compress($quality);
-            $image->saveTo($tmpPath);
+        if (self::compressAuto($imagePath, $tmpPath, $quality)) {
             if (filesize($tmpPath) >= $imageSize) {
                 copy($imagePath, $savePath);
                 unlink($tmpPath);
             } else {
                 rename($tmpPath, $savePath);
             }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 自动压缩图片（仅限于compressImage方法使用）
+     * @param string $imagePath
+     * @param string $savePath
+     * @param int $quality
+     * @return bool
+     */
+    private static function compressAuto(string $imagePath, string $savePath, int $quality = 100): bool
+    {
+        if (strtolower(pathinfo($imagePath, PATHINFO_EXTENSION)) === 'png') {
+            $minQuality = $quality - 20;
+            $compressedContent = shell_exec("pngquant --quality={$minQuality}-{$quality} --strip - < " . $imagePath);
+            if ($compressedContent) {
+                file_put_contents($savePath, $compressedContent);
+                return true;
+            }
+        }
+        try {
+            $image = new Image($imagePath);
+            $image->compress($quality);
+            $image->saveTo($savePath);
             return true;
         } catch (\ImagickException) {
             return false;

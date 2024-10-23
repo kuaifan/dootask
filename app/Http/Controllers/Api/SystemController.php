@@ -884,7 +884,8 @@ class SystemController extends AbstractController
                 "image64" => $image64,
                 "path" => $path,
                 "fileName" => $fileName,
-                "scale" => $scale
+                "scale" => $scale,
+                "quality" => 85
             ]);
         } else {
             $data = Base::upload([
@@ -892,7 +893,8 @@ class SystemController extends AbstractController
                 "type" => 'image',
                 "path" => $path,
                 "fileName" => $fileName,
-                "scale" => $scale
+                "scale" => $scale,
+                "quality" => 100
             ]);
         }
         if (Base::isError($data)) {
@@ -1028,6 +1030,7 @@ class SystemController extends AbstractController
                 "image64" => $image64,
                 "path" => $path,
                 "fileName" => $fileName,
+                "quality" => 85
             ]);
         } else {
             $data = Base::upload([
@@ -1035,6 +1038,7 @@ class SystemController extends AbstractController
                 "type" => 'file',
                 "path" => $path,
                 "fileName" => $fileName,
+                "quality" => 100
             ]);
         }
         //

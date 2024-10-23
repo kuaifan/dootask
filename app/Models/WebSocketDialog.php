@@ -738,18 +738,18 @@ class WebSocketDialog extends AbstractModel
                     "image64" => $image64,
                     "path" => $path,
                     "fileName" => $fileName,
+                    "quality" => 85
                 ]);
             } else if ($filePath) {
                 Base::makeDir(public_path($path));
                 copy($filePath, public_path($path) . basename($filePath));
             } else {
-                $setting = Base::setting('system');
                 $data = Base::upload([
                     "file" => $files,
                     "type" => 'more',
                     "path" => $path,
                     "fileName" => $fileName,
-                    "size" => ($setting['file_upload_limit'] ?: 0) * 1024,
+                    "quality" => 100,
                     "convertVideo" => true
                 ]);
             }

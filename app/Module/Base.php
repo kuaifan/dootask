@@ -2126,7 +2126,7 @@ class Base
 
     /**
      * image64图片保存
-     * @param array $param [ image64=带前缀的base64, path=>文件路径, fileName=>文件名称, scale=>[压缩原图宽,高, 压缩方式], autoThumb=>false不要自动生成缩略图, 'compress'=>是否压缩图片(默认true) ]
+     * @param array $param [ image64=带前缀的base64, path=>文件路径, fileName=>文件名称, scale=>[压缩原图宽,高, 压缩方式], autoThumb=>false不要自动生成缩略图, 'quality'=>压缩图片质量(默认：0不压缩) ]
      * @return array [name=>文件名, size=>文件大小(单位KB),file=>绝对地址, path=>相对地址, url=>全路径地址, ext=>文件后缀名]
      */
     public static function image64save($param)
@@ -2169,19 +2169,19 @@ class Base
                     "height" => -1,                                                     //图片高度
                     "ext" => $extension,                                                //文件后缀名
                 ];
-                //图片尺寸
+                // 图片尺寸
                 $paramet = getimagesize($array['file']);
                 $array['width'] = $paramet[0];
                 $array['height'] = $paramet[1];
-                //原图压缩
+                // 原图裁剪
                 if ($param['scale'] && is_array($param['scale'])) {
                     list($width, $height) = $param['scale'];
                     if (($width > 0 && $array['width'] > $width) || ($height > 0 && $array['height'] > $height)) {
                         $cut = ($width > 0 && $height > 0) ? 'cover' : 'percentage';
                         $cut = $param['scale'][2] ?? $cut;
-                        //图片压缩
+                        // 图片裁剪
                         $tmpFile = $array['file'] . '_tmp.jpg';
-                        if (Image::thumbImage($array['file'], $tmpFile, $width, $height, $cut)) {
+                        if (Image::thumbImage($array['file'], $tmpFile, $width, $height, 90, $cut)) {
                             $tmpSize = filesize($tmpFile);
                             if ($tmpSize > $fileSize) {
                                 @unlink($tmpFile);
@@ -2190,11 +2190,11 @@ class Base
                                 rename($tmpFile, $array['file']);
                             }
                         }
-                        //图片尺寸
+                        // 更新图片尺寸
                         $paramet = getimagesize($array['file']);
                         $array['width'] = $paramet[0];
                         $array['height'] = $paramet[1];
-                        //重命名
+                        // 重命名
                         if ($scaleName) {
                             $scaleName = str_replace(['{WIDTH}', '{HEIGHT}'], [$array['width'], $array['height']], $scaleName);
                             if (rename($array['file'], Base::rightDelete($array['file'], $fileName) . $scaleName)) {
@@ -2206,8 +2206,9 @@ class Base
                     }
                 }
                 // 压缩图片
-                if ($param['compress'] !== false) {
-                    Image::compressImage($array['file']);
+                $quality = intval($param['quality']);
+                if ($quality > 0) {
+                    Image::compressImage($array['file'], null, $quality);
                     $array['size'] = Base::twoFloat(filesize($array['file']) / 1024, true);
                 }
                 //生成缩略图
@@ -2216,7 +2217,7 @@ class Base
                     $param['autoThumb'] = false;
                 }
                 if ($param['autoThumb'] !== false) {
-                    if ($extension = Image::thumbImage($array['file'], $array['file'] . "_thumb.{*}", 320, 0)) {
+                    if ($extension = Image::thumbImage($array['file'], $array['file'] . "_thumb.{*}", 320, 0, 80)) {
                         $array['thumb'] .= "_thumb.{$extension}";
                     }
                 }
@@ -2238,7 +2239,7 @@ class Base
         size=>限制大小KB,
         autoThumb=>false不要自动生成缩略图,
         chmod=>权限(默认0644),
-        compress=>是否压缩图片(默认true) ,
+        quality=>压缩图片质量(默认：0不压缩),
         convertVideo=>转换视频格式(默认false) ,
      ]
      * @return array [
@@ -2304,10 +2305,15 @@ class Base
             if ($type && !in_array($extension, $type)) {
                 return Base::retError('文件格式错误，限制类型：' . implode(",", $type));
             }
+            $limitSize = intval($param['size']);
+            if ($limitSize <= 0) {
+                $fileUploadLimit = intval(Base::settingFind('system', 'file_upload_limit', 0));
+                $limitSize = $fileUploadLimit * 1024;
+            }
             try {
                 $fileSize = $file->getSize();
-                if ($param['size'] > 0 && $fileSize > $param['size'] * 1024) {
-                    return Base::retError('文件大小超限，最大限制：' . $param['size'] . 'KB');
+                if ($limitSize > 0 && $fileSize > $limitSize * 1024) {
+                    return Base::retError('文件大小超限，最大限制：' . $limitSize . 'KB');
                 }
             } catch (\Throwable) {
                 $fileSize = 0;
@@ -2353,7 +2359,7 @@ class Base
                 return Base::retError('上传失败');
             }
             @chmod($array['file'], $chmod);
-            //iOS照片颠倒处理
+            // iOS照片颠倒处理
             if (in_array($array['ext'], ['jpg', 'jpeg']) && function_exists('exif_read_data')) {
                 $data = imagecreatefromstring(file_get_contents($array['file']));
                 $exif = @exif_read_data($array['file']);
@@ -2402,19 +2408,19 @@ class Base
                 }
             }
             if (in_array($array['ext'], ['jpg', 'jpeg', 'webp', 'gif', 'png'])) {
-                //图片尺寸
+                // 获取图片尺寸
                 $paramet = getimagesize($array['file']);
                 $array['width'] = $paramet[0];
                 $array['height'] = $paramet[1];
-                //原图压缩
+                // 原图裁剪
                 if ($param['scale'] && is_array($param['scale'])) {
                     list($width, $height) = $param['scale'];
                     if (($width > 0 && $array['width'] > $width) || ($height > 0 && $array['height'] > $height)) {
                         $cut = ($width > 0 && $height > 0) ? 'cover' : 'percentage';
                         $cut = $param['scale'][2] ?? $cut;
-                        //图片压缩
+                        // 图片裁剪
                         $tmpFile = $array['file'] . '_tmp.jpg';
-                        if (Image::thumbImage($array['file'], $tmpFile, $width, $height, $cut)) {
+                        if (Image::thumbImage($array['file'], $tmpFile, $width, $height, 90, $cut)) {
                             $tmpSize = filesize($tmpFile);
                             if ($tmpSize > $fileSize) {
                                 @unlink($tmpFile);
@@ -2423,11 +2429,11 @@ class Base
                                 rename($tmpFile, $array['file']);
                             }
                         }
-                        //图片尺寸
+                        // 更新图片尺寸
                         $paramet = getimagesize($array['file']);
                         $array['width'] = $paramet[0];
                         $array['height'] = $paramet[1];
-                        //重命名
+                        // 重命名
                         if ($scaleName) {
                             $scaleName = str_replace(['{WIDTH}', '{HEIGHT}'], [$array['width'], $array['height']], $scaleName);
                             if (rename($array['file'], Base::rightDelete($array['file'], $fileName) . $scaleName)) {
@@ -2438,21 +2444,22 @@ class Base
                         }
                     }
                 }
-                //生成缩略图
+                // 生成缩略图
                 $array['thumb'] = $array['path'];
                 if ($array['ext'] === 'gif' && !isset($param['autoThumb'])) {
                     $param['autoThumb'] = false;
                 }
                 if ($param['autoThumb'] !== false) {
-                    if ($array['ext'] = Image::thumbImage($array['file'], $array['file'] . "_thumb.{*}", 320, 0)) {
+                    if ($array['ext'] = Image::thumbImage($array['file'], $array['file'] . "_thumb.{*}", 320, 0, 80)) {
                         $array['thumb'] .= "_thumb.{$array['ext']}";
                     }
                 }
                 $array['thumb'] = Base::fillUrl($array['thumb']);
             }
             // 压缩图片
-            if ($param['compress'] !== false) {
-                Image::compressImage($array['file']);
+            $quality = intval($param['quality']);
+            if ($quality > 0) {
+                Image::compressImage($array['file'], null, $quality);
                 $array['size'] = Base::twoFloat(filesize($array['file']) / 1024, true);
             }
             //
@@ -3010,13 +3017,13 @@ class Base
      * 保存图片到文件（同时压缩）
      * @param $path
      * @param $content
-     * @param $compress
+     * @param int $quality  压缩图片质量(默认：0不压缩)
      * @return bool
      */
-    public static function saveContentImage($path, $content, $compress = true) {
+    public static function saveContentImage($path, $content, int $quality = 0) {
         if (file_put_contents($path, $content)) {
-            if ($compress) {
-                Image::compressImage($path);
+            if ($quality > 0) {
+                Image::compressImage($path, null, $quality);
             }
             return true;
         }

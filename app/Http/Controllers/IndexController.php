@@ -197,7 +197,8 @@ class IndexController extends InvokeController
                     "file" => Request::file('file'),
                     "type" => 'publish',
                     "path" => $publishPath,
-                    "fileName" => true
+                    "fileName" => true,
+                    "quality" => 100
                 ]);
                 if (Base::isSuccess($res)) {
                     file_put_contents($latestFile, $publishVersion);

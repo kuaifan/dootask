@@ -146,7 +146,7 @@ class LdapUser extends Model
                 $path = "uploads/user/ldap/";
                 $file = "{$path}{$user->userid}.jpeg";
                 Base::makeDir(public_path($path));
-                if (Base::saveContentImage(public_path($file), $userimg)) {
+                if (Base::saveContentImage(public_path($file), $userimg, 90)) {
                     $user->userimg = $file;
                 }
             }
