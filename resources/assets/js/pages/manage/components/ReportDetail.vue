@@ -4,7 +4,7 @@
             {{ data.title }}
             <Icon v-if="loadIng > 0" type="ios-loading" class="icon-loading"></Icon>
         </div>
-        <div v-if="formLabelWidth === 'auto'" class="report-detail-context">
+        <div v-if="formOptions.labelWidth === 'auto'" class="report-detail-context">
             <Form class="report-form auto-form" label-width="auto" inline>
                 <FormItem :label="$L('汇报人')">
                     <UserAvatar :userid="data.userid" :size="28"/>
@@ -24,8 +24,8 @@
             </Form>
         </div>
         <div v-else class="report-detail-context">
-            <Form class="report-form" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth">
-                <template v-if="formLabelWidth !== 'auto'">
+            <Form class="report-form" v-bind="formOptions">
+                <template v-if="formOptions.labelWidth !== 'auto'">
                     <FormItem :label="$L('汇报人')">
                         <UserAvatar :userid="data.userid" :size="28"/>
                     </FormItem>
@@ -61,7 +61,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
+        ...mapState(['formOptions']),
     },
     watch: {
         'data.id': {

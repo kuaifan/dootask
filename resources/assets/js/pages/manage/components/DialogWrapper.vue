@@ -401,7 +401,7 @@
             v-model="modifyShow"
             :title="$L('修改资料')"
             :mask-closable="false">
-            <Form :model="modifyData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
+            <Form :model="modifyData" v-bind="formOptions" @submit.native.prevent>
                 <Alert v-if="modifyData.system_name" type="error" style="margin-bottom:18px">{{$L(`正在修改系统机器人：${modifyData.system_name}`)}}</Alert>
                 <FormItem prop="avatar" :label="$L('头像')">
                     <ImgUpload v-model="modifyData.avatar" :num="1" :width="512" :height="512" :whcut="1"/>
@@ -515,7 +515,7 @@
             v-model="todoSettingShow"
             :title="$L('设置待办')"
             :mask-closable="false">
-            <Form ref="todoSettingForm" :model="todoSettingData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
+            <Form ref="todoSettingForm" :model="todoSettingData" v-bind="formOptions" @submit.native.prevent>
                 <FormItem prop="type" :label="$L('当前会话')">
                     <RadioGroup v-model="todoSettingData.type" @on-change="onTypeChange">
                         <Radio label="all">{{$L('所有成员')}}</Radio>
@@ -573,7 +573,7 @@
             v-model="groupTransferShow"
             :title="$L('转让群主身份')"
             :mask-closable="false">
-            <Form :model="groupTransferData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
+            <Form :model="groupTransferData" v-bind="formOptions" @submit.native.prevent>
                 <FormItem prop="userid" :label="$L('新的群主')">
                     <UserSelect v-model="groupTransferData.userid" :disabledChoice="groupTransferData.disabledChoice" :multiple-max="1" :title="$L('选择新的群主')"/>
                 </FormItem>
@@ -886,9 +886,7 @@ export default {
             'keyboardType',
             'keyboardHeight',
             'safeAreaBottom',
-            'formLabelPosition',
-            'formLabelWidth',
-            'formLabelClassName'
+            'formOptions'
         ]),
 
         ...mapGetters(['isLoad']),

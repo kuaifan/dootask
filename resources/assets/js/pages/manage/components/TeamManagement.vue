@@ -174,7 +174,7 @@
             v-model="departmentShow"
             :title="$L(departmentData.id > 0 ? '修改部门' : '新建部门')"
             :mask-closable="false">
-            <Form ref="addProject" :model="departmentData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
+            <Form ref="addProject" :model="departmentData" v-bind="formOptions" @submit.native.prevent>
                 <FormItem prop="name" :label="$L('部门名称')">
                     <Input type="text" v-model="departmentData.name" :placeholder="$L('请输入部门名称')"></Input>
                 </FormItem>
@@ -224,7 +224,7 @@
         <Modal
             v-model="checkinMacEditShow"
             :title="$L('修改签到MAC地址')">
-            <Form :model="checkinMacEditData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
+            <Form :model="checkinMacEditData" v-bind="formOptions" @submit.native.prevent>
                 <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${checkinMacEditData.userid}, ${checkinMacEditData.nickname}】MAC地址修改。`)}}</Alert>
                 <Row class="team-department-checkin-item">
                     <Col span="12">{{$L('设备MAC地址')}}</Col>
@@ -256,7 +256,7 @@
          <Modal
             v-model="checkinFaceEditShow"
             :title="$L('修改签到人脸图片')">
-            <Form :model="checkinMacEditData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
+            <Form :model="checkinMacEditData" v-bind="formOptions" @submit.native.prevent>
                 <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${checkinFaceEditData.userid}, ${checkinFaceEditData.nickname}】人脸图片修改。`)}}</Alert>
                 <Row class="team-department-checkin-item">
                     <Col span="24">{{$L('人脸图片')}}</Col>
@@ -278,7 +278,7 @@
         <Modal
             v-model="departmentEditShow"
             :title="$L('修改部门')">
-            <Form :model="departmentEditData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
+            <Form :model="departmentEditData" v-bind="formOptions" @submit.native.prevent>
                 <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${departmentEditData.userid}, ${departmentEditData.nickname}】部门修改。`)}}</Alert>
                 <FormItem :label="$L('修改部门')">
                     <Select v-model="departmentEditData.department" multiple :multiple-max="10" :placeholder="$L('留空为默认部门')">
@@ -296,7 +296,7 @@
         <Modal
             v-model="disableShow"
             :title="$L('操作离职')">
-            <Form :model="disableData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
+            <Form :model="disableData" v-bind="formOptions" @submit.native.prevent>
                 <Alert type="error" style="margin-bottom:18px">{{$L(`正在进行帐号【ID:${disableData.userid}, ${disableData.nickname}】离职操作。`)}}</Alert>
                 <FormItem :label="$L('离职时间')">
                     <DatePicker
@@ -902,7 +902,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
+        ...mapState(['formOptions']),
 
         departmentParentDisabled() {
             return !!(this.departmentData.id > 0 && this.departmentList.find(({parent_id}) => parent_id == this.departmentData.id));

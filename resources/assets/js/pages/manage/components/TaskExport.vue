@@ -3,7 +3,7 @@
         v-model="show"
         :title="$L('导出任务统计')"
         :mask-closable="false">
-        <Form ref="exportTask" :model="formData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth"  @submit.native.prevent>
+        <Form ref="exportTask" :model="formData" v-bind="formOptions"  @submit.native.prevent>
             <FormItem :label="$L('导出成员')">
                 <UserSelect v-model="formData.userid" :multiple-max="100" avatar-name show-disable :title="$L('请选择成员')"/>
                 <div class="form-tip">{{$L('每次最多选择导出100个成员')}}</div>
@@ -85,7 +85,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
+        ...mapState(['formOptions']),
     },
 
     methods: {

@@ -1,5 +1,5 @@
 <template>
-    <Form class="report-edit" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
+    <Form class="report-edit" v-bind="formOptions" @submit.native.prevent>
         <FormItem :label="$L('汇报类型')">
             <RadioGroup
                 type="button"
@@ -97,7 +97,7 @@ export default {
         },
     },
     computed: {
-        ...mapState(['formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
+        ...mapState(['formOptions']),
     },
     methods: {
         handleSubmit() {

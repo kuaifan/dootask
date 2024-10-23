@@ -188,7 +188,7 @@
 
         <!--评论-->
         <Modal v-model="commentShow" :title="$L('评论')" :mask-closable="false" class="page-approve-initiate">
-            <Form ref="initiateRef" :model="commentData" :rules="commentRule" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
+            <Form ref="initiateRef" :model="commentData" :rules="commentRule" v-bind="formOptions" @submit.native.prevent>
                 <FormItem prop="content" :label="$L('内容')">
                     <Input type="textarea" v-model="commentData.content"></Input>
                 </FormItem>
@@ -255,7 +255,7 @@ export default {
         },
     },
     computed: {
-        ...mapState(['formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
+        ...mapState(['formOptions']),
 
         isShowAgreeBtn() {
             return (this.datas.candidate || '').split(',').indexOf(this.userId + '') != -1 && !this.datas.is_finished

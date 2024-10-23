@@ -62,7 +62,7 @@
             </div>
         </div>
 
-        <Form v-if="advanced" class="task-add-advanced" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
+        <Form v-if="advanced" class="task-add-advanced" v-bind="formOptions" @submit.native.prevent>
             <FormItem :label="$L('计划时间')">
                 <DatePicker
                     v-model="addData.times"
@@ -285,7 +285,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheProjects', 'projectId', 'cacheColumns', 'taskPriority', 'formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
+        ...mapState(['cacheProjects', 'projectId', 'cacheColumns', 'taskPriority', 'formOptions']),
 
         taskDays() {
             const {times} = this.addData;

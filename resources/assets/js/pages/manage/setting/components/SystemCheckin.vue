@@ -4,9 +4,7 @@
             ref="formData"
             :model="formData"
             :rules="ruleData"
-            :class="formLabelClassName"
-            :labelPosition="formLabelPosition"
-            :labelWidth="formLabelWidth"
+            v-bind="formOptions"
             @submit.native.prevent>
             <div class="block-setting-box">
                 <h3>{{ $L('签到设置') }}</h3>
@@ -151,7 +149,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
+        ...mapState(['formOptions']),
     },
 
     methods: {

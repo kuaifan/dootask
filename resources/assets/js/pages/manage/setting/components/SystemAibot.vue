@@ -4,9 +4,7 @@
             ref="formData"
             :model="formData"
             :rules="ruleData"
-            :class="formLabelClassName"
-            :labelPosition="formLabelPosition"
-            :labelWidth="formLabelWidth"
+            v-bind="formOptions"
             @submit.native.prevent>
             <div class="block-setting-box" v-if="type=='all' || type=='ChatGPT'">
                 <h3>ChatGPT</h3>
@@ -149,7 +147,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
+        ...mapState(['formOptions']),
     },
 
     methods: {

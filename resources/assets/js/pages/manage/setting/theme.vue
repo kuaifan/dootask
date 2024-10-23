@@ -1,6 +1,6 @@
 <template>
     <div class="setting-item submit">
-        <Form ref="formData" :model="formData" :rules="ruleData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
+        <Form ref="formData" :model="formData" :rules="ruleData" v-bind="formOptions" @submit.native.prevent>
             <FormItem :label="$L('选择主题')" prop="theme">
                 <Select v-model="formData.theme" :placeholder="$L('选项主题')">
                     <Option v-for="(item, index) in themeList" :value="item.value" :key="index">{{$L(item.name)}}</Option>
@@ -38,9 +38,7 @@ export default {
         ...mapState([
             'themeConf',
             'themeList',
-            'formLabelPosition',
-            'formLabelWidth',
-            'formLabelClassName'
+            'formOptions'
         ])
     },
 

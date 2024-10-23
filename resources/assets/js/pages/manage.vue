@@ -211,9 +211,7 @@
                 ref="addProject"
                 :model="addData"
                 :rules="addRule"
-                :class="formLabelClassName"
-                :labelPosition="formLabelPosition"
-                :labelWidth="formLabelWidth"
+                v-bind="formOptions"
                 @submit.native.prevent>
                 <FormItem prop="name" :label="$L('项目名称')">
                     <Input ref="projectName" type="text" v-model="addData.name"></Input>
@@ -256,7 +254,7 @@
             v-model="createGroupShow"
             :title="$L('创建群组')"
             :mask-closable="false">
-            <Form :model="createGroupData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth"  @submit.native.prevent>
+            <Form :model="createGroupData" v-bind="formOptions"  @submit.native.prevent>
                 <FormItem prop="avatar" :label="$L('群头像')">
                     <ImgUpload v-model="createGroupData.avatar" :num="1" :width="512" :height="512" :whcut="1"/>
                 </FormItem>
@@ -536,9 +534,7 @@ export default {
 
             'okrWindow',
 
-            'formLabelPosition',
-            'formLabelWidth',
-            'formLabelClassName'
+            'formOptions'
         ]),
 
         ...mapGetters(['dashboardTask']),

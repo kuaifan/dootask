@@ -4,9 +4,7 @@
             ref="formData"
             :model="formData"
             :rules="ruleData"
-            :class="formLabelClassName"
-            :labelPosition="formLabelPosition"
-            :labelWidth="formLabelWidth"
+            v-bind="formOptions"
             @submit.native.prevent>
             <FormItem :label="$L('头像')" prop="userimg">
                 <ImgUpload v-model="formData.userimg" :num="1" :width="512" :height="512" :whcut="1"></ImgUpload>
@@ -68,7 +66,7 @@ export default {
         this.initData();
     },
     computed: {
-        ...mapState(['userInfo', 'formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
+        ...mapState(['userInfo', 'formOptions']),
     },
     watch: {
         userInfo() {

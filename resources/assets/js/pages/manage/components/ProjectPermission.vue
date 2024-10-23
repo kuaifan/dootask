@@ -8,89 +8,98 @@
             </div>
         </div>
         <div class="permission-content">
-            <Form :model="formData" label-width="90" label-position="right">
+            <Form :model="formData" v-bind="formOptions" @submit.native.prevent>
                 <!-- 项目权限 -->
-                <div class="project-permission-title" >{{$L('任务列权限')}}:</div>
-                <FormItem :label="$L('添加列')">
-                    <CheckboxGroup v-model="formData.task_list_add">
-                        <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
-                        <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
-                    </CheckboxGroup>
-                </FormItem>
-                <FormItem :label="$L('修改列')">
-                    <CheckboxGroup v-model="formData.task_list_update">
-                        <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
-                        <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
-                    </CheckboxGroup>
-                </FormItem>
-                <FormItem :label="$L('删除列')">
-                    <CheckboxGroup v-model="formData.task_list_remove">
-                        <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
-                        <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
-                    </CheckboxGroup>
-                </FormItem>
-                <FormItem :label="$L('排序列')">
-                    <CheckboxGroup v-model="formData.task_list_sort">
-                        <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
-                        <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
-                    </CheckboxGroup>
-                </FormItem>
+                <div class="block-setting-box">
+                    <h3>{{ $L('任务列权限') }}</h3>
+                    <div class="form-box">
+                        <FormItem :label="$L('添加列')">
+                            <CheckboxGroup v-model="formData.task_list_add">
+                                <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
+                                <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
+                            </CheckboxGroup>
+                        </FormItem>
+                        <FormItem :label="$L('修改列')">
+                            <CheckboxGroup v-model="formData.task_list_update">
+                                <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
+                                <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
+                            </CheckboxGroup>
+                        </FormItem>
+                        <FormItem :label="$L('删除列')">
+                            <CheckboxGroup v-model="formData.task_list_remove">
+                                <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
+                                <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
+                            </CheckboxGroup>
+                        </FormItem>
+                        <FormItem :label="$L('排序列')">
+                            <CheckboxGroup v-model="formData.task_list_sort">
+                                <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
+                                <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
+                            </CheckboxGroup>
+                        </FormItem>
+                    </div>
+                </div>
+
                 <!-- 任务权限 -->
-                <div class="project-permission-title" >{{$L('任务权限')}}:</div>
-                <FormItem :label="$L('添加任务')">
-                    <CheckboxGroup v-model="formData.task_add">
-                        <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
-                        <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
-                    </CheckboxGroup>
-                </FormItem>
-                <FormItem :label="$L('修改任务')">
-                    <CheckboxGroup v-model="formData.task_update">
-                        <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
-                        <Checkbox :label="3">{{ $L('任务负责人') }}</Checkbox>
-                        <Checkbox :label="4">{{ $L('任务协助人') }}</Checkbox>
-                        <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
-                    </CheckboxGroup>
-                </FormItem>
-                <FormItem :label="$L('修改时间')">
-                    <CheckboxGroup v-model="formData.task_time">
-                        <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
-                        <Checkbox :label="3">{{ $L('任务负责人') }}</Checkbox>
-                        <Checkbox :label="4">{{ $L('任务协助人') }}</Checkbox>
-                        <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
-                    </CheckboxGroup>
-                </FormItem>
-                <FormItem :label="$L('修改状态')">
-                    <CheckboxGroup v-model="formData.task_status">
-                        <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
-                        <Checkbox :label="3">{{ $L('任务负责人') }}</Checkbox>
-                        <Checkbox :label="4">{{ $L('任务协助人') }}</Checkbox>
-                        <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
-                    </CheckboxGroup>
-                </FormItem>
-                <FormItem :label="$L('归档任务')">
-                    <CheckboxGroup v-model="formData.task_archived">
-                        <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
-                        <Checkbox :label="3">{{ $L('任务负责人') }}</Checkbox>
-                        <Checkbox :label="4">{{ $L('任务协助人') }}</Checkbox>
-                        <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
-                    </CheckboxGroup>
-                </FormItem>
-                <FormItem :label="$L('删除任务')">
-                    <CheckboxGroup v-model="formData.task_remove">
-                        <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
-                        <Checkbox :label="3">{{ $L('任务负责人') }}</Checkbox>
-                        <Checkbox :label="4">{{ $L('任务协助人') }}</Checkbox>
-                        <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
-                    </CheckboxGroup>
-                </FormItem>
-                <FormItem :label="$L('移动任务')">
-                    <CheckboxGroup v-model="formData.task_move">
-                        <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
-                        <Checkbox :label="3">{{ $L('任务负责人') }}</Checkbox>
-                        <Checkbox :label="4">{{ $L('任务协助人') }}</Checkbox>
-                        <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
-                    </CheckboxGroup>
-                </FormItem>
+                <div class="block-setting-box">
+                    <h3>{{ $L('任务权限') }}</h3>
+                    <div class="form-box">
+                        <FormItem :label="$L('添加任务')">
+                            <CheckboxGroup v-model="formData.task_add">
+                                <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
+                                <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
+                            </CheckboxGroup>
+                        </FormItem>
+                        <FormItem :label="$L('修改任务')">
+                            <CheckboxGroup v-model="formData.task_update">
+                                <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
+                                <Checkbox :label="3">{{ $L('任务负责人') }}</Checkbox>
+                                <Checkbox :label="4">{{ $L('任务协助人') }}</Checkbox>
+                                <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
+                            </CheckboxGroup>
+                        </FormItem>
+                        <FormItem :label="$L('修改时间')">
+                            <CheckboxGroup v-model="formData.task_time">
+                                <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
+                                <Checkbox :label="3">{{ $L('任务负责人') }}</Checkbox>
+                                <Checkbox :label="4">{{ $L('任务协助人') }}</Checkbox>
+                                <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
+                            </CheckboxGroup>
+                        </FormItem>
+                        <FormItem :label="$L('修改状态')">
+                            <CheckboxGroup v-model="formData.task_status">
+                                <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
+                                <Checkbox :label="3">{{ $L('任务负责人') }}</Checkbox>
+                                <Checkbox :label="4">{{ $L('任务协助人') }}</Checkbox>
+                                <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
+                            </CheckboxGroup>
+                        </FormItem>
+                        <FormItem :label="$L('归档任务')">
+                            <CheckboxGroup v-model="formData.task_archived">
+                                <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
+                                <Checkbox :label="3">{{ $L('任务负责人') }}</Checkbox>
+                                <Checkbox :label="4">{{ $L('任务协助人') }}</Checkbox>
+                                <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
+                            </CheckboxGroup>
+                        </FormItem>
+                        <FormItem :label="$L('删除任务')">
+                            <CheckboxGroup v-model="formData.task_remove">
+                                <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
+                                <Checkbox :label="3">{{ $L('任务负责人') }}</Checkbox>
+                                <Checkbox :label="4">{{ $L('任务协助人') }}</Checkbox>
+                                <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
+                            </CheckboxGroup>
+                        </FormItem>
+                        <FormItem :label="$L('移动任务')">
+                            <CheckboxGroup v-model="formData.task_move">
+                                <Checkbox :label="1" disabled>{{ $L('项目负责人') }}</Checkbox>
+                                <Checkbox :label="3">{{ $L('任务负责人') }}</Checkbox>
+                                <Checkbox :label="4">{{ $L('任务协助人') }}</Checkbox>
+                                <Checkbox :label="2">{{ $L('项目成员') }}</Checkbox>
+                            </CheckboxGroup>
+                        </FormItem>
+                    </div>
+                </div>
             </Form>
         </div>
         <div slot="footer" class="project-permission-footer">
@@ -101,6 +110,8 @@
 </template>
 
 <script>
+
+import {mapState} from "vuex";
 
 export default {
     name: "ProjectPermission",
@@ -126,11 +137,6 @@ export default {
         }
     },
 
-    mounted() {
-
-    },
-
-
     watch: {
         projectId: {
             handler(val) {
@@ -140,6 +146,10 @@ export default {
             },
             immediate: true
         },
+    },
+
+    computed: {
+        ...mapState(['formOptions'])
     },
 
     methods: {

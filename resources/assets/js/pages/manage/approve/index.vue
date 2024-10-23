@@ -172,7 +172,7 @@
 
         <!--发起-->
         <Modal v-model="addShow" :title="$L(addTitle)" :mask-closable="false" class="page-approve-initiate">
-            <Form ref="initiateRef" :model="addData" :rules="addRule" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
+            <Form ref="initiateRef" :model="addData" :rules="addRule" v-bind="formOptions" @submit.native.prevent>
                 <FormItem v-if="departmentList.length>1" prop="department_id" :label="$L('选择部门')">
                     <Select v-model="addData.department_id" :placeholder="$L('请选择部门')">
                         <Option v-for="(item, index) in departmentList" :value="item.id" :key="index">{{ item.name }}</Option>
@@ -341,7 +341,7 @@ export default {
         }
     },
     computed: {
-        ...mapState(['wsMsg', 'userInfo', 'userIsAdmin', 'windowWidth', 'formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
+        ...mapState(['wsMsg', 'userInfo', 'userIsAdmin', 'windowWidth', 'formOptions']),
         departmentList() {
             let departmentNames = (this.userInfo.department_name || '').split(',');
             return (this.userInfo.department || []).map((h, index) => {

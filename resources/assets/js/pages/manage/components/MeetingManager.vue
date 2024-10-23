@@ -6,7 +6,7 @@
             :title="$L(addData.type === 'join' ? '加入会议' : '新会议')"
             :mask-closable="false"
             :closable="!addData.sharekey">
-            <Form ref="addForm" :model="addData" :rules="addRule" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
+            <Form ref="addForm" :model="addData" :rules="addRule" v-bind="formOptions" @submit.native.prevent>
                 <template v-if="addData.type === 'join'">
                     <!-- 加入会议 -->
                     <FormItem v-if="addData.name" prop="userids" :label="$L('会议主题')">
@@ -108,7 +108,7 @@
             v-model="invitationShow"
             :title="$L('邀请加入')"
             :mask-closable="false">
-            <Form ref="invitationForm" :model="invitationData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
+            <Form ref="invitationForm" :model="invitationData" v-bind="formOptions" @submit.native.prevent>
                 <FormItem prop="userids" :label="$L('邀请成员')">
                     <UserSelect v-model="invitationData.userids" :multiple-max="20" :title="$L('选择邀请成员')"/>
                 </FormItem>
@@ -179,7 +179,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['meetingWindow', 'formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
+        ...mapState(['meetingWindow', 'formOptions']),
     },
 
     mounted() {

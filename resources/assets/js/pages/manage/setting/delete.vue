@@ -1,7 +1,7 @@
 <template>
     <div class="setting-item submit">
         <Loading v-if="configLoad > 0"/>
-        <Form v-else ref="formDatum" :model="formDatum" :rules="ruleDatum" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
+        <Form v-else ref="formDatum" :model="formDatum" :rules="ruleDatum" v-bind="formOptions" @submit.native.prevent>
             <FormItem :label="$L('帐号')" prop="email">
                 <Input v-if="isRegVerify == 1" v-model="formDatum.email"
                        :class="count > 0 ? 'setting-send-input':'setting-input'" search @on-search="sendEmailCode"
@@ -116,7 +116,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['userInfo', 'formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
+        ...mapState(['userInfo', 'formOptions']),
 
         appTitle() {
             return window.systemInfo.title || "DooTask";

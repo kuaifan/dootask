@@ -28,9 +28,11 @@ export default {
     windowPortrait: windowOrientation === 'portrait',   // 竖屏
 
     // 表单布局
-    formLabelClassName: windowWidth > 576 ? '' : 'form-label-weight-bold',
-    formLabelPosition: windowWidth > 576 ? 'right' : 'top',
-    formLabelWidth: windowWidth > 576 ? 'auto' : '',
+    formOptions: {
+        class: windowWidth > 576 ? '' : 'form-label-weight-bold',
+        labelPosition: windowWidth > 576 ? 'right' : 'top',
+        labelWidth: windowWidth > 576 ? 'auto' : '',
+    },
 
     // 键盘状态（仅iOS）
     keyboardType: null, // show|hide

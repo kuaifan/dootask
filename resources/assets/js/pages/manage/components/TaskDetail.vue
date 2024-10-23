@@ -485,9 +485,7 @@
                 ref="formDelayTaskRef"
                 :model="delayTaskForm"
                 :rules="delayTaskRule"
-                :class="formLabelClassName"
-                :labelPosition="formLabelPosition.replace('right', 'left')"
-                :labelWidth="formLabelWidth"
+                v-bind="formOptions"
                 @submit.native.prevent>
                 <FormItem :label="$L('延期时长')" prop="time">
                     <Input type="number" v-model="delayTaskForm.time" :placeholder="$L('请输入时长')">
@@ -516,7 +514,7 @@
             :styles="{
                 width: '90%',
                 maxWidth: '700px'
-            }">
+            }">v-bind="formOptions"
             <TaskContentHistory v-if="historyShow" :task-id="taskDetail.id" :task-name="taskDetail.name"/>
             <div slot="footer">
                 <Button @click="historyShow=false">{{$L('关闭')}}</Button>
@@ -699,9 +697,7 @@ export default {
 
             'dialogId',
 
-            'formLabelPosition',
-            'formLabelWidth',
-            'formLabelClassName'
+            'formOptions'
         ]),
 
         projectName() {

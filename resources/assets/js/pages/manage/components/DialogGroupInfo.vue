@@ -39,7 +39,7 @@
             v-model="addShow"
             :title="$L('添加群成员')"
             :mask-closable="false">
-            <Form :model="addData" :class="formLabelClassName" :labelPosition="formLabelPosition" :labelWidth="formLabelWidth" @submit.native.prevent>
+            <Form :model="addData" v-bind="formOptions" @submit.native.prevent>
                 <FormItem prop="userids" :label="$L('新增成员')">
                     <UserSelect v-model="addData.userids" :disabledChoice="addData.disabledChoice" :multiple-max="100" show-bot :title="$L('选择成员')"/>
                     <div v-if="dialogData.group_type === 'department'" class="form-tip">{{$L('此操作仅加入群成员并不会加入部门')}}</div>
@@ -86,7 +86,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheDialogs', 'cacheUserBasic', 'userIsAdmin', 'formLabelPosition', 'formLabelWidth', 'formLabelClassName']),
+        ...mapState(['cacheDialogs', 'cacheUserBasic', 'userIsAdmin', 'formOptions']),
 
         dialogData() {
             return this.cacheDialogs.find(({id}) => id == this.dialogId) || {};
