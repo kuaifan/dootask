@@ -147,18 +147,26 @@ class DialogController extends AbstractController
         }
         // 搜索消息会话
         if (count($list) < 20) {
-            $msgs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at', 'm.id as search_msg_id'])
-                ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
-                ->join('web_socket_dialog_msgs as m', 'web_socket_dialogs.id', '=', 'm.dialog_id')
-                ->where('u.userid', $user->userid)
-                ->where('m.key', 'LIKE', "%{$key}%")
-                ->orderByDesc('m.id')
+            $msgs = WebSocketDialogMsg::select(['web_socket_dialog_msgs.*'])
+                ->join('web_socket_dialog_msg_reads as r', 'r.msg_id', '=', 'web_socket_dialog_msgs.id')
+                ->where('r.userid', $user->userid)
+                ->where('r.live', 1)
+                ->where('web_socket_dialog_msgs.key', 'LIKE', "%{$key}%")
+                ->orderByDesc('r.msg_id')
                 ->take(20 - count($list))
                 ->get();
-            $msgs->transform(function (WebSocketDialog $item) use ($user) {
-                return $item->formatData($user->userid);
-            });
-            $list = array_merge($list, $msgs->toArray());
+            foreach ($msgs as $msg) {
+                $item = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
+                    ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
+                    ->where('web_socket_dialogs.id', $msg->dialog_id)
+                    ->first();
+                if (empty($item)) {
+                    continue;
+                }
+                $item->search_msg_id = $msg->id;
+                $item->last_msg = $msg;
+                $list[] = $item->formatData($user->userid);
+            }
         }
         //
         return Base::retSuccess('success', $list);

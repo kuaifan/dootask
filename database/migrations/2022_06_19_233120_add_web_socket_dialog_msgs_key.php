@@ -26,11 +26,7 @@ class AddWebSocketDialogMsgsKey extends Migration
             \App\Models\WebSocketDialogMsg::chunkById(100, function ($lists) {
                 /** @var \App\Models\WebSocketDialogMsg $item */
                 foreach ($lists as $item) {
-                    $key = $item->generateMsgKey();
-                    if ($key) {
-                        $item->key = $key;
-                        $item->save();
-                    }
+                    $item->generateKeyAndSave();
                 }
             });
         }

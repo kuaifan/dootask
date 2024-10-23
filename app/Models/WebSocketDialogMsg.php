@@ -200,6 +200,7 @@ class WebSocketDialogMsg extends AbstractModel
                     'msg_id' => $this->id,
                     'userid' => $userid,
                     'after' => 1,
+                    'live' => 1,
                 ]);
                 if ($msgRead->saveOrIgnore()) {
                     $this->send = WebSocketDialogMsgRead::whereMsgId($this->id)->count();
@@ -638,16 +639,35 @@ class WebSocketDialogMsg extends AbstractModel
     }
 
     /**
-     * 生成关键词
-     * @return string
+     * 生成关键词并保存
+     * @return void
      */
-    public function generateMsgKey()
+    public function generateKeyAndSave(): void
     {
-        return match ($this->type) {
-            'text' => str_replace("&nbsp;", " ", strip_tags($this->msg['text'])),
-            'meeting', 'file' => $this->msg['name'],
-            default => '',
-        };
+        $key = '';
+        switch ($this->type) {
+            case 'text':
+            case 'vote':
+            case 'word-chain':
+                $key = strip_tags($this->msg['text']);
+                break;
+
+            case 'file':
+                $key = $this->msg['name'];
+                $key = preg_replace("/^(image|\d+)\.(png|jpg|jpeg|webp|gif)$/i", "", $key);
+                $key = preg_replace("/^LongText-(.*?)/i", "", $key);
+                break;
+
+            case 'meeting':
+                $key = $this->msg['name'];
+                break;
+        }
+        $key = str_replace(["&quot;", "&amp;", "&lt;", "&gt;"], "", $key);
+        $key = str_replace(["\r", "\n", "\t", "&nbsp;"], " ", $key);
+        $key = preg_replace("/^\/[A-Za-z]+/", " ", $key);
+        $key = preg_replace("/\s+/", " ", $key);
+        $this->key = trim($key);
+        $this->save();
     }
 
     /**
@@ -997,8 +1017,7 @@ class WebSocketDialogMsg extends AbstractModel
                 'modify' => $modify,
             ];
             $dialogMsg->updateInstance($updateData);
-            $dialogMsg->key = $dialogMsg->generateMsgKey();
-            $dialogMsg->save();
+            $dialogMsg->generateKeyAndSave();
             //
             WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($sender)->whereHide(1)->change([
                 'hide' => 0,    // 修改消息时，显示会话（仅自己）
@@ -1045,8 +1064,7 @@ class WebSocketDialogMsg extends AbstractModel
             ]);
             AbstractModel::transaction(function () use ($dialogMsg) {
                 $dialogMsg->send = 1;
-                $dialogMsg->key = $dialogMsg->generateMsgKey();
-                $dialogMsg->save();
+                $dialogMsg->generateKeyAndSave();
                 //
                 if ($dialogMsg->type === 'meeting') {
                     MeetingMsg::createInstance([

@@ -128,6 +128,7 @@ class WebSocketDialogMsgTask extends AbstractTask
                     'mention' => $mention,
                     'silence' => $silence,
                     'dot' => $dot,
+                    'live' => 1,
                 ])->saveOrIgnore();
                 $array[$userid] = [
                     'userid' => $userid,

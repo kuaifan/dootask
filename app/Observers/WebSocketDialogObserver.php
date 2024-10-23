@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\Deleted;
 use App\Models\WebSocketDialog;
+use App\Models\WebSocketDialogMsgRead;
 use App\Models\WebSocketDialogUser;
 
 class WebSocketDialogObserver
@@ -39,6 +40,7 @@ class WebSocketDialogObserver
     public function deleted(WebSocketDialog $webSocketDialog)
     {
         Deleted::record('dialog', $webSocketDialog->id, $this->userids($webSocketDialog));
+        WebSocketDialogMsgRead::whereDialogId($webSocketDialog->id)->update(['live' => 0]);
     }
 
     /**
@@ -49,7 +51,9 @@ class WebSocketDialogObserver
      */
     public function restored(WebSocketDialog $webSocketDialog)
     {
-        Deleted::forget('dialog', $webSocketDialog->id, $this->userids($webSocketDialog));
+        $userids = $this->userids($webSocketDialog);
+        Deleted::forget('dialog', $webSocketDialog->id, $userids);
+        WebSocketDialogMsgRead::whereDialogId($webSocketDialog->id)->whereIn('userid', $userids)->update(['live' => 1]);
     }
 
     /**
