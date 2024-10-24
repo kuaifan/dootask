@@ -549,6 +549,9 @@ body {
         margin-top: 20px;
         .select-box {
             margin-right: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 2px;
             .ivu-select {
                 width: auto;
                 max-width: 200px;

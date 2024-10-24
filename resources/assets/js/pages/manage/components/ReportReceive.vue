@@ -132,6 +132,9 @@ export default {
                 key: 'type',
                 sortable: true,
                 width: 90,
+                render: (h, {row}) => {
+                    return h('AutoTip', this.$L(row.type === 'daily' ? '日报' : '周报'))
+                }
             }, {
                 title: this.$L("接收时间"),
                 key: 'receive_at',

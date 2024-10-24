@@ -88,6 +88,9 @@ export default {
                 key: 'type',
                 align: 'center',
                 width: 90,
+                render: (h, {row}) => {
+                    return h('AutoTip', this.$L(row.type === 'daily' ? '日报' : '周报'))
+                }
             }, {
                 title: this.$L("汇报时间"),
                 key: 'created_at',

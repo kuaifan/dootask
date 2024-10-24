@@ -589,7 +589,7 @@ class WebSocketDialogMsg extends AbstractModel
                 return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
 
             case 'notice':
-                return $data['msg']['notice'];
+                return Doo::translate($data['msg']['notice']);
 
             case 'template':
                 return $this->previewTemplateMsg($data['msg']);

@@ -326,6 +326,10 @@ class Extranet
                     $text = "心灵鸡汤：{$data}";
                 }
                 break;
+
+            default:
+                $text = "";
+                break;
         }
         return $text;
     }

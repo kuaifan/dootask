@@ -190,6 +190,7 @@
 
     .report-users {
         display: flex;
+        flex-wrap: wrap;
         align-items: flex-start;
         line-height: 34px;
 

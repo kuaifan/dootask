@@ -82,15 +82,6 @@ class Report extends AbstractModel
         return $this->hasOne(User::class, "userid", "userid");
     }
 
-    public function getTypeAttribute($value): string
-    {
-        return match ($value) {
-            Report::WEEKLY => "周报",
-            Report::DAILY => "日报",
-            default => "",
-        };
-    }
-
     public function getContentAttribute($value): string
     {
         return htmlspecialchars_decode($value);

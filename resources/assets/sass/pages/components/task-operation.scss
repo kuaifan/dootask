@@ -35,6 +35,9 @@
                     .item {
                         display: flex;
                         align-items: center;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
 
                         > i {
                             flex-shrink: 0;

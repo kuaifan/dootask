@@ -325,7 +325,7 @@ export default {
                 "project_flow_item": [
                     {
                         "id": -10,
-                        "name": "待处理",
+                        "name": this.$L("待处理"),
                         "status": "start",
                         "turns": [-10, -11, -12, -13, -14],
                         "userids": [],
@@ -335,7 +335,7 @@ export default {
                     },
                     {
                         "id": -11,
-                        "name": "进行中",
+                        "name": this.$L("进行中"),
                         "status": "progress",
                         "turns": [-10, -11, -12, -13, -14],
                         "userids": [],
@@ -345,7 +345,7 @@ export default {
                     },
                     {
                         "id": -12,
-                        "name": "待测试",
+                        "name": this.$L("待测试"),
                         "status": "test",
                         "turns": [-10, -11, -12, -13, -14],
                         "userids": [],
@@ -355,7 +355,7 @@ export default {
                     },
                     {
                         "id": -13,
-                        "name": "已完成",
+                        "name": this.$L("已完成"),
                         "status": "end",
                         "turns": [-10, -11, -12, -13, -14],
                         "userids": [],
@@ -365,7 +365,7 @@ export default {
                     },
                     {
                         "id": -14,
-                        "name": "已取消",
+                        "name": this.$L("已取消"),
                         "status": "end",
                         "turns": [-10, -11, -12, -13, -14],
                         "userids": [],

@@ -199,12 +199,16 @@
 }
 
 .browse-list {
-    max-height: 540px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 20px;
+    max-height: 520px;
     overflow: auto;
 
     .browse-item {
-        margin: 10px 15px;
-        display: inline-block;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         text-align: center;
         cursor: pointer;
         position: relative;

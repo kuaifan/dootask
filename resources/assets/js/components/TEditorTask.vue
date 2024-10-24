@@ -27,7 +27,7 @@
                     <DropdownItem v-if="operateMenu.link" @click.native="onLinkPreview">{{ $L('打开链接') }}</DropdownItem>
                     <DropdownItem v-if="operateMenu.img" @click.native="onImagePreview">{{ $L('查看图片') }}</DropdownItem>
                     <DropdownItem @click.native="onEditing">{{ $L('编辑描述') }}</DropdownItem>
-                    <DropdownItem @click.native="onHistory">{{ $L('历史记录') }}</DropdownItem>
+                    <DropdownItem v-if="operateMenu.history" @click.native="onHistory">{{ $L('历史记录') }}</DropdownItem>
                 </DropdownMenu>
             </Dropdown>
         </div>
@@ -109,6 +109,7 @@ export default {
                 checked: null,
                 link: null,
                 img: null,
+                history: true
             },
 
             listener: null,
@@ -125,6 +126,7 @@ export default {
             }
             parent = parent.parentNode;
         }
+        this.operateMenu.history = typeof this.$listeners['on-history'] === "function";
     },
 
     beforeDestroy() {

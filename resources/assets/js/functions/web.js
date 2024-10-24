@@ -409,7 +409,7 @@ import {MarkdownPreview} from "../store/markdown";
                 case 'todo':
                     return `[${$A.L(data.msg.action === 'remove' ? '取消待办' : (data.msg.action === 'done' ? '完成' : '设待办'))}] ${$A.getMsgSimpleDesc(data.msg.data)}`
                 case 'notice':
-                    return data.msg.notice
+                    return $A.L(data.msg.notice)
                 case 'template':
                     return $A.templateMsgSimpleDesc(data.msg)
                 default:
