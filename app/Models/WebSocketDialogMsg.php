@@ -1071,7 +1071,7 @@ class WebSocketDialogMsg extends AbstractModel
                 'msg' => $msg,
                 'read' => 0,
             ]);
-            AbstractModel::transaction(function () use ($dialogMsg) {
+            AbstractModel::transaction(function () use ($search_key, $dialogMsg) {
                 $dialogMsg->send = 1;
                 $dialogMsg->generateKeyAndSave($search_key);
                 //

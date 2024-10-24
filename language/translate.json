@@ -24730,5 +24730,41 @@
         "fr": "Terme de recherche (généré automatiquement si laissé vide)",
         "id": "Kata kunci (otomatis dihasilkan jika kosong)",
         "ru": "Поисковой термин (автоматически сгенерирован, если оставлено пустым)"
+    },
+    {
+        "key": "考勤机",
+        "zh": "",
+        "zh-CHT": "考勤機",
+        "en": "Attendance Machine",
+        "ko": "출석기",
+        "ja": "出席管理機",
+        "de": "Attendance-Maschine",
+        "fr": "Machine de pointage",
+        "id": "Mesin Absensi",
+        "ru": "Устройство учета посещаемости"
+    },
+    {
+        "key": "签到备注",
+        "zh": "",
+        "zh-CHT": "簽到備註",
+        "en": "Check-in Note",
+        "ko": "체크인 비고",
+        "ja": "チェックインメモ",
+        "de": "Check-in-Notiz",
+        "fr": "Note de pointage",
+        "id": "Catatan Check-in",
+        "ru": "Заметка о регистрации"
+    },
+    {
+        "key": "重复打卡提醒",
+        "zh": "",
+        "zh-CHT": "重複打卡提醒",
+        "en": "Duplicate Check-in Reminder",
+        "ko": "중복 체크인 알림",
+        "ja": "重複打刻リマインダー",
+        "de": "Erinnerung an doppelten Check-in",
+        "fr": "Rappel de pointage en double",
+        "id": "Pengingat Check-in Duplikat",
+        "ru": "Напоминание о дублирующем входе"
     }
 ]

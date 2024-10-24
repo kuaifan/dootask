@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.38.91]
+
+### Bug Fixes
+
+- 周报默认内容已完成工作负责人不显示的情况
+- 无法清除计划时间
+- 选择时间起始不正确的问题
+- 修复iOS日历无法正常显示的情况
+- 签到信息预览错误
+
+### Performance
+
+- 优化人脸签到设置
+- 优化消息搜索速度
+- 优化显示
+- 优化图片压缩
+- 优化cmd命令
+
 ## [0.38.73]
 
 ### Performance
