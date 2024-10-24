@@ -517,7 +517,7 @@
             :styles="{
                 width: '90%',
                 maxWidth: '700px'
-            }">v-bind="formOptions"
+            }">
             <TaskContentHistory v-if="historyShow" :task-id="taskDetail.id" :task-name="taskDetail.name"/>
             <div slot="footer">
                 <Button @click="historyShow=false">{{$L('关闭')}}</Button>
