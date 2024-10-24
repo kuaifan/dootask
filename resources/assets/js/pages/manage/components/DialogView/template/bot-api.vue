@@ -10,6 +10,7 @@
         <p>--form 'dialog_id="<span class="mark-color">{{$L("对话ID")}}</span>"' \</p>
         <p>--form 'text="<span class="mark-color">{{$L("消息内容")}}</span>"'</p>
         <p>--form 'text_type="<span class="mark-color">[html|md]</span>"'</p>
+        <p>--form 'key="<span class="mark-color">{{$L("搜索词 (留空自动生成)")}}</span>"'</p>
         <p>--form 'silence="<span class="mark-color">[yes|no]</span>"'</p>
         <p>--form 'reply_id="<span class="mark-color">{{$L("回复指定消息ID")}}</span>"'</p>
         <p>&nbsp;</p>

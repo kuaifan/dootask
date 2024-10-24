@@ -503,7 +503,7 @@ const timezone = require("dayjs/plugin/timezone");
                     return 0;
                 }
                 if (typeof obj === "number") {
-                    obj+= "";
+                    obj += "";
                 }
                 if (typeof obj.length === 'number') {
                     return obj.length;
@@ -514,7 +514,7 @@ const timezone = require("dayjs/plugin/timezone");
                     }
                     return i;
                 }
-            }catch (e) {
+            } catch (e) {
                 return 0;
             }
         },

@@ -640,27 +640,35 @@ class WebSocketDialogMsg extends AbstractModel
 
     /**
      * 生成关键词并保存
+     * @param string $key
      * @return void
      */
-    public function generateKeyAndSave(): void
+    public function generateKeyAndSave(string $key = ''): void
     {
-        $key = '';
-        switch ($this->type) {
-            case 'text':
-            case 'vote':
-            case 'word-chain':
-                $key = strip_tags($this->msg['text']);
-                break;
+        if (empty($key)) {
+            $key = '';
+            switch ($this->type) {
+                case 'text':
+                    if (!preg_match("/<span[^>]*?data-quick-key=([\"'])(.*?)\\1[^>]*?>/is", $this->msg['text'])) {
+                        $key = strip_tags($this->msg['text']);
+                    }
+                    break;
 
-            case 'file':
-                $key = $this->msg['name'];
-                $key = preg_replace("/^(image|\d+)\.(png|jpg|jpeg|webp|gif)$/i", "", $key);
-                $key = preg_replace("/^LongText-(.*?)/i", "", $key);
-                break;
+                case 'vote':
+                case 'word-chain':
+                    $key = strip_tags($this->msg['text']);
+                    break;
 
-            case 'meeting':
-                $key = $this->msg['name'];
-                break;
+                case 'file':
+                    $key = $this->msg['name'];
+                    $key = preg_replace("/^(image|\d+)\.(png|jpg|jpeg|webp|gif)$/i", "", $key);
+                    $key = preg_replace("/^LongText-(.*?)/i", "", $key);
+                    break;
+
+                case 'meeting':
+                    $key = $this->msg['name'];
+                    break;
+            }
         }
         $key = str_replace(["&quot;", "&amp;", "&lt;", "&gt;"], "", $key);
         $key = str_replace(["\r", "\n", "\t", "&nbsp;"], " ", $key);
@@ -940,9 +948,10 @@ class WebSocketDialogMsg extends AbstractModel
      * @param bool $push_retry          推送-失败后重试1次（有时候在事务里执行，数据还没生成时会出现找不到消息的情况）
      * @param bool|null $push_silence   推送-静默
      * - type = [text|file|record|meeting]  默认为：false
+     * @param string|null $search_key   搜索关键词（用于搜索，留空则自动生成）
      * @return array
      */
-    public static function sendMsg($action, $dialog_id, $type, $msg, $sender = null, $push_self = false, $push_retry = false, $push_silence = null)
+    public static function sendMsg($action, $dialog_id, $type, $msg, $sender = null, $push_self = false, $push_retry = false, $push_silence = null, $search_key = null)
     {
         $link = 0;
         $mtype = $type;
@@ -1017,7 +1026,7 @@ class WebSocketDialogMsg extends AbstractModel
                 'modify' => $modify,
             ];
             $dialogMsg->updateInstance($updateData);
-            $dialogMsg->generateKeyAndSave();
+            $dialogMsg->generateKeyAndSave($search_key);
             //
             WebSocketDialogUser::whereDialogId($dialog->id)->whereUserid($sender)->whereHide(1)->change([
                 'hide' => 0,    // 修改消息时，显示会话（仅自己）
@@ -1064,7 +1073,7 @@ class WebSocketDialogMsg extends AbstractModel
             ]);
             AbstractModel::transaction(function () use ($dialogMsg) {
                 $dialogMsg->send = 1;
-                $dialogMsg->generateKeyAndSave();
+                $dialogMsg->generateKeyAndSave($search_key);
                 //
                 if ($dialogMsg->type === 'meeting') {
                     MeetingMsg::createInstance([

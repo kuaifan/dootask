@@ -3204,18 +3204,6 @@
         "ru": "Загрузить\/Просмотреть изображения"
     },
     {
-        "key": "签到设置 (Beta)",
-        "zh": "",
-        "zh-CHT": "簽到設置 (Beta)",
-        "en": "Check-in settings (Beta)",
-        "ko": "체크인 설정 (베타)",
-        "ja": "チェックイン設定（ベータ）",
-        "de": "Check-in-Einstellungen (Beta)",
-        "fr": "Paramètres d'enregistrement (Bêta)",
-        "id": "Pengaturan check-in (Beta)",
-        "ru": "Настройки регистрации (Бета)"
-    },
-    {
         "key": "不能对话自己",
         "zh": "",
         "zh-CHT": "不能對話自己",
@@ -3327,13 +3315,13 @@
         "key": "启用 LDAP 认证",
         "zh": "",
         "zh-CHT": "啟用 LDAP 認證",
-        "en": "Enable LDAP authentication",
-        "ko": "LDAP 인증 활성화",
-        "ja": "LDAP認証を有効にする",
-        "de": "LDAP-Authentifizierung aktivieren",
-        "fr": "Activer l'authentification LDAP",
-        "id": "Aktifkan autentikasi LDAP",
-        "ru": "Включить аутентификацию LDAP"
+        "en": "Enable LDAP",
+        "ko": "LDAP 활성화",
+        "ja": "LDAPを有効にする",
+        "de": "LDAP aktivieren",
+        "fr": "Activer LDAP",
+        "id": "Aktifkan LDAP",
+        "ru": "Включить LDAP"
     },
     {
         "key": "导出任务统计",
@@ -19332,6 +19320,30 @@
         "ru": "Ручная регистрация пока недоступна."
     },
     {
+        "key": "今日已上班打卡，无需重复打卡。(*)",
+        "zh": "",
+        "zh-CHT": "今日已上班打卡，無需重複打卡。(*)",
+        "en": "You have already clocked in today. No need to clock in again (*).",
+        "ko": "오늘 이미 출근 체크인 완료입니다. 다시 체크인할 필요 없습니다.(*))",
+        "ja": "今日はすでに出勤打刻済みです。再度打刻する必要はありません。(*)",
+        "de": "Sie haben heute bereits eingecheckt. Es ist kein erneutes Einchecken notwendig.(*))",
+        "fr": "Vous avez déjà pointé aujourd'hui. Pas besoin de pointez à nouveau.(*))",
+        "id": "Anda telah melakukan absensi hari ini. Tidak perlu absen lagi.(*))",
+        "ru": "Вы уже отметились сегодня. Нет необходимости отмечаться снова.(*))"
+    },
+    {
+        "key": "今日已下班打卡，无需重复打卡。(*)",
+        "zh": "",
+        "zh-CHT": "今日已下班打卡，無需重複打卡。(*)",
+        "en": "You have already clocked out today. No need to clock out again (*).",
+        "ko": "오늘 이미 퇴근 체크인 완료입니다. 다시 체크아웃할 필요 없습니다.(*))",
+        "ja": "今日はすでに退勤打刻済みです。再度打刻する必要はありません。(*)",
+        "de": "Sie haben heute bereits ausgecheckt. Es ist kein erneutes Auschecken notwendig.(*))",
+        "fr": "Vous avez déjà pointé de sortie aujourd'hui. Pas besoin de pointer à nouveau.(*))",
+        "id": "Anda telah melakukan absensi keluar hari ini. Tidak perlu absen lagi.(*))",
+        "ru": "Вы уже отметились сегодня на выход. Нет необходимости отмечаться снова.(*))"
+    },
+    {
         "key": "今日已上班打卡，无需重复打卡。",
         "zh": "",
         "zh-CHT": "今日已上班打卡，無需重複打卡。",
@@ -24036,18 +24048,6 @@
         "ru": "Успешно закреплено"
     },
     {
-        "key": "上班打卡成功，打卡时间:(*)(手动签到)",
-        "zh": "",
-        "zh-CHT": "上班打卡成功，打卡時間:(*)(手動簽到)",
-        "en": "Clock-in successful, time: (*) (Manual check-in)",
-        "ko": "출근 체크인 성공, 시간: (*) (수동 체크인)",
-        "ja": "出勤打刻成功、時間：(*) (手動チェックイン)",
-        "de": "Erfolgreich eingestempelt, Zeit: (*) (Manuelles Check-in)",
-        "fr": "Pointage réussi, heure : (*) (Enregistrement manuel)",
-        "id": "Berhasil absen masuk, waktu: (*) (Check-in manual)",
-        "ru": "Успешная регистрация прихода, время: (*) (Ручная регистрация)"
-    },
-    {
         "key": "上班打卡成功，打卡时间:(*)",
         "zh": "",
         "zh-CHT": "上班打卡成功，打卡時間:(*)",
@@ -24058,18 +24058,6 @@
         "fr": "Pointage réussi, heure : (*)",
         "id": "Berhasil absen masuk, waktu: (*)",
         "ru": "Успешная регистрация прихода, время: (*)"
-    },
-    {
-        "key": "下班打卡成功，打卡时间:(*)(手动签到)",
-        "zh": "",
-        "zh-CHT": "下班打卡成功，打卡時間:(*)(手動簽到)",
-        "en": "Clock-out successful, time: (*) (Manual check-out)",
-        "ko": "퇴근 체크아웃 성공, 시간: (*) (수동 체크아웃)",
-        "ja": "退勤打刻成功、時間：(*) (手動チェックアウト)",
-        "de": "Erfolgreich ausgestempelt, Zeit: (*) (Manuelles Check-out)",
-        "fr": "Pointage de sortie réussi, heure : (*) (Enregistrement manuel)",
-        "id": "Berhasil absen keluar, waktu: (*) (Check-out manual)",
-        "ru": "Успешная регистрация ухода, время: (*) (Ручная регистрация)"
     },
     {
         "key": "下班打卡成功，打卡时间:(*)",
@@ -24718,5 +24706,29 @@
         "fr": "Membres externes",
         "id": "Anggota luar grup",
         "ru": "Внешние участники"
+    },
+    {
+        "key": "该任务尚未被领取，点击这里",
+        "zh": "",
+        "zh-CHT": "該任務尚未被領取，點擊這裡",
+        "en": "This task has not been claimed yet, click here.",
+        "ko": "이 작업은 아직 수령되지 않았습니다. 여기 클릭하세요.",
+        "ja": "このタスクはまだ受け取られていません。ここをクリックしてください。",
+        "de": "Diese Aufgabe wurde noch nicht angenommen. Klicken Sie hier.",
+        "fr": "Cette tâche n'a pas encore été réclamée, cliquez ici.",
+        "id": "Tugas ini belum diambil, klik di sini.",
+        "ru": "Эта задача еще не была принята, нажмите здесь."
+    },
+    {
+        "key": "搜索词 (留空自动生成)",
+        "zh": "",
+        "zh-CHT": "搜索詞 (留空自動生成)",
+        "en": "Search term (auto-generated if left blank)",
+        "ko": "검색어 (비워 두면 자동 생성됨)",
+        "ja": "検索語 (空白の場合は自動生成)",
+        "de": "Suchbegriff (automatisch generiert, wenn leer gelassen)",
+        "fr": "Terme de recherche (généré automatiquement si laissé vide)",
+        "id": "Kata kunci (otomatis dihasilkan jika kosong)",
+        "ru": "Поисковой термин (автоматически сгенерирован, если оставлено пустым)"
     }
 ]

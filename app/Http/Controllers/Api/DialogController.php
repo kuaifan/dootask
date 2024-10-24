@@ -985,6 +985,7 @@ class DialogController extends AbstractController
      *
      * @apiParam {Number} dialog_id         对话ID
      * @apiParam {String} text              消息内容
+     * @apiParam {String} [key]             搜索关键词 (不设置根据内容自动生成)
      * @apiParam {String} [text_type]       消息类型
      * - html: HTML（默认）
      * - md: MARKDOWN
@@ -1012,6 +1013,7 @@ class DialogController extends AbstractController
         $update_mark = !($user->bot && in_array(strtolower(trim(Request::input('update_mark'))), ['no', 'false', '0']));
         $reply_id = intval(Request::input('reply_id'));
         $text = trim(Request::input('text'));
+        $key = trim(Request::input('key'));
         $text_type = strtolower(trim(Request::input('text_type')));
         $silence = in_array(strtolower(trim(Request::input('silence'))), ['yes', 'true', '1']);
         $markdown = in_array($text_type, ['md', 'markdown']);
@@ -1064,13 +1066,16 @@ class DialogController extends AbstractController
                     'height' => -1,
                     'ext' => $ext,
                 ];
-                $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'file', $fileData, $user->userid, false, false, $silence);
+                if (empty($key)) {
+                    $key = mb_substr(strip_tags($text), 0, 200);
+                }
+                $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'file', $fileData, $user->userid, false, false, $silence, $key);
             } else {
                 $msgData = ['text' => $text];
                 if ($markdown) {
                     $msgData['type'] = 'md';
                 }
-                $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'text', $msgData, $user->userid, false, false, $silence);
+                $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'text', $msgData, $user->userid, false, false, $silence, $key);
             }
         }
         return $result;

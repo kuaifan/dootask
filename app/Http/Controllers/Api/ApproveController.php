@@ -1008,30 +1008,26 @@ class ApproveController extends AbstractController
             $msgAction = 'change-' . $toUser['msg_id'];
         }
         //
-        try {
-            $msg = WebSocketDialogMsg::sendMsg($msgAction, $dialog->id, 'template', $msgData, $process['start_user_id'], false, false, true);
-            // 关联信息
-            if ($action == 'start') {
-                $proc_msg = new ApproveProcMsg();
-                $proc_msg->proc_inst_id = $process['id'];
-                $proc_msg->msg_id = $msg['data']->id;
-                $proc_msg->userid = $toUser['userid'];
-                $proc_msg->save();
-            }
-            // 更新审批 未读数量
-            if ($type == 'approve_reviewer' && $toUser['userid']) {
-                $params = [
-                    'userid' => [$toUser['userid'], User::auth()->userid()],
-                    'msg' => [
-                        'type' => 'approve',
-                        'action' => 'unread',
-                        'userid' => $toUser['userid'],
-                    ]
-                ];
-                Task::deliver(new PushTask($params, false));
-            }
-        } catch (\Throwable $th) {
-            info($th->getMessage());
+        $msg = WebSocketDialogMsg::sendMsg($msgAction, $dialog->id, 'template', $msgData, $process['start_user_id'], false, false, true);
+        // 关联信息
+        if ($action == 'start') {
+            $proc_msg = new ApproveProcMsg();
+            $proc_msg->proc_inst_id = $process['id'];
+            $proc_msg->msg_id = $msg['data']->id;
+            $proc_msg->userid = $toUser['userid'];
+            $proc_msg->save();
+        }
+        // 更新审批 未读数量
+        if ($type == 'approve_reviewer' && $toUser['userid']) {
+            $params = [
+                'userid' => [$toUser['userid'], User::auth()->userid()],
+                'msg' => [
+                    'type' => 'approve',
+                    'action' => 'unread',
+                    'userid' => $toUser['userid'],
+                ]
+            ];
+            Task::deliver(new PushTask($params, false));
         }
         return true;
     }

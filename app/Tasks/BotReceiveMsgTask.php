@@ -526,13 +526,19 @@ class BotReceiveMsgTask extends AbstractTask
                 $userBot->webhook_num++;
                 $userBot->save();
             }
-            if ($res['data'] && $data = json_decode($res['data'])) {
+            if ($res['data'] && $data = Base::json2array($res['data'])) {
                 if ($data['code'] != 200 && $data['message']) {
                     WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'text', ['text' => $res['data']['message']], $botUser->userid, false, false, true);
                 }
             }
         } catch (\Throwable $th) {
-            info($th->getMessage());
+            info(Base::array2json([
+                'bot_userid' => $botUser->userid,
+                'dialog' => $dialog->id,
+                'msg' => $msg->id,
+                'webhook_url' => $webhookUrl,
+                'error' => $th->getMessage(),
+            ]));
         }
     }
 
