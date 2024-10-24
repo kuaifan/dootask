@@ -643,7 +643,7 @@ class WebSocketDialogMsg extends AbstractModel
      * @param string $key
      * @return void
      */
-    public function generateKeyAndSave(string $key = ''): void
+    public function generateKeyAndSave($key = ''): void
     {
         if (empty($key)) {
             $key = '';

@@ -282,7 +282,7 @@ class UserBot extends AbstractModel
                         WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
                             'type' => 'content',
                             'content' => $text,
-                        ], $botUser->userid, false, false, $type != "up");
+                        ], $botUser->userid, false, false, true);
                     }
                     return;
                 }
