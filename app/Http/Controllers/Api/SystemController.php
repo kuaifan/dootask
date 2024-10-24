@@ -399,7 +399,10 @@ class SystemController extends AbstractController
                     'remindin',
                     'remindexceed',
                     'edit',
-                    'faceupload',
+                    'face_upload',
+                    'face_remark',
+                    'face_retip',
+                    'manual_remark',
                     'modes',
                     'key',
                 ])) {
@@ -433,7 +436,10 @@ class SystemController extends AbstractController
         }
         //
         $setting['open'] = $setting['open'] ?: 'close';
-        $setting['faceupload'] = $setting['faceupload'] ?: 'close';
+        $setting['face_upload'] = $setting['face_upload'] ?: 'close';
+        $setting['face_remark'] = $setting['face_remark'] ?: Doo::translate('考勤机');
+        $setting['face_retip'] = $setting['face_retip'] ?: 'open';
+        $setting['manual_remark'] = $setting['manual_remark'] ?: Doo::translate('手动签到');
         $setting['time'] = $setting['time'] ? Base::json2array($setting['time']) : ['09:00', '18:00'];
         $setting['advance'] = intval($setting['advance']) ?: 120;
         $setting['delay'] = intval($setting['delay']) ?: 120;

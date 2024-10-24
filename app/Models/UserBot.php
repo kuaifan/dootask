@@ -231,7 +231,7 @@ class UserBot extends AbstractModel
                     ];
                     $checkins[] = [
                         'userid' => $UserInfo->userid,
-                        'remark' => '手动签到',
+                        'remark' => $setting['manual_remark'] ?: 'Manual',
                     ];
                 }
             } elseif (Base::leftExists($mac, "checkin-", true)) {
@@ -244,7 +244,7 @@ class UserBot extends AbstractModel
                     ];
                     $checkins[] = [
                         'userid' => $UserInfo->userid,
-                        'remark' => '考勤机',
+                        'remark' => $setting['face_remark'] ?: 'Machine',
                     ];
                 }
             }
@@ -278,6 +278,7 @@ class UserBot extends AbstractModel
                 if (Cache::get($cacheKey) === "yes") {
                     if ($alreadyTip && $dialog = WebSocketDialog::checkUserDialog($botUser, $checkin['userid'])) {
                         $text = "今日已{$typeContent}打卡，无需重复打卡。";
+                        $text .= $checkin['remark'] ? " ({$checkin['remark']})": "";
                         WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
                             'type' => 'content',
                             'content' => $text,

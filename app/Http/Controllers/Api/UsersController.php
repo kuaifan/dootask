@@ -1680,7 +1680,11 @@ class UsersController extends AbstractController
      * @apiGroup users
      * @apiName checkin__save
      *
-     * @apiParam {Array} list   优先级数据，格式：[{mac,remark}]
+     * @apiParam {String} type      类型
+     * - face: 人脸识别设置
+     * - mac: MAC设置
+     * @apiParam {String} faceimg   人脸图片地址
+     * @apiParam {Array} list       优先级数据，格式：[{mac,remark}]
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1694,52 +1698,52 @@ class UsersController extends AbstractController
         if ($setting['open'] !== 'open') {
             return Base::retError('此功能未开启，请联系管理员开启');
         }
-        if ($setting['edit'] !== 'open' && $setting['faceupload'] !== 'open') {
-            return Base::retError('未开放修改权限，请联系管理员');
-        }
         //
+        $type = Request::input('type');
         $list = Request::input('list');
         $faceimg = Request::input('faceimg');
-        // 默认返回值，使用用户传递数据
+        //
         $data = [
             'list' => $list,
             'faceimg' =>  $faceimg
         ];
-        // 当mac允许修改
-        if ($setting['edit' === 'open']) {
-            $array = [];
-            if (empty($list) || !is_array($list)) {
-                return Base::retError('参数错误');
-            }
-            foreach ($list AS $item) {
-                $item = Base::newTrim($item);
-                if (Base::isMac($item['mac'])) {
-                    $mac = strtoupper($item['mac']);
-                    $array[$mac] = [
-                        'mac' => $mac,
-                        'remark' => substr($item['remark'], 0, 50),
-                    ];
+        switch ($type) {
+            case 'face':
+                if ($setting['face_upload'] !== 'open') {
+                    return Base::retError('未开放修改权限，请联系管理员');
                 }
-            }
-            if (count($array) > 3) {
-                return Base::retError('最多只能添加3个MAC地址');
-            }
-            $saveMacRes = UserCheckinMac::saveMac($user->userid, $array);
-            $data['list'] = $saveMacRes['data'];
-        } else {
-            $list = UserCheckinMac::whereUserid($user->userid)->orderBy('id')->get();
-            $data['list'] = $list;
+                UserCheckinFace::saveFace($user->userid, $user->nickname(), $faceimg, "用户上传");
+                break;
+
+            case 'mac':
+                if ($setting['edit'] !== 'open') {
+                    return Base::retError('未开放修改权限，请联系管理员');
+                }
+                $array = [];
+                if (empty($list) || !is_array($list)) {
+                    return Base::retError('参数错误');
+                }
+                foreach ($list as $item) {
+                    $item = Base::newTrim($item);
+                    if (Base::isMac($item['mac'])) {
+                        $mac = strtoupper($item['mac']);
+                        $array[$mac] = [
+                            'mac' => $mac,
+                            'remark' => substr($item['remark'], 0, 50),
+                        ];
+                    }
+                }
+                if (count($array) > 3) {
+                    return Base::retError('最多只能添加3个MAC地址');
+                }
+                $saveMacRes = UserCheckinMac::saveMac($user->userid, $array);
+                $data['list'] = $saveMacRes['data'];
+                break;
+
+            default:
+                return Base::retError('参数错误');
         }
-
-
-        // 当图片允许修改
-        if ($setting['faceupload'] === 'open') {
-            UserCheckinFace::saveFace($user->userid, $user->nickname(), $faceimg, "用户上传");
-        } else {
-            $userface = UserCheckinFace::whereUserid($user->userid)->first();
-            $data['faceimg'] = $userface;
-        }
-
+        //
         return Base::retSuccess('修改成功', $data);
     }
 

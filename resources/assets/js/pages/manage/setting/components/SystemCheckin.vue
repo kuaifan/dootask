@@ -56,7 +56,7 @@
                             </Form>
                         </FormItem>
                         <FormItem :label="$L('允许修改')" prop="edit">
-                            <RadioGroup v-model="formData.faceupload">
+                            <RadioGroup v-model="formData.face_upload">
                                 <Radio label="open">{{ $L('允许') }}</Radio>
                                 <Radio label="close">{{ $L('禁止') }}</Radio>
                             </RadioGroup>
@@ -69,13 +69,13 @@
                         </FormItem>
                         <FormItem :label="$L('签到方式')" prop="modes">
                             <CheckboxGroup v-model="formData.modes">
-                                <Checkbox label="auto">{{$L('WiFi签到')}}</Checkbox>
                                 <Checkbox label="face">{{$L('人脸签到')}}</Checkbox>
+                                <Checkbox label="auto">{{$L('WiFi签到')}}</Checkbox>
                                 <Checkbox label="manual">{{$L('手动签到')}}</Checkbox>
                                 <Checkbox v-if="false" label="location">{{$L('定位签到')}}</Checkbox>
                             </CheckboxGroup>
-                            <div v-if="formData.modes.includes('auto')" class="form-tip">{{$L('WiFi签到')}}: {{$L('详情看下文安装说明')}}</div>
                             <div v-if="formData.modes.includes('face')" class="form-tip">{{$L('人脸签到')}}: {{$L('通过人脸识别机签到')}}</div>
+                            <div v-if="formData.modes.includes('auto')" class="form-tip">{{$L('WiFi签到')}}: {{$L('详情看下文安装说明')}}</div>
                             <div v-if="formData.modes.includes('manual')" class="form-tip">{{$L('手动签到')}}: {{$L('通过在签到打卡机器人发送指令签到')}}</div>
                             <div v-if="formData.modes.includes('location')" class="form-tip">{{$L('定位签到')}}: {{$L('通过在签到打卡机器人发送位置签到')}}</div>
                         </FormItem>
@@ -83,21 +83,51 @@
                 </div>
             </div>
 
-            <template v-if="formData.open === 'open' && formData.modes.includes('auto')">
-                <div class="block-setting-space"></div>
-                <div class="block-setting-box">
-                    <h3>{{ $L('WiFi签到') }}</h3>
-                    <div class="form-box">
-                        <FormItem :label="$L('安装说明')" prop="explain">
-                            <p>1. {{ $L('WiFi签到延迟时长为±1分钟。') }}</p>
-                            <p>2. {{ $L('设备连接上指定路由器（WiFi）后自动签到。') }}</p>
-                            <p>3. {{ $L('仅支持Openwrt系统的路由器。') }}</p>
-                            <p>4. {{ $L('关闭签到功能再开启需要重新安装。') }}</p>
-                            <p>5. {{ $L('进入路由器终端执行以下命令即可完成安装') }}:</p>
-                            <Input ref="cmd" @on-focus="clickCmd" style="margin-top:6px" type="textarea" readonly :value="formData.cmd"/>
-                        </FormItem>
+            <template v-if="formData.open === 'open'">
+                <template v-if="formData.modes.includes('face')">
+                    <div class="block-setting-space"></div>
+                    <div class="block-setting-box">
+                        <h3>{{ $L('人脸签到') }}</h3>
+                        <div class="form-box">
+                            <FormItem :label="$L('签到备注')" prop="face_remark">
+                                <Input :maxlength="30" v-model="formData.face_remark"/>
+                            </FormItem>
+                            <FormItem :label="$L('重复打卡提醒')" prop="face_retip">
+                                <RadioGroup v-model="formData.face_retip">
+                                    <Radio label="open">{{ $L('开启') }}</Radio>
+                                    <Radio label="close">{{ $L('关闭') }}</Radio>
+                                </RadioGroup>
+                            </FormItem>
+                        </div>
                     </div>
-                </div>
+                </template>
+                <template v-if="formData.modes.includes('auto')">
+                    <div class="block-setting-space"></div>
+                    <div class="block-setting-box">
+                        <h3>{{ $L('WiFi签到') }}</h3>
+                        <div class="form-box">
+                            <FormItem :label="$L('安装说明')" prop="explain">
+                                <p>1. {{ $L('WiFi签到延迟时长为±1分钟。') }}</p>
+                                <p>2. {{ $L('设备连接上指定路由器（WiFi）后自动签到。') }}</p>
+                                <p>3. {{ $L('仅支持Openwrt系统的路由器。') }}</p>
+                                <p>4. {{ $L('关闭签到功能再开启需要重新安装。') }}</p>
+                                <p>5. {{ $L('进入路由器终端执行以下命令即可完成安装') }}:</p>
+                                <Input ref="cmd" @on-focus="clickCmd" style="margin-top:6px" type="textarea" readonly :value="formData.cmd"/>
+                            </FormItem>
+                        </div>
+                    </div>
+                </template>
+                <template v-if="formData.modes.includes('manual')">
+                    <div class="block-setting-space"></div>
+                    <div class="block-setting-box">
+                        <h3>{{ $L('手动签到') }}</h3>
+                        <div class="form-box">
+                            <FormItem :label="$L('签到备注')" prop="manual_remark">
+                                <Input :maxlength="30" v-model="formData.manual_remark"/>
+                            </FormItem>
+                        </div>
+                    </div>
+                </template>
             </template>
         </Form>
         <div class="setting-footer">
@@ -132,10 +162,13 @@ export default {
 
             formData: {
                 open: '',
-                faceupload: '',
                 edit: '',
                 cmd: '',
                 modes: [],
+                face_upload: '',
+                face_remark: '',
+                face_retip: '',
+                manual_remark: '',
             },
             ruleData: {},
 

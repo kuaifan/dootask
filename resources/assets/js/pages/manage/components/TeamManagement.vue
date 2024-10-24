@@ -1147,7 +1147,7 @@ export default {
                         type: data.type,
                         userid: data.userid,
                         nickname: data.nickname,
-                        checkin_face: data.faceimg[0] ? data.faceimg[0].url : ''
+                        checkin_face: $A.arrayLength(data.faceimg) > 0 ? data.faceimg[0].url : ''
                     }
                 } else if (data.type == 'department') {
                     this.departmentEditLoading++;

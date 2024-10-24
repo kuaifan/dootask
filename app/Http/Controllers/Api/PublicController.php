@@ -65,7 +65,9 @@ class PublicController extends AbstractController
     }
 
     /**
-     * {post} 签到 - 路由器（openwrt）上报
+     * {post} 签到 - 上报
+     * - 1、路由器（openwrt）签到上报
+     * - 2、考勤机签到上报
      *
      * @apiParam {String}   key
      * @apiParam {String}   mac     使用逗号分割多个
@@ -84,6 +86,7 @@ class PublicController extends AbstractController
         if ($setting['open'] !== 'open') {
             return 'function off';
         }
+        $alreadyTip = false;
         if ($type === 'face') {
             if (!in_array('face', $setting['modes'])) {
                 return 'mode off';
@@ -91,6 +94,7 @@ class PublicController extends AbstractController
             if ($key != $setting['face_key']) {
                 return 'key error';
             }
+            $alreadyTip = $setting['face_retip'] === 'open';
         } else {
             if (!in_array('auto', $setting['modes'])) {
                 return 'mode off';
@@ -99,8 +103,7 @@ class PublicController extends AbstractController
                 return 'key error';
             }
         }
-
-        if ($error = UserBot::checkinBotCheckin($mac, $time)) {
+        if ($error = UserBot::checkinBotCheckin($mac, $time, $alreadyTip)) {
             return $error;
         }
         return 'success';

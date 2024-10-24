@@ -20,7 +20,7 @@
             <Divider orientation="left">{{ $L('签到设置') }}</Divider>
             <div class="setting-checkin-row">
                 <Tabs v-model="checkinTabs" style="margin: 0;">
-                    <TabPane :label="$L('人脸签到')" name="receive">
+                    <TabPane :label="$L('人脸签到')" name="face">
                         <Row class="setting-template">
                             <Col span="24">{{ $L('人脸图片') }}</Col>
                         </Row>
@@ -84,14 +84,13 @@ export default {
             loadIng: 0,
 
             formData: [],
-
             faceimgs: [],
 
             nullDatum: {
                 'mac': '',
                 'remark': '',
             },
-            checkinTabs: "receive",
+            checkinTabs: "face",
 
             latelyLoad: 0,
             latelyData: [],
@@ -144,12 +143,16 @@ export default {
                                 remark: item.remark.trim()
                             }
                         });
-                    const faceimg = this.faceimgs ? this.faceimgs[0].url : ''
+                    const faceimg = $A.arrayLength(this.faceimgs) > 0 ? this.faceimgs[0].url : ''
                     //
                     this.loadIng++;
                     this.$store.dispatch("call", {
                         url: 'users/checkin/save',
-                        data: {list, faceimg},
+                        data: {
+                            type: this.checkinTabs,
+                            list,
+                            faceimg,
+                        },
                         method: 'post',
                     }).then(({data}) => {
                         this.formData = data.list;
