@@ -310,6 +310,10 @@
                                     <i class="taskfont">&#xe628;</i>
                                     <span>{{ $L('转文字') }}</span>
                                 </li>
+                                <li v-if="actionPermission(operateItem, 'translation')" @click="onOperate('translation')">
+                                    <i class="taskfont">&#xe795;</i>
+                                    <span>{{ $L('翻译') }}</span>
+                                </li>
                                 <li v-for="item in operateCopys" @click="onOperate('copy', item)">
                                     <i class="taskfont" v-html="item.icon"></i>
                                     <span>{{ $L(item.label) }}</span>
@@ -2897,6 +2901,10 @@ export default {
                         this.onVoice2text()
                         break;
 
+                    case "translation":
+                        this.onTranslation()
+                        break;
+
                     case "copy":
                         this.onCopy(value)
                         break;
@@ -3020,6 +3028,9 @@ export default {
                 return;
             }
             const {id: msg_id} = this.operateItem
+            if (this.isLoad(`msg-${msg_id}`)) {
+                return;
+            }
             this.$store.dispatch("setLoad", `msg-${msg_id}`)
             this.$store.dispatch("call", {
                 url: 'dialog/msg/voice2text',
@@ -3028,6 +3039,32 @@ export default {
                 },
             }).then(({data}) => {
                 this.$store.dispatch("saveDialogMsg", data);
+            }).catch(({msg}) => {
+                $A.messageError(msg);
+            }).finally(_ => {
+                this.$store.dispatch("cancelLoad", `msg-${msg_id}`)
+            });
+        },
+
+        onTranslation() {
+            if (!this.actionPermission(this.operateItem, 'translation')) {
+                return;
+            }
+            const {id: msg_id} = this.operateItem
+            if (this.isLoad(`msg-${msg_id}`)) {
+                return;
+            }
+            this.$store.dispatch("setLoad", `msg-${msg_id}`)
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/translation',
+                data: {
+                    msg_id
+                },
+            }).then(({data}) => {
+                this.$store.dispatch("saveTranslation", {
+                    key: `msg-${msg_id}`,
+                    value: data.content,
+                });
             }).catch(({msg}) => {
                 $A.messageError(msg);
             }).finally(_ => {
@@ -3621,10 +3658,10 @@ export default {
                     if (item.msg.text) {
                         return false;
                     }
-                    if (this.isLoad(`msg-${item.id}`)) {
-                        return false;
-                    }
                     break;
+
+                case 'translation':
+                    return ['text', 'record'].includes(item.type) && item.msg.text // 文本、语音消息 支持翻译
             }
             return true // 返回 true 允许操作
         },

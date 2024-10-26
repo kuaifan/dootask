@@ -189,6 +189,14 @@
                         <div v-if="formDatum.voice2text == 'open'" class="form-tip">{{$L('长按语音消息可转换成文字。')}} ({{$L('需要在应用中开启 ChatGPT AI 机器人')}})</div>
                         <div v-else class="form-tip">{{$L('关闭语音转文字功能。')}}</div>
                     </FormItem>
+                    <FormItem :label="$L('翻译消息')" prop="translation">
+                        <RadioGroup v-model="formDatum.translation">
+                            <Radio label="open">{{$L('开启')}}</Radio>
+                            <Radio label="close">{{$L('关闭')}}</Radio>
+                        </RadioGroup>
+                        <div v-if="formDatum.translation == 'open'" class="form-tip">{{$L('长按文本消息可翻译成当前设置的语言。')}} ({{$L('需要在应用中开启 ChatGPT AI 机器人')}})</div>
+                        <div v-else class="form-tip">{{$L('关闭文本消息翻译功能。')}}</div>
+                    </FormItem>
                     <FormItem :label="$L('端到端加密')" prop="e2eMessage">
                         <RadioGroup v-model="formDatum.e2e_message">
                             <Radio label="open">{{$L('开启')}}</Radio>

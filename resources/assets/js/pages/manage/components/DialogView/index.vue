@@ -26,11 +26,11 @@
             <!--详情-->
             <div ref="content" class="dialog-content" :class="contentClass">
                 <!--文本-->
-                <TextMsg v-if="msgData.type === 'text'" :msg="msgData.msg" @viewText="viewText"/>
+                <TextMsg v-if="msgData.type === 'text'" :msgId="msgData.id" :msg="msgData.msg" @viewText="viewText"/>
                 <!--文件-->
                 <FileMsg v-else-if="msgData.type === 'file'" :msg="msgData.msg" @viewFile="viewFile" @downFile="downFile"/>
                 <!--录音-->
-                <RecordMsg v-else-if="msgData.type === 'record'" :msg="msgData.msg" @playRecord="playRecord"/>
+                <RecordMsg v-else-if="msgData.type === 'record'" :msgId="msgData.id" :msg="msgData.msg" @playRecord="playRecord"/>
                 <!--会议-->
                 <MeetingMsg v-else-if="msgData.type === 'meeting'" :msg="msgData.msg" @openMeeting="openMeeting"/>
                 <!--接龙-->

@@ -2,12 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Tasks\PushTask;
 use DB;
-use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Request;
 use Redirect;
 use Carbon\Carbon;
+use App\Tasks\PushTask;
 use App\Models\File;
 use App\Models\User;
 use App\Module\Base;
@@ -20,6 +19,8 @@ use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogUser;
 use App\Models\WebSocketDialogMsgRead;
 use App\Models\WebSocketDialogMsgTodo;
+use App\Models\WebSocketDialogMsgTranslate;
+use Hhxsv5\LaravelS\Swoole\Task\Task;
 
 /**
  * @apiDefine dialog
@@ -1537,6 +1538,75 @@ class DialogController extends AbstractController
         ]);
         $msg->save();
         return Base::retSuccess("success", $msg);
+    }
+
+    /**
+     * @api {get} api/dialog/msg/translation          31. 翻译消息
+     *
+     * @apiDescription 将文本消息翻译成当前语言，需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__translation
+     *
+     * @apiParam {Number} msg_id            消息ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__translation()
+    {
+        User::auth();
+        //
+        $msg_id = intval(Request::input("msg_id"));
+        $language = Base::headerOrInput('language');
+        $targetLanguage = match ($language) {
+            "zh" => "简体中文",
+            "zh-CHT" => "繁体中文",
+            "en" => "英语",
+            "ko" => "韩语",
+            "ja" => "日语",
+            "de" => "德语",
+            "fr" => "法语",
+            "id" => "印度尼西亚语",
+            "ru" => "俄语",
+            default => '',
+        };
+        //
+        if (empty($targetLanguage)) {
+            return Base::retError("参数错误");
+        }
+        $msg = WebSocketDialogMsg::whereId($msg_id)->first();
+        if (empty($msg)) {
+            return Base::retError("消息不存在或已被删除");
+        }
+        if (!in_array($msg->type, ['text', 'record'])) {
+            return Base::retError("此消息不支持翻译");
+        }
+        WebSocketDialog::checkDialog($msg->dialog_id);
+        //
+        $row = WebSocketDialogMsgTranslate::whereMsgId($msg_id)->whereLanguage($language)->first();
+        if ($row) {
+            return Base::retSuccess("success", $row->only(['msg_id', 'language', 'content']));
+        }
+        //
+        $msgData = Base::json2array($msg->getRawOriginal('msg'));
+        if (empty($msgData['text'])) {
+            return Base::retError("消息内容为空");
+        }
+        $res = Extranet::openAItranslations($msgData['text'], $targetLanguage);
+        if (Base::isError($res)) {
+            return $res;
+        }
+        $row = WebSocketDialogMsgTranslate::createInstance([
+            'dialog_id' => $msg->dialog_id,
+            'msg_id' => $msg_id,
+            'language' => $language,
+            'content' => $res['data'],
+        ]);
+        $row->save();
+        //
+        return Base::retSuccess("success", $row->only(['msg_id', 'language', 'content']));
     }
 
     /**

@@ -1096,22 +1096,6 @@
                                     }
                                 }
                             }
-
-                            .dialog-record-text {
-                                position: relative;
-                                margin-top: 8px;
-                                padding-top: 8px;
-                                &:before {
-                                    content: "";
-                                    position: absolute;
-                                    top: 0;
-                                    left: 0;
-                                    right: 0;
-                                    height: 1px;
-                                    background-color: rgba(255, 255, 255, 0.2);
-                                    transform: scaleY(0.5);
-                                }
-                            }
                         }
 
                         .content-meeting {
@@ -1409,6 +1393,26 @@
                                         height: 32px;
                                     }
                                 }
+                            }
+                        }
+
+                        .content-divider {
+                            width: 100%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            margin: 6px 0;
+                            > span {
+                                flex: 1;
+                                height: 1px;
+                                background-color: rgba(255, 255, 255, 0.2);
+                                transform: scaleY(0.5);
+                                min-width: 18px;
+                            }
+                            .divider-label {
+                                font-size: 12px;
+                                padding: 0 8px;
+                                opacity: 0.6;
                             }
                         }
 

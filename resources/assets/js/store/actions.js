@@ -1,6 +1,6 @@
 import {Store} from 'le5le-store';
 import * as openpgp from 'openpgp_hi/lightweight';
-import {languageName} from "../language";
+import {languageList, languageName} from "../language";
 import {$callData, $urlSafe, SSEClient} from './utils'
 
 export default {
@@ -826,6 +826,7 @@ export default {
             const cacheLoginEmail = await $A.IDBString("cacheLoginEmail");
             const cacheFileSort = await $A.IDBJson("cacheFileSort");
             const cacheTaskBrowse = await $A.IDBArray("cacheTaskBrowse")
+            const cacheTranslations = await $A.IDBArray("cacheTranslations")
             const cacheEmojis = await $A.IDBArray("cacheEmojis")
             const userInfo = await $A.IDBJson("userInfo")
             await $A.IDBClear();
@@ -835,6 +836,7 @@ export default {
             await $A.IDBSet("cacheLoginEmail", cacheLoginEmail);
             await $A.IDBSet("cacheFileSort", cacheFileSort);
             await $A.IDBSet("cacheTaskBrowse", cacheTaskBrowse);
+            await $A.IDBSet("cacheTranslations", cacheTranslations);
             await $A.IDBSet("cacheEmojis", cacheEmojis);
             await $A.IDBSet("cacheVersion", state.cacheVersion)
 
@@ -865,6 +867,7 @@ export default {
             state.cacheTasks = await $A.IDBArray("cacheTasks")
             state.cacheProjectParameter = await $A.IDBArray("cacheProjectParameter")
             state.cacheTaskBrowse = await $A.IDBArray("cacheTaskBrowse")
+            state.cacheTranslations = await $A.IDBArray("cacheTranslations")
             state.dialogMsgs = await $A.IDBArray("dialogMsgs")
             state.fileLists = await $A.IDBArray("fileLists")
             state.userInfo = await $A.IDBJson("userInfo")
@@ -3339,6 +3342,27 @@ export default {
         if (state.dialogSseList.length > 10) {
             state.dialogSseList.shift().sse.close()
         }
+    },
+
+    /**
+     * 保存翻译
+     * @param state
+     * @param dispatch
+     * @param data {key, value}
+     */
+    saveTranslation({state, dispatch}, data) {
+        if (!$A.isJson(data)) {
+            return
+        }
+        const item = state.cacheTranslations.find(item => item.key == data.key && item.lang == languageName)
+        if (item) {
+            item.value = data.value
+        } else {
+            data.lang = languageName
+            data.label = languageList[languageName] || languageName
+            state.cacheTranslations.push(data)
+        }
+        $A.IDBSave("cacheTranslations", state.cacheTranslations.slice(-200))
     },
 
     /** *****************************************************************************************/

@@ -4,21 +4,45 @@
             <div class="record-time">{{recordDuration(msg.duration)}}</div>
             <div class="record-icon taskfont"></div>
         </div>
-        <div v-if="msg.text" class="dialog-record-text">
-            {{msg.text}}
-        </div>
+
+        <template v-if="msg.text">
+            <div class="content-divider">
+                <span class="divider-full"></span>
+            </div>
+            <div class="content-additional">{{msg.text}}</div>
+        </template>
+
+        <template v-if="translation">
+            <div class="content-divider">
+                <span></span>
+                <div class="divider-label">{{ translation.label }}</div>
+                <span></span>
+            </div>
+            <div class="content-additional">{{translation.value}}</div>
+        </template>
     </div>
 </template>
 
 <script lang="ts">
 import {mapState} from "vuex";
+import DialogMarkdown from "../DialogMarkdown.vue";
+import {languageName} from "../../../../language";
 
 export default {
+    components: {DialogMarkdown},
     props: {
+        msgId: Number,
         msg: Object,
     },
     computed: {
-        ...mapState(['audioPlaying']),
+        ...mapState(['audioPlaying', 'cacheTranslations']),
+
+        translation() {
+            const translation = this.cacheTranslations.find(item => {
+                return item.key === `msg-${this.msgId}` && item.lang === languageName;
+            });
+            return translation ? translation : null;
+        },
     },
     methods: {
         playRecord() {

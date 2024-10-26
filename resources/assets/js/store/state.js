@@ -231,5 +231,8 @@ export default {
         model: 'details',
         id: 0,
         show: false
-    }
+    },
+
+    // 翻译
+    cacheTranslations: [],
 };
