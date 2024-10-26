@@ -16,17 +16,15 @@
                         v-for="(item, key) in menu"
                         :key="key"
                         :class="classNameRoute(item.path, item.divided)"
-                        @click="toggleRoute(item.path)">{{$L(item.name)}}</li>
-                    <li
-                        v-if="!!clientNewVersion"
-                        class="flex"
-                        :class="classNameRoute('version', true)"
-                        @click="toggleRoute('version')">
-                        <AutoTip disabled>{{$L('版本')}}: {{version}}</AutoTip>
-                        <Badge :text="clientNewVersion"/>
-                    </li>
-                    <li v-else class="version divided" @click="onVersion">
-                        <AutoTip>{{$L('版本')}}: {{version}}</AutoTip>
+                        @click="toggleRoute(item.path)">
+                        <template v-if="item.path === 'version'">
+                            <AutoTip disabled>{{$L(item.name)}}</AutoTip>
+                            <Badge v-if="!!clientNewVersion" :text="clientNewVersion"/>
+                        </template>
+                        <template v-else-if="item.path === 'version-show'">
+                            <AutoTip>{{$L(item.name)}}: {{version}}</AutoTip>
+                        </template>
+                        <span v-else>{{$L(item.name)}}</span>
                     </li>
                 </ul>
             </div>
@@ -101,6 +99,8 @@ export default {
                 ])
             }
             menu.push(...[
+                {path: 'version', name: '更新日志', divided: true},
+                {path: 'version-show', name: '版本'},
                 {path: 'clearCache', name: '清除缓存', divided: true},
                 {path: 'logout', name: '退出登录'},
             ])
@@ -163,8 +163,8 @@ export default {
                     });
                     break;
 
-                case 'version':
-                    Store.set('updateNotification', null);
+                case 'version-show':
+                    this.onVersion();
                     break;
 
                 case 'privacy':
@@ -176,6 +176,10 @@ export default {
                     break;
 
                 default:
+                    if (path === 'version' && !!this.clientNewVersion) {
+                        Store.set('updateNotification', null);
+                        return
+                    }
                     this.goForward({name: 'manage-setting-' + path});
                     break;
             }
@@ -201,6 +205,7 @@ export default {
 
         classNameRoute(path, divided) {
             return {
+                "flex": true,
                 "active": this.windowLandscape && this.routeName === `manage-setting-${path}`,
                 "divided": !!divided
             };

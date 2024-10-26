@@ -1059,24 +1059,38 @@ class SystemController extends AbstractController
      * @apiGroup system
      * @apiName get__updatelog
      *
+     * @apiParam {Number} [take]        获取数量，10-100
+     *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
      */
     public function get__updatelog()
     {
+        $take = min(100, max(10, intval(Request::input('take'))));
         $logPath = base_path('CHANGELOG.md');
-        $logContent = "";
         $logVersion = "";
+        $logContent = "";
+        $logResults = [];
         if (file_exists($logPath)) {
-            $logContent = file_get_contents($logPath);
-            preg_match("/## \[(.*?)\]/", $logContent, $matchs);
-            if ($matchs) {
-                $logVersion = $matchs[1] === "Unreleased" ? $matchs[1] : "v{$matchs[1]}";
+            $content = file_get_contents($logPath);
+            $sections = preg_split("/## \[(.*?)\]/", $content, -1, PREG_SPLIT_DELIM_CAPTURE);
+            for ($i = 1; $i < count($sections) && count($logResults) < $take; $i += 2) {
+                $logResults[] = [
+                    'title' => $sections[$i],
+                    'content' => $sections[$i + 1]
+                ];
             }
         }
+        if ($logResults) {
+            $logVersion = $logResults[0]['title'];
+            $logContent = implode("\n", array_map(function($item) {
+                return "## " . $item['title'] . $item['content'];
+            }, $logResults));
+        }
         return Base::retSuccess('success', [
-            'updateLog' => $logContent ?: false,
+            'logVersion' => $logVersion,
+            'updateLog' => $logContent,
         ]);
     }
 

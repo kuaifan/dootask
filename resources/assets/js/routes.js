@@ -95,6 +95,11 @@ export default [
                         component: () => import('./pages/manage/setting/system.vue'),
                     },
                     {
+                        name: 'manage-setting-version',
+                        path: 'version',
+                        component: () => import('./pages/manage/setting/version.vue'),
+                    },
+                    {
                         name: 'manage-setting-delete',
                         path: 'delete',
                         component: () => import('./pages/manage/setting/delete.vue'),
