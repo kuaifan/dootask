@@ -679,18 +679,14 @@ class WebSocketDialogMsg extends AbstractModel
     }
 
     /**
-     * 返回引用消息（如果是文本消息则截取）
-     * @param int $strlen
+     * 返回引用消息（如果是文本只取预览）
      * @return array|mixed
      */
-    public function quoteTextMsg($strlen = 30)
+    public function quoteTextMsg()
     {
         $msg = $this->msg;
         if ($this->type === 'text') {
             $msg['text'] = $this->previewTextMsg($msg['text']);
-            if (mb_strlen($msg['text']) > $strlen) {
-                $msg['text'] = mb_substr($msg['text'], 0, $strlen - 3) . "...";
-            }
         }
         return $msg;
     }
@@ -710,6 +706,10 @@ class WebSocketDialogMsg extends AbstractModel
         if (!$preserveHtml) {
             $text = strip_tags($text);
             $text = str_replace(["&nbsp;", "&amp;", "&lt;", "&gt;"], [" ", "&", "<", ">"], $text);
+            $text = preg_replace("/\s+/", " ", $text);
+            if (mb_strlen($text) > 30) {
+                $text = mb_substr($text, 0, 30) . "...";
+            }
         }
         return $text;
     }

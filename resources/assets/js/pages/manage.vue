@@ -1074,22 +1074,13 @@ export default {
                 return; // 窗口激活且最后打开的会话是通知的会话时不通知
             }
             //
-            const {id, dialog_id, dialog_type, type, msg, userid} = data;
+            const {id, dialog_id, dialog_type, userid} = data;
             if (userid == this.userId) {
                 return; // 自己的消息不通知
             }
-            let body;
-            switch (type) {
-                case 'text':
-                    body = $A.getMsgTextPreview(msg.type === 'md' ? MarkdownPreview(msg.text) : msg.text)
-                    break;
-                case 'file':
-                    body = '[' + this.$L(msg.type == 'img' ? '图片信息' : '文件信息') + ']'
-                    break;
-                default:
-                    return;
-            }
+            const body = $A.getMsgSimpleDesc(data);
             this.__notificationId = id;
+            //
             const notificationFuncA = (title) => {
                 if (dialog_type === 'group') {
                     let tempUser = this.cacheUserBasic.find(item => item.userid == userid);

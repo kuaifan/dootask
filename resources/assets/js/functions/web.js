@@ -270,9 +270,14 @@ import {MarkdownPreview} from "../store/markdown";
                 .replace(/&amp;/g, "&")
                 .replace(/&lt;/g, "<")
                 .replace(/&gt;/g, ">")
+                .replace(/\s+/g, " ")
             if (imgClassName) {
                 text = text.replace(/\[image:(.*?)\]/g, `<img class="${imgClassName}" src="$1">`)
                 text = text.replace(/\{\{RemoteURL\}\}/g, this.apiUrl('../'))
+            }
+            const tmpText = text.substring(0, 30)
+            if (tmpText.length < text.length) {
+                text = tmpText + '...'
             }
             return text
         },
