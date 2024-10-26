@@ -1,6 +1,6 @@
 <template>
     <div class="open-approve-details" :data-id="msg.data.id">
-        <b>{{ $L("抄送") }}{{ msg.data.nickname }}{{ $L(`提交的「${msg.data.proc_def_name}」记录`) }}</b>
+        <b>{{ $L(`抄送 ${msg.data.nickname} 提交的「${msg.data.proc_def_name}」记录`) }}</b>
         <div class="cause">
             <p>{{$L("申请人")}}：<span class="mark-color">@{{ msg.data.nickname }}</span> {{ msg.data.department }}</p>
             <b>{{$L("详情")}}</b>
