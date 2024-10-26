@@ -493,6 +493,14 @@ body {
     .ivu-tabs-nav-prev {
         padding-top: 3px;
     }
+
+    .vuepress-markdown-body {
+        h1,
+        h2 {
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid #eaecef;
+        }
+    }
 }
 
 *[hidden="hidden"] {
