@@ -143,7 +143,7 @@
                 </template>
             </Timeline>
 
-            <template v-if="datas.global_comment">
+            <template v-if="datas.global_comments">
                 <Divider/>
                 <h3 class="approve-details-subtitle">{{$L('全文评论')}}</h3>
                 <div class="approve-record-comment">
@@ -163,7 +163,7 @@
                                 </div>
                                 <div class="content" style="display: flex; gap: 10px;">
                                     <div v-for="(src,k) in getPictures(item.content)" :key="k"  @click="onViewPicture(src, item.content, 2)">
-                                        <ImgView :src="src" class="img-view"/>
+                                        <ImgView :src="getPictureThumb(src)" class="img-view"/>
                                     </div>
                                 </div>
                             </div>
@@ -477,6 +477,10 @@ export default {
             } catch (error) {
                 return ''
             }
+        },
+        // 获取图片缩略图
+        getPictureThumb(src) {
+            return src + '_thumb.' + src.split('.').pop()
         },
         // 打开图片
         onViewPicture(currentUrl, datas, type) {

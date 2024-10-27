@@ -1064,8 +1064,9 @@ class ApproveController extends AbstractController
             }
         }
         // 全局评论
+        unset($res['global_comment']);
         if (isset($res['global_comments'])) {
-            foreach ($res['global_comments'] as $k => &$globalComment) {
+            foreach ($res['global_comments'] as $k => $globalComment) {
                 $info = User::whereUserid($globalComment['user_id'])->first();
                 if (!$info) {
                     continue;
@@ -1073,6 +1074,8 @@ class ApproveController extends AbstractController
                 $res['global_comments'][$k]['userimg'] = User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname);
                 $res['global_comments'][$k]['nickname'] = $info->nickname;
             }
+        } else {
+            $res['global_comments'] = [];
         }
         $info = User::whereUserid($res['start_user_id'])->first();
         $res['userimg'] = $info ? User::getAvatar($info->userid, $info->userimg, $info->email, $info->nickname) : '';

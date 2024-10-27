@@ -1,5 +1,5 @@
 <template>
-    <img :src="srcValue" :alt="alt">
+    <img :src="srcValue" :alt="alt" @error.once="onError">
 </template>
 
 <script>
@@ -9,13 +9,20 @@ export default {
         src: {
             default: ""
         },
+        errorSrc: {
+            default: ""
+        },
         alt: {
             default: ""
         },
     },
     computed: {
-        srcValue() {
-            const {src} = this;
+        srcValue({src}) {
+            return this.toSrc(src)
+        }
+    },
+    methods: {
+        toSrc(src) {
             if (src.substring(0, 10) === "data:image" ||
                 src.substring(0, 2) === "//" ||
                 src.substring(0, 7) === "http://" ||
@@ -25,6 +32,13 @@ export default {
                 return src;
             }
             return $A.mainUrl(src)
+        },
+
+        onError(e) {
+            if (!this.errorSrc) {
+                return;
+            }
+            e.target.src = this.toSrc(this.errorSrc);
         }
     }
 }
