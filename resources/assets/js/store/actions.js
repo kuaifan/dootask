@@ -1881,6 +1881,10 @@ export default {
         if ($A.runNum(task_id) === 0) {
             return;
         }
+        dispatch("setLoad", {
+            key: `task-${task_id}`,
+            delay: 1200
+        })
         dispatch("call", {
             url: 'project/task/content',
             data: {
@@ -1890,6 +1894,8 @@ export default {
             dispatch("saveTaskContent", result.data)
         }).catch(e => {
             console.warn(e);
+        }).finally(_ => {
+            dispatch("cancelLoad", `task-${task_id}`)
         });
     },
 
