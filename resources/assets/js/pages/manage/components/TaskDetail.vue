@@ -1170,7 +1170,12 @@ export default {
                     return
                 }
                 this.updateParams = Object.assign({}, params)
-                this.$refs.taskExistTipsRef?.isExistTask({
+                const tipsRef = this.$refs.taskExistTipsRef
+                if (!tipsRef) {
+                    resolve()
+                    return
+                }
+                tipsRef.isExistTask({
                     taskid: this.taskDetail.id,
                     userids: this.taskDetail.owner_userid,
                     timerange: [params.start_at, params.end_at]
