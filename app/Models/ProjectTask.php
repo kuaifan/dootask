@@ -1686,15 +1686,6 @@ class ProjectTask extends AbstractModel
         if (empty($botUser)) {
             return;
         }
-
-        $dataId = $this->parent_id ?: $this->id;
-        $text = match ($type) {
-            1 => "(*)即将超时",
-            2 => "(*)已经超时",
-            3 => "(*)时间已修改",
-            default => "您有一个新任务",
-        };
-
         /** @var User $user */
         foreach ($receivers as $receiver) {
             $data = [
@@ -1705,17 +1696,31 @@ class ProjectTask extends AbstractModel
             if (in_array($type, [1, 2]) && ProjectTaskPushLog::where($data)->exists()) {
                 continue;
             }
+            if ($owners[$receiver->userid]) {
+                $title = match ($type) {
+                    1 => "您负责的任务即将超时",
+                    2 => "您负责的任务已经超时",
+                    3 => "您负责的任务时间已修改",
+                    default => "您有一个新任务",
+                };
+            } else {
+                $title = match ($type) {
+                    1 => "您协助的任务即将超时",
+                    2 => "您协助的任务已经超时",
+                    3 => "您协助的任务时间已修改",
+                    default => "您有一个新协助任务",
+                };
+            }
             //
-            $replace = $owners[$receiver->userid] ? "您负责的任务" : "您协助的任务";
             $dialog = WebSocketDialog::checkUserDialog($botUser, $receiver->userid);
             if ($dialog) {
                 ProjectTaskPushLog::createInstance($data)->save();
                 WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
                     'type' => 'task_list',
-                    'title' => str_replace("(*)", $replace, $text) . $suffix,
+                    'title' => $title . $suffix,
                     'list' => [
                         [
-                            'id' => $dataId,
+                            'id' => $this->parent_id ?: $this->id,
                             'name' => $this->name,
                         ]
                     ],
