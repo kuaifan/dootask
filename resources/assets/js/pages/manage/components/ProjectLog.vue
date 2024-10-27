@@ -25,6 +25,10 @@
                                 <div v-if="log.project_task" class="log-task">
                                     <em @click="openTask(log.project_task)">{{$L('关联任务')}}: {{log.project_task.name}}</em>
                                 </div>
+                                <div v-if="hasRecordSubtask(log.record)" class="log-task">
+                                    <em @click="posSubTask(log.record.subtask)">{{$L('关联子任务')}}: {{log.record.subtask.name}}</em>
+                                </div>
+                                <div class="log-bottom"></div>
                             </template>
                         </TimelineItem>
                     </Timeline>
@@ -157,6 +161,15 @@ export default {
             this.hasMorePages = false;
             this.listPage++;
             this.getLists();
+        },
+
+        /**
+         * 是否有子任务
+         * @param record
+         * @returns {boolean}
+         */
+        hasRecordSubtask(record) {
+            return $A.isJson(record) && $A.isJson(record.subtask)
         },
 
         /**
@@ -305,6 +318,28 @@ export default {
 
         openTask(task) {
             this.$store.dispatch("openTask", task)
+        },
+
+        posSubTask(subtask) {
+            const el = this.$parent.$refs[`subTask_${subtask.id}`]
+            if (el && el[0]) {
+                const $e = el[0].$el
+                if ($e.classList.contains("common-shake")) {
+                    return
+                }
+                $A.scrollIntoViewIfNeeded($e)
+                requestAnimationFrame(_ => {
+                    $e.classList.add("common-shake")
+                    setTimeout(_ => {
+                        $e.classList.remove("common-shake")
+                    }, 600)
+                })
+            } else {
+                if (subtask.parent_id == this.taskId) {
+                    return
+                }
+                this.$store.dispatch("openTask", subtask)
+            }
         }
     }
 }

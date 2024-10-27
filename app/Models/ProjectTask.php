@@ -769,6 +769,7 @@ class ProjectTask extends AbstractModel
             if (Arr::exists($data, 'times')) {
                 $oldAt = [Carbon::parse($this->start_at), Carbon::parse($this->end_at)];
                 $oldStringAt = $this->start_at ? ($oldAt[0]->toDateTimeString() . '~' . $oldAt[1]->toDateTimeString()) : '';
+                $clearSubTaskTime = false;
                 $this->start_at = null;
                 $this->end_at = null;
                 $times = $data['times'];
@@ -802,6 +803,7 @@ class ProjectTask extends AbstractModel
                         // 清空子任务时间（子任务时间等于主任务时间）
                         $this->start_at = $mainTask->start_at;
                         $this->end_at = $mainTask->end_at;
+                        $clearSubTaskTime = true;
                     }
                 }
                 if ($this->parent_id == 0) {
@@ -832,7 +834,7 @@ class ProjectTask extends AbstractModel
                         }
                     });
                 }
-                $newStringAt = $this->start_at ? ($this->start_at->toDateTimeString() . '~' . $this->end_at->toDateTimeString()) : '';
+                $newStringAt = $this->start_at && !$clearSubTaskTime ? ($this->start_at->toDateTimeString() . '~' . $this->end_at->toDateTimeString()) : '';
                 $newDesc = $desc ? "（备注：{$desc}）" : "";
                 $this->addLog("修改{任务}时间" . $newDesc, [
                     'change' => [$oldStringAt, $newStringAt]
@@ -1426,7 +1428,11 @@ class ProjectTask extends AbstractModel
             'detail' => $detail,
         ];
         if ($this->parent_id) {
-            $record['subtitle'] = $this->name;
+            $record['subtask'] = [
+                'id' => $this->id,
+                'parent_id' => $this->parent_id,
+                'name' => $this->name,
+            ];
         }
         if ($record) {
             $array['record'] = $record;
