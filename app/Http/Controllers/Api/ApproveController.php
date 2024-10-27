@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Module\Doo;
 use Request;
 use Session;
 use Response;
@@ -992,11 +993,12 @@ class ApproveController extends AbstractController
             'is_finished' => $process['is_finished'],
             'data' => $data
         ];
+        $procDefName = Doo::translate($data['proc_def_name']);
         $msgData['title'] = match ($type) {
-            'approve_reviewer' => $data['nickname'] . " 提交的「{$data['proc_def_name']}」待你审批",
-            'approve_notifier' => "抄送 {$data['nickname']} 提交的「{$data['proc_def_name']}」记录",
-            'approve_comment_notifier' => $data['comment_nickname'] . " 评论了 {$data['nickname']} 的「{$data['proc_def_name']}」审批",
-            'approve_submitter' => $action == 'pass' ? "您发起的「{$data['proc_def_name']}」已通过" : "您发起的「{$data['proc_def_name']}」被 {$data['nickname']} 拒绝",
+            'approve_reviewer' => $data['nickname'] . " 提交的「{$procDefName}」待你审批",
+            'approve_notifier' => "抄送 {$data['nickname']} 提交的「{$procDefName}」记录",
+            'approve_comment_notifier' => $data['comment_nickname'] . " 评论了 {$data['nickname']} 的「{$procDefName}」审批",
+            'approve_submitter' => $action == 'pass' ? "您发起的「{$procDefName}」已通过" : "您发起的「{$procDefName}」被 {$data['nickname']} 拒绝",
             default => '不支持的指令',
         };
         if ($action == 'withdraw' || $action == 'pass' || $action == 'refuse') {
