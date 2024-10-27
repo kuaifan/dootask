@@ -726,7 +726,7 @@
             border-top-right-radius: 18px !important;
             .ivu-modal-body {
                 overflow: visible;
-                padding: 24px !important;
+                padding: 24px 24px 0 24px !important;
             }
             .ivu-modal-close {
                 > i {
@@ -747,10 +747,13 @@
     }
 
     .chat-input-box {
+        display: flex;
+        flex-direction: column;
         height: 100%;
 
         .chat-input-wrapper {
-            height: 100%;
+            flex: 1;
+            height: 0;
 
             .ql-container {
                 height: 100%;
@@ -758,6 +761,63 @@
 
                 .ql-editor {
                     max-height: none;
+                }
+            }
+        }
+
+        .chat-input-menu {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            &.activation {
+                > li {
+                    opacity: 1;
+                    cursor: pointer;
+                }
+            }
+            > li {
+                flex: 1;
+                width: 0;
+                height: 60px;
+                max-width: 60px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                list-style: none;
+                opacity: 0.6;
+                cursor: not-allowed;
+                > svg {
+                    height: 20px;
+                    .im-fill {
+                        fill: #333;
+                    }
+                    .im-stroke {
+                        fill: none;
+                        stroke: #333;
+                        stroke-linecap: round;
+                        stroke-linejoin: round;
+                        stroke-width: 2;
+                    }
+                    .im-thin {
+                        stroke-width: 1;
+                    }
+                    .im-even {
+                        fill-rule: evenodd;
+                    }
+                    &:active {
+                        .im-fill {
+                            fill: #000;
+                        }
+                        .im-stroke {
+                            stroke: #000;
+                        }
+                    }
+                }
+                @media screen and (max-width: 320px) {
+                    height: 52px;
+                    > svg {
+                        height: 18px;
+                    }
                 }
             }
         }

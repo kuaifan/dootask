@@ -206,6 +206,13 @@
                 <div class="chat-input-wrapper">
                     <div ref="editorFull" class="no-dark-content"></div>
                 </div>
+                <ul class="chat-input-menu" :class="{activation: fullSelection.length > 0}">
+                    <li
+                        v-for="(item, index) in fullTools"
+                        :key="index"
+                        @click="onFullMenu(item.label, item.type)"
+                        v-html="item.svg"></li>
+                </ul>
             </div>
             <i slot="close" class="taskfont">&#xe6ab;</i>
         </Modal>
@@ -223,6 +230,7 @@ import TransferDom from "../../../../directives/transfer-dom";
 import clickoutside from "../../../../directives/clickoutside";
 import longpress from "../../../../directives/longpress";
 import {inputLoadAdd, inputLoadIsLast, inputLoadRemove} from "./one";
+import {fullToolIcons} from "./icon";
 import {isMarkdownFormat} from "../../../../store/markdown";
 import {Store} from "le5le-store";
 
@@ -345,6 +353,8 @@ export default {
 
             fullInput: false,
             fullQuill: null,
+            fullSelection: {index: 0, length: 0},
+            fullTools: fullToolIcons,
         };
     },
     created() {
@@ -1287,10 +1297,13 @@ export default {
                         readOnly: false,
                         placeholder: this.placeholder,
                         modules: {
-                            toolbar: this.toolbar,
+                            toolbar: false,
                             mention: this.quillMention()
                         }
                     }, this.options))
+                    this.fullQuill.on('selection-change', range => {
+                        this.fullSelection = range || {index: 0, length: 0};
+                    })
                     this.fullQuill.enable(true)
                     this.$refs.editorFull.firstChild.innerHTML = this.$refs.editor.firstChild.innerHTML
                     this.$nextTick(_ => {
@@ -1308,6 +1321,50 @@ export default {
                 }
                 resolve()
             })
+        },
+
+        onFullMenu(action, type) {
+            const {length} = this.fullQuill.getSelection(true);
+            if (length === 0) {
+                $A.messageWarning("请选择文字后再操作")
+                return
+            }
+            switch (action) {
+                case 'bold':
+                    this.fullQuill.format('bold', !this.fullQuill.getFormat().bold);
+                    break;
+                case 'strike':
+                    this.fullQuill.format('strike', !this.fullQuill.getFormat().strike);
+                    break;
+                case 'italic':
+                    this.fullQuill.format('italic', !this.fullQuill.getFormat().italic);
+                    break;
+                case 'underline':
+                    this.fullQuill.format('underline', !this.fullQuill.getFormat().underline);
+                    break;
+                case 'blockquote':
+                    this.fullQuill.format('blockquote', !this.fullQuill.getFormat().blockquote);
+                    break;
+                case 'link':
+                    if (this.fullQuill.getFormat().link) {
+                        this.fullQuill.format('link', false);
+                        return
+                    }
+                    $A.modalInput({
+                        title: "插入链接",
+                        placeholder: "请输入完整的链接地址",
+                        onOk: (link) => {
+                            if (!link) {
+                                return false;
+                            }
+                            this.fullQuill.format('link', link);
+                        }
+                    })
+                    break;
+                case 'list':
+                    this.fullQuill.format('list', this.fullQuill.getFormat().list === type ? false : type);
+                    break;
+            }
         },
 
         setQuote(id, type = 'reply') {
