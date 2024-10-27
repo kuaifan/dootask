@@ -454,6 +454,9 @@ import {MarkdownPreview} from "../store/markdown";
             if (msg.title_raw) {
                 return msg.title_raw
             }
+            if (msg.type === 'task_list' && $A.arrayLength(msg.list) === 1) {
+                return $A.L(msg.title) + ": " + msg.list[0].name
+            }
             if (msg.title) {
                 return $A.L(msg.title)
             }

@@ -628,6 +628,9 @@ class WebSocketDialogMsg extends AbstractModel
         if (!empty($msg['title_raw'])) {
             return $msg['title_raw'];
         }
+        if ($msg['type'] === 'task_list' && count($msg['list']) === 1) {
+            return Doo::translate($msg['title']) . ": " . $msg['list'][0]['name'];
+        }
         if (!empty($msg['title'])) {
             return Doo::translate($msg['title']);
         }
