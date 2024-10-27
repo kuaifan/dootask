@@ -54,7 +54,7 @@
             <div class="approve-details-text"  v-if="datas.var?.other">
                 <h4>{{$L('图片')}}</h4>
                 <div class="img-body">
-                    <div v-for="(src,key) in (datas.var.other).split(',')" @click="onViewPicture(src, datas.var.other, 1)">
+                    <div v-for="(src,key) in (datas.var.other).split(',')" @click="onViewPicture(src, 1)">
                         <ImgView :src="src" :key="key" class="img-view"/>
                     </div>
                 </div>
@@ -148,13 +148,13 @@
                 <h3 class="approve-details-subtitle">{{$L('全文评论')}}</h3>
                 <div class="approve-record-comment">
                     <List :split="false" :border="false">
-                        <ListItem v-for="(item,key) in datas.global_comments" :key="key">
+                        <ListItem v-for="(item, key) in datas.global_comments" :key="key">
                             <div>
                                 <div class="top">
                                     <Avatar :src="item.userimg" size="38"/>
                                     <div>
-                                        <p>{{item.nickname}}</p>
-                                        <p class="time">{{item.created_at}}</p>
+                                        <p>{{ item.nickname }}</p>
+                                        <p class="time">{{ item.created_at }}</p>
                                     </div>
                                     <span>{{ getTimeAgo(item.created_at) }}</span>
                                 </div>
@@ -162,8 +162,8 @@
                                     {{ getContent(item.content) }}
                                 </div>
                                 <div class="content" style="display: flex; gap: 10px;">
-                                    <div v-for="(src,k) in getPictures(item.content)" :key="k"  @click="onViewPicture(src, item.content, 2)">
-                                        <ImgView :src="getPictureThumb(src)" class="img-view"/>
+                                    <div v-for="(src, k) in getPictures(item.content)" :key="k" @click="onViewPicture(src, 2)">
+                                        <ImgView :src="getPictureThumb(src)" :error-src="src" class="img-view"/>
                                     </div>
                                 </div>
                             </div>
@@ -483,20 +483,23 @@ export default {
             return src + '_thumb.' + src.split('.').pop()
         },
         // 打开图片
-        onViewPicture(currentUrl, datas, type) {
+        onViewPicture(currentUrl, type) {
+            const datas = [];
             if (type == 1) {
-                datas = datas.split(',')
+                datas.push(...this.datas.var.other.split(','))
             }
             if (type == 2) {
-                datas = this.getPictures(datas)
+                this.datas.global_comments.map(h => {
+                    datas.push(...this.getPictures(h.content))
+                })
             }
             const list = datas.map(src => {
                 return {
                     src: $A.mainUrl(src)
                 }
             });
-            const index = list.findIndex(({ src }) => src === $A.mainUrl(currentUrl));
-            this.$store.dispatch("previewImage", { index, list })
+            const index = list.findIndex(({src}) => src === $A.mainUrl(currentUrl));
+            this.$store.dispatch("previewImage", {index, list})
         }
     }
 }
