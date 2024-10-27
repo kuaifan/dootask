@@ -21,7 +21,7 @@
                 <div v-if="isFullscreen" class="user-modal-header">
                     <div class="user-modal-close" @click="showModal=false">{{$L('关闭')}}</div>
                     <div class="user-modal-title">
-                        <span ref="headerTitle">{{localTitle}}</span>
+                        <span ref="headerTitle" @click="onClickTitle">{{localTitle}}</span>
                     </div>
                     <div ref="headerSubmit" class="user-modal-submit" @click="onSubmit">
                         <div v-if="submittIng > 0" class="submit-loading"><Loading /></div>
@@ -752,6 +752,21 @@ export default {
                 return
             }
             this.selects = this.selects.filter(value => value != userid)
+        },
+
+        onClickTitle() {
+            const $content = this.$refs.headerTitle;
+            const range = document.createRange();
+            range.setStart($content, 0);
+            range.setEnd($content, $content.childNodes.length || 0);
+            const rangeWidth = range.getBoundingClientRect().width;
+            if (Math.floor(rangeWidth) > Math.floor($content.offsetWidth)) {
+                $A.modalInfo({
+                    title: this.$L("全标题"),
+                    content: this.localTitle,
+                    language: false,
+                })
+            }
         },
 
         onSubmit() {
