@@ -627,7 +627,7 @@ export default {
             loops: [
                 {key: 'never', label: '从不'},
                 {key: 'day', label: '每天'},
-                {key: 'weekdays', label: '每个工作日'},
+                {key: 'weekdays', label: '工作日'},
                 {key: 'week', label: '每周'},
                 {key: 'twoweeks', label: '每两周'},
                 {key: 'month', label: '每月'},
