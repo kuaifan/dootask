@@ -7,8 +7,6 @@
         @dragover.prevent="chatDragOver(true, $event)"
         @dragleave.prevent="chatDragOver(false, $event)"
         @touchstart="onTouchStart"
-        @touchmove="onTouchMove"
-        @touchend="onTouchEnd"
         @pointerover="onPointerover">
         <!--顶部导航-->
         <div ref="nav" class="dialog-nav">
@@ -780,7 +778,6 @@ export default {
             operateItem: {},
 
             recordState: '',
-            wrapperStart: null,
             pointerMouse: false,
 
             scrollTail: 0,
@@ -830,7 +827,6 @@ export default {
             positionShow: false,                // 定位跳转显示
             preventMoreLoad: false,             // 阻止加载更多
             preventToBottom: false,             // 阻止滚动到底部
-            selectedTextStatus: false,          // 是否选择文本
             scrollToBottomRefresh: false,       // 滚动到底部重新获取消息
             androidKeyboardVisible: false,      // Android键盘是否可见
             replyMsgAutoMention: false,         // 允许回复消息后自动@
@@ -840,7 +836,6 @@ export default {
     mounted() {
         this.subMsgListener()
         this.msgSubscribe = Store.subscribe('dialogMsgChange', this.onMsgChange);
-        document.addEventListener('selectionchange', this.onSelectionchange);
     },
 
     beforeDestroy() {
@@ -857,8 +852,6 @@ export default {
         }
         this.observers.forEach(({observer}) => observer.disconnect())
         this.observers = []
-        //
-        document.removeEventListener('selectionchange', this.onSelectionchange);
         //
         const scroller = this.$refs.scroller;
         if (scroller) {
@@ -1781,11 +1774,6 @@ export default {
             }
         },
 
-        onSelectionchange() {
-            const selectionType = window.getSelection().type;
-            this.selectedTextStatus = selectionType === "Range"
-        },
-
         getTempId() {
             return this.tempId++
         },
@@ -2023,63 +2011,10 @@ export default {
             }
         },
 
-        onTouchStart(e) {
-            if ($A.isAndroid() && $A.eeuiAppKeyboardStatus()) {
+        onTouchStart() {
+            // Android 阻止长按反馈导致失去焦点页面抖动
+            if (this.androidKeyboardVisible) {
                 $A.eeuiAppSetDisabledUserLongClickSelect(500);
-            }
-            this.wrapperStart = null;
-            if (this.selectedTextStatus) {
-                this.wrapperStart = window.scrollY
-                return
-            }
-            if (this.$refs.scroller.$el.contains(e.target)) {
-                // 聊天内容区域
-                this.wrapperStart = Object.assign(this.scrollInfo(), {
-                    clientY: e.touches[0].clientY,
-                });
-            } else if (this.$refs.input.$refs.editor.contains(e.target)) {
-                // 输入内容区域
-                const editor = this.$refs.input.$refs.editor.querySelector(".ql-editor");
-                if (editor) {
-                    const clientSize = editor.clientHeight;
-                    const offset = editor.scrollTop;
-                    const scrollSize = editor.scrollHeight;
-                    this.wrapperStart = {
-                        offset, // 滚动的距离
-                        scale: offset / (scrollSize - clientSize), // 已滚动比例
-                        tail: scrollSize - clientSize - offset, // 与底部距离
-                        clientY: e.touches[0].clientY,
-                    }
-                }
-            }
-        },
-
-        onTouchMove(e) {
-            if (this.footerPaddingBottom > 0 || (this.windowPortrait && this.windowScrollY > 0)) {
-                if (typeof this.wrapperStart === 'number') {
-                    return;
-                }
-                if (this.wrapperStart === null) {
-                    e.preventDefault();
-                    return;
-                }
-                if (this.wrapperStart.clientY > e.touches[0].clientY) {
-                    // 向上滑动
-                    if (this.wrapperStart.tail === 0) {
-                        e.preventDefault();
-                    }
-                } else {
-                    // 向下滑动
-                    if (this.wrapperStart.offset === 0) {
-                        e.preventDefault();
-                    }
-                }
-            }
-        },
-
-        onTouchEnd() {
-            if (typeof this.wrapperStart === 'number' && $A.isIos()) {
-                $A.scrollToView(this.$refs.footer, false)
             }
         },
 

@@ -65,6 +65,12 @@ export default {
         }
     },
 
+    watch: {
+        visible(v) {
+            $A.eeuiAppSetScrollEnabled(!v)
+        }
+    },
+
     methods: {
         onBeforeClose() {
             return new Promise(_ => {
