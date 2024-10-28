@@ -275,6 +275,7 @@
         <!--长按、右键-->
         <div class="operate-position" :style="operateStyles" v-show="operateVisible">
             <Dropdown
+                ref="operate"
                 trigger="custom"
                 placement="top"
                 :visible="operateVisible"
@@ -1432,9 +1433,10 @@ export default {
         },
 
         operateVisible(val) {
-            if (!val && !this.pointerMouse) {
-                document.getSelection().removeAllRanges();
+            if (val || this.pointerMouse || this.focusLazy) {
+                return
             }
+            document.getSelection().removeAllRanges();
         },
     },
 
@@ -2812,7 +2814,13 @@ export default {
                     height: `${height}px`,
                 }
                 this.operateClient = {x: left, y: event.clientY};
-                this.operateVisible = true;
+                if (this.operateVisible) {
+                    try {
+                        this.$refs.operate.$refs.drop.popper.update()
+                    } catch (e) {}
+                } else {
+                    this.operateVisible = true;
+                }
             })
         },
 
@@ -3780,7 +3788,6 @@ export default {
                 $A.messageError(msg);
             });
         },
-
     }
 }
 </script>
