@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // 获取当前页面路径
   const currentPath = window.location.pathname;
   // 判断是否为广告页面
-  const isAdPage = currentPath.includes("ad.html");
+  const isAdPage = currentPath.endsWith("/ad.html");
 
   // 获取URL对象
   const url = new URL(window.location.href);
