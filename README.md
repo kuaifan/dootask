@@ -12,7 +12,10 @@ English | **[中文文档](./README_CN.md)**
 ```bash
 # Upgrade from the regular version to the pro version
 
-git checkout -b pro origin/pro
+git fetch origin pro:pro 
+git stash save 
+git checkout pro
+
 ./cmd up -d
 ./cmd update
 ```

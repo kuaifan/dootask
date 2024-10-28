@@ -12,7 +12,10 @@
 ```bash
 # 普通版升级至Pro版
 
-git checkout -b pro origin/pro
+git fetch origin pro:pro 
+git stash save 
+git checkout pro
+
 ./cmd up -d
 ./cmd update
 ```
