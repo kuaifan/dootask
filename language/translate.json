@@ -25750,5 +25750,89 @@
         "fr": "Approuvé automatiquement, l'approbateur a déjà examiné",
         "id": "Disetujui otomatis, pemberi persetujuan telah melakukan peninjauan",
         "ru": "Автоматически одобрено, утверждающий уже выполнил проверку"
+    },
+    {
+        "key": "你确定要删除项目吗？",
+        "zh": "",
+        "zh-CHT": "你確定要刪除項目嗎？",
+        "en": "Are you sure you want to delete this project?",
+        "ko": "프로젝트를 삭제하시겠습니까?",
+        "ja": "プロジェクトを削除してもよろしいですか？",
+        "de": "Sind Sie sicher, dass Sie dieses Projekt löschen möchten?",
+        "fr": "Êtes-vous sûr de vouloir supprimer ce projet ?",
+        "id": "Apakah Anda yakin ingin menghapus proyek ini?",
+        "ru": "Вы уверены, что хотите удалить этот проект?"
+    },
+    {
+        "key": "你确定要删除【(*)】等(*)个文件吗？",
+        "zh": "",
+        "zh-CHT": "你確定要刪除【(*)】等(*)個檔案嗎？",
+        "en": "Are you sure you want to delete (*) and (*) other files?",
+        "ko": "【(*)】외 (*)개의 파일을 삭제하시겠습니까?",
+        "ja": "【(*)】など(*)個のファイルを削除してもよろしいですか？",
+        "de": "Sind Sie sicher, dass Sie (*) und (*) weitere Dateien löschen möchten?",
+        "fr": "Êtes-vous sûr de vouloir supprimer (*) et (*) autres fichiers ?",
+        "id": "Apakah Anda yakin ingin menghapus (*) dan (*) file lainnya?",
+        "ru": "Вы уверены, что хотите удалить (*) и (*) других файлов?"
+    },
+    {
+        "key": "你确定要删除【(*)】等(*)个文件夹吗？",
+        "zh": "",
+        "zh-CHT": "你確定要刪除【(*)】等(*)個資料夾嗎？",
+        "en": "Are you sure you want to delete (*) and (*) other folders?",
+        "ko": "【(*)】외 (*)개의 폴더를 삭제하시겠습니까?",
+        "ja": "【(*)】など(*)個のフォルダを削除してもよろしいですか？",
+        "de": "Sind Sie sicher, dass Sie (*) und (*) weitere Ordner löschen möchten?",
+        "fr": "Êtes-vous sûr de vouloir supprimer (*) et (*) autres dossiers ?",
+        "id": "Apakah Anda yakin ingin menghapus (*) dan (*) folder lainnya?",
+        "ru": "Вы уверены, что хотите удалить (*) и (*) других папок?"
+    },
+    {
+        "key": "你确定要还原归档任务【(*)】吗？",
+        "zh": "",
+        "zh-CHT": "你確定要還原歸檔任務【(*)】嗎？",
+        "en": "Are you sure you want to restore the archived task (*)?",
+        "ko": "보관된 작업 【(*)】을(를) 복원하시겠습니까?",
+        "ja": "アーカイブされたタスク【(*)】を復元してもよろしいですか？",
+        "de": "Sind Sie sicher, dass Sie die archivierte Aufgabe (*) wiederherstellen möchten?",
+        "fr": "Êtes-vous sûr de vouloir restaurer la tâche archivée (*) ?",
+        "id": "Apakah Anda yakin ingin memulihkan tugas terarsip (*)?",
+        "ru": "Вы уверены, что хотите восстановить архивированную задачу (*)?"
+    },
+    {
+        "key": "你确定要删除子任务【(*)】吗？",
+        "zh": "",
+        "zh-CHT": "你確定要刪除子任務【(*)】嗎？",
+        "en": "Are you sure you want to delete the subtask (*)?",
+        "ko": "하위 작업 【(*)】을(를) 삭제하시겠습니까?",
+        "ja": "サブタスク【(*)】を削除してもよろしいですか？",
+        "de": "Sind Sie sicher, dass Sie die Unteraufgabe (*) löschen möchten?",
+        "fr": "Êtes-vous sûr de vouloir supprimer la sous-tâche (*) ?",
+        "id": "Apakah Anda yakin ingin menghapus sub-tugas (*)?",
+        "ru": "Вы уверены, что хотите удалить подзадачу (*)?"
+    },
+    {
+        "key": "你确定要归档子任务【(*)】吗？",
+        "zh": "",
+        "zh-CHT": "你確定要歸檔子任務【(*)】嗎？",
+        "en": "Are you sure you want to archive the subtask (*)?",
+        "ko": "하위 작업 【(*)】을(를) 보관하시겠습니까?",
+        "ja": "サブタスク【(*)】をアーカイブしてもよろしいですか？",
+        "de": "Sind Sie sicher, dass Sie die Unteraufgabe (*) archivieren möchten?",
+        "fr": "Êtes-vous sûr de vouloir archiver la sous-tâche (*) ?",
+        "id": "Apakah Anda yakin ingin mengarsipkan sub-tugas (*)?",
+        "ru": "Вы уверены, что хотите архивировать подзадачу (*)?"
+    },
+    {
+        "key": "你确定要还原归档子任务【(*)】吗？",
+        "zh": "",
+        "zh-CHT": "你確定要還原歸檔子任務【(*)】嗎？",
+        "en": "Are you sure you want to restore the archived subtask (*)?",
+        "ko": "보관된 하위 작업 【(*)】을(를) 복원하시겠습니까?",
+        "ja": "アーカイブされたサブタスク【(*)】を復元してもよろしいですか？",
+        "de": "Sind Sie sicher, dass Sie die archivierte Unteraufgabe (*) wiederherstellen möchten?",
+        "fr": "Êtes-vous sûr de vouloir restaurer la sous-tâche archivée (*) ?",
+        "id": "Apakah Anda yakin ingin memulihkan sub-tugas terarsip (*)?",
+        "ru": "Вы уверены, что хотите восстановить архивированную подзадачу (*)?"
     }
 ]

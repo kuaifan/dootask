@@ -1541,7 +1541,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/translation          31. 翻译消息
+     * @api {get} api/dialog/msg/translation          32. 翻译消息
      *
      * @apiDescription 将文本消息翻译成当前语言，需要token身份
      * @apiVersion 1.0.0
@@ -1610,7 +1610,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/mark          32. 消息标记操作
+     * @api {get} api/dialog/msg/mark          33. 消息标记操作
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -1674,7 +1674,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/silence          33. 消息免打扰
+     * @api {get} api/dialog/msg/silence          34. 消息免打扰
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -1737,7 +1737,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/forward          34. 转发消息给
+     * @api {get} api/dialog/msg/forward          35. 转发消息给
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1778,7 +1778,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/emoji          35. emoji回复
+     * @api {get} api/dialog/msg/emoji          36. emoji回复
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1813,7 +1813,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/tag          36. 标注/取消标注
+     * @api {get} api/dialog/msg/tag          37. 标注/取消标注
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1842,7 +1842,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/todo          37. 设待办/取消待办
+     * @api {get} api/dialog/msg/todo          38. 设待办/取消待办
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1885,7 +1885,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/todolist          38. 获取消息待办情况
+     * @api {get} api/dialog/msg/todolist          39. 获取消息待办情况
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1915,7 +1915,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/done          39. 完成待办
+     * @api {get} api/dialog/msg/done          40. 完成待办
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -1968,7 +1968,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/color          40. 设置颜色
+     * @api {get} api/dialog/msg/color          41. 设置颜色
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2009,7 +2009,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/add          41. 新增群组
+     * @api {get} api/dialog/group/add          42. 新增群组
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -2071,7 +2071,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/edit          42. 修改群组
+     * @api {get} api/dialog/group/edit          43. 修改群组
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -2133,7 +2133,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/adduser          43. 添加群成员
+     * @api {get} api/dialog/group/adduser          44. 添加群成员
      *
      * @apiDescription  需要token身份
      * - 有群主时：只有群主可以邀请
@@ -2169,7 +2169,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/deluser          44. 移出（退出）群成员
+     * @api {get} api/dialog/group/deluser          45. 移出（退出）群成员
      *
      * @apiDescription  需要token身份
      * - 只有群主、邀请人可以踢人
@@ -2213,7 +2213,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/transfer          45. 转让群组
+     * @api {get} api/dialog/group/transfer          46. 转让群组
      *
      * @apiDescription  需要token身份
      * - 只有群主且是个人类型群可以解散
@@ -2262,7 +2262,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/disband          46. 解散群组
+     * @api {get} api/dialog/group/disband          47. 解散群组
      *
      * @apiDescription  需要token身份
      * - 只有群主且是个人类型群可以解散
@@ -2290,7 +2290,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/group/searchuser          47. 搜索个人群（仅限管理员）
+     * @api {get} api/dialog/group/searchuser          48. 搜索个人群（仅限管理员）
      *
      * @apiDescription  需要token身份，用于创建部门搜索个人群组
      * @apiVersion 1.0.0
@@ -2319,7 +2319,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {post} api/dialog/okr/add          48. 创建OKR评论会话
+     * @api {post} api/dialog/okr/add          49. 创建OKR评论会话
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -2358,7 +2358,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {post} api/dialog/okr/push          49. 推送OKR相关信息
+     * @api {post} api/dialog/okr/push          50. 推送OKR相关信息
      *
      * @apiDescription  需要token身份
      * @apiVersion 1.0.0
@@ -2394,7 +2394,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {post} api/dialog/msg/wordchain          50. 发送接龙消息
+     * @api {post} api/dialog/msg/wordchain          51. 发送接龙消息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2480,7 +2480,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {post} api/dialog/msg/vote          51. 发起投票
+     * @api {post} api/dialog/msg/vote          52. 发起投票
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2596,7 +2596,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/top          52. 置顶/取消置顶
+     * @api {get} api/dialog/msg/top          53. 置顶/取消置顶
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2656,7 +2656,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/msg/topinfo          53. 获取置顶消息
+     * @api {get} api/dialog/msg/topinfo          54. 获取置顶消息
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
@@ -2683,7 +2683,7 @@ class DialogController extends AbstractController
     }
 
     /**
-     * @api {get} api/dialog/sticker/search          54. 搜索在线表情
+     * @api {get} api/dialog/sticker/search          55. 搜索在线表情
      *
      * @apiDescription 需要token身份
      * @apiVersion 1.0.0
