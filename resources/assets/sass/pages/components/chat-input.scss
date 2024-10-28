@@ -769,10 +769,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            user-select: none;
+            margin: 0 -12px;
             &.activation {
                 > li {
                     opacity: 1;
                     cursor: pointer;
+                    &:active {
+                        background-color: #eee;
+                    }
                 }
             }
             > li {
@@ -784,39 +789,17 @@
                 justify-content: center;
                 align-items: center;
                 list-style: none;
-                opacity: 0.6;
+                opacity: 0.8;
                 cursor: not-allowed;
-                > svg {
-                    height: 20px;
-                    .im-fill {
-                        fill: #333;
-                    }
-                    .im-stroke {
-                        fill: none;
-                        stroke: #333;
-                        stroke-linecap: round;
-                        stroke-linejoin: round;
-                        stroke-width: 2;
-                    }
-                    .im-thin {
-                        stroke-width: 1;
-                    }
-                    .im-even {
-                        fill-rule: evenodd;
-                    }
-                    &:active {
-                        .im-fill {
-                            fill: #000;
-                        }
-                        .im-stroke {
-                            stroke: #000;
-                        }
-                    }
+                border-radius: 8px;
+                > i {
+                    color: #555;
+                    font-size: 16px;
                 }
                 @media screen and (max-width: 320px) {
                     height: 52px;
-                    > svg {
-                        height: 18px;
+                    > i {
+                        font-size: 14px;
                     }
                 }
             }

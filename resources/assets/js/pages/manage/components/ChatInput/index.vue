@@ -202,7 +202,7 @@
             class-name="chat-input-full-input"
             footer-hide
             fullscreen>
-            <div class="chat-input-box">
+            <div class="chat-input-box" :style="chatInputBoxStyle">
                 <div class="chat-input-wrapper">
                     <div ref="editorFull" class="no-dark-content"></div>
                 </div>
@@ -210,8 +210,11 @@
                     <li
                         v-for="(item, index) in fullTools"
                         :key="index"
-                        @click="onFullMenu(item.label, item.type)"
-                        v-html="item.svg"></li>
+                        @touchstart.prevent=""
+                        @touchend.prevent="onFullMenu(item.label, item.type)"
+                        @click="onFullMenu(item.label, item.type)">
+                        <i class="taskfont" v-html="item.icon"></i>
+                    </li>
                 </ul>
             </div>
             <i slot="close" class="taskfont">&#xe6ab;</i>
@@ -230,7 +233,6 @@ import TransferDom from "../../../../directives/transfer-dom";
 import clickoutside from "../../../../directives/clickoutside";
 import longpress from "../../../../directives/longpress";
 import {inputLoadAdd, inputLoadIsLast, inputLoadRemove} from "./one";
-import {fullToolIcons} from "./icon";
 import {isMarkdownFormat} from "../../../../store/markdown";
 import {Store} from "le5le-store";
 
@@ -354,7 +356,55 @@ export default {
             fullInput: false,
             fullQuill: null,
             fullSelection: {index: 0, length: 0},
-            fullTools: fullToolIcons,
+            fullTools: [
+                {
+                    label: 'bold',
+                    type: '',
+                    icon: '&#xe891;',
+                },
+                {
+                    label: 'strike',
+                    type: '',
+                    icon: '&#xe892;',
+                },
+                {
+                    label: 'italic',
+                    type: '',
+                    icon: '&#xe896;',
+                },
+                {
+                    label: 'underline',
+                    type: '',
+                    icon: '&#xe88e;',
+                },
+                {
+                    label: 'blockquote',
+                    type: '',
+                    icon: '&#xe88d;',
+                },
+                {
+                    label: 'link',
+                    type: '',
+                    icon: '&#xe885;',
+                },
+                {
+                    label: 'list',
+                    type: 'ordered',
+                    icon: '&#xe886;',
+                },
+                {
+                    label: 'list',
+                    type: 'bullet',
+                    icon: '&#xe894;',
+                },
+                {
+                    label: 'list',
+                    type: 'unchecked',
+                    icon: '&#xe88c;',
+                },
+            ],
+
+            viewportHeight: 0,
         };
     },
     created() {
@@ -362,6 +412,10 @@ export default {
     },
     mounted() {
         this.init();
+        //
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', this.visualViewportResize);
+        }
         //
         this.recordInter = setInterval(_ => {
             if (this.recordState === 'ing') {
@@ -398,6 +452,9 @@ export default {
         }
         if (this.recordInter) {
             clearInterval(this.recordInter)
+        }
+        if (window.visualViewport) {
+            window.visualViewport.removeEventListener('resize', this.visualViewportResize);
         }
     },
     computed: {
@@ -510,6 +567,14 @@ export default {
                 return this.dialogMsgs.find(item => item.id === extra_quote_id)
             }
             return null;
+        },
+
+        chatInputBoxStyle({fullInput, viewportHeight}) {
+            const style = {}
+            if (fullInput && viewportHeight > 0) {
+                style.height = Math.max(100, viewportHeight - 70) + 'px'
+            }
+            return style
         },
     },
     watch: {
@@ -661,7 +726,13 @@ export default {
 
         fullInput(val) {
             this.quill?.enable(!val)
-        }
+        },
+
+        windowScrollY(val) {
+            if (this.fullInput && val > 0) {
+                window.scrollTo(0, 0)
+            }
+        },
     },
     methods: {
         init() {
@@ -1304,6 +1375,9 @@ export default {
                     this.fullQuill.on('selection-change', range => {
                         this.fullSelection = range || {index: 0, length: 0};
                     })
+                    this.fullQuill.on('text-change', _ => {
+                        this.fullSelection = this.fullQuill.getSelection()
+                    })
                     this.fullQuill.enable(true)
                     this.$refs.editorFull.firstChild.innerHTML = this.$refs.editor.firstChild.innerHTML
                     this.$nextTick(_ => {
@@ -1782,7 +1856,11 @@ export default {
             if (mention.isOpen) {
                 mention.setMentionContainerPosition()
             }
-        }
+        },
+
+        visualViewportResize() {
+            this.viewportHeight = window.visualViewport?.height || 0;
+        },
     }
 }
 </script>
