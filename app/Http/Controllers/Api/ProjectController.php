@@ -1281,7 +1281,7 @@ class ProjectController extends AbstractController
                         if ($residueTime < 0) {
                             $overTime = Doo::translate(Base::timeFormat(abs($residueTime)));
                         }
-                        $planTime = Base::timeDiff($startTime, $endTime);
+                        $planTime = Doo::translate(Base::timeDiff($startTime, $endTime));
                     }
                     $actualTime = $task->complete_at ? $totalTime : 0; // 实际完成用时
                     $statusText = '未完成';
@@ -1321,7 +1321,7 @@ class ProjectController extends AbstractController
                         $task->end_at ?: '-',
                         $task->complete_at ?: '-',
                         $task->archived_at ?: '-',
-                        $planTime ?: '-',
+                        $planTime,
                         $actualTime ? Doo::translate(Base::timeFormat($actualTime)) : '-',
                         $overTime,
                         $developTime > 0 ? Doo::translate(Base::timeFormat($developTime)) : '-',
@@ -1466,7 +1466,7 @@ class ProjectController extends AbstractController
                         if ($residueTime < 0) {
                             $overTime = Doo::translate(Base::timeFormat(abs($residueTime)));
                         }
-                        $planTime = Base::timeDiff($startTime, $endTime);
+                        $planTime = Doo::translate(Base::timeDiff($startTime, $endTime));
                     }
                     $ownerIds = $task->taskUser->where('owner', 1)->pluck('userid')->toArray();
                     $ownerNames = [];
@@ -1480,7 +1480,7 @@ class ProjectController extends AbstractController
                         Base::filterEmoji($task->name),
                         $task->start_at ?: '-',
                         $task->end_at ?: '-',
-                        $planTime ?: '-',
+                        $planTime,
                         $overTime,
                         implode("、", $ownerNames),
                         Base::filterEmoji(User::userid2nickname($task->userid)) . " (ID: {$task->userid})",

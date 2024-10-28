@@ -110,7 +110,7 @@
                                 <p>{{item.claim_time?.substr(0,16)}}</p>
                             </div>
                         </div>
-                        <p class="comment" v-if="item.identitylink?.comment"><span>“{{ item.identitylink?.comment  }}”</span></p>
+                        <p class="comment" v-if="item.identitylink?.comment"><span>“{{ item.identitylink?.is_system ? $L(item.identitylink?.comment) : item.identitylink?.comment  }}”</span></p>
                     </TimelineItem>
 
                     <!-- 抄送 -->
@@ -143,7 +143,7 @@
                 </template>
             </Timeline>
 
-            <template v-if="datas.global_comments">
+            <template v-if="$A.arrayLength(datas.global_comments) > 0">
                 <Divider/>
                 <h3 class="approve-details-subtitle">{{$L('全文评论')}}</h3>
                 <div class="approve-record-comment">

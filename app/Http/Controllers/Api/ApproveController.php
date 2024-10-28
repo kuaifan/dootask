@@ -816,7 +816,7 @@ class ApproveController extends AbstractController
             // 计算审批耗时
             $startTime = Carbon::parse($val['start_time'])->timestamp;
             $endTime = $val['end_time'] ? Carbon::parse($val['end_time'])->timestamp : time();
-            $approval_time = Base::timeDiff($startTime, $endTime); // 审批耗时
+            $approval_time = Doo::translate(Base::timeDiff($startTime, $endTime)); // 审批耗时
             // 计算时长
             $varStartTime = Carbon::parse($val['var']['start_time']);
             $varEndTime = Carbon::parse($val['var']['end_time']);

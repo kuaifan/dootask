@@ -14007,13 +14007,13 @@
         "key": "自动通过,审批人与发起人为同一人",
         "zh": "",
         "zh-CHT": "自動通過,審批人與發起人為同一人",
-        "en": "Auto-approve if approver and initiator are the same person",
-        "ko": "승인자와 시작자가 동일인일 경우 자동 승인",
-        "ja": "承認者と発起者が同一人物の場合、自動承認",
-        "de": "Automatisch genehmigen, wenn Genehmiger und Initiator dieselbe Person sind",
-        "fr": "Approbation automatique si l'approbateur et l'initiateur sont la même personne",
-        "id": "Persetujuan otomatis jika pemberi persetujuan dan pemohon adalah orang yang sama",
-        "ru": "Автоматическое утверждение, если утверждающий и инициатор - одно и то же лицо"
+        "en": "Auto-approved, the approver is the same person as the initiator",
+        "ko": "자동 승인, 승인자와 신청자가 동일인",
+        "ja": "自動承認、承認者と申請者が同一人物",
+        "de": "Automatisch genehmigt, Genehmiger und Antragsteller sind dieselbe Person",
+        "fr": "Approuvé automatiquement, l'approbateur est la même personne que l'initiateur",
+        "id": "Disetujui otomatis, pemberi persetujuan adalah orang yang sama dengan pemohon",
+        "ru": "Автоматически одобрено, утверждающий и инициатор - одно и то же лицо"
     },
     {
         "key": "您当前未加入任何部门，不能发起！",
@@ -25738,5 +25738,17 @@
         "fr": "(*)min",
         "id": "(*)m",
         "ru": "(*)мин"
+    },
+    {
+        "key": "自动通过,审批人已审核",
+        "zh": "",
+        "zh-CHT": "自動通過,審批人已審核",
+        "en": "Auto-approved, the approver has reviewed",
+        "ko": "자동 승인, 승인자가 이미 검토함",
+        "ja": "自動承認、承認者が既に審査済み",
+        "de": "Automatisch genehmigt, der Genehmiger hat bereits geprüft",
+        "fr": "Approuvé automatiquement, l'approbateur a déjà examiné",
+        "id": "Disetujui otomatis, pemberi persetujuan telah melakukan peninjauan",
+        "ru": "Автоматически одобрено, утверждающий уже выполнил проверку"
     }
 ]
