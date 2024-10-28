@@ -1211,22 +1211,22 @@ class ProjectController extends AbstractController
         go(function () use ($user, $userid, $time, $type, $botUser, $dialog) {
             Coroutine::sleep(0.1);
             $headings = [];
-            $headings[] = '任务ID';
-            $headings[] = '父级任务ID';
-            $headings[] = '所属项目';
-            $headings[] = '任务标题';
-            $headings[] = '任务开始时间';
-            $headings[] = '任务结束时间';
-            $headings[] = '完成时间';
-            $headings[] = '归档时间';
-            $headings[] = '任务计划用时';
-            $headings[] = '实际完成用时';
-            $headings[] = '超时时间';
-            $headings[] = '开发用时';
-            $headings[] = '验收/测试用时';
-            $headings[] = '负责人';
-            $headings[] = '创建人';
-            $headings[] = '状态';
+            $headings[] = Doo::translate('任务ID');
+            $headings[] = Doo::translate('父级任务ID');
+            $headings[] = Doo::translate('所属项目');
+            $headings[] = Doo::translate('任务标题');
+            $headings[] = Doo::translate('任务开始时间');
+            $headings[] = Doo::translate('任务结束时间');
+            $headings[] = Doo::translate('完成时间');
+            $headings[] = Doo::translate('归档时间');
+            $headings[] = Doo::translate('任务计划用时');
+            $headings[] = Doo::translate('实际完成用时');
+            $headings[] = Doo::translate('超时时间');
+            $headings[] = Doo::translate('开发用时');
+            $headings[] = Doo::translate('验收/测试用时');
+            $headings[] = Doo::translate('负责人');
+            $headings[] = Doo::translate('创建人');
+            $headings[] = Doo::translate('状态');
             $datas = [];
             //
             $content = [];
@@ -1244,20 +1244,21 @@ class ProjectController extends AbstractController
                 /** @var ProjectTask $task */
                 foreach ($tasks as $task) {
                     $flowChanges = ProjectTaskFlowChange::whereTaskId($task->id)->get();
-                    $testTime = 0;//验收/测试时间
+                    $testTime = 0; // 测试时间
                     $taskStartTime = $task->start_at ? Carbon::parse($task->start_at)->timestamp : Carbon::parse($task->created_at)->timestamp;
                     $taskCompleteTime = $task->complete_at ? Carbon::parse($task->complete_at)->timestamp : time();
-                    $totalTime = $taskCompleteTime - $taskStartTime; //开发测试总用时
+                    $totalTime = $taskCompleteTime - $taskStartTime; // 任务总用时
                     foreach ($flowChanges as $change) {
-                        if (!str_contains($change->before_flow_item_name, 'end')) {
-                            $upOne = ProjectTaskFlowChange::where('id', '<', $change->id)->whereTaskId($task->id)->orderByDesc('id')->first();
-                            if ($upOne) {
-                                if (str_contains($change->before_flow_item_name, 'test') || str_contains($change->before_flow_item_name, '测试') || strpos($change->before_flow_item_name, '验收') !== false) {
-                                    $testCtime = Carbon::parse($change->created_at)->timestamp;
-                                    $tTime = Carbon::parse($upOne->created_at)->timestamp;
-                                    $tMinusNum = $testCtime - $tTime;
-                                    $testTime += $tMinusNum;
-                                }
+                        if (str_starts_with($change->before_flow_item_name, 'end')) {
+                            continue;
+                        }
+                        $upOne = ProjectTaskFlowChange::where('id', '<', $change->id)->whereTaskId($task->id)->orderByDesc('id')->first();
+                        if ($upOne) {
+                            if (str_starts_with($change->before_flow_item_name, 'test')) {
+                                $testCtime = Carbon::parse($change->created_at)->timestamp;
+                                $tTime = Carbon::parse($upOne->created_at)->timestamp;
+                                $tMinusNum = $testCtime - $tTime;
+                                $testTime += $tMinusNum;
                             }
                         }
                     }
@@ -1265,27 +1266,27 @@ class ProjectController extends AbstractController
                         $lastChange = ProjectTaskFlowChange::whereTaskId($task->id)->orderByDesc('id')->first();
                         $nowTime = time();
                         $unFinishTime = $nowTime - Carbon::parse($lastChange->created_at)->timestamp;
-                        if (str_contains($lastChange->after_flow_item_name, 'test') || str_contains($lastChange->after_flow_item_name, '测试') || strpos($lastChange->after_flow_item_name, '验收') !== false) {
+                        if (str_starts_with($lastChange->after_flow_item_name, 'test')) {
                             $testTime += $unFinishTime;
                         }
                     }
-                    $developTime = $totalTime - $testTime;//开发时间
-                    $planTime = '-';//任务计划用时
-                    $overTime = '-';//超时时间
+                    $developTime = $totalTime - $testTime; // 开发时间
+                    $planTime = '-'; // 任务计划用时
+                    $overTime = '-'; // 超时时间
                     if ($task->end_at) {
                         $startTime = Carbon::parse($task->start_at)->timestamp;
                         $endTime = Carbon::parse($task->end_at)->timestamp;
                         $planTotalTime = $endTime - $startTime;
                         $residueTime = $planTotalTime - $totalTime;
                         if ($residueTime < 0) {
-                            $overTime = Base::timeFormat(abs($residueTime));
+                            $overTime = Doo::translate(Base::timeFormat(abs($residueTime)));
                         }
                         $planTime = Base::timeDiff($startTime, $endTime);
                     }
-                    $actualTime = $task->complete_at ? $totalTime : 0;//实际完成用时
+                    $actualTime = $task->complete_at ? $totalTime : 0; // 实际完成用时
                     $statusText = '未完成';
-                    if ($task->flow_item_name) {
-                        if (str_contains($task->flow_item_name, '已取消')) {
+                    if (str_starts_with($task->flow_item_name, 'end')) {
+                        if (preg_match('/已取消|Cancelled|취소됨|キャンセル済み|Abgebrochen|Annulé|Dibatalkan|Отменено/', $task->flow_item_name)) {
                             $statusText = '已取消';
                             $actualTime = 0;
                             $testTime = 0;
@@ -1321,13 +1322,13 @@ class ProjectController extends AbstractController
                         $task->complete_at ?: '-',
                         $task->archived_at ?: '-',
                         $planTime ?: '-',
-                        $actualTime ? Base::timeFormat($actualTime) : '-',
+                        $actualTime ? Doo::translate(Base::timeFormat($actualTime)) : '-',
                         $overTime,
-                        $developTime > 0 ? Base::timeFormat($developTime) : '-',
-                        $testTime > 0 ? Base::timeFormat($testTime) : '-',
+                        $developTime > 0 ? Doo::translate(Base::timeFormat($developTime)) : '-',
+                        $testTime > 0 ? Doo::translate(Base::timeFormat($testTime)) : '-',
                         Base::filterEmoji(User::userid2nickname($task->ownerid)) . " (ID: {$task->ownerid})",
                         Base::filterEmoji(User::userid2nickname($task->userid)) . " (ID: {$task->userid})",
-                        $statusText
+                        Doo::translate($statusText),
                     ];
                 }
             });
@@ -1357,9 +1358,11 @@ class ProjectController extends AbstractController
             //
             $fileName = User::userid2nickname($userid[0]) ?: $userid[0];
             if (count($userid) > 1) {
-                $fileName .= '等' . count($userid) . '位成员任务统计';
+                $fileName .= '等' . count($userid) . '位成员的任务统计';
+            } else {
+                $fileName .= '的任务统计';
             }
-            $fileName .= '_' . Base::time() . '.xls';
+            $fileName = Doo::translate($fileName) . '_' . Base::time() . '.xls';
             $filePath = "temp/task/export/" . date("Ym", Base::time());
             $export = new BillMultipleExport($sheets);
             $res = $export->store($filePath . "/" . $fileName);
@@ -1432,16 +1435,16 @@ class ProjectController extends AbstractController
         $user = User::auth('admin');
         //
         $headings = [];
-        $headings[] = '任务ID';
-        $headings[] = '父级任务ID';
-        $headings[] = '所属项目';
-        $headings[] = '任务标题';
-        $headings[] = '任务开始时间';
-        $headings[] = '任务结束时间';
-        $headings[] = '任务计划用时';
-        $headings[] = '超时时间';
-        $headings[] = '负责人';
-        $headings[] = '创建人';
+        $headings[] = Doo::translate('任务ID');
+        $headings[] = Doo::translate('父级任务ID');
+        $headings[] = Doo::translate('所属项目');
+        $headings[] = Doo::translate('任务标题');
+        $headings[] = Doo::translate('任务开始时间');
+        $headings[] = Doo::translate('任务结束时间');
+        $headings[] = Doo::translate('任务计划用时');
+        $headings[] = Doo::translate('超时时间');
+        $headings[] = Doo::translate('负责人');
+        $headings[] = Doo::translate('创建人');
         $data = [];
         //
         ProjectTask::whereNull('complete_at')
@@ -1461,7 +1464,7 @@ class ProjectController extends AbstractController
                         $planTotalTime = $endTime - $startTime;
                         $residueTime = $planTotalTime - $totalTime;
                         if ($residueTime < 0) {
-                            $overTime = Base::timeFormat(abs($residueTime));
+                            $overTime = Doo::translate(Base::timeFormat(abs($residueTime)));
                         }
                         $planTime = Base::timeDiff($startTime, $endTime);
                     }
@@ -1488,11 +1491,12 @@ class ProjectController extends AbstractController
             return Base::retError('没有任何数据');
         }
         //
+        $title = Doo::translate('超期任务');
         $sheets = [
-            BillExport::create()->setTitle("超期任务")->setHeadings($headings)->setData($data)->setStyles(["A1:J1" => ["font" => ["bold" => true]]])
+            BillExport::create()->setTitle($title)->setHeadings($headings)->setData($data)->setStyles(["A1:J1" => ["font" => ["bold" => true]]])
         ];
         //
-        $fileName = '超期任务_' . Base::time() . '.xls';
+        $fileName = $title . '_' . Base::time() . '.xls';
         $filePath = "temp/task/export/" . date("Ym", Base::time());
         $export = new BillMultipleExport($sheets);
         $res = $export->store($filePath . "/" . $fileName);

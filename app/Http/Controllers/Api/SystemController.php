@@ -1193,14 +1193,14 @@ class SystemController extends AbstractController
         $secondEnd = strtotime("2000-01-01 {$time[1]}") - strtotime("2000-01-01 00:00:00");
         //
         $headings = [];
-        $headings[] = '签到人';
-        $headings[] = '签到日期';
-        $headings[] = '班次时间';
-        $headings[] = '首次签到时间';
-        $headings[] = '首次签到结果';
-        $headings[] = '最后签到时间';
-        $headings[] = '最后签到结果';
-        $headings[] = '参数数据';
+        $headings[] = Doo::translate('签到人');
+        $headings[] = Doo::translate('签到日期');
+        $headings[] = Doo::translate('班次时间');
+        $headings[] = Doo::translate('首次签到时间');
+        $headings[] = Doo::translate('首次签到结果');
+        $headings[] = Doo::translate('最后签到时间');
+        $headings[] = Doo::translate('最后签到结果');
+        $headings[] = Doo::translate('参数数据');
         //
         $sheets = [];
         $startD = Carbon::parse($date[0])->startOfDay();
@@ -1230,12 +1230,12 @@ class SystemController extends AbstractController
                 if (Base::time() < $startT + $secondStart) {
                     $firstResult = "-";
                 } else {
-                    $firstResult = "正常";
+                    $firstResult = Doo::translate("正常");
                     if (empty($firstTimestamp)) {
-                        $firstResult = "缺卡";
+                        $firstResult = Doo::translate("缺卡");
                         $styles["E{$index}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];
                     } elseif ($firstTimestamp > $startT + $secondStart) {
-                        $firstResult = "迟到";
+                        $firstResult = Doo::translate("迟到");
                         $styles["E{$index}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];
                     }
                 }
@@ -1243,12 +1243,12 @@ class SystemController extends AbstractController
                     $lastResult = "-";
                     $lastTimestamp = 0;
                 } else {
-                    $lastResult = "正常";
+                    $lastResult = Doo::translate("正常");
                     if (empty($lastTimestamp) || $lastTimestamp === $firstTimestamp) {
-                        $lastResult = "缺卡";
+                        $lastResult = Doo::translate("缺卡");
                         $styles["G{$index}"] = ["font" => ["color" => ["rgb" => "ff0000"]]];
                     } elseif ($lastTimestamp < $startT + $secondEnd) {
-                        $lastResult = "早退";
+                        $lastResult = Doo::translate("早退");
                         $styles["G{$index}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];
                     }
                 }
@@ -1278,9 +1278,11 @@ class SystemController extends AbstractController
         //
         $fileName = $users[0]->nickname;
         if (count($users) > 1) {
-            $fileName .= "等" . count($userid) . "位成员";
+            $fileName .= "等" . count($userid) . "位成员的签到记录";
+        } else {
+            $fileName .= '的签到记录';
         }
-        $fileName .= '签到记录_' . Base::time() . '.xlsx';
+        $fileName = Doo::translate($fileName) . '_' . Base::time() . '.xlsx';
         $filePath = "temp/checkin/export/" . date("Ym", Base::time());
         $export = new BillMultipleExport($sheets);
         $res = $export->store($filePath . "/" . $fileName);

@@ -773,32 +773,31 @@ class ApproveController extends AbstractController
         $res = Base::arrayKeyToUnderline($process['data']);
         //
         $headings = [];
-        $headings[] = '申请编号';
-        $headings[] = '标题';
-        $headings[] = '申请状态';
-        $headings[] = '发起时间';
-        $headings[] = '完成时间';
-        $headings[] = '发起人工号';
-        $headings[] = '发起人User ID';
-        $headings[] = '发起人姓名';
-        $headings[] = '发起人部门';
-        $headings[] = '发起人部门ID';
-        $headings[] = '部门负责人';
-        $headings[] = '历史审批人';
-        $headings[] = '历史办理人';
-        $headings[] = '审批记录';
-        $headings[] = '当前处理人';
-        $headings[] = '审批节点';
-        $headings[] = '审批人数';
-        $headings[] = '审批耗时';
-        $headings[] = '假期类型';
-        $headings[] = '开始时间';
-        $headings[] = '结束时间';
-        $headings[] = '时长';
-        $headings[] = '请假事由';
-        $headings[] = '请假单位';
+        $headings[] = Doo::translate('申请编号');
+        $headings[] = Doo::translate('标题');
+        $headings[] = Doo::translate('申请状态');
+        $headings[] = Doo::translate('发起时间');
+        $headings[] = Doo::translate('完成时间');
+        $headings[] = Doo::translate('发起人工号');
+        $headings[] = Doo::translate('发起人User ID');
+        $headings[] = Doo::translate('发起人姓名');
+        $headings[] = Doo::translate('发起人部门');
+        $headings[] = Doo::translate('发起人部门ID');
+        $headings[] = Doo::translate('部门负责人');
+        $headings[] = Doo::translate('历史审批人');
+        $headings[] = Doo::translate('历史办理人');
+        $headings[] = Doo::translate('审批记录');
+        $headings[] = Doo::translate('当前处理人');
+        $headings[] = Doo::translate('审批节点');
+        $headings[] = Doo::translate('审批人数');
+        $headings[] = Doo::translate('审批耗时');
+        $headings[] = Doo::translate('假期类型');
+        $headings[] = Doo::translate('开始时间');
+        $headings[] = Doo::translate('结束时间');
+        $headings[] = Doo::translate('时长');
+        $headings[] = Doo::translate('请假事由');
+        $headings[] = Doo::translate('请假单位');
         //
-        $sheets = [];
         $datas = [];
         foreach ($res as $val) {
             //
@@ -822,7 +821,7 @@ class ApproveController extends AbstractController
             $varStartTime = Carbon::parse($val['var']['start_time']);
             $varEndTime = Carbon::parse($val['var']['end_time']);
             $duration = $varEndTime->floatDiffInHours($varStartTime);
-            $duration_unit = '小时'; // 时长单位
+            $duration_unit = Doo::translate('小时'); // 时长单位
             $datas[] = [
                 $val['id'], // 申请编号
                 $val['proc_def_name'], // 标题
@@ -854,12 +853,12 @@ class ApproveController extends AbstractController
             return Base::retError('没有任何数据');
         }
         //
-        $title = "Sheet1";
+        $title = Doo::translate("审批记录");
         $sheets = [
             BillExport::create()->setTitle($title)->setHeadings($headings)->setData($datas)->setStyles(["A1:Y1" => ["font" => ["bold" => true]]])
         ];
         //
-        $fileName = '审批记录_' . Base::time() . '.xlsx';
+        $fileName = $title . '_' . Base::time() . '.xlsx';
         $filePath = "temp/approve/export/" . date("Ym", Base::time());
         $export = new BillMultipleExport($sheets);
         $res = $export->store($filePath . "/" . $fileName);
