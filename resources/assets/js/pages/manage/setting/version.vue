@@ -40,7 +40,7 @@ export default {
             this.$store.dispatch("call", {
                 url: 'system/get/updatelog',
                 data: {
-                    take: 20
+                    take: 50
                 }
             }).then(({data}) => {
                 this.updateLog = data.updateLog;

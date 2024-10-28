@@ -1064,7 +1064,7 @@ class SystemController extends AbstractController
      * @apiGroup system
      * @apiName get__updatelog
      *
-     * @apiParam {Number} [take]        获取数量，10-100
+     * @apiParam {Number} [take]        获取数量：10-100（留空默认：50）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1072,7 +1072,7 @@ class SystemController extends AbstractController
      */
     public function get__updatelog()
     {
-        $take = min(100, max(10, intval(Request::input('take'))));
+        $take = min(100, max(10, intval(Request::input('take', 50))));
         $logPath = base_path('CHANGELOG.md');
         $logVersion = "";
         $logContent = "";
@@ -1090,7 +1090,7 @@ class SystemController extends AbstractController
         if ($logResults) {
             $logVersion = $logResults[0]['title'];
             $logContent = implode("\n", array_map(function($item) {
-                return "## " . $item['title'] . $item['content'];
+                return "## [{$item['title']}]" . $item['content'];
             }, $logResults));
         }
         return Base::retSuccess('success', [

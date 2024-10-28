@@ -1405,7 +1405,7 @@
                             > span {
                                 flex: 1;
                                 height: 1px;
-                                background-color: rgba(255, 255, 255, 0.2);
+                                background-color: rgba(120, 120, 120, 0.2);
                                 transform: scaleY(0.5);
                                 min-width: 18px;
                             }
@@ -1764,6 +1764,12 @@
                                 .ivu-btn-grey {
                                     background-color: #efefef;
                                     border-color: #f3f3f3;
+                                }
+                            }
+
+                            .content-divider {
+                                > span {
+                                    background-color: rgba(255, 255, 255, 0.2);
                                 }
                             }
 
