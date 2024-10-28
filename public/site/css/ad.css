@@ -139,6 +139,8 @@ footer.ad-footer .footer-layout {
 
 .ad-wrapper .topics .topics-btn {
     gap: 16px;
+
+    margin-bottom: 240px;
 }
 
 .ad-wrapper .topics .topics-btn .btn {
@@ -169,10 +171,15 @@ footer.ad-footer .footer-layout {
 }
 
 .ad-wrapper main {
-    background-image: url(../img/ad/plan.png);
+    /* background-image: url(../img/ad/plan.png);
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat;
+    background-repeat: no-repeat; */
+    position: relative;
+}
+
+.ad-plan {
+    margin-top: -240px;
 }
 
 .ad-plan,
@@ -183,7 +190,7 @@ footer.ad-footer .footer-layout {
 .section-wrapper {
     max-width: 1280px;
     margin: 0 auto;
-    padding: 96px 0 64px;
+    padding: 0 0 96px 64px;
 
     display: flex;
 
@@ -210,8 +217,8 @@ footer.ad-footer .footer-layout {
 .ad-plan .section-content {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
 }
 
 .ad-plan .section-content .plan-item {
@@ -222,12 +229,32 @@ footer.ad-footer .footer-layout {
     min-height: 360px;
     padding: 32px 24px;
     border: 2px solid transparent;
+
+    position: relative;
 }
 
 .ad-plan .section-content .plan-item:hover,
 .ad-plan .section-content .plan-item.active {
     border-color: #f3474c;
     box-shadow: 0px 24px 32px 16px #0000001f;
+}
+
+.ad-plan .section-content .plan-item .plan-item-tag {
+    position: absolute;
+    top: -12px;
+    right: -12px;
+    width: 88px;
+    height: 32px;
+    background-image: url(../img/ad/tag.png);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
 }
 
 .ad-plan .section-content .plan-item .plan-item-title {
@@ -245,8 +272,16 @@ footer.ad-footer .footer-layout {
 }
 
 .ad-plan .section-content .plan-item .plan-item-price .plan-item-price-current {
-    font-size: 24px;
+    font-size: 32px;
     font-weight: 900;
+}
+
+.ad-plan
+    .section-content
+    .plan-item
+    .plan-item-price
+    .plan-item-price-current.price {
+    color: #f3474c;
 }
 
 .ad-plan .section-content .plan-item .plan-item-price .plan-item-price-payment {
@@ -269,7 +304,6 @@ footer.ad-footer .footer-layout {
     .plan-item
     .plan-item-price
     .plan-item-price-original.price {
-    color: #f3474c;
     text-decoration: line-through;
 }
 

@@ -307,12 +307,32 @@ function handleAdBannerSelfHostButton({
     "ad-banner-self-host-button"
   );
   if (selfHostButtonEl) {
-    selfHostButtonEl.innerHTML = `
-        <a href="${href}" ${target === "_blank" ? 'target="_blank"' : ""} >
-          <button class="btn btn-default">
-            ${label}
-          </button>
-        </a>`;
+    if (href === "#") {
+      selfHostButtonEl.innerHTML = `
+      <a>
+        <button class="btn btn-default">
+          ${label}
+        </button>
+      </a>`;
+      function showDialog(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const dialogEl = document.querySelector(".ad-dialog");
+        if (!dialogEl) return;
+        dialogEl.classList.add("show");
+        lockBodyScroll(true);
+        handleDialogAnimate(true)
+      }
+      selfHostButtonEl.addEventListener("click", showDialog);
+    } else {
+      selfHostButtonEl.innerHTML = `
+      <a href="${href}" ${target === "_blank" ? 'target="_blank"' : ""} >
+        <button class="btn btn-default">
+          ${label}
+        </button>
+      </a>`;
+    }
     selfHostButtonEl.style = getStyle(style);
   }
 }
@@ -373,11 +393,12 @@ async function handleAdPlanPlans(plans) {
       planItemEl.className = `plan-item ${plan.activated ? "active" : ""
         }`;
       planItemEl.innerHTML = `
+          ${plan.tag ? `<div class="plan-item-tag">${plan.tag}</div>` : ""}
           <div class="plan-item-title">
               <span>${plan.title}</span>
           </div>
           <div class="plan-item-price">
-              <span class="plan-item-price-current">
+              <span class="plan-item-price-current price">
                   ${plan.price.current}
                   <span class="plan-item-price-payment">
                       ${plan.price.payment ?? ""}
