@@ -67,7 +67,7 @@
                             </div>
                         </li>
                     </ul>
-                    <Tabs v-else v-model="aibotTabAction">
+                    <Tabs v-else v-model="aibotTabAction" class="ai-tabs">
                         <TabPane label="ChatGPT" name="opanai">
                             <div class="aibot-warp">
                                 <SystemAibot type="ChatGPT" v-if="aibotTabAction == 'opanai'" />

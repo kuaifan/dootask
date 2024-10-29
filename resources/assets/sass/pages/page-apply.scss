@@ -319,24 +319,6 @@
             }
         }
 
-        //
-        .ivu-tabs {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            margin: 0 -30px;
-
-            .ivu-tabs-bar {
-                padding: 0 10px;
-            }
-
-            .ivu-tabs-content {
-                height: 100%;
-                flex: 1;
-            }
-        }
-
-        //
         .ivu-modal-wrap-ul {
             list-style-type: none;
             overflow: hidden;
@@ -421,9 +403,29 @@
         }
 
         // 机器人
-        .aibot-warp {
-            position: relative;
-            height: 100%;
+        .ai-tabs {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+
+            .ivu-tabs-bar {
+                padding: 0 10px;
+            }
+
+            .ivu-tabs-content {
+                height: 0;
+                flex: 1;
+
+                .aibot-warp {
+                    position: relative;
+                    height: 100%;
+                }
+            }
         }
     }
 }

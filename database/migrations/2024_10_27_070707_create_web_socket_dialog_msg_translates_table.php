@@ -13,6 +13,9 @@ class CreateWebSocketDialogMsgTranslatesTable extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('web_socket_dialog_msg_translates'))
+            return;
+
         Schema::create('web_socket_dialog_msg_translates', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('dialog_id')->nullable()->default(0)->comment('对话ID');
