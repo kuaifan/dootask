@@ -245,7 +245,7 @@ class File extends AbstractModel
             }
         }
         //
-        $path = 'uploads/tmp/' . date("Ym") . '/';
+        $path = 'uploads/tmp/file/' . date("Ym") . '/';
         $data = Base::upload([
             "file" => Request::file('files'),
             "type" => 'more',

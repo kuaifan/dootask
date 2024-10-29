@@ -252,10 +252,22 @@ import {MarkdownPreview} from "../store/markdown";
                     const widthMatch = res.match("width=\"(\\d+)\""),
                         heightMatch = res.match("height=\"(\\d+)\"");
                     if (widthMatch && heightMatch) {
-                        const width = parseInt(widthMatch[1]),
-                            height = parseInt(heightMatch[1]),
-                            maxSize = 40;
-                        const scale = $A.scaleToScale(width, height, maxSize, maxSize);
+                        const data = {
+                            width: parseInt(widthMatch[1]),
+                            height: parseInt(heightMatch[1]),
+                            maxSize: 40,
+                            src
+                        }
+                        const ratioExceed = $A.imageRatioExceed(data.width, data.height, 2)
+                        if (ratioExceed > 0 && /\.(png|jpg|jpeg)$/.test(data.src)) {
+                            src = $A.thumbRestore(data.src) + `/crop/ratio:${ratioExceed},percentage:80x0`
+                            if (data.width > data.height) {
+                                data.width = data.height * ratioExceed;
+                            } else {
+                                data.height = data.width * ratioExceed;
+                            }
+                        }
+                        const scale = $A.scaleToScale(data.width, data.height, data.maxSize);
                         imgClassName = `${imgClassName}" style="width:${scale.width}px;height:${scale.height}px`
                     }
                     return `[image:${src}]`
@@ -274,10 +286,11 @@ import {MarkdownPreview} from "../store/markdown";
             if (imgClassName) {
                 text = text.replace(/\[image:(.*?)\]/g, `<img class="${imgClassName}" src="$1">`)
                 text = text.replace(/\{\{RemoteURL\}\}/g, this.apiUrl('../'))
-            }
-            const tmpText = text.substring(0, 30)
-            if (tmpText.length < text.length) {
-                text = tmpText + '...'
+            } else {
+                const tmpText = text.substring(0, 30)
+                if (tmpText.length < text.length) {
+                    text = tmpText + '...'
+                }
             }
             return text
         },
@@ -339,13 +352,30 @@ import {MarkdownPreview} from "../store/markdown";
                     const widthMatch = res.match(widthReg),
                         heightMatch = res.match(heightReg);
                     if (widthMatch && heightMatch) {
-                        const width = parseInt(widthMatch[1]),
-                            height = parseInt(heightMatch[1]),
-                            maxSize = res.indexOf("emoticon") > -1 ? 150 : 220; // 跟css中的设置一致
-                        const scale = $A.scaleToScale(width, height, maxSize, maxSize);
-                        const value = res
-                            .replace(widthReg, `original-width="${width}"`)
-                            .replace(heightReg, `original-height="${height}" style="width:${scale.width}px;height:${scale.height}px"`)
+                        const data = {
+                            res,
+                            width: parseInt(widthMatch[1]),
+                            height: parseInt(heightMatch[1]),
+                            maxSize: res.indexOf("emoticon") > -1 ? 150 : 220,  // 跟css中的设置一致
+                        }
+                        if (data.maxSize === 220) {
+                            const ratioExceed = $A.imageRatioExceed(data.width, data.height)
+                            if (ratioExceed > 0) {
+                                const srcMatch = res.match(/src=(["'])(([^'"]*)\.(png|jpg|jpeg))\1/);
+                                if (srcMatch) {
+                                    data.res = data.res.replace(srcMatch[2], $A.thumbRestore(srcMatch[2]) + `/crop/ratio:${ratioExceed},percentage:320x0`)
+                                    if (data.width > data.height) {
+                                        data.width = data.height * ratioExceed;
+                                    } else {
+                                        data.height = data.width * ratioExceed;
+                                    }
+                                }
+                            }
+                        }
+                        const scale = $A.scaleToScale(data.width, data.height, data.maxSize);
+                        const value = data.res
+                            .replace(widthReg, `original-width="${data.width}"`)
+                            .replace(heightReg, `original-height="${data.height}" style="width:${scale.width}px;height:${scale.height}px"`)
                         text = text.replace(res, value)
                     } else {
                         text = text.replace(res, `<div class="no-size-image-box">${res}</div>`);
@@ -432,11 +462,23 @@ import {MarkdownPreview} from "../store/markdown";
             if (msg.type == 'img') {
                 if (imgClassName) {
                     // 缩略图，主要用于回复消息预览
-                    const width = parseInt(msg.width),
-                        height = parseInt(msg.height),
-                        maxSize = 40;
-                    const scale = $A.scaleToScale(width, height, maxSize, maxSize);
-                    return `<img class="${imgClassName}" style="width:${scale.width}px;height:${scale.height}px" src="${msg.thumb}">`
+                    const data = {
+                        width: parseInt(msg.width),
+                        height: parseInt(msg.height),
+                        maxSize: 40,
+                        thumb: msg.thumb
+                    }
+                    const ratioExceed = $A.imageRatioExceed(data.width, data.height, 2)
+                    if (ratioExceed > 0 && /\.(png|jpg|jpeg)$/.test(data.thumb)) {
+                        data.thumb = $A.thumbRestore(data.thumb) + `/crop/ratio:${ratioExceed},percentage:80x0`
+                        if (data.width > data.height) {
+                            data.width = data.height * ratioExceed;
+                        } else {
+                            data.height = data.width * ratioExceed;
+                        }
+                    }
+                    const scale = $A.scaleToScale(data.width, data.height, data.maxSize);
+                    return `<img class="${imgClassName}" style="width:${scale.width}px;height:${scale.height}px" src="${data.thumb}">`
                 }
                 return `[${$A.L('图片')}]`
             } else if (msg.ext == 'mp4') {
@@ -500,7 +542,9 @@ import {MarkdownPreview} from "../store/markdown";
          * @returns {*|string}
          */
         thumbRestore(url) {
-            return `${url}`.replace(/_thumb\.(jpg|jpeg|png)$/, '')
+            return `${url}`
+                .replace(/_thumb\.(png|jpg|jpeg)$/, '')
+                .replace(/\/crop\/([^\/]+)$/, '')
         },
 
         /**
@@ -518,6 +562,23 @@ import {MarkdownPreview} from "../store/markdown";
                 }
             }
             return false;
+        },
+
+        /**
+         * 图片尺寸比例超出
+         * @param width
+         * @param height
+         * @param ratio
+         * @param float
+         * @returns {number}
+         */
+        imageRatioExceed(width, height, ratio = 3, float = 0.5) {
+            if (width && height) {
+                if (width / height > (ratio + float) || height / width > (ratio + float)) {
+                    return ratio
+                }
+            }
+            return 0;
         },
 
         /**

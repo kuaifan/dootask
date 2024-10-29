@@ -58,11 +58,11 @@ class Image
 
     /**
      * 按比例裁剪
-     * @param int $ratio
+     * @param float $ratio
      * @return $this
      * @throws \ImagickException
      */
-    public function ratioCrop(int $ratio = 0): static
+    public function ratioCrop(float $ratio = 0): static
     {
         if ($ratio === 0) {
             return $this;
@@ -77,7 +77,7 @@ class Image
             $newHeight = $height;
         } elseif ($height > $width * $ratio) {
             $newWidth = $width;
-            $newHeight = $width * 3;
+            $newHeight = $width * $ratio;
         } else {
             return $this;
         }
@@ -198,6 +198,15 @@ class Image
     public function saveTo(string $savePath): void
     {
         $this->image->writeImage($savePath);
+        $this->image->destroy();
+    }
+
+    /**
+     * 销毁对象
+     * @return void
+     */
+    public function destroy()
+    {
         $this->image->destroy();
     }
 

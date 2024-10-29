@@ -1067,11 +1067,13 @@ const timezone = require("dayjs/plugin/timezone");
          * 等比缩放尺寸
          * @param width
          * @param height
-         * @param maxWidth
-         * @param maxHeight
+         * @param maxW
+         * @param maxH
          * @returns {{width, height}|{width: number, height: number}}
          */
-        scaleToScale(width, height, maxWidth, maxHeight) {
+        scaleToScale(width, height, maxW, maxH = undefined) {
+            const maxWidth = maxW;
+            const maxHeight = typeof maxH === "undefined" ? maxW : maxH;
             let tempWidth;
             let tempHeight;
             if (width > 0 && height > 0) {

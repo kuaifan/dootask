@@ -1,7 +1,7 @@
 <template>
     <div :class="`content-file ${msg.type}`">
         <div class="dialog-file">
-            <img v-if="msg.type === 'img'" class="file-img" :style="imageStyle(msg)" :src="msg.thumb" @click="viewFile"/>
+            <img v-if="msg.type === 'img'" class="file-img" :style="imageStyle(msg)" :src="imageSrc(msg)" @click="viewFile"/>
             <div v-else-if="isVideoFile(msg)" class="file-video" :style="imageStyle(msg)" @click="viewFile">
                 <img v-if="msg.thumb" :src="msg.thumb">
                 <video v-else :width="imageStyle(msg, 'width')" :height="imageStyle(msg, 'height')">
@@ -49,9 +49,16 @@ export default {
             return {};
         },
 
-        imageStyle(info, type = 'style') {
-            const {width, height} = info;
+        imageStyle({width, height, ext}, type = 'style') {
             if (width && height) {
+                const ratioExceed = $A.imageRatioExceed(width, height)
+                if (['png', 'jpg', 'jpeg'].includes(ext) && ratioExceed > 0) {
+                    if (width > height) {
+                        width = height * ratioExceed;
+                    } else {
+                        height = width * ratioExceed;
+                    }
+                }
                 let maxW = 220,
                     maxH = 220,
                     tempW = width,
@@ -80,6 +87,14 @@ export default {
                 return 0
             }
             return {};
+        },
+
+        imageSrc({width, height, ext, thumb}) {
+            const ratioExceed = $A.imageRatioExceed(width, height)
+            if (['png', 'jpg', 'jpeg'].includes(ext) && ratioExceed > 0) {
+                thumb = $A.thumbRestore(thumb) + `/crop/ratio:${ratioExceed},percentage:320x0`;
+            }
+            return thumb;
         },
 
         isVideoFile(msg) {

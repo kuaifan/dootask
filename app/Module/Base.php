@@ -2507,7 +2507,7 @@ class Base
      */
     public static function isThumb($file): bool
     {
-        return preg_match('/_thumb\.(jpg|jpeg|png)$/', $file);
+        return preg_match('/_thumb\.(png|jpg|jpeg)$/', $file);
     }
 
     /**
@@ -2535,7 +2535,8 @@ class Base
      */
     public static function thumbRestore($file): string
     {
-        return preg_replace('/_thumb\.(jpg|jpeg|png)$/', '', $file);
+        $file = preg_replace('/_thumb\.(png|jpg|jpeg)$/', '', $file);
+        return preg_replace('/\/crop\/([^\/]+)$/', '', $file);
     }
 
     /**
