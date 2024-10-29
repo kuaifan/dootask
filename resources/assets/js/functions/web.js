@@ -500,9 +500,7 @@ import {MarkdownPreview} from "../store/markdown";
          * @returns {*|string}
          */
         thumbRestore(url) {
-            url = $A.rightDelete(url, '_thumb.jpg')
-            url = $A.rightDelete(url, '_thumb.png')
-            return url
+            return `${url}`.replace(/_thumb\.(jpg|jpeg|png)$/, '')
         },
 
         /**

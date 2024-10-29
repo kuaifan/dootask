@@ -2444,6 +2444,12 @@ class Base
                         }
                     }
                 }
+                // 压缩图片
+                $quality = intval($param['quality']);
+                if ($quality > 0) {
+                    Image::compressImage($array['file'], null, $quality);
+                    $array['size'] = Base::twoFloat(filesize($array['file']) / 1024, true);
+                }
                 // 生成缩略图
                 $array['thumb'] = $array['path'];
                 if ($array['ext'] === 'gif' && !isset($param['autoThumb'])) {
@@ -2455,12 +2461,6 @@ class Base
                     }
                 }
                 $array['thumb'] = Base::fillUrl($array['thumb']);
-            }
-            // 压缩图片
-            $quality = intval($param['quality']);
-            if ($quality > 0) {
-                Image::compressImage($array['file'], null, $quality);
-                $array['size'] = Base::twoFloat(filesize($array['file']) / 1024, true);
             }
             //
             return Base::retSuccess('success', $array);
@@ -2507,9 +2507,7 @@ class Base
      */
     public static function isThumb($file): bool
     {
-        return str_ends_with($file, '_thumb.jpeg')
-            || str_ends_with($file, '_thumb.jpg')
-            || str_ends_with($file, '_thumb.png');
+        return preg_match('/_thumb\.(jpg|jpeg|png)$/', $file);
     }
 
     /**
@@ -2533,19 +2531,11 @@ class Base
     /**
      * 缩略图还原
      * @param $file
-     * @return mixed|string
+     * @return string
      */
-    public static function thumbRestore($file): mixed
+    public static function thumbRestore($file): string
     {
-        if (str_ends_with($file, '_thumb.jpeg')) {
-            return Base::rightDelete($file, '_thumb.jpeg');
-        } elseif (str_ends_with($file, '_thumb.jpg')) {
-            return Base::rightDelete($file, '_thumb.jpg');
-        } elseif (str_ends_with($file, '_thumb.png')) {
-            return Base::rightDelete($file, '_thumb.png');
-        } else {
-            return $file;
-        }
+        return preg_replace('/_thumb\.(jpg|jpeg|png)$/', '', $file);
     }
 
     /**

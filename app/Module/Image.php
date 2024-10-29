@@ -24,6 +24,15 @@ class Image
     public function __construct($imagePath) {
         $this->path = $imagePath;
         $this->image = new Imagick($this->path);
+        $this->updateSize();
+    }
+
+    /**
+     * 更新图片尺寸
+     * @return void
+     * @throws \ImagickException
+     */
+    private function updateSize() {
         $geo = $this->image->getImageGeometry();
         $this->height = $geo['height'];
         $this->width = $geo['width'];
@@ -45,6 +54,36 @@ class Image
     public function getHeight(): int
     {
         return $this->height;
+    }
+
+    /**
+     * 按比例裁剪
+     * @param int $ratio
+     * @return $this
+     * @throws \ImagickException
+     */
+    public function ratioCrop(int $ratio = 0): static
+    {
+        if ($ratio === 0) {
+            return $this;
+        }
+        if ($ratio  < 1) {
+            $ratio = 1 / $ratio;
+        }
+        $width = $this->width;
+        $height = $this->height;
+        if ($width > $height * $ratio) {
+            $newWidth = $height * $ratio;
+            $newHeight = $height;
+        } elseif ($height > $width * $ratio) {
+            $newWidth = $width;
+            $newHeight = $width * 3;
+        } else {
+            return $this;
+        }
+        $this->image->cropImage($newWidth, $newHeight, ($width - $newWidth) / 2, ($height - $newHeight) / 2);
+        $this->updateSize();
+        return $this;
     }
 
     /**
@@ -97,6 +136,7 @@ class Image
         } else {
             $this->image->thumbnailImage($width, $height);
         }
+        $this->updateSize();
         return $this;
     }
 
@@ -190,6 +230,10 @@ class Image
             $image->saveTo($savePath);
             if ($quality > 0) {
                 Image::compressImage($savePath, null, $quality);
+            }
+            if (filesize($savePath) >= filesize($imagePath)) {
+                unlink($savePath);
+                symlink(basename($imagePath), $savePath);
             }
             return $extension;
         } catch (\ImagickException) {
