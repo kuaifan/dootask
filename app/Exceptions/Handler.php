@@ -96,14 +96,25 @@ class Handler extends ExceptionHandler
         $path = $request->path();
 
         // 处理图片
-        $pattern = '/^(uploads\/.*\.(png|jpg|jpeg))\/crop\/([^\/]+)$/';
-        if (preg_match($pattern, $path, $matches)) {
+        $patternCrop = '/^(uploads\/.*\.(png|jpg|jpeg))\/crop\/([^\/]+)$/';
+        $patternThumb = '/^(uploads\/.*)_thumb\.(png|jpg|jpeg)$/';
+        $matchesCrop = null;
+        $matchesThumb = null;
+        if (preg_match($patternCrop, $path, $matchesCrop) || preg_match($patternThumb, $path, $matchesThumb)) {
             // 获取参数
-            $file = $matches[1];
-            $ext = $matches[2];
-            $rules = preg_replace('/\s+/', '', $matches[3]);
-            $rules = str_replace(['=', '&'], [':', ','], $rules);
-            $rules = explode(',', $rules);
+            if ($matchesCrop) {
+                $file = $matchesCrop[1];
+                $ext = $matchesCrop[2];
+                $rules = preg_replace('/\s+/', '', $matchesCrop[3]);
+                $rules = str_replace(['=', '&'], [':', ','], $rules);
+                $rules = explode(',', $rules);
+            } elseif ($matchesThumb) {
+                $file = $matchesThumb[1];
+                $ext = $matchesThumb[2];
+                $rules = ['percentage:320x0'];
+            } else {
+                return null;
+            }
             if (empty($rules)) {
                 return null;
             }

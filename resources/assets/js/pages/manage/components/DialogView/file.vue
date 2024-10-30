@@ -51,7 +51,7 @@ export default {
 
         imageStyle({width, height, ext}, type = 'style') {
             if (width && height) {
-                const ratioExceed = $A.imageRatioExceed(width, height)
+                const ratioExceed = $A.imageRatioExceed(width, height, 3)
                 if (['png', 'jpg', 'jpeg'].includes(ext) && ratioExceed > 0) {
                     if (width > height) {
                         width = height * ratioExceed;
@@ -90,7 +90,7 @@ export default {
         },
 
         imageSrc({width, height, ext, thumb}) {
-            const ratioExceed = $A.imageRatioExceed(width, height)
+            const ratioExceed = $A.imageRatioExceed(width, height, 3)
             if (['png', 'jpg', 'jpeg'].includes(ext) && ratioExceed > 0) {
                 thumb = $A.thumbRestore(thumb) + `/crop/ratio:${ratioExceed},percentage:320x0`;
             }

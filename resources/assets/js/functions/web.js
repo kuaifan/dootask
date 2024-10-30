@@ -249,26 +249,17 @@ import {MarkdownPreview} from "../store/markdown";
             text = text.replace(/<img\s+class="emoticon"[^>]*?>/g, `[${$A.L('动画表情')}]`)
             if (imgClassName) {
                 text = text.replace(/<img\s+class="browse"[^>]*?src="(\S+)"[^>]*?>/g, function (res, src) {
-                    const widthMatch = res.match("width=\"(\\d+)\""),
-                        heightMatch = res.match("height=\"(\\d+)\"");
-                    if (widthMatch && heightMatch) {
-                        const data = {
-                            width: parseInt(widthMatch[1]),
-                            height: parseInt(heightMatch[1]),
-                            maxSize: 40,
-                            src
-                        }
-                        const ratioExceed = $A.imageRatioExceed(data.width, data.height, 2)
-                        if (ratioExceed > 0 && /\.(png|jpg|jpeg)$/.test(data.src)) {
-                            src = $A.thumbRestore(data.src) + `/crop/ratio:${ratioExceed},percentage:80x0`
-                            if (data.width > data.height) {
-                                data.width = data.height * ratioExceed;
-                            } else {
-                                data.height = data.width * ratioExceed;
-                            }
-                        }
-                        const scale = $A.scaleToScale(data.width, data.height, data.maxSize);
-                        imgClassName = `${imgClassName}" style="width:${scale.width}px;height:${scale.height}px`
+                    const item = $A.extractImageParameter(res);
+                    if (item.width && item.height) {
+                        const data = $A.imageRatioHandle({
+                            src: item.src,
+                            width: item.width,
+                            height: item.height,
+                            crops: {ratio: 2, percentage: '80x0'},
+                            scaleSize: 40,
+                        })
+                        src = data.src
+                        imgClassName = `${imgClassName}" style="width:${data.width}px;height:${data.height}px`
                     }
                     return `[image:${src}]`
                 })
@@ -344,44 +335,25 @@ import {MarkdownPreview} from "../store/markdown";
                 }).join("")
             }
             // 处理图片显示尺寸
-            const array = text.match(/<img\s+[^>]*?>/g);
-            if (array) {
-                const widthReg = new RegExp("width=\"(\\d+)\""),
-                    heightReg = new RegExp("height=\"(\\d+)\"")
-                array.some(res => {
-                    const widthMatch = res.match(widthReg),
-                        heightMatch = res.match(heightReg);
-                    if (widthMatch && heightMatch) {
-                        const data = {
-                            res,
-                            width: parseInt(widthMatch[1]),
-                            height: parseInt(heightMatch[1]),
-                            maxSize: res.indexOf("emoticon") > -1 ? 150 : 220,  // 跟css中的设置一致
-                        }
-                        if (data.maxSize === 220) {
-                            const ratioExceed = $A.imageRatioExceed(data.width, data.height)
-                            if (ratioExceed > 0) {
-                                const srcMatch = res.match(/src=(["'])(([^'"]*)\.(png|jpg|jpeg))\1/);
-                                if (srcMatch) {
-                                    data.res = data.res.replace(srcMatch[2], $A.thumbRestore(srcMatch[2]) + `/crop/ratio:${ratioExceed},percentage:320x0`)
-                                    if (data.width > data.height) {
-                                        data.width = data.height * ratioExceed;
-                                    } else {
-                                        data.height = data.width * ratioExceed;
-                                    }
-                                }
-                            }
-                        }
-                        const scale = $A.scaleToScale(data.width, data.height, data.maxSize);
-                        const value = data.res
-                            .replace(widthReg, `original-width="${data.width}"`)
-                            .replace(heightReg, `original-height="${data.height}" style="width:${scale.width}px;height:${scale.height}px"`)
-                        text = text.replace(res, value)
-                    } else {
-                        text = text.replace(res, `<div class="no-size-image-box">${res}</div>`);
-                    }
-                })
-            }
+            const items = $A.extractImageParameterAll(text);
+            items.some(item => {
+                if (item.src && item.width && item.height) {
+                    const data = $A.imageRatioHandle({
+                        src: item.src,
+                        width: item.width,
+                        height: item.height,
+                        crops: {ratio: 3, percentage: '320x0'},
+                        scaleSize: item.original.indexOf("emoticon") > -1 ? 150 : 220,
+                    })
+                    const value = item.original
+                        .replace(/\s+width=/, ` original-width=`)
+                        .replace(/\s+height=/, ` original-height=`)
+                        .replace(/\s+src=(["'])([^'"]*)\1/i, ` style="width:${data.width}px;height:${data.height}px" src="${data.src}"`)
+                    text = text.replace(item.original, value)
+                } else {
+                    text = text.replace(item.original, `<div class="no-size-image-box">${item.original}</div>`);
+                }
+            })
             return text;
         },
 
@@ -462,23 +434,14 @@ import {MarkdownPreview} from "../store/markdown";
             if (msg.type == 'img') {
                 if (imgClassName) {
                     // 缩略图，主要用于回复消息预览
-                    const data = {
+                    const data = $A.imageRatioHandle({
+                        src: msg.thumb,
                         width: parseInt(msg.width),
                         height: parseInt(msg.height),
-                        maxSize: 40,
-                        thumb: msg.thumb
-                    }
-                    const ratioExceed = $A.imageRatioExceed(data.width, data.height, 2)
-                    if (ratioExceed > 0 && /\.(png|jpg|jpeg)$/.test(data.thumb)) {
-                        data.thumb = $A.thumbRestore(data.thumb) + `/crop/ratio:${ratioExceed},percentage:80x0`
-                        if (data.width > data.height) {
-                            data.width = data.height * ratioExceed;
-                        } else {
-                            data.height = data.width * ratioExceed;
-                        }
-                    }
-                    const scale = $A.scaleToScale(data.width, data.height, data.maxSize);
-                    return `<img class="${imgClassName}" style="width:${scale.width}px;height:${scale.height}px" src="${data.thumb}">`
+                        crops: {ratio: 2, percentage: '80x0'},
+                        scaleSize: 40,
+                    })
+                    return `<img class="${imgClassName}" style="width:${data.width}px;height:${data.height}px" src="${data.src}">`
                 }
                 return `[${$A.L('图片')}]`
             } else if (msg.ext == 'mp4') {
@@ -566,14 +529,54 @@ import {MarkdownPreview} from "../store/markdown";
 
         /**
          * 图片尺寸比例超出
+         * @param params {{src: *, width: (number|*), height: (number|*), crops: {percentage: string, ratio: number}, scaleSize: (number)}}
+         * src,        // 原图地址
+         * width,      // 原图宽度
+         * height,     // 原图高度
+         * crops,      // 裁剪参数，如：{ratio:3, percentage:"80x0"}
+         * scaleSize,  // 返回尺寸缩放最高尺寸
+         */
+        imageRatioHandle(params) {
+            if (!/\.(png|jpg|jpeg)$/.test(params.src)) {
+                return params
+            }
+
+            if (!$A.isJson(params.crops)) {
+                return params
+            }
+
+            params.src = $A.thumbRestore(params.src) + "/crop/" + Object.keys(params.crops).map(key => {
+                return `${key}:${params.crops[key]}`
+            }).join(",")
+
+            const ratio = $A.imageRatioExceed(params.width, params.height, params.crops.ratio)
+            if (ratio > 0) {
+                if (params.width > params.height) {
+                    params.width = params.height * ratio;
+                } else {
+                    params.height = params.width * ratio;
+                }
+            }
+
+            if (params.scaleSize) {
+                const scale = $A.scaleToScale(params.width, params.height, params.scaleSize);
+                params.width = scale.width;
+                params.height = scale.height;
+            }
+
+            return params;
+        },
+
+        /**
+         * 图片尺寸比例超出
          * @param width
          * @param height
          * @param ratio
          * @param float
          * @returns {number}
          */
-        imageRatioExceed(width, height, ratio = 3, float = 0.5) {
-            if (width && height) {
+        imageRatioExceed(width, height, ratio, float = 0.5) {
+            if (width && height && ratio) {
                 if (width / height > (ratio + float) || height / width > (ratio + float)) {
                     return ratio
                 }

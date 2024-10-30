@@ -1199,6 +1199,33 @@ const timezone = require("dayjs/plugin/timezone");
                 }
                 return result;
             }, {});
+        },
+
+        /**
+         * 从HTML中提取图片参数
+         * @param imgTag
+         * @returns {{original, src: (*|null), width: (number|*), height: (number|*)}}
+         */
+        extractImageParameter(imgTag) {
+            const srcMatch = imgTag.match(/\s+src=(["'])([^'"]*)\1/i);
+            const widthMatch = imgTag.match(/\s+width=(["'])([^'"]*)\1/i);
+            const heightMatch = imgTag.match(/\s+height=(["'])([^'"]*)\1/i);
+            return {
+                src: srcMatch ? srcMatch[2] : null,
+                width: $A.runNum(widthMatch ? widthMatch[2] : 0),
+                height: $A.runNum(heightMatch ? heightMatch[2] : 0),
+                original: imgTag,
+            }
+        },
+
+        /**
+         * 从HTML中提取所有图片参数
+         * @param html
+         * @returns {{original, src: (*|null), width: (number|*), height: (number|*)}[]}
+         */
+        extractImageParameterAll(html) {
+            const imgTags = html.match(/<img\s+[^>]*?>/g) || [];
+            return imgTags.map(imgTag => this.extractImageParameter(imgTag));
         }
     });
 
