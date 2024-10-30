@@ -480,7 +480,10 @@ export default {
         },
         // 获取图片缩略图
         getPictureThumb(src) {
-            return src + '_thumb.' + src.split('.').pop()
+            if (!/\.(png|jpg|jpeg)$/.test(src)) {
+                return src
+            }
+            return $A.thumbRestore(src) + '_thumb.' + src.split('.').pop()
         },
         // 打开图片
         onViewPicture(currentUrl, type) {

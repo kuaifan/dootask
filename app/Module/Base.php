@@ -2177,19 +2177,10 @@ class Base
                 if ($param['scale'] && is_array($param['scale'])) {
                     list($width, $height) = $param['scale'];
                     if (($width > 0 && $array['width'] > $width) || ($height > 0 && $array['height'] > $height)) {
-                        $cut = ($width > 0 && $height > 0) ? 'cover' : 'percentage';
-                        $cut = $param['scale'][2] ?? $cut;
                         // 图片裁剪
-                        $tmpFile = $array['file'] . '_tmp.jpg';
-                        if (Image::thumbImage($array['file'], $tmpFile, $width, $height, 90, $cut)) {
-                            $tmpSize = filesize($tmpFile);
-                            if ($tmpSize > $fileSize) {
-                                @unlink($tmpFile);
-                            } else {
-                                @unlink($array['file']);
-                                rename($tmpFile, $array['file']);
-                            }
-                        }
+                        $cutMode = ($width > 0 && $height > 0) ? 'cover' : 'percentage';
+                        $cutMode = $param['scale'][2] ?? $cutMode;
+                        Image::thumbImage($array['file'], $array['file'], $width, $height, 90, $cutMode);
                         // 更新图片尺寸
                         $paramet = getimagesize($array['file']);
                         $array['width'] = $paramet[0];
@@ -2416,19 +2407,10 @@ class Base
                 if ($param['scale'] && is_array($param['scale'])) {
                     list($width, $height) = $param['scale'];
                     if (($width > 0 && $array['width'] > $width) || ($height > 0 && $array['height'] > $height)) {
-                        $cut = ($width > 0 && $height > 0) ? 'cover' : 'percentage';
-                        $cut = $param['scale'][2] ?? $cut;
                         // 图片裁剪
-                        $tmpFile = $array['file'] . '_tmp.jpg';
-                        if (Image::thumbImage($array['file'], $tmpFile, $width, $height, 90, $cut)) {
-                            $tmpSize = filesize($tmpFile);
-                            if ($tmpSize > $fileSize) {
-                                @unlink($tmpFile);
-                            } else {
-                                @unlink($array['file']);
-                                rename($tmpFile, $array['file']);
-                            }
-                        }
+                        $cutMode = ($width > 0 && $height > 0) ? 'cover' : 'percentage';
+                        $cutMode = $param['scale'][2] ?? $cutMode;
+                        Image::thumbImage($array['file'], $array['file'], $width, $height, 90, $cutMode);
                         // 更新图片尺寸
                         $paramet = getimagesize($array['file']);
                         $array['width'] = $paramet[0];
@@ -2517,12 +2499,12 @@ class Base
      */
     public static function getThumbExt($file): string
     {
-        if (file_exists($file . '_thumb.jpeg')) {
-            return 'jpeg';
+        if (file_exists($file . '_thumb.png')) {
+            return 'png';
         } elseif (file_exists($file . '_thumb.jpg')) {
             return 'jpg';
-        } elseif (file_exists($file . '_thumb.png')) {
-            return 'png';
+        } elseif (file_exists($file . '_thumb.jpeg')) {
+            return 'jpeg';
         } else {
             return '';
         }

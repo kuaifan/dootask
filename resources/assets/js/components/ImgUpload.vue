@@ -2,7 +2,7 @@
     <div class="common-img-update">
         <div v-if="type !== 'callback'" class="imgcomp-upload-list" v-for="item in uploadList">
             <template v-if="item.status === 'finished'">
-                <div class="imgcomp-upload-img" v-bind:style="{ 'background-image': 'url(' + __thumb(item.thumb) + ')' }"></div>
+                <div class="imgcomp-upload-img" v-bind:style="{ 'background-image': 'url(' + backgroundImage(item.thumb) + ')' }"></div>
                 <div class="imgcomp-upload-list-cover">
                     <Icon type="ios-eye-outline" @click.native="handleView(item)"></Icon>
                     <Icon type="ios-trash-outline" @click.native="handleRemove(item)"></Icon>
@@ -373,7 +373,7 @@
                 }
             },
 
-            __thumb(url) {
+            backgroundImage(url) {
                 if ($A.strExists(url, "?", false)) {
                     return $A.mainUrl(url) + "&__thumb=true";
                 }else{

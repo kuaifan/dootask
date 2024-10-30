@@ -716,7 +716,7 @@ class WebSocketDialog extends AbstractModel
      *
      * @param User $user 发起会话的会员
      * @param array $dialogIds 对话id
-     * @param file $files 文件对象
+     * @param file|mixed $files 文件对象
      * @param string $image64 base64文件
      * @param string $fileName 文件名称
      * @param int $replyId 恢复id

@@ -984,7 +984,7 @@ class SystemController extends AbstractController
                 ];
                 //
                 $extension = pathinfo($dirPath . $filename, PATHINFO_EXTENSION);
-                if (in_array($extension, array('gif', 'jpg', 'jpeg', 'webp', 'png', 'bmp'))) {
+                if (in_array($extension, ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp'])) {
                     if ($extension = Base::getThumbExt($dirPath . $filename)) {
                         $array['thumb'] .= "_thumb.{$extension}";
                     } else {

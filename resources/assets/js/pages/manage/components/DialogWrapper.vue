@@ -2874,7 +2874,7 @@ export default {
 
                     case "newTask":
                         let content = $A.formatMsgBasic(this.operateItem.msg.text)
-                        content = content.replace(/<img[^>]*?src=(["'])(.*?)(_thumb\.jpg)*\1[^>]*?>/g, `<img src="$2">`)
+                        content = content.replace(/<img[^>]*?src=(["'])(.*?)(_thumb\.(png|jpg|jpeg))*\1[^>]*?>/g, `<img src="$2">`)
                         content = content.replace(/<li\s+data-list="checked">/g, `<li class="tox-checklist--checked">`)
                         content = content.replace(/<li\s+data-list="unchecked">/g, `<li>`)
                         content = content.replace(/<ol[^>]*>([\s\S]*?)<\/ol>/g, `<ul class="tox-checklist">$1</ul>`)

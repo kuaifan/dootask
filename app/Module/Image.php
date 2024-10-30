@@ -240,7 +240,7 @@ class Image
             if ($quality > 0) {
                 Image::compressImage($savePath, null, $quality);
             }
-            if (filesize($savePath) >= filesize($imagePath)) {
+            if ($savePath != $imagePath && filesize($savePath) >= filesize($imagePath)) {
                 unlink($savePath);
                 symlink(basename($imagePath), $savePath);
             }
