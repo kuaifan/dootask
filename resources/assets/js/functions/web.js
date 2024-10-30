@@ -529,7 +529,7 @@ import {MarkdownPreview} from "../store/markdown";
 
         /**
          * 图片尺寸比例超出
-         * @param params {{src: *, width: (number|*), height: (number|*), crops: {percentage: string, ratio: number}, scaleSize: (number)}}
+         * @param params {{src: *, width: (number|*), height: (number|*), crops: {ratio?: number, size?: string, percentage?: string, cover?: string, contain?: string}, scaleSize: (number)}}
          * src,        // 原图地址
          * width,      // 原图宽度
          * height,     // 原图高度
@@ -537,24 +537,22 @@ import {MarkdownPreview} from "../store/markdown";
          * scaleSize,  // 返回尺寸缩放最高尺寸
          */
         imageRatioHandle(params) {
-            if (!/\.(png|jpg|jpeg)$/.test(params.src)) {
-                return params
-            }
-
             if (!$A.isJson(params.crops)) {
                 return params
             }
 
-            params.src = $A.thumbRestore(params.src) + "/crop/" + Object.keys(params.crops).map(key => {
-                return `${key}:${params.crops[key]}`
-            }).join(",")
+            if ($A.imageRatioJudge(params.src)) {
+                params.src = $A.thumbRestore(params.src) + "/crop/" + Object.keys(params.crops).map(key => {
+                    return `${key}:${params.crops[key]}`
+                }).join(",")
 
-            const ratio = $A.imageRatioExceed(params.width, params.height, params.crops.ratio)
-            if (ratio > 0) {
-                if (params.width > params.height) {
-                    params.width = params.height * ratio;
-                } else {
-                    params.height = params.width * ratio;
+                const ratio = $A.imageRatioExceed(params.width, params.height, params.crops.ratio)
+                if (ratio > 0) {
+                    if (params.width > params.height) {
+                        params.width = params.height * ratio;
+                    } else {
+                        params.height = params.width * ratio;
+                    }
                 }
             }
 
@@ -565,6 +563,18 @@ import {MarkdownPreview} from "../store/markdown";
             }
 
             return params;
+        },
+
+        /**
+         * 判断图片地址是否满足比例缩放
+         * @param url
+         * @returns {boolean}
+         */
+        imageRatioJudge(url) {
+            if (!/\.(png|jpg|jpeg)$/.test(url)) {
+                return false
+            }
+            return $A.getDomain(url) == $A.getDomain($A.mainUrl());
         },
 
         /**
