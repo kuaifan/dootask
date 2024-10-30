@@ -24,7 +24,7 @@
     </div>
 </template>
 
-<script lang="ts">
+<script>
 export default {
     props: {
         msg: Object,
@@ -33,8 +33,8 @@ export default {
         openMeeting() {
             this.$emit('openMeeting');
         },
-        channelID(meetingid: string) {
-            return meetingid.replace(/^(.{3})(.{3})(.*)$/, '$1 $2 $3');
+        channelID(meetingId) {
+            return meetingId.replace(/^(.{3})(.{3})(.*)$/, '$1 $2 $3');
         },
     },
 }

@@ -25834,5 +25834,17 @@
         "fr": "Êtes-vous sûr de vouloir restaurer la sous-tâche archivée (*) ?",
         "id": "Apakah Anda yakin ingin memulihkan sub-tugas terarsip (*)?",
         "ru": "Вы уверены, что хотите восстановить архивированную подзадачу (*)?"
+    },
+    {
+        "key": "请使用(*)移动端扫描二维码。",
+        "zh": "",
+        "zh-CHT": "請使用(*)移動端掃描二維碼。",
+        "en": "Please use (*) mobile device to scan the QR code.",
+        "ko": "(*) 모바일 장치를 사용하여 QR 코드를 스캔하십시오.",
+        "ja": "(*) モバイルデバイスを使用してQRコードをスキャンしてください。",
+        "de": "Bitte verwenden Sie (*) ein mobiles Gerät, um den QR-Code zu scannen.",
+        "fr": "Veuillez utiliser (*) un appareil mobile pour scanner le code QR.",
+        "id": "Silakan gunakan (*) perangkat seluler untuk memindai kode QR.",
+        "ru": "Пожалуйста, используйте (*) мобильное устройство для сканирования QR-кода."
     }
 ]

@@ -15,7 +15,7 @@
     </div>
 </template>
 
-<script lang="ts">
+<script>
 import {mapState} from "vuex";
 import DialogMarkdown from "../DialogMarkdown.vue";
 import {languageName} from "../../../../language";

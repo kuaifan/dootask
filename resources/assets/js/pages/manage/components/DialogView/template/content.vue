@@ -3,7 +3,7 @@
         <p v-for="(item, index) in items" :key="index" :style="item.style">{{ item.content }}</p>
     </div>
 </template>
-<script lang="ts">
+<script>
 export default {
     props: {
         msg: Object,

@@ -4,7 +4,7 @@
     </div>
 </template>
 
-<script lang="ts">
+<script>
 import BotHello from "./bot-hello.vue";
 import BotHelp from "./bot-help.vue";
 import BotList from "./bot-list.vue";
