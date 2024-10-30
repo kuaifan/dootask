@@ -1,6 +1,6 @@
 import {Store} from 'le5le-store';
 import * as openpgp from 'openpgp_hi/lightweight';
-import {languageList, languageName} from "../language";
+import {initLanguage, languageList, languageName} from "../language";
 import {$callData, $urlSafe, SSEClient} from './utils'
 
 export default {
@@ -60,6 +60,7 @@ export default {
                 `language/web/${languageName}.js`,
                 `language/iview/${languageName}.js`,
             ])
+            initLanguage()
 
             resolve(action)
         })

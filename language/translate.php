@@ -1,316 +1,281 @@
 <?php
+@error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
-require_once ("config.php");
+require __DIR__ . '/vendor/autoload.php';
 
-/**
- * 有道翻译类
- */
-class Youdao
-{
-    const URL = "https://openapi.youdao.com/api";
-    const CURL_TIMEOUT = 10000;
+use Orhanerday\OpenAi\OpenAi;
 
-    private string $APP_KEY = '';
-    private string $SEC_KEY = '';
+require_once("config.php");
 
-    /**
-     * @param $APP_KEY
-     * @param $SEC_KEY
-     */
-    public function __construct($APP_KEY, $SEC_KEY)
-    {
-        $this->APP_KEY = $APP_KEY;
-        $this->SEC_KEY = $SEC_KEY;
-    }
 
-    /**
-     * 翻译
-     * @param $q
-     * @param $from
-     * @param $to
-     * @param $successSleep
-     * @return mixed|null
-     * @throws Exception
-     */
-    public function translate($q, $from = null, $to = null, $successSleep = 1)
-    {
-        if ($from === null) {
-            $from = 'auto';
-        }
-        if ($to === null) {
-            $to = $from;
-            $from = 'auto';
-        }
-        $salt = $this->create_guid();
-        $args = array(
-            'q' => $q,
-            'appKey' => $this->APP_KEY,
-            'salt' => $salt,
-        );
-        $args['from'] = $from;
-        $args['to'] = $to;
-        $args['signType'] = 'v3';
-        $curtime = strtotime("now");
-        $args['curtime'] = $curtime;
-        $signStr = $this->APP_KEY . $this->truncate($q) . $salt . $curtime . $this->SEC_KEY;
-        $args['sign'] = hash("sha256", $signStr);
-        // $args['vocabId'] = '您的用户词表ID';
-        $data = $this->call(self::URL, $args);
-        $res = json_decode($data, true);
-        if ($res['errorCode'] == 0 && $res['translation']) {
-            sleep($successSleep);
-            return is_array($res['translation']) ? $res['translation'][0] : $res['translation'];
-        }
-        file_put_contents('error.log', $data . "\n", FILE_APPEND);
-        throw new Exception("翻译失败，详细查看：error.log\n\n");
-        return null;
-    }
-
-    private function call($url, $args = null, $method = "post", $testflag = 0, $timeout = self::CURL_TIMEOUT, $headers = array())
-    {
-        $ret = false;
-        $i = 0;
-        while ($ret === false) {
-            if ($i > 1)
-                break;
-            if ($i > 0) {
-                sleep(1);
-            }
-            $ret = $this->callOnce($url, $args, $method, false, $timeout, $headers);
-            $i++;
-        }
-        return $ret;
-    }
-
-    private function callOnce($url, $args = null, $method = "post", $withCookie = false, $timeout = self::CURL_TIMEOUT, $headers = array())
-    {
-        $ch = curl_init();
-        $data = $this->convert($args);
-        if ($method == "post") {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-            curl_setopt($ch, CURLOPT_POST, 1);
-        } else {
-            if ($data) {
-                if (stripos($url, "?") > 0) {
-                    $url .= "&$data";
-                } else {
-                    $url .= "?$data";
-                }
-            }
-        }
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        if (!empty($headers)) {
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        }
-        if ($withCookie) {
-            curl_setopt($ch, CURLOPT_COOKIEJAR, $_COOKIE);
-        }
-        $r = curl_exec($ch);
-        curl_close($ch);
-        return $r;
-    }
-
-    private function convert($args)
-    {
-        $data = '';
-        if (is_array($args)) {
-            foreach ($args as $key => $val) {
-                if (is_array($val)) {
-                    foreach ($val as $k => $v) {
-                        $data .= $key . '[' . $k . ']=' . rawurlencode($v) . '&';
-                    }
-                } else {
-                    $data .= "$key=" . rawurlencode($val) . "&";
-                }
-            }
-            return trim($data, "&");
-        }
-        return $args;
-    }
-
-    private function create_guid()
-    {
-        $microTime = microtime();
-        list($a_dec, $a_sec) = explode(" ", $microTime);
-        $dec_hex = dechex($a_dec * 1000000);
-        $sec_hex = dechex($a_sec);
-        $this->ensure_length($dec_hex, 5);
-        $this->ensure_length($sec_hex, 6);
-        $guid = $dec_hex;
-        $guid .= $this->create_guid_section(3);
-        $guid .= '-';
-        $guid .= $this->create_guid_section(4);
-        $guid .= '-';
-        $guid .= $this->create_guid_section(4);
-        $guid .= '-';
-        $guid .= $this->create_guid_section(4);
-        $guid .= '-';
-        $guid .= $sec_hex;
-        $guid .= $this->create_guid_section(6);
-        return $guid;
-    }
-
-    private function create_guid_section($characters)
-    {
-        $return = "";
-        for ($i = 0; $i < $characters; $i++) {
-            $return .= dechex(mt_rand(0, 15));
-        }
-        return $return;
-    }
-
-    private function truncate($q)
-    {
-        $len = $this->abslength($q);
-        return $len <= 20 ? $q : (mb_substr($q, 0, 10) . $len . mb_substr($q, $len - 10, $len));
-    }
-
-    private function abslength($str)
-    {
-        if (empty($str)) {
-            return 0;
-        }
-        if (function_exists('mb_strlen')) {
-            return mb_strlen($str, 'utf-8');
-        } else {
-            preg_match_all("/./u", $str, $ar);
-            return count($ar[0]);
-        }
-    }
-
-    private function ensure_length(&$string, $length)
-    {
-        $strlen = strlen($string);
-        if ($strlen < $length) {
-            $string = str_pad($string, $length, "0");
-        } else if ($strlen > $length) {
-            $string = substr($string, 0, $length);
-        }
-    }
+// 读取所有要翻译的内容
+$originals = [];
+$generateds = [];
+foreach (['web', 'api'] as $type) {
+    $content = file_exists("original-{$type}.txt") ? file_get_contents("original-{$type}.txt") : "";
+    $array = array_values(array_filter(array_unique(explode("\n", $content))));
+    $generateds[$type] = $array;
+    $originals = array_merge($originals, $array);
 }
 
-try {
-    // 译文
-    $translations = [];
-    if (file_exists( "translate.json")) {
-        $tmps = json_decode(file_get_contents("translate.json"), true);
-        foreach ($tmps as $tmp) {
-            if (!isset($tmp['key'])) {
-                continue;
-            }
-            $translations[$tmp['key']] = $tmp;
-        }
+// 判定是否存在translate.json文件
+if (!file_exists("translate.json")) {
+    print_r("translate.json not exists");
+    exit;
+}
+
+$translations = []; // 翻译数据
+$regrror = [];      // 正则匹配错误的数据
+$redundants = [];   // 多余的数据
+$needs = [];        // 需要翻译的数据
+
+// 读取翻译数据
+$tmps = json_decode(file_get_contents("translate.json"), true);
+foreach ($tmps as $obj) {
+    if (!isset($obj['key'])) {
+        continue;
     }
-    foreach (['api', 'web'] as $type) {
-        // 读取文件
-        $content = file_exists("original-{$type}.txt") ? file_get_contents("original-{$type}.txt") : "";
-        $array = array_values(array_filter(array_unique(explode("\n", $content))));
-        // 提取要翻译的
-        $datas = [];
-        $needs = [];
-        foreach ($array as $text) {
-            $text = trim($text);
-            if ($tmp = json_decode($text, true)) {
-                $key = key($tmp);
-                $value = current($tmp);
-            } else {
-                $key = $value = $text;
-            }
-            if (isset($translations[$key])) {
-                $datas[] = $translations[$key];
-            } else {
-                $needs[$key] = $value;
-            }
-        }
-        $waits = array_chunk($needs, 200, true);
-        // 分组翻译
-        $YD = new Youdao(YOUDAO_APP_KEY, YOUDAO_SEC_KEY);
-        $func = function($text) {
-            if (!$text) {
-                return null;
-            }
-            return preg_replace_callback("/^\(\*\)\s*[A-Z]/", function ($match) {
-                return strtolower($match[0]);
-            }, ucfirst($text));
-        };
-        foreach ($waits as $items) {
-            $text = implode("\n", $items);
-            $TCS = explode("\n", $YD->translate($text, "zh-CHS", "zh-CHT"));    // 繁体
-            $ENS = explode("\n", $YD->translate($text, "zh-CHS", "en"));        // 英语
-            $KOS = explode("\n", $YD->translate($text, "zh-CHS", "ko"));        // 韩语
-            $JAS = explode("\n", $YD->translate($text, "zh-CHS", "ja"));        // 日语
-            $DES = explode("\n", $YD->translate($text, "zh-CHS", "de"));        // 德语
-            $FRS = explode("\n", $YD->translate($text, "zh-CHS", "fr"));        // 法语
-            $IDS = explode("\n", $YD->translate($text, "zh-CHS", "id"));        // 印度尼西亚
-            $RUS = explode("\n", $YD->translate($text, "zh-CHS", "ru"));        // 俄语
-            $index = 0;
-            foreach ($items as $key => $item) {
-                $tmp = [];
-                $tmp['key'] = $key;
-                $tmp['zh'] = $key != $item ? $item : "";
-                $tmp["zh-CHT"] = $func($TCS[$index]);
-                $tmp["en"] = $func($ENS[$index]);
-                $tmp["ko"] = $func($KOS[$index]);
-                $tmp["ja"] = $func($JAS[$index]);
-                $tmp["de"] = $func($DES[$index]);
-                $tmp["fr"] = $func($FRS[$index]);
-                $tmp["id"] = $func($IDS[$index]);
-                $tmp["ru"] = $func($RUS[$index]);
-                $datas[] = $translations[$key] = $tmp;
-                $index++;
-            }
-        }
-        // 按长度排序
-        $inOrder = [];
-        foreach ($datas as $index => $item) {
-            $key = $item['key'];
-            if (str_contains($key, '(*)')) {
-                $inOrder[$index] = strlen($key);
-            } else {
-                $inOrder[$index] = strlen($key) + 10000000000;
-            }
-        }
-        array_multisort($inOrder, SORT_DESC, $datas);
-        // 合成数组
-        $results = ['key' => []];
-        $index = 0;
-        foreach ($datas as $items) {
-            $results['key'][$items['key']] = $index++;
-            foreach ($items as $key => $item) {
-                if ($key === 'key') {
+
+    $currentKey = $obj['key'];
+    $originalKey = preg_replace(["/\(%T\d+\)/", "/\(%M\d+\)/"], ["(*)", "(**)"], $currentKey);
+    $translations[$originalKey] = $obj;
+
+    if (!in_array($originalKey, $originals)) {
+        // 多余的数据
+        $redundants[$originalKey] = $obj;
+        continue;
+    }
+
+    if (preg_match_all('/\(%[TM]\d+\)/', $currentKey, $matches)) {
+        foreach ($matches[0] as $match) {
+            foreach ($obj as $k => $v) {
+                if (empty($v)) {
                     continue;
                 }
-                if (!isset($results)) {
-                    $results[$key] = [];
+                if (!str_contains($v, $match)) {
+                    // 正则匹配错误
+                    $regrror[$originalKey] = [
+                        $k => $v,
+                        'match' => $match,
+                        'key' => $currentKey,
+                    ];
+                    continue 2;
                 }
-                $results[$key][] = $item;
             }
         }
-        // 生成文件
-        if ($type === 'api') {
-            if (!is_dir("../public/language/api")) {
-                mkdir("../public/language/api", 0777, true);
-            }
-            foreach ($results as $key => $item) {
-                $file = "../public/language/api/$key.json";
-                file_put_contents($file, json_encode($item, JSON_UNESCAPED_UNICODE));
-            }
-        } elseif ($type === 'web') {
-            if (!is_dir("../public/language/web")) {
-                mkdir("../public/language/web", 0777, true);
-            }
-            foreach ($results as $key => $item) {
-                $file = "../public/language/web/$key.js";
-                file_put_contents($file, "if(typeof window.LANGUAGE_DATA===\"undefined\")window.LANGUAGE_DATA={};window.LANGUAGE_DATA[\"{$key}\"]=" . json_encode($item, JSON_UNESCAPED_UNICODE));
-            }
-        }
-        print_r("[$type] translate success\ntotal: " . count($results['key']) . "\nadd: " . count($needs) . "\n\n");
     }
-    file_put_contents("translate.json", json_encode(array_values($translations), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . "\n");
-
-} catch (Exception $e) {
-    print_r("[$type] error, " . $e->getMessage());
 }
 
+if (count($regrror) > 0) {
+    print_r("正则匹配错误的数据:\n");
+    print_r($regrror);
+    exit();
+}
+if (count($redundants) > 0) {
+    print_r("多余的数据:\n");
+    print_r($redundants);
+    exit();
+}
+
+// 需要翻译的数据
+foreach ($originals as $text) {
+    $key = trim($text);
+    if (!isset($translations[$key])) {
+        $needs[$key] = $key;
+    }
+}
+if (count($needs) > 0) {
+    $array = array_chunk($needs, 10, true);
+    $success = [];
+    $error = [];
+    $done = 0;
+    foreach ($array as $index => $keys) {
+        // 生成翻译内容
+        foreach ($keys as &$key) {
+            $c = 1;
+            $key = preg_replace_callback('/\((\*+)\)/', function ($m) use (&$c) {
+                $label = strlen($m[1]) > 1 ? "M" : "T";
+                return "(%" . $label . $c++ . ")";
+            }, $key);
+        }
+        $content = implode("\n", $keys);
+
+        // 开始翻译
+        print_r("正在翻译：" . (count($keys) + $done) . "/" . count($needs) . "...\n");
+        $openAi = new OpenAi(OPEN_AI_KEY);
+        $openAi->setProxy(OPEN_AI_PROXY);
+        $result = $openAi->chat([
+            'model' => 'gpt-4o',
+            'messages' => [
+                [
+                    "role" => "system",
+                    "content" => <<<EOF
+                        你是一个专业的翻译器，翻译的结果尽量符合 “项目任务管理系统” 的使用，请将提供的内容按每行一个翻译成：
+
+                        ```json
+                        [
+                            {
+                                "key": "",      // 原文本
+                                "zh": "",       // 留空(不用翻译)
+                                "zh-CHT": "",   // 繁体中文
+                                "en": "",       // 英语
+                                "ko": "",       // 韩语
+                                "ja": "",       // 日语
+                                "de": "",       // 德语
+                                "fr": "",       // 法语
+                                "id": "",       // 印度尼西亚语
+                                "ru": ""        // 俄语
+                            }
+                        ]
+                        ```
+
+                        请注意：(%T1)、(%T2)、(%T3)、(%M1)、(%M2) ...... 这类以 `小括号(%+内容)` 的字符组合是一个变量，翻译时请保留。
+
+                        例子1：
+                        原文：此(%T1)已经处于【(%T2)】共享文件夹中，无法重复共享。
+                        翻译成英语：This (%T1) is already in the 【(%T2)】 shared folder and cannot be shared again。
+
+                        例子2：
+                        原文：(%T1)的周报[(%T2)][(%T3)月第(%T4)周]
+                        翻译成英语：Weekly report of (%T1) [(%T2)] [(Week (%T4) of (%T3) month)]
+
+                        例子3：
+                        原文：(%T1)提交的「(%M2)」待你审批
+                        翻译成英语：'(%M2)' submitted by (%T1) is waiting for your approval
+
+                        例子4：
+                        原文：您发起的「(%M1)」已通过
+                        翻译成英语：The '(%M1)' you initiated has been approved
+                        EOF,
+                ],
+                [
+                    "role" => "user",
+                    "content" => $content,
+                ],
+            ],
+            'temperature' => 1.0,
+            'max_tokens' => 4000,
+            'frequency_penalty' => 0,
+            'presence_penalty' => 0,
+        ]);
+
+        // 处理结果
+        $obj = json_decode($result);
+        $txt = preg_replace('/(^\s*```json\s*|\s*```\s*$)/', "", $obj->choices[0]->message->content);
+        $txt = preg_replace('/\(％([TM]\d+)\)/', '(%$1)', $txt);
+        $arr = json_decode($txt, true);
+        if (!$arr || !is_array($arr)) {
+            $error = array_merge($error, array_flip($keys));
+            print_r("翻译失败：\n" . $content . "\n\n");
+            file_put_contents("translate-gpt.log", json_encode($obj, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . "\n\n", FILE_APPEND);
+            continue;
+        }
+
+        // 验证结果
+        foreach ($arr as $item) {
+            if (empty($item['key'])) {
+                print_r("翻译结果不符合规范：key为空。\n");
+                print_r($item);
+                continue;
+            }
+            foreach (['key', 'zh', 'zh-CHT', 'en', 'ko', 'ja', 'de', 'fr', 'id', 'ru'] as $lang) {
+                if (!isset($item[$lang])) {
+                    print_r("翻译结果不符合规范：{$item['key']}，缺少：{$lang} 的值。\n");
+                    continue 2;
+                }
+            }
+            $currentKey = $item['key'];
+            $originalKey = preg_replace(["/\(%T\d+\)/", "/\(%M\d+\)/"], ["(*)", "(**)"], $currentKey);
+            if (preg_match_all('/\(%[TM]\d+\)/', $currentKey, $matches)) {
+                foreach ($matches[0] as $match) {
+                    foreach ($item as $k => $v) {
+                        if (empty($v)) {
+                            continue;
+                        }
+                        if (!str_contains($v, $match)) {
+                            // 正则匹配错误
+                            $error[$originalKey] = [
+                                'key' => $currentKey,
+                                $k => $v,
+                                'match' => $match,
+                            ];
+                            continue 3;
+                        }
+                    }
+                }
+            }
+
+            $item['zh'] = "";
+            $translations[$originalKey] = $item;
+            $success[$originalKey] = $item;
+        }
+        print_r("翻译完成：" . (count($keys) + $done) . "/" . count($needs) . "\n\n");
+        $done += count($keys);
+    }
+
+    if (count($error) > 0) {
+        print_r("正则匹配错误的数据:\n");
+        print_r(json_encode(array_values($error), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . "\n\n");
+    }
+
+    // 保存翻译结果
+    file_put_contents("translate.json", json_encode(array_values($translations), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+    print_r("----------------\n\n");
+    print_r("总翻译：" . count($needs) . " 条\n");
+    print_r("成功：" . count($success) . " 条\n");
+    print_r("错误：" . count($error) . " 条\n\n");
+    print_r("----------------\n\n");
+}
+
+// 生成前端使用的文件
+foreach ($generateds as $type => $array) {
+    $datas = [];
+    foreach ($array as $text) {
+        $text = trim($text);
+        if (isset($translations[$text])) {
+            $datas[] = $translations[$text];
+        }
+    }
+    // 按长度排序
+    $inOrder = [];
+    foreach ($datas as $index => $item) {
+        if (preg_match('/\(%[TM]\d+\)/', $item['key'])) {
+            $inOrder[$index] = strlen($item['key']);
+        } else {
+            $inOrder[$index] = strlen($item['key']) + 10000000000;
+        }
+    }
+    array_multisort($inOrder, SORT_DESC, $datas);
+    // 合成数组
+    $results = [];
+    $index = 0;
+    foreach ($datas as $items) {
+        foreach ($items as $kk => $item) {
+            if (!isset($results)) {
+                $results[$kk] = [];
+            }
+            $results[$kk][] = $item;
+        }
+    }
+    // 生成文件
+    if ($type === 'api') {
+        if (!is_dir("../public/language/api")) {
+            mkdir("../public/language/api", 0777, true);
+        }
+        foreach ($results as $kk => $item) {
+            $file = "../public/language/api/$kk.json";
+            file_put_contents($file, json_encode($item, JSON_UNESCAPED_UNICODE));
+        }
+    } elseif ($type === 'web') {
+        if (!is_dir("../public/language/web")) {
+            mkdir("../public/language/web", 0777, true);
+        }
+        foreach ($results as $kk => $item) {
+            $file = "../public/language/web/$kk.js";
+            file_put_contents($file, "if(typeof window.LANGUAGE_DATA===\"undefined\")window.LANGUAGE_DATA={};window.LANGUAGE_DATA[\"{$kk}\"]=" . json_encode($item, JSON_UNESCAPED_UNICODE));
+        }
+    }
+    print_r("[$type] total: " . count($results['key']) . "\n");
+}
+
+print_r("\n任务结束\n");

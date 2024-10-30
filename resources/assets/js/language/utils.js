@@ -42,7 +42,10 @@ export default {
         if (!val || val == '') {
             return '';
         }
-        return val.replace(/\(\*\)/g, "~%~").replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&').replace(/~%~/g, '(.*?)');
+        return val
+            .replace(/\(%[TM]\d+\)/g, "~:%%:~")
+            .replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
+            .replace(/~:%%:~/g, '(.*?)');
     },
 
     /**

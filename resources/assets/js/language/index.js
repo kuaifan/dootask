@@ -2,10 +2,55 @@ const utils = require('./utils')
 
 const languageList = utils.languageList
 const languageName = utils.getLanguage()
-const languageRege = {}
+const languageCache = new Map();
+const languageRegex = [];
 
 if (typeof window.LANGUAGE_DATA === "undefined") {
     window.LANGUAGE_DATA = {}
+}
+
+/**
+ * 初始化语言，需在加载完语言文件后调用
+ */
+function initLanguage() {
+    if (typeof window.LANGUAGE_DATA === "undefined" || typeof window.LANGUAGE_DATA["key"] === "undefined") {
+        return
+    }
+    const keys = window.LANGUAGE_DATA['key'] || []
+    delete window.LANGUAGE_DATA['key'];
+    //
+    keys.forEach((key, index) => {
+        if (/\(%[TM]\d+\)/.test(key)) {
+            // 处理复杂的键值
+            const _m = {};
+            const translation = {
+                key: new RegExp("^" + utils.replaceEscape(key) + "$"),
+            }
+            for (let language in window.LANGUAGE_DATA) {
+                if (typeof languageList[language] === "undefined") {
+                    continue
+                }
+                translation[language] = window.LANGUAGE_DATA[language][index]
+                    ?.replace(/\(%([TM])(\d+)\)/g, function (_, type, index) {
+                        if (type === 'M') {
+                            _m[index] = index;
+                        }
+                        return "$" + index;
+                    });
+            }
+            translation._m = Object.keys(_m);
+            languageRegex.push(translation)
+        } else {
+            // 缓存简单的键值
+            for (let language in window.LANGUAGE_DATA) {
+                if (typeof languageList[language] === "undefined") {
+                    continue
+                }
+                const result = window.LANGUAGE_DATA[language][index] || key
+                languageCache.set(`${key}-${language}`, result);
+            }
+        }
+    })
 }
 
 /**
@@ -16,17 +61,24 @@ function addLanguage(data) {
     if (!$A.isArray(data)) {
         return
     }
-    const keys = Object.assign(Object.keys(languageList))
-    data.some(item => {
-        let index = -1;
-        item.key && keys.some(key => {
-            const value = item[key] || item['general'] || null
-            if (value && typeof window.LANGUAGE_DATA[key] !== "undefined") {
-                index = window.LANGUAGE_DATA[key].push(value) - 1
+    data.forEach(item => {
+        const {key, general} = item
+        if (!key) {
+            return
+        }
+        if (general) {
+            for (let language in window.LANGUAGE_DATA) {
+                if (typeof languageList[language] === "undefined") {
+                    continue
+                }
+                languageCache.set(`${key}-${language}`, general);
             }
-        })
-        if (index > -1) {
-            window.LANGUAGE_DATA['key'][item.key] = index
+        }
+        for (let language in item) {
+            if (language === 'key' || language === 'general') {
+                continue
+            }
+            languageCache.set(`${key}-${language}`, item[language]);
         }
     })
 }
@@ -65,68 +117,56 @@ function getLanguage() {
 
 /**
  * 转换语言
- * @param text
+ * @param inputString
  * @returns {string|*}
  */
-function switchLanguage(text) {
-    if (typeof arguments[1] !== "undefined") {
-        return switchLanguage(utils.replaceArgumentsLanguage(text, arguments))
+function switchLanguage(inputString) {
+    if (typeof inputString !== "string" || !inputString) {
+        return inputString
     }
-    if (typeof text !== "string" || !text) {
-        return text
+
+    // 读取缓存
+    const cacheKey = `${inputString}-${languageName}`;
+    if (languageCache.has(cacheKey)) {
+        return languageCache.get(cacheKey);
     }
-    //
-    if (typeof window.LANGUAGE_DATA === "undefined"
-        || typeof window.LANGUAGE_DATA["key"] === "undefined"
-        || typeof window.LANGUAGE_DATA[languageName] === "undefined") {
-        return text
-    }
-    const index = window.LANGUAGE_DATA["key"][text] || -1
-    if (index > -1) {
-        return window.LANGUAGE_DATA[languageName][index] || text
-    }
-    if (typeof languageRege[text] === "undefined") {
-        languageRege[text] = false
-        for (let key in window.LANGUAGE_DATA["key"]) {
-            if (key.indexOf("(*)") > -1) {
-                const rege = new RegExp("^" + utils.replaceEscape(key) + "$", "g")
-                if (rege.test(text)) {
-                    let j = 0
-                    const index = window.LANGUAGE_DATA["key"][key]
-                    const value = (window.LANGUAGE_DATA[languageName][index] || key)?.replace(/\(\*\)/g, function () {
-                        return "$" + (++j)
-                    })
-                    languageRege[text] = {rege, value}
-                    break
+
+    // 正则匹配
+    for (const translation of languageRegex) {
+        const { key, _m } = translation;
+        const match = key.exec(inputString);
+        if (match && translation[languageName]) {
+            const result = translation[languageName].replace(/\$(\d+)/g, (_, index) => {
+                if (_m.includes(index)) {
+                    return switchLanguage(match[index]);
                 }
-            }
+                return match[index] || '';
+            });
+            languageCache.set(cacheKey, result);
+            return result;
         }
     }
-    if (languageRege[text]) {
-        return text.replace(languageRege[text].rege, languageRege[text].value)
-    }
+
+    // 开发模式下，未翻译的文本自动添加到语言文件
     if (window.systemInfo.debug === "yes") {
         setTimeout(_ => {
             try {
-                let key = '__language:Undefined__'
-                let languageTmp = JSON.parse(window.localStorage.getItem(key) || '[]')
+                let cacheKey = '__language:Undefined__'
+                let languageTmp = JSON.parse(window.localStorage.getItem(cacheKey) || '[]')
                 if (!$A.isArray(languageTmp)) {
                     languageTmp = []
                 }
-                let tmpRege = null
-                let tmpData = languageTmp.find((val) => {
-                    tmpRege = new RegExp("^" + val.replace(/\(\*\)/g, "(.*?)") + "$", "g")
-                    return !!text.match(tmpRege)
-                })
-                if (!tmpData) {
-                    languageTmp.push(text)
-                    window.localStorage.setItem(key, JSON.stringify(languageTmp))
+                if (languageTmp.findIndex(item => item == inputString) === -1) {
+                    languageTmp.push(inputString)
+                    window.localStorage.setItem(cacheKey, JSON.stringify(languageTmp))
                 }
-            } catch (e) {
-            }
+            } catch (e) { }
         }, 10)
     }
-    return text
+
+    // 未匹配返回原始字符串
+    languageCache.set(cacheKey, inputString);
+    return inputString;
 }
 
-export {languageName, languageList, addLanguage, setLanguage, getLanguage, switchLanguage}
+export {languageName, languageList, addLanguage, setLanguage, initLanguage, getLanguage, switchLanguage}

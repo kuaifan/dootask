@@ -27,7 +27,7 @@ export default {
     },
     computed: {
         title({msg}) {
-            return msg.action === 'pass' ? `您发起的「${this.$L(msg.data.proc_def_name)}」已通过` : `您发起的「${this.$L(msg.data.proc_def_name)}」被 ${msg.data.nickname} 拒绝`
+            return msg.action === 'pass' ? `您发起的「${msg.data.proc_def_name}」已通过` : `您发起的「${msg.data.proc_def_name}」被 ${msg.data.nickname} 拒绝`
         }
     },
     methods: {},

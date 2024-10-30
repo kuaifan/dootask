@@ -1,6 +1,6 @@
 <template>
     <div class="open-approve-details" :data-id="msg.data.id">
-        <b>{{ $L(`${msg.data.comment_nickname} 评论了 ${msg.data.nickname} 的「${$L(msg.data.proc_def_name)}」审批`) }}</b>
+        <b>{{ $L(`${msg.data.comment_nickname} 评论了 ${msg.data.nickname} 的「${msg.data.proc_def_name}」审批`) }}</b>
         <div class="cause">
             <p>{{$L('申请人')}}：<span class="mark-color">@{{ msg.data.nickname }}</span> {{ msg.data.department }}</p>
             <b>{{$L('评论内容')}}</b>
