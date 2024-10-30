@@ -405,6 +405,7 @@ export default {
             ],
 
             viewportHeight: 0,
+            iOSDevices: $A.isIos(),
         };
     },
     created() {
@@ -569,9 +570,9 @@ export default {
             return null;
         },
 
-        chatInputBoxStyle({fullInput, viewportHeight}) {
+        chatInputBoxStyle({iOSDevices, fullInput, viewportHeight}) {
             const style = {}
-            if (fullInput && viewportHeight > 0) {
+            if (iOSDevices && fullInput && viewportHeight > 0) {
                 style.height = Math.max(100, viewportHeight - 70) + 'px'
             }
             return style
