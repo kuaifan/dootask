@@ -7,6 +7,9 @@
         <!--任务操作-->
         <TaskOperation/>
 
+        <!--下拉菜单-->
+        <DropdownMenu/>
+
         <!--全局浮窗加载器-->
         <FloatSpinner/>
 
@@ -40,10 +43,19 @@ import PreviewImageState from "./components/PreviewImage/state";
 import NetworkException from "./components/NetworkException";
 import GuidePage from "./components/GuidePage";
 import TaskOperation from "./pages/manage/components/TaskOperation";
+import DropdownMenu from "./components/DropdownMenu";
 import {mapState} from "vuex";
 
 export default {
-    components: {TaskOperation, NetworkException, PreviewImageState, RightBottom, FloatSpinner, GuidePage},
+    components: {
+        DropdownMenu,
+        TaskOperation,
+        NetworkException,
+        PreviewImageState,
+        RightBottom,
+        FloatSpinner,
+        GuidePage
+    },
 
     data() {
         return {

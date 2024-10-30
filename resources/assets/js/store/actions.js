@@ -826,6 +826,7 @@ export default {
             const cacheLoginEmail = await $A.IDBString("cacheLoginEmail");
             const cacheFileSort = await $A.IDBJson("cacheFileSort");
             const cacheTaskBrowse = await $A.IDBArray("cacheTaskBrowse")
+            const cacheTranslationLanguage = await $A.IDBString("cacheTranslationLanguage")
             const cacheTranslations = await $A.IDBArray("cacheTranslations")
             const cacheEmojis = await $A.IDBArray("cacheEmojis")
             const userInfo = await $A.IDBJson("userInfo")
@@ -836,6 +837,7 @@ export default {
             await $A.IDBSet("cacheLoginEmail", cacheLoginEmail);
             await $A.IDBSet("cacheFileSort", cacheFileSort);
             await $A.IDBSet("cacheTaskBrowse", cacheTaskBrowse);
+            await $A.IDBSet("cacheTranslationLanguage", cacheTranslationLanguage);
             await $A.IDBSet("cacheTranslations", cacheTranslations);
             await $A.IDBSet("cacheEmojis", cacheEmojis);
             await $A.IDBSet("cacheVersion", state.cacheVersion)
@@ -867,12 +869,16 @@ export default {
             state.cacheTasks = await $A.IDBArray("cacheTasks")
             state.cacheProjectParameter = await $A.IDBArray("cacheProjectParameter")
             state.cacheTaskBrowse = await $A.IDBArray("cacheTaskBrowse")
+            state.cacheTranslationLanguage = await $A.IDBString("cacheTranslationLanguage")
             state.cacheTranslations = await $A.IDBArray("cacheTranslations")
             state.dialogMsgs = await $A.IDBArray("dialogMsgs")
             state.fileLists = await $A.IDBArray("fileLists")
             state.userInfo = await $A.IDBJson("userInfo")
             state.callAt = await $A.IDBArray("callAt")
             state.cacheEmojis = await $A.IDBArray("cacheEmojis")
+
+            // TranslationLanguage
+            typeof languageList[state.cacheTranslationLanguage] === "undefined" && (state.cacheTranslationLanguage = languageName)
 
             // 会员信息
             if (state.userInfo.userid) {
@@ -3351,22 +3357,30 @@ export default {
     /**
      * 保存翻译
      * @param state
-     * @param dispatch
-     * @param data {key, value}
+     * @param data {key, content, language}
      */
-    saveTranslation({state, dispatch}, data) {
+    saveTranslation({state}, data) {
         if (!$A.isJson(data)) {
             return
         }
-        const item = state.cacheTranslations.find(item => item.key == data.key && item.lang == languageName)
-        if (item) {
-            item.value = data.value
+        const translation = state.cacheTranslations.find(item => item.key == data.key && item.language == data.language)
+        if (translation) {
+            translation.content = data.content
         } else {
-            data.lang = languageName
-            data.label = languageList[languageName] || languageName
-            state.cacheTranslations.push(data)
+            const label = languageList[data.language] || data.language
+            state.cacheTranslations.push(Object.assign(data, {label}))
         }
         $A.IDBSave("cacheTranslations", state.cacheTranslations.slice(-200))
+    },
+
+    /**
+     * 设置翻译语言
+     * @param state
+     * @param language
+     */
+    setTranslationLanguage({state}, language) {
+        state.cacheTranslationLanguage = language
+        $A.IDBSave('cacheTranslationLanguage', language);
     },
 
     /** *****************************************************************************************/

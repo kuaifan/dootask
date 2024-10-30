@@ -672,6 +672,7 @@ import DialogGroupWordChain from "./DialogGroupWordChain";
 import DialogGroupVote from "./DialogGroupVote";
 import DialogComplaint from "./DialogComplaint";
 import touchclick from "../../../directives/touchclick";
+import {languageList} from "../../../language";
 
 export default {
     name: "DialogWrapper",
@@ -884,7 +885,8 @@ export default {
             'keyboardType',
             'keyboardHeight',
             'safeAreaBottom',
-            'formOptions'
+            'formOptions',
+            'cacheTranslationLanguage'
         ]),
 
         ...mapGetters(['isLoad']),
@@ -2994,25 +2996,41 @@ export default {
                 return;
             }
             const {id: msg_id} = this.operateItem
-            if (this.isLoad(`msg-${msg_id}`)) {
+            const key = `msg-${msg_id}`
+            if (this.isLoad(key)) {
                 return;
             }
-            this.$store.dispatch("setLoad", `msg-${msg_id}`)
+            this.$store.dispatch("setLoad", key)
             this.$store.dispatch("call", {
                 url: 'dialog/msg/translation',
                 data: {
-                    msg_id
+                    msg_id,
+                    language: this.cacheTranslationLanguage
                 },
             }).then(({data}) => {
-                this.$store.dispatch("saveTranslation", {
-                    key: `msg-${msg_id}`,
-                    value: data.content,
-                });
+                this.$store.dispatch("saveTranslation", Object.assign(data, {key}));
             }).catch(({msg}) => {
                 $A.messageError(msg);
             }).finally(_ => {
-                this.$store.dispatch("cancelLoad", `msg-${msg_id}`)
+                this.$store.dispatch("cancelLoad", key)
             });
+        },
+
+        openTranslationMenu(event) {
+            const list = Object.keys(languageList).map(item => ({
+                label: languageList[item],
+                value: item
+            }))
+            this.$store.state.menuOperation = {
+                event,
+                list,
+                active: this.cacheTranslationLanguage,
+                scrollHide: true,
+                onUpdate: async (language) => {
+                    await this.$store.dispatch("setTranslationLanguage", language);
+                    this.onTranslation();
+                }
+            }
         },
 
         onCopy(data) {
@@ -3097,8 +3115,16 @@ export default {
             this.onPositionId(data.reply_id, data.msg_id)
         },
 
-        onViewText({target, clientX}, el) {
+        onViewText(event, el) {
             if (this.operateVisible) {
+                return
+            }
+            const {target, clientX} = event
+
+            // 点击切换翻译
+            if (target.classList.contains('translation-label')) {
+                this.operateItem = this.findMsgByElement(el)
+                this.openTranslationMenu(event)
                 return
             }
 
@@ -3144,54 +3170,58 @@ export default {
                         if (clientX - target.getBoundingClientRect().x > 18) {
                             return;
                         }
-                        let listElement = el.parentElement;
-                        while (listElement) {
-                            if (listElement.classList.contains('dialog-scroller')) {
-                                break;
-                            }
-                            if (listElement.classList.contains('dialog-view')) {
-                                const dataId = listElement.getAttribute("data-id")
-                                const dataMsg = this.allMsgs.find(item => item.id == dataId) || {}
-                                if (dataMsg.userid != this.userId) {
-                                    return;
-                                }
-                                const dataIndex = [].indexOf.call(el.querySelectorAll(target.tagName), target);
-                                if (dataClass === 'checked') {
-                                    target.setAttribute('data-list', 'unchecked')
-                                } else {
-                                    target.setAttribute('data-list', 'checked')
-                                }
-                                this.$store.dispatch("setLoad", {
-                                    key: `msg-${dataId}`,
-                                    delay: 600
-                                })
-                                this.$store.dispatch("call", {
-                                    url: 'dialog/msg/checked',
-                                    data: {
-                                        dialog_id: this.dialogId,
-                                        msg_id: dataId,
-                                        index: dataIndex,
-                                        checked: dataClass === 'checked' ? 0 : 1
-                                    },
-                                }).then(({data}) => {
-                                    this.$store.dispatch("saveDialogMsg", data);
-                                }).catch(({msg}) => {
-                                    if (dataClass === 'checked') {
-                                        target.setAttribute('data-list', 'checked')
-                                    } else {
-                                        target.setAttribute('data-list', 'unchecked')
-                                    }
-                                    $A.modalError(msg)
-                                }).finally(_ => {
-                                    this.$store.dispatch("cancelLoad", `msg-${dataId}`)
-                                });
-                                break;
-                            }
-                            listElement = listElement.parentElement;
+                        const dataMsg = this.findMsgByElement(el)
+                        if (dataMsg.userid != this.userId) {
+                            return;
                         }
+                        const dataIndex = [].indexOf.call(el.querySelectorAll(target.tagName), target);
+                        if (dataClass === 'checked') {
+                            target.setAttribute('data-list', 'unchecked')
+                        } else {
+                            target.setAttribute('data-list', 'checked')
+                        }
+                        this.$store.dispatch("setLoad", {
+                            key: `msg-${dataMsg.id}`,
+                            delay: 600
+                        })
+                        this.$store.dispatch("call", {
+                            url: 'dialog/msg/checked',
+                            data: {
+                                dialog_id: this.dialogId,
+                                msg_id: dataMsg.id,
+                                index: dataIndex,
+                                checked: dataClass === 'checked' ? 0 : 1
+                            },
+                        }).then(({data}) => {
+                            this.$store.dispatch("saveDialogMsg", data);
+                        }).catch(({msg}) => {
+                            if (dataClass === 'checked') {
+                                target.setAttribute('data-list', 'checked')
+                            } else {
+                                target.setAttribute('data-list', 'unchecked')
+                            }
+                            $A.modalError(msg)
+                        }).finally(_ => {
+                            this.$store.dispatch("cancelLoad", `msg-${dataMsg.id}`)
+                        });
                     }
                     break;
             }
+        },
+
+        findMsgByElement(el) {
+            let element = el.parentElement;
+            while (element) {
+                if (element.classList.contains('dialog-scroller')) {
+                    break;
+                }
+                if (element.classList.contains('dialog-view')) {
+                    const dataId = element.getAttribute("data-id")
+                    return this.allMsgs.find(item => item.id == dataId) || {}
+                }
+                element = element.parentElement;
+            }
+            return {};
         },
 
         onViewFile(data) {

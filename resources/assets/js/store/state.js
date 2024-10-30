@@ -234,5 +234,9 @@ export default {
     },
 
     // 翻译
+    cacheTranslationLanguage: '',
     cacheTranslations: [],
+
+    // 下拉菜单操作
+    menuOperation: {}
 };

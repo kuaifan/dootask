@@ -15,10 +15,10 @@
         <template v-if="translation">
             <div class="content-divider">
                 <span></span>
-                <div class="divider-label">{{ translation.label }}</div>
+                <div class="divider-label translation-label" @click="viewText">{{ translation.label }}</div>
                 <span></span>
             </div>
-            <div class="content-additional">{{translation.value}}</div>
+            <div class="content-additional">{{translation.content}}</div>
         </template>
     </div>
 </template>
@@ -26,7 +26,6 @@
 <script>
 import {mapState} from "vuex";
 import DialogMarkdown from "../DialogMarkdown.vue";
-import {languageName} from "../../../../language";
 
 export default {
     components: {DialogMarkdown},
@@ -35,11 +34,11 @@ export default {
         msg: Object,
     },
     computed: {
-        ...mapState(['audioPlaying', 'cacheTranslations']),
+        ...mapState(['audioPlaying', 'cacheTranslations', 'cacheTranslationLanguage']),
 
-        translation() {
-            const translation = this.cacheTranslations.find(item => {
-                return item.key === `msg-${this.msgId}` && item.lang === languageName;
+        translation({cacheTranslations, msgId, cacheTranslationLanguage}) {
+            const translation = cacheTranslations.find(item => {
+                return item.key === `msg-${msgId}` && item.language === cacheTranslationLanguage;
             });
             return translation ? translation : null;
         },
@@ -62,6 +61,9 @@ export default {
                 return `${minute}:${seconds}″`
             }
             return `${Math.max(1, seconds)}″`
+        },
+        viewText(e) {
+            this.$emit('viewText', e);
         },
     },
 }

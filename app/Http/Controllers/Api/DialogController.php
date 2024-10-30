@@ -1543,12 +1543,13 @@ class DialogController extends AbstractController
     /**
      * @api {get} api/dialog/msg/translation          32. 翻译消息
      *
-     * @apiDescription 将文本消息翻译成当前语言，需要token身份
+     * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup dialog
      * @apiName msg__translation
      *
      * @apiParam {Number} msg_id            消息ID
+     * @apiParam {String} [language]        目标语言，默认当前语言
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1559,7 +1560,7 @@ class DialogController extends AbstractController
         User::auth();
         //
         $msg_id = intval(Request::input("msg_id"));
-        $language = Base::headerOrInput('language');
+        $language = Base::inputOrHeader('language');
         $targetLanguage = match ($language) {
             "zh" => "简体中文",
             "zh-CHT" => "繁体中文",

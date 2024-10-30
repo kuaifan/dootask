@@ -6,11 +6,11 @@
         <template v-if="translation">
             <div class="content-divider">
                 <span></span>
-                <div class="divider-label">{{ translation.label }}</div>
+                <div class="divider-label translation-label" @click="viewText">{{ translation.label }}</div>
                 <span></span>
             </div>
-            <DialogMarkdown v-if="msg.type === 'md'" :text="translation.value"/>
-            <pre v-else v-html="$A.formatTextMsg(translation.value, userId)"></pre>
+            <DialogMarkdown v-if="msg.type === 'md'" :text="translation.content"/>
+            <pre v-else v-html="$A.formatTextMsg(translation.content, userId)"></pre>
         </template>
     </div>
 </template>
@@ -18,7 +18,6 @@
 <script>
 import {mapState} from "vuex";
 import DialogMarkdown from "../DialogMarkdown.vue";
-import {languageName} from "../../../../language";
 
 export default {
     components: {DialogMarkdown},
@@ -27,11 +26,11 @@ export default {
         msg: Object,
     },
     computed: {
-        ...mapState(['cacheTranslations']),
+        ...mapState(['cacheTranslations', 'cacheTranslationLanguage']),
 
-        translation() {
-            const translation = this.cacheTranslations.find(item => {
-                return item.key === `msg-${this.msgId}` && item.lang === languageName;
+        translation({cacheTranslations, msgId, cacheTranslationLanguage}) {
+            const translation = cacheTranslations.find(item => {
+                return item.key === `msg-${msgId}` && item.language === cacheTranslationLanguage;
             });
             return translation ? translation : null;
         },

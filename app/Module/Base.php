@@ -98,6 +98,16 @@ class Base
     }
 
     /**
+     * 如果input没有则通过header读取
+     * @param $key
+     * @return mixed|string
+     */
+    public static function inputOrHeader($key)
+    {
+        return Base::nullShow(Request::input($key), Request::header($key));
+    }
+
+    /**
      * 获取版本号
      * @return string
      */

@@ -1413,6 +1413,10 @@
                                 font-size: 12px;
                                 padding: 0 8px;
                                 opacity: 0.6;
+                                cursor: pointer;
+                                &:hover {
+                                    opacity: 0.8;
+                                }
                             }
                         }
 
