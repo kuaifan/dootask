@@ -1363,6 +1363,7 @@
                                 > p {
                                     display: block;
                                     margin-bottom: 3px;
+                                    word-break: break-all;
                                     &:first-child {
                                         padding: 15px 0;
                                     }
@@ -2566,7 +2567,8 @@ body.window-portrait {
 
             .dialog-item {
                 .dialog-view {
-                    &.text {
+                    &.text,
+                    &.template {
                         max-width: calc(100% - 80px);
                     }
                     .dialog-head {
