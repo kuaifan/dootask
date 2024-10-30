@@ -70,7 +70,9 @@
                     <TimelineItem :key="key" v-if="item.type == 'starter'" color="green">
                         <p class="timeline-title">{{$L('提交')}}</p>
                         <div class="timeline-body">
-                            <Avatar :src="data.userimg || datas.userimg" size="38"/>
+                            <div class="approve-process-avatar" @click="onAvatar(data.start_user_id)">
+                                <Avatar :src="data.userimg || datas.userimg" size="38"/>
+                            </div>
                             <div class="approve-process-left">
                                 <p class="approve-process-name">{{data.start_user_name || datas.start_user_name}}</p>
                                 <p class="approve-process-state">{{$L('已提交')}}</p>
@@ -89,7 +91,9 @@
                         :color="item.identitylink ? (item.identitylink?.state > 1 ? '#f03f3f' :'green') : '#ccc'">
                         <p class="timeline-title">{{$L('审批')}}</p>
                         <div class="timeline-body">
-                            <Avatar :src="(item.node_user_list && item.node_user_list[0]?.userimg) || item.userimg" size="38"/>
+                            <div class="approve-process-avatar" @click="onAvatar(item.node_user_list && item.node_user_list[0]?.target_id)">
+                                <Avatar :src="(item.node_user_list && item.node_user_list[0]?.userimg) || item.userimg" size="38"/>
+                            </div>
                             <div class="approve-process-left">
                                 <p class="approve-process-name">{{item.approver}}</p>
                                 <p class="approve-process-state" style="color: #6d6d6d;" v-if="!item.identitylink">待审批</p>
@@ -151,7 +155,9 @@
                         <ListItem v-for="(item, key) in datas.global_comments" :key="key">
                             <div>
                                 <div class="top">
-                                    <Avatar :src="item.userimg" size="38"/>
+                                    <span @click="onAvatar(item.user_id)">
+                                        <Avatar :src="item.userimg" size="38"/>
+                                    </span>
                                     <div>
                                         <p>{{ item.nickname }}</p>
                                         <p class="time">{{ item.created_at }}</p>
@@ -503,6 +509,17 @@ export default {
             });
             const index = list.findIndex(({src}) => src === $A.mainUrl(currentUrl));
             this.$store.dispatch("previewImage", {index, list})
+        },
+        // 点击头像
+        onAvatar(userid) {
+            if (!/^\d+$/.test(userid)) {
+                return
+            }
+            this.$store.dispatch("openDialogUserid", userid).then(_ => {
+                this.goForward({name: 'manage-messenger'})
+            }).catch(({msg}) => {
+                $A.modalError(msg)
+            });
         }
     }
 }

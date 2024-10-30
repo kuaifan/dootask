@@ -2738,12 +2738,12 @@ export default {
                 resolve(dialog);
                 return;
             }
-            dispatch("showSpinner", 600)
             dispatch("call", {
                 url: 'dialog/open/user',
                 data: {
                     userid,
                 },
+                spinner: 600
             }).then(({data}) => {
                 dispatch("saveDialog", data);
                 dispatch("openDialog", data.id);
@@ -2751,8 +2751,6 @@ export default {
             }).catch(e => {
                 console.warn(e);
                 reject(e);
-            }).finally(_ => {
-                dispatch("hiddenSpinner")
             })
         });
     },
