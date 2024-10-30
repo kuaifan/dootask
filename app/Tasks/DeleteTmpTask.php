@@ -6,8 +6,8 @@ use App\Models\File;
 use App\Models\TaskWorker;
 use App\Models\Tmp;
 use App\Models\WebSocketTmpMsg;
+use App\Module\Base;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\File as SupportFile;
 
 /**
  * 删除过期临时数据任务
@@ -99,22 +99,19 @@ class DeleteTmpTask extends AbstractTask
                 break;
 
             /**
-             * file_pack 临时压缩下载文件
+             * tmp_file 删除临时文件
              */
-            case 'file_pack':
+            case 'tmp_file':
                 {
-                    $path = public_path('tmp/file/');
-                    if (!SupportFile::exists($path)) {
+                    $day = intval(env("AUTO_EMPTY_TEMP_FILE", 30));
+                    if ($day <= 0) {
                         return;
                     }
-                    $dirIterator = new \RecursiveDirectoryIterator($path);
-                    $iterator = new \RecursiveIteratorIterator($dirIterator);
-                    foreach ($iterator as $file) {
-                        if ($file->isFile()) {
-                            $time = $file->getMTime();
-                            if ($time < time() - 3600 * 24) {
-                                unlink($file->getPathname());
-                            }
+                    $files = Base::recursiveFiles(public_path('uploads/tmp'));
+                    foreach ($files as $file) {
+                        $time = filemtime($file);
+                        if ($time < time() - 3600 * 24 * $day) {
+                            unlink($file);
                         }
                     }
                 }

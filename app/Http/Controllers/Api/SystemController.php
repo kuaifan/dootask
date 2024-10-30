@@ -1401,7 +1401,7 @@ class SystemController extends AbstractController
 
         if ($isMain || $isApp) {
             $path = 'js/build/';
-            $list = Base::readDir(public_path($path), false);
+            $list = Base::recursiveFiles(public_path($path), false);
             foreach ($list as $item) {
                 if (is_file($item) && filesize($item) > 50 * 1024) {
                     $array[] = $path . basename($item);

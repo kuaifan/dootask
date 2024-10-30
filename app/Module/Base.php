@@ -2652,27 +2652,71 @@ class Base
     }
 
     /**
-     * 遍历获取文件
+     * 路径拼接
+     * @param ...$segments
+     * @return string
+     */
+    public static function joinPath(...$segments)
+    {
+        $trimmedSegments = array_map(function ($segment) {
+            return trim($segment, DIRECTORY_SEPARATOR);
+        }, $segments);
+        return implode(DIRECTORY_SEPARATOR, $trimmedSegments);
+    }
+
+    /**
+     * 递归获取所有文件
      * @param $dir
-     * @param bool $subdirectory    是否遍历子目录
+     * @param bool|int $recursive
      * @return array
      */
-    public static function readDir($dir, $subdirectory = true)
+    public static function recursiveFiles($dir, $recursive = true)
     {
-        $files = array();
-        $dir_list = scandir($dir);
-        foreach ($dir_list as $file) {
-            if ($file != '..' && $file != '.') {
-                if (is_dir($dir . '/' . $file)) {
-                    if ($subdirectory) {
-                        $files = array_merge($files, self::readDir($dir . '/' . $file, $subdirectory));
+        if ($recursive && is_numeric($recursive)) {
+            $recursive--;
+        }
+        $array = [];
+        $items = scandir($dir);
+        foreach ($items as $item) {
+            if ($item != '..' && $item != '.') {
+                $itemPath = self::joinPath($dir, $item);
+                if (is_dir($itemPath)) {
+                    if ($recursive) {
+                        $array = array_merge($array, self::recursiveFiles($itemPath, $recursive));
                     }
                 } else {
-                    $files[] = $dir . "/" . $file;
+                    $array[] = $itemPath;
                 }
             }
         }
-        return $files;
+        return $array;
+    }
+
+    /**
+     * 递归获取所有目录
+     * @param $dir
+     * @param bool|int $recursive
+     * @return array
+     */
+    public static function recursiveDirs($dir, $recursive = true)
+    {
+        if ($recursive && is_numeric($recursive)) {
+            $recursive--;
+        }
+        $array = [];
+        $items = scandir($dir);
+        foreach ($items as $item) {
+            if ($item != '..' && $item != '.') {
+                $itemPath = self::joinPath($dir, $item);
+                if (is_dir($itemPath)) {
+                    $array[] = $itemPath;
+                    if ($recursive) {
+                        $array = array_merge($array, self::recursiveDirs($itemPath, $recursive));
+                    }
+                }
+            }
+        }
+        return $array;
     }
 
     /**

@@ -155,7 +155,7 @@ class IndexController extends InvokeController
         Task::deliver(new DeleteTmpTask('task_worker', 12));
         Task::deliver(new DeleteTmpTask('tmp'));
         Task::deliver(new DeleteTmpTask('file'));
-        Task::deliver(new DeleteTmpTask('file_pack'));
+        Task::deliver(new DeleteTmpTask('tmp_file', 24));
         // 删除机器人消息
         Task::deliver(new DeleteBotMsgTask());
         // 周期任务
@@ -186,7 +186,7 @@ class IndexController extends InvokeController
         }
         // 上传
         if (preg_match("/^\d+\.\d+\.\d+$/", $publishVersion)) {
-            $uploadSuccessFileNum  = (int)Cache::get($publishVersion, 0);
+            $uploadSuccessFileNum = (int)Cache::get($publishVersion, 0);
             $publishKey = Request::header('publish-key');
             if ($publishKey !== env('APP_KEY')) {
                 return Base::retError("key error");
@@ -205,15 +205,22 @@ class IndexController extends InvokeController
                     $uploadSuccessFileNum = $uploadSuccessFileNum + 1;
                     Cache::set($publishVersion, $uploadSuccessFileNum, 7200);
                 }
-                if ($uploadSuccessFileNum >= $fileNum){
-                    $directoryPath = public_path("uploads/desktop");
-                    $files = array_filter(scandir($directoryPath), function($file) use($directoryPath) {
-                        return preg_match("/^\d+\.\d+\.\d+$/", $file) && is_dir($directoryPath . '/' . $file) && $file != '.' && $file != '..';
-                    });
-                    sort($files);
-                    foreach ($files as $key => $file) {
-                        if ($file != $publishVersion && $key < count($files) - 2) {
-                            Base::deleteDirAndFile($directoryPath . '/' . $file);
+                if ($uploadSuccessFileNum >= $fileNum) {
+                    // 删除旧版本
+                    $dirs = Base::recursiveDirs(public_path("uploads/desktop"), false);
+                    sort($dirs);
+                    $num = 0;
+                    foreach ($dirs as $dir) {
+                        if (!preg_match("/\/\d+\.\d+\.\d+$/", $dir)) {
+                            continue;
+                        }
+                        $num++;
+                        if ($num < 2) {
+                            continue;
+                        }
+                        $time = filemtime($dir);
+                        if ($time < time() - 3600 * 24 * 30) {
+                            Base::deleteDirAndFile($dir);
                         }
                     }
                 }
@@ -224,7 +231,7 @@ class IndexController extends InvokeController
         if (preg_match("/^\d+\.\d+\.\d+$/", $name)) {
             $path = "uploads/desktop/{$name}";
             $dirPath = public_path($path);
-            $lists = Base::readDir($dirPath);
+            $lists = Base::recursiveFiles($dirPath, false);
             $files = [];
             foreach ($lists as $file) {
                 if (str_ends_with($file, '.yml') || str_ends_with($file, '.yaml') || str_ends_with($file, '.blockmap')) {
@@ -252,7 +259,7 @@ class IndexController extends InvokeController
                 }
             }
         }
-        return abort(404);
+        abort(404);
     }
 
     /**
@@ -362,86 +369,5 @@ class IndexController extends InvokeController
     public function storage__synch()
     {
         return '<!-- Deprecated -->';
-    }
-
-    /**
-     * 提取所有中文
-     * @return array|string
-     */
-    public function allcn()
-    {
-        if (!Base::is_internal_ip(Base::getIp())) {
-            // 限制内网访问
-            return "Forbidden Access";
-        }
-        $list = Base::readDir(resource_path());
-        $array = [];
-        foreach ($list as $item) {
-            $content = file_get_contents($item);
-            preg_match_all("/\\\$L\((.*?)\)/", $content, $matchs);
-            if ($matchs) {
-                foreach ($matchs[1] as $text) {
-                    $array[trim(trim($text, '"'), "'")] = trim(trim($text, '"'), "'");
-                }
-            }
-        }
-        return array_values($array);
-    }
-
-    /**
-     * 提取所有中文
-     * @return array|string
-     */
-    public function allcn__php()
-    {
-        if (!Base::is_internal_ip(Base::getIp())) {
-            // 限制内网访问
-            return "Forbidden Access";
-        }
-        $list = Base::readDir(app_path());
-        $array = [];
-        foreach ($list as $item) {
-            $content = file_get_contents($item);
-            preg_match_all("/(retSuccess|retError|ApiException)\((.*?)[,|)]/", $content, $matchs);
-            if ($matchs) {
-                foreach ($matchs[2] as $text) {
-                    $array[trim(trim($text, '"'), "'")] = trim(trim($text, '"'), "'");
-                }
-            }
-        }
-        return array_values($array);
-    }
-
-    /**
-     * 提取所有中文
-     * @return array|string
-     */
-    public function allcn__all()
-    {
-        if (!Base::is_internal_ip(Base::getIp())) {
-            // 限制内网访问
-            return "Forbidden Access";
-        }
-        $list = array_merge(Base::readDir(app_path()), Base::readDir(resource_path()));
-        $array = [];
-        foreach ($list as $item) {
-            if (Base::rightExists($item, ".php") || Base::rightExists($item, ".vue") || Base::rightExists($item, ".js")) {
-                $content = file_get_contents($item);
-                preg_match_all("/(['\"])(.*?)[\u{4e00}-\u{9fa5}\u{FE30}-\u{FFA0}]+([\s\S]((?!\n).)*)\\1/u", $content, $matchs);
-                if ($matchs) {
-                    foreach ($matchs[0] as $text) {
-                        $tmp = preg_replace("/\/\/(.*?)$/", "", $text);
-                        $tmp = preg_replace("/\/\/(.*?)\n/", "", $tmp);
-                        $tmp = str_replace("：", "", $tmp);
-                        if (!preg_match("/[\u{4e00}-\u{9fa5}\u{FE30}-\u{FFA0}]/u", $tmp)){
-                            continue;  // 没有中文
-                        }
-                        $val = trim(trim($text, '"'), "'");
-                        $array[md5($val)] = $val;
-                    }
-                }
-            }
-        }
-        return implode("\n", array_values($array));
     }
 }
