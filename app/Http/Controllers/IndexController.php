@@ -237,13 +237,13 @@ class IndexController extends InvokeController
                 if (str_ends_with($file, '.yml') || str_ends_with($file, '.yaml') || str_ends_with($file, '.blockmap')) {
                     continue;
                 }
-                $fileName = Base::leftDelete($file, $dirPath);
+                $fileName = basename($file, $dirPath);
                 $fileSize = filesize($file);
                 $files[] = [
-                    'name' => substr($fileName, 1),
+                    'name' => $fileName,
                     'time' => date("Y-m-d H:i:s", filemtime($file)),
                     'size' => $fileSize > 0 ? Base::readableBytes($fileSize) : 0,
-                    'url' => Base::fillUrl($path . $fileName),
+                    'url' => Base::fillUrl(Base::joinPath($path, $fileName)),
                 ];
             }
             //

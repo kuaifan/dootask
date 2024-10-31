@@ -2671,10 +2671,14 @@ class Base
      */
     public static function joinPath(...$segments)
     {
-        $trimmedSegments = array_map(function ($segment) {
+        if (count($segments) === 0) {
+            return "";
+        }
+        $array = array_map(function ($segment) {
             return trim($segment, DIRECTORY_SEPARATOR);
         }, $segments);
-        return implode(DIRECTORY_SEPARATOR, $trimmedSegments);
+        $prefix = str_starts_with($segments[0], DIRECTORY_SEPARATOR) ? DIRECTORY_SEPARATOR : "";
+        return $prefix . implode(DIRECTORY_SEPARATOR, $array);
     }
 
     /**
