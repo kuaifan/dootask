@@ -1345,9 +1345,13 @@
                         }
 
                         .open-approve-details {
-                            width: 260px;
+                            width: 280px;
                             display: inline-block;
                             max-width: 100%;
+
+                            @media screen and (max-width: 768px) {
+                                width: 300px;
+                            }
 
                             .cause {
                                 border-bottom: 1px solid #e3e3e3;

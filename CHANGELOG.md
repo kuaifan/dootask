@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.39.39]
+
+### Bug Fixes
+
+- 目录拼错的情况
+
 ## [0.39.37]
 
 ### Bug Fixes

@@ -1581,7 +1581,6 @@ class Base
         } else {
             abort($abortCode, $msg);
         }
-        return [];
     }
 
     /**
