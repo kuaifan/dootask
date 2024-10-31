@@ -781,11 +781,11 @@ class ProjectTask extends AbstractModel
                         // 判断同步主任务时间（子任务时间 超出 主任务）
                         if ($mainTask) {
                             $isUp = false;
-                            if ($start_at->lt(Carbon::parse($mainTask->start_at))) {
+                            if (empty($mainTask->start_at) || $start_at->lt(Carbon::parse($mainTask->start_at))) {
                                 $mainTask->start_at = $start_at;
                                 $isUp = true;
                             }
-                            if ($end_at->gt(Carbon::parse($mainTask->end_at))) {
+                            if (empty($mainTask->end_at) || $end_at->gt(Carbon::parse($mainTask->end_at))) {
                                 $mainTask->end_at = $end_at;
                                 $isUp = true;
                             }
