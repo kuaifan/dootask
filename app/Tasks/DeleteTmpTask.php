@@ -109,8 +109,8 @@ class DeleteTmpTask extends AbstractTask
                     }
                     $files = Base::recursiveFiles(public_path('uploads/tmp'));
                     foreach ($files as $file) {
-                        $time = filemtime($file);
-                        if ($time < time() - 3600 * 24 * $day) {
+                        $time = @filemtime($file);
+                        if ($time && $time < time() - 3600 * 24 * $day) {
                             unlink($file);
                         }
                     }

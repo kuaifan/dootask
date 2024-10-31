@@ -2381,10 +2381,11 @@ class Base
                 // 转换视频格式
                 $output = Base::rightReplace($array['file'], ".{$array['ext']}", '.mp4');
                 if ($array['ext'] === 'webm') {
-                    shell_exec("ffmpeg -y -i {$array['file']} -strict experimental {$output} 2>&1");
+                    $command = sprintf("ffmpeg -y -i %s -strict experimental %s 2>&1", escapeshellarg($array['file']), escapeshellarg($output));
                 } else {
-                    shell_exec("ffmpeg -y -i {$array['file']} -c:v copy -c:a copy {$output} 2>&1");
+                    $command = sprintf("ffmpeg -y -i %s -c:v copy -c:a copy %s 2>&1", escapeshellarg($array['file']), escapeshellarg($output));
                 }
+                @shell_exec($command);
                 if (file_exists($output) && filesize($output) > 0) {
                     @unlink($array['file']);
                     $array = array_merge($array, [
@@ -2400,12 +2401,14 @@ class Base
             if (in_array($array['ext'], ['mov', 'webm', 'mp4'])) {
                 // 视频尺寸
                 $thumbFile = $array['file'] . '_thumb.jpg';
-                shell_exec("ffmpeg -y -i {$array['file']} -ss 1 -vframes 1 {$thumbFile} 2>&1");
+                $command = sprintf("ffmpeg -y -i %s -ss 1 -vframes 1 %s 2>&1", escapeshellarg($array['file']), escapeshellarg($thumbFile));
+                @shell_exec($command);
                 if (file_exists($thumbFile) && filesize($thumbFile) > 0) {
                     $paramet = getimagesize($thumbFile);
                     $array['width'] = $paramet[0];
                     $array['height'] = $paramet[1];
                     $array['thumb'] = $array['path'] . '_thumb.jpg';
+                    Image::compressImage($thumbFile, null, 80);
                 }
             }
             if (in_array($array['ext'], ['jpg', 'jpeg', 'webp', 'gif', 'png'])) {

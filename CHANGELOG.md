@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.39.37]
+
+### Bug Fixes
+
+- 设置子任务时间主任务出现1970的情况
+- 消息溢出的情况
+
+### Features
+
+- 消息翻译支持切换语言
+
+### Performance
+
+- 优化国际化语言
+- 审批支持点击头像进入私聊
+- 优化删除临时文件
+- 优化缩略图
+
 ## [0.39.21]
 
 ### Bug Fixes
