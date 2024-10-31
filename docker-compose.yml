@@ -1,7 +1,7 @@
 services:
   php:
     container_name: "dootask-php-${APP_ID}"
-    image: "kuaifan/php:swoole-8.0.rc17"
+    image: "kuaifan/php:swoole-8.0.rc18"
     shm_size: "2gb"
     ulimits:
       core:
@@ -193,6 +193,7 @@ services:
     depends_on:
       - mariadb
     restart: unless-stopped
+
   face:
     container_name: "dootask-face-${APP_ID}"
     image: "hitosea2020/dooface:0.0.1"
