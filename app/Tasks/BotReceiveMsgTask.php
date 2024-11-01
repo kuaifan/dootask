@@ -10,6 +10,7 @@ use App\Module\Base;
 use App\Module\Doo;
 use App\Module\Ihttp;
 use Carbon\Carbon;
+use DB;
 
 @error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
@@ -316,20 +317,22 @@ class BotReceiveMsgTask extends AbstractTask
                     $nameKey = $isManager ? $array[2] : $array[1];
                     $data = $this->botManagerOne($botId, $msg->userid);
                     if ($data) {
-                        $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
-                            ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
-                            ->where('web_socket_dialogs.name', 'LIKE', "%{$nameKey}%")
+                        $list = DB::table('web_socket_dialog_users as u')
+                            ->select(['d.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
+                            ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
                             ->where('u.userid', $data->userid)
+                            ->where('d.name', 'LIKE', "%{$nameKey}%")
                             ->orderByDesc('u.top_at')
                             ->orderByDesc('u.last_at')
                             ->take(20)
-                            ->get();
-                        if ($list->isEmpty()) {
+                            ->get()
+                            ->map(function($item) use ($data) {
+                                return WebSocketDialog::synthesizeData($item, $data->userid);
+                            })
+                            ->all();
+                        if (empty($list)) {
                             $content = "没有搜索到相关会话。";
                         } else {
-                            $list->transform(function (WebSocketDialog $item) use ($data) {
-                                return $item->formatData($data->userid);
-                            });
                             $data->list = $list;   // 这个参数只是作为输出，所以不保存
                         }
                     } else {

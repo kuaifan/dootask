@@ -111,18 +111,19 @@ class DialogController extends AbstractController
             return Base::retError('请输入搜索关键词');
         }
         // 搜索会话
-        $dialogs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
-            ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
-            ->where('web_socket_dialogs.name', 'LIKE', "%{$key}%")
+        $list = DB::table('web_socket_dialog_users as u')
+            ->select(['d.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
+            ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
             ->where('u.userid', $user->userid)
+            ->where('d.name', 'LIKE', "%{$key}%")
             ->orderByDesc('u.top_at')
             ->orderByDesc('u.last_at')
             ->take(20)
-            ->get();
-        $dialogs->transform(function (WebSocketDialog $item) use ($user) {
-            return $item->formatData($user->userid);
-        });
-        $list = $dialogs->toArray();
+            ->get()
+            ->map(function($item) use ($user) {
+                return WebSocketDialog::synthesizeData($item, $user->userid);
+            })
+            ->all();
         // 搜索联系人
         if (count($list) < 20 && Base::judgeClientVersion("0.21.60")) {
             $users = User::select(User::$basicField)
@@ -148,26 +149,21 @@ class DialogController extends AbstractController
         }
         // 搜索消息会话
         if (count($list) < 20) {
-            $msgs = WebSocketDialogMsg::select(['web_socket_dialog_msgs.*'])
-                ->join('web_socket_dialog_msg_reads as r', 'r.msg_id', '=', 'web_socket_dialog_msgs.id')
-                ->where('r.userid', $user->userid)
-                ->where('r.live', 1)
-                ->where('web_socket_dialog_msgs.key', 'LIKE', "%{$key}%")
-                ->orderByDesc('r.msg_id')
+            $prefix = DB::getTablePrefix();
+            $msgs = DB::table('web_socket_dialog_users as u')
+                ->select(['d.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at', 'm.id as search_msg_id'])
+                ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
+                ->join('web_socket_dialog_msgs as m', 'm.dialog_id', '=', 'd.id')
+                ->where('u.userid', $user->userid)
+                ->whereRaw("MATCH({$prefix}m.key) AGAINST('*{$key}*' IN BOOLEAN MODE)")
+                ->orderByDesc('m.id')
                 ->take(20 - count($list))
-                ->get();
-            foreach ($msgs as $msg) {
-                $item = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
-                    ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
-                    ->where('web_socket_dialogs.id', $msg->dialog_id)
-                    ->first();
-                if (empty($item)) {
-                    continue;
-                }
-                $item->search_msg_id = $msg->id;
-                $item->last_msg = $msg;
-                $list[] = $item->formatData($user->userid);
-            }
+                ->get()
+                ->map(function($item) use ($user) {
+                    return WebSocketDialog::synthesizeData($item, $user->userid);
+                })
+                ->all();
+            $list = array_merge($list, $msgs);
         }
         //
         return Base::retSuccess('success', $list);
@@ -189,19 +185,21 @@ class DialogController extends AbstractController
     {
         $user = User::auth();
         // 搜索会话
-        $msgs = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at', 'm.id as search_msg_id'])
-            ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
-            ->join('web_socket_dialog_msgs as m', 'web_socket_dialogs.id', '=', 'm.dialog_id')
+        $msgs = DB::table('web_socket_dialog_users as u')
+            ->select(['d.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at', 'm.id as search_msg_id'])
+            ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
+            ->join('web_socket_dialog_msgs as m', 'm.dialog_id', '=', 'd.id')
             ->where('u.userid', $user->userid)
             ->where('m.tag', '>', 0)
             ->orderByDesc('m.id')
             ->take(50)
-            ->get();
-        $msgs->transform(function (WebSocketDialog $item) use ($user) {
-            return $item->formatData($user->userid);
-        });
+            ->get()
+            ->map(function($item) use ($user) {
+                return WebSocketDialog::synthesizeData($item, $user->userid);
+            })
+            ->all();
         //
-        return Base::retSuccess('success', $msgs->toArray());
+        return Base::retSuccess('success', $msgs);
     }
 
     /**
@@ -224,16 +222,13 @@ class DialogController extends AbstractController
         //
         $dialog_id = intval(Request::input('dialog_id'));
         //
-        $item = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
-            ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
-            ->where('web_socket_dialogs.id', $dialog_id)
+        $item = DB::table('web_socket_dialog_users as u')
+            ->select(['d.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
+            ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
             ->where('u.userid', $user->userid)
+            ->where('d.id', $dialog_id)
             ->first();
-        if (empty($item)) {
-            WebSocketDialogMsgRead::forceRead($dialog_id, $user->userid);
-            return Base::retError('会话不存在或已被删除', ['dialog_id' => $dialog_id], -4003);
-        }
-        return Base::retSuccess('success', $item->formatData($user->userid));
+        return Base::retSuccess('success', WebSocketDialog::synthesizeData($item, $user->userid));
     }
 
     /**
@@ -455,7 +450,7 @@ class DialogController extends AbstractController
         if (empty($dialog)) {
             return Base::retError('打开会话失败');
         }
-        $data = WebSocketDialog::find($dialog->id)?->formatData($user->userid);
+        $data = WebSocketDialog::synthesizeData($dialog->id, $user->userid);
         return Base::retSuccess('success', $data);
     }
 
@@ -587,7 +582,7 @@ class DialogController extends AbstractController
         }
         //
         if ($reDialog) {
-            $data['dialog'] = $dialog->formatData($user->userid, true);
+            $data['dialog'] = WebSocketDialog::synthesizeData($dialog, $user->userid, true);
             $data['todo'] = $data['dialog']->todo_num > 0 ? WebSocketDialogMsgTodo::whereDialogId($dialog->id)->whereUserid($user->userid)->whereDoneAt(null)->orderByDesc('id')->take(50)->get() : [];
             $data['top'] = $dialog->top_msg_id ? WebSocketDialogMsg::whereId($dialog->top_msg_id)->first() : null;
         }
@@ -814,13 +809,13 @@ class DialogController extends AbstractController
             $dialogUser->updated_at = Carbon::now();
             $dialogUser->save();
             //
-            $dialogUser->webSocketDialog->generateUnread($user->userid);
+            $unreadData = WebSocketDialog::generateUnread($dialogUser->dialog_id, $user->userid);
             $data[] = [
-                'id' => $dialogUser->webSocketDialog->id,
-                'unread' => $dialogUser->webSocketDialog->unread,
-                'unread_one' => $dialogUser->webSocketDialog->unread_one,
-                'mention' => $dialogUser->webSocketDialog->mention,
-                'mention_ids' => $dialogUser->webSocketDialog->mention_ids,
+                'id' => $dialogUser->dialog_id,
+                'unread' => $unreadData['unread'],
+                'unread_one' => $unreadData['unread_one'],
+                'mention' => $unreadData['mention'],
+                'mention_ids' => $unreadData['mention_ids'],
                 'user_at' =>  Carbon::parse($dialogUser->updated_at)->toDateTimeString('millisecond'),
                 'user_ms' => Carbon::parse($dialogUser->updated_at)->valueOf()
             ];
@@ -858,14 +853,14 @@ class DialogController extends AbstractController
         if (empty($dialogUser?->webSocketDialog)) {
             return Base::retError('会话不存在');
         }
-        $dialogUser->webSocketDialog->generateUnread($dialogUser->userid);
+        $unreadData = WebSocketDialog::generateUnread($dialog_id, $dialogUser->userid);
         //
         return Base::retSuccess('success', [
-            'id' => $dialogUser->webSocketDialog->id,
-            'unread' => $dialogUser->webSocketDialog->unread,
-            'unread_one' => $dialogUser->webSocketDialog->unread_one,
-            'mention' => $dialogUser->webSocketDialog->mention,
-            'mention_ids' => $dialogUser->webSocketDialog->mention_ids,
+            'id' => $dialog_id,
+            'unread' => $unreadData['unread'],
+            'unread_one' => $unreadData['unread_one'],
+            'mention' => $unreadData['mention'],
+            'mention_ids' => $unreadData['mention_ids'],
             'user_at' => Carbon::parse($dialogUser->updated_at)->toDateTimeString('millisecond'),
             'user_ms' => Carbon::parse($dialogUser->updated_at)->valueOf()
         ]);
@@ -1661,13 +1656,13 @@ class DialogController extends AbstractController
         }
         $dialogUser->mark_unread = $type == 'unread' ? 1 : 0;
         $dialogUser->save();
-        $dialogUser->webSocketDialog->generateUnread($user->userid);
+        $unreadData = WebSocketDialog::generateUnread($dialog_id, $user->userid);
         return Base::retSuccess("success", [
-            'id' => $dialogUser->webSocketDialog->id,
-            'unread' => $dialogUser->webSocketDialog->unread,
-            'unread_one' => $dialogUser->webSocketDialog->unread_one,
-            'mention' => $dialogUser->webSocketDialog->mention,
-            'mention_ids' => $dialogUser->webSocketDialog->mention_ids,
+            'id' => $dialog_id,
+            'unread' => $unreadData['unread'],
+            'unread_one' => $unreadData['unread_one'],
+            'mention' => $unreadData['mention'],
+            'mention_ids' => $unreadData['mention_ids'],
             'user_at' => Carbon::parse($dialogUser->updated_at)->toDateTimeString('millisecond'),
             'user_ms' => Carbon::parse($dialogUser->updated_at)->valueOf(),
             'mark_unread' => $dialogUser->mark_unread,
@@ -2065,7 +2060,7 @@ class DialogController extends AbstractController
             $dialog->avatar = $avatar;
             $dialog->save();
         }
-        $data = WebSocketDialog::find($dialog->id)?->formatData($user->userid);
+        $data = WebSocketDialog::synthesizeData($dialog, $user->userid);
         $userids = array_values(array_diff($userids, [$user->userid]));
         $dialog->pushMsg("groupAdd", null, $userids);
         return Base::retSuccess('创建成功', $data);

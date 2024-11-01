@@ -9,6 +9,7 @@ use App\Tasks\PushTask;
 use Cache;
 use Carbon\Carbon;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 
@@ -87,8 +88,9 @@ class WebSocketDialog extends AbstractModel
      */
     public static function getDialogList($userid, $updated = "", $deleted = "")
     {
-        $builder = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
-            ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
+        $builder = DB::table('web_socket_dialog_users as u')
+            ->select(['d.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
+            ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
             ->where('u.userid', $userid);
         if ($updated) {
             $builder->where('u.updated_at', '>', $updated);
@@ -97,8 +99,8 @@ class WebSocketDialog extends AbstractModel
             ->orderByDesc('u.top_at')
             ->orderByDesc('u.last_at')
             ->paginate(Base::getPaginate(100, 50));
-        $list->transform(function (WebSocketDialog $item) use ($userid) {
-            return $item->formatData($userid);
+        $list->transform(function ($item) use ($userid) {
+            return self::synthesizeData($item, $userid);
         });
         //
         $data = $list->toArray();
@@ -122,241 +124,237 @@ class WebSocketDialog extends AbstractModel
         $array = [];
         if ($unreadAt) {
             // 未读对话
-            $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
-                ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
-                ->join('web_socket_dialog_msg_reads as r', 'web_socket_dialogs.id', '=', 'r.dialog_id')
+            $list = DB::table('web_socket_dialog_users as u')
+                ->select(['d.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
+                ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
+                ->join('web_socket_dialog_msg_reads as r', 'd.id', '=', 'r.dialog_id')
                 ->where('u.userid', $userid)
+                ->where('u.last_at', '<', $unreadAt)
                 ->where('r.userid', $userid)
                 ->where('r.read_at')
-                ->where('u.last_at', '<', $unreadAt)
                 ->groupBy('u.dialog_id')
                 ->take(20)
                 ->get();
-            $list->transform(function (WebSocketDialog $item) use ($userid, &$ids, &$array) {
+            $list->transform(function ($item) use ($userid, &$ids, &$array) {
                 if (!in_array($item->id, $ids)) {
                     $ids[] = $item->id;
-                    $array[] = $item->formatData($userid);
+                    $array[] = self::synthesizeData($item, $userid);
                 }
             });
             // 标记未读会话
-            $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
-                ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
+            $list = DB::table('web_socket_dialog_users as u')
+                ->select(['d.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
+                ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
                 ->where('u.userid', $userid)
                 ->where('u.mark_unread', 1)
                 ->where('u.last_at', '<', $unreadAt)
                 ->take(20)
                 ->get();
-            $list->transform(function (WebSocketDialog $item) use ($userid, &$ids, &$array) {
+            $list->transform(function ($item) use ($userid, &$ids, &$array) {
                 if (!in_array($item->id, $ids)) {
                     $ids[] = $item->id;
-                    $array[] = $item->formatData($userid);
+                    $array[] = self::synthesizeData($item, $userid);
                 }
             });
         }
         if ($todoAt) {
             // 待办会话
-            $list = WebSocketDialog::select(['web_socket_dialogs.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
-                ->join('web_socket_dialog_users as u', 'web_socket_dialogs.id', '=', 'u.dialog_id')
-                ->join('web_socket_dialog_msg_todos as t', 'web_socket_dialogs.id', '=', 't.dialog_id')
+            $list = DB::table('web_socket_dialog_users as u')
+                ->select(['d.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
+                ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
+                ->join('web_socket_dialog_msg_todos as t', 'd.id', '=', 't.dialog_id')
                 ->where('u.userid', $userid)
+                ->where('u.last_at', '<', $todoAt)
                 ->where('t.userid', $userid)
                 ->where('t.done_at')
-                ->where('u.last_at', '<', $todoAt)
                 ->groupBy('u.dialog_id')
                 ->take(20)
                 ->get();
-            $list->transform(function (WebSocketDialog $item) use ($userid, &$ids, &$array) {
+            $list->transform(function ($item) use ($userid, &$ids, &$array) {
                 if (!in_array($item->id, $ids)) {
                     $ids[] = $item->id;
-                    $array[] = $item->formatData($userid);
+                    $array[] = self::synthesizeData($item, $userid);
                 }
             });
         }
         return $array;
     }
 
-
     /**
-     * 格式化对话
+     * 综合数据
+     * @param $data
      * @param int $userid   会员ID
-     * @param bool $hasData
-     * @return $this
+     * @param bool $hasData 已存在的消息类型
+     * @return array|mixed
      */
-    public function formatData($userid, $hasData = false)
+    public static function synthesizeData($data, $userid, $hasData = false)
     {
-        $dialogUserFun = function ($key, $default = null) use ($userid) {
-            $data = Cache::remember("Dialog::formatData-{$this->id}-{$userid}", now()->addSeconds(10), function () use ($userid) {
-                return WebSocketDialogUser::whereDialogId($this->id)->whereUserid($userid)->first()?->toArray();
-            });
-            return $data[$key] ?? $default;
-        };
-        //
-        $time = Carbon::parse($this->user_at ?? $dialogUserFun('updated_at'));
-        $this->hide = $this->hide ?? $dialogUserFun('hide');
-        $this->top_at = $this->top_at ?? $dialogUserFun('top_at');
-        $this->last_at = $this->last_at ?? $dialogUserFun('last_at');
-        $this->user_at = $time->toDateTimeString('millisecond');
-        $this->user_ms = $time->valueOf();
-        //
-        if (isset($this->search_msg_id)) {
-            // 最后消息 (搜索预览消息)
-            $this->last_msg = $this->last_msg ?? WebSocketDialogMsg::whereDialogId($this->id)->find($this->search_msg_id);
-            $this->last_at = $this->last_msg ? Carbon::parse($this->last_msg->created_at)->toDateTimeString() : null;
-        } else {
-            // 未读信息
-            if (Base::judgeClientVersion("0.34.0")) {
-                $this->generateUnread($userid);
-            } else {
-                $this->generateUnread_03398($userid, $hasData);
-            }
-            // 未读标记
-            $this->mark_unread = $this->mark_unread ?? $dialogUserFun('mark_unread');
-            // 是否免打扰
-            $this->silence = $this->silence ?? $dialogUserFun('silence');
-            // 对话人数
-            $this->people = $this->people ?? WebSocketDialogUser::whereDialogId($this->id)->count();
-            // 有待办
-            $this->todo_num = $this->todo_num ?? WebSocketDialogMsgTodo::whereDialogId($this->id)->whereUserid($userid)->whereDoneAt(null)->count();
-            // 最后消息
-            $this->last_msg = $this->last_msg ?? WebSocketDialogMsg::whereDialogId($this->id)->orderByDesc('id')->first();
+        // 判断数据
+        if (is_numeric($data)) {
+            $data = WebSocketDialog::find($data)?->toArray();
+        } elseif ($data instanceof Model) {
+            $data = $data->toArray();
+        } elseif (is_object($data)) {
+            $data = (array)$data;
         }
+        if (!is_array($data) || !isset($data['id'])) {
+            return $data;
+        }
+
+        // 会话必要字段
+        $fields = [
+            'id', 'type', 'group_type', 'name', 'avatar', 'owner_id', 'link_id', 'top_userid', 'top_msg_id', 'created_at', 'updated_at', 'deleted_at',
+        ];
+        if (!empty(array_diff($fields, array_keys($data)))) {
+            // 补全数据
+            foreach ($fields as $field) {
+                $data[$field] = $data[$field] ?? null;
+            }
+        }
+
+        // 会员必要字段
+        $fields = [
+            'top_at', 'last_at', 'mark_unread', 'silence', 'hide', 'color', 'user_at',
+        ];
+        if (!empty(array_diff($fields, array_keys($data)))) {
+            // 补全数据（查询数据库）
+            $array = WebSocketDialogUser::whereDialogId($data['id'])->whereUserid($userid)->first()?->toArray();
+            foreach ($fields as $field) {
+                if ($field === 'user_at') {
+                    $data[$field] = $data[$field] ?? $array['updated_at'] ?? null;
+                } else {
+                    $data[$field] = $data[$field] ?? $array[$field] ?? null;
+                }
+            }
+        }
+        // 会员数据处理
+        if (isset($data['user_at']) && !isset($data['user_ms'])) {
+            $time = Carbon::parse($fields['user_at']);
+            $data['user_at'] = $time->toDateTimeString('millisecond');
+            $data['user_ms'] = $time->valueOf();
+        }
+
+        // 信息数据
+        if (isset($data['search_msg_id'])) {
+            // 最后消息 (搜索预览消息)
+            $data['last_msg'] = $data['last_msg'] ?? WebSocketDialogMsg::whereDialogId($data['id'])->find($data['search_msg_id'])?->toArray();
+            $data['last_at'] = $data['last_msg'] ? Carbon::parse($data['last_msg']['created_at'])->toDateTimeString() : null;
+        } else {
+            // 未读消息
+            $data = array_merge($data, self::generateUnread($data['id'], $userid));
+            // 对话人数
+            $data['people'] = $data['people'] ?? WebSocketDialogUser::whereDialogId($data['id'])->count();
+            // 有待办
+            $data['todo_num'] = $data['todo_num'] ?? WebSocketDialogMsgTodo::whereDialogId($data['id'])->whereUserid($userid)->whereDoneAt(null)->count();
+            // 最后消息
+            $data['last_msg'] = $data['last_msg'] ?? WebSocketDialogMsg::whereDialogId($data['id'])->orderByDesc('id')->first()?->toArray();
+        }
+
         // 对方信息
-        $this->pinyin = Base::cn2pinyin($this->name);
-        $this->quick_msgs = [];
-        $this->dialog_user = null;
-        $this->group_info = null;
-        $this->bot = 0;
-        switch ($this->type) {
+        $data['pinyin'] = Base::cn2pinyin($data['name']);
+        $data['quick_msgs'] = [];
+        $data['dialog_user'] = null;
+        $data['group_info'] = null;
+        $data['bot'] = 0;
+        switch ($data['type']) {
             case "user":
-                $dialog_user = WebSocketDialogUser::whereDialogId($this->id)->where('userid', '!=', $userid)->first();
+                $dialog_user = WebSocketDialogUser::whereDialogId($data['id'])->where('userid', '!=', $userid)->first();
                 if ($dialog_user->userid === 0) {
                     $dialog_user->userid = $userid;
                 }
                 $basic = User::userid2basic($dialog_user->userid);
                 if ($basic) {
-                    $this->name = $basic->nickname;
-                    $this->email = $basic->email;
-                    $this->userimg = $basic->userimg;
-                    $this->bot = $basic->getBotOwner();
-                    $this->quick_msgs = UserBot::quickMsgs($basic->email);
+                    $data['name'] = $basic->nickname;
+                    $data['email'] = $basic->email;
+                    $data['userimg'] = $basic->userimg;
+                    $data['bot'] = $basic->getBotOwner();
+                    $data['quick_msgs'] = UserBot::quickMsgs($basic->email);
                 } else {
-                    $this->name = 'non-existent';
-                    $this->dialog_delete = 1;
+                    $data['name'] = 'non-existent';
+                    $data['dialog_delete'] = 1;
                 }
-                $this->dialog_user = $dialog_user;
-                $this->dialog_mute = Base::settingFind('system', 'user_private_chat_mute');
+                $data['dialog_user'] = $dialog_user;
+                $data['dialog_mute'] = Base::settingFind('system', 'user_private_chat_mute');
                 break;
             case "group":
-                switch ($this->group_type) {
+                switch ($data['group_type']) {
                     case 'user':
-                        $this->dialog_mute = Base::settingFind('system', 'user_group_chat_mute');
+                        $data['dialog_mute'] = Base::settingFind('system', 'user_group_chat_mute');
                         break;
                     case 'project':
-                        $this->group_info = Project::withTrashed()->select(['id', 'name', 'archived_at', 'deleted_at'])->whereDialogId($this->id)->first()?->cancelAppend()->cancelHidden();
-                        if ($this->group_info) {
-                            $this->name = $this->group_info->name;
+                        $data['group_info'] = Project::withTrashed()->select(['id', 'name', 'archived_at', 'deleted_at'])->whereDialogId($data['id'])->first()?->cancelAppend()->cancelHidden()->toArray();
+                        if ($data['group_info']) {
+                            $data['name'] = $data['group_info']['name'];
                         } else {
-                            $this->name = '[Delete]';
-                            $this->dialog_delete = 1;
+                            $data['name'] = '[Delete]';
+                            $data['dialog_delete'] = 1;
                         }
                         break;
                     case 'task':
-                        $this->group_info = ProjectTask::withTrashed()->select(['id', 'name', 'complete_at', 'archived_at', 'deleted_at'])->whereDialogId($this->id)->first()?->cancelAppend()->cancelHidden();
-                        if ($this->group_info) {
-                            $this->name = $this->group_info->name;
+                        $data['group_info'] = ProjectTask::withTrashed()->select(['id', 'name', 'complete_at', 'archived_at', 'deleted_at'])->whereDialogId($data['id'])->first()?->cancelAppend()->cancelHidden()->toArray();
+                        if ($data['group_info']) {
+                            $data['name'] = $data['group_info']['name'];
                         } else {
-                            $this->name = '[Delete]';
-                            $this->dialog_delete = 1;
+                            $data['name'] = '[Delete]';
+                            $data['dialog_delete'] = 1;
                         }
                         break;
                     case 'all':
-                        $this->name = Doo::translate('全体成员');
-                        $this->dialog_mute = Base::settingFind('system', 'all_group_mute');
+                        $data['name'] = Doo::translate('全体成员');
+                        $data['dialog_mute'] = Base::settingFind('system', 'all_group_mute');
                         break;
                 }
                 break;
         }
+
+        // 已存在的消息类型
         if ($hasData === true) {
-            $msgBuilder = WebSocketDialogMsg::whereDialogId($this->id);
-            $this->has_tag = $msgBuilder->clone()->where('tag', '>', 0)->exists();
-            $this->has_todo = $msgBuilder->clone()->where('todo', '>', 0)->exists();
-            $this->has_image = $msgBuilder->clone()->whereMtype('image')->exists();
-            $this->has_file = $msgBuilder->clone()->whereMtype('file')->exists();
-            $this->has_link = $msgBuilder->clone()->whereLink(1)->exists();
-            Cache::forever("Dialog::tag:" . $this->id, Base::array2json([
-                'has_tag' => $this->has_tag,
-                'has_todo' => $this->has_todo,
-                'has_image' => $this->has_image,
-                'has_file' => $this->has_file,
-                'has_link' => $this->has_link,
+            $msgBuilder = WebSocketDialogMsg::whereDialogId($data['id']);
+            $data['has_tag'] = $msgBuilder->clone()->where('tag', '>', 0)->exists();
+            $data['has_todo'] = $msgBuilder->clone()->where('todo', '>', 0)->exists();
+            $data['has_image'] = $msgBuilder->clone()->whereMtype('image')->exists();
+            $data['has_file'] = $msgBuilder->clone()->whereMtype('file')->exists();
+            $data['has_link'] = $msgBuilder->clone()->whereLink(1)->exists();
+            Cache::forever("Dialog::tag:" . $data['id'], Base::array2json([
+                'has_tag' => $data['has_tag'],
+                'has_todo' => $data['has_todo'],
+                'has_image' => $data['has_image'],
+                'has_file' => $data['has_file'],
+                'has_link' => $data['has_link'],
             ]));
         } else {
-            $tagData = Base::json2array(Cache::get("Dialog::tag:" . $this->id));
+            $tagData = Base::json2array(Cache::get("Dialog::tag:" . $data['id']));
             if ($tagData) {
-                $this->has_tag = !!$tagData['has_tag'];
-                $this->has_todo = !!$tagData['has_todo'];
-                $this->has_image = !!$tagData['has_image'];
-                $this->has_file = !!$tagData['has_file'];
-                $this->has_link = !!$tagData['has_link'];
+                $data['has_tag'] = !!$tagData['has_tag'];
+                $data['has_todo'] = !!$tagData['has_todo'];
+                $data['has_image'] = !!$tagData['has_image'];
+                $data['has_file'] = !!$tagData['has_file'];
+                $data['has_link'] = !!$tagData['has_link'];
             }
         }
-        return $this;
+        return $data;
     }
 
     /**
-     * 生成未读数据
+     * 获取未读数据
+     * @param $dialogId
      * @param $userid
-     * @return $this
+     * @return array
      */
-    public function generateUnread($userid)
+    public static function generateUnread($dialogId, $userid)
     {
-        $builder = WebSocketDialogMsgRead::whereDialogId($this->id)->whereUserid($userid)->whereReadAt(null);
+        $data = [];
         // 未读消息
-        $this->unread = $builder->count();
+        $builder = WebSocketDialogMsgRead::whereDialogId($dialogId)->whereUserid($userid)->whereReadAt(null);
+        // 总未读消息
+        $data['unread'] = $builder->clone()->count();
         // 最早一条未读消息
-        $this->unread_one = $this->unread > 0 ? intval($builder->clone()->orderBy('msg_id')->value('msg_id')) : 0;
+        $data['unread_one'] = $data['unread'] > 0 ? intval($builder->clone()->orderBy('msg_id')->value('msg_id')) : 0;
         // @我的消息
-        $this->mention = $this->unread > 0 ? $builder->clone()->whereMention(1)->count() : 0;
+        $data['mention'] = $data['unread'] > 0 ? $builder->clone()->whereMention(1)->count() : 0;
         // @我的消息（id集合）
-        $this->mention_ids = $this->mention > 0 ? $builder->clone()->whereMention(1)->orderByDesc('msg_id')->take(20)->pluck('msg_id')->toArray() : [];
-        return $this;
-    }
-
-    /**
-     * 生成未读数据   // todo: 旧版兼容，后续删除
-     * @param $userid
-     * @param $positionData
-     * @return $this
-     */
-    public function generateUnread_03398($userid, $positionData = false)
-    {
-        $builder = WebSocketDialogMsgRead::whereDialogId($this->id)->whereUserid($userid)->whereReadAt(null);
-        $this->unread = $builder->count();
-        $this->mention = $this->unread > 0 ? $builder->clone()->whereMention(1)->count() : 0;
-        if ($positionData) {
-            $array = [];
-            // @我的消息
-            if ($this->mention > 0) {
-                $list = $builder->clone()->whereMention(1)->orderByDesc('msg_id')->take(20)->get();
-                foreach ($list as $item) {
-                    $array[] = [
-                        'msg_id' => $item->msg_id,
-                        'label' => Doo::translate('@我的消息'),
-                    ];
-                }
-            }
-            // 最早一条未读消息
-            if ($this->unread > 0
-                && $first_id = intval($builder->clone()->orderBy('msg_id')->value('msg_id'))) {
-                $array[] = [
-                    'msg_id' => $first_id,
-                    'label' => '{UNREAD}'
-                ];
-            }
-            //
-            $this->position_msgs = $array;
-        }
-        return $this;
+        $data['mention_ids'] = $data['mention'] > 0 ? $builder->clone()->whereMention(1)->orderByDesc('msg_id')->take(20)->pluck('msg_id')->toArray() : [];
+        return $data;
     }
 
     /**

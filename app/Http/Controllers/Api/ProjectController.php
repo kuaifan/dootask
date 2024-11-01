@@ -2105,7 +2105,7 @@ class ProjectController extends AbstractController
         });
         //
         $task->pushMsg('dialog');
-        $dialogData = WebSocketDialog::find($task->dialog_id)?->formatData($user->userid);
+        $dialogData = WebSocketDialog::synthesizeData($task->dialog_id, $user->userid);
         return Base::retSuccess('success', [
             'id' => $task->id,
             'dialog_id' => $task->dialog_id,

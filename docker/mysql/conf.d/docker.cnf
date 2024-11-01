@@ -44,6 +44,8 @@ innodb_lock_wait_timeout = 50
 innodb_max_dirty_pages_pct = 90
 innodb_read_io_threads = 2
 innodb_write_io_threads = 2
+innodb_ft_min_token_size=1
+innodb_ft_max_token_size=80
 
 [mysqldump]
 quick
