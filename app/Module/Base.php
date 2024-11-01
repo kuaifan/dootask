@@ -7,6 +7,8 @@ use App\Models\Setting;
 use App\Models\Tmp;
 use Cache;
 use Carbon\Carbon;
+use League\CommonMark\CommonMarkConverter;
+use League\CommonMark\Exception\CommonMarkException;
 use Overtrue\Pinyin\Pinyin;
 use Redirect;
 use Request;
@@ -3102,4 +3104,18 @@ class Base
         return $newArray;
     }
 
+    /**
+     * MD(markdown) 转 html
+     * @param $markdown
+     * @return \League\CommonMark\Output\RenderedContentInterface|mixed
+     */
+    public static function markdown2html($markdown)
+    {
+        $converter = new CommonMarkConverter();
+        try {
+            return $converter->convert($markdown);
+        } catch (CommonMarkException $e) {
+            return $markdown;
+        }
+    }
 }

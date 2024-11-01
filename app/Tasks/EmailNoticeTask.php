@@ -114,7 +114,7 @@ class EmailNoticeTask extends AbstractTask
                 foreach ($items as $item) {
                     $item->cancelAppend();
                     $item->userInfo = User::userid2basic($item->userid);
-                    $item->preview = $item->previewMsg(true);
+                    $item->preview = WebSocketDialogMsg::previewMsg($item, true);
                     $item->preview = str_replace('<p>', '<p style="margin:0;padding:0">', $item->preview);
                     if (empty($dialogId)) {
                         $dialogId = $item->dialog_id;

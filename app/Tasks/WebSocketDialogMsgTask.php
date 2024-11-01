@@ -194,7 +194,7 @@ class WebSocketDialogMsgTask extends AbstractTask
                 }
                 $this->endArray[] = new PushUmengMsg($umengUserid, [
                     'title' => $umengTitle,
-                    'body' => $msg->previewMsg(),
+                    'body' => WebSocketDialogMsg::previewMsg($msg),
                     'description' => "MID:{$msg->id}",
                     'seconds' => 3600,
                     'badge' => 1,

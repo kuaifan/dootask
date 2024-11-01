@@ -236,13 +236,16 @@ import {MarkdownPreview} from "../store/markdown";
 
         /**
          * 返回文本信息预览格式
-         * @param text
+         * @param msgData
          * @param imgClassName
          * @returns {*}
          */
-        getMsgTextPreview(text, imgClassName = null) {
+        getMsgTextPreview({type, text}, imgClassName = null) {
             if (!text) {
                 return '';
+            }
+            if (type === 'md') {
+                text = MarkdownPreview(text);
             }
             //
             text = text.replace(/<img\s+class="emoticon"[^>]*?alt="(\S+)"[^>]*?>/g, "[$1]")
@@ -398,11 +401,11 @@ import {MarkdownPreview} from "../store/markdown";
             }
             switch (data.type) {
                 case 'text':
-                    return $A.getMsgTextPreview(data.msg.type === 'md' ? MarkdownPreview(data.msg.text) : data.msg.text, imgClassName)
+                    return $A.getMsgTextPreview(data.msg, imgClassName)
                 case 'vote':
-                    return `[${$A.L('投票')}]` + $A.getMsgTextPreview(data.msg.text, imgClassName)
+                    return `[${$A.L('投票')}]` + $A.getMsgTextPreview(data.msg, imgClassName)
                 case 'word-chain':
-                    return `[${$A.L('接龙')}]` + $A.getMsgTextPreview(data.msg.text, imgClassName)
+                    return `[${$A.L('接龙')}]` + $A.getMsgTextPreview(data.msg, imgClassName)
                 case 'record':
                     return `[${$A.L('语音')}]`
                 case 'meeting':

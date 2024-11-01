@@ -27,6 +27,7 @@
         "laravel/framework": "^v8.83.27",
         "laravel/tinker": "^v2.6.1",
         "lasserafn/php-initial-avatar-generator": "^4.2",
+        "league/commonmark": "^2.5",
         "maatwebsite/excel": "^3.1.31",
         "madnest/madzipper": "^v1.1.0",
         "mews/captcha": "^3.2.6",

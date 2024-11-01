@@ -185,7 +185,7 @@ class WebSocketDialog extends AbstractModel
      * @param $data
      * @param int $userid   会员ID
      * @param bool $hasData 已存在的消息类型
-     * @return array|mixed
+     * @return array
      */
     public static function synthesizeData($data, $userid, $hasData = false)
     {
@@ -248,6 +248,16 @@ class WebSocketDialog extends AbstractModel
             $data['todo_num'] = $data['todo_num'] ?? WebSocketDialogMsgTodo::whereDialogId($data['id'])->whereUserid($userid)->whereDoneAt(null)->count();
             // 最后消息
             $data['last_msg'] = $data['last_msg'] ?? WebSocketDialogMsg::whereDialogId($data['id'])->orderByDesc('id')->first()?->toArray();
+        }
+
+        // 最后消息处理
+        if ($data['last_msg']) {
+            foreach ($data['last_msg']['emoji'] as &$value) {
+                unset($value['userids']);
+            }
+            if ($data['last_msg']['type'] === 'text') {
+                $data['last_msg']['msg']['text'] = WebSocketDialogMsg::previewTextMsg($data['last_msg']['msg']);
+            }
         }
 
         // 对方信息

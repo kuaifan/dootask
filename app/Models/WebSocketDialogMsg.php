@@ -541,29 +541,33 @@ class WebSocketDialogMsg extends AbstractModel
 
     /**
      * 预览消息
-     * @param bool $preserveHtml    保留html格式
-     * @param null|array $data
+     * @param WebSocketDialogMsg|array $data    消息数据
+     * @param bool $preserveHtml                保留html格式
      * @return string
      */
-    public function previewMsg($preserveHtml = false, $data = null)
+    public static function previewMsg($data, $preserveHtml = false)
     {
-        if ($data === null) {
+        if ($data instanceof WebSocketDialogMsg) {
             $data = [
-                'type' => $this->type,
-                'msg' => $this->msg,
+                'type' => $data->type,
+                'msg' => $data->msg,
             ];
         }
+        if (!is_array($data)) {
+            return '';
+        }
+
         switch ($data['type']) {
             case 'text':
-                return $this->previewTextMsg($data['msg']['text'], $preserveHtml);
+                return self::previewTextMsg($data['msg'], $preserveHtml);
 
             case 'vote':
                 $action = Doo::translate("投票");
-                return "[{$action}] {$this->previewTextMsg($data['msg']['text'], $preserveHtml)}";
+                return "[{$action}] " . self::previewTextMsg($data['msg'], $preserveHtml);
 
             case 'word-chain':
                 $action = Doo::translate("接龙");
-                return "[{$action}] {$this->previewTextMsg($data['msg']['text'], $preserveHtml)}";
+                return "[{$action}] " . self::previewTextMsg($data['msg'], $preserveHtml);
 
             case 'record':
                 $action = Doo::translate("语音");
@@ -574,25 +578,25 @@ class WebSocketDialogMsg extends AbstractModel
                 return "[{$action}] ${$data['msg']['name']}";
 
             case 'file':
-                return $this->previewFileMsg($data['msg']);
+                return self::previewFileMsg($data['msg']);
 
             case 'tag':
                 $action = Doo::translate($data['msg']['action'] === 'remove' ? '取消标注' : '标注');
-                return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
+                return "[{$action}] " . self::previewMsg($data['msg']['data']);
 
             case 'top':
                 $action = Doo::translate($data['msg']['action'] === 'remove' ? '取消置顶' : '置顶');
-                return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
+                return "[{$action}] " . self::previewMsg($data['msg']['data']);
 
             case 'todo':
                 $action = Doo::translate($data['msg']['action'] === 'remove' ? '取消待办' : ($data['msg']['action'] === 'done' ? '完成' : '设待办'));
-                return "[{$action}] {$this->previewMsg(false, $data['msg']['data'])}";
+                return "[{$action}] " . self::previewMsg($data['msg']['data']);
 
             case 'notice':
                 return Doo::translate($data['msg']['notice']);
 
             case 'template':
-                return $this->previewTemplateMsg($data['msg']);
+                return self::previewTemplateMsg($data['msg']);
 
             default:
                 $action = Doo::translate("未知的消息");
@@ -605,7 +609,7 @@ class WebSocketDialogMsg extends AbstractModel
      * @param $msg
      * @return string
      */
-    private function previewFileMsg($msg)
+    private static function previewFileMsg($msg)
     {
         if ($msg['type'] == 'img') {
             $action = Doo::translate("图片");
@@ -623,7 +627,7 @@ class WebSocketDialogMsg extends AbstractModel
      * @param $msg
      * @return string
      */
-    private function previewTemplateMsg($msg)
+    private static function previewTemplateMsg($msg)
     {
         if (!empty($msg['title_raw'])) {
             return $msg['title_raw'];
@@ -689,20 +693,24 @@ class WebSocketDialogMsg extends AbstractModel
     {
         $msg = $this->msg;
         if ($this->type === 'text') {
-            $msg['text'] = $this->previewTextMsg($msg['text']);
+            $msg['text'] = self::previewTextMsg($msg);
         }
         return $msg;
     }
 
     /**
      * 返回文本预览消息
-     * @param $text
+     * @param array $msgData
      * @param bool $preserveHtml    保留html格式
      * @return string|string[]|null
      */
-    private function previewTextMsg($text, $preserveHtml = false)
+    public static function previewTextMsg($msgData, $preserveHtml = false)
     {
+        $text = $msgData['text'] ?? '';
         if (!$text) return '';
+        if ($msgData['type'] === 'md') {
+            $text = Base::markdown2html($text);
+        }
         $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?alt=\"(\S+)\"[^>]*?>/", "[$1]", $text);
         $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?>/", "[动画表情]", $text);
         $text = preg_replace("/<img\s+class=\"browse\"[^>]*?>/", "[图片]", $text);
