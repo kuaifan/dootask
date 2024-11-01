@@ -121,6 +121,9 @@ function getLanguage() {
  * @returns {string|*}
  */
 function switchLanguage(inputString) {
+    if (typeof arguments[1] !== "undefined") {
+        inputString = utils.replaceArgumentsLanguage(inputString, arguments)
+    }
     if (typeof inputString !== "string" || !inputString) {
         return inputString
     }
