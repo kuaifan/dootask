@@ -5,7 +5,7 @@
             <p>{{$L('申请人')}}：<span class="mark-color">@{{ msg.data.nickname }}</span> {{ msg.data.department }}</p>
             <b>{{$L('评论内容')}}</b>
             <p>{{ msg.data.comment_content }}</p>
-            <p v-if="isPicture">[{{$L('图片')}}]</p>
+            <p v-if="msg.data.thumb" v-html="imageHtml(msg.data.thumb)"></p>
         </div>
         <div class="btn-raw no-dark-content">
             <button class="ivu-btn ivu-btn-grey">{{$L('查看详情')}}</button>
@@ -21,13 +21,18 @@ export default {
     data() {
         return {};
     },
-    computed: {
-        isPicture() {
-            const {comment_pictures} = this.msg.data
-            return $A.isArray(comment_pictures) && comment_pictures.length > 0
-        },
+    methods: {
+        imageHtml(info) {
+            const data = $A.imageRatioHandle({
+                src: info.url,
+                width: info.width,
+                height: info.height,
+                crops: {ratio: 3, percentage: '320x0'},
+                scaleSize: 220,
+            })
+            return `<img src="${data.src}" width="${data.width}" height="${data.height}" />`
+        }
     },
-    methods: {},
 }
 </script>
 

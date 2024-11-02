@@ -8,6 +8,7 @@
             <p>{{$L("开始时间")}}：{{ msg.data.start_time }} ({{ msg.data.start_day_of_week }})</p>
             <p>{{$L("结束时间")}}：{{ msg.data.end_time }} ({{ msg.data.end_day_of_week }})</p>
             <p>{{$L("事由")}}：{{ msg.data.description }}</p>
+            <p v-if="msg.data.thumb" v-html="imageHtml(msg.data.thumb)"></p>
         </div>
         <div class="btn-raw no-dark-content">
             <button v-if="msg.action === 'pass'" class="ivu-btn ivu-btn-grey">{{$L("已同意")}}</button>
@@ -29,7 +30,17 @@ export default {
     data() {
         return {};
     },
-    computed: {},
-    methods: {},
+    methods: {
+        imageHtml(info) {
+            const data = $A.imageRatioHandle({
+                src: info.url,
+                width: info.width,
+                height: info.height,
+                crops: {ratio: 3, percentage: '320x0'},
+                scaleSize: 220,
+            })
+            return `<img src="${data.src}" width="${data.width}" height="${data.height}" />`
+        }
+    },
 }
 </script>

@@ -149,19 +149,29 @@ class WebSocketDialogMsg extends AbstractModel
         if (!is_array($msg)) {
             $msg = Base::json2array($msg);
         }
-        if ($type === 'file') {
-            $msg['type'] = in_array($msg['ext'], ['jpg', 'jpeg', 'webp', 'png', 'gif']) ? 'img' : 'file';
-            $msg['path'] = Base::fillUrl($msg['path']);
-            $msg['thumb'] = Base::fillUrl($msg['thumb'] ?: Base::extIcon($msg['ext']));
-        } else if ($type === 'record') {
-            $msg['path'] = Base::fillUrl($msg['path']);
-            $textUserid = is_array($msg['text_userid']) ? $msg['text_userid'] : [];
-            if (isset($msg['text_userid'])) {
-                unset($msg['text_userid']);
-            }
-            if ($msg['text'] && !in_array(Doo::userId(), $textUserid)) {
-                $msg['text'] = "";
-            }
+        switch ($type) {
+            case 'file':
+                $msg['type'] = in_array($msg['ext'], ['jpg', 'jpeg', 'webp', 'png', 'gif']) ? 'img' : 'file';
+                $msg['path'] = Base::fillUrl($msg['path']);
+                $msg['thumb'] = Base::fillUrl($msg['thumb'] ?: Base::extIcon($msg['ext']));
+                break;
+
+            case 'record':
+                $msg['path'] = Base::fillUrl($msg['path']);
+                $textUserid = is_array($msg['text_userid']) ? $msg['text_userid'] : [];
+                if (isset($msg['text_userid'])) {
+                    unset($msg['text_userid']);
+                }
+                if ($msg['text'] && !in_array(Doo::userId(), $textUserid)) {
+                    $msg['text'] = "";
+                }
+                break;
+
+            case 'template':
+                if ($msg['data']['thumb']) {
+                    $msg['data']['thumb']['url'] = Base::fillUrl($msg['data']['thumb']['url']);
+                }
+                break;
         }
         return $msg;
     }

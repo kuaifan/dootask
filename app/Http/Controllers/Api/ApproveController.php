@@ -985,6 +985,20 @@ class ApproveController extends AbstractController
             'comment_content' => $process['comment_contents']['content'] ?? '',
             'comment_pictures' => $process['comment_contents']['pictures'] ?? []
         ];
+        $thumb = null;
+        if ($type === 'approve_reviewer') {
+            $thumb = $process['var']['other'];
+        } elseif ($type === 'approve_comment_notifier') {
+            $thumb = $data['comment_pictures'] ? $data['comment_pictures'][0] : null;
+        }
+        if ($thumb && file_exists(public_path($thumb))) {
+            $imageSize = getimagesize(public_path($thumb));
+            $data['thumb'] = [
+                'url' => $thumb,
+                'width' => $imageSize[0],
+                'height' => $imageSize[1]
+            ];
+        }
         $msgAction = null;
         $msgData = [
             'type' => $type,
