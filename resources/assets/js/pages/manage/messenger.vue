@@ -412,6 +412,9 @@ export default {
                             case 'file':
                                 searchString += ` ${last_msg.msg.name}`
                                 break
+                            case 'preview':
+                                searchString += ` ${last_msg.msg.preview}`
+                                break
                         }
                     }
                     if (!$A.strExists(searchString, dialogSearchKey)) {

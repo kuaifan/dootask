@@ -251,13 +251,12 @@ class WebSocketDialog extends AbstractModel
         }
 
         // 最后消息处理
-        if ($data['last_msg']) {
-            foreach ($data['last_msg']['emoji'] as &$value) {
-                unset($value['userids']);
-            }
-            if ($data['last_msg']['type'] === 'text') {
-                $data['last_msg']['msg']['text'] = WebSocketDialogMsg::previewTextMsg($data['last_msg']['msg']);
-            }
+        if ($data['last_msg'] && $data['last_msg']['type'] != 'preview') {
+            $msgData = $data['last_msg'];
+            $msgData['emoji'] = Base::array_only_recursive($msgData['emoji'], ['symbol']);
+            $msgData['msg'] = ['preview' => WebSocketDialogMsg::previewMsg($msgData)];
+            $msgData['type'] = 'preview';
+            $data['last_msg'] = array_intersect_key($msgData, array_flip(['id', 'type', 'msg', 'userid', 'percentage', 'emoji', 'created_at']));
         }
 
         // 对方信息

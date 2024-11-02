@@ -375,79 +375,33 @@ class Base
     /**
      *
      * 截取字符串
-     * @param string $string 字符串
+     * @param string $str 字符串
      * @param int $length 截取长度
      * @param int $start 何处开始
-     * @param string $dot 超出尾部添加
-     * @param string $charset 默认编码
+     * @param string $suffix 后缀（超出长度显示，默认：...）
      * @return string
      */
-    public static function cutStr($string, $length, $start = 0, $dot = '', $charset = 'utf-8')
+    public static function cutStr(string $str, int $length, int $start = 0, string $suffix = '...')
     {
-        if (strtolower($charset) == 'utf-8') {
-            if (Base::getStrlen($string) <= $length) return $string;
-            $strcut = Base::utf8Substr($string, $length, $start);
-            return $strcut . $dot;
-        } else {
-            $length = $length * 2;
-            if (strlen($string) <= $length) return $string;
-            $strcut = '';
-            for ($i = 0; $i < $length; $i++) {
-                $strcut .= ord($string[$i]) > 127 ? $string[$i] . $string[++$i] : $string[$i];
-            }
+        $strLen = mb_strlen($str);
+        // 处理负数长度
+        if ($length < 0) {
+            $length = max($strLen + $length, 0);
         }
-        return $strcut . $dot;
-    }
-
-    /**
-     * PHP获取字符串中英文混合长度
-     * @param string $str 字符串
-     * @param string $charset 编码
-     * @return float            返回长度，1中文=1位，2英文=1位
-     */
-    public static function getStrlen($str, $charset = 'utf-8')
-    {
-        if (strtolower($charset) == 'utf-8') {
-            $str = iconv('utf-8', 'GBK//IGNORE', $str);
+        // 处理负数起始位置
+        if ($start < 0) {
+            $start = max($strLen + $start, 0);
         }
-        $num = strlen($str);
-        $cnNum = 0;
-        for ($i = 0; $i < $num; $i++) {
-            if (ord(substr($str, $i + 1, 1)) > 127) {
-                $cnNum++;
-                $i++;
-            }
+        // 处理边界情况
+        if ($length === 0 || $start >= $strLen) {
+            return '';
         }
-        $enNum = $num - ($cnNum * 2);
-        $number = ($enNum / 2) + $cnNum;
-        return ceil($number);
-    }
-
-    /**
-     * PHP截取UTF-8字符串，解决半字符问题。
-     * @param string $str 源字符串
-     * @param int $len 左边的子串的长度
-     * @param int $start 何处开始
-     * @return string           取出的字符串, 当$len小于等于0时, 会返回整个字符串
-     */
-    public static function utf8Substr($str, $len, $start = 0)
-    {
-        $len = $len * 2;
-        $new_str = [];
-        for ($i = 0; $i < $len; $i++) {
-            $temp_str = substr($str, 0, 1);
-            if (ord($temp_str) > 127) {
-                $i++;
-                if ($i < $len) {
-                    $new_str[] = substr($str, 0, 3);
-                    $str = substr($str, 3);
-                }
-            } else {
-                $new_str[] = substr($str, 0, 1);
-                $str = substr($str, 1);
-            }
+        $result = mb_substr($str, $start, $length);
+        // 只有当实际截取的长度小于原字符串长度时才添加后缀
+        if ($start + $length < $strLen) {
+            return $result . $suffix;
         }
-        return join(array_slice($new_str, $start));
+        return $result;
     }
 
     /**
@@ -2023,6 +1977,20 @@ class Base
             return $temp;
         }
         return $array;
+    }
+
+    /**
+     * 多维数组只保留指定键值
+     * @param $array
+     * @param $keys
+     * @return array
+     */
+    public static function array_only_recursive($array, $keys) {
+        return array_map(function ($item) use ($keys) {
+            return is_array($item)
+                ? array_intersect_key($item, array_flip($keys))
+                : $item;
+        }, $array);
     }
 
     /**

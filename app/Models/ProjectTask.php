@@ -368,7 +368,7 @@ class ProjectTask extends AbstractModel
                 }
             }, $matches[0]);
         }, $content);
-        return Base::cutStr(strip_tags($content), 100, 0, "...");
+        return Base::cutStr(strip_tags($content), 100);
     }
 
     /**

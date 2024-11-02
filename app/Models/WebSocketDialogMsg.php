@@ -575,7 +575,7 @@ class WebSocketDialogMsg extends AbstractModel
 
             case 'meeting':
                 $action = Doo::translate("会议");
-                return "[{$action}] ${$data['msg']['name']}";
+                return "[{$action}] " . Base::cutStr($data['msg']['name'], 30);
 
             case 'file':
                 return self::previewFileMsg($data['msg']);
@@ -593,15 +593,43 @@ class WebSocketDialogMsg extends AbstractModel
                 return "[{$action}] " . self::previewMsg($data['msg']['data']);
 
             case 'notice':
-                return Doo::translate($data['msg']['notice']);
+                return Base::cutStr(Doo::translate($data['msg']['notice']), 30);
 
             case 'template':
                 return self::previewTemplateMsg($data['msg']);
+
+            case 'preview':
+                return $data['msg']['preview'];
 
             default:
                 $action = Doo::translate("未知的消息");
                 return "[{$action}]";
         }
+    }
+
+    /**
+     * 返回文本预览消息
+     * @param array $msgData
+     * @param bool $preserveHtml    保留html格式
+     * @return string|string[]|null
+     */
+    private static function previewTextMsg($msgData, $preserveHtml = false)
+    {
+        $text = $msgData['text'] ?? '';
+        if (!$text) return '';
+        if ($msgData['type'] === 'md') {
+            $text = Base::markdown2html($text);
+        }
+        $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?alt=\"(\S+)\"[^>]*?>/", "[$1]", $text);
+        $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?>/", "[动画表情]", $text);
+        $text = preg_replace("/<img\s+class=\"browse\"[^>]*?>/", "[图片]", $text);
+        if (!$preserveHtml) {
+            $text = strip_tags($text);
+            $text = str_replace(["&nbsp;", "&amp;", "&lt;", "&gt;"], [" ", "&", "<", ">"], $text);
+            $text = preg_replace("/\s+/", " ", $text);
+            $text = Base::cutStr($text, 30);
+        }
+        return $text;
     }
 
     /**
@@ -619,7 +647,7 @@ class WebSocketDialogMsg extends AbstractModel
             return "[{$action}]";
         }
         $action = Doo::translate("文件");
-        return "[{$action}] {$msg['name']}";
+        return "[{$action}] " . Base::cutStr($msg['name'], 30);
     }
 
     /**
@@ -633,16 +661,15 @@ class WebSocketDialogMsg extends AbstractModel
             return $msg['title_raw'];
         }
         if ($msg['type'] === 'task_list' && count($msg['list']) === 1) {
-            return Doo::translate($msg['title']) . ": " . $msg['list'][0]['name'];
+            return Doo::translate($msg['title']) . ": " . Base::cutStr($msg['list'][0]['name'], 30);
         }
         if (!empty($msg['title'])) {
             return Doo::translate($msg['title']);
         }
         if ($msg['type'] === 'content' && is_string($msg['content']) && $msg['content'] !== '') {
-            return Doo::translate($msg['content']);
+            return Base::cutStr(Doo::translate($msg['content']), 30);
         }
         return Doo::translate('未知的消息');
-
     }
 
     /**
@@ -696,33 +723,6 @@ class WebSocketDialogMsg extends AbstractModel
             $msg['text'] = self::previewTextMsg($msg);
         }
         return $msg;
-    }
-
-    /**
-     * 返回文本预览消息
-     * @param array $msgData
-     * @param bool $preserveHtml    保留html格式
-     * @return string|string[]|null
-     */
-    public static function previewTextMsg($msgData, $preserveHtml = false)
-    {
-        $text = $msgData['text'] ?? '';
-        if (!$text) return '';
-        if ($msgData['type'] === 'md') {
-            $text = Base::markdown2html($text);
-        }
-        $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?alt=\"(\S+)\"[^>]*?>/", "[$1]", $text);
-        $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?>/", "[动画表情]", $text);
-        $text = preg_replace("/<img\s+class=\"browse\"[^>]*?>/", "[图片]", $text);
-        if (!$preserveHtml) {
-            $text = strip_tags($text);
-            $text = str_replace(["&nbsp;", "&amp;", "&lt;", "&gt;"], [" ", "&", "<", ">"], $text);
-            $text = preg_replace("/\s+/", " ", $text);
-            if (mb_strlen($text) > 30) {
-                $text = mb_substr($text, 0, 30) . "...";
-            }
-        }
-        return $text;
     }
 
     /**

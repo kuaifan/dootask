@@ -3634,8 +3634,8 @@ export default {
                                             // 更新最后消息
                                             const newData = {
                                                 id: dialog_id,
-                                                last_at: data.last_msg && data.last_msg.created_at,
                                                 last_msg: data.last_msg,
+                                                last_at: data.last_msg ? data.last_msg.created_at : $A.daytz().format("YYYY-MM-DD HH:mm:ss"),
                                             }
                                             if (data.update_read) {
                                                 // 更新未读数量

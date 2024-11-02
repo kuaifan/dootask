@@ -86,7 +86,6 @@ const timezone = require("dayjs/plugin/timezone");
             return str;
         },
 
-
         /**
          * 字符串是否包含
          * @param string
@@ -1226,6 +1225,36 @@ const timezone = require("dayjs/plugin/timezone");
         extractImageParameterAll(html) {
             const imgTags = html.match(/<img\s+[^>]*?>/g) || [];
             return imgTags.map(imgTag => this.extractImageParameter(imgTag));
+        },
+
+        /**
+         * 增强版的字符串截取
+         * @param str
+         * @param length
+         * @param start
+         * @param suffix
+         * @returns {string}
+         */
+        cutString(str, length, start = 0, suffix = '...') {
+            const chars = [...str];
+            // 如果长度为负数，则从末尾开始计数
+            if (length < 0) {
+                length = Math.max(chars.length + length, 0);
+            }
+            // 如果起始位置为负数，则从末尾开始计数
+            if (start < 0) {
+                start = Math.max(chars.length + start, 0);
+            }
+            // 如果截取长度为0或起始位置超出字符串长度，返回空字符串
+            if (length === 0 || start >= chars.length) {
+                return '';
+            }
+            const sliced = chars.slice(start, start + length);
+            // 只有当实际截取的长度小于原字符串长度时才添加后缀
+            if (start + length < chars.length) {
+                return sliced.join('') + suffix;
+            }
+            return sliced.join('');
         }
     });
 
