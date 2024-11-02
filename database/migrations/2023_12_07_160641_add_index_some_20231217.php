@@ -25,7 +25,7 @@ class AddIndexSome20231217 extends Migration
     /**
      * Reverse the migrations.
      *
-     * @return voidw
+     * @return void
      */
     public function down()
     {
