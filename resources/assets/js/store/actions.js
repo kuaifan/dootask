@@ -21,7 +21,7 @@ export default {
                     action = "handleClearCache"
                 }
                 await $A.IDBRemove("clearCache")
-                await $A.IDBRemove("cacheVersion")
+                await $A.IDBSet("cacheVersion", "clear")
             }
             const cacheVersion = await $A.IDBString("cacheVersion")
             if (cacheVersion && cacheVersion !== state.cacheVersion) {
@@ -812,39 +812,39 @@ export default {
     handleClearCache({state, dispatch}, userData) {
         return new Promise(async resolve => {
             // localStorage
-            const themeConf = window.localStorage.getItem("__system:themeConf__");
-            const languageName = window.localStorage.getItem("__system:languageName__");
-            const keyboardConf = window.localStorage.getItem("__system:keyboardConf__");
+            const keys = ['themeConf', 'languageName', 'keyboardConf'];
+            const savedData = keys.reduce((acc, key) => ({
+                ...acc,
+                [key]: window.localStorage.getItem(`__system:${key}__`)
+            }), {});
             window.localStorage.clear();
-            window.localStorage.setItem("__system:themeConf__", themeConf)
-            window.localStorage.setItem("__system:languageName__", languageName)
-            window.localStorage.setItem("__system:keyboardConf__", keyboardConf)
+            keys.forEach(key =>
+                window.localStorage.setItem(`__system:${key}__`, savedData[key])
+            );
 
             // localForage
-            const clientId = await $A.IDBString("clientId")
-            const cacheServerUrl = await $A.IDBString("cacheServerUrl")
-            const cacheProjectParameter = await $A.IDBArray("cacheProjectParameter")
-            const cacheLoginEmail = await $A.IDBString("cacheLoginEmail");
-            const cacheFileSort = await $A.IDBJson("cacheFileSort");
-            const cacheTaskBrowse = await $A.IDBArray("cacheTaskBrowse")
-            const cacheTranslationLanguage = await $A.IDBString("cacheTranslationLanguage")
-            const cacheTranslations = await $A.IDBArray("cacheTranslations")
-            const cacheEmojis = await $A.IDBArray("cacheEmojis")
-            const userInfo = await $A.IDBJson("userInfo")
+            const cacheItems = {
+                clientId: await $A.IDBString("clientId"),
+                cacheServerUrl: await $A.IDBString("cacheServerUrl"),
+                cacheProjectParameter: await $A.IDBArray("cacheProjectParameter"),
+                cacheLoginEmail: await $A.IDBString("cacheLoginEmail"),
+                cacheFileSort: await $A.IDBJson("cacheFileSort"),
+                cacheTaskBrowse: await $A.IDBArray("cacheTaskBrowse"),
+                cacheTranslationLanguage: await $A.IDBString("cacheTranslationLanguage"),
+                cacheTranslations: await $A.IDBArray("cacheTranslations"),
+                cacheEmojis: await $A.IDBArray("cacheEmojis"),
+                userInfo: await $A.IDBJson("userInfo"),
+                cacheVersion: state.cacheVersion,
+            };
             await $A.IDBClear();
-            await $A.IDBSet("clientId", clientId);
-            await $A.IDBSet("cacheServerUrl", cacheServerUrl);
-            await $A.IDBSet("cacheProjectParameter", cacheProjectParameter);
-            await $A.IDBSet("cacheLoginEmail", cacheLoginEmail);
-            await $A.IDBSet("cacheFileSort", cacheFileSort);
-            await $A.IDBSet("cacheTaskBrowse", cacheTaskBrowse);
-            await $A.IDBSet("cacheTranslationLanguage", cacheTranslationLanguage);
-            await $A.IDBSet("cacheTranslations", cacheTranslations);
-            await $A.IDBSet("cacheEmojis", cacheEmojis);
-            await $A.IDBSet("cacheVersion", state.cacheVersion)
+            await Promise.all(
+                Object.entries(cacheItems).map(([key, value]) =>
+                    $A.IDBSet(key, value)
+                )
+            );
 
             // userInfo
-            await dispatch("saveUserInfoBase", $A.isJson(userData) ? userData : userInfo)
+            await dispatch("saveUserInfoBase", $A.isJson(userData) ? userData : cacheItems.userInfo)
 
             // readCache
             await dispatch("handleReadCache")
@@ -861,45 +861,77 @@ export default {
      */
     handleReadCache({state}) {
         return new Promise(async resolve => {
-            state.clientId = await $A.IDBString("clientId")
-            state.cacheServerUrl = await $A.IDBString("cacheServerUrl")
-            state.cacheUserBasic = await $A.IDBArray("cacheUserBasic")
-            state.cacheDialogs = (await $A.IDBArray("cacheDialogs")).map(item => Object.assign(item, {loading: false, extra_draft_has: item.extra_draft_content ? 1 : 0}))
-            state.cacheProjects = await $A.IDBArray("cacheProjects")
-            state.cacheColumns = await $A.IDBArray("cacheColumns")
-            state.cacheTasks = await $A.IDBArray("cacheTasks")
-            state.cacheProjectParameter = await $A.IDBArray("cacheProjectParameter")
-            state.cacheTaskBrowse = await $A.IDBArray("cacheTaskBrowse")
-            state.cacheTranslationLanguage = await $A.IDBString("cacheTranslationLanguage")
-            state.cacheTranslations = await $A.IDBArray("cacheTranslations")
-            state.dialogMsgs = await $A.IDBArray("dialogMsgs")
-            state.fileLists = await $A.IDBArray("fileLists")
-            state.userInfo = await $A.IDBJson("userInfo")
-            state.callAt = await $A.IDBArray("callAt")
-            state.cacheEmojis = await $A.IDBArray("cacheEmojis")
+            // 定义需要获取的数据映射
+            const dataMap = {
+                string: [
+                    'clientId',
+                    'cacheServerUrl',
+                    'cacheTranslationLanguage'
+                ],
+                array: [
+                    'cacheUserBasic',
+                    'cacheProjects',
+                    'cacheColumns',
+                    'cacheTasks',
+                    'cacheProjectParameter',
+                    'cacheTaskBrowse',
+                    'cacheTranslations',
+                    'dialogMsgs',
+                    'fileLists',
+                    'callAt',
+                    'cacheEmojis',
+                    'cacheDialogs'
+                ],
+                json: [
+                    'userInfo'
+                ]
+            };
 
-            // TranslationLanguage
-            typeof languageList[state.cacheTranslationLanguage] === "undefined" && (state.cacheTranslationLanguage = languageName)
+            // 批量获取数据
+            const data = await Promise.all([
+                ...dataMap.string.map(key => $A.IDBString(key)),
+                ...dataMap.array.map(key => $A.IDBArray(key)),
+                ...dataMap.json.map(key => $A.IDBJson(key))
+            ]);
 
-            // 会员信息
+            // 更新state
+            [...dataMap.string, ...dataMap.array, ...dataMap.json].forEach((key, index) => {
+                state[key] = data[index];
+            });
+
+            // 特殊处理cacheDialogs
+            state.cacheDialogs = state.cacheDialogs.map(item => ({
+                ...item,
+                loading: false,
+                extra_draft_has: item.extra_draft_content ? 1 : 0
+            }));
+
+            // TranslationLanguage检查
+            if (typeof languageList[state.cacheTranslationLanguage] === "undefined") {
+                state.cacheTranslationLanguage = languageName;
+            }
+
+            // 处理用户信息
             if (state.userInfo.userid) {
-                state.userId = state.userInfo.userid = $A.runNum(state.userInfo.userid)
-                state.userToken = state.userInfo.token
-                state.userIsAdmin = $A.inArray("admin", state.userInfo.identity)
-            }
-            const localId = $A.runNum(window.localStorage.getItem("__system:userId__"))
-            const localToken = window.localStorage.getItem("__system:userToken__") || ""
-            if (state.userId === 0 && localId && localToken) {
-                state.userId = localId
-                state.userToken = localToken
+                state.userId = state.userInfo.userid = $A.runNum(state.userInfo.userid);
+                state.userToken = state.userInfo.token;
+                state.userIsAdmin = $A.inArray("admin", state.userInfo.identity);
             }
 
-            // ServerUrl
+            // 处理本地存储的用户信息
+            const localId = $A.runNum(window.localStorage.getItem("__system:userId__"));
+            const localToken = window.localStorage.getItem("__system:userToken__") || "";
+            if (state.userId === 0 && localId && localToken) {
+                state.userId = localId;
+                state.userToken = localToken;
+            }
+
+            // 处理ServerUrl
             if (state.cacheServerUrl) {
                 window.systemInfo.apiUrl = state.cacheServerUrl
             }
 
-            resolve()
+            resolve();
         })
     },
 
