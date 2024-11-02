@@ -200,7 +200,6 @@ class WebSocketDialogMsg extends AbstractModel
                     'msg_id' => $this->id,
                     'userid' => $userid,
                     'after' => 1,
-                    'live' => 1,
                 ]);
                 if ($msgRead->saveOrIgnore()) {
                     $this->send = WebSocketDialogMsgRead::whereMsgId($this->id)->count();
