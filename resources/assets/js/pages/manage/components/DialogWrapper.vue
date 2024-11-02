@@ -1295,6 +1295,9 @@ export default {
                         if (this.searchKey !== key) {
                             return
                         }
+                        if (data.data.length === 0) {
+                            $A.messageWarning('没有找到相关消息')
+                        }
                         this.searchResult = data.data
                         this.searchLocation = this.searchResult.length
                     }).finally(_ => {
@@ -1454,6 +1457,7 @@ export default {
 
             this.msgNew = 0
             this.msgType = ''
+            this.searchKey = ''
             this.unreadOne = 0
             this.scrollTail = 0
             this.scrollOffset = 0
