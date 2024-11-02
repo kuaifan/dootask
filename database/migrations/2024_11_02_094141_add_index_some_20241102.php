@@ -18,6 +18,7 @@ class AddIndexSome20241102 extends Migration
         });
         Schema::table('deleteds', function (Blueprint $table) {
             $table->index(['type', 'userid']);
+            $table->index(['type', 'userid', 'deleted_at']);
         });
         Schema::table('report_receives', function (Blueprint $table) {
             $table->index(['userid', 'read', 'rid']);

@@ -25846,5 +25846,17 @@
         "fr": "Rapport hebdomadaire de (%T1) [(%T2)] [(Semaine (%T4) du mois de (%T3))]",
         "id": "Laporan mingguan (%T1) [(%T2)] [(Minggu ke-(%T4) dari bulan (%T3))]",
         "ru": "Еженедельный отчет (%T1) [(%T2)] [(Неделя (%T4) месяца (%T3))]"
+    },
+    {
+        "key": "没有找到相关消息",
+        "zh": "",
+        "zh-CHT": "沒有找到相關消息",
+        "en": "No relevant messages found",
+        "ko": "관련 메시지를 찾을 수 없습니다",
+        "ja": "関連するメッセージが見つかりません",
+        "de": "Keine relevanten Nachrichten gefunden",
+        "fr": "Aucun message pertinent trouvé",
+        "id": "Tidak ada pesan terkait yang ditemukan",
+        "ru": "Сообщения не найдены"
     }
 ]
