@@ -211,6 +211,7 @@ class WebSocketDialog extends AbstractModel
                 $data[$field] = $data[$field] ?? null;
             }
         }
+        $data['avatar'] = Base::fillUrl($data['avatar']);
 
         // 会员必要字段
         $fields = [

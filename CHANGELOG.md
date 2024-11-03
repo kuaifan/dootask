@@ -2,16 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.39.52]
+
+### Bug Fixes
+
+- 无法清理数据缓存的情况
+
+### Performance
+
+- 优化预览消息
+- 优化移动端输入法换行
+- 审批消息预览图片
+- 删除冗余字段
+- 优化索引
+- 优化国际化语言
+- 优化会话查询
+
 ## [0.39.39]
 
 ### Bug Fixes
 
 - 目录拼错的情况
-
-## [0.39.37]
-
-### Bug Fixes
-
 - 设置子任务时间主任务出现1970的情况
 - 消息溢出的情况
 
