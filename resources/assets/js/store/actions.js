@@ -794,7 +794,7 @@ export default {
             }
             const data = $A.isJson(newData) ? newData : ($A.jsonParse(window.localStorage.getItem("__system:keyboardConf__")) || {})
             data.screenshot_key = (data.screenshot_key || "").trim().toLowerCase()
-            data.send_button_app = data.send_button_app || 'button'         // button, enter 移动端发送按钮，默认 button （页面按钮发送）
+            data.send_button_app = data.send_button_app || 'enter'         // button, enter 移动端发送按钮，默认 enter （键盘回车发送）
             data.send_button_desktop = data.send_button_desktop || 'enter'  // button, enter 桌面端发送按钮，默认 enter （键盘回车发送）
             window.localStorage.setItem("__system:keyboardConf__", $A.jsonStringify(data))
             state.cacheKeyboard = data

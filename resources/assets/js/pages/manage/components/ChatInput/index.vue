@@ -815,6 +815,12 @@ export default {
 
             // Update model if text changes
             this.quill.on('text-change', _ => {
+                const {index} = this.quill.getSelection(true);
+                if (this.quill.getText(index - 1, 1) === "\r") {
+                    this.quill.insertText(index, "\n");
+                    this.quill.deleteText(index - 1, 1);
+                    return;
+                }
                 if (this.textTimer) {
                     clearTimeout(this.textTimer)
                 } else {
@@ -826,17 +832,10 @@ export default {
                     if (this.maxlength > 0 && this.quill.getLength() > this.maxlength) {
                         this.quill.deleteText(this.maxlength, this.quill.getLength());
                     }
-                    let html = this.$refs.editor.firstChild.innerHTML
+                    const html = this.$refs.editor.firstChild.innerHTML;
                     this.updateEmojiQuick(html)
                     this._content = html
                     this.$emit('input', this._content)
-                    this.$nextTick(_ => {
-                        const range = this.quill.getSelection();
-                        if (range) {
-                            const endText = this.quill.getText(range.index);
-                            /^\n\n$/.test(endText) && this.quill.deleteText(range.index, 1);
-                        }
-                    })
                 }, 100)
             })
 
@@ -872,21 +871,6 @@ export default {
 
             // Set enterkeyhint
             this.$nextTick(_ => {
-                this.quill.root.addEventListener('keydown', e => {
-                    if (e.key === '\r\r' && e.keyCode === 229) {
-                        const {index} = this.quill.getSelection(true);
-                        this.quill.insertText(index, "\r\n");
-                        //
-                        this.keyTimer && clearTimeout(this.keyTimer)
-                        this.keyTimer = setTimeout(_ => {
-                            this.$refs.editor.firstChild.childNodes.forEach(child => {
-                                if (/^\r+/.test(child.innerHTML)) {
-                                    child.innerHTML = child.innerHTML.replace(/^\r+/, "") || "<br>"
-                                }
-                            })
-                        }, 200)
-                    }
-                });
                 if (this.$isEEUiApp && this.cacheKeyboard.send_button_app === 'enter') {
                     this.quill.root.setAttribute('enterkeyhint', 'send')
                 }
