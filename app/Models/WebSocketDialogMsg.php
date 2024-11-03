@@ -633,6 +633,7 @@ class WebSocketDialogMsg extends AbstractModel
         $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?>/", "[动画表情]", $text);
         $text = preg_replace("/<img\s+class=\"browse\"[^>]*?>/", "[图片]", $text);
         if (!$preserveHtml) {
+            $text = str_replace("</p><p>", "</p> <p>", $text);
             $text = strip_tags($text);
             $text = str_replace(["&nbsp;", "&amp;", "&lt;", "&gt;"], [" ", "&", "<", ">"], $text);
             $text = preg_replace("/\s+/", " ", $text);

@@ -270,6 +270,7 @@ import {MarkdownPreview} from "../store/markdown";
                 text = text.replace(/<img\s+class="browse"[^>]*?>/g, `[${$A.L('图片')}]`)
             }
             text = text
+                .replace(/<\/p><p>/g, "</p> <p>")
                 .replace(/<[^>]+>/g, "")
                 .replace(/&nbsp;/g, " ")
                 .replace(/&quot;/g, "\"")
