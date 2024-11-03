@@ -583,7 +583,7 @@ class DialogController extends AbstractController
         //
         if ($reDialog) {
             $data['dialog'] = WebSocketDialog::synthesizeData($dialog, $user->userid, true);
-            $data['todo'] = $data['dialog']->todo_num > 0 ? WebSocketDialogMsgTodo::whereDialogId($dialog->id)->whereUserid($user->userid)->whereDoneAt(null)->orderByDesc('id')->take(50)->get() : [];
+            $data['todo'] = $data['dialog']['todo_num'] > 0 ? WebSocketDialogMsgTodo::whereDialogId($dialog->id)->whereUserid($user->userid)->whereDoneAt(null)->orderByDesc('id')->take(50)->get() : [];
             $data['top'] = $dialog->top_msg_id ? WebSocketDialogMsg::whereId($dialog->top_msg_id)->first() : null;
         }
         return Base::retSuccess('success', $data);
