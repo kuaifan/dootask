@@ -584,7 +584,7 @@ class WebSocketDialogMsg extends AbstractModel
 
             case 'meeting':
                 $action = Doo::translate("会议");
-                return "[{$action}] " . Base::cutStr($data['msg']['name'], 30);
+                return "[{$action}] " . Base::cutStr($data['msg']['name'], 50);
 
             case 'file':
                 return self::previewFileMsg($data['msg']);
@@ -602,7 +602,7 @@ class WebSocketDialogMsg extends AbstractModel
                 return "[{$action}] " . self::previewMsg($data['msg']['data']);
 
             case 'notice':
-                return Base::cutStr(Doo::translate($data['msg']['notice']), 30);
+                return Base::cutStr(Doo::translate($data['msg']['notice']), 50);
 
             case 'template':
                 return self::previewTemplateMsg($data['msg']);
@@ -637,7 +637,7 @@ class WebSocketDialogMsg extends AbstractModel
             $text = strip_tags($text);
             $text = str_replace(["&nbsp;", "&amp;", "&lt;", "&gt;"], [" ", "&", "<", ">"], $text);
             $text = preg_replace("/\s+/", " ", $text);
-            $text = Base::cutStr($text, 30);
+            $text = Base::cutStr($text, 50);
         }
         return $text;
     }
@@ -657,7 +657,7 @@ class WebSocketDialogMsg extends AbstractModel
             return "[{$action}]";
         }
         $action = Doo::translate("文件");
-        return "[{$action}] " . Base::cutStr($msg['name'], 30);
+        return "[{$action}] " . Base::cutStr($msg['name'], 50);
     }
 
     /**
@@ -671,13 +671,13 @@ class WebSocketDialogMsg extends AbstractModel
             return $msg['title_raw'];
         }
         if ($msg['type'] === 'task_list' && count($msg['list']) === 1) {
-            return Doo::translate($msg['title']) . ": " . Base::cutStr($msg['list'][0]['name'], 30);
+            return Doo::translate($msg['title']) . ": " . Base::cutStr($msg['list'][0]['name'], 50);
         }
         if (!empty($msg['title'])) {
             return Doo::translate($msg['title']);
         }
         if ($msg['type'] === 'content' && is_string($msg['content']) && $msg['content'] !== '') {
-            return Base::cutStr(Doo::translate($msg['content']), 30);
+            return Base::cutStr(Doo::translate($msg['content']), 50);
         }
         return Doo::translate('未知的消息');
     }

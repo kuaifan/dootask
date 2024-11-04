@@ -282,7 +282,7 @@ import {MarkdownPreview} from "../store/markdown";
                 text = text.replace(/\[image:(.*?)\]/g, `<img class="${imgClassName}" src="$1">`)
                 text = text.replace(/\{\{RemoteURL\}\}/g, this.apiUrl('../'))
             } else {
-                text = $A.cutString(text, 30)
+                text = $A.cutString(text, 50)
             }
             return text
         },
@@ -407,7 +407,7 @@ import {MarkdownPreview} from "../store/markdown";
                 case 'record':
                     return `[${$A.L('语音')}]`
                 case 'meeting':
-                    return `[${$A.L('会议')}] ${$A.cutString(data.msg.name, 30)}`
+                    return `[${$A.L('会议')}] ${$A.cutString(data.msg.name, 50)}`
                 case 'file':
                     return $A.fileMsgSimpleDesc(data.msg, imgClassName)
                 case 'tag':
@@ -417,7 +417,7 @@ import {MarkdownPreview} from "../store/markdown";
                 case 'todo':
                     return `[${$A.L(data.msg.action === 'remove' ? '取消待办' : (data.msg.action === 'done' ? '完成' : '设待办'))}] ${$A.getMsgSimpleDesc(data.msg.data)}`
                 case 'notice':
-                    return $A.cutString($A.L(data.msg.notice), 30)
+                    return $A.cutString($A.L(data.msg.notice), 50)
                 case 'template':
                     return $A.templateMsgSimpleDesc(data.msg)
                 case 'preview':
@@ -450,7 +450,7 @@ import {MarkdownPreview} from "../store/markdown";
             } else if (msg.ext == 'mp4') {
                 return `[${$A.L('视频')}]`
             }
-            return `[${$A.L('文件')}] ${$A.cutString(msg.name, 30)}`
+            return `[${$A.L('文件')}] ${$A.cutString(msg.name, 50)}`
         },
 
         /**
@@ -463,13 +463,13 @@ import {MarkdownPreview} from "../store/markdown";
                 return msg.title_raw
             }
             if (msg.type === 'task_list' && $A.arrayLength(msg.list) === 1) {
-                return $A.L(msg.title) + ": " + $A.cutString(msg.list[0].name, 30)
+                return $A.L(msg.title) + ": " + $A.cutString(msg.list[0].name, 50)
             }
             if (msg.title) {
                 return $A.L(msg.title)
             }
             if (msg.type === 'content' && typeof msg.content === 'string' && msg.content !== '') {
-                return $A.cutString($A.L(msg.content), 30)
+                return $A.cutString($A.L(msg.content), 50)
             }
             return $A.L('未知的消息')
         },
