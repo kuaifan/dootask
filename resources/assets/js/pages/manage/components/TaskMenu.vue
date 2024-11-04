@@ -1,6 +1,6 @@
 <template>
     <div class="task-menu-icon" @click="handleClick">
-        <div v-if="loadIng" class="loading"><Loading/></div>
+        <div v-if="loadIng && showLoad" class="loading"><Loading/></div>
         <template v-else>
             <Icon v-if="task.complete_at" class="completed" :type="completedIcon" />
             <Icon v-else :type="icon" class="uncomplete"/>
@@ -55,6 +55,10 @@ export default {
         projectId:{
             type: Number,
             default: 0
+        },
+        showLoad: {
+            type: Boolean,
+            default: true
         }
     },
     computed: {
