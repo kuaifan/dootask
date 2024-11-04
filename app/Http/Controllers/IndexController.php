@@ -23,7 +23,7 @@ use App\Tasks\CheckinRemindTask;
 use App\Tasks\CloseMeetingRoomTask;
 use App\Tasks\UnclaimedTaskRemindTask;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
-use LasseRafn\InitialAvatarGenerator\InitialAvatar;
+use Laravolt\Avatar\Avatar;
 
 
 /**
@@ -83,7 +83,7 @@ class IndexController extends InvokeController
 
     /**
      * 头像
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Http\Response|\Symfony\Component\HttpFoundation\BinaryFileResponse
      */
     public function avatar()
     {
@@ -91,14 +91,82 @@ class IndexController extends InvokeController
         if ($segment && preg_match('/.*?\.png$/i', $segment)) {
             $name = substr($segment, 0, -4);
         } else {
-            $name = Request::input('name', 'H');
+            $name = Request::input('name', 'D');
         }
         $size = Request::input('size', 128);
         $color = Request::input('color');
         $background = Request::input('background');
+        // 移除各种括号及其内容
+        $pattern = '/[(（\[【{［<＜『「](.*?)[)）\]】}］>＞』」]/u';
+        $name = preg_replace($pattern, '', $name) ?: preg_replace($pattern, '$1', $name);
+        // 移除常见标识词（不区分大小写）
+        $filterWords = [
+            // 测试相关
+            '测试', '测试号', '测试账号', '内测', '体验', '试用', 'test', 'testing', 'beta',
+            // 账号相关
+            '账号', '帐号', '账户', '帐户', 'account', 'acc', 'id', 'uid',
+            // 临时标识
+            '临时', '暂用', '备用', '主号', '副号', '小号', '大号', 'temp', 'temporary', 'backup',
+            // 系统相关
+            '系统', '管理员', 'admin', 'administrator', 'system', 'sys', 'root',
+            // 用户相关
+            '用户', 'user', '会员', 'member', 'vip', 'svip', 'mvip', 'premium',
+            // 官方相关
+            '官方', '正式', '认证', 'official', 'verified', 'auth',
+            // 客服相关
+            '客服', '售后', '服务', 'service', 'support', 'helper', 'assistant',
+            // 游戏相关
+            'game', 'gaming', 'player', 'gamer',
+            // 社交媒体相关
+            'ins', 'instagram', 'fb', 'facebook', 'tiktok', 'tweet', 'weibo', 'wechat',
+            // 常见后缀
+            'official', 'real', 'fake', 'copy', 'channel', 'studio', 'team', 'group',
+            // 职业相关
+            'dev', 'developer', 'designer', 'artist', 'writer', 'editor',
+            // 其他
+            'bot', 'robot', 'auto', 'anonymous', 'guest', 'default', 'new', 'old'
+        ];
+        $filterWords = array_map(function($word) {
+            return preg_quote($word, '/');
+        }, $filterWords);
+        $name = preg_replace('/' . implode('|', $filterWords) . '/iu', '', $name) ?: $name;
+        // 移除分隔符和特殊字符
+        $filterSymbols = [
+            // 常见分隔符
+            '-', '_', '=', '+', '/', '\\', '|',
+            '~', '@', '#', '$', '%', '^', '&', '*',
+            // 空格类字符
+            ' ', '　', "\t", "\n", "\r",
+            // 标点符号（中英文）
+            '。', '，', '、', '；', '：', '？', '！',
+            '．', '…', '‥', '′', '″', '℃',
+            '.', ',', ';', ':', '?', '!',
+            // 引号类（修正版）
+            '"', "'", '‘', '’', '“', '”', '`',
+            // 特殊符号
+            '★', '☆', '○', '●', '◎', '◇', '◆',
+            '□', '■', '△', '▲', '▽', '▼',
+            '♀', '♂', '♪', '♫', '♯', '♭', '♬',
+            '→', '←', '↑', '↓', '↖', '↗', '↙', '↘',
+            '√', '×', '÷', '±', '∵', '∴',
+            '♠', '♥', '♣', '♦',
+            // emoji 表情符号范围
+            '\x{1F300}-\x{1F9FF}',
+            '\x{2600}-\x{26FF}',
+            '\x{2700}-\x{27BF}',
+            '\x{1F900}-\x{1F9FF}',
+            '\x{1F600}-\x{1F64F}'
+        ];
+        $filterSymbols = array_map(function($symbol) {
+            return preg_quote($symbol, '/');
+        }, $filterSymbols);
+        $name = preg_replace('/[' . implode('', $filterSymbols) . ']/u', '', $name) ?: $name;
         //
         if (preg_match('/^[\x{4e00}-\x{9fa5}]+$/u', $name)) {
             $name = mb_substr($name, mb_strlen($name) - 2);
+        }
+        if (empty($name)) {
+            $name = 'D';
         }
         if (empty($color)) {
             $color = '#ffffff';
@@ -108,17 +176,35 @@ class IndexController extends InvokeController
             });
         }
         //
-        $avatar = new InitialAvatar();
-        $content = $avatar->name($name)
-            ->size($size)
-            ->color($color)
-            ->background($background)
-            ->fontSize(0.35)
-            ->autoFont()
-            ->generate()
-            ->stream('png', 100);
+        $path = public_path('uploads/tmp/avatar/' . substr(md5($name), 0, 2));
+        $file = Base::joinPath($path, md5($name) . '.png');
+        if (file_exists($file)) {
+            return response()->file($file, [
+                'Pragma' => 'public',
+                'Cache-Control' => 'max-age=1814400',
+                'Content-type' => 'image/png',
+                'Expires' => gmdate('D, d M Y H:i:s \G\M\T', time() + 1814400),
+            ]);
+        }
+        Base::makeDir($path);
         //
-        return response($content)
+        $avatar = new Avatar([
+            'shape' => 'square',
+            'width' => $size,
+            'height' => $size,
+            'chars'    => 2,
+            'fontSize' => $size / 2.9,
+            'uppercase' => true,
+            'fonts' => [resource_path('assets/statics/fonts/Source_Han_Sans_SC_Regular.otf')],
+            'foregrounds' => [$color],
+            'backgrounds' => [$background],
+            'border' => [
+                'size' => 0,
+                'color' => 'foreground',
+                'radius' => 0,
+            ],
+        ]);
+        return response($avatar->create($name)->save($file))
             ->header('Pragma', 'public')
             ->header('Cache-Control', 'max-age=1814400')
             ->header('Content-type', 'image/png')

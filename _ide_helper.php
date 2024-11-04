@@ -16045,7 +16045,7 @@
                     /**
          * 
          *
-         * @see \Maatwebsite\Excel\Mixins\DownloadCollection::downloadExcel()
+         * @see \Maatwebsite\Excel\Mixins\DownloadCollectionMixin::downloadExcel()
          * @param string $fileName
          * @param string|null $writerType
          * @param mixed $withHeadings
@@ -16059,7 +16059,7 @@
                     /**
          * 
          *
-         * @see \Maatwebsite\Excel\Mixins\StoreCollection::storeExcel()
+         * @see \Maatwebsite\Excel\Mixins\StoreCollectionMixin::storeExcel()
          * @param string $filePath
          * @param string|null $disk
          * @param string|null $writerType
@@ -16441,6 +16441,247 @@
      
 }
 
+    namespace Laravolt\Avatar { 
+            /**
+     * 
+     *
+     */ 
+        class Facade {
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function setGenerator($generator)
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->setGenerator($generator);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function create($name)
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->create($name);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function applyTheme($config)
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->applyTheme($config);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function addTheme($name, $config)
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->addTheme($name, $config);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function toBase64()
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->toBase64();
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function save($path, $quality = 90)
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->save($path, $quality);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function toSvg()
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->toSvg();
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function toGravatar($param = null)
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->toGravatar($param);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function getInitial()
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->getInitial();
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function getImageObject()
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->getImageObject();
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function buildAvatar()
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->buildAvatar();
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function getAttribute($key)
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->getAttribute($key);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function setTheme($theme)
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->setTheme($theme);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function setBackground($hex)
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->setBackground($hex);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function setForeground($hex)
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->setForeground($hex);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function setDimension($width, $height = null)
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->setDimension($width, $height);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function setFontSize($size)
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->setFontSize($size);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function setFontFamily($font)
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->setFontFamily($font);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function setBorder($size, $color, $radius = 0)
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->setBorder($size, $color, $radius);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function setBorderRadius($radius)
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->setBorderRadius($radius);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function setShape($shape)
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->setShape($shape);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function setChars($chars)
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->setChars($chars);
+        }
+                    /**
+         * 
+         *
+         * @static 
+         */ 
+        public static function setFont($font)
+        {
+                        /** @var \Laravolt\Avatar\Avatar $instance */
+                        return $instance->setFont($font);
+        }
+         
+    }
+     
+}
+
     namespace Maatwebsite\Excel\Facades { 
             /**
      * 
@@ -16467,9 +16708,10 @@
                     /**
          * 
          *
+         * @param string|null $disk Fallback for usage with named properties
          * @param object $export
          * @param string $filePath
-         * @param string|null $disk
+         * @param string|null $diskName
          * @param string $writerType
          * @param mixed $diskOptions
          * @return bool 
@@ -16477,10 +16719,10 @@
          * @throws \PhpOffice\PhpSpreadsheet\Writer\Exception
          * @static 
          */ 
-        public static function store($export, $filePath, $diskName = null, $writerType = null, $diskOptions = [])
+        public static function store($export, $filePath, $diskName = null, $writerType = null, $diskOptions = [], $disk = null)
         {
                         /** @var \Maatwebsite\Excel\Excel $instance */
-                        return $instance->store($export, $filePath, $diskName, $writerType, $diskOptions);
+                        return $instance->store($export, $filePath, $diskName, $writerType, $diskOptions, $disk);
         }
                     /**
          * 
@@ -16698,7 +16940,7 @@
          * @param $pathToFile string The file to open
          * @param \Madnest\Madzipper\Repositories\RepositoryInterface|string $type The type of the archive, defaults to zip, possible are zip, phar
          * @throws \RuntimeException
-         * @throws \Exception
+         * @throws Exception
          * @throws \InvalidArgumentException
          * @return \Madnest\Madzipper\Madzipper Madzipper instance
          * @static 
@@ -16712,7 +16954,7 @@
          * Create a new zip archive or open an existing one.
          *
          * @param string $pathToFile
-         * @throws \Exception
+         * @throws Exception
          * @return self 
          * @static 
          */ 
@@ -16725,7 +16967,7 @@
          * Create a new phar file or open one.
          *
          * @param string $pathToFile
-         * @throws \Exception
+         * @throws Exception
          * @return self 
          * @static 
          */ 
@@ -16738,7 +16980,7 @@
          * Create a new rar file or open one.
          *
          * @param string $pathToFile
-         * @throws \Exception
+         * @throws Exception
          * @return self 
          * @static 
          */ 
@@ -16755,7 +16997,7 @@
          * @param $path string The path to extract to
          * @param array $files An array of files
          * @param int $methodFlags The Method the files should be treated
-         * @throws \Exception
+         * @throws Exception
          * @return void 
          * @static 
          */ 
@@ -16782,7 +17024,7 @@
          * Gets the content of a single file if available.
          *
          * @param $filePath string The full path (including all folders) of the file in the zip
-         * @throws \Exception
+         * @throws Exception
          * @return mixed returns the content or throws an exception
          * @static 
          */ 
@@ -18769,6 +19011,64 @@ namespace  {
             {
                                 /** @var \Illuminate\Database\Eloquent\Builder $instance */
                                 return $instance->unless($value, $callback, $default);
+            }
+             
+                /**
+             * 
+             *
+             * @see \Maatwebsite\Excel\Mixins\DownloadQueryMacro::__invoke()
+             * @param string $fileName
+             * @param string|null $writerType
+             * @param mixed $withHeadings
+             * @static 
+             */ 
+            public static function downloadExcel($fileName, $writerType = null, $withHeadings = false)
+            {
+                                return \Illuminate\Database\Eloquent\Builder::downloadExcel($fileName, $writerType, $withHeadings);
+            }
+             
+                /**
+             * 
+             *
+             * @see \Maatwebsite\Excel\Mixins\StoreQueryMacro::__invoke()
+             * @param string $filePath
+             * @param string|null $disk
+             * @param string|null $writerType
+             * @param mixed $withHeadings
+             * @static 
+             */ 
+            public static function storeExcel($filePath, $disk = null, $writerType = null, $withHeadings = false)
+            {
+                                return \Illuminate\Database\Eloquent\Builder::storeExcel($filePath, $disk, $writerType, $withHeadings);
+            }
+             
+                /**
+             * 
+             *
+             * @see \Maatwebsite\Excel\Mixins\ImportMacro::__invoke()
+             * @param string $filename
+             * @param string|null $disk
+             * @param string|null $readerType
+             * @static 
+             */ 
+            public static function import($filename, $disk = null, $readerType = null)
+            {
+                                return \Illuminate\Database\Eloquent\Builder::import($filename, $disk, $readerType);
+            }
+             
+                /**
+             * 
+             *
+             * @see \Maatwebsite\Excel\Mixins\ImportAsMacro::__invoke()
+             * @param string $filename
+             * @param callable $mapping
+             * @param string|null $disk
+             * @param string|null $readerType
+             * @static 
+             */ 
+            public static function importAs($filename, $mapping, $disk = null, $readerType = null)
+            {
+                                return \Illuminate\Database\Eloquent\Builder::importAs($filename, $mapping, $disk, $readerType);
             }
              
                 /**
@@ -20814,6 +21114,7 @@ namespace  {
             class View extends \Illuminate\Support\Facades\View {}
             class Flare extends \Facade\Ignition\Facades\Flare {}
             class Image extends \Intervention\Image\Facades\Image {}
+            class Avatar extends \Laravolt\Avatar\Facade {}
             class Excel extends \Maatwebsite\Excel\Facades\Excel {}
             class Madzipper extends \Madnest\Madzipper\Facades\Madzipper {}
             class Captcha extends \Mews\Captcha\Facades\Captcha {}
