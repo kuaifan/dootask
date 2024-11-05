@@ -156,6 +156,14 @@
             })
         },
 
+        // 检查更新
+        eeuiAppCheckUpdate() {
+            if (!$A.isEEUiApp) return;
+            $A.eeuiModule("eeui").then(obj => {
+                obj.checkUpdate();
+            })
+        },
+
         // 获取主题名称 light|dark
         eeuiAppGetThemeName() {
             if (!$A.isEEUiApp) return;
@@ -172,6 +180,12 @@
         eeuiAppSetVariate(key, value) {
             if (!$A.isEEUiApp) return;
             $A.eeuiModuleSync("eeui").setVariate(key, value);
+        },
+
+        // 设置缓存数据
+        eeuiAppSetCachesString(key, value, expired = 0) {
+            if (!$A.isEEUiApp) return;
+            $A.eeuiModuleSync("eeui").setCachesString(key, value, expired);
         },
 
         // 长按内容震动（仅支持android、iOS无效）

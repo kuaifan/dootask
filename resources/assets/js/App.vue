@@ -62,6 +62,7 @@ export default {
             routePath: null,
             appInter: null,
             countDown: Math.min(30, 60 - $A.daytz().second()),
+            lastCheckUpgradeYmd: $A.daytz().format('YYYY-MM-DD')
         }
     },
 
@@ -331,6 +332,10 @@ export default {
                 this.autoTheme()
                 $A.updateTimezone()
                 $A.IDBTest()
+                if (this.lastCheckUpgradeYmd != $A.daytz().format('YYYY-MM-DD')) {
+                    this.lastCheckUpgradeYmd = $A.daytz().format('YYYY-MM-DD')
+                    $A.eeuiAppCheckUpdate();
+                }
             }
             // 页面失活
             window.__onPagePause = () => {
@@ -434,8 +439,12 @@ export default {
             // 取消长按振动
             $A.eeuiAppSetHapticBackEnabled(false)
             // 设置语言
-            $A.eeuiAppSetVariate("languageWebBrowser", this.$L("浏览器打开"))
-            $A.eeuiAppSetVariate("languageWebRefresh", this.$L("刷新"))
+            $A.eeuiAppSetCachesString("languageWebBrowser", this.$L("浏览器打开"))
+            $A.eeuiAppSetCachesString("languageWebRefresh", this.$L("刷新"))
+            $A.eeuiAppSetCachesString("updateDefaultTitle", this.$L("发现新版本"))
+            $A.eeuiAppSetCachesString("updateDefaultContent", this.$L("暂无更新介绍！"))
+            $A.eeuiAppSetCachesString("updateDefaultCancelText", this.$L("以后再说"))
+            $A.eeuiAppSetCachesString("updateDefaultUpdateText", this.$L("立即更新"))
         },
 
         otherEvents() {
