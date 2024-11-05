@@ -815,11 +815,13 @@ export default {
 
             // Update model if text changes
             this.quill.on('text-change', _ => {
-                const {index} = this.quill.getSelection(true);
-                if (this.quill.getText(index - 1, 1) === "\r") {
-                    this.quill.insertText(index, "\n");
-                    this.quill.deleteText(index - 1, 1);
-                    return;
+                if (this.isFocus) {
+                    const {index} = this.quill.getSelection();
+                    if (this.quill.getText(index - 1, 1) === "\r") {
+                        this.quill.insertText(index, "\n");
+                        this.quill.deleteText(index - 1, 1);
+                        return;
+                    }
                 }
                 if (this.textTimer) {
                     clearTimeout(this.textTimer)

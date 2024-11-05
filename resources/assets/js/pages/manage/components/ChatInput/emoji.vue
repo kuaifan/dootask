@@ -40,8 +40,6 @@
 </template>
 
 <script>
-import { jsonp } from 'vue-jsonp'
-
 export default {
     name: 'ChatEmoji',
     props: {
