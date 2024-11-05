@@ -331,8 +331,7 @@ class UsersController extends AbstractController
         $data = $user->toArray();
         $data['nickname_original'] = $user->getRawOriginal('nickname');
         $data['department_name'] = $user->getDepartmentName();
-        // 适用默认部门下第1级负责人才能添加部门OKR
-        $data['department_owner'] = UserDepartment::where('parent_id',0)->where('owner_userid', $user->userid())->exists();
+        $data['department_owner'] = UserDepartment::where('parent_id',0)->where('owner_userid', $user->userid)->exists(); // 适用默认部门下第1级负责人才能添加部门OKR
         return Base::retSuccess('success', $data);
     }
 
@@ -348,6 +347,7 @@ class UsersController extends AbstractController
      * @apiParam {String} [tel]                 电话
      * @apiParam {String} [nickname]            昵称
      * @apiParam {String} [profession]          职位/职称
+     * @apiParam {String} [lang]                语言（比如：zh/en）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -408,6 +408,15 @@ class UsersController extends AbstractController
             } else {
                 $user->profession = $profession;
                 $upLdap['employeeType'] = $profession;
+            }
+        }
+        // 语言
+        if (Arr::exists($data, 'lang')) {
+            $lang = trim(Request::input('lang'));
+            if (!Doo::checkLanguage($lang)) {
+                return Base::retError('语言错误');
+            } else {
+                $user->lang = $lang;
             }
         }
         //

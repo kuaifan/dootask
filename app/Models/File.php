@@ -941,7 +941,7 @@ class File extends AbstractModel
      */
     public static function filePushMsg($action, $data = null, $userid = null)
     {
-        $userid = User::auth()->userid();
+        $userid = User::userid();
         if (empty($userid)) {
             return;
         }

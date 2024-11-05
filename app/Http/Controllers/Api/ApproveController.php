@@ -1034,7 +1034,7 @@ class ApproveController extends AbstractController
         // 更新审批 未读数量
         if ($type == 'approve_reviewer' && $toUser['userid']) {
             $params = [
-                'userid' => [$toUser['userid'], User::auth()->userid()],
+                'userid' => [$toUser['userid'], User::userid()],
                 'msg' => [
                     'type' => 'approve',
                     'action' => 'unread',

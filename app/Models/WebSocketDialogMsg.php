@@ -630,8 +630,8 @@ class WebSocketDialogMsg extends AbstractModel
             $text = Base::markdown2html($text);
         }
         $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?alt=\"(\S+)\"[^>]*?>/", "[$1]", $text);
-        $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?>/", "[动画表情]", $text);
-        $text = preg_replace("/<img\s+class=\"browse\"[^>]*?>/", "[图片]", $text);
+        $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?>/", "[" . Doo::translate('动画表情') . "]", $text);
+        $text = preg_replace("/<img\s+class=\"browse\"[^>]*?>/", "[" . Doo::translate('图片') . "]", $text);
         if (!$preserveHtml) {
             $text = str_replace("</p><p>", "</p> <p>", $text);
             $text = strip_tags($text);

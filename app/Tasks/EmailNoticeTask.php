@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogMsgRead;
 use App\Module\Base;
+use App\Module\Doo;
 use Carbon\Carbon;
 use Guanguans\Notify\Factory;
 use Guanguans\Notify\Messages\EmailMessage;
@@ -113,7 +114,8 @@ class EmailNoticeTask extends AbstractTask
                 $dialogName = null;
                 foreach ($items as $item) {
                     $item->cancelAppend();
-                    $item->userInfo = User::userid2basic($item->userid);
+                    $item->userInfo = User::userid2basic($item->userid, ['lang']);
+                    Doo::setLanguage($item->userInfo->lang);
                     $item->preview = WebSocketDialogMsg::previewMsg($item, true);
                     $item->preview = str_replace('<p>', '<p style="margin:0;padding:0">', $item->preview);
                     if (empty($dialogId)) {

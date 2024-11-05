@@ -9,6 +9,7 @@ use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogMsgRead;
 use App\Module\Base;
+use App\Module\Doo;
 use Carbon\Carbon;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Request;
@@ -191,13 +192,24 @@ class WebSocketDialogMsgTask extends AbstractTask
                 if ($dialog->type == 'group') {
                     $umengTitle = "{$dialog->getGroupName()} ($umengTitle)";
                 }
-                $this->endArray[] = new PushUmengMsg($umengUserid, [
-                    'title' => $umengTitle,
-                    'body' => WebSocketDialogMsg::previewMsg($msg),
-                    'description' => "MID:{$msg->id}",
-                    'seconds' => 3600,
-                    'badge' => 1,
-                ]);
+                $langs = User::select(['userid', 'lang'])
+                    ->whereIn('userid', $umengUserid)
+                    ->get()
+                    ->groupBy('lang')
+                    ->map(function($group) {
+                        return $group->pluck('userid');
+                    });
+                foreach ($langs as $lang => $uids) {
+                    Doo::setLanguage($lang);
+                    $umengMsg = [
+                        'title' => $umengTitle,
+                        'body' => WebSocketDialogMsg::previewMsg($msg),
+                        'description' => "MID:{$msg->id}",
+                        'seconds' => 3600,
+                        'badge' => 1,
+                    ];
+                    $this->endArray[] = new PushUmengMsg($uids->toArray(), $umengMsg);
+                }
             }
         }
 

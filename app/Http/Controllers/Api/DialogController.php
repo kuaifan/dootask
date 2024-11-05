@@ -7,6 +7,7 @@ use Request;
 use Redirect;
 use Carbon\Carbon;
 use App\Tasks\PushTask;
+use App\Module\Doo;
 use App\Models\File;
 use App\Models\User;
 use App\Module\Base;
@@ -1556,18 +1557,7 @@ class DialogController extends AbstractController
         //
         $msg_id = intval(Request::input("msg_id"));
         $language = Base::inputOrHeader('language');
-        $targetLanguage = match ($language) {
-            "zh" => "简体中文",
-            "zh-CHT" => "繁体中文",
-            "en" => "英语",
-            "ko" => "韩语",
-            "ja" => "日语",
-            "de" => "德语",
-            "fr" => "法语",
-            "id" => "印度尼西亚语",
-            "ru" => "俄语",
-            default => '',
-        };
+        $targetLanguage = Doo::getLanguages($language);
         //
         if (empty($targetLanguage)) {
             return Base::retError("参数错误");

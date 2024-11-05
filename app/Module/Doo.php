@@ -11,7 +11,7 @@ use FFI;
 class Doo
 {
     private static $doo;
-    private static $passphrase = "LYHevk5n";
+    private static $userLanguage = "";
 
     /**
      * char转为字符串
@@ -269,12 +269,58 @@ class Doo
     /**
      * 翻译
      * @param $text
-     * @param string $type
+     * @param string $lang
      * @return string
      */
-    public static function translate($text, string $type = ""): string
+    public static function translate($text, string $lang = ""): string
     {
-        return self::string(self::doo()->translate($text, $type));
+        return self::string(self::doo()->translate($text, $lang ?: self::$userLanguage));
+    }
+
+    /**
+     * 设置语言
+     * @param string|integer $lang 语言 或 会员ID
+     * @return void
+     */
+    public static function setLanguage($lang) {
+        if (Base::isNumber($lang)) {
+            $lang = User::find(intval($lang))?->lang ?: "";
+        }
+        self::$userLanguage = $lang;
+    }
+
+    /**
+     * 获取语言列表 或 语言名称
+     * @param string|false $lang
+     * @return string|string[]
+     */
+    public static function getLanguages(bool $lang = false)
+    {
+        $array = [
+            "zh" => "简体中文",
+            "zh-CHT" => "繁体中文",
+            "en" => "英语",
+            "ko" => "韩语",
+            "ja" => "日语",
+            "de" => "德语",
+            "fr" => "法语",
+            "id" => "印度尼西亚语",
+            "ru" => "俄语",
+        ];
+        if ($lang !== false) {
+            return $array[$lang] ?? "";
+        }
+        return $array;
+    }
+
+    /**
+     * 检查语言是否存在
+     * @param $lang
+     * @return bool
+     */
+    public static function checkLanguage($lang): bool
+    {
+        return array_key_exists($lang, self::getLanguages());
     }
 
     /**
