@@ -509,8 +509,7 @@ export default {
                     src: $A.mainUrl(src)
                 }
             });
-            const index = list.findIndex(({src}) => src === $A.mainUrl(currentUrl));
-            this.$store.dispatch("previewImage", {index, list})
+            this.$store.dispatch("previewImage", {index: $A.mainUrl(currentUrl), list})
         },
         // 点击头像
         onAvatar(userid) {

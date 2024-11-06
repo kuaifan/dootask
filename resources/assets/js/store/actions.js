@@ -3487,11 +3487,25 @@ export default {
     /**
      * 预览图片
      * @param state
-     * @param data
+     * @param data {{index: number | string, list: array} | string}
      */
     previewImage({state}, data) {
-        if (!$A.isJson(data) || !$A.isArray(data.list)) {
-            data = {index:0, list: [data]}
+        if (!$A.isJson(data)) {
+            data = {index: 0, list: [data]}
+        }
+        data.list = data.list.map(item => {
+            if ($A.isJson(item)) {
+                item.src = $A.thumbRestore(item.src)
+            } else {
+                item = $A.thumbRestore(item)
+            }
+            return item
+        })
+        if (typeof data.index === "string") {
+            const current = $A.thumbRestore(data.index)
+            data.index = Math.max(0, data.list.findIndex(item => {
+                return $A.isJson(item) ? item.src == current : item == current
+            }))
         }
         state.previewImageIndex = data.index;
         state.previewImageList = data.list;

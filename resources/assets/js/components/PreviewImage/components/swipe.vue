@@ -59,9 +59,6 @@ export default {
                 this.lightbox?.destroy();
                 const dataSource = array.map(item => {
                     if ($A.isJson(item)) {
-                        if (item.src) {
-                            item.src = $A.thumbRestore(item.src);
-                        }
                         if (parseInt(item.width) > 0 && parseInt(item.height) > 0) {
                             return item
                         }
@@ -69,7 +66,7 @@ export default {
                     }
                     htmlZoom = true;
                     return {
-                        html: `<div class="preview-image-swipe"><img src="${$A.thumbRestore(item)}"/></div>`,
+                        html: `<div class="preview-image-swipe"><img src="${item}"/></div>`,
                     }
                 })
                 this.lightbox = new PhotoSwipeLightbox({

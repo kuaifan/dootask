@@ -3177,8 +3177,7 @@ export default {
                         this.onViewPicture(target.currentSrc);
                     } else {
                         const list = $A.getTextImagesInfo(el.outerHTML)
-                        const index = list.findIndex(item => item.src == target.currentSrc)
-                        this.$store.dispatch("previewImage", {index, list})
+                        this.$store.dispatch("previewImage", {index: target.currentSrc, list})
                     }
                     break;
 
@@ -3263,9 +3262,12 @@ export default {
             const {msg} = data;
             if (msg.ext === 'mp4') {
                 this.$store.dispatch("previewImage", {
-                    src: msg.path,
-                    width: msg.width,
-                    height: msg.height,
+                    index: 0,
+                    list: [{
+                        src: msg.path,
+                        width: msg.width,
+                        height: msg.height,
+                    }]
                 })
                 return
             }
@@ -3330,12 +3332,7 @@ export default {
                 }
             })
             //
-            const index = list.findIndex(({src}) => src === currentUrl);
-            if (index > -1) {
-                this.$store.dispatch("previewImage", {index, list})
-            } else {
-                this.$store.dispatch("previewImage", currentUrl)
-            }
+            this.$store.dispatch("previewImage", {index: currentUrl, list})
         },
 
         onDownFile(data) {

@@ -1671,7 +1671,8 @@ export default {
                 const index = list.findIndex(item => item.id === file.id);
                 if (index > -1) {
                     this.$store.dispatch("previewImage", {
-                        index, list: list.map(item => {
+                        index,
+                        list: list.map(item => {
                             return {
                                 src: item.path,
                                 width: item.width,
@@ -1681,7 +1682,8 @@ export default {
                     })
                 } else {
                     this.$store.dispatch("previewImage", {
-                        index: 0, list: [{
+                        index: 0,
+                        list: [{
                             src: file.path,
                             width: file.width,
                             height: file.height,

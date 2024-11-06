@@ -218,7 +218,7 @@ export default {
             if ($A.isJson(item)) {
                 item = item.src;
             }
-            return $A.thumbRestore(item);
+            return item;
         },
         imgStyle() {
             const {scale, deg, offsetX, offsetY, enableTransition} = this.transform;

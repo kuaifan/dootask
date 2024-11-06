@@ -79,8 +79,7 @@ export default {
                 if (list.length === 0) {
                     return
                 }
-                const index = Math.max(0, list.indexOf(target.src))
-                this.$store.dispatch("previewImage", {index, list})
+                this.$store.dispatch("previewImage", {index: target.src, list})
             }
         }
     }

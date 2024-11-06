@@ -303,8 +303,7 @@ export default {
                 $A.messageWarning("没有可预览的图片")
                 return;
             }
-            let index = Math.max(0, array.findIndex(item => item.src === this.operateMenu.img));
-            this.$store.dispatch("previewImage", {index, list: array})
+            this.$store.dispatch("previewImage", {index: this.operateMenu.img, list: array})
         },
     }
 }

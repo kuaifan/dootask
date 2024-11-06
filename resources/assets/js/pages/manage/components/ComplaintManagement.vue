@@ -168,7 +168,7 @@ export default {
                             },
                             on: {
                                 click: () => {
-                                    this.$store.dispatch("previewImage", { index: 0, list })
+                                    this.$store.dispatch("previewImage", {index: 0, list})
                                 }
                             }
                         }, [h('AutoTip', this.$L('点击查看'))])

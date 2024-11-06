@@ -35,9 +35,9 @@ export default {
                     let position = Math.min(Math.max(this.$store.state.previewImageIndex, 0), this.$store.state.previewImageList.length - 1)
                     let paths = l.map(item => {
                         if ($A.isJson(item)) {
-                            return $A.thumbRestore(item.src);
+                            return item.src;
                         }
-                        return $A.thumbRestore(item)
+                        return item
                     })
                     let max = 50;
                     if (paths.length > max) {

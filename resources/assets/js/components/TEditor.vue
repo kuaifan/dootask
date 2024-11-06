@@ -614,8 +614,7 @@ export default {
                 $A.messageWarning("没有可预览的图片")
                 return;
             }
-            let index = Math.max(0, array.findIndex(item => item.src === this.operateImg));
-            this.$store.dispatch("previewImage", {index, list: array})
+            this.$store.dispatch("previewImage", {index: this.operateImg, list: array})
         },
 
         addClickEvent({target}, isFull) {
