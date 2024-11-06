@@ -38,8 +38,9 @@ class ApproveController extends AbstractController
     /**
      * @api {get} api/approve/verifyToken          01. 验证APi登录
      *
+     * @apiDescription 需要token身份
      * @apiVersion 1.0.0
-     * @apiGroup users
+     * @apiGroup approve
      * @apiName verifyToken
      *
      * @apiSuccess {String} version
@@ -906,7 +907,7 @@ class ApproveController extends AbstractController
      * @api {get} api/approve/down          19. 下载导出的审批数据
      *
      * @apiVersion 1.0.0
-     * @apiGroup system
+     * @apiGroup approve
      * @apiName down
      *
      * @apiParam {String} key               通过export接口得到的下载钥匙
@@ -1133,7 +1134,7 @@ class ApproveController extends AbstractController
      * @api {get} api/approve/user/status          20. 获取用户审批状态
      *
      * @apiVersion 1.0.0
-     * @apiGroup system
+     * @apiGroup approve
      * @apiName user__status
      *
      * @apiParam {String} userid

@@ -36,6 +36,7 @@ use Request;
  * @property \Illuminate\Support\Carbon|null $disable_at
  * @property int|null $email_verity 邮箱是否已验证
  * @property int|null $bot 是否机器人
+ * @property string|null $lang 语言首选项
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
@@ -59,6 +60,7 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereEmailVerity($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereEncrypt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereIdentity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereLang($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLastAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLastIp($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereLineAt($value)

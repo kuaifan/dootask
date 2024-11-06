@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.39.64]
+
+### Bug Fixes
+
+- 修复会话内加载待办为空的情况
+
+### Performance
+
+- 优化会话搜索
+- 优化国际化语言
+- 优化消息已读逻辑
+- 优化app新版本提示
+- 优化文字头像
+- 优化修改任务load
+
 ## [0.39.52]
 
 ### Bug Fixes
