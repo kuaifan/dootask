@@ -5,8 +5,8 @@
             <p>{{$L("申请人")}}：<span class="mark-color">@{{ msg.data.nickname }}</span> {{ msg.data.department }}</p>
             <b>{{$L("详情")}}</b>
             <p v-if="msg.data.type">{{$L("假期类型")}}：{{ $L(msg.data.type) }}</p>
-            <p>{{$L("开始时间")}}：{{ msg.data.start_time }} ({{ msg.data.start_day_of_week }})</p>
-            <p>{{$L("结束时间")}}：{{ msg.data.end_time }} ({{ msg.data.end_day_of_week }})</p>
+            <p>{{$L("开始时间")}}：{{ msg.data.start_time }} ({{ $L(msg.data.start_day_of_week) }})</p>
+            <p>{{$L("结束时间")}}：{{ msg.data.end_time }} ({{ $L(msg.data.end_day_of_week) }})</p>
             <p>{{$L("事由")}}：{{ msg.data.description }}</p>
         </div>
         <div class="btn-raw no-dark-content">

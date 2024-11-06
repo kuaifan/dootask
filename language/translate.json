@@ -25930,5 +25930,41 @@
         "fr": "Mettre à jour maintenant",
         "id": "Perbarui sekarang",
         "ru": "Обновить сейчас"
+    },
+    {
+        "key": "语言错误",
+        "zh": "",
+        "zh-CHT": "語言錯誤",
+        "en": "Language Error",
+        "ko": "언어 오류",
+        "ja": "言語エラー",
+        "de": "Sprachfehler",
+        "fr": "Erreur de langue",
+        "id": "Kesalahan Bahasa",
+        "ru": "Ошибка языка"
+    },
+    {
+        "key": "每日开心：(%T1)",
+        "zh": "",
+        "zh-CHT": "每日開心：(%T1)",
+        "en": "Daily Joy: (%T1)",
+        "ko": "일일 행복: (%T1)",
+        "ja": "毎日の喜び: (%T1)",
+        "de": "Tägliche Freude: (%T1)",
+        "fr": "Joie quotidienne : (%T1)",
+        "id": "Keceriaan Harian: (%T1)",
+        "ru": "Ежедневная радость: (%T1)"
+    },
+    {
+        "key": "心灵鸡汤：(%T1)",
+        "zh": "",
+        "zh-CHT": "心靈雞湯：(%T1)",
+        "en": "Soulful Quote: (%T1)",
+        "ko": "마음의 비타민: (%T1)",
+        "ja": "心のスープ: (%T1)",
+        "de": "Seelenstärkung: (%T1)",
+        "fr": "Citation inspirante : (%T1)",
+        "id": "Kata Bijak: (%T1)",
+        "ru": "Душеподъемная цитата: (%T1)"
     }
 ]

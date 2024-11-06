@@ -96,8 +96,10 @@
                             </div>
                             <div class="approve-process-left">
                                 <p class="approve-process-name">{{item.approver}}</p>
-                                <p class="approve-process-state" style="color: #6d6d6d;" v-if="!item.identitylink">待审批</p>
-                                <p class="approve-process-state" v-if="item.identitylink">
+                                <p v-if="!item.identitylink" class="approve-process-state">
+                                    <span style="color:#6d6d6d;">{{$L('待审批')}}</span>
+                                </p>
+                                <p v-else class="approve-process-state">
                                     <span v-if="item.identitylink.state==0" style="color:#496dff;">{{$L('审批中')}}</span>
                                     <span v-if="item.identitylink.state==1" >{{$L('已通过')}}</span>
                                     <span v-if="item.identitylink.state==2" style="color:#f03f3f;">{{$L('已拒绝')}}</span>

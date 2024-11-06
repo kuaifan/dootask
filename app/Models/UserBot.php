@@ -260,14 +260,15 @@ class UserBot extends AbstractModel
         }
         //
         if ($checkins && $botUser = User::botGetOrCreate('check-in')) {
-            $getJokeSoup = function($type) {
+            $getJokeSoup = function($type, $userid) {
                 $pre = $type == "up" ? "每日开心：" : "心灵鸡汤：";
                 $key = $type == "up" ? "jokes" : "soups";
                 $array = Base::json2array(Cache::get(JokeSoupTask::keyName($key)));
                 if ($array) {
                     $item = $array[array_rand($array)];
                     if ($item) {
-                        return $pre . $item;
+                        Doo::setLanguage($userid);
+                        return Doo::translate($pre . $item);
                     }
                 }
                 return null;
@@ -291,7 +292,7 @@ class UserBot extends AbstractModel
                 if ($dialog = WebSocketDialog::checkUserDialog($botUser, $checkin['userid'])) {
                     $hi = date("H:i");
                     $remark = $checkin['remark'] ? " ({$checkin['remark']})": "";
-                    $subcontent = $getJokeSoup($type);
+                    $subcontent = $getJokeSoup($type, $checkin['userid']);
                     $title = "{$typeContent}打卡成功，打卡时间: {$hi}{$remark}";
                     WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
                         'type' => 'content',
