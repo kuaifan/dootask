@@ -250,15 +250,7 @@ class WebSocketDialog extends AbstractModel
             // 最后消息
             $data['last_msg'] = $data['last_msg'] ?? WebSocketDialogMsg::whereDialogId($data['id'])->orderByDesc('id')->first()?->toArray();
         }
-
-        // 最后消息处理
-        if ($data['last_msg'] && $data['last_msg']['type'] != 'preview') {
-            $msgData = $data['last_msg'];
-            $msgData['emoji'] = Base::array_only_recursive($msgData['emoji'], ['symbol']);
-            $msgData['msg'] = ['preview' => WebSocketDialogMsg::previewMsg($msgData)];
-            $msgData['type'] = 'preview';
-            $data['last_msg'] = array_intersect_key($msgData, array_flip(['id', 'type', 'msg', 'userid', 'percentage', 'emoji', 'created_at']));
-        }
+        $data['last_msg'] = self::lastMsgFormat($data['last_msg']);
 
         // 对方信息
         $data['pinyin'] = Base::cn2pinyin($data['name']);
@@ -343,6 +335,23 @@ class WebSocketDialog extends AbstractModel
             }
         }
         return $data;
+    }
+
+    /**
+     * 格式化最后消息
+     * @param array $lastMsg
+     * @return array
+     */
+    public static function lastMsgFormat($lastMsg)
+    {
+        if ($lastMsg && $lastMsg['type'] != 'preview') {
+            $msgData = $lastMsg;
+            $msgData['emoji'] = Base::array_only_recursive($msgData['emoji'], ['symbol']);
+            $msgData['msg'] = ['preview' => WebSocketDialogMsg::previewMsg($msgData)];
+            $msgData['type'] = 'preview';
+            $lastMsg = array_intersect_key($msgData, array_flip(['id', 'type', 'msg', 'userid', 'percentage', 'emoji', 'created_at']));
+        }
+        return $lastMsg;
     }
 
     /**
@@ -682,27 +691,22 @@ class WebSocketDialog extends AbstractModel
      * 获取会员对话（没有自动创建）
      * @param User $user    发起会话的会员
      * @param int $receiver  另一个会员ID
-     * @return self|null
+     * @return WebSocketDialog|null
      */
     public static function checkUserDialog($user, $receiver)
     {
         if ($user->userid == $receiver) {
             $receiver = 0;
         }
-        $dialogUser = self::select(['web_socket_dialogs.*'])
-            ->join('web_socket_dialog_users as u1', 'web_socket_dialogs.id', '=', 'u1.dialog_id')
-            ->join('web_socket_dialog_users as u2', 'web_socket_dialogs.id', '=', 'u2.dialog_id')
-            ->where('u1.userid', $user->userid)
-            ->where('u2.userid', $receiver)
-            ->where('web_socket_dialogs.type', 'user')
-            ->first();
+        $dialogUser = self::getUserDialog($user->userid, $receiver, 0, $cacheKey);
         if ($dialogUser) {
             return $dialogUser;
         }
         if ($receiver > 0 && $user->isTemp() && !User::whereUserid($receiver)->whereBot(1)->exists() ) {
             throw new ApiException('无法发起会话，请联系管理员。');
         }
-        return AbstractModel::transaction(function () use ($receiver, $user) {
+        return AbstractModel::transaction(function () use ($cacheKey, $receiver, $user) {
+            Cache::forget($cacheKey);
             $dialog = self::createInstance([
                 'type' => 'user',
             ]);
@@ -716,6 +720,41 @@ class WebSocketDialog extends AbstractModel
                 'userid' => $receiver,
             ])->save();
             return $dialog;
+        });
+    }
+
+    /**
+     * 获取用户对话（支持缓存）
+     * @param $userid1
+     * @param $userid2
+     * @param $ttl
+     * @param null $cacheKey
+     * @return \Illuminate\Database\Eloquent\Builder|WebSocketDialog|null
+     */
+    public static function getUserDialog($userid1, $userid2, $ttl, &$cacheKey = null)
+    {
+        $userids = [$userid1, $userid2];
+        sort($userids);
+        $cacheKey = "Dialog::user:" . implode('-', $userids);
+        if (empty($ttl)) {
+            return WebSocketDialog::query()
+                ->whereType('user')
+                ->whereExists(function ($query) use ($userids) {
+                    $query->select(DB::raw(1))
+                        ->from('web_socket_dialog_users')
+                        ->whereColumn('web_socket_dialog_users.dialog_id', 'web_socket_dialogs.id')
+                        ->where('web_socket_dialog_users.userid', $userids[0]);
+                })
+                ->whereExists(function ($query) use ($userids) {
+                    $query->select(DB::raw(1))
+                        ->from('web_socket_dialog_users')
+                        ->whereColumn('web_socket_dialog_users.dialog_id', 'web_socket_dialogs.id')
+                        ->where('web_socket_dialog_users.userid', $userids[1]);
+                })
+                ->first();
+        }
+        return Cache::remember($cacheKey, $ttl, function() use ($userids) {
+            return self::getUserDialog($userids[0], $userids[1], 0);
         });
     }
 

@@ -137,13 +137,26 @@ class DialogController extends AbstractController
                 })->orderBy('userid')
                 ->take(20 - count($list))
                 ->get();
-            $users->transform(function (User $item) {
+            $users->transform(function (User $item) use ($user) {
+                $id = 'u:' . $item->userid;
+                $lastAt = null;
+                $lastMsg = null;
+                $dialog = WebSocketDialog::getUserDialog($user->userid, $item->userid, now()->addDay());
+                if ($dialog) {
+                    $id = $dialog->id;
+                    $row = WebSocketDialogMsg::whereDialogId($dialog->id)->orderByDesc('id')->first();
+                    if ($row) {
+                        $lastAt = Carbon::parse($row->created_at)->toDateTimeString();
+                        $lastMsg = WebSocketDialog::lastMsgFormat($row->toArray());
+                    }
+                }
                 return [
-                    'id' => 'u:' . $item->userid,
+                    'id' => $id,
                     'type' => 'user',
                     'name' => $item->nickname,
                     'dialog_user' => $item,
-                    'last_msg' => null,
+                    'last_at' => $lastAt,
+                    'last_msg' => $lastMsg,
                 ];
             });
             $list = array_merge($list, $users->toArray());
