@@ -347,10 +347,12 @@ const timezone = require("dayjs/plugin/timezone");
          * @returns {*}
          */
         cloneJSON(myObj) {
-            if (typeof (myObj) !== 'object') return myObj;
-            if (myObj === null) return myObj;
-            //
-            return $A.jsonParse($A.jsonStringify(myObj))
+            try {
+                return structuredClone(myObj);
+            } catch (e) {
+                if (typeof myObj !== 'object' || myObj === null) return myObj;
+                return $A.jsonParse($A.jsonStringify(myObj))
+            }
         },
 
         /**
@@ -1255,7 +1257,19 @@ const timezone = require("dayjs/plugin/timezone");
                 return sliced.join('') + suffix;
             }
             return sliced.join('');
-        }
+        },
+
+        /**
+         * 获取两个数组后面的交集
+         * @param arr1
+         * @param arr2
+         * @returns {*}
+         */
+        getLastSameElements(arr1, arr2) {
+            return arr1.slice(-(arr1.filter((item, index) =>
+                item === arr2[arr2.length - arr1.length + index]
+            ).length));
+        },
     });
 
     /**

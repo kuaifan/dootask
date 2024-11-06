@@ -832,6 +832,7 @@ export default {
             scrollToBottomRefresh: false,       // 滚动到底部重新获取消息
             androidKeyboardVisible: false,      // Android键盘是否可见
             replyMsgAutoMention: false,         // 允许回复消息后自动@
+            waitUnreadData: {},                 // 等待未读数据
         }
     },
 
@@ -1215,7 +1216,7 @@ export default {
 
         dialogId: {
             handler(dialog_id, old_id) {
-                this.getDialogBase(dialog_id)
+                this.getDialogBase(dialog_id, old_id)
                 //
                 this.$store.dispatch('closeDialog', old_id)
                 //
@@ -1449,8 +1450,22 @@ export default {
         /**
          * 获取会话基本信息
          * @param dialog_id
+         * @param old_id
          */
-        getDialogBase(dialog_id) {
+        getDialogBase(dialog_id, old_id = null) {
+            if (old_id) {
+                const ens = []
+                const ids = this.allMsgs.filter(item => item.read_at === null && item.userid != this.userId).map(item => item.id)
+                const enters = this.$refs.scroller?.$el.querySelectorAll('.item-enter') || []
+                for (const enter of enters) {
+                    const id = $A.runNum(enter.querySelector(".dialog-view")?.getAttribute('data-id'));
+                    if (id && !ids.includes(id)) {
+                        ids.push(id)
+                    }
+                }
+                this.waitUnreadData[old_id] = $A.getLastSameElements(ids, ens)
+            }
+
             if (!dialog_id) {
                 return
             }
@@ -1473,9 +1488,19 @@ export default {
                 dialog_id,
                 msg_id: this.msgId,
                 msg_type: this.msgType,
-            }).then(_ => {
+            }).then(({data}) => {
                 this.openId = dialog_id
                 this.msgPrepared = true
+                //
+                if (this.dialogId !== dialog_id) {
+                    let unreadIds = this.waitUnreadData[dialog_id] || []
+                    if (unreadIds.length > 0) {
+                        const ids = [...data.list.map(item => item.id)].reverse();
+                        $A.getLastSameElements(unreadIds, ids).forEach(id => {
+                            this.$store.dispatch("dialogMsgRead", {id, dialog_id})
+                        })
+                    }
+                }
                 //
                 setTimeout(_ => {
                     this.onSearchMsgId()

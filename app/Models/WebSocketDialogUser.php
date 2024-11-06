@@ -47,6 +47,8 @@ use Carbon\Carbon;
  */
 class WebSocketDialogUser extends AbstractModel
 {
+    protected $dateFormat = 'Y-m-d H:i:s.u';
+
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */

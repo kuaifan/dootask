@@ -230,7 +230,7 @@ class WebSocketDialog extends AbstractModel
         }
         // 会员数据处理
         if (isset($data['user_at']) && !isset($data['user_ms'])) {
-            $time = Carbon::parse($fields['user_at']);
+            $time = Carbon::parse($data['user_at']);
             $data['user_at'] = $time->toDateTimeString('millisecond');
             $data['user_ms'] = $time->valueOf();
         }

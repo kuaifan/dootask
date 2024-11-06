@@ -675,7 +675,7 @@ export default {
 
         columnList() {
             const {projectId, cacheColumns, allTask} = this;
-            const list = cacheColumns.filter(({project_id}) => {
+            const list = $A.cloneJSON(cacheColumns).filter(({project_id}) => {
                 return project_id == projectId
             }).sort((a, b) => {
                 if (a.sort != b.sort) {
