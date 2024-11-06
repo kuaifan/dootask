@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.39.64]
+## [0.39.66]
 
 ### Bug Fixes
 
@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Performance
 
+- 图片浏览
 - 优化会话搜索
 - 优化国际化语言
 - 优化消息已读逻辑
