@@ -70,7 +70,7 @@
                     <TimelineItem :key="key" v-if="item.type == 'starter'" color="green">
                         <p class="timeline-title">{{$L('提交')}}</p>
                         <div class="timeline-body">
-                            <div class="approve-process-avatar" @click="onAvatar(data.start_user_id)">
+                            <div class="approve-process-avatar" @click="onAvatar(data.start_user_id || datas.start_user_id)">
                                 <Avatar :src="data.userimg || datas.userimg" size="38"/>
                             </div>
                             <div class="approve-process-left">
@@ -91,7 +91,7 @@
                         :color="item.identitylink ? (item.identitylink?.state > 1 ? '#f03f3f' :'green') : '#ccc'">
                         <p class="timeline-title">{{$L('审批')}}</p>
                         <div class="timeline-body">
-                            <div class="approve-process-avatar" @click="onAvatar(item.node_user_list && item.node_user_list[0]?.target_id)">
+                            <div class="approve-process-avatar" @click="onAvatar(item.node_user_list && item.node_user_list[0]?.target_id || item.aprover_id)">
                                 <Avatar :src="(item.node_user_list && item.node_user_list[0]?.userimg) || item.userimg" size="38"/>
                             </div>
                             <div class="approve-process-left">
@@ -517,6 +517,9 @@ export default {
                 return
             }
             this.$store.dispatch("openDialogUserid", userid).then(_ => {
+                if (this.$parent.$options.name === "DrawerOverlayView") {
+                    this.$parent.onClose()
+                }
                 this.goForward({name: 'manage-messenger'})
             }).catch(({msg}) => {
                 $A.modalError(msg)
