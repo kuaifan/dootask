@@ -164,12 +164,17 @@ class DialogController extends AbstractController
         // 搜索消息会话
         if (count($list) < 20) {
             $prefix = DB::getTablePrefix();
+            if (preg_match('/[+\-><()~*"@]/', $key)) {
+                $against = "\"{$key}\"";
+            } else {
+                $against = "*{$key}*";
+            }
             $msgs = DB::table('web_socket_dialog_users as u')
                 ->select(['d.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at', 'm.id as search_msg_id'])
                 ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
                 ->join('web_socket_dialog_msgs as m', 'm.dialog_id', '=', 'd.id')
                 ->where('u.userid', $user->userid)
-                ->whereRaw("MATCH({$prefix}m.key) AGAINST('*{$key}*' IN BOOLEAN MODE)")
+                ->whereRaw("MATCH({$prefix}m.key) AGAINST('{$against}' IN BOOLEAN MODE)")
                 ->orderByDesc('m.id')
                 ->take(20 - count($list))
                 ->get()
