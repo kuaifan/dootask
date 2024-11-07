@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.39.73]
+
+### Bug Fixes
+
+- 无法打开项目的情况
+- 搜索特殊字符报错的情况
+
+### Performance
+
+- 优化从审批点击头像发起会话
+
 ## [0.39.66]
 
 ### Bug Fixes
