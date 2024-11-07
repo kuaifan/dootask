@@ -970,16 +970,14 @@ export default {
     },
 
     /**
-     * 获取定位（App）
+     * 打开地图选位置（App）
      * @param dispatch
-     * @param objects
+     * @param objects {{key: string, point: string}}
      * @returns {Promise<unknown>}
      */
     openAppMapPage({dispatch}, objects) {
         return new Promise(resolve => {
             const params = {
-                // key: "xxxxxx",
-                // point: "116.404,39.925",
                 title: $A.L("签到地点"),
                 label: $A.L("选择附近地点"),
                 placeholder: $A.L("搜索地点"),
@@ -988,7 +986,7 @@ export default {
                 selectclose: "true",
                 channel: $A.randomString(6)
             }
-            const url = $A.urlAddParams($A.eeuiAppRewriteUrl('../public/tools/map/index.html'), Object.assign(params, objects))
+            const url = $A.urlAddParams($A.mainUrl("tools/map/index.html"), Object.assign(params, objects))
             dispatch('openAppChildPage', {
                 pageType: 'app',
                 pageTitle: params.title,

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title></title>
+    <!-- 百度地图API -->
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="container">
+    <div class="search-box">
+        <div class="search-input-wrapper">
+            <svg class="search-icon" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+                <path d="M950.784 899.584l-168.448-167.936c64.512-74.752 99.84-168.96 99.84-268.8 0-110.08-43.008-212.992-120.32-290.816S581.12 51.2 471.552 51.2c-110.08 0-212.992 43.008-290.816 120.32-77.824 77.824-120.832 181.248-120.832 291.328s43.008 212.992 120.32 290.816c77.824 77.824 181.248 120.32 290.816 120.32 90.624 0 177.152-29.184 248.32-82.944l169.984 169.984c8.192 8.192 19.456 12.8 30.72 12.8s22.016-4.096 30.72-12.8c16.896-16.896 16.896-44.544 0-61.44zM146.432 462.848C146.432 283.648 292.352 138.24 471.04 138.24c179.2 0 324.608 145.92 324.608 324.608 0 179.2-145.408 324.608-324.608 324.608s-324.608-145.92-324.608-324.608z" fill="#646A73"></path>
+            </svg>
+            <input type="text" id="search-input" placeholder="" enterkeyhint="search">
+        </div>
+    </div>
+    <div id="map-container"></div>
+    <div id="address-list" class="address-list">
+        <h3 id="address-label"></h3>
+        <ul id="poi-list"></ul>
+    </div>
+    <div class="loading">
+        <div class="loading-spinner"></div>
+    </div>
+</div>
+<script src="./main.js"></script>
+</body>
+</html>
