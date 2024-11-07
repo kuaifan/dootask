@@ -91,7 +91,8 @@ class WebSocketDialog extends AbstractModel
         $builder = DB::table('web_socket_dialog_users as u')
             ->select(['d.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
             ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
-            ->where('u.userid', $userid);
+            ->where('u.userid', $userid)
+            ->whereNull('d.deleted_at');
         if ($updated) {
             $builder->where('u.updated_at', '>', $updated);
         }
@@ -130,6 +131,7 @@ class WebSocketDialog extends AbstractModel
                 ->join('web_socket_dialog_msg_reads as r', 'd.id', '=', 'r.dialog_id')
                 ->where('u.userid', $userid)
                 ->where('u.last_at', '<', $unreadAt)
+                ->whereNull('d.deleted_at')
                 ->where('r.userid', $userid)
                 ->where('r.read_at')
                 ->groupBy('u.dialog_id')
@@ -148,6 +150,7 @@ class WebSocketDialog extends AbstractModel
                 ->where('u.userid', $userid)
                 ->where('u.mark_unread', 1)
                 ->where('u.last_at', '<', $unreadAt)
+                ->whereNull('d.deleted_at')
                 ->take(20)
                 ->get();
             $list->transform(function ($item) use ($userid, &$ids, &$array) {
@@ -165,6 +168,7 @@ class WebSocketDialog extends AbstractModel
                 ->join('web_socket_dialog_msg_todos as t', 'd.id', '=', 't.dialog_id')
                 ->where('u.userid', $userid)
                 ->where('u.last_at', '<', $todoAt)
+                ->whereNull('d.deleted_at')
                 ->where('t.userid', $userid)
                 ->where('t.done_at')
                 ->groupBy('u.dialog_id')

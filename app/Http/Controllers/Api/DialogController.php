@@ -117,6 +117,7 @@ class DialogController extends AbstractController
             ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
             ->where('u.userid', $user->userid)
             ->where('d.name', 'LIKE', "%{$key}%")
+            ->whereNull('d.deleted_at')
             ->orderByDesc('u.top_at')
             ->orderByDesc('u.last_at')
             ->take(20)
@@ -174,6 +175,7 @@ class DialogController extends AbstractController
                 ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
                 ->join('web_socket_dialog_msgs as m', 'm.dialog_id', '=', 'd.id')
                 ->where('u.userid', $user->userid)
+                ->whereNull('d.deleted_at')
                 ->whereRaw("MATCH({$prefix}m.key) AGAINST('{$against}' IN BOOLEAN MODE)")
                 ->orderByDesc('m.id')
                 ->take(20 - count($list))
@@ -209,6 +211,7 @@ class DialogController extends AbstractController
             ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
             ->join('web_socket_dialog_msgs as m', 'm.dialog_id', '=', 'd.id')
             ->where('u.userid', $user->userid)
+            ->whereNull('d.deleted_at')
             ->where('m.tag', '>', 0)
             ->orderByDesc('m.id')
             ->take(50)
@@ -246,6 +249,7 @@ class DialogController extends AbstractController
             ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
             ->where('u.userid', $user->userid)
             ->where('d.id', $dialog_id)
+            ->whereNull('d.deleted_at')
             ->first();
         return Base::retSuccess('success', WebSocketDialog::synthesizeData($item, $user->userid));
     }

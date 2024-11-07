@@ -322,6 +322,7 @@ class BotReceiveMsgTask extends AbstractTask
                             ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
                             ->where('u.userid', $data->userid)
                             ->where('d.name', 'LIKE', "%{$nameKey}%")
+                            ->whereNull('d.deleted_at')
                             ->orderByDesc('u.top_at')
                             ->orderByDesc('u.last_at')
                             ->take(20)
