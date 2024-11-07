@@ -71,7 +71,13 @@
         // 打开app新页面
         eeuiAppOpenPage(object, callback) {
             if (!$A.isEEUiApp) return;
-            if (typeof callback !== "function") callback = _ => {};
+            if (typeof callback !== "function") {
+                callback = _ => {};
+            }
+            if (typeof object.callback === "function") {
+                callback = object.callback;
+                delete object.callback
+            }
             $A.eeuiModule("eeui").then(obj => {
                 obj.openPage(object, callback);
             })
@@ -182,10 +188,22 @@
             $A.eeuiModuleSync("eeui").setVariate(key, value);
         },
 
+        // 获取全局变量
+        eeuiAppGetVariate(key, defaultVal = "") {
+            if (!$A.isEEUiApp) return;
+            return $A.eeuiModuleSync("eeui").getVariate(key, defaultVal);
+        },
+
         // 设置缓存数据
         eeuiAppSetCachesString(key, value, expired = 0) {
             if (!$A.isEEUiApp) return;
             $A.eeuiModuleSync("eeui").setCachesString(key, value, expired);
+        },
+
+        // 获取缓存数据
+        eeuiAppGetCachesString(key, defaultVal = "") {
+            if (!$A.isEEUiApp) return;
+            return $A.eeuiModuleSync("eeui").getCachesString(key, defaultVal);
         },
 
         // 长按内容震动（仅支持android、iOS无效）

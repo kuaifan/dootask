@@ -970,6 +970,45 @@ export default {
     },
 
     /**
+     * 获取定位（App）
+     * @param dispatch
+     * @param objects
+     * @returns {Promise<unknown>}
+     */
+    openAppMapPage({dispatch}, objects) {
+        return new Promise(resolve => {
+            const params = {
+                // key: "xxxxxx",
+                // point: "116.404,39.925",
+                title: $A.L("签到地点"),
+                label: $A.L("选择附近地点"),
+                placeholder: $A.L("搜索地点"),
+                noresult: $A.L("附近没有找到地点"),
+                errtip: $A.L("定位失败"),
+                selectclose: "true",
+                channel: $A.randomString(6)
+            }
+            const url = $A.urlAddParams($A.eeuiAppRewriteUrl('../public/tools/map/index.html'), Object.assign(params, objects))
+            dispatch('openAppChildPage', {
+                pageType: 'app',
+                pageTitle: params.title,
+                url: 'web.js',
+                params: {
+                    titleFixed: true,
+                    allowAccess: true,
+                    url
+                },
+                callback: ({status}) => {
+                    if (status === 'destroy') {
+                        const data = $A.jsonParse($A.eeuiAppGetVariate(`location::${params.channel}`));
+                        resolve(data);
+                    }
+                }
+            })
+        })
+    },
+
+    /**
      * 打开子窗口（客户端）
      * @param dispatch
      * @param params
