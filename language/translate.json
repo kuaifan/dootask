@@ -25966,5 +25966,65 @@
         "fr": "Citation inspirante : (%T1)",
         "id": "Kata Bijak: (%T1)",
         "ru": "Душеподъемная цитата: (%T1)"
+    },
+    {
+        "key": "签到地点",
+        "zh": "",
+        "zh-CHT": "簽到地點",
+        "en": "Check-in Location",
+        "ko": "출석 장소",
+        "ja": "チェックイン場所",
+        "de": "Eingetragener Ort",
+        "fr": "Lieu d'enregistrement",
+        "id": "Lokasi Check-in",
+        "ru": "Место регистрации"
+    },
+    {
+        "key": "选择附近地点",
+        "zh": "",
+        "zh-CHT": "選擇附近地點",
+        "en": "Select Nearby Location",
+        "ko": "근처 위치 선택",
+        "ja": "近くの場所を選択",
+        "de": "In der Nähe befindlichen Ort auswählen",
+        "fr": "Sélectionner un lieu à proximité",
+        "id": "Pilih Lokasi Terdekat",
+        "ru": "Выберите близлежащее место"
+    },
+    {
+        "key": "搜索地点",
+        "zh": "",
+        "zh-CHT": "搜尋地點",
+        "en": "Search Location",
+        "ko": "장소 검색",
+        "ja": "場所を検索",
+        "de": "Ort suchen",
+        "fr": "Rechercher un lieu",
+        "id": "Cari Lokasi",
+        "ru": "Поиск места"
+    },
+    {
+        "key": "附近没有找到地点",
+        "zh": "",
+        "zh-CHT": "附近沒有找到地點",
+        "en": "No Nearby Location Found",
+        "ko": "근처에 위치 없음",
+        "ja": "近くに場所が見つかりません",
+        "de": "Kein Ort in der Nähe gefunden",
+        "fr": "Aucun lieu à proximité trouvé",
+        "id": "Tidak Ditemukan Lokasi Terdekat",
+        "ru": "Рядом не найдено мест"
+    },
+    {
+        "key": "定位失败",
+        "zh": "",
+        "zh-CHT": "定位失敗",
+        "en": "Location Failed",
+        "ko": "위치 실패",
+        "ja": "位置特定失敗",
+        "de": "Standortfehler",
+        "fr": "Échec de localisation",
+        "id": "Lokasi Gagal",
+        "ru": "Не удалось определить местоположение"
     }
 ]
