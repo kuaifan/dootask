@@ -1377,7 +1377,7 @@ class DialogController extends AbstractController
      * @apiParam {Number} lat                   纬度
      * @apiParam {String} title                 位置名称
      * @apiParam {String} [address]             位置地址
-     * @apiParam {String} [preview]             预览图片（url）
+     * @apiParam {String} [thumb]               预览图片（url）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1393,7 +1393,7 @@ class DialogController extends AbstractController
         $lat = floatval(Request::input('lat'));
         $title = trim(Request::input('title'));
         $address = trim(Request::input('address'));
-        $preview = trim(Request::input('preview'));
+        $thumb = trim(Request::input('thumb'));
         //
         if (empty($lng) || $lng < -180 || $lng > 180
             || empty($lat) || $lat < -90 || $lat > 90) {
@@ -1412,7 +1412,7 @@ class DialogController extends AbstractController
                 'lat' => $lat,
                 'title' => $title,
                 'address' => $address,
-                'preview' => $preview,
+                'thumb' => $thumb,
             ];
             return WebSocketDialogMsg::sendMsg(null, $dialog_id, 'location', $msgData, $user->userid);
         }

@@ -406,6 +406,8 @@ import {MarkdownPreview} from "../store/markdown";
                     return `[${$A.L('接龙')}]` + $A.getMsgTextPreview(data.msg, imgClassName)
                 case 'record':
                     return `[${$A.L('语音')}]`
+                case 'location':
+                    return `[${$A.L('位置')}] ${$A.cutString(data.msg.title, 50)}`
                 case 'meeting':
                     return `[${$A.L('会议')}] ${$A.cutString(data.msg.name, 50)}`
                 case 'file':
@@ -1020,15 +1022,15 @@ import {MarkdownPreview} from "../store/markdown";
                         will-change: transform;
                     }
 
-                    [style*="background:url"] *,
-                    [style*="background-image:url"] *,
-                    [style*="background: url"] *,
-                    [style*="background-image: url"] *,
                     input,
-                    [background] *,
                     .no-dark-content img,
                     .no-dark-content canvas,
-                    .no-dark-content svg image {
+                    .no-dark-content svg image,
+                    .no-dark-content [style*="background:url"],
+                    .no-dark-content [style*="background-image:url"],
+                    .no-dark-content [style*="background: url"],
+                    .no-dark-content [style*="background-image: url"],
+                    .no-dark-content [background] {
                         ${this.utils.noneFilter()}
                     }
 

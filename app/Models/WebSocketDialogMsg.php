@@ -167,6 +167,10 @@ class WebSocketDialogMsg extends AbstractModel
                 }
                 break;
 
+            case 'location':
+                $msg['thumb'] = Base::fillUrl($msg['thumb'] ?: "images/other/location.jpg");
+                break;
+
             case 'template':
                 if ($msg['data']['thumb']) {
                     $msg['data']['thumb']['url'] = Base::fillUrl($msg['data']['thumb']['url']);
@@ -582,6 +586,10 @@ class WebSocketDialogMsg extends AbstractModel
                 $action = Doo::translate("语音");
                 return "[{$action}]";
 
+            case 'location':
+                $action = Doo::translate("位置");
+                return "[{$action}] " . Base::cutStr($data['msg']['title'], 50);
+
             case 'meeting':
                 $action = Doo::translate("会议");
                 return "[{$action}] " . Base::cutStr($data['msg']['name'], 50);
@@ -996,17 +1004,21 @@ class WebSocketDialogMsg extends AbstractModel
                 $mtype = 'image';
             }
         } elseif ($type === 'location') {
-            if (preg_match('/^https*:\/\//', $msg['preview'])) {
-                $preview = file_get_contents($msg['preview']);
-                if (empty($preview)) {
+            if (preg_match('/^https*:\/\//', $msg['thumb'])) {
+                $thumb = file_get_contents($msg['thumb']);
+                if (empty($thumb)) {
                     throw new ApiException('获取地图快照失败');
                 }
-                $filePath = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/" . md5s($msg['preview']) . ".jpg";
-                Base::makeDir(dirname(public_path($filePath)));
-                if (!Base::saveContentImage(public_path($filePath), $preview, 90)) {
+                $fileUrl = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/" . md5s($msg['thumb']) . ".jpg";
+                $filePath = public_path($fileUrl);
+                Base::makeDir(dirname($filePath));
+                if (!Base::saveContentImage($filePath, $thumb, 90)) {
                     throw new ApiException('保存地图快照失败');
                 }
-                $msg['preview'] = $filePath;
+                $imageSize = getimagesize($filePath);
+                $msg['thumb'] = $fileUrl;
+                $msg['width'] = $imageSize[0];
+                $msg['height'] = $imageSize[1];
             }
         }
         if ($push_silence === null) {

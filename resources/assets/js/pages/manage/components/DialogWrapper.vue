@@ -1767,13 +1767,14 @@ export default {
                         $A.modalError(`你选择的位置「${data.title}」不在签到范围内`)
                         return
                     }
-                    const preview = $A.urlAddParams('https://api.map.baidu.com/staticimage/v2', {
+                    const thumb = $A.urlAddParams('https://api.map.baidu.com/staticimage/v2', {
                         ak: item.config.key,
                         center: `${item.config.lng},${item.config.lat}`,
+                        markers: `${item.config.lng},${item.config.lat}`,
                         width: 800,
                         height: 480,
-                        zoom: 17,
-                        copyright: 1
+                        zoom: 19,
+                        copyright: 1,
                     })
                     this.sendLocationMsg({
                         type: 'bd',
@@ -1781,7 +1782,7 @@ export default {
                         lat: data.point.lat,
                         title: data.title,
                         address: data.address || '',
-                        preview
+                        thumb
                     })
                 })
                 return;

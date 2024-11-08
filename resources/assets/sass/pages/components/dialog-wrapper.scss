@@ -1098,6 +1098,42 @@
                             }
                         }
 
+                        .content-location {
+                            display: flex;
+                            flex-direction: column;
+                            align-items: flex-start;
+                            color: $primary-title-color;
+                            width: 260px;
+                            max-width: 100%;
+                            .location-title {
+                                width: 100%;
+                                font-size: 14px;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                white-space: nowrap;
+                            }
+                            .location-address {
+                                width: 100%;
+                                font-size: 12px;
+                                opacity: 0.6;
+                                word-break: break-all;
+                                text-overflow: ellipsis;
+                                overflow: hidden;
+                                display: -webkit-box;
+                                -webkit-line-clamp: 2;
+                                -webkit-box-orient: vertical;
+                            }
+                            .location-preview {
+                                width: calc(100% + 16px);
+                                height: 110px;
+                                margin: 4px -8px -8px;
+                                border-radius: 0 0 6px 6px;
+                                background-repeat: no-repeat;
+                                background-size: cover;
+                                background-position: center;
+                            }
+                        }
+
                         .content-meeting {
                             padding: 4px 6px;
                             color: $primary-title-color;
@@ -1720,6 +1756,10 @@
                                         transform: rotate(0) scale(0.9);
                                     }
                                 }
+                            }
+
+                            .content-location {
+                                color: #ffffff;
                             }
 
                             .content-meeting {
@@ -2572,6 +2612,7 @@ body.window-portrait {
             .dialog-item {
                 .dialog-view {
                     &.text,
+                    &.location,
                     &.template {
                         max-width: calc(100% - 80px);
                     }

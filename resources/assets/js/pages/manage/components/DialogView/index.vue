@@ -31,6 +31,8 @@
                 <FileMsg v-else-if="msgData.type === 'file'" :msg="msgData.msg" @viewFile="viewFile" @downFile="downFile"/>
                 <!--录音-->
                 <RecordMsg v-else-if="msgData.type === 'record'" :msgId="msgData.id" :msg="msgData.msg" @playRecord="playRecord"/>
+                <!--位置-->
+                <LocationMsg v-else-if="msgData.type === 'location'" :msg="msgData.msg"/>
                 <!--会议-->
                 <MeetingMsg v-else-if="msgData.type === 'meeting'" :msg="msgData.msg" @openMeeting="openMeeting"/>
                 <!--接龙-->
@@ -178,6 +180,7 @@ import longpress from "../../../../directives/longpress";
 import TextMsg from "./text.vue";
 import FileMsg from "./file.vue";
 import RecordMsg from "./record.vue";
+import LocationMsg from "./location.vue";
 import MeetingMsg from "./meet.vue";
 import WordChainMsg from "./word-chain.vue";
 import VoteMsg from "./vote.vue";
@@ -194,6 +197,7 @@ export default {
         VoteMsg,
         WordChainMsg,
         MeetingMsg,
+        LocationMsg,
         RecordMsg,
         TextMsg,
         FileMsg,
