@@ -294,7 +294,7 @@ class Doo
      * @param string|false $lang
      * @return string|string[]
      */
-    public static function getLanguages(bool $lang = false)
+    public static function getLanguages($lang = false)
     {
         $array = [
             "zh" => "简体中文",
