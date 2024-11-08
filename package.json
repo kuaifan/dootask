@@ -24,6 +24,7 @@
         "@traptitech/markdown-it-katex": "^3.6.0",
         "autoprefixer": "^10.4.13",
         "axios": "^0.24.0",
+        "chokidar": "^4.0.1",
         "codemirror": "^5.65.16",
         "cross-env": "^7.0.3",
         "css-loader": "^6.7.2",
