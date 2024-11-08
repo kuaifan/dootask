@@ -408,7 +408,7 @@ class IndexController extends InvokeController
                 ], 'inline');
             }
             // EEUI App 直接在线预览查看
-            if (str_contains($userAgent, 'eeui') && Base::judgeClientVersion("0.34.47")) {
+            if (Base::isEEUIApp() && Base::judgeClientVersion("0.34.47")) {
                 if ($browser === 'safari-mobile') {
                     $redirectUrl = Base::fillUrl($path);
                     return <<<EOF

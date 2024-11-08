@@ -1363,6 +1363,63 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {post} api/dialog/msg/sendlocation          24. 发送位置消息
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__sendlocation
+     *
+     * @apiParam {Number} dialog_id             对话ID
+     * @apiParam {String} type                  位置类型
+     * - bd: 百度地图
+     * @apiParam {Number} lng                   经度
+     * @apiParam {Number} lat                   纬度
+     * @apiParam {String} title                 位置名称
+     * @apiParam {String} [address]             位置地址
+     * @apiParam {String} [preview]             预览图片（url）
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__sendlocation()
+    {
+        $user = User::auth();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        $type = strtolower(trim(Request::input('type')));
+        $lng = floatval(Request::input('lng'));
+        $lat = floatval(Request::input('lat'));
+        $title = trim(Request::input('title'));
+        $address = trim(Request::input('address'));
+        $preview = trim(Request::input('preview'));
+        //
+        if (empty($lng) || $lng < -180 || $lng > 180
+            || empty($lat) || $lat < -90 || $lat > 90) {
+            return Base::retError('经纬度错误');
+        }
+        if (empty($title)) {
+            return Base::retError('位置名称不能为空');
+        }
+        //
+        WebSocketDialog::checkDialog($dialog_id);
+        //
+        if ($type == 'bd') {
+            $msgData = [
+                'type' => $type,
+                'lng' => $lng,
+                'lat' => $lat,
+                'title' => $title,
+                'address' => $address,
+                'preview' => $preview,
+            ];
+            return WebSocketDialogMsg::sendMsg(null, $dialog_id, 'location', $msgData, $user->userid);
+        }
+        return Base::retError('位置类型错误');
+    }
+
+    /**
      * @api {get} api/dialog/msg/readlist          27. 获取消息阅读情况
      *
      * @apiDescription 需要token身份

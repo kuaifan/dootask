@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        html.theme-dark {
+            -webkit-filter: invert(100%) hue-rotate(180deg) contrast(90%) !important;
+            filter: invert(100%) hue-rotate(180deg) contrast(90%) !important;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+            font-size: 14px;
+            color: #303133;
+        }
+
+        #map-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+    </style>
+    <script>
+        class Pickup {
+            constructor(containerId) {
+                this.containerId = containerId;
+                this.map = null;
+                this.circle = null;
+                this.marker = null;
+                this.centerPoint = null;
+                this.isFirstClick = true;
+                this.params = {
+                    theme: 'light',     // 主题风格，light|dark
+                    key: null,          // 百度地图 API Key
+                    point: null,        // 初始坐标，如：116.404,39.915
+                    radius: 300,        // 圆形半径
+                    zoom: 16,           // 地图缩放级别
+                }
+                this.init();
+            }
+
+            async init() {
+                // 先初始化参数
+                this.initParams();
+
+                // 如果没有 key，直接返回
+                if (!this.params.key) {
+                    console.error('未提供百度地图 API Key');
+                    return;
+                }
+
+                try {
+                    // 等待地图 JS 加载完成
+                    await this.loadMapScript();
+                    // 初始化地图
+                    this.initMap();
+                } catch (error) {
+                    console.error('加载百度地图失败：', error);
+                }
+            }
+
+            initParams() {
+                // 获取当前URL的查询参数
+                const urlParams = new URLSearchParams(window.location.search);
+
+                // 遍历 params 对象的所有属性
+                Object.keys(this.params).forEach(key => {
+                    // 从 URL 参数中获取值
+                    const value = urlParams.get(key);
+                    if (value !== null) {
+                        // 根据参数类型进行转换
+                        switch (key) {
+                            case 'radius':
+                                // 转换为数字
+                                this.params[key] = parseInt(value) || 300;
+                                break;
+                            case 'point':
+                                // 转换为坐标数组
+                                const [lng, lat] = value.replace(/[|-]/, ',').split(',').map(parseFloat);
+                                if (lng && lat) {
+                                    this.params[key] = {lng, lat};
+                                }
+                                break;
+                            default:
+                                // 字符串类型直接赋值
+                                this.params[key] = value;
+                        }
+                    }
+                });
+
+                // 设置主题风格
+                if (!['dark', 'light'].includes(this.params.theme)) {
+                    this.params.theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                }
+                document.documentElement.classList.add(`theme-${this.params.theme}`);
+                document.body.style.backgroundColor = "#ffffff";
+            }
+
+            // 初始化地图
+            initMap() {
+                this.map = new BMap.Map(this.containerId, {
+                    enableMapClick: false
+                });
+
+                if (this.params.point) {
+                    this.centerPoint = new BMap.Point(this.params.point.lng, this.params.point.lat);
+                    this.handleMapClick({point: this.centerPoint});
+                } else {
+                    this.centerPoint = new BMap.Point(116.404, 39.915);
+                }
+                this.map.centerAndZoom(this.centerPoint, 15);
+
+                this.initMapControls();
+                this.bindEvents();
+            }
+
+            initMapControls() {
+                this.map.enableScrollWheelZoom();
+                this.map.enableDragging();
+                this.map.addControl(new BMap.NavigationControl());
+                this.map.addControl(new BMap.ScaleControl());
+            }
+
+            bindEvents() {
+                this.map.addEventListener("click", (e) => this.handleMapClick(e));
+            }
+
+            handleMapClick(e) {
+                this.centerPoint = e.point;
+
+                if (this.isFirstClick) {
+                    this.createMarkerAndCircle();
+                    this.isFirstClick = false;
+                } else {
+                    this.params.radius = this.circle.getRadius();
+                    this.updateMarkerAndCircle();
+                }
+
+                this.updateInfoPanel();
+            }
+
+            createMarkerAndCircle() {
+                this.createMarker();
+                this.createCircle();
+            }
+
+            createMarker() {
+                this.marker = new BMap.Marker(this.centerPoint, {
+                    enableClicking: false
+                });
+                this.map.addOverlay(this.marker);
+            }
+
+            createCircle() {
+                this.circle = new BMap.Circle(this.centerPoint, this.params.radius, {
+                    strokeColor: "#FF0000",
+                    strokeWeight: 2,
+                    strokeOpacity: 0.5,
+                    fillColor: "#FF0000",
+                    fillOpacity: 0.2,
+                    enableClicking: false
+                });
+
+                this.map.addOverlay(this.circle);
+                this.circle.enableEditing();
+
+                this.circle.addEventListener("lineupdate", () => {
+                    this.centerPoint = this.circle.getCenter();
+                    this.marker?.setPosition(this.centerPoint);
+                    this.params.radius = this.circle.getRadius();
+                    this.updateInfoPanel();
+                });
+            }
+
+            updateMarkerAndCircle() {
+                this.map.removeOverlay(this.marker);
+                this.map.removeOverlay(this.circle);
+
+                this.createMarker();
+                this.createCircle();
+            }
+
+            updateInfoPanel() {
+                const data = {
+                    longitude: this.centerPoint.lng.toFixed(6),
+                    latitude: this.centerPoint.lat.toFixed(6),
+                    radius: this.circle ? this.circle.getRadius().toFixed(0) : '-'
+                }
+                window.parent.postMessage(Object.assign(data, {
+                    action: "bd_lbs_select_point",
+                }), "*");
+            }
+
+            // 获取当前选择的数据
+            getData() {
+                if (!this.circle) return null;
+
+                return {
+                    center: {
+                        lng: this.centerPoint.lng,
+                        lat: this.centerPoint.lat
+                    },
+                    radius: this.circle.getRadius()
+                };
+            }
+
+            // 设置中心点和半径
+            setData(lng, lat, radius) {
+                this.centerPoint = new BMap.Point(lng, lat);
+                this.params.radius = radius || this.params.radius;
+
+                if (this.isFirstClick) {
+                    this.createMarkerAndCircle();
+                    this.isFirstClick = false;
+                } else {
+                    this.updateMarkerAndCircle();
+                }
+
+                this.updateInfoPanel();
+                this.map.panTo(this.centerPoint);
+            }
+
+            loadMapScript() {
+                return new Promise((resolve, reject) => {
+                    // 如果已经加载过，直接返回
+                    if (window.BMap) {
+                        resolve();
+                        return;
+                    }
+
+                    // 创建script标签
+                    const script = document.createElement('script');
+                    script.type = 'text/javascript';
+                    script.src = `https://api.map.baidu.com/api?v=3.0&ak=${this.params.key}&callback=initBaiduMap`;
+
+                    // 添加回调函数
+                    window.initBaiduMap = () => {
+                        resolve();
+                        delete window.initBaiduMap;
+                    };
+
+                    // 处理加载错误
+                    script.onerror = () => {
+                        reject(new Error('百度地图脚本加载失败'));
+                    };
+
+                    // 添加到页面
+                    document.body.appendChild(script);
+                });
+            }
+        }
+
+        // 页面加载完成后初始化
+        window.onload = function () {
+            window.pickup = new Pickup("map-container");
+        };
+    </script>
+</head>
+<body>
+<div id="map-container"></div>
+</body>
+</html>

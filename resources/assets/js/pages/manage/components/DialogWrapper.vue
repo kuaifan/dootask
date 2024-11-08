@@ -1723,10 +1723,69 @@ export default {
         },
 
         /**
+         * 发送位置消息
+         * @param data
+         */
+        sendLocationMsg(data) {
+            this.$store.dispatch("call", {
+                url: 'dialog/msg/sendlocation',
+                data: Object.assign(data, {
+                    dialog_id: this.dialogId,
+                }),
+                spinner: true,
+                method: 'post',
+            }).then(({data}) => {
+                this.sendSuccess(data)
+            }).catch(({msg}) => {
+                $A.modalConfirm({
+                    icon: 'error',
+                    title: '发送失败',
+                    content: msg,
+                    cancelText: '取消发送',
+                    okText: '重新发送',
+                    onOk: _ => {
+                        this.sendLocationMsg(data)
+                    },
+                })
+            });
+        },
+
+        /**
          * 发送快捷消息
          * @param item
          */
         sendQuick(item) {
+            if (item.key === "locat-checkin") {
+                this.$store.dispatch('openAppMapPage', {
+                    key: item.config.key,
+                    point: `${item.config.lng},${item.config.lat}`,
+                }).then(data => {
+                    if (!$A.isJson(data)) {
+                        return
+                    }
+                    if (data.distance > item.config.radius) {
+                        $A.modalError(`你选择的位置「${data.title}」不在签到范围内`)
+                        return
+                    }
+                    const preview = $A.urlAddParams('https://api.map.baidu.com/staticimage/v2', {
+                        ak: item.config.key,
+                        center: `${item.config.lng},${item.config.lat}`,
+                        width: 800,
+                        height: 480,
+                        zoom: 17,
+                        copyright: 1
+                    })
+                    this.sendLocationMsg({
+                        type: 'bd',
+                        lng: data.point.lng,
+                        lat: data.point.lat,
+                        title: data.title,
+                        address: data.address || '',
+                        preview
+                    })
+                })
+                return;
+            }
             this.sendMsg(`<p><span data-quick-key="${item.key}">${item.label}</span></p>`)
         },
 

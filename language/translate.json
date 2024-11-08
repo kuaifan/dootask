@@ -22968,18 +22968,6 @@
         "ru": "Я хочу зарегистрироваться"
     },
     {
-        "key": "我要打卡",
-        "zh": "",
-        "zh-CHT": "我要打卡",
-        "en": "I want to clock in",
-        "ko": "출근하고 싶습니다",
-        "ja": "出勤したい",
-        "de": "Ich möchte einstempeln",
-        "fr": "Je veux pointer",
-        "id": "Saya ingin absen",
-        "ru": "Я хочу отметиться"
-    },
-    {
         "key": "关键词不能为空",
         "zh": "",
         "zh-CHT": "關鍵詞不能為空",

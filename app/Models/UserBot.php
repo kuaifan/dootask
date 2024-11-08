@@ -91,63 +91,86 @@ class UserBot extends AbstractModel
      */
     public static function quickMsgs($email)
     {
-        return match ($email) {
-            'check-in@bot.system' => [
-                [
-                    'key' => 'checkin',
-                    'label' => Doo::translate('我要打卡')
-                ], /*[
-                    'key' => 'it',
-                    'label' => Doo::translate('IT资讯')
-                ], [
-                    'key' => '36ke',
-                    'label' => Doo::translate('36氪')
-                ], [
-                    'key' => '60s',
-                    'label' => Doo::translate('60s读世界')
-                ], [
-                    'key' => 'joke',
-                    'label' => Doo::translate('开心笑话')
-                ], [
-                    'key' => 'soup',
-                    'label' => Doo::translate('心灵鸡汤')
-                ]*/
-            ],
-            'anon-msg@bot.system' => [
-                [
-                    'key' => 'help',
-                    'label' => Doo::translate('使用说明')
-                ], [
-                    'key' => 'privacy',
-                    'label' => Doo::translate('隐私说明')
-                ],
-            ],
-            'bot-manager@bot.system' => [
-                [
-                    'key' => '/help',
-                    'label' => Doo::translate('帮助指令')
-                ], [
-                    'key' => '/api',
-                    'label' => Doo::translate('API接口文档')
-                ], [
-                    'key' => '/list',
-                    'label' => Doo::translate('我的机器人')
-                ],
-            ],
-            'ai-openai@bot.system',
-            'ai-claude@bot.system',
-            'ai-wenxin@bot.system',
-            'ai-gemini@bot.system',
-            'ai-zhipu@bot.system',
-            'ai-qianwen@bot.system' => [
-                [
-                    'key' => '%3A.clear',
-                    'label' => Doo::translate('清空上下文')
-                ]
-            ],
-            default => [],
-        };
+        switch ($email) {
+            case 'check-in@bot.system':
+                $menu = [
+                    /*[
+                        'key' => 'it',
+                        'label' => Doo::translate('IT资讯')
+                    ], [
+                        'key' => '36ke',
+                        'label' => Doo::translate('36氪')
+                    ], [
+                        'key' => '60s',
+                        'label' => Doo::translate('60s读世界')
+                    ], [
+                        'key' => 'joke',
+                        'label' => Doo::translate('开心笑话')
+                    ], [
+                        'key' => 'soup',
+                        'label' => Doo::translate('心灵鸡汤')
+                    ]*/
+                ];
+                $setting = Base::setting('checkinSetting');
+                if ($setting['open'] !== 'open') {
+                    return $menu;
+                }
+                if (in_array('locat', $setting['modes']) && Base::isEEUIApp()) {
+                    $menu[] = [
+                        'key' => 'locat-checkin',
+                        'label' => $setting['locat_remark'] ?: Doo::translate('定位签到'),
+                        'config' => [
+                            'key' => $setting['locat_bd_lbs_key'],
+                            'lng' => $setting['locat_bd_lbs_point']['lng'],
+                            'lat' => $setting['locat_bd_lbs_point']['lat'],
+                            'radius' => $setting['locat_bd_lbs_point']['radius'],
+                        ]
+                    ];
+                }
+                if (in_array('manual', $setting['modes'])) {
+                    $menu[] = [
+                        'key' => 'manual-checkin',
+                        'label' => $setting['manual_remark'] ?: Doo::translate('手动打卡')
+                    ];
+                }
+                return $menu;
 
+            case 'anon-msg@bot.system':
+                return [
+                    [
+                        'key' => 'help',
+                        'label' => Doo::translate('使用说明')
+                    ], [
+                        'key' => 'privacy',
+                        'label' => Doo::translate('隐私说明')
+                    ],
+                ];
+
+            case 'bot-manager@bot.system':
+                return [
+                    [
+                        'key' => '/help',
+                        'label' => Doo::translate('帮助指令')
+                    ], [
+                        'key' => '/api',
+                        'label' => Doo::translate('API接口文档')
+                    ], [
+                        'key' => '/list',
+                        'label' => Doo::translate('我的机器人')
+                    ],
+                ];
+
+            default:
+                if (preg_match('/^ai-(.*?)@bot.system$/', $email)) {
+                    return [
+                        [
+                            'key' => '%3A.clear',
+                            'label' => Doo::translate('清空上下文')
+                        ]
+                    ];
+                }
+                return [];
+        }
     }
 
     /**
@@ -163,7 +186,7 @@ class UserBot extends AbstractModel
         }
         Cache::put("UserBot::checkinBotQuickMsg:{$userid}", "yes", Carbon::now()->addSecond());
         //
-        if ($command === 'checkin') {
+        if ($command === 'manual-checkin') {
             $setting = Base::setting('checkinSetting');
             if ($setting['open'] !== 'open') {
                 return '暂未开启签到功能。';
@@ -182,7 +205,9 @@ class UserBot extends AbstractModel
 
     /**
      * 签到机器人签到
-     * @param $mac
+     * @param mixed $mac
+     * - 多个使用,分隔
+     * - 支持：mac地址、userid、checkin-userid
      * @param $time
      * @param bool $alreadyTip  签到过是否提示
      * @return string|null 返回string表示错误信息，返回null表示签到成功

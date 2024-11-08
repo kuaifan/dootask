@@ -986,7 +986,7 @@ export default {
                 selectclose: "true",
                 channel: $A.randomString(6)
             }
-            const url = $A.urlAddParams($A.mainUrl("tools/map/index.html"), Object.assign(params, objects))
+            const url = $A.urlAddParams($A.eeuiAppRewriteUrl('../public/tools/map/index.html'), Object.assign(params, objects || {}))
             dispatch('openAppChildPage', {
                 pageType: 'app',
                 pageTitle: params.title,

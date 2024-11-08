@@ -2,6 +2,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    user-select: none;
 }
 
 html.theme-dark {
@@ -67,9 +68,38 @@ body {
     -webkit-user-select: text;
 }
 
+.map-box {
+    position: relative;
+    display: flex;
+    flex: 1;
+}
+
 #map-container {
     flex: 1;
     min-height: 240px;
+}
+
+#map-location {
+    display: none;
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    z-index: 100;
+    background: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+#map-location .icon {
+    width: 24px;
+    height: 24px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .address-list {

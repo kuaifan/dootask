@@ -71,13 +71,13 @@
                             <CheckboxGroup v-model="formData.modes">
                                 <Checkbox label="face">{{$L('人脸签到')}}</Checkbox>
                                 <Checkbox label="auto">{{$L('WiFi签到')}}</Checkbox>
+                                <Checkbox label="locat">{{$L('定位签到')}}</Checkbox>
                                 <Checkbox label="manual">{{$L('手动签到')}}</Checkbox>
-                                <Checkbox v-if="false" label="location">{{$L('定位签到')}}</Checkbox>
                             </CheckboxGroup>
                             <div v-if="formData.modes.includes('face')" class="form-tip">{{$L('人脸签到')}}: {{$L('通过人脸识别机签到')}}</div>
                             <div v-if="formData.modes.includes('auto')" class="form-tip">{{$L('WiFi签到')}}: {{$L('详情看下文安装说明')}}</div>
+                            <div v-if="formData.modes.includes('locat')" class="form-tip">{{$L('定位签到')}}: {{$L('通过在签到打卡机器人发送位置签到')}}</div>
                             <div v-if="formData.modes.includes('manual')" class="form-tip">{{$L('手动签到')}}: {{$L('通过在签到打卡机器人发送指令签到')}}</div>
-                            <div v-if="formData.modes.includes('location')" class="form-tip">{{$L('定位签到')}}: {{$L('通过在签到打卡机器人发送位置签到')}}</div>
                         </FormItem>
                     </template>
                 </div>
@@ -117,6 +117,29 @@
                         </div>
                     </div>
                 </template>
+                <template v-if="formData.modes.includes('locat')">
+                    <div class="block-setting-space"></div>
+                    <div class="block-setting-box">
+                        <h3>{{ $L('定位签到') }}</h3>
+                        <div class="form-box">
+                            <FormItem :label="$L('签到备注')" prop="locat_remark">
+                                <Input :maxlength="30" v-model="formData.locat_remark"/>
+                            </FormItem>
+                            <FormItem :label="$L('百度地图AK')" prop="locat_bd_lbs_key">
+                                <Input :maxlength="100" v-model="formData.locat_bd_lbs_key"/>
+                                <div class="form-tip">{{$L('获取AK流程')}}: <a href="https://lbs.baidu.com/faq/search?id=299&title=677" target="_blank">https://lbs.baidu.com/faq/search?id=299&title=677</a></div>
+                            </FormItem>
+                            <FormItem :label="$L('允许签到位置')" prop="locat_bd_allow_point">
+                                <ETooltip v-if="formData.locat_bd_lbs_point.lng" :content="$L('点击修改')">
+                                    <a href="javascript:void(0)" @click="openBdSelect">
+                                        {{ $L(`经度：${formData.locat_bd_lbs_point.lng}，纬度：${formData.locat_bd_lbs_point.lat}，半径：${formData.locat_bd_lbs_point.radius}米`) }}
+                                    </a>
+                                </ETooltip>
+                                <a v-else href="javascript:void(0)" @click="openBdSelect">{{$L('点击设置')}}</a>
+                            </FormItem>
+                        </div>
+                    </div>
+                </template>
                 <template v-if="formData.modes.includes('manual')">
                     <div class="block-setting-space"></div>
                     <div class="block-setting-box">
@@ -145,17 +168,49 @@
             :size="1380">
             <TeamManagement v-if="allUserShow" checkin-mode/>
         </DrawerOverlay>
+
+        <!--百度选择签到位置-->
+        <Modal
+            v-model="bdSelectShow"
+            :title="$L('允许签到位置')"
+            :mask-closable="false"
+            width="800">
+            <div>
+                <div v-if="bdSelectPoint.radius" class="bd-select-point-tip">{{ $L(`签到半径${bdSelectPoint.radius}米`) }}</div>
+                <div v-else class="bd-select-point-tip">{{ $L('请点击地图选择签到位置') }}</div>
+                <IFrame v-if="bdSelectShow" class="bd-select-point-iframe" :src="bdSelectUrl" @on-message="onBdMessage"/>
+            </div>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="bdSelectShow=false">{{$L('关闭')}}</Button>
+                <Button type="primary" @click="onBdSelect">{{$L('确定')}}</Button>
+            </div>
+        </Modal>
+
     </div>
 </template>
-
+<style lang="scss" scoped>
+.bd-select-point-tip {
+    font-size: 16px;
+    text-align: center;
+    margin-bottom: 12px;
+    margin-top: -12px;
+}
+.bd-select-point-iframe {
+    width: 100%;
+    height: 500px;
+    border: 0;
+    border-radius: 12px;
+}
+</style>
 <script>
 import DrawerOverlay from "../../../../components/DrawerOverlay";
 import TeamManagement from "../../components/TeamManagement";
 import CheckinExport from "../../components/CheckinExport";
 import {mapState} from "vuex";
+import IFrame from "../../components/IFrame.vue";
 export default {
     name: "SystemCheckin",
-    components: {CheckinExport, TeamManagement, DrawerOverlay},
+    components: {IFrame, CheckinExport, TeamManagement, DrawerOverlay},
     data() {
         return {
             loadIng: 0,
@@ -169,11 +224,17 @@ export default {
                 face_remark: '',
                 face_retip: '',
                 manual_remark: '',
+                locat_remark: '',
+                locat_bd_lbs_point: {},
             },
             ruleData: {},
 
             allUserShow: false,
             exportShow: false,
+
+            bdSelectShow: false,
+            bdSelectPoint: {},
+            bdSelectUrl: '',
         }
     },
 
@@ -226,6 +287,39 @@ export default {
             this.$nextTick(_ => {
                 this.$refs.cmd.focus({cursor:'all'});
             });
+        },
+
+        openBdSelect() {
+            if (!this.formData.locat_bd_lbs_key) {
+                $A.messageError('请先填写百度地图AK');
+                return;
+            }
+            const url = $A.urlAddParams($A.mainUrl('tools/map/select.html'), {
+                key: this.formData.locat_bd_lbs_key,
+                point: this.formData.locat_bd_lbs_point.lng + ',' + this.formData.locat_bd_lbs_point.lat,
+                radius: this.formData.locat_bd_lbs_point.radius,
+            })
+            this.$store.dispatch('userUrl', url).then(newUrl => {
+                this.bdSelectUrl = newUrl;
+                this.bdSelectPoint = this.formData.locat_bd_lbs_point;
+                this.bdSelectShow = true;
+            });
+        },
+
+        onBdMessage(data) {
+            if (data.action !== 'bd_lbs_select_point') {
+                return;
+            }
+            this.bdSelectPoint = {
+                lng: data.longitude,
+                lat: data.latitude,
+                radius: data.radius,
+            }
+        },
+
+        onBdSelect() {
+            this.formData.locat_bd_lbs_point = this.bdSelectPoint;
+            this.bdSelectShow = false;
         },
     }
 }

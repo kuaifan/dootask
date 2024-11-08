@@ -2040,6 +2040,16 @@ class Base
     }
 
     /**
+     * 是否是App移动端
+     * @return bool
+     */
+    public static function isEEUIApp()
+    {
+        $userAgent = strtolower(Request::server('HTTP_USER_AGENT'));
+        return str_contains($userAgent, 'kuaifan_eeui');
+    }
+
+    /**
      * 返回根据距离sql排序语句
      * @param $lat
      * @param $lng

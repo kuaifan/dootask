@@ -957,6 +957,7 @@ class WebSocketDialogMsg extends AbstractModel
     /**
      * 发送消息、修改消息
      * @param string $action            动作
+     * - null：发送消息
      * - reply-98：回复消息ID=98
      * - update-99：更新消息ID=99（标记修改）
      * - change-99：更新消息ID=99（不标记修改）
@@ -993,6 +994,19 @@ class WebSocketDialogMsg extends AbstractModel
         } elseif ($type === 'file') {
             if (in_array($msg['ext'], ['jpg', 'jpeg', 'webp', 'png', 'gif'])) {
                 $mtype = 'image';
+            }
+        } elseif ($type === 'location') {
+            if (preg_match('/^https*:\/\//', $msg['preview'])) {
+                $preview = file_get_contents($msg['preview']);
+                if (empty($preview)) {
+                    throw new ApiException('获取地图快照失败');
+                }
+                $filePath = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/" . md5s($msg['preview']) . ".jpg";
+                Base::makeDir(dirname(public_path($filePath)));
+                if (!Base::saveContentImage(public_path($filePath), $preview, 90)) {
+                    throw new ApiException('保存地图快照失败');
+                }
+                $msg['preview'] = $filePath;
             }
         }
         if ($push_silence === null) {

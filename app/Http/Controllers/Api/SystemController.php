@@ -407,6 +407,9 @@ class SystemController extends AbstractController
                     'face_upload',
                     'face_remark',
                     'face_retip',
+                    'locat_remark',
+                    'locat_bd_lbs_key',
+                    'locat_bd_lbs_point', // 格式：{"lng":116.404, "lat":39.915, "radius":500}
                     'manual_remark',
                     'modes',
                     'key',
@@ -422,9 +425,21 @@ class SystemController extends AbstractController
                 if (!$botUser) {
                     return Base::retError('创建签到机器人失败');
                 }
+                if (in_array('locat', $all['modes'])) {
+                    if (empty($all['locat_bd_lbs_key'])) {
+                        return Base::retError('请填写百度地图LBS Key');
+                    }
+                    if (!is_array($all['locat_bd_lbs_point'])) {
+                        return Base::retError('请选择允许签到位置');
+                    }
+                    $all['locat_bd_lbs_point']['radius'] = intval($all['locat_bd_lbs_point']['radius']);
+                    if (empty($all['locat_bd_lbs_point']['lng']) || empty($all['locat_bd_lbs_point']['lat']) || empty($all['locat_bd_lbs_point']['radius'])) {
+                        return Base::retError('请选择有效的签到位置');
+                    }
+                }
             }
             if ($all['modes']) {
-                $all['modes'] = array_intersect($all['modes'], ['auto', 'manual', 'location', 'face']);
+                $all['modes'] = array_intersect($all['modes'], ['auto', 'manual', 'locat', 'face']);
             }
             $setting = Base::setting('checkinSetting', Base::newTrim($all));
         } else {
@@ -444,6 +459,8 @@ class SystemController extends AbstractController
         $setting['face_upload'] = $setting['face_upload'] ?: 'close';
         $setting['face_remark'] = $setting['face_remark'] ?: Doo::translate('考勤机');
         $setting['face_retip'] = $setting['face_retip'] ?: 'open';
+        $setting['locat_remark'] = $setting['locat_remark'] ?: Doo::translate('定位签到');
+        $setting['locat_bd_lbs_point'] = is_array($setting['locat_bd_lbs_point']) ? $setting['locat_bd_lbs_point'] : ['radius' => 500];
         $setting['manual_remark'] = $setting['manual_remark'] ?: Doo::translate('手动签到');
         $setting['time'] = $setting['time'] ? Base::json2array($setting['time']) : ['09:00', '18:00'];
         $setting['advance'] = intval($setting['advance']) ?: 120;
