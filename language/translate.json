@@ -25956,18 +25956,6 @@
         "ru": "Душеподъемная цитата: (%T1)"
     },
     {
-        "key": "签到地点",
-        "zh": "",
-        "zh-CHT": "簽到地點",
-        "en": "Check-in Location",
-        "ko": "출석 장소",
-        "ja": "チェックイン場所",
-        "de": "Eingetragener Ort",
-        "fr": "Lieu d'enregistrement",
-        "id": "Lokasi Check-in",
-        "ru": "Место регистрации"
-    },
-    {
         "key": "选择附近地点",
         "zh": "",
         "zh-CHT": "選擇附近地點",

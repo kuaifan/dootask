@@ -290,7 +290,9 @@ class BaiduMapPicker {
      */
     initMap() {
         // 初始化地图
-        this.map = new BMap.Map('map-container');
+        this.map = new BMap.Map('map-container', {
+            enableMapClick: false
+        });
 
         // 初始化本地搜索，移除地图渲染
         this.localSearch = new BMap.LocalSearch(this.map, {
@@ -320,9 +322,7 @@ class BaiduMapPicker {
         this.bindEvents();
 
         // 初始化时自动定位
-        Loader.show();
         this.getCurrentLocation().then((point) => {
-            Loader.hide();
             if (point === null) {
                 this.locationError();
             }
@@ -348,10 +348,7 @@ class BaiduMapPicker {
         // 地图定位点击事件
         const mapLocation = document.getElementById('map-location');
         mapLocation.addEventListener('click', () => {
-            Loader.show()
-            this.getCurrentLocation().then(() => {
-                Loader.hide()
-            });
+            this.getCurrentLocation();
         });
     }
 
@@ -361,7 +358,9 @@ class BaiduMapPicker {
      */
     getCurrentLocation() {
         return new Promise(resolve => {
+            Loader.show()
             App.getLocation().then(res => {
+                Loader.hide()
                 if (App.isJson(res) && res.longitude && res.latitude) {
                     const bd09_coord = CoordTransform.wgs84toBd09(res.longitude, res.latitude);
                     const point = new BMap.Point(bd09_coord[0], bd09_coord[1]);
@@ -381,9 +380,13 @@ class BaiduMapPicker {
      */
     updateCurrentPoint(point) {
         this.currentPoint = point;
-        this.map.centerAndZoom(this.currentPoint, this.params.zoom);
+        if (Math.abs(this.map.getZoom() - this.params.zoom) > 1) {
+            this.map.centerAndZoom(this.currentPoint, this.params.zoom);
+        } else {
+            this.map.setCenter(this.currentPoint);
+        }
         this.updateMarker(this.currentPoint);
-        this.searchNearby();
+        this.searchAddress();
     }
 
     /**
@@ -403,95 +406,134 @@ class BaiduMapPicker {
      * 搜索地址
      */
     searchAddress() {
-        const keyword = document.getElementById('search-input').value;
-        this.searchNearby(keyword ? [keyword] : []);
+        const keyword = `${document.getElementById('search-input').value}`.trim();
+        if (keyword) {
+            this.searchKeyword(this.currentPoint, keyword);
+        } else {
+            this.searchLocation(this.currentPoint);
+        }
     }
 
     /**
-     * 搜索附近的地点
-     * @param keywords
+     * 通过关键词搜索附近的地点
+     * @param centerPoint
+     * @param keyword
      * @param retryCount
      */
-    searchNearby(keywords = [], retryCount = 0) {
-        // 当前位置未获取
-        if (this.currentPoint === null) {
-            return;
-        }
-
+    searchKeyword(centerPoint, keyword, retryCount = 0) {
         // 清除之前的搜索结果
         this.localSearch.clearResults();
-
-        // 搜索附近的关键词
-        if (keywords.length === 0) {
-            keywords = ["写字楼", "公司", "银行", "餐馆", "商场", "超市", "学校", "医院", "公交站", "地铁站"]
-        }
 
         // 定义一个随机数，用于判断定时器是否过期
         this.searchRandom = Math.random();
 
         // 设置搜索完成回调
         Loader.show();
-        this.localSearch.setSearchCompleteCallback((results) => {
+        this.localSearch.setSearchCompleteCallback(result => {
             Loader.hide();
             if (this.localSearch.getStatus() !== BMAP_STATUS_SUCCESS) {
-                // 搜索失败
-                if (retryCount < 60) {
+                // 搜索失败，10次重试
+                if (retryCount < 10) {
                     const tmpRand = this.searchRandom;
                     Loader.show();
                     setTimeout(() => {
                         Loader.hide();
-                        tmpRand === this.searchRandom && this.searchNearby(keywords, ++retryCount);
-                    }, 1000)
+                        tmpRand === this.searchRandom && this.searchKeyword(centerPoint, keyword, ++retryCount);
+                    }, 300)
                     return;
                 }
             }
             // 搜索结果
-            document.getElementById('address-list').style.display = 'block';
-            const array = [];
-            if (results instanceof Array) {
-                results.some(result => {
-                    if (!result) {
-                        return false;
-                    }
-                    for (let i = 0; i < result.getCurrentNumPois(); i++) {
-                        const poi = result.getPoi(i);
-                        poi.distance = this.params.point ? this.map.getDistance(this.params.point, poi.point) : null;
-                        array.push(poi);
-                    }
-                });
+            const pois = [];
+            for (let i = 0; i < result.getCurrentNumPois(); i++) {
+                const poi = result.getPoi(i);
+                if (!poi.point) {
+                    continue;
+                }
+                poi.distance = this.params.point ? this.map.getDistance(this.params.point, poi.point) : null;
+                poi.distance_current = this.map.getDistance(centerPoint, poi.point);
+                pois.push(poi);
             }
-            this.updatePoiList(array);
+            this.updatePoiList(pois);
         });
 
         // 执行搜索
-        this.localSearch.searchNearby(keywords, this.currentPoint, this.params.radius);
+        this.localSearch.searchNearby(keyword, centerPoint, this.params.radius);
+    }
+
+    /**
+     * 通过坐标搜索附近的地点
+     * @param point
+     */
+    searchLocation(point) {
+        const geoc = new BMap.Geocoder();
+        Loader.show();
+        geoc.getLocation(point, (result) => {
+            Loader.hide();
+            const pois = [];
+            if (result) {
+                // 搜索结果
+                const surroundingPois = result.surroundingPois || [];
+                if (surroundingPois.length === 0) {
+                    surroundingPois.push({
+                        title: result.addressComponents.city + result.addressComponents.district,
+                        address: result.address,
+                        point: result.point,
+                    });
+                }
+                surroundingPois.some(poi => {
+                    if (!poi.point) {
+                        return false;
+                    }
+                    poi.distance = this.params.point ? this.map.getDistance(this.params.point, poi.point) : null;
+                    poi.distance_current = this.map.getDistance(point, poi.point);
+                    pois.push(poi);
+                })
+            }
+            this.updatePoiList(pois)
+        }, {
+            poiRadius: this.params.radius,
+            numPois: 20,
+        });
     }
 
     /**
      * 更新搜索结果列表
-     * @param results
+     * @param pois
      */
-    updatePoiList(results) {
+    updatePoiList(pois) {
+        const addressList = document.getElementById('address-list');
+        addressList.style.display = 'block';
+
         const poiList = document.getElementById('poi-list');
         poiList.innerHTML = '';
 
         // 如果没有搜索结果
-        if (results.length === 0 && this.params.noresult) {
-            poiList.innerHTML = '<li>' + this.params.noresult + '</li>';
+        if (pois.length === 0) {
+            if (this.params.noresult) {
+                poiList.innerHTML = '<li><div class="address-noresult">' + this.params.noresult + '</div></li>';
+            }
             return;
         }
 
+        // 筛选距离小于搜索半径的结果（+100）
+        pois = pois.filter(poi => {
+            return poi.title && poi.point && poi.distance_current < this.params.radius + 100;
+        });
+
         // 按距离排序（如果有距离信息）
-        results.sort((a, b) => {
-            if (a.distance && b.distance) {
-                return a.distance - b.distance;
+        pois.sort((a, b) => {
+            if (a.distance_current && b.distance_current) {
+                return a.distance_current - b.distance_current;
             }
             return 0;
         });
-        results = results.slice(0, 20);
+
+        // 只显示前20个结果
+        pois = pois.slice(0, 20);
 
         // 创建列表项
-        results.forEach(poi => {
+        pois.forEach(poi => {
             const li = document.createElement('li');
             const distanceFormat = poi.distance ? `<div class="address-distance">${this.convertDistance(Math.round(poi.distance))}</div>` : '';
             li.innerHTML = `

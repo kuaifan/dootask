@@ -207,6 +207,9 @@ class UserBot extends AbstractModel
             if (!in_array('locat', $setting['modes'])) {
                 return '暂未开放定位签到。';
             }
+            if (empty($extra)) {
+                return '当前客户端版本低（所需版本≥v0.39.75）。';
+            }
             if ($extra['type'] === 'bd') {
                 // todo 判断距离
             } else {

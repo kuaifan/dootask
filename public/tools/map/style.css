@@ -29,7 +29,6 @@ body {
 .search-box {
     padding: 10px;
     background: #fff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     position: relative;
     z-index: 100;
 }
@@ -121,6 +120,7 @@ body {
 
 #poi-list {
     list-style: none;
+    padding-bottom: 10px;
 }
 
 #poi-list li {
@@ -147,8 +147,8 @@ body {
     transform: scaleY(0.5);
 }
 
-#poi-list li:hover {
-    background: #f5f5f5;
+#poi-list li:last-child::before {
+    display: none;
 }
 
 .address-name {

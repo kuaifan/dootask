@@ -978,7 +978,7 @@ export default {
     openAppMapPage({dispatch}, objects) {
         return new Promise(resolve => {
             const params = {
-                title: $A.L("签到地点"),
+                title: $A.L("定位签到"),
                 label: $A.L("选择附近地点"),
                 placeholder: $A.L("搜索地点"),
                 noresult: $A.L("附近没有找到地点"),
@@ -986,6 +986,7 @@ export default {
                 selectclose: "true",
                 channel: $A.randomString(6)
             }
+            $A.eeuiAppSetVariate(`location::${params.channel}`, "");
             const url = $A.urlAddParams($A.eeuiAppRewriteUrl('../public/tools/map/index.html'), Object.assign(params, objects || {}))
             dispatch('openAppChildPage', {
                 pageType: 'app',
@@ -997,9 +998,12 @@ export default {
                     url
                 },
                 callback: ({status}) => {
-                    if (status === 'destroy') {
+                    if (status === 'pause') {
                         const data = $A.jsonParse($A.eeuiAppGetVariate(`location::${params.channel}`));
-                        resolve(data);
+                        if (data.point) {
+                            $A.eeuiAppSetVariate(`location::${params.channel}`, "");
+                            resolve(data);
+                        }
                     }
                 }
             })
