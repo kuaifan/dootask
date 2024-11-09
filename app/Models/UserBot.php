@@ -118,7 +118,7 @@ class UserBot extends AbstractModel
                 if (in_array('locat', $setting['modes']) && Base::isEEUIApp()) {
                     $menu[] = [
                         'key' => 'locat-checkin',
-                        'label' => $setting['locat_remark'] ?: Doo::translate('定位签到'),
+                        'label' => Doo::translate('定位签到'),
                         'config' => [
                             'key' => $setting['locat_bd_lbs_key'],
                             'lng' => $setting['locat_bd_lbs_point']['lng'],
@@ -130,7 +130,7 @@ class UserBot extends AbstractModel
                 if (in_array('manual', $setting['modes'])) {
                     $menu[] = [
                         'key' => 'manual-checkin',
-                        'label' => $setting['manual_remark'] ?: Doo::translate('手动打卡')
+                        'label' => Doo::translate('手动签到')
                     ];
                 }
                 return $menu;
@@ -177,9 +177,10 @@ class UserBot extends AbstractModel
      * 签到机器人
      * @param $command
      * @param $userid
+     * @param $extra
      * @return string
      */
-    public static function checkinBotQuickMsg($command, $userid)
+    public static function checkinBotQuickMsg($command, $userid, $extra = [])
     {
         if (Cache::get("UserBot::checkinBotQuickMsg:{$userid}") === "yes") {
             return "操作频繁！";
@@ -194,7 +195,24 @@ class UserBot extends AbstractModel
             if (!in_array('manual', $setting['modes'])) {
                 return '暂未开放手动签到。';
             }
-            if ($error = UserBot::checkinBotCheckin($userid, Base::time(), true)) {
+            if ($error = UserBot::checkinBotCheckin('manual-' . $userid, Base::time(), true)) {
+                return $error;
+            }
+            return null;
+        } elseif ($command === 'locat-checkin') {
+            $setting = Base::setting('checkinSetting');
+            if ($setting['open'] !== 'open') {
+                return '暂未开启签到功能。';
+            }
+            if (!in_array('locat', $setting['modes'])) {
+                return '暂未开放定位签到。';
+            }
+            if ($extra['type'] === 'bd') {
+                // todo 判断距离
+            } else {
+                return '错误的定位签到。';
+            }
+            if ($error = UserBot::checkinBotCheckin('locat-' . $userid, Base::time(), true)) {
                 return $error;
             }
             return null;
@@ -207,7 +225,7 @@ class UserBot extends AbstractModel
      * 签到机器人签到
      * @param mixed $mac
      * - 多个使用,分隔
-     * - 支持：mac地址、userid、checkin-userid
+     * - 支持：mac地址、(manual|locat|face|checkin)-userid
      * @param $time
      * @param bool $alreadyTip  签到过是否提示
      * @return string|null 返回string表示错误信息，返回null表示签到成功
@@ -247,7 +265,15 @@ class UserBot extends AbstractModel
                         'remark' => $UserCheckinMac->remark,
                     ];
                 }
-            } elseif (Base::isNumber($mac)) {
+            } elseif (preg_match('/^(manual|locat|face|checkin)-(\d+)$/i', $mac, $match)) {
+                $type = str_replace('checkin', 'face', $match[1]);
+                $mac = intval($match[2]);
+                $remark = match ($type) {
+                    'manual' => $setting['manual_remark'] ?: 'Manual',
+                    'locat' => $setting['locat_remark'] ?: 'Location',
+                    'face' => $setting['face_remark'] ?: 'Machine',
+                    default => '',
+                };
                 if ($UserInfo = User::whereUserid($mac)->whereBot(0)->first()) {
                     $array = [
                         'userid' => $UserInfo->userid,
@@ -256,20 +282,7 @@ class UserBot extends AbstractModel
                     ];
                     $checkins[] = [
                         'userid' => $UserInfo->userid,
-                        'remark' => $setting['manual_remark'] ?: 'Manual',
-                    ];
-                }
-            } elseif (Base::leftExists($mac, "checkin-", true)) {
-                $mac = Base::leftDelete($mac, "checkin-", true);
-                if ($UserInfo = User::whereUserid($mac)->whereBot(0)->first()) {
-                    $array = [
-                        'userid' => $UserInfo->userid,
-                        'mac' => '00:00:00:00:00:00',
-                        'date' => $nowDate,
-                    ];
-                    $checkins[] = [
-                        'userid' => $UserInfo->userid,
-                        'remark' => $setting['face_remark'] ?: 'Machine',
+                        'remark' => $remark,
                     ];
                 }
             }

@@ -427,7 +427,7 @@ class SystemController extends AbstractController
                 }
                 if (in_array('locat', $all['modes'])) {
                     if (empty($all['locat_bd_lbs_key'])) {
-                        return Base::retError('请填写百度地图LBS Key');
+                        return Base::retError('请填写百度地图AK');
                     }
                     if (!is_array($all['locat_bd_lbs_point'])) {
                         return Base::retError('请选择允许签到位置');

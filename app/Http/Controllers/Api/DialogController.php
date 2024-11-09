@@ -1376,6 +1376,7 @@ class DialogController extends AbstractController
      * @apiParam {Number} lng                   经度
      * @apiParam {Number} lat                   纬度
      * @apiParam {String} title                 位置名称
+     * @apiParam {Number} [distance]            距离（米）
      * @apiParam {String} [address]             位置地址
      * @apiParam {String} [thumb]               预览图片（url）
      *
@@ -1392,6 +1393,7 @@ class DialogController extends AbstractController
         $lng = floatval(Request::input('lng'));
         $lat = floatval(Request::input('lat'));
         $title = trim(Request::input('title'));
+        $distance = intval(Request::input('distance'));
         $address = trim(Request::input('address'));
         $thumb = trim(Request::input('thumb'));
         //
@@ -1411,6 +1413,7 @@ class DialogController extends AbstractController
                 'lng' => $lng,
                 'lat' => $lat,
                 'title' => $title,
+                'distance' => $distance,
                 'address' => $address,
                 'thumb' => $thumb,
             ];

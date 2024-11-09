@@ -1769,8 +1769,8 @@ export default {
                     }
                     const thumb = $A.urlAddParams('https://api.map.baidu.com/staticimage/v2', {
                         ak: item.config.key,
-                        center: `${item.config.lng},${item.config.lat}`,
-                        markers: `${item.config.lng},${item.config.lat}`,
+                        center: `${data.point.lng},${data.point.lat}`,
+                        markers: `${data.point.lng},${data.point.lat}`,
                         width: 800,
                         height: 480,
                         zoom: 19,
@@ -1781,6 +1781,7 @@ export default {
                         lng: data.point.lng,
                         lat: data.point.lat,
                         title: data.title,
+                        distance: data.distance,
                         address: data.address || '',
                         thumb
                     })
