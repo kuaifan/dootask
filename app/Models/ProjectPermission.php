@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Exceptions\ApiException;
 use App\Module\Base;
+use App\Module\Doo;
 
 /**
  * App\Models\ProjectPermission
@@ -198,7 +199,7 @@ class ProjectPermission extends AbstractModel
                     $desc = [];
                     rsort($permissions);
                     foreach ($permissions as $permission) {
-                        $desc[] = self::PERMISSIONS_DESC[$permission];
+                        $desc[] = Doo::translate(self::PERMISSIONS_DESC[$permission]);
                     }
                     $desc = array_reverse($desc);
                     throw new ApiException(sprintf("仅限%s操作", implode('、', $desc)));
