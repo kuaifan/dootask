@@ -1016,6 +1016,10 @@ class WebSocketDialogMsg extends AbstractModel
                     throw new ApiException('保存地图快照失败');
                 }
                 $imageSize = getimagesize($filePath);
+                if ($imageSize[0] < 20 || $imageSize[1] < 20) {
+                    throw new ApiException('地图快照尺寸太小');
+                }
+                $msg['thumb_original'] = $msg['thumb'];
                 $msg['thumb'] = $fileUrl;
                 $msg['width'] = $imageSize[0];
                 $msg['height'] = $imageSize[1];

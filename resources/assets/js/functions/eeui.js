@@ -85,7 +85,9 @@
                 delete object.callback
             }
             $A.eeuiModule("eeui").then(obj => {
-                obj.openPage(object, callback);
+                obj.openPage(Object.assign({
+                    softInputMode: "resize",
+                }, object), callback);
             })
         },
 

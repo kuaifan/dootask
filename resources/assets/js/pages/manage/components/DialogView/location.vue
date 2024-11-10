@@ -19,7 +19,8 @@ export default {
                 backgroundImage: `url(${thumb})`,
             }
             if (width && height) {
-                style.backgroundSize = `${width}px ${height}px`;
+                const scale = $A.scaleToScale(width, height, 600);
+                style.backgroundSize = `${scale.width}px ${scale.height}px`;
             }
             return style;
         }
