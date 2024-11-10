@@ -48,9 +48,12 @@ import GuidePage from "./components/GuidePage";
 import TaskOperation from "./pages/manage/components/TaskOperation";
 import MeetingManager from "./pages/manage/components/MeetingManager";
 import DropdownMenu from "./components/DropdownMenu";
+import {ctrlPressed} from "./mixins/ctrlPressed";
 import {mapState} from "vuex";
 
 export default {
+    mixins: [ctrlPressed],
+
     components: {
         MeetingManager,
         DropdownMenu,
@@ -270,19 +273,64 @@ export default {
         },
 
         isUseDefaultBrowser(url) {
-            if (/web\.zoom\.us/i.test(url)
-                || /meeting\.tencent\.com/i.test(url)
-                || /meet\.google\.com/i.test(url)) {
+            // 按下Ctrl|Command键打开
+            if (this.isCtrlCommandPressed) {
                 return true;
             }
+            // 常见会议链接
+            if (this.isMeetingUrlStrict(url)) {
+                return true;
+            }
+            // 同域名规则
             if ($A.getDomain(url) == $A.getDomain($A.mainUrl())) {
                 try {
-                    if (/^\/uploads\//i.test(new URL(url).pathname)) {
+                    const {pathname, searchParams} = new URL(url);
+                    // uploads/                    上传文件
+                    // api/dialog/msg/download     会话文件
+                    // api/project/task/filedown   任务文件
+                    if (/^\/(uploads|api\/dialog\/msg\/download|api\/project\/task\/filedown)/.test(pathname)) {
+                        return true;
+                    }
+                    // api/file/content?down=yes   文件下载
+                    if (/^\/api\/file\/content/.test(pathname) && searchParams.get('down') === 'yes') {
                         return true;
                     }
                 } catch (e) { }
             }
             return false;
+        },
+
+        isMeetingUrlStrict(url) {
+            const meetingDomains = [
+                // 国际主流
+                'web.zoom.us',
+                'meeting.tencent.com',
+                'meet.google.com',
+                'teams.microsoft.com',
+                'join.skype.com',
+                'bluejeans.com',
+                'webex.com',
+                'voovmeeting.com',
+
+                // 中国区
+                'meeting.feishu.cn',
+                'meeting.dingtalk.com',
+                'jitsi.baidu.com',
+
+                // 其他国际
+                'whereby.com',
+                'meet.jit.si',
+                'gotomeeting.com',
+                '8x8.vc',
+                'lifesize.com',
+                'starleaf.com',
+
+                // 教育和企业
+                'classroomscreen.com',
+                'bigbluebutton.org'
+            ];
+            const lowerUrl = `${url}`.toLowerCase()
+            return meetingDomains.some(domain => lowerUrl.indexOf(domain) !== -1);
         },
 
         electronEvents() {
