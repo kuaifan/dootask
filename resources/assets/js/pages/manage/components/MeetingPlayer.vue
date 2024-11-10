@@ -90,7 +90,7 @@ export default {
         },
         playerStyle() {
             const user = this.cacheUserBasic.find(({userid}) => userid == this.userid);
-            if (user) {
+            if (user && user.userimg) {
                 return {
                     backgroundImage: `url("${user.userimg}")`
                 }

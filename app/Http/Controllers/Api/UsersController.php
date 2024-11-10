@@ -1175,6 +1175,7 @@ class UsersController extends AbstractController
      * @apiParam {String} [name]                    会话ID
      * @apiParam {String} [sharekey]                分享的key
      * @apiParam {String} [username]                用户名称
+     * @apiParam {String} [userimg]                 用户头像
      * @apiParam {Array} [userids]                  邀请成员
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -1189,6 +1190,7 @@ class UsersController extends AbstractController
         $userids = Request::input('userids');
         $sharekey = trim(Request::input('sharekey'));
         $username = trim(Request::input('username'));
+        $userimg = trim(Request::input('userimg')) ?: Base::fillUrl('avatar/' . $username . '.png');
         $user = null;
         if (!empty($sharekey) && $type === 'join') {
             if (!Meeting::getShareInfo($sharekey)) {
@@ -1266,7 +1268,7 @@ class UsersController extends AbstractController
         //
         $data['appid'] = $meetingSetting['appid'];
         $data['uid'] = $uid;
-        $data['userimg'] = $sharekey ? Base::fillUrl('avatar/' . $username . '.png') : $user?->userimg;
+        $data['userimg'] = $sharekey ? $userimg : $user?->userimg;
         $data['nickname'] = $sharekey ? $username : $user?->nickname;
         $data['token'] = $token;
         $data['msgs'] = $msgs;

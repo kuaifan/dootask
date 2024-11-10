@@ -7,6 +7,9 @@
         <!--任务操作-->
         <TaskOperation/>
 
+        <!--会议管理-->
+        <MeetingManager/>
+
         <!--下拉菜单-->
         <DropdownMenu/>
 
@@ -43,11 +46,13 @@ import PreviewImageState from "./components/PreviewImage/state";
 import NetworkException from "./components/NetworkException";
 import GuidePage from "./components/GuidePage";
 import TaskOperation from "./pages/manage/components/TaskOperation";
+import MeetingManager from "./pages/manage/components/MeetingManager";
 import DropdownMenu from "./components/DropdownMenu";
 import {mapState} from "vuex";
 
 export default {
     components: {
+        MeetingManager,
         DropdownMenu,
         TaskOperation,
         NetworkException,

@@ -9,7 +9,7 @@ body {
                         > ul {
                             display: grid;
                             justify-content: space-between;
-                            grid-template-columns: repeat(auto-fill, 220px);
+                            grid-template-columns: repeat(auto-fill, 210px);
                             grid-gap: 24px;
                             > li {
                                 list-style: none;
@@ -17,8 +17,8 @@ body {
                                 .meeting-player {
                                     position: relative;
                                     .player {
-                                        width: 220px;
-                                        height: 220px;;
+                                        width: 210px;
+                                        height: 210px;;
                                         border-radius: 12px;
                                         position: relative;
                                         z-index: 1;

@@ -12,10 +12,16 @@ export default {
         MeetingManager,
     },
     mounted() {
+        const {meetingId, sharekey} = this.$route.params;
+        const {nickname, avatar, audio, video, type} = this.$route.query;
         this.$store.dispatch("showMeetingWindow",{
-            type: "join",
-            meetingid: this.$route.params.meetingId,
-            meetingSharekey: this.$route.params.sharekey,
+            type: ['direct', 'join'].includes(type) ? type : 'join',
+            meetingid: meetingId,
+            meetingSharekey: sharekey,
+            meetingNickname: nickname,
+            meetingAvatar: avatar,
+            meetingAudio: audio,
+            meetingVideo: video,
             meetingdisabled: true,
         })
     },

@@ -326,9 +326,6 @@
             <ProjectArchived v-if="archivedProjectShow"/>
         </DrawerOverlay>
 
-        <!--会议管理-->
-        <MeetingManager/>
-
         <!--移动端选项卡-->
         <transition name="mobile-slide">
             <MobileTabbar v-if="showMobileTabbar" @on-click="onTabbarClick"/>
@@ -357,7 +354,6 @@ import TaskAdd from "./manage/components/TaskAdd";
 import Report from "./manage/components/Report";
 import MobileBack from "../components/Mobile/Back";
 import MobileNotification from "../components/Mobile/Notification";
-import MeetingManager from "./manage/components/MeetingManager";
 import longpress from "../directives/longpress";
 import DialogModal from "./manage/components/DialogModal";
 import TaskModal from "./manage/components/TaskModal";
@@ -366,12 +362,11 @@ import TaskExport from "./manage/components/TaskExport";
 import ApproveExport from "./manage/components/ApproveExport";
 import ComplaintManagement from "./manage/components/ComplaintManagement";
 import MicroApps from "../components/MicroApps.vue";
-import notificationKoro from "notification-koro1";
-import {Store} from "le5le-store";
-import {MarkdownPreview} from "../store/markdown";
 import UserSelect from "../components/UserSelect.vue";
 import ImgUpload from "../components/ImgUpload.vue";
 import ApproveDetails from "./manage/approve/details.vue";
+import notificationKoro from "notification-koro1";
+import {Store} from "le5le-store";
 
 export default {
     components: {
@@ -383,7 +378,6 @@ export default {
         ApproveExport,
         TaskModal,
         DialogModal,
-        MeetingManager,
         MobileNotification,
         MobileBack,
         MobileTabbar,

@@ -3515,8 +3515,16 @@ export default {
     /**
      * 隐藏全局浮窗加载器
      * @param state
+     * @param dispatch
+     * @param delay
      */
-    hiddenSpinner({state}) {
+    hiddenSpinner({state, dispatch}, delay) {
+        if (typeof delay === "number") {
+            setTimeout(_ => {
+                dispatch("hiddenSpinner")
+            }, delay)
+            return
+        }
         const item = state.floatSpinnerTimer.shift()
         if (item) {
             clearTimeout(item.timer)
@@ -4193,19 +4201,12 @@ export default {
     /**
      * 显示会议窗口
      * @param state
-     * @param type
-     * @param meetingid
-     * @param meetingdisabled
-     * @param meetingSharekey
+     * @param data
      */
-    showMeetingWindow({state}, {type, meetingid, meetingdisabled, meetingSharekey}) {
-        state.meetingWindow = {
-            show: true,
-            type: type,
-            meetingid: meetingid,
-            meetingdisabled: meetingdisabled,
-            meetingSharekey: meetingSharekey
-        };
+    showMeetingWindow({state}, data) {
+        state.meetingWindow = Object.assign(data, {
+            show: data.type !== 'direct',
+        });
     },
 
     /** *****************************************************************************************/
