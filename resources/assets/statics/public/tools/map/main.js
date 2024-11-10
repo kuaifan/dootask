@@ -1,6 +1,5 @@
 class App {
     static #eeui = null;
-    static #geolocation = null;
 
     constructor() {
         this.constructor.init();
@@ -11,7 +10,6 @@ class App {
             await new Promise(resolve => setTimeout(resolve, 500));
         }
         this.#eeui = requireModuleJs("eeui");
-        this.#geolocation = requireModuleJs("eeui/geolocation");
     }
 
     static async setVariate(key, value) {
@@ -22,11 +20,11 @@ class App {
     }
 
     static async getLocation() {
-        while (!this.#geolocation) {
+        while (!this.#eeui) {
             await new Promise(resolve => setTimeout(resolve, 500));
         }
         return new Promise(resolve => {
-            this.#geolocation.get((res) => {
+            this.#eeui.getGeolocation((res) => {
                 resolve(res);
             });
         });
@@ -202,7 +200,6 @@ class BaiduMapPicker {
             radius: 300,        // 搜索半径，单位：300
             zoom: 16,           // 地图缩放级别
             errtip: null,       // 定位失败提示
-            errclose: false,    // 定位失败是否关闭页面
             channel: null,      // 回传数据通道
             selectclose: false, // 选择地点是否关闭页面
         };
@@ -322,10 +319,9 @@ class BaiduMapPicker {
         this.bindEvents();
 
         // 初始化时自动定位
-        this.getCurrentLocation().then((point) => {
-            if (point === null) {
-                this.locationError();
-            }
+        this.getCurrentLocation().catch(error => {
+            this.locationError(error);
+        }).finally(() => {
             document.getElementById('map-location').style.display = 'block';
         });
     }
@@ -348,7 +344,9 @@ class BaiduMapPicker {
         // 地图定位点击事件
         const mapLocation = document.getElementById('map-location');
         mapLocation.addEventListener('click', () => {
-            this.getCurrentLocation();
+            this.getCurrentLocation().catch(error => {
+                this.locationError(error);
+            });
         });
     }
 
@@ -357,19 +355,24 @@ class BaiduMapPicker {
      * @returns {Promise<unknown>}
      */
     getCurrentLocation() {
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
             Loader.show()
             App.getLocation().then(res => {
                 Loader.hide()
-                if (App.isJson(res) && res.longitude && res.latitude) {
-                    const bd09_coord = CoordTransform.wgs84toBd09(res.longitude, res.latitude);
-                    const point = new BMap.Point(bd09_coord[0], bd09_coord[1]);
-                    this.updateCurrentPoint(point)
-                    resolve(point);
-                } else {
-                    console.error('定位失败');
-                    resolve(null);
+                if (!App.isJson(res)) {
+                    console.error('定位失败', res);
+                    reject("result error");
+                    return;
                 }
+                if (res.status != 'success') {
+                    console.error('定位失败', res);
+                    reject(res.error || "unknown error");
+                    return;
+                }
+                const bd09_coord = CoordTransform.wgs84toBd09(res.longitude, res.latitude);
+                const point = new BMap.Point(bd09_coord[0], bd09_coord[1]);
+                this.updateCurrentPoint(point)
+                resolve(point);
             })
         })
     }
@@ -576,12 +579,11 @@ class BaiduMapPicker {
     /**
      * 定位失败提示
      */
-    locationError() {
+    locationError(error) {
         if (this.params.errtip) {
-            alert(this.params.errtip);
-        }
-        if (this.params.errclose) {
-            App.closePage();
+            alert(this.params.errtip + '：' + error);
+        } else {
+            alert(error);
         }
     }
 
