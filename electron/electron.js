@@ -706,6 +706,27 @@ ipcMain.on('updateChildWindow', (event, args) => {
 })
 
 /**
+ * 获取路由窗口信息
+ */
+ipcMain.handle('getChildWindow', (event, args) => {
+    let child;
+    if (!args) {
+        const browser = BrowserWindow.fromWebContents(event.sender);
+        child = childWindow.find(({browser: win}) => win === browser)
+    } else {
+        child = childWindow.find(({name}) => name === args)
+    }
+    if (child) {
+        return {
+            name: child.name,
+            id: child.browser.webContents.id,
+            url: child.browser.webContents.getURL()
+        }
+    }
+    return null;
+});
+
+/**
  * 创建路由窗口（todo 已废弃）
  * @param args {path, ?}
  */

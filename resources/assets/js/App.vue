@@ -374,15 +374,15 @@ export default {
                 })
             }
             // 会议事件
-            window.__onMeetingEvent = ({act,uuid,meetingid}) => {
+            window.__onMeetingEvent = ({act, uuid, meetingid, status}) => {
                 switch (act) {
                     // 获取用户信息
                     case "getInfo":
-                        const isTourist = (uuid+'').indexOf('88888') !== -1;
+                        const isTourist = (uuid + '').indexOf('88888') !== -1;
                         this.$store.dispatch("call", {
                             url: isTourist ? 'users/meeting/tourist' : 'users/basic',
                             data: {
-                                userid: isTourist ? uuid : (uuid+'').substring(6),
+                                userid: isTourist ? uuid : (uuid + '').substring(6),
                                 tourist_id: uuid,
                             }
                         }).then(({data}) => {
@@ -398,23 +398,27 @@ export default {
                             $A.modalError(msg);
                         });
                         break;
-                    //加入成功
+                    // 加入成功
                     case "success":
-                        this.$store.dispatch("closeMeetingWindow","add")
+                        this.$store.dispatch("closeMeetingWindow", "add")
                         break;
                     // 邀请
                     case "invent":
-                        this.$store.dispatch("showMeetingWindow",{
+                        this.$store.dispatch("showMeetingWindow", {
                             type: "invitation",
                             meetingid: meetingid
                         })
                         break;
-                    //结束会议
+                    // 结束会议
                     case "endMeeting":
                         break;
-                    //加入失败
+                    // 加入失败
                     case "error":
-                        this.$store.dispatch("closeMeetingWindow","error")
+                        this.$store.dispatch("closeMeetingWindow", "error")
+                        break;
+                    // 状态
+                    case "status":
+                        this.$store.state.appMeetingShow = status
                         break;
                     default:
                         break;

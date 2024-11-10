@@ -224,6 +224,7 @@ export default {
         type: "",
         meetingid: 0
     },
+    appMeetingShow: false,
 
     // okr窗口
     okrWindow: {

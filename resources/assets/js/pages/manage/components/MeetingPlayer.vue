@@ -1,6 +1,8 @@
 <template>
     <div class="meeting-player">
-        <div :id="id" class="player" :style="playerStyle"></div>
+        <div :id="id" class="player">
+            <div class="player-bg" :style="playerStyle"></div>
+        </div>
         <ETooltip :disabled="$isEEUiApp || windowTouch || !username">
             <div slot="content">
                 {{username}}

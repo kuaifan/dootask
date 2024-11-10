@@ -68,6 +68,12 @@
             return $A.eeuiModuleSync("eeui").rewriteUrl(val);
         },
 
+        // 获取页面信息
+        eeuiAppGetPageInfo(pageName) {
+            if (!$A.isEEUiApp) return;
+            return $A.eeuiModuleSync("eeui").getPageInfo(pageName);
+        },
+
         // 打开app新页面
         eeuiAppOpenPage(object, callback) {
             if (!$A.isEEUiApp) return;

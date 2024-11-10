@@ -179,7 +179,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['meetingWindow', 'formOptions', 'userToken']),
+        ...mapState(['meetingWindow', 'appMeetingShow', 'formOptions', 'userToken']),
     },
 
     mounted() {
@@ -300,11 +300,26 @@ export default {
             });
         },
 
-        onOpen(isDirect = false) {
-            if (this.meetingShow) {
+        async onOpen(isDirect = false) {
+            // 判断是否在会议中
+            let isMeeting = false;
+            if ($A.isEEUiApp) {
+                isMeeting = this.appMeetingShow;
+            } else if ($A.Electron) {
+                const meetingWindow = await $A.Electron.sendAsync("getChildWindow", 'meeting-window')
+                if (meetingWindow) {
+                    const currentWindow = await $A.Electron.sendAsync("getChildWindow", null)
+                    isMeeting = currentWindow?.id !== meetingWindow.id;
+                }
+            } else {
+                isMeeting = this.meetingShow;
+            }
+            if (isMeeting) {
                 $A.modalWarning("正在会议中，无法进入其他会议室");
                 return;
             }
+
+            // 加载动画
             const loader = (add) => {
                 if (isDirect) {
                     if (add) {
@@ -320,6 +335,8 @@ export default {
                     }
                 }
             }
+
+            // 加入会议
             loader(true);
             this.$store.dispatch("call", {
                 url: 'users/meeting/open',

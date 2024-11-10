@@ -1,16 +1,5 @@
-<template>
-    <div>
-        <MeetingManager/>
-    </div>
-</template>
-
 <script>
-import MeetingManager from "./manage/components/MeetingManager.vue";
-
 export default {
-    components: {
-        MeetingManager,
-    },
     mounted() {
         const {meetingId, sharekey} = this.$route.params;
         const {nickname, avatar, audio, video, type} = this.$route.query;
@@ -25,5 +14,8 @@ export default {
             meetingdisabled: true,
         })
     },
+    render() {
+        return null
+    }
 }
 </script>
