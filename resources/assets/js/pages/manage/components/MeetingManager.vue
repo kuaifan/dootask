@@ -205,14 +205,12 @@ export default {
                     // 创建会议
                     case 'add':
                         this.addShow = data.show;
-                        this.loadIng = 0;
                         break;
 
                     // 加入会议（直接加入）
                     case 'join':
                     case 'direct':
                         this.addShow = data.show;
-                        this.loadIng = 0;
                         this.addData.type  = 'join';
                         if (data.meetingNickname) {
                             this.addData.username = data.meetingNickname;
@@ -246,7 +244,6 @@ export default {
                     // 加入失败
                     case 'error':
                         this.addShow = data.show;
-                        this.loadIng = 0;
                         this.invitationShow = data.show;
                         this.invitationLoad = false;
                         $A.modalError('加入会议失败');
@@ -352,6 +349,8 @@ export default {
                 delete data.msgs;
                 // App 直接使用新窗口打开会议
                 if ($A.isEEUiApp) {
+                    loader(true);
+                    setTimeout(_ => loader(false), 1200)
                     $A.eeuiAppSendMessage({
                         action: 'startMeeting',
                         meetingParams: {
@@ -524,83 +523,86 @@ export default {
 
         async join(options) {
             this.loadIng++;
-            // 音频采集设备状态变化回调
-            AgoraRTC.onMicrophoneChanged = async (changedDevice) => {
-                // When plugging in a device, switch to a device that is newly plugged in.
-                if (changedDevice.state === "ACTIVE") {
-                    this.localUser.audioTrack?.setDevice(changedDevice.device.deviceId);
-                    // Switch to an existing device when the current device is unplugged.
-                } else if (changedDevice.device.label === this.localUser.audioTrack?.getTrackLabel()) {
-                    const oldMicrophones = await AgoraRTC.getMicrophones();
-                    oldMicrophones[0] && this.localUser.audioTrack?.setDevice(oldMicrophones[0].deviceId);
-                }
-            }
-            // 视频采集设备状态变化回调
-            AgoraRTC.onCameraChanged = async (changedDevice) => {
-                // When plugging in a device, switch to a device that is newly plugged in.
-                if (changedDevice.state === "ACTIVE") {
-                    this.localUser.videoTrack?.setDevice(changedDevice.device.deviceId);
-                    // Switch to an existing device when the current device is unplugged.
-                } else if (changedDevice.device.label === this.localUser.videoTrack?.getTrackLabel()) {
-                    const oldCameras = await AgoraRTC.getCameras();
-                    oldCameras[0] && this.localUser.videoTrack?.setDevice(oldCameras[0].deviceId);
-                }
-            }
-            // 音频或视频轨道自动播放失败回调
-            AgoraRTC.onAutoplayFailed = () => {
-                $A.messageWarning("点击屏幕开始会议");
-            }
-            // 设置日志级别
-            AgoraRTC.setLogLevel(window.systemInfo.debug === "yes" ? 0 : 3);
-
-            // 创建客户端
-            this.agoraClient = AgoraRTC.createClient({mode: "rtc", codec: "vp8"});
-            // 添加事件侦听器
-            this.agoraClient.on("user-joined", this.handleUserJoined);
-            this.agoraClient.on("user-left", this.handleUserLeft);
-            this.agoraClient.on("user-published", this.handleUserPublished);
-            this.agoraClient.on("user-unpublished", this.handleUserUnpublished);
-            // 加入频道、开启音视频
-            const localTracks = [];
             try {
-                this.localUser.uid = await this.agoraClient.join(options.appid, options.channel, options.token, options.uid)
-                if (this.addData.tracks.includes("audio")) {
-                    localTracks.push(this.localUser.audioTrack = await AgoraRTC.createMicrophoneAudioTrack())
+                // 音频采集设备状态变化回调
+                AgoraRTC.onMicrophoneChanged = async (changedDevice) => {
+                    // When plugging in a device, switch to a device that is newly plugged in.
+                    if (changedDevice.state === "ACTIVE") {
+                        this.localUser.audioTrack?.setDevice(changedDevice.device.deviceId);
+                        // Switch to an existing device when the current device is unplugged.
+                    } else if (changedDevice.device.label === this.localUser.audioTrack?.getTrackLabel()) {
+                        const oldMicrophones = await AgoraRTC.getMicrophones();
+                        oldMicrophones[0] && this.localUser.audioTrack?.setDevice(oldMicrophones[0].deviceId);
+                    }
                 }
-                if (this.addData.tracks.includes("video")) {
-                    localTracks.push(this.localUser.videoTrack = await AgoraRTC.createCameraVideoTrack())
+                // 视频采集设备状态变化回调
+                AgoraRTC.onCameraChanged = async (changedDevice) => {
+                    // When plugging in a device, switch to a device that is newly plugged in.
+                    if (changedDevice.state === "ACTIVE") {
+                        this.localUser.videoTrack?.setDevice(changedDevice.device.deviceId);
+                        // Switch to an existing device when the current device is unplugged.
+                    } else if (changedDevice.device.label === this.localUser.videoTrack?.getTrackLabel()) {
+                        const oldCameras = await AgoraRTC.getCameras();
+                        oldCameras[0] && this.localUser.videoTrack?.setDevice(oldCameras[0].deviceId);
+                    }
                 }
-                // 将本地视频曲目播放到本地浏览器、将本地音频和视频发布到频道。
-                if (localTracks.length > 0) {
-                    await this.agoraClient.publish(localTracks);
+                // 音频或视频轨道自动播放失败回调
+                AgoraRTC.onAutoplayFailed = () => {
+                    $A.messageWarning("点击屏幕开始会议");
                 }
-                //
-                this.meetingShow = true;
-            } catch (error) {
-                console.error(error)
-                $A.modalError("会议组件加载失败！");
-            }
+                // 设置日志级别
+                AgoraRTC.setLogLevel(window.systemInfo.debug === "yes" ? 0 : 3);
+
+                // 创建客户端
+                this.agoraClient = AgoraRTC.createClient({mode: "rtc", codec: "vp8"});
+                // 添加事件侦听器
+                this.agoraClient.on("user-joined", this.handleUserJoined);
+                this.agoraClient.on("user-left", this.handleUserLeft);
+                this.agoraClient.on("user-published", this.handleUserPublished);
+                this.agoraClient.on("user-unpublished", this.handleUserUnpublished);
+                // 加入频道、开启音视频
+                const localTracks = [];
+                try {
+                    this.localUser.uid = await this.agoraClient.join(options.appid, options.channel, options.token, options.uid)
+                    if (this.addData.tracks.includes("audio")) {
+                        localTracks.push(this.localUser.audioTrack = await AgoraRTC.createMicrophoneAudioTrack())
+                    }
+                    if (this.addData.tracks.includes("video")) {
+                        localTracks.push(this.localUser.videoTrack = await AgoraRTC.createCameraVideoTrack())
+                    }
+                    // 将本地视频曲目播放到本地浏览器、将本地音频和视频发布到频道。
+                    if (localTracks.length > 0) {
+                        await this.agoraClient.publish(localTracks);
+                    }
+                    //
+                    this.meetingShow = true;
+                } catch (error) {
+                    console.error(error)
+                    $A.modalError("会议组件加载失败！");
+                }
+            } catch (e) { }
             this.addShow = false;
             this.loadIng--;
         },
 
         async leave() {
             this.loadIng++;
-            // 删除本地用户和播放器视图。
-            ['audioTrack', 'videoTrack'].some(trackName => {
-                this.localUser[trackName]?.stop();
-                this.localUser[trackName]?.close();
-            })
-            this.localUser = {
-                uid: null,
-                audioTrack: null,
-                videoTrack: null,
-            }
-            // 删除远程用户和播放器视图。
-            this.remoteUsers = [];
-            // 离开频道
-            await this.agoraClient.leave();
-            //
+            try {
+                // 删除本地用户和播放器视图。
+                ['audioTrack', 'videoTrack'].some(trackName => {
+                    this.localUser[trackName]?.stop();
+                    this.localUser[trackName]?.close();
+                })
+                this.localUser = {
+                    uid: null,
+                    audioTrack: null,
+                    videoTrack: null,
+                }
+                // 删除远程用户和播放器视图。
+                this.remoteUsers = [];
+                // 离开频道
+                await this.agoraClient.leave();
+            } catch (e) { }
             this.meetingShow = false;
             this.loadIng--;
         },

@@ -374,22 +374,25 @@ export default {
                 })
             }
             // 会议事件
-            window.__onMeetingEvent = ({act, uuid, meetingid, status}) => {
-                switch (act) {
+            window.__onMeetingEvent = (event) => {
+                if (!$A.isJson(event)) {
+                    return;
+                }
+                switch (event.act) {
                     // 获取用户信息
                     case "getInfo":
-                        const isTourist = (uuid + '').indexOf('88888') !== -1;
+                        const isTourist = (event.uuid + '').indexOf('88888') !== -1;
                         this.$store.dispatch("call", {
                             url: isTourist ? 'users/meeting/tourist' : 'users/basic',
                             data: {
-                                userid: isTourist ? uuid : (uuid + '').substring(6),
-                                tourist_id: uuid,
+                                userid: isTourist ? event.uuid : (event.uuid + '').substring(6),
+                                tourist_id: event.uuid,
                             }
                         }).then(({data}) => {
                             $A.eeuiAppSendMessage({
                                 action: 'updateMeetingInfo',
                                 infos: {
-                                    uuid: uuid,
+                                    uuid: event.uuid,
                                     avatar: isTourist ? data?.userimg : data[0]?.userimg,
                                     username: isTourist ? data?.nickname : data[0]?.nickname,
                                 }
@@ -406,7 +409,7 @@ export default {
                     case "invent":
                         this.$store.dispatch("showMeetingWindow", {
                             type: "invitation",
-                            meetingid: meetingid
+                            meetingid: event.meetingid
                         })
                         break;
                     // 结束会议
@@ -418,18 +421,24 @@ export default {
                         break;
                     // 状态
                     case "status":
-                        this.$store.state.appMeetingShow = status
+                        this.$store.state.appMeetingShow = event.status
                         break;
                     default:
                         break;
                 }
             }
             // 键盘状态
-            window.__onKeyboardStatus = (data) => {
-                const message = $A.jsonParse(decodeURIComponent(data));
-                this.$store.state.keyboardType = message.keyboardType;
-                this.$store.state.keyboardHeight = message.keyboardHeight;
-                this.$store.state.safeAreaBottom = message.safeAreaBottom;
+            window.__onKeyboardStatus = (event) => {
+                if (!$A.isJson(event)) {
+                    // 兼容旧版本
+                    event = $A.jsonParse(decodeURIComponent(event));
+                }
+                if (!$A.isJson(event)) {
+                    return;
+                }
+                this.$store.state.keyboardType = event.keyboardType;
+                this.$store.state.keyboardHeight = event.keyboardHeight;
+                this.$store.state.safeAreaBottom = event.safeAreaBottom;
             }
             // 通知权限
             window.__onNotificationPermissionStatus = (ret) => {
