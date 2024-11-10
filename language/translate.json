@@ -26266,5 +26266,41 @@
         "fr": "Vous êtes actuellement la personne responsable. Voulez-vous vraiment passer à assistant ?",
         "id": "Anda saat ini adalah orang yang bertanggung jawab. Apakah Anda yakin ingin beralih menjadi asisten?",
         "ru": "Вы в данный момент являетесь ответственным лицом. Уверены, что хотите перейти в помощники?"
+    },
+    {
+        "key": "仅支持移动端App",
+        "zh": "",
+        "zh-CHT": "僅支持移動端App",
+        "en": "Only supported on mobile app",
+        "ko": "모바일 앱에서만 지원",
+        "ja": "モバイルアプリのみ対応",
+        "de": "Nur auf der mobilen App unterstützt",
+        "fr": "Uniquement pris en charge sur l'application mobile",
+        "id": "Hanya didukung di aplikasi seluler",
+        "ru": "Поддерживается только в мобильном приложении"
+    },
+    {
+        "key": "正在会议中，无法进入其他会议室",
+        "zh": "",
+        "zh-CHT": "正在會議中，無法進入其他會議室",
+        "en": "In a meeting, cannot enter another meeting room",
+        "ko": "회의 중이며 다른 회의실에 입장할 수 없음",
+        "ja": "会議中のため、他の会議室に入れません",
+        "de": "Im Meeting, kann keinen anderen Meetingraum betreten",
+        "fr": "En réunion, impossible d'entrer dans une autre salle de réunion",
+        "id": "Sedang dalam rapat, tidak dapat memasuki ruang rapat lain",
+        "ru": "На совещании, невозможно войти в другую переговорную"
+    },
+    {
+        "key": "地图快照尺寸太小",
+        "zh": "",
+        "zh-CHT": "地圖快照尺寸太小",
+        "en": "Map snapshot size is too small",
+        "ko": "지도 스냅샷 크기가 너무 작음",
+        "ja": "地図スナップショットのサイズが小さすぎます",
+        "de": "Kartenschnappschussgröße ist zu klein",
+        "fr": "La taille de la capture d'écran de la carte est trop petite",
+        "id": "Ukuran snapshot peta terlalu kecil",
+        "ru": "Размер снимка карты слишком мал"
     }
 ]

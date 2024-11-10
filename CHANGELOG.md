@@ -2,12 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.39.88]
+
+### Bug Fixes
+
+- 翻译聊天内容参数错误
+
+### Performance
+
+- 优化使用默认浏览器打开链接
+- 添加定位签到
+- 优化打开会议
+- 优化打开会话逻辑
+
 ## [0.39.73]
 
 ### Bug Fixes
 
 - 无法打开项目的情况
 - 搜索特殊字符报错的情况
+
+### Features
+
+- 添加定位签到
 
 ### Performance
 
