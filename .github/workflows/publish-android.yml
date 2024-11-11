@@ -22,10 +22,14 @@ jobs:
           node-version: 20.x
 
       - name: Build Js
-        run: |
-          git submodule init
-          git submodule update --remote "resources/mobile"
-          ./cmd appbuild publish
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 5
+          command: |
+            git submodule init
+            git submodule update --remote "resources/mobile"
+            ./cmd appbuild publish
 
       - name: Set up JDK 11
         uses: actions/setup-java@v3
@@ -36,6 +40,7 @@ jobs:
       - name: Build Android
         uses: nick-fields/retry@v2
         with:
+          timeout_minutes: 60
           max_attempts: 10
           command: |
             cd resources/mobile/platforms/android/eeuiApp

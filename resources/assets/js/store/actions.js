@@ -997,6 +997,7 @@ export default {
                 params: {
                     titleFixed: true,
                     allowAccess: true,
+                    hiddenDone: true,
                     url
                 },
                 callback: ({status}) => {

@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.39.97]
+
+### Bug Fixes
+
+- iOS16-无法打开定位签到的问题
+
+### Performance
+
+- 优化初始化数据
+- 优化一处定位签到的问题
+- 升级海豚表情包
+- 优化新窗口链接打开逻辑
+- 添加会议机器人快捷菜单
+
 ## [0.39.88]
 
 ### Bug Fixes
