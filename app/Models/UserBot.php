@@ -146,6 +146,21 @@ class UserBot extends AbstractModel
                     ],
                 ];
 
+            case 'meeting-alert@bot.system':
+                if (!Base::judgeClientVersion('0.39.89')) {
+                    return [];
+                }
+                return [
+                    [
+                        'key' => 'meeting-create',
+                        'label' => Doo::translate('新会议')
+                    ],
+                    [
+                        'key' => 'meeting-join',
+                        'label' => Doo::translate('加入会议')
+                    ],
+                ];
+
             case 'bot-manager@bot.system':
                 return [
                     [

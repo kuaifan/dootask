@@ -1755,40 +1755,61 @@ export default {
          * @param item
          */
         sendQuick(item) {
-            if (item.key === "locat-checkin") {
-                this.$store.dispatch('openAppMapPage', {
-                    key: item.config.key,
-                    point: `${item.config.lng},${item.config.lat}`,
-                }).then(data => {
-                    if (!$A.isJson(data)) {
-                        return
-                    }
-                    if (data.distance > item.config.radius) {
-                        $A.modalError(`你选择的位置「${data.title}」不在签到范围内`)
-                        return
-                    }
-                    const thumb = $A.urlAddParams('https://api.map.baidu.com/staticimage/v2', {
-                        ak: item.config.key,
-                        center: `${data.point.lng},${data.point.lat}`,
-                        markers: `${data.point.lng},${data.point.lat}`,
-                        width: 800,
-                        height: 480,
-                        zoom: 19,
-                        copyright: 1,
+            switch (item.key) {
+                // 位置签到
+                case "locat-checkin":
+                    this.$store.dispatch('openAppMapPage', {
+                        key: item.config.key,
+                        point: `${item.config.lng},${item.config.lat}`,
+                    }).then(data => {
+                        if (!$A.isJson(data)) {
+                            return
+                        }
+                        if (data.distance > item.config.radius) {
+                            $A.modalError(`你选择的位置「${data.title}」不在签到范围内`)
+                            return
+                        }
+                        const thumb = $A.urlAddParams('https://api.map.baidu.com/staticimage/v2', {
+                            ak: item.config.key,
+                            center: `${data.point.lng},${data.point.lat}`,
+                            markers: `${data.point.lng},${data.point.lat}`,
+                            width: 800,
+                            height: 480,
+                            zoom: 19,
+                            copyright: 1,
+                        })
+                        this.sendLocationMsg({
+                            type: 'bd',
+                            lng: data.point.lng,
+                            lat: data.point.lat,
+                            title: data.title,
+                            distance: data.distance,
+                            address: data.address || '',
+                            thumb
+                        })
                     })
-                    this.sendLocationMsg({
-                        type: 'bd',
-                        lng: data.point.lng,
-                        lat: data.point.lat,
-                        title: data.title,
-                        distance: data.distance,
-                        address: data.address || '',
-                        thumb
-                    })
-                })
-                return;
+                    break;
+
+                // 创建会议
+                case "meeting-create":
+                    Store.set('addMeeting', {
+                        type: 'create',
+                        userids: [this.userId],
+                    });
+                    break;
+
+                // 加入会议
+                case "meeting-join":
+                    Store.set('addMeeting', {
+                        type: 'join',
+                    });
+                    break;
+
+                // 发送快捷指令
+                default:
+                    this.sendMsg(`<p><span data-quick-key="${item.key}">${item.label}</span></p>`)
+                    break;
             }
-            this.sendMsg(`<p><span data-quick-key="${item.key}">${item.label}</span></p>`)
         },
 
         /**
