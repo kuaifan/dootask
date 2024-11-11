@@ -284,7 +284,7 @@ class UserBot extends AbstractModel
                     ];
                 }
             } elseif (preg_match('/^(manual|locat|face|checkin)-(\d+)$/i', $mac, $match)) {
-                $type = str_replace('checkin', 'face', $match[1]);
+                $type = strtolower(str_replace('checkin', 'face', $match[1]));
                 $mac = intval($match[2]);
                 $remark = match ($type) {
                     'manual' => $setting['manual_remark'] ?: 'Manual',
@@ -303,6 +303,8 @@ class UserBot extends AbstractModel
                         'remark' => $remark,
                     ];
                 }
+            } else {
+                continue;
             }
             if ($array) {
                 $record = UserCheckinRecord::where($array)->first();
