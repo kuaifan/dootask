@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 @error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
 use App\Module\Doo;
+use App\Services\RequestContext;
 use Closure;
 
 class WebApi
@@ -18,11 +19,14 @@ class WebApi
      */
     public function handle($request, Closure $next)
     {
-        global $_A;
-        $_A = [];
+        // 为每个请求生成唯一ID
+        $request->requestId = RequestContext::generateRequestId();
+        RequestContext::set('start_time', microtime(true));
 
+        // 加载Doo类
         Doo::load();
 
+        // 解密请求内容
         $encrypt = Doo::pgpParseStr($request->header('encrypt'));
         if ($request->isMethod('post')) {
             $version = $request->header('version');
@@ -47,6 +51,7 @@ class WebApi
             $request->setTrustedProxies([$request->getClientIp()], $request::HEADER_X_FORWARDED_PROTO);
         }
 
+        // 执行下一个中间件
         $response = $next($request);
 
         // 加密返回内容
@@ -57,6 +62,16 @@ class WebApi
             }
         }
 
+        // 返回响应
         return $response;
+    }
+
+    /**
+     * @return void
+     */
+    public function terminate()
+    {
+        // 请求结束后清理上下文
+        RequestContext::clear();
     }
 }

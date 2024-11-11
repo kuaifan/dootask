@@ -10,6 +10,7 @@ use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogMsgRead;
 use App\Module\Base;
 use App\Module\Doo;
+use App\Services\RequestContext;
 use Carbon\Carbon;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Request;
@@ -78,11 +79,7 @@ class WebSocketDialogMsgTask extends AbstractTask
 
     public function start()
     {
-        global $_A;
-        $_A = [
-            '__fill_url_remote_url' => true,
-        ];
-
+        RequestContext::set('fill_url_remote_url', true);
         //
         $msg = WebSocketDialogMsg::find($this->id);
         if (empty($msg)) {

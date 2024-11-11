@@ -5,6 +5,7 @@ namespace App\Module;
 use App\Exceptions\ApiException;
 use App\Models\Setting;
 use App\Models\Tmp;
+use App\Services\RequestContext;
 use Cache;
 use Carbon\Carbon;
 use League\CommonMark\CommonMarkConverter;
@@ -125,11 +126,10 @@ class Base
      */
     public static function getClientVersion()
     {
-        global $_A;
-        if (!isset($_A["__static_client_version"])) {
-            $_A["__static_client_version"] = self::headerOrInput('version') ?: '0.0.1';
+        if (RequestContext::has('client_version')) {
+            return RequestContext::get('client_version');
         }
-        return $_A["__static_client_version"];
+        return RequestContext::save('client_version', self::headerOrInput('version') ?: '0.0.1');
     }
 
     /**
@@ -757,7 +757,6 @@ class Base
      */
     public static function fillUrl($str = '')
     {
-        global $_A;
         if (is_array($str)) {
             foreach ($str as $key => $item) {
                 $str[$key] = Base::fillUrl($item);
@@ -776,7 +775,7 @@ class Base
         ) {
             return $str;
         } else {
-            if ($_A['__fill_url_remote_url'] === true) {
+            if (RequestContext::has('fill_url_remote_url')) {
                 return "{{RemoteURL}}" . $str;
             }
             try {
@@ -1298,12 +1297,11 @@ class Base
      */
     public static function setting($setname, $array = false, $isUpdate = false)
     {
-        global $_A;
         if (empty($setname)) {
             return [];
         }
-        if ($array === false && isset($_A["__static_setting_" . $setname])) {
-            return $_A["__static_setting_" . $setname];
+        if ($array === false && RequestContext::has('setting_' . $setname)) {
+            return RequestContext::get('setting_' . $setname);
         }
         $setting = [];
         $row = Setting::whereName($setname)->first();
@@ -1322,8 +1320,7 @@ class Base
             $row->updateInstance(['setting' => $setting]);
             $row->save();
         }
-        $_A["__static_setting_" . $setname] = $setting;
-        return $setting;
+        return RequestContext::save('setting_' . $setname, $setting);
     }
 
     /**
@@ -1739,16 +1736,11 @@ class Base
 
     /**
      * 获取时间戳
-     * @param bool $refresh
      * @return int
      */
-    public static function time($refresh = false)
+    public static function time()
     {
-        global $_A;
-        if (!isset($_A["__static_time"]) || $refresh === true) {
-            $_A["__static_time"] = time();
-        }
-        return $_A["__static_time"];
+        return intval(RequestContext::get("start_time", time()));
     }
 
     /**
@@ -1833,29 +1825,28 @@ class Base
      */
     public static function getIp()
     {
-        global $_A;
-        if (!isset($_A["__static_ip"])) {
-            if (getenv('HTTP_CLIENT_IP') and strcasecmp(getenv('HTTP_CLIENT_IP'), 'unknown')) {
-                $onlineip = getenv('HTTP_CLIENT_IP');
-            } elseif (isset($_SERVER['HTTP_CLIENT_IP']) and $_SERVER['HTTP_CLIENT_IP'] and strcasecmp($_SERVER['HTTP_CLIENT_IP'], 'unknown')) {
-                $onlineip = $_SERVER['HTTP_CLIENT_IP'];
-            } elseif (getenv('HTTP_X_FORWARDED_FOR') and strcasecmp(getenv('HTTP_X_FORWARDED_FOR'), 'unknown')) {
-                $onlineip = getenv('HTTP_X_FORWARDED_FOR');
-            } elseif (isset($_SERVER['HTTP_X_FORWARDED_FOR']) and $_SERVER['HTTP_X_FORWARDED_FOR'] and strcasecmp($_SERVER['HTTP_X_FORWARDED_FOR'], 'unknown')) {
-                $onlineip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-            } elseif (getenv('REMOTE_ADDR') and strcasecmp(getenv('REMOTE_ADDR'), 'unknown')) {
-                $onlineip = getenv('REMOTE_ADDR');
-            } elseif (isset($_SERVER['REMOTE_ADDR']) and $_SERVER['REMOTE_ADDR'] and strcasecmp($_SERVER['REMOTE_ADDR'], 'unknown')) {
-                $onlineip = $_SERVER['REMOTE_ADDR'];
-            } elseif (Request::header('X-Real-IP')) {
-                $onlineip = Request::header('X-Real-IP');
-            } else {
-                $onlineip = '0,0,0,0';
-            }
-            preg_match("/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/", $onlineip, $match);
-            $_A["__static_ip"] = $match ? ($match[0] ?: 'unknown') : '';
+        if (RequestContext::has("static_ip")) {
+            return RequestContext::get("static_ip");
         }
-        return $_A["__static_ip"];
+        if (getenv('HTTP_CLIENT_IP') and strcasecmp(getenv('HTTP_CLIENT_IP'), 'unknown')) {
+            $onlineip = getenv('HTTP_CLIENT_IP');
+        } elseif (isset($_SERVER['HTTP_CLIENT_IP']) and $_SERVER['HTTP_CLIENT_IP'] and strcasecmp($_SERVER['HTTP_CLIENT_IP'], 'unknown')) {
+            $onlineip = $_SERVER['HTTP_CLIENT_IP'];
+        } elseif (getenv('HTTP_X_FORWARDED_FOR') and strcasecmp(getenv('HTTP_X_FORWARDED_FOR'), 'unknown')) {
+            $onlineip = getenv('HTTP_X_FORWARDED_FOR');
+        } elseif (isset($_SERVER['HTTP_X_FORWARDED_FOR']) and $_SERVER['HTTP_X_FORWARDED_FOR'] and strcasecmp($_SERVER['HTTP_X_FORWARDED_FOR'], 'unknown')) {
+            $onlineip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        } elseif (getenv('REMOTE_ADDR') and strcasecmp(getenv('REMOTE_ADDR'), 'unknown')) {
+            $onlineip = getenv('REMOTE_ADDR');
+        } elseif (isset($_SERVER['REMOTE_ADDR']) and $_SERVER['REMOTE_ADDR'] and strcasecmp($_SERVER['REMOTE_ADDR'], 'unknown')) {
+            $onlineip = $_SERVER['REMOTE_ADDR'];
+        } elseif (Request::header('X-Real-IP')) {
+            $onlineip = Request::header('X-Real-IP');
+        } else {
+            $onlineip = '0,0,0,0';
+        }
+        preg_match("/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/", $onlineip, $match);
+        return RequestContext::save("static_ip", $match ? ($match[0] ?: 'unknown') : '');
     }
 
     /**

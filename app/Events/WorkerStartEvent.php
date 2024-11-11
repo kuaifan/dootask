@@ -17,14 +17,20 @@ class WorkerStartEvent implements WorkerStartInterface
 
     public function handle(Server $server, $workerId)
     {
-        if (isset($server->startMsecTime) && Cache::get("swooleServerStartMsecTime") != $server->startMsecTime) {
-            Cache::forever("swooleServerStartMsecTime", $server->startMsecTime);
-            WebSocket::query()->delete();
-            //
-            $all = Base::json2array(Cache::get("User::online:all"));
-            foreach ($all as $userid) {
-                Cache::forget("User::online:" . $userid);
-            }
+        // 仅在Worker进程启动时执行一次初始化代码
+        $initTable = app('swoole')->initFlagTable;
+        if ($initTable->incr('init_flag', 'value') === 1) {
+            $this->handleFirstWorkerTasks();
+        }
+    }
+
+    private function handleFirstWorkerTasks()
+    {
+        WebSocket::query()->delete();
+        //
+        $all = Base::json2array(Cache::get("User::online:all"));
+        foreach ($all as $userid) {
+            Cache::forget("User::online:" . $userid);
         }
     }
 }

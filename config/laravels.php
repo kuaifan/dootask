@@ -134,7 +134,6 @@ return [
     */
 
     'event_handlers' => [
-        'ServerStart' => \App\Events\ServerStartEvent::class,
         'WorkerStart' => \App\Events\WorkerStartEvent::class,
     ],
 
@@ -222,7 +221,38 @@ return [
     |
     */
 
-    'swoole_tables' => [],
+    'swoole_tables' => [
+        'initFlag' => [
+            'size' => 1,
+            'column' => [
+                [
+                    'name' => 'value',
+                    'type' => \Swoole\Table::TYPE_INT,
+                    'size' => 8
+                ],
+            ],
+        ],
+        'globalData' => [
+            'size' => 1024,
+            'column' => [
+                [
+                    'name' => 'value',
+                    'type' => \Swoole\Table::TYPE_STRING,
+                    'size' => 1024
+                ],
+            ],
+        ],
+        'onlineData' => [
+            'size' => 10240,
+            'column' => [
+                [
+                    'name' => 'value',
+                    'type' => \Swoole\Table::TYPE_INT,
+                    'size' => 8
+                ],
+            ],
+        ],
+    ],
 
     /*
     |--------------------------------------------------------------------------

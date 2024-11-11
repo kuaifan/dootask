@@ -6,6 +6,7 @@ namespace App\Models;
 use App\Exceptions\ApiException;
 use App\Module\Base;
 use App\Module\Doo;
+use App\Services\RequestContext;
 use Cache;
 use Carbon\Carbon;
 use Request;
@@ -435,9 +436,8 @@ class User extends AbstractModel
      */
     private static function authInfo()
     {
-        global $_A;
-        if (isset($_A["__static_auth"])) {
-            return $_A["__static_auth"];
+        if (RequestContext::has('auth')) {
+            return RequestContext::get('auth');
         }
         if (Doo::userId() > 0
             && !Doo::userExpired()
@@ -459,9 +459,9 @@ class User extends AbstractModel
                 $user->updateInstance($upArray);
                 $user->save();
             }
-            return $_A["__static_auth"] = $user;
+            return RequestContext::save('auth', $user);
         }
-        return $_A["__static_auth"] = false;
+        return RequestContext::save('auth', false);
     }
 
     /**
@@ -497,20 +497,19 @@ class User extends AbstractModel
      */
     public static function userid2basic($userid, $addField = [])
     {
-        global $_A;
         if (empty($userid)) {
             return null;
         }
         $userid = intval($userid);
-        if (isset($_A["__static_userid2basic_" . $userid])) {
-            return $_A["__static_userid2basic_" . $userid];
+        if (RequestContext::has("userid2basic_" . $userid)) {
+            return RequestContext::get("userid2basic_" . $userid);
         }
         $userInfo = self::whereUserid($userid)->select(array_merge(User::$basicField, $addField))->first();
         if ($userInfo) {
             $userInfo->online = $userInfo->getOnlineStatus();
             $userInfo->department_name = $userInfo->getDepartmentName();
         }
-        return $_A["__static_userid2basic_" . $userid] = ($userInfo ?: []);
+        return RequestContext::save("userid2basic_" . $userid, $userInfo ?: []);
     }
 
 
