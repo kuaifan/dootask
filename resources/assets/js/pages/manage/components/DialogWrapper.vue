@@ -1761,6 +1761,7 @@ export default {
                     this.$store.dispatch('openAppMapPage', {
                         key: item.config.key,
                         point: `${item.config.lng},${item.config.lat}`,
+                        radius: item.config.radius,
                     }).then(data => {
                         if (!$A.isJson(data)) {
                             return
