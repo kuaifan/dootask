@@ -131,9 +131,11 @@
                             </FormItem>
                             <FormItem :label="$L('允许签到位置')" prop="locat_bd_allow_point">
                                 <ETooltip v-if="formData.locat_bd_lbs_point.lng" :content="$L('点击修改')">
-                                    <a href="javascript:void(0)" @click="openBdSelect">
-                                        {{ $L(`经度：${formData.locat_bd_lbs_point.lng}，纬度：${formData.locat_bd_lbs_point.lat}，半径：${formData.locat_bd_lbs_point.radius}米`) }}
-                                    </a>
+                                    <div class="form-tip">
+                                        <a href="javascript:void(0)" @click="openBdSelect">
+                                            {{ $L(`经度：${formData.locat_bd_lbs_point.lng}，纬度：${formData.locat_bd_lbs_point.lat}，半径：${formData.locat_bd_lbs_point.radius}米`) }}
+                                        </a>
+                                    </div>
                                 </ETooltip>
                                 <a v-else href="javascript:void(0)" @click="openBdSelect">{{$L('点击设置')}}</a>
                             </FormItem>
