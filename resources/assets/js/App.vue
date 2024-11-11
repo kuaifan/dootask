@@ -50,6 +50,7 @@ import MeetingManager from "./pages/manage/components/MeetingManager";
 import DropdownMenu from "./components/DropdownMenu";
 import {ctrlPressed} from "./mixins/ctrlPressed";
 import {mapState} from "vuex";
+import {Store} from "le5le-store";
 
 export default {
     mixins: [ctrlPressed],
@@ -272,14 +273,19 @@ export default {
             }
         },
 
-        isUseDefaultBrowser(url) {
+        /**
+         * 获取链接打开方式
+         * @param url
+         * @returns {number}    // 0: 默认 1: 浏览器打开 2: 阻止打开
+         */
+        getUrlMethodType(url) {
             // 按下Ctrl|Command键打开
             if (this.isCtrlCommandPressed) {
-                return true;
+                return 1;
             }
             // 常见会议链接
             if (this.isMeetingUrlStrict(url)) {
-                return true;
+                return 1;
             }
             // 同域名规则
             if ($A.getDomain(url) == $A.getDomain($A.mainUrl())) {
@@ -289,15 +295,25 @@ export default {
                     // api/dialog/msg/download     会话文件
                     // api/project/task/filedown   任务文件
                     if (/^\/(uploads|api\/dialog\/msg\/download|api\/project\/task\/filedown)/.test(pathname)) {
-                        return true;
+                        return 1;
                     }
                     // api/file/content?down=yes   文件下载
                     if (/^\/api\/file\/content/.test(pathname) && searchParams.get('down') === 'yes') {
-                        return true;
+                        return 1;
+                    }
+                    // meeting/1234567890/xxxxx    会议
+                    if (/^\/meeting\/\d+\/\S+$/.test(pathname)) {
+                        const meetingId = pathname.split('/')[2];
+                        Store.set('addMeeting', {
+                            type: 'join',
+                            meetingid: meetingId,
+                            meetingdisabled: true,
+                        });
+                        return 2;
                     }
                 } catch (e) { }
             }
-            return false;
+            return 0;
         },
 
         isMeetingUrlStrict(url) {
@@ -343,11 +359,17 @@ export default {
                 }
             }
             window.__onBeforeOpenWindow = ({url}) => {
-                if (this.isUseDefaultBrowser(url)) {
-                    return false;   // 使用默认浏览器打开
+                const urlType = this.getUrlMethodType(url)
+                if (urlType === 2) {
+                    // 阻止打开
+                    return true;
+                } else if (urlType === 1) {
+                    // 使用默认浏览器打开
+                    return false;
                 }
+                // 使用内置浏览器打开
                 this.$store.dispatch("openWebTabWindow", url)
-                return true;        // 阻止默认打开
+                return true
             }
             this.$Electron.registerMsgListener('dispatch', args => {
                 if (!$A.isJson(args)) {
@@ -406,10 +428,16 @@ export default {
             }
             // 新窗口打开
             window.__onCreateTarget = (url) => {
-                if (this.isUseDefaultBrowser(url)) {
+                const urlType = this.getUrlMethodType(url)
+                if (urlType === 2) {
+                    // 阻止打开
+                    return;
+                } else if (urlType === 1) {
+                    // 使用默认浏览器打开
                     $A.eeuiAppOpenWeb(url);
                     return;
                 }
+                // App 内置浏览器打开
                 this.$store.dispatch('openAppChildPage', {
                     pageType: 'app',
                     pageTitle: ' ',
