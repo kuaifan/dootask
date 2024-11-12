@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use App\Module\Doo;
 use App\Models\User;
 use App\Module\Base;
+use App\Module\Timer;
 use App\Models\Setting;
 use App\Module\Extranet;
 use LdapRecord\Container;
@@ -180,11 +181,18 @@ class SystemController extends AbstractController
                     'notice_msg',
                     'msg_unread_user_minute',
                     'msg_unread_group_minute',
+                    'msg_unread_time_ranges',
                     'ignore_addr'
                 ])) {
                     unset($all[$key]);
                 }
             }
+            $ranges = array_map(function ($item) {
+                return !is_array($item) ? explode(',', $item) : $item;
+            }, is_array($all['msg_unread_time_ranges']) ? $all['msg_unread_time_ranges'] : []);
+            $all['msg_unread_time_ranges'] = array_values(array_filter($ranges, function ($item) {
+                return count($item) == 2 && Timer::isTime($item[0]) && Timer::isTime($item[1]);
+            }));
             $setting = Base::setting('emailSetting', Base::newTrim($all));
         } else {
             $setting = Base::setting('emailSetting');
@@ -198,6 +206,7 @@ class SystemController extends AbstractController
         $setting['notice_msg'] = $setting['notice_msg'] ?: 'close';
         $setting['msg_unread_user_minute'] = intval($setting['msg_unread_user_minute'] ?? -1);
         $setting['msg_unread_group_minute'] = intval($setting['msg_unread_group_minute'] ?? -1);
+        $setting['msg_unread_time_ranges'] = is_array($setting['msg_unread_time_ranges']) ? $setting['msg_unread_time_ranges'] : [[]];
         $setting['ignore_addr'] = $setting['ignore_addr'] ?: '';
         //
         if ($type != 'save' && !in_array('admin', $user->identity)) {
@@ -768,7 +777,7 @@ class SystemController extends AbstractController
         if ($data['info']['people'] > 0 && $data['user_count'] > $data['info']['people']) {
             $data['error'][] = '终端用户数超过License限制';
         }
-        if ($data['info']['expired_at'] && strtotime($data['info']['expired_at']) <= Base::time()) {
+        if ($data['info']['expired_at'] && strtotime($data['info']['expired_at']) <= Timer::time()) {
             $data['error'][] = '终端License已过期';
         }
         //
@@ -1196,13 +1205,13 @@ class SystemController extends AbstractController
         if (count($userid) > 100) {
             return Base::retError('导出成员限制最多100个');
         }
-        if (!(is_array($date) && Base::isDate($date[0]) && Base::isDate($date[1]))) {
+        if (!(is_array($date) && Timer::isDate($date[0]) && Timer::isDate($date[1]))) {
             return Base::retError('日期选择错误');
         }
         if (Carbon::parse($date[1])->timestamp - Carbon::parse($date[0])->timestamp > 35 * 86400) {
             return Base::retError('日期范围限制最大35天');
         }
-        if (!(is_array($time) && Base::isTime($time[0]) && Base::isTime($time[1]))) {
+        if (!(is_array($time) && Timer::isTime($time[0]) && Timer::isTime($time[1]))) {
             return Base::retError('时间选择错误');
         }
         //
@@ -1244,7 +1253,7 @@ class SystemController extends AbstractController
                 $lastRecord = $sameCollect?->whereBetween("datetime", $lastBetween)->last();
                 $firstTimestamp = $firstRecord['timestamp'] ?: 0;
                 $lastTimestamp = $lastRecord['timestamp'] ?: 0;
-                if (Base::time() < $startT + $secondStart) {
+                if (Timer::time() < $startT + $secondStart) {
                     $firstResult = "-";
                 } else {
                     $firstResult = Doo::translate("正常");
@@ -1256,7 +1265,7 @@ class SystemController extends AbstractController
                         $styles["E{$index}"] = ["font" => ["color" => ["rgb" => "436FF6"]]];
                     }
                 }
-                if (Base::time() < $startT + $secondEnd) {
+                if (Timer::time() < $startT + $secondEnd) {
                     $lastResult = "-";
                     $lastTimestamp = 0;
                 } else {
@@ -1299,8 +1308,8 @@ class SystemController extends AbstractController
         } else {
             $fileName .= '的签到记录';
         }
-        $fileName = Doo::translate($fileName) . '_' . Base::time() . '.xlsx';
-        $filePath = "temp/checkin/export/" . date("Ym", Base::time());
+        $fileName = Doo::translate($fileName) . '_' . Timer::time() . '.xlsx';
+        $filePath = "temp/checkin/export/" . date("Ym", Timer::time());
         $export = new BillMultipleExport($sheets);
         $res = $export->store($filePath . "/" . $fileName);
         if ($res != 1) {

@@ -54,6 +54,12 @@ body {
         font-family: "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
     }
 
+    .input-range-box {
+        .input-range-item {
+            margin-bottom: 6px;
+        }
+    }
+
     .input-number-box {
         display: flex;
         align-items: center;

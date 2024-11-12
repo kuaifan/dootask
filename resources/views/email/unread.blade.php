@@ -3,9 +3,9 @@
         <tbody>
         <tr style="box-sizing:border-box;padding:0;vertical-align:top;text-align:left">
             <td style="box-sizing:border-box;word-break:break-word;border-collapse:collapse;padding:0 0 10px;vertical-align:top;text-align:left;color:#202020;font-weight:normal;margin:0;line-height:19px;font-size:14px">
-                <p>{{ $nickname }} 您好：</p>
-                <p>您有（{{ $count }}）条未读{{ $msgType }}消息，请及时处理。</p>
-                <hr style='box-sizing:border-box;color:#d9d9d9;background-color:#d9d9d9;height:1px;border:none;margin-top:32px'>
+                <p>{{ $title }} </p>
+                <p>{{ $desc }}</p>
+                <hr style="box-sizing:border-box;color:#d9d9d9;background-color:#d9d9d9;height:1px;border:none;margin-top:32px">
             </td>
         </tr>
         </tbody>
@@ -19,7 +19,7 @@
                     {{ $dialogName }}
                 </h2>
                 <h4 style="box-sizing:border-box;color:#202020;font-weight:normal;padding:0;margin:0;text-align:left;line-height:1.3;word-break:normal;font-size:14px">
-                    {{ $unread }}条未读信息
+                    {{ $title }}
                 </h4>
                 <br style="box-sizing:border-box">
                 @foreach($items as $item)
@@ -51,7 +51,7 @@
                         <tbody>
                         <tr style="box-sizing:border-box; padding:0; vertical-align:top; text-align:left">
                             <td style="box-sizing:border-box; word-break:break-word; border-collapse:collapse; padding:0 0 10px; vertical-align:top; text-align:left; color:#202020; font-weight:normal; margin:0; line-height:19px; font-size:14px">
-                                <a style="text-decoration:none; box-sizing:border-box; color:white; background-color:#46bc99; padding:8px 16px; border-radius:4px; font-size:10px; text-transform:uppercase; font-weight:bold" href="{{ $dialogUrl }}" target="_blank">回复消息</a>
+                                <a style="text-decoration:none; box-sizing:border-box; color:white; background-color:#46bc99; padding:8px 16px; border-radius:4px; font-size:10px; text-transform:uppercase; font-weight:bold" href="{{ $dialogUrl }}" target="_blank">{{ $button }}</a>
                             </td>
                         </tr>
                         </tbody>

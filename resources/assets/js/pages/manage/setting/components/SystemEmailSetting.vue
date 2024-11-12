@@ -49,6 +49,23 @@
                             <Radio label="close">{{ $L('关闭') }}</Radio>
                         </RadioGroup>
                         <Form v-if="formData.notice_msg == 'open'" @submit.native.prevent class="block-setting-msg-unread">
+                            <FormItem :label="$L('通知时间')">
+                                <div class="input-range-box">
+                                    <div
+                                        v-for="(_, index) in formData.msg_unread_time_ranges"
+                                        :key="index"
+                                        class="input-range-item">
+                                        <TimePicker
+                                            v-model="formData.msg_unread_time_ranges[index]"
+                                            type="timerange"
+                                            format="HH:mm"
+                                            :placeholder="$L('选择时间范围')"
+                                            transfer/>
+                                    </div>
+                                    <Button type="default" icon="md-add" @click="onAddTimeRange">{{ $L('添加时间范围') }}</Button>
+                                    <div class="form-tip">{{ $L('仅在通知时间内发送邮件。') }}</div>
+                                </div>
+                            </FormItem>
                             <FormItem :label="$L('未读个人消息')" prop="msg_unread_user_minute">
                                 <div class="input-number-box">
                                     <InputNumber v-model="formData.msg_unread_user_minute" :min="0" :step="1"/>
@@ -104,6 +121,7 @@ export default {
                 msg_unread_user_minute: -1,
                 msg_unread_group_minute: -1,
                 ignore_addr: '',
+                msg_unread_time_ranges:[[]]
             },
             ruleData: {},
         }
@@ -128,6 +146,14 @@ export default {
 
         resetForm() {
             this.formData = $A.cloneJSON(this.formDatum_bak);
+        },
+
+        onAddTimeRange() {
+            if (this.formData.msg_unread_time_ranges.length > 5) {
+                $A.messageError('最多添加5个时间范围');
+                return;
+            }
+            this.formData.msg_unread_time_ranges.push([])
         },
 
         systemSetting(save) {
