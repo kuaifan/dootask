@@ -4,6 +4,7 @@ namespace App\Models;
 
 
 use App\Module\Base;
+use App\Module\Timer;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -76,7 +77,7 @@ class FileContent extends AbstractModel
             'name' => $name,
             'ext' => $fileExt
         ]));
-        return Base::fillUrl("online/preview/{$name}?key={$key}&version=" . Base::getVersion() . "&__=" . Base::msecTime());
+        return Base::fillUrl("online/preview/{$name}?key={$key}&version=" . Base::getVersion() . "&__=" . Timer::msecTime());
     }
 
     /**

@@ -11,6 +11,7 @@ use App\Module\Doo;
 use App\Models\File;
 use App\Models\User;
 use App\Module\Base;
+use App\Module\Timer;
 use App\Ldap\LdapUser;
 use App\Models\Meeting;
 use App\Models\Project;
@@ -1091,7 +1092,7 @@ class UsersController extends AbstractController
             return Base::retError('链接已经使用过', ['code' => 2]);
 
         $oldTime = Carbon::parse($res->created_at)->timestamp;
-        $time = Base::Time();
+        $time = Timer::Time();
 
         // 30分钟失效
         if (abs($time - $oldTime) > 1800) {

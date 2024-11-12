@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Exceptions\ApiException;
 use App\Module\Base;
+use App\Module\Timer;
 use Carbon\Carbon;
 use Guanguans\Notify\Factory;
 use Guanguans\Notify\Messages\EmailMessage;
@@ -122,7 +123,7 @@ class UserEmailVerification extends AbstractModel
         }
 
         $oldTime = Carbon::parse($emailVerify->created_at)->timestamp;
-        $time = Base::Time();
+        $time = Timer::Time();
 
         // 30分钟失效
         if (abs($time - $oldTime) > 1800) {

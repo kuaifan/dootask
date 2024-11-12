@@ -11,6 +11,7 @@ use App\Module\Doo;
 use App\Models\File;
 use App\Models\User;
 use App\Module\Base;
+use App\Module\Timer;
 use App\Module\Extranet;
 use App\Module\TimeRange;
 use App\Models\FileContent;
@@ -591,7 +592,7 @@ class DialogController extends AbstractController
                 ->value('id'));
         }
         $data['list'] = $list;
-        $data['time'] = Base::time();
+        $data['time'] = Timer::time();
         // 记录当前打开的任务对话
         if ($dialog->type == 'group' && $dialog->group_type == 'task') {
             $user->task_dialog_id = $dialog->id;

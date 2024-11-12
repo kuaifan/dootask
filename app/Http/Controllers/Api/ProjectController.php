@@ -12,6 +12,7 @@ use App\Module\Doo;
 use App\Models\File;
 use App\Models\User;
 use App\Module\Base;
+use App\Module\Timer;
 use Swoole\Coroutine;
 use App\Models\Deleted;
 use App\Models\Project;
@@ -1003,7 +1004,7 @@ class ProjectController extends AbstractController
         }
         //
         if (is_array($time)) {
-            if (Base::isDateOrTime($time[0]) && Base::isDateOrTime($time[1])) {
+            if (Timer::isDateOrTime($time[0]) && Timer::isDateOrTime($time[1])) {
                 $builder->betweenTime(Carbon::parse($time[0])->startOfDay(), Carbon::parse($time[1])->endOfDay());
             }
         }
@@ -1196,7 +1197,7 @@ class ProjectController extends AbstractController
         if (count($userid) > 100) {
             return Base::retError('导出成员限制最多100个');
         }
-        if (!(is_array($time) && Base::isDateOrTime($time[0]) && Base::isDateOrTime($time[1]))) {
+        if (!(is_array($time) && Timer::isDateOrTime($time[0]) && Timer::isDateOrTime($time[1]))) {
             return Base::retError('时间选择错误');
         }
         if (Carbon::parse($time[1])->timestamp - Carbon::parse($time[0])->timestamp > 90 * 86400) {
@@ -1279,9 +1280,9 @@ class ProjectController extends AbstractController
                         $planTotalTime = $endTime - $startTime;
                         $residueTime = $planTotalTime - $totalTime;
                         if ($residueTime < 0) {
-                            $overTime = Doo::translate(Base::timeFormat(abs($residueTime)));
+                            $overTime = Doo::translate(Timer::timeFormat(abs($residueTime)));
                         }
-                        $planTime = Doo::translate(Base::timeDiff($startTime, $endTime));
+                        $planTime = Doo::translate(Timer::timeDiff($startTime, $endTime));
                     }
                     $actualTime = $task->complete_at ? $totalTime : 0; // 实际完成用时
                     $statusText = '未完成';
@@ -1322,10 +1323,10 @@ class ProjectController extends AbstractController
                         $task->complete_at ?: '-',
                         $task->archived_at ?: '-',
                         $planTime,
-                        $actualTime ? Doo::translate(Base::timeFormat($actualTime)) : '-',
+                        $actualTime ? Doo::translate(Timer::timeFormat($actualTime)) : '-',
                         $overTime,
-                        $developTime > 0 ? Doo::translate(Base::timeFormat($developTime)) : '-',
-                        $testTime > 0 ? Doo::translate(Base::timeFormat($testTime)) : '-',
+                        $developTime > 0 ? Doo::translate(Timer::timeFormat($developTime)) : '-',
+                        $testTime > 0 ? Doo::translate(Timer::timeFormat($testTime)) : '-',
                         Base::filterEmoji(User::userid2nickname($task->ownerid)) . " (ID: {$task->ownerid})",
                         Base::filterEmoji(User::userid2nickname($task->userid)) . " (ID: {$task->userid})",
                         Doo::translate($statusText),
@@ -1362,8 +1363,8 @@ class ProjectController extends AbstractController
             } else {
                 $fileName .= '的任务统计';
             }
-            $fileName = Doo::translate($fileName) . '_' . Base::time() . '.xls';
-            $filePath = "temp/task/export/" . date("Ym", Base::time());
+            $fileName = Doo::translate($fileName) . '_' . Timer::time() . '.xls';
+            $filePath = "temp/task/export/" . date("Ym", Timer::time());
             $export = new BillMultipleExport($sheets);
             $res = $export->store($filePath . "/" . $fileName);
             if ($res != 1) {
@@ -1464,9 +1465,9 @@ class ProjectController extends AbstractController
                         $planTotalTime = $endTime - $startTime;
                         $residueTime = $planTotalTime - $totalTime;
                         if ($residueTime < 0) {
-                            $overTime = Doo::translate(Base::timeFormat(abs($residueTime)));
+                            $overTime = Doo::translate(Timer::timeFormat(abs($residueTime)));
                         }
-                        $planTime = Doo::translate(Base::timeDiff($startTime, $endTime));
+                        $planTime = Doo::translate(Timer::timeDiff($startTime, $endTime));
                     }
                     $ownerIds = $task->taskUser->where('owner', 1)->pluck('userid')->toArray();
                     $ownerNames = [];
@@ -1496,8 +1497,8 @@ class ProjectController extends AbstractController
             BillExport::create()->setTitle($title)->setHeadings($headings)->setData($data)->setStyles(["A1:J1" => ["font" => ["bold" => true]]])
         ];
         //
-        $fileName = $title . '_' . Base::time() . '.xls';
-        $filePath = "temp/task/export/" . date("Ym", Base::time());
+        $fileName = $title . '_' . Timer::time() . '.xls';
+        $filePath = "temp/task/export/" . date("Ym", Timer::time());
         $export = new BillMultipleExport($sheets);
         $res = $export->store($filePath . "/" . $fileName);
         if ($res != 1) {
@@ -2541,10 +2542,10 @@ class ProjectController extends AbstractController
             }
             $log->detail = Doo::translate($log->detail);
             $log->time = [
-                'ymd' => date(date("Y", $timestamp) == date("Y", Base::time()) ? "m-d" : "Y-m-d", $timestamp),
+                'ymd' => date(date("Y", $timestamp) == date("Y", Timer::time()) ? "m-d" : "Y-m-d", $timestamp),
                 'hi' => date("h:i", $timestamp) ,
-                'week' => Doo::translate("周" . Base::getTimeWeek($timestamp)),
-                'segment' => Doo::translate(Base::getTimeDayeSegment($timestamp)),
+                'week' => Doo::translate("周" . Timer::getWeek($timestamp)),
+                'segment' => Doo::translate(Timer::getDayeSegment($timestamp)),
             ];
             $record = Base::json2array($log->record);
             if (is_array($record['change'])) {

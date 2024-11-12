@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Module\Base;
 use App\Module\Doo;
 use App\Module\Extranet;
+use App\Module\Timer;
 use App\Tasks\JokeSoupTask;
 use Cache;
 use Carbon\Carbon;
@@ -210,7 +211,7 @@ class UserBot extends AbstractModel
             if (!in_array('manual', $setting['modes'])) {
                 return '暂未开放手动签到。';
             }
-            if ($error = UserBot::checkinBotCheckin('manual-' . $userid, Base::time(), true)) {
+            if ($error = UserBot::checkinBotCheckin('manual-' . $userid, Timer::time(), true)) {
                 return $error;
             }
             return null;
@@ -230,7 +231,7 @@ class UserBot extends AbstractModel
             } else {
                 return '错误的定位签到。';
             }
-            if ($error = UserBot::checkinBotCheckin('locat-' . $userid, Base::time(), true)) {
+            if ($error = UserBot::checkinBotCheckin('locat-' . $userid, Timer::time(), true)) {
                 return $error;
             }
             return null;
@@ -262,7 +263,7 @@ class UserBot extends AbstractModel
         $timeEnd = strtotime("{$nowDate} {$times[1]}");
         $timeAdvance = max($timeStart - $advance, strtotime($nowDate));
         $timeDelay = min($timeEnd + $delay, strtotime("{$nowDate} 23:59:59"));
-        if (Base::time() < $timeAdvance || $timeDelay < Base::time()) {
+        if (Timer::time() < $timeAdvance || $timeDelay < Timer::time()) {
             return "不在有效时间内，有效时间为：" . date("H:i", $timeAdvance) . "-" . date("H:i", $timeDelay);
         }
         //
@@ -367,13 +368,13 @@ class UserBot extends AbstractModel
                     ], $botUser->userid, false, false, $type != "up");
                 }
             };
-            if ($timeAdvance <= Base::time() && Base::time() < $timeEnd) {
+            if ($timeAdvance <= Timer::time() && Timer::time() < $timeEnd) {
                 // 上班打卡通知（从最早打卡时间 到 下班打卡时间）
                 foreach ($checkins as $checkin) {
                     $sendMsg('up', $checkin);
                 }
             }
-            if ($timeEnd <= Base::time() && Base::time() <= $timeDelay) {
+            if ($timeEnd <= Timer::time() && Timer::time() <= $timeDelay) {
                 // 下班打卡通知（下班打卡时间 到 最晚打卡时间）
                 foreach ($checkins as $checkin) {
                     $sendMsg('down', $checkin);

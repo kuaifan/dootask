@@ -12,7 +12,7 @@ use App\Models\FileLink;
 use App\Models\FileUser;
 use App\Models\User;
 use App\Module\Base;
-use App\Module\Doo;
+use App\Module\Timer;
 use App\Module\Ihttp;
 use Response;
 use Session;
@@ -1020,9 +1020,9 @@ class FileController extends AbstractController
         if (empty($fileName)) {
             $fileName = 'Package_' . $user->userid;
         }
-        $fileName .= '_' . Base::time() . '.zip';
+        $fileName .= '_' . Timer::time() . '.zip';
 
-        $filePath = "temp/file/pack/" . date("Ym", Base::time());
+        $filePath = "temp/file/pack/" . date("Ym", Timer::time());
         $zipFile = "app/" . $filePath . "/" . $fileName;
         $zipPath = storage_path($zipFile);
 

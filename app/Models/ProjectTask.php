@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Module\Timer;
 use DB;
 use Arr;
 use Request;
@@ -438,7 +439,7 @@ class ProjectTask extends AbstractModel
         // 时间
         if ($times) {
             list($start, $end) = is_string($times) ? explode(",", $times) : (is_array($times) ? $times : []);
-            if (Base::isDate($start) && Base::isDate($end) && $start != $end) {
+            if (Timer::isDate($start) && Timer::isDate($end) && $start != $end) {
                 $task->start_at = Carbon::parse($start);
                 $task->end_at = Carbon::parse($end);
             }
@@ -537,7 +538,7 @@ class ProjectTask extends AbstractModel
             if ($task->parent_id == 0 && $subtasks && is_array($subtasks)) {
                 foreach ($subtasks as $subtask) {
                     list($start, $end) = is_string($subtask['times']) ? explode(",", $subtask['times']) : (is_array($subtask['times']) ? $subtask['times'] : []);
-                    if (Base::isDate($start) && Base::isDate($end) && $start != $end) {
+                    if (Timer::isDate($start) && Timer::isDate($end) && $start != $end) {
                         if (Carbon::parse($start)->lt($task->start_at)) {
                             throw new ApiException('子任务开始时间不能小于主任务开始时间');
                         }
@@ -663,7 +664,7 @@ class ProjectTask extends AbstractModel
                 if ($mainTask?->complete_at) {
                     throw new ApiException('主任务已完成，无法修改子任务状态');
                 }
-                if (Base::isDate($data['complete_at'])) {
+                if (Timer::isDate($data['complete_at'])) {
                     // 标记已完成
                     if ($this->complete_at) {
                         throw new ApiException('任务已完成');
@@ -774,7 +775,7 @@ class ProjectTask extends AbstractModel
                 $this->end_at = null;
                 $times = $data['times'];
                 list($start, $end, $desc) = is_string($times) ? explode(",", $times) : (is_array($times) ? $times : []);
-                if (Base::isDate($start) && Base::isDate($end) && $start != $end) {
+                if (Timer::isDate($start) && Timer::isDate($end) && $start != $end) {
                     $start_at = Carbon::parse($start);
                     $end_at = Carbon::parse($end);
                     if ($this->parent_id > 0) {

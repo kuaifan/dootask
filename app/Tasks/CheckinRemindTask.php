@@ -9,6 +9,7 @@ use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
 use App\Module\Doo;
 use App\Module\Extranet;
+use App\Module\Timer;
 use Cache;
 use Carbon\Carbon;
 
@@ -41,14 +42,14 @@ class CheckinRemindTask extends AbstractTask
         //
         if ($remindin > 0) {
             $timeRemindin = $timeStart - $remindin;
-            if ($timeRemindin <= Base::time() && Base::time() <= $timeStart) {
+            if ($timeRemindin <= Timer::time() && Timer::time() <= $timeStart) {
                 // 签到打卡提醒
                 $this->remind('in');
             }
         }
         if ($remindexceed > 0) {
             $timeRemindexceed = $timeStart + $remindexceed;
-            if ($timeRemindexceed <= Base::time() && Base::time() <= $timeRemindexceed + 300) {
+            if ($timeRemindexceed <= Timer::time() && Timer::time() <= $timeRemindexceed + 300) {
                 // 签到缺卡提醒
                 $this->remind('exceed');
             }

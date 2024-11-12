@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Module\Doo;
 use Request;
 use Session;
 use Response;
@@ -10,6 +9,8 @@ use Madzipper;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Module\Base;
+use App\Module\Doo;
+use App\Module\Timer;
 use App\Module\Ihttp;
 use App\Tasks\PushTask;
 use App\Module\BillExport;
@@ -758,7 +759,7 @@ class ApproveController extends AbstractController
         if (empty($name) || empty($date)) {
             return Base::retError('参数错误');
         }
-        if (!(is_array($date) && Base::isDate($date[0]) && Base::isDate($date[1]))) {
+        if (!(is_array($date) && Timer::isDate($date[0]) && Timer::isDate($date[1]))) {
             return Base::retError('日期选择错误');
         }
         if (Carbon::parse($date[1])->timestamp - Carbon::parse($date[0])->timestamp > 35 * 86400) {
@@ -817,7 +818,7 @@ class ApproveController extends AbstractController
             // 计算审批耗时
             $startTime = Carbon::parse($val['start_time'])->timestamp;
             $endTime = $val['end_time'] ? Carbon::parse($val['end_time'])->timestamp : time();
-            $approval_time = Doo::translate(Base::timeDiff($startTime, $endTime)); // 审批耗时
+            $approval_time = Doo::translate(Timer::timeDiff($startTime, $endTime)); // 审批耗时
             // 计算时长
             $varStartTime = Carbon::parse($val['var']['start_time']);
             $varEndTime = Carbon::parse($val['var']['end_time']);
@@ -859,8 +860,8 @@ class ApproveController extends AbstractController
             BillExport::create()->setTitle($title)->setHeadings($headings)->setData($datas)->setStyles(["A1:Y1" => ["font" => ["bold" => true]]])
         ];
         //
-        $fileName = $title . '_' . Base::time() . '.xlsx';
-        $filePath = "temp/approve/export/" . date("Ym", Base::time());
+        $fileName = $title . '_' . Timer::time() . '.xlsx';
+        $filePath = "temp/approve/export/" . date("Ym", Timer::time());
         $export = new BillMultipleExport($sheets);
         $res = $export->store($filePath . "/" . $fileName);
         if ($res != 1) {
@@ -978,9 +979,9 @@ class ApproveController extends AbstractController
             'department' => $process['department'],
             'type' => $process['var']['type'],
             'start_time' => $process['var']['start_time'],
-            'start_day_of_week' => '周' . Base::getTimeWeek(Carbon::parse($process['var']['start_time'])->timestamp),
+            'start_day_of_week' => '周' . Timer::getWeek(Carbon::parse($process['var']['start_time'])->timestamp),
             'end_time' => $process['var']['end_time'],
-            'end_day_of_week' => '周' . Base::getTimeWeek(Carbon::parse($process['var']['end_time'])->timestamp),
+            'end_day_of_week' => '周' . Timer::getWeek(Carbon::parse($process['var']['end_time'])->timestamp),
             'description' => $process['var']['description'],
             'comment_nickname' => $process['comment_user_id'] ? User::userid2nickname($process['comment_user_id']) : '',
             'comment_content' => $process['comment_contents']['content'] ?? '',
