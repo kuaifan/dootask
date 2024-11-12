@@ -106,7 +106,7 @@ class FileContent extends AbstractModel
      * @param File $file
      * @param $content
      * @param $download
-     * @return array|\Symfony\Component\HttpFoundation\StreamedResponse
+     * @return array|\Symfony\Component\HttpFoundation\BinaryFileResponse
      */
     public static function formatContent($file, $content, $download = false)
     {
@@ -118,7 +118,7 @@ class FileContent extends AbstractModel
             } else {
                 $filePath = public_path($content['url']);
             }
-            return Base::streamDownload($filePath, $name);
+            return Base::BinaryFileResponse($filePath, $name);
         }
         if (empty($content)) {
             $content = match ($file->type) {
@@ -147,7 +147,7 @@ class FileContent extends AbstractModel
             if ($download) {
                 $filePath = public_path($path);
                 if (isset($filePath)) {
-                    return Base::streamDownload($filePath, $name);
+                    return Base::BinaryFileResponse($filePath, $name);
                 } else {
                     abort(403, "This file not support download.");
                 }

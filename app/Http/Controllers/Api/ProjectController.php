@@ -1819,7 +1819,7 @@ class ProjectController extends AbstractController
         }
         //
         $filePath = public_path($file->getRawOriginal('path'));
-        return Base::streamDownload($filePath, $file->name);
+        return Base::BinaryFileResponse($filePath, $file->name);
     }
 
     /**

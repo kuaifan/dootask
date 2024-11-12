@@ -1537,7 +1537,7 @@ class DialogController extends AbstractController
         }
         //
         $filePath = public_path($array['path']);
-        return Base::streamDownload($filePath, $array['name']);
+        return Base::BinaryFileResponse($filePath, $array['name']);
     }
 
     /**

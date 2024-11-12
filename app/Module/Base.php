@@ -2976,45 +2976,70 @@ class Base
     }
 
     /**
-     * 流下载，解决没有后缀无法下载的问题
-     * @param $file
-     * @param $name
-     * @return mixed
+     * BinaryFileResponse 下载文件
+     * @param File|\SplFileInfo|string $file 文件对象或路径
+     * @param string|null $name 下载文件名
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
      */
-    public static function streamDownload($file, $name = null)
+    public static function BinaryFileResponse($file, $name = null)
     {
-        if ($name && !str_contains($name, '.')) {
-            $name .= ".";
-        }
-        //
-        if (!$file instanceof File) {
-            if ($file instanceof \SplFileInfo) {
-                $file = new File($file->getPathname());
-            } else {
-                $file = new File((string)$file);
+        try {
+            // 处理文件对象
+            if (!$file instanceof File) {
+                if ($file instanceof \SplFileInfo) {
+                    $file = new File($file->getPathname());
+                } else {
+                    $file = new File((string)$file);
+                }
             }
-        }
-        if (!$file->isReadable()) {
-            throw new FileException('File must be readable.');
-        }
-        // 大于100M直接下载
-        if ($file->getSize() > 100 * 1024 * 1024) {
-            return Response::download($file->getPathname(), $name);
-        }
-        //
-        $filePath = $file->getPathname();
-        return Response::stream(function () use ($filePath) {
-            $fileStream = fopen($filePath, 'r');
-            while (!feof($fileStream)) {
-                echo fread($fileStream, 1024);
-                flush();
+
+            // 检查文件是否可读和存在
+            if (!$file->isReadable() || !$file->isFile()) {
+                throw new FileException('File must be readable and exist.');
             }
-            fclose($fileStream);
-        }, 200, [
-            'Content-Type' => 'application/octet-stream',
-            'Content-Disposition' => 'attachment; filename="'.$name.'"',
-            'Content-Length' => $file->getSize(),
-        ]);
+
+            // 处理文件名
+            if (empty($name)) {
+                $name = basename($file->getPathname());
+            } elseif (!str_contains($name, '.')) {
+                $name .= '.' . $file->getExtension();
+            }
+
+            // 文件名安全处理
+            $name = Base::cutStr($name, 180);
+            $name = str_replace(['"', '<', '>', '|', '/', '\\', '?', ':'], '', $name);
+
+            // IE 浏览器特殊处理
+            $encodedName = $name;
+            if (isset($_SERVER['HTTP_USER_AGENT']) && preg_match("/MSIE|Internet Explorer|Trident/i", $_SERVER['HTTP_USER_AGENT'])) {
+                $encodedName = rawurlencode($name);
+            }
+
+            // 创建响应对象
+            return new \Symfony\Component\HttpFoundation\BinaryFileResponse($file->getPathname(), 200, [
+                'Content-Type' => $file->getMimeType() ?: 'application/octet-stream',
+                'Content-Disposition' => sprintf(
+                    'attachment; filename="%s"; filename*=UTF-8\'\'%s',
+                    $encodedName,
+                    rawurlencode($name)
+                ),
+                // 添加缓存控制和安全相关的头
+                'Cache-Control' => 'private, no-transform, no-store, must-revalidate',
+                'Pragma' => 'public',
+                'Expires' => '0',
+                'Accept-Ranges' => 'bytes', // 支持断点续传
+                'X-Content-Type-Options' => 'nosniff', // 安全相关
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('File download failed', [
+                'error' => $e->getMessage(),
+                'file' => $file->getPathname() ?? null,
+                'name' => $name ?? null,
+                'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? null, // 添加更多调试信息
+                'ip' => request()->ip()
+            ]);
+            abort(403, 'File download failed');
+        }
     }
 
     /**
