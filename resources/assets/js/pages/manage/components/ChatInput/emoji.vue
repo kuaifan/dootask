@@ -17,7 +17,7 @@
             <Scrollbar>
                 <ul :class="[type, 'no-dark-content']">
                     <li v-for="item in list" @click="onSelect($event, item)">
-                        <img v-if="item.type === 'emoticon'" :src="item.src" :title="item.name" :alt="item.name"/>
+                        <Imgs v-if="item.type === 'emoticon'" :src="item.src" :title="item.name" :alt="item.name"/>
                         <span v-else v-html="item.html" :title="item.name"></span>
                     </li>
                 </ul>
@@ -32,7 +32,7 @@
                 <span class="no-dark-content">&#128512;</span>
             </li>
             <li v-for="item in emoticonData" :class="{active: type === 'emoticon' && emoticonPath == item.path}" @click="onEmoticon(item.path)">
-                <img :title="item.name" :alt="item.name" :src="item.src"/>
+                <Imgs :title="item.name" :alt="item.name" :src="item.src"/>
             </li>
             <li v-if="showEmojiMenuScrollRightBtn" @click="onEmojiMenuScroll('right')" class="right-btn"><i class="taskfont">&#xe733;</i></li>
         </ul>

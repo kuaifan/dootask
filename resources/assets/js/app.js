@@ -62,6 +62,7 @@ import TagInput from './components/TagInput.vue'
 import TableAction from './components/TableAction.vue'
 import QuickEdit from './components/QuickEdit.vue'
 import UserAvatar from './components/UserAvatar'
+import Imgs from './components/Replace/Imgs'
 import ImgView from './components/ImgView.vue'
 import Scrollbar from './components/Scrollbar'
 
@@ -72,6 +73,7 @@ Vue.component('TagInput', TagInput)
 Vue.component('TableAction', TableAction);
 Vue.component('QuickEdit', QuickEdit);
 Vue.component('UserAvatar', UserAvatar);
+Vue.component('Imgs', Imgs);
 Vue.component('ImgView', ImgView);
 Vue.component('Scrollbar', Scrollbar);
 

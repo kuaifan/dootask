@@ -1,4 +1,5 @@
 import {MarkdownPreview} from "../store/markdown";
+import {publicImageResources} from "../components/Replace/utils";
 
 /**
  * 页面专用
@@ -349,7 +350,7 @@ import {MarkdownPreview} from "../store/markdown";
                     const value = item.original
                         .replace(/\s+width=/, ` original-width=`)
                         .replace(/\s+height=/, ` original-height=`)
-                        .replace(/\s+src=(["'])([^'"]*)\1/i, ` style="width:${data.width}px;height:${data.height}px" src="${data.src}"`)
+                        .replace(/\s+src=(["'])([^'"]*)\1/i, ` style="width:${data.width}px;height:${data.height}px" src="${publicImageResources(data.src)}"`)
                     text = text.replace(item.original, value)
                 } else {
                     text = text.replace(item.original, `<div class="no-size-image-box">${item.original}</div>`);

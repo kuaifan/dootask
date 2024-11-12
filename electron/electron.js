@@ -1,7 +1,7 @@
 const fs = require('fs')
 const os = require("os");
 const path = require('path')
-const {app, BrowserWindow, ipcMain, dialog, clipboard, nativeImage, shell, Tray, Menu, globalShortcut, Notification, BrowserView, nativeTheme} = require('electron')
+const {app, BrowserWindow, ipcMain, dialog, clipboard, nativeImage, shell, Tray, Menu, globalShortcut, Notification, BrowserView, nativeTheme, protocol} = require('electron')
 const {autoUpdater} = require("electron-updater")
 const log = require("electron-log");
 const electronConf = require('electron-config')
@@ -50,6 +50,70 @@ let showState = {},
 
 if (fs.existsSync(devloadCachePath)) {
     devloadUrl = fs.readFileSync(devloadCachePath, 'utf8')
+}
+
+// 在最开始就注册协议为特权协议
+protocol.registerSchemesAsPrivileged([
+    {
+        scheme: 'dootask-resources',
+        privileges: {
+            standard: true,
+            secure: true,
+            supportFetchAPI: true,
+            corsEnabled: true
+        }
+    }
+])
+
+/**
+ * 创建协议
+ */
+function createProtocol() {
+    protocol.handle('dootask-resources', async (request) => {
+        const url = request.url.replace(/^dootask-resources:\/\//, '')
+
+        if (url.includes('..')) {
+            return new Response('Access Denied', { status: 403 })
+        }
+
+        try {
+            const filePath = path.join(__dirname, devloadUrl ? '..' : '.', url)
+
+            if (!fs.existsSync(filePath)) {
+                return new Response('Not Found', { status: 404 })
+            }
+
+            const data = await fs.promises.readFile(filePath)
+            const mimeType = getMimeType(filePath)
+
+            return new Response(data, {
+                headers: {
+                    'Content-Type': mimeType
+                }
+            })
+        } catch (error) {
+            console.error('Protocol handler error:', error)
+            return new Response('Internal Error', { status: 500 })
+        }
+    })
+}
+
+/**
+ * MIME类型判断
+ * @param filePath
+ * @returns {*|string}
+ */
+function getMimeType(filePath) {
+    const ext = path.extname(filePath).toLowerCase()
+    const mimeTypes = {
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.png': 'image/png',
+        '.gif': 'image/gif',
+        '.svg': 'image/svg+xml',
+        '.webp': 'image/webp'
+    }
+    return mimeTypes[ext] || 'application/octet-stream'
 }
 
 /**
@@ -596,6 +660,8 @@ if (!getTheLock) {
         isReady = true
         // SameSite
         utils.useCookie()
+        // 创建协议
+        createProtocol()
         // 创建主窗口
         createMainWindow()
         // 创建托盘
