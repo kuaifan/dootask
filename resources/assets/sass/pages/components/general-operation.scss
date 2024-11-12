@@ -1,4 +1,4 @@
-.task-operation-dropdown {
+.general-operation-dropdown {
     position: absolute;
     top: 0;
     left: 0;
@@ -18,9 +18,9 @@
     }
 }
 
-.task-operation-more-dropdown {
+.general-operation-more-dropdown {
     > li {
-        &.task-operation-more-warp {
+        &.general-operation-more-warp {
             list-style: none;
 
             > ul {
@@ -89,16 +89,19 @@
                                 border-color: rgba($flow-status-start-color, 0.1);
                                 color: $flow-status-start-color;
                             }
+
                             &.progress {
                                 background-color: rgba($flow-status-progress-color, 0.1);
                                 border-color: rgba($flow-status-progress-color, 0.1);
                                 color: $flow-status-progress-color;
                             }
+
                             &.test {
                                 background-color: rgba($flow-status-test-color, 0.1);
                                 border-color: rgba($flow-status-test-color, 0.1);
                                 color: $flow-status-test-color;
                             }
+
                             &.end {
                                 background-color: rgba($flow-status-end-color, 0.1);
                                 border-color: rgba($flow-status-end-color, 0.1);

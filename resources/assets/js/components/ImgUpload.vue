@@ -2,7 +2,7 @@
     <div class="common-img-update">
         <div v-if="type !== 'callback'" class="imgcomp-upload-list" v-for="item in uploadList">
             <template v-if="item.status === 'finished'">
-                <div class="imgcomp-upload-img" v-bind:style="{ 'background-image': 'url(' + backgroundImage(item.thumb) + ')' }"></div>
+                <div @click="handleTouch($event, item)" class="imgcomp-upload-img" v-bind:style="{ 'background-image': 'url(' + backgroundImage(item.thumb) + ')' }"></div>
                 <div class="imgcomp-upload-list-cover">
                     <Icon type="ios-eye-outline" @click.native="handleView(item)"></Icon>
                     <Icon type="ios-trash-outline" @click.native="handleRemove(item)"></Icon>
@@ -13,7 +13,7 @@
             </template>
         </div>
         <div class="add-box" v-bind:class="{ 'callback-add-box': type === 'callback' }">
-            <div class="add-box-icon">
+            <div @click="handleTouch($event, null)" class="add-box-icon">
                 <Icon type="md-add" size="32"></Icon>
             </div>
             <div class="add-box-upload">
@@ -77,314 +77,361 @@
 </template>
 
 <script>
-    export default {
-        name: 'ImgUpload',
-        props: {
-            value: {
-            },
-            num: {
-            },
-            width: {
-            },
-            height: {
-            },
-            whcut: {
-            },
-            type: {
-            },
-            http: {
-                type: Boolean,
-                default: false
-            },
-            otherParams: {
-                type: Object,
-                default: () => {
-                    return {};
+import {languageList} from "../language";
+
+export default {
+    name: 'ImgUpload',
+    props: {
+        value: {},
+        num: {},
+        width: {},
+        height: {},
+        whcut: {},
+        type: {},
+        http: {
+            type: Boolean,
+            default: false
+        },
+        otherParams: {
+            type: Object,
+            default: () => {
+                return {};
+            }
+        },
+        uploadIng: {
+            type: Number,
+            default: 0
+        }
+    },
+    data() {
+        return {
+            actionUrl: $A.apiUrl('system/imgupload'),
+            multiple: this.num > 1,
+            visible: false,
+            browseVisible: false,
+            isLoading: false,
+            browseList: [],
+            browseListNext: [],
+            imgVisible: '',
+            defaultList: this.initItems(this.value),
+            uploadList: [],
+            maxNum: Math.min(Math.max($A.runNum(this.num), 1), 99),
+            httpValue: '',
+            httpType: '',
+            maxSize: 2048
+        }
+    },
+    mounted() {
+        this.uploadList = this.$refs.upload.fileList;
+        this.$emit('input', this.uploadList);
+        //
+        let browseBox = $A(this.$refs.browselistbox);
+        browseBox.scroll(() => {
+            let nHight = browseBox[0].scrollHeight;
+            let nTop = browseBox[0].scrollTop;
+            let boxHight = browseBox.height();
+            if (nTop + boxHight >= nHight) {
+                //到底了
+                if (this.browseListNext.length > 0) {
+                    let tmpNext = this.browseListNext;
+                    this.browseListNext = [];
+                    this.browsePictureFor(tmpNext);
                 }
-            },
-            uploadIng: {
-                type: Number,
-                default: 0
             }
-        },
-        data () {
-            return {
-                actionUrl: $A.apiUrl('system/imgupload'),
-                multiple: this.num > 1,
-                visible: false,
-                browseVisible: false,
-                isLoading: false,
-                browseList: [],
-                browseListNext: [],
-                imgVisible: '',
-                defaultList: this.initItems(this.value),
-                uploadList: [],
-                maxNum: Math.min(Math.max($A.runNum(this.num), 1), 99),
-                httpValue: '',
-                httpType: '',
-                maxSize: 2048
+        });
+    },
+    watch: {
+        value(val) {
+            if (typeof val === 'string') {
+                this.$emit('input', this.initItems(val));
+                return;
             }
-        },
-        mounted () {
+            if (val === this.$refs.upload.fileList) {
+                return;
+            }
+            this.$refs.upload.fileList = this.initItems(val);
             this.uploadList = this.$refs.upload.fileList;
-            this.$emit('input', this.uploadList);
-            //
-            let browseBox = $A(this.$refs.browselistbox);
-            browseBox.scroll(()=>{
-                let nHight = browseBox[0].scrollHeight;
-                let nTop = browseBox[0].scrollTop;
-                let boxHight = browseBox.height();
-                if(nTop + boxHight >= nHight) {
-                    //到底了
-                    if (this.browseListNext.length > 0) {
-                        let tmpNext = this.browseListNext;
-                        this.browseListNext = [];
-                        this.browsePictureFor(tmpNext);
-                    }
-                }
-            });
         },
-        watch: {
-            value (val) {
-                if (typeof val === 'string') {
-                    this.$emit('input', this.initItems(val));
-                    return;
-                }
-                if (val === this.$refs.upload.fileList) {
-                    return;
-                }
-                this.$refs.upload.fileList = this.initItems(val);
-                this.uploadList = this.$refs.upload.fileList;
-            },
-            browseVisible() {
-                this.httpType = '';
-                this.httpValue = '';
+        browseVisible() {
+            this.httpType = '';
+            this.httpValue = '';
+        }
+    },
+    computed: {
+        uploadHeaders() {
+            return {
+                fd: $A.getSessionStorageString("userWsFd"),
+                token: this.userToken,
             }
         },
-        computed: {
-            uploadHeaders() {
-                return {
-                    fd: $A.getSessionStorageString("userWsFd"),
-                    token: this.userToken,
-                }
-            },
 
-            uploadParams() {
-                let params = {
-                    width: this.width,
-                    height: this.height,
-                    whcut: this.whcut,
-                };
-                if (Object.keys(this.otherParams).length > 0) {
-                    return Object.assign(params, this.otherParams);
-                } else {
-                    return params;
-                }
-            }
-        },
-        methods: {
-            handleCallback(file) {
-                if (this.type === 'callback') {
-                    if (file === true) {
-                        this.$emit('on-callback', this.uploadList);
-                        this.$refs.upload.fileList = [];
-                        this.uploadList = this.$refs.upload.fileList;
-                    }else if (typeof file === "object") {
-                        this.$emit('on-callback', [file]);
-                    }
-                }
-                this.browseVisible = false;
-            },
-            initItems(items) {
-                //数据初始化
-                if (typeof items === 'string') {
-                    items = [{'url': items}];
-                }
-                let list = [];
-                $A.each(items, (index, item)=>{
-                    if (typeof item === 'string') item = {'url': item};
-                    if (item.url) {
-                        item.active = true;
-                        item.status = 'finished';
-                        if (typeof item.path === 'undefined') item.path = item.url;
-                        if (typeof item.thumb === 'undefined') item.thumb = item.url;
-                        list.push(item);
-                    }
-                });
-                return list;
-            },
-            handleView (item) {
-                //查看
-                this.$store.dispatch("previewImage", item.url)
-                // this.visible = true;
-                // this.imgVisible = item.url;
-            },
-            handleRemove (item) {
-                //删除
-                let fileList = this.$refs.upload.fileList;
-                this.$refs.upload.fileList.splice(fileList.indexOf(item), 1);
-                this.$emit('input', this.$refs.upload.fileList);
-            },
-            handleProgress(event, file) {
-                //开始上传
-                if (file._uploadIng === undefined) {
-                    file._uploadIng = true;
-                    this.$emit('update:uploadIng', this.uploadIng + 1);
-                }
-            },
-            handleSuccess (res, file) {
-                //上传完成
-                this.$emit('update:uploadIng', this.uploadIng - 1);
-                if (res.ret === 1) {
-                    file.url = res.data.url;
-                    file.path = res.data.path;
-                    file.thumb = res.data.thumb;
-                    this.handleCallback(file);
-                }else{
-                    $A.noticeWarning({
-                        title: this.$L('上传失败'),
-                        desc: this.$L('文件 ' + file.name + ' 上传失败 ' + res.msg),
-                    });
-                    this.$refs.upload.fileList.pop();
-                }
-                this.$emit('input', this.$refs.upload.fileList);
-            },
-            handleError() {
-                //上传错误
-                this.$emit('update:uploadIng', this.uploadIng - 1);
-            },
-            handleFormatError (file) {
-                //上传类型错误
-                $A.noticeWarning({
-                    title: this.$L('文件格式不正确'),
-                    desc: this.$L('文件 ' + file.name + ' 格式不正确，请上传 jpg、jpeg、webp、gif、png 格式的图片。')
-                });
-            },
-            handleMaxSize (file) {
-                //上传大小错误
-                $A.noticeWarning({
-                    title: this.$L('超出文件大小限制'),
-                    desc: this.$L('文件 ' + file.name + ' 太大，不能超过：' + $A.bytesToSize(this.maxSize * 1024))
-                });
-            },
-            handleBeforeUpload () {
-                //上传前判断
-                let check = this.uploadList.length < this.maxNum;
-                if (!check && this.uploadList.length == 1) {
-                    this.handleRemove(this.uploadList[0]);
-                    check = this.uploadList.length < this.maxNum;
-                }
-                if (!check) {
-                    $A.noticeWarning(this.$L('最多只能上传 ' + this.maxNum + ' 张图片。'));
-                }
-                return check;
-            },
-            handleClick() {
-                //手动上传
-                if (this.handleBeforeUpload()) {
-                    this.$refs.upload.handleClick()
-                }
-            },
-            handleManual(file) {
-                //手动传file
-                if (this.handleBeforeUpload()) {
-                    this.$refs.upload.upload(file);
-                }
-            },
-            browsePicture(path) {
-                //获取图片空间
-                this.browseVisible = true;
-                this.browseList = [];
-                this.browseListNext = [];
-                this.isLoading = true;
-                this.$store.dispatch("call", {
-                    url: 'system/imgview',
-                    data: {path: path ? path : ''},
-                }).then(({data}) => {
-                    let dirs = data['dirs'];
-                    for (let i = 0; i < dirs.length; i++) {
-                        this.browseList.push(dirs[i]);
-                    }
-                    this.browsePictureFor(data['files']);
-                }).catch(({msg}) => {
-                    this.browseVisible = false;
-                    $A.noticeWarning(msg);
-                }).finally(_ => {
-                    this.isLoading = false;
-                });
-            },
-
-            browsePictureFor(files) {
-                for (let o = 0; o < files.length; o++) {
-                    for (let j = 0; j < this.uploadList.length; j++) {
-                        if (this.uploadList[j]['url'] === files[o]['url']
-                            || this.uploadList[j]['url'] === files[o]['path']) {
-                            files[o]['active'] = true;
-                            break;
-                        }
-                    }
-                    if (o < 100) {
-                        this.browseList.push(files[o]);
-                    }else{
-                        this.browseListNext.push(files[o]);
-                    }
-                }
-            },
-
-            browseItem(item) {
-                //点击选择图片
-                if (item.type === 'dir') {
-                    //文件夹
-                    this.browsePicture(item.path);
-                }else if (item.type === 'file') {
-                    //文件
-                    if (item.active) {
-                        let fileList = this.$refs.upload.fileList;
-                        this.$refs.upload.fileList.splice(fileList.indexOf(item), 1);
-                        item.active = false;
-                    }else{
-                        if (this.maxNum === 1) {
-                            for (let i = 0; i < this.browseList.length; i++) {
-                                this.browseList[i].active = false;
-                            }
-                            this.$refs.upload.fileList = [];
-                            this.uploadList = this.$refs.upload.fileList;
-                        }
-                        let check = this.uploadList.length < this.maxNum;
-                        if (!check) {
-                            $A.noticeWarning(this.$L('最多只能选择 ' + this.maxNum + ' 张图片。'));
-                            return;
-                        }
-                        item.active = true;
-                        item.status = 'finished';
-                        this.$refs.upload.fileList.push(item);
-                        this.uploadList = this.$refs.upload.fileList;
-                    }
-                    this.$emit('input', this.$refs.upload.fileList);
-                }
-            },
-
-            browseStyle(thumb) {
-                if (!/https*:\/\//.test(thumb) && !/^\//.test(thumb)) {
-                    thumb = $A.mainUrl(thumb);
-                }
-                return {
-                    'background-image': `url("${thumb}")`
-                }
-            },
-
-            backgroundImage(url) {
-                if ($A.strExists(url, "?", false)) {
-                    return $A.mainUrl(url) + "&__thumb=true";
-                }else{
-                    return $A.mainUrl(url) + "?__thumb=true";
-                }
-            },
-
-            httpEnter() {
-                this.$emit('input', this.initItems(this.httpValue));
-                this.browseVisible = false;
+        uploadParams() {
+            let params = {
+                width: this.width,
+                height: this.height,
+                whcut: this.whcut,
+            };
+            if (Object.keys(this.otherParams).length > 0) {
+                return Object.assign(params, this.otherParams);
+            } else {
+                return params;
             }
         }
+    },
+    methods: {
+        handleCallback(file) {
+            if (this.type === 'callback') {
+                if (file === true) {
+                    this.$emit('on-callback', this.uploadList);
+                    this.$refs.upload.fileList = [];
+                    this.uploadList = this.$refs.upload.fileList;
+                } else if (typeof file === "object") {
+                    this.$emit('on-callback', [file]);
+                }
+            }
+            this.browseVisible = false;
+        },
+        initItems(items) {
+            //数据初始化
+            if (typeof items === 'string') {
+                items = [{'url': items}];
+            }
+            let list = [];
+            $A.each(items, (index, item) => {
+                if (typeof item === 'string') item = {'url': item};
+                if (item.url) {
+                    item.active = true;
+                    item.status = 'finished';
+                    if (typeof item.path === 'undefined') item.path = item.url;
+                    if (typeof item.thumb === 'undefined') item.thumb = item.url;
+                    list.push(item);
+                }
+            });
+            return list;
+        },
+        handleTouch(event, item) {
+            if (!this.windowTouch) {
+                return;
+            }
+            const list = [];
+            if (item === null) {
+                const subfix = this.type === 'callback' ? '图片' : '';
+                list.push(...[
+                    {
+                        label: '浏览' + subfix,
+                        value: 'browse'
+                    },
+                    {
+                        label: '上传' + subfix,
+                        value: 'upload'
+                    }
+                ])
+            } else {
+                list.push(...[
+                    {
+                        label: '查看',
+                        value: 'view'
+                    },
+                    {
+                        label: '删除',
+                        value: 'trash'
+                    }
+                ])
+            }
+            this.$store.state.menuOperation = {
+                event,
+                list,
+                scrollHide: true,
+                onUpdate: async (act) => {
+                    switch (act) {
+                        case 'browse':
+                            this.browsePicture();
+                            break;
+                        case 'upload':
+                            this.$refs.upload?.handleClick()
+                            break;
+                        case 'view':
+                            this.handleView(item);
+                            break;
+                        case 'trash':
+                            this.handleRemove(item);
+                            break;
+                    }
+                }
+            }
+        },
+        handleView(item) {
+            //查看
+            this.$store.dispatch("previewImage", item.url)
+            // this.visible = true;
+            // this.imgVisible = item.url;
+        },
+        handleRemove(item) {
+            //删除
+            let fileList = this.$refs.upload.fileList;
+            this.$refs.upload.fileList.splice(fileList.indexOf(item), 1);
+            this.$emit('input', this.$refs.upload.fileList);
+        },
+        handleProgress(event, file) {
+            //开始上传
+            if (file._uploadIng === undefined) {
+                file._uploadIng = true;
+                this.$emit('update:uploadIng', this.uploadIng + 1);
+            }
+        },
+        handleSuccess(res, file) {
+            //上传完成
+            this.$emit('update:uploadIng', this.uploadIng - 1);
+            if (res.ret === 1) {
+                file.url = res.data.url;
+                file.path = res.data.path;
+                file.thumb = res.data.thumb;
+                this.handleCallback(file);
+            } else {
+                $A.noticeWarning({
+                    title: this.$L('上传失败'),
+                    desc: this.$L('文件 ' + file.name + ' 上传失败 ' + res.msg),
+                });
+                this.$refs.upload.fileList.pop();
+            }
+            this.$emit('input', this.$refs.upload.fileList);
+        },
+        handleError() {
+            //上传错误
+            this.$emit('update:uploadIng', this.uploadIng - 1);
+        },
+        handleFormatError(file) {
+            //上传类型错误
+            $A.noticeWarning({
+                title: this.$L('文件格式不正确'),
+                desc: this.$L('文件 ' + file.name + ' 格式不正确，请上传 jpg、jpeg、webp、gif、png 格式的图片。')
+            });
+        },
+        handleMaxSize(file) {
+            //上传大小错误
+            $A.noticeWarning({
+                title: this.$L('超出文件大小限制'),
+                desc: this.$L('文件 ' + file.name + ' 太大，不能超过：' + $A.bytesToSize(this.maxSize * 1024))
+            });
+        },
+        handleBeforeUpload() {
+            //上传前判断
+            let check = this.uploadList.length < this.maxNum;
+            if (!check && this.uploadList.length == 1) {
+                this.handleRemove(this.uploadList[0]);
+                check = this.uploadList.length < this.maxNum;
+            }
+            if (!check) {
+                $A.noticeWarning(this.$L('最多只能上传 ' + this.maxNum + ' 张图片。'));
+            }
+            return check;
+        },
+        handleClick() {
+            //手动上传
+            if (this.handleBeforeUpload()) {
+                this.$refs.upload.handleClick()
+            }
+        },
+        handleManual(file) {
+            //手动传file
+            if (this.handleBeforeUpload()) {
+                this.$refs.upload.upload(file);
+            }
+        },
+        browsePicture(path) {
+            //获取图片空间
+            this.browseVisible = true;
+            this.browseList = [];
+            this.browseListNext = [];
+            this.isLoading = true;
+            this.$store.dispatch("call", {
+                url: 'system/imgview',
+                data: {path: path ? path : ''},
+            }).then(({data}) => {
+                let dirs = data['dirs'];
+                for (let i = 0; i < dirs.length; i++) {
+                    this.browseList.push(dirs[i]);
+                }
+                this.browsePictureFor(data['files']);
+            }).catch(({msg}) => {
+                this.browseVisible = false;
+                $A.noticeWarning(msg);
+            }).finally(_ => {
+                this.isLoading = false;
+            });
+        },
+
+        browsePictureFor(files) {
+            for (let o = 0; o < files.length; o++) {
+                for (let j = 0; j < this.uploadList.length; j++) {
+                    if (this.uploadList[j]['url'] === files[o]['url']
+                        || this.uploadList[j]['url'] === files[o]['path']) {
+                        files[o]['active'] = true;
+                        break;
+                    }
+                }
+                if (o < 100) {
+                    this.browseList.push(files[o]);
+                } else {
+                    this.browseListNext.push(files[o]);
+                }
+            }
+        },
+
+        browseItem(item) {
+            //点击选择图片
+            if (item.type === 'dir') {
+                //文件夹
+                this.browsePicture(item.path);
+            } else if (item.type === 'file') {
+                //文件
+                if (item.active) {
+                    let fileList = this.$refs.upload.fileList;
+                    this.$refs.upload.fileList.splice(fileList.indexOf(item), 1);
+                    item.active = false;
+                } else {
+                    if (this.maxNum === 1) {
+                        for (let i = 0; i < this.browseList.length; i++) {
+                            this.browseList[i].active = false;
+                        }
+                        this.$refs.upload.fileList = [];
+                        this.uploadList = this.$refs.upload.fileList;
+                    }
+                    let check = this.uploadList.length < this.maxNum;
+                    if (!check) {
+                        $A.noticeWarning(this.$L('最多只能选择 ' + this.maxNum + ' 张图片。'));
+                        return;
+                    }
+                    item.active = true;
+                    item.status = 'finished';
+                    this.$refs.upload.fileList.push(item);
+                    this.uploadList = this.$refs.upload.fileList;
+                }
+                this.$emit('input', this.$refs.upload.fileList);
+            }
+        },
+
+        browseStyle(thumb) {
+            if (!/https*:\/\//.test(thumb) && !/^\//.test(thumb)) {
+                thumb = $A.mainUrl(thumb);
+            }
+            return {
+                'background-image': `url("${thumb}")`
+            }
+        },
+
+        backgroundImage(url) {
+            if ($A.strExists(url, "?", false)) {
+                return $A.mainUrl(url) + "&__thumb=true";
+            } else {
+                return $A.mainUrl(url) + "?__thumb=true";
+            }
+        },
+
+        httpEnter() {
+            this.$emit('input', this.initItems(this.httpValue));
+            this.browseVisible = false;
+        }
     }
+}
 </script>

@@ -45,6 +45,9 @@
         left: 0;
         right: 0;
         background: rgba(0, 0, 0, .6);
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
     }
 
     .imgcomp-upload-list-cover i {
@@ -74,7 +77,7 @@
 }
 
 .imgcomp-upload-list:hover .imgcomp-upload-list-cover {
-    display: block;
+    display: flex;
 }
 
 .img-upload-foot {
@@ -111,10 +114,11 @@
     vertical-align: top;
 
     .add-box-icon {
-        i {
-            vertical-align: middle;
-            padding-bottom: 2px;
-        }
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
     }
 
     .add-box-upload {
@@ -132,8 +136,12 @@
             height: 22px;
             line-height: 22px;
             cursor: pointer;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
 
-            .ivu-upload-drag, .ivu-upload-drag:hover {
+            .ivu-upload-drag,
+            .ivu-upload-drag:hover {
                 background: transparent;
                 border: 0;
                 border-radius: 0;
@@ -259,4 +267,18 @@
     height: 100%;
     background-color: rgba(255, 255, 255, 0.9);
     z-index: 1;
+}
+
+// 移动端不显示
+body.window-touch {
+    .imgcomp-upload-list:hover .imgcomp-upload-list-cover {
+        display: none;
+    }
+    .add-box:hover {
+        border-color: #dddee1;
+
+        .add-box-upload {
+            display: none;
+        }
+    }
 }

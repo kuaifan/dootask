@@ -6,13 +6,13 @@
             :disabled="disabled"
             :size="size"
             :style="styles"
-            class="task-operation-dropdown"
+            class="general-operation-dropdown"
             placement="bottom"
             @command="dropTask"
             @visible-change="visibleChange">
-            <div ref="icon" class="task-operation-icon"></div>
-            <EDropdownMenu ref="dropdownMenu" slot="dropdown" class="task-operation-more-dropdown">
-                <li class="task-operation-more-warp" :class="size">
+            <div ref="icon" class="general-operation-icon"></div>
+            <EDropdownMenu ref="dropdownMenu" slot="dropdown" class="general-operation-more-dropdown">
+                <li class="general-operation-more-warp" :class="size">
                     <ul>
                         <EDropdownItem v-if="!flow" class="load-flow" disabled>
                             <div class="load-flow-warp">

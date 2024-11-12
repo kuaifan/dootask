@@ -2,15 +2,15 @@
     <EDropdown
         ref="dropdown"
         trigger="click"
-        class="task-operation-dropdown"
+        class="general-operation-dropdown"
         placement="bottom"
         size="small"
         :style="styles"
         @command="onCommand"
         @visible-change="visibleChange">
-        <div ref="icon" class="task-operation-icon"></div>
-        <EDropdownMenu ref="dropdownMenu" slot="dropdown" class="task-operation-more-dropdown">
-            <li class="task-operation-more-warp small">
+        <div ref="icon" class="general-operation-icon"></div>
+        <EDropdownMenu ref="dropdownMenu" slot="dropdown" class="general-operation-more-dropdown menu-dropdown">
+            <li class="general-operation-more-warp small">
                 <ul>
                     <EDropdownItem
                         v-for="(item, key) in list"
@@ -73,8 +73,8 @@ export default {
                 this.scrollHide = typeof data.scrollHide === "boolean" ? data.scrollHide : false;
                 //
                 this.$refs.icon.focus();
-                this.updatePopper();
                 this.show();
+                this.updatePopper();
                 this.setupEventListeners(data.event)
             } else {
                 this.hide()
@@ -103,7 +103,9 @@ export default {
         },
 
         updatePopper() {
-            this.$nextTick(this.$refs.dropdownMenu.updatePopper)
+            setTimeout(() => {
+                this.$refs.dropdownMenu.updatePopper();
+            }, 0);
         },
 
         setupEventListeners(event) {
