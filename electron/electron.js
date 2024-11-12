@@ -3,7 +3,7 @@ const os = require("os");
 const path = require('path')
 const {app, BrowserWindow, ipcMain, dialog, clipboard, nativeImage, shell, Tray, Menu, globalShortcut, Notification, BrowserView, nativeTheme, protocol} = require('electron')
 const {autoUpdater} = require("electron-updater")
-const log = require("electron-log");
+const loger = require("electron-log");
 const electronConf = require('electron-config')
 const userConf = new electronConf()
 const fsProm = require('fs/promises');
@@ -1150,7 +1150,7 @@ ipcMain.on('openNotification', (event, args) => {
 //================================================================
 
 let autoUpdating = 0
-autoUpdater.logger = log
+autoUpdater.logger = loger
 autoUpdater.autoDownload = false
 autoUpdater.autoInstallOnAppQuit = true
 autoUpdater.on('update-available', info => {
@@ -1264,7 +1264,7 @@ function writePngWithText(origBuff, key, text, compressed, base64encoded) {
         outBuff.writeUInt32BE(magic2, outOffset);
         outOffset += 4;
     } catch (e) {
-        log.error(e.message, {stack: e.stack});
+        loger.error(e.message, {stack: e.stack});
         throw new Error("PNGImageDecoder1");
     }
 
@@ -1345,7 +1345,7 @@ function writePngWithText(origBuff, key, text, compressed, base64encoded) {
             outOffset += length + 4;
         }
     } catch (e) {
-        log.error(e.message, {stack: e.stack});
+        loger.error(e.message, {stack: e.stack});
         throw e;
     }
 }
