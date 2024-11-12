@@ -63,22 +63,22 @@
                                             transfer/>
                                     </div>
                                     <Button type="default" icon="md-add" @click="onAddTimeRange">{{ $L('添加时间范围') }}</Button>
-                                    <div class="form-tip">{{ $L('仅在通知时间内发送邮件。') }}</div>
+                                    <div class="form-tip">{{ $L('仅在指定时间范围内发送邮件通知。') }}</div>
                                 </div>
                             </FormItem>
                             <FormItem :label="$L('未读个人消息')" prop="msg_unread_user_minute">
                                 <div class="input-number-box">
                                     <InputNumber v-model="formData.msg_unread_user_minute" :min="0" :step="1"/>
-                                    <label>{{ $L('分钟') }}(m)</label>
+                                    <label>{{ $L('分钟') }}</label>
                                 </div>
                             </FormItem>
                             <FormItem :label="$L('未读群聊消息')" prop="msg_unread_group_minute">
                                 <div class="input-number-box">
                                     <InputNumber v-model="formData.msg_unread_group_minute" :min="0" :step="1"/>
-                                    <label>{{ $L('分钟') }}(m)</label>
+                                    <label>{{ $L('分钟') }}</label>
                                 </div>
                             </FormItem>
-                            <div class="form-tip">{{$L('填写-1则不通知，误差±10分钟')}}</div>
+                            <div class="form-tip">{{$L('未读消息超过指定时间后发送邮件通知，设为-1则不通知。')}}</div>
                         </Form>
                     </FormItem>
                 </div>
