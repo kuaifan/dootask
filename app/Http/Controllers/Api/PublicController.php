@@ -103,9 +103,7 @@ class PublicController extends AbstractController
                 return 'key error';
             }
         }
-        if ($error = UserBot::checkinBotCheckin($mac, $time, $alreadyTip)) {
-            return $error;
-        }
+        UserBot::checkinBotCheckin($mac, $time, $alreadyTip);
         return 'success';
     }
 }

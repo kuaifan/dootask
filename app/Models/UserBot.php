@@ -211,9 +211,7 @@ class UserBot extends AbstractModel
             if (!in_array('manual', $setting['modes'])) {
                 return '暂未开放手动签到。';
             }
-            if ($error = UserBot::checkinBotCheckin('manual-' . $userid, Timer::time(), true)) {
-                return $error;
-            }
+            UserBot::checkinBotCheckin('manual-' . $userid, Timer::time(), true);
             return null;
         } elseif ($command === 'locat-checkin') {
             $setting = Base::setting('checkinSetting');
@@ -231,9 +229,7 @@ class UserBot extends AbstractModel
             } else {
                 return '错误的定位签到。';
             }
-            if ($error = UserBot::checkinBotCheckin('locat-' . $userid, Timer::time(), true)) {
-                return $error;
-            }
+            UserBot::checkinBotCheckin('locat-' . $userid, Timer::time(), true);
             return null;
         } else {
             return Extranet::checkinBotQuickMsg($command);
@@ -247,7 +243,6 @@ class UserBot extends AbstractModel
      * - 支持：mac地址、(manual|locat|face|checkin)-userid
      * @param $time
      * @param bool $alreadyTip  签到过是否提示
-     * @return string|null 返回string表示错误信息，返回null表示签到成功
      */
     public static function checkinBotCheckin($mac, $time, $alreadyTip = false)
     {
@@ -263,18 +258,20 @@ class UserBot extends AbstractModel
         $timeEnd = strtotime("{$nowDate} {$times[1]}");
         $timeAdvance = max($timeStart - $advance, strtotime($nowDate));
         $timeDelay = min($timeEnd + $delay, strtotime("{$nowDate} 23:59:59"));
+        $errorTime = false;
         if (Timer::time() < $timeAdvance || $timeDelay < Timer::time()) {
-            return "不在有效时间内，有效时间为：" . date("H:i", $timeAdvance) . "-" . date("H:i", $timeDelay);
+            $errorTime = "不在有效时间内，有效时间为：" . date("H:i", $timeAdvance) . "-" . date("H:i", $timeDelay);
         }
         //
         $macs = explode(",", $mac);
         $checkins = [];
+        $array = [];
         foreach ($macs as $mac) {
             $mac = strtoupper($mac);
-            $array = [];
             if (Base::isMac($mac)) {
+                // 路由器签到
                 if ($UserCheckinMac = UserCheckinMac::whereMac($mac)->first()) {
-                    $array = [
+                    $array[] = [
                         'userid' => $UserCheckinMac->userid,
                         'mac' => $UserCheckinMac->mac,
                         'date' => $nowDate,
@@ -285,6 +282,7 @@ class UserBot extends AbstractModel
                     ];
                 }
             } elseif (preg_match('/^(manual|locat|face|checkin)-(\d+)$/i', $mac, $match)) {
+                // 机器签到、手动签到、定位签到
                 $type = str_replace('checkin', 'face', strtolower($match[1]));
                 $mac = intval($match[2]);
                 $remark = match ($type) {
@@ -294,7 +292,7 @@ class UserBot extends AbstractModel
                     default => '',
                 };
                 if ($UserInfo = User::whereUserid($mac)->whereBot(0)->first()) {
-                    $array = [
+                    $array[] = [
                         'userid' => $UserInfo->userid,
                         'mac' => '00:00:00:00:00:00',
                         'date' => $nowDate,
@@ -304,13 +302,13 @@ class UserBot extends AbstractModel
                         'remark' => $remark,
                     ];
                 }
-            } else {
-                continue;
             }
-            if ($array) {
-                $record = UserCheckinRecord::where($array)->first();
+        }
+        if (!$errorTime) {
+            foreach ($array as $item) {
+                $record = UserCheckinRecord::where($item)->first();
                 if (empty($record)) {
-                    $record = UserCheckinRecord::createInstance($array);
+                    $record = UserCheckinRecord::createInstance($item);
                 }
                 $record->times = Base::array2json(array_merge($record->times, [$nowTime]));
                 $record->report_time = $time;
@@ -332,11 +330,28 @@ class UserBot extends AbstractModel
                 }
                 return null;
             };
-            $sendMsg = function($type, $checkin) use ($alreadyTip, $getJokeSoup, $botUser, $nowDate) {
+            $sendMsg = function($type, $checkin) use ($errorTime, $alreadyTip, $getJokeSoup, $botUser, $nowDate) {
+                $dialog = WebSocketDialog::checkUserDialog($botUser, $checkin['userid']);
+                if (!$dialog) {
+                    return;
+                }
+                // 判断错误
+                if ($errorTime) {
+                    if ($alreadyTip) {
+                        $text = $errorTime;
+                        $text .= $checkin['remark'] ? " ({$checkin['remark']})": "";
+                        WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                            'type' => 'content',
+                            'content' => $text,
+                        ], $botUser->userid, false, false, true);
+                    }
+                    return;
+                }
+                // 判断已打卡
                 $cacheKey = "Checkin::sendMsg-{$nowDate}-{$type}:" . $checkin['userid'];
                 $typeContent = $type == "up" ? "上班" : "下班";
                 if (Cache::get($cacheKey) === "yes") {
-                    if ($alreadyTip && $dialog = WebSocketDialog::checkUserDialog($botUser, $checkin['userid'])) {
+                    if ($alreadyTip) {
                         $text = "今日已{$typeContent}打卡，无需重复打卡。";
                         $text .= $checkin['remark'] ? " ({$checkin['remark']})": "";
                         WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
@@ -347,26 +362,24 @@ class UserBot extends AbstractModel
                     return;
                 }
                 Cache::put($cacheKey, "yes", Carbon::now()->addDay());
-                //
-                if ($dialog = WebSocketDialog::checkUserDialog($botUser, $checkin['userid'])) {
-                    $hi = date("H:i");
-                    $remark = $checkin['remark'] ? " ({$checkin['remark']})": "";
-                    $subcontent = $getJokeSoup($type, $checkin['userid']);
-                    $title = "{$typeContent}打卡成功，打卡时间: {$hi}{$remark}";
-                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
-                        'type' => 'content',
-                        'title' => $title,
-                        'content' => [
-                            [
-                                'content' => $title
-                            ], [
-                                'content' => $subcontent,
-                                'language' => false,
-                                'style' => 'padding-top:4px;opacity:0.6',
-                            ]
-                        ],
-                    ], $botUser->userid, false, false, $type != "up");
-                }
+                // 打卡成功
+                $hi = date("H:i");
+                $remark = $checkin['remark'] ? " ({$checkin['remark']})": "";
+                $subcontent = $getJokeSoup($type, $checkin['userid']);
+                $title = "{$typeContent}打卡成功，打卡时间: {$hi}{$remark}";
+                WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', [
+                    'type' => 'content',
+                    'title' => $title,
+                    'content' => [
+                        [
+                            'content' => $title
+                        ], [
+                            'content' => $subcontent,
+                            'language' => false,
+                            'style' => 'padding-top:4px;opacity:0.6',
+                        ]
+                    ],
+                ], $botUser->userid, false, false, $type != "up");
             };
             if ($timeAdvance <= Timer::time() && Timer::time() < $timeEnd) {
                 // 上班打卡通知（从最早打卡时间 到 下班打卡时间）
@@ -381,7 +394,6 @@ class UserBot extends AbstractModel
                 }
             }
         }
-        return null;
     }
 
     /**
