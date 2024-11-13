@@ -71,6 +71,7 @@
         "files": [
             "render/**/*",
             "public/**/*",
+            "updater/**/*",
             "electron-menu.js",
             "electron-preload.js",
             "electron.js",

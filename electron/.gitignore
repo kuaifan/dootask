@@ -5,6 +5,7 @@ package-lock.json
 
 build/
 dist/
+updater/*
 
 .devload
 .native

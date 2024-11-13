@@ -20,6 +20,7 @@ const isMac = process.platform === 'darwin'
 const isWin = process.platform === 'win32'
 const allowedUrls = /^(?:https?|mailto|tel|callto):/i;
 const allowedCalls = /^(?:mailto|tel|callto):/i;
+let updaterLockFile = path.join(os.tmpdir(), '.dootask_updater.lock');
 let enableStoreBkp = true;
 let dialogOpen = false;
 let enablePlugins = false;
@@ -181,6 +182,55 @@ function createMainWindow() {
             })
         }
     })
+}
+
+/**
+ * 创建更新程序子进程
+ */
+function createUpdaterWindow() {
+    // 检查平台是否支持
+    if (!['darwin', 'win32'].includes(process.platform)) {
+        return;
+    }
+
+    try {
+        // 构建updater应用路径
+        let updaterPath;
+        if (isWin) {
+            updaterPath = path.join(__dirname, 'updater', 'updater.exe');
+        } else {
+            updaterPath = path.join(__dirname, 'updater', 'updater');
+        }
+        
+        // 检查updater应用是否存在
+        if (!fs.existsSync(updaterPath)) {
+            console.log('Updater not found:', updaterPath);
+            return;
+        }
+
+        // 创建锁文件
+        fs.writeFileSync(updaterLockFile, '1');
+
+        // 启动子进程,传入锁文件路径作为第一个参数
+        const child = spawn(updaterPath, [updaterLockFile], {
+            detached: true,
+            stdio: 'ignore',
+            env: {
+                ...process.env,
+                ELECTRON_RUN_AS_NODE: '1',
+                UPDATER_LOCK_FILE: updaterLockFile
+            }
+        });
+
+        child.unref();
+
+        child.on('error', (err) => {
+            console.log('Updater process error:', err);
+        });
+
+    } catch (e) {
+        console.log('Failed to create updater process:', e);
+    }
 }
 
 /**
@@ -684,6 +734,14 @@ if (!getTheLock) {
                     }
                 }])
                 mainTray.setContextMenu(trayMenu)
+            }
+        }
+        // 删除updater锁文件(如果存在)
+        if (fs.existsSync(updaterLockFile)) {
+            try {
+                fs.unlinkSync(updaterLockFile);
+            } catch (e) {
+                //忽略错误
             }
         }
         //
@@ -1215,13 +1273,20 @@ ipcMain.on('mainWindowActive', (event) => {
  */
 ipcMain.on('updateQuitAndInstall', (event) => {
     event.returnValue = "ok"
+
+    // 关闭所有子窗口
     willQuitApp = true
     childWindow.some(({browser}) => {
         browser && browser.destroy()
     })
+
+    // 启动更新子窗口
+    createUpdaterWindow()
+
+    // 退出并安装更新
     setTimeout(_ => {
         autoUpdater.quitAndInstall(true, true)
-    }, 1)
+    }, 1000)
 })
 
 //================================================================
