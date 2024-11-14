@@ -197,9 +197,9 @@ function createUpdaterWindow(loadingTip) {
         // 构建updater应用路径
         let updaterPath;
         if (isWin) {
-            updaterPath = path.join(process.resourcesPath, '..', 'updater', 'updater.exe');
+            updaterPath = path.join(process.resourcesPath, 'updater', 'updater.exe');
         } else {
-            updaterPath = path.join(process.resourcesPath, '..', 'updater', 'updater');
+            updaterPath = path.join(process.resourcesPath, 'updater', 'updater');
         }
         
         // 检查updater应用是否存在

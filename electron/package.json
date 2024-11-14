@@ -80,7 +80,7 @@
         "extraFiles": [
             {
                 "from": "updater/${os}/${arch}",
-                "to": "Resources/Updater",
+                "to": "Resources/updater",
                 "filter": ["**/*"]
             }
         ],

@@ -25,6 +25,7 @@ const platforms = ["build-mac", "build-win"];
  */
 async function detectAndDownloadUpdater() {
     const updaterDir = path.resolve(__dirname, "updater");
+    const latestVersionFile = path.join(updaterDir, "latest");
 
     // 创建updater目录
     if (!fs.existsSync(updaterDir)) {
@@ -41,6 +42,27 @@ async function detectAndDownloadUpdater() {
         if (!response.data || !response.data.assets) {
             spinner.fail('Failed to fetch updater release info');
             return;
+        }
+
+        // 检查版本是否需要更新
+        const latestVersion = response.data.tag_name || response.data.name;
+        let currentVersion = '';
+        if (fs.existsSync(latestVersionFile)) {
+            currentVersion = fs.readFileSync(latestVersionFile, 'utf8').trim();
+        }
+
+        // 如果版本不一致，清空updater目录（保留latest文件）
+        if (currentVersion !== latestVersion) {
+            const files = fs.readdirSync(updaterDir);
+            for (const file of files) {
+                if (file === 'latest') continue;
+                const filePath = path.join(updaterDir, file);
+                if (fs.lstatSync(filePath).isDirectory()) {
+                    fs.rmdirSync(filePath, { recursive: true });
+                } else {
+                    fs.unlinkSync(filePath);
+                }
+            }
         }
 
         // 过滤出binary开头的zip文件
@@ -132,6 +154,9 @@ async function detectAndDownloadUpdater() {
                 // 删除zip文件
                 fs.unlinkSync(zipPath);
                 downloadSpinner.succeed(`Downloaded and extracted ${fileName}`);
+
+                // 下载和解压成功后，保存最新版本号
+                fs.writeFileSync(latestVersionFile, latestVersion, 'utf8');
 
             } catch (error) {
                 downloadSpinner.fail(`Failed to download ${fileName}: ${error.message}`);
@@ -558,7 +583,7 @@ if (["dev"].includes(argv[2])) {
     child_process.spawn("npx", ["vite", "--", "fromcmd", "electronDev"], {stdio: "inherit"});
     child_process.spawn("npm", ["run", "start-quiet"], {stdio: "inherit", cwd: "electron"});
 } else if (["app"].includes(argv[2])) {
-    // 编译给app
+    // 编译前端页面给 App
     let mobileSrcDir = path.resolve(__dirname, "../resources/mobile");
     if (!fs.existsSync(mobileSrcDir)) {
         console.error("resources/mobile not found");
@@ -577,13 +602,14 @@ if (["dev"].includes(argv[2])) {
         }
     })
 } else if (["android-upload"].includes(argv[2])) {
+    // 上传安卓文件（GitHub Actions）
     config.app.forEach(({publish}) => {
         if (publish.provider === 'generic') {
             androidUpload(publish.url)
         }
     })
 } else if (["all", "win", "mac"].includes(argv[2])) {
-    // 自动编译
+    // 自动编译（GitHub Actions）
     platforms.filter(p => {
         return argv[2] === "all" || p.indexOf(argv[2]) !== -1
     }).forEach(async platform => {
