@@ -71,19 +71,19 @@ jobs:
 
               // 按类型分组提交
               const groups = {
-                'feat:': { title: '## Features', commits: [] },
-                'fix:': { title: '## Bug Fixes', commits: [] },
-                'perf:': { title: '## Performance Improvements', commits: [] }
+                'feat:': { title: '## Features', commits: new Set() },
+                'fix:': { title: '## Bug Fixes', commits: new Set() },
+                'perf:': { title: '## Performance Improvements', commits: new Set() }
               };
 
-              // 分类收集提交
+              // 分类收集提交，使用 Set 去重
               commits.commits.forEach(commit => {
                 const message = commit.commit.message.split('\n')[0].trim();
                 for (const [prefix, group] of Object.entries(groups)) {
                   if (message.startsWith(prefix)) {
                     // 移除前缀后添加到对应分组
                     const cleanMessage = message.slice(prefix.length).trim();
-                    group.commits.push(`- ${cleanMessage}`);
+                    group.commits.add(cleanMessage);  // 使用 Set.add 自动去重
                     break;
                   }
                 }
@@ -92,8 +92,8 @@ jobs:
               // 生成更新日志
               const sections = [];
               for (const group of Object.values(groups)) {
-                if (group.commits.length > 0) {
-                  sections.push(`${group.title}\n\n${group.commits.join('\n')}`);
+                if (group.commits.size > 0) {
+                  sections.push(`${group.title}\n\n${Array.from(group.commits).map(msg => `- ${msg}`).join('\n')}`);
                 }
               }
 
@@ -123,10 +123,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: "macos-latest"
+          - platform: "macos-12"
             build_type: "mac"
             args: "--target aarch64-apple-darwin"
-          - platform: "macos-latest"
+          - platform: "macos-12"
             build_type: "mac"
             args: "--target x86_64-apple-darwin"
           - platform: "ubuntu-latest"
@@ -148,7 +148,7 @@ jobs:
           node-version: 20.x
 
       # Android 构建步骤
-      - name: Build Js for Android
+      - name: (Android) Build Js
         if: matrix.build_type == 'android'
         uses: nick-fields/retry@v2
         with:
@@ -159,14 +159,14 @@ jobs:
             git submodule update --remote "resources/mobile"
             ./cmd appbuild publish
 
-      - name: Setup JDK 11 for Android
+      - name: (Android) Setup JDK 11
         if: matrix.build_type == 'android'
         uses: actions/setup-java@v3
         with:
           distribution: "zulu"
           java-version: "11"
 
-      - name: Build Android App
+      - name: (Android) Build App
         if: matrix.build_type == 'android'
         uses: nick-fields/retry@v2
         with:
@@ -177,15 +177,26 @@ jobs:
             chmod +x ./gradlew
             ./gradlew assembleRelease --quiet
 
-      - name: Upload Android File
+      - name: (Android) Upload File
         if: matrix.build_type == 'android'
         env:
           DP_KEY: ${{ secrets.DP_KEY }}
         run: |
           node ./electron/build.js android-upload
 
+      - name: (Android) Upload Release
+        if: matrix.build_type == 'android'
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.check-version.outputs.version }}
+          draft: true
+          files: |
+            resources/mobile/platforms/android/eeuiApp/app/build/outputs/apk/release/*.apk
+
       # Mac 构建步骤
-      - name: Build Mac App
+      - name: (Mac) Build Client
         if: matrix.build_type == 'mac'
         env:
           APPLEID: ${{ secrets.APPLEID }}
@@ -199,7 +210,7 @@ jobs:
           ./cmd electron mac
 
       # Windows 构建步骤
-      - name: Build Windows App
+      - name: (Windows) Build Client
         if: matrix.build_type == 'windows'
         env:
           DP_KEY: ${{ secrets.DP_KEY }}
@@ -208,17 +219,6 @@ jobs:
         shell: bash
         run: |
           ./cmd electron win
-
-      # 上传Android构建产物
-      - name: Upload Android Release Assets
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        if: matrix.build_type == 'android'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ needs.check-version.outputs.version }}
-          files: |
-            resources/mobile/platforms/android/eeuiApp/app/build/outputs/apk/release/*.apk
 
   # publish-release:
   #   needs: [check-version, create-release, builds]
