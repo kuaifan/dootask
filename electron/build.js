@@ -479,26 +479,23 @@ async function startBuild(data) {
         const publicDir = path.resolve(__dirname, "../resources/mobile/src/public");
         fse.removeSync(publicDir)
         fse.copySync(electronDir, publicDir)
-        if (argv[3] === "setting") {
-            child_process.execSync(`docker run -it ${eeuiRun} eeui setting`, {stdio: "inherit", cwd: "resources/mobile"});
-        }
         if (argv[3] === "publish") {
-            const gradleFile = path.resolve(eeuiDir, "platforms/android/eeuiApp/build.gradle")
+            const gradleFile = path.resolve(eeuiDir, "platforms/android/eeuiApp/local.properties")
             if (fs.existsSync(gradleFile)) {
                 let gradleResult = fs.readFileSync(gradleFile, 'utf8')
                 gradleResult = gradleResult.replace(/versionCode\s*=\s*(.+?)(\n|$)/, `versionCode = ${config.codeVerson}\n`)
                 gradleResult = gradleResult.replace(/versionName\s*=\s*(.+?)(\n|$)/, `versionName = "${config.version}"\n`)
                 fs.writeFileSync(gradleFile, gradleResult, 'utf8')
             }
-            const xcconfigFile = path.resolve(eeuiDir, "platforms/ios/eeuiApp/Config/IdentityConfig.xcconfig")
+            const xcconfigFile = path.resolve(eeuiDir, "platforms/ios/eeuiApp/Config/Version.xcconfig")
             if (fs.existsSync(xcconfigFile)) {
                 let xcconfigResult = fs.readFileSync(xcconfigFile, 'utf8')
-                xcconfigResult = xcconfigResult.replace(/BASE_CODE_VERSON\s*=\s*(.+?)(\n|$)/, `BASE_CODE_VERSON = ${config.codeVerson}\n`)
-                xcconfigResult = xcconfigResult.replace(/BASE_SHORT_VERSON\s*=\s*(.+?)(\n|$)/, `BASE_SHORT_VERSON = ${config.version}\n`)
+                xcconfigResult = xcconfigResult.replace(/VERSION_CODE\s*=\s*(.+?)(\n|$)/, `VERSION_CODE = ${config.codeVerson}\n`)
+                xcconfigResult = xcconfigResult.replace(/VERSION_NAME\s*=\s*(.+?)(\n|$)/, `VERSION_NAME = ${config.version}\n`)
                 fs.writeFileSync(xcconfigFile, xcconfigResult, 'utf8')
             }
         }
-        if (['setting', 'build', 'publish'].includes(argv[3])) {
+        if (['build', 'publish'].includes(argv[3])) {
             if (!fs.existsSync(path.resolve(eeuiDir, "node_modules"))) {
                 child_process.execSync(`docker run ${eeuiRun} npm install`, {stdio: "inherit", cwd: "resources/mobile"});
             }
