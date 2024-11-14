@@ -431,13 +431,13 @@ async function startBuild(data) {
     if (data.id === 'app') {
         console.log("\n=== 编译信息 ===");
         console.log("名称:", data.name);
-        console.log("版本:", config.version);
+        console.log("版本:", config.version + ` (${config.codeVerson})`);
         console.log("===============\n");
     } else {
         console.log("\n=== 编译信息 ===");
         console.log("名称:", data.name);
         console.log("应用ID:", data.id);
-        console.log("版本:", config.version);
+        console.log("版本:", config.version + ` (${config.codeVerson})`);
         console.log("系统:", platform.replace('build-', '').toUpperCase());
         console.log("架构:", archs.map(arch => arch.toUpperCase()).join(', '));
         console.log("发布:", publish ? '是' : '否');

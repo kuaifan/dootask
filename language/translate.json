@@ -26302,5 +26302,17 @@
         "fr": "La taille de la capture d'écran de la carte est trop petite",
         "id": "Ukuran snapshot peta terlalu kecil",
         "ru": "Размер снимка карты слишком мал"
+    },
+    {
+        "key": "正在安装更新，请稍候...",
+        "zh": "",
+        "zh-CHT": "正在安裝更新，請稍候...",
+        "en": "Installing updates, please wait...",
+        "ko": "업데이트를 설치 중입니다. 잠시 기다려 주세요...",
+        "ja": "更新をインストールしています。しばらくお待ちください...",
+        "de": "Updates werden installiert, bitte warten...",
+        "fr": "Installation des mises à jour, veuillez patienter...",
+        "id": "Sedang menginstal pembaruan, harap tunggu...",
+        "ru": "Идет установка обновлений, пожалуйста, подождите..."
     }
 ]
