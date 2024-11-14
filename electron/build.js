@@ -19,6 +19,7 @@ const devloadCachePath = path.resolve(__dirname, ".devload");
 const packageFile = path.resolve(__dirname, "package.json");
 const packageBakFile = path.resolve(__dirname, "package-bak.json");
 const platforms = ["build-mac", "build-win"];
+const architectures = ["arm64", "x64"];
 
 /**
  * 检测并下载更新器
@@ -34,13 +35,13 @@ async function detectAndDownloadUpdater() {
 
     try {
         // 获取最新release
-        const spinner = ora('Fetching latest updater release...').start();
+        const spinner = ora('检查更新器...').start();
         const response = await axios.get('https://api.github.com/repos/kuaifan/dootask-updater/releases/latest', {
             headers: GH_TOKEN ? { 'Authorization': `token ${GH_TOKEN}` } : {}
         });
         
         if (!response.data || !response.data.assets) {
-            spinner.fail('Failed to fetch updater release info');
+            spinner.fail('检查更新器失败');
             return;
         }
 
@@ -58,7 +59,7 @@ async function detectAndDownloadUpdater() {
                 if (file === 'latest') continue;
                 const filePath = path.join(updaterDir, file);
                 if (fs.lstatSync(filePath).isDirectory()) {
-                    fs.rmdirSync(filePath, { recursive: true });
+                    fs.rmSync(filePath, { recursive: true });
                 } else {
                     fs.unlinkSync(filePath);
                 }
@@ -70,7 +71,7 @@ async function detectAndDownloadUpdater() {
             asset.name.startsWith('binary_') && asset.name.endsWith('.zip')
         );
 
-        spinner.succeed('Found updater release files');
+        spinner.succeed('检查更新器成功');
 
         // 下载并解压每个文件
         for (const asset of assets) {
@@ -106,7 +107,7 @@ async function detectAndDownloadUpdater() {
             fs.mkdirSync(targetDir, { recursive: true });
 
             // 下载文件
-            const downloadSpinner = ora(`Downloading ${fileName}...`).start();
+            const downloadSpinner = ora(`下载 ${fileName}...`).start();
             try {
                 const writer = fs.createWriteStream(zipPath);
                 const response = await axios({
@@ -124,7 +125,7 @@ async function detectAndDownloadUpdater() {
                 });
 
                 // 解压文件
-                downloadSpinner.text = `Extracting ${fileName}...`;
+                downloadSpinner.text = `解压 ${fileName}...`;
                 await new Promise((resolve, reject) => {
                     yauzl.open(zipPath, { lazyEntries: true }, (err, zipfile) => {
                         if (err) reject(err);
@@ -153,25 +154,25 @@ async function detectAndDownloadUpdater() {
 
                 // 删除zip文件
                 fs.unlinkSync(zipPath);
-                downloadSpinner.succeed(`Downloaded and extracted ${fileName}`);
+                downloadSpinner.succeed(`下载并解压 ${fileName} 成功`);
 
                 // 下载和解压成功后，保存最新版本号
                 fs.writeFileSync(latestVersionFile, latestVersion, 'utf8');
 
             } catch (error) {
-                downloadSpinner.fail(`Failed to download ${fileName}: ${error.message}`);
+                downloadSpinner.fail(`下载 ${fileName} 失败: ${error.message}`);
                 // 清理失败的下载
                 if (fs.existsSync(zipPath)) {
                     fs.unlinkSync(zipPath);
                 }
                 if (fs.existsSync(targetDir)) {
-                    fs.rmdirSync(targetDir, { recursive: true });
+                    fs.rmdSync(targetDir, { recursive: true });
                 }
             }
         }
 
     } catch (error) {
-        console.error('Failed to check updater:', error.message);
+        console.error('检查更新器失败:', error.message);
     }
 }
 
@@ -189,7 +190,7 @@ function cloneDrawio(systemInfo) {
     //
     const preConfigFile = path.resolve(drawioDestDir, "js/PreConfig.js");
     if (!fs.existsSync(preConfigFile)) {
-        console.error("Clone Drawio error!");
+        console.error("克隆 Drawio 失败!");
         process.exit()
     }
     let preConfigString = fs.readFileSync(preConfigFile, 'utf8');
@@ -269,12 +270,12 @@ function axiosAutoTry(data) {
  */
 function androidUpload(url) {
     if (!DP_KEY) {
-        console.error("Missing Deploy Key or GitHub Token and Repository!");
+        console.error("缺少 Deploy Key, 请检查环境变量!");
         process.exit()
     }
     const releaseDir = path.resolve(__dirname, "../resources/mobile/platforms/android/eeuiApp/app/build/outputs/apk/release");
     if (!fs.existsSync(releaseDir)) {
-        console.error("Release not found");
+        console.error("发布文件未找到");
         process.exit()
     }
     fs.readdir(releaseDir, async (err, files) => {
@@ -344,12 +345,12 @@ function androidUpload(url) {
  */
 function genericPublish({url, key, version, output}) {
     if (!/https*:\/\//i.test(url)) {
-        console.warn("Publish url is invalid: " + url)
+        console.warn("发布地址无效: " + url)
         return
     }
     const filePath = path.resolve(__dirname, output)
     if (!fs.existsSync(filePath)) {
-        console.warn("Publish output not found: " + filePath)
+        console.warn("发布文件未找到: " + filePath)
         return
     }
     fs.readdir(filePath, async (err, files) => {
@@ -425,7 +426,7 @@ function genericPublish({url, key, version, output}) {
  * @param data
  */
 async function startBuild(data) {
-    const {platform, publish, release, notarize} = data.configure
+    const {platform, archs, publish, release, notarize} = data.configure
     // system info
     const systemInfo = {
         title: data.name,
@@ -437,19 +438,28 @@ async function startBuild(data) {
     }
     // information
     if (data.id === 'app') {
-        console.log("Name: " + data.name);
-        console.log("Version: " + config.version);
+        console.log("\n=== 编译信息 ===");
+        console.log("名称:", data.name);
+        console.log("版本:", config.version);
+        console.log("===============\n");
     } else {
-        console.log("Name: " + data.name);
-        console.log("AppId: " + data.id);
-        console.log("Version: " + config.version);
-        console.log("Platform: " + platform);
-        console.log("Publish: " + (publish ? 'Yes' : 'No'));
-        console.log("Release: " + (release ? 'Yes' : 'No'));
-        console.log("Notarize: " + (notarize ? 'Yes' : 'No'));
+        console.log("\n=== 编译信息 ===");
+        console.log("名称:", data.name);
+        console.log("应用ID:", data.id);
+        console.log("版本:", config.version);
+        console.log("系统:", platform.replace('build-', '').toUpperCase());
+        console.log("架构:", archs.map(arch => arch.toUpperCase()).join(', '));
+        console.log("发布:", publish ? '是' : '否');
+        if (publish) {
+            console.log("升级提示:", release ? '是' : '否');
+            if (platform === 'build-mac') {
+                console.log("公证:", notarize ? '是' : '否');
+            }
+        }
+        console.log("===============\n");
         // drawio
         cloneDrawio(systemInfo)
-        // detect and download updater
+        // updater
         await detectAndDownloadUpdater()
     }
     // language
@@ -461,7 +471,7 @@ async function startBuild(data) {
     // index.html
     let manifestFile = path.resolve(electronDir, "manifest.json");
     if (!fs.existsSync(manifestFile)) {
-        console.error("manifest.json not found");
+        console.error("manifest.json 未找到");
         return;
     }
     let manifestContent = JSON.parse(fs.readFileSync(manifestFile, 'utf8'));
@@ -539,9 +549,20 @@ async function startBuild(data) {
     if (!release) {
         econfig.build.releaseInfo.releaseNotes = econfig.build.releaseInfo.releaseNotes.replace(`## [${config.version}]`, `## [${config.version}-Silence]`)
     }
-    // darwin notarize
+    // notarize
     if (notarize && APPLEID && APPLEIDPASS) {
         econfig.build.afterSign = "./notarize.js"
+    }
+    // archs
+    if (archs.length > 0) {
+        econfig.build.mac.target = econfig.build.mac.target.map(target => {
+            if (target.arch) target.arch = target.arch.filter(arch => archs.includes(arch))
+            return target
+        })
+        econfig.build.win.target = econfig.build.win.target.map(target => {
+            if (target.arch) target.arch = target.arch.filter(arch => archs.includes(arch))
+            return target
+        })
     }
     // github (build && publish)
     if (publish === true && GH_TOKEN && utils.strExists(GH_REPOSITORY, "/")) {
@@ -553,13 +574,13 @@ async function startBuild(data) {
             "repo": repository[1]
         }
         econfig.build.directories.output = `${output}-github`;
-        fs.writeFileSync(packageFile, JSON.stringify(econfig, null, 2), 'utf8');
+        fs.writeFileSync(packageFile, JSON.stringify(econfig, null, 4), 'utf8');
         child_process.execSync(`npm run ${platform}-publish`, {stdio: "inherit", cwd: "electron"});
     }
     // generic (build || publish)
     econfig.build.publish = data.publish
     econfig.build.directories.output = `${output}-generic`;
-    fs.writeFileSync(packageFile, JSON.stringify(econfig, null, 2), 'utf8');
+    fs.writeFileSync(packageFile, JSON.stringify(econfig, null, 4), 'utf8');
     child_process.execSync(`npm run ${platform}`, {stdio: "inherit", cwd: "electron"});
     if (publish === true && DP_KEY) {
         genericPublish({
@@ -586,7 +607,7 @@ if (["dev"].includes(argv[2])) {
     // 编译前端页面给 App
     let mobileSrcDir = path.resolve(__dirname, "../resources/mobile");
     if (!fs.existsSync(mobileSrcDir)) {
-        console.error("resources/mobile not found");
+        console.error("resources/mobile 未找到");
         process.exit()
     }
     startBuild({
@@ -596,6 +617,7 @@ if (["dev"].includes(argv[2])) {
         url: 'http://public/',
         configure: {
             platform: '',
+            archs: [],
             publish: false,
             release: true,
             notarize: false,
@@ -616,6 +638,7 @@ if (["dev"].includes(argv[2])) {
         for (const data of config.app) {
             data.configure = {
                 platform,
+                archs: architectures,
                 publish: true,
                 release: true,
                 notarize: false,
@@ -624,21 +647,36 @@ if (["dev"].includes(argv[2])) {
         }
     });
 } else {
-    // 手动编译（默认）
+    // 手编译（默认）
     const questions = [
         {
             type: 'list',
-            name: 'platforms',
+            name: 'platform',
             message: "选择编译系统",
             choices: [{
                 name: "MacOS",
-                value: [platforms[0]]
+                value: platforms[0]
             }, {
-                name: "Window",
-                value: [platforms[1]]
+                name: "Windows",
+                value: platforms[1]
             }, {
-                name: "All platforms",
+                name: "全平台",
                 value: platforms
+            }]
+        },
+        {
+            type: 'list',
+            name: 'arch',
+            message: "选择系统架构",
+            choices: [{
+                name: "arm64",
+                value: architectures[0]
+            }, {
+                name: "x64",
+                value: architectures[1]
+            }, {
+                name: "全架构",
+                value: architectures
             }]
         },
         {
@@ -646,22 +684,26 @@ if (["dev"].includes(argv[2])) {
             name: 'publish',
             message: "选择是否要发布",
             choices: [{
-                name: "No",
+                name: "否",
                 value: false
             }, {
-                name: "Yes",
+                name: "是",
                 value: true
             }]
-        },
+        }
+    ];
+
+    // 根据publish选项动态添加后续问题
+    const publishQuestions = [
         {
             type: 'list',
             name: 'release',
             message: "选择是否弹出升级提示框",
             choices: [{
-                name: "Yes",
+                name: "是",
                 value: true
             }, {
-                name: "No",
+                name: "否",
                 value: false
             }]
         },
@@ -669,32 +711,54 @@ if (["dev"].includes(argv[2])) {
             type: 'list',
             name: 'notarize',
             message: "选择是否需要公证MacOS应用",
+            when: (answers) => answers.platform === 'build-mac', // 只在MacOS时显示
             choices: [{
-                name: "No",
+                name: "否",
                 value: false
             }, {
-                name: "Yes",
+                name: "是",
                 value: true
             }]
         }
     ];
+
+    // 先询问基本问题
     inquirer.prompt(questions).then(async answers => {
-        if (answers.publish === true) {
+        // 如果选择发布，继续询问发布相关问题
+        if (answers.publish) {
+            const publishAnswers = await inquirer.prompt(publishQuestions);
+            Object.assign(answers, publishAnswers);
+
             if (!DP_KEY && (!GH_TOKEN || !utils.strExists(GH_REPOSITORY, "/"))) {
-                console.error("Missing Deploy Key or GitHub Token and Repository!");
+                console.error("发布需要 Deploy Key 或 GitHub Token 和 Repository, 请检查环境变量!");
                 process.exit()
             }
-        }
-        if (answers.notarize === true) {
-            if (!APPLEID || !APPLEIDPASS) {
-                console.error("Missing Apple ID or Apple ID password!");
-                process.exit()
+
+            if (answers.notarize === true) {
+                if (!APPLEID || !APPLEIDPASS) {
+                    console.error("公证MacOS应用需要 Apple ID 和 Apple ID 密码, 请检查环境变量!");
+                    process.exit()
+                }
             }
+        } else {
+            // 如果不发布，设置默认值
+            answers.release = false;
+            answers.notarize = false;
         }
-        for (const platform of answers.platforms) {
+
+        // 开始构建
+        const platformList = utils.isArray(answers.platform) ? answers.platform : [answers.platform];
+        const archList = utils.isArray(answers.arch) ? answers.arch : [answers.arch];
+        
+        for (const platform of platformList) {
             for (const data of config.app) {
-                data.configure = answers;
-                data.configure.platform = platform;
+                data.configure = {
+                    platform,
+                    archs: archList,
+                    publish: answers.publish,
+                    release: answers.release,
+                    notarize: answers.notarize
+                };
                 await startBuild(data);
             }
         }

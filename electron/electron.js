@@ -201,6 +201,20 @@ function createUpdaterWindow(loadingTip) {
         } else {
             updaterPath = path.join(process.resourcesPath, 'updater', 'updater');
         }
+
+        // 检查文件权限
+        try {
+            fs.accessSync(updaterPath, fs.constants.X_OK);
+        } catch (e) {
+            if (process.platform === 'darwin') {
+                try {
+                    spawn('chmod', ['+x', updaterPath], {stdio: 'inherit'});
+                } catch (e) {
+                    console.log('Failed to set executable permission:', e);
+                }
+            }
+            return;
+        }
         
         // 检查updater应用是否存在
         if (!fs.existsSync(updaterPath)) {
