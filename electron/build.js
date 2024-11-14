@@ -293,6 +293,7 @@ function startBuild(data) {
         console.log("Notarize: " + (notarize ? 'Yes' : 'No'));
         // drawio
         cloneDrawio(systemInfo)
+        // todo: download updater
     }
     // language
     fse.copySync(path.resolve(__dirname, "../public/language"), path.resolve(electronDir, "language"))

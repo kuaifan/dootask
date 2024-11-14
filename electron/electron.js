@@ -187,7 +187,7 @@ function createMainWindow() {
 /**
  * 创建更新程序子进程
  */
-function createUpdaterWindow() {
+function createUpdaterWindow(loadingTip) {
     // 检查平台是否支持
     if (!['darwin', 'win32'].includes(process.platform)) {
         return;
@@ -197,9 +197,9 @@ function createUpdaterWindow() {
         // 构建updater应用路径
         let updaterPath;
         if (isWin) {
-            updaterPath = path.join(__dirname, 'updater', 'updater.exe');
+            updaterPath = path.join(process.resourcesPath, '..', 'updater', 'updater.exe');
         } else {
-            updaterPath = path.join(__dirname, 'updater', 'updater');
+            updaterPath = path.join(process.resourcesPath, '..', 'updater', 'updater');
         }
         
         // 检查updater应用是否存在
@@ -209,7 +209,7 @@ function createUpdaterWindow() {
         }
 
         // 创建锁文件
-        fs.writeFileSync(updaterLockFile, '1');
+        fs.writeFileSync(updaterLockFile, loadingTip || '');
 
         // 启动子进程,传入锁文件路径作为第一个参数
         const child = spawn(updaterPath, [updaterLockFile], {
@@ -1271,7 +1271,10 @@ ipcMain.on('mainWindowActive', (event) => {
 /**
  * 退出并安装更新
  */
-ipcMain.on('updateQuitAndInstall', (event) => {
+ipcMain.on('updateQuitAndInstall', (event, args) => {
+    if (!utils.isJson(args)) {
+        args = {}
+    }
     event.returnValue = "ok"
 
     // 关闭所有子窗口
@@ -1281,7 +1284,7 @@ ipcMain.on('updateQuitAndInstall', (event) => {
     })
 
     // 启动更新子窗口
-    createUpdaterWindow()
+    createUpdaterWindow(args.loadingTip)
 
     // 退出并安装更新
     setTimeout(_ => {

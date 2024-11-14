@@ -77,6 +77,13 @@
             "electron.js",
             "utils.js"
         ],
+        "extraFiles": [
+            {
+                "from": "updater",
+                "to": "updater",
+                "filter": ["**/*"]
+            }
+        ],
         "npmRebuild": false,
         "publish": {
             "provider": "generic"
