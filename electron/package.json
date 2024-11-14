@@ -49,7 +49,8 @@
         "electron-updater": "^6.1.8",
         "fs-extra": "^11.2.0",
         "pdf-lib": "^1.17.1",
-        "request": "^2.88.2"
+        "request": "^2.88.2",
+        "yauzl": "^2.10.0"
     },
     "trayIcon": {
         "dev": {
@@ -71,7 +72,6 @@
         "files": [
             "render/**/*",
             "public/**/*",
-            "updater/**/*",
             "electron-menu.js",
             "electron-preload.js",
             "electron.js",
@@ -79,8 +79,8 @@
         ],
         "extraFiles": [
             {
-                "from": "updater",
-                "to": "updater",
+                "from": "updater/${os}/${arch}",
+                "to": "Resources/Updater",
                 "filter": ["**/*"]
             }
         ],

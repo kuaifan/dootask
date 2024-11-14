@@ -4,6 +4,7 @@ const path = require('path')
 const inquirer = require('inquirer');
 const child_process = require('child_process');
 const ora = require('ora');
+const yauzl = require('yauzl');
 const axios = require('axios');
 const FormData =require('form-data');
 const utils = require('./utils');
@@ -18,6 +19,136 @@ const devloadCachePath = path.resolve(__dirname, ".devload");
 const packageFile = path.resolve(__dirname, "package.json");
 const packageBakFile = path.resolve(__dirname, "package-bak.json");
 const platforms = ["build-mac", "build-win"];
+
+/**
+ * 检测并下载更新器
+ */
+async function detectAndDownloadUpdater() {
+    const updaterDir = path.resolve(__dirname, "updater");
+
+    // 创建updater目录
+    if (!fs.existsSync(updaterDir)) {
+        fs.mkdirSync(updaterDir, { recursive: true });
+    }
+
+    try {
+        // 获取最新release
+        const spinner = ora('Fetching latest updater release...').start();
+        const response = await axios.get('https://api.github.com/repos/kuaifan/dootask-updater/releases/latest', {
+            headers: GH_TOKEN ? { 'Authorization': `token ${GH_TOKEN}` } : {}
+        });
+        
+        if (!response.data || !response.data.assets) {
+            spinner.fail('Failed to fetch updater release info');
+            return;
+        }
+
+        // 过滤出binary开头的zip文件
+        const assets = response.data.assets.filter(asset => 
+            asset.name.startsWith('binary_') && asset.name.endsWith('.zip')
+        );
+
+        spinner.succeed('Found updater release files');
+
+        // 下载并解压每个文件
+        for (const asset of assets) {
+            const fileName = asset.name;
+            // 解析平台和架构信息 (binary_0.1.0_linux-x86_64.zip => linux/x86_64)
+            const match = fileName.match(/binary_[\d.]+_(.+)-(.+)\.zip$/);
+            if (!match) continue;
+
+            let [, platform, arch] = match;
+            
+            // 平台名称映射
+            const platformMap = {
+                'macos': 'mac',
+                'windows': 'win'
+            };
+            platform = platformMap[platform] || platform;
+
+            // 架构名称映射
+            const archMap = {
+                'x86_64': 'x64'
+            };
+            arch = archMap[arch] || arch;
+
+            const targetDir = path.join(updaterDir, platform, arch);
+            const zipPath = path.join(updaterDir, fileName);
+
+            // 检查是否已经下载过
+            if (fs.existsSync(targetDir)) {
+                continue;
+            }
+
+            // 创建目标目录
+            fs.mkdirSync(targetDir, { recursive: true });
+
+            // 下载文件
+            const downloadSpinner = ora(`Downloading ${fileName}...`).start();
+            try {
+                const writer = fs.createWriteStream(zipPath);
+                const response = await axios({
+                    url: asset.browser_download_url,
+                    method: 'GET',
+                    responseType: 'stream',
+                    headers: GH_TOKEN ? { 'Authorization': `token ${GH_TOKEN}` } : {}
+                });
+
+                response.data.pipe(writer);
+
+                await new Promise((resolve, reject) => {
+                    writer.on('finish', resolve);
+                    writer.on('error', reject);
+                });
+
+                // 解压文件
+                downloadSpinner.text = `Extracting ${fileName}...`;
+                await new Promise((resolve, reject) => {
+                    yauzl.open(zipPath, { lazyEntries: true }, (err, zipfile) => {
+                        if (err) reject(err);
+                        
+                        zipfile.readEntry();
+                        zipfile.on('entry', (entry) => {
+                            if (/\/$/.test(entry.fileName)) {
+                                zipfile.readEntry();
+                            } else {
+                                zipfile.openReadStream(entry, (err, readStream) => {
+                                    if (err) reject(err);
+                                    
+                                    const outputPath = path.join(targetDir, path.basename(entry.fileName));
+                                    const writer = fs.createWriteStream(outputPath);
+                                    readStream.pipe(writer);
+                                    writer.on('finish', () => {
+                                        zipfile.readEntry();
+                                    });
+                                });
+                            }
+                        });
+                        
+                        zipfile.on('end', resolve);
+                    });
+                });
+
+                // 删除zip文件
+                fs.unlinkSync(zipPath);
+                downloadSpinner.succeed(`Downloaded and extracted ${fileName}`);
+
+            } catch (error) {
+                downloadSpinner.fail(`Failed to download ${fileName}: ${error.message}`);
+                // 清理失败的下载
+                if (fs.existsSync(zipPath)) {
+                    fs.unlinkSync(zipPath);
+                }
+                if (fs.existsSync(targetDir)) {
+                    fs.rmdirSync(targetDir, { recursive: true });
+                }
+            }
+        }
+
+    } catch (error) {
+        console.error('Failed to check updater:', error.message);
+    }
+}
 
 /**
  * 克隆 Drawio
@@ -268,7 +399,7 @@ function genericPublish({url, key, version, output}) {
  * 生成配置、编译应用
  * @param data
  */
-function startBuild(data) {
+async function startBuild(data) {
     const {platform, publish, release, notarize} = data.configure
     // system info
     const systemInfo = {
@@ -293,7 +424,8 @@ function startBuild(data) {
         console.log("Notarize: " + (notarize ? 'Yes' : 'No'));
         // drawio
         cloneDrawio(systemInfo)
-        // todo: download updater
+        // detect and download updater
+        await detectAndDownloadUpdater()
     }
     // language
     fse.copySync(path.resolve(__dirname, "../public/language"), path.resolve(electronDir, "language"))
@@ -443,7 +575,7 @@ if (["dev"].includes(argv[2])) {
             release: true,
             notarize: false,
         }
-    }, false, false)
+    })
 } else if (["android-upload"].includes(argv[2])) {
     config.app.forEach(({publish}) => {
         if (publish.provider === 'generic') {
@@ -454,17 +586,17 @@ if (["dev"].includes(argv[2])) {
     // 自动编译
     platforms.filter(p => {
         return argv[2] === "all" || p.indexOf(argv[2]) !== -1
-    }).forEach(platform => {
-        config.app.forEach(data => {
+    }).forEach(async platform => {
+        for (const data of config.app) {
             data.configure = {
                 platform,
                 publish: true,
                 release: true,
                 notarize: false,
-            }
-            startBuild(data)
-        })
-    })
+            };
+            await startBuild(data);
+        }
+    });
 } else {
     // 手动编译（默认）
     const questions = [
@@ -520,7 +652,7 @@ if (["dev"].includes(argv[2])) {
             }]
         }
     ];
-    inquirer.prompt(questions).then(answers => {
+    inquirer.prompt(questions).then(async answers => {
         if (answers.publish === true) {
             if (!DP_KEY && (!GH_TOKEN || !utils.strExists(GH_REPOSITORY, "/"))) {
                 console.error("Missing Deploy Key or GitHub Token and Repository!");
@@ -533,12 +665,12 @@ if (["dev"].includes(argv[2])) {
                 process.exit()
             }
         }
-        answers.platforms.forEach(platform => {
-            config.app.forEach(data => {
-                data.configure = answers
-                data.configure.platform = platform
-                startBuild(data)
-            })
-        });
+        for (const platform of answers.platforms) {
+            for (const data of config.app) {
+                data.configure = answers;
+                data.configure.platform = platform;
+                await startBuild(data);
+            }
+        }
     });
 }
