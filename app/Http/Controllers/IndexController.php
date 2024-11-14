@@ -126,7 +126,7 @@ class IndexController extends InvokeController
             // 其他
             'bot', 'robot', 'auto', 'anonymous', 'guest', 'default', 'new', 'old'
         ];
-        $filterWords = array_map(function($word) {
+        $filterWords = array_map(function ($word) {
             return preg_quote($word, '/');
         }, $filterWords);
         $name = preg_replace('/' . implode('|', $filterWords) . '/iu', '', $name) ?: $name;
@@ -157,7 +157,7 @@ class IndexController extends InvokeController
             '\x{1F900}-\x{1F9FF}',
             '\x{1F600}-\x{1F64F}'
         ];
-        $filterSymbols = array_map(function($symbol) {
+        $filterSymbols = array_map(function ($symbol) {
             return preg_quote($symbol, '/');
         }, $filterSymbols);
         $name = preg_replace('/[' . implode('', $filterSymbols) . ']/u', '', $name) ?: $name;
@@ -171,7 +171,7 @@ class IndexController extends InvokeController
         if (empty($color)) {
             $color = '#ffffff';
             $cacheKey = "avatarBackgroundColor::" . md5($name);
-            $background = Cache::rememberForever($cacheKey, function() {
+            $background = Cache::rememberForever($cacheKey, function () {
                 return RandomColor::one(['luminosity' => 'dark']);
             });
         }
@@ -192,7 +192,7 @@ class IndexController extends InvokeController
             'shape' => 'square',
             'width' => $size,
             'height' => $size,
-            'chars'    => 2,
+            'chars' => 2,
             'fontSize' => $size / 2.9,
             'uppercase' => true,
             'fonts' => [resource_path('assets/statics/fonts/Source_Han_Sans_SC_Regular.otf')],
@@ -264,7 +264,6 @@ class IndexController extends InvokeController
     public function desktop__publish($name = '')
     {
         $publishVersion = Request::header('publish-version');
-        $fileNum = Request::get('file_num', 1);
         $latestFile = public_path("uploads/desktop/latest");
         $latestVersion = file_exists($latestFile) ? trim(file_get_contents($latestFile)) : "0.0.1";
         if (strtolower($name) === 'latest') {
@@ -272,27 +271,29 @@ class IndexController extends InvokeController
         }
         // 上传
         if (preg_match("/^\d+\.\d+\.\d+$/", $publishVersion)) {
-            $uploadSuccessFileNum = (int)Cache::get($publishVersion, 0);
+            // 判断密钥
             $publishKey = Request::header('publish-key');
             if ($publishKey !== env('APP_KEY')) {
                 return Base::retError("key error");
             }
+            // 判断版本
             if (version_compare($publishVersion, $latestVersion) > -1) {    // 限制上传版本必须 ≥ 当前版本
-                $publishPath = "uploads/desktop/{$publishVersion}/";
-                $res = Base::upload([
-                    "file" => Request::file('file'),
-                    "type" => 'publish',
-                    "path" => $publishPath,
-                    "fileName" => true,
-                    "quality" => 100
-                ]);
-                if (Base::isSuccess($res)) {
+                $action = Request::get('action');
+                $draftPath = "uploads/desktop-draft/{$publishVersion}/";
+                if ($action === 'release') {
+                    // 将草稿版本发布为正式版本
+                    $draftPath = public_path($draftPath);
+                    $releasePath = public_path("uploads/desktop/{$publishVersion}/");
+                    if (!file_exists($draftPath)) {
+                        return Base::retError("draft version not exists");
+                    }
+                    if (file_exists($releasePath)) {
+                        Base::deleteDirAndFile($releasePath);
+                    }
+                    Base::copyDirectory($draftPath, $releasePath);
                     file_put_contents($latestFile, $publishVersion);
-                    $uploadSuccessFileNum = $uploadSuccessFileNum + 1;
-                    Cache::set($publishVersion, $uploadSuccessFileNum, 7200);
-                }
-                if ($uploadSuccessFileNum >= $fileNum) {
                     // 删除旧版本
+                    Base::deleteDirAndFile(public_path("uploads/desktop-draft"));
                     $dirs = Base::recursiveDirs(public_path("uploads/desktop"), false);
                     sort($dirs);
                     $num = 0;
@@ -309,8 +310,16 @@ class IndexController extends InvokeController
                             Base::deleteDirAndFile($dir);
                         }
                     }
+                    return Base::retSuccess('success');
                 }
-                return $res;
+                // 上传草稿版本
+                return Base::upload([
+                    "file" => Request::file('file'),
+                    "type" => 'publish',
+                    "path" => $draftPath,
+                    "fileName" => true,
+                    "quality" => 100
+                ]);
             }
         }
         // 列表

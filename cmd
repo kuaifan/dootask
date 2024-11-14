@@ -174,6 +174,7 @@ run_electron() {
         mkdir -p ./electron/public
         cp ./electron/index.html ./electron/public/index.html
         npx vite build -- fromcmd electronBuild
+        echo ""
     fi
     node ./electron/build.js $argv
 }

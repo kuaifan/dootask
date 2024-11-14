@@ -1,0 +1,244 @@
+name: "Publish"
+
+on:
+  push:
+    branches:
+      - "pro"
+
+jobs:
+  check-version:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    outputs:
+      should_release: ${{ steps.check-tag.outputs.should_release }}
+      version: ${{ steps.get-version.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version from package.json
+        id: get-version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check if tag exists
+        id: check-tag
+        run: |
+          VERSION=${{ steps.get-version.outputs.version }}
+          if git ls-remote --tags origin | grep -q "refs/tags/v${VERSION}$"; then
+            echo "This version v${VERSION} has been released"
+            echo "should_release=false" >> $GITHUB_OUTPUT
+          else
+            echo "Version v${VERSION} has not been released, continue building"
+            echo "should_release=true" >> $GITHUB_OUTPUT
+          fi
+
+  create-release:
+    needs: check-version
+    if: needs.check-version.outputs.should_release == 'true'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.create-release.outputs.result }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: create release
+        id: create-release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // 获取最新的 tag
+            const { data: tags } = await github.rest.repos.listTags({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 1
+            });
+
+            // 获取提交日志
+            let changelog = '';
+            if (tags.length > 0) {
+              const { data: commits } = await github.rest.repos.compareCommits({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                base: tags[0].name,
+                head: 'HEAD'
+              });
+
+              // 按类型分组提交
+              const groups = {
+                'feat:': { title: '## Features', commits: [] },
+                'fix:': { title: '## Bug Fixes', commits: [] },
+                'perf:': { title: '## Performance Improvements', commits: [] }
+              };
+
+              // 分类收集提交
+              commits.commits.forEach(commit => {
+                const message = commit.commit.message.split('\n')[0].trim();
+                for (const [prefix, group] of Object.entries(groups)) {
+                  if (message.startsWith(prefix)) {
+                    // 移除前缀后添加到对应分组
+                    const cleanMessage = message.slice(prefix.length).trim();
+                    group.commits.push(`- ${cleanMessage}`);
+                    break;
+                  }
+                }
+              });
+
+              // 生成更新日志
+              const sections = [];
+              for (const group of Object.values(groups)) {
+                if (group.commits.length > 0) {
+                  sections.push(`${group.title}\n\n${group.commits.join('\n')}`);
+                }
+              }
+
+              if (sections.length > 0) {
+                changelog = '# Changelog\n\n' + sections.join('\n\n');
+              }
+            }
+
+            // 创建 release
+            const { data } = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: `v${{ needs.check-version.outputs.version }}`,
+              name: `${{ needs.check-version.outputs.version }}`,
+              body: changelog || 'No significant changes in this release.',
+              draft: true,
+              prerelease: false
+            })
+            return data.id
+
+  build-client:
+    needs: [ check-version, create-release ]
+    if: needs.check-version.outputs.should_release == 'true'
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "macos-latest"
+            build_type: "mac"
+            args: "--target aarch64-apple-darwin"
+          - platform: "macos-latest"
+            build_type: "mac"
+            args: "--target x86_64-apple-darwin"
+          - platform: "ubuntu-latest"
+            build_type: "android"
+            args: ""
+          - platform: "windows-latest"
+            build_type: "windows"
+            args: ""
+
+    runs-on: ${{ matrix.platform }}
+    environment: build
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 20.x
+
+      # Android 构建步骤
+      - name: Build Js for Android
+        if: matrix.build_type == 'android'
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 5
+          command: |
+            git submodule init
+            git submodule update --remote "resources/mobile"
+            ./cmd appbuild publish
+
+      - name: Setup JDK 11 for Android
+        if: matrix.build_type == 'android'
+        uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "11"
+
+      - name: Build Android App
+        if: matrix.build_type == 'android'
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 60
+          max_attempts: 10
+          command: |
+            cd resources/mobile/platforms/android/eeuiApp
+            chmod +x ./gradlew
+            ./gradlew assembleRelease --quiet
+
+      - name: Upload Android File
+        if: matrix.build_type == 'android'
+        env:
+          DP_KEY: ${{ secrets.DP_KEY }}
+        run: |
+          node ./electron/build.js android-upload
+
+      # Mac 构建步骤
+      - name: Build Mac App
+        if: matrix.build_type == 'mac'
+        env:
+          APPLEID: ${{ secrets.APPLEID }}
+          APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          DP_KEY: ${{ secrets.DP_KEY }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_REPOSITORY: ${{ github.repository }}
+        run: |
+          ./cmd electron mac
+
+      # Windows 构建步骤
+      - name: Build Windows App
+        if: matrix.build_type == 'windows'
+        env:
+          DP_KEY: ${{ secrets.DP_KEY }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          ./cmd electron win
+
+      # 上传Android构建产物
+      - name: Upload Android Release Assets
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        if: matrix.build_type == 'android'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.check-version.outputs.version }}
+          files: |
+            resources/mobile/platforms/android/eeuiApp/app/build/outputs/apk/release/*.apk
+
+  # publish-release:
+  #   needs: [check-version, create-release, builds]
+  #   if: needs.check-version.outputs.should_release == 'true'
+  #   permissions:
+  #     contents: write
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - name: publish release
+  #       id: publish-release
+  #       uses: actions/github-script@v7
+  #       env:
+  #         release_id: ${{ needs.create-release.outputs.release_id }}
+  #       with:
+  #         script: |
+  #           github.rest.repos.updateRelease({
+  #             owner: context.repo.owner,
+  #             repo: context.repo.repo,
+  #             release_id: process.env.release_id,
+  #             draft: false,
+  #             prerelease: false
+  #           })

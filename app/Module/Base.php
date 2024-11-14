@@ -13,7 +13,6 @@ use League\CommonMark\Exception\CommonMarkException;
 use Overtrue\Pinyin\Pinyin;
 use Redirect;
 use Request;
-use Response;
 use Storage;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\File;
@@ -370,6 +369,34 @@ class Base
                 rmdir($dirName);
             }
         }
+    }
+
+    /**
+     * 复制文件夹
+     * @param $source
+     * @param $destination
+     * @return bool
+     */
+    public static function copyDirectory($source, $destination)
+    {
+        if (!is_dir($source)) {
+            return false;
+        }
+        if (!is_dir($destination)) {
+            Base::makeDir($destination);
+        }
+        $dir = opendir($source);
+        while (false !== ($file = readdir($dir))) {
+            if (($file != '.') && ($file != '..')) {
+                if (is_dir($source . '/' . $file)) {
+                    self::copyDirectory($source . '/' . $file, $destination . '/' . $file);
+                } else {
+                    copy($source . '/' . $file, $destination . '/' . $file);
+                }
+            }
+        }
+        closedir($dir);
+        return true;
     }
 
     /**

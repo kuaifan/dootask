@@ -292,7 +292,7 @@ function androidUpload(url) {
                         uploadOras[filename] = ora(`Upload [0%] ${filename}`).start()
                         const formData = new FormData()
                         formData.append("file", fs.createReadStream(localFile));
-                        formData.append("file_num", 1);
+                        formData.append("action", "draft");
                         await axiosAutoTry({
                             axios: {
                                 method: 'post',
@@ -358,16 +358,6 @@ function genericPublish({url, key, version, output}) {
         if (err) {
             console.warn(err)
         } else {
-            let uploadFileNum = 0;
-            for (const filename of files) {
-                const localFile = path.join(filePath, filename)
-                if (fs.existsSync(localFile)) {
-                    const fileStat = fs.statSync(localFile)
-                    if (fileStat.isFile()) {
-                        uploadFileNum += 1;
-                    }
-                }
-            }
             const uploadOras = {}
             for (const filename of files) {
                 const localFile = path.join(filePath, filename)
@@ -377,7 +367,7 @@ function genericPublish({url, key, version, output}) {
                         uploadOras[filename] = ora(`Upload [0%] ${filename}`).start()
                         const formData = new FormData()
                         formData.append("file", fs.createReadStream(localFile));
-                        formData.append("file_num", uploadFileNum);
+                        formData.append("action", "draft");
                         await axiosAutoTry({
                             axios: {
                                 method: 'post',
