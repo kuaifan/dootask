@@ -2,18 +2,6 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.40.16]
-
-### Performance
-
-- 优化客户端升级
-- 优化客户端
-- 优化签到错误提示
-- 优化图片选择器
-- 优化邮件通知
-- 优化本地资源
-- 修复iOS下载中文名乱码的问题
-
 ## [0.39.97]
 
 ### Bug Fixes

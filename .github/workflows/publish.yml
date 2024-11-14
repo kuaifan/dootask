@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "pro"
+      - "dev"
 
 jobs:
   check-version:
@@ -47,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: create release
+      - name: Create Release
         id: create-release
         uses: actions/github-script@v7
         with:
@@ -229,25 +230,30 @@ jobs:
         run: |
           ./cmd electron win
 
-  # publish-release:
-  #   needs: [check-version, create-release, build-client]
-  #   if: needs.check-version.outputs.should_release == 'true'
-  #   permissions:
-  #     contents: write
-  #   runs-on: ubuntu-latest
+  publish-release:
+    needs: [ check-version, create-release, build-client ]
+    if: needs.check-version.outputs.should_release == 'true' && github.ref == 'refs/heads/pro'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - name: publish release
-  #       id: publish-release
-  #       uses: actions/github-script@v7
-  #       env:
-  #         RELEASE_ID: ${{ needs.create-release.outputs.release_id }}
-  #       with:
-  #         script: |
-  #           github.rest.repos.updateRelease({
-  #             owner: context.repo.owner,
-  #             repo: context.repo.repo,
-  #             release_id: process.env.RELEASE_ID,
-  #             draft: false,
-  #             prerelease: false
-  #           })
+    steps:
+      - name: Publish Release
+        uses: actions/github-script@v7
+        env:
+          RELEASE_ID: ${{ needs.create-release.outputs.release_id }}
+        with:
+          script: |
+            github.rest.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: process.env.RELEASE_ID,
+              draft: false,
+              prerelease: false
+            })
+
+      - name: Publish Official
+        env:
+          PUBLISH_KEY: ${{ secrets.PUBLISH_KEY }}
+        run: |
+          node ./electron/build.js published

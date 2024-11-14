@@ -338,6 +338,48 @@ function androidUpload(url) {
 }
 
 /**
+ * 通知发布完成
+ * @param url
+ */
+async function published(url) {
+    if (!PUBLISH_KEY) {
+        console.error("缺少 PUBLISH_KEY 环境变量");
+        process.exit()
+    }
+    const spinner = ora('完成发布...').start();
+    const formData = new FormData()
+    formData.append("action", "release");
+    await axiosAutoTry({
+        axios: {
+            method: 'post',
+            url: url,
+            data: formData,
+            headers: {
+                'Publish-Version': config.version,
+                'Publish-Key': PUBLISH_KEY,
+            },
+        },
+        retryNumber: 3
+    }).then(({status, data}) => {
+        if (status !== 200) {
+            spinner.fail('发布失败, status: ' + status)
+            return
+        }
+        if (!utils.isJson(data)) {
+            spinner.fail('发布失败, not json')
+            return
+        }
+        if (data.ret !== 1) {
+            spinner.fail(`发布失败, ret ${data.ret}`)
+            return
+        }
+        spinner.succeed('发布完成')
+    }).catch(_ => {
+        spinner.fail('发布失败')
+    })
+}
+
+/**
  * 通用发布
  * @param url
  * @param key
@@ -475,31 +517,29 @@ async function startBuild(data) {
     //
     if (data.id === 'app') {
         const eeuiDir = path.resolve(__dirname, "../resources/mobile");
-        const eeuiRun = `--rm -v ${eeuiDir}:/work -w /work kuaifan/eeui-cli:0.0.1`
+        const eeuiRun = `docker run --rm -v ${eeuiDir}:/work -w /work kuaifan/eeui-cli:0.0.1`
         const publicDir = path.resolve(__dirname, "../resources/mobile/src/public");
         fse.removeSync(publicDir)
         fse.copySync(electronDir, publicDir)
         if (argv[3] === "publish") {
+            // Android config
             const gradleFile = path.resolve(eeuiDir, "platforms/android/eeuiApp/local.properties")
-            if (fs.existsSync(gradleFile)) {
-                let gradleResult = fs.readFileSync(gradleFile, 'utf8')
-                gradleResult = gradleResult.replace(/versionCode\s*=\s*(.+?)(\n|$)/, `versionCode = ${config.codeVerson}\n`)
-                gradleResult = gradleResult.replace(/versionName\s*=\s*(.+?)(\n|$)/, `versionName = "${config.version}"\n`)
-                fs.writeFileSync(gradleFile, gradleResult, 'utf8')
-            }
+            let gradleResult = fs.existsSync(gradleFile) ? fs.readFileSync(gradleFile, 'utf8') : "";
+            gradleResult = gradleResult.replace(/(versionCode|versionName)\s*=\s*(.+?)(\n|$)/g, '')
+            gradleResult += `versionCode = ${config.codeVerson}\nversionName = ${config.version}\n`
+            fs.writeFileSync(gradleFile, gradleResult, 'utf8')
+            // iOS config
             const xcconfigFile = path.resolve(eeuiDir, "platforms/ios/eeuiApp/Config/Version.xcconfig")
-            if (fs.existsSync(xcconfigFile)) {
-                let xcconfigResult = fs.readFileSync(xcconfigFile, 'utf8')
-                xcconfigResult = xcconfigResult.replace(/VERSION_CODE\s*=\s*(.+?)(\n|$)/, `VERSION_CODE = ${config.codeVerson}\n`)
-                xcconfigResult = xcconfigResult.replace(/VERSION_NAME\s*=\s*(.+?)(\n|$)/, `VERSION_NAME = ${config.version}\n`)
-                fs.writeFileSync(xcconfigFile, xcconfigResult, 'utf8')
-            }
+            let xcconfigResult = fs.existsSync(xcconfigFile) ? fs.readFileSync(xcconfigFile, 'utf8') : "";
+            xcconfigResult = xcconfigResult.replace(/(VERSION_CODE|VERSION_NAME)\s*=\s*(.+?)(\n|$)/g, '')
+            xcconfigResult += `VERSION_CODE = ${config.codeVerson}\nVERSION_NAME = ${config.version}\n`
+            fs.writeFileSync(xcconfigFile, xcconfigResult, 'utf8')
         }
         if (['build', 'publish'].includes(argv[3])) {
             if (!fs.existsSync(path.resolve(eeuiDir, "node_modules"))) {
-                child_process.execSync(`docker run ${eeuiRun} npm install`, {stdio: "inherit", cwd: "resources/mobile"});
+                child_process.execSync(`${eeuiRun} npm install`, {stdio: "inherit", cwd: "resources/mobile"});
             }
-            child_process.execSync(`docker run ${eeuiRun} eeui build --simple`, {stdio: "inherit", cwd: "resources/mobile"});
+            child_process.execSync(`${eeuiRun} eeui build --simple`, {stdio: "inherit", cwd: "resources/mobile"});
         } else {
             [
                 path.resolve(publicDir, "../../platforms/ios/eeuiApp/bundlejs/eeui/public"),
@@ -524,58 +564,58 @@ async function startBuild(data) {
     process.on('SIGINT', recoveryPackage);
     process.on('SIGHUP', recoveryPackage);
     // package.json Generated
-    const econfig = require('./package.json')
+    const appConfig = require('./package.json')
     let appName = utils.getDomain(data.url)
     if (appName === "public") appName = "DooTask"
-    econfig.name = data.name;
-    econfig.version = config.version;
-    econfig.build.appId = data.id;
-    econfig.build.artifactName = appName + "-v${version}-${os}-${arch}.${ext}";
-    econfig.build.nsis.artifactName = appName + "-v${version}-${os}-${arch}.${ext}";
+    appConfig.name = data.name;
+    appConfig.version = config.version;
+    appConfig.build.appId = data.id;
+    appConfig.build.artifactName = appName + "-v${version}-${os}-${arch}.${ext}";
+    appConfig.build.nsis.artifactName = appName + "-v${version}-${os}-${arch}.${ext}";
     // changelog
-    econfig.build.releaseInfo.releaseNotes = changeLog()
+    appConfig.build.releaseInfo.releaseNotes = changeLog()
     if (!release) {
-        econfig.build.releaseInfo.releaseNotes = econfig.build.releaseInfo.releaseNotes.replace(`## [${config.version}]`, `## [${config.version}-Silence]`)
+        appConfig.build.releaseInfo.releaseNotes = appConfig.build.releaseInfo.releaseNotes.replace(`## [${config.version}]`, `## [${config.version}-Silence]`)
     }
     // notarize
     if (notarize && APPLEID && APPLEIDPASS) {
-        econfig.build.afterSign = "./notarize.js"
+        appConfig.build.afterSign = "./notarize.js"
     }
     // archs
     if (archs.length > 0) {
-        econfig.build.mac.target = econfig.build.mac.target.map(target => {
+        appConfig.build.mac.target = appConfig.build.mac.target.map(target => {
             if (target.arch) target.arch = target.arch.filter(arch => archs.includes(arch))
             return target
         })
-        econfig.build.win.target = econfig.build.win.target.map(target => {
+        appConfig.build.win.target = appConfig.build.win.target.map(target => {
             if (target.arch) target.arch = target.arch.filter(arch => archs.includes(arch))
             return target
         })
     }
-    // github (build && publish)
+    // GitHub (build and publish)
     if (publish === true && GITHUB_TOKEN && utils.strExists(GITHUB_REPOSITORY, "/")) {
         const repository = GITHUB_REPOSITORY.split("/")
-        econfig.build.publish = {
+        appConfig.build.publish = {
             "releaseType": "release",
             "provider": "github",
             "owner": repository[0],
             "repo": repository[1]
         }
-        econfig.build.directories.output = `${output}-github`;
-        fs.writeFileSync(packageFile, JSON.stringify(econfig, null, 4), 'utf8');
+        appConfig.build.directories.output = `${output}-github`;
+        fs.writeFileSync(packageFile, JSON.stringify(appConfig, null, 4), 'utf8');
         child_process.execSync(`npm run ${platform}-publish`, {stdio: "inherit", cwd: "electron"});
     }
-    // generic (build || publish)
-    econfig.build.publish = data.publish
-    econfig.build.directories.output = `${output}-generic`;
-    fs.writeFileSync(packageFile, JSON.stringify(econfig, null, 4), 'utf8');
+    // generic (build or publish)
+    appConfig.build.publish = data.publish
+    appConfig.build.directories.output = `${output}-generic`;
+    fs.writeFileSync(packageFile, JSON.stringify(appConfig, null, 4), 'utf8');
     child_process.execSync(`npm run ${platform}`, {stdio: "inherit", cwd: "electron"});
     if (publish === true && PUBLISH_KEY) {
         genericPublish({
-            url: econfig.build.publish.url,
+            url: appConfig.build.publish.url,
             key: PUBLISH_KEY,
             version: config.version,
-            output: econfig.build.directories.output
+            output: appConfig.build.directories.output
         })
     }
     // package.json Recovery
@@ -616,6 +656,13 @@ if (["dev"].includes(argv[2])) {
     config.app.forEach(({publish}) => {
         if (publish.provider === 'generic') {
             androidUpload(publish.url)
+        }
+    })
+} else if (["published"].includes(argv[2])) {
+    // 发布完成（GitHub Actions）
+    config.app.forEach(async ({publish}) => {
+        if (publish.provider === 'generic') {
+            await published(publish.url)
         }
     })
 } else if (["all", "win", "mac"].includes(argv[2])) {
