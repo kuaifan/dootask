@@ -142,6 +142,7 @@ async function detectAndDownloadUpdater() {
                                     const writer = fs.createWriteStream(outputPath);
                                     readStream.pipe(writer);
                                     writer.on('finish', () => {
+                                        fs.chmodSync(outputPath, 0o755);
                                         zipfile.readEntry();
                                     });
                                 });
@@ -650,34 +651,48 @@ if (["dev"].includes(argv[2])) {
     // 手编译（默认）
     const questions = [
         {
-            type: 'list',
+            type: 'checkbox',
             name: 'platform',
             message: "选择编译系统",
-            choices: [{
-                name: "MacOS",
-                value: platforms[0]
-            }, {
-                name: "Windows",
-                value: platforms[1]
-            }, {
-                name: "全平台",
-                value: platforms
-            }]
+            choices: [
+                {
+                    name: "MacOS",
+                    value: platforms[0],
+                    checked: true
+                }, 
+                {
+                    name: "Windows",
+                    value: platforms[1]
+                }
+            ],
+            validate: function(answer) {
+                if (answer.length < 1) {
+                    return '请至少选择一个系统';
+                }
+                return true;
+            }
         },
         {
-            type: 'list',
+            type: 'checkbox',
             name: 'arch',
             message: "选择系统架构",
-            choices: [{
-                name: "arm64",
-                value: architectures[0]
-            }, {
-                name: "x64",
-                value: architectures[1]
-            }, {
-                name: "全架构",
-                value: architectures
-            }]
+            choices: [
+                {
+                    name: "arm64",
+                    value: architectures[0],
+                    checked: true
+                }, 
+                {
+                    name: "x64",
+                    value: architectures[1]
+                }
+            ],
+            validate: function(answer) {
+                if (answer.length < 1) {
+                    return '请至少选择一个架构';
+                }
+                return true;
+            }
         },
         {
             type: 'list',
@@ -747,14 +762,11 @@ if (["dev"].includes(argv[2])) {
         }
 
         // 开始构建
-        const platformList = utils.isArray(answers.platform) ? answers.platform : [answers.platform];
-        const archList = utils.isArray(answers.arch) ? answers.arch : [answers.arch];
-        
-        for (const platform of platformList) {
+        for (const platform of answers.platform) {
             for (const data of config.app) {
                 data.configure = {
                     platform,
-                    archs: archList,
+                    archs: answers.arch,
                     publish: answers.publish,
                     release: answers.release,
                     notarize: answers.notarize

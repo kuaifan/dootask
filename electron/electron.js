@@ -212,8 +212,13 @@ function createUpdaterWindow(loadingTip) {
                 } catch (e) {
                     console.log('Failed to set executable permission:', e);
                 }
+            } else if (process.platform === 'win32') {
+                try {
+                    spawn('icacls', [updaterPath, '/set', 'everyone:F'], {stdio: 'inherit'});
+                } catch (e) {
+                    console.log('Failed to set executable permission:', e);
+                }
             }
-            return;
         }
         
         // 检查updater应用是否存在
