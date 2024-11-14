@@ -125,16 +125,10 @@ jobs:
         include:
           - platform: "macos-12"
             build_type: "mac"
-            args: "--target aarch64-apple-darwin"
-          - platform: "macos-12"
-            build_type: "mac"
-            args: "--target x86_64-apple-darwin"
           - platform: "ubuntu-latest"
             build_type: "android"
-            args: ""
           - platform: "windows-latest"
             build_type: "windows"
-            args: ""
 
     runs-on: ${{ matrix.platform }}
     environment: build
@@ -153,7 +147,7 @@ jobs:
         uses: nick-fields/retry@v2
         with:
           timeout_minutes: 10
-          max_attempts: 5
+          max_attempts: 3
           command: |
             git submodule init
             git submodule update --remote "resources/mobile"
@@ -170,8 +164,8 @@ jobs:
         if: matrix.build_type == 'android'
         uses: nick-fields/retry@v2
         with:
-          timeout_minutes: 60
-          max_attempts: 10
+          timeout_minutes: 20
+          max_attempts: 5
           command: |
             cd resources/mobile/platforms/android/eeuiApp
             chmod +x ./gradlew
@@ -180,20 +174,35 @@ jobs:
       - name: (Android) Upload File
         if: matrix.build_type == 'android'
         env:
-          DP_KEY: ${{ secrets.DP_KEY }}
+          PUBLISH_KEY: ${{ secrets.PUBLISH_KEY }}
         run: |
           node ./electron/build.js android-upload
 
       - name: (Android) Upload Release
         if: matrix.build_type == 'android'
+        uses: actions/github-script@v7
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        uses: softprops/action-gh-release@v2
+          RELEASE_ID: ${{ needs.create-release.outputs.release_id }}
         with:
-          tag_name: v${{ needs.check-version.outputs.version }}
-          draft: true
-          files: |
-            resources/mobile/platforms/android/eeuiApp/app/build/outputs/apk/release/*.apk
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const globby = require('globby');
+
+            // 查找 APK 文件
+            const files = await globby('resources/mobile/platforms/android/eeuiApp/app/build/outputs/apk/release/*.apk');
+
+            for (const file of files) {
+              const data = await fs.promises.readFile(file);
+
+              await github.rest.repos.uploadReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: process.env.RELEASE_ID,
+                name: path.basename(file),
+                data: data
+              });
+            }
 
       # Mac 构建步骤
       - name: (Mac) Build Client
@@ -203,9 +212,9 @@ jobs:
           APPLEIDPASS: ${{ secrets.APPLEIDPASS }}
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          DP_KEY: ${{ secrets.DP_KEY }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          GH_REPOSITORY: ${{ github.repository }}
+          PUBLISH_KEY: ${{ secrets.PUBLISH_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
           ./cmd electron mac
 
@@ -213,15 +222,15 @@ jobs:
       - name: (Windows) Build Client
         if: matrix.build_type == 'windows'
         env:
-          DP_KEY: ${{ secrets.DP_KEY }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          GH_REPOSITORY: ${{ github.repository }}
+          PUBLISH_KEY: ${{ secrets.PUBLISH_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         shell: bash
         run: |
           ./cmd electron win
 
   # publish-release:
-  #   needs: [check-version, create-release, builds]
+  #   needs: [check-version, create-release, build-client]
   #   if: needs.check-version.outputs.should_release == 'true'
   #   permissions:
   #     contents: write
@@ -232,13 +241,13 @@ jobs:
   #       id: publish-release
   #       uses: actions/github-script@v7
   #       env:
-  #         release_id: ${{ needs.create-release.outputs.release_id }}
+  #         RELEASE_ID: ${{ needs.create-release.outputs.release_id }}
   #       with:
   #         script: |
   #           github.rest.repos.updateRelease({
   #             owner: context.repo.owner,
   #             repo: context.repo.repo,
-  #             release_id: process.env.release_id,
+  #             release_id: process.env.RELEASE_ID,
   #             draft: false,
   #             prerelease: false
   #           })

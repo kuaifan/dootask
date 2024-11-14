@@ -11,7 +11,7 @@ const utils = require('./utils');
 const config = require('../package.json')
 const env = require('dotenv').config({ path: './.env' })
 const argv = process.argv;
-const {APPLEID, APPLEIDPASS, GH_TOKEN, GH_REPOSITORY, DP_KEY} = process.env;
+const {APPLEID, APPLEIDPASS, GITHUB_TOKEN, GITHUB_REPOSITORY, PUBLISH_KEY} = process.env;
 
 const electronDir = path.resolve(__dirname, "public");
 const nativeCachePath = path.resolve(__dirname, ".native");
@@ -37,9 +37,9 @@ async function detectAndDownloadUpdater() {
         // 获取最新release
         const spinner = ora('检查更新器...').start();
         const response = await axios.get('https://api.github.com/repos/kuaifan/dootask-updater/releases/latest', {
-            headers: GH_TOKEN ? { 'Authorization': `token ${GH_TOKEN}` } : {}
+            headers: GITHUB_TOKEN ? { 'Authorization': `token ${GITHUB_TOKEN}` } : {}
         });
-        
+
         if (!response.data || !response.data.assets) {
             spinner.fail('检查更新器失败');
             return;
@@ -67,7 +67,7 @@ async function detectAndDownloadUpdater() {
         }
 
         // 过滤出binary开头的zip文件
-        const assets = response.data.assets.filter(asset => 
+        const assets = response.data.assets.filter(asset =>
             asset.name.startsWith('binary_') && asset.name.endsWith('.zip')
         );
 
@@ -81,7 +81,7 @@ async function detectAndDownloadUpdater() {
             if (!match) continue;
 
             let [, platform, arch] = match;
-            
+
             // 平台名称映射
             const platformMap = {
                 'macos': 'mac',
@@ -114,7 +114,7 @@ async function detectAndDownloadUpdater() {
                     url: asset.browser_download_url,
                     method: 'GET',
                     responseType: 'stream',
-                    headers: GH_TOKEN ? { 'Authorization': `token ${GH_TOKEN}` } : {}
+                    headers: GITHUB_TOKEN ? { 'Authorization': `token ${GITHUB_TOKEN}` } : {}
                 });
 
                 response.data.pipe(writer);
@@ -129,7 +129,7 @@ async function detectAndDownloadUpdater() {
                 await new Promise((resolve, reject) => {
                     yauzl.open(zipPath, { lazyEntries: true }, (err, zipfile) => {
                         if (err) reject(err);
-                        
+
                         zipfile.readEntry();
                         zipfile.on('entry', (entry) => {
                             if (/\/$/.test(entry.fileName)) {
@@ -137,7 +137,7 @@ async function detectAndDownloadUpdater() {
                             } else {
                                 zipfile.openReadStream(entry, (err, readStream) => {
                                     if (err) reject(err);
-                                    
+
                                     const outputPath = path.join(targetDir, path.basename(entry.fileName));
                                     const writer = fs.createWriteStream(outputPath);
                                     readStream.pipe(writer);
@@ -148,7 +148,7 @@ async function detectAndDownloadUpdater() {
                                 });
                             }
                         });
-                        
+
                         zipfile.on('end', resolve);
                     });
                 });
@@ -270,8 +270,8 @@ function axiosAutoTry(data) {
  * @param url
  */
 function androidUpload(url) {
-    if (!DP_KEY) {
-        console.error("缺少 Deploy Key, 请检查环境变量!");
+    if (!PUBLISH_KEY) {
+        console.error("缺少 PUBLISH_KEY 环境变量");
         process.exit()
     }
     const releaseDir = path.resolve(__dirname, "../resources/mobile/platforms/android/eeuiApp/app/build/outputs/apk/release");
@@ -300,7 +300,7 @@ function androidUpload(url) {
                                 data: formData,
                                 headers: {
                                     'Publish-Version': config.version,
-                                    'Publish-Key': DP_KEY,
+                                    'Publish-Key': PUBLISH_KEY,
                                     'Content-Type': 'multipart/form-data;boundary=' + formData.getBoundary(),
                                 },
                                 onUploadProgress: progress => {
@@ -556,8 +556,8 @@ async function startBuild(data) {
         })
     }
     // github (build && publish)
-    if (publish === true && GH_TOKEN && utils.strExists(GH_REPOSITORY, "/")) {
-        const repository = GH_REPOSITORY.split("/")
+    if (publish === true && GITHUB_TOKEN && utils.strExists(GITHUB_REPOSITORY, "/")) {
+        const repository = GITHUB_REPOSITORY.split("/")
         econfig.build.publish = {
             "releaseType": "release",
             "provider": "github",
@@ -573,10 +573,10 @@ async function startBuild(data) {
     econfig.build.directories.output = `${output}-generic`;
     fs.writeFileSync(packageFile, JSON.stringify(econfig, null, 4), 'utf8');
     child_process.execSync(`npm run ${platform}`, {stdio: "inherit", cwd: "electron"});
-    if (publish === true && DP_KEY) {
+    if (publish === true && PUBLISH_KEY) {
         genericPublish({
             url: econfig.build.publish.url,
-            key: DP_KEY,
+            key: PUBLISH_KEY,
             version: config.version,
             output: econfig.build.directories.output
         })
@@ -649,7 +649,7 @@ if (["dev"].includes(argv[2])) {
                     name: "MacOS",
                     value: platforms[0],
                     checked: true
-                }, 
+                },
                 {
                     name: "Windows",
                     value: platforms[1]
@@ -671,7 +671,7 @@ if (["dev"].includes(argv[2])) {
                     name: "arm64",
                     value: architectures[0],
                     checked: true
-                }, 
+                },
                 {
                     name: "x64",
                     value: architectures[1]
@@ -734,8 +734,8 @@ if (["dev"].includes(argv[2])) {
             const publishAnswers = await inquirer.prompt(publishQuestions);
             Object.assign(answers, publishAnswers);
 
-            if (!DP_KEY && (!GH_TOKEN || !utils.strExists(GH_REPOSITORY, "/"))) {
-                console.error("发布需要 Deploy Key 或 GitHub Token 和 Repository, 请检查环境变量!");
+            if (!PUBLISH_KEY && (!GITHUB_TOKEN || !utils.strExists(GITHUB_REPOSITORY, "/"))) {
+                console.error("发布需要 PUBLISH_KEY 或 GitHub Token 和 Repository, 请检查环境变量!");
                 process.exit()
             }
 
