@@ -201,30 +201,30 @@ function createUpdaterWindow(loadingTip) {
         } else {
             updaterPath = path.join(process.resourcesPath, 'updater', 'updater');
         }
-
-        // 检查文件权限
-        try {
-            fs.accessSync(updaterPath, fs.constants.X_OK);
-        } catch (e) {
-            if (process.platform === 'darwin') {
-                try {
-                    spawn('chmod', ['+x', updaterPath], {stdio: 'inherit'});
-                } catch (e) {
-                    console.log('Failed to set executable permission:', e);
-                }
-            } else if (process.platform === 'win32') {
-                try {
-                    spawn('icacls', [updaterPath, '/set', 'everyone:F'], {stdio: 'inherit'});
-                } catch (e) {
-                    console.log('Failed to set executable permission:', e);
-                }
-            }
-        }
         
         // 检查updater应用是否存在
         if (!fs.existsSync(updaterPath)) {
             console.log('Updater not found:', updaterPath);
             return;
+        }
+
+        // 检查文件权限
+        try {
+            fs.accessSync(updaterPath, fs.constants.X_OK);
+        } catch (e) {
+            if (isWin) {
+                try {
+                    spawn('icacls', [updaterPath, '/grant', 'everyone:F'], { stdio: 'inherit', shell: true });
+                } catch (e) {
+                    console.log('Failed to set executable permission:', e);
+                }
+            } else if (process.platform === 'darwin') {
+                try {
+                    spawn('chmod', ['+x', updaterPath], {stdio: 'inherit'});
+                } catch (e) {
+                    console.log('Failed to set executable permission:', e); 
+                }
+            }
         }
 
         // 创建锁文件
@@ -234,6 +234,7 @@ function createUpdaterWindow(loadingTip) {
         const child = spawn(updaterPath, [updaterLockFile], {
             detached: true,
             stdio: 'ignore',
+            shell: isWin,
             env: {
                 ...process.env,
                 ELECTRON_RUN_AS_NODE: '1',
