@@ -269,7 +269,8 @@ class IndexController extends InvokeController
         if (strtolower($name) === 'latest') {
             $name = $latestVersion;
         }
-        // 上传
+
+        // 上传（header 中包含 publish-version）
         if (preg_match("/^\d+\.\d+\.\d+$/", $publishVersion)) {
             // 判断密钥
             $publishKey = Request::header('publish-key');
@@ -277,55 +278,70 @@ class IndexController extends InvokeController
                 return Base::retError("key error");
             }
             // 判断版本
-            if (version_compare($publishVersion, $latestVersion) > -1) {    // 限制上传版本必须 ≥ 当前版本
-                $action = Request::get('action');
-                $draftPath = "uploads/desktop-draft/{$publishVersion}/";
-                if ($action === 'release') {
-                    // 将草稿版本发布为正式版本
-                    $draftPath = public_path($draftPath);
-                    $releasePath = public_path("uploads/desktop/{$publishVersion}/");
-                    if (!file_exists($draftPath)) {
-                        return Base::retError("draft version not exists");
-                    }
-                    if (file_exists($releasePath)) {
-                        Base::deleteDirAndFile($releasePath);
-                    }
-                    Base::copyDirectory($draftPath, $releasePath);
-                    file_put_contents($latestFile, $publishVersion);
-                    // 删除旧版本
-                    Base::deleteDirAndFile(public_path("uploads/desktop-draft"));
-                    $dirs = Base::recursiveDirs(public_path("uploads/desktop"), false);
-                    sort($dirs);
-                    $num = 0;
-                    foreach ($dirs as $dir) {
-                        if (!preg_match("/\/\d+\.\d+\.\d+$/", $dir)) {
-                            continue;
-                        }
-                        $num++;
-                        if ($num < 2) {
-                            continue;
-                        }
-                        $time = filemtime($dir);
-                        if ($time < time() - 3600 * 24 * 30) {
-                            Base::deleteDirAndFile($dir);
-                        }
-                    }
-                    return Base::retSuccess('success');
+            $action = Request::get('action');
+            $draftPath = "uploads/desktop-draft/{$publishVersion}/";
+            if ($action === 'release') {
+                // 将草稿版本发布为正式版本
+                $draftPath = public_path($draftPath);
+                $releasePath = public_path("uploads/desktop/{$publishVersion}/");
+                if (!file_exists($draftPath)) {
+                    return Base::retError("draft version not exists");
                 }
-                // 上传草稿版本
-                return Base::upload([
-                    "file" => Request::file('file'),
-                    "type" => 'publish',
-                    "path" => $draftPath,
-                    "fileName" => true,
-                    "quality" => 100
-                ]);
+                if (file_exists($releasePath)) {
+                    Base::deleteDirAndFile($releasePath);
+                }
+                Base::copyDirectory($draftPath, $releasePath);
+                file_put_contents($latestFile, $publishVersion);
+                // 删除旧版本
+                Base::deleteDirAndFile(public_path("uploads/desktop-draft"));
+                $dirs = Base::recursiveDirs(public_path("uploads/desktop"), false);
+                sort($dirs);
+                $num = 0;
+                foreach ($dirs as $dir) {
+                    if (!preg_match("/\/\d+\.\d+\.\d+$/", $dir)) {
+                        continue;
+                    }
+                    $num++;
+                    if ($num < 5) {
+                        continue;   // 保留最新的5个版本
+                    }
+                    if (filemtime($dir) > time() - 3600 * 24 * 30) {
+                        continue;   // 保留最近30天的版本
+                    }
+                    Base::deleteDirAndFile($dir);
+                }
+                return Base::retSuccess('success');
             }
+            // 上传草稿版本
+            return Base::upload([
+                "file" => Request::file('file'),
+                "type" => 'publish',
+                "path" => $draftPath,
+                "fileName" => true,
+                "quality" => 100
+            ]);
         }
-        // 列表
-        if (preg_match("/^\d+\.\d+\.\d+$/", $name)) {
-            $path = "uploads/desktop/{$name}";
-            $dirPath = public_path($path);
+
+        // 列表（访问路径 desktop/publish/{version}）
+        if (preg_match("/^v*(\d+\.\d+\.\d+)$/", $name, $match)) {
+            $paths = [
+                "uploads/desktop/{$match[1]}/",
+                "uploads/desktop/v{$match[1]}/",
+                "uploads/desktop-draft/{$match[1]}/",
+                "uploads/desktop-draft/v{$match[1]}/",
+            ];
+            $avaiPath = null;
+            foreach ($paths as $path) {
+                $dirPath = public_path($path);
+                $isDraft = str_contains($path, 'draft');
+                if (is_dir($dirPath)) {
+                    $avaiPath = $path;
+                    break;
+                }
+            }
+            if (empty($avaiPath)) {
+                abort(404);
+            }
             $lists = Base::recursiveFiles($dirPath, false);
             $files = [];
             foreach ($lists as $file) {
@@ -338,22 +354,43 @@ class IndexController extends InvokeController
                     'name' => $fileName,
                     'time' => date("Y-m-d H:i:s", filemtime($file)),
                     'size' => $fileSize > 0 ? Base::readableBytes($fileSize) : 0,
-                    'url' => Base::fillUrl(Base::joinPath($path, $fileName)),
+                    'url' => Base::fillUrl(Base::joinPath($avaiPath, $fileName)),
+                ];
+            }
+            $otherVersion = [];
+            $dirs = Base::recursiveDirs(public_path("uploads/desktop"), false);
+            foreach ($dirs as $dir) {
+                if (!preg_match("/\/\d+\.\d+\.\d+$/", $dir)) {
+                    continue;
+                }
+                $version = basename($dir);
+                if ($version === $match[1]) {
+                    continue;
+                }
+                $otherVersion[] = [
+                    'version' => $version,
+                    'url' => Base::fillUrl("desktop/publish/{$version}"),
                 ];
             }
             //
-            return view('desktop', ['version' => $name, 'files' => $files]);
+            return view('desktop', [
+                'version' => $match[1],
+                'files' => $files,
+                'is_draft' => $isDraft,
+                'latest_version' => $latestVersion,
+                'other_version' => array_reverse($otherVersion),
+            ]);
         }
-        // 下载
-        if ($name && file_exists($latestFile)) {
-            $publishVersion = file_get_contents($latestFile);
-            if (preg_match("/^\d+\.\d+\.\d+$/", $publishVersion)) {
-                $filePath = public_path("uploads/desktop/{$publishVersion}/{$name}");
-                if (file_exists($filePath)) {
-                    return Response::download($filePath);
-                }
+
+        // 下载（Latest 版本内的文件，访问路径 desktop/publish/{fileName}）
+        if ($name) {
+            $filePath = public_path("uploads/desktop/{$latestVersion}/{$name}");
+            if (file_exists($filePath)) {
+                return Response::download($filePath);
             }
         }
+
+        // 404
         abort(404);
     }
 

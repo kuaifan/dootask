@@ -24,13 +24,15 @@
 
         .mirror {
             overflow: auto;
-            width: 1180px;
-            margin: 0 auto 20px
+            max-width: 1180px;
+            margin: 0 auto 20px;
+            padding: 0 20px;
         }
 
         .mirror-nav {
-            width: 1180px;
+            max-width: 1180px;
             margin: 20px auto 10px;
+            padding: 0 20px;
             display: flex;
             justify-content: space-between;
         }
@@ -88,33 +90,55 @@
         }
 
         .download-other-btn {
+            flex-shrink: 0;
             padding: 2px 12px;
             color: #088acb;
             border-radius: 8px;
             margin-top: 2px;
+            margin-left: 12px;
             border: 1px solid #088acb;
             font-size: 14px;
             height: 30px;
             line-height: 30px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .fileDate, .fileName, .fileSize {
-            padding-left: 8px
+            padding-left: 8px;
+            line-height: 44px;
         }
 
-        .date, .fileDate {
+        .date, .link, .size {
+            line-height: 26px
+        }
+
+        .fileDate,
+        .date {
             width: 25%;
-            line-height: 26px
         }
 
-        .fileName, .link {
+        .fileName,
+        .link {
             width: 55%;
-            line-height: 26px
         }
 
-        .fileSize, .size {
+        .fileSize,
+        .size {
             width: 20%;
-            line-height: 26px
+        }
+
+        .other-version {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            font-size: 11pt;
+            padding: 0 24px;
+        }
+        .other-version a {
+            padding: 0 12px;
+            color: #088acb
         }
 
         @media (max-width: 768px) {
@@ -168,10 +192,6 @@
             a:hover {
                 color: #ff791a
             }
-
-            .mirror-nav {
-                padding-left: 15px
-            }
         }
     </style>
 </head>
@@ -180,7 +200,7 @@
 @extends('ie')
 
 <h1 class="mirror-nav">
-    <p>Download of v{{ $version }}</p>
+    <span>Download of v{{ $version }}{{ $version === $latest_version ? ' (Latest)' : '' }}{{ $is_draft ? ' (Draft)' : '' }}</span>
     <a class="download-other-btn" href="https://github.com/kuaifan/dootask/releases" target="_blank">More Versions</a>
 </h1>
 <div class="mirror">
@@ -215,6 +235,13 @@
         </tbody>
     </table>
 </div>
+@if ($other_version)
+    <div class="other-version">
+        @foreach($other_version as $item)
+            <a href="{{ $item['url'] }}">v{{ $item['version'] }}{{ $item['version'] === $latest_version ? ' (Latest)' : '' }}</a>
+        @endforeach
+    </div>
+@endif
 </body>
 <script>
     function getUrlParam(name, url) {
