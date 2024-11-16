@@ -219,7 +219,7 @@ export default {
             this.updateIng = true
             setTimeout(() => {
                 this.$Electron.sendMessage('updateQuitAndInstall', {
-                    loadingTip: this.$L('正在安装更新，请稍候...')
+                    updateTitle: this.$L('正在安装更新，请稍候...')
                 })
             }, 301)
         },

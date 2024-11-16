@@ -187,7 +187,7 @@ function createMainWindow() {
 /**
  * 创建更新程序子进程
  */
-function createUpdaterWindow(loadingTip) {
+function createUpdaterWindow(updateTitle) {
     // 检查平台是否支持
     if (!['darwin', 'win32'].includes(process.platform)) {
         return;
@@ -228,7 +228,7 @@ function createUpdaterWindow(loadingTip) {
         }
 
         // 创建锁文件
-        fs.writeFileSync(updaterLockFile, loadingTip || '');
+        fs.writeFileSync(updaterLockFile, Date.now().toString());
 
         // 启动子进程,传入锁文件路径作为第一个参数
         const child = spawn(updaterPath, [updaterLockFile], {
@@ -238,7 +238,7 @@ function createUpdaterWindow(loadingTip) {
             env: {
                 ...process.env,
                 ELECTRON_RUN_AS_NODE: '1',
-                UPDATER_LOCK_FILE: updaterLockFile
+                UPDATER_TITLE: updateTitle || ''
             }
         });
 
@@ -1304,12 +1304,15 @@ ipcMain.on('updateQuitAndInstall', (event, args) => {
     })
 
     // 启动更新子窗口
-    createUpdaterWindow(args.loadingTip)
+    createUpdaterWindow(args.updateTitle)
+
+    // 隐藏主窗口
+    mainWindow.hide()
 
     // 退出并安装更新
     setTimeout(_ => {
         autoUpdater.quitAndInstall(true, true)
-    }, 1000)
+    }, 300)
 })
 
 //================================================================
