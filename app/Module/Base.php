@@ -2063,13 +2063,18 @@ class Base
                 $exif = @exif_read_data($array['file']);
                 if (!empty($exif['Orientation'])) {
                     $data = match ($exif['Orientation']) {
-                        8 => imagerotate($data, 90, 0),
+                        2 => imageflip($data, IMG_FLIP_HORIZONTAL),
                         3 => imagerotate($data, 180, 0),
+                        4 => imageflip($data, IMG_FLIP_VERTICAL), 
+                        5 => imageflip(imagerotate($data, -90, 0), IMG_FLIP_HORIZONTAL),
                         6 => imagerotate($data, -90, 0),
+                        7 => imageflip(imagerotate($data, 90, 0), IMG_FLIP_HORIZONTAL),
+                        8 => imagerotate($data, 90, 0),
                         default => null,
                     };
                     if ($data !== null) {
                         imagejpeg($data, $array['file']);
+                        imagedestroy($data);
                     }
                 }
             }
