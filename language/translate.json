@@ -26314,5 +26314,29 @@
         "fr": "Installation des mises à jour, veuillez patienter...",
         "id": "Sedang menginstal pembaruan, harap tunggu...",
         "ru": "Идет установка обновлений, пожалуйста, подождите..."
+    },
+    {
+        "key": "产检假",
+        "zh": "",
+        "zh-CHT": "產檢假",
+        "en": "Antenatal Leave",
+        "ko": "산전 휴가",
+        "ja": "産前検診休暇",
+        "de": "Vorsorgeuntersuchungsurlaub",
+        "fr": "Congé prénatal",
+        "id": "Cuti pralahir",
+        "ru": "Отпуск на дородовую проверку"
+    },
+    {
+        "key": "其他",
+        "zh": "",
+        "zh-CHT": "其他",
+        "en": "Others",
+        "ko": "기타",
+        "ja": "その他",
+        "de": "Andere",
+        "fr": "Autres",
+        "id": "Lainnya",
+        "ru": "Прочее"
     }
 ]

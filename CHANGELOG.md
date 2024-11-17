@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.40.27]
+
+### Performance
+
+- 优化iOS上传图片颠倒的问题
+- 优化桌面端通知图标
+- 优化资源预取
+- 优化emoji表情回复的判断
+- 更新office组件
+- 优化审批功能
+- 优化客户端升级
+- 优化客户端
+- 优化签到错误提示
+- 优化图片选择器
+- 优化邮件通知
+- 优化本地资源
+- 修复iOS下载中文名乱码的问题
+
 ## [0.39.97]
 
 ### Bug Fixes

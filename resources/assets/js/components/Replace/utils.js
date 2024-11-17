@@ -16,6 +16,9 @@ const publicImageResources = (() => {
         // 设置应用前缀URL
         if ($A.isEEUiApp) {
             appPreUrl = $A.eeuiAppRewriteUrl('../public/')
+            if ($A.isAndroid()) {
+                appPreUrl = appPreUrl.replace(/^file:\/\/assets\//, 'file:///android_asset/')
+            }
         } else if ($A.Electron) {
             appPreUrl = "dootask-resources://public/"
         }
