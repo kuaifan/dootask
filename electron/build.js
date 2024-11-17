@@ -11,7 +11,7 @@ const utils = require('./utils');
 const config = require('../package.json')
 const env = require('dotenv').config({ path: './.env' })
 const argv = process.argv;
-const {APPLEID, APPLEIDPASS, GITHUB_TOKEN, GITHUB_REPOSITORY, PUBLISH_KEY} = process.env;
+const {BUILD_FRONTEND, APPLEID, APPLEIDPASS, GITHUB_TOKEN, GITHUB_REPOSITORY, PUBLISH_KEY} = process.env;
 
 const electronDir = path.resolve(__dirname, "public");
 const nativeCachePath = path.resolve(__dirname, ".native");
@@ -20,6 +20,9 @@ const packageFile = path.resolve(__dirname, "package.json");
 const packageBakFile = path.resolve(__dirname, "package-bak.json");
 const platforms = ["build-mac", "build-win"];
 const architectures = ["arm64", "x64"];
+
+let buildChecked = false,
+    updaterChecked = false;
 
 /**
  * 检测并下载更新器
@@ -459,6 +462,13 @@ function genericPublish({url, key, version, output}) {
  * @param data
  */
 async function startBuild(data) {
+    if (BUILD_FRONTEND === 'build' && !buildChecked) {
+        buildChecked = true
+        fs.mkdirSync(electronDir, { recursive: true });
+        fse.copySync(path.resolve(__dirname, "index.html"), path.resolve(electronDir, "index.html"))
+        child_process.spawnSync("npx", ["vite", "build", "--", "fromcmd", "electronBuild"], {stdio: "inherit"});
+    }
+    //
     const {platform, archs, publish, release, notarize} = data.configure
     // system info
     const systemInfo = {
@@ -493,7 +503,10 @@ async function startBuild(data) {
         // drawio
         cloneDrawio(systemInfo)
         // updater
-        await detectAndDownloadUpdater()
+        if (!updaterChecked) {
+            updaterChecked = true
+            await detectAndDownloadUpdater()
+        }
     }
     // language
     fse.copySync(path.resolve(__dirname, "../public/language"), path.resolve(electronDir, "language"))
@@ -569,6 +582,7 @@ async function startBuild(data) {
     if (appName === "public") appName = "DooTask"
     appConfig.name = data.name;
     appConfig.version = config.version;
+    appConfig.appId = data.id;
     appConfig.build.appId = data.id;
     appConfig.build.artifactName = appName + "-v${version}-${os}-${arch}.${ext}";
     appConfig.build.nsis.artifactName = appName + "-v${version}-${os}-${arch}.${ext}";

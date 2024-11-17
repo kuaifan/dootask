@@ -1,8 +1,14 @@
 const fs = require("fs");
+const os = require("os");
+const path = require('path')
 const dayjs = require("dayjs");
-const {shell, dialog, session} = require("electron");
+const http = require('http')
+const https = require('https')
+const crypto = require('crypto')
+const {shell, dialog, session, Notification} = require("electron");
+const loger = require("electron-log");
 
-module.exports = {
+const utils = {
     /**
      * 时间对象
      * @param v
@@ -160,7 +166,7 @@ module.exports = {
     leftDelete(string, find, lower = false) {
         string += "";
         find += "";
-        if (this.leftExists(string, find, lower)) {
+        if (utils.leftExists(string, find, lower)) {
             string = string.substring(find.length)
         }
         return string ? string : '';
@@ -185,33 +191,33 @@ module.exports = {
 
     /**
      * 打开文件
-     * @param path
+     * @param filePath
      */
-    openFile(path) {
-        if (!fs.existsSync(path)) {
+    openFile(filePath) {
+        if (!fs.existsSync(filePath)) {
             return
         }
-        shell.openPath(path).then(() => {
+        shell.openPath(filePath).then(() => {
         })
     },
 
     /**
      * 删除文件夹及文件
-     * @param path
+     * @param filePath
      */
-    deleteFile(path) {
+    deleteFile(filePath) {
         let files = [];
-        if (fs.existsSync(path)) {
-            files = fs.readdirSync(path);
-            files.forEach(function (file, index) {
-                let curPath = path + "/" + file;
+        if (fs.existsSync(filePath)) {
+            files = fs.readdirSync(filePath);
+            files.forEach(function (file) {
+                let curPath = filePath + "/" + file;
                 if (fs.statSync(curPath).isDirectory()) {
-                    deleteFile(curPath);
+                    utils.deleteFile(curPath);
                 } else {
                     fs.unlinkSync(curPath);
                 }
             });
-            fs.rmdirSync(path);
+            fs.rmdirSync(filePath);
         }
     },
 
@@ -225,14 +231,14 @@ module.exports = {
         let rs = fs.createReadStream(srcPath)
         rs.on('error', function (err) {
             if (err) {
-                console.log('read error', srcPath)
+                loger.log('read error', srcPath)
             }
             cb && cb(err)
         })
         let ws = fs.createWriteStream(tarPath)
         ws.on('error', function (err) {
             if (err) {
-                console.log('write error', tarPath)
+                loger.log('write error', tarPath)
             }
             cb && cb(err)
         })
@@ -296,7 +302,7 @@ module.exports = {
             const contents = app.webContents
             if (contents != null) {
                 contents.executeJavaScript('if(typeof window.__onBeforeUnload === \'function\'){window.__onBeforeUnload()}', true).then(options => {
-                    if (this.isJson(options)) {
+                    if (utils.isJson(options)) {
                         let choice = dialog.showMessageBoxSync(app, options)
                         if (choice === 1) {
                             contents.executeJavaScript('if(typeof window.__removeBeforeUnload === \'function\'){window.__removeBeforeUnload()}', true).catch(() => {});
@@ -414,7 +420,7 @@ module.exports = {
      * electron15 后，解决跨域cookie无法携带，
      */
     useCookie() {
-        const filter = {urls: ['https://*/*']};
+        const filter = {urls: ['https://*/*', 'http://*/*']};
         session.defaultSession.webRequest.onHeadersReceived(filter, (details, callback) => {
             if (details.responseHeaders && details.responseHeaders['Set-Cookie']) {
                 for (let i = 0; i < details.responseHeaders['Set-Cookie'].length; i++) {
@@ -436,5 +442,170 @@ module.exports = {
         } else {
             return input.meta
         }
-    }
+    },
+
+    /**
+     * MIME类型判断
+     * @param filePath
+     * @returns {*|string}
+     */
+    getMimeType(filePath) {
+        const ext = path.extname(filePath).toLowerCase()
+        const mimeTypes = {
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.png': 'image/png',
+            '.gif': 'image/gif',
+            '.svg': 'image/svg+xml',
+            '.webp': 'image/webp'
+        }
+        return mimeTypes[ext] || 'application/octet-stream'
+    },
+
+    /**
+     * 显示系统通知
+     * @param {Object} args - 通知参数
+     * @param {string} args.title - 通知标题
+     * @param {string} args.body - 通知内容
+     * @param {string} [args.icon] - 通知图标路径或URL
+     * @param {Electron.BrowserWindow} [window] - 主窗口实例
+     * @returns {Promise<void>}
+     */
+    async showNotification(args, window = null) {
+        try {
+            // 如果是网络图片，进行缓存处理（仅Windows）
+            if (process.platform === 'win32' && args.icon && /^https?:\/\//i.test(args.icon)) {
+                args.icon = await utils.getCachedImage(args.icon);
+            }
+
+            const notifiy = new Notification(args);
+            notifiy.addListener('click', _ => {
+                if (window && window.webContents) {
+                    window.webContents.send("clickNotification", args)
+                    if (!window.isVisible()) {
+                        window.show();
+                    }
+                    window.focus();
+                }
+            })
+            notifiy.addListener('reply', (event, reply) => {
+                if (window && window.webContents) {
+                    window.webContents.send("replyNotification", Object.assign(args, {reply}))
+                }
+            })
+            notifiy.show()
+        } catch (error) {
+            loger.error('显示通知失败:', error);
+        }
+    },
+
+    /**
+     * 获取缓存的图片路径
+     * @param {string} imageUrl - 图片URL
+     * @returns {Promise<string>} 缓存的图片路径
+     */
+    async getCachedImage(imageUrl) {
+        // 生成图片URL的唯一标识
+        const urlHash = crypto.createHash('md5').update(imageUrl).digest('hex');
+        const cacheDir = path.join(os.tmpdir(), 'dootask-cache', 'images');
+        const cachePath = path.join(cacheDir, `${urlHash}.png`);
+
+        try {
+            // 确保缓存目录存在
+            if (!fs.existsSync(cacheDir)) {
+                fs.mkdirSync(cacheDir, { recursive: true });
+            }
+
+            // 检查缓存是否存在
+            if (!fs.existsSync(cachePath)) {
+                await utils.downloadImage(imageUrl, cachePath);
+            }
+
+            return cachePath;
+        } catch (error) {
+            loger.error('处理缓存图片失败:', error);
+            return ''; // 返回空字符串，通知将使用默认图标
+        }
+    },
+
+    /**
+     * 下载图片
+     * @param {string} url - 图片URL
+     * @param {string} filePath - 保存路径
+     * @returns {Promise<void>}
+     */
+    downloadImage(url, filePath) {
+        return new Promise((resolve, reject) => {
+            const file = fs.createWriteStream(filePath);
+
+            // 根据协议选择http或https
+            const protocol = url.startsWith('https') ? https : http;
+
+            const request = protocol.get(url, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+            }, (response) => {
+                // 处理重定向
+                if (response.statusCode === 301 || response.statusCode === 302) {
+                    file.close();
+                    fs.unlink(filePath, () => {});
+                    return utils.downloadImage(response.headers.location, filePath)
+                        .then(resolve)
+                        .catch(reject);
+                }
+
+                // 检查内容类型
+                const contentType = response.headers['content-type'];
+                if (!contentType || !contentType.startsWith('image/')) {
+                    file.close();
+                    fs.unlink(filePath, () => {});
+                    reject(new Error(`非图片类型: ${contentType}`));
+                    return;
+                }
+
+                if (response.statusCode !== 200) {
+                    file.close();
+                    fs.unlink(filePath, () => {});
+                    reject(new Error(`下载失败，状态码: ${response.statusCode}`));
+                    return;
+                }
+
+                let downloadedBytes = 0;
+                response.on('data', (chunk) => {
+                    downloadedBytes += chunk.length;
+                });
+
+                response.pipe(file);
+
+                file.on('finish', () => {
+                    // 检查文件大小
+                    if (downloadedBytes === 0) {
+                        file.close();
+                        fs.unlink(filePath, () => {});
+                        reject(new Error('下载的文件大小为0'));
+                        return;
+                    }
+                    file.close();
+                    resolve();
+                });
+            });
+
+            request.on('error', (err) => {
+                file.close();
+                fs.unlink(filePath, () => {});
+                reject(err);
+            });
+
+            // 设置超时
+            request.setTimeout(30000, () => {
+                request.destroy();
+                file.close();
+                fs.unlink(filePath, () => {});
+                reject(new Error('下载超时'));
+            });
+        });
+    },
 }
+
+module.exports = utils;

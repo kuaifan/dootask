@@ -1075,32 +1075,26 @@ export default {
             const body = $A.getMsgSimpleDesc(data);
             this.__notificationId = id;
             //
-            const notificationFuncA = (title) => {
-                if (dialog_type === 'group') {
-                    let tempUser = this.cacheUserBasic.find(item => item.userid == userid);
-                    if (tempUser) {
-                        notificationFuncB(`${title} (${tempUser.nickname})`)
-                    } else {
-                        this.$store.dispatch("call", {
+            const notificationFuncA = async (title) => {
+                let tempUser = this.cacheUserBasic.find(item => item.userid == userid);
+                if (!tempUser) {
+                    try {
+                        const {data} = await this.$store.dispatch("call", {
                             url: 'users/basic',
                             data: {
                                 userid: [userid]
                             },
                             skipAuthError: true
-                        }).then(({data}) => {
-                            tempUser = data.find(item => item.userid == userid);
-                            if (tempUser) {
-                                notificationFuncB(`${title} (${tempUser.nickname})`)
-                            }
-                        }).catch(_ => {
-                            notificationFuncB(title)
                         });
-                    }
-                } else {
-                    notificationFuncB(title)
+                        tempUser = data.find(item => item.userid == userid);
+                    } catch (_) {}
                 }
+                if (dialog_type === 'group' && tempUser) {
+                    title = `${title} (${tempUser.nickname})`
+                }
+                notificationFuncB(title, tempUser?.userimg)
             }
-            const notificationFuncB = (title) => {
+            const notificationFuncB = (title, userimg) => {
                 if (this.__notificationId === id) {
                     this.__notificationId = null
                     if (this.$isEEUiApp) {
@@ -1115,7 +1109,7 @@ export default {
                         })
                     } else if (this.$Electron) {
                         this.$Electron.sendMessage('openNotification', {
-                            icon: $A.originUrl('images/logo.png'),
+                            icon: userimg || $A.originUrl('images/logo.png'),
                             title,
                             body,
                             data,
@@ -1125,7 +1119,7 @@ export default {
                         })
                     } else {
                         this.notificationManage.replaceOptions({
-                            icon: $A.originUrl('images/logo.png'),
+                            icon: userimg || $A.originUrl('images/logo.png'),
                             body: body,
                             data: data,
                             tag: "dialog",

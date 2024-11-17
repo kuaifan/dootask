@@ -6,6 +6,7 @@ package-lock.json
 build/
 dist/
 updater/*
+cache/*
 
 .devload
 .native

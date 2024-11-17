@@ -168,15 +168,12 @@ run_electron() {
         rm -rf "./electron/public"
     fi
     #
+    BUILD_FRONTEND="build"
     if [ "$argv" == "dev" ]; then
         switch_debug "$argv"
-    else
-        mkdir -p ./electron/public
-        cp ./electron/index.html ./electron/public/index.html
-        npx vite build -- fromcmd electronBuild
-        echo ""
+        BUILD_FRONTEND="dev"
     fi
-    node ./electron/build.js $argv
+    env BUILD_FRONTEND=$BUILD_FRONTEND node ./electron/build.js $argv
 }
 
 run_exec() {

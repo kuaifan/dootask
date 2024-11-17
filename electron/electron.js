@@ -20,7 +20,8 @@ const isMac = process.platform === 'darwin'
 const isWin = process.platform === 'win32'
 const allowedUrls = /^(?:https?|mailto|tel|callto):/i;
 const allowedCalls = /^(?:mailto|tel|callto):/i;
-let updaterLockFile = path.join(os.tmpdir(), '.dootask_updater.lock');
+const cacheDir = path.join(os.tmpdir(), 'dootask-cache')
+let updaterLockFile = path.join(cacheDir, '.dootask_updater.lock');
 let enableStoreBkp = true;
 let dialogOpen = false;
 let enablePlugins = false;
@@ -51,6 +52,10 @@ let showState = {},
 
 if (fs.existsSync(devloadCachePath)) {
     devloadUrl = fs.readFileSync(devloadCachePath, 'utf8')
+}
+
+if (!fs.existsSync(cacheDir)) {
+    fs.mkdirSync(cacheDir, { recursive: true });
 }
 
 // 在最开始就注册协议为特权协议
@@ -85,7 +90,7 @@ function createProtocol() {
             }
 
             const data = await fs.promises.readFile(filePath)
-            const mimeType = getMimeType(filePath)
+            const mimeType = utils.getMimeType(filePath)
 
             return new Response(data, {
                 headers: {
@@ -97,24 +102,6 @@ function createProtocol() {
             return new Response('Internal Error', { status: 500 })
         }
     })
-}
-
-/**
- * MIME类型判断
- * @param filePath
- * @returns {*|string}
- */
-function getMimeType(filePath) {
-    const ext = path.extname(filePath).toLowerCase()
-    const mimeTypes = {
-        '.jpg': 'image/jpeg',
-        '.jpeg': 'image/jpeg',
-        '.png': 'image/png',
-        '.gif': 'image/gif',
-        '.svg': 'image/svg+xml',
-        '.webp': 'image/webp'
-    }
-    return mimeTypes[ext] || 'application/octet-stream'
 }
 
 /**
@@ -201,7 +188,7 @@ function createUpdaterWindow(updateTitle) {
         } else {
             updaterPath = path.join(process.resourcesPath, 'updater', 'updater');
         }
-        
+
         // 检查updater应用是否存在
         if (!fs.existsSync(updaterPath)) {
             console.log('Updater not found:', updaterPath);
@@ -222,7 +209,7 @@ function createUpdaterWindow(updateTitle) {
                 try {
                     spawn('chmod', ['+x', updaterPath], {stdio: 'inherit'});
                 } catch (e) {
-                    console.log('Failed to set executable permission:', e); 
+                    console.log('Failed to set executable permission:', e);
                 }
             }
         }
@@ -728,6 +715,7 @@ if (!getTheLock) {
     })
     app.on('ready', () => {
         isReady = true
+        isWin && app.setAppUserModelId(config.appId)
         // SameSite
         utils.useCookie()
         // 创建协议
@@ -756,17 +744,13 @@ if (!getTheLock) {
                 mainTray.setContextMenu(trayMenu)
             }
         }
-        // 删除updater锁文件(如果存在)
+        // 删除updater锁文件（如果存在）
         if (fs.existsSync(updaterLockFile)) {
             try {
                 fs.unlinkSync(updaterLockFile);
             } catch (e) {
                 //忽略错误
             }
-        }
-        //
-        if (process.platform === 'win32') {
-            app.setAppUserModelId(config.name)
         }
         // 截图对象
         screenshotObj = new Screenshots({
@@ -1150,7 +1134,7 @@ ipcMain.on('copyImageAt', (event, args) => {
     try {
         event.sender.copyImageAt(args.x, args.y);
     } catch (e) {
-        // log.error(e)
+        // loger.error(e)
     }
     event.returnValue = "ok"
 })
@@ -1212,14 +1196,7 @@ ipcMain.on('closeScreenshot', (event) => {
  * 通知
  */
 ipcMain.on('openNotification', (event, args) => {
-    const notifiy = new Notification(args);
-    notifiy.addListener('click', _ => {
-        mainWindow.webContents.send("clickNotification", args)
-    })
-    notifiy.addListener('reply', (event, reply) => {
-        mainWindow.webContents.send("replyNotification", Object.assign(args, {reply}))
-    })
-    notifiy.show()
+    utils.showNotification(args, mainWindow)
     event.returnValue = "ok"
 })
 
@@ -1306,13 +1283,11 @@ ipcMain.on('updateQuitAndInstall', (event, args) => {
     // 启动更新子窗口
     createUpdaterWindow(args.updateTitle)
 
-    // 隐藏主窗口
-    mainWindow.hide()
-
     // 退出并安装更新
     setTimeout(_ => {
+        mainWindow.hide()
         autoUpdater.quitAndInstall(true, true)
-    }, 300)
+    }, 600)
 })
 
 //================================================================
