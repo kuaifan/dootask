@@ -1868,7 +1868,7 @@ class DialogController extends AbstractController
         $msg_id = intval(Request::input("msg_id"));
         $symbol = Request::input("symbol");
         //
-        if (!preg_match("/^[\u{d800}-\u{dbff}]|[\u{dc00}-\u{dfff}]$/", $symbol)) {
+        if (!preg_match('/[\x{1F300}-\x{1F9FF}]|[\x{1F000}-\x{1F02F}]|[\x{1F0A0}-\x{1F0FF}]|[\x{1F100}-\x{1F64F}]|[\x{1F680}-\x{1F6FF}]|[\x{2600}-\x{26FF}]|[\x{2700}-\x{27BF}]/u', $symbol)) {
             return Base::retError("参数错误");
         }
         //
