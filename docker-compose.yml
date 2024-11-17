@@ -147,7 +147,7 @@ services:
 
   approve:
     container_name: "dootask-approve-${APP_ID}"
-    image: "kuaifan/dooapprove:0.1.3"
+    image: "kuaifan/dooapprove:0.1.5"
     environment:
       TZ: "${TIMEZONE:-PRC}"
       MYSQL_HOST: "${DB_HOST}"

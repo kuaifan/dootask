@@ -334,7 +334,7 @@ export default {
                 endTime: {type: 'string', required: true, message: this.$L('请选择结束时间！'), trigger: 'change'},
                 description: {type: 'string', required: true, message: this.$L('请输入事由！'), trigger: 'change'},
             },
-            selectTypes: ["年假", "事假", "病假", "调休", "产假", "陪产假", "婚假", "丧假", "哺乳假"],
+            selectTypes: ["年假", "事假", "病假", "调休", "产假", "陪产假", "婚假", "丧假", "哺乳假", "产检假", "其他"],
 
             //
             showDateTime: false

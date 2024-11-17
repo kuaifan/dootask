@@ -326,10 +326,10 @@ export default {
                 const minutes = Math.floor(timeDiff / 60);
                 return {time: minutes, unit: this.$L('分钟')};
             } else if (timeDiff < 3600 * 24) {
-                const hours = Math.floor(timeDiff / 60 / 60);
+                const hours = Math.floor(timeDiff / 60 / 60 * 10) / 10;
                 return {time: hours, unit: this.$L('小时')};
             } else {
-                const days = Math.floor(timeDiff / 60 / 60 / 24);
+                const days = Math.floor(timeDiff / 60 / 60 / 24 * 10) / 10;
                 return {time: days + 1, unit: this.$L('天')};
             }
         },
