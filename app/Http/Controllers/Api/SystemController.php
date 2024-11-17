@@ -1429,7 +1429,7 @@ class SystemController extends AbstractController
             $path = 'js/build/';
             $list = Base::recursiveFiles(public_path($path), false);
             foreach ($list as $item) {
-                if (is_file($item) && filesize($item) > 50 * 1024) {
+                if (is_file($item) && filesize($item) > 50 * 1024) { // 50KB
                     $array[] = $path . basename($item);
                 }
             }
@@ -1441,6 +1441,27 @@ class SystemController extends AbstractController
                 $content = file_get_contents($file);
                 $items = explode("\n", $content);
                 $array = array_merge($array, $items);
+            }
+            // 添加office资源
+            $officePath = '';
+            $officeApi = 'http://' . env('APP_IPPR') . '.6/web-apps/apps/api/documents/api.js';
+            $content = @file_get_contents($officeApi);
+            if ($content) {
+                if (preg_match("/const\s+ver\s*=\s*'\/*([^']+)'/", $content, $matches)) {
+                    $officePath = $matches[1];
+                }
+            }
+            if ($officePath) {
+                $array = array_map(function($item) use ($officePath) {
+                    if (str_starts_with($item, 'office/{path}/')) {
+                        return preg_replace("/office\/{path}\//", '/office/' . $officePath . '/', $item);
+                    }
+                    return $item;
+                }, $array);
+            } else {
+                $array = array_filter($array, function($item) {
+                    return !str_starts_with($item, 'office/{path}/');
+                });
             }
         }
 

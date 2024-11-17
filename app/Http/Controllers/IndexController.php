@@ -345,7 +345,7 @@ class IndexController extends InvokeController
             $lists = Base::recursiveFiles($dirPath, false);
             $files = [];
             foreach ($lists as $file) {
-                if (str_ends_with($file, '.yml') || str_ends_with($file, '.yaml') || str_ends_with($file, '.blockmap')) {
+                if (preg_match('/\.(zip|yml|yaml|blockmap)$/i', $file) || str_ends_with($file, '-win.exe')) {
                     continue;
                 }
                 $fileName = basename($file, $dirPath);
