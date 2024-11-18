@@ -76,21 +76,19 @@ protocol.registerSchemesAsPrivileged([
  */
 function createProtocol() {
     protocol.handle('dootask-resources', async (request) => {
-        const url = request.url.replace(/^dootask-resources:\/\//, '')
+        const url = utils.protocolResourcePath(request.url)
 
         if (url.includes('..')) {
             return new Response('Access Denied', { status: 403 })
         }
 
         try {
-            const filePath = path.join(__dirname, devloadUrl ? '..' : '.', url)
-
-            if (!fs.existsSync(filePath)) {
+            if (!fs.existsSync(url)) {
                 return new Response('Not Found', { status: 404 })
             }
 
-            const data = await fs.promises.readFile(filePath)
-            const mimeType = utils.getMimeType(filePath)
+            const data = await fs.promises.readFile(url)
+            const mimeType = utils.getMimeType(url)
 
             return new Response(data, {
                 headers: {

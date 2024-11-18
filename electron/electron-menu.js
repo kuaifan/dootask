@@ -9,6 +9,7 @@ const {
 const fs = require('fs')
 const url = require('url')
 const request = require("request");
+const utils = require('./utils')
 
 const MAILTO_PREFIX = "mailto:";
 
@@ -52,9 +53,30 @@ const electronMenu = {
     },
 
     async saveImageAs(url, params) {
-        const targetFileName = params.suggestedFilename || params.altText || "image.png";
+        let extension = '';
+        if (utils.isProtocolResource(url)) {
+            extension = utils.protocolResourcePath(url).split('.').pop().toLowerCase();
+        } else {
+            const urlExtension = url.split('.').pop().split(/[#?]/)[0].toLowerCase();
+            if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(urlExtension)) {
+                extension = urlExtension;
+            }
+        }
+        
+        if (!extension) {
+            extension = 'png';
+        }
+
+        let targetFileName = params.suggestedFilename || params.altText || "image";
+        if (!targetFileName.toLowerCase().endsWith('.' + extension)) {
+            targetFileName = targetFileName.replace(/\.[^/.]+$/, '') + '.' + extension;
+        }
+
         const {filePath} = await dialog.showSaveDialog({
             defaultPath: targetFileName,
+            filters: [
+                { name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'] }
+            ]
         });
 
         if (!filePath) return; // user cancelled dialog
@@ -62,6 +84,8 @@ const electronMenu = {
         try {
             if (electronMenu.isBlobOrDataUrl(url)) {
                 await electronMenu.writeNativeImage(filePath, nativeImage.createFromDataURL(url));
+            } else if (utils.isProtocolResource(url)) {
+                await fs.promises.copyFile(utils.protocolResourcePath(url), filePath);
             } else {
                 const writeStream = fs.createWriteStream(filePath)
                 const readStream = request(url)
@@ -98,7 +122,7 @@ const electronMenu = {
                 const url = params.linkURL || params.srcURL;
                 const popupMenu = new Menu();
 
-                if (!electronMenu.isBlobOrDataUrl(url)) {
+                if (!electronMenu.isBlobOrDataUrl(url) && !utils.isProtocolResource(url)) {
                     popupMenu.append(
                         new MenuItem({
                             label: electronMenu.language.openInBrowser,
@@ -144,7 +168,7 @@ const electronMenu = {
                                 },
                             }),
                         );
-                    } else {
+                    } else if (!utils.isProtocolResource(url)) {
                         popupMenu.append(
                             new MenuItem({
                                 label: params.hasImageContents ? electronMenu.language.copyImageAddress : electronMenu.language.copyLinkAddress,

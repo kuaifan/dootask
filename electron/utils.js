@@ -606,6 +606,39 @@ const utils = {
             });
         });
     },
+
+    /**
+     * 是否协议资源
+     * @param {string} url 
+     * @returns {boolean}
+     */
+    isProtocolResource(url) {
+        return url.startsWith('dootask-resources://')
+    },
+
+    /**
+     * 协议资源路径
+     * @param {string} url 
+     * @returns {string}
+     */
+    protocolResourcePath(url) {
+        if (!utils.isProtocolResource(url)) {
+            return url
+        }
+
+        let p0 = url.replace(/^dootask-resources:\/\//, '')
+
+        const p1 = path.join(__dirname, '.', p0)
+        if (fs.existsSync(p1)) {
+            return p1
+        } 
+
+        const p2 = path.join(__dirname, '..', p0)
+        if (fs.existsSync(p2)) {
+            return p2
+        }
+        return url
+    }
 }
 
 module.exports = utils;

@@ -62,4 +62,11 @@ const publicImageResources = (() => {
     }
 })()
 
-export {publicImageResources}
+const isPublicResources = (url) => {
+    return url && (
+        url.startsWith('file://') || 
+        url.startsWith('dootask-resources://')
+    )
+}
+
+export {publicImageResources, isPublicResources}
