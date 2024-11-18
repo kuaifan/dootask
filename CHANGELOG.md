@@ -2,10 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.40.27]
+## [0.40.40]
+
+### Bug Fixes
+
+- 任务内容保存后图片消失的情况
+- 修复上传超大尺寸图片
 
 ### Performance
 
+- 优化窗口加载速度
+- 优化国际化
+- 优化图片上传
+- 优化用户在线状态
+- 优化小屏幕登录页
+- 优化本地资源
 - 优化iOS上传图片颠倒的问题
 - 优化桌面端通知图标
 - 优化资源预取
@@ -17,7 +28,6 @@ All notable changes to this project will be documented in this file.
 - 优化签到错误提示
 - 优化图片选择器
 - 优化邮件通知
-- 优化本地资源
 - 修复iOS下载中文名乱码的问题
 
 ## [0.39.97]
