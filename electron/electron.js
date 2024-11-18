@@ -351,6 +351,7 @@ function createChildWindow(args) {
         } else {
             // 创建新窗口
             browser = new BrowserWindow(options)
+            console.log("create new window")
         }
 
         browser.on('page-title-updated', (event, title) => {

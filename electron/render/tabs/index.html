@@ -154,7 +154,7 @@
                     return 'Loading...'
                 }
                 if (item.url) {
-                    return `${item.url}`.replace(/^https*:\/\//, '')
+                    return `${item.url}`.replace(/^https?:\/\//, '')
                 }
             },
 

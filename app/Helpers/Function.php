@@ -3,7 +3,7 @@
 if (!function_exists('asset_main')) {
     function asset_main($path, $secure = null)
     {
-        return preg_replace("/^https*:\/\//", "//", app('url')->asset($path, $secure));
+        return preg_replace("/^https?:\/\//", "//", app('url')->asset($path, $secure));
     }
 }
 

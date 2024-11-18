@@ -414,7 +414,7 @@ export default {
         },
 
         browseStyle(thumb) {
-            if (!/https*:\/\//.test(thumb) && !/^\//.test(thumb)) {
+            if (!/https?:\/\//.test(thumb) && !/^\//.test(thumb)) {
                 thumb = $A.mainUrl(thumb);
             }
             return {

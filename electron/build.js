@@ -390,7 +390,7 @@ async function published(url) {
  * @param output
  */
 function genericPublish({url, key, version, output}) {
-    if (!/https*:\/\//i.test(url)) {
+    if (!/https?:\/\//i.test(url)) {
         console.warn("发布地址无效: " + url)
         return
     }

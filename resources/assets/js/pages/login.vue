@@ -445,7 +445,7 @@ export default {
                 if (!/\/api\/$/.test(url)) {
                     url = url + ($A.rightExists(url, "/") ? "api/" : "/api/");
                 }
-                if (!/^https*:\/\//i.test(url)) {
+                if (!/^https?:\/\//i.test(url)) {
                     url = `https://${url}`;
                 }
                 this.$store.dispatch("call", {
@@ -460,7 +460,7 @@ export default {
                     }
                 }).catch(({ret, msg}) => {
                     if (ret === -1001) {
-                        if (!/^https*:\/\//i.test(value)) {
+                        if (!/^https?:\/\//i.test(value)) {
                             this.inputServerChack(`http://${value}`).then(resolve).catch(reject);
                             return;
                         }

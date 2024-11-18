@@ -328,10 +328,10 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
             text = text.replace(/\{\{RemoteURL\}\}/g, $A.mainUrl())
             text = text.replace(atReg, `<span class="mention me" data-id="${userid}">`)
             // 处理内容连接
-            if (/https*:\/\//.test(text)) {
+            if (/https?:\/\//.test(text)) {
                 text = text.split(/(<[^>]*>)/g).map(string => {
                     if (string && !/<[^>]*>/.test(string)) {
-                        string = string.replace(/(^|[^'"])((https*:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;|#|@|,|!)+))/g, "$1<a href=\"$2\" target=\"_blank\">$2</a>")
+                        string = string.replace(/(^|[^'"])((https?:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;|#|@|,|!)+))/g, "$1<a href=\"$2\" target=\"_blank\">$2</a>")
                     }
                     return string;
                 }).join("")

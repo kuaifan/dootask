@@ -74,7 +74,7 @@ class ProjectTaskContent extends AbstractModel
         $oldContent = $content;
         $path = 'uploads/task/content/' . date("Ym") . '/' . $task_id . '/';
         //
-        preg_match_all("/<img\s+src=\"data:image\/(png|jpg|jpeg|webp);base64,(.*?)\"/s", $content, $matchs);
+        preg_match_all('/<img[^>]*?src=\\\\?["\']data:image\/(png|jpg|jpeg|webp);base64,(.*?)\\\\?["\']/s', $content, $matchs);
         foreach ($matchs[2] as $key => $text) {
             $tmpPath = $path . 'attached/';
             Base::makeDir(public_path($tmpPath));
@@ -84,7 +84,7 @@ class ProjectTaskContent extends AbstractModel
                 $content = str_replace($matchs[0][$key], '<img src="{{RemoteURL}}' . $tmpPath . '" original-width="' . $paramet[0] . '" original-height="' . $paramet[1] . '"', $content);
             }
         }
-        $pattern = '/(<img[^>]*?src=["\'])(https?:\/\/[^\/]+)(\/uploads\/task\/content\/[^\s"\'>]+)(["\'][^>]*?>)/i';
+        $pattern = '/(<img[^>]*?src=\\\\?["\'])(https?:\/\/[^\/]+\/)(uploads\/task\/content\/[^\s"\'>]+)(\\\\?["\'][^>]*?>)/i';
         $replacement = '$1{{RemoteURL}}$3$4';
         $content = preg_replace($pattern, $replacement, $content);
         //

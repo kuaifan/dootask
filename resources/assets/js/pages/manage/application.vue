@@ -533,7 +533,7 @@ export default {
         },
         // 扫一扫
         scanResult(text) {
-            const arr = (text + "").match(/^https*:\/\/(.*?)\/login\?qrcode=(.*?)$/)
+            const arr = (text + "").match(/^https?:\/\/(.*?)\/login\?qrcode=(.*?)$/)
             if (arr) {
                 // 扫码登录
                 if ($A.getDomain(text) != $A.getDomain($A.mainUrl())) {
@@ -551,7 +551,7 @@ export default {
                 this.scanLoginShow = true;
                 return
             }
-            if (/^https*:\/\//i.test(text)) {
+            if (/^https?:\/\//i.test(text)) {
                 // 打开链接
                 this.$store.dispatch('openAppChildPage', {
                     pageType: 'app',

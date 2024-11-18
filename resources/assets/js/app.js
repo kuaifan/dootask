@@ -99,7 +99,7 @@ VueRouter.prototype.push = function push(location) {
 }
 
 const router = new VueRouter({
-    mode: isSoftware && !/https*:/i.test(window.location.protocol) ? 'hash' : 'history',
+    mode: isSoftware && !/https?:/i.test(window.location.protocol) ? 'hash' : 'history',
     routes
 });
 

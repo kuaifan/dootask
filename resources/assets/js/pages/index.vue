@@ -11,7 +11,7 @@ export default {
     },
 
     mounted() {
-        if (/^https*:/i.test(window.location.protocol)) {
+        if (/^https?:/i.test(window.location.protocol)) {
             let redirect = null
             if (this.$router.mode === "hash") {
                 if ($A.stringLength(window.location.pathname) > 2) {

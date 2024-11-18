@@ -524,7 +524,7 @@ class BotReceiveMsgTask extends AbstractTask
             ], $botUser->userid, false, false, true); // todo 未能在任务end事件来发送任务
             return;
         }
-        if (!preg_match("/^https*:\/\//", $webhookUrl)) {
+        if (!preg_match("/^https?:\/\//", $webhookUrl)) {
             return;
         }
         //

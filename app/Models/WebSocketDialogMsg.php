@@ -918,7 +918,7 @@ class WebSocketDialogMsg extends AbstractModel
             $text = str_replace($str, "[:LINK:{$herf}:{$title}:]", $text);
         }
         // 文件分享链接
-        preg_match_all("/(https*:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;|#|@|,|!)+)/i", $text, $matchs);
+        preg_match_all("/(https?:\/\/)((\w|=|\?|\.|\/|&|-|:|\+|%|;|#|@|,|!)+)/i", $text, $matchs);
         if ($matchs) {
             foreach ($matchs[0] as $str) {
                 preg_match("/\/single\/file\/(.*?)$/i", $str, $match);
@@ -986,7 +986,7 @@ class WebSocketDialogMsg extends AbstractModel
         $link = 0;
         $mtype = $type;
         if ($type === 'text') {
-            if (str_contains($msg['text'], '<a ') || preg_match("/https*:\/\//", $msg['text'])) {
+            if (str_contains($msg['text'], '<a ') || preg_match("/https?:\/\//", $msg['text'])) {
                 $link = 1;
             }
             if (str_contains($msg['text'], '<img ')) {
@@ -1004,7 +1004,7 @@ class WebSocketDialogMsg extends AbstractModel
                 $mtype = 'image';
             }
         } elseif ($type === 'location') {
-            if (preg_match('/^https*:\/\//', $msg['thumb'])) {
+            if (preg_match('/^https?:\/\//', $msg['thumb'])) {
                 $thumb = file_get_contents($msg['thumb']);
                 if (empty($thumb)) {
                     throw new ApiException('获取地图快照失败');
