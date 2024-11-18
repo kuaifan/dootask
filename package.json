@@ -1,6 +1,6 @@
 {
     "name": "DooTask",
-    "version": "0.40.27",
+    "version": "0.40.40",
     "codeVerson": 155,
     "description": "DooTask is task management system.",
     "scripts": {
@@ -45,7 +45,6 @@
         "lodash": "^4.17.21",
         "markdown-it": "^13.0.1",
         "markdown-it-link-attributes": "^4.0.1",
-        "node-sass": "^9.0.0",
         "notification-koro1": "^1.1.1",
         "openpgp_hi": "^5.7.0-1",
         "photoswipe": "^5.2.8",
