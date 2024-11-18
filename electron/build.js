@@ -466,7 +466,7 @@ async function startBuild(data) {
         buildChecked = true
         fs.mkdirSync(electronDir, { recursive: true });
         fse.copySync(path.resolve(__dirname, "index.html"), path.resolve(electronDir, "index.html"))
-        child_process.spawnSync("npx", ["vite", "build", "--", "fromcmd", "electronBuild"], {stdio: "inherit"});
+        child_process.execSync("npx vite build -- fromcmd electronBuild", {stdio: "inherit"});
     }
     //
     const {platform, archs, publish, release, notarize} = data.configure
