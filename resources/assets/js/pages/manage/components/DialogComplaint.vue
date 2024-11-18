@@ -20,7 +20,7 @@
                     :placeholder="$L('请输入填写详细的举报原因，以使我们更好的帮助你解决问题')" />
             </div>
             <div class="group-complaint-img">
-                <ImgUpload v-model="imgs" :num="5" :width="512" :height="512" :whcut="1"></ImgUpload>
+                <ImgUpload v-model="imgs" :num="5" :width="2048" :height="2048" whcut="percentage"/>
             </div>
         </div>
         <!--  -->

@@ -407,7 +407,7 @@
             <Form :model="modifyData" v-bind="formOptions" @submit.native.prevent>
                 <Alert v-if="modifyData.system_name" type="error" style="margin-bottom:18px">{{$L(`正在修改系统机器人：${modifyData.system_name}`)}}</Alert>
                 <FormItem prop="avatar" :label="$L('头像')">
-                    <ImgUpload v-model="modifyData.avatar" :num="1" :width="512" :height="512" :whcut="1"/>
+                    <ImgUpload v-model="modifyData.avatar" :num="1" :width="512" :height="512" whcut="cover"/>
                 </FormItem>
                 <FormItem v-if="typeof modifyData.name !== 'undefined'" prop="name" :label="$L('名称')">
                     <Input v-model="modifyData.name" :maxlength="20" />

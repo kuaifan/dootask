@@ -256,7 +256,7 @@
             :mask-closable="false">
             <Form :model="createGroupData" v-bind="formOptions"  @submit.native.prevent>
                 <FormItem prop="avatar" :label="$L('群头像')">
-                    <ImgUpload v-model="createGroupData.avatar" :num="1" :width="512" :height="512" :whcut="1"/>
+                    <ImgUpload v-model="createGroupData.avatar" :num="1" :width="512" :height="512" whcut="cover"/>
                 </FormItem>
                 <FormItem prop="userids" :label="$L('群成员')">
                     <UserSelect v-model="createGroupData.userids" :uncancelable="createGroupData.uncancelable" :multiple-max="100" show-bot :title="$L('选择项目成员')"/>

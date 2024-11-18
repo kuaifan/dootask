@@ -228,7 +228,7 @@
                     <Input type="textarea" v-model="addData.description"></Input>
                 </FormItem>
                 <FormItem prop="other" :label="$L('图片')">
-                    <ImgUpload v-model="addData.other" :num="3" :width="2000" :height="2000" :whcut="0"></ImgUpload>
+                    <ImgUpload v-model="addData.other" :num="3" :width="2048" :height="2048" whcut="percentage"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">

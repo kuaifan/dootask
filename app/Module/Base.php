@@ -2027,7 +2027,7 @@ class Base
                     if ($width > 0 || $height > 0) {
                         $scaleName = "_{WIDTH}x{HEIGHT}";
                         if (isset($param['scale'][2])) {
-                            $scaleName .= "_c{$param['scale'][2]}";
+                            $scaleName .= "_{$param['scale'][2]}";
                         }
                     }
                 }
@@ -2065,7 +2065,7 @@ class Base
                     $data = match ($exif['Orientation']) {
                         2 => imageflip($data, IMG_FLIP_HORIZONTAL),
                         3 => imagerotate($data, 180, 0),
-                        4 => imageflip($data, IMG_FLIP_VERTICAL), 
+                        4 => imageflip($data, IMG_FLIP_VERTICAL),
                         5 => imageflip(imagerotate($data, -90, 0), IMG_FLIP_HORIZONTAL),
                         6 => imagerotate($data, -90, 0),
                         7 => imageflip(imagerotate($data, 90, 0), IMG_FLIP_HORIZONTAL),

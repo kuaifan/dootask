@@ -892,10 +892,10 @@ class SystemController extends AbstractController
      * @apiParam {String} filename          post-文件名
      * @apiParam {Number} [width]           压缩图片宽（默认0）
      * @apiParam {Number} [height]          压缩图片高（默认0）
-     * @apiParam {String} [whcut]           压缩方式
-     * - 1：裁切（默认，宽、高非0有效）
-     * - 0：缩放
-     * - -1或'auto'：保持等比裁切
+     * @apiParam {String} [whcut]           压缩方式（等比缩放）
+     * - cover：完全覆盖容器，可能图片部分不可见（width、height必须大于0）
+     * - contain：完全装入容器，可能容器部分显示空白（width、height必须大于0）
+     * - percentage：完全装入容器，可能容器有一边尺寸不足（默认，假如：width=200、height=0，则宽度最大不超过200、高度自动）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -908,11 +908,15 @@ class SystemController extends AbstractController
         }
         $width = intval(Request::input('width'));
         $height = intval(Request::input('height'));
-        $whcut = intval(Request::input('whcut', 1));
-        $scale = [2160, 4160, -1];
-        if ($width > 0 || $height > 0) {
-            $scale = [$width, $height, $whcut];
-        }
+        $whcut = Request::input('whcut');
+        $whcut = match (strval($whcut)) {
+            '1' => 'cover',
+            '0' => 'contain',
+            'cover',
+            'contain' => $whcut,
+            default => 'percentage',
+        };
+        $scale = [$width ?: 2160, $height ?: 4160, $whcut];
         $path = "uploads/user/picture/" . User::userid() . "/" . date("Ym") . "/";
         $image64 = trim(Request::input('image64'));
         $fileName = trim(Request::input('filename'));

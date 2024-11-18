@@ -26,7 +26,7 @@
                         </Row>
                         <Row class="setting-template">
                             <Col span="24">
-                                <ImgUpload v-model="faceimgs" :num="1" :width="512" :height="512" :whcut="1"></ImgUpload>
+                                <ImgUpload v-model="faceimgs" :num="1" :width="512" :height="512" whcut="cover"/>
                                 <div class="form-tip">{{ $L('建议尺寸：500x500') }}</div>
                             </Col>
                         </Row>

@@ -18,7 +18,10 @@
                 type="callback"
                 :uploadIng.sync="uploadIng"
                 @on-callback="editorImage"
-                num="50"/>
+                :num="50"
+                :width="2048"
+                :height="2048"
+                whcut="percentage"/>
             <Upload
                 name="files"
                 ref="fileUpload"

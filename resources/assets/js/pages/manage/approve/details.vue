@@ -201,7 +201,7 @@
                     <Input type="textarea" v-model="commentData.content"></Input>
                 </FormItem>
                 <FormItem prop="pictures" :label="$L('图片')">
-                    <ImgUpload v-model="commentData.pictures" :num="3" :width="2000" :height="2000" :whcut="0"></ImgUpload>
+                    <ImgUpload v-model="commentData.pictures" :num="3" :width="2048" :height="2048" whcut="percentage"/>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">

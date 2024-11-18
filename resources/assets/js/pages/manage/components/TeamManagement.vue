@@ -263,7 +263,7 @@
                 </Row>
                 <Row class="team-department-checkin-item">
                     <Col span="24">
-                        <ImgUpload v-model="checkinFaceEditData.faceimg" :num="1" :width="512" :height="512" :whcut="1"></ImgUpload>
+                        <ImgUpload v-model="checkinFaceEditData.faceimg" :num="1" :width="512" :height="512" whcut="cover"/>
                         <div class="form-tip">{{$L('建议尺寸：500x500')}}</div>
                     </Col>
                 </Row>

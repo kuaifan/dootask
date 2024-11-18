@@ -29,7 +29,7 @@
                             :headers="uploadHeaders"
                             :data="uploadParams"
                             :show-upload-list="false"
-                            :max-size="maxSize"
+                            :max-size="maxImageSize"
                             :format="['jpg', 'jpeg', 'webp', 'gif', 'png']"
                             :default-file-list="defaultList"
                             :on-progress="handleProgress"
@@ -77,8 +77,6 @@
 </template>
 
 <script>
-import {languageList} from "../language";
-
 export default {
     name: 'ImgUpload',
     props: {
@@ -101,6 +99,10 @@ export default {
         uploadIng: {
             type: Number,
             default: 0
+        },
+        maxSize: {
+            type: Number,
+            default: 1024 * 10 // 10M
         }
     },
     data() {
@@ -118,7 +120,7 @@ export default {
             maxNum: Math.min(Math.max($A.runNum(this.num), 1), 99),
             httpValue: '',
             httpType: '',
-            maxSize: 2048
+            maxImageSize: this.maxSize
         }
     },
     mounted() {
@@ -311,7 +313,7 @@ export default {
             //上传大小错误
             $A.noticeWarning({
                 title: this.$L('超出文件大小限制'),
-                desc: this.$L('文件 ' + file.name + ' 太大，不能超过：' + $A.bytesToSize(this.maxSize * 1024))
+                desc: this.$L('文件 ' + file.name + ' 太大，不能超过：' + $A.bytesToSize(this.maxImageSize * 1024))
             });
         },
         handleBeforeUpload() {
