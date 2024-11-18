@@ -3373,9 +3373,6 @@ export default {
                         width: Math.min(window.screen.availWidth, 1440),
                         height: Math.min(window.screen.availHeight, 900),
                     },
-                    webPreferences: {
-                        nodeIntegrationInSubFrames: msg.ext === 'drawio'
-                    },
                 });
             } else if (this.$isEEUiApp) {
                 this.$store.dispatch('openAppChildPage', {

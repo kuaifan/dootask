@@ -341,18 +341,16 @@ function createChildWindow(args) {
             browser = preloadWindow;
             preloadWindow = null;
             setTimeout(() => onShowWindow(browser), 300)
-            browser.once('resize', () => onShowWindow(browser))
+            browser.once('resize', () => setTimeout(() => onShowWindow(browser), 10))
             browser.setSize(options.width, options.height);
             browser.setMinimumSize(options.minWidth, options.minHeight);
             browser.center();
             browser.setParentWindow(options.parent);
             browser.setAutoHideMenuBar(options.autoHideMenuBar);
             browser.removeAllListeners("closed");
-            console.log("use preload window")
         } else {
             // 创建新窗口
             browser = new BrowserWindow(options)
-            console.log("create new window")
         }
 
         browser.on('page-title-updated', (event, title) => {
