@@ -42,7 +42,6 @@ class UsersController extends AbstractController
     /**
      * @api {get} api/users/login          01. 登录、注册
      *
-     * @apiDescription 需要token身份
      * @apiVersion 1.0.0
      * @apiGroup users
      * @apiName login

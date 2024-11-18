@@ -820,7 +820,7 @@ export default {
                     },
                     render: (h, {row}) => {
                         const checkin_face = $A.cloneJSON(row.checkin_face || '')
-                        return h('div', checkin_face ? this.$L('已上传') : '-');
+                        return h('AutoTip', checkin_face ? this.$L('已上传') : '-');
                     },
                 }, {
                     key: 'checkin_mac',

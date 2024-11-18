@@ -3298,13 +3298,16 @@ export default {
             state.readTimeout = null;
             //
             if (state.userId === 0) {
+                data && (data.read_at = null);
                 return;
             }
-            if (Object.values(state.readWaitData).length === 0) {
+            const entries = Object.entries(state.readWaitData);
+            if (entries.length === 0) {
+                data && (data.read_at = null);
                 return
             }
-            const ids = $A.cloneJSON(state.readWaitData);
-            state.readWaitData = {};
+            const ids = Object.fromEntries(entries.slice(0, 100));
+            state.readWaitData = Object.fromEntries(entries.slice(100));
             //
             dispatch("call", {
                 method: 'post',
@@ -3313,18 +3316,23 @@ export default {
                     id: ids
                 }
             }).then(({data}) => {
-                for (const id in ids) {
-                    if (ids.hasOwnProperty(id) && /^\d+$/.test(ids[id])) {
-                        state.dialogMsgs.some(item => {
-                            if (item.dialog_id == ids[id] && item.id >= id) {
-                                item.read_at = $A.daytz().format("YYYY-MM-DD HH:mm:ss")
-                            }
-                        })
-                    }
-                }
+                Object.entries(ids)
+                    .filter(([_, dialogId]) => /^\d+$/.test(dialogId))
+                    .forEach(([msdId, dialogId]) => {
+                        state.dialogMsgs
+                            .filter(item => item.dialog_id == dialogId && item.id >= msdId)
+                            .forEach(item => {
+                                item.read_at = $A.daytz().format("YYYY-MM-DD HH:mm:ss");
+                            });
+                    });
                 dispatch("saveDialog", data)
             }).catch(_ => {
-                state.readWaitData = ids;
+                Object.keys(ids)
+                    .forEach(id => {
+                        const msg = state.dialogMsgs.find(item => item.id == id);
+                        if (msg) msg.read_at = null;
+                    });
+                state.readWaitData = Object.assign(state.readWaitData, ids);
             }).finally(_ => {
                 state.readLoadNum++
             });

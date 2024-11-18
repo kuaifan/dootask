@@ -960,11 +960,19 @@ class Base
     /**
      * 判断是否二维数组
      * @param $array
+     * @param bool $strict 严格模式，是否每个元素都是数组
      * @return bool
      */
-    public static function isTwoArray($array)
+    public static function isTwoArray($array, bool $strict = true)
     {
-        return is_array($array) && count(array_filter($array, 'is_array')) > 0;
+        if (!is_array($array)) {
+            return false;
+        }
+        $count = count(array_filter($array, 'is_array'));
+        if ($strict) {
+            return $count === count($array);
+        }
+        return $count > 0;
     }
 
     /**

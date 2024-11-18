@@ -786,7 +786,7 @@ class DialogController extends AbstractController
      *
      * @apiParam {Object} id         消息ID（组）
      * - 1、多个ID用逗号分隔，如：1,2,3
-     * - 2、另一种格式：{"id": "[会话ID]"}，如：{"2": 0, "3": 10}
+     * - 2、另一种格式：{"id": "会话ID|0"}，如：{"2": 0, "3": 10}
      * -- 会话ID：标记id之后的消息已读
      * -- 其他：标记已读
      *
