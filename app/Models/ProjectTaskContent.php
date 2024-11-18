@@ -84,8 +84,9 @@ class ProjectTaskContent extends AbstractModel
                 $content = str_replace($matchs[0][$key], '<img src="{{RemoteURL}}' . $tmpPath . '" original-width="' . $paramet[0] . '" original-height="' . $paramet[1] . '"', $content);
             }
         }
-        $pattern = '/<img(.*?)src=("|\')https*:\/\/(.*?)\/(uploads\/task\/content\/(.*?))\2/is';
-        $content = preg_replace($pattern, '<img$1src=$2{{RemoteURL}}$4$2', $content);
+        $pattern = '/(<img[^>]*?src=["\'])(https?:\/\/[^\/]+)(\/uploads\/task\/content\/[^\s"\'>]+)(["\'][^>]*?>)/i';
+        $replacement = '$1{{RemoteURL}}$3$4';
+        $content = preg_replace($pattern, $replacement, $content);
         //
         $filePath = $path . md5($content);
         $publicPath = public_path($filePath);
