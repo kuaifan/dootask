@@ -6,6 +6,7 @@ namespace App\Models;
 use App\Exceptions\ApiException;
 use App\Module\Base;
 use App\Module\Doo;
+use App\Module\Table\OnlineData;
 use App\Services\RequestContext;
 use Cache;
 use Carbon\Carbon;
@@ -195,7 +196,7 @@ class User extends AbstractModel
      */
     public function getOnlineStatus()
     {
-        $online = $this->bot || Cache::get("User::online:" . $this->userid) === "on";
+        $online = $this->bot || OnlineData::live($this->userid) > 0;
         if ($online) {
             return true;
         }
