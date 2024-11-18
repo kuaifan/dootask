@@ -1,4 +1,8 @@
-const publicImageResources = (() => {
+/**
+ * 将服务器资源路径转换为本地资源路径
+ * @type {(function(*): (*))|*}
+ */
+const convertLocalResourcePath = (() => {
     let initialized = false
     let appPreUrl = null
     let serverPreUrl = null
@@ -20,7 +24,7 @@ const publicImageResources = (() => {
                 appPreUrl = appPreUrl.replace(/^file:\/\/assets\//, 'file:///android_asset/')
             }
         } else if ($A.Electron) {
-            appPreUrl = "dootask-resources://public/"
+            appPreUrl = "local-asset://public/"
         }
 
         // 如果没有特殊前缀，提前返回
@@ -62,11 +66,16 @@ const publicImageResources = (() => {
     }
 })()
 
-const isPublicResources = (url) => {
+/**
+ * 是否是本地资源路径
+ * @param url
+ * @returns {*}
+ */
+const isLocalResourcePath = (url) => {
     return url && (
-        url.startsWith('file://') || 
-        url.startsWith('dootask-resources://')
+        url.startsWith('file://') ||
+        url.startsWith('local-asset://')
     )
 }
 
-export {publicImageResources, isPublicResources}
+export {convertLocalResourcePath, isLocalResourcePath}

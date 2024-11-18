@@ -1,7 +1,21 @@
 const fs = require('fs')
 const os = require("os");
 const path = require('path')
-const {app, BrowserWindow, ipcMain, dialog, clipboard, nativeImage, shell, Tray, Menu, globalShortcut, Notification, BrowserView, nativeTheme, protocol} = require('electron')
+const {
+    app,
+    ipcMain,
+    dialog,
+    clipboard,
+    nativeImage,
+    shell,
+    globalShortcut,
+    nativeTheme,
+    protocol,
+    Tray,
+    Menu,
+    BrowserView,
+    BrowserWindow
+} = require('electron')
 const {autoUpdater} = require("electron-updater")
 const loger = require("electron-log");
 const electronConf = require('electron-config')
@@ -61,7 +75,7 @@ if (!fs.existsSync(cacheDir)) {
 // 在最开始就注册协议为特权协议
 protocol.registerSchemesAsPrivileged([
     {
-        scheme: 'dootask-resources',
+        scheme: 'local-asset',
         privileges: {
             standard: true,
             secure: true,
@@ -75,8 +89,8 @@ protocol.registerSchemesAsPrivileged([
  * 创建协议
  */
 function createProtocol() {
-    protocol.handle('dootask-resources', async (request) => {
-        const url = utils.protocolResourcePath(request.url)
+    protocol.handle('local-asset', async (request) => {
+        const url = utils.localAssetRestoreRealPath(request.url)
 
         if (url.includes('..')) {
             return new Response('Access Denied', { status: 403 })

@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import {publicImageResources} from "./utils";
+import {convertLocalResourcePath} from "./utils";
 
 export default {
     props: {
@@ -18,7 +18,7 @@ export default {
     },
     computed: {
         processedSrc({src}) {
-            return publicImageResources(src)
+            return convertLocalResourcePath(src)
         }
     },
 }

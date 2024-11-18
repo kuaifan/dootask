@@ -54,15 +54,15 @@ const electronMenu = {
 
     async saveImageAs(url, params) {
         let extension = '';
-        if (utils.isProtocolResource(url)) {
-            extension = utils.protocolResourcePath(url).split('.').pop().toLowerCase();
+        if (utils.isLocalAssetPath(url)) {
+            extension = utils.localAssetRestoreRealPath(url).split('.').pop().toLowerCase();
         } else {
             const urlExtension = url.split('.').pop().split(/[#?]/)[0].toLowerCase();
             if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(urlExtension)) {
                 extension = urlExtension;
             }
         }
-        
+
         if (!extension) {
             extension = 'png';
         }
@@ -84,8 +84,8 @@ const electronMenu = {
         try {
             if (electronMenu.isBlobOrDataUrl(url)) {
                 await electronMenu.writeNativeImage(filePath, nativeImage.createFromDataURL(url));
-            } else if (utils.isProtocolResource(url)) {
-                await fs.promises.copyFile(utils.protocolResourcePath(url), filePath);
+            } else if (utils.isLocalAssetPath(url)) {
+                await fs.promises.copyFile(utils.localAssetRestoreRealPath(url), filePath);
             } else {
                 const writeStream = fs.createWriteStream(filePath)
                 const readStream = request(url)
@@ -122,7 +122,7 @@ const electronMenu = {
                 const url = params.linkURL || params.srcURL;
                 const popupMenu = new Menu();
 
-                if (!electronMenu.isBlobOrDataUrl(url) && !utils.isProtocolResource(url)) {
+                if (!electronMenu.isBlobOrDataUrl(url) && !utils.isLocalAssetPath(url)) {
                     popupMenu.append(
                         new MenuItem({
                             label: electronMenu.language.openInBrowser,
@@ -168,7 +168,7 @@ const electronMenu = {
                                 },
                             }),
                         );
-                    } else if (!utils.isProtocolResource(url)) {
+                    } else if (!utils.isLocalAssetPath(url)) {
                         popupMenu.append(
                             new MenuItem({
                                 label: params.hasImageContents ? electronMenu.language.copyImageAddress : electronMenu.language.copyLinkAddress,

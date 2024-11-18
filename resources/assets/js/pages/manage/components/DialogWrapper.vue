@@ -673,7 +673,7 @@ import DialogGroupVote from "./DialogGroupVote";
 import DialogComplaint from "./DialogComplaint";
 import touchclick from "../../../directives/touchclick";
 import {languageList} from "../../../language";
-import {isPublicResources} from "../../../components/Replace/utils";
+import {isLocalResourcePath} from "../../../components/Replace/utils";
 
 export default {
     name: "DialogWrapper",
@@ -2880,7 +2880,7 @@ export default {
                 })
             }
             if (msgData.type === 'text') {
-                if (event.target.nodeName === 'IMG' && !isPublicResources(event.target.currentSrc)) {
+                if (event.target.nodeName === 'IMG' && !isLocalResourcePath(event.target.currentSrc)) {
                     this.operateCopys.push({
                         type: 'imagedown',
                         icon: '&#xe7a8;',
