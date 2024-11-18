@@ -244,9 +244,16 @@ export default {
                     case 'file':
                         if (action == 'content') {
                             if (this.value && data.id == this.fileId) {
+                                const contents = [
+                                    '团队成员「' + info.nickname + '」更新了内容，',
+                                    '更新时间：' + $A.dayjs(info.time).format("YYYY-MM-DD HH:mm:ss") + '。',
+                                    '',
+                                    '点击【确定】加载最新内容。'
+                                ]
                                 $A.modalConfirm({
-                                    title: "更新提示",
-                                    content: '团队成员（' + info.nickname + '）更新了内容，<br/>更新时间：' + $A.dayjs(info.time).format("YYYY-MM-DD HH:mm:ss") + '。<br/><br/>点击【确定】加载最新内容。',
+                                    language: false,
+                                    title: this.$L("更新提示"),
+                                    content: contents.map(item => `<p>${item ? this.$L(item) : '&nbsp;'}</p>`).join(''),
                                     onOk: () => {
                                         this.getContent();
                                     }
