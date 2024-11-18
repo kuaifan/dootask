@@ -1861,7 +1861,7 @@ class Base
                     if ($width > 0 || $height > 0) {
                         $scaleName = "_{WIDTH}x{HEIGHT}";
                         if (isset($param['scale'][2])) {
-                            $scaleName .= "_c{$param['scale'][2]}";
+                            $scaleName .= "_{$param['scale'][2]}";
                         }
                     }
                 }
@@ -1870,13 +1870,14 @@ class Base
             }
             $fileDir = $param['path'];
             $filePath = public_path($fileDir);
+            $fileFullPath = $filePath . $fileName;
             Base::makeDir($filePath);
-            if (file_put_contents($filePath . $fileName, base64_decode(str_replace($res[1], '', $imgBase64)))) {
-                $fileSize = filesize($filePath . $fileName);
+            if (file_put_contents($fileFullPath, base64_decode(str_replace($res[1], '', $imgBase64)))) {
+                $fileSize = filesize($fileFullPath);
                 $array = [
                     "name" => $fileName,                                                //原文件名
                     "size" => Base::twoFloat($fileSize / 1024, true),         //大小KB
-                    "file" => $filePath . $fileName,                                    //文件的完整路径                "D:\www....KzZ.jpg"
+                    "file" => $fileFullPath,                                            //文件的完整路径                "D:\www....KzZ.jpg"
                     "path" => $fileDir . $fileName,                                     //相对路径                     "uploads/pic....KzZ.jpg"
                     "url" => Base::fillUrl($fileDir . $fileName),                   //完整的URL                    "https://.....hhsKzZ.jpg"
                     "thumb" => '',                                                      //缩略图（预览图）               "https://.....hhsKzZ.jpg_thumb.jpg"
@@ -1884,6 +1885,12 @@ class Base
                     "height" => -1,                                                     //图片高度
                     "ext" => $extension,                                                //文件后缀名
                 ];
+                // 图片验证
+                $res = Image::validateImage($array['file']);
+                if (Base::isError($res)) {
+                    unlink($array['file']);
+                    return $res;
+                }
                 // 图片尺寸
                 $paramet = getimagesize($array['file']);
                 $array['width'] = $paramet[0];
@@ -2008,6 +2015,7 @@ class Base
                     return Base::retError('错误的类型参数');
             }
             $extension = strtolower($file->getClientOriginalExtension());
+            $isImage = in_array($extension, ['jpg', 'jpeg', 'webp', 'gif', 'png']);
             if ($type && !in_array($extension, $type)) {
                 return Base::retError('文件格式错误，限制类型：' . implode(",", $type));
             }
@@ -2023,6 +2031,12 @@ class Base
                 }
             } catch (\Throwable) {
                 $fileSize = 0;
+            }
+            if ($isImage) {
+                $res = Image::validateImage($file);
+                if (Base::isError($res)) {
+                    return $res;
+                }
             }
             $scaleName = "";
             if ($param['fileName'] === true) {
@@ -2121,7 +2135,7 @@ class Base
                     Image::compressImage($thumbFile, null, 80);
                 }
             }
-            if (in_array($array['ext'], ['jpg', 'jpeg', 'webp', 'gif', 'png'])) {
+            if ($isImage) {
                 // 获取图片尺寸
                 $paramet = getimagesize($array['file']);
                 $array['width'] = $paramet[0];

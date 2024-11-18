@@ -313,4 +313,59 @@ class Image
             return false;
         }
     }
+
+    /** ******************************************************************************/
+    /** ******************************************************************************/
+    /** ******************************************************************************/
+
+    // ImageMagick 策略限制配置
+    private static $limits = [
+        'width' => 16384,    // 16KP
+        'height' => 16384,   // 16KP
+        'area' => 128000000, // 128MP (128 * 1000000 pixels)
+        'memory' => 256,     // 256MiB
+    ];
+
+    /**
+     * 验证上传的图片
+     * @param $file
+     * @return array
+     */
+    public static function validateImage($file)
+    {
+        try {
+            // 获取图片信息
+            $imageInfo = getimagesize($file);
+            if ($imageInfo === false) {
+                return Base::retError('无法获取图片信息');
+            }
+
+            $width = $imageInfo[0];
+            $height = $imageInfo[1];
+            $area = $width * $height;
+
+            // 检查尺寸限制
+            if ($width > self::$limits['width']) {
+                return Base::retError(sprintf('图片宽度(%dpx)超过限制(%dpx)', $width, self::$limits['width']));
+            }
+
+            if ($height > self::$limits['height']) {
+                return Base::retError(sprintf('图片高度(%dpx)超过限制(%dpx)', $height, self::$limits['height']));
+            }
+
+            if ($area > self::$limits['area']) {
+                return Base::retError(sprintf('图片总像素(%dpx)超过限制(%dpx)', $area, self::$limits['area']));
+            }
+
+            // 估算内存使用（每个像素约4字节）
+            $estimatedMemory = ($area * 4) / (1024 * 1024); // 转换为 MB
+            if ($estimatedMemory > self::$limits['memory']) {
+                return Base::retError(sprintf('预计内存使用(%dMB)超过限制(%dMB)', $estimatedMemory, self::$limits['memory']));
+            }
+
+            return Base::retSuccess('success');
+        } catch (\Exception $e) {
+            return Base::retError('验证过程发生错误：' . $e->getMessage());
+        }
+    }
 }
