@@ -82,8 +82,21 @@ body.window-portrait {
         }
     }
 }
+@media screen and (max-height: 720px) {
+    .common-right-bottom {
+        .common-right-bottom-link {
+            line-height: 24px;
+            height: 24px;
+        }
+    }
+    body.window-portrait {
+        .common-right-bottom {
+            bottom: 16px;
+        }
+    }
+}
 
-@media (max-height: 640px) {
+@media (max-height: 600px) {
     .common-right-bottom {
         display: none;
     }

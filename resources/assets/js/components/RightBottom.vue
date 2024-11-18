@@ -1,7 +1,6 @@
 <template>
     <div class="common-right-bottom">
         <div v-if="showSSO" class="common-right-bottom-link" @click="useSSOLogin">
-            <Icon type="ios-globe-outline"/>
             {{ $L('使用 SSO 登录') }}
         </div>
         <template v-if="showDown">

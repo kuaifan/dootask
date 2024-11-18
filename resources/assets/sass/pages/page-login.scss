@@ -298,3 +298,32 @@ body.window-portrait {
         }
     }
 }
+
+@media screen and (max-height: 720px) {
+    .page-login {
+        .login-body {
+            .login-box {
+                .login-title {
+                    margin-top: 16px;
+                }
+                .login-access {
+                    > * {
+                        margin-top: 14px;
+                    }
+                }
+            }
+        }
+    }
+    body.window-portrait {
+        .page-login {
+            .login-body {
+                .login-box {
+                    .login-access {
+                        margin-top: 12px;
+                        margin-bottom: 12px;
+                    }
+                }
+            }
+        }
+    }
+}
