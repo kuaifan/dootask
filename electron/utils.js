@@ -638,6 +638,27 @@ const utils = {
             return p2
         }
         return url
+    },
+
+    /**
+     * 加载URL或文件
+     * @param browser
+     * @param url
+     * @param hash
+     */
+    loadUrlOrFile(browser, url, hash = null) {
+        if (url) {
+            if (hash) {
+                url = `${url}#${hash}`.replace(/\/*#\/*/g, '/')
+            }
+            browser.loadURL(url).then(_ => { }).catch(_ => { })
+        } else {
+            const options = {}
+            if (hash) {
+                options.hash = hash
+            }
+            browser.loadFile('./public/index.html', options).then(_ => { }).catch(_ => { })
+        }
     }
 }
 

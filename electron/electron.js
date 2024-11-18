@@ -51,6 +51,7 @@ let screenshotObj = null,
     screenshotKey = null;
 
 let childWindow = [],
+    preloadWindow = null,
     webTabWindow = null,
     webTabView = [],
     webTabHeight = 38;
@@ -58,9 +59,14 @@ let childWindow = [],
 let showState = {},
     onShowWindow = (win) => {
         if (typeof showState[win.webContents.id] === 'undefined') {
-            showState[win.webContents.id] = true
-            win.setBackgroundColor('rgba(255, 255, 255, 0)')
-            win.show();
+            try {
+                showState[win.webContents.id] = true
+                win.setBackgroundColor('rgba(255, 255, 255, 0)')
+                win.show();
+            } catch (e) {
+                showState[win.webContents.id] = false
+                // loger.error(e)
+            }
         }
     }
 
@@ -135,24 +141,6 @@ function createMainWindow() {
             nativeWindowOpen: true
         }
     })
-    const originalUA = mainWindow.webContents.session.getUserAgent() || mainWindow.webContents.getUserAgent()
-    mainWindow.webContents.setUserAgent(originalUA + " MainTaskWindow/" + process.platform + "/" + os.arch() + "/1.0");
-    mainWindow.webContents.setWindowOpenHandler(({url}) => {
-        if (allowedCalls.test(url)) {
-            return {action: 'allow'}
-        }
-        utils.onBeforeOpenWindow(mainWindow.webContents, url).then(() => {
-            openExternal(url)
-        })
-        return {action: 'deny'}
-    })
-    electronMenu.webContentsMenu(mainWindow.webContents)
-
-    if (devloadUrl) {
-        mainWindow.loadURL(devloadUrl).then(_ => { }).catch(_ => { })
-    } else {
-        mainWindow.loadFile('./public/index.html').then(_ => { }).catch(_ => { })
-    }
 
     mainWindow.on('page-title-updated', (event, title) => {
         if (title == "index.html") {
@@ -171,16 +159,35 @@ function createMainWindow() {
     mainWindow.on('close', event => {
         if (!willQuitApp) {
             utils.onBeforeUnload(event, mainWindow).then(() => {
-                if (process.platform === 'win32') {
-                    mainWindow.hide()
-                } else if (process.platform === 'darwin') {
-                    mainWindow.hide()
+                if (['darwin', 'win32'].includes(process.platform)) {
+                    mainWindow.hide();
                 } else {
-                    app.quit()
+                    app.quit();
                 }
             })
         }
     })
+
+    // 设置 UA
+    const originalUA = mainWindow.webContents.session.getUserAgent() || mainWindow.webContents.getUserAgent()
+    mainWindow.webContents.setUserAgent(originalUA + " MainTaskWindow/" + process.platform + "/" + os.arch() + "/1.0");
+
+    // 新窗口处理
+    mainWindow.webContents.setWindowOpenHandler(({url}) => {
+        if (allowedCalls.test(url)) {
+            return {action: 'allow'}
+        }
+        utils.onBeforeOpenWindow(mainWindow.webContents, url).then(() => {
+            openExternal(url)
+        })
+        return {action: 'deny'}
+    })
+
+    // 设置右键菜单
+    electronMenu.webContentsMenu(mainWindow.webContents)
+
+    // 加载地址
+    utils.loadUrlOrFile(mainWindow, devloadUrl)
 }
 
 /**
@@ -253,6 +260,41 @@ function createUpdaterWindow(updateTitle) {
 }
 
 /**
+ * 创建预窗口
+ */
+function preCreateChildWindow() {
+    if (preloadWindow) {
+        return;
+    }
+
+    const browser = new BrowserWindow({
+        width: 360,
+        height: 360,
+        minWidth: 360,
+        minHeight: 360,
+        center: true,
+        show: false,
+        parent: mainWindow,
+        autoHideMenuBar: true,
+        webPreferences: {
+            preload: path.join(__dirname, 'electron-preload.js'),
+            webSecurity: true,
+            nodeIntegration: true,
+            contextIsolation: true,
+            nativeWindowOpen: true
+        }
+    });
+
+    browser.addListener('closed', () => {
+        preloadWindow = null;
+    })
+
+    utils.loadUrlOrFile(browser, devloadUrl, 'preload')
+
+    preloadWindow = browser;
+}
+
+/**
  * 创建子窗口
  * @param args {path, hash, title, titleFixed, force, userAgent, config, webPreferences}
  */
@@ -265,18 +307,18 @@ function createChildWindow(args) {
         args = {path: args, config: {}}
     }
 
-    let name = args.name || "auto_" + utils.randomString(6);
-    let item = childWindow.find(item => item.name == name);
-    let browser = item ? item.browser : null;
+    const name = args.name || "auto_" + utils.randomString(6);
+    const wind = childWindow.find(item => item.name == name);
+    let browser = wind ? wind.browser : null;
     if (browser) {
         browser.focus();
         if (args.force === false) {
             return;
         }
     } else {
-        let config = args.config || {};
-        let webPreferences = args.webPreferences || {};
-        browser = new BrowserWindow(Object.assign({
+        const config = args.config || {};
+        const webPreferences = args.webPreferences || {};
+        const options = Object.assign({
             width: 1280,
             height: 800,
             minWidth: 360,
@@ -292,7 +334,26 @@ function createChildWindow(args) {
                 contextIsolation: true,
                 nativeWindowOpen: true
             }, webPreferences),
-        }, config))
+        }, config)
+
+        if (preloadWindow && Object.keys(webPreferences).length === 0) {
+            // 使用预加载窗口
+            browser = preloadWindow;
+            preloadWindow = null;
+            setTimeout(() => onShowWindow(browser), 300)
+            browser.once('resize', () => onShowWindow(browser))
+            browser.setSize(options.width, options.height);
+            browser.setMinimumSize(options.minWidth, options.minHeight);
+            browser.center();
+            browser.setParentWindow(options.parent);
+            browser.setAutoHideMenuBar(options.autoHideMenuBar);
+            browser.removeAllListeners("closed");
+            console.log("use preload window")
+        } else {
+            // 创建新窗口
+            browser = new BrowserWindow(options)
+            console.log("create new window")
+        }
 
         browser.on('page-title-updated', (event, title) => {
             if (title == "index.html" || config.titleFixed === true) {
@@ -311,13 +372,16 @@ function createChildWindow(args) {
         browser.on('close', event => {
             if (!willQuitApp) {
                 utils.onBeforeUnload(event, browser).then(() => {
-                    browser.destroy()
+                    browser.hide()
+                    setTimeout(() => {
+                        browser.destroy()
+                    }, 100)
                 })
             }
         })
 
         browser.on('closed', () => {
-            let index = childWindow.findIndex(item => item.name == name);
+            const index = childWindow.findIndex(item => item.name == name);
             if (index > -1) {
                 childWindow.splice(index, 1)
             }
@@ -333,8 +397,12 @@ function createChildWindow(args) {
 
         childWindow.push({ name, browser })
     }
+
+    // 设置 UA
     const originalUA = browser.webContents.session.getUserAgent() || browser.webContents.getUserAgent()
     browser.webContents.setUserAgent(originalUA + " SubTaskWindow/" + process.platform + "/" + os.arch() + "/1.0" + (args.userAgent ? (" " + args.userAgent) : ""));
+
+    // 新窗口处理
     browser.webContents.setWindowOpenHandler(({url}) => {
         if (allowedCalls.test(url)) {
             return {action: 'allow'}
@@ -344,22 +412,20 @@ function createChildWindow(args) {
         })
         return {action: 'deny'}
     })
+
+    // 设置右键菜单
     electronMenu.webContentsMenu(browser.webContents)
 
+    // 加载地址
     const hash = args.hash || args.path;
-    if (/^https?:\/\//i.test(hash)) {
+    if (/^https?:/i.test(hash)) {
         browser.loadURL(hash).then(_ => { }).catch(_ => { })
-        return;
+    } else {
+        utils.loadUrlOrFile(browser, devloadUrl, hash)
     }
-    if (devloadUrl) {
-        browser.loadURL(devloadUrl + '#' + hash).then(_ => { }).catch(_ => { })
-        return;
-    }
-    browser.loadFile('./public/index.html', {
-        hash
-    }).then(_ => {
 
-    })
+    // 预创建下一个窗口
+    preCreateChildWindow();
 }
 
 /**
@@ -378,13 +444,7 @@ function updateChildWindow(browser, args) {
 
     const hash = args.hash || args.path;
     if (hash) {
-        if (devloadUrl) {
-            browser.loadURL(devloadUrl + '#' + hash).then(_ => { }).catch(_ => { })
-        } else {
-            browser.loadFile('./public/index.html', {
-                hash
-            }).then(_ => { }).catch(_ => { })
-        }
+        utils.loadUrlOrFile(browser, devloadUrl, hash)
     }
     if (args.name) {
         const er = childWindow.find(item => item.browser == browser);
@@ -503,9 +563,7 @@ function createWebTabWindow(args) {
             }
         })
 
-        webTabWindow.loadFile('./render/tabs/index.html', {}).then(_ => {
-
-        })
+        webTabWindow.loadFile('./render/tabs/index.html', {}).then(_ => { }).catch(_ => { })
     }
     if (webTabWindow.isMinimized()) {
         webTabWindow.restore()
@@ -513,7 +571,7 @@ function createWebTabWindow(args) {
     webTabWindow.focus();
     webTabWindow.show();
 
-    // 创建子窗口
+    // 创建 tab 子窗口
     const browserView = new BrowserView({
         useHTMLTitleAndIcon: true,
         useLoadingView: true,
@@ -734,6 +792,8 @@ if (!getTheLock) {
         createProtocol()
         // 创建主窗口
         createMainWindow()
+        // 预创建子窗口
+        preCreateChildWindow()
         // 创建托盘
         if (['darwin', 'win32'].includes(process.platform) && utils.isJson(config.trayIcon)) {
             mainTray = new Tray(path.join(__dirname, config.trayIcon[devloadUrl ? 'dev' : 'prod'][process.platform === 'darwin' ? 'mac' : 'win']));
@@ -867,25 +927,6 @@ ipcMain.handle('getChildWindow', (event, args) => {
 });
 
 /**
- * 创建路由窗口（todo 已废弃）
- * @param args {path, ?}
- */
-ipcMain.on('windowRouter', (event, args) => {
-    createChildWindow(args)
-    event.returnValue = "ok"
-})
-
-/**
- * 更新路由窗口（todo 已废弃）
- * @param args {?name, ?path} // name: 不是要更改的窗口名，是要把窗口名改成什么， path: 地址
- */
-ipcMain.on('updateRouter', (event, args) => {
-    const browser = BrowserWindow.fromWebContents(event.sender);
-    updateChildWindow(browser, args)
-    event.returnValue = "ok"
-})
-
-/**
  * 内置浏览器 - 打开创建
  * @param args {url, ?}
  */
@@ -983,6 +1024,9 @@ ipcMain.on('childWindowCloseAll', (event) => {
     childWindow.some(({browser}) => {
         browser && browser.close()
     })
+    if (preloadWindow) {
+        preloadWindow.close()
+    }
     event.returnValue = "ok"
 })
 
@@ -993,6 +1037,9 @@ ipcMain.on('childWindowDestroyAll', (event) => {
     childWindow.some(({browser}) => {
         browser && browser.destroy()
     })
+    if (preloadWindow) {
+        preloadWindow.destroy()
+    }
     event.returnValue = "ok"
 })
 
@@ -1291,6 +1338,9 @@ ipcMain.on('updateQuitAndInstall', (event, args) => {
     childWindow.some(({browser}) => {
         browser && browser.destroy()
     })
+    if (preloadWindow) {
+        preloadWindow.destroy()
+    }
 
     // 启动更新子窗口
     createUpdaterWindow(args.updateTitle)
@@ -1540,13 +1590,9 @@ function exportDiagram(event, args, directFinalize) {
         });
 
         if (devloadUrl) {
-            browser.loadURL(devloadUrl + 'drawio/webapp/export3.html').then(_ => {
-
-            })
+            browser.loadURL(devloadUrl + 'drawio/webapp/export3.html').then(_ => { }).catch(_ => { })
         } else {
-            browser.loadFile('./public/drawio/webapp/export3.html').then(_ => {
-
-            })
+            browser.loadFile('./public/drawio/webapp/export3.html').then(_ => { }).catch(_ => { })
         }
 
         const contents = browser.webContents;

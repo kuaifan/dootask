@@ -184,6 +184,11 @@ export default [
         component: () => import('./pages/login.vue'),
     },
     {
+        name: 'preload',
+        path: '/preload',
+        component: () => import('./pages/preload.vue')
+    },
+    {
         name: '404',
         path: '*',
         component: () => import('./pages/404.vue')
