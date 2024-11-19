@@ -496,11 +496,11 @@ export default {
         }
         window.__getBasicDataKey = tmpKey
         //
-        dispatch("getProjects").catch(() => {});
         dispatch("getDialogAuto").catch(() => {});
         dispatch("getDialogTodo", 0).catch(() => {});
         dispatch("getReportUnread", 1000);
         dispatch("getApproveUnread", 1000);
+        dispatch("getProjectByQueue");
         dispatch("getTaskForDashboard");
         dispatch("dialogMsgRead");
         //
@@ -1249,11 +1249,10 @@ export default {
      * 获取项目
      * @param state
      * @param dispatch
-     * @param getters
      * @param requestData
      * @returns {Promise<unknown>}
      */
-    getProjects({state, dispatch, getters}, requestData) {
+    getProjects({state, dispatch}, requestData) {
         return new Promise(function (resolve, reject) {
             if (state.userId === 0) {
                 state.cacheProjects = [];
@@ -1281,6 +1280,20 @@ export default {
                 state.loadProjects--;
             });
         });
+    },
+
+    /**
+     * 获取项目（队列）
+     * @param dispatch
+     * @param timeout
+     */
+    getProjectByQueue({dispatch}, timeout = null) {
+        window.__getProjectByQueueTimer && clearTimeout(window.__getProjectByQueueTimer)
+        if (typeof timeout === "number") {
+            window.__getProjectByQueueTimer = setTimeout(_ => dispatch("getProjectByQueue", null), timeout)
+            return
+        }
+        dispatch("getProjects").catch(() => {});
     },
 
     /**
@@ -1836,10 +1849,9 @@ export default {
      * 获取Dashboard相关任务
      * @param state
      * @param dispatch
-     * @param getters
      * @param timeout
      */
-    getTaskForDashboard({state, dispatch, getters}, timeout) {
+    getTaskForDashboard({state, dispatch}, timeout) {
         window.__getTaskForDashboard && clearTimeout(window.__getTaskForDashboard)
         if (typeof timeout === "number") {
             if (timeout > -1) {
@@ -2609,11 +2621,10 @@ export default {
      * 获取会话列表
      * @param state
      * @param dispatch
-     * @param getters
      * @param requestData
      * @returns {Promise<unknown>}
      */
-    getDialogs({state, dispatch, getters}, requestData) {
+    getDialogs({state, dispatch}, requestData) {
         return new Promise(function (resolve, reject) {
             if (state.userId === 0) {
                 state.cacheDialogs = [];

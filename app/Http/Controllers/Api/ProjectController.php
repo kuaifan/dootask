@@ -324,7 +324,7 @@ class ProjectController extends AbstractController
             }
             $project->save();
         });
-        $project->pushMsg('update', $project);
+        $project->pushMsg('update');
         //
         return Base::retSuccess('修改成功', $project);
     }
@@ -2592,6 +2592,10 @@ class ProjectController extends AbstractController
         }
         $projectUser->top_at = $projectUser->top_at ? null : Carbon::now();
         $projectUser->save();
+        if ($projectUser->project) {
+            $projectUser->project->updated_at = Carbon::now();
+            $projectUser->project->save();
+        }
         return Base::retSuccess("success", [
             'id' => $projectUser->project_id,
             'top_at' => $projectUser->top_at?->toDateTimeString(),

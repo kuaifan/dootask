@@ -161,26 +161,23 @@ export default {
         },
 
         windowActive(active) {
-            if (active) {
-                this.autoTheme()
-                $A.updateTimezone()
-                this.__windowTimer && clearTimeout(this.__windowTimer)
-                this.__windowTimer = setTimeout(_ => {
-                    this.$store.dispatch("call", {
-                        url: "users/socket/status",
-                    }).then(_ => {
-                        this.$store.dispatch("websocketSend", {
-                            type: 'handshake',
-                        }).catch(_ => {
-                            this.$store.dispatch("websocketConnection")
-                        })
-                    }).catch(_ => {
-                        this.$store.dispatch("websocketConnection")
-                    })
-                }, 600)
-            } else {
+            if (!active) {
                 this.$store.dispatch("audioStop", true)
+                return
             }
+
+            this.autoTheme()
+            $A.updateTimezone()
+
+            this.__windowTimer && clearTimeout(this.__windowTimer)
+            this.__windowTimer = setTimeout(async () => {
+                try {
+                    await this.$store.dispatch("call", {url: "users/socket/status"})
+                    await this.$store.dispatch("websocketSend", {type: 'handshake'})
+                } catch {
+                    await this.$store.dispatch("websocketConnection")
+                }
+            }, 600)
         },
     },
 

@@ -729,9 +729,13 @@ export default {
         },
 
         workReportShow(show) {
-            if (show) {
-                this.$store.dispatch("getReportUnread", 0)
-            }
+            if (!show) return
+            this.$store.dispatch("getReportUnread", 0)
+        },
+
+        windowActive(active) {
+            if (!active) return
+            this.$store.dispatch("getProjectByQueue", 600);
         },
 
         'cacheProjects.length': {

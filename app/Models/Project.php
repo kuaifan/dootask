@@ -325,44 +325,65 @@ class Project extends AbstractModel
     /**
      * 推送消息
      * @param string $action
-     * @param array|self $data      发送内容，默认为[id=>项目ID]
+     * @param array|self $data      推送内容
      * @param array $userid         指定会员，默认为项目所有成员
      */
     public function pushMsg($action, $data = null, $userid = null)
     {
-        if ($data === null) {
-            $data = ['id' => $this->id];
-        } elseif ($data instanceof self) {
+        // 处理数据
+        if ($data instanceof self) {
             $data = $data->toArray();
         }
-        //
-        $array = [$userid, []];
+
+        $data = is_array($data) ? $data : [];
+        $data['id'] = $this->id;
+        $data['name'] = $this->name;
+        $data['desc'] = $this->desc;
+
+        // 处理接收用户
+        $recipients = [$userid, []];
         if ($userid === null) {
-            $array[0] = $this->relationUserids();
+            $recipients[0] = $this->relationUserids();
         } elseif (!is_array($userid)) {
-            $array[0] = [$userid];
+            $recipients[0] = [$userid];
         }
-        //
+
+        // 移除不需要的字段
+        unset($data['top_at']);
+
+        // 处理所有者权限
         if (isset($data['owner'])) {
-            $owners = ProjectUser::whereProjectId($data['id'])->whereOwner(1)->pluck('userid')->toArray();
-            $array = [array_intersect($array[0], $owners), array_diff($array[0], $owners)];
+            $owners = ProjectUser::whereProjectId($data['id'])
+                ->whereOwner(1)
+                ->pluck('userid')
+                ->toArray();
+            $recipients = [
+                array_intersect($recipients[0], $owners),
+                array_diff($recipients[0], $owners)
+            ];
         }
-        //
-        foreach ($array as $index => $item) {
+
+        // 发送推送
+        foreach ($recipients as $index => $userids) {
+            if (empty($userids)) {
+                continue;
+            }
+
             if ($index > 0) {
                 $data['owner'] = 0;
             }
+
             $params = [
                 'ignoreFd' => Request::header('fd'),
-                'userid' => array_values($item),
+                'userid' => array_values($userids),
                 'msg' => [
                     'type' => 'project',
                     'action' => $action,
                     'data' => $data,
                 ]
             ];
-            $task = new PushTask($params, false);
-            Task::deliver($task);
+
+            Task::deliver(new PushTask($params, false));
         }
     }
 
