@@ -53,8 +53,8 @@ class ProjectTaskContent extends AbstractModel
             $array = $this->toArray();
             $array['content'] = file_get_contents($filePath) ?: '';
             if ($array['content']) {
-                $replace = Base::fillUrl('uploads/task');
-                $array['content'] = str_replace('{{RemoteURL}}uploads/task', $replace, $array['content']);
+                $replace = Base::fillUrl('uploads');
+                $array['content'] = str_replace('{{RemoteURL}}uploads', $replace, $array['content']);
             }
             return $array;
         }
@@ -84,9 +84,14 @@ class ProjectTaskContent extends AbstractModel
                 $content = str_replace($matchs[0][$key], '<img src="{{RemoteURL}}' . $tmpPath . '" original-width="' . $paramet[0] . '" original-height="' . $paramet[1] . '"', $content);
             }
         }
-        $pattern = '/(<img[^>]*?src=\\\\?["\'])(https?:\/\/[^\/]+\/)(uploads\/task\/content\/[^\s"\'>]+)(\\\\?["\'][^>]*?>)/i';
-        $replacement = '$1{{RemoteURL}}$3$4';
-        $content = preg_replace($pattern, $replacement, $content);
+        preg_match_all('/(<img[^>]*?src=\\\\?["\'])(https?:\/\/[^\/]+\/)(uploads\/[^\s"\'>]+)(\\\\?["\'][^>]*?>)/i', $content, $matches);
+        foreach ($matches[0] as $key => $fullMatch) {
+            $filePath = public_path($matches[3][$key]);
+            if (file_exists($filePath)) {
+                $replacement = $matches[1][$key] . '{{RemoteURL}}' . $matches[3][$key] . $matches[4][$key];
+                $content = str_replace($fullMatch, $replacement, $content);
+            }
+        }
         //
         $filePath = $path . md5($content);
         $publicPath = public_path($filePath);

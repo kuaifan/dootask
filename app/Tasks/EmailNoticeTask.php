@@ -223,7 +223,8 @@ class EmailNoticeTask extends AbstractTask
             // 添加对话内容
             $content .= view('email.unread', [
                 'type' => 'content',
-                'dialogUrl' => config("app.url") . "/manage/messenger?dialog_id={$dialogId}",
+                'dialogUrl' => '',  // 不显示回复消息按钮
+                // 'dialogUrl' => config("app.url") . "/manage/messenger?dialog_id={$dialogId}",
                 'dialogName' => trim($dialogName),
                 'title' => Doo::translate(sprintf('%d条未读信息', count($items))),
                 'button' => Doo::translate('回复消息'),
