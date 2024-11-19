@@ -127,25 +127,44 @@ if (!isSoftware) {
 }
 
 // 加载路由
-Vue.prototype.goForward = function(location, isReplace) {
-    if (typeof location === 'string') {
-        location = {name: location};
+Vue.prototype.goForward = function(route, isReplace) {
+    // 处理路由格式
+    if (typeof route === 'string') {
+        if ($A.strExists(route, '/')) {
+            if (/^https?:\/\//.test(route)) {
+                if ($A.getDomain(route) === $A.getDomain($A.mainUrl())) {
+                    route = route.replace(/^https?:\/\/[^\/]+/, '');
+                } else {
+                    // 处理外部链接
+                    if (isReplace) {
+                        window.location.replace(route);
+                    } else {
+                        window.location.href = route;
+                    }
+                    return;
+                }
+            }
+            route = { path: route };
+        } else {
+            route = { name: route };
+        }
     }
+    // 初始化路由历史
     if (app.$store.state.routeHistorys.length === 0) {
         app.$store.state.routeHistorys.push(app.$route)
     }
-    if (isReplace === true) {
-        app.$router.replace(location).then(to => {
+    // 执行路由跳转
+    const routerMethod = isReplace ? 'replace' : 'push';
+    app.$router[routerMethod](route).then(to => {
+        if (isReplace) {
             app.$store.state.routeHistorys.pop();
             app.$store.state.routeHistorys.push(to);
-        }).catch(_ => {});
-    } else {
-        app.$router.push(location).then(to => {
+        } else {
             const length = app.$store.state.routeHistorys.push(to)
             length > 120 && app.$store.state.routeHistorys.splice(length - 100)
             app.$store.state.routeHistoryLast = length >= 2 ? app.$store.state.routeHistorys[length - 2] : {};
-        }).catch(_ => {});
-    }
+        }
+    }).catch(err => console.warn('路由跳转失败:', err));
 };
 
 // 返回路由

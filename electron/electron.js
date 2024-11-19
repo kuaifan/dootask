@@ -310,6 +310,7 @@ function createChildWindow(args) {
     const name = args.name || "auto_" + utils.randomString(6);
     const wind = childWindow.find(item => item.name == name);
     let browser = wind ? wind.browser : null;
+    let isPreload = false;
     if (browser) {
         browser.focus();
         if (args.force === false) {
@@ -340,6 +341,7 @@ function createChildWindow(args) {
             // 使用预加载窗口
             browser = preloadWindow;
             preloadWindow = null;
+            isPreload = true;
             setTimeout(() => onShowWindow(browser), 300)
             browser.once('resize', () => setTimeout(() => onShowWindow(browser), 10))
             browser.setSize(options.width, options.height);
@@ -419,6 +421,10 @@ function createChildWindow(args) {
     const hash = args.hash || args.path;
     if (/^https?:/i.test(hash)) {
         browser.loadURL(hash).then(_ => { }).catch(_ => { })
+    } else if (isPreload) {
+        browser.webContents.executeJavaScript(`if(typeof $A.goForward === 'function'){$A.goForward('${hash}')}else{throw new Error('no function')}`, true).catch(() => {
+            utils.loadUrlOrFile(browser, devloadUrl, hash)
+        });
     } else {
         utils.loadUrlOrFile(browser, devloadUrl, hash)
     }
@@ -1221,7 +1227,7 @@ ipcMain.on('bindScreenshotKey', (event, args) => {
             screenshotKey = key
             globalShortcut.register(key, () => {
                 screenshotObj.startCapture().then(_ => {
-                    screenshotObj.view.webContents.executeJavaScript('if(typeof window.__initializeShortcuts===\'undefined\'){window.__initializeShortcuts=true;document.addEventListener(\'keydown\',function(e){console.log(e);if(e.keyCode===27){window.screenshots.cancel()}})}', true).catch(() => {});
+                    screenshotObj.view.webContents.executeJavaScript(`if(typeof window.__initializeShortcuts==='undefined'){window.__initializeShortcuts=true;document.addEventListener('keydown',function(e){console.log(e);if(e.keyCode===27){window.screenshots.cancel()}})}`, true).catch(() => {});
                     screenshotObj.view.webContents.focus()
                 })
             })

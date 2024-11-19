@@ -301,11 +301,11 @@ const utils = {
         return new Promise(resolve => {
             const contents = app.webContents
             if (contents != null) {
-                contents.executeJavaScript('if(typeof window.__onBeforeUnload === \'function\'){window.__onBeforeUnload()}', true).then(options => {
+                contents.executeJavaScript(`if(typeof window.__onBeforeUnload === 'function'){window.__onBeforeUnload()}`, true).then(options => {
                     if (utils.isJson(options)) {
                         let choice = dialog.showMessageBoxSync(app, options)
                         if (choice === 1) {
-                            contents.executeJavaScript('if(typeof window.__removeBeforeUnload === \'function\'){window.__removeBeforeUnload()}', true).catch(() => {});
+                            contents.executeJavaScript(`if(typeof window.__removeBeforeUnload === 'function'){window.__removeBeforeUnload()}`, true).catch(() => {});
                             resolve()
                         }
                     } else if (options !== true) {
