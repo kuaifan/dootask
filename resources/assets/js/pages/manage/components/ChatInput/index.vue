@@ -895,7 +895,10 @@ export default {
                         type: "mp3",
                         bitRate: 64,
                         sampleRate: 32000,
-                        audioTrackSet: null,
+                        audioTrackSet: {
+                            noiseSuppression: true,
+                            echoCancellation: true,
+                        },
                         disableEnvInFix: false,
                         onProcess: (buffers, powerLevel, duration, sampleRate, newBufferIdx, asyncEnd) => {
                             this.recordWave?.input(buffers[buffers.length - 1], powerLevel, sampleRate);
@@ -908,6 +911,9 @@ export default {
                     })
                     if (window.Recorder.Support()) {
                         this.recordReady = true;
+                    }
+                    if (window.systemInfo.debug !== "yes") {
+                        window.Recorder.CLog = function () { }
                     }
                 });
             }
