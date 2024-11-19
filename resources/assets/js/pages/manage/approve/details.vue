@@ -519,6 +519,8 @@ export default {
             this.$store.dispatch("openDialogUserid", userid).then(_ => {
                 if (this.$parent.$options.name === "DrawerOverlayView") {
                     this.$parent.onClose()
+                } else if (this.$parent.$options.name === "Modal") {
+                    this.$parent.close()
                 }
                 this.goForward({name: 'manage-messenger'})
             }).catch(({msg}) => {
