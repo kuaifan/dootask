@@ -41,7 +41,7 @@ class SystemController extends AbstractController
      * @apiParam {String} type
      * - get: 获取（默认）
      * - all: 获取所有（需要管理员权限）
-     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'temp_account_alias', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'voice2text', 'translation', 'e2e_message', 'auto_archived', 'archived_day', 'task_visible', 'task_default_time', 'all_group_mute', 'all_group_autoin', 'user_private_chat_mute', 'user_group_chat_mute', 'image_compress', 'image_save_local', 'start_home']）
+     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'temp_account_alias', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'voice2text', 'translation', 'e2e_message', 'auto_archived', 'archived_day', 'task_visible', 'task_default_time', 'all_group_mute', 'all_group_autoin', 'user_private_chat_mute', 'user_group_chat_mute', 'system_alias', 'image_compress', 'image_save_local', 'start_home']）
 
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -78,6 +78,7 @@ class SystemController extends AbstractController
                     'all_group_autoin',
                     'user_private_chat_mute',
                     'user_group_chat_mute',
+                    'system_alias',
                     'image_compress',
                     'image_save_local',
                     'start_home',
@@ -101,6 +102,9 @@ class SystemController extends AbstractController
             }
             if ($all['translation'] == 'open' && empty(Base::settingFind('aibotSetting', 'openai_key'))) {
                 return Base::retError('开启翻译功能需要在应用中开启 ChatGPT AI 机器人。');
+            }
+            if ($all['system_alias'] == env('APP_NAME')) {
+                $all['system_alias'] = '';
             }
             $setting = Base::setting('system', Base::newTrim($all));
         } else {
@@ -1154,10 +1158,10 @@ class SystemController extends AbstractController
                 Factory::mailer()
                     ->setDsn("smtp://{$all['account']}:{$all['password']}@{$all['smtp_server']}:{$all['port']}?verify_peer=0")
                     ->setMessage(EmailMessage::create()
-                        ->from(env('APP_NAME', 'Task') . " <{$all['account']}>")
+                        ->from(Base::settingFind('system', 'system_alias', 'Task') . " <{$all['account']}>")
                         ->to($to)
                         ->subject('Mail sending test')
-                        ->html('<p>收到此电子邮件意味着您的邮箱配置正确。</p><p>Receiving this email means that your mailbox is configured correctly.</p>'))
+                        ->html('<p>' . Doo::translate('收到此电子邮件意味着您的邮箱配置正确。') . '</p>'))
                     ->send();
             }, function () {
                 throw new \Exception("收件人地址错误或已被忽略");

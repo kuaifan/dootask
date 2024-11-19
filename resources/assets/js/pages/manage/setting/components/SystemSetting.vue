@@ -17,7 +17,7 @@
                         <div v-if="formDatum.reg == 'open'" class="form-tip">{{$L('允许：开放注册功能。')}}</div>
                         <template v-else-if="formDatum.reg == 'invite'">
                             <div class="form-tip">{{$L('邀请码：注册时需填写下方邀请码。')}}</div>
-                            <Input v-model="formDatum.reg_invite" style="width:200px;margin-top:6px">
+                            <Input v-model="formDatum.reg_invite" style="width:220px;margin-top:6px">
                                 <span slot="prepend">{{$L('邀请码')}}</span>
                             </Input>
                         </template>
@@ -210,6 +210,12 @@
             <div class="block-setting-box">
                 <h3>{{ $L('其他设置') }}</h3>
                 <div class="form-box">
+                    <FormItem :label="$L('系统别名')" prop="system_alias">
+                        <div style="width: 220px;">
+                            <Input v-model="formDatum.system_alias"/>
+                        </div>
+                        <div class="form-tip">{{$L('用于网页默认标题、邮件发送等')}}</div>
+                    </FormItem>
                     <FormItem :label="$L('图片优化')" prop="image_compress">
                         <RadioGroup v-model="formDatum.image_compress">
                             <Radio label="open">{{$L('开启')}}</Radio>
@@ -225,7 +231,7 @@
                         <div class="form-tip">{{$L('是否将消息中的网络图片保存到本地服务器。')}}</div>
                     </FormItem>
                     <FormItem :label="$L('文件上传限制')" prop="fileUploadLimit">
-                        <div style="width: 192px;">
+                        <div style="width: 220px;">
                             <Input type="number" number v-model="formDatum.file_upload_limit" :placeholder="$L('默认不限制')">
                                 <template #append>
                                 <span>MB</span>

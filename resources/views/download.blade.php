@@ -9,7 +9,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $name }} - {{ config('app.name', 'WebPage') }}</title>
+    <title>{{ $name }} - {{ $system_alias }}</title>
     <link rel="shortcut icon" href="{{ asset_main('favicon.ico') }}">
     <style>
         * {
