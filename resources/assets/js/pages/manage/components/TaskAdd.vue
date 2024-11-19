@@ -189,7 +189,7 @@
             <div class="adaption">
                 <Button type="default" @click="close">{{$L('取消')}}</Button>
                 <ButtonGroup class="page-manage-add-task-button-group">
-                    <Button type="primary" :loading="loadIng > 0" @click="onAdd">{{$L('添加任务')}}</Button>
+                    <Button type="primary" :loading="loadIng > 0" @click="onAdd(false)">{{$L('添加任务')}}</Button>
                     <Dropdown @on-click="onAdd(true)" transfer>
                         <Button type="primary">
                             <Icon type="ios-arrow-down"></Icon>
@@ -202,7 +202,7 @@
             </div>
         </div>
 
-        <TaskExistTips ref="taskExistTipsRef" @onContinue="onAdd(again, true)"/>
+        <TaskExistTips ref="taskExistTipsRef" @onContinue="onAdd(addContinue, true)"/>
     </div>
 </template>
 
@@ -262,7 +262,7 @@ export default {
 
             beforeClose: [],
 
-            again: false
+            addContinue: false
         }
     },
 
@@ -512,34 +512,33 @@ export default {
             this.addData = Object.assign({}, this.addData, data);
         },
 
-        async onAdd(again, affirm = false) {
+        async onAdd(continued = false, affirm = false) {
             if (!this.addData.name) {
                 $A.messageError("任务描述不能为空");
                 return;
             }
 
-            this.loadIng++;
-
             // 存在任务提示
             if (!affirm && this.addData.owner.length > 0) {
+                this.loadIng++;
                 this.$refs.taskExistTipsRef.isExistTask({
                     userids: this.addData.owner,
                     timerange: this.addData.times
                 }, 600).then(res => {
                     if (!res) {
-                        this.onAdd(again, true)
+                        this.onAdd(continued, true)
                     } else {
-                        this.loadIng--;
-                        this.again = again
+                        this.addContinue = continued
                     }
+                    this.loadIng--;
                 });
                 return;
             }
 
+            this.loadIng++;
             this.$store.dispatch("taskAdd", this.addData).then(({msg}) => {
-                this.loadIng--;
                 $A.messageSuccess(msg);
-                if (again === true) {
+                if (continued === true) {
                     this.addData = Object.assign({}, this.addData, {
                         name: "",
                         content: "",
@@ -551,8 +550,9 @@ export default {
                     this.close()
                 }
             }).catch(({msg}) => {
-                this.loadIng--;
                 $A.modalError(msg);
+            }).finally(() => {
+                this.loadIng--;
             });
         },
 
