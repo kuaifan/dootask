@@ -66,6 +66,7 @@ class IndexController extends InvokeController
             $script = asset_main($array['resources/assets/js/app.js']['file']);
         }
         return response()->view('main', [
+            'system_alias' => Base::settingFind('system', 'system_alias', 'WebPage'),
             'version' => Base::getVersion(),
             'style' => $style,
             'script' => $script,
@@ -374,6 +375,7 @@ class IndexController extends InvokeController
             }
             //
             return view('desktop', [
+                'system_alias' => Base::settingFind('system', 'system_alias', 'WebPage'),
                 'version' => $match[1],
                 'files' => $files,
                 'is_draft' => $isDraft,
@@ -434,6 +436,7 @@ class IndexController extends InvokeController
             // 文件超过 10m 不支持在线预览，提示下载
             if (filesize($file) > 10 * 1024 * 1024) {
                 return view('download', [
+                    'system_alias' => Base::settingFind('system', 'system_alias', 'WebPage'),
                     'name' => $name,
                     'size' => Base::readableBytes(filesize($file)),
                     'url' => Base::fillUrl($path),

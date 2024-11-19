@@ -224,7 +224,7 @@ class EmailNoticeTask extends AbstractTask
             $content .= view('email.unread', [
                 'type' => 'content',
                 'dialogUrl' => config("app.url") . "/manage/messenger?dialog_id={$dialogId}",
-                'dialogName' => $dialogName,
+                'dialogName' => trim($dialogName),
                 'title' => Doo::translate(sprintf('%d条未读信息', count($items))),
                 'button' => Doo::translate('回复消息'),
                 'unread' => count($items),
@@ -247,7 +247,7 @@ class EmailNoticeTask extends AbstractTask
     {
         if ($dialogType === "user" && $message->userInfo) {
             return $message->userInfo->profession
-                ? sprintf('%s (%s)', $message->userInfo->nickname, $message->userInfo->profession)
+                ? sprintf('%s (%s) ', $message->userInfo->nickname, $message->userInfo->profession)
                 : $message->userInfo->nickname;
         }
         return $message->webSocketDialog?->getGroupName();
@@ -268,7 +268,7 @@ class EmailNoticeTask extends AbstractTask
                     $this->emailSetting['port']
                 ))
                 ->setMessage(EmailMessage::create()
-                    ->from(sprintf('%s <%s>', env('APP_NAME', 'Task'), $this->emailSetting['account']))
+                    ->from(sprintf('%s <%s>', Base::settingFind('system', 'system_alias', 'Task'), $this->emailSetting['account']))
                     ->to($to)
                     ->subject($emailData['subject'])
                     ->html($emailData['content']))

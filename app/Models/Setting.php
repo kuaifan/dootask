@@ -33,6 +33,23 @@ use App\Module\Base;
 class Setting extends AbstractModel
 {
     /**
+     * 格式化设置参数
+     * @param $value
+     * @return array|mixed
+     */
+    public function getSettingAttribute($value)
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+        $value = Base::json2array($value);
+        if ($this->name === 'system') {
+            $value['system_alias'] = $value['system_alias'] ?: env('APP_NAME');
+        }
+        return $value;
+    }
+
+    /**
      * 验证邮箱地址（过滤忽略地址）
      * @param $array
      * @param \Closure $resultClosure

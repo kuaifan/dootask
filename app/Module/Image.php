@@ -238,7 +238,7 @@ class Image
             $image->thumb($width, $height, $mode);
             $image->saveTo($savePath);
             if ($quality > 0) {
-                Image::compressImage($savePath, null, $quality);
+                Image::compressImage($savePath, $quality);
             }
             if ($savePath != $imagePath && filesize($savePath) >= filesize($imagePath)) {
                 unlink($savePath);
@@ -252,16 +252,22 @@ class Image
 
     /**
      * 压缩图片（如果压缩后的图片比原图还大那就直接使用原图）
-     * @param string $imagePath     图片路径
-     * @param string|null $savePath 保存路径（默认覆盖原图）
-     * @param int $quality          压缩质量（0-100）
-     * @param float $minSize        最小尺寸，小于这个尺寸不压缩（单位：KB）
+     * @param array|string $path        图片路径（如果是数组，第1个元素为原图路径，第2个元素为保存路径）
+     * @param int $quality              压缩质量（0-100）
+     * @param float $minSize            最小尺寸，小于这个尺寸不压缩（单位：KB）
      * @return bool
      */
-    public static function compressImage(string $imagePath, string $savePath = null, int $quality = 100, float $minSize = 5): bool
+    public static function compressImage(array|string $path, int $quality = 100, float $minSize = 5): bool
     {
         if (Base::settingFind("system", "image_compress") === 'close') {
             return false;
+        }
+        if (is_array($path)) {
+            $imagePath = $path[0];
+            $savePath = $path[1] ?? $imagePath;
+        } else {
+            $imagePath = $path;
+            $savePath = $path;
         }
         if (!file_exists($imagePath)) {
             return false;
@@ -270,9 +276,6 @@ class Image
         $imageSize = filesize($imagePath);
         if ($minSize > 0 && $imageSize < $minSize * 1024) {
             return false;
-        }
-        if (empty($savePath)) {
-            $savePath = $imagePath;
         }
         $tmpPath = $imagePath . '.compress.tmp';
         if (self::compressAuto($imagePath, $tmpPath, $quality)) {

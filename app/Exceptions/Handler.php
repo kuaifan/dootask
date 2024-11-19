@@ -209,7 +209,7 @@ class Handler extends ExceptionHandler
                 }
                 if ($handle > 0) {
                     $image->saveTo($savePath);
-                    Image::compressImage($savePath, null, 80);
+                    Image::compressImage($savePath, 80);
                     return response()->file($savePath, [
                         'Pragma' => 'public',
                         'Cache-Control' => 'max-age=1814400',

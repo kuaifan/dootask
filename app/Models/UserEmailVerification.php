@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Exceptions\ApiException;
 use App\Module\Base;
+use App\Module\Doo;
 use App\Module\Timer;
 use Carbon\Carbon;
 use Guanguans\Notify\Factory;
@@ -65,29 +66,41 @@ class UserEmailVerification extends AbstractModel
         ]);
         $row->save();
         $setting = Base::setting('emailSetting');
+        $alias = Base::settingFind('system', 'system_alias', 'Task');
         try {
             if (!Base::isEmail($email)) {
                 throw new \Exception("User email '{$email}' address error");
             }
             switch ($type) {
                 case 2:
-                    $subject = env('APP_NAME') . "修改邮箱验证";
-                    $content = "<p>{$user->nickname} 您好，您正在修改 " . env('APP_NAME') . " 的邮箱，验证码如下。请在30分钟内输入验证码</p><p style='color: #0000DD;'><u>$code</u></p><p>如果不是本人操作，您的帐号可能存在风险，请及时修改密码!</p>";
+                    $subject = Doo::translate($alias . "修改邮箱验证");
+                    $content = sprintf("<p>%s</p><p style='color: #0000DD;'><u>%s</u></p><p>%s</p>",
+                        Doo::translate($user->nickname . " 您好，您正在修改 " . $alias . " 的邮箱，验证码如下。请在30分钟内输入验证码"),
+                        $code,
+                        Doo::translate("如果不是本人操作，您的帐号可能存在风险，请及时修改密码！")
+                    );
                     break;
                 case 3:
-                    $subject = env('APP_NAME') . "注销帐号验证";
-                    $content = "<p>{$user->nickname} 您好，您正在注销 " . env('APP_NAME') . " 的帐号，验证码如下。请在30分钟内输入验证码</p><p style='color: #0000DD;'><u>$code</u></p><p>如果不是本人操作，您的帐号可能存在风险，请及时修改密码!</p>";
+                    $subject = Doo::translate($alias . "注销帐号验证");
+                    $content = sprintf("<p>%s</p><p style='color: #0000DD;'><u>%s</u></p><p>%s</p>",
+                        Doo::translate($user->nickname . " 您好，您正在注销 " . $alias . " 的帐号，验证码如下。请在30分钟内输入验证码"),
+                        $code,
+                        Doo::translate("如果不是本人操作，您的帐号可能存在风险，请及时修改密码！")
+                    );
                     break;
                 default:
                     $url = Base::fillUrl('single/valid/email') . '?code=' . $row->code;
-                    $subject = env('APP_NAME') . "绑定邮箱验证";
-                    $content = "<p>{$user->nickname} 您好，您正在绑定 " . env('APP_NAME') . " 的邮箱，请于30分钟之内点击以下链接完成验证 :</p><p style='display: flex; justify-content: center;'><a href='{$url}' target='_blank'>{$url}</a></p>";
+                    $subject = Doo::translate($alias . "绑定邮箱验证");
+                    $content = sprintf("<p>%s</p><p style='display: flex; justify-content: center;'>%s</p>",
+                        Doo::translate($user->nickname . " 您好，您正在绑定 " . $alias . " 的邮箱，请于30分钟之内点击以下链接完成验证:"),
+                        "<a href='{$url}' target='_blank'>{$url}</a>"
+                    );
                     break;
             }
             Factory::mailer()
                 ->setDsn("smtp://{$setting['account']}:{$setting['password']}@{$setting['smtp_server']}:{$setting['port']}?verify_peer=0")
                 ->setMessage(EmailMessage::create()
-                    ->from(env('APP_NAME', 'Task') . " <{$setting['account']}>")
+                    ->from($alias . " <{$setting['account']}>")
                     ->to($email)
                     ->subject($subject)
                     ->html($content))

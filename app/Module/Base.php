@@ -1921,7 +1921,7 @@ class Base
                 // 压缩图片
                 $quality = intval($param['quality']);
                 if ($quality > 0) {
-                    Image::compressImage($array['file'], null, $quality);
+                    Image::compressImage($array['file'], $quality);
                     $array['size'] = Base::twoFloat(filesize($array['file']) / 1024, true);
                 }
                 //生成缩略图
@@ -2132,7 +2132,7 @@ class Base
                     $array['width'] = $paramet[0];
                     $array['height'] = $paramet[1];
                     $array['thumb'] = $array['path'] . '_thumb.jpg';
-                    Image::compressImage($thumbFile, null, 80);
+                    Image::compressImage($thumbFile, 80);
                 }
             }
             if ($isImage) {
@@ -2166,7 +2166,7 @@ class Base
                 // 压缩图片
                 $quality = intval($param['quality']);
                 if ($quality > 0) {
-                    Image::compressImage($array['file'], null, $quality);
+                    Image::compressImage($array['file'], $quality);
                     $array['size'] = Base::twoFloat(filesize($array['file']) / 1024, true);
                 }
                 // 生成缩略图
@@ -2806,7 +2806,7 @@ class Base
     public static function saveContentImage($path, $content, int $quality = 0) {
         if (file_put_contents($path, $content)) {
             if ($quality > 0) {
-                Image::compressImage($path, null, $quality);
+                Image::compressImage($path, $quality);
             }
             return true;
         }
