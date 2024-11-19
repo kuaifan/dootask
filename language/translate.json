@@ -26698,5 +26698,29 @@
         "fr": "(%T1) messages non lus",
         "id": "(%T1) pesan belum dibaca",
         "ru": "(%T1) непрочитанных сообщений"
+    },
+    {
+        "key": "系统别名",
+        "zh": "",
+        "zh-CHT": "系統別名",
+        "en": "System Alias",
+        "ko": "시스템 별칭",
+        "ja": "システムエイリアス",
+        "de": "Systemalias",
+        "fr": "Alias du système",
+        "id": "Alias Sistem",
+        "ru": "Системный псевдоним"
+    },
+    {
+        "key": "用于网页默认标题、邮件发送等",
+        "zh": "",
+        "zh-CHT": "用於網頁默認標題、郵件發送等",
+        "en": "Used for web default titles, email sending, etc.",
+        "ko": "웹 기본 제목, 이메일 전송 등에 사용",
+        "ja": "ウェブのデフォルトタイトル、メール送信などに使用されます",
+        "de": "Wird für Web-Standardtitel, E-Mail-Versand usw. verwendet",
+        "fr": "Utilisé pour les titres par défaut des pages Web, l'envoi d'e-mails, etc.",
+        "id": "Digunakan untuk judul default web, pengiriman email, dll.",
+        "ru": "Используется для веб-страниц по умолчанию, отправки электронной почты и т. д."
     }
 ]
