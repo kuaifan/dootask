@@ -1014,6 +1014,28 @@ class FileController extends AbstractController
         }
 
         $user = User::auth();
+        if ($user->isTemp()) {
+            return Base::retError('无法打包下载');
+        }
+        $setting = Base::setting('fileSetting');
+        switch ($setting['permission_pack_type']) {
+            case 'admin':
+                if (!$user->isAdmin()) {
+                    return Base::retError('此功能仅管理员可用');
+                }
+                break;
+            case 'appointAllow':
+                if (!in_array($user->userid, $setting['permission_pack_userids'])) {
+                    return Base::retError('此功能仅指定用户可用');
+                }
+                break;
+            case 'appointProhibit':
+                if (in_array($user->userid, $setting['permission_pack_userids'])) {
+                    return Base::retError('此功能已禁止使用');
+                }
+                break;
+        }
+
         $ids = Request::input('ids');
         $fileName = Request::input('name');
         $fileName = preg_replace("/[\/\\\:\*\?\"\<\>\|]/", "", $fileName);

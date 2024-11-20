@@ -606,6 +606,46 @@ class SystemController extends AbstractController
     }
 
     /**
+     * @api {get} api/system/setting/file          07. 文件设置（限管理员）
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName setting__file
+     *
+     * @apiParam {String} type
+     * - get: 获取（默认）
+     * - save: 保存设置（参数：['permission_pack_type', 'permission_pack_userids']）
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function setting__file()
+    {
+        User::auth('admin');
+        //
+        $type = trim(Request::input('type'));
+        if ($type == 'save') {
+            if (env("SYSTEM_SETTING") == 'disabled') {
+                return Base::retError('当前环境禁止修改');
+            }
+            $all = Base::newTrim(Request::input());
+            foreach ($all as $key => $value) {
+                if (!in_array($key, [
+                    'permission_pack_type',
+                    'permission_pack_userids'
+                ])) {
+                    unset($all[$key]);
+                }
+            }
+            $setting = Base::setting('fileSetting', Base::newTrim($all));
+        } else {
+            $setting = Base::setting('fileSetting');
+        }
+        //
+        return Base::retSuccess('success', $setting ?: json_decode('{}'));
+    }
+
+    /**
      * @api {get} api/system/demo          08. 获取演示帐号
      *
      * @apiVersion 1.0.0
