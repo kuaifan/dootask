@@ -1000,6 +1000,7 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                 @media screen {
                     html {
                         ${this.utils.defaultFilter()}
+                        background-color: #0D0D0D;
                         will-change: transform;
                     }
 
