@@ -3423,24 +3423,25 @@ export default {
         }
         const sse = new SSEClient(streamUrl)
         sse.subscribe(['append', 'replace', 'done'], (type, e) => {
+            const data = {
+                id: e.lastEventId,
+                text: e.data,
+                type: 'replace',
+            };
             switch (type) {
                 case 'append':
-                    Store.set('dialogMsgChange', {
-                        id: e.lastEventId,
-                        type: 'append',
-                        text: e.data
-                    });
+                    data.type = 'append';
+                    Store.set('dialogMsgChange', data);
                     break;
 
                 case 'replace':
-                    Store.set('dialogMsgChange', {
-                        id: e.lastEventId,
-                        type: 'replace',
-                        text: e.data
-                    });
+                    Store.set('dialogMsgChange', data);
                     break;
 
                 case 'done':
+                    if (data.text) {
+                        Store.set('dialogMsgChange', data);
+                    }
                     const index = state.dialogSseList.findIndex(item => sse === item.sse)
                     if (index > -1) {
                         state.dialogSseList.splice(index, 1)
