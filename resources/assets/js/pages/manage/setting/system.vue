@@ -10,6 +10,9 @@
             <TabPane :label="$L('项目模板')" name="columnTemplate">
                 <SystemColumnTemplate/>
             </TabPane>
+            <TabPane :label="$L('文件设置')" name="fileSetting">
+                <SystemFileSetting/>
+            </TabPane>
         </Tabs>
     </div>
 </template>
@@ -18,9 +21,10 @@
 import SystemSetting from "./components/SystemSetting";
 import SystemTaskPriority from "./components/SystemTaskPriority";
 import SystemColumnTemplate from "./components/SystemColumnTemplate";
+import SystemFileSetting from "./components/SystemFileSetting";
 
 export default {
-    components: {SystemColumnTemplate, SystemTaskPriority, SystemSetting},
+    components: {SystemColumnTemplate, SystemTaskPriority, SystemSetting, SystemFileSetting},
     data() {
         return {
             tabAction: 'setting',

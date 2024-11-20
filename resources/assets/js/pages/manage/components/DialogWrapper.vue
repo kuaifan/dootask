@@ -833,7 +833,7 @@ export default {
             scrollToBottomRefresh: false,       // 滚动到底部重新获取消息
             androidKeyboardVisible: false,      // Android键盘是否可见
             replyMsgAutoMention: false,         // 允许回复消息后自动@
-            waitUnreadData: {},                 // 等待未读数据
+            waitUnreadData: new Map(),          // 等待未读数据
         }
     },
 
@@ -844,6 +844,7 @@ export default {
 
     beforeDestroy() {
         this.subMsgListener(true)
+        this.generateUnreadData(this.dialogId)
         //
         if (!this.isChildComponent) {
             this.$store.dispatch('forgetInDialog', this._uid)
@@ -1217,7 +1218,8 @@ export default {
 
         dialogId: {
             handler(dialog_id, old_id) {
-                this.getDialogBase(dialog_id, old_id)
+                this.getDialogBase(dialog_id)
+                this.generateUnreadData(old_id)
                 //
                 this.$store.dispatch('closeDialog', old_id)
                 //
@@ -1451,22 +1453,8 @@ export default {
         /**
          * 获取会话基本信息
          * @param dialog_id
-         * @param old_id
          */
-        getDialogBase(dialog_id, old_id = null) {
-            if (old_id) {
-                const ens = []
-                const ids = this.allMsgs.filter(item => item.read_at === null && item.userid != this.userId).map(item => item.id)
-                const enters = this.$refs.scroller?.$el.querySelectorAll('.item-enter') || []
-                for (const enter of enters) {
-                    const id = $A.runNum(enter.querySelector(".dialog-view")?.getAttribute('data-id'));
-                    if (id && !ids.includes(id)) {
-                        ids.push(id)
-                    }
-                }
-                this.waitUnreadData[old_id] = $A.getLastSameElements(ids, ens)
-            }
-
+        getDialogBase(dialog_id) {
             if (!dialog_id) {
                 return
             }
@@ -1485,6 +1473,7 @@ export default {
             this.allMsgs = this.allMsgList
             this.errorId = 0
             //
+            this.waitUnreadData.delete(dialog_id)
             this.getMsgs({
                 dialog_id,
                 msg_id: this.msgId,
@@ -1493,14 +1482,12 @@ export default {
                 this.openId = dialog_id
                 this.msgPrepared = true
                 //
-                if (this.dialogId !== dialog_id) {
-                    let unreadIds = this.waitUnreadData[dialog_id] || []
-                    if (unreadIds.length > 0) {
-                        const ids = [...data.list.map(item => item.id)].reverse();
-                        $A.getLastSameElements(unreadIds, ids).forEach(id => {
-                            this.$store.dispatch("dialogMsgRead", {id, dialog_id})
-                        })
-                    }
+                const unreadIds = this.waitUnreadData.get(dialog_id) || []
+                if (unreadIds.length > 0) {
+                    const ids = [...data.list.map(item => item.id)].reverse();
+                    $A.getLastSameElements(unreadIds, ids).forEach(id => {
+                        this.$store.dispatch("dialogMsgRead", {id, dialog_id})
+                    })
                 }
                 //
                 setTimeout(_ => {
@@ -1521,6 +1508,26 @@ export default {
             }
             //
             this.getUserApproveStatus()
+        },
+
+        /**
+         * 关闭会话前记录未读数据
+         * @param dialog_id
+         */
+        generateUnreadData(dialog_id) {
+            if (!dialog_id) {
+                return
+            }
+            const ens = []
+            const ids = this.allMsgs.filter(item => item.read_at === null && item.userid != this.userId).map(item => item.id)
+            const enters = this.$refs.scroller?.$el.querySelectorAll('.item-enter') || []
+            for (const enter of enters) {
+                const id = $A.runNum(enter.querySelector(".dialog-view")?.getAttribute('data-id'));
+                if (id && !ids.includes(id)) {
+                    ids.push(id)
+                }
+            }
+            this.waitUnreadData.set(dialog_id, $A.getLastSameElements(ids, ens))
         },
 
         /**
@@ -2989,7 +2996,7 @@ export default {
 
                     case "newTask":
                         let content = $A.formatMsgBasic(this.operateItem.msg.text)
-                        content = content.replace(/<img[^>]*?src=(["'])(.*?)(_thumb\.(png|jpg|jpeg))*\1[^>]*?>/g, `<img src="$2">`)
+                        content = content.replace(/<img[^>]*?src=(["'])([^"']+?)(_thumb\.(png|jpg|jpeg))?\1[^>]*?>/g, `<img src="$2">`)
                         content = content.replace(/<li\s+data-list="checked">/g, `<li class="tox-checklist--checked">`)
                         content = content.replace(/<li\s+data-list="unchecked">/g, `<li>`)
                         content = content.replace(/<ol[^>]*>([\s\S]*?)<\/ol>/g, `<ul class="tox-checklist">$1</ul>`)

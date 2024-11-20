@@ -43,8 +43,14 @@ class Setting extends AbstractModel
             return $value;
         }
         $value = Base::json2array($value);
-        if ($this->name === 'system') {
-            $value['system_alias'] = $value['system_alias'] ?: env('APP_NAME');
+        switch ($this->name) {
+            case 'system':
+                $value['system_alias'] = $value['system_alias'] ?: env('APP_NAME');
+                break;
+            case 'fileSetting':
+                $value['permission_pack_type'] = $value['permission_pack_type'] ?: 'all';
+                $value['permission_pack_userids'] = is_array($value['permission_pack_userids']) ? $value['permission_pack_userids'] : [];
+                break;
         }
         return $value;
     }

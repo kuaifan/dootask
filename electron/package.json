@@ -26,31 +26,32 @@
         "url": "https://github.com/kuaifan/dootask.git"
     },
     "devDependencies": {
-        "@electron-forge/cli": "^7.3.1",
-        "@electron-forge/maker-deb": "^7.3.1",
-        "@electron-forge/maker-rpm": "^7.3.1",
-        "@electron-forge/maker-squirrel": "^7.3.1",
-        "@electron-forge/maker-zip": "^7.3.1",
-        "dotenv": "^16.3.1",
-        "electron": "29.4.2",
-        "electron-builder": "^24.13.3",
+        "@electron-forge/cli": "^7.5.0",
+        "@electron-forge/maker-deb": "^7.5.0",
+        "@electron-forge/maker-rpm": "^7.5.0",
+        "@electron-forge/maker-squirrel": "^7.5.0",
+        "@electron-forge/maker-zip": "^7.5.0",
+        "dotenv": "^16.4.5",
+        "electron": "^33.2.0",
+        "electron-builder": "^25.1.8",
         "electron-notarize": "^1.2.2",
-        "form-data": "^4.0.0",
+        "form-data": "^4.0.1",
         "ora": "^4.1.1"
     },
     "dependencies": {
-        "axios": "^1.6.2",
+        "axios": "^1.7.7",
         "crc": "^3.8.0",
         "dayjs": "^1.11.13",
         "electron-config": "^2.0.0",
-        "electron-log": "^5.1.1",
+        "electron-log": "^5.2.2",
         "electron-screenshots-tool": "^1.1.2",
-        "electron-squirrel-startup": "^1.0.0",
-        "electron-updater": "^6.1.8",
+        "electron-squirrel-startup": "^1.0.1",
+        "electron-store": "^8.2.0",
+        "electron-updater": "^6.3.9",
         "fs-extra": "^11.2.0",
         "pdf-lib": "^1.17.1",
         "request": "^2.88.2",
-        "yauzl": "^2.10.0"
+        "yauzl": "^3.2.0"
     },
     "trayIcon": {
         "dev": {

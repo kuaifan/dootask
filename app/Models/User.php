@@ -10,7 +10,6 @@ use App\Module\Table\OnlineData;
 use App\Services\RequestContext;
 use Cache;
 use Carbon\Carbon;
-use Request;
 
 /**
  * App\Models\User
@@ -450,10 +449,10 @@ class User extends AbstractModel
             if (Carbon::parse($user->line_at)->addSeconds(30)->lt(Carbon::now())) {
                 $upArray['line_at'] = Carbon::now();
             }
-            if (empty($user->lang) || Request::hasHeader('language')) {
-                $lang = Request::header('language');
-                if (Doo::checkLanguage($lang) && $user->lang != $lang) {
-                    $upArray['lang'] = $lang;
+            $headerLanguage = RequestContext::get('header_language');
+            if (empty($user->lang) || $headerLanguage) {
+                if (Doo::checkLanguage($headerLanguage) && $user->lang != $headerLanguage) {
+                    $upArray['lang'] = $headerLanguage;
                 }
             }
             if ($upArray) {

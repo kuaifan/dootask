@@ -1057,6 +1057,9 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                         min-width: 100%;
                         min-height: 100%;
                     }
+                    html[data-platform="desktop"] {
+                        background-color: #0D0D0D;
+                    }
                     .child-view {
                         background-color: #fff;
                     }

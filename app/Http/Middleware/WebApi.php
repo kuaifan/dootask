@@ -22,6 +22,7 @@ class WebApi
         // 为每个请求生成唯一ID
         $request->requestId = RequestContext::generateRequestId();
         RequestContext::set('start_time', microtime(true));
+        RequestContext::set('header_language', $request->header('language'));
 
         // 加载Doo类
         Doo::load();

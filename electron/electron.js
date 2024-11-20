@@ -17,6 +17,7 @@ const {
     BrowserWindow
 } = require('electron')
 const {autoUpdater} = require("electron-updater")
+const Store = require("electron-store");
 const loger = require("electron-log");
 const electronConf = require('electron-config')
 const userConf = new electronConf()
@@ -29,6 +30,7 @@ const utils = require('./utils');
 const config = require('./package.json');
 const electronMenu = require("./electron-menu");
 const spawn = require("child_process").spawn;
+const store = new Store();
 
 const isMac = process.platform === 'darwin'
 const isWin = process.platform === 'win32'
@@ -133,6 +135,7 @@ function createMainWindow() {
         minHeight: 360,
         center: true,
         autoHideMenuBar: true,
+        backgroundColor: utils.getDefaultBackgroundColor(),
         webPreferences: {
             preload: path.join(__dirname, 'electron-preload.js'),
             webSecurity: true,
@@ -276,6 +279,7 @@ function preCreateChildWindow() {
         show: false,
         parent: mainWindow,
         autoHideMenuBar: true,
+        backgroundColor: utils.getDefaultBackgroundColor(),
         webPreferences: {
             preload: path.join(__dirname, 'electron-preload.js'),
             webSecurity: true,
@@ -328,6 +332,7 @@ function createChildWindow(args) {
             show: false,
             parent: mainWindow,
             autoHideMenuBar: true,
+            backgroundColor: utils.getDefaultBackgroundColor(),
             webPreferences: Object.assign({
                 preload: path.join(__dirname, 'electron-preload.js'),
                 webSecurity: true,
@@ -499,6 +504,7 @@ function createWebTabWindow(args) {
             autoHideMenuBar: true,
             titleBarStyle: 'hidden',
             titleBarOverlay,
+            backgroundColor: utils.getDefaultBackgroundColor(),
             webPreferences: Object.assign({
                 preload: path.join(__dirname, 'electron-preload.js'),
                 webSecurity: true,
@@ -1263,6 +1269,23 @@ ipcMain.on('openNotification', (event, args) => {
     utils.showNotification(args, mainWindow)
     event.returnValue = "ok"
 })
+
+/**
+ * 保存缓存
+ */
+ipcMain.on('setStore', (event, args) => {
+    if (utils.isJson(args)) {
+        store.set(args.key, args.value)
+    }
+    event.returnValue = "ok"
+})
+
+/**
+ * 获取缓存
+ */
+ipcMain.handle('getStore', (event, args) => {
+    return store.get(args)
+});
 
 //================================================================
 // Update
