@@ -18,7 +18,7 @@
                     :touch-content-blur="false"
                     class-name="chat-quick-emoji-wrapper scrollbar-hidden">
                     <li v-for="item in emojiQuickItems" @click="onEmojiQuick(item)">
-                        <img :title="item.name" :alt="item.name" :src="item.src"/>
+                        <Imgs :title="item.name" :alt="item.name" :src="item.src"/>
                     </li>
                 </Scrollbar>
             </EPopover>
