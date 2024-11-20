@@ -5,8 +5,10 @@ const dayjs = require("dayjs");
 const http = require('http')
 const https = require('https')
 const crypto = require('crypto')
-const {shell, dialog, session, Notification} = require("electron");
+const {shell, dialog, session, Notification, nativeTheme} = require("electron");
 const loger = require("electron-log");
+const Store = require("electron-store");
+const store = new Store();
 
 const utils = {
     /**
@@ -658,6 +660,30 @@ const utils = {
                 options.hash = hash
             }
             browser.loadFile('./public/index.html', options).then(_ => { }).catch(_ => { })
+        }
+    },
+
+    /**
+     * 获取主题名称
+     * @returns {string|*}
+     */
+    getThemName() {
+        const themeConf = store.get("themeConf");
+        if (["dark", "light"].includes(themeConf)) {
+            return themeConf;
+        }
+        return nativeTheme.shouldUseDarkColors ? "dark" : "light";
+    },
+
+    /**
+     * 获取默认背景颜色
+     * @returns {string}
+     */
+    getDefaultBackgroundColor() {
+        if (utils.getThemName() === "dark") {
+            return "#0D0D0D";
+        } else {
+            return "#FFFFFF";
         }
     }
 }

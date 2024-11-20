@@ -1,7 +1,7 @@
 <template>
     <div id="app">
         <keep-alive>
-            <router-view class="child-view"></router-view>
+            <router-view class="child-view" @hook:mounted.once="onRouterViewMounted"></router-view>
         </keep-alive>
 
         <!--任务操作-->
@@ -268,6 +268,10 @@ export default {
                     $A.eeuiAppSendMessage(item);
                 })
             }
+        },
+
+        onRouterViewMounted() {
+            document.documentElement.setAttribute("data-platform", $A.isElectron ? "desktop" : $A.isEEUiApp ? "app" : "web")
         },
 
         /**

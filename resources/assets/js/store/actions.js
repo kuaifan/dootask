@@ -472,6 +472,11 @@ export default {
                 action: 'updateTheme',
                 themeName: state.themeName,
             });
+        } else if ($A.isElectron) {
+            $A.Electron.sendMessage('setStore', {
+                key: 'themeConf',
+                value: state.themeConf
+            });
         }
     },
 
