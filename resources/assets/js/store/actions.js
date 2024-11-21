@@ -3439,9 +3439,6 @@ export default {
                     break;
 
                 case 'done':
-                    if (data.text) {
-                        Store.set('dialogMsgChange', data);
-                    }
                     const index = state.dialogSseList.findIndex(item => sse === item.sse)
                     if (index > -1) {
                         state.dialogSseList.splice(index, 1)

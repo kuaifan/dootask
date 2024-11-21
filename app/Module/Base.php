@@ -960,19 +960,49 @@ class Base
     /**
      * 判断是否二维数组
      * @param $array
-     * @param bool $strict 严格模式，是否每个元素都是数组
+     * @param bool $strict 严格模式：要求每个元素都是数组 且 索引连续
      * @return bool
+     *
+     * // 严格模式测试
+     * $arr1 = [[1], [2]];                  // true
+     * $arr2 = ['a' => [1], 'b' => [2]];    // false（非连续数字索引）
+     * $arr3 = [[1], 2];                    // false（含非数组元素）
+     * $arr4 = [1, 2];                      // false（全部非数组元素）
+     * $arr5 = [];                          // false（空数组）
+     *
+     * // 非严格模式测试 ($strict = false)
+     * $arr6 = [[1], 2, [3]];              // true（包含数组元素即可）
+     * $arr7 = ['a' => [1], 'b' => 2];     // true（包含数组元素即可）
      */
     public static function isTwoArray($array, bool $strict = true)
     {
-        if (!is_array($array)) {
+        if (!is_array($array) || empty($array)) {
             return false;
         }
         $count = count(array_filter($array, 'is_array'));
         if ($strict) {
-            return $count === count($array);
+            return $count === count($array) && Base::arrayIsList($array);
         }
         return $count > 0;
+    }
+
+    /**
+     * 判断数组是否为 list
+     * @param array $array
+     * @return bool
+     */
+    public static function arrayIsList(array $array): bool
+    {
+        if ([] === $array || $array === array_values($array)) {
+            return true;
+        }
+        $nextKey = -1;
+        foreach ($array as $k => $v) {
+            if ($k !== ++$nextKey) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
