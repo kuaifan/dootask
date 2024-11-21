@@ -701,7 +701,7 @@ class WebSocketDialogMsg extends AbstractModel
             $key = '';
             switch ($this->type) {
                 case 'text':
-                    if (!preg_match("/<span[^>]*?data-quick-key=([\"'])(.*?)\\1[^>]*?>/is", $this->msg['text'])) {
+                    if (!preg_match("/<span[^>]*?data-quick-key=([\"'])([^\"']+?)\\1[^>]*?>/is", $this->msg['text'])) {
                         $key = strip_tags($this->msg['text']);
                     }
                     break;
@@ -880,7 +880,7 @@ class WebSocketDialogMsg extends AbstractModel
             $text = str_replace($matchs[0][$key], "[:{$matchChar[1]}:{$keyId}:{$matchValye[1]}:]", $text);
         }
         // 处理快捷消息
-        preg_match_all("/<span[^>]*?data-quick-key=([\"'])(.*?)\\1[^>]*?>(.*?)<\/span>/is", $text, $matchs);
+        preg_match_all("/<span[^>]*?data-quick-key=([\"'])([^\"']+?)\\1[^>]*?>(.*?)<\/span>/is", $text, $matchs);
         foreach ($matchs[0] as $key => $str) {
             $quickKey = $matchs[2][$key];
             $quickLabel = $matchs[3][$key];
@@ -900,7 +900,7 @@ class WebSocketDialogMsg extends AbstractModel
             }
         }
         // 处理链接标签
-        preg_match_all("/<a[^>]*?href=([\"'])(.*?)\\1[^>]*?>(.*?)<\/a>/is", $text, $matchs);
+        preg_match_all("/<a[^>]*?href=([\"'])([^\"']+?)\\1[^>]*?>(.*?)<\/a>/is", $text, $matchs);
         foreach ($matchs[0] as $key => $str) {
             $herf = $matchs[2][$key];
             $title = $matchs[3][$key] ?: $herf;

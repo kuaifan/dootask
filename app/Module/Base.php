@@ -876,7 +876,7 @@ class Base
      */
     public static function formatContentImg($content)
     {
-        $pattern = '/<img(.*?)src=("|\')(.*?)\2/is';
+        $pattern = '/<img([^>]*?)src=(["\'])([^"\']+?)\2/i';
         if (preg_match($pattern, $content)) {
             preg_match_all($pattern, $content, $matchs);
             foreach ($matchs[3] as $index => $value) {

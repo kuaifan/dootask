@@ -86,7 +86,7 @@ class BotReceiveMsgTask extends AbstractTask
         if ($this->mention) {
             $original = preg_replace("/<span class=\"mention user\" data-id=\"(\d+)\">(.*?)<\/span>/", "", $original);
         }
-        if (preg_match("/<span[^>]*?data-quick-key=([\"'])(.*?)\\1[^>]*?>(.*?)<\/span>/is", $original, $match)) {
+        if (preg_match("/<span[^>]*?data-quick-key=([\"'])([^\"']+?)\\1[^>]*?>(.*?)<\/span>/is", $original, $match)) {
             $command = $match[2];
             if (str_starts_with($command, '%3A.')) {
                 $command = ":" . substr($command, 4);
