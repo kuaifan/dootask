@@ -500,6 +500,13 @@
                             </Select>
                         </template>
                     </Input>
+                    <div v-if="delayTaskQuick.length > 0" class="form-tip delay-task-quick-select">
+                        <span>{{$L('快捷选择')}}:</span>
+                        <em
+                            v-for="(item, index) in delayTaskQuick"
+                            :key="index"
+                            @click="onTaskQuick(item.time, item.type)">{{$L(item.name)}}</em>
+                    </div>
                 </FormItem>
                 <FormItem :label="$L('延期备注')" prop="remark">
                     <Input type="textarea" v-model="delayTaskForm.remark" :placeholder="$L('请输入修改备注')"></Input>
@@ -527,6 +534,22 @@
     </div>
 </template>
 
+<style lang="scss">
+.delay-task-quick-select {
+    > span {
+        margin-right: 4px;
+    }
+    > em {
+        margin-right: 4px;
+        cursor: pointer;
+        color: #2b85e4;
+        font-style: normal;
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+</style>
 <script>
 import {mapState} from "vuex";
 import TaskPriority from "./TaskPriority";
@@ -644,9 +667,10 @@ export default {
                 time: "24",
                 remark: ""
             },
+            delayTaskQuick: [],
             delayTaskRule: {
                 time: [
-                    { required: true,  message: this.$L('请输入时长'), trigger: 'blur' },
+                    { required: true,  message: this.$L('请输入时长'), trigger: 'blur', type: 'number' },
                 ],
                 remark: [
                     { required: true, message: this.$L('请输入备注'), trigger: 'blur' },
@@ -1799,6 +1823,12 @@ export default {
         dropDeadline(command) {
             switch (command) {
                 case 1:
+                    this.delayTaskQuick = [
+                        {time: 1, type: 'day', name: '1天'},
+                        {time: 2, type: 'day', name: '2天'},
+                        {time: 3, type: 'day', name: '3天'},
+                        {time: 5, type: 'day', name: '5天'},
+                    ];
                     this.delayTaskShow = true;
                     break;
                 case 2:
@@ -1854,6 +1884,11 @@ export default {
 
         updateVisible() {
             this.updateData(['visibility', 'visibility_appointor'])
+        },
+
+        onTaskQuick(time, type) {
+            this.$set(this.delayTaskForm, 'time', time)
+            this.$set(this.delayTaskForm, 'type', type)
         }
     }
 }

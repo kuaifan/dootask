@@ -132,7 +132,6 @@ class SystemController extends AbstractController
         $setting['auto_archived'] = $setting['auto_archived'] ?: 'close';
         $setting['archived_day'] = floatval($setting['archived_day']) ?: 7;
         $setting['task_visible'] = $setting['task_visible'] ?: 'close';
-        $setting['task_default_time'] = $setting['task_default_time'] ? Base::json2array($setting['task_default_time']) : ['09:00', '18:00'];
         $setting['all_group_mute'] = $setting['all_group_mute'] ?: 'open';
         $setting['all_group_autoin'] = $setting['all_group_autoin'] ?: 'yes';
         $setting['user_private_chat_mute'] = $setting['user_private_chat_mute'] ?: 'open';

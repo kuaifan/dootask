@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Module\Base;
+use App\Module\Timer;
 
 /**
  * App\Models\Setting
@@ -46,6 +47,9 @@ class Setting extends AbstractModel
         switch ($this->name) {
             case 'system':
                 $value['system_alias'] = $value['system_alias'] ?: env('APP_NAME');
+                if (!is_array($value['task_default_time']) || count($value['task_default_time']) != 2 || !Timer::isTime($value['task_default_time'][0]) || !Timer::isTime($value['task_default_time'][1])) {
+                    $value['task_default_time'] = ['09:00', '18:00'];
+                }
                 break;
             case 'fileSetting':
                 $value['permission_pack_type'] = $value['permission_pack_type'] ?: 'all';
