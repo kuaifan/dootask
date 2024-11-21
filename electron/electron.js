@@ -289,9 +289,14 @@ function preCreateChildWindow() {
         }
     });
 
+    // 关闭事件
     browser.addListener('closed', () => {
         preloadWindow = null;
     })
+
+    // 设置 UA
+    const originalUA = browser.webContents.session.getUserAgent() || browser.webContents.getUserAgent()
+    browser.webContents.setUserAgent(originalUA + " SubTaskWindow/" + process.platform + "/" + os.arch() + "/1.0");
 
     utils.loadUrlOrFile(browser, devloadUrl, 'preload')
 
