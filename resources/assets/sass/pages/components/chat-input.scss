@@ -562,55 +562,64 @@
             }
         }
     }
-    .chat-emoji-menu {
-        width: 376px;
-        height: 40px;
-        line-height: 40px;
-        background-color: #f2f4f7;
-        display: flex;
-        align-items: center;
-        overflow: auto;
 
-        &::-webkit-scrollbar {
-            display: none;
-        }
+    .chat-emoji-menu-wrap {
+        position: relative;
 
-        > li {
-            list-style: none;
-            cursor: pointer;
+        .chat-emoji-menu {
+            width: 376px;
+            height: 40px;
+            line-height: 40px;
+            background-color: #f2f4f7;
             display: flex;
             align-items: center;
-            height: 100%;
+            overflow: auto;
 
-            &.active {
-                background-color: #fff;
+            &::-webkit-scrollbar {
+                display: none;
             }
 
-            > span {
-                padding: 0 13px;
-                font-size: 22px;
-            }
+            > li {
+                list-style: none;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                height: 100%;
 
-            > i {
-                width: 48px;
-                font-size: 18px;
-                text-align: center;
-            }
+                &.active {
+                    background-color: #fff;
+                }
 
-            > img {
-                width: 24px;
-                height: 24px;
-                padding: 0 12px;
-                box-sizing: content-box;
+                > span {
+                    padding: 0 13px;
+                    font-size: 22px;
+                }
+
+                > i {
+                    width: 48px;
+                    font-size: 18px;
+                    text-align: center;
+                }
+
+                > img {
+                    width: 24px;
+                    height: 24px;
+                    padding: 0 12px;
+                    box-sizing: content-box;
+                }
             }
         }
 
         .left-btn,.right-btn{
-            position: absolute !important;
-            height: 40px;
+            position: absolute;
+            height: 100%;
             background: #f2f4f7 !important;
             width: 34px;
             z-index: 3;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .left-btn{
