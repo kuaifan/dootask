@@ -1540,7 +1540,11 @@ export default {
         },
 
         sendDialogMsg(msgText = null) {
-            if (this.msgFile.length > 0) {
+            if (typeof msgText === 'string' && msgText) {
+                this.autoSaveTextDraft();
+                this.$refs.dialog.sendMsg(msgText);
+            } else if (this.msgFile.length > 0) {
+                this.autoSaveTextDraft();
                 this.$refs.dialog.sendFileMsg(this.msgFile.map(file => Object.assign(file, {
                     ajaxExtraData: {
                         image_attachment: this.imageAttachment ? 1 : 0
@@ -1548,11 +1552,19 @@ export default {
                 })));
             } else if (this.msgText) {
                 this.$refs.dialog.sendMsg(this.msgText);
-            } else if (typeof msgText === 'string' && msgText) {
-                this.$refs.dialog.sendMsg(msgText);
             }
             this.msgFile = [];
             this.msgText = "";
+        },
+
+        autoSaveTextDraft() {
+            if (!this.msgText) {
+                return;
+            }
+            this.$store.dispatch("saveDialogDraft", {
+                id: this.taskDetail.dialog_id,
+                extra_draft_content: this.msgText
+            })
         },
 
         taskPasteDrag(e, type) {

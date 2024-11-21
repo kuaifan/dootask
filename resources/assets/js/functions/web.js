@@ -601,6 +601,17 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
         },
 
         /**
+         * 去除html内容中无效的部分
+         * @param content
+         * @returns {string}
+         */
+        filterInvalidLine(content) {
+            return `${content}`
+                .replace(/^(<p>\s*<\/p>)+|(<p>\s*<\/p>)+$/gi, '')
+                .replace(/^(<p><br\/*><\/p>)+|(<p><br\/*><\/p>)+$/gi, '')
+        },
+
+        /**
          * 加载 VConsole 日志组件
          * @param key
          */

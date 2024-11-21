@@ -521,7 +521,7 @@ export default {
         },
 
         sendClass() {
-            if (this.filterInvalidLine(this.value)) {
+            if ($A.filterInvalidLine(this.value)) {
                 return 'sender';
             }
             if (this.recordReady) {
@@ -590,7 +590,7 @@ export default {
                 }
             }
             if (!this.simpleMode) {
-                this.$store.dispatch("saveDialogDraft", {id: this.dialogId, extra_draft_content: this.filterInvalidLine(val)})
+                this.$store.dispatch("saveDialogDraft", {id: this.dialogId, extra_draft_content: val})
             }
         },
 
@@ -1157,7 +1157,7 @@ export default {
             this.emojiQuickShow = false;
             //
             setTimeout(_ => {
-                if (this.filterInvalidLine(this.value) === '') {
+                if ($A.filterInvalidLine(this.value) === '') {
                     return
                 }
                 this.hidePopover('send')
@@ -1270,12 +1270,11 @@ export default {
 
         onEmojiQuick(item) {
             if (item.type === 'online') {
-                this.$emit('input', "")
                 this.$emit('on-send', `<img src="${item.src}"/>`)
             } else {
-                this.$emit('input', "")
                 this.$emit('on-send', `<img class="emoticon" data-asset="${item.asset}" data-name="${item.name}" src="${item.src}"/>`)
             }
+            this.$emit('input', "")
             this.emojiQuickShow = false
             this.focus()
         },
@@ -1828,11 +1827,6 @@ export default {
                 e.preventDefault()
                 this.$emit('on-file', files)
             }
-        },
-
-        filterInvalidLine(content) {
-            let value = (content + '').replace(/^(<p>\s*<\/p>)+|(<p>\s*<\/p>)+$/gi, '')
-            return value.replace(/^(<p><br\/*><\/p>)+|(<p><br\/*><\/p>)+$/gi, '')
         },
 
         updateTools() {

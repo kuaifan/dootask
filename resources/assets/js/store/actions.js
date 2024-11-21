@@ -3044,6 +3044,7 @@ export default {
      * @param data {id, extra_draft_content}
      */
     saveDialogDraft({state, dispatch}, data) {
+        data.extra_draft_content = $A.filterInvalidLine(data.extra_draft_content)
         state.dialogDraftTimer[data.id] && clearInterval(state.dialogDraftTimer[data.id])
         state.dialogDraftTimer[data.id] = setTimeout(_ => {
             if (state.dialogId != data.id) {
