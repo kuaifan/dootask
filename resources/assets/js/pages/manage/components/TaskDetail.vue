@@ -646,7 +646,7 @@ export default {
             delayTaskQuicks: [],
             delayTaskForm: {
                 type: "hour",
-                time: "24",
+                time: 24,
                 remark: ""
             },
             delayTaskRule: {
@@ -668,8 +668,8 @@ export default {
             this.navActive = navActive;
         }
         $A.IDBJson('delayTaskForm').then(data => {
+            data.time && this.$set(this.delayTaskForm, 'time', Math.round(time * 100) / 100);
             data.type && this.$set(this.delayTaskForm, 'type', data.type);
-            data.time && this.$set(this.delayTaskForm, 'time', data.time);
         });
     },
 
@@ -1811,11 +1811,11 @@ export default {
                         {time: 5, type: 'day', name: '5天'},
                     ];
                     const offDuty = $A.dayjs(`${$A.dayjs().format('YYYY-MM-DD')} ${this.systemConfig.task_default_time[1]}`)
-                    const diffEnd = offDuty.diff($A.dayjs(this.taskDetail.end_at), 'hour', true).toFixed(1)
+                    const diffEnd = offDuty.diff($A.dayjs(this.taskDetail.end_at), 'hour', true).toFixed(2)
                     const diffEnd2 = offDuty.diff($A.dayjs(this.taskDetail.end_at).subtract(1, 'day'), 'day', true).toFixed(2)
                     const quickEnd = {time: diffEnd, type: 'hour', name: `今天下班前`}
                     const quickEnd2 = {time: diffEnd2, type: 'day', name: `明天下班前`}
-                    if (quickEnd.time > 24) {
+                    if (quickEnd.time >= 24) {
                         quickEnd.type = 'day'
                         quickEnd.time = (quickEnd.time / 24).toFixed(2)
                     }
@@ -1837,7 +1837,15 @@ export default {
                 if (!valid) {
                     return
                 }
-                const endAt = $A.dayjs(this.taskDetail.end_at).add(this.delayTaskForm.time, this.delayTaskForm.type)
+                let {type, time} = this.delayTaskForm
+                if (type === 'day') {
+                    type = 'minute'
+                    time = time * 24 * 60
+                } else if (type === 'hour') {
+                    type = 'minute'
+                    time = time * 60
+                }
+                const endAt = $A.dayjs(this.taskDetail.end_at).add(time, type)
                 this.updateData('times', {
                     start_at: this.taskDetail.start_at,
                     end_at: endAt.format('YYYY-MM-DD HH:mm:ss'),
@@ -1879,7 +1887,7 @@ export default {
         },
 
         onTaskQuick(time, type) {
-            this.$set(this.delayTaskForm, 'time', time)
+            this.$set(this.delayTaskForm, 'time', Math.round(time * 100) / 100)
             this.$set(this.delayTaskForm, 'type', type)
         }
     }

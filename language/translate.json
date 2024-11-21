@@ -11304,42 +11304,6 @@
         "ru": "По умолчанию"
     },
     {
-        "key": "3天",
-        "zh": "",
-        "zh-CHT": "3天",
-        "en": "3 days",
-        "ko": "3일",
-        "ja": "3日間",
-        "de": "3 Tage",
-        "fr": "3 jours",
-        "id": "3 hari",
-        "ru": "3 дня"
-    },
-    {
-        "key": "5天",
-        "zh": "",
-        "zh-CHT": "5天",
-        "en": "5 days",
-        "ko": "5일",
-        "ja": "5日間",
-        "de": "5 Tage",
-        "fr": "5 jours",
-        "id": "5 hari",
-        "ru": "5 дней"
-    },
-    {
-        "key": "7天",
-        "zh": "",
-        "zh-CHT": "7天",
-        "en": "7 days",
-        "ko": "7일",
-        "ja": "7日間",
-        "de": "7 Tage",
-        "fr": "7 jours",
-        "id": "7 hari",
-        "ru": "7 дней"
-    },
-    {
         "key": "一",
         "zh": "",
         "zh-CHT": "一",
@@ -26974,5 +26938,29 @@
         "fr": "Cette fonctionnalité est désactivée",
         "id": "Fitur ini dinonaktifkan",
         "ru": "Эта функция отключена"
+    },
+    {
+        "key": "今天下班前",
+        "zh": "",
+        "zh-CHT": "今天下班前",
+        "en": "Today EOD",
+        "ko": "오늘 업무종료",
+        "ja": "本日終業まで",
+        "de": "Heute COB",
+        "fr": "Aujourd'hui COB",
+        "id": "Hari ini COB",
+        "ru": "Сегодня КРД"
+    },
+    {
+        "key": "明天下班前",
+        "zh": "",
+        "zh-CHT": "明天下班前",
+        "en": "Tomorrow EOD",
+        "ko": "내일 업무종료",
+        "ja": "明日終業まで",
+        "de": "Morgen COB",
+        "fr": "Demain COB",
+        "id": "Besok COB",
+        "ru": "Завтра КРД"
     }
 ]
