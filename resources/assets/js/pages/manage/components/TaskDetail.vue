@@ -500,12 +500,9 @@
                             </Select>
                         </template>
                     </Input>
-                    <div v-if="delayTaskQuick.length > 0" class="form-tip delay-task-quick-select">
+                    <div class="form-tip form-quick-select">
                         <span>{{$L('快捷选择')}}:</span>
-                        <em
-                            v-for="(item, index) in delayTaskQuick"
-                            :key="index"
-                            @click="onTaskQuick(item.time, item.type)">{{$L(item.name)}}</em>
+                        <em v-for="(item, index) in delayTaskQuicks" :key="index" @click="onTaskQuick(item.time, item.type)">{{$L(item.name)}}</em>
                     </div>
                 </FormItem>
                 <FormItem :label="$L('延期备注')" prop="remark">
@@ -534,22 +531,6 @@
     </div>
 </template>
 
-<style lang="scss">
-.delay-task-quick-select {
-    > span {
-        margin-right: 4px;
-    }
-    > em {
-        margin-right: 4px;
-        cursor: pointer;
-        color: #2b85e4;
-        font-style: normal;
-        &:hover {
-            text-decoration: underline;
-        }
-    }
-}
-</style>
 <script>
 import {mapState} from "vuex";
 import TaskPriority from "./TaskPriority";
@@ -662,15 +643,15 @@ export default {
             updateParams: {},
 
             delayTaskShow: false,
+            delayTaskQuicks: [],
             delayTaskForm: {
                 type: "hour",
                 time: "24",
                 remark: ""
             },
-            delayTaskQuick: [],
             delayTaskRule: {
                 time: [
-                    { required: true,  message: this.$L('请输入时长'), trigger: 'blur', type: 'number' },
+                    { required: true,  message: this.$L('请输入时长'), trigger: 'blur', pattern: /^\d+(\.\d+)?$/ },
                 ],
                 remark: [
                     { required: true, message: this.$L('请输入备注'), trigger: 'blur' },
@@ -1823,12 +1804,23 @@ export default {
         dropDeadline(command) {
             switch (command) {
                 case 1:
-                    this.delayTaskQuick = [
+                    this.delayTaskQuicks = [
                         {time: 1, type: 'day', name: '1天'},
                         {time: 2, type: 'day', name: '2天'},
                         {time: 3, type: 'day', name: '3天'},
                         {time: 5, type: 'day', name: '5天'},
                     ];
+                    const offDuty = $A.dayjs(`${$A.dayjs().format('YYYY-MM-DD')} ${this.systemConfig.task_default_time[1]}`)
+                    const diffEnd = offDuty.diff($A.dayjs(this.taskDetail.end_at), 'hour', true).toFixed(1)
+                    const diffEnd2 = offDuty.diff($A.dayjs(this.taskDetail.end_at).subtract(1, 'day'), 'day', true).toFixed(2)
+                    const quickEnd = {time: diffEnd, type: 'hour', name: `今天下班前`}
+                    const quickEnd2 = {time: diffEnd2, type: 'day', name: `明天下班前`}
+                    if (quickEnd.time > 24) {
+                        quickEnd.type = 'day'
+                        quickEnd.time = (quickEnd.time / 24).toFixed(2)
+                    }
+                    quickEnd2.time > 0 && this.delayTaskQuicks.unshift(quickEnd2)
+                    quickEnd.time > 0 && this.delayTaskQuicks.unshift(quickEnd)
                     this.delayTaskShow = true;
                     break;
                 case 2:

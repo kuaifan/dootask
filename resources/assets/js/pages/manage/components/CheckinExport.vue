@@ -15,7 +15,7 @@
                     format="yyyy/MM/dd"
                     style="width:100%"
                     :placeholder="$L('请选择签到日期')"/>
-                <div class="form-tip checkin-export-quick-select">
+                <div class="form-tip form-quick-select">
                     <span>{{$L('快捷选择')}}:</span>
                     <em @click="formData.date=dateShortcuts('prev')">{{$L('上个月')}}</em>
                     <em @click="formData.date=dateShortcuts('this')">{{$L('这个月')}}</em>
@@ -28,7 +28,7 @@
                     format="HH:mm"
                     style="width:100%"
                     :placeholder="$L('请选择班次时间')"/>
-                <div class="form-tip checkin-export-quick-select">
+                <div class="form-tip form-quick-select">
                     <span>{{$L('快捷选择')}}:</span>
                     <em @click="formData.time=['8:30', '18:00']">8:30-18:00</em>
                     <em @click="formData.time=['9:00', '18:00']">9:00-18:00</em>
@@ -43,22 +43,6 @@
     </Modal>
 </template>
 
-<style lang="scss">
-.checkin-export-quick-select {
-    > span {
-        margin-right: 4px;
-    }
-    > em {
-        margin-right: 4px;
-        cursor: pointer;
-        color: #2b85e4;
-        font-style: normal;
-        &:hover {
-            text-decoration: underline;
-        }
-    }
-}
-</style>
 <script>
 import UserSelect from "../../../components/UserSelect.vue";
 import {mapState} from "vuex";
