@@ -518,6 +518,7 @@ export default {
             searchText: '',
 
             addColumnShow: false,
+            addColumnLoad: false,
             addColumnName: '',
 
             sortData: [],
@@ -1047,21 +1048,25 @@ export default {
 
         addColumnSubmit() {
             let name = this.addColumnName.trim();
-            if (name === '') {
+            if (name === '' || this.addColumnLoad) {
                 return;
             }
+            this.addColumnLoad = true
             this.$store.dispatch("call", {
                 url: 'project/column/add',
                 data: {
                     project_id: this.projectId,
                     name: name,
                 },
+                spinner: 600,
             }).then(({data, msg}) => {
                 $A.messageSuccess(msg);
                 this.addColumnName = '';
                 this.$store.dispatch("saveColumn", data);
             }).catch(({msg}) => {
                 $A.modalError(msg);
+            }).finally(() => {
+                this.addColumnLoad = false;
             });
         },
 
