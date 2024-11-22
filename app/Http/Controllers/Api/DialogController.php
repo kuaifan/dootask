@@ -280,21 +280,15 @@ class DialogController extends AbstractController
         $dialog = WebSocketDialog::checkDialog($dialog_id);
         //
         if ($getuser === 1) {
-            $data = $dialog->dialogUser->toArray();
-            $array = [];
-            foreach ($data as $item) {
-                $res = User::userid2basic($item['userid']);
-                if ($res) {
-                    $array[] = array_merge($item, $res->toArray());
-                }
-            }
-            $array = array_filter($array, function ($item) {
+            $data = $dialog->dialogUserBuilder()->get();
+            $array = array_filter($data->toArray(), function ($item) {
                 return $item['userid'] > 0;
             });
         } else {
             $data = WebSocketDialogUser::select(['web_socket_dialog_users.*', 'users.bot'])
                 ->join('users', 'web_socket_dialog_users.userid', '=', 'users.userid')
                 ->where('web_socket_dialog_users.dialog_id', $dialog_id)
+                ->whereNull('users.disable_at')
                 ->orderBy('web_socket_dialog_users.id')
                 ->get();
             $array = $data->toArray();
@@ -421,12 +415,11 @@ class DialogController extends AbstractController
         if ($dialog->type !== 'user') {
             return Base::retError("会话类型错误");
         }
-        $dialogUser = $dialog->dialogUser->where('userid', '!=', $user->userid)->first();
+        $dialogUser = $dialog->dialogUserBuilder(['tel'])->where('users.userid', '!=', $user->userid)->first();
         if (empty($dialogUser)) {
             return Base::retError("会话对象不存在");
         }
-        $callUser = User::find($dialogUser->userid);
-        if (empty($callUser) || empty($callUser->tel)) {
+        if (empty($dialogUser->tel)) {
             return Base::retError("对方未设置联系电话");
         }
         if ($user->isTemp()) {
@@ -435,14 +428,14 @@ class DialogController extends AbstractController
         //
         $add = null;
         $res = WebSocketDialogMsg::sendMsg(null, $dialog->id, 'notice', [
-            'notice' => $user->nickname . " 查看了 " . $callUser->nickname . " 的联系电话"
+            'notice' => $user->nickname . " 查看了 " . $dialogUser->nickname . " 的联系电话"
         ]);
         if (Base::isSuccess($res)) {
             $add = $res['data'];
         }
         //
         return Base::retSuccess("success", [
-            'tel' => $callUser->tel,
+            'tel' => $dialogUser->tel,
             'add' => $add ?: null
         ]);
     }

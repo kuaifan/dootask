@@ -78,6 +78,23 @@ class WebSocketDialog extends AbstractModel
         return $this->hasMany(WebSocketDialogUser::class, 'dialog_id', 'id');
     }
 
+    /**
+     * 获取对话成员（剔除离职）
+     * @param $addField
+     * @return User|\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
+     */
+    public function dialogUserBuilder($addField = [])
+    {
+        $columns = array_map(function ($column) {
+            return "users." . $column;
+        }, array_merge(User::$basicField, $addField));
+        $columns[] = "du.*";
+        return User::select($columns)
+            ->join('web_socket_dialog_users as du', 'users.userid', '=', 'du.userid')
+            ->where('du.dialog_id', $this->id)
+            ->whereNull('users.disable_at');
+    }
+
 
     /**
      * 获取对话列表
