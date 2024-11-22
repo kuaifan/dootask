@@ -668,7 +668,7 @@ export default {
             this.navActive = navActive;
         }
         $A.IDBJson('delayTaskForm').then(data => {
-            data.time && this.$set(this.delayTaskForm, 'time', Math.round(time * 100) / 100);
+            data.time && this.$set(this.delayTaskForm, 'time', Math.round(data.time * 100) / 100);
             data.type && this.$set(this.delayTaskForm, 'type', data.type);
         });
     },
