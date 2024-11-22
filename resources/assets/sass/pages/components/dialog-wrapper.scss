@@ -818,36 +818,23 @@
 
                                 ol,
                                 ul {
+                                    padding-left: 1.5em;
+                                    list-style-type: none;
+
                                     li {
-                                        display: flex;
-                                        list-style-type: none;
 
                                         &::before {
-                                            flex-shrink: 0;
-                                            white-space: nowrap;
-                                            width: 1.2em;
+                                            position: absolute;
+                                            left: 0;
+                                            width: 1.5em;
                                             color: #0088ff;
-                                            text-align: left;
-                                            margin-right: 0.2em;
-                                        }
-
-                                        &[data-list=unchecked] {
-                                            &::before {
-                                                color: #777;
-                                            }
+                                            display: flex;
+                                            justify-content: center;
+                                            align-items: center;
                                         }
 
                                         .mention {
                                             display: contents;
-                                        }
-                                    }
-                                }
-
-                                ul {
-                                    li {
-                                        &::before {
-                                            content: '\2022';
-                                            font-weight: 900;
                                         }
                                     }
                                 }
@@ -857,36 +844,43 @@
                                         counter-reset: list-1 list-2 list-3 list-4 list-5 list-6 list-7 list-8 list-9;
                                         counter-increment: list-0;
 
-                                        &:before {
-                                            width: auto;
-                                            min-width: 1.2em;
-                                            content: counter(list-0, decimal) '. ';
+                                        &::before {
+                                            content: counter(list-0, decimal) ".";
                                         }
 
                                         &[data-list=bullet] {
-                                            &:before {
+                                            &::before {
                                                 content: '\2022';
                                                 font-weight: 900;
-                                                text-align: center;
+                                                transform: scale(1.12);
                                             }
                                         }
 
                                         &[data-list=checked],
                                         &[data-list=unchecked] {
-                                            &:before {
+                                            &::before {
                                                 font-family: "taskfont", "serif" !important;
                                                 font-size: 14px;
                                                 content: "\e6ed";
-                                                font-weight: normal;
                                                 transform: scale(1.12);
-                                                transform-origin: left top;
                                             }
                                         }
 
                                         &[data-list=unchecked] {
-                                            &:before {
+                                            &::before {
                                                 content: "\e6f1";
+                                                color: #777;
                                             }
+                                        }
+                                    }
+                                }
+
+                                ul {
+                                    li {
+                                        &::before {
+                                            content: '\2022';
+                                            font-weight: 900;
+                                            transform: scale(1.12);
                                         }
                                     }
                                 }
