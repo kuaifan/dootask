@@ -7,8 +7,9 @@ use Cache;
 use Request;
 use Redirect;
 use Response;
-use App\Module\Doo;
 use App\Models\File;
+use App\Models\UserTransfer;
+use App\Module\Doo;
 use App\Module\Base;
 use App\Module\Extranet;
 use App\Module\RandomColor;
@@ -24,6 +25,7 @@ use App\Tasks\CloseMeetingRoomTask;
 use App\Tasks\UnclaimedTaskRemindTask;
 use Hhxsv5\LaravelS\Swoole\Task\Task;
 use Laravolt\Avatar\Avatar;
+use Swoole\Coroutine;
 
 
 /**
@@ -257,6 +259,27 @@ class IndexController extends InvokeController
         Task::deliver(new CloseMeetingRoomTask());
 
         return "success";
+    }
+
+    /**
+     * 迁移辅助路由
+     * @return array
+     */
+    public function migration__userdialog()
+    {
+        if (Request::header('app-key') !== env('APP_KEY')) {
+            return Base::retError("key error");
+        }
+        go(function() {
+            Coroutine::sleep(3);
+            UserTransfer::orderBy('id')->chunkById(10, function ($transfers) {
+                /** @var UserTransfer $transfer */
+                foreach ($transfers as $transfer) {
+                    $transfer->exitDialog();
+                }
+            });
+        });
+        return Base::retSuccess('success');
     }
 
     /**
