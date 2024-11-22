@@ -1115,6 +1115,9 @@ class UsersController extends AbstractController
      * @apiGroup users
      * @apiName umeng__alias
      *
+     * @apiParam {String} action
+     * - update: 更新（默认）
+     * - remove: 删除
      * @apiParam {String} alias           别名
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
@@ -1129,6 +1132,13 @@ class UsersController extends AbstractController
             'alias.required' => '别名不能为空',
             'alias.between:2,20' => '别名的长度在2-20个字符',
         ]);
+        //
+        if ($data['action'] === 'remove') {
+            if ($data['alias']) {
+                UmengAlias::whereAlias($data['alias'])->delete();
+            }
+            return Base::retSuccess('删除成功');
+        }
         //
         if (!in_array(Base::platform(), ['ios', 'android'])) {
             return Base::retError('设备类型错误');

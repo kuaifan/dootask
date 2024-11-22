@@ -122,20 +122,29 @@ export default {
             handler() {
                 this.$store.dispatch("websocketConnection");
                 //
-                if (this.userId > 0 && this.$isEEUiApp) {
-                    $A.eeuiAppSendMessage({
-                        action: 'initApp',
-                        apiUrl: $A.apiUrl(''),
-                        userid: this.userId,
-                        token: this.userToken,
-                        userAgent: window.navigator.userAgent,
-                    });
-                    setTimeout(_ => {
+                if (this.$isEEUiApp) {
+                    this.umengAliasTimer && clearTimeout(this.umengAliasTimer)
+                    if (this.userId > 0) {
                         $A.eeuiAppSendMessage({
-                            action: 'setUmengAlias',
+                            action: 'initApp',
+                            apiUrl: $A.apiUrl(''),
+                            userid: this.userId,
+                            token: this.userToken,
+                            userAgent: window.navigator.userAgent,
+                        });
+                        this.umengAliasTimer = setTimeout(_ => {
+                            this.umengAliasTimer = null;
+                            $A.eeuiAppSendMessage({
+                                action: 'setUmengAlias',
+                                url: $A.apiUrl('users/umeng/alias')
+                            });
+                        }, 6000)
+                    } else {
+                        $A.eeuiAppSendMessage({
+                            action: 'delUmengAlias',
                             url: $A.apiUrl('users/umeng/alias')
                         });
-                    }, 6000)
+                    }
                 }
             },
             immediate: true
