@@ -124,7 +124,7 @@ class EmailNoticeTask extends AbstractTask
     private function sendUserEmail(int $userId, string $dialogType, Carbon $startTime, Carbon $endTime): void
     {
         // 验证用户
-        $user = User::find($userId);
+        $user = User::whereDisableAt(null)->find($userId);
         if (!$user || $user->bot || !is_null($user->disable_at) || !Base::isEmail($user->email)) {
             return;
         }

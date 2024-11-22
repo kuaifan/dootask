@@ -191,6 +191,7 @@ class WebSocketDialogMsgTask extends AbstractTask
                 }
                 $langs = User::select(['userid', 'lang'])
                     ->whereIn('userid', $umengUserid)
+                    ->whereDisableAt(null)
                     ->get()
                     ->groupBy('lang')
                     ->map(function($group) {
