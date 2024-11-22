@@ -24,7 +24,7 @@
             </Scrollbar>
         </div>
         <div v-if="!onlyEmoji" class="chat-emoji-menu-wrap">
-            <span v-show="showEmojiMenuScrollLeftBtn" class="left-btn" @click="onEmojiMenuScroll('left')" style="position: absolute; left: 0; bottom: 0;"><i class="taskfont">&#xe72d;</i></span>
+            <span v-show="showEmojiMenuScrollLeftBtn" class="left-btn" @click="onEmojiMenuScroll('left')"><i class="taskfont">&#xe72d;</i></span>
             <ul ref="chatEmojiMenuRef" class="chat-emoji-menu" @scroll="onHandleScroll">
                 <li :class="{active: type === 'emosearch'}" @click="type='emosearch'">
                     <i class="taskfont">&#xe6f8;</i>
@@ -36,7 +36,7 @@
                     <Imgs :title="item.name" :alt="item.name" :src="item.src"/>
                 </li>
             </ul>
-            <span v-show="showEmojiMenuScrollRightBtn" class="right-btn" @click="onEmojiMenuScroll('right')" style="position: absolute; right: 0; bottom: 0;"><i class="taskfont">&#xe733;</i></span>
+            <span v-show="showEmojiMenuScrollRightBtn" class="right-btn" @click="onEmojiMenuScroll('right')"><i class="taskfont">&#xe733;</i></span>
         </div>
     </div>
 </template>
