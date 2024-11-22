@@ -2136,6 +2136,7 @@ export default {
             dispatch("call", {
                 url: 'project/task/add',
                 data: post,
+                spinner: 600,
                 method: 'post',
             }).then(result => {
                 if (result.data.is_visible === 1) {
@@ -2160,6 +2161,7 @@ export default {
             dispatch("call", {
                 url: 'project/task/addsub',
                 data: data,
+                spinner: 600,
             }).then(result => {
                 dispatch("addTaskSuccess", result.data)
                 resolve(result)

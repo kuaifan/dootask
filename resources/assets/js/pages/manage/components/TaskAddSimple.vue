@@ -104,6 +104,8 @@ export default {
     },
     data() {
         return {
+            loadIng: 0,
+
             addData: {
                 name: "",
                 owner: 0,
@@ -205,11 +207,13 @@ export default {
                 $A.messageWarning("请输入任务描述");
                 return;
             }
+            if (this.loadIng > 0) {
+                return;
+            }
             this.loadIng++;
             let type = this.parentId > 0 ? 'taskAddSub' : 'taskAdd';
             this.$store.dispatch(type, this.getData()).then(({msg}) => {
                 $A.messageSuccess(msg);
-                this.loadIng--;
                 this.active = false;
                 this.addData = {
                     name: "",
@@ -226,6 +230,7 @@ export default {
                 }
             }).catch(({msg}) => {
                 $A.modalError(msg);
+            }).finally(() => {
                 this.loadIng--;
             });
         },
