@@ -3660,18 +3660,6 @@
         "ru": "Нажмите, чтобы скопировать ссылку"
     },
     {
-        "key": "自动归档任务",
-        "zh": "",
-        "zh-CHT": "自動歸檔任務",
-        "en": "Automatically archive tasks",
-        "ko": "작업 자동 보관",
-        "ja": "タスクを自動アーカイブ",
-        "de": "Aufgaben automatisch archivieren",
-        "fr": "Archiver automatiquement les tâches",
-        "id": "Arsipkan tugas secara otomatis",
-        "ru": "Автоматически архивировать задачи"
-    },
-    {
         "key": "请输入昵称！",
         "zh": "",
         "zh-CHT": "請輸入暱稱！",

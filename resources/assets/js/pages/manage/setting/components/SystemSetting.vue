@@ -75,7 +75,12 @@
                         </RadioGroup>
                         <div v-if="formDatum.project_invite == 'open'" class="form-tip">{{$L('开启：项目管理员可生成链接邀请成员加入项目。')}}</div>
                     </FormItem>
-                    <FormItem :label="$L('自动归档任务')" prop="autoArchived">
+                </div>
+            </div>
+            <div class="block-setting-box">
+                <h3>{{ $L('任务相关') }}</h3>
+                <div class="form-box">
+                    <FormItem :label="$L('自动归档')" prop="autoArchived">
                         <RadioGroup :value="formDatum.auto_archived" @on-change="formArchived">
                             <Radio label="open">{{$L('开启')}}</Radio>
                             <Radio label="close">{{$L('关闭')}}</Radio>
@@ -90,11 +95,6 @@
                             <div slot="content">{{$L('任务完成 (*) 天后自动归档。', formDatum.archived_day)}}</div>
                         </ETooltip>
                     </FormItem>
-                </div>
-            </div>
-            <div class="block-setting-box">
-                <h3>{{ $L('任务相关') }}</h3>
-                <div class="form-box">
                     <FormItem :label="$L('可见性选项')" prop="taskVisible">
                         <RadioGroup v-model="formDatum.task_visible">
                             <Radio label="open">{{$L('保持')}}</Radio>

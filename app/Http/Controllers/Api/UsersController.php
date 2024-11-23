@@ -130,7 +130,7 @@ class UsersController extends AbstractController
                 return $retError('帐号或密码错误');
             }
             //
-            if (in_array('disable', $user->identity)) {
+            if ($user->isDisable()) {
                 return $retError('帐号已停用...');
             }
             Cache::forget("code::" . $email);
@@ -928,7 +928,7 @@ class UsersController extends AbstractController
                 if ($transferUser->userid === $userInfo->userid) {
                     return Base::retError('不能移交给自己');
                 }
-                if (in_array('disable', $transferUser->identity)) {
+                if ($transferUser->isDisable()) {
                     return Base::retError('交接人已离职，请选择另一个交接人');
                 }
                 break;

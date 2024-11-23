@@ -421,7 +421,7 @@ class User extends AbstractModel
                 throw new ApiException('请登录后继续...', [], -1);
             }
         }
-        if (in_array('disable', $user->identity)) {
+        if ($user->isDisable()) {
             throw new ApiException('帐号已停用...', [], -1);
         }
         if ($identity) {

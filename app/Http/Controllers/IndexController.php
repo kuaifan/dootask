@@ -8,6 +8,7 @@ use Request;
 use Redirect;
 use Response;
 use App\Models\File;
+use App\Models\User;
 use App\Models\UserTransfer;
 use App\Module\Doo;
 use App\Module\Base;
@@ -262,27 +263,6 @@ class IndexController extends InvokeController
     }
 
     /**
-     * 迁移辅助路由
-     * @return array
-     */
-    public function migration__userdialog()
-    {
-        if (Request::header('app-key') !== env('APP_KEY')) {
-            return Base::retError("key error");
-        }
-        go(function() {
-            Coroutine::sleep(3);
-            UserTransfer::orderBy('id')->chunkById(10, function ($transfers) {
-                /** @var UserTransfer $transfer */
-                foreach ($transfers as $transfer) {
-                    $transfer->exitDialog();
-                }
-            });
-        });
-        return Base::retSuccess('success');
-    }
-
-    /**
      * 桌面客户端发布
      */
     public function desktop__publish($name = '')
@@ -518,6 +498,36 @@ class IndexController extends InvokeController
         ]);
         $redirectUrl = Base::fillUrl("fileview/onlinePreview?url=" . urlencode(base64_encode($url)));
         return Redirect::to($redirectUrl, 301);
+    }
+
+    /**
+     * 修复操作离职后续操作(todo 临时，后期删除)
+     * @return array
+     */
+    public function migration__userdialog()
+    {
+        if (Request::header('app-key') !== env('APP_KEY')) {
+            return Base::retError("key error");
+        }
+        go(function() {
+            Coroutine::sleep(3);
+            $handled = [];
+            UserTransfer::orderBy('id')->chunkById(10, function ($transfers) use ($handled) {
+                /** @var UserTransfer $transfer */
+                foreach ($transfers as $transfer) {
+                    if (in_array($transfer->original_userid, $handled)) {
+                        continue;
+                    }
+                    $handled[] = $transfer->original_userid;
+                    //
+                    $user = User::find($transfer->original_userid);
+                    if ($user?->isDisable()) {
+                        $transfer->exitDialog();
+                    }
+                }
+            });
+        });
+        return Base::retSuccess('success');
     }
 
     /**

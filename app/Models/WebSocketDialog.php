@@ -79,7 +79,7 @@ class WebSocketDialog extends AbstractModel
     }
 
     /**
-     * 获取对话成员（剔除离职）
+     * 获取对话成员（连表查）
      * @param $addField
      * @return User|\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
      */
