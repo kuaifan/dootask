@@ -7,7 +7,7 @@ export default {
     clientId: "",
 
     // 缓存版本号（如果想升级后清除客户端缓存则修改此参数值）
-    cacheVersion: "v9",
+    cacheVersion: "v10",
 
     // 窗口是否激活
     windowActive: true,

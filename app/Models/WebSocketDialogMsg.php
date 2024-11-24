@@ -643,7 +643,7 @@ class WebSocketDialogMsg extends AbstractModel
         if (!$preserveHtml) {
             $text = str_replace("</p><p>", "</p> <p>", $text);
             $text = strip_tags($text);
-            $text = str_replace(["&nbsp;", "&amp;", "&lt;", "&gt;"], [" ", "&", "<", ">"], $text);
+            $text = str_replace(["&nbsp;", "&quot;", "&amp;", "&lt;", "&gt;"], [" ", '"', "&", "<", ">"], $text);
             $text = preg_replace("/\s+/", " ", $text);
             $text = Base::cutStr($text, 50);
         }

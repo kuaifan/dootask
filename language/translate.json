@@ -26950,5 +26950,29 @@
         "fr": "Demain COB",
         "id": "Besok COB",
         "ru": "Завтра КРД"
+    },
+    {
+        "key": "自动归档",
+        "zh": "",
+        "zh-CHT": "自動歸檔",
+        "en": "Auto Archive",
+        "ko": "자동 보관",
+        "ja": "自動アーカイブ",
+        "de": "Automatisches Archivieren",
+        "fr": "Archivage automatique",
+        "id": "Arsip Otomatis",
+        "ru": "Автоархивирование"
+    },
+    {
+        "key": "是否保存编辑内容？",
+        "zh": "",
+        "zh-CHT": "是否保存編輯內容？",
+        "en": "Do you want to save the edited content?",
+        "ko": "편집 내용을 저장하시겠습니까?",
+        "ja": "編集内容を保存しますか？",
+        "de": "Möchten Sie die bearbeiteten Inhalte speichern?",
+        "fr": "Voulez-vous enregistrer le contenu modifié ?",
+        "id": "Apakah Anda ingin menyimpan konten yang diedit?",
+        "ru": "Вы хотите сохранить отредактированный контент?"
     }
 ]

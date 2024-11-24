@@ -68,6 +68,7 @@ services:
       - ./docker/mysql/conf.d:/etc/mysql/conf.d
       - ./docker/mysql/data:/var/lib/mysql
     environment:
+      TZ: "${TIMEZONE:-PRC}"
       MYSQL_PREFIX: "${DB_PREFIX}"
       MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
       MYSQL_DATABASE: "${DB_DATABASE}"
