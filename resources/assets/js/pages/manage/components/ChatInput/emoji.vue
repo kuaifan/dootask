@@ -23,19 +23,21 @@
                 </ul>
             </Scrollbar>
         </div>
-        <ul v-if="!onlyEmoji" ref="chatEmojiMenuRef" class="chat-emoji-menu" :style="chatEmojiMenuStyle" @scroll="onHandleScroll">
-            <li v-if="showEmojiMenuScrollLeftBtn" @click="onEmojiMenuScroll('left')" class="left-btn"><i class="taskfont">&#xe72d;</i></li>
-            <li :class="{active: type === 'emosearch'}" @click="type='emosearch'">
-                <i class="taskfont">&#xe6f8;</i>
-            </li>
-            <li :class="{active: type === 'emoji'}" @click="type='emoji'">
-                <span class="no-dark-content">&#128512;</span>
-            </li>
-            <li v-for="item in emoticonData" :class="{active: type === 'emoticon' && emoticonPath == item.path}" @click="onEmoticon(item.path)">
-                <Imgs :title="item.name" :alt="item.name" :src="item.src"/>
-            </li>
-            <li v-if="showEmojiMenuScrollRightBtn" @click="onEmojiMenuScroll('right')" class="right-btn"><i class="taskfont">&#xe733;</i></li>
-        </ul>
+        <div v-if="!onlyEmoji" class="chat-emoji-menu-wrap">
+            <span v-show="showEmojiMenuScrollLeftBtn" class="left-btn" @click="onEmojiMenuScroll('left')"><i class="taskfont">&#xe72d;</i></span>
+            <ul ref="chatEmojiMenuRef" class="chat-emoji-menu" @scroll="onHandleScroll">
+                <li :class="{active: type === 'emosearch'}" @click="type='emosearch'">
+                    <i class="taskfont">&#xe6f8;</i>
+                </li>
+                <li :class="{active: type === 'emoji'}" @click="type='emoji'">
+                    <span class="no-dark-content">&#128512;</span>
+                </li>
+                <li v-for="item in emoticonData" :class="{active: type === 'emoticon' && emoticonPath == item.path}" @click="onEmoticon(item.path)">
+                    <Imgs :title="item.name" :alt="item.name" :src="item.src"/>
+                </li>
+            </ul>
+            <span v-show="showEmojiMenuScrollRightBtn" class="right-btn" @click="onEmojiMenuScroll('right')"><i class="taskfont">&#xe733;</i></span>
+        </div>
     </div>
 </template>
 
@@ -115,19 +117,16 @@ export default {
             }
             return [];
         },
-        chatEmojiMenuStyle() {
-            return {
-                paddingLeft: this.showEmojiMenuScrollLeftBtn ? '34px' : 0,
-                paddingRight: this.showEmojiMenuScrollRightBtn ? '34px' : 0,
-            }
-        },
-        showEmojiMenuScrollLeftBtn(){
+        showEmojiMenuScrollLeftBtn() {
             return this.emojiMenuScrollLeft > 34
         },
-        showEmojiMenuScrollRightBtn(){
+        showEmojiMenuScrollRightBtn() {
             const container = this.$refs['chatEmojiMenuRef'];
-            const liWidth = container?.querySelector('li')?.offsetWidth || 48;
-            return this.emojiMenuScrollLeft < this.emoticonData.length * liWidth - (this.$store.state.windowPortrait ? 34 : 0)
+            if (container) {
+                const liWidth = container?.querySelector('li')?.offsetWidth || 48;
+                return this.emojiMenuScrollLeft < (container.scrollWidth - container.clientWidth - liWidth);
+            }
+            return this.emojiMenuScrollLeft <= 100;
         }
     },
     methods: {
@@ -226,8 +225,11 @@ export default {
         onMonitorWheel() {
             const container = this.$refs['chatEmojiMenuRef'];
             container?.addEventListener("wheel", (event) =>{
-                event.preventDefault();
-                container.scrollLeft = container.scrollLeft + event.deltaY;
+                const isTouchpad = Math.abs(event.deltaY) < 10 && event.deltaMode === 0;
+                if (!isTouchpad) {
+                    event.preventDefault();
+                    container.scrollLeft = container.scrollLeft + event.deltaY;
+                }
             });
         },
 
