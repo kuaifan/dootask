@@ -957,7 +957,8 @@ class DialogController extends AbstractController
      * @apiGroup dialog
      * @apiName msg__stream
      *
-     * @apiParam {Number} dialog_id      对话ID
+     * @apiParam {String} [type]         消息类型（暂时无用，预留）
+     * - ai: 默认
      * @apiParam {Number} userid         通知会员ID
      * @apiParam {String} stream_url     流动消息地址
      *
@@ -967,13 +968,14 @@ class DialogController extends AbstractController
      */
     public function msg__stream()
     {
-        // $dialog_id = intval(Request::input('dialog_id'));
         $userid = intval(Request::input('userid'));
         $stream_url = trim(Request::input('stream_url'));
         //
         if ($userid <= 0) {
             return Base::retError('参数错误');
         }
+        //
+        $stream_url = '/ai' . preg_replace('/^\/ai/?', '/', $stream_url);
         //
         $params = [
             'userid' => $userid,

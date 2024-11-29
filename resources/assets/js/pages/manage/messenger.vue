@@ -834,7 +834,7 @@ export default {
                     }
                 }
             } else if (dialog.type == 'user') {
-                if (this.systemConfig.server_closeai === 'close' && /^ai-(.*?)@bot.system/.test(dialog.email)) {
+                if (this.systemConfig.server_closeai === 'close' && /^ai-(.*?)@bot\.system/.test(dialog.email)) {
                     return false
                 }
             }

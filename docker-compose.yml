@@ -167,10 +167,15 @@ services:
 
   ai:
     container_name: "dootask-ai-${APP_ID}"
-    image: "kuaifan/dooai:0.2.1"
+    image: "kuaifan/dootask-ai:0.0.5"
+    environment:
+      REDIS_HOST: "${REDIS_HOST}"
+      REDIS_PORT: "${REDIS_PORT}"
     networks:
       extnetwork:
         ipv4_address: "${APP_IPPR}.12"
+    depends_on:
+      - redis
     restart: unless-stopped
 
   okr:

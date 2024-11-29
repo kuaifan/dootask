@@ -177,7 +177,7 @@ class UserBot extends AbstractModel
                 ];
 
             default:
-                if (preg_match('/^ai-(.*?)@bot.system$/', $email)) {
+                if (preg_match('/^ai-(.*?)@bot\.system$/', $email)) {
                     return [
                         [
                             'key' => '%3A.clear',

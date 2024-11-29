@@ -6,120 +6,57 @@
             :rules="ruleData"
             v-bind="formOptions"
             @submit.native.prevent>
-            <div class="block-setting-box" v-if="type=='all' || type=='ChatGPT'">
-                <h3>ChatGPT</h3>
+            <div class="block-setting-box" v-if="aiConfig[type]">
+                <h3>{{ type }}</h3>
                 <div class="form-box">
-                    <FormItem label="API Key" prop="openai_key">
-                        <Input :maxlength="255" v-model="formData.openai_key" type="password" placeholder="OpenAI API Key"/>
-                        <div class="form-tip">{{$L('访问OpenAI网站查看')}}: <a href="https://platform.openai.com/account/api-keys" target="_blank">https://platform.openai.com/account/api-keys</a></div>
-                    </FormItem>
-                    <FormItem :label="$L('模型')" prop="openai_model">
-                        <Select v-model="formData.openai_model" placement="top" transfer>
-                            <Option value="gpt-4o">gpt-4o</Option>
-                            <Option value="gpt-4o-mini">gpt-4o-mini</Option>
-                            <Option value="gpt-4-turbo">gpt-4-turbo</Option>
-                            <Option value="gpt-3.5-turbo">gpt-3.5-turbo</Option>
-                        </Select>
-                        <div class="form-tip">{{$L('查看说明')}} <a href="https://platform.openai.com/docs/models" target="_blank">https://platform.openai.com/docs/models</a></div>
-                    </FormItem>
-                    <FormItem :label="$L('使用代理')" prop="openai_agency">
-                        <Input :maxlength="500" v-model="formData.openai_agency" :placeholder="$L('支持 http 或 socks 代理')"/>
-                        <div class="form-tip">{{$L('例如：http://proxy.com 或 socks5://proxy.com')}}</div>
-                    </FormItem>
-                </div>
-            </div>
-            <div class="block-setting-box" v-if="type=='all' || type=='Claude'">
-                <h3>Claude</h3>
-                <div class="form-box">
-                    <FormItem label="Token" prop="claude_token">
-                        <Input :maxlength="255" v-model="formData.claude_token" type="password" placeholder="Claude Token"/>
-                        <div class="form-tip">{{$L('登录')}} <a href="https://claude.ai" target="_blank">https://claude.ai</a> {{$L('查看 Cookie 中的 sessionKey 便是')}}</div>
-                    </FormItem>
-                    <FormItem :label="$L('使用代理')" prop="claude_agency">
-                        <Input :maxlength="500" v-model="formData.claude_agency" :placeholder="$L('支持 http 或 socks 代理')"/>
-                        <div class="form-tip">{{$L('例如：http://proxy.com 或 socks5://proxy.com')}}</div>
-                    </FormItem>
-                </div>
-            </div>
-            <div class="block-setting-box" v-if="type=='all' || type=='Wenxin'">
-                <h3>文心一言 (Wenxin)</h3>
-                <div class="form-box">
-                    <FormItem label="API Key" prop="wenxin_key">
-                        <Input :maxlength="255" v-model="formData.wenxin_key" type="password" placeholder="API Key"/>
-                        <div class="form-tip">{{$L('获取方式')}} <a href="https://ai.baidu.com/ai-doc/REFERENCE/Ck3dwjgn3#3-%E8%8E%B7%E5%8F%96%E5%AF%86%E9%92%A5" target="_blank">https://ai.baidu.com/ai-doc/REFERENCE/Ck3dwjgn3</a></div>
-                    </FormItem>
-                    <FormItem label="API Secret" prop="wenxin_secret">
-                        <Input :maxlength="500" v-model="formData.wenxin_secret"  type="password" placeholder="API Secret"/>
-                        <div class="form-tip">{{$L('获取方式')}} <a href="https://ai.baidu.com/ai-doc/REFERENCE/Ck3dwjgn3#3-%E8%8E%B7%E5%8F%96%E5%AF%86%E9%92%A5" target="_blank">https://ai.baidu.com/ai-doc/REFERENCE/Ck3dwjgn3</a></div>
-                    </FormItem>
-                    <FormItem :label="$L('模型')" prop="wenxin_model">
-                        <Select v-model="formData.wenxin_model" placement="top" transfer>
-                            <Option value="completions_pro">ERNIE-Bot 4.0</Option>
-                            <Option value="completions">ERNIE-Bot</Option>
-                            <Option value="eb-instant">ERNIE-Bot-turbo</Option>
-                            <Option value="llama_2_7b">Llama-2-7b-chat</Option>
-                            <Option value="llama_2_13b">Llama-2-13B-Chat</Option>
-                        </Select>
-                        <div class="form-tip">{{$L('查看说明')}} <a href="https://cloud.baidu.com/doc/WENXINWORKSHOP/s/vliu6vq7u" target="_blank">https://cloud.baidu.com/doc/WENXINWORKSHOP/s/vliu6vq7u</a></div>
-                    </FormItem>
-                </div>
-            </div>
-            <div class="block-setting-box" v-if="type=='all' || type=='Qianwen'">
-                <h3>通义千问 (Qianwen)</h3>
-                <div class="form-box">
-                    <FormItem label="API Key" prop="qianwen_key">
-                        <Input :maxlength="255" v-model="formData.qianwen_key" type="password" placeholder="API Key"/>
-                        <div class="form-tip">{{$L('获取方式')}} <a href="https://help.aliyun.com/document_detail/611472.html" target="_blank">https://help.aliyun.com/document_detail/611472.html</a></div>
-                    </FormItem>
-                    <FormItem :label="$L('模型')" prop="qianwen_model">
-                        <Select v-model="formData.qianwen_model" placement="top" transfer>
-                            <Option value="qwen-v1">qwen-v1</Option>
-                            <Option value="qwen-plus-v1">qwen-plus-v1</Option>
-                        </Select>
-                        <div class="form-tip">{{$L('查看说明')}} <a href="https://help.aliyun.com/document_detail/2399481.html" target="_blank">https://help.aliyun.com/document_detail/2399481.html</a></div>
-                    </FormItem>
-                </div>
-            </div>
-            <div class="block-setting-box" v-if="type=='all' || type=='Gemini'">
-                <h3>Gemini</h3>
-                <div class="form-box">
-                    <FormItem label="API Key" prop="gemini_key">
-                        <Input :maxlength="255" v-model="formData.gemini_key" type="password" placeholder="API Key"/>
-                        <div class="form-tip">{{$L('获取方式')}} <a href="https://ai.google.dev/tutorials/setup?hl=zh-cn" target="_blank">https://ai.google.dev/tutorials/setup?hl=zh-cn</a></div>
-                    </FormItem>
-                    <FormItem :label="$L('模型')" prop="gemini_model">
-                        <Select v-model="formData.gemini_model" placement="top" transfer>
-                            <Option value="gemini-1.0-pro">gemini-1.0-pro</Option>
-                        </Select>
-                        <div class="form-tip">{{$L('查看说明')}} <a href="https://ai.google.dev/models?hl=zh-cn" target="_blank">https://ai.google.dev/models?hl=zh-cn</a></div>
-                    </FormItem>
-                    <FormItem :label="$L('使用代理')" prop="gemini_agency">
-                        <Input :maxlength="500" v-model="formData.gemini_agency" :placeholder="$L('支持 http 或 socks 代理')"/>
-                        <div class="form-tip">{{$L('例如：http://proxy.com 或 socks5://proxy.com')}}</div>
-                    </FormItem>
-                </div>
-            </div>
-            <div class="block-setting-box" v-if="type=='all' || type=='Zhipu'">
-                <h3>智谱清言</h3>
-                <div class="form-box">
-                    <FormItem label="API Key" prop="zhipu_key">
-                        <Input :maxlength="255" v-model="formData.zhipu_key" type="password" placeholder="API Key"/>
-                        <div class="form-tip">{{$L('获取方式')}} <a href="https://open.bigmodel.cn/usercenter/apikeys" target="_blank">https://open.bigmodel.cn/usercenter/apikeys</a></div>
-                    </FormItem>
-                    <FormItem :label="$L('模型')" prop="zhipu_model">
-                        <Select v-model="formData.zhipu_model" placement="top" transfer>
-                            <Option value="glm-4">glm-4</Option>
-                            <Option value="glm-4v">glm-4v</Option>
-                            <Option value="glm-3-turbo">glm-3-turbo</Option>
-                        </Select>
-                        <div class="form-tip">{{$L('查看说明')}} <a href="https://open.bigmodel.cn/dev/howuse/model" target="_blank">https://open.bigmodel.cn/dev/howuse/model</a></div>
-                    </FormItem>
+                    <template v-for="field in aiConfig[type].fields">
+                        <FormItem :label="$L(field.label)" :prop="field.prop">
+                            <template v-if="field.type === 'password'">
+                                <Input
+                                    :maxlength="255"
+                                    v-model="formData[field.prop]"
+                                    type="password"
+                                    :placeholder="$L(field.placeholder)"/>
+                            </template>
+                            <template v-else-if="field.type === 'select'">
+                                <Select v-model="formData[field.prop]" placement="top" transfer>
+                                    <Option v-for="option in field.options"
+                                        :key="option.value"
+                                        :value="option.value">
+                                        {{ option.value }}
+                                    </Option>
+                                </Select>
+                            </template>
+                            <template v-else-if="field.type === 'textarea'">
+                                <Input
+                                    :maxlength="500"
+                                    type="textarea"
+                                    :autosize="{minRows:2,maxRows:5}"
+                                    v-model="formData[field.prop]"
+                                    :placeholder="$L(field.placeholder)"/>
+                            </template>
+                            <template v-else>
+                                <Input
+                                    :maxlength="500"
+                                    v-model="formData[field.prop]"
+                                    :placeholder="$L(field.placeholder)"/>
+                            </template>
+                            <div v-if="field.link || field.tip" class="form-tip">
+                                <template v-if="field.link">
+                                    {{$L(field.tipPrefix || '获取方式')}} <a :href="field.link" target="_blank">{{ field.link }}</a>
+                                </template>
+                                <template v-else-if="field.tip">
+                                    {{$L(field.tip)}}
+                                </template>
+                            </div>
+                        </FormItem>
+                    </template>
                 </div>
             </div>
         </Form>
         <div class="setting-footer">
             <Button :loading="loadIng > 0" type="primary" @click="submitForm">{{ $L('提交') }}</Button>
-            <Button :loading="loadIng > 0" @click="resetForm" style="margin-left: 8px">{{ $L('重置') }}</Button>
+            <Button :loading="loadIng > 0" @click="resetForm">{{ $L('重置') }}</Button>
         </div>
     </div>
 </template>
@@ -131,7 +68,7 @@ export default {
     name: "SystemAibot",
     props: {
         type: {
-            default: 'all'
+            default: ''
         }
     },
     data() {
@@ -139,17 +76,247 @@ export default {
             loadIng: 0,
             formData: {},
             ruleData: {},
+            aiConfig: {
+                ChatGPT: {
+                    fields: [
+                        {
+                            label: 'API Key',
+                            prop: 'openai_key',
+                            type: 'password',
+                            placeholder: 'OpenAI API Key',
+                            tipPrefix: '访问OpenAI网站查看',
+                            link: 'https://platform.openai.com/account/api-keys'
+                        },
+                        {
+                            label: '模型',
+                            prop: 'openai_model',
+                            type: 'select',
+                            options: [
+                                { value: 'gpt-4' },
+                                { value: 'gpt-4-turbo' },
+                                { value: 'gpt-4o' },
+                                { value: 'gpt-4o-mini' },
+                                { value: 'gpt-3.5-turbo' },
+                                { value: 'gpt-3.5-turbo-16k' },
+                                { value: 'gpt-3.5-turbo-0125' },
+                                { value: 'gpt-3.5-turbo-1106' }
+                            ],
+                            tipPrefix: '查看说明',
+                            link: 'https://platform.openai.com/docs/models'
+                        },
+                        {
+                            label: '使用代理',
+                            prop: 'openai_agency',
+                            placeholder: '支持 http 或 socks 代理',
+                            tip: '例如：http://proxy.com 或 socks5://proxy.com'
+                        },
+                        {
+                            label: '默认提示词',
+                            prop: 'openai_system',
+                            type: 'textarea',
+                            placeholder: '请输入默认提示词',
+                            tip: '例如：你是一个人开发的AI助手'
+                        }
+                    ]
+                },
+                Claude: {
+                    fields: [
+                        {
+                            label: 'API Key',
+                            prop: 'claude_key',
+                            type: 'password',
+                            placeholder: 'Claude API Key',
+                            link: 'https://docs.anthropic.com/en/api/getting-started'
+                        },
+                        {
+                            label: '模型',
+                            prop: 'claude_model',
+                            type: 'select',
+                            options: [
+                                { value: 'claude-3-opus-20240229' },
+                                { value: 'claude-3-sonnet-20240229' },
+                                { value: 'claude-2.1' },
+                                { value: 'claude-2.0' }
+                            ],
+                            tipPrefix: '查看说明',
+                            link: 'https://docs.anthropic.com/en/docs/about-claude/models'
+                        },
+                        {
+                            label: '使用代理',
+                            prop: 'claude_agency',
+                            placeholder: '支持 http 或 socks 代理',
+                            tip: '例如：http://proxy.com 或 socks5://proxy.com'
+                        },
+                        {
+                            label: '默认提示词',
+                            prop: 'claude_system',
+                            type: 'textarea',
+                            placeholder: '请输入默认提示词',
+                            tip: '例如：你是一个人开发的AI助手'
+                        }
+                    ]
+                },
+                Gemini: {
+                    fields: [
+                        {
+                            label: 'API Key',
+                            prop: 'gemini_key',
+                            type: 'password',
+                            placeholder: 'Gemini API Key',
+                            link: 'https://makersuite.google.com/app/apikey'
+                        },
+                        {
+                            label: '模型',
+                            prop: 'gemini_model',
+                            type: 'select',
+                            options: [
+                                { value: 'gemini-pro' },
+                                { value: 'gemini-pro-vision' }
+                            ],
+                            tipPrefix: '查看说明',
+                            link: 'https://ai.google.dev/models/gemini'
+                        },
+                        {
+                            label: '使用代理',
+                            prop: 'gemini_agency',
+                            placeholder: '仅支持 http 代理',
+                            tip: '例如：http://proxy.com 或 https://proxy.com'
+                        },
+                        {
+                            label: '默认提示词',
+                            prop: 'gemini_system',
+                            type: 'textarea',
+                            placeholder: '请输入默认提示词',
+                            tip: '例如：你是一个人开发的AI助手'
+                        }
+                    ]
+                },
+                Zhipu: {
+                    fields: [
+                        {
+                            label: 'API Key',
+                            prop: 'zhipu_key',
+                            type: 'password',
+                            placeholder: 'Zhipu API Key',
+                            link: 'https://bigmodel.cn/usercenter/apikeys'
+                        },
+                        {
+                            label: '模型',
+                            prop: 'zhipu_model',
+                            type: 'select',
+                            options: [
+                                { value: 'glm-4' },
+                                { value: 'glm-4v' },
+                                { value: 'glm-3-turbo' }
+                            ],
+                            tipPrefix: '查看说明',
+                            link: 'https://open.bigmodel.cn/dev/api'
+                        },
+                        {
+                            label: '使用代理',
+                            prop: 'zhipu_agency',
+                            placeholder: '支持 http 或 socks 代理',
+                            tip: '例如：http://proxy.com 或 socks5://proxy.com'
+                        },
+                        {
+                            label: '默认提示词',
+                            prop: 'zhipu_system',
+                            type: 'textarea',
+                            placeholder: '请输入默认提示词',
+                            tip: '例如：你是一个人开发的AI助手'
+                        }
+                    ]
+                },
+                Qianwen: {
+                    fields: [
+                        {
+                            label: 'API Key',
+                            prop: 'qianwen_key',
+                            type: 'password',
+                            placeholder: 'Qianwen API Key',
+                            link: 'https://help.aliyun.com/zh/model-studio/developer-reference/get-api-key'
+                        },
+                        {
+                            label: '模型',
+                            prop: 'qianwen_model',
+                            type: 'select',
+                            options: [
+                                { value: 'qwen-turbo' },
+                                { value: 'qwen-plus' },
+                                { value: 'qwen-max' },
+                                { value: 'qwen-max-longcontext' }
+                            ],
+                            tipPrefix: '查看说明',
+                            link: 'https://help.aliyun.com/zh/model-studio/getting-started/models'
+                        },
+                        {
+                            label: '使用代理',
+                            prop: 'qianwen_agency',
+                            placeholder: '支持 http 或 socks 代理',
+                            tip: '例如：http://proxy.com 或 socks5://proxy.com'
+                        },
+                        {
+                            label: '默认提示词',
+                            prop: 'qianwen_system',
+                            type: 'textarea',
+                            placeholder: '请输入默认提示词',
+                            tip: '例如：你是一个人开发的AI助手'
+                        }
+                    ]
+                },
+                Wenxin: {
+                    fields: [
+                        {
+                            label: 'API Key',
+                            prop: 'wenxin_key',
+                            type: 'password',
+                            placeholder: 'Wenxin API Key',
+                            link: 'https://console.bce.baidu.com/qianfan/ais/console/applicationConsole/application'
+                        },
+                        {
+                            label: 'Secret Key',
+                            prop: 'wenxin_secret',
+                            type: 'password',
+                            placeholder: 'Wenxin Secret Key',
+                            link: 'https://console.bce.baidu.com/qianfan/ais/console/applicationConsole/application'
+                        },
+                        {
+                            label: '模型',
+                            prop: 'wenxin_model',
+                            type: 'select',
+                            options: [
+                                { value: 'ernie-bot-4' },
+                                { value: 'ernie-bot-8k' },
+                                { value: 'ernie-bot-turbo' },
+                                { value: 'ernie-bot' }
+                            ],
+                            tipPrefix: '查看说明',
+                            link: 'https://cloud.baidu.com/doc/WENXINWORKSHOP/s/Blfmc9dlf'
+                        },
+                        {
+                            label: '使用代理',
+                            prop: 'wenxin_agency',
+                            placeholder: '支持 http 或 socks 代理',
+                            tip: '例如：http://proxy.com 或 socks5://proxy.com'
+                        },
+                        {
+                            label: '默认提示词',
+                            prop: 'wenxin_system',
+                            type: 'textarea',
+                            placeholder: '请输入默认提示词',
+                            tip: '例如：你是一个人开发的AI助手'
+                        }
+                    ]
+                }
+            }
         }
     },
-
     mounted() {
         this.systemSetting();
     },
-
     computed: {
         ...mapState(['formOptions']),
     },
-
     methods: {
         submitForm() {
             this.$refs.formData.validate((valid) => {
@@ -158,11 +325,9 @@ export default {
                 }
             })
         },
-
         resetForm() {
             this.formData = $A.cloneJSON(this.formDatum_bak);
         },
-
         systemSetting(save) {
             this.loadIng++;
             this.$store.dispatch("call", {

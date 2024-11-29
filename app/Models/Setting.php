@@ -51,12 +51,48 @@ class Setting extends AbstractModel
                     $value['task_default_time'] = ['09:00', '18:00'];
                 }
                 break;
+
             case 'fileSetting':
                 $value['permission_pack_type'] = $value['permission_pack_type'] ?: 'all';
                 $value['permission_pack_userids'] = is_array($value['permission_pack_userids']) ? $value['permission_pack_userids'] : [];
                 break;
+
+            case 'aibotSetting':
+                if ($value['claude_token'] && empty($value['claude_key'])) {
+                    $value['claude_key'] = $value['claude_token'];
+                }
+                $array = [];
+                $aiList = ['openai', 'claude', 'gemini', 'zhipu', 'qianwen', 'wenxin'];
+                $fieldList = ['key', 'model', 'agency', 'system', 'secret'];
+                foreach ($aiList as $aiName) {
+                    foreach ($fieldList as $fieldName) {
+                        $key = $aiName . '_' . $fieldName;
+                        $array[$key] = $value[$key] ?: match ($key) {
+                            'openai_model' => 'gpt-4o-mini',
+                            'claude_model' => 'claude-3-5-sonnet-latest',
+                            'gemini_model' => 'gemini-1.5-flash',
+                            'zhipu_model' => 'glm-4',
+                            'qianwen_model' => 'qwen-turbo',
+                            'wenxin_model' => 'ernie-4.0-8k',
+                            default => '',
+                        };
+                    }
+                }
+                $value = $array;
+                break;
         }
         return $value;
+    }
+
+    /**
+     * 是否开启AI
+     * @param $ai
+     * @return bool
+     */
+    public static function AIOpen($ai = 'openai')
+    {
+        $array = Base::setting('aibotSetting');
+        return !!$array[$ai . '_key'];
     }
 
     /**

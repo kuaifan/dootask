@@ -409,113 +409,33 @@ class BotReceiveMsgTask extends AbstractTask
         $userBot = null;
         $extras = [];
         $errorContent = null;
-        switch ($botUser->email) {
-            // ChatGPT 机器人
-            case 'ai-openai@bot.system':
-                $setting = Base::setting('aibotSetting');
-                $webhookUrl = "{$serverUrl}/ai/openai/send";
-                $extras = [
-                    'openai_key' => $setting['openai_key'],
-                    'openai_agency' => $setting['openai_agency'],
-                    'openai_model' => $setting['openai_model'],
-                    'server_url' => $serverUrl,
-                    'chunk_size' => 7,
-                ];
-                if (empty($extras['openai_key'])) {
-                    $errorContent = '机器人未启用。';
-                } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
-                    && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
-                    $errorContent = '当前客户端版本低（所需版本≥v0.29.11）。';
-                }
-                break;
-            // Claude 机器人
-            case 'ai-claude@bot.system':
-                $setting = Base::setting('aibotSetting');
-                $webhookUrl = "{$serverUrl}/ai/claude/send";
-                $extras = [
-                    'claude_token' => $setting['claude_token'],
-                    'claude_agency' => $setting['claude_agency'],
-                    'server_url' => $serverUrl,
-                ];
-                if (empty($extras['claude_token'])) {
-                    $errorContent = '机器人未启用。';
-                } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
-                    && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
-                    $errorContent = '当前客户端版本低（所需版本≥v0.29.11）。';
-                }
-                break;
-            // Wenxin 机器人
-            case 'ai-wenxin@bot.system':
-                $setting = Base::setting('aibotSetting');
-                $webhookUrl = "{$serverUrl}/ai/wenxin/send";
-                $extras = [
-                    'wenxin_key' => $setting['wenxin_key'],
-                    'wenxin_secret' => $setting['wenxin_secret'],
-                    'wenxin_model' => $setting['wenxin_model'],
-                    'server_url' => $serverUrl,
-                ];
-                if (empty($extras['wenxin_key'])) {
-                    $errorContent = '机器人未启用。';
-                } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
-                    && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
-                    $errorContent = '当前客户端版本低（所需版本≥v0.29.12）。';
-                }
-                break;
-            // QianWen 机器人
-            case 'ai-qianwen@bot.system':
-                $setting = Base::setting('aibotSetting');
-                $webhookUrl = "{$serverUrl}/ai/qianwen/send";
-                $extras = [
-                    'qianwen_key' => $setting['qianwen_key'],
-                    'qianwen_model' => $setting['qianwen_model'],
-                    'server_url' => $serverUrl,
-                ];
-                if (empty($extras['qianwen_key'])) {
-                    $errorContent = '机器人未启用。';
-                } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
-                    && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
-                    $errorContent = '当前客户端版本低（所需版本≥v0.29.12）。';
-                }
-                break;
-            // Gemini 机器人
-            case 'ai-gemini@bot.system':
-                $setting = Base::setting('aibotSetting');
-                $webhookUrl = "{$serverUrl}/ai/gemini/send";
-                $extras = [
-                    'gemini_key' => $setting['gemini_key'],
-                    'gemini_model' => $setting['gemini_model'],
-                    'gemini_agency' => $setting['gemini_agency'],
-                    'gemini_timeout' => 20,
-                    'server_url' => $serverUrl,
-                ];
-                if (empty($extras['gemini_key'])) {
-                    $errorContent = '机器人未启用。';
-                } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
-                    && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
-                    $errorContent = '当前客户端版本低（所需版本≥v0.29.12）。';
-                }
-                break;
-            // 智谱清言 机器人
-            case 'ai-zhipu@bot.system':
-                $setting = Base::setting('aibotSetting');
-                $webhookUrl = "{$serverUrl}/ai/zhipu/send";
-                $extras = [
-                    'zhipu_key' => $setting['zhipu_key'],
-                    'zhipu_model' => $setting['zhipu_model'],
-                    'server_url' => $serverUrl,
-                ];
-                if (empty($extras['zhipu_key'])) {
-                    $errorContent = '机器人未启用。';
-                } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
-                    && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
-                    $errorContent = '当前客户端版本低（所需版本≥v0.29.12）。';
-                }
-                break;
-            // 其他机器人
-            default:
-                $userBot = UserBot::whereBotId($botUser->userid)->first();
-                $webhookUrl = $userBot?->webhook_url;
-                break;
+        if (preg_match('/^ai-(.*?)@bot\.system$/', $botUser->email, $matches)) {
+            $setting = Base::setting('aibotSetting');
+            $type = $matches[1];
+            $extras = [
+                'model_type' => match ($type) {
+                    'qianwen' => 'qwen',
+                    default => $type,
+                },
+                'model_name' => $setting[$type . '_model'],
+                'system_message' => $setting[$type . '_system'],
+                'api_key' => $setting[$type . '_key'],
+                'agency' => $setting[$type . '_agency'],
+                'server_url' => $serverUrl,
+            ];
+            if ($type === 'wenxin') {
+                $extras['api_key'] .= ':' . $setting['wenxin_secret'];
+            }
+            if (empty($extras[$type . '_key'])) {
+                $errorContent = '机器人未启用。';
+            } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
+                && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
+                $errorContent = '当前客户端版本低（所需版本≥v0.29.11）。';
+            }
+            $webhookUrl = "{$serverUrl}/ai/chat";
+        } else {
+            $userBot = UserBot::whereBotId($botUser->userid)->first();
+            $webhookUrl = $userBot?->webhook_url;
         }
         if ($errorContent) {
             WebSocketDialogMsg::sendMsg(null, $msg->dialog_id, 'template', [

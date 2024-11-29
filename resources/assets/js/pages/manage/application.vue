@@ -47,7 +47,7 @@
         </DrawerOverlay>
 
         <!--AI 机器人-->
-        <DrawerOverlay v-model="aibotShow" placement="right" :size="650">
+        <DrawerOverlay v-model="aibotShow" placement="right" :size="720">
             <div class="ivu-modal-wrap-apply">
                 <div class="ivu-modal-wrap-apply-title">
                     {{ $L('AI 机器人') }}
@@ -73,14 +73,19 @@
                                 <SystemAibot type="ChatGPT" v-if="aibotTabAction == 'opanai'" />
                             </div>
                         </TabPane>
+                        <TabPane label="Claude" name="claude">
+                            <div class="aibot-warp">
+                                <SystemAibot type="Claude" v-if="aibotTabAction == 'claude'" />
+                            </div>
+                        </TabPane>
                         <TabPane label="Gemini" name="gemini">
                             <div class="aibot-warp">
                                 <SystemAibot type="Gemini" v-if="aibotTabAction == 'gemini'" />
                             </div>
                         </TabPane>
-                        <TabPane label="Claude" name="claude">
+                        <TabPane :label="$L('智谱清言')" name="zhipu">
                             <div class="aibot-warp">
-                                <SystemAibot type="Claude" v-if="aibotTabAction == 'claude'" />
+                                <SystemAibot type="Zhipu" v-if="aibotTabAction == 'zhipu'" />
                             </div>
                         </TabPane>
                         <TabPane :label="$L('文心一言')" name="wenxin">
@@ -91,11 +96,6 @@
                         <TabPane :label="$L('通义千问')" name="qianwen">
                             <div class="aibot-warp">
                                 <SystemAibot type="Qianwen" v-if="aibotTabAction == 'qianwen'" />
-                            </div>
-                        </TabPane>
-                        <TabPane :label="$L('智谱清言')" name="zhipu">
-                            <div class="aibot-warp">
-                                <SystemAibot type="Zhipu" v-if="aibotTabAction == 'zhipu'" />
                             </div>
                         </TabPane>
                     </Tabs>

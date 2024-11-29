@@ -97,10 +97,10 @@ class SystemController extends AbstractController
                     return Base::retError('自动归档时间不可大于100天！');
                 }
             }
-            if ($all['voice2text'] == 'open' && empty(Base::settingFind('aibotSetting', 'openai_key'))) {
+            if ($all['voice2text'] == 'open' && !Setting::AIOpen()) {
                 return Base::retError('开启语音转文字功能需要在应用中开启 ChatGPT AI 机器人。');
             }
-            if ($all['translation'] == 'open' && empty(Base::settingFind('aibotSetting', 'openai_key'))) {
+            if ($all['translation'] == 'open' && !Setting::AIOpen()) {
                 return Base::retError('开启翻译功能需要在应用中开启 ChatGPT AI 机器人。');
             }
             if ($all['system_alias'] == env('APP_NAME')) {
@@ -282,7 +282,7 @@ class SystemController extends AbstractController
      *
      * @apiParam {String} type
      * - get: 获取（默认）
-     * - save: 保存设置（参数：['openai_key', 'openai_agency', 'claude_token', 'claude_agency']）
+     * - save: 保存设置（参数：[...]）
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
      * @apiSuccess {Object} data    返回数据
@@ -293,32 +293,13 @@ class SystemController extends AbstractController
         //
         $type = trim(Request::input('type'));
         $setting = Base::setting('aibotSetting');
-
-        $keys = [
-            'openai_key',
-            'openai_agency',
-            'openai_model',
-            'claude_token',
-            'claude_agency',
-            'wenxin_key',
-            'wenxin_secret',
-            'wenxin_model',
-            'qianwen_key',
-            'qianwen_model',
-            'gemini_key',
-            'gemini_model',
-            'gemini_agency',
-            'zhipu_key',
-            'zhipu_model',
-        ];
-
         if ($type == 'save') {
             if (env("SYSTEM_SETTING") == 'disabled') {
                 return Base::retError('当前环境禁止修改');
             }
             $all = Request::input();
             foreach ($all as $key => $value) {
-                if (!in_array($key, $keys)) {
+                if (!isset($setting[$key])) {
                     unset($all[$key]);
                 }
             }
@@ -335,7 +316,7 @@ class SystemController extends AbstractController
                     WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', $tempMsg, $botUser->userid, true, false, true);
                 }
             }
-            if ($backup['claude_token'] != $setting['claude_token']) {
+            if ($backup['claude_key'] != $setting['claude_key']) {
                 $botUser = User::botGetOrCreate('ai-claude');
                 if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
                     WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', $tempMsg, $botUser->userid, true, false, true);
@@ -367,15 +348,10 @@ class SystemController extends AbstractController
             }
         }
         //
-        $setting['openai_model'] = $setting['openai_model'] ?: 'gpt-3.5-turbo';
-        $setting['wenxin_model'] = $setting['wenxin_model'] ?: 'eb-instant';
-        $setting['qianwen_model'] = $setting['qianwen_model'] ?: 'qwen-v1';
-        $setting['gemini_model'] = $setting['gemini_model'] ?: 'gemini-1.0-pro';
-        $setting['zhipu_model'] = $setting['zhipu_model'] ?: 'glm-4';
         if (env("SYSTEM_SETTING") == 'disabled') {
-            foreach ($keys as $item) {
-                if (strlen($setting[$item]) > 12) {
-                    $setting[$item] = substr($setting[$item], 0, 4) . str_repeat('*', strlen($setting[$item]) - 8) . substr($setting[$item], -4);
+            foreach ($setting as $key => $item) {
+                if (str_contains($key, '_key')) {
+                    $setting[$key] = substr($item, 0, 4) . str_repeat('*', strlen($item) - 8) . substr($item, -4);
                 }
             }
         }
