@@ -26974,5 +26974,65 @@
         "fr": "Voulez-vous enregistrer le contenu modifié ?",
         "id": "Apakah Anda ingin menyimpan konten yang diedit?",
         "ru": "Вы хотите сохранить отредактированный контент?"
+    },
+    {
+        "key": "默认提示词",
+        "zh": "",
+        "zh-CHT": "默認提示詞",
+        "en": "Default Prompt",
+        "ko": "기본 프롬프트",
+        "ja": "デフォルトプロンプト",
+        "de": "Standardaufforderung",
+        "fr": "Invite par défaut",
+        "id": "Prompt Bawaan",
+        "ru": "Подсказка по умолчанию"
+    },
+    {
+        "key": "请输入默认提示词",
+        "zh": "",
+        "zh-CHT": "請輸入默認提示詞",
+        "en": "Please enter the default prompt",
+        "ko": "기본 프롬프트를 입력하세요",
+        "ja": "デフォルトプロンプトを入力してください",
+        "de": "Bitte geben Sie die Standardaufforderung ein",
+        "fr": "Veuillez entrer l'invite par défaut",
+        "id": "Silakan masukkan prompt bawaan",
+        "ru": "Пожалуйста, введите подсказку по умолчанию"
+    },
+    {
+        "key": "例如：你是一个人开发的AI助手",
+        "zh": "",
+        "zh-CHT": "例如：你是一個人開發的AI助手",
+        "en": "For example: You are an AI assistant developed by one person",
+        "ko": "예: 당신은 한 사람이 개발한 AI 비서입니다",
+        "ja": "例: あなたは一人で開発されたAIアシスタントです",
+        "de": "Zum Beispiel: Sie sind ein von einer Person entwickelter KI-Assistent",
+        "fr": "Par exemple : Vous êtes un assistant IA développé par une personne",
+        "id": "Misalnya: Anda adalah asisten AI yang dikembangkan oleh satu orang",
+        "ru": "Например: Вы - ИИ помощник, разработанный одним человеком"
+    },
+    {
+        "key": "仅支持 http 代理",
+        "zh": "",
+        "zh-CHT": "僅支持 http 代理",
+        "en": "Only HTTP proxy is supported",
+        "ko": "HTTP 프록시만 지원됩니다",
+        "ja": "HTTPプロキシのみサポートされています",
+        "de": "Nur HTTP-Proxy wird unterstützt",
+        "fr": "Seul le proxy HTTP est pris en charge",
+        "id": "Hanya mendukung proxy HTTP",
+        "ru": "Поддерживается только HTTP-прокси"
+    },
+    {
+        "key": "例如：http:\/\/proxy.com 或 https:\/\/proxy.com",
+        "zh": "",
+        "zh-CHT": "例如：http:\/\/proxy.com 或 https:\/\/proxy.com",
+        "en": "For example: http:\/\/proxy.com or https:\/\/proxy.com",
+        "ko": "예: http:\/\/proxy.com 또는 https:\/\/proxy.com",
+        "ja": "例: http:\/\/proxy.com または https:\/\/proxy.com",
+        "de": "Zum Beispiel: http:\/\/proxy.com oder https:\/\/proxy.com",
+        "fr": "Par exemple : http:\/\/proxy.com ou https:\/\/proxy.com",
+        "id": "Misalnya: http:\/\/proxy.com atau https:\/\/proxy.com",
+        "ru": "Например: http:\/\/proxy.com или https:\/\/proxy.com"
     }
 ]

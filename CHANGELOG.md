@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.40.88]
+
+### Performance
+
+- 更新 AI 支持更多模型和支持提示词
+
 ## [0.40.78]
 
 ### Bug Fixes
@@ -19,6 +25,7 @@ All notable changes to this project will be documented in this file.
 - 重复添加任务的情况
 - 重复添加任务列表的情况
 - 优化消息样式
+- 优化表情滚动条
 - 优化websocket消息
 - 优化快捷选择
 - 延期任务支持快选时间
@@ -26,6 +33,7 @@ All notable changes to this project will be documented in this file.
 - 新增文件打包下载权限设置
 - 升级electron框架
 - 优化深色主题
+- 优化深色主题下调整浏览器窗口显示白边的情况
 - 优化表情包资源
 - 优化客户端子窗口
 - 优化项目列表
