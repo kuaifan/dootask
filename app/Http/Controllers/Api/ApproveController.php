@@ -996,7 +996,7 @@ class ApproveController extends AbstractController
         if ($thumb && file_exists(public_path($thumb))) {
             $imageSize = getimagesize(public_path($thumb));
             $data['thumb'] = [
-                'url' => $thumb,
+                'url' => Base::fillUrl($thumb),
                 'width' => $imageSize[0],
                 'height' => $imageSize[1]
             ];
