@@ -351,10 +351,12 @@ export default {
             this.formData = $A.cloneJSON(this.formDatum_bak);
         },
         systemSetting(save) {
+            const props = this.aiConfig[this.type].fields.map(item => item.prop);
+            const data = Object.fromEntries(Object.entries(this.formData).filter(([key]) => props.includes(key)));
             this.loadIng++;
             this.$store.dispatch("call", {
                 url: 'system/setting/aibot?type=' + (save ? 'save' : 'all'),
-                data: this.formData,
+                data,
             }).then(({data}) => {
                 if (save) {
                     $A.messageSuccess('修改成功');

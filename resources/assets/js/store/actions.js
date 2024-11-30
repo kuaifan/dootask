@@ -3426,19 +3426,15 @@ export default {
         }
         const sse = new SSEClient(streamUrl)
         sse.subscribe(['append', 'replace', 'done'], (type, e) => {
-            const data = {
-                id: e.lastEventId,
-                text: e.data,
-                type: 'replace',
-            };
             switch (type) {
                 case 'append':
-                    data.type = 'append';
-                    Store.set('dialogMsgChange', data);
-                    break;
-
                 case 'replace':
-                    Store.set('dialogMsgChange', data);
+                    const data = $A.jsonParse(e.data);
+                    Store.set('dialogMsgChange', {
+                        type,
+                        id: e.lastEventId,
+                        text: data.content
+                    });
                     break;
 
                 case 'done':

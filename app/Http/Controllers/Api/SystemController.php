@@ -297,14 +297,15 @@ class SystemController extends AbstractController
             if (env("SYSTEM_SETTING") == 'disabled') {
                 return Base::retError('当前环境禁止修改');
             }
+            Base::checkClientVersion('0.40.79');
+            $backup = $setting;
             $all = Request::input();
             foreach ($all as $key => $value) {
-                if (!isset($setting[$key])) {
-                    unset($all[$key]);
+                if (isset($setting[$key])) {
+                    $setting[$key] = $value;
                 }
             }
-            $backup = $setting;
-            $setting = Base::setting('aibotSetting', Base::newTrim($all));
+            $setting = Base::setting('aibotSetting', Base::newTrim($setting));
             $tempMsg = [
                 'type' => 'content',
                 'content' => '设置成功'
