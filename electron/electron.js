@@ -810,6 +810,16 @@ if (!getTheLock) {
         createMainWindow()
         // 预创建子窗口
         preCreateChildWindow()
+        // 监听主题变化（重建预窗口）
+        let currentTheme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
+        nativeTheme.on('updated', () => {
+            const newTheme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
+            if (currentTheme !== newTheme) {
+                currentTheme = newTheme;
+                preloadWindow?.close()
+                preCreateChildWindow()
+            }
+        })
         // 创建托盘
         if (['darwin', 'win32'].includes(process.platform) && utils.isJson(config.trayIcon)) {
             mainTray = new Tray(path.join(__dirname, config.trayIcon[devloadUrl ? 'dev' : 'prod'][process.platform === 'darwin' ? 'mac' : 'win']));
