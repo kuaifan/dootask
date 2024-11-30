@@ -60,15 +60,14 @@ let childWindow = [],
 
 let showState = {},
     onShowWindow = (win) => {
-        if (typeof showState[win.webContents.id] === 'undefined') {
-            try {
+        try {
+            if (typeof showState[win.webContents.id] === 'undefined') {
                 showState[win.webContents.id] = true
                 win.setBackgroundColor('rgba(255, 255, 255, 0)')
                 win.show();
-            } catch (e) {
-                showState[win.webContents.id] = false
-                // loger.error(e)
             }
+        } catch (e) {
+            // loger.error(e)
         }
     }
 
@@ -277,7 +276,6 @@ function preCreateChildWindow() {
         minHeight: 360,
         center: true,
         show: false,
-        parent: mainWindow,
         autoHideMenuBar: true,
         backgroundColor: utils.getDefaultBackgroundColor(),
         webPreferences: {
@@ -335,7 +333,6 @@ function createChildWindow(args) {
             minHeight: 360,
             center: true,
             show: false,
-            parent: mainWindow,
             autoHideMenuBar: true,
             backgroundColor: utils.getDefaultBackgroundColor(),
             webPreferences: Object.assign({
@@ -346,20 +343,23 @@ function createChildWindow(args) {
                 nativeWindowOpen: true
             }, webPreferences),
         }, config)
+        if (options.parent) {
+            options.parent = mainWindow
+        }
 
         if (preloadWindow && Object.keys(webPreferences).length === 0) {
             // 使用预加载窗口
             browser = preloadWindow;
             preloadWindow = null;
             isPreload = true;
-            setTimeout(() => onShowWindow(browser), 300)
-            browser.once('resize', () => setTimeout(() => onShowWindow(browser), 10))
+            options.parent && browser.setParentWindow(options.parent);
             browser.setSize(options.width, options.height);
             browser.setMinimumSize(options.minWidth, options.minHeight);
             browser.center();
-            browser.setParentWindow(options.parent);
             browser.setAutoHideMenuBar(options.autoHideMenuBar);
             browser.removeAllListeners("closed");
+            setTimeout(() => onShowWindow(browser), 300)
+            process.nextTick(() => setTimeout(() => onShowWindow(browser), 50));
         } else {
             // 创建新窗口
             browser = new BrowserWindow(options)
