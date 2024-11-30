@@ -520,7 +520,8 @@ class UsersController extends AbstractController
             } else {
                 $builder->where(function($query) use ($keys) {
                     $query->where("nickname", "like", "%{$keys['key']}%")
-                        ->orWhere("pinyin", "like", "%{$keys['key']}%");
+                        ->orWhere("pinyin", "like", "%{$keys['key']}%")
+                        ->orWhere("profession", "like", "%{$keys['key']}%");
                 });
             }
         }

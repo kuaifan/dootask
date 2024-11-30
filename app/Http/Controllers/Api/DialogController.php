@@ -134,7 +134,9 @@ class DialogController extends AbstractController
                     if (str_contains($key, "@")) {
                         $query->where("email", "like", "%{$key}%");
                     } else {
-                        $query->where("nickname", "like", "%{$key}%")->orWhere("pinyin", "like", "%{$key}%");
+                        $query->where("nickname", "like", "%{$key}%")
+                            ->orWhere("pinyin", "like", "%{$key}%")
+                            ->orWhere("profession", "like", "%{$key}%");
                     }
                 })->orderBy('userid')
                 ->take(20 - count($list))

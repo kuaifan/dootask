@@ -114,7 +114,7 @@
                                             </template>
                                             <div class="last-text">
                                                 <em v-if="formatMsgEmojiDesc(dialog.last_msg)">{{formatMsgEmojiDesc(dialog.last_msg)}}</em>
-                                                <span>{{$A.getMsgSimpleDesc(dialog.last_msg)}}</span>
+                                                <span>{{$A.getMsgSimpleDesc(dialog.last_msg) || showProfessionDesc(dialog.dialog_user)}}</span>
                                             </div>
                                         </template>
                                         <div v-if="dialog.silence" class="taskfont last-silence">&#xe7d7;</div>
@@ -469,8 +469,13 @@ export default {
         },
 
         contactsList() {
+            const {contactsKey} = this;
             const list = [];
-            this.contactsFilter.some(user => {
+            this.contactsFilter.some(data => {
+                const user = $A.cloneJSON(data);
+                if (contactsKey && $A.strExists(user.profession, contactsKey)) {
+                    user.tags.push(user.profession)
+                }
                 let az = user.az ? user.az.toUpperCase() : "#";
                 let item = list.find(item => item.az == az);
                 if (item) {
@@ -996,6 +1001,13 @@ export default {
                 return data.emoji[0].symbol;
             }
             return null;
+        },
+
+        showProfessionDesc(dialog_user) {
+            if (dialog_user) {
+                return `[${dialog_user.profession}]`
+            }
+            return ''
         },
 
         lastMsgReadDone(data) {
