@@ -63,7 +63,6 @@ let showState = {},
         try {
             if (typeof showState[win.webContents.id] === 'undefined') {
                 showState[win.webContents.id] = true
-                win.setBackgroundColor('rgba(255, 255, 255, 0)')
                 win.show();
             }
         } catch (e) {
@@ -509,7 +508,7 @@ function createWebTabWindow(args) {
             autoHideMenuBar: true,
             titleBarStyle: 'hidden',
             titleBarOverlay,
-            backgroundColor: utils.getDefaultBackgroundColor(),
+            backgroundColor: nativeTheme.shouldUseDarkColors ? '#3B3B3D' : '#EFF0F4',
             webPreferences: Object.assign({
                 preload: path.join(__dirname, 'electron-preload.js'),
                 webSecurity: true,
@@ -518,12 +517,6 @@ function createWebTabWindow(args) {
                 nativeWindowOpen: true
             }, webPreferences),
         }, config))
-
-        if (nativeTheme.shouldUseDarkColors) {
-            webTabWindow.setBackgroundColor('#3B3B3D')
-        } else {
-            webTabWindow.setBackgroundColor('#EFF0F4')
-        }
 
         webTabWindow.on('resize', () => {
             resizeWebTab(0)
@@ -792,6 +785,32 @@ function closeWebTab(id) {
     }
 }
 
+/**
+ * 监听主题变化
+ */
+function monitorThemeChanges() {
+    let currentTheme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
+    nativeTheme.on('updated', () => {
+        const newTheme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
+        if (currentTheme === newTheme) {
+            return
+        }
+        currentTheme = newTheme;
+        // 更新背景
+        const backgroundColor = utils.getDefaultBackgroundColor()
+        mainWindow?.setBackgroundColor(backgroundColor);
+        preloadWindow?.setBackgroundColor(backgroundColor);
+        childWindow.some(({browser}) => browser.setBackgroundColor(backgroundColor))
+        webTabWindow?.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#3B3B3D' : '#EFF0F4')
+        // 通知所有窗口
+        BrowserWindow.getAllWindows().forEach(window => {
+            window.webContents.send('systemThemeChanged', {
+                theme: currentTheme,
+            });
+        });
+    })
+}
+
 const getTheLock = app.requestSingleInstanceLock()
 if (!getTheLock) {
     app.quit()
@@ -810,16 +829,8 @@ if (!getTheLock) {
         createMainWindow()
         // 预创建子窗口
         preCreateChildWindow()
-        // 监听主题变化（重建预窗口）
-        let currentTheme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
-        nativeTheme.on('updated', () => {
-            const newTheme = nativeTheme.shouldUseDarkColors ? 'dark' : 'light';
-            if (currentTheme !== newTheme) {
-                currentTheme = newTheme;
-                preloadWindow?.close()
-                preCreateChildWindow()
-            }
-        })
+        // 监听主题变化
+        monitorThemeChanges()
         // 创建托盘
         if (['darwin', 'win32'].includes(process.platform) && utils.isJson(config.trayIcon)) {
             mainTray = new Tray(path.join(__dirname, config.trayIcon[devloadUrl ? 'dev' : 'prod'][process.platform === 'darwin' ? 'mac' : 'win']));
@@ -1050,9 +1061,7 @@ ipcMain.on('childWindowCloseAll', (event) => {
     childWindow.some(({browser}) => {
         browser && browser.close()
     })
-    if (preloadWindow) {
-        preloadWindow.close()
-    }
+    preloadWindow?.close()
     event.returnValue = "ok"
 })
 
@@ -1063,9 +1072,7 @@ ipcMain.on('childWindowDestroyAll', (event) => {
     childWindow.some(({browser}) => {
         browser && browser.destroy()
     })
-    if (preloadWindow) {
-        preloadWindow.destroy()
-    }
+    preloadWindow?.destroy()
     event.returnValue = "ok"
 })
 
@@ -1381,9 +1388,7 @@ ipcMain.on('updateQuitAndInstall', (event, args) => {
     childWindow.some(({browser}) => {
         browser && browser.destroy()
     })
-    if (preloadWindow) {
-        preloadWindow.destroy()
-    }
+    preloadWindow?.destroy()
 
     // 启动更新子窗口
     createUpdaterWindow(args.updateTitle)

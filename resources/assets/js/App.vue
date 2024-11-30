@@ -394,6 +394,9 @@ export default {
             this.$Electron.registerMsgListener('browserWindowFocus', _ => {
                 this.$store.state.windowActive = true;
             })
+            this.$Electron.registerMsgListener('systemThemeChanged', _ => {
+                this.autoTheme()
+            })
             $A.bindScreenshotKey(this.$store.state.cacheKeyboard);
             //
             this.$Electron.sendMessage('setMenuLanguage', {
