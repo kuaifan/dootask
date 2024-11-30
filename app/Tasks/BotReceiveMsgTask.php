@@ -426,10 +426,10 @@ class BotReceiveMsgTask extends AbstractTask
             if ($type === 'wenxin') {
                 $extras['api_key'] .= ':' . $setting['wenxin_secret'];
             }
-            if (empty($extras[$type . '_key'])) {
+            if (empty($extras['api_key'])) {
                 $errorContent = '机器人未启用。';
-            } elseif (in_array($this->client['platform'], ['win', 'mac', 'web'])
-                && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
+            }
+            if (in_array($this->client['platform'], ['win', 'mac', 'web']) && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
                 $errorContent = '当前客户端版本低（所需版本≥v0.29.11）。';
             }
             $webhookUrl = "{$serverUrl}/ai/chat";

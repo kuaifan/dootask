@@ -19,7 +19,7 @@
                                     :placeholder="$L(field.placeholder)"/>
                             </template>
                             <template v-else-if="field.type === 'select'">
-                                <Select v-model="formData[field.prop]" placement="top" transfer>
+                                <Select v-model="formData[field.prop]" transfer>
                                     <Option v-for="option in field.options"
                                         :key="option.value"
                                         :value="option.value">
@@ -133,8 +133,13 @@ export default {
                             prop: 'claude_model',
                             type: 'select',
                             options: [
+                                { value: 'claude-3-5-sonnet-latest' },
+                                { value: 'claude-3-5-sonnet-20241022' },
+                                { value: 'claude-3-5-haiku-latest' },
+                                { value: 'claude-3-5-haiku-20241022' },
+                                { value: 'claude-3-opus-latest' },
                                 { value: 'claude-3-opus-20240229' },
-                                { value: 'claude-3-sonnet-20240229' },
+                                { value: 'claude-3-haiku-20240307' },
                                 { value: 'claude-2.1' },
                                 { value: 'claude-2.0' }
                             ],
@@ -170,8 +175,10 @@ export default {
                             prop: 'gemini_model',
                             type: 'select',
                             options: [
-                                { value: 'gemini-pro' },
-                                { value: 'gemini-pro-vision' }
+                                { value: 'gemini-1.5-flash' },
+                                { value: 'gemini-1.5-flash-8b' },
+                                { value: 'gemini-1.5-pro' },
+                                { value: 'gemini-1.0-pro' },
                             ],
                             tipPrefix: '查看说明',
                             link: 'https://ai.google.dev/models/gemini'
@@ -206,7 +213,13 @@ export default {
                             type: 'select',
                             options: [
                                 { value: 'glm-4' },
+                                { value: 'glm-4-plus' },
+                                { value: 'glm-4-air' },
+                                { value: 'glm-4-airx' },
+                                { value: 'glm-4-long' },
+                                { value: 'glm-4-flash' },
                                 { value: 'glm-4v' },
+                                { value: 'glm-4v-plus' },
                                 { value: 'glm-3-turbo' }
                             ],
                             tipPrefix: '查看说明',
@@ -242,9 +255,12 @@ export default {
                             type: 'select',
                             options: [
                                 { value: 'qwen-turbo' },
+                                { value: 'qwen-turbo-latest' },
                                 { value: 'qwen-plus' },
+                                { value: 'qwen-plus-latest' },
                                 { value: 'qwen-max' },
-                                { value: 'qwen-max-longcontext' }
+                                { value: 'qwen-max-latest' },
+                                { value: 'qwen-long' },
                             ],
                             tipPrefix: '查看说明',
                             link: 'https://help.aliyun.com/zh/model-studio/getting-started/models'
@@ -271,24 +287,30 @@ export default {
                             prop: 'wenxin_key',
                             type: 'password',
                             placeholder: 'Wenxin API Key',
-                            link: 'https://console.bce.baidu.com/qianfan/ais/console/applicationConsole/application'
+                            link: 'https://console.bce.baidu.com/qianfan/ais/console/applicationConsole/application/v1'
                         },
                         {
                             label: 'Secret Key',
                             prop: 'wenxin_secret',
                             type: 'password',
                             placeholder: 'Wenxin Secret Key',
-                            link: 'https://console.bce.baidu.com/qianfan/ais/console/applicationConsole/application'
+                            link: 'https://console.bce.baidu.com/qianfan/ais/console/applicationConsole/application/v1'
                         },
                         {
                             label: '模型',
                             prop: 'wenxin_model',
                             type: 'select',
                             options: [
-                                { value: 'ernie-bot-4' },
-                                { value: 'ernie-bot-8k' },
-                                { value: 'ernie-bot-turbo' },
-                                { value: 'ernie-bot' }
+                                { value: 'ernie-4.0-8k' },
+                                { value: 'ernie-4.0-8k-latest' },
+                                { value: 'ernie-4.0-turbo-128k' },
+                                { value: 'ernie-4.0-turbo-8k' },
+                                { value: 'ernie-3.5-128k' },
+                                { value: 'ernie-3.5-8k' },
+                                { value: 'ernie-speed-128k' },
+                                { value: 'ernie-speed-8k' },
+                                { value: 'ernie-lite-8k' },
+                                { value: 'ernie-tiny-8k' },
                             ],
                             tipPrefix: '查看说明',
                             link: 'https://cloud.baidu.com/doc/WENXINWORKSHOP/s/Blfmc9dlf'
