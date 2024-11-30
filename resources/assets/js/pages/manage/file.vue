@@ -644,13 +644,7 @@ export default {
                                     cb();
                                 }
                             }
-                        }, [
-                            h('AutoTip', {
-                                props: {
-                                    placement: 'top'
-                                }
-                            }, $A.getFileName(row))
-                        ]));
+                        }, $A.getFileName(row)));
                         //
                         const iconArray = [];
                         if (row.share) {
@@ -748,7 +742,7 @@ export default {
                 sortable: true,
             },
         ].map(item => {
-            if (item.key === FileObject.sort.key) {
+            if (FileObject.sort && item.key === FileObject.sort.key) {
                 item.sortType = FileObject.sort.order
             }
             return item;
