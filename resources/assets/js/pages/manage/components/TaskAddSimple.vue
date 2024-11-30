@@ -163,7 +163,7 @@ export default {
                 }
             } else {
                 this.addData.project_id = this.projectId || this.$store.state.projectId;
-                this.addData.column_id = this.columnId || '';
+                this.addData.column_id = this.columnId || this.$store.state.cacheColumns.find(item => item.project_id === this.addData.project_id)?.id || '';
                 this.addData.owner = [this.userId];
                 this.addData.top = this.addTop ? 1 : 0;
                 return $A.cloneJSON(this.addData);
@@ -171,9 +171,16 @@ export default {
         },
 
         openAdd() {
+            if (this.windowPortrait) {
+                this.defaultPriority();
+                this.$emit("on-priority", this.getData())
+                this.$emit("on-close")
+                return
+            }
             this.active = true;
             this.defaultPriority();
             this.$nextTick(() => {
+                this.$refs.input.resizeTextarea();
                 this.$refs.input.focus();
             });
         },
@@ -243,7 +250,7 @@ export default {
             return item.name + ' (' + days + this.$L('天') + ')';
         },
 
-        choosePriority(item) {
+        choosePriority(item, focus = true) {
             if ($A.runNum(item.days) > 0) {
                 let start = $A.daytz();
                 let end = start.clone().add($A.runNum(item.days), 'day');
@@ -254,19 +261,16 @@ export default {
             this.$set(this.addData, 'p_level', item.priority)
             this.$set(this.addData, 'p_name', item.name)
             this.$set(this.addData, 'p_color', item.color)
-            this.$nextTick(() => {
+            focus && this.$nextTick(() => {
                 this.$refs.input.focus();
             });
         },
 
         defaultPriority() {
-            if (this.taskPriority.length === 0) {
+            if (this.taskPriority.length === 0 || this.addData.p_name) {
                 return;
             }
-            if (this.addData.p_name) {
-                return;
-            }
-            this.choosePriority(this.taskPriority[0]);
+            this.choosePriority(this.taskPriority[0], false);
         }
     }
 }
