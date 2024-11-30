@@ -80,6 +80,9 @@
                                 <div>{{$L('搜索消息')}}</div>
                             </EDropdownItem>
                             <template v-if="dialogData.type === 'user'">
+                                <EDropdownItem v-if="dialogData.userimg" command="previewAvatar">
+                                    <div>{{$L('查看头像')}}</div>
+                                </EDropdownItem>
                                 <EDropdownItem v-if="isManageBot" command="modifyNormal">
                                     <div>{{$L('修改资料')}}</div>
                                 </EDropdownItem>
@@ -93,6 +96,9 @@
                             <template v-else>
                                 <EDropdownItem command="groupInfo">
                                     <div>{{$L('群组设置')}}</div>
+                                </EDropdownItem>
+                                <EDropdownItem v-if="dialogData.avatar" command="previewAvatar">
+                                    <div>{{$L('查看头像')}}</div>
                                 </EDropdownItem>
                                 <template v-if="dialogData.owner_id != userId">
                                     <EDropdownItem v-if="dialogData.group_type === 'all' && userIsAdmin" command="modifyAdmin">
@@ -2537,6 +2543,14 @@ export default {
                         admin: 1
                     }
                     this.modifyShow = true
+                    break;
+
+                case "previewAvatar":
+                    if (this.dialogData.type === 'user') {
+                        this.$store.dispatch("previewImage", this.dialogData.userimg)
+                    } else {
+                        this.$store.dispatch("previewImage", this.dialogData.avatar)
+                    }
                     break;
 
                 case "groupInfo":
