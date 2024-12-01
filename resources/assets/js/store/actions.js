@@ -2506,6 +2506,23 @@ export default {
         });
     },
 
+    /**
+     * 更新任务模板
+     * @param state
+     * @param dispatch
+     * @param projectId
+     * @returns {Promise<void>}
+     */
+    async updateTaskTemplates({state, dispatch}, projectId) {
+        const {data} = await dispatch("call", {
+            url: 'project/task/template_list',
+            data: {
+                project_id: projectId
+            },
+        })
+        state.taskTemplates = state.taskTemplates.filter(template => template.project_id !== projectId).concat(data || [])
+    },
+
     /** *****************************************************************************************/
     /** ************************************** 会话 **********************************************/
     /** *****************************************************************************************/

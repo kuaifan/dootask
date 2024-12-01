@@ -621,4 +621,14 @@ body.dark-mode-reverse {
             }
         }
     }
+
+    .task-add {
+        .task-add-template {
+            > li {
+                &.active {
+                    color: black;
+                }
+            }
+        }
+    }
 }

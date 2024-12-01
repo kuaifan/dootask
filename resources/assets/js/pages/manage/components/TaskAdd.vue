@@ -12,6 +12,11 @@
                 @on-visible-change="cascaderShow=!cascaderShow"
                 filterable/>
         </div>
+        <ul v-if="taskTemplateList.length > 0" class="task-add-template">
+            <li v-for="item in taskTemplateList" :key="item.id" @click="setTaskTemplate(item)">
+                {{ item.name }}
+            </li>
+        </ul>
         <div class="task-add-form">
             <div class="title">
                 <Input
@@ -211,6 +216,7 @@ import {mapState} from "vuex";
 import UserSelect from "../../../components/UserSelect.vue";
 import TaskExistTips from "./TaskExistTips.vue";
 import TEditorTask from "../../../components/TEditorTask.vue";
+import nostyle from "../../../components/VMEditor/engine/nostyle";
 
 export default {
     name: "TaskAdd",
@@ -285,7 +291,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheProjects', 'projectId', 'cacheColumns', 'taskPriority', 'formOptions']),
+        ...mapState(['cacheProjects', 'projectId', 'cacheColumns', 'taskPriority', 'taskTemplates', 'formOptions']),
 
         taskDays() {
             const {times} = this.addData;
@@ -297,6 +303,10 @@ export default {
                 }
             }
             return 0;
+        },
+
+        taskTemplateList() {
+            return this.taskTemplates.filter(({project_id}) => project_id == this.addData.project_id) || []
         }
     },
 
@@ -315,6 +325,12 @@ export default {
         'addData.project_id'(projectId) {
             if (projectId > 0) {
                 $A.IDBSave("cacheAddTaskProjectId", projectId);
+                this.$store.dispatch("updateTaskTemplates", projectId).then(() => {
+                    const defaultTemplate = this.taskTemplateList.find(({is_default}) => is_default);
+                    if (defaultTemplate) {
+                        this.setTaskTemplate(defaultTemplate);
+                    }
+                })
             }
         },
         'addData.column_id'(columnId) {
@@ -609,6 +625,13 @@ export default {
                     break;
             }
         },
+
+        setTaskTemplate(item) {
+            this.addData.name = item.title
+            this.addData.content = nostyle(item.content, {
+                sanitize: false,
+            });
+        }
     }
 }
 </script>
