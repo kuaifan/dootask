@@ -99,3 +99,31 @@
         }
     }
 }
+
+.project-task-template-system {
+    .tip-title {
+        margin: -12px 0;
+        cursor: pointer;
+        color: $primary-color;
+    }
+    ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+
+        > li {
+            list-style: none;
+            padding: 0px 12px;
+            background-color: #f5f5f5;
+            border-radius: 18px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            line-height: 34px;
+            height: 34px;
+
+            &:hover {
+                background-color: #e0e0e0;
+            }
+        }
+    }
+}
