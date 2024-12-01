@@ -53,6 +53,7 @@
                         <EDropdownMenu v-if="projectData.owner_userid === userId" slot="dropdown">
                             <EDropdownItem command="setting">{{$L('项目设置')}}</EDropdownItem>
                             <EDropdownItem command="permissions">{{$L('权限设置')}}</EDropdownItem>
+                            <EDropdownItem command="task_template">{{$L('任务模板')}}</EDropdownItem>
                             <EDropdownItem command="workflow">{{$L('工作流设置')}}</EDropdownItem>
                             <EDropdownItem command="user" divided>{{$L('成员管理')}}</EDropdownItem>
                             <EDropdownItem command="invite">{{$L('邀请链接')}}</EDropdownItem>
@@ -452,6 +453,14 @@
             </div>
         </Modal>
 
+        <!--任务模板-->
+        <DrawerOverlay
+            v-model="taskTemplateShow"
+            placement="right"
+            :size="720">
+            <ProjectTaskTemplate ref="taskTemplate" v-if="taskTemplateShow" :project-id="projectId"/>
+        </DrawerOverlay>
+
         <!--工作流程设置-->
         <DrawerOverlay
             v-model="workflowShow"
@@ -497,6 +506,7 @@ import TaskRow from "./TaskRow";
 import TaskArchived from "./TaskArchived";
 import ProjectLog from "./ProjectLog";
 import DrawerOverlay from "../../../components/DrawerOverlay";
+import ProjectTaskTemplate from "./ProjectTaskTemplate";
 import ProjectWorkflow from "./ProjectWorkflow";
 import ProjectPermission from "./ProjectPermission";
 import TaskMenu from "./TaskMenu";
@@ -513,6 +523,7 @@ export default {
         UserAvatarTip,
         UserSelect,
         TaskMenu,
+        ProjectTaskTemplate,
         ProjectWorkflow,
         ProjectPermission,
         DrawerOverlay,
@@ -558,6 +569,8 @@ export default {
             transferShow: false,
             transferData: {},
             transferLoad: 0,
+
+            taskTemplateShow: false,
 
             workflowShow: false,
             logShow: false,
@@ -1317,6 +1330,10 @@ export default {
                     this.inviteData = {};
                     this.inviteShow = true;
                     this.inviteGet()
+                    break;
+
+                case "task_template":
+                    this.taskTemplateShow = true;
                     break;
 
                 case "workflow":

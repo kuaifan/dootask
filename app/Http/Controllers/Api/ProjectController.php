@@ -39,6 +39,7 @@ use App\Module\BillMultipleExport;
 use Illuminate\Support\Facades\DB;
 use App\Models\ProjectTaskFlowChange;
 use App\Models\ProjectTaskVisibilityUser;
+use App\Models\ProjectTaskTemplate;
 
 /**
  * @apiDefine project
@@ -2692,5 +2693,171 @@ class ProjectController extends AbstractController
         ]);
         $projectPermission = ProjectPermission::updatePermissions($projectId, Base::newArrayRecursive('intval', $permissions));
         return Base::retSuccess("success",  $projectPermission);
+    }
+
+    /**
+     * @api {get} api/project/task/template_list          47. 任务模板列表
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__template_list
+     *
+     * @apiParam {Number} project_id                项目ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__template_list()
+    {
+        $user = User::auth();
+        $projectId = intval(Request::input('project_id'));
+        if (!$projectId) {
+            return Base::retError('缺少参数project_id');
+        }
+        $project = Project::userProject($projectId);
+        if (!$project) {
+            return Base::retError('项目不存在或已被删除');
+        }
+        $templates = ProjectTaskTemplate::where('project_id', $projectId)
+            ->orderBy('sort')
+            ->orderByDesc('id')
+            ->get();
+        return Base::retSuccess('success', $templates);
+    }
+
+    /**
+     * @api {post} api/project/task/template_save          48. 保存任务模板
+     *
+     * @apiDescription 需要token身份（限：项目负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__template_save
+     *
+     * @apiParam {Number} project_id                项目ID
+     * @apiParam {Number} [id]                      模板ID
+     * @apiParam {String} name                      模板名称
+     * @apiParam {String} title                     任务标题
+     * @apiParam {String} content                   任务内容
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__template_save()
+    {
+        $user = User::auth();
+        //
+        $projectId = intval(Request::input('project_id'));
+        if (!$projectId) {
+            return Base::retError('缺少参数project_id');
+        }
+        Project::userProject($projectId, true, true);
+        //
+        $id = intval(Request::input('id', 0));
+        $name = trim(Request::input('name', ''));
+        $title = trim(Request::input('title', ''));
+        $content = trim(Request::input('content', ''));
+        if (empty($name)) {
+            return Base::retError('请输入模板名称');
+        }
+        if (empty($title)) {
+            return Base::retError('请输入任务标题');
+        }
+        $data = [
+            'project_id' => $projectId,
+            'name' => $name,
+            'title' => $title,
+            'content' => $content,
+            'userid' => $user->userid
+        ];
+        if ($id > 0) {
+            $template = ProjectTaskTemplate::where('id', $id)
+                ->where('project_id', $projectId)
+                ->first();
+            if (!$template) {
+                return Base::retError('模板不存在或已被删除');
+            }
+            $template->update($data);
+        } else {
+            $templateCount = ProjectTaskTemplate::where('project_id', $projectId)->count();
+            if ($templateCount >= 20) {
+                return Base::retError('每个项目最多添加10个模板');
+            }
+            $data['sort'] = ProjectTaskTemplate::where('project_id', $projectId)->max('sort') + 1;
+            $template = ProjectTaskTemplate::create($data);
+        }
+        return Base::retSuccess('保存成功', $template);
+    }
+
+    /**
+     * @api {get} api/project/task/template_delete          49. 删除任务模板
+     *
+     * @apiDescription 需要token身份（限：项目负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__template_delete
+     *
+     * @apiParam {Number} id                      模板ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__template_delete()
+    {
+        User::auth();
+        //
+        $id = intval(Request::input('id'));
+        if (!$id) {
+            return Base::retError('缺少参数id');
+        }
+        $template = ProjectTaskTemplate::find($id);
+        if (!$template) {
+            return Base::retError('模板不存在或已被删除');
+        }
+        Project::userProject($template->project_id, true, true);
+        $template->delete();
+        return Base::retSuccess('删除成功');
+    }
+
+    /**
+     * @api {get} api/project/task/template_default          50. 设置任务模板为默认
+     *
+     * @apiDescription 需要token身份（限：项目负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName task__template_default
+     *
+     * @apiParam {Number} id                      模板ID
+     * @apiParam {Number} project_id              项目ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function task__template_default()
+    {
+        User::auth();
+        //
+        $id = intval(Request::input('id'));
+        $projectId = intval(Request::input('project_id'));
+        if (!$id || !$projectId) {
+            return Base::retError('参数错误');
+        }
+        Project::userProject($projectId, true, true);
+        //
+        $template = ProjectTaskTemplate::where('id', $id)
+            ->where('project_id', $projectId)
+            ->first();
+        if (!$template) {
+            return Base::retError('模板不存在或已被删除');
+        }
+        // 先将所有模板设为非默认
+        ProjectTaskTemplate::where('project_id', $projectId)->update(['is_default' => false]);
+        // 设置当前模板为默认
+        $template->update(['is_default' => true]);
+        return Base::retSuccess('设置成功');
     }
 }
