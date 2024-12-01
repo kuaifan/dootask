@@ -7,7 +7,11 @@
         padding: 20px 20px 10px;
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: flex-start;
+        
+        @media screen and (min-width: 500px) {
+            justify-content: space-between;
+        }
 
         .title {
             color: $primary-title-color;

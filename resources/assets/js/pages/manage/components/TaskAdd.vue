@@ -630,7 +630,7 @@ export default {
         setTaskTemplate(item, force = false) {
             if (force) {
                 this.templateActiveID = item.id;
-                this.addData.name = item.name;
+                this.addData.name = item.title;
                 this.addData.content = nostyle(item.content, {sanitize: false});
                 this.$nextTick(() => {
                     this.$refs.input.focus();

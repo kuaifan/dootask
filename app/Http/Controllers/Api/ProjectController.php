@@ -2711,14 +2711,11 @@ class ProjectController extends AbstractController
      */
     public function task__template_list()
     {
-        $user = User::auth();
+        User::auth();
+        //
         $projectId = intval(Request::input('project_id'));
         if (!$projectId) {
-            return Base::retError('缺少参数project_id');
-        }
-        $project = Project::userProject($projectId);
-        if (!$project) {
-            return Base::retError('项目不存在或已被删除');
+            return Base::retError('参数错误');
         }
         $templates = ProjectTaskTemplate::where('project_id', $projectId)
             ->orderBy('sort')
@@ -2751,7 +2748,7 @@ class ProjectController extends AbstractController
         //
         $projectId = intval(Request::input('project_id'));
         if (!$projectId) {
-            return Base::retError('缺少参数project_id');
+            return Base::retError('参数错误');
         }
         Project::userProject($projectId, true, true);
         //
@@ -2783,7 +2780,7 @@ class ProjectController extends AbstractController
         } else {
             $templateCount = ProjectTaskTemplate::where('project_id', $projectId)->count();
             if ($templateCount >= 20) {
-                return Base::retError('每个项目最多添加10个模板');
+                return Base::retError('每个项目最多添加20个模板');
             }
             $data['sort'] = ProjectTaskTemplate::where('project_id', $projectId)->max('sort') + 1;
             $template = ProjectTaskTemplate::create($data);
@@ -2811,7 +2808,7 @@ class ProjectController extends AbstractController
         //
         $id = intval(Request::input('id'));
         if (!$id) {
-            return Base::retError('缺少参数id');
+            return Base::retError('参数错误');
         }
         $template = ProjectTaskTemplate::find($id);
         if (!$template) {

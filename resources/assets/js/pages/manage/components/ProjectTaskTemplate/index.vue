@@ -67,9 +67,9 @@
                 </FormItem>
                 <FormItem v-if="!editingTemplate.id">
                     <div class="project-task-template-system">
-                        <div v-if="!systemTemplateShow" @click="systemTemplateShow=true" class="tip-title">{{$L('使用示例模板')}}</div>
+                        <div v-if="!systemTemplateShow" @click="onSystemTemplate" class="tip-title">{{$L('使用示例模板')}}</div>
                         <ul v-else>
-                            <li v-for="(item, index) in systemTemplates" :key="index" @click="useSystemTemplate(item)">{{item.name}}</li>
+                            <li v-for="(item, index) in systemTemplateData" :key="index" @click="useSystemTemplate(item)">{{item.name}}</li>
                         </ul>
                     </div>
                 </FormItem>
@@ -84,7 +84,9 @@
 
 <script>
 import {mapState} from 'vuex'
-import VMPreviewNostyle from "../../../components/VMEditor/nostyle.vue";
+import VMPreviewNostyle from "../../../../components/VMEditor/nostyle.vue";
+import AllTaskTemplates from "./template";
+import {getLanguage} from "../../../../language";
 
 export default {
     name: 'ProjectTaskTemplate',
@@ -108,103 +110,7 @@ export default {
             },
 
             systemTemplateShow: false,
-            systemTemplates: [
-                {
-                    "name": "通用任务",
-                    "title": "xxxx 任务",
-                    "content": "描述：xxxx\n清单：xxxx"
-                },
-                {
-                    "name": "产品需求",
-                    "title": "xxxx 功能需求/产品任务",
-                    "content": "背景：xxxx\n目标：xxxx\n清单：xxxx"
-                },
-                {
-                    "name": "技术任务",
-                    "title": "xxxx 开发任务/技术优化任务",
-                    "content": "背景：xxxx\n技术目标：xxxx\n任务清单：xxxx"
-                },
-                {
-                    "name": "运营任务",
-                    "title": "xxxx 活动策划/运营任务",
-                    "content": "背景：xxxx\n活动方案：xxxx\n数据指标：xxxx\n任务清单：xxxx"
-                },
-                {
-                    "name": "市场推广",
-                    "title": "xxxx 推广任务/品牌活动",
-                    "content": "背景：xxxx\n推广方案：xxxx\n数据指标：xxxx\n任务清单：xxxx"
-                },
-                {
-                    "name": "设计任务",
-                    "title": "xxxx 设计任务",
-                    "content": "背景：xxxx\n设计要求：xxxx\n任务清单：xxxx\n相关资源：xxxx"
-                },
-                {
-                    "name": "人力资源",
-                    "title": "xxxx 招聘任务/培训任务",
-                    "content": "目标：xxxx\n内容：xxxx\n任务清单：xxxx"
-                },
-                {
-                    "name": "财务任务",
-                    "title": "xxxx 预算审批/报销任务",
-                    "content": "背景：xxxx\n审批流程：xxxx\n报销清单：xxxx"
-                },
-                {
-                    "name": "销售任务",
-                    "title": "xxxx 销售跟进任务",
-                    "content": "客户信息：xxxx\n销售目标：xxxx\n任务清单：xxxx"
-                },
-                {
-                    "name": "客户支持",
-                    "title": "xxxx 客户问题处理任务",
-                    "content": "客户问题：xxxx\n优先级：xxxx\n解决方案：xxxx\n任务清单：xxxx"
-                },
-                {
-                    "name": "内容创作",
-                    "title": "xxxx 内容创作任务",
-                    "content": "主题：xxxx\n目标：xxxx\n任务清单：xxxx"
-                },
-                {
-                    "name": "法律事务",
-                    "title": "xxxx 合同审核/法律任务",
-                    "content": "合同背景：xxxx\n审核重点：xxxx\n任务清单：xxxx"
-                },
-                {
-                    "name": "学习计划",
-                    "title": "xxxx 学习计划任务",
-                    "content": "学习目标：xxxx\n学习资源：xxxx\n任务清单：xxxx"
-                },
-                {
-                    "name": "项目管理",
-                    "title": "xxxx 项目管理任务",
-                    "content": "项目背景：xxxx\n任务清单：xxxx\n状态：xxxx"
-                },
-                {
-                    "name": "测试任务",
-                    "title": "xxxx 测试任务",
-                    "content": "测试目标：xxxx\n测试范围：xxxx\n测试用例：xxxx\n问题记录：xxxx"
-                },
-                {
-                    "name": "数据分析",
-                    "title": "xxxx 数据分析任务",
-                    "content": "分析目标：xxxx\n数据来源：xxxx\n分析方法：xxxx\n结论与建议：xxxx"
-                },
-                {
-                    "name": "供应链管理",
-                    "title": "xxxx 供应链任务",
-                    "content": "任务目标：xxxx\n供应商信息：xxxx\n任务清单：xxxx"
-                },
-                {
-                    "name": "安全检查",
-                    "title": "xxxx 安全检查任务",
-                    "content": "检查范围：xxxx\n检查标准：xxxx\n问题记录：xxxx\n整改计划：xxxx"
-                },
-                {
-                    "name": "行政事务",
-                    "title": "xxxx 行政任务",
-                    "content": "任务描述：xxxx\n负责人：xxxx\n任务清单：xxxx"
-                }
-            ]
+            systemTemplateData: [],
         }
     },
     computed: {
@@ -325,6 +231,12 @@ export default {
             } catch ({msg}) {
                 $A.messageError(msg || '设置失败')
             }
+        },
+
+        onSystemTemplate() {
+            const lang = getLanguage()
+            this.systemTemplateData = typeof AllTaskTemplates[lang] === "undefined" ? AllTaskTemplates['en'] : AllTaskTemplates[lang]
+            this.systemTemplateShow = true
         },
 
         // 使用系统模板
