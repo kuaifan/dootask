@@ -4,11 +4,12 @@
     flex-direction: column;
 
     .header {
-        padding: 20px 20px 10px;
+        height: 60px;
+        padding: 10px 20px;
         display: flex;
         align-items: center;
         justify-content: flex-start;
-        
+
         @media screen and (min-width: 500px) {
             justify-content: space-between;
         }
@@ -30,15 +31,15 @@
 
         .empty {
             text-align: center;
-            padding: 40px 0;
-            color: $primary-text-color;
             height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-
-            .empty-text {
-                font-size: 14px;
+            flex-direction: column;
+            padding: 20px;
+            color: $primary-text-color;
+            > button {
+                margin-top: 18px;
             }
         }
     }
@@ -86,11 +87,12 @@
             }
 
             .template-actions {
-                margin-top: 12px;
+                margin-top: 4px;
                 text-align: right;
 
                 > button {
-                    margin-right: 12px;
+                    margin-top: 8px;
+                    margin-right: 8px;
                     height: 28px;
                     padding: 0 12px;
                     font-size: 13px;
@@ -127,6 +129,11 @@
 
             &:hover {
                 background-color: #e0e0e0;
+            }
+
+            &.selected {
+                background-color: $primary-color;
+                color: white;
             }
         }
     }

@@ -10,7 +10,7 @@ namespace App\Models;
  * @property string $name 模板名称
  * @property string|null $title 任务标题
  * @property string|null $content 任务内容
- * @property int $sort 排序
+ * @property int $sort 排序（预留）
  * @property bool $is_default 是否默认模板
  * @property int $userid 创建人
  * @property \Illuminate\Support\Carbon|null $created_at

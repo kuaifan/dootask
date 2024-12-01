@@ -12,7 +12,8 @@
 
         <div class="content">
             <div v-if="!templates.length" class="empty">
-                <div class="empty-text">{{$L('暂无任务模板')}}</div>
+                <div class="empty-text">{{$L('当前项目暂无任务模板')}}</div>
+                <Button type="primary" icon="md-add" @click="handleAdd">{{$L('新建模板')}}</Button>
             </div>
             <div v-else class="template-list">
                 <div v-for="item in templates" :key="item.id" class="template-item">
@@ -53,15 +54,16 @@
                 v-bind="formOptions"
                 @submit.native.prevent>
                 <FormItem prop="name" :label="$L('模板名称')">
-                    <Input ref="templateName" v-model="editingTemplate.name" :placeholder="$L('请输入模板名称')"/>
+                    <Input ref="templateName" v-model="editingTemplate.name" :disabled="systemTemplateIsMultiple" :placeholder="$L('请输入模板名称')"/>
                 </FormItem>
                 <FormItem prop="title" :label="$L('任务标题')">
-                    <Input v-model="editingTemplate.title" :placeholder="$L('请输入任务标题')"/>
+                    <Input v-model="editingTemplate.title" :disabled="systemTemplateIsMultiple" :placeholder="$L('请输入任务标题')"/>
                 </FormItem>
                 <FormItem prop="content" :label="$L('任务内容')">
                     <Input
                         type="textarea"
                         v-model="editingTemplate.content"
+                        :disabled="systemTemplateIsMultiple"
                         :placeholder="$L('请输入任务内容')"
                         :autosize="{ minRows: 4, maxRows: 12 }"/>
                 </FormItem>
@@ -69,14 +71,27 @@
                     <div class="project-task-template-system">
                         <div v-if="!systemTemplateShow" @click="onSystemTemplate" class="tip-title">{{$L('使用示例模板')}}</div>
                         <ul v-else>
-                            <li v-for="(item, index) in systemTemplateData" :key="index" @click="useSystemTemplate(item)">{{item.name}}</li>
+                            <li
+                                :class="{selected:systemTemplateIsMultiple}"
+                                @click="systemTemplateIsMultiple=!systemTemplateIsMultiple">
+                                <i class="taskfont" v-html="systemTemplateIsMultiple ? '&#xe627;' : '&#xe625;'"></i>
+                                {{$L('多选')}}
+                            </li>
+                            <li
+                                v-for="(item, index) in systemTemplateData"
+                                :key="index"
+                                :class="{selected:systemTemplateIsMultiple && systemTemplateMultipleData.indexOf(item)!==-1}"
+                                @click="useSystemTemplate(item)">{{item.name}}</li>
                         </ul>
                     </div>
                 </FormItem>
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="showEditModal=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="loading" @click="handleSave">{{$L('保存')}}</Button>
+                <Button type="primary" :loading="loading" @click="handleSave">
+                    {{ $L('保存') }}
+                    {{ systemTemplateIsMultiple && systemTemplateMultipleData.length > 0 ? ` (${systemTemplateMultipleData.length})` : '' }}
+                </Button>
             </div>
         </Modal>
     </div>
@@ -111,6 +126,8 @@ export default {
 
             systemTemplateShow: false,
             systemTemplateData: [],
+            systemTemplateIsMultiple: false,
+            systemTemplateMultipleData: [],
         }
     },
     computed: {
@@ -176,20 +193,38 @@ export default {
                 $A.messageWarning('请输入模板名称')
                 return
             }
+            let savePromises = []
+            if (this.systemTemplateIsMultiple) {
+                if (this.systemTemplateMultipleData.length === 0) {
+                    $A.messageWarning('请选择示例模板')
+                    return
+                }
+                savePromises = this.systemTemplateMultipleData.map(item => {
+                    const template = { ...this.editingTemplate, id: null, name: item.name, title: item.title, content: item.content }
+                    return this.handleSaveCall(template)
+                })
+            } else {
+                savePromises.push(this.handleSaveCall(this.editingTemplate))
+            }
 
             try {
-                await this.$store.dispatch("call", {
-                    url: 'project/task/template_save',
-                    data: this.editingTemplate,
-                    method: 'post',
-                    spinner: 300
-                })
-                $A.messageSuccess('保存成功')
+                const results = await Promise.all(savePromises)
+                $A.messageSuccess(results.length === 1 ? results[0].msg : '全部保存成功')
                 this.showEditModal = false
                 this.loadTemplates()
-            } catch ({msg}) {
-                $A.messageError(msg || '保存失败')
+            } catch (error) {
+                $A.messageError(error.msg || '保存失败')
             }
+        },
+
+        // 保存模板请求
+        async handleSaveCall(data) {
+            return this.$store.dispatch("call", {
+                url: 'project/task/template_save',
+                data,
+                method: 'post',
+                spinner: 300
+            })
         },
 
         // 删除模板
@@ -199,14 +234,14 @@ export default {
                 content: '确定要删除该模板吗？',
                 onOk: async () => {
                     try {
-                        await this.$store.dispatch("call", {
+                        const {msg} = await this.$store.dispatch("call", {
                             url: 'project/task/template_delete',
                             data: {
                                 id: template.id
                             },
                             spinner: 300
                         })
-                        $A.messageSuccess('删除成功')
+                        $A.messageSuccess(msg || '删除成功')
                         this.loadTemplates()
                     } catch ({msg}) {
                         $A.messageError(msg || '删除失败')
@@ -218,7 +253,7 @@ export default {
         // 设置默认模板
         async handleSetDefault(template) {
             try {
-                await this.$store.dispatch("call", {
+                const {msg} = await this.$store.dispatch("call", {
                     url: 'project/task/template_default',
                     data: {
                         id: template.id,
@@ -226,7 +261,7 @@ export default {
                     },
                     spinner: 300
                 })
-                $A.messageSuccess('设置成功')
+                $A.messageSuccess(msg || '设置成功')
                 this.loadTemplates()
             } catch ({msg}) {
                 $A.messageError(msg || '设置失败')
@@ -244,6 +279,15 @@ export default {
             this.editingTemplate.name = item.name
             this.editingTemplate.title = item.title
             this.editingTemplate.content = item.content
+            //
+            if (this.systemTemplateIsMultiple) {
+                const index = this.systemTemplateMultipleData.indexOf(item)
+                if (index === -1) {
+                    this.systemTemplateMultipleData.push(item)
+                } else {
+                    this.systemTemplateMultipleData.splice(index, 1)
+                }
+            }
         }
     }
 }

@@ -2718,7 +2718,6 @@ class ProjectController extends AbstractController
             return Base::retError('参数错误');
         }
         $templates = ProjectTaskTemplate::where('project_id', $projectId)
-            ->orderBy('sort')
             ->orderByDesc('id')
             ->get();
         return Base::retSuccess('success', $templates);
@@ -2782,7 +2781,6 @@ class ProjectController extends AbstractController
             if ($templateCount >= 20) {
                 return Base::retError('每个项目最多添加20个模板');
             }
-            $data['sort'] = ProjectTaskTemplate::where('project_id', $projectId)->max('sort') + 1;
             $template = ProjectTaskTemplate::create($data);
         }
         return Base::retSuccess('保存成功', $template);

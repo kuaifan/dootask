@@ -631,4 +631,14 @@ body.dark-mode-reverse {
             }
         }
     }
+
+    .project-task-template-system {
+        ul {
+            > li {
+                &.selected {
+                    color: black;
+                }
+            }
+        }
+    }
 }
