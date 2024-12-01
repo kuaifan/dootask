@@ -13,7 +13,11 @@
                 filterable/>
         </div>
         <ul v-if="taskTemplateList.length > 0" class="task-add-template">
-            <li v-for="item in taskTemplateList" :key="item.id" @click="setTaskTemplate(item)">
+            <li
+                v-for="item in taskTemplateList"
+                :key="item.id"
+                :class="{active:templateActiveID === item.id}"
+                @click="setTaskTemplate(item)">
                 {{ item.name }}
             </li>
         </ul>
@@ -268,7 +272,10 @@ export default {
 
             beforeClose: [],
 
-            addContinue: false
+            addContinue: false,
+
+            templateActiveID: 0,
+            templateCompareData: {name: '', content: ''},
         }
     },
 
@@ -279,7 +286,10 @@ export default {
     async mounted() {
         this.initCascaderData();
         await this.initProjectData();
-        this.$nextTick(() => this.$refs.input.focus())
+        this.$nextTick(() => {
+            this.$refs.input.focus();
+            this.templateCompareData = {name: this.addData.name, content: this.addData.content};
+        })
         this.isMounted = true
     },
 
@@ -325,12 +335,7 @@ export default {
         'addData.project_id'(projectId) {
             if (projectId > 0) {
                 $A.IDBSave("cacheAddTaskProjectId", projectId);
-                this.$store.dispatch("updateTaskTemplates", projectId).then(() => {
-                    const defaultTemplate = this.taskTemplateList.find(({is_default}) => is_default);
-                    if (defaultTemplate) {
-                        this.setTaskTemplate(defaultTemplate);
-                    }
-                })
+                this.$store.dispatch("updateTaskTemplates", projectId).then(this.setTaskDefaultTemplate)
             }
         },
         'addData.column_id'(columnId) {
@@ -555,11 +560,7 @@ export default {
             this.$store.dispatch("taskAdd", this.addData).then(({msg}) => {
                 $A.messageSuccess(msg);
                 if (continued === true) {
-                    this.addData = Object.assign({}, this.addData, {
-                        name: "",
-                        content: "",
-                        subtasks: [],
-                    });
+                    this.addData = Object.assign({}, this.addData, this.templateCompareData, {subtasks: []});
                     this.$refs.input.focus();
                 } else {
                     this.addData = $A.cloneJSON(this.addDefault);
@@ -626,11 +627,33 @@ export default {
             }
         },
 
-        setTaskTemplate(item) {
-            this.addData.name = item.title
-            this.addData.content = nostyle(item.content, {
-                sanitize: false,
-            });
+        setTaskTemplate(item, force = false) {
+            if (force) {
+                this.templateActiveID = item.id;
+                this.addData.name = item.name;
+                this.addData.content = nostyle(item.content, {sanitize: false});
+                this.$nextTick(() => {
+                    this.$refs.input.focus();
+                    this.templateCompareData = {name: this.addData.name, content: this.addData.content};
+                });
+                return;
+            }
+            if ((this.addData.name !== this.templateCompareData.name && this.addData.name !== '') ||
+                (this.addData.content !== this.templateCompareData.content && this.addData.content !== '')) {
+                $A.modalConfirm({
+                    content: '当前已有修改的内容，是否要覆盖？',
+                    onOk: () => this.setTaskTemplate(item, true)
+                });
+            } else {
+                this.setTaskTemplate(item, true);
+            }
+        },
+
+        setTaskDefaultTemplate() {
+            const defaultTemplate = this.taskTemplateList.find(({is_default}) => is_default);
+            if (defaultTemplate) {
+                this.setTaskTemplate(defaultTemplate);
+            }
         }
     }
 }

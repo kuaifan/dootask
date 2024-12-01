@@ -2762,8 +2762,8 @@ class ProjectController extends AbstractController
         if (empty($name)) {
             return Base::retError('请输入模板名称');
         }
-        if (empty($title)) {
-            return Base::retError('请输入任务标题');
+        if (empty($title) && empty($content)) {
+            return Base::retError('请输入任务标题或内容');
         }
         $data = [
             'project_id' => $projectId,
@@ -2823,7 +2823,7 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @api {get} api/project/task/template_default          50. 设置任务模板为默认
+     * @api {get} api/project/task/template_default          50. 设置(取消)任务模板为默认
      *
      * @apiDescription 需要token身份（限：项目负责人）
      * @apiVersion 1.0.0
@@ -2854,9 +2854,12 @@ class ProjectController extends AbstractController
         if (!$template) {
             return Base::retError('模板不存在或已被删除');
         }
-        // 先将所有模板设为非默认
+        if ($template->is_default) {
+            $template->update(['is_default' => false]);
+            return Base::retSuccess('取消成功');
+        }
+        //
         ProjectTaskTemplate::where('project_id', $projectId)->update(['is_default' => false]);
-        // 设置当前模板为默认
         $template->update(['is_default' => true]);
         return Base::retSuccess('设置成功');
     }

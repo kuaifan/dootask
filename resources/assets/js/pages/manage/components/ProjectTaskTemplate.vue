@@ -21,8 +21,8 @@
                         <span v-if="item.is_default" class="default-tag">{{$L('默认')}}</span>
                     </div>
                     <div class="template-content">
-                        <div class="task-title">{{ item.title }}</div>
-                        <div class="task-content">
+                        <div v-if="item.title" class="task-title">{{ item.title }}</div>
+                        <div v-if="item.content" class="task-content">
                             <VMPreviewNostyle ref="descPreview" :value="item.content"/>
                         </div>
                     </div>
@@ -96,9 +96,6 @@ export default {
             formRules: {
                 name: [
                     { required: true, message: this.$L('请输入模板名称'), trigger: 'blur' }
-                ],
-                title: [
-                    { required: true, message: this.$L('请输入任务标题'), trigger: 'blur' }
                 ]
             }
         }
@@ -135,7 +132,7 @@ export default {
                 })
                 this.templates = data || []
             } catch ({msg}) {
-                this.$Message.error(msg || this.$L('加载模板失败'))
+                $A.messageError(msg || '加载模板失败')
             }
             this.loading = false
         },
@@ -155,7 +152,7 @@ export default {
         // 保存模板
         async handleSave() {
             if (!this.editingTemplate.name) {
-                this.$Message.warning(this.$L('请输入模板名称'))
+                $A.messageWarning('请输入模板名称')
                 return
             }
 
@@ -166,19 +163,19 @@ export default {
                     method: 'post',
                     spinner: 300
                 })
-                this.$Message.success(this.$L('保存成功'))
+                $A.messageSuccess('保存成功')
                 this.showEditModal = false
                 this.loadTemplates()
             } catch ({msg}) {
-                this.$Message.error(msg || this.$L('保存失败'))
+                $A.messageError(msg || '保存失败')
             }
         },
 
         // 删除模板
         async handleDelete(template) {
-            this.$Modal.confirm({
-                title: this.$L('确认删除'),
-                content: this.$L('确定要删除该模板吗？'),
+            $A.modalConfirm({
+                title: '确认删除',
+                content: '确定要删除该模板吗？',
                 onOk: async () => {
                     try {
                         await this.$store.dispatch("call", {
@@ -188,10 +185,10 @@ export default {
                             },
                             spinner: 300
                         })
-                        this.$Message.success(this.$L('删除成功'))
+                        $A.messageSuccess('删除成功')
                         this.loadTemplates()
                     } catch ({msg}) {
-                        this.$Message.error(msg || this.$L('删除失败'))
+                        $A.messageError(msg || '删除失败')
                     }
                 }
             })
@@ -199,10 +196,6 @@ export default {
 
         // 设置默认模板
         async handleSetDefault(template) {
-            if (template.is_default) {
-                return
-            }
-
             try {
                 await this.$store.dispatch("call", {
                     url: 'project/task/template_default',
@@ -212,10 +205,10 @@ export default {
                     },
                     spinner: 300
                 })
-                this.$Message.success(this.$L('设置成功'))
+                $A.messageSuccess('设置成功')
                 this.loadTemplates()
             } catch ({msg}) {
-                this.$Message.error(msg || this.$L('设置失败'))
+                $A.messageError(msg || '设置失败')
             }
         }
     }
