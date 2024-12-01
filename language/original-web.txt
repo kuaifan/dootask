@@ -1833,3 +1833,5 @@ WiFi签到延迟时长为±1分钟。
 例如：你是一个人开发的AI助手
 仅支持 http 代理
 例如：http://proxy.com 或 https://proxy.com
+
+系统默认

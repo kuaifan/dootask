@@ -92,7 +92,7 @@
                                     <span slot="append">{{$L('天')}}</span>
                                 </Input>
                             </div>
-                            <div slot="content">{{$L('任务完成 (*) 天后自动归档。', formDatum.archived_day)}}</div>
+                            <div slot="content">{{$L('任务完成 (*) 天后自动归档。', formDatum.archived_day || 'n')}}</div>
                         </ETooltip>
                     </FormItem>
                     <FormItem :label="$L('可见性选项')" prop="taskVisible">

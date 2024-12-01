@@ -20,6 +20,8 @@ use Request;
  * @property string|null $desc 描述、备注
  * @property int|null $userid 创建人
  * @property int|null $personal 是否个人项目
+ * @property string|null $archive_method 自动归档方式
+ * @property int|null $archive_days 自动归档天数
  * @property string|null $user_simple 成员总数|1,2,3
  * @property int|null $dialog_id 聊天会话ID
  * @property \Illuminate\Support\Carbon|null $archived_at 归档时间
@@ -48,6 +50,8 @@ use Request;
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereArchivedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereArchivedUserid($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Project whereArchiveDays($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Project whereArchiveMethod($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Project whereDesc($value)

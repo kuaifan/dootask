@@ -286,6 +286,8 @@ class ProjectController extends AbstractController
      * @apiParam {Number} project_id        项目ID
      * @apiParam {String} name              项目名称
      * @apiParam {String} [desc]            项目介绍
+     * @apiParam {String} [archive_method]  归档方式
+     * @apiParam {Number} [archive_days]    自动归档天数
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -298,6 +300,8 @@ class ProjectController extends AbstractController
         $project_id = intval(Request::input('project_id'));
         $name = trim(Request::input('name', ''));
         $desc = trim(Request::input('desc', ''));
+        $archive_method = Request::input('archive_method');
+        $archive_days = intval(Request::input('archive_days'));
         if (mb_strlen($name) < 2) {
             return Base::retError('项目名称不可以少于2个字');
         } elseif (mb_strlen($name) > 32) {
@@ -306,9 +310,14 @@ class ProjectController extends AbstractController
         if (mb_strlen($desc) > 255) {
             return Base::retError('项目介绍最多只能设置255个字');
         }
+        if ($archive_method == 'custom') {
+            if ($archive_days < 1 || $archive_days > 365) {
+                return Base::retError('自动归档天数设置错误，范围：1-365');
+            }
+        }
         //
         $project = Project::userProject($project_id, true, true);
-        AbstractModel::transaction(function () use ($desc, $name, $project) {
+        AbstractModel::transaction(function () use ($archive_days, $archive_method, $desc, $name, $project) {
             if ($project->name != $name) {
                 $project->addLog("修改项目名称", [
                     'change' => [$project->name, $name]
@@ -321,6 +330,18 @@ class ProjectController extends AbstractController
             if ($project->desc != $desc) {
                 $project->desc = $desc;
                 $project->addLog("修改项目介绍");
+            }
+            if ($project->archive_method != $archive_method) {
+                $project->addLog("修改归档方式", [
+                    'change' => [$project->archive_method, $archive_method]
+                ]);
+                $project->archive_method = $archive_method;
+            }
+            if ($project->archive_method == 'custom') {
+                $project->addLog("修改自动归档天数", [
+                    'change' => [$project->archive_days, $archive_days]
+                ]);
+                $project->archive_days = $archive_days;
             }
             $project->save();
         });

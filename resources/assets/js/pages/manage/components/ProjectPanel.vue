@@ -338,6 +338,21 @@
                 <FormItem prop="desc" :label="$L('项目介绍')">
                     <Input ref="projectDesc" type="textarea" :autosize="{ minRows: 3, maxRows: 5 }" v-model="settingData.desc" :maxlength="255" :placeholder="`${$L('选填')} (${$L('支持 Markdown 格式')})`"></Input>
                 </FormItem>
+                <FormItem :label="$L('自动归档')" prop="archive_method">
+                    <RadioGroup :value="settingData.archive_method" @on-change="formArchived">
+                        <Radio label="system">{{$L('系统默认')}}</Radio>
+                        <Radio label="custom">{{$L('自定义')}}</Radio>
+                    </RadioGroup>
+                    <template v-if="settingData.archive_method=='custom'">
+                        <div class="form-tip">{{$L('任务完成 (*) 天后自动归档。', settingData.archive_days || 'n')}}</div>
+                        <div class="setting-auto-day">
+                            <Input v-model="settingData.archive_days" type="number">
+                                <span slot="append">{{$L('天')}}</span>
+                            </Input>
+                        </div>
+                    </template>
+
+                </FormItem>
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="settingShow=false">{{$L('取消')}}</Button>
@@ -1270,8 +1285,12 @@ export default {
         projectDropdown(name) {
             switch (name) {
                 case "setting":
-                    this.$set(this.settingData, 'name', this.projectData.name);
-                    this.$set(this.settingData, 'desc', this.projectData.desc);
+                    Object.assign(this.settingData, {
+                        name: this.projectData.name,
+                        desc: this.projectData.desc,
+                        archive_method: this.projectData.archive_method,
+                        archive_days: this.projectData.archive_days
+                    });
                     this.settingShow = true;
                     this.$nextTick(() => {
                         this.$refs.projectName.focus()
@@ -1280,13 +1299,7 @@ export default {
                     break;
 
                 case "permissions":
-                    // this.$set(this.settingData, 'name', this.projectData.name);
-                    // this.$set(this.settingData, 'desc', this.projectData.desc);
                     this.permissionShow = true;
-                    // this.$nextTick(() => {
-                    //     this.$refs.projectName.focus()
-                    //     setTimeout(this.$refs.projectDesc.resizeTextarea, 0)
-                    // });
                     break;
 
                 case "user":
@@ -1556,7 +1569,11 @@ export default {
             } else {
                 this.goBack();
             }
-        }
+        },
+
+        formArchived(value) {
+            this.settingData = { ...this.settingData, archive_method: value };
+        },
     }
 }
 </script>

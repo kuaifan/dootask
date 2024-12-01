@@ -22,24 +22,61 @@ class AutoArchivedTask extends AbstractTask
 
     public function start()
     {
+        $this->systemAutoArchived();
+        $this->projectAutoArchived();
+    }
+
+    /**
+     * 处理已完成未归档的任务（系统默认）
+     */
+    private function systemAutoArchived()
+    {
         $setting = Base::setting('system');
-        if ($setting['auto_archived'] === 'open') {
-            $archivedDay = floatval($setting['archived_day']);
-            if ($archivedDay > 0) {
-                $archivedDay = min(100, $archivedDay);
-                $archivedTime = Carbon::now()->subDays($archivedDay);
-                //获取已完成未归档的任务
-                $taskLists = ProjectTask::whereNotNull('complete_at')
-                    ->where('complete_at', '<=', $archivedTime)
-                    ->where('archived_userid', 0)
-                    ->whereNull('archived_at')
-                    ->take(100)
-                    ->get();
-                /** @var ProjectTask $task */
-                foreach ($taskLists AS $task) {
-                    $task->archivedTask(Carbon::now(), true);
-                }
-            }
+        if ($setting['auto_archived'] !== 'open') {
+            return;
+        }
+        $archivedDay = min(365, floatval($setting['archived_day']));
+        if ($archivedDay <= 0) {
+            return;
+        }
+        $taskLists = ProjectTask::select('project_tasks.*')
+            ->join('projects', 'projects.id', '=', 'project_tasks.project_id')
+            ->whereNotNull('project_tasks.complete_at')
+            ->where('project_tasks.complete_at', '<=', Carbon::now()->subDays($archivedDay))
+            ->where('project_tasks.archived_userid', 0)
+            ->whereNull('project_tasks.archived_at')
+            ->where('projects.archive_method', '!=', 'custom')
+            ->take(100)
+            ->get();
+        /** @var ProjectTask $task */
+        foreach ($taskLists as $task) {
+            $task->archivedTask(Carbon::now(), true);
+        }
+    }
+
+    /**
+     * 处理已完成未归档的任务（项目自定义）
+     */
+    private function projectAutoArchived()
+    {
+        // 获取设置了自定义归档的项目的任务
+        $prefix = \DB::getTablePrefix();
+        $taskLists = ProjectTask::select('project_tasks.*')
+            ->join('projects', 'projects.id', '=', 'project_tasks.project_id')
+            ->whereNotNull('project_tasks.complete_at')
+            ->where('project_tasks.archived_userid', 0)
+            ->whereNull('project_tasks.archived_at')
+            ->where('projects.archive_method', 'custom')
+            ->whereRaw("DATEDIFF(NOW(), {$prefix}project_tasks.complete_at) >= {$prefix}projects.archive_days")
+            ->with(['project' => function ($query) {
+                $query->select('id', 'archive_days');
+            }])
+            ->take(100)
+            ->get();
+
+        /** @var ProjectTask $task */
+        foreach ($taskLists as $task) {
+            $task->archivedTask(Carbon::now(), true);
         }
     }
 
