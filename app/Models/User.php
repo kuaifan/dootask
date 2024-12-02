@@ -222,10 +222,14 @@ class User extends AbstractModel
 
     /**
      * 返回是否禁用帐号（离职）
+     * @param bool $incAt 是否包含禁用时间
      * @return bool
      */
-    public function isDisable()
+    public function isDisable($incAt = false)
     {
+        if ($incAt) {
+            return in_array('disable', $this->identity) || $this->disable_at;
+        }
         return in_array('disable', $this->identity);
     }
 

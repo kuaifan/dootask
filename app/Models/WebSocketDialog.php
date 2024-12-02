@@ -291,6 +291,7 @@ class WebSocketDialog extends AbstractModel
                     $data['email'] = $basic->email;
                     $data['userimg'] = $basic->userimg;
                     $data['bot'] = $basic->getBotOwner();
+                    $data['is_disable'] = $basic->isDisable(true);
                     $data['quick_msgs'] = UserBot::quickMsgs($basic->email);
                 } else {
                     $data['name'] = 'non-existent';

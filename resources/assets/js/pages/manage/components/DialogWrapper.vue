@@ -260,6 +260,9 @@
             <div v-if="isMute" class="chat-mute">
                 {{$L('禁言发言')}}
             </div>
+            <div v-else-if="isDisable" class="chat-mute">
+                {{$L('此账号已停用')}}
+            </div>
             <ChatInput
                 v-else
                 ref="input"
@@ -1124,6 +1127,10 @@ export default {
                 return !this.userIsAdmin
             }
             return false
+        },
+
+        isDisable() {
+            return this.dialogData.is_disable ?? false
         },
 
         quoteId() {
