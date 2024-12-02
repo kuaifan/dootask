@@ -60,7 +60,7 @@
                         placement="bottom"
                         :disabled="item.sub_top === true"
                         @command="dropTask(item, $event)">
-                        <TaskPriority :backgroundColor="item.p_color">{{item.p_name}}</TaskPriority>
+                        <TaskPriority :backgroundColor="item.p_color">{{item.p_name || $L('未设置')}}</TaskPriority>
                         <EDropdownMenu slot="dropdown">
                             <EDropdownItem v-for="(item, key) in taskPriority" :key="key" :command="'priority::' + key">
                                 <i
