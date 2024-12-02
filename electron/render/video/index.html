@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Video</title>
+    <link rel="stylesheet" href="./plyr.css" />
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            overflow: hidden;
+            user-select: none;
+        }
+        #video-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .plyr {
+            width: 100%;
+            height: 100%;
+        }
+        video {
+            width: 100%;
+            height: 100%;
+        }
+        /* 自定义播放器主题色 */
+        :root {
+            --plyr-color-main: #409eff;
+        }
+        /* 黑色背景主题 */
+        .plyr--video {
+            background: #000;
+        }
+        .plyr__control--overlaid {
+            background: rgba(64, 158, 255, 0.8);
+        }
+    </style>
+</head>
+<body>
+    <div id="video-container">
+        <video id="player" playsinline controls>
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <script src="./plyr.polyfilled.js"></script>
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        // 多语言翻译
+        const translations = {
+            zh: {
+                speed: '播放速度',
+                normal: '正常',
+                quality: '视频质量',
+                loop: '循环播放',
+                play: '播放',
+                pause: '暂停',
+                played: '已播放',
+                buffered: '已缓冲',
+                currentTime: '当前时间',
+                duration: '总时长',
+                volume: '音量',
+                mute: '静音',
+                unmute: '取消静音',
+                enableCaptions: '启用字幕',
+                disableCaptions: '禁用字幕',
+                enterFullscreen: '进入全屏',
+                exitFullscreen: '退出全屏',
+                frameTitle: '视频播放器',
+                captions: '字幕',
+                settings: '设置',
+                menuBack: '返回上级菜单',
+                restart: '重新播放',
+                rewind: '后退 {seektime} 秒',
+                forward: '前进 {seektime} 秒'
+            },
+            'zh-CHT': {
+                speed: '播放速度',
+                normal: '正常',
+                quality: '視頻質量',
+                loop: '循環播放',
+                play: '播放',
+                pause: '暫停',
+                played: '已播放',
+                buffered: '已緩衝',
+                currentTime: '當前時間',
+                duration: '總時長',
+                volume: '音量',
+                mute: '靜音',
+                unmute: '取消靜音',
+                enableCaptions: '啟用字幕',
+                disableCaptions: '禁用字幕',
+                enterFullscreen: '進入全屏',
+                exitFullscreen: '退出全屏',
+                frameTitle: '視頻播放器',
+                captions: '字幕',
+                settings: '設置',
+                menuBack: '返回上級菜單',
+                restart: '重新播放',
+                rewind: '後退 {seektime} 秒',
+                forward: '前進 {seektime} 秒'
+            },
+            en: {
+                speed: 'Speed',
+                normal: 'Normal',
+                quality: 'Quality',
+                loop: 'Loop',
+                play: 'Play',
+                pause: 'Pause',
+                played: 'Played',
+                buffered: 'Buffered',
+                currentTime: 'Current time',
+                duration: 'Duration',
+                volume: 'Volume',
+                mute: 'Mute',
+                unmute: 'Unmute',
+                enableCaptions: 'Enable captions',
+                disableCaptions: 'Disable captions',
+                enterFullscreen: 'Enter fullscreen',
+                exitFullscreen: 'Exit fullscreen',
+                frameTitle: 'Video player',
+                captions: 'Captions',
+                settings: 'Settings',
+                menuBack: 'Go back to previous menu',
+                restart: 'Restart',
+                rewind: 'Rewind {seektime}s',
+                forward: 'Forward {seektime}s'
+            },
+            ja: {
+                speed: '再生速度',
+                normal: '標準',
+                quality: '画質',
+                loop: 'ループ',
+                play: '再生',
+                pause: '一時停止',
+                played: '再生済み',
+                buffered: 'バッファリング済み',
+                currentTime: '現在の時間',
+                duration: '合計時間',
+                volume: '音量',
+                mute: 'ミュート',
+                unmute: 'ミュート解除',
+                enableCaptions: '字幕をオン',
+                disableCaptions: '字幕をオフ',
+                enterFullscreen: '全画面表示',
+                exitFullscreen: '全画面解除',
+                frameTitle: 'ビデオプレーヤー',
+                captions: '字幕',
+                settings: '設定',
+                menuBack: '前のメニューに戻る',
+                restart: '最初から再生',
+                rewind: '{seektime}秒戻る',
+                forward: '{seektime}秒進む'
+            },
+            ko: {
+                speed: '재생 속도',
+                normal: '보통',
+                quality: '품질',
+                loop: '반복',
+                play: '재생',
+                pause: '일시정지',
+                played: '재생됨',
+                buffered: '버퍼링됨',
+                currentTime: '현재 시간',
+                duration: '총 시간',
+                volume: '볼륨',
+                mute: '음소거',
+                unmute: '음소거 해제',
+                enableCaptions: '자막 켜기',
+                disableCaptions: '자막 끄기',
+                enterFullscreen: '전체화면',
+                exitFullscreen: '전체화면 나가기',
+                frameTitle: '비디오 플레이어',
+                captions: '자막',
+                settings: '설정',
+                menuBack: '이전 메뉴로 돌아가기',
+                restart: '다시 시작',
+                rewind: '{seektime}초 뒤로',
+                forward: '{seektime}초 앞으로'
+            },
+            de: {
+                speed: 'Geschwindigkeit',
+                normal: 'Normal',
+                quality: 'Qualität',
+                loop: 'Wiederholen',
+                play: 'Abspielen',
+                pause: 'Pause',
+                played: 'Gespielt',
+                buffered: 'Gepuffert',
+                currentTime: 'Aktuelle Zeit',
+                duration: 'Gesamtzeit',
+                volume: 'Lautstärke',
+                mute: 'Stummschalten',
+                unmute: 'Ton einschalten',
+                enableCaptions: 'Untertitel aktivieren',
+                disableCaptions: 'Untertitel deaktivieren',
+                enterFullscreen: 'Vollbild',
+                exitFullscreen: 'Vollbild beenden',
+                frameTitle: 'Video-Player',
+                captions: 'Untertitel',
+                settings: 'Einstellungen',
+                menuBack: 'Zurück zum vorherigen Menü',
+                restart: 'Neu starten',
+                rewind: '{seektime}s zurück',
+                forward: '{seektime}s vorwärts'
+            },
+            fr: {
+                speed: 'Vitesse',
+                normal: 'Normale',
+                quality: 'Qualité',
+                loop: 'Boucle',
+                play: 'Lecture',
+                pause: 'Pause',
+                played: 'Lu',
+                buffered: 'Tamponné',
+                currentTime: 'Temps actuel',
+                duration: 'Durée',
+                volume: 'Volume',
+                mute: 'Muet',
+                unmute: 'Son activé',
+                enableCaptions: 'Activer les sous-titres',
+                disableCaptions: 'Désactiver les sous-titres',
+                enterFullscreen: 'Plein écran',
+                exitFullscreen: 'Quitter le plein écran',
+                frameTitle: 'Lecteur vidéo',
+                captions: 'Sous-titres',
+                settings: 'Paramètres',
+                menuBack: 'Retour au menu précédent',
+                restart: 'Redémarrer',
+                rewind: 'Reculer de {seektime}s',
+                forward: 'Avancer de {seektime}s'
+            },
+            id: {
+                speed: 'Kecepatan',
+                normal: 'Normal',
+                quality: 'Kualitas',
+                loop: 'Putar Ulang',
+                play: 'Putar',
+                pause: 'Jeda',
+                played: 'Telah Diputar',
+                buffered: 'Telah Buffer',
+                currentTime: 'Waktu Saat Ini',
+                duration: 'Durasi',
+                volume: 'Volume',
+                mute: 'Bisukan',
+                unmute: 'Suarakan',
+                enableCaptions: 'Aktifkan Teks',
+                disableCaptions: 'Nonaktifkan Teks',
+                enterFullscreen: 'Layar Penuh',
+                exitFullscreen: 'Keluar Layar Penuh',
+                frameTitle: 'Pemutar Video',
+                captions: 'Teks',
+                settings: 'Pengaturan',
+                menuBack: 'Kembali ke menu sebelumnya',
+                restart: 'Mulai Ulang',
+                rewind: 'Mundur {seektime} detik',
+                forward: 'Maju {seektime} detik'
+            },
+            ru: {
+                speed: 'Скорость',
+                normal: 'Нормальная',
+                quality: 'Качество',
+                loop: 'Повтор',
+                play: 'Воспроизвести',
+                pause: 'Пауза',
+                played: 'Воспроизведено',
+                buffered: 'Буферизовано',
+                currentTime: 'Текущее время',
+                duration: 'Продолжительность',
+                volume: 'Громкость',
+                mute: 'Без звука',
+                unmute: 'Со звуком',
+                enableCaptions: 'Включить субтитры',
+                disableCaptions: 'Отключить субтитры',
+                enterFullscreen: 'Полноэкранный режим',
+                exitFullscreen: 'Выйти из полноэкранного режима',
+                frameTitle: 'Видеоплеер',
+                captions: 'Субтитры',
+                settings: 'Настройки',
+                menuBack: 'Вернуться в предыдущее меню',
+                restart: 'Перезапустить',
+                rewind: 'Назад на {seektime} сек',
+                forward: 'Вперед на {seektime} сек'
+            }
+        };
+
+        // 标题翻译
+        const titleTranslations = {
+            zh: '视频播放器',
+            'zh-CHT': '視頻播放器',
+            en: 'Video Player',
+            ko: '비디오 플레이어',
+            ja: 'ビデオプレーヤー',
+            de: 'Video-Player',
+            fr: 'Lecteur Vidéo',
+            id: 'Pemutar Video',
+            ru: 'Видеоплеер'
+        };
+
+        let player = null;
+
+        // 接收主进程传来的视频路径
+        ipcRenderer.on('load-media', (event, args) => {
+            const videoElement = document.querySelector('video');
+            videoElement.src = args.video;
+
+            // 销毁旧的播放器实例
+            if (player) {
+                player.destroy();
+            }
+
+            // 设置语言
+            const currentLang = args.lang || 'en';
+
+            // 创建新的播放器实例
+            player = new Plyr('#player', {
+                controls: [
+                    'play-large', // 大播放按钮
+                    'play', // 播放/暂停
+                    'progress', // 进度条
+                    'current-time', // 当前时间
+                    'duration', // 总时长
+                    'mute', // 静音
+                    'volume', // 音量
+                    'settings', // 设置
+                    'fullscreen' // 全屏
+                ],
+                settings: ['captions', 'quality', 'speed', 'loop'], // 设置菜单选项
+                speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] }, // 播放速度选项
+                keyboard: { focused: true, global: true }, // 启用键盘快捷键
+                tooltips: { controls: true, seek: true }, // 显示工具提示
+                hideControls: true, // 自动隐藏控制栏
+                i18n: translations[currentLang] || translations['en'] // 设置语言
+            });
+
+            // 错误处理
+            player.on('error', (event) => {
+                console.error('Player error:', event);
+            });
+
+            // 更新网页标题
+            document.title = args.title || titleTranslations[currentLang] || titleTranslations['en'];
+
+            // 自动播放
+            player.play().catch(e => {
+                console.log('Auto-play failed:', e);
+            });
+        });
+
+        // 快捷键处理
+        document.addEventListener('keydown', (e) => {
+            // ESC 键关闭窗口
+            if (e.key === 'Escape' && player && !player.fullscreen.active) {
+                window.close();
+            }
+        });
+    </script>
+</body>
+</html>

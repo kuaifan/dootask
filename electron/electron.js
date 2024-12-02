@@ -469,6 +469,44 @@ function updateChildWindow(browser, args) {
 }
 
 /**
+ * 创建媒体浏览器窗口
+ * @param args
+ * @param type
+ */
+function createMediaWindow(args, type = 'image') {
+    const imageWindow = new BrowserWindow({
+        width: args.width || 970,
+        height: args.height || 700,
+        minWidth: 360,
+        minHeight: 360,
+        webPreferences: {
+            nodeIntegration: true,
+            contextIsolation: false,
+            webSecurity: false,
+            plugins: true
+        },
+        show: false
+    });
+
+    // 加载图片浏览器的HTML
+    let filePath = './render/viewer/index.html';
+    if (type === 'video') {
+        filePath = './render/video/index.html';
+    }
+    imageWindow.loadFile(filePath, {}).then(_ => { }).catch(_ => { })
+
+    // 设置右键菜单
+    electronMenu.webContentsMenu(imageWindow.webContents)
+
+    // 窗口准备好后显示
+    imageWindow.on('ready-to-show', () => {
+        imageWindow.show();
+        // 发送图片数据到渲染进程
+        imageWindow.webContents.send('load-media', args);
+    });
+}
+
+/**
  * 创建内置浏览器
  * @param args {url, ?}
  */
@@ -961,6 +999,14 @@ ipcMain.handle('getChildWindow', (event, args) => {
         }
     }
     return null;
+});
+
+/**
+ * 打开媒体浏览器
+ */
+ipcMain.on('openMediaViewer', (event, args) => {
+    createMediaWindow(args, ['image', 'video'].includes(args.type) ? args.type : 'image');
+    event.returnValue = "ok"
 });
 
 /**

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Viewer</title>
+    <link href="./viewer.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1a1a1a;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #image-container {
+            display: none;
+        }
+
+        .viewer-close {
+            display: none;
+        }
+
+        /* 加载动画 */
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+<div id="image-container"></div>
+<div class="loading"></div>
+
+<script src="./viewer.min.js"></script>
+<script>
+    const {ipcRenderer} = require('electron');
+    let viewer = null;
+
+    // 标题翻译
+    const titleTranslations = {
+        zh: '图片查看器',
+        'zh-CHT': '圖片查看器',
+        en: 'Image Viewer',
+        ko: '이미지 뷰어',
+        ja: '画像ビューア',
+        de: 'Bildbetrachter',
+        fr: 'Visionneuse d\'images',
+        id: 'Penampil Gambar',
+        ru: 'Просмотр изображений'
+    };
+
+    // 接收主进程发送的图片数据
+    ipcRenderer.on('load-media', (event, args) => {
+        const container = document.getElementById('image-container');
+        const loading = document.querySelector('.loading');
+
+        loading.style.display = 'block';
+        container.innerHTML = ''; // 清空容器
+
+        // 更新网页标题
+        const currentLang = args.lang || 'en';
+        document.title = args.title || titleTranslations[currentLang] || titleTranslations['en'];
+
+        // 创建图片元素
+        args.images.forEach((src, index) => {
+            const img = document.createElement('img');
+            img.src = src;
+            container.appendChild(img);
+        });
+
+        // 如果已存在查看器，则销毁
+        if (viewer) {
+            viewer.destroy();
+        }
+
+        // 初始化 ViewerJS
+        viewer = new Viewer(container, {
+            // 是否使用内联模式显示
+            // false: 以模态框形式显示（推荐，支持完整键盘快捷键）
+            // true: 直接在页面中显示
+            inline: false,
+
+            // 是否显示图片标题
+            title: false,
+
+            // 工具栏按钮配置
+            toolbar: {
+                zoomIn: true,      // 放大按钮
+                zoomOut: true,     // 缩小按钮
+                oneToOne: true,    // 1:1 原始尺寸按钮
+                reset: true,       // 重置按钮
+                prev: true,        // 上一张图片按钮
+                next: true,        // 下一张图片按钮
+                rotateLeft: true,  // 向左旋转按钮
+                rotateRight: true, // 向右旋转按钮
+                flipHorizontal: true, // 水平翻转按钮
+                flipVertical: true,   // 垂直翻转按钮
+            },
+
+            // 是否显示缩略图导航栏
+            navbar: true,
+
+            // 是否显示工具提示
+            tooltip: true,
+
+            // 是否允许拖动图片
+            movable: true,
+
+            // 是否允许缩放图片
+            zoomable: true,
+
+            // 是否允许旋转图片
+            rotatable: true,
+
+            // 是否允许翻转图片
+            scalable: true,
+
+            // 是否启用过渡动画效果
+            transition: false,
+
+            // 是否启用全屏模式
+            fullscreen: false,
+
+            // 是否启用键盘快捷键
+            // 支持的快捷键：
+            // ← / →：上一张/下一张图片
+            // ↑ / ↓：放大/缩小
+            // Ctrl + ← / Ctrl + →：向左/向右旋转
+            // Space：切换1:1模式
+            // Esc：关闭查看器
+            keyboard: true,
+
+            // 背景遮罩层设置
+            // 'static'：点击背景不会关闭查看器
+            backdrop: 'static',
+
+            // 初始显示第几张图片（从0开始计数）
+            initialViewIndex: args.currentIndex || 0,
+
+            // 图片加载完成后的回调函数
+            viewed() {
+                loading.style.display = 'none';
+            },
+
+            // 查看器隐藏时的回调函数
+            hidden() {
+                window.close();
+            }
+        });
+
+        // 立即显示查看器
+        viewer.show();
+
+        // 监听键盘事件
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !document.fullscreenElement) {
+                window.close();
+            }
+        });
+    });
+</script>
+</body>
+</html>

@@ -5,6 +5,7 @@
 <script>
 import {mapState} from "vuex";
 import PreviewImage from "./index";
+import {getLanguage} from "../../language";
 
 export default {
     name: 'PreviewImageState',
@@ -31,7 +32,7 @@ export default {
         },
         previewImageList(l) {
             if (l.length > 0) {
-                if ($A.isEEUiApp) {
+                if ($A.isEEUiApp || $A.isElectron) {
                     let position = Math.min(Math.max(this.$store.state.previewImageIndex, 0), this.$store.state.previewImageList.length - 1)
                     let paths = l.map(item => {
                         if ($A.isJson(item)) {
@@ -61,20 +62,45 @@ export default {
                         return /\.mp4$/i.test(src)
                     });
                     if (videoPath) {
-                        $A.eeuiAppSendMessage({
-                            action: 'videoPreview',
-                            path: videoPath
-                        });
-                        return
+                        this.videoPreview(videoPath);
+                    } else {
+                        this.imagePreview(position, paths);
                     }
-                    $A.eeuiAppSendMessage({
-                        action: 'picturePreview',
-                        position,
-                        paths
-                    });
                 } else {
                     this.show = true;
                 }
+            }
+        }
+    },
+    methods: {
+        videoPreview(path) {
+            if ($A.isEEUiApp) {
+                $A.eeuiAppSendMessage({
+                    action: 'videoPreview',
+                    path
+                });
+            } else if ($A.isElectron) {
+                this.$Electron.sendMessage('openMediaViewer', {
+                    type: 'video',
+                    lang: getLanguage(),
+                    video: path,
+                })
+            }
+        },
+        imagePreview(index, paths) {
+            if ($A.isEEUiApp) {
+                $A.eeuiAppSendMessage({
+                    action: 'picturePreview',
+                    position: index,
+                    paths
+                });
+            } else if ($A.isElectron) {
+                this.$Electron.sendMessage('openMediaViewer', {
+                    type: 'image',
+                    lang: getLanguage(),
+                    currentIndex: index,
+                    images: paths,
+                })
             }
         }
     }
