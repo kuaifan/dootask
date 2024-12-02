@@ -106,9 +106,9 @@ class EmailNoticeTask extends AbstractTask
             ->groupBy('web_socket_dialog_msg_reads.userid');
 
         // 分批处理用户的未读消息
-        $query->chunk(self::CHUNK_SIZE, function($users) use ($dialogType, $startTime, $endTime) {
+        $query->chunk(self::CHUNK_SIZE, function($users) use ($dialogType) {
             foreach ($users as $userData) {
-                $this->sendUserEmail($userData->userid, $dialogType, $startTime, $endTime);
+                $this->sendUserEmail($userData->userid, $dialogType);
             }
         });
 
@@ -121,7 +121,7 @@ class EmailNoticeTask extends AbstractTask
     /**
      * 发送用户的未读消息邮件
      */
-    private function sendUserEmail(int $userId, string $dialogType, Carbon $startTime, Carbon $endTime): void
+    private function sendUserEmail(int $userId, string $dialogType): void
     {
         // 验证用户
         $user = User::whereDisableAt(null)->find($userId);
@@ -130,7 +130,7 @@ class EmailNoticeTask extends AbstractTask
         }
 
         // 获取未读消息
-        $messages = $this->getUnreadMessages($userId, $dialogType, $startTime, $endTime);
+        $messages = $this->getUnreadMessages($userId, $dialogType);
         if ($messages->isEmpty()) {
             return;
         }
@@ -156,7 +156,7 @@ class EmailNoticeTask extends AbstractTask
     /**
      * 获取用户的未读消息
      */
-    private function getUnreadMessages($userId, $dialogType, Carbon $startTime, Carbon $endTime)
+    private function getUnreadMessages($userId, $dialogType)
     {
         return WebSocketDialogMsg::select([
             'web_socket_dialog_msgs.*',
@@ -171,7 +171,6 @@ class EmailNoticeTask extends AbstractTask
                 'web_socket_dialog_msgs.dialog_type' => $dialogType
             ])
             ->whereNull('r.read_at')
-            ->whereBetween('web_socket_dialog_msgs.created_at', [$startTime, $endTime])
             ->whereIn('web_socket_dialog_msgs.type', self::ALLOWED_MSG_TYPES)
             ->orderBy('web_socket_dialog_msgs.created_at')
             ->limit(self::CHUNK_SIZE)
