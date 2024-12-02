@@ -479,6 +479,7 @@ function createMediaWindow(args, type = 'image') {
         height: args.height || 700,
         minWidth: 360,
         minHeight: 360,
+        autoHideMenuBar: true,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,

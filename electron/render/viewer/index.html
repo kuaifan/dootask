@@ -27,35 +27,28 @@
         .viewer-close {
             display: none;
         }
-
-        /* 加载动画 */
-        .loading {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-            display: none;
-        }
-
-        @keyframes spin {
-            to { transform: translate(-50%, -50%) rotate(360deg); }
-        }
     </style>
 </head>
 <body>
 <div id="image-container"></div>
-<div class="loading"></div>
 
 <script src="./viewer.min.js"></script>
 <script>
     const {ipcRenderer} = require('electron');
     let viewer = null;
+
+    const thumbnailUrl = (url) => {
+        const crops = {
+            ratio: 3,
+            percentage: '320x0'
+        }
+        url = `${url}`
+            .replace(/_thumb\.(png|jpg|jpeg)$/, '')
+            .replace(/\/crop\/([^\/]+)$/, '')
+        return url + "/crop/" + Object.keys(crops).map(key => {
+            return `${key}:${crops[key]}`
+        }).join(",")
+    }
 
     // 标题翻译
     const titleTranslations = {
@@ -73,9 +66,6 @@
     // 接收主进程发送的图片数据
     ipcRenderer.on('load-media', (event, args) => {
         const container = document.getElementById('image-container');
-        const loading = document.querySelector('.loading');
-
-        loading.style.display = 'block';
         container.innerHTML = ''; // 清空容器
 
         // 更新网页标题
@@ -83,9 +73,10 @@
         document.title = args.title || titleTranslations[currentLang] || titleTranslations['en'];
 
         // 创建图片元素
-        args.images.forEach((src, index) => {
+        args.images.forEach(src => {
             const img = document.createElement('img');
-            img.src = src;
+            img.src = thumbnailUrl(src);
+            img.setAttribute('data-original', src);
             container.appendChild(img);
         });
 
@@ -119,7 +110,7 @@
             },
 
             // 是否显示缩略图导航栏
-            navbar: true,
+            navbar: 2,
 
             // 是否显示工具提示
             tooltip: true,
@@ -155,13 +146,11 @@
             // 'static'：点击背景不会关闭查看器
             backdrop: 'static',
 
+            // 使用url属性来加载原始图片
+            url: 'data-original',
+
             // 初始显示第几张图片（从0开始计数）
             initialViewIndex: args.currentIndex || 0,
-
-            // 图片加载完成后的回调函数
-            viewed() {
-                loading.style.display = 'none';
-            },
 
             // 查看器隐藏时的回调函数
             hidden() {
