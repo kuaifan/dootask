@@ -1932,7 +1932,7 @@ class Base
                         // 图片裁剪
                         $cutMode = ($width > 0 && $height > 0) ? 'cover' : 'percentage';
                         $cutMode = $param['scale'][2] ?? $cutMode;
-                        Image::thumbImage($array['file'], $array['file'], $width, $height, 90, $cutMode);
+                        Image::thumbImage($array['file'], $array['file'], $width, $height, true, $cutMode);
                         // 更新图片尺寸
                         $paramet = getimagesize($array['file']);
                         $array['width'] = $paramet[0];
@@ -1949,9 +1949,8 @@ class Base
                     }
                 }
                 // 压缩图片
-                $quality = intval($param['quality']);
-                if ($quality > 0) {
-                    Image::compressImage($array['file'], $quality);
+                if ($param['quality']) {
+                    Image::compressImage($array['file'], $param['quality']);
                     $array['size'] = Base::twoFloat(filesize($array['file']) / 1024, true);
                 }
                 //生成缩略图
@@ -2177,7 +2176,7 @@ class Base
                         // 图片裁剪
                         $cutMode = ($width > 0 && $height > 0) ? 'cover' : 'percentage';
                         $cutMode = $param['scale'][2] ?? $cutMode;
-                        Image::thumbImage($array['file'], $array['file'], $width, $height, 90, $cutMode);
+                        Image::thumbImage($array['file'], $array['file'], $width, $height, true, $cutMode);
                         // 更新图片尺寸
                         $paramet = getimagesize($array['file']);
                         $array['width'] = $paramet[0];
@@ -2194,9 +2193,8 @@ class Base
                     }
                 }
                 // 压缩图片
-                $quality = intval($param['quality']);
-                if ($quality > 0) {
-                    Image::compressImage($array['file'], $quality);
+                if ($param['quality']) {
+                    Image::compressImage($array['file'], $param['quality']);
                     $array['size'] = Base::twoFloat(filesize($array['file']) / 1024, true);
                 }
                 // 生成缩略图
@@ -2830,14 +2828,11 @@ class Base
      * 保存图片到文件（同时压缩）
      * @param $path
      * @param $content
-     * @param int $quality  压缩图片质量(默认：0不压缩)
      * @return bool
      */
-    public static function saveContentImage($path, $content, int $quality = 0) {
+    public static function saveContentImage($path, $content) {
         if (file_put_contents($path, $content)) {
-            if ($quality > 0) {
-                Image::compressImage($path, $quality);
-            }
+            Image::compressImage($path);
             return true;
         }
         return false;

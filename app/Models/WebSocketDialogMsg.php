@@ -760,7 +760,7 @@ class WebSocketDialogMsg extends AbstractModel
             $imagePath = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/";
             Base::makeDir(public_path($imagePath));
             $imagePath .= md5s($base64) . "." . $matchs[1][$key];
-            if (Base::saveContentImage(public_path($imagePath), base64_decode($base64), 90)) {
+            if (Base::saveContentImage(public_path($imagePath), base64_decode($base64))) {
                 $imageSize = getimagesize(public_path($imagePath));
                 if ($extension = Image::thumbImage(public_path($imagePath), public_path($imagePath) . "_thumb.{*}", 320, 0, 80)) {
                     $imagePath .= "_thumb.{$extension}";
@@ -844,7 +844,7 @@ class WebSocketDialogMsg extends AbstractModel
                 $image = file_get_contents($str);
                 if (empty($image)) {
                     $text = str_replace($matchs[0][$key], "[:IMAGE:browse:90:90:images/other/imgerr.jpg::]", $text);
-                } else if (Base::saveContentImage(public_path($imagePath), $image, 90)) {
+                } else if (Base::saveContentImage(public_path($imagePath), $image)) {
                     $imageSize = getimagesize(public_path($imagePath));
                     if ($extension = Image::thumbImage(public_path($imagePath), public_path($imagePath) . "_thumb.{*}", 320, 0, 80)) {
                         $imagePath .= "_thumb.{$extension}";
@@ -1012,7 +1012,7 @@ class WebSocketDialogMsg extends AbstractModel
                 $fileUrl = "uploads/chat/" . date("Ym") . "/" . $dialog_id . "/" . md5s($msg['thumb']) . ".jpg";
                 $filePath = public_path($fileUrl);
                 Base::makeDir(dirname($filePath));
-                if (!Base::saveContentImage($filePath, $thumb, 90)) {
+                if (!Base::saveContentImage($filePath, $thumb)) {
                     throw new ApiException('保存地图快照失败');
                 }
                 $imageSize = getimagesize($filePath);

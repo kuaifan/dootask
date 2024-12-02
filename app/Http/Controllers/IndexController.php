@@ -322,7 +322,6 @@ class IndexController extends InvokeController
                 "type" => 'publish',
                 "path" => $draftPath,
                 "fileName" => true,
-                "quality" => 100
             ]);
         }
 

@@ -41,7 +41,7 @@ class SystemController extends AbstractController
      * @apiParam {String} type
      * - get: 获取（默认）
      * - all: 获取所有（需要管理员权限）
-     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'temp_account_alias', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'voice2text', 'translation', 'e2e_message', 'auto_archived', 'archived_day', 'task_visible', 'task_default_time', 'all_group_mute', 'all_group_autoin', 'user_private_chat_mute', 'user_group_chat_mute', 'system_alias', 'image_compress', 'image_save_local', 'start_home']）
+     * - save: 保存设置（参数：['reg', 'reg_identity', 'reg_invite', 'temp_account_alias', 'login_code', 'password_policy', 'project_invite', 'chat_information', 'anon_message', 'voice2text', 'translation', 'e2e_message', 'auto_archived', 'archived_day', 'task_visible', 'task_default_time', 'all_group_mute', 'all_group_autoin', 'user_private_chat_mute', 'user_group_chat_mute', 'system_alias', 'image_compress', 'image_quality', 'image_save_local', 'start_home']）
 
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -80,6 +80,7 @@ class SystemController extends AbstractController
                     'user_group_chat_mute',
                     'system_alias',
                     'image_compress',
+                    'image_quality',
                     'image_save_local',
                     'start_home',
                     'file_upload_limit',
@@ -136,8 +137,6 @@ class SystemController extends AbstractController
         $setting['all_group_autoin'] = $setting['all_group_autoin'] ?: 'yes';
         $setting['user_private_chat_mute'] = $setting['user_private_chat_mute'] ?: 'open';
         $setting['user_group_chat_mute'] = $setting['user_group_chat_mute'] ?: 'open';
-        $setting['image_compress'] = $setting['image_compress'] ?: 'open';
-        $setting['image_save_local'] = $setting['image_save_local'] ?: 'open';
         $setting['start_home'] = $setting['start_home'] ?: 'close';
         $setting['file_upload_limit'] = $setting['file_upload_limit'] ?: '';
         $setting['unclaimed_task_reminder'] = $setting['unclaimed_task_reminder'] ?: 'close';
@@ -946,7 +945,7 @@ class SystemController extends AbstractController
                 "path" => $path,
                 "fileName" => $fileName,
                 "scale" => $scale,
-                "quality" => 85
+                "quality" => true
             ]);
         } else {
             $data = Base::upload([
@@ -955,7 +954,7 @@ class SystemController extends AbstractController
                 "path" => $path,
                 "fileName" => $fileName,
                 "scale" => $scale,
-                "quality" => 100
+                "quality" => true
             ]);
         }
         if (Base::isError($data)) {
@@ -1091,7 +1090,7 @@ class SystemController extends AbstractController
                 "image64" => $image64,
                 "path" => $path,
                 "fileName" => $fileName,
-                "quality" => 85
+                "quality" => true
             ]);
         } else {
             $data = Base::upload([
@@ -1099,7 +1098,7 @@ class SystemController extends AbstractController
                 "type" => 'file',
                 "path" => $path,
                 "fileName" => $fileName,
-                "quality" => 100
+                "quality" => true
             ]);
         }
         //

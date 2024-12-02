@@ -220,11 +220,11 @@ class Image
      * @param string $savePath  保存路径
      * @param int $width        宽度
      * @param int $height       高度
-     * @param int $quality      压缩质量（0-100）, 0 为不压缩
+     * @param int|bool $quality 压缩质量（0-100）, 0 为不压缩，true 为从系统设置里面获取
      * @param string $mode      模式（percentage|cover|contain）
      * @return string|null      成功返回图片后缀，失败返回 false
      */
-    public static function thumbImage(string $imagePath, string $savePath, int $width, int $height, int $quality = 0, string $mode = 'percentage'): ?string
+    public static function thumbImage(string $imagePath, string $savePath, int $width, int $height, int|bool $quality = 0, string $mode = 'percentage'): ?string
     {
         if (!file_exists($imagePath)) {
             return null;
@@ -237,7 +237,7 @@ class Image
             $image = new Image($imagePath);
             $image->thumb($width, $height, $mode);
             $image->saveTo($savePath);
-            if ($quality > 0) {
+            if ($quality) {
                 Image::compressImage($savePath, $quality);
             }
             if ($savePath != $imagePath && filesize($savePath) >= filesize($imagePath)) {
@@ -253,14 +253,18 @@ class Image
     /**
      * 压缩图片（如果压缩后的图片比原图还大那就直接使用原图）
      * @param array|string $path        图片路径（如果是数组，第1个元素为原图路径，第2个元素为保存路径）
-     * @param int $quality              压缩质量（0-100）
+     * @param int|bool $quality         压缩质量（0-100），如果为 true，则从系统设置里面获取
      * @param float $minSize            最小尺寸，小于这个尺寸不压缩（单位：KB）
      * @return bool
      */
-    public static function compressImage(array|string $path, int $quality = 100, float $minSize = 5): bool
+    public static function compressImage(array|string $path, int|bool $quality = true, float $minSize = 5): bool
     {
-        if (Base::settingFind("system", "image_compress") === 'close') {
-            return false;
+        if ($quality === true) {
+            $setting = Base::setting("system");
+            if ($setting['image_compress'] === 'close') {
+                return false;
+            }
+            $quality = $setting['image_quality'];
         }
         if (is_array($path)) {
             $imagePath = $path[0];
@@ -272,7 +276,7 @@ class Image
         if (!file_exists($imagePath)) {
             return false;
         }
-        $quality = min(max($quality, 1), 100);
+        $quality = min(max(intval($quality), 1), 100);
         $imageSize = filesize($imagePath);
         if ($minSize > 0 && $imageSize < $minSize * 1024) {
             return false;

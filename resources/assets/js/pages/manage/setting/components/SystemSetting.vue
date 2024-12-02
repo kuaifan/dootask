@@ -223,6 +223,10 @@
                             <Radio label="close">{{$L('关闭')}}</Radio>
                         </RadioGroup>
                         <div class="form-tip">{{$L('数码相机4M的图片，优化后仅有700KB左右，而且肉眼基本看不出区别。')}}</div>
+                        <Input v-model="formDatum.image_quality" style="width:220px;margin-top:6px" :placeholder="$L('默认：90')">
+                            <span slot="prepend">{{$L('压缩质量')}}</span>
+                        </Input>
+                        <div class="form-tip">{{$L('取值范围：0-100，建议：90')}}</div>
                     </FormItem>
                     <FormItem :label="$L('保存网络图片')" prop="image_save_local">
                         <RadioGroup v-model="formDatum.image_save_local">

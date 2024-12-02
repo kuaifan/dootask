@@ -47,6 +47,9 @@ class Setting extends AbstractModel
         switch ($this->name) {
             case 'system':
                 $value['system_alias'] = $value['system_alias'] ?: env('APP_NAME');
+                $value['image_compress'] = $value['image_compress'] ?: 'open';
+                $value['image_quality'] = min(100, max(0, intval($value['image_quality']) ?: 90));
+                $value['image_save_local'] = $value['image_save_local'] ?: 'open';
                 if (!is_array($value['task_default_time']) || count($value['task_default_time']) != 2 || !Timer::isTime($value['task_default_time'][0]) || !Timer::isTime($value['task_default_time'][1])) {
                     $value['task_default_time'] = ['09:00', '18:00'];
                 }

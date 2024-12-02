@@ -807,7 +807,7 @@ class WebSocketDialog extends AbstractModel
                     "image64" => $image64,
                     "path" => $path,
                     "fileName" => $fileName,
-                    "quality" => 85
+                    "quality" => true
                 ]);
             } else if ($filePath) {
                 Base::makeDir(public_path($path));
@@ -818,7 +818,7 @@ class WebSocketDialog extends AbstractModel
                     "type" => 'more',
                     "path" => $path,
                     "fileName" => $fileName,
-                    "quality" => 100,
+                    "quality" => true,
                     "convertVideo" => true
                 ]);
             }
