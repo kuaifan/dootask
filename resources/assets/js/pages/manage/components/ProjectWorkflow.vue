@@ -143,7 +143,7 @@
         </div>
         <div v-else-if="loadIng == 0" class="workflow-no">
             {{$L('当前项目还没有创建工作流')}}
-            <Button type="primary" @click="onCreate">{{$L('创建工作流')}}</Button>
+            <Button type="primary" icon="md-add" @click="onCreate">{{$L('创建工作流')}}</Button>
         </div>
 
         <!--状态设置-->
