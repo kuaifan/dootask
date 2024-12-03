@@ -960,10 +960,10 @@ class DialogController extends AbstractController
      * @apiGroup dialog
      * @apiName msg__stream
      *
-     * @apiParam {String} [source]       消息来源
-     * - ai: 默认
      * @apiParam {Number} userid         通知会员ID
      * @apiParam {String} stream_url     流动消息地址
+     * @apiParam {String} [source]       消息来源
+     *  - api: 默认
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -973,12 +973,15 @@ class DialogController extends AbstractController
     {
         $userid = intval(Request::input('userid'));
         $stream_url = trim(Request::input('stream_url'));
+        $source = trim(Request::input('source', 'api'));
         //
         if ($userid <= 0) {
             return Base::retError('参数错误');
         }
         //
-        $stream_url = '/ai' . preg_replace('/^\/ai\/?/', '/', $stream_url);
+        if ($source === 'ai') {
+            $stream_url = '/ai' . preg_replace('/^\/ai\/?/', '/', $stream_url);
+        }
         //
         $params = [
             'userid' => $userid,
@@ -1001,7 +1004,8 @@ class DialogController extends AbstractController
      * @apiGroup dialog
      * @apiName msg__sendtext
      *
-     * @apiParam {Number} dialog_id         对话ID
+     * @apiParam {Number} dialog_id         对话ID（存在dialog_ids时无效）
+     * @apiParam {String} [dialog_ids]      对话ID列表，多个对话ID用逗号分隔
      * @apiParam {String} text              消息内容
      * @apiParam {String} [key]             搜索关键词 (不设置根据内容自动生成)
      * @apiParam {String} [text_type]       消息类型
@@ -1095,6 +1099,128 @@ class DialogController extends AbstractController
                 }
                 $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'text', $msgData, $user->userid, false, false, $silence, $key);
             }
+        }
+        return $result;
+    }
+
+    /**
+     * @api {post} api/dialog/msg/sendnotice          21. 发送通知
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__sendnotice
+     *
+     * @apiParam {Number} dialog_id         对话ID（存在dialog_ids时无效）
+     * @apiParam {String} [dialog_ids]      对话ID列表，多个对话ID用逗号分隔
+     * @apiParam {String} notice            通知内容（最长500字）
+     * @apiParam {String} [silence]         是否静默发送
+     * - no: 正常发送（默认）
+     * - yes: 静默发送
+     * @apiParam {String} [source]          消息来源
+     *  - api: 默认
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__sendnotice()
+    {
+        $user = User::auth();
+        $user->checkChatInformation();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        $dialog_ids = trim(Request::input('dialog_ids'));
+        $notice = trim(Request::input('notice'));
+        $silence = in_array(strtolower(trim(Request::input('silence'))), ['yes', 'true', '1']);
+        $source = trim(Request::input('source', 'api'));
+        //
+        $strlen = mb_strlen($notice);
+        if ($strlen < 1) {
+            return Base::retError('通知内容不能为空');
+        }
+        if ($strlen > 500) {
+            return Base::retError('通知内容最大不能超过500字');
+        }
+        //
+        $result = [];
+        $dialogIds = $dialog_ids ? explode(',', $dialog_ids) : [$dialog_id ?: 0];
+        foreach ($dialogIds as $dialog_id) {
+            WebSocketDialog::checkDialog($dialog_id);
+            //
+            $result = WebSocketDialogMsg::sendMsg(null, $dialog_id, 'notice', [
+                'notice' => $notice,
+                'source' => $source
+            ], $user->userid, false, false, $silence);
+        }
+        return $result;
+    }
+
+    /**
+     * @api {post} api/dialog/msg/sendtemplate          21. 发送模板消息
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__sendtemplate
+     *
+     * @apiParam {Number} dialog_id         对话ID（存在dialog_ids时无效）
+     * @apiParam {String} [dialog_ids]      对话ID列表，多个对话ID用逗号分隔
+     * @apiParam {String} content           模板消息（JSON格式）
+     * - 格式：[{content:内容(最长300个字), style:样式(最长300个字)}, ...]
+     * @apiParam {String} [title]           模板标题（留空从模板消息第一个内容提取）
+     * @apiParam {String} [silence]         是否静默发送
+     * - no: 正常发送（默认）
+     * - yes: 静默发送
+     * @apiParam {String} [source]          消息来源
+     *  - api: 默认
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__sendtemplate()
+    {
+        $user = User::auth();
+        $user->checkChatInformation();
+        //
+        $dialog_id = intval(Request::input('dialog_id'));
+        $dialog_ids = trim(Request::input('dialog_ids'));
+        $content = Base::json2array(Request::input('content'));
+        $title = trim(Request::input('title'));
+        $silence = in_array(strtolower(trim(Request::input('silence'))), ['yes', 'true', '1']);
+        $source = trim(Request::input('source', 'api'));
+        //
+        if (empty($content)) {
+            return Base::retError('模板内容不能为空');
+        }
+        foreach ($content as $item) {
+            $contentLength = mb_strlen($item['content']);
+            if ($contentLength < 1) {
+                return Base::retError('模板消息内容至少需要1个字');
+            }
+            if ($contentLength > 300) {
+                return Base::retError('模板消息内容最多不能超过300个字');
+            }
+            if (mb_strlen($item['style']) > 300) {
+                return Base::retError('模板消息样式过长');
+            }
+            if (empty($title)) {
+                $title = Base::cutStr($item['content'], 50);
+            }
+        }
+        //
+        $result = [];
+        $dialogIds = $dialog_ids ? explode(',', $dialog_ids) : [$dialog_id ?: 0];
+        foreach ($dialogIds as $dialog_id) {
+            WebSocketDialog::checkDialog($dialog_id);
+            //
+            $result = WebSocketDialogMsg::sendMsg(null, $dialog_id, 'template', [
+                'type' => 'content',
+                'title' => $title,
+                'content' => $content,
+                'source' => $source
+            ], $user->userid, false, false, $silence);
         }
         return $result;
     }

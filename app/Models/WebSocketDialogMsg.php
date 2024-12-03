@@ -610,7 +610,8 @@ class WebSocketDialogMsg extends AbstractModel
                 return "[{$action}] " . self::previewMsg($data['msg']['data']);
 
             case 'notice':
-                return Base::cutStr(Doo::translate($data['msg']['notice']), 50);
+                $notice = $data['msg']['source'] === 'api' ? $data['msg']['notice'] : Doo::translate($data['msg']['notice']);
+                return Base::cutStr($notice, 50);
 
             case 'template':
                 return self::previewTemplateMsg($data['msg']);
@@ -679,13 +680,15 @@ class WebSocketDialogMsg extends AbstractModel
             return $msg['title_raw'];
         }
         if ($msg['type'] === 'task_list' && count($msg['list']) === 1) {
-            return Doo::translate($msg['title']) . ": " . Base::cutStr($msg['list'][0]['name'], 50);
+            $title = $msg['source'] === 'api' ? $msg['title'] : Doo::translate($msg['title']);
+            return $title . ": " . Base::cutStr($msg['list'][0]['name'], 50);
         }
         if (!empty($msg['title'])) {
-            return Doo::translate($msg['title']);
+            return $msg['source'] === 'api' ? $msg['title'] : Doo::translate($msg['title']);
         }
         if ($msg['type'] === 'content' && is_string($msg['content']) && $msg['content'] !== '') {
-            return Base::cutStr(Doo::translate($msg['content']), 50);
+            $content = $msg['source'] === 'api' ? $msg['content'] : Doo::translate($msg['content']);
+            return Base::cutStr($content, 50);
         }
         return Doo::translate('未知的消息');
     }

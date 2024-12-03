@@ -420,7 +420,8 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                 case 'todo':
                     return `[${$A.L(data.msg.action === 'remove' ? '取消待办' : (data.msg.action === 'done' ? '完成' : '设待办'))}] ${$A.getMsgSimpleDesc(data.msg.data)}`
                 case 'notice':
-                    return $A.cutString($A.L(data.msg.notice), 50)
+                    const notice = data.msg.source === 'api' ? data.msg.notice : $A.L(data.msg.notice);
+                    return $A.cutString(notice, 50)
                 case 'template':
                     return $A.templateMsgSimpleDesc(data.msg)
                 case 'preview':
@@ -466,13 +467,15 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                 return msg.title_raw
             }
             if (msg.type === 'task_list' && $A.arrayLength(msg.list) === 1) {
-                return $A.L(msg.title) + ": " + $A.cutString(msg.list[0].name, 50)
+                const title = msg.source === 'api' ? msg.title : $A.L(msg.title)
+                return title + ": " + $A.cutString(msg.list[0].name, 50)
             }
             if (msg.title) {
-                return $A.L(msg.title)
+                return msg.source === 'api' ? msg.title : $A.L(msg.title)
             }
             if (msg.type === 'content' && typeof msg.content === 'string' && msg.content !== '') {
-                return $A.cutString($A.L(msg.content), 50)
+                const content = msg.source === 'api' ? msg.content : $A.L(msg.content)
+                return $A.cutString(content, 50)
             }
             return $A.L('未知的消息')
         },

@@ -26,7 +26,7 @@
             </div>
         </div>
         <div v-else-if="source.type === 'notice'" class="dialog-notice">
-            {{$L(source.msg.notice)}}
+            {{source.msg.source === 'api' ? source.msg.notice : $L(source.msg.notice)}}
         </div>
         <template v-else>
             <div class="dialog-avatar">

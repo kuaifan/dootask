@@ -25,7 +25,7 @@ export default {
         formatContent(item) {
             if ($A.isJson(item)) {
                 return {
-                    content: item.language === false ? item.content : this.$L(item.content),
+                    content: item.language === false || this.msg.source === 'api' ? item.content : this.$L(item.content),
                     style: item.style || {},
                 };
             }
