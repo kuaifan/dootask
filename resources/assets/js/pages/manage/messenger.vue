@@ -530,7 +530,7 @@ export default {
         },
 
         searchLoading({tabActive, loadDialogs, dialogSearchLoad, contactsLoad}) {
-            if (tabActive==='dialog') {
+            if (tabActive === 'dialog') {
                 return loadDialogs > 0 || dialogSearchLoad > 0
             } else {
                 return contactsLoad > 0
@@ -696,7 +696,7 @@ export default {
                 return
             }
             this.$nextTick(_ => {
-                $A.scrollToView(this.$refs.navList?.querySelector('.active'), { behavior: "auto", block: "nearest", inline: "nearest" });
+                $A.scrollToView(this.$refs.navList?.querySelector('.active'), {behavior: "auto", block: "nearest", inline: "nearest"});
             })
         },
 
@@ -895,7 +895,7 @@ export default {
             }).then(({data}) => {
                 const msgIds = [];
                 const lists = [];
-                this.dialogList.forEach(h=>{
+                this.dialogList.forEach(h => {
                     lists.push(h);
                     msgIds.push(h.search_msg_id)
                 });
@@ -989,7 +989,7 @@ export default {
         formatDraft(value) {
             return value?.replace(/<img[^>]*>/gi, `[${$A.L('图片')}]`)
                 .replace(/<[^>]*>/g, '')
-                .replace(/&nbsp;/g, ' ')|| null
+                .replace(/&nbsp;/g, ' ') || null
         },
 
         formatTodoNum(num) {
@@ -1004,7 +1004,7 @@ export default {
         },
 
         showProfessionDesc(dialog_user) {
-            if (dialog_user) {
+            if (dialog_user && dialog_user.profession) {
                 return `[${dialog_user.profession}]`
             }
             return ''

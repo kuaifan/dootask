@@ -111,6 +111,8 @@ class File extends AbstractModel
      * 获取文件列表
      * @param user $user
      * @param int $pid
+     * @param string $type
+     * @param bool $isGetparent
      * @return array
      */
     public function getFileList($user, int $pid, $type = "all", $isGetparent = true)
@@ -118,7 +120,7 @@ class File extends AbstractModel
         $permission = 1000;
         $userids = $user->isTemp() ? [$user->userid] : [0, $user->userid];
         $builder = File::wherePid($pid)
-            ->when($type=='dir',function($q){
+            ->when($type == 'dir', function ($q) {
                 $q->whereType('folder');
             });
         if ($pid > 0) {
@@ -134,7 +136,7 @@ class File extends AbstractModel
         //
         if ($pid > 0) {
             // 遍历获取父级
-            if($isGetparent){
+            if ($isGetparent) {
                 while ($pid > 0) {
                     $file = File::whereId($pid)->first();
                     if (empty($file)) {
@@ -172,8 +174,8 @@ class File extends AbstractModel
                 ->whereIn('file_users.userid', $userids)
                 ->groupBy('files.id')
                 ->take(100)
-                ->when($type=='dir',function($q){
-                    $q->where('files.type','folder');
+                ->when($type == 'dir', function ($q) {
+                    $q->where('files.type', 'folder');
                 })
                 ->get();
             if ($list->isNotEmpty()) {

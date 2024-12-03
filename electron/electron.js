@@ -351,6 +351,7 @@ function createChildWindow(args) {
             browser = preloadWindow;
             preloadWindow = null;
             isPreload = true;
+            options.title && browser.setTitle(options.title);
             options.parent && browser.setParentWindow(options.parent);
             browser.setSize(options.width, options.height);
             browser.setMinimumSize(options.minWidth, options.minHeight);

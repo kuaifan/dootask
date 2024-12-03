@@ -47,8 +47,7 @@ class FileController extends AbstractController
     {
         $user = User::auth();
         //
-        $data = Request::all();
-        $pid = intval($data['pid']);
+        $pid = intval(Request::input('pid'));
         //
         return Base::retSuccess('success', (new File)->getFileList($user, $pid));
     }
