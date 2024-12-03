@@ -1685,14 +1685,16 @@ export default {
                             })
                         }
                         // 待完成任务
-                        let dataA = this.$store.getters.transforTasks(this.$store.getters.dashboardTask['all']);
-                        if (dataA.length > 0) {
-                            dataA = dataA.sort((a, b) => {
+                        const { overdue, today, todo } = this.$store.getters.dashboardTask;
+                        const combinedTasks = [...overdue, ...today, ...todo];
+                        let allTask = this.$store.getters.transforTasks(combinedTasks);
+                        if (allTask.length > 0) {
+                            allTask = allTask.sort((a, b) => {
                                 return $A.dayjs(a.end_at || "2099-12-31 23:59:59") - $A.dayjs(b.end_at || "2099-12-31 23:59:59");
                             }).splice(0, 100)
                             this.taskList.push({
                                 label: [{id: 0, value: this.$L('我的待完成任务'), disabled: true}],
-                                list: dataA.map(item => {
+                                list: allTask.map(item => {
                                     return {
                                         id: item.id,
                                         value: item.name
@@ -1701,14 +1703,14 @@ export default {
                             })
                         }
                         // 我协助的任务
-                        let dataB = this.$store.getters.assistTask;
-                        if (dataB.length > 0) {
-                            dataB = dataB.sort((a, b) => {
+                        let assistTask = this.$store.getters.assistTask;
+                        if (assistTask.length > 0) {
+                            assistTask = assistTask.sort((a, b) => {
                                 return $A.dayjs(a.end_at || "2099-12-31 23:59:59") - $A.dayjs(b.end_at || "2099-12-31 23:59:59");
                             }).splice(0, 100)
                             this.taskList.push({
                                 label: [{id: 0, value: this.$L('我协助的任务'), disabled: true}],
-                                list: dataB.map(item => {
+                                list: assistTask.map(item => {
                                     return {
                                         id: item.id,
                                         value: item.name

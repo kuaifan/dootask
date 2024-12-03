@@ -8,7 +8,7 @@
                 <template v-if="item.name === 'dashboard'">
                     <Badge v-if="dashboardTask.overdue_count > 0" class="tabbar-badge" type="error" :overflow-count="999" :count="dashboardTask.overdue_count"/>
                     <Badge v-else-if="dashboardTask.today_count > 0" class="tabbar-badge" type="info" :overflow-count="999" :count="dashboardTask.today_count"/>
-                    <Badge v-else-if="dashboardTask.all_count > 0" class="tabbar-badge" type="primary" :overflow-count="999" :count="dashboardTask.all_count"/>
+                    <Badge v-else-if="dashboardTask.todo_count > 0" class="tabbar-badge" type="primary" :overflow-count="999" :count="dashboardTask.todo_count"/>
                 </template>
                 <template v-else-if="item.name === 'dialog'">
                     <Badge class="tabbar-badge" :overflow-count="999" :text="msgUnreadMention"/>

@@ -111,17 +111,25 @@ export default {
     /**
      * 仪表盘任务数据
      * @param state
-     * @returns {{overdue: *, today: *,all:*}}
+     * @returns {{
+     *   overdue: Array,            // 超期任务列表
+     *   overdue_count: number,     // 超期任务数量
+     *   today: Array,              // 今日任务列表
+     *   today_count: number,       // 今日任务数量
+     *   todo: Array,               // 待办任务列表
+     *   todo_count: number         // 待办任务数量
+     * }}
      */
     dashboardTask(state) {
         const todayStart = $A.daytz().startOf('day'),
             todayEnd = $A.daytz().endOf('day'),
             todayNow = $A.daytz();
-        const filterTask = (task, chackCompleted = true) => {
+            
+        const filterTask = (task, checkCompleted = true) => {
             if (task.archived_at) {
                 return false;
             }
-            if (task.complete_at && chackCompleted === true) {
+            if (task.complete_at && checkCompleted === true) {
                 return false;
             }
             if (task.start_at && $A.dayjs(task.start_at) > todayNow) {
@@ -129,64 +137,105 @@ export default {
             }
             return task.owner == 1;
         }
+        
+        // 获取所有未完成的任务
         let array = state.cacheTasks.filter(task => filterTask(task));
+        
+        // 处理临时完成的任务
         let tmpCount = 0;
         if (state.taskCompleteTemps.length > 0) {
             let tmps = state.cacheTasks.filter(task => state.taskCompleteTemps.includes(task.id) && filterTask(task, false));
             if (tmps.length > 0) {
-                tmpCount = tmps.length
-                array = $A.cloneJSON(array)
+                tmpCount = tmps.length;
+                array = $A.cloneJSON(array);
                 array.push(...tmps);
             }
         }
-        const todayTasks = array.filter(task => {
-            const end = $A.dayjs(task.end_at);
-            return todayStart <= end && end <= todayEnd;
-        })
-        const overdueTasks = array.filter(task => {
-            return task.end_at && $A.dayjs(task.end_at) <= todayNow;
-        })
+
+        // 使用一次遍历完成任务分类
         const result = {
-            today: todayTasks,
-            today_count: todayTasks.length,
-
-            overdue: overdueTasks,
-            overdue_count: overdueTasks.length,
-
-            all: array,
-            all_count: array.length,
+            overdue: [],
+            today: [],
+            todo: [],
+            overdue_count: 0,
+            today_count: 0,
+            todo_count: 0
         };
-        if (tmpCount > 0) {
-            result.today_count -= todayTasks.filter(task => state.taskCompleteTemps.includes(task.id)).length
-            result.overdue_count -= overdueTasks.filter(task => state.taskCompleteTemps.includes(task.id)).length
-            result.all_count -= tmpCount
-        }
-        return result
+
+        // 遍历任务进行分类
+        array.forEach(task => {
+            const isTemp = state.taskCompleteTemps.includes(task.id);
+            
+            if (task.end_at && $A.dayjs(task.end_at) <= todayNow) {
+                // 超期任务
+                result.overdue.push(task);
+                if (!isTemp) {
+                    result.overdue_count++;
+                }
+            } else if (task.end_at) {
+                const end = $A.dayjs(task.end_at);
+                if (todayStart <= end && end <= todayEnd) {
+                    // 今日任务
+                    result.today.push(task);
+                    if (!isTemp) {
+                        result.today_count++;
+                    }
+                } else {
+                    // 待办任务
+                    result.todo.push(task);
+                    if (!isTemp) {
+                        result.todo_count++;
+                    }
+                }
+            } else {
+                // 无截止日期的任务归类为待办
+                result.todo.push(task);
+                if (!isTemp) {
+                    result.todo_count++;
+                }
+            }
+        });
+
+        return result;
     },
 
     /**
      * 协助任务
      * @param state
-     * @returns {*}
+     * @returns {Array}               // 协助任务列表
      */
     assistTask(state) {
-        const filterTask = (task, chackCompleted = true) => {
+        const filterTask = (task, checkCompleted = true) => {
             if (task.archived_at) {
                 return false;
             }
-            if (task.complete_at && chackCompleted === true) {
+            if (task.complete_at && checkCompleted === true) {
                 return false;
             }
             return task.assist && task.owner === 0;
         }
+
+        // 获取所有未完成的协助任务
         let array = state.cacheTasks.filter(task => filterTask(task));
+        
+        // 处理临时完成的任务
         if (state.taskCompleteTemps.length > 0) {
-            let tmps = state.cacheTasks.filter(task => state.taskCompleteTemps.includes(task.id) && filterTask(task, false));
+            const tmps = state.cacheTasks.filter(task => 
+                state.taskCompleteTemps.includes(task.id) && 
+                filterTask(task, false)
+            );
+            
             if (tmps.length > 0) {
-                array = $A.cloneJSON(array)
+                array = $A.cloneJSON(array);
                 array.push(...tmps);
             }
         }
-        return array
+
+        // 按截止时间排序：无截止时间的任务排在最后
+        return array.sort((a, b) => {
+            const timeA = a.end_at ? $A.dayjs(a.end_at) : $A.dayjs('2099-12-31 23:59:59');
+            const timeB = b.end_at ? $A.dayjs(b.end_at) : $A.dayjs('2099-12-31 23:59:59');
+            return timeA - timeB;
+        });
     },
 }

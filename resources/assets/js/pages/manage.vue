@@ -100,7 +100,7 @@
                             <div class="menu-title">{{$L('仪表盘')}}</div>
                             <Badge v-if="dashboardTask.overdue_count > 0" class="menu-badge" type="error" :overflow-count="999" :count="dashboardTask.overdue_count"/>
                             <Badge v-else-if="dashboardTask.today_count > 0" class="menu-badge" type="info" :overflow-count="999" :count="dashboardTask.today_count"/>
-                            <Badge v-else-if="dashboardTask.all_count > 0" class="menu-badge" type="primary" :overflow-count="999" :count="dashboardTask.all_count"/>
+                            <Badge v-else-if="dashboardTask.todo_count > 0" class="menu-badge" type="primary" :overflow-count="999" :count="dashboardTask.todo_count"/>
                         </li>
                         <li @click="toggleRoute('calendar')" :class="classNameRoute('calendar')">
                             <i class="taskfont">&#xe6f5;</i>

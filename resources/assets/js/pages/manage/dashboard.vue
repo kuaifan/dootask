@@ -31,10 +31,10 @@
                         <i class="taskfont">&#xe603;</i>
                     </div>
                 </li>
-                <li @click="scrollTo('all')">
-                    <div class="block-title">{{getTitle('all')}}</div>
+                <li @click="scrollTo('todo')">
+                    <div class="block-title">{{getTitle('todo')}}</div>
                     <div class="block-data">
-                        <div class="block-num">{{dashboardTask.all_count}}</div>
+                        <div class="block-num">{{dashboardTask.todo_count}}</div>
                         <i class="taskfont">&#xe6f9;</i>
                     </div>
                 </li>
@@ -48,7 +48,7 @@
                         <span>
                             {{column.title}}
                             <template v-if="column.hidden">
-                                ({{column.list.length}})
+                                ({{column.count}})
                             </template>
                         </span>
                         <i class="taskfont">&#xe702;</i>
@@ -147,14 +147,15 @@ export default {
             return this.$route.name
         },
 
-        columns({hiddenColumns}) {
+        columns({hiddenColumns, dashboardTask, assistTask}) {
             const list = [];
-            ['today', 'overdue', 'all'].some(type => {
-                let data = this.transforTasks(this.dashboardTask[type]);
+            ['today', 'overdue', 'todo'].some(type => {
+                let data = this.transforTasks(dashboardTask[type]);
                 list.push({
                     type,
                     title: this.getTitle(type),
                     hidden: hiddenColumns.includes(type),
+                    count: dashboardTask[`${type}_count`],
                     list: data.sort((a, b) => {
                         return $A.dayjs(a.end_at || "2099-12-31 23:59:59") - $A.dayjs(b.end_at || "2099-12-31 23:59:59");
                     })
@@ -164,7 +165,8 @@ export default {
                 type: 'assist',
                 title: this.getTitle('assist'),
                 hidden: hiddenColumns.includes('assist'),
-                list: this.assistTask.sort((a, b) => {
+                count: assistTask.length,
+                list: assistTask.sort((a, b) => {
                     return $A.dayjs(a.end_at || "2099-12-31 23:59:59") - $A.dayjs(b.end_at || "2099-12-31 23:59:59");
                 })
             })
@@ -173,7 +175,7 @@ export default {
 
         total() {
             const {dashboardTask} = this;
-            return dashboardTask.today_count + dashboardTask.overdue_count + dashboardTask.all_count;
+            return dashboardTask.today_count + dashboardTask.overdue_count + dashboardTask.todo_count;
         },
 
         wrapperStyle({warningMsg}) {
@@ -203,7 +205,7 @@ export default {
                     return this.$L('今日到期');
                 case 'overdue':
                     return this.$L('超期任务');
-                case 'all':
+                case 'todo':
                     return this.$L('待完成任务');
                 case 'assist':
                     return this.$L('协助的任务');
