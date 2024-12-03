@@ -27346,5 +27346,101 @@
         "fr": "Il n'y a actuellement pas de modèles de tâche dans ce projet",
         "id": "Saat ini tidak ada template tugas dalam proyek ini",
         "ru": "В текущем проекте нет шаблонов задач"
+    },
+    {
+        "key": "禁言发言",
+        "zh": "",
+        "zh-CHT": "禁言發言",
+        "en": "Mute Speaking",
+        "ko": "발언 금지",
+        "ja": "発言禁止",
+        "de": "Redeverbot",
+        "fr": "Parole interdite",
+        "id": "Bisu",
+        "ru": "Запрет говорить"
+    },
+    {
+        "key": "此账号已停用",
+        "zh": "",
+        "zh-CHT": "此帳號已停用",
+        "en": "This account has been deactivated",
+        "ko": "이 계정은 비활성화되었습니다",
+        "ja": "このアカウントは停止されました",
+        "de": "Dieses Konto wurde deaktiviert",
+        "fr": "Ce compte a été désactivé",
+        "id": "Akun ini telah dinonaktifkan",
+        "ru": "Этот аккаунт был деактивирован"
+    },
+    {
+        "key": "压缩质量",
+        "zh": "",
+        "zh-CHT": "壓縮質量",
+        "en": "Compression Quality",
+        "ko": "압축 품질",
+        "ja": "圧縮品質",
+        "de": "Komprimierungsqualität",
+        "fr": "Qualité de compression",
+        "id": "Kualitas Kompresi",
+        "ru": "Качество сжатия"
+    },
+    {
+        "key": "取值范围：0-100，建议：90",
+        "zh": "",
+        "zh-CHT": "取值範圍：0-100，建議：90",
+        "en": "Value range: 0-100, Recommended: 90",
+        "ko": "값 범위: 0-100, 권장: 90",
+        "ja": "値の範囲：0-100、推奨：90",
+        "de": "Wertebereich: 0-100, Empfohlen: 90",
+        "fr": "Plage de valeurs : 0-100, Recommandé : 90",
+        "id": "Rentang nilai: 0-100, Disarankan: 90",
+        "ru": "Диапазон значений: 0-100, Рекомендуется: 90"
+    },
+    {
+        "key": "修改提示词",
+        "zh": "",
+        "zh-CHT": "修改提示詞",
+        "en": "Modify Prompt",
+        "ko": "프롬프트 수정",
+        "ja": "プロンプトを修正",
+        "de": "Eingabeaufforderung ändern",
+        "fr": "Modifier l'invite",
+        "id": "Ubah Prompt",
+        "ru": "Изменить подсказку"
+    },
+    {
+        "key": "提示词",
+        "zh": "",
+        "zh-CHT": "提示詞",
+        "en": "Prompt",
+        "ko": "프롬프트",
+        "ja": "プロンプト",
+        "de": "Aufforderung",
+        "fr": "Invite",
+        "id": "Prompt",
+        "ru": "Подсказка"
+    },
+    {
+        "key": "修改提示词：(%T1)",
+        "zh": "",
+        "zh-CHT": "修改提示詞：(%T1)",
+        "en": "Modify Prompt: (%T1)",
+        "ko": "프롬프트 수정: (%T1)",
+        "ja": "プロンプトを修正：(%T1)",
+        "de": "Eingabeaufforderung ändern: (%T1)",
+        "fr": "Modifier l'invite : (%T1)",
+        "id": "Ubah Prompt: (%T1)",
+        "ru": "Изменить подсказку: (%T1)"
+    },
+    {
+        "key": "取消提示词",
+        "zh": "",
+        "zh-CHT": "取消提示詞",
+        "en": "Cancel Prompt",
+        "ko": "프롬프트 취소",
+        "ja": "プロンプトをキャンセル",
+        "de": "Aufforderung abbrechen",
+        "fr": "Annuler l'invite",
+        "id": "Batalkan Prompt",
+        "ru": "Отменить подсказку"
     }
 ]
