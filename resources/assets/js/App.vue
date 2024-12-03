@@ -353,7 +353,10 @@ export default {
 
                 // 教育和企业
                 'classroomscreen.com',
-                'bigbluebutton.org'
+                'bigbluebutton.org',
+
+                // 其他
+                'matrix.to'
             ];
             const lowerUrl = `${url}`.toLowerCase()
             return meetingDomains.some(domain => lowerUrl.indexOf(domain) !== -1);

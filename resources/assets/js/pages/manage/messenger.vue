@@ -714,13 +714,7 @@ export default {
                     if (el[0].classList.contains("common-shake")) {
                         return
                     }
-                    $A.scrollIntoViewIfNeeded(el[0])
-                    requestAnimationFrame(_ => {
-                        el[0].classList.add("common-shake")
-                        setTimeout(_ => {
-                            el[0].classList.remove("common-shake")
-                        }, 600)
-                    })
+                    $A.scrollIntoAndShake(el[0])
                 }
             }
         },

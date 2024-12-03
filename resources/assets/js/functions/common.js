@@ -1065,6 +1065,36 @@ const timezone = require("dayjs/plugin/timezone");
         },
 
         /**
+         * 给元素添加一个class，过指定时间之后再去除这个class
+         * @param element
+         * @param className
+         * @param duration
+         */
+        addClassWithTimeout(element, className, duration) {
+            if (!element || !className || !duration) return;
+            element.classList.add(className);
+            setTimeout(() => {
+                if (!element) return;
+                element.classList.remove(className);
+            }, duration);
+        },
+
+        /**
+         * 滚动到元素并抖动
+         * @param element
+         */
+        scrollIntoAndShake(element) {
+            if (!element) return;
+            const elements = Array.isArray(element) ? element : [element];
+            elements.forEach(el => {
+                if (el) {
+                    $A.scrollIntoViewIfNeeded(el);
+                    $A.addClassWithTimeout(el, "common-shake", 800);
+                }
+            });
+        },
+
+        /**
          * 等比缩放尺寸
          * @param width
          * @param height

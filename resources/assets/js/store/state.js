@@ -150,6 +150,7 @@ export default {
     taskOperation: {},
     taskArchiveView: 0,
     taskTemplates: [],
+    taskLatestId: 0,
 
     // 任务等待状态
     taskOneLoad: {},

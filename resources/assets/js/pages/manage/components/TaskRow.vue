@@ -1,6 +1,6 @@
 <template>
     <div class="task-rows">
-        <div v-for="(item, key) in list" :key="key">
+        <div v-for="(item, key) in list" :key="key" :ref="`task_${item.id}`">
             <Row class="task-row" :style="item.color ? {backgroundColor: item.color, borderBottomColor: item.color} : {}">
                 <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
                 <Col span="12" :class="['row-name', item.complete_at ? 'complete' : '']">
@@ -160,7 +160,7 @@ export default {
     },
 
     computed: {
-        ...mapState(['cacheTasks', 'taskPriority', 'cacheColumns']),
+        ...mapState(['cacheTasks', 'taskPriority', 'cacheColumns', 'taskLatestId']),
 
         subTask() {
             return function(task_id) {
@@ -175,12 +175,18 @@ export default {
             }
         },
     },
+    watch: {
+        taskLatestId(id) {
+            setTimeout(() => {
+                $A.scrollIntoAndShake(this.$refs[`task_${id}`]);
+            }, 300)
+        }
+    },
     methods: {
         columnName(column_id) {
             const column = this.cacheColumns.find(({id}) => id == column_id)
             return column ? column.name : '';
         },
-
 
         dropTask(task, command) {
             const el = this.$refs[`taskMenu_${task.id}`];

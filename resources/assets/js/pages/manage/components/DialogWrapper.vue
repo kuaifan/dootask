@@ -1468,11 +1468,7 @@ export default {
             if (val > 0) {
                 this.msgActiveId = 0
                 const element = this.$refs.scroller.$el.querySelector(`[data-id="${val}"]`)?.querySelector(".dialog-head")
-                if (element) {
-                    $A.scrollIntoViewIfNeeded(element)
-                    element.classList.add("common-shake")
-                    setTimeout(_ => element.classList.remove("common-shake"), 800)
-                }
+                $A.scrollIntoAndShake(element)
             }
         },
 

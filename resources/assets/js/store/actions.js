@@ -2142,6 +2142,7 @@ export default {
                 if (result.data.is_visible === 1) {
                     dispatch("addTaskSuccess", result.data)
                 }
+                state.taskLatestId = result.data.id
                 resolve(result)
             }).catch(e => {
                 console.warn(e);

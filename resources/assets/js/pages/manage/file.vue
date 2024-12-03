@@ -1778,9 +1778,7 @@ export default {
             this.$nextTick(_ => {
                 const dom = $A(this.$el).find(`[data-id="${fileId}"]`)
                 if (dom.length > 0) {
-                    $A.scrollIntoViewIfNeeded(dom[0])
-                    $A(dom[0]).addClass("common-shake")
-                    setTimeout(_ => $A(dom[0]).removeClass("common-shake"), 800)
+                    $A.scrollIntoAndShake(dom)
                 }
             })
         },

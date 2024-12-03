@@ -327,13 +327,7 @@ export default {
                 if ($e.classList.contains("common-shake")) {
                     return
                 }
-                $A.scrollIntoViewIfNeeded($e)
-                requestAnimationFrame(_ => {
-                    $e.classList.add("common-shake")
-                    setTimeout(_ => {
-                        $e.classList.remove("common-shake")
-                    }, 600)
-                })
+                $A.scrollIntoAndShake($e)
             } else {
                 if (subtask.parent_id == this.taskId) {
                     return
