@@ -5,6 +5,7 @@ namespace App\Tasks;
 use App\Models\User;
 use App\Models\UserBot;
 use App\Models\WebSocketDialog;
+use App\Models\WebSocketDialogConfig;
 use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
 use App\Module\Doo;
@@ -429,8 +430,16 @@ class BotReceiveMsgTask extends AbstractTask
             if (empty($extras['api_key'])) {
                 $errorContent = '机器人未启用。';
             }
-            if (in_array($this->client['platform'], ['win', 'mac', 'web']) && !Base::judgeClientVersion("0.29.11", $this->client['version'])) {
-                $errorContent = '当前客户端版本低（所需版本≥v0.29.11）。';
+            if (in_array($this->client['platform'], ['win', 'mac', 'web']) && !Base::judgeClientVersion("0.41.11", $this->client['version'])) {
+                $errorContent = '当前客户端版本低（所需版本≥v0.41.11）。';
+            }
+            $aiPrompt = WebSocketDialogConfig::where([
+                'dialog_id' => $dialog->id,
+                'userid' => $msg->userid,
+                'type' => 'ai_prompt',
+            ])->value('value');
+            if ($aiPrompt) {
+                $extras['system_message'] = $aiPrompt;
             }
             $webhookUrl = "{$serverUrl}/ai/chat";
         } else {

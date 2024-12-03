@@ -86,6 +86,9 @@
                                 <EDropdownItem v-if="isManageBot" command="modifyNormal">
                                     <div>{{$L('修改资料')}}</div>
                                 </EDropdownItem>
+                                <EDropdownItem v-if="isAiBot" command="modifyAi">
+                                    <div>{{$L('修改提示词')}}</div>
+                                </EDropdownItem>
                                 <EDropdownItem command="openCreate">
                                     <div>{{$L('创建群组')}}</div>
                                 </EDropdownItem>
@@ -438,6 +441,27 @@
             </div>
         </Modal>
 
+        <!--修改提示词-->
+        <Modal
+            v-model="modifyAiShow"
+            :title="$L('修改提示词')"
+            :mask-closable="false">
+            <Form :model="modifyData" @submit.native.prevent>
+                <FormItem prop="value" style="margin-bottom: 16px">
+                    <Input
+                        :maxlength="500"
+                        type="textarea"
+                        :autosize="{minRows:3,maxRows:5}"
+                        v-model="modifyData.value"
+                        :placeholder="$L('例如：你是一个人开发的AI助手')"/>
+                </FormItem>
+            </Form>
+            <div slot="footer" class="adaption">
+                <Button type="default" @click="modifyAiShow=false">{{$L('取消')}}</Button>
+                <Button type="primary" :loading="modifyLoad > 0" @click="onAiModify">{{$L('保存')}}</Button>
+            </div>
+        </Modal>
+
         <!-- 转发选择 -->
         <UserSelect
             ref="forwardSelect"
@@ -759,6 +783,7 @@ export default {
             searchResult: [],
 
             modifyShow: false,
+            modifyAiShow: false,
             modifyData: {},
             modifyLoad: 0,
 
@@ -1120,6 +1145,14 @@ export default {
                 return true
             }
             return dialogData.dialog_user && dialogData.dialog_user.userid == dialogData.bot && userIsAdmin
+        },
+
+        isAiBot() {
+            const {dialogData} = this;
+            if (!dialogData.bot || dialogData.type !== 'user') {
+                return false
+            }
+            return /^ai-(.*?)@bot\.system/.test(dialogData.email)
         },
 
         isMute() {
@@ -2543,6 +2576,23 @@ export default {
                     this.modifyShow = true
                     break;
 
+                case "modifyAi":
+                    this.modifyData = {
+                        dialog_id: this.dialogData.id,
+                        type: 'ai_prompt'
+                    }
+                    this.modifyLoad++;
+                    this.$store.dispatch("call", {
+                        url: 'dialog/config',
+                        data: this.modifyData,
+                    }).then(({data}) => {
+                        this.modifyData.value = data.value
+                    }).finally(() => {
+                        this.modifyLoad--;
+                    })
+                    this.modifyAiShow = true
+                    break;
+
                 case "modifyAdmin":
                     this.modifyData = {
                         dialog_id: this.dialogData.id,
@@ -2710,6 +2760,23 @@ export default {
                     this.modifyLoad--;
                 });
             }
+        },
+
+        onAiModify() {
+            this.modifyLoad++;
+            this.$store.dispatch("call", {
+                url: 'dialog/config/save',
+                data: this.modifyData
+            }).then(({data, msg}) => {
+                $A.messageSuccess(msg);
+                this.$store.dispatch("saveDialog", data);
+                this.modifyAiShow = false;
+                this.modifyData = {};
+            }).catch(({msg}) => {
+                $A.modalError(msg);
+            }).finally(_ => {
+                this.modifyLoad--;
+            });
         },
 
         onForwardBefore() {

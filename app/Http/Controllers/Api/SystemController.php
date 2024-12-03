@@ -54,6 +54,7 @@ class SystemController extends AbstractController
             if (env("SYSTEM_SETTING") == 'disabled') {
                 return Base::retError('当前环境禁止修改');
             }
+            Base::checkClientVersion('0.41.11');
             User::auth('admin');
             $all = Request::input();
             foreach ($all AS $key => $value) {
@@ -296,7 +297,7 @@ class SystemController extends AbstractController
             if (env("SYSTEM_SETTING") == 'disabled') {
                 return Base::retError('当前环境禁止修改');
             }
-            Base::checkClientVersion('0.40.79');
+            Base::checkClientVersion('0.41.11');
             $backup = $setting;
             $all = Request::input();
             foreach ($all as $key => $value) {

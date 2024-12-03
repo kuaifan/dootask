@@ -19,6 +19,7 @@ use App\Models\AbstractModel;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Models\WebSocketDialogUser;
+use App\Models\WebSocketDialogConfig;
 use App\Models\WebSocketDialogMsgRead;
 use App\Models\WebSocketDialogMsgTodo;
 use App\Models\WebSocketDialogMsgTranslate;
@@ -2770,5 +2771,87 @@ class DialogController extends AbstractController
         return Base::retSuccess('success', [
             'list' => Extranet::sticker($key)
         ]);
+    }
+
+    /**
+     * @api {get} api/dialog/config          57. 获取会话配置
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName config
+     *
+     * @apiParam {Number} dialog_id         对话ID
+     * @apiParam {String} type              配置类型
+     *
+     * @apiSuccess {String} value           配置值
+     */
+    public function config()
+    {
+        $user = User::auth();
+
+        $dialog_id = intval(Request::input('dialog_id'));
+        $type = Request::input('type');
+
+        if (!$dialog_id || !$type) {
+            return Base::retError('参数错误');
+        }
+
+        WebSocketDialog::checkDialog($dialog_id);
+
+        $config = WebSocketDialogConfig::where('dialog_id', $dialog_id)
+            ->where('userid', $user->userid)
+            ->where('type', $type)
+            ->first();
+
+        return Base::retSuccess('success', [
+            'value' => $config?->value
+        ]);
+    }
+
+    /**
+     * @api {post} api/dialog/config/save          58. 保存会话配置
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName config__save
+     *
+     * @apiParam {Number} dialog_id         对话ID
+     * @apiParam {String} type              配置类型
+     * @apiParam {String} value             配置值
+     *
+     * @apiSuccess {String} msg             成功提示
+     */
+    public function config__save()
+    {
+        $user = User::auth();
+
+        $dialog_id = intval(Request::input('dialog_id'));
+        $type = Request::input('type');
+        $value = Request::input('value');
+
+        if (!$dialog_id || !$type) {
+            return Base::retError('参数错误');
+        }
+
+        WebSocketDialog::checkDialog($dialog_id);
+
+        if (WebSocketDialogConfig::updateOrCreate(
+            [
+                'dialog_id' => $dialog_id,
+                'userid' => $user->userid,
+                'type' => $type,
+            ],
+            [
+                'value' => $value,
+            ]
+        )) {
+            WebSocketDialogMsg::sendMsg(null, $dialog_id, 'notice', [
+                'notice' => $value ? ("修改提示词：" . $value) : "取消提示词",
+            ], User::userid(), true, true);
+        }
+
+        return Base::retSuccess('保存成功');
     }
 }
