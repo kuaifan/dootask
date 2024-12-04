@@ -353,7 +353,8 @@ class File extends AbstractModel
      */
     public function getPermission(array $userids)
     {
-        if (in_array($this->userid, $userids) || in_array($this->created_id, $userids)) {
+        $validUserIds = array_filter($userids);
+        if (in_array($this->userid, $validUserIds) || in_array($this->created_id, $validUserIds)) {
             // ① 自己的文件夹 或 自己创建的文件夹
             return 1000;
         }
