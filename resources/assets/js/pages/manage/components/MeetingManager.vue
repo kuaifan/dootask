@@ -392,7 +392,9 @@ export default {
                             width: Math.min(window.screen.availWidth, 1440),
                             height: Math.min(window.screen.availHeight, 900),
                         }
-                        const meetingPath = $A.urlAddParams(linkRes.data, {
+                        const meetingLink = $A.leftDelete(linkRes.data, $A.mainUrl())
+                            .replace(/^\//, '');
+                        const meetingPath = $A.urlAddParams("/" + meetingLink, {
                             type: 'direct',
                             nickname: encodeURIComponent(data.nickname),
                             avatar: encodeURIComponent(data.userimg),
