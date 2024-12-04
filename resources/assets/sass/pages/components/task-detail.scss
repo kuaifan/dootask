@@ -421,6 +421,20 @@
                                     opacity: 0;
                                 }
                             }
+                            .subtask-avatar {
+                                max-width: 30%;
+                                min-width: 54px;
+                                > ul {
+                                    justify-content: flex-end;
+                                    > li {
+                                        margin-right: 0;
+                                        margin-left: 6px;
+                                        &:first-child {
+                                            margin-left: 0;
+                                        }
+                                    }
+                                }
+                            }
                             .ivu-icon-ios-loading {
                                 animation: animation-icon-loading 0.6s infinite linear;
                             }
