@@ -658,40 +658,44 @@
                         display: flex;
                         align-items: center;
                         cursor: pointer;
-                    }
-                    .head-title{
-                        white-space: nowrap;
-                    }
-                    .task-sort {
-                        display: inline-block;
-                        width: 14px;
-                        height: 12px;
-                        margin-top: -1px;
-                        margin-left: 1px;
-                        vertical-align: middle;
-                        overflow: hidden;
-                        cursor: pointer;
-                        position: relative;
-                        > i {
-                            display: block;
-                            height: 6px;
-                            line-height: 6px;
+                        max-width: 100%;
+                        .head-title {
+                            max-width: calc(100% - 14px);
                             overflow: hidden;
-                            position: absolute;
-                            color: #c5c8ce;
-                            transition: color .2s ease-in-out;
-                            font-size: 16px;
-                            &.on {
-                                color: $primary-color
-                            }
-                            &:hover {
-                                color: inherit
-                            }
-                            &:first-child {
-                                top: 0
-                            }
-                            &:last-child {
-                                bottom: 0
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                        }
+                        .head-sort {
+                            display: inline-block;
+                            width: 14px;
+                            height: 12px;
+                            margin-top: -1px;
+                            margin-left: 1px;
+                            vertical-align: middle;
+                            overflow: hidden;
+                            cursor: pointer;
+                            position: relative;
+                            > i {
+                                display: block;
+                                height: 6px;
+                                line-height: 6px;
+                                overflow: hidden;
+                                position: absolute;
+                                color: #c5c8ce;
+                                transition: color .2s ease-in-out;
+                                font-size: 16px;
+                                &.on {
+                                    color: $primary-color
+                                }
+                                &:hover {
+                                    color: inherit
+                                }
+                                &:first-child {
+                                    top: 0
+                                }
+                                &:last-child {
+                                    bottom: 0
+                                }
                             }
                         }
                     }

@@ -1,6 +1,12 @@
 body {
     overflow: hidden;
 
+    .ellipsis {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
     .form-tip {
         color: $primary-desc-color;
         line-height: 22px;

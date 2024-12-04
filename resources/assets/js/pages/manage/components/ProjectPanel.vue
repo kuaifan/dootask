@@ -238,22 +238,28 @@
         <Scrollbar v-else-if="tabTypeActive === 'table'" class="project-table" enable-x>
             <div class="project-table-head">
                 <Row class="task-row">
-                    <Col span="12"><span class="head-title"># {{$L('任务名称')}}</span></Col>
-                    <Col span="3"><span class="head-title">{{$L('列表')}}</span></Col>
+                    <Col span="12">
+                        <div class="ellipsis"># {{$L('任务名称')}}</div>
+                    </Col>
+                    <Col span="3">
+                        <div class="ellipsis">{{$L('列表')}}</div>
+                    </Col>
                     <Col span="3">
                         <div class="sort" @click="onSort('level')">
-                            <span class="head-title">{{$L('优先级')}}</span>
-                            <div class="task-sort">
+                            <div class="head-title">{{$L('优先级')}}</div>
+                            <div class="head-sort">
                                 <Icon :class="{on:sortField=='level' && sortType=='asc'}" type="md-arrow-dropup" />
                                 <Icon :class="{on:sortField=='level' && sortType=='desc'}" type="md-arrow-dropdown" />
                             </div>
                         </div>
                     </Col>
-                    <Col span="3">{{$L('负责人')}}</Col>
+                    <Col span="3">
+                        <div class="ellipsis">{{$L('负责人')}}</div>
+                    </Col>
                     <Col span="3">
                         <div class="sort" @click="onSort('end_at')">
-                            <span class="head-title">{{$L('到期时间')}}</span>
-                            <div class="task-sort">
+                            <div class="head-title">{{$L('到期时间')}}</div>
+                            <div class="head-sort">
                                 <Icon :class="{on:sortField=='end_at' && sortType=='asc'}" type="md-arrow-dropup" />
                                 <Icon :class="{on:sortField=='end_at' && sortType=='desc'}" type="md-arrow-dropdown" />
                             </div>
@@ -317,7 +323,9 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                     <Col span="3"></Col>
-                    <Col span="3">{{projectData.task_num > 0 && projectData.cacheParameter.showCompleted ? $L('完成时间') : ''}}</Col>
+                    <Col span="3">
+                        <div class="ellipsis">{{projectData.task_num > 0 && projectData.cacheParameter.showCompleted ? $L('完成时间') : ''}}</div>
+                    </Col>
                 </Row>
                 <TaskRow v-if="projectData.cacheParameter.showCompleted" :list="completedList" open-key="completed" @on-priority="addTaskOpen" showCompleteAt/>
             </div>

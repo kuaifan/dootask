@@ -3092,6 +3092,9 @@ export default {
                 dispatch("saveDialogMsg", msg)
             });
         } else if ($A.isJson(data)) {
+            if (data.type == "notice") {
+                data.estimateSize = 42;
+            }
             const index = state.dialogMsgs.findIndex(({id}) => id == data.id);
             if (index > -1) {
                 const original = state.dialogMsgs[index]

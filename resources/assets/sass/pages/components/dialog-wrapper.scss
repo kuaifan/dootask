@@ -1191,6 +1191,11 @@
                         .content-template {
                             color: $primary-title-color;
                             max-width: 100%;
+                            padding: 0 2px;
+                            min-height: 24px;
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: center;
 
                             .warning-color {
                                 color: $flow-status-start-color;
