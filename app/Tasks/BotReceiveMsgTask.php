@@ -64,9 +64,8 @@ class BotReceiveMsgTask extends AbstractTask
      */
     private function botManagerReceive(WebSocketDialogMsg $msg, User $botUser)
     {
-        // 位置消息
+        // 位置消息（仅支持签到机器人）
         if ($msg->type === 'location') {
-            // 签到机器人
             if ($botUser->email === 'check-in@bot.system') {
                 $content = UserBot::checkinBotQuickMsg('locat-checkin', $msg->userid, $msg->msg);
                 if ($content) {
@@ -79,36 +78,26 @@ class BotReceiveMsgTask extends AbstractTask
             return;
         }
 
-        // 文本消息
-        if ($msg->type !== 'text') {
+        // 提取指令
+        $command = $this->extractCommand($msg, $this->mention);
+        if (empty($command)) {
             return;
         }
-        $original = $msg->msg['text'];
-        if ($this->mention) {
-            $original = preg_replace("/<span class=\"mention user\" data-id=\"(\d+)\">(.*?)<\/span>/", "", $original);
-        }
-        if (preg_match("/<span[^>]*?data-quick-key=([\"'])([^\"']+?)\\1[^>]*?>(.*?)<\/span>/is", $original, $match)) {
-            $command = $match[2];
-            if (str_starts_with($command, '%3A.')) {
-                $command = ":" . substr($command, 4);
-            }
-        } else {
-            $command = trim(strip_tags($original));
-        }
-        //
+
+        // 查询会话
         $dialog = WebSocketDialog::find($msg->dialog_id);
         if (empty($dialog)) {
             return;
         }
+
         // 推送Webhook
-        if ($command
-            && !str_starts_with($command, '/')
-            && ($dialog->type === 'user' || $this->mention)) {
-            $this->botManagerWebhook($command, $msg, $botUser, $dialog);
-        }
+        $this->botManagerWebhook($command, $msg, $botUser, $dialog);
+
+        // 仅支持用户会话
         if ($dialog->type !== 'user') {
             return;
         }
+
         // 签到机器人
         if ($botUser->email === 'check-in@bot.system') {
             $content = UserBot::checkinBotQuickMsg($command, $msg->userid);
@@ -119,6 +108,7 @@ class BotReceiveMsgTask extends AbstractTask
                 ], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
             }
         }
+
         // 隐私机器人
         if ($botUser->email === 'anon-msg@bot.system') {
             $array = UserBot::anonBotQuickMsg($command);
@@ -130,8 +120,10 @@ class BotReceiveMsgTask extends AbstractTask
                 ], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
             }
         }
+
         // 管理机器人
         if (str_starts_with($command, '/')) {
+            // 判断是否是机器人管理员
             if ($botUser->email === 'bot-manager@bot.system') {
                 $isManager = true;
             } elseif (UserBot::whereBotId($botUser->userid)->whereUserid($msg->userid)->exists()) {
@@ -143,7 +135,8 @@ class BotReceiveMsgTask extends AbstractTask
                 ], $botUser->userid, false, false, true);    // todo 未能在任务end事件来发送任务
                 return;
             }
-            //
+
+            // 指令处理
             $array = Base::newTrim(explode(" ", "{$command}    "));
             $type = $array[0];
             $data = [];
@@ -358,8 +351,8 @@ class BotReceiveMsgTask extends AbstractTask
                     }
                     break;
             }
-            //
 
+            // 回复消息
             if ($content) {
                 $msgData = [
                     'type' => 'content',
@@ -411,6 +404,7 @@ class BotReceiveMsgTask extends AbstractTask
         $extras = [];
         $errorContent = null;
         if (preg_match('/^ai-(.*?)@bot\.system$/', $botUser->email, $matches)) {
+            // AI机器人
             $setting = Base::setting('aibotSetting');
             $type = $matches[1];
             $extras = [
@@ -441,8 +435,20 @@ class BotReceiveMsgTask extends AbstractTask
             if ($aiPrompt) {
                 $extras['system_message'] = $aiPrompt;
             }
+            if ($msg->reply_id > 0) {
+                $replyMsg = WebSocketDialogMsg::find($msg->reply_id);
+                $replyCommand = '';
+                if ($replyMsg) {
+                    $replyCommand = $this->extractCommand($replyMsg);
+                    if ($replyCommand) {
+                        $replyCommand = Base::cutStr($replyCommand, 200) . "\n\n ------------------ Reference above ------------------ \n\n";
+                    }
+                }
+                $command = $replyCommand . $command;
+            }
             $webhookUrl = "{$serverUrl}/ai/chat";
         } else {
+            // 用户机器人
             $userBot = UserBot::whereBotId($botUser->userid)->first();
             $webhookUrl = $userBot?->webhook_url;
         }
@@ -470,7 +476,7 @@ class BotReceiveMsgTask extends AbstractTask
                 'version' => Base::getVersion(),
                 'extras' => Base::array2json($extras)
             ];
-            $res = Ihttp::ihttp_post($webhookUrl, $data);
+            $res = Ihttp::ihttp_post($webhookUrl, $data, 30);
             if ($userBot) {
                 $userBot->webhook_num++;
                 $userBot->save();
@@ -515,5 +521,34 @@ class BotReceiveMsgTask extends AbstractTask
                 ->first();
         }
         return null;
+    }
+
+    /**
+     * 提取消息指令（提取消息内容）
+     * @param WebSocketDialogMsg $msg
+     * @param bool $mention
+     * @return string
+     */
+    private function extractCommand(WebSocketDialogMsg $msg, bool $mention = false)
+    {
+        if ($msg->type !== 'text') {
+            return '';
+        }
+        $original = $msg->msg['text'];
+        if ($mention) {
+            $original = preg_replace("/<span class=\"mention user\" data-id=\"(\d+)\">(.*?)<\/span>/", "", $original);
+        }
+        if (preg_match("/<span[^>]*?data-quick-key=([\"'])([^\"']+?)\\1[^>]*?>(.*?)<\/span>/is", $original, $match)) {
+            $command = $match[2];
+            if (str_starts_with($command, '%3A.')) {
+                $command = ":" . substr($command, 4);
+            }
+        } else {
+            $command = trim(strip_tags($original));
+        }
+        if (empty($command)) {
+            return '';
+        }
+        return $command;
     }
 }
