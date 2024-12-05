@@ -1790,6 +1790,7 @@ export default {
                             data: {
                                 keys: {
                                     key,
+                                    bot: 2,
                                 },
                                 state: 1,
                                 take: 30

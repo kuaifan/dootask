@@ -1016,6 +1016,9 @@ class DialogController extends AbstractController
      * - no: 不标记（仅机器人支持）
      * - yes: 标记（默认）
      * @apiParam {Number} [reply_id]        回复ID
+     * @apiParam {String} [reply_check]     配合 reply_id 使用，判断是否需要验证回复ID的有效性
+     * - no: 不进行判断，直接使用提供的 reply_id（默认）
+     * - yes: 进行判断，如果上一条消息的 ID 为 reply_id，则认为 reply_id 无效
      * @apiParam {String} [silence]         是否静默发送
      * - no: 正常发送（默认）
      * - yes: 静默发送
@@ -1034,6 +1037,7 @@ class DialogController extends AbstractController
         $update_id = intval(Request::input('update_id'));
         $update_mark = !($user->bot && in_array(strtolower(trim(Request::input('update_mark'))), ['no', 'false', '0']));
         $reply_id = intval(Request::input('reply_id'));
+        $reply_check = trim(Request::input('reply_check'));
         $text = trim(Request::input('text'));
         $key = trim(Request::input('key'));
         $text_type = strtolower(trim(Request::input('text_type')));
@@ -1050,6 +1054,12 @@ class DialogController extends AbstractController
                 $action = $update_mark ? "update-$update_id" : "change-$update_id";
             } elseif ($reply_id > 0) {
                 $action = "reply-$reply_id";
+                if ($reply_check === 'yes') {
+                    $lastMsgId = WebSocketDialogMsg::whereDialogId($dialog_id)->orderByDesc('id')->value('id');
+                    if ($lastMsgId == $reply_id) {
+                        $action = "";
+                    }
+                }
             } else {
                 $action = "";
             }
