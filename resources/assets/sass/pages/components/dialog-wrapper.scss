@@ -2037,6 +2037,97 @@
         visibility: hidden;
         pointer-events: none;
     }
+
+    .apply-create-task {
+        min-width: 160px;
+        margin-bottom: 16px;
+
+        ul {
+            max-height: 500px;
+            overflow: auto;
+            padding: 0;
+            margin: 0;
+            list-style-type: none;
+            li {
+                display: flex;
+                margin-bottom: 12px;
+                .task-index {
+                    padding-right: 6px;
+                }
+                .task-item {
+                    line-height: 18px;
+                    .title,
+                    .desc {
+                        word-break: break-all;
+                        text-overflow: ellipsis;
+                        overflow: hidden;
+                        display: -webkit-box;
+                        -webkit-line-clamp: 2;
+                        -webkit-box-orient: vertical;
+                    }
+                    .title {
+                        font-weight: bold;
+                    }
+                    .desc {
+                        padding-top: 4px;
+                        opacity: 0.6;
+                    }
+                }
+            }
+        }
+
+
+        .apply-button {
+            display: inline-block;
+            user-select: none;
+            > div {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 32px;
+                line-height: 32px;
+                padding: 0 12px;
+                font-size: 14px;
+                border-radius: 4px;
+                color: #515a6e;
+                background-color: #fff;
+                border-color: #dcdee2;
+                cursor: pointer;
+                &:before {
+                    font-family: "taskfont", "serif" !important;
+                    content: "\e6f2";
+                    font-size: 14px;
+                    width: 14px;
+                    margin-right: 6px;
+                }
+                &.applying,
+                &.applied {
+                    cursor: default;
+                }
+                &.applying {
+                    &:before {
+                        content: "";
+                        width: 14px;
+                        height: 14px;
+                        border: 2px solid #dddd;
+                        border-bottom-color: $primary-color;
+                        border-radius: 50%;
+                        display: inline-block;
+                        box-sizing: border-box;
+                        animation: pureing-rotation 0.75s linear infinite;
+                    }
+                }
+                &.applied {
+                    color: #c5c8ce;
+                    background-color: #f7f7f7;
+                    border-color: #dcdee2;
+                    &:before {
+                        content: "\e684";
+                    }
+                }
+            }
+        }
+    }
 }
 
 body:not(.window-touch) {

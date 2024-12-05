@@ -2886,6 +2886,58 @@ class DialogController extends AbstractController
     }
 
     /**
+     * @api {get} api/dialog/msg/applied          55. 标记消息已应用
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup dialog
+     * @apiName msg__applied
+     *
+     * @apiParam {String} type          类型
+     * - CreateTask: 创建任务
+     * @apiParam {Number} index         索引
+     * @apiParam {Number} msg_id        消息ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function msg__applied()
+    {
+        User::auth();
+        //
+        $msg_id = intval(Request::input('msg_id'));
+        $type = trim(Request::input('type'));
+        $index = intval(Request::input('index'));
+        //
+        $msg = WebSocketDialogMsg::whereId($msg_id)->first();
+        if (empty($msg)) {
+            return Base::retError("消息不存在或已被删除");
+        }
+        WebSocketDialog::checkDialog($msg->dialog_id);
+        //
+        $originalMsg = $msg->getRawOriginal('msg');
+        $pattern = '/```\s*' . preg_quote($type, '/') . '\s*(applying|applied)?\s*(\n|\\\\n)/';
+        $count = -1;
+        $updatedMsg = preg_replace_callback($pattern, function($matches) use (&$count, $index, $type) {
+            $count++;
+            if ($count === $index || ($index === 0 && $count === 1)) {
+                return "```{$type} applied{$matches[2]}";
+            }
+            return $matches[0];
+        }, $originalMsg);
+
+        if ($count === 0) {
+            return Base::retError("未找到可应用的规则");
+        }
+
+        $msg->msg = $updatedMsg;
+        $msg->save();
+        //
+        return Base::retSuccess("success");
+    }
+
+    /**
      * @api {get} api/dialog/sticker/search          56. 搜索在线表情
      *
      * @apiDescription 需要token身份

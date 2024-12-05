@@ -3220,6 +3220,89 @@ export default {
             });
         },
 
+        async applyCreateTask(event, el) {
+            const currentTarget = event.target;
+            if (currentTarget.classList.contains('applying') || currentTarget.classList.contains('applied')) {
+                return;
+            }
+            currentTarget.classList.add('applying')
+
+            if (this.dialogData.group_type !== 'project') {
+                currentTarget.classList.remove('applying')
+                $A.modalError('只有在项目中才能创建任务')
+                return
+            }
+
+            let target = event.target;
+            while (target) {
+                if (target.classList.contains('apply-create-task')) {
+                    break;
+                }
+                if (target.classList.contains('dialog-scroller')) {
+                    target = null;
+                    break;
+                }
+                target = target.parentElement;
+            }
+            if (!target) {
+                currentTarget.classList.remove('applying')
+                $A.modalError('未找到任务内容')
+                return
+            }
+            if (!this.dialogData.group_info) {
+                currentTarget.classList.remove('applying')
+                $A.modalError('项目不存在')
+                return;
+            }
+
+            const allTaskElements = el.querySelectorAll('.apply-create-task');
+            const taskIndex = Array.from(allTaskElements).indexOf(target);
+            const taskList = Array.from(target.querySelectorAll('li'))
+                .map(item => {
+                    const title = item.querySelector('.title')?.innerText?.trim();
+                    if (!title) return null;
+
+                    const desc = item.querySelector('.desc')?.innerText?.trim() || '';
+                    const content = desc ? desc.split('\n')
+                        .filter(Boolean)
+                        .map(line => `<p>${line.trim()}</p>`)
+                        .join('') : '';
+
+                    return {
+                        project_id: this.dialogData.group_info.id,
+                        name: title,
+                        content
+                    };
+                })
+                .filter(Boolean);
+
+            const results = await Promise.all(taskList.map(item =>
+                this.$store.dispatch("taskAdd", item).then(
+                    success => ({ success: true, data: success }),
+                    error => ({ success: false, error: error })
+                )
+            ));
+            const successTasks = results.filter(r => r.success).map(r => r.data);
+            const failedTasks = results.filter(r => !r.success).map(r => r.error);
+            if (failedTasks.length > 0) {
+                $A.modalError(`成功创建 ${successTasks.length} 个任务，${failedTasks.length} 个任务创建失败`);
+            } else {
+                $A.messageSuccess(`成功创建 ${successTasks.length} 个任务`);
+            }
+
+            currentTarget.classList.remove('applying')
+            currentTarget.classList.add('applied')
+
+            await this.$store.dispatch("call", {
+                url: 'dialog/msg/applied',
+                data: {
+                    type: 'CreateTask',
+                    index: taskIndex,
+                    msg_id: this.operateItem.id
+                },
+            });
+        },
+
         openTranslationMenu(event) {
             const list = Object.keys(languageList).map(item => ({
                 label: languageList[item],
@@ -3324,6 +3407,13 @@ export default {
                 return
             }
             const {target, clientX} = event
+
+            // 创建任务
+            if (target.classList.contains('apply-create-task-button')) {
+                this.operateItem = this.findMsgByElement(el)
+                this.applyCreateTask(event, el)
+                return;
+            }
 
             // 点击切换翻译
             if (target.classList.contains('translation-label')) {
