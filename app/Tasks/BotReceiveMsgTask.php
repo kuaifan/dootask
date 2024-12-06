@@ -2,6 +2,8 @@
 
 namespace App\Tasks;
 
+use App\Models\Project;
+use App\Models\ProjectTask;
 use App\Models\User;
 use App\Models\UserBot;
 use App\Models\WebSocketDialog;
@@ -12,6 +14,7 @@ use App\Module\Doo;
 use App\Module\Ihttp;
 use Carbon\Carbon;
 use DB;
+use League\HTMLToMarkdown\HtmlConverter;
 
 @error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
 
@@ -23,17 +26,19 @@ use DB;
  */
 class BotReceiveMsgTask extends AbstractTask
 {
-    protected $userid;
-    protected $msgId;
-    protected $mention;
-    protected $client = [];
+    protected $userid;          // 机器人ID
+    protected $msgId;           // 消息ID
+    protected $mention;         // 是否提及
+    protected $mentionOther;    // 是否提及其他人
+    protected $client = [];     // 客户端信息（版本、语言、平台）
 
-    public function __construct($userid, $msgId, $mention, $client = [])
+    public function __construct($userid, $msgId, $mentions, $client = [])
     {
         parent::__construct(...func_get_args());
         $this->userid = $userid;
         $this->msgId = $msgId;
-        $this->mention = $mention;
+        $this->mention = array_intersect([$userid], $mentions) ? 1 : 0;     // 是否提及（不含@所有人）
+        $this->mentionOther = array_diff($mentions, [0, $userid]) ? 1 : 0;  // 是否提及其他人
         $this->client = is_array($client) ? $client : [];
     }
 
@@ -43,12 +48,14 @@ class BotReceiveMsgTask extends AbstractTask
         if (empty($botUser)) {
             return;
         }
-        $msg = WebSocketDialogMsg::find($this->msgId);
+        $msg = WebSocketDialogMsg::with(['user'])->find($this->msgId);
         if (empty($msg)) {
             return;
         }
         $msg->readSuccess($botUser->userid);
-        $this->botManagerReceive($msg, $botUser);
+        if (!$msg->user?->bot) {
+            $this->botReceiveBusiness($msg, $botUser);
+        }
     }
 
     public function end()
@@ -57,12 +64,12 @@ class BotReceiveMsgTask extends AbstractTask
     }
 
     /**
-     * 机器人管理处理消息
+     * 机器人处理消息
      * @param WebSocketDialogMsg $msg
      * @param User $botUser
      * @return void
      */
-    private function botManagerReceive(WebSocketDialogMsg $msg, User $botUser)
+    private function botReceiveBusiness(WebSocketDialogMsg $msg, User $botUser)
     {
         // 位置消息（仅支持签到机器人）
         if ($msg->type === 'location') {
@@ -90,8 +97,13 @@ class BotReceiveMsgTask extends AbstractTask
             return;
         }
 
+        // 如果是群聊，未提及丹提及其他人
+        if ($dialog->type === 'group' && !$this->mention && $this->mentionOther) {
+            return;
+        }
+
         // 推送Webhook
-        $this->botManagerWebhook($command, $msg, $botUser, $dialog);
+        $this->botWebhookBusiness($command, $msg, $botUser, $dialog);
 
         // 仅支持用户会话
         if ($dialog->type !== 'user') {
@@ -173,7 +185,7 @@ class BotReceiveMsgTask extends AbstractTask
                 case '/hello':
                 case '/info':
                     $botId = $isManager ? $array[1] : $botUser->userid;
-                    $data = $this->botManagerOne($botId, $msg->userid);
+                    $data = $this->botOne($botId, $msg->userid);
                     if (!$data) {
                         $content = "机器人不存在。";
                     }
@@ -222,7 +234,7 @@ class BotReceiveMsgTask extends AbstractTask
                         $content = "机器人名称由2-20个字符组成。";
                         break;
                     }
-                    $data = $this->botManagerOne($botId, $msg->userid);
+                    $data = $this->botOne($botId, $msg->userid);
                     if ($data) {
                         $data->nickname = $nameString;
                         $data->az = Base::getFirstCharter($nameString);
@@ -239,7 +251,7 @@ class BotReceiveMsgTask extends AbstractTask
                  */
                 case '/deletebot':
                     $botId = $isManager ? $array[1] : $botUser->userid;
-                    $data = $this->botManagerOne($botId, $msg->userid);
+                    $data = $this->botOne($botId, $msg->userid);
                     if ($data) {
                         $data->deleteUser('delete bot');
                     } else {
@@ -252,7 +264,7 @@ class BotReceiveMsgTask extends AbstractTask
                  */
                 case '/token':
                     $botId = $isManager ? $array[1] : $botUser->userid;
-                    $data = $this->botManagerOne($botId, $msg->userid);
+                    $data = $this->botOne($botId, $msg->userid);
                     if ($data) {
                         User::generateToken($data);
                     } else {
@@ -265,7 +277,7 @@ class BotReceiveMsgTask extends AbstractTask
                  */
                 case '/revoke':
                     $botId = $isManager ? $array[1] : $botUser->userid;
-                    $data = $this->botManagerOne($botId, $msg->userid);
+                    $data = $this->botOne($botId, $msg->userid);
                     if ($data) {
                         $data->encrypt = Base::generatePassword(6);
                         $data->password = Doo::md5s(Base::generatePassword(32), $data->encrypt);
@@ -281,7 +293,7 @@ class BotReceiveMsgTask extends AbstractTask
                 case '/clearday':
                     $botId = $isManager ? $array[1] : $botUser->userid;
                     $clearDay = $isManager ? $array[2] : $array[1];
-                    $data = $this->botManagerOne($botId, $msg->userid);
+                    $data = $this->botOne($botId, $msg->userid);
                     if ($data) {
                         $userBot = UserBot::whereBotId($botId)->whereUserid($msg->userid)->first();
                         if ($userBot) {
@@ -302,7 +314,7 @@ class BotReceiveMsgTask extends AbstractTask
                 case '/webhook':
                     $botId = $isManager ? $array[1] : $botUser->userid;
                     $webhookUrl = $isManager ? $array[2] : $array[1];
-                    $data = $this->botManagerOne($botId, $msg->userid);
+                    $data = $this->botOne($botId, $msg->userid);
                     if (strlen($webhookUrl) > 255) {
                         $content = "webhook地址最长仅支持255个字符。";
                     } elseif ($data) {
@@ -325,7 +337,7 @@ class BotReceiveMsgTask extends AbstractTask
                 case '/dialog':
                     $botId = $isManager ? $array[1] : $botUser->userid;
                     $nameKey = $isManager ? $array[2] : $array[1];
-                    $data = $this->botManagerOne($botId, $msg->userid);
+                    $data = $this->botOne($botId, $msg->userid);
                     if ($data) {
                         $list = DB::table('web_socket_dialog_users as u')
                             ->select(['d.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
@@ -397,7 +409,7 @@ class BotReceiveMsgTask extends AbstractTask
      * @param WebSocketDialog $dialog
      * @return void
      */
-    private function botManagerWebhook(string $command, WebSocketDialogMsg $msg, User $botUser, WebSocketDialog $dialog)
+    private function botWebhookBusiness(string $command, WebSocketDialogMsg $msg, User $botUser, WebSocketDialog $dialog)
     {
         $serverUrl = 'http://' . env('APP_IPPR') . '.3';
         $userBot = null;
@@ -427,14 +439,6 @@ class BotReceiveMsgTask extends AbstractTask
             if (in_array($this->client['platform'], ['win', 'mac', 'web']) && !Base::judgeClientVersion("0.41.11", $this->client['version'])) {
                 $errorContent = '当前客户端版本低（所需版本≥v0.41.11）。';
             }
-            $aiPrompt = WebSocketDialogConfig::where([
-                'dialog_id' => $dialog->id,
-                'userid' => $msg->userid,
-                'type' => 'ai_prompt',
-            ])->value('value');
-            if ($aiPrompt) {
-                $extras['system_message'] = $aiPrompt;
-            }
             if ($msg->reply_id > 0) {
                 $replyMsg = WebSocketDialogMsg::find($msg->reply_id);
                 $replyCommand = '';
@@ -446,6 +450,7 @@ class BotReceiveMsgTask extends AbstractTask
                 }
                 $command = $replyCommand . $command;
             }
+            $this->AIGenerateSystemMessageOrBeforeText($msg->userid, $dialog, $extras);
             $webhookUrl = "{$serverUrl}/ai/chat";
         } else {
             // 用户机器人
@@ -498,11 +503,12 @@ class BotReceiveMsgTask extends AbstractTask
     }
 
     /**
+     * 获取机器人信息
      * @param $botId
      * @param $userid
      * @return User
      */
-    private function botManagerOne($botId, $userid)
+    private function botOne($botId, $userid)
     {
         $botId = intval($botId);
         $userid = intval($userid);
@@ -550,5 +556,89 @@ class BotReceiveMsgTask extends AbstractTask
             return '';
         }
         return $command;
+    }
+
+    /**
+     * 生成AI系统提示词或前置消息
+     * @param int|null $userid
+     * @param WebSocketDialog $dialog
+     * @param array $extras
+     * @return void
+     */
+    private function AIGenerateSystemMessageOrBeforeText(int|null $userid, WebSocketDialog $dialog, array &$extras)
+    {
+        $system_message = null;
+        $before_text = [];
+        switch ($dialog->type) {
+            case "user":
+                $aiPrompt = WebSocketDialogConfig::where([
+                    'dialog_id' => $dialog->id,
+                    'userid' => $userid,
+                    'type' => 'ai_prompt',
+                ])->value('value');
+                if ($aiPrompt) {
+                    $system_message = $aiPrompt;
+                }
+                break;
+            case "group":
+                switch ($dialog->group_type) {
+                    case 'user':
+                        break;
+                    case 'project':
+                        $projectInfo = Project::select(['id', 'name', 'archived_at', 'deleted_at'])->whereDialogId($dialog->id)->first();
+                        if ($projectInfo) {
+                            $before_text[] = "当前我在项目【{$projectInfo->name}】中";
+                            if ($projectInfo->desc) {
+                                $before_text[] = "项目描述：{$projectInfo->desc}";
+                            }
+                            $before_text[] = <<<EOF
+                                如果你判断我想要添加任务，请将任务标题和描述添加到回复中，例如：
+                                ```CreateTask
+                                title: 任务标题1
+                                desc: 任务描述1
+
+                                title: 任务标题2
+                                desc: 任务描述2
+                                ```
+                                EOF;
+                        }
+                        break;
+                    case 'task':
+                        $taskInfo = ProjectTask::with(['content'])->select(['id', 'name', 'complete_at', 'archived_at', 'deleted_at'])->whereDialogId($dialog->id)->first();
+                        if ($taskInfo) {
+                            $before_text[] = "当前我在任务【{$taskInfo->name}】中";
+                            if ($taskInfo->content) {
+                                $taskDesc = $taskInfo->content?->getContentInfo();
+                                if ($taskDesc) {
+                                    $converter = new HtmlConverter(['strip_tags' => true]);
+                                    $before_text[] = <<<EOF
+                                        任务描述：
+                                        ```md
+                                        {$converter->convert($taskDesc['content'])}
+                                        ```
+                                        EOF;
+                                }
+                            }
+                            $before_text[] = <<<EOF
+                                如果你判断我想要添加子任务，请将子任务标题添加到回复中，例如：
+                                ```CreateSubTask
+                                子任务标题1
+                                子任务标题2
+                                ```
+                                EOF;
+                        }
+                        break;
+                    case 'all':
+                        $before_text[] = "当前我团队【全体成员】的群聊中";
+                        break;
+                }
+                break;
+        }
+        if ($system_message) {
+            $extras['system_message'] = $system_message;
+        }
+        if ($before_text) {
+            $extras['before_text'] = Base::newTrim($before_text);
+        }
     }
 }

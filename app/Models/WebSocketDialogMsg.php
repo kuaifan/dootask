@@ -39,6 +39,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read int|mixed $percentage
  * @property-read \App\Models\WebSocketDialog|null $webSocketDialog
+ * @property-read \App\Models\User|null $user
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
@@ -94,6 +95,14 @@ class WebSocketDialogMsg extends AbstractModel
     public function webSocketDialog(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(WebSocketDialog::class, 'id', 'dialog_id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function user(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(User::class, 'userid', 'userid');
     }
 
     /**

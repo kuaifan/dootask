@@ -289,7 +289,7 @@ class SystemController extends AbstractController
      */
     public function setting__aibot()
     {
-        $user = User::auth('admin');
+        User::auth('admin');
         //
         $type = trim(Request::input('type'));
         $setting = Base::setting('aibotSetting');
@@ -298,7 +298,6 @@ class SystemController extends AbstractController
                 return Base::retError('当前环境禁止修改');
             }
             Base::checkClientVersion('0.41.11');
-            $backup = $setting;
             $all = Request::input();
             foreach ($all as $key => $value) {
                 if (isset($setting[$key])) {
@@ -306,47 +305,6 @@ class SystemController extends AbstractController
                 }
             }
             $setting = Base::setting('aibotSetting', Base::newTrim($setting));
-            $tempMsg = [
-                'type' => 'content',
-                'content' => '设置成功'
-            ];
-            //
-            if ($backup['openai_key'] != $setting['openai_key']) {
-                $botUser = User::botGetOrCreate('ai-openai');
-                if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
-                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', $tempMsg, $botUser->userid, true, false, true);
-                }
-            }
-            if ($backup['claude_key'] != $setting['claude_key']) {
-                $botUser = User::botGetOrCreate('ai-claude');
-                if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
-                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', $tempMsg, $botUser->userid, true, false, true);
-                }
-            }
-            if ($backup['wenxin_key'] != $setting['wenxin_key']) {
-                $botUser = User::botGetOrCreate('ai-wenxin');
-                if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
-                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', $tempMsg, $botUser->userid, true, false, true);
-                }
-            }
-            if ($backup['qianwen_key'] != $setting['qianwen_key']) {
-                $botUser = User::botGetOrCreate('ai-qianwen');
-                if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
-                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', $tempMsg, $botUser->userid, true, false, true);
-                }
-            }
-            if ($backup['gemini_key'] != $setting['gemini_key']) {
-                $botUser = User::botGetOrCreate('ai-gemini');
-                if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
-                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', $tempMsg, $botUser->userid, true, false, true);
-                }
-            }
-            if ($backup['zhipu_key'] != $setting['zhipu_key']) {
-                $botUser = User::botGetOrCreate('ai-zhipu');
-                if ($botUser && $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid)) {
-                    WebSocketDialogMsg::sendMsg(null, $dialog->id, 'template', $tempMsg, $botUser->userid, true, false, true);
-                }
-            }
         }
         //
         if (env("SYSTEM_SETTING") == 'disabled') {
