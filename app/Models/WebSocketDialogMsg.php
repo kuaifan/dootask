@@ -112,7 +112,11 @@ class WebSocketDialogMsg extends AbstractModel
     public function getPercentageAttribute()
     {
         if (!isset($this->appendattrs['percentage'])) {
-            $this->generatePercentage();
+            if ($this->read > $this->send || empty($this->send)) {
+                $this->appendattrs['percentage'] = 100;
+            } else {
+                $this->appendattrs['percentage'] = intval($this->read / $this->send * 100);
+            }
         }
         return $this->appendattrs['percentage'];
     }
@@ -190,22 +194,6 @@ class WebSocketDialogMsg extends AbstractModel
     }
 
     /**
-     * 获取占比
-     * @param bool|int $increment 是否新增阅读数
-     * @return int
-     */
-    public function generatePercentage($increment = false) {
-        if ($increment) {
-            $this->increment('read', is_bool($increment) ? 1 : $increment);
-        }
-        if ($this->read > $this->send || empty($this->send)) {
-            return $this->appendattrs['percentage'] = 100;
-        } else {
-            return $this->appendattrs['percentage'] = intval($this->read / $this->send * 100);
-        }
-    }
-
-    /**
      * 标记已送达 同时 告诉发送人已送达
      * @param $userid
      * @return bool
@@ -234,22 +222,41 @@ class WebSocketDialogMsg extends AbstractModel
             if (!$msgRead->read_at) {
                 $msgRead->read_at = Carbon::now();
                 $msgRead->save();
-                $this->generatePercentage(true);
+                //
+                $row = self::incrementRead($this->id);
                 PushTask::push([
-                    'userid' => $this->userid,
+                    'userid' => $row->userid,
                     'msg' => [
                         'type' => 'dialog',
                         'mode' => 'readed',
                         'data' => [
-                            'id' => $this->id,
-                            'read' => $this->read,
-                            'percentage' => $this->percentage,
+                            'id' => $row->id,
+                            'read' => $row->read,
+                            'percentage' => $row->percentage,
                         ],
                     ]
                 ]);
             }
         });
         return true;
+    }
+
+    /**
+     * 增加已读数量
+     * @param $msgId
+     * @return self
+     */
+    private static function incrementRead($msgId)
+    {
+        return self::transaction(function () use ($msgId) {
+            $model = WebSocketDialogMsg::lockForUpdate()->find($msgId);
+            if (!$model) {
+                throw new \Exception('记录不存在');
+            }
+
+            $model->increment('read');
+            return WebSocketDialogMsg::find($msgId);
+        });
     }
 
     /**
