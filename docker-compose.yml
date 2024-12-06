@@ -113,7 +113,7 @@ services:
 
   drawio-webapp:
     container_name: "dootask-drawio-webapp-${APP_ID}"
-    image: "jgraph/drawio:20.8.20"
+    image: "jgraph/drawio:24.7.17"
     volumes:
       - ./docker/drawio/webapp/index.html:/usr/local/tomcat/webapps/draw/index.html
       - ./docker/drawio/webapp/stencils:/usr/local/tomcat/webapps/draw/stencils
