@@ -209,6 +209,7 @@ export function MarkdownConver(text) {
 export function MarkdownPreview(text) {
     if (MarkdownUtils.mds === null) {
         MarkdownUtils.mds = MarkdownIt()
+        MarkdownPluginUtils.initCreateTaskPlugin(MarkdownUtils.mds);
     }
     return MarkdownUtils.mds.render(text)
 }

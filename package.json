@@ -21,6 +21,7 @@
     "devDependencies": {
         "@chenfengyuan/vue-qrcode": "^1.0.2",
         "@kangc/v-md-editor": "^1.7.12",
+        "@micro-zoe/micro-app": "^0.8.11",
         "@traptitech/markdown-it-katex": "^3.6.0",
         "autoprefixer": "^10.4.13",
         "axios": "^0.24.0",
@@ -43,7 +44,7 @@
         "less-loader": "^10.2.0",
         "localforage": "^1.10.0",
         "lodash": "^4.17.21",
-        "markdown-it": "^13.0.1",
+        "markdown-it": "^14.1.0",
         "markdown-it-link-attributes": "^4.0.1",
         "notification-koro1": "^1.1.1",
         "openpgp_hi": "^5.7.0-1",
@@ -90,8 +91,5 @@
                 "url": "https://www.dootask.com/desktop/publish"
             }
         }
-    ],
-    "dependencies": {
-        "@micro-zoe/micro-app": "^0.8.11"
-    }
+    ]
 }

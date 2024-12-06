@@ -653,6 +653,7 @@ class WebSocketDialogMsg extends AbstractModel
         if (!$text) return '';
         if ($msgData['type'] === 'md') {
             $text = Base::markdown2html($text);
+            $text = self::previewConvertTaskList($text);
         }
         $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?alt=\"(\S+)\"[^>]*?>/", "[$1]", $text);
         $text = preg_replace("/<img\s+class=\"emoticon\"[^>]*?>/", "[" . Doo::translate('动画表情') . "]", $text);
@@ -665,6 +666,36 @@ class WebSocketDialogMsg extends AbstractModel
             $text = Base::cutStr($text, 50);
         }
         return $text;
+    }
+
+    /**
+     * 转换任务列表
+     * @param $text
+     * @return array|string|string[]|null
+     */
+    private static function previewConvertTaskList($text) {
+        $pattern = '/:::\s*(create-task-list|create-subtask-list)(.*?):::/s';
+        $replacement = function($matches) {
+            $content = $matches[2];
+            $lines = explode("\n", trim($content));
+            $result = [];
+            $currentTitle = '';
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if (empty($line)) continue;
+
+                if (preg_match('/^title:\s*(.+)$/', $line, $titleMatch)) {
+                    $currentTitle = $titleMatch[1];
+                    $result[] = $currentTitle;
+                } elseif (preg_match('/^desc:\s*(.+)$/', $line, $descMatch)) {
+                    if (!empty($currentTitle)) {
+                        $result[] = $descMatch[1];
+                    }
+                }
+            }
+            return implode("\n", $result);
+        };
+        return preg_replace_callback($pattern, $replacement, $text);
     }
 
     /**

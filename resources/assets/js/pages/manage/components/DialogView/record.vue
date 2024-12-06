@@ -25,10 +25,8 @@
 
 <script>
 import {mapState} from "vuex";
-import DialogMarkdown from "../DialogMarkdown.vue";
 
 export default {
-    components: {DialogMarkdown},
     props: {
         msgId: Number,
         msg: Object,
