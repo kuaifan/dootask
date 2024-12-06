@@ -39,10 +39,13 @@ const MarkdownUtils = {
 const MarkdownPluginUtils = {
     // 配置选项
     config: {
+        maxItems: 200,
         maxTitleLength: 200,
         maxDescLength: 1000,
-        maxItems: 200,
-        defaultTitle: '创建任务'
+        buttonLabels: {
+            task: '创建任务',
+            subtask: '创建子任务'
+        }
     },
 
     // HTML转义函数
@@ -65,137 +68,118 @@ const MarkdownPluginUtils = {
         return value;
     },
 
-    // 解析任务项
-    parseTaskItems(content) {
-        const items = [];
-        let currentItem = {};
-        let itemCount = 0;
-
-        content.forEach(line => {
-            line = line.trim();
-            if (!line) {
-                if (Object.keys(currentItem).length > 0) {
-                    items.push(currentItem);
-                    currentItem = {};
-                    itemCount++;
-                }
-                return;
-            }
-
-            if (itemCount >= this.config.maxItems) {
-                return;
-            }
-
-            const [key, ...valueParts] = line.split(':');
-            const value = valueParts.join(':').trim();
-
-            if (key === 'title' && value) {
-                if (Object.keys(currentItem).length > 0) {
-                    items.push(currentItem);
-                    currentItem = {};
-                    itemCount++;
-                }
-                currentItem.title = this.validateInput(value, this.config.maxTitleLength);
-            } else if (key === 'desc' && value) {
-                currentItem.desc = this.validateInput(value, this.config.maxDescLength);
-            }
-        });
-
-        if (Object.keys(currentItem).length > 0 && itemCount < this.config.maxItems) {
-            items.push(currentItem);
-        }
-
-        return items;
-    },
-
-    // 生成HTML
-    generateTaskHtml(items, status = null) {
-        if (!Array.isArray(items) || items.length === 0) {
-            return '';
-        }
-
-        const html = [
-            '<div class="apply-create-task">',
-            '<ul>'
-        ];
-
-        items.forEach((item, index) => {
-            if (item.title) {
-                html.push(`<li>`);
-                html.push(`<div class="task-index">${index + 1}.</div>`);
-                html.push(`<div class="task-item">`);
-                html.push(`<div class="title">${this.escapeHtml(item.title)}</div>`);
-                if (item.desc) {
-                    html.push(`<div class="desc">${this.escapeHtml(item.desc)}</div>`);
-                }
-                html.push('</div>');
-                html.push('</li>');
-            }
-        });
-
-        html.push(
-            '</ul>',
-            `<div class="apply-button"><div class="apply-create-task-button ${status||''}">${this.escapeHtml($A.L(this.config.defaultTitle))}</div></div>`,
-            '</div>'
-        );
-        return html.join('\n');
-    },
-
     // 修改初始化插件函数
     initCreateTaskPlugin(md) {
-        md.block.ruler.before('fence', 'create_task', (state, startLine, endLine, silent) => {
-            try {
-                const start = state.bMarks[startLine] + state.tShift[startLine];
-                const max = state.eMarks[startLine];
+        md.block.ruler.before('fence', 'create-task', (state, startLine, endLine, silent) => {
+            const start = state.bMarks[startLine] + state.tShift[startLine];
+            const max = state.eMarks[startLine];
+            const firstLine = state.src.slice(start, max).trim();
 
-                const match = state.src.slice(start, max).trim().match(/^```\s*CreateTask\s*(applying|applied)?$/);
-                if (!match) {
-                    return false;
-                }
-
-                if (silent) {
-                    return true;
-                }
-
-                let nextLine = startLine + 1;
-                let content = [];
-                let found = false;
-
-                while (nextLine < endLine) {
-                    const line = state.src.slice(state.bMarks[nextLine], state.eMarks[nextLine]).trim();
-                    if (line === '```') {
-                        found = true;
-                        break;
-                    }
-                    content.push(line);
-                    nextLine++;
-                }
-
-                if (!found) {
-                    return false;
-                }
-
-                // 创建 token 并设置为空字符串内容
-                const token = state.push('html_block', '', 0);
-
-                // 如果有内容，则解析并生成HTML
-                if (content.length > 0) {
-                    const items = this.parseTaskItems(content);
-                    const html = this.generateTaskHtml(items, match[1]);
-                    token.content = html || '';
-                } else {
-                    token.content = ''; // 空内容直接返回空字符串
-                }
-
-                token.map = [startLine, nextLine + 1];
-                state.line = nextLine + 1;
-                return true;
-
-            } catch (error) {
-                console.error('Error in create_task parser:', error);
+            // 检查开始标记，并获取status值
+            const match = firstLine.match(/^:::\s*(create-task-list|create-subtask-list)(?:\s+(\S+))?$/);
+            if (!match) {
                 return false;
             }
-        });
+
+            if (silent) {
+                return true;
+            }
+
+            // 获取按钮标题和状态
+            const listType = match[1] === 'create-task-list' ? 'task' : 'subtask';
+            const buttonTitle = this.config.buttonLabels[listType] || '';
+            const status = match[2] || '';
+
+            let nextLine = startLine + 1;
+            let content = [];
+
+            // 查找结束标记
+            while (nextLine < endLine) {
+                const lineStart = state.bMarks[nextLine] + state.tShift[nextLine];
+                const lineMax = state.eMarks[nextLine];
+                const line = state.src.slice(lineStart, lineMax);
+
+                if (line.trim() === ':::') {
+                    break;
+                }
+
+                content.push(line);
+                nextLine++;
+            }
+
+            // 解析任务
+            const tasks = [];
+            let currentTask = null;
+            let isCollectingDesc = false;
+            let descLines = [];
+
+            content.forEach(line => {
+                const titleMatch = line.trim().match(/^title:\s*(.+)$/);
+                const descMatch = line.trim().match(/^desc:\s*(.*)$/);
+
+                if (titleMatch) {
+                    // 如果已经有一个任务在处理中，保存它
+                    if (currentTask) {
+                        if (descLines.length > 0) {
+                            currentTask.desc = descLines.join('\n');
+                        }
+                        tasks.push(currentTask);
+                    }
+
+                    // 开始新的任务
+                    currentTask = {title: titleMatch[1]};
+                    isCollectingDesc = false;
+                    descLines = [];
+                } else if (descMatch) {
+                    isCollectingDesc = true;
+                    if (descMatch[1]) {
+                        descLines.push(descMatch[1]);
+                    }
+                } else if (isCollectingDesc && line.trim() && !line.trim().startsWith('title:')) {
+                    // 收集多行描述，但不包括空行和新的title行
+                    descLines.push(line.trim());
+                }
+            });
+
+            // 处理最后一个任务
+            if (currentTask) {
+                if (descLines.length > 0) {
+                    currentTask.desc = descLines.join('\n');
+                }
+                tasks.push(currentTask);
+            }
+
+            // 生成HTML
+            const showIndex = tasks.length > 1;
+            const taskItems = tasks.slice(0, this.config.maxItems).map((task, index) => [
+                '<li>',
+                showIndex ? `<div class="task-index">${index + 1}.</div>` : '',
+                '<div class="task-item">',
+                `<div class="title">${this.escapeHtml(this.validateInput(task.title, this.config.maxTitleLength))}</div>`,
+                task.desc && match[1] === 'create-task-list' ? `<div class="desc">${this.escapeHtml(this.validateInput(task.desc, this.config.maxDescLength))}</div>` : '',
+                '</div>',
+                '</li>'
+            ].join(''));
+
+            const htmls =  [
+                '<div class="apply-create-task">',
+                '<ul>',
+                taskItems.join(''),
+                '</ul>',
+                '<div class="apply-button">',
+                `<div class="apply-create-${listType}-button${status ? ' ' + status : ''}">${$A.L(buttonTitle)}</div>`,
+                '</div>',
+                '</div>'
+            ];
+
+            // 添加token
+            const token = state.push('html_block', '', 0);
+            token.content = htmls.join('');
+            token.map = [startLine, nextLine];
+
+            state.line = nextLine + 1;
+            return true;
+        })
     }
 };
 

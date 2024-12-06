@@ -3220,16 +3220,38 @@ export default {
             });
         },
 
-        async applyCreateTask(event, el) {
+        async applyCreateTask(type, event, el) {
             const currentTarget = event.target;
             if (currentTarget.classList.contains('applying') || currentTarget.classList.contains('applied')) {
                 return;
             }
             currentTarget.classList.add('applying')
 
-            if (this.dialogData.group_type !== 'project') {
+            if (type === 'task') {
+                if (this.dialogData.group_type !== 'project') {
+                    currentTarget.classList.remove('applying')
+                    $A.modalError('只有在项目中才能创建任务')
+                    return
+                }
+                if (!this.dialogData.group_info) {
+                    currentTarget.classList.remove('applying')
+                    $A.modalError('项目不存在')
+                    return;
+                }
+            } else if (type === 'subtask') {
+                if (this.dialogData.group_type !== 'task') {
+                    currentTarget.classList.remove('applying')
+                    $A.modalError('只有在任务中才能创建子任务')
+                    return
+                }
+                if (!this.dialogData.group_info) {
+                    currentTarget.classList.remove('applying')
+                    $A.modalError('任务不存在')
+                    return;
+                }
+            } else {
                 currentTarget.classList.remove('applying')
-                $A.modalError('只有在项目中才能创建任务')
+                $A.modalError('未知类型')
                 return
             }
 
@@ -3246,13 +3268,8 @@ export default {
             }
             if (!target) {
                 currentTarget.classList.remove('applying')
-                $A.modalError('未找到任务内容')
+                $A.modalError('未找到内容')
                 return
-            }
-            if (!this.dialogData.group_info) {
-                currentTarget.classList.remove('applying')
-                $A.modalError('项目不存在')
-                return;
             }
 
             const allTaskElements = el.querySelectorAll('.apply-create-task');
@@ -3268,6 +3285,12 @@ export default {
                         .map(line => `<p>${line.trim()}</p>`)
                         .join('') : '';
 
+                    if (type === 'subtask') {
+                        return {
+                            task_id: this.dialogData.group_info.id,
+                            name: title,
+                        };
+                    }
                     return {
                         project_id: this.dialogData.group_info.id,
                         name: title,
@@ -3276,29 +3299,40 @@ export default {
                 })
                 .filter(Boolean);
 
+            const typeCall = type === 'subtask' ? 'taskAddSub' : 'taskAdd';
+            const typeLabel = type === 'subtask' ? '子任务' : '任务';
             const results = await Promise.all(taskList.map(item =>
-                this.$store.dispatch("taskAdd", item).then(
+                this.$store.dispatch(typeCall, item).then(
                     success => ({ success: true, data: success }),
                     error => ({ success: false, error: error })
                 )
             ));
             const successTasks = results.filter(r => r.success).map(r => r.data);
             const failedTasks = results.filter(r => !r.success).map(r => r.error);
+            let notice = `${this.$store.state.userInfo.nickname} 成功创建 ${successTasks.length} 个${typeLabel}`;
             if (failedTasks.length > 0) {
-                $A.modalError(`成功创建 ${successTasks.length} 个任务，${failedTasks.length} 个任务创建失败`);
-            } else {
-                $A.messageSuccess(`成功创建 ${successTasks.length} 个任务`);
+                notice += `，${failedTasks.length} 个${typeLabel}创建失败`;
             }
 
             currentTarget.classList.remove('applying')
             currentTarget.classList.add('applied')
 
+            const {data} = await this.$store.dispatch("call", {
+                url: 'dialog/msg/sendnotice',
+                data: {
+                    dialog_id: this.dialogId,
+                    source: 'ai',
+                    notice,
+                },
+            });
+            this.sendSuccess(data)
+
+
             await this.$store.dispatch("call", {
                 url: 'dialog/msg/applied',
                 data: {
-                    type: 'CreateTask',
+                    msg_id: this.operateItem.id,
                     index: taskIndex,
-                    msg_id: this.operateItem.id
                 },
             });
         },
@@ -3411,7 +3445,14 @@ export default {
             // 创建任务
             if (target.classList.contains('apply-create-task-button')) {
                 this.operateItem = this.findMsgByElement(el)
-                this.applyCreateTask(event, el)
+                this.applyCreateTask('task', event, el)
+                return;
+            }
+
+            // 创建子任务
+            if (target.classList.contains('apply-create-subtask-button')) {
+                this.operateItem = this.findMsgByElement(el)
+                this.applyCreateTask('subtask', event, el)
                 return;
             }
 

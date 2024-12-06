@@ -2893,8 +2893,6 @@ class DialogController extends AbstractController
      * @apiGroup dialog
      * @apiName msg__applied
      *
-     * @apiParam {String} type          类型
-     * - CreateTask: 创建任务
      * @apiParam {Number} index         索引
      * @apiParam {Number} msg_id        消息ID
      *
@@ -2907,7 +2905,6 @@ class DialogController extends AbstractController
         User::auth();
         //
         $msg_id = intval(Request::input('msg_id'));
-        $type = trim(Request::input('type'));
         $index = intval(Request::input('index'));
         //
         $msg = WebSocketDialogMsg::whereId($msg_id)->first();
@@ -2917,17 +2914,17 @@ class DialogController extends AbstractController
         WebSocketDialog::checkDialog($msg->dialog_id);
         //
         $originalMsg = $msg->getRawOriginal('msg');
-        $pattern = '/```\s*' . preg_quote($type, '/') . '\s*(applying|applied)?\s*(\n|\\\\n)/';
+        $pattern = '/:::\s*(create-task-list|create-subtask-list)(?:\s+(\S+))?/';
         $count = -1;
-        $updatedMsg = preg_replace_callback($pattern, function($matches) use (&$count, $index, $type) {
+        $updatedMsg = preg_replace_callback($pattern, function($matches) use (&$count, $index) {
             $count++;
             if ($count === $index || ($index === 0 && $count === 1)) {
-                return "```{$type} applied{$matches[2]}";
+                return "::: {$matches[1]} applied";
             }
             return $matches[0];
         }, $originalMsg);
 
-        if ($count === 0) {
+        if ($count === -1) {
             return Base::retError("未找到可应用的规则");
         }
 

@@ -593,13 +593,13 @@ class BotReceiveMsgTask extends AbstractTask
                             }
                             $before_text[] = <<<EOF
                                 如果你判断我想要添加任务，请将任务标题和描述添加到回复中，例如：
-                                ```CreateTask
+                                ::: create-task-list
                                 title: 任务标题1
                                 desc: 任务描述1
 
                                 title: 任务标题2
                                 desc: 任务描述2
-                                ```
+                                :::
                                 EOF;
                         }
                         break;
@@ -621,10 +621,10 @@ class BotReceiveMsgTask extends AbstractTask
                             }
                             $before_text[] = <<<EOF
                                 如果你判断我想要添加子任务，请将子任务标题添加到回复中，例如：
-                                ```CreateSubTask
-                                子任务标题1
-                                子任务标题2
-                                ```
+                                ::: create-subtask-list
+                                title: 子任务标题1
+                                title: 子任务标题2
+                                :::
                                 EOF;
                         }
                         break;
