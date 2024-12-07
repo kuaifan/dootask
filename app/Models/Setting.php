@@ -11,7 +11,7 @@ use App\Module\Timer;
  * @property int $id
  * @property string|null $name
  * @property string|null $desc 参数描述、备注
- * @property string|null $setting
+ * @property array $setting
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
@@ -36,7 +36,7 @@ class Setting extends AbstractModel
     /**
      * 格式化设置参数
      * @param $value
-     * @return array|mixed
+     * @return array
      */
     public function getSettingAttribute($value)
     {

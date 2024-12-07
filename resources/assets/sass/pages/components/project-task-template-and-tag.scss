@@ -103,6 +103,40 @@
                 }
             }
         }
+        .tag-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding: 16px;
+            border: 1px solid #F4F4F5;
+            border-radius: 4px;
+            .tag-contents {
+                .tag-title {
+                    height: 22px;
+                    display: flex;
+                    align-items: center;
+                    color: $primary-title-color;
+                }
+                .tag-desc {
+                    margin-top: 4px;
+                    color: $primary-text-color;
+                    font-size: 13px;
+                }
+            }
+            .tag-actions {
+                > button {
+                    margin: 8px 0 8px 8px;
+                    height: 28px;
+                    padding: 0 12px;
+                    font-size: 13px;
+
+                    > i {
+                        margin: 0 -2px;
+                    }
+                }
+            }
+        }
     }
 }
 
