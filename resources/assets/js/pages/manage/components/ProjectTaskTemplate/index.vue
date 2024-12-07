@@ -29,7 +29,7 @@
                     </div>
                     <div class="template-actions">
                         <Button @click="handleSetDefault(item)" type="primary" :icon="item.is_default ? 'md-checkmark' : ''">
-                            {{$L('设为默认')}}
+                            {{$L(item.is_default ? '取消默认' : '设为默认')}}
                         </Button>
                         <Button @click="handleEdit(item)" type="primary">
                             {{$L('编辑')}}

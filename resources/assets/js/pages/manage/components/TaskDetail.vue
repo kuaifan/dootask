@@ -149,6 +149,16 @@
                 <Form class="items" label-position="left" label-width="auto" @submit.native.prevent>
                     <FormItem v-if="taskDetail.p_name">
                         <div class="item-label" slot="label">
+                            <i class="taskfont">&#xe61e;</i>{{$L('标签')}}
+                        </div>
+                        <ul class="item-content">
+                            <li>
+
+                            </li>
+                        </ul>
+                    </FormItem>
+                    <FormItem v-if="taskDetail.p_name">
+                        <div class="item-label" slot="label">
                             <i class="taskfont">&#xe6ec;</i>{{$L('优先级')}}
                         </div>
                         <ul class="item-content">

@@ -18,7 +18,9 @@
             <div v-else class="template-list">
                 <div v-for="item in tags" :key="item.id" class="tag-item">
                     <div class="tag-contents">
-                        <div class="tag-title">{{ item.name }}</div>
+                        <div class="tag-title">
+                            <Tags :tags="item"/>
+                        </div>
                         <div v-if="item.desc" class="tag-desc">{{ item.desc }}</div>
                     </div>
                     <div class="tag-actions">
@@ -50,6 +52,9 @@
                 <FormItem prop="desc" :label="$L('标签描述')">
                     <Input v-model="editingTag.desc" :disabled="systemTagIsMultiple" :placeholder="$L('请输入标签描述')"/>
                 </FormItem>
+                <FormItem prop="color" :label="$L('标签颜色')">
+                    <ColorPicker v-model="editingTag.color" :disabled="systemTagIsMultiple" recommend transfer/>
+                </FormItem>
                 <FormItem v-if="!editingTag.id">
                     <div class="project-task-template-system">
                         <div v-if="!systemTagShow" @click="onSystemTag" class="tip-title">{{$L('使用示例标签')}}</div>
@@ -63,8 +68,10 @@
                             <li
                                 v-for="(item, index) in systemTagData"
                                 :key="index"
-                                :class="{selected:systemTagIsMultiple && systemTagMultipleData.indexOf(item)!==-1}"
-                                @click="useSystemTag(item)">{{item.name}}</li>
+                                :class="{tag: true, selected:systemTagIsMultiple && systemTagMultipleData.indexOf(item)!==-1}"
+                                @click="useSystemTag(item)">
+                                <Tags :tags="item"></Tags>
+                            </li>
                         </ul>
                     </div>
                 </FormItem>
@@ -82,11 +89,15 @@
 
 <script>
 import {mapState} from 'vuex'
-import AllTaskTags from "./tags";
+import {systemTags} from "./utils";
+import Tags from "./tags.vue";
 import {getLanguage} from "../../../../language";
 
 export default {
     name: 'ProjectTaskTag',
+    components: {
+        Tags
+    },
     props: {
         projectId: {
             type: [Number, String],
@@ -233,7 +244,7 @@ export default {
 
         onSystemTag() {
             const lang = getLanguage()
-            this.systemTagData = typeof AllTaskTags[lang] === "undefined" ? AllTaskTags['en'] : AllTaskTags[lang]
+            this.systemTagData = typeof systemTags[lang] === "undefined" ? systemTags['en'] : systemTags[lang]
             this.systemTagShow = true
         },
 

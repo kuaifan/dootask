@@ -1,4 +1,4 @@
-export default {
+const systemTags = {
     "zh": [
         {"name": "需求", "desc": "新功能或业务需求", "color": "#007bff"},
         {"name": "优化", "desc": "现有功能或体验的改进", "color": "#28a745"},
@@ -260,3 +260,121 @@ export default {
         {"name": "Поддержка разработки", "desc": "Задача по поддержке других команд", "color": "#20c997"}
     ]
 }
+
+const colorUtils = {
+    cache: new Map(),
+
+    // 清理缓存
+    clearCache() {
+        if (this.cache.size > 1000) {
+            this.cache.clear();
+        }
+    },
+
+    // 判断颜色是否为深色
+    isColorDark(color) {
+        if (!color) return true;
+
+        const cacheKey = `dark_${color}`;
+        if (this.cache.has(cacheKey)) {
+            return this.cache.get(cacheKey);
+        }
+
+        const hex = color.replace('#', '');
+        const r = parseInt(hex.substr(0, 2), 16) | 0;
+        const g = parseInt(hex.substr(2, 2), 16) | 0;
+        const b = parseInt(hex.substr(4, 2), 16) | 0;
+
+        const brightness = (r * 299 + g * 587 + b * 114) >> 10;
+        const isDark = brightness < 128;
+
+        this.cache.set(cacheKey, isDark);
+        return isDark;
+    },
+
+    // 将 hex 转换为 HSL
+    hexToHSL(hex) {
+        if (!hex || typeof hex !== 'string') return { h: 0, s: 0, l: 0 };
+
+        const cacheKey = `hsl_${hex}`;
+        if (this.cache.has(cacheKey)) {
+            return this.cache.get(cacheKey);
+        }
+
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        if (!result) return { h: 0, s: 0, l: 0 };
+
+        const r = (parseInt(result[1], 16) | 0) / 255;
+        const g = (parseInt(result[2], 16) | 0) / 255;
+        const b = (parseInt(result[3], 16) | 0) / 255;
+
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        let h, s, l = (max + min) / 2;
+
+        if (max === min) {
+            h = s = 0;
+        } else {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            const hueCalc = {
+                [r]: () => (g - b) / d + (g < b ? 6 : 0),
+                [g]: () => (b - r) / d + 2,
+                [b]: () => (r - g) / d + 4
+            };
+            h = hueCalc[max]() / 6;
+        }
+
+        const hsl = {
+            h: (h * 360) | 0,
+            s: (s * 100) | 0,
+            l: (l * 100) | 0
+        };
+
+        this.cache.set(cacheKey, hsl);
+        return hsl;
+    },
+
+    // HSL 转 hex
+    HSLToHex(h, s, l) {
+        s /= 100;
+        l /= 100;
+        const k = n => (n + h / 30) % 12;
+        const a = s * Math.min(l, 1 - l);
+        const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+        const toHex = x => {
+            const hex = Math.round(x * 255).toString(16);
+            return hex.length === 1 ? '0' + hex : hex;
+        };
+
+        return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
+    },
+
+    // 生成配色方案
+    generateColorScheme(baseColor, defaultColor = '#3498db') {
+        if (!baseColor) baseColor = defaultColor;
+
+        const cacheKey = `scheme_${baseColor}`;
+        if (this.cache.has(cacheKey)) {
+            return this.cache.get(cacheKey);
+        }
+
+        const hsl = this.hexToHSL(baseColor);
+        const h = hsl.h;
+        const s = hsl.s;
+        const l = hsl.l;
+
+        const colors = [
+            baseColor,
+            this.HSLToHex(h, s, Math.min(l + 20, 100)),
+            this.HSLToHex(h, s, Math.max(l - 20, 0)),
+            this.HSLToHex((h + 30) % 360, s, l),
+            this.HSLToHex((h - 30 + 360) % 360, s, l)
+        ];
+
+        this.cache.set(cacheKey, colors);
+        return colors;
+    }
+}
+
+export {systemTags, colorUtils}

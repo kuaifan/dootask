@@ -2389,10 +2389,8 @@ export default {
                 url: 'system/priority',
             }).then(result => {
                 state.taskPriority = result.data;
-                resolve(result)
             }).catch(e => {
                 console.warn(e);
-                reject(e);
             });
         }, typeof timeout === "number" ? timeout : 1000)
     },
