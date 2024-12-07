@@ -470,7 +470,7 @@ export default {
 
     activated() {
         this.$store.dispatch("getUserInfo").catch(_ => {})
-        this.$store.dispatch("getTaskPriority").catch(_ => {})
+        this.$store.dispatch("getTaskPriority", 1000)
         this.$store.dispatch("getReportUnread", 1000)
         this.$store.dispatch("getApproveUnread", 1000)
         //

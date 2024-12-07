@@ -100,7 +100,7 @@
 <script>
 import {mapState} from 'vuex'
 import VMPreviewNostyle from "../../../../components/VMEditor/nostyle.vue";
-import AllTaskTemplates from "./template";
+import AllTaskTemplates from "./templates";
 import {getLanguage} from "../../../../language";
 
 export default {
@@ -141,6 +141,7 @@ export default {
             if (!val) {
                 this.$refs.editForm.resetFields()
                 this.systemTemplateShow = false
+                this.systemTemplateIsMultiple = false
             }
         }
     },

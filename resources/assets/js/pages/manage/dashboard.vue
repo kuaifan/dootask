@@ -277,7 +277,7 @@ export default {
                 this.$store.dispatch("call", {
                     url: 'system/license',
                     data: {
-                        type: 'get'
+                        type: 'error',
                     }
                 }).then(({data}) => {
                     this.warningMsg = data.error.length > 0 ? data.error[0] : '';

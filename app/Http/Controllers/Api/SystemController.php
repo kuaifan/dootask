@@ -759,6 +759,12 @@ class SystemController extends AbstractController
             $data['error'][] = '终端License已过期';
         }
         //
+        if ($type === 'error') {
+            $data = [
+                'error' => $data['error']
+            ];
+        }
+        //
         return Base::retSuccess('success', $data);
     }
 

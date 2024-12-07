@@ -503,6 +503,7 @@ export default {
         //
         dispatch("getDialogAuto").catch(() => {});
         dispatch("getDialogTodo", 0).catch(() => {});
+        dispatch("getTaskPriority", 1000);
         dispatch("getReportUnread", 1000);
         dispatch("getApproveUnread", 1000);
         dispatch("getProjectByQueue");
@@ -2379,10 +2380,11 @@ export default {
      * 获取任务优先级预设数据
      * @param state
      * @param dispatch
-     * @returns {Promise<unknown>}
+     * @param timeout
      */
-    getTaskPriority({state, dispatch}) {
-        return new Promise(function (resolve, reject) {
+    getTaskPriority({state, dispatch}, timeout) {
+        window.__getTaskPriority && clearTimeout(window.__getTaskPriority)
+        window.__getTaskPriority = setTimeout(() => {
             dispatch("call", {
                 url: 'system/priority',
             }).then(result => {
@@ -2392,7 +2394,7 @@ export default {
                 console.warn(e);
                 reject(e);
             });
-        });
+        }, typeof timeout === "number" ? timeout : 1000)
     },
 
     /**

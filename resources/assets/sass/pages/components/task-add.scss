@@ -71,14 +71,15 @@
     .task-add-template {
         display: flex;
         flex-wrap: wrap;
-        gap: 12px;
+        gap: 8px;
         margin-bottom: 20px;
 
         > li {
             list-style: none;
-            padding: 7px 15px;
+            padding: 6px 14px;
             background-color: #f5f5f5;
             border-radius: 20px;
+            line-height: 20px;
             transition: all 0.3s ease;
             cursor: pointer;
 
