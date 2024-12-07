@@ -12,6 +12,7 @@ namespace App\Models;
  * @property string|null $color 颜色
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int|null $tag_id 标签ID
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
@@ -26,6 +27,7 @@ namespace App\Models;
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTag whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTag whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTag whereProjectId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTag whereTagId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTag whereTaskId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|ProjectTaskTag whereUpdatedAt($value)
  * @mixin \Eloquent

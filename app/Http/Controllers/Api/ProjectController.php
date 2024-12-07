@@ -40,6 +40,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\ProjectTaskFlowChange;
 use App\Models\ProjectTaskVisibilityUser;
 use App\Models\ProjectTaskTemplate;
+use App\Models\ProjectTag;
 
 /**
  * @apiDefine project
@@ -2857,5 +2858,127 @@ class ProjectController extends AbstractController
         ProjectTaskTemplate::where('project_id', $projectId)->update(['is_default' => false]);
         $template->update(['is_default' => true]);
         return Base::retSuccess('设置成功');
+    }
+
+    /**
+     * @api {post} api/project/tag/save          51. 保存标签
+     *
+     * @apiDescription 需要token身份（限：项目负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName tag__save
+     *
+     * @apiParam {Number} project_id                项目ID
+     * @apiParam {Number} [id]                      标签ID
+     * @apiParam {String} name                      标签名称
+     * @apiParam {String} desc                      标签描述
+     * @apiParam {String} color                     标签颜色
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function tag__save()
+    {
+        $user = User::auth();
+        //
+        $projectId = intval(Request::input('project_id'));
+        if (!$projectId) {
+            return Base::retError('参数错误');
+        }
+        Project::userProject($projectId, true, true);
+        //
+        $id = intval(Request::input('id', 0));
+        $name = trim(Request::input('name', ''));
+        $desc = trim(Request::input('desc', ''));
+        $color = trim(Request::input('color', ''));
+        if (empty($name)) {
+            return Base::retError('请输入标签名称');
+        }
+        if (empty($color)) {
+            return Base::retError('请选择标签颜色');
+        }
+        $data = [
+            'project_id' => $projectId,
+            'name' => $name,
+            'desc' => $desc,
+            'color' => $color,
+            'userid' => $user->userid
+        ];
+        if ($id > 0) {
+            $tag = ProjectTag::where('id', $id)
+                ->where('project_id', $projectId)
+                ->first();
+            if (!$tag) {
+                return Base::retError('标签不存在或已被删除');
+            }
+            $tag->update($data);
+        } else {
+            $tagCount = ProjectTag::where('project_id', $projectId)->count();
+            if ($tagCount >= 20) {
+                return Base::retError('每个项目最多添加20个标签');
+            }
+            $tag = ProjectTag::create($data);
+        }
+        return Base::retSuccess('保存成功', $tag);
+    }
+
+    /**
+     * @api {get} api/project/tag/delete          52. 删除标签
+     *
+     * @apiDescription 需要token身份（限：项目负责人）
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName tag__delete
+     *
+     * @apiParam {Number} id                      标签ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function tag__delete()
+    {
+        User::auth();
+        //
+        $id = intval(Request::input('id'));
+        if (!$id) {
+            return Base::retError('参数错误');
+        }
+        $tag = ProjectTag::find($id);
+        if (!$tag) {
+            return Base::retError('标签不存在或已被删除');
+        }
+        Project::userProject($tag->project_id, true, true);
+        $tag->delete();
+        return Base::retSuccess('删除成功');
+    }
+
+    /**
+     * @api {get} api/project/tag/list          53. 标签列表
+     *
+     * @apiDescription 需要token身份
+     * @apiVersion 1.0.0
+     * @apiGroup project
+     * @apiName tag__list
+     *
+     * @apiParam {Number} project_id                项目ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function tag__list()
+    {
+        User::auth();
+        //
+        $projectId = intval(Request::input('project_id'));
+        if (!$projectId) {
+            return Base::retError('参数错误');
+        }
+        $tags = ProjectTag::where('project_id', $projectId)
+            ->orderByDesc('id')
+            ->get();
+        return Base::retSuccess('success', $tags);
     }
 }

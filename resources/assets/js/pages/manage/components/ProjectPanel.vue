@@ -54,6 +54,7 @@
                             <EDropdownItem command="setting">{{$L('项目设置')}}</EDropdownItem>
                             <EDropdownItem command="permissions">{{$L('权限设置')}}</EDropdownItem>
                             <EDropdownItem command="task_template">{{$L('任务模板')}}</EDropdownItem>
+                            <EDropdownItem command="task_tag">{{$L('任务标签')}}</EDropdownItem>
                             <EDropdownItem command="workflow">{{$L('工作流设置')}}</EDropdownItem>
                             <EDropdownItem command="user" divided>{{$L('成员管理')}}</EDropdownItem>
                             <EDropdownItem command="invite">{{$L('邀请链接')}}</EDropdownItem>
@@ -469,6 +470,14 @@
             <ProjectTaskTemplate ref="taskTemplate" v-if="taskTemplateShow" :project-id="projectId"/>
         </DrawerOverlay>
 
+        <!--任务标签-->
+        <DrawerOverlay
+            v-model="taskTagShow"
+            placement="right"
+            :size="720">
+            <ProjectTaskTag ref="taskTag" v-if="taskTagShow" :project-id="projectId"/>
+        </DrawerOverlay>
+
         <!--工作流程设置-->
         <DrawerOverlay
             v-model="workflowShow"
@@ -514,6 +523,7 @@ import TaskRow from "./TaskRow";
 import TaskArchived from "./TaskArchived";
 import ProjectLog from "./ProjectLog";
 import DrawerOverlay from "../../../components/DrawerOverlay";
+import ProjectTaskTag from "./ProjectTaskTag";
 import ProjectTaskTemplate from "./ProjectTaskTemplate";
 import ProjectWorkflow from "./ProjectWorkflow";
 import ProjectPermission from "./ProjectPermission";
@@ -531,6 +541,7 @@ export default {
         UserAvatarTip,
         UserSelect,
         TaskMenu,
+        ProjectTaskTag,
         ProjectTaskTemplate,
         ProjectWorkflow,
         ProjectPermission,
@@ -579,6 +590,7 @@ export default {
             transferLoad: 0,
 
             taskTemplateShow: false,
+            taskTagShow: false,
 
             workflowShow: false,
             logShow: false,
@@ -1342,6 +1354,10 @@ export default {
 
                 case "task_template":
                     this.taskTemplateShow = true;
+                    break;
+
+                case "task_tag":
+                    this.taskTagShow = true;
                     break;
 
                 case "workflow":
