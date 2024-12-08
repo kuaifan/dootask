@@ -2,7 +2,10 @@
 <template>
     <div class="project-task-template">
         <div class="header">
-            <div class="title">{{$L('任务模板')}}</div>
+            <div class="title">
+                {{$L('任务模板')}}
+                <Loading v-if="loadIng > 0"/>
+            </div>
             <div class="actions">
                 <Button type="primary" icon="md-add" @click="handleAdd">
                     {{$L('新建模板')}}
@@ -88,7 +91,7 @@
             </Form>
             <div slot="footer" class="adaption">
                 <Button type="default" @click="showEditModal=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="loading" @click="handleSave">
+                <Button type="primary" :loading="loadIng > 0" @click="handleSave">
                     {{ $L('保存') }}
                     {{ systemTemplateIsMultiple && systemTemplateMultipleData.length > 0 ? ` (${systemTemplateMultipleData.length})` : '' }}
                 </Button>
@@ -114,7 +117,7 @@ export default {
     },
     data() {
         return {
-            loading: false,
+            loadIng: 0,
             templates: [],
             showEditModal: false,
             editingTemplate: this.getEmptyTemplate(),
@@ -160,7 +163,7 @@ export default {
 
         // 加载模板列表
         async loadTemplates() {
-            this.loading = true
+            this.loadIng++
             try {
                 const {data} = await this.$store.dispatch("call", {
                     url: 'project/task/template_list',
@@ -172,8 +175,9 @@ export default {
                 this.templates = data || []
             } catch ({msg}) {
                 $A.messageError(msg || '加载模板失败')
+            } finally {
+                this.loadIng--
             }
-            this.loading = false
         },
 
         // 新建模板
@@ -220,12 +224,17 @@ export default {
 
         // 保存模板请求
         async handleSaveCall(data) {
-            return this.$store.dispatch("call", {
-                url: 'project/task/template_save',
-                data,
-                method: 'post',
-                spinner: 300
-            })
+            this.loadIng++
+            try {
+                return await this.$store.dispatch("call", {
+                    url: 'project/task/template_save',
+                    data,
+                    method: 'post',
+                    spinner: 300
+                })
+            } finally {
+                this.loadIng--
+            }
         },
 
         // 删除模板
@@ -234,6 +243,7 @@ export default {
                 title: '确认删除',
                 content: '确定要删除该模板吗？',
                 onOk: async () => {
+                    this.loadIng++
                     try {
                         const {msg} = await this.$store.dispatch("call", {
                             url: 'project/task/template_delete',
@@ -246,6 +256,8 @@ export default {
                         this.loadTemplates()
                     } catch ({msg}) {
                         $A.messageError(msg || '删除失败')
+                    } finally {
+                        this.loadIng--
                     }
                 }
             })
@@ -253,6 +265,7 @@ export default {
 
         // 设置默认模板
         async handleSetDefault(template) {
+            this.loadIng++
             try {
                 const {msg} = await this.$store.dispatch("call", {
                     url: 'project/task/template_default',
@@ -266,6 +279,8 @@ export default {
                 this.loadTemplates()
             } catch ({msg}) {
                 $A.messageError(msg || '设置失败')
+            } finally {
+                this.loadIng--
             }
         },
 

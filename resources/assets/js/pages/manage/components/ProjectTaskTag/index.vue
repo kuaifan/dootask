@@ -2,7 +2,10 @@
 <template>
     <div class="project-task-template">
         <div class="header">
-            <div class="title">{{$L('任务标签')}}</div>
+            <div class="title">
+                {{$L('任务标签')}}
+                <Loading v-if="loadIng > 0"/>
+            </div>
             <div class="actions">
                 <Button type="primary" icon="md-add" @click="handleAdd">
                     {{$L('新建标签')}}
@@ -36,66 +39,19 @@
         </div>
 
         <!-- 编辑标签弹窗 -->
-        <Modal
-            v-model="showEditModal"
-            :title="editingTag.id ? $L('编辑标签') : $L('新建标签')"
-            :mask-closable="false">
-            <Form
-                ref="editForm"
-                :model="editingTag"
-                :rules="formRules"
-                v-bind="formOptions"
-                @submit.native.prevent>
-                <FormItem prop="name" :label="$L('标签名称')">
-                    <Input ref="tagName" v-model="editingTag.name" :disabled="systemTagIsMultiple" :placeholder="$L('请输入标签名称')"/>
-                </FormItem>
-                <FormItem prop="desc" :label="$L('标签描述')">
-                    <Input v-model="editingTag.desc" :disabled="systemTagIsMultiple" :placeholder="$L('请输入标签描述')"/>
-                </FormItem>
-                <FormItem prop="color" :label="$L('标签颜色')">
-                    <ColorPicker v-model="editingTag.color" :disabled="systemTagIsMultiple" recommend transfer/>
-                </FormItem>
-                <FormItem v-if="!editingTag.id">
-                    <div class="project-task-template-system">
-                        <div v-if="!systemTagShow" @click="onSystemTag" class="tip-title">{{$L('使用示例标签')}}</div>
-                        <ul v-else>
-                            <li
-                                :class="{selected:systemTagIsMultiple}"
-                                @click="systemTagIsMultiple=!systemTagIsMultiple">
-                                <i class="taskfont" v-html="systemTagIsMultiple ? '&#xe627;' : '&#xe625;'"></i>
-                                {{$L('多选')}}
-                            </li>
-                            <li
-                                v-for="(item, index) in systemTagData"
-                                :key="index"
-                                :class="{tag: true, selected:systemTagIsMultiple && systemTagMultipleData.indexOf(item)!==-1}"
-                                @click="useSystemTag(item)">
-                                <Tags :tags="item"></Tags>
-                            </li>
-                        </ul>
-                    </div>
-                </FormItem>
-            </Form>
-            <div slot="footer" class="adaption">
-                <Button type="default" @click="showEditModal=false">{{$L('取消')}}</Button>
-                <Button type="primary" :loading="loading" @click="handleSave">
-                    {{ $L('保存') }}
-                    {{ systemTagIsMultiple && systemTagMultipleData.length > 0 ? ` (${systemTagMultipleData.length})` : '' }}
-                </Button>
-            </div>
-        </Modal>
+        <TaskTagAdd ref="addTag" @on-save="loadTags"/>
     </div>
 </template>
 
 <script>
 import {mapState} from 'vuex'
-import {systemTags} from "./utils";
 import Tags from "./tags.vue";
-import {getLanguage} from "../../../../language";
+import TaskTagAdd from "./add.vue";
 
 export default {
     name: 'ProjectTaskTag',
     components: {
+        TaskTagAdd,
         Tags
     },
     props: {
@@ -106,20 +62,8 @@ export default {
     },
     data() {
         return {
-            loading: false,
+            loadIng: 0,
             tags: [],
-            showEditModal: false,
-            editingTag: this.getEmptyTag(),
-            formRules: {
-                name: [
-                    { required: true, message: this.$L('请输入标签名称'), trigger: 'blur' }
-                ]
-            },
-
-            systemTagShow: false,
-            systemTagData: [],
-            systemTagIsMultiple: false,
-            systemTagMultipleData: [],
         }
     },
     computed: {
@@ -127,15 +71,6 @@ export default {
     },
     created() {
         this.loadTags()
-    },
-    watch: {
-        showEditModal(val) {
-            if (!val) {
-                this.$refs.editForm.resetFields()
-                this.systemTagShow = false
-                this.systemTagIsMultiple = false
-            }
-        }
     },
     methods: {
         // 获取空标签对象
@@ -151,7 +86,7 @@ export default {
 
         // 加载标签列表
         async loadTags() {
-            this.loading = true
+            this.loadIng++
             try {
                 const {data} = await this.$store.dispatch("call", {
                     url: 'project/tag/list',
@@ -163,60 +98,19 @@ export default {
                 this.tags = data || []
             } catch ({msg}) {
                 $A.messageError(msg || '加载标签失败')
+            } finally {
+                this.loadIng--
             }
-            this.loading = false
         },
 
         // 新建标签
         handleAdd() {
-            this.editingTag = this.getEmptyTag()
-            this.showEditModal = true
+            this.$refs.addTag.onOpen(this.getEmptyTag())
         },
 
         // 编辑标签
         handleEdit(tag) {
-            this.editingTag = { ...tag }
-            this.showEditModal = true
-        },
-
-        // 保存标签
-        async handleSave() {
-            if (!this.editingTag.name) {
-                $A.messageWarning('请输入标签名称')
-                return
-            }
-            let savePromises = []
-            if (this.systemTagIsMultiple) {
-                if (this.systemTagMultipleData.length === 0) {
-                    $A.messageWarning('请选择示例标签')
-                    return
-                }
-                savePromises = this.systemTagMultipleData.map(item => {
-                    const tag = { ...this.editingTag, id: null, name: item.name, desc: item.desc, color: item.color }
-                    return this.handleSaveCall(tag)
-                })
-            } else {
-                savePromises.push(this.handleSaveCall(this.editingTag))
-            }
-
-            try {
-                const results = await Promise.all(savePromises)
-                $A.messageSuccess(results.length === 1 ? results[0].msg : '全部保存成功')
-                this.showEditModal = false
-                this.loadTags()
-            } catch (error) {
-                $A.messageError(error.msg || '保存失败')
-            }
-        },
-
-        // 保存标签请求
-        async handleSaveCall(data) {
-            return this.$store.dispatch("call", {
-                url: 'project/tag/save',
-                data,
-                method: 'post',
-                spinner: 300
-            })
+            this.$refs.addTag.onOpen(tag)
         },
 
         // 删除标签
@@ -225,6 +119,7 @@ export default {
                 title: '确认删除',
                 content: '确定要删除该标签吗？',
                 onOk: async () => {
+                    this.loadIng++
                     try {
                         const {msg} = await this.$store.dispatch("call", {
                             url: 'project/tag/delete',
@@ -237,32 +132,12 @@ export default {
                         this.loadTags()
                     } catch ({msg}) {
                         $A.messageError(msg || '删除失败')
+                    } finally {
+                        this.loadIng--
                     }
                 }
             })
         },
-
-        onSystemTag() {
-            const lang = getLanguage()
-            this.systemTagData = typeof systemTags[lang] === "undefined" ? systemTags['en'] : systemTags[lang]
-            this.systemTagShow = true
-        },
-
-        // 使用系统标签
-        useSystemTag(item) {
-            this.editingTag.name = item.name
-            this.editingTag.desc = item.desc
-            this.editingTag.color = item.color
-            //
-            if (this.systemTagIsMultiple) {
-                const index = this.systemTagMultipleData.indexOf(item)
-                if (index === -1) {
-                    this.systemTagMultipleData.push(item)
-                } else {
-                    this.systemTagMultipleData.splice(index, 1)
-                }
-            }
-        }
     }
 }
 </script>
