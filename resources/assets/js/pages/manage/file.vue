@@ -624,7 +624,8 @@ export default {
                                 value: row.name,
                                 autoEdit: !!row._edit,
                                 clickOutSide: false,
-                                parser: this.onParser
+                                parser: this.onParser,
+                                attrTitle: row.name,
                             },
                             on: {
                                 'on-edit-change': (b) => {

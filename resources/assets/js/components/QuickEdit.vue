@@ -21,7 +21,7 @@
             <div v-if="isLoad" class="quick-loading"><Loading/></div>
         </div>
         <template v-else>
-            <div class="quick-text"><slot></slot></div>
+            <div class="quick-text" :title="attrTitle"><slot></slot></div>
             <Icon v-if="!disabled" class="quick-icon" type="ios-create-outline" @click.stop="onEdit"/>
         </template>
     </div>
@@ -59,6 +59,10 @@ export default {
         parser: {
             type: Function
         },
+        attrTitle: {
+            type: String,
+            default: ''
+        }
     },
 
     data() {

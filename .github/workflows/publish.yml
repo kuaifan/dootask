@@ -258,4 +258,7 @@ jobs:
         env:
           PUBLISH_KEY: ${{ secrets.PUBLISH_KEY }}
         run: |
+          pushd electron
+          npm install
+          popd
           node ./electron/build.js published

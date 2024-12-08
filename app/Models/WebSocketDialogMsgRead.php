@@ -91,7 +91,9 @@ class WebSocketDialogMsgRead extends AbstractModel
             }
         }
         foreach ($dialogMsg as $item) {
-            $item['dialogMsg']?->generatePercentage($item['readNum']);
+            if ($item['dialogMsg']) {
+                $item['dialogMsg']->increment('read', $item['readNum']);
+            }
         }
     }
 }
