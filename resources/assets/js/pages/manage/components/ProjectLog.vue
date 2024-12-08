@@ -43,10 +43,11 @@
 
 <script>
 import ProjectLogDetail from "./ProjectLogDetail";
+import TaskTag from "./ProjectTaskTag/tags.vue";
 
 export default {
     name: "ProjectLog",
-    components: {ProjectLogDetail},
+    components: {ProjectLogDetail, TaskTag},
     props: {
         projectId: {
             type: Number,
@@ -192,6 +193,17 @@ export default {
                     } else {
                         vNode.push(h('span', {class:'change-value'}, now || '-'))
                     }
+                }
+                if ($A.isArray(record.tags)) {
+                    vNode.push(h('span', {
+                        class: 'change-tags'
+                    }, [
+                        h('TaskTag', {
+                            props: {
+                                tags: record.tags
+                            }
+                        })
+                    ]))
                 }
                 if ($A.isJson(record.link)) {
                     const {title, url} = record.link

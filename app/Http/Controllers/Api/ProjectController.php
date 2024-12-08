@@ -2864,7 +2864,7 @@ class ProjectController extends AbstractController
     /**
      * @api {post} api/project/tag/save          51. 保存标签
      *
-     * @apiDescription 需要token身份（限：项目负责人）
+     * @apiDescription 需要token身份（修改：项目负责人；添加：项目所有成员）
      * @apiVersion 1.0.0
      * @apiGroup project
      * @apiName tag__save
@@ -2887,7 +2887,6 @@ class ProjectController extends AbstractController
         if (!$projectId) {
             return Base::retError('参数错误');
         }
-        Project::userProject($projectId, true, true);
         //
         $id = intval(Request::input('id', 0));
         $name = trim(Request::input('name', ''));
@@ -2906,6 +2905,7 @@ class ProjectController extends AbstractController
             'color' => $color,
             'userid' => $user->userid
         ];
+        $project = Project::userProject($projectId, true, $id > 0 ? true : null);
         if ($id > 0) {
             $tag = ProjectTag::where('id', $id)
                 ->where('project_id', $projectId)
@@ -2920,6 +2920,7 @@ class ProjectController extends AbstractController
                 return Base::retError('每个项目最多添加20个标签');
             }
             $tag = ProjectTag::create($data);
+            $project->addLog("添加标签【" . $tag->name . "】");
         }
         return Base::retSuccess('保存成功', $tag);
     }

@@ -143,6 +143,19 @@
                             }
                         }
                     }
+
+                    .change-tags {
+                        display: inline-block;
+                        margin-left: 6px;
+                        .tags-box {
+                            gap: 6px;
+                            > li {
+                                height: 20px;
+                                padding: 0 8px;
+                                font-size: 12px;
+                            }
+                        }
+                    }
                 }
 
                 .log-operation {
