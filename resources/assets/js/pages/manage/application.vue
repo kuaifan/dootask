@@ -211,6 +211,19 @@
             show-dialog
             module/>
 
+        <!-- 机器人管理 -->
+        <DrawerOverlay v-model="robotManageShow" placement="right" :size="480">
+            <div class="ivu-modal-wrap-apply">
+                <div class="ivu-modal-wrap-apply-title">
+                    {{ $L('机器人管理') }}
+                    <p @click="handleApiDoc">{{ $L('API文档') }}</p>
+                    <p @click="handleCreateRobot">{{ $L('创建机器人') }}</p>
+                </div>
+                <div class="ivu-modal-wrap-apply-body robot-management-body">
+                    <RobotManage ref="robotManage" />
+                </div>
+            </div>
+        </DrawerOverlay>
     </div>
 </template>
 
@@ -226,6 +239,7 @@ import SystemMeeting from "./setting/components/SystemMeeting";
 import SystemThirdAccess from "./setting/components/SystemThirdAccess";
 import SystemEmailSetting from "./setting/components/SystemEmailSetting";
 import SystemAppPush from "./setting/components/SystemAppPush";
+import RobotManage from "./components/RobotManage";
 import { Store } from "le5le-store";
 
 export default {
@@ -239,7 +253,8 @@ export default {
         SystemMeeting,
         SystemThirdAccess,
         SystemEmailSetting,
-        SystemAppPush
+        SystemAppPush,
+        RobotManage,
     },
     data() {
         return {
@@ -316,6 +331,8 @@ export default {
             //
             sendData: [],
             sendType: '',
+            //
+            robotManageShow: false,
         }
     },
     activated() {
@@ -351,6 +368,7 @@ export default {
                 { value: "meeting", label: "在线会议", sort: 8 },
                 { value: "word-chain", label: "群接龙", sort: 9 },
                 { value: "vote", label: "群投票", sort: 10 },
+                { value: "robot-manage", label: "机器人管理", sort: 11 },
             ];
             if (this.systemConfig.server_closeai === 'close') {
                 applyList = applyList.filter(h => h.value !== 'robot');
@@ -468,6 +486,9 @@ export default {
                     this.sendData = [];
                     this.sendType = item.value;
                     this.$refs.wordChainAndVoteRef.onSelection()
+                    return;
+                case 'robot-manage':
+                    this.robotManageShow = true;
                     return;
             }
             this.$emit("on-click", item.value)
@@ -629,7 +650,15 @@ export default {
                     }
                 })
             }
-        }
+        },
+        // 创建机器人
+        handleCreateRobot() {
+            this.$refs.robotManage.createShow = true;
+        },
+        // API文档
+        handleApiDoc() {
+            this.$refs.robotManage.apiShow = true;
+        },
     }
 }
 </script>

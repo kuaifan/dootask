@@ -1518,4 +1518,47 @@ class SystemController extends AbstractController
             return url($url);
         }, array_values(array_filter($array)));
     }
+
+    /**
+     * @api {get} api/system/bot/apidoc          27. 机器人API文档
+     *
+     * @apiVersion 1.0.0
+     * @apiGroup system
+     * @apiName bot__apidoc
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function bot__apidoc()
+    {
+        $version = Base::getVersion();
+        $content = <<<EOF
+## Webhook说明：
+### 机器人收到消息后会将消息POST推送到Webhook地址，请求超时为10秒，请求参数如下：
+- text: 消息文本
+- token: 机器人Token
+- dialog_id: 对话ID
+- dialog_type: 对话类型
+- msg_id: 消息ID
+- msg_uid: 消息发送人ID
+- mention: 是否被@到
+- bot_uid: 机器人ID
+- version: 系统版本
+
+### 发送文本消息：
+```bash
+curl --request POST 'http(s)://your_domain/api/dialog/msg/sendtext' \
+--header 'version: {$version}' \
+--header 'token: 机器人Token' \
+--form 'dialog_id="对话ID"' \
+--form 'text="消息内容"'
+--form 'text_type="[html|md]"'
+--form 'key="搜索词 (留空自动生成)"'
+--form 'silence="[yes|no]"'
+--form 'reply_id="回复指定消息ID"'
+```
+EOF;
+        return Base::retSuccess('success', ['content' => $content]);
+    }
 }

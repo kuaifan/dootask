@@ -1881,7 +1881,50 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/bot/info          31. 机器人信息
+     * @api {get} api/users/bot/list          31. 机器人列表
+     *
+     * @apiDescription 需要token身份，获取我的机器人列表
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName bot__list
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function bot__list()
+    {
+        $user = User::auth();
+        // 查询自己创建的机器人
+        $search = trim(Request::input('search'));
+        //
+        $query = User::select([
+            'users.userid',
+            'users.nickname as name',
+            'user_bots.bot_id',
+            'user_bots.clear_day',
+            'user_bots.clear_at',
+            'user_bots.webhook_url',
+            'user_bots.webhook_num'
+        ])
+            ->join('user_bots', 'users.userid', '=', 'user_bots.bot_id')
+            ->where('users.bot', 1)
+            ->where('user_bots.userid', $user->userid);
+        if ($search) {
+            $query->where('users.nickname', 'like', '%' . $search . '%');
+        }
+        $list = $query->orderByDesc('id')->paginate(Base::getPaginate(50, 20));
+        //
+        foreach ($list->items() as $item) {
+            $data = UserBot::botManagerOne($item->bot_id, $user->userid);
+            $item->token = User::generateToken($data);
+        }
+
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
+     * @api {get} api/users/bot/info          32. 机器人信息
      *
      * @apiDescription 需要token身份，获取我的机器人信息
      * @apiVersion 1.0.0
@@ -1927,12 +1970,53 @@ class UsersController extends AbstractController
         if ($userBot) {
             $data['clear_day'] = $userBot->clear_day;
             $data['webhook_url'] = $userBot->webhook_url;
+            $user = UserBot::botManagerOne($botId, $user->userid);
+            $data['token'] = User::generateToken($user);
         }
         return Base::retSuccess('success', $data);
     }
 
     /**
-     * @api {post} api/users/bot/edit          32. 编辑机器人
+     * @api {post} api/users/bot/add          33. 创建机器人
+     *
+     * @apiDescription 需要token身份，创建机器人
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName bot__add
+     *
+     * @apiParam {String} name        机器人名称
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function bot__add()
+    {
+        $user = User::auth();
+        //
+        $data = Request::input();
+        if (User::select(['users.*'])
+                ->join('user_bots', 'users.userid', '=', 'user_bots.bot_id')
+                ->where('users.bot', 1)
+                ->where('user_bots.userid', $user->userid)
+                ->count() >= 50) {
+            return Base::retError('超过最大创建数量。');
+        }
+        if (strlen($data['name']) < 2 || strlen($data['name']) > 20) {
+            return Base::retError('机器人名称由2-20个字符组成。');
+        }
+        $data = User::botGetOrCreate("user-" . Base::generatePassword(), [
+            'nickname' => $data['name']
+        ], $user->userid);
+        if (empty($data)) {
+            return Base::retError('创建失败。');
+        }
+
+        return Base::retSuccess('创建成功', $data);
+    }
+
+    /**
+     * @api {post} api/users/bot/edit          34. 编辑机器人
      *
      * @apiDescription 需要token身份，编辑 我的机器人 或 管理员修改系统机器人 信息
      * @apiVersion 1.0.0
@@ -2018,7 +2102,117 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/share/list          33. 获取分享列表
+     * @api {post} api/users/bot/delete          35. 删除机器人
+     *
+     * @apiDescription 需要token身份，删除机器人
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName bot__delete
+     *
+     * @apiParam {Number} id        机器人ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     */
+    public function bot__delete()
+    {
+        $user = User::auth();
+        //
+        $botId = intval(Request::input('id'));
+        $botUser = User::whereUserid($botId)->whereBot(1)->first();
+        $userBot = UserBot::whereBotId($botUser->userid)->whereUserid($user->userid)->first();
+        if (empty($userBot)) {
+            if (UserBot::systemBotName($botUser->email)) {
+                // 系统机器人（仅限管理员）
+                if (!$user->isAdmin()) {
+                    return Base::retError('权限不足');
+                }
+            } else {
+                // 其他用户的机器人（仅限主人）
+                return Base::retError('不是你的机器人');
+            }
+        }
+        //
+        UserBot::whereBotId($botUser->userid)->whereUserid($user->userid)->delete();
+        $botUser->deleteUser('delete bot');
+        return Base::retSuccess('删除成功');
+    }
+
+    /**
+     * @api {post} api/users/bot/revoke          36. 撤销Token
+     *
+     * @apiDescription 需要token身份，撤销机器人Token
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName bot__revoke
+     *
+     * @apiParam {Number} id        机器人ID
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     */
+    public function bot__revoke()
+    {
+        $user = User::auth();
+        //
+        $botId = intval(Request::input('id'));
+        $botUser = User::whereUserid($botId)->whereBot(1)->first();
+        $userBot = UserBot::whereBotId($botUser->userid)->whereUserid($user->userid)->first();
+        if (empty($userBot)) {
+            return Base::retError('不是你的机器人');
+        }
+        $botUser->encrypt = Base::generatePassword(6);
+        $botUser->password = Doo::md5s(Base::generatePassword(32), $botUser->encrypt);
+        $botUser->save();
+
+        $token = User::generateToken($botUser);
+        return Base::retSuccess('重置成功', [
+            'id' => $botId,
+            'token' => $token
+        ]);
+    }
+
+    /**
+     * @api {post} api/users/bot/session          37. 获取会话列表
+     *
+     * @apiDescription 需要token身份，获取会话列表
+     * @apiVersion 1.0.0
+     * @apiGroup users
+     * @apiName bot__session
+     *
+     * @apiParam {Number} id        机器人ID
+     * @apiParam {String} [name]    会话名称关键字
+     *
+     * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
+     * @apiSuccess {String} msg     返回信息（错误描述）
+     * @apiSuccess {Object} data    返回数据
+     */
+    public function bot__session()
+    {
+        $user = User::auth();
+        //
+        $botId = intval(Request::input('id'));
+        $nameKey = trim(Request::input('name'));
+        $bot = UserBot::botManagerOne($botId, $user->userid);
+        $list = DB::table('web_socket_dialog_users as u')
+            ->select(['d.*', 'u.top_at', 'u.last_at', 'u.mark_unread', 'u.silence', 'u.hide', 'u.color', 'u.updated_at as user_at'])
+            ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
+            ->where('u.userid', $bot->userid)
+            ->where('d.name', 'LIKE', "%{$nameKey}%")
+            ->whereNull('d.deleted_at')
+            ->orderByDesc('u.top_at')
+            ->orderByDesc('u.last_at')
+            ->take(20)
+            ->get()
+            ->map(function($item) use ($bot) {
+                return WebSocketDialog::synthesizeData($item, $bot->userid);
+            })
+            ->all();
+        return Base::retSuccess('success', $list);
+    }
+
+    /**
+     * @api {get} api/users/share/list          38. 获取分享列表
      *
      * @apiVersion 1.0.0
      * @apiGroup users
@@ -2103,7 +2297,7 @@ class UsersController extends AbstractController
     }
 
     /**
-     * @api {get} api/users/annual/report          34. 年度报告
+     * @api {get} api/users/annual/report          39. 年度报告
      *
      * @apiVersion 1.0.0
      * @apiGroup users
