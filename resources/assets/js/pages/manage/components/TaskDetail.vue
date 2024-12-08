@@ -147,21 +147,30 @@
                     @on-history="onHistory"
                     @on-blur="updateBlur('content', $event)"/>
                 <Form class="items" label-position="left" label-width="auto" @submit.native.prevent>
-                    <FormItem v-if="taskDetail.p_name">
+                    <FormItem v-if="getTag.length > 0 || tagForce">
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe61e;</i>{{$L('标签')}}
                         </div>
-                        <ul class="item-content">
-                            <li>
-
-                            </li>
-                        </ul>
+                        <div class="item-content tags">
+                            <EPopover v-model="tagShow" class="tags-select" placement="bottom">
+                                <TagSelect
+                                    v-model="tagValue"
+                                    :data-sources="tagData"
+                                    :loading="tagLoad > 0"
+                                    :max="10"/>
+                                <div slot="reference">
+                                    <TaskTag :tags="getTag">
+                                        <li v-if="getTag.length === 0" slot="end" class="add-icon"></li>
+                                    </TaskTag>
+                                </div>
+                            </EPopover>
+                        </div>
                     </FormItem>
                     <FormItem v-if="taskDetail.p_name">
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe6ec;</i>{{$L('优先级')}}
                         </div>
-                        <ul class="item-content">
+                        <ul class="item-content priority">
                             <li>
                                 <EDropdown
                                     ref="priority"
@@ -300,7 +309,7 @@
                                 <div class="file-size">{{$A.bytesToSize(file.size)}}</div>
                             </li>
                         </ul>
-                        <ul class="item-content">
+                        <ul class="item-content file-up">
                             <li>
                                 <div class="add-button" @click="onUploadClick(true)">
                                     <i class="taskfont">&#xe6f2;</i>
@@ -313,7 +322,7 @@
                         <div class="item-label" slot="label">
                             <i class="taskfont">&#xe6f0;</i>{{$L('子任务')}}
                         </div>
-                        <ul class="item-content subtask">
+                        <ul v-if="subList.length > 0" class="item-content subtask">
                             <TaskDetail
                                 v-for="(task, key) in subList"
                                 :ref="`subTask_${task.id}`"
@@ -323,7 +332,7 @@
                                 :main-end-at="taskDetail.end_at"
                                 :can-update-blur="canUpdateBlur"/>
                         </ul>
-                        <ul :class="['item-content', subList.length === 0 ? 'nosub' : '']">
+                        <ul class="item-content subtask-add">
                             <li>
                                 <Input
                                     v-if="addsubShow"
@@ -551,6 +560,8 @@ import {Store} from "le5le-store";
 import TaskMenu from "./TaskMenu";
 import ChatInput from "./ChatInput";
 import UserSelect from "../../../components/UserSelect.vue";
+import TaskTag from "./ProjectTaskTag/tags.vue";
+import TagSelect from "./ProjectTaskTag/select.vue";
 import TaskExistTips from "./TaskExistTips.vue";
 import TEditorTask from "../../../components/TEditorTask.vue";
 import TaskContentHistory from "./TaskContentHistory.vue";
@@ -561,6 +572,8 @@ export default {
         TaskContentHistory,
         TEditorTask,
         UserSelect,
+        TaskTag,
+        TagSelect,
         TaskExistTips,
         ChatInput,
         TaskMenu,
@@ -604,6 +617,13 @@ export default {
             ownerLoad: 0,
 
             receiveShow: false,
+
+            tagForce: false,
+            tagShow: false,
+            tagValue: [],
+            tagBakValue: [],
+            tagData: [],
+            tagLoad: 0,
 
             assistForce: false,
             assistData: {},
@@ -819,6 +839,14 @@ export default {
             return string
         },
 
+        getTag() {
+            const {taskDetail} = this;
+            if (!$A.isArray(taskDetail.task_tag)) {
+                return [];
+            }
+            return taskDetail.task_tag;
+        },
+
         getOwner() {
             const {taskDetail} = this;
             if (!$A.isArray(taskDetail.task_user)) {
@@ -842,6 +870,13 @@ export default {
         menuList() {
             const {taskDetail} = this;
             const list = [];
+            if ($A.arrayLength(taskDetail.task_tag) === 0) {
+                list.push({
+                    command: 'tag',
+                    icon: '&#xe61e;',
+                    name: '标签',
+                });
+            }
             if (!taskDetail.p_name) {
                 list.push({
                     command: 'priority',
@@ -934,6 +969,7 @@ export default {
                     this.timeOpen = false;
                     this.timeForce = false;
                     this.loopForce = false;
+                    this.tagForce = false;
                     this.assistForce = false;
                     this.visibleForce = false;
                     this.addsubForce = false;
@@ -974,6 +1010,36 @@ export default {
             },
             immediate: true
         },
+        tagShow(val) {
+            if (val) {
+                this.tagValue = this.getTag;
+                this.tagBakValue = $A.cloneJSON(this.tagValue);
+                //
+                const isLoad = this.tagValue.length === 0 && this.tagData.length === 0;
+                isLoad && this.tagLoad++;
+                this.$store.dispatch("call", {
+                    url: "project/tag/list",
+                    data: {
+                        project_id: this.taskDetail.project_id
+                    }
+                }).then(res => {
+                    this.tagData = res.data;
+                }).finally(_ => {
+                    isLoad && this.tagLoad--;
+                })
+            } else {
+                const isChanged = (() => {
+                    if (this.tagValue.length !== this.tagBakValue.length) return true;
+                    const sortValue = arr => [...arr].map(({name, color}) => ({name, color})).sort((a, b) => a.name.localeCompare(b.name));
+                    const sortedValue = sortValue(this.tagValue);
+                    const sortedBakValue = sortValue(this.tagBakValue);
+                    return JSON.stringify(sortedValue) !== JSON.stringify(sortedBakValue);
+                })();
+                if (isChanged) {
+                    this.updateData('tag', this.tagValue);
+                }
+            }
+        }
     },
 
     methods: {
@@ -1158,10 +1224,14 @@ export default {
                         })
                     }
                     break;
+
+                case 'tag':
+                    this.$set(this.taskDetail, 'task_tag', params)
+                    action = 'task_tag'
+                    break;
             }
             //
-
-            let dataJson = {task_id: this.taskDetail.id};
+            const dataJson = {task_id: this.taskDetail.id};
             ($A.isArray(action) ? action : [action]).forEach(key => {
                 let newData = this.taskDetail[key];
                 let originalData = this.openTask[key];
@@ -1426,6 +1496,13 @@ export default {
 
         dropAdd(command) {
             switch (command) {
+                case 'tag':
+                    this.tagForce = true;
+                    this.$nextTick(() => {
+                        this.tagShow = true;
+                    });
+                    break;
+
                 case 'priority':
                     this.$set(this.taskDetail, 'p_name', this.$L('未设置'));
                     this.$nextTick(() => {

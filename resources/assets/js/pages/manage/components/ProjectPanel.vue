@@ -180,9 +180,7 @@
                                 </div>
                                 <template v-if="!item.complete_at">
                                     <div v-if="item.desc" class="task-desc"><pre v-html="item.desc"></pre></div>
-                                    <div v-if="item.task_tag.length > 0" class="task-tags">
-                                        <Tag v-for="(tag, keyt) in item.task_tag" :key="keyt" :color="tag.color">{{tag.name}}</Tag>
-                                    </div>
+                                    <TaskTag v-if="item.task_tag.length > 0" class="task-tags" :tags="item.task_tag"/>
                                     <div class="task-users">
                                         <ul>
                                             <li v-for="(user, keyu) in ownerUser(item.task_user)" :key="keyu">
@@ -529,6 +527,7 @@ import ProjectWorkflow from "./ProjectWorkflow";
 import ProjectPermission from "./ProjectPermission";
 import TaskMenu from "./TaskMenu";
 import TaskDeleted from "./TaskDeleted";
+import TaskTag from "./ProjectTaskTag/tags.vue";
 import ProjectGantt from "./ProjectGantt";
 import UserSelect from "../../../components/UserSelect.vue";
 import UserAvatarTip from "../../../components/UserAvatar/tip.vue";
@@ -546,7 +545,16 @@ export default {
         ProjectWorkflow,
         ProjectPermission,
         DrawerOverlay,
-        ProjectLog, TaskArchived, TaskRow, Draggable, TaskAddSimple, TaskPriority, TaskDeleted, ProjectGantt},
+        ProjectLog,
+        TaskArchived,
+        TaskRow,
+        Draggable,
+        TaskAddSimple,
+        TaskPriority,
+        TaskDeleted,
+        TaskTag,
+        ProjectGantt,
+    },
     data() {
         return {
             loading: false,

@@ -944,6 +944,60 @@ class ProjectTask extends AbstractModel
                     $this->addLog("修改{任务}详细描述", $logRecord);
                     $updateMarking['is_update_content'] = true;
                 }
+                // 标签
+                if (Arr::exists($data, 'task_tag')) {
+                    $oldTags = collect($this->taskTag);
+                    $newTags = collect($data['task_tag']);
+
+                    // 找出需要删除的标签（在旧数据中存在，但在新数据中不存在）
+                    $deletedTags = $oldTags->filter(function ($oldTag) use ($newTags) {
+                        return !$newTags->contains('name', $oldTag['name']);
+                    });
+                    if ($deletedTags->isNotEmpty()) {
+                        $this->addLog("删除{任务}标签", [
+                            'tags' => $deletedTags->values()->all()
+                        ]);
+                        ProjectTaskTag::whereProjectId($this->project_id)
+                            ->whereTaskId($this->id)
+                            ->whereIn('name', $deletedTags->pluck('name'))
+                            ->delete();
+                    }
+
+                    // 找出需要新增的标签（在新数据中存在，但在旧数据中不存在）
+                    $addedTags = $newTags->filter(function ($newTag) use ($oldTags) {
+                        return !$oldTags->contains('name', $newTag['name']);
+                    });
+                    if ($addedTags->isNotEmpty()) {
+                        $this->addLog("新增{任务}标签", [
+                            'tags' => $addedTags->values()->all()
+                        ]);
+                        $addedTags->each(function ($tag) {
+                            ProjectTaskTag::createInstance([
+                                'project_id' => $this->project_id,
+                                'task_id' => $this->id,
+                                'name' => $tag['name'],
+                                'color' => $tag['color'],
+                            ])->save();
+                        });
+                    }
+
+                    // 找出需要更新的标签（标签名相同，但其他属性可能变化）
+                    $updatedTags = $newTags->filter(function ($newTag) use ($oldTags) {
+                        $oldTag = $oldTags->firstWhere('name', $newTag['name']);
+                        return $oldTag && ($oldTag['color'] !== $newTag['color']);
+                    });
+                    if ($updatedTags->isNotEmpty()) {
+                        $this->addLog("更新{任务}标签", [
+                            'tags' => $updatedTags->values()->all()
+                        ]);
+                        $updatedTags->each(function ($tag) {
+                            ProjectTaskTag::whereProjectId($this->project_id)
+                                ->whereTaskId($this->id)
+                                ->whereName($tag['name'])
+                                ->update(['color' => $tag['color']]);
+                        });
+                    }
+                }
                 // 优先级
                 $p = false;
                 $oldPName = $this->p_name;

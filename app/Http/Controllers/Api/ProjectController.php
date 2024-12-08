@@ -1995,6 +1995,7 @@ class ProjectController extends AbstractController
      * @apiParam {String} [content]             任务详情（子任务不支持）
      * @apiParam {String} [color]               背景色（子任务不支持）
      * @apiParam {Array} [assist]               修改协助人员（子任务不支持）
+     * @apiParam {Array} [task_tag]             任务标签（子任务不支持）
      * @apiParam {Number} [visibility]          修改可见性
      * @apiParam {Array} [visibility_appointor] 修改可见性人员
      *
