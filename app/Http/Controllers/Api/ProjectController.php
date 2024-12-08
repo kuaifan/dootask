@@ -1239,6 +1239,7 @@ class ProjectController extends AbstractController
             $headings[] = Doo::translate('父级任务ID');
             $headings[] = Doo::translate('所属项目');
             $headings[] = Doo::translate('任务标题');
+            $headings[] = Doo::translate('任务标签');
             $headings[] = Doo::translate('任务开始时间');
             $headings[] = Doo::translate('任务结束时间');
             $headings[] = Doo::translate('完成时间');
@@ -1259,7 +1260,7 @@ class ProjectController extends AbstractController
                 'style' => 'font-weight: bold;padding-bottom: 4px;',
             ];
             //
-            $builder = ProjectTask::select(['project_tasks.*', 'project_task_users.userid as ownerid'])
+            $builder = ProjectTask::with(['taskTag'])->select(['project_tasks.*', 'project_task_users.userid as ownerid'])
                 ->join('project_task_users', 'project_tasks.id', '=', 'project_task_users.task_id')
                 ->where('project_task_users.owner', 1)
                 ->whereIn('project_task_users.userid', $userid)
@@ -1341,6 +1342,9 @@ class ProjectController extends AbstractController
                         $task->parent_id ?: '-',
                         Base::filterEmoji($task->project?->name) ?: '-',
                         Base::filterEmoji($task->name),
+                        $task->taskTag->map(function ($tag) {
+                            return Base::filterEmoji($tag->name);
+                        })->join(', ') ?: '-',
                         $task->start_at ?: '-',
                         $task->end_at ?: '-',
                         $task->complete_at ?: '-',
@@ -1463,6 +1467,7 @@ class ProjectController extends AbstractController
         $headings[] = Doo::translate('父级任务ID');
         $headings[] = Doo::translate('所属项目');
         $headings[] = Doo::translate('任务标题');
+        $headings[] = Doo::translate('任务标签');
         $headings[] = Doo::translate('任务开始时间');
         $headings[] = Doo::translate('任务结束时间');
         $headings[] = Doo::translate('任务计划用时');
@@ -1471,7 +1476,8 @@ class ProjectController extends AbstractController
         $headings[] = Doo::translate('创建人');
         $data = [];
         //
-        ProjectTask::whereNull('complete_at')
+        ProjectTask::with(['taskTag'])
+            ->whereNull('complete_at')
             ->whereNotNull('end_at')
             ->where('end_at', '<=', Carbon::now())
             ->orderBy('end_at')
@@ -1502,11 +1508,14 @@ class ProjectController extends AbstractController
                         $task->parent_id ?: '-',
                         Base::filterEmoji($task->project?->name) ?: '-',
                         Base::filterEmoji($task->name),
+                        $task->taskTag->map(function ($tag) {
+                            return Base::filterEmoji($tag->name);
+                        })->join(', ') ?: '-',
                         $task->start_at ?: '-',
                         $task->end_at ?: '-',
                         $planTime,
                         $overTime,
-                        implode("、", $ownerNames),
+                        implode(', ', $ownerNames),
                         Base::filterEmoji(User::userid2nickname($task->userid)) . " (ID: {$task->userid})",
                     ];
                 }

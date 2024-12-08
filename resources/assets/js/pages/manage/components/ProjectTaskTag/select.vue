@@ -48,7 +48,7 @@
 
 <script>
 export default {
-    name: "TaskSelect",
+    name: "TaskTagSelect",
     props: {
         value: {
             type: Array,

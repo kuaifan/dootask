@@ -153,11 +153,12 @@
                         </div>
                         <div class="item-content tags">
                             <EPopover v-model="tagShow" class="tags-select" placement="bottom">
-                                <TagSelect
+                                <TaskTagSelect
                                     v-model="tagValue"
                                     :data-sources="tagData"
                                     :loading="tagLoad > 0"
-                                    :max="10"/>
+                                    :max="10"
+                                    @add="onTagAdd"/>
                                 <div slot="reference">
                                     <TaskTag :tags="getTag">
                                         <li v-if="getTag.length === 0" slot="end" class="add-icon"></li>
@@ -547,6 +548,8 @@
                 <Button @click="historyShow=false">{{$L('关闭')}}</Button>
             </div>
         </Modal>
+        <!--标签添加-->
+        <TaskTagAdd ref="addTag" :project-id="taskDetail.project_id" @on-save="onTagAddSave"/>
     </div>
 </template>
 
@@ -561,19 +564,21 @@ import TaskMenu from "./TaskMenu";
 import ChatInput from "./ChatInput";
 import UserSelect from "../../../components/UserSelect.vue";
 import TaskTag from "./ProjectTaskTag/tags.vue";
-import TagSelect from "./ProjectTaskTag/select.vue";
+import TaskTagSelect from "./ProjectTaskTag/select.vue";
 import TaskExistTips from "./TaskExistTips.vue";
 import TEditorTask from "../../../components/TEditorTask.vue";
 import TaskContentHistory from "./TaskContentHistory.vue";
+import TaskTagAdd from "./ProjectTaskTag/add.vue";
 
 export default {
     name: "TaskDetail",
     components: {
+        TaskTagAdd,
         TaskContentHistory,
         TEditorTask,
         UserSelect,
         TaskTag,
-        TagSelect,
+        TaskTagSelect,
         TaskExistTips,
         ChatInput,
         TaskMenu,
@@ -1988,6 +1993,27 @@ export default {
         onTaskQuick(time, type) {
             this.$set(this.delayTaskForm, 'time', Math.round(time * 100) / 100)
             this.$set(this.delayTaskForm, 'type', type)
+        },
+
+        onTagAdd() {
+            // 避免关闭选择框时触发更新
+            this.tagValue = this.getTag;
+            this.tagBakValue = $A.cloneJSON(this.tagValue);
+            // 隐藏选择框并打开添加框
+            this.tagShow = false
+            this.$refs.addTag.onOpen(null)
+        },
+
+        onTagAddSave(result) {
+            const current = this.tagValue;
+            const addData = result.filter(({data}) => data && data.id > 0).map(({data}) => data);
+            // 合并数组，如果有重名标签则使用新添加的标签数据
+            const mergedTags = [
+                ...addData,
+                ...current.filter(tag => !addData.some(newTag => newTag.name === tag.name))
+            ];
+            // 触发更新
+            this.updateData('tag', mergedTags);
         }
     }
 }

@@ -7,7 +7,7 @@
                 <Loading v-if="loadIng > 0"/>
             </div>
             <div class="actions">
-                <Button type="primary" icon="md-add" @click="handleAdd">
+                <Button type="primary" icon="md-add" @click="handleAdd(null)">
                     {{$L('新建标签')}}
                 </Button>
             </div>
@@ -16,7 +16,7 @@
         <div class="content">
             <div v-if="!tags.length" class="empty">
                 <div class="empty-text">{{$L('当前项目暂无任务标签')}}</div>
-                <Button type="primary" icon="md-add" @click="handleAdd">{{$L('新建标签')}}</Button>
+                <Button type="primary" icon="md-add" @click="handleAdd(null)">{{$L('新建标签')}}</Button>
             </div>
             <div v-else class="template-list">
                 <div v-for="item in tags" :key="item.id" class="tag-item">
@@ -27,7 +27,7 @@
                         <div v-if="item.desc" class="tag-desc">{{ item.desc }}</div>
                     </div>
                     <div class="tag-actions">
-                        <Button @click="handleEdit(item)" type="primary">
+                        <Button @click="handleAdd(item)" type="primary">
                             {{$L('编辑')}}
                         </Button>
                         <Button @click="handleDelete(item)" type="error">
@@ -38,8 +38,8 @@
             </div>
         </div>
 
-        <!-- 编辑标签弹窗 -->
-        <TaskTagAdd ref="addTag" @on-save="loadTags"/>
+        <!-- 标签添加/编辑 -->
+        <TaskTagAdd ref="addTag" :project-id="projectId" @on-save="loadTags"/>
     </div>
 </template>
 
@@ -73,17 +73,6 @@ export default {
         this.loadTags()
     },
     methods: {
-        // 获取空标签对象
-        getEmptyTag() {
-            return {
-                id: null,
-                project_id: this.projectId,
-                name: '',
-                desc: '',
-                color: ''
-            }
-        },
-
         // 加载标签列表
         async loadTags() {
             this.loadIng++
@@ -103,13 +92,8 @@ export default {
             }
         },
 
-        // 新建标签
-        handleAdd() {
-            this.$refs.addTag.onOpen(this.getEmptyTag())
-        },
-
-        // 编辑标签
-        handleEdit(tag) {
+        // 新建、编辑标签
+        handleAdd(tag) {
             this.$refs.addTag.onOpen(tag)
         },
 

@@ -58,6 +58,12 @@ import Tags from "./tags.vue";
 export default {
     name: "TaskTagAdd",
     components: {Tags},
+    props: {
+        projectId: {
+            type: [Number, String],
+            required: true
+        }
+    },
     data() {
         return {
             loadIng: 0,
@@ -89,9 +95,23 @@ export default {
         }
     },
     methods: {
-        onOpen(tag) {
+        onOpen(tag = null) {
+            if (tag === null) {
+                tag = this.getEmptyTag()
+            }
             this.editingTag = { ...tag }
             this.showEditModal = true
+        },
+
+        // 获取空标签对象
+        getEmptyTag() {
+            return {
+                id: null,
+                project_id: this.projectId,
+                name: '',
+                desc: '',
+                color: ''
+            }
         },
 
         // 保存标签
@@ -118,7 +138,7 @@ export default {
                 const results = await Promise.all(savePromises)
                 $A.messageSuccess(results.length === 1 ? results[0].msg : '全部保存成功')
                 this.showEditModal = false
-                this.$emit('on-save')
+                this.$emit('on-save', results)
             } catch (error) {
                 $A.messageError(error.msg || '保存失败')
             }
