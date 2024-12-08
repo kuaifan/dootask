@@ -38,8 +38,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read int|mixed $percentage
- * @property-read \App\Models\WebSocketDialog|null $webSocketDialog
  * @property-read \App\Models\User|null $user
+ * @property-read \App\Models\WebSocketDialog|null $webSocketDialog
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelHidden()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel change($array)
