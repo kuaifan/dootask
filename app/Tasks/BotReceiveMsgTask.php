@@ -611,10 +611,11 @@ class BotReceiveMsgTask extends AbstractTask
                                 $taskDesc = $taskInfo->content?->getContentInfo();
                                 if ($taskDesc) {
                                     $converter = new HtmlConverter(['strip_tags' => true]);
+                                    $descContent = Base::cutStr($converter->convert($taskDesc['content']), 2000);
                                     $before_text[] = <<<EOF
                                         任务描述：
                                         ```md
-                                        {$converter->convert($taskDesc['content'])}
+                                        {$descContent}
                                         ```
                                         EOF;
                                 }
