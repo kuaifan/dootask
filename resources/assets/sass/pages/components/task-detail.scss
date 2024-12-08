@@ -228,13 +228,13 @@
                     }
                 }
                 .item-content {
-                    margin-top: 5px;
+                    margin-top: 4px;
                     margin-left: 12px;
                     > li {
                         display: flex;
                         align-items: center;
                         list-style: none;
-                        line-height: 26px;
+                        line-height: 24px;
                         .el-dropdown {
                             display: flex;
                             cursor: pointer;
@@ -269,14 +269,27 @@
                             }
                         }
                     }
+                    &.tags {
+                        margin-top: 6px;
+                        .tags-select {
+                            display: table;
+                        }
+                        .add-icon {
+                            margin: -1px 0;
+                            width: 26px;
+                            height: 26px;
+                            background: #F2F3F5 url("data:image/svg+xml;base64,PHN2ZyB0PSIxNjg2NjIxNjA3NDE0IiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik04NzQuNjY2NjY3IDQ3My42aC0zMjQuMjY2NjY3VjE0OS4zMzMzMzNjMC0yMS4zMzMzMzMtMTcuMDY2NjY3LTM4LjQtMzguNC0zOC40cy0zOC40IDE3LjA2NjY2Ny0zOC40IDM4LjR2MzI0LjI2NjY2N0gxNDkuMzMzMzMzYy0yMS4zMzMzMzMgMC0zOC40IDE3LjA2NjY2Ny0zOC40IDM4LjRzMTcuMDY2NjY3IDM4LjQgMzguNCAzOC40aDMyNC4yNjY2Njd2MzI0LjI2NjY2N2MwIDIxLjMzMzMzMyAxNy4wNjY2NjcgMzguNCAzOC40IDM4LjRzMzguNC0xNy4wNjY2NjcgMzguNC0zOC40di0zMjQuMjY2NjY3aDMyNC4yNjY2NjdjMjEuMzMzMzMzIDAgMzguNC0xNy4wNjY2NjcgMzguNC0zOC40cy0xNy4wNjY2NjctMzguNC0zOC40LTM4LjR6IiAgZmlsbD0iIzYwNjI2NiI+PC9wYXRoPjwvc3ZnPg==") no-repeat center;
+                            background-size: 50%;
+                            border-radius: 50%;
+                        }
+                    }
                     &.user {
                         margin-top: 1px;
                     }
                     &.file {
-                        margin-bottom: -3px;
                         > li {
                             cursor: pointer;
-                            margin-bottom: 2px;
+                            margin-bottom: 4px;
                             &.tip {
                                 color: #999;
                             }
@@ -316,7 +329,17 @@
                             }
                         }
                     }
+                    &.file-up {
+                        margin-top: 2px;
+                        > li {
+                            .add-button {
+                                margin-top: 0;
+                            }
+                        }
+                    }
                     &.subtask {
+                        margin-top: 5px;
+                        margin-bottom: 10px;
                         > li {
                             align-items: flex-start;
                             margin-bottom: 4px;
@@ -423,7 +446,6 @@
                             }
                             .subtask-avatar {
                                 max-width: 30%;
-                                min-width: 54px;
                                 > ul {
                                     justify-content: flex-end;
                                     > li {
@@ -440,12 +462,13 @@
                             }
                         }
                     }
-                    &.nosub {
-                        margin-top: 0;
+
+                    &.subtask-add {
+                        margin-top: 2px;
                         > li {
                             .add-input,
                             .add-button {
-                                margin-top: -2px;
+                                margin-top: 0;
                             }
                         }
                     }
