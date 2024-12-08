@@ -1,0 +1,92 @@
+.robot-management-body {
+    height: 100%;
+    padding: 0 !important;
+    overflow: hidden;
+}
+.robot-management {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    .robot-management-search {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        padding: 0 12px;
+        .robot-management-search-input {
+            width: 300px;
+            margin-right: 20px;
+        }
+    }
+    .robot-scrollbar {
+        overflow: auto;
+        padding: 0 12px;
+        .robot-box {
+            margin-bottom: 8px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #eeeeee;
+            transition: box-shadow 0.3s;
+            cursor: pointer;
+
+            &:hover {
+                box-shadow: 0 0 10px #e6ecfa;
+            }
+
+            .robot-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 8px;
+                .robot-item {
+                    display: flex;
+
+                    .robot-item-label {
+                        font-size: 14px;
+                    }
+                    .robot-item-value {
+                        font-size: 14px;
+                        color: #303133;
+                        word-break: break-all;
+                    }
+                    .robot-item-action {
+                        margin-left: 8px;
+                    }
+                }
+            }
+        }
+    }
+}
+.robot-session-search {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    .robot-session-search-button {
+        margin-left: 10px;
+    }
+}
+.robot-session-list {
+    display: flex;
+    align-items: center;
+    .robot-session-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+    .robot-session-item-id {
+        flex: 0.5;
+    }
+    .robot-session-item-name {
+        flex: 1;
+    }
+}
+.nothing {
+    margin: 0 !important;
+    padding: 24px !important;
+    text-align: center;
+    justify-content: center;
+    height: 100%;
+    border-radius: 0;
+    line-height: 22px;
+}

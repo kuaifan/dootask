@@ -46,6 +46,15 @@ class UserBot extends AbstractModel
 {
 
     /**
+     * 关联用户表
+     * @return BelongsTo
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'bot_id', 'userid');
+    }
+
+    /**
      * 判断是否系统机器人
      * @param $email
      * @return bool
@@ -414,5 +423,31 @@ class UserBot extends AbstractModel
             ],
             default => [],
         };
+    }
+
+    /**
+     * @param $botId
+     * @param $userid
+     * @return User
+     */
+    public static function botManagerOne($botId, $userid)
+    {
+        $botId = intval($botId);
+        $userid = intval($userid);
+        if ($botId > 0) {
+            return User::select([
+                'users.*',
+                'user_bots.clear_day',
+                'user_bots.clear_at',
+                'user_bots.webhook_url',
+                'user_bots.webhook_num'
+            ])
+                ->join('user_bots', 'users.userid', '=', 'user_bots.bot_id')
+                ->where('users.bot', 1)
+                ->where('user_bots.bot_id', $botId)
+                ->where('user_bots.userid', $userid)
+                ->first();
+        }
+        return null;
     }
 }
