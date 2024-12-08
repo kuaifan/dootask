@@ -373,7 +373,7 @@ async function published(url) {
             return
         }
         if (data.ret !== 1) {
-            spinner.fail(`发布失败, ret ${data.ret}`)
+            spinner.fail(`发布失败, ${JSON.stringify(data)}`)
             return
         }
         spinner.succeed('发布完成')
