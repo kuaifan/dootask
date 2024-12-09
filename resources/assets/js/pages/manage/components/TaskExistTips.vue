@@ -60,7 +60,7 @@ export default {
                 string = start_at.format('YYYY/MM/DD HH:mm') + " ~ " + end_at.format('MM/DD HH:mm')
                 string = string.replace(/( 00:00| 23:59)/g, "")
             } else {
-                string = start_at.format('YYYY/MM/DD HH:mm') +end_at.format('YYYY/MM/DD HH:mm')
+                string = start_at.format('YYYY/MM/DD HH:mm') + " ~ " + end_at.format('YYYY/MM/DD HH:mm')
                 string = string.replace(/( 00:00| 23:59)/g, "")
             }
             return string
