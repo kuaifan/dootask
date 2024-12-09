@@ -3792,34 +3792,34 @@ export default {
                                         break;
                                     case 'add':
                                     case 'chat':
+                                        const isChat = mode === "chat" || $A.isSubElectron;
                                         if (!state.dialogMsgs.find(({id}) => id == data.id)) {
                                             // 新增任务消息数量
                                             dispatch("increaseTaskMsgNum", data);
                                             // 新增回复数量
                                             dispatch("increaseMsgReplyNum", data);
                                             //
-                                            if (mode === "chat" || $A.isSubElectron) {
-                                                return;
-                                            }
-                                            if (data.userid !== state.userId) {
-                                                // 更新对话新增未读数
-                                                const dialog = state.cacheDialogs.find(({id}) => id == dialog_id);
-                                                if (dialog) {
-                                                    const newData = {
-                                                        id: dialog_id,
-                                                        unread: dialog.unread + 1,
-                                                        mention: dialog.mention,
-                                                        user_at: data.user_at,
-                                                        user_ms: data.user_ms,
+                                            if (!isChat) {
+                                                if (data.userid !== state.userId) {
+                                                    // 更新对话新增未读数
+                                                    const dialog = state.cacheDialogs.find(({id}) => id == dialog_id);
+                                                    if (dialog) {
+                                                        const newData = {
+                                                            id: dialog_id,
+                                                            unread: dialog.unread + 1,
+                                                            mention: dialog.mention,
+                                                            user_at: data.user_at,
+                                                            user_ms: data.user_ms,
+                                                        }
+                                                        if (data.mention) {
+                                                            newData.mention++;
+                                                        }
+                                                        dispatch("saveDialog", newData)
                                                     }
-                                                    if (data.mention) {
-                                                        newData.mention++;
-                                                    }
-                                                    dispatch("saveDialog", newData)
                                                 }
-                                            }
-                                            if (!silence) {
-                                                Store.set('dialogMsgPush', data);
+                                                if (!silence) {
+                                                    Store.set('dialogMsgPush', data);
+                                                }
                                             }
                                         }
                                         const saveMsg = (data, count) => {
@@ -3827,12 +3827,10 @@ export default {
                                                 // 更新消息列表
                                                 dispatch("saveDialogMsg", data)
                                                 // 更新最后消息
-                                                dispatch("updateDialogLastMsg", data);
+                                                !isChat && dispatch("updateDialogLastMsg", data);
                                                 return;
                                             }
-                                            setTimeout(_ => {
-                                                saveMsg(data, ++count)
-                                            }, 20);
+                                            setTimeout(() => saveMsg(data, count + 1), 50);
                                         }
                                         saveMsg(data, 0);
                                         break;
