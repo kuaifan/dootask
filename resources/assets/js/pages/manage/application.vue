@@ -257,16 +257,22 @@ export default {
                     desc: this.$L('我是一个人工智能助手，为用户提供问题解答和指导。我没有具体的身份，只是一个程序。您有什么问题可以问我哦？')
                 },
                 {
+                    value: "claude",
+                    label: "Claude",
+                    src: $A.mainUrl('images/avatar/default_claude.png'),
+                    desc: this.$L('我是Claude,一个由Anthropic公司创造出来的AI助手机器人。我的工作是帮助人类,与人对话并给出解答。')
+                },
+                {
                     value: "gemini",
                     label: "Gemini",
                     src: $A.mainUrl('images/avatar/default_gemini.png'),
                     desc: `${this.$L('我是由Google开发的生成式人工智能聊天机器人。')}${this.$L('它基于同名的Gemini系列大型语言模型。')}${this.$L('是应对OpenAI公司开发的ChatGPT聊天机器人的崛起而开发的。')}`
                 },
                 {
-                    value: "claude",
-                    label: "Claude",
-                    src: $A.mainUrl('images/avatar/default_claude.png'),
-                    desc: this.$L('我是Claude,一个由Anthropic公司创造出来的AI助手机器人。我的工作是帮助人类,与人对话并给出解答。')
+                    value: "zhipu",
+                    label: "Zhipu",
+                    src: $A.mainUrl('images/avatar/default_zhipu.png'),
+                    desc: `${this.$L('我是智谱清言，是智谱 AI 公司于2023训练的语言模型。')}${this.$L('我的任务是针对用户的问题和要求提供适当的答复和支持。')}`
                 },
                 {
                     value: "wenxin",
@@ -279,12 +285,6 @@ export default {
                     label: "Qianwen",
                     src: $A.mainUrl('avatar/%E9%80%9A%E4%B9%89%E5%8D%83%E9%97%AE.png'),
                     desc: this.$L('我是达摩院自主研发的超大规模语言模型，能够回答问题、创作文字，还能表达观点、撰写代码。')
-                },
-                {
-                    value: "zhipu",
-                    label: "Zhipu",
-                    src: $A.mainUrl('images/avatar/default_zhipu.png'),
-                    desc: `${this.$L('我是智谱清言，是智谱 AI 公司于2023训练的语言模型。')}${this.$L('我的任务是针对用户的问题和要求提供适当的答复和支持。')}`
                 },
             ],
             aibotTabAction: "opanai",
