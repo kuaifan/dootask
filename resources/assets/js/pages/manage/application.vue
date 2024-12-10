@@ -475,9 +475,8 @@ export default {
         // 开始聊天
         onGoToChat(type) {
             let dialogId = 0;
-            let email = `ai-${type}@bot.system`;
             this.cacheDialogs.map(h => {
-                if (h.email == email) {
+                if (h.email == `ai-${type}@bot.system`) {
                     dialogId = h.id;
                 }
             })
@@ -491,15 +490,10 @@ export default {
             } else {
                 this.aibotDialogSearchLoad = type;
                 this.$store.dispatch("call", {
-                    url: 'dialog/search',
-                    data: { key: email },
-                }).then(({ data }) => {
-                    if (data?.length < 1) {
-                        $A.messageError('机器人暂未开启');
-                        this.aibotDialogSearchLoad = '';
-                        return;
-                    }
-                    this.$store.dispatch("openDialogUserid", data[0]?.dialog_user.userid).then(_ => {
+                    url: 'users/search/ai',
+                    data: {type},
+                }).then(({data}) => {
+                    this.$store.dispatch("openDialogUserid", data.userid).then(_ => {
                         if (this.windowOrientation == 'landscape') {
                             this.goForward({ name: 'manage-messenger' })
                         }
@@ -509,8 +503,9 @@ export default {
                     }).finally(_ => {
                         this.aibotDialogSearchLoad = '';
                     });
-                }).catch(_ => {
+                }).catch(({msg}) => {
                     this.aibotDialogSearchLoad = '';
+                    $A.messageError(msg || '机器人暂未开启');
                 });
             }
         },
