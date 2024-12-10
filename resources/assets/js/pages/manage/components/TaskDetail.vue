@@ -263,10 +263,10 @@
                                         <div v-if="!taskDetail.end_at" @click="timeOpen = true" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
                                         <div v-else @click="showAtDropdown" class="time">{{taskDetail.end_at ? cutTime : '--'}}</div>
                                         <template v-if="!taskDetail.complete_at && taskDetail.end_at">
-                                            <Tag v-if="within24Hours(taskDetail.end_at)" :color="tagColor(taskDetail)">
+                                            <Tag v-if="within24Hours(taskDetail.end_at)" :color="tagColor(taskDetail)" @on-click="showAtDropdown">
                                                 <i class="taskfont">&#xe71d;</i>{{expiresFormat(taskDetail.end_at)}}
                                             </Tag>
-                                            <Tag v-if="taskDetail.overdue" color="red">{{$L('超期未完成')}}</Tag>
+                                            <Tag v-if="taskDetail.overdue" color="red" @on-click="showAtDropdown">{{$L('超期未完成')}}</Tag>
                                         </template>
                                     </div>
                                 </DatePicker>
