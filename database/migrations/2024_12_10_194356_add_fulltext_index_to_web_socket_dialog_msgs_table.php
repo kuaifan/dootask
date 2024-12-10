@@ -33,9 +33,10 @@ class AddFulltextIndexToWebSocketDialogMsgsTable extends Migration
         $databaseName = env('DB_DATABASE');
 
         // 查询 information_schema.statistics 表
+        $prefix = DB::getTablePrefix();
         $indexExists = DB::table(DB::raw('information_schema.statistics'))
             ->where('table_schema', $databaseName)
-            ->where('table_name', $tableName)
+            ->where('table_name', $prefix . $tableName)
             ->where('index_type', 'FULLTEXT')
             ->get();
 

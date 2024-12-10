@@ -179,6 +179,7 @@ class DialogController extends AbstractController
                 ->join('web_socket_dialogs as d', 'u.dialog_id', '=', 'd.id')
                 ->join('web_socket_dialog_msgs as m', 'm.dialog_id', '=', 'd.id')
                 ->where('u.userid', $user->userid)
+                ->where('m.bot', 0)
                 ->whereNull('d.deleted_at')
                 ->whereRaw("MATCH({$prefix}m.key) AGAINST('{$against}' IN BOOLEAN MODE)")
                 ->orderByDesc('m.id')
@@ -1018,7 +1019,7 @@ class DialogController extends AbstractController
      * @apiParam {Number} [reply_id]        回复ID
      * @apiParam {String} [reply_check]     配合 reply_id 使用，判断是否需要验证回复ID的有效性
      * - no: 不进行判断，直接使用提供的 reply_id（默认）
-     * - yes: 进行判断，如果上一条消息的 ID 为 reply_id，则认为 reply_id 无效
+     * - yes: 进行判断，如果上一条消息（非机器人）的 ID 为 reply_id，则认为 reply_id 无效
      * @apiParam {String} [silence]         是否静默发送
      * - no: 正常发送（默认）
      * - yes: 静默发送
