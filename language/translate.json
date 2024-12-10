@@ -8187,13 +8187,13 @@
         "key": "高级选项",
         "zh": "",
         "zh-CHT": "高級選項",
-        "en": "Advanced Options",
-        "ko": "고급 옵션",
-        "ja": "詳細オプション",
-        "de": "Erweiterte Optionen",
-        "fr": "Options avancées",
-        "id": "Opsi Lanjutan",
-        "ru": "Расширенные настройки"
+        "en": "Advanced",
+        "ko": "고급",
+        "ja": "詳細",
+        "de": "Erweitert",
+        "fr": "Avancé",
+        "id": "Lanjutan",
+        "ru": "Расширенные"
     },
     {
         "key": "默认节点",

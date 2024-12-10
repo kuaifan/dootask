@@ -328,36 +328,116 @@ export default {
 
         isMeetingUrlStrict(url) {
             const meetingDomains = [
-                // 国际主流
-                'web.zoom.us',
-                'meeting.tencent.com',
-                'meet.google.com',
-                'teams.microsoft.com',
-                'join.skype.com',
-                'bluejeans.com',
-                'webex.com',
-                'voovmeeting.com',
+                // 视频会议（内置浏览器无法正常使用摄像头/麦克风）
+                'zoom.us',              // Zoom 所有子域名
+                'meeting.tencent.com',  // 腾讯会议
+                'teams.microsoft.com',  // Teams 会议
+                'meet.google.com',      // Google Meet
+                'meeting.feishu.cn',    // 飞书会议
+                'meeting.dingtalk.com', // 钉钉会议
+                'webex.com',            // Webex
+                'bluejeans.com',        // BlueJeans
+                'goto.com',             // GoToMeeting
+                'gotomeeting.com',      // GoToMeeting 旧域名
+                '8x8.vc',              // 8x8
+                'meet.jit.si',          // Jitsi
+                'jitsi.baidu.com',      // 百度 Jitsi
+                'whereby.com',          // Whereby
+                'lifesize.com',         // Lifesize
+                'starleaf.com',         // StarLeaf
+                'classroomscreen.com',  // ClassroomScreen
+                'bigbluebutton.org',    // BigBlueButton
+                'matrix.to',            // Matrix
+                'meetings.vonage.com',  // Vonage Video
+                'voovmeeting.com',      // 腾讯会议国际版
+                'skype.com',            // Skype
+                
+                // 需要调用系统API的场景
+                'maps.google.com',      // Google地图
+                'maps.apple.com',       // 苹果地图
+                'amap.com',             // 高德地图
+                'map.baidu.com',        // 百度地图
+                'map.qq.com',           // 腾讯地图
+                'mapurl.cn',            // 百度地图短链接
 
-                // 中国区
-                'meeting.feishu.cn',
-                'meeting.dingtalk.com',
-                'jitsi.baidu.com',
+                // 支付场景（需要调用系统支付组件）
+                'alipay.com',           // 支付宝
+                'pay.weixin.qq.com',    // 微信支付
+                'paypal.com/cgi-bin',   // PayPal支付流程
+                'checkout.stripe.com',   // Stripe支付流程
+                'pay.google.com',       // Google Pay
+                'pay.qq.com',           // QQ钱包
+                'pay.baidu.com',        // 百度支付
 
-                // 其他国际
-                'whereby.com',
-                'meet.jit.si',
-                'gotomeeting.com',
-                '8x8.vc',
-                'lifesize.com',
-                'starleaf.com',
+                // 应用商店和应用分发（需要系统处理）
+                'apps.apple.com',       // iOS App Store
+                'play.google.com',      // Google Play
+                'itunes.apple.com',     // iTunes
+                'apps.samsung.com',     // Samsung Store
+                'microsoft.com/store',   // Microsoft Store
+                'amazon.com/apps',      // Amazon Appstore
+                'apk.qq.com',           // 应用宝
+                'app.mi.com',           // 小米应用商店
+                'app.hicloud.com',      // 华为应用市场
 
-                // 教育和企业
-                'classroomscreen.com',
-                'bigbluebutton.org',
+                // 文件处理（需要系统能力）
+                'pan.baidu.com',        // 百度网盘
+                'aliyundrive.com',      // 阿里云盘
+                'drive.google.com',     // Google Drive
+                'onedrive.live.com',    // OneDrive
+                'xunlei.com',           // 迅雷
+                'thunder://',           // 迅雷专有链接
+                'ed2k://',             // 电驴链接
+                'magnet:?',            // 磁力链接
 
-                // 其他
-                'matrix.to'
-            ];
+                // 即时通讯（需要系统通知和持久连接）
+                'wx.qq.com',            // 微信网页版
+                'im.qq.com',            // QQ
+                'web.whatsapp.com',     // WhatsApp Web
+                'web.telegram.org',     // Telegram Web
+                'discord.com/channels', // Discord语音频道
+                'messenger.com/call',   // Facebook Messenger通话
+                'workspace.dingtalk.com', // 钉钉工作台
+
+                // 媒体流（需要特殊权限或编解码）
+                'douyin.com/live',      // 抖音直播
+                'live.kuaishou.com',    // 快手直播
+                'live.bilibili.com',    // B站直播
+                'douyu.com/room',       // 斗鱼直播间
+                'yy.com/x/',            // YY直播
+                'inke.cn/live',         // 映客直播
+                'facebook.com/live',    // Facebook直播
+                'instagram.com/live',   // Instagram直播
+                'youtube.com/live',     // YouTube直播
+                'twitch.tv/live',       // Twitch直播
+
+                // 专门的APP协议链接
+                'weixin://',            // 微信
+                'alipays://',           // 支付宝
+                'mqq://',               // QQ
+                'dingtalk://',          // 钉钉
+                'baidumap://',          // 百度地图
+                'iosamap://',           // 高德地图iOS
+                'androidamap://',       // 高德地图Android
+                'tel://',               // 电话
+                'sms://',               // 短信
+                'mailto://',            // 邮件
+                'market://',            // 应用市场
+                'intent://',            // Android Intent
+                'taobao://',            // 淘宝
+                'tmall://',             // 天猫
+                'jd://',                // 京东
+                'pinduoduo://',         // 拼多多
+                'vnd.youtube://',       // YouTube应用
+                'zhihu://',             // 知乎
+                'bilibili://',          // B站
+                'snssdk1128://',        // 抖音
+                'kwai://',              // 快手
+                'fb://',                // Facebook
+                'twitter://',           // Twitter
+                'instagram://',         // Instagram
+                'linkedin://'           // LinkedIn
+            ];            
             const lowerUrl = `${url}`.toLowerCase()
             return meetingDomains.some(domain => lowerUrl.indexOf(domain) !== -1);
         },
