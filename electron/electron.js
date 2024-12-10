@@ -54,6 +54,8 @@ let screenshotObj = null,
 
 let childWindow = [],
     preloadWindow = null,
+    mediaWindow = null,
+    mediaType = null,
     webTabWindow = null,
     webTabView = [],
     webTabHeight = 38;
@@ -475,36 +477,63 @@ function updateChildWindow(browser, args) {
  * @param type
  */
 function createMediaWindow(args, type = 'image') {
-    const imageWindow = new BrowserWindow({
-        width: args.width || 970,
-        height: args.height || 700,
-        minWidth: 360,
-        minHeight: 360,
-        autoHideMenuBar: true,
-        webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false,
-            webSecurity: false,
-            plugins: true
-        },
-        show: false
-    });
+    if (mediaWindow === null) {
+        mediaWindow = new BrowserWindow({
+            width: args.width || 970,
+            height: args.height || 700,
+            minWidth: 360,
+            minHeight: 360,
+            autoHideMenuBar: true,
+            webPreferences: {
+                nodeIntegration: true,
+                contextIsolation: false,
+                webSecurity: false,
+                plugins: true
+            },
+            show: false
+        });
+
+        // 监听关闭事件
+        mediaWindow.addListener('close', event => {
+            if (!willQuitApp) {
+                event.preventDefault()
+                mediaWindow.webContents.send('on-close');
+                mediaWindow.hide();
+            }
+        })
+
+        // 监听关闭事件
+        mediaWindow.addListener('closed', () => {
+            mediaWindow = null;
+            mediaType = null;
+        })
+
+        // 设置右键菜单
+        electronMenu.webContentsMenu(mediaWindow.webContents)
+    } else {
+        // 直接显示
+        mediaWindow.show();
+    }
 
     // 加载图片浏览器的HTML
-    let filePath = './render/viewer/index.html';
-    if (type === 'video') {
-        filePath = './render/video/index.html';
+    if (mediaType === type) {
+        // 更新窗口
+        mediaWindow.webContents.send('load-media', args);
+    } else {
+        // 重置窗口
+        mediaType = type;
+        let filePath = './render/viewer/index.html';
+        if (type === 'video') {
+            filePath = './render/video/index.html';
+        }
+        mediaWindow.loadFile(filePath, {}).then(_ => { }).catch(_ => { })
     }
-    imageWindow.loadFile(filePath, {}).then(_ => { }).catch(_ => { })
 
-    // 设置右键菜单
-    electronMenu.webContentsMenu(imageWindow.webContents)
-
-    // 窗口准备好后显示
-    imageWindow.on('ready-to-show', () => {
-        imageWindow.show();
-        // 发送图片数据到渲染进程
-        imageWindow.webContents.send('load-media', args);
+    // 窗口准备好后事件
+    mediaWindow.removeAllListeners("ready-to-show");
+    mediaWindow.addListener('ready-to-show', () => {
+        mediaWindow.show();
+        mediaWindow.webContents.send('load-media', args);
     });
 }
 
@@ -840,6 +869,7 @@ function monitorThemeChanges() {
         const backgroundColor = utils.getDefaultBackgroundColor()
         mainWindow?.setBackgroundColor(backgroundColor);
         preloadWindow?.setBackgroundColor(backgroundColor);
+        mediaWindow?.setBackgroundColor(backgroundColor);
         childWindow.some(({browser}) => browser.setBackgroundColor(backgroundColor))
         webTabWindow?.setBackgroundColor(nativeTheme.shouldUseDarkColors ? '#3B3B3D' : '#EFF0F4')
         // 通知所有窗口
@@ -1110,6 +1140,7 @@ ipcMain.on('childWindowCloseAll', (event) => {
         browser && browser.close()
     })
     preloadWindow?.close()
+    mediaWindow?.close()
     event.returnValue = "ok"
 })
 
@@ -1121,6 +1152,7 @@ ipcMain.on('childWindowDestroyAll', (event) => {
         browser && browser.destroy()
     })
     preloadWindow?.destroy()
+    mediaWindow?.destroy()
     event.returnValue = "ok"
 })
 
@@ -1437,6 +1469,7 @@ ipcMain.on('updateQuitAndInstall', (event, args) => {
         browser && browser.destroy()
     })
     preloadWindow?.destroy()
+    mediaWindow?.destroy()
 
     // 启动更新子窗口
     createUpdaterWindow(args.updateTitle)

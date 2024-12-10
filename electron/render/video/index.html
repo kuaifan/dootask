@@ -235,7 +235,7 @@
             disableCaptions: 'Désactiver les sous-titres',
             enterFullscreen: 'Plein écran',
             exitFullscreen: 'Quitter le plein écran',
-            frameTitle: 'Lecteur vidéo',
+            frameTitle: 'Lecteur Vidéo',
             captions: 'Sous-titres',
             settings: 'Paramètres',
             menuBack: 'Retour au menu précédent',
@@ -310,46 +310,79 @@
         ru: 'Видеоплеер'
     };
 
+    // 获取视频MIME类型
+    const getVideoMimeType = (filename) => {
+        const ext = filename.split('.').pop().toLowerCase();
+        const mimeTypes = {
+            'mp4': 'video/mp4',
+            'webm': 'video/webm',
+            'ogg': 'video/ogg',
+            'mov': 'video/quicktime',
+            'm4v': 'video/mp4',
+            'avi': 'video/x-msvideo',
+            'wmv': 'video/x-ms-wmv',
+            'flv': 'video/x-flv',
+            'mkv': 'video/x-matroska',
+            '3gp': 'video/3gpp'
+        };
+        return mimeTypes[ext] || 'video/mp4';
+    };
+
     let player = null;
+
+    // 接收主进程传来的关闭事件
+    ipcRenderer.on('on-close', () => {
+        if (player) {
+            player.stop()
+        }
+    });
 
     // 接收主进程传来的视频路径
     ipcRenderer.on('load-media', (event, args) => {
-        const videoElement = document.querySelector('video');
-        videoElement.src = args.video;
-
-        // 销毁旧的播放器实例
-        if (player) {
-            player.destroy();
+        // 检查视频源是否有效
+        if (!args || !args.video) {
+            return;
         }
 
         // 设置语言
         const currentLang = args.lang || 'en';
 
-        // 创建新的播放器实例
-        player = new Plyr('#player', {
-            controls: [
-                'play-large', // 大播放按钮
-                'play', // 播放/暂停
-                'progress', // 进度条
-                'current-time', // 当前时间
-                'duration', // 总时长
-                'mute', // 静音
-                'volume', // 音量
-                'settings', // 设置
-                'fullscreen' // 全屏
-            ],
-            settings: ['captions', 'quality', 'speed', 'loop'], // 设置菜单选项
-            speed: {selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2]}, // 播放速度选项
-            keyboard: {focused: true, global: true}, // 启用键盘快捷键
-            tooltips: {controls: true, seek: true}, // 显示工具提示
-            hideControls: true, // 自动隐藏控制栏
-            i18n: translations[currentLang] || translations['en'] // 设置语言
-        });
+        // 如果播放器不存在，创建新的实例
+        if (!player) {
+            player = new Plyr('#player', {
+                controls: [
+                    'play-large', // 大播放按钮
+                    'play', // 播放/暂停
+                    'progress', // 进度条
+                    'current-time', // 当前时间
+                    'duration', // 总时长
+                    'mute', // 静音
+                    'volume', // 音量
+                    'settings', // 设置
+                    'fullscreen' // 全屏
+                ],
+                settings: ['captions', 'quality', 'speed', 'loop'], // 设置菜单选项
+                speed: {selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2]}, // 播放速度选项
+                keyboard: {focused: true, global: true}, // 启用键盘快捷键
+                tooltips: {controls: true, seek: true}, // 显示工具提示
+                hideControls: true, // 自动隐藏控制栏
+                i18n: translations[currentLang] || translations['en'] // 设置语言
+            });
 
-        // 错误处理
-        player.on('error', (event) => {
-            console.error('Player error:', event);
-        });
+            // 错误处理
+            player.on('error', (event) => {
+                console.error('Player error:', event);
+            });
+        }
+
+        // 直接更新播放器源
+        player.source = {
+            type: 'video',
+            sources: [{
+                src: args.video,
+                type: getVideoMimeType(args.video)
+            }]
+        };
 
         // 更新网页标题
         document.title = args.title || titleTranslations[currentLang] || titleTranslations['en'];

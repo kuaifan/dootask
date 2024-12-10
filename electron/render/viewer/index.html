@@ -35,7 +35,6 @@
 <script src="./viewer.min.js"></script>
 <script>
     const {ipcRenderer} = require('electron');
-    let viewer = null;
 
     const thumbnailUrl = (url) => {
         const crops = {
@@ -63,8 +62,22 @@
         ru: 'Просмотр изображений'
     };
 
+    let viewer = null;
+
+    // 接收主进程传来的关闭事件
+    ipcRenderer.on('on-close', () => {
+        if (viewer) {
+            viewer.destroy()
+        }
+    });
+
     // 接收主进程发送的图片数据
     ipcRenderer.on('load-media', (event, args) => {
+        // 检查数据源是否有效
+        if (!args || !args.images) {
+            return;
+        }
+
         const container = document.getElementById('image-container');
         container.innerHTML = ''; // 清空容器
 
