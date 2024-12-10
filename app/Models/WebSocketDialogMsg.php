@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $todo 设为待办会员ID
  * @property int|null $link 是否存在链接
  * @property int|null $modify 是否编辑
+ * @property int $bot
  * @property int|null $reply_num 有多少条回复
  * @property int|null $reply_id 回复ID
  * @property int|null $forward_id 转发ID
@@ -50,6 +51,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg query()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel remove()
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel saveOrIgnore()
+ * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereBot($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|WebSocketDialogMsg whereDialogId($value)
@@ -1169,6 +1171,7 @@ class WebSocketDialogMsg extends AbstractModel
                 'type' => $type,
                 'mtype' => $mtype,
                 'link' => $link,
+                'bot' => User::isBot($sender) ? 1 : 0,
                 'msg' => $msg,
                 'read' => 0,
             ]);

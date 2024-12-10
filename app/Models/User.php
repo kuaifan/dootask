@@ -683,4 +683,21 @@ class User extends AbstractModel
         }
         return $botUser;
     }
+
+    /**
+     * 是否机器人
+     * @param $userid
+     * @return bool|mixed
+     */
+    public static function isBot($userid)
+    {
+        if (empty($userid)) {
+            return false;
+        }
+        $userid = intval($userid);
+        if (RequestContext::has("isBot_" . $userid)) {
+            return RequestContext::get("isBot_" . $userid);
+        }
+        return (bool)User::find($userid)?->bot;
+    }
 }

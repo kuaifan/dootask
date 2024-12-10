@@ -1019,7 +1019,7 @@ class DialogController extends AbstractController
      * @apiParam {Number} [reply_id]        回复ID
      * @apiParam {String} [reply_check]     配合 reply_id 使用，判断是否需要验证回复ID的有效性
      * - no: 不进行判断，直接使用提供的 reply_id（默认）
-     * - yes: 进行判断，如果上一条消息（非机器人）的 ID 为 reply_id，则认为 reply_id 无效
+     * - yes: 进行判断，如果 reply_id 到最新消息都没有会员发的消息，则 reply_id 无效
      * @apiParam {String} [silence]         是否静默发送
      * - no: 正常发送（默认）
      * - yes: 静默发送
@@ -1056,8 +1056,8 @@ class DialogController extends AbstractController
             } elseif ($reply_id > 0) {
                 $action = "reply-$reply_id";
                 if ($reply_check === 'yes') {
-                    $lastMsgId = WebSocketDialogMsg::whereDialogId($dialog_id)->orderByDesc('id')->value('id');
-                    if ($lastMsgId == $reply_id) {
+                    $exisUserMsg = WebSocketDialogMsg::whereDialogId($dialog_id)->where('id', '>', $reply_id)->whereBot(0)->exists();
+                    if (!$exisUserMsg) {
                         $action = "";
                     }
                 }
