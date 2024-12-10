@@ -791,6 +791,14 @@ export default {
             this.quill = new Quill(this.$refs.editor, this._options)
             this.quill.enable(!this.disabled)
 
+            // 监听滚动事件
+            const container = document.querySelector('.ql-container')
+            const editor = document.querySelector('.ql-editor')
+            const tooltip = document.querySelector('.ql-tooltip')
+            $(editor).on('scroll', (e) => {
+                this.onShowTooltip(container, tooltip, editor)
+            })
+
             // Set editor content
             if (this.value) {
                 this.setContent(this.value)
@@ -802,6 +810,8 @@ export default {
             this.quill.on('selection-change', range => {
                 if (range) {
                     this.selectRange = range
+                    this.quill.setSelection(range.index, range.length)
+                    this.onShowTooltip(container, tooltip, editor)
                 } else if (this.selectRange && document.activeElement && /(ql-editor|ql-clipboard)/.test(document.activeElement.className)) {
                     // 修复iOS光标会超出的问题
                     this.selectTimer && clearTimeout(this.selectTimer)
@@ -810,6 +820,7 @@ export default {
                     }, 100)
                     return
                 }
+                // 
                 this.isFocus = !!range;
             })
 
@@ -1851,6 +1862,25 @@ export default {
         visualViewportResize() {
             this.viewportHeight = window.visualViewport?.height || 0;
         },
+
+        onShowTooltip(container, tooltip, editor) {
+            const tooltipRect = tooltip.getBoundingClientRect();
+            const editorRect = editor.getBoundingClientRect();
+            
+            // 如果 tooltip 没有高度,直接返回
+            if (tooltipRect.height <= 0) {
+                return;
+            }
+            
+            // 检查 tooltip 是否超出编辑器的可视区域
+            const isOutOfBounds = tooltipRect.top + tooltipRect.height < editorRect.top || 
+                                 tooltipRect.bottom > editorRect.bottom;
+            
+            // 根据是否超出边界设置容器的 overflowY
+            $(container).css({
+                overflowY: isOutOfBounds ? 'hidden' : 'visible'
+            });
+        }
     }
 }
 </script>
