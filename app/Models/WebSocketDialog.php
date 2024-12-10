@@ -755,6 +755,9 @@ class WebSocketDialog extends AbstractModel
      */
     public static function getUserDialog($userid1, $userid2, $ttl, &$cacheKey = null)
     {
+        if ($userid1 == $userid2) {
+            $userid2 = 0;
+        }
         $userids = [$userid1, $userid2];
         sort($userids);
         $cacheKey = "Dialog::user:" . implode('-', $userids);
