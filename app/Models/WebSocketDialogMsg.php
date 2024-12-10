@@ -30,7 +30,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $todo 设为待办会员ID
  * @property int|null $link 是否存在链接
  * @property int|null $modify 是否编辑
- * @property int $bot
+ * @property int|null $bot 是否机器人的消息
  * @property int|null $reply_num 有多少条回复
  * @property int|null $reply_id 回复ID
  * @property int|null $forward_id 转发ID

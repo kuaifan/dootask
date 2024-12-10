@@ -15,7 +15,7 @@ class AddBotToWebSocketDialogMsgs extends Migration
     {
         Schema::table('web_socket_dialog_msgs', function (Blueprint $table) {
             if (!Schema::hasColumn('web_socket_dialog_msgs', 'bot')) {
-                $table->tinyInteger('bot')->default(0)->after('modify');
+                $table->tinyInteger('bot')->nullable()->default(0)->after('modify')->comment('是否机器人的消息');
                 $table->index('bot');
             }
         });

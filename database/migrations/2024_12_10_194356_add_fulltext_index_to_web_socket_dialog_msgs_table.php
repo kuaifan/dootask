@@ -42,7 +42,7 @@ class AddFulltextIndexToWebSocketDialogMsgsTable extends Migration
 
         // 检查返回的索引是否包含指定的列
         foreach ($indexExists as $index) {
-            $indexColumns = explode(',', $index->column_name);
+            $indexColumns = explode(',', $index->COLUMN_NAME ?? $index->column_name ?? '');
             // 如果索引包含指定的列，则返回 true
             if (in_array($column, $indexColumns)) {
                 return true;

@@ -27898,5 +27898,17 @@
         "fr": "Mettre à jour le tag de la sous-tâche",
         "id": "Perbarui tag sub-tugas",
         "ru": "Обновить тег подзадачи"
+    },
+    {
+        "key": "AI机器人不存在",
+        "zh": "",
+        "zh-CHT": "AI機器人不存在",
+        "en": "AI robot does not exist",
+        "ko": "AI 로봇이 존재하지 않습니다",
+        "ja": "AIロボットは存在しません",
+        "de": "KI-Roboter existiert nicht",
+        "fr": "Le robot IA n'existe pas",
+        "id": "Robot AI tidak ada",
+        "ru": "ИИ-робот не существует"
     }
 ]

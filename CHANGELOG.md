@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.41.55]
+
+### Performance
+
+- 优化媒体播放
+- 优化临时会话的消息推送
+- 优化任务时间显示
+
 ## [0.41.45]
 
 ### Bug Fixes
