@@ -1056,7 +1056,11 @@ class DialogController extends AbstractController
             } elseif ($reply_id > 0) {
                 $action = "reply-$reply_id";
                 if ($reply_check === 'yes') {
-                    $exisUserMsg = WebSocketDialogMsg::whereDialogId($dialog_id)->where('id', '>', $reply_id)->whereBot(0)->exists();
+                    $exisUserMsg = WebSocketDialogMsg::whereDialogId($dialog_id)
+                        ->where('id', '>', $reply_id)
+                        ->whereBot(0)
+                        ->whereNotIn('type', ['notice', 'template'])
+                        ->exists();
                     if (!$exisUserMsg) {
                         $action = "";
                     }
