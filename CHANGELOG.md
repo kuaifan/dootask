@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.41.64]
+
+### Bug Fixes
+
+- 修复使用AI创建任务顺序错误的问题
+
 ## [0.41.55]
 
 ### Performance
