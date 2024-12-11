@@ -30,6 +30,7 @@
             color: #fff;
             padding: 16px 18px;
             border-radius: 12px;;
+            max-width: calc(100% - 160px);
         }
 
         .title {
@@ -47,6 +48,9 @@
             color: #fff;
             text-decoration: none;
             border-radius: 5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .dark {
