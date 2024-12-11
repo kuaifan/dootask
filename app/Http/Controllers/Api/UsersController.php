@@ -1151,6 +1151,9 @@ class UsersController extends AbstractController
      * - update: 更新（默认）
      * - remove: 删除
      * @apiParam {String} alias           别名
+     * @apiParam {String} [userAgent]     浏览器信息
+     * @apiParam {String} [deviceModel]   设备型号
+     * @apiParam {String} [isNotified]    是否有通知权限（0不通知、1通知）
      *
      * @apiSuccess {Number} ret     返回状态码（1正确、0错误）
      * @apiSuccess {String} msg     返回信息（错误描述）
@@ -1187,6 +1190,7 @@ class UsersController extends AbstractController
             $row->update([
                 'ua' => $data['userAgent'],
                 'device' => $data['deviceModel'],
+                'is_notified' => intval($data['isNotified']),
                 'updated_at' => Carbon::now()
             ]);
             return Base::retSuccess('别名已存在');
@@ -1194,6 +1198,7 @@ class UsersController extends AbstractController
         $row = UmengAlias::createInstance(array_merge($inArray, [
             'ua' => $data['userAgent'],
             'device' => $data['deviceModel'],
+            'is_notified' => intval($data['isNotified']),
         ]));
         if ($row->save()) {
             return Base::retSuccess('添加成功');

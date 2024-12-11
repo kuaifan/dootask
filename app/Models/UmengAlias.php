@@ -16,6 +16,7 @@ use Hedeqiang\UMeng\IOS;
  * @property string|null $platform 平台类型
  * @property string|null $device 设备类型
  * @property string|null $ua userAgent
+ * @property int|null $is_notified 通知权限
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @method static \Illuminate\Database\Eloquent\Builder|AbstractModel cancelAppend()
@@ -31,6 +32,7 @@ use Hedeqiang\UMeng\IOS;
  * @method static \Illuminate\Database\Eloquent\Builder|UmengAlias whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UmengAlias whereDevice($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UmengAlias whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UmengAlias whereIsNotified($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UmengAlias wherePlatform($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UmengAlias whereUa($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UmengAlias whereUpdatedAt($value)
