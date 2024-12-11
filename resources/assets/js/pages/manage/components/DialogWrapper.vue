@@ -3301,12 +3301,15 @@ export default {
 
             const typeCall = type === 'subtask' ? 'taskAddSub' : 'taskAdd';
             const typeLabel = type === 'subtask' ? '子任务' : '任务';
-            const results = await Promise.all(taskList.map(item =>
-                this.$store.dispatch(typeCall, item).then(
-                    success => ({ success: true, data: success }),
-                    error => ({ success: false, error: error })
-                )
-            ));
+            const results = [];
+            for (const item of taskList) {
+                try {
+                    const success = await this.$store.dispatch(typeCall, item);
+                    results.push({ success: true, data: success });
+                } catch (error) {
+                    results.push({ success: false, error: error });
+                }
+            }
             const successTasks = results.filter(r => r.success).map(r => r.data);
             const failedTasks = results.filter(r => !r.success).map(r => r.error);
             let notice = `${this.$store.state.userInfo.nickname} 成功创建 ${successTasks.length} 个${typeLabel}`;
