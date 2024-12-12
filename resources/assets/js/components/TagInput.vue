@@ -227,7 +227,7 @@
                 if (this.max > 0 && this.disSource.length >= this.max) {
                     this.content = '';
                     this.tis = '最多只能添加' + this.max + '个';
-                    clearInterval(this.tisTimeout);
+                    clearTimeout(this.tisTimeout);
                     this.tisTimeout = setTimeout(() => { this.tis = ''; }, 2000);
                     return;
                 }

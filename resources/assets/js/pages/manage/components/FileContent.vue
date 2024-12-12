@@ -188,6 +188,7 @@ export default {
         //
         if (this.$isSubElectron) {
             window.__onBeforeUnload = () => {
+                this.$store.dispatch("onBeforeUnload");
                 if (!this.equalContent) {
                     $A.modalConfirm({
                         content: '修改的内容尚未保存，确定要放弃修改吗？',

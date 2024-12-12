@@ -941,6 +941,17 @@ export default {
         })
     },
 
+    /**
+     * Electron 页面卸载触发
+     * @param dispatch
+     */
+    onBeforeUnload({dispatch}) {
+        if ($A.isSubElectron && $A.isJson(window.__dialogDraft)) {
+            dispatch("saveDialog", window.__dialogDraft)
+            window.__dialogDraft = null;
+        }
+    },
+
     /** *****************************************************************************************/
     /** *************************************** 新窗口打开 ****************************************/
     /** *****************************************************************************************/
@@ -3065,7 +3076,11 @@ export default {
      */
     saveDialogDraft({state, dispatch}, data) {
         data.extra_draft_content = $A.filterInvalidLine(data.extra_draft_content)
-        state.dialogDraftTimer[data.id] && clearInterval(state.dialogDraftTimer[data.id])
+        if ($A.isSubElectron) {
+            window.__dialogDraft = data
+            return
+        }
+        state.dialogDraftTimer[data.id] && clearTimeout(state.dialogDraftTimer[data.id])
         state.dialogDraftTimer[data.id] = setTimeout(_ => {
             if (state.dialogId != data.id) {
                 data.extra_draft_has = data.extra_draft_content ? 1 : 0

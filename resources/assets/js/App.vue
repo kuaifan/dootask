@@ -456,6 +456,7 @@ export default {
                 return;
             }
             window.__onBeforeUnload = () => {
+                this.$store.dispatch("onBeforeUnload");
                 if (this.$Modal.removeLast()) {
                     return true;
                 }

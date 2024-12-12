@@ -53,6 +53,7 @@ export default {
         //
         if (this.$isSubElectron) {
             window.__onBeforeUnload = () => {
+                this.$store.dispatch("onBeforeUnload");
                 if (this.$refs.taskDetail.checkUpdate()) {
                     this.canUpdateBlur = false;
                     $A.modalConfirm({
