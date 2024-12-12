@@ -515,7 +515,6 @@
 import Draggable from 'vuedraggable'
 import TaskPriority from "./TaskPriority";
 import {mapGetters, mapState} from "vuex";
-import {Store} from 'le5le-store';
 import TaskAddSimple from "./TaskAddSimple";
 import TaskRow from "./TaskRow";
 import TaskArchived from "./TaskArchived";
@@ -532,6 +531,7 @@ import ProjectGantt from "./ProjectGantt";
 import UserSelect from "../../../components/UserSelect.vue";
 import UserAvatarTip from "../../../components/UserAvatar/tip.vue";
 import VMPreviewNostyle from "../../../components/VMEditor/nostyle.vue";
+import emitter from "../../../store/events";
 
 export default {
     name: "ProjectPanel",
@@ -1086,7 +1086,7 @@ export default {
         },
 
         addTaskOpen(params) {
-            Store.set('addTask', params);
+            emitter.emit('addTask', params);
         },
 
         addColumnOpen() {
@@ -1408,7 +1408,7 @@ export default {
             if (receive === true) {
                 // 向任务窗口发送领取任务请求
                 setTimeout(() => {
-                    Store.set('receiveTask', true);
+                    emitter.emit('receiveTask', true);
                 }, 300)
             }
         },

@@ -226,7 +226,7 @@ import SystemMeeting from "./setting/components/SystemMeeting";
 import SystemThirdAccess from "./setting/components/SystemThirdAccess";
 import SystemEmailSetting from "./setting/components/SystemEmailSetting";
 import SystemAppPush from "./setting/components/SystemAppPush";
-import { Store } from "le5le-store";
+import emitter from "../../store/events";
 
 export default {
     components: {
@@ -513,13 +513,13 @@ export default {
         onMeeting(name) {
             switch (name) {
                 case 'createMeeting':
-                    Store.set('addMeeting', {
+                    emitter.emit('addMeeting', {
                         type: 'create',
                         userids: [this.userId],
                     });
                     break;
                 case 'joinMeeting':
-                    Store.set('addMeeting', {
+                    emitter.emit('addMeeting', {
                         type: 'join',
                     });
                     break;

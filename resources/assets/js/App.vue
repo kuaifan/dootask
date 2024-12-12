@@ -50,7 +50,7 @@ import MeetingManager from "./pages/manage/components/MeetingManager";
 import DropdownMenu from "./components/DropdownMenu";
 import {ctrlPressed} from "./mixins/ctrlPressed";
 import {mapState} from "vuex";
-import {Store} from "le5le-store";
+import emitter from "./store/events";
 
 export default {
     mixins: [ctrlPressed],
@@ -323,7 +323,7 @@ export default {
                     // meeting/1234567890/xxxxx    会议
                     if (/^\/meeting\/\d+\/\S+$/.test(pathname)) {
                         const meetingId = pathname.split('/')[2];
-                        Store.set('addMeeting', {
+                        emitter.emit('addMeeting', {
                             type: 'join',
                             meetingid: meetingId,
                             meetingdisabled: true,

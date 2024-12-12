@@ -164,9 +164,9 @@
 
 <script>
 import {mapState} from "vuex";
-import {Store} from "le5le-store";
 import {languageList, languageName, setLanguage} from "../language";
 import VueQrcode from "@chenfengyuan/vue-qrcode";
+import emitter from "../store/events";
 
 export default {
     components: {VueQrcode},
@@ -200,8 +200,6 @@ export default {
 
             needInvite: false,
 
-            subscribe: null,
-
             privacyShow: false,
         }
     },
@@ -218,17 +216,12 @@ export default {
         //
         this.qrcodeTimer = setInterval(this.qrcodeStatus, 2000);
         //
-        this.subscribe = Store.subscribe('useSSOLogin', () => {
-            this.inputServerUrl();
-        });
+        emitter.on('useSSOLogin', this.inputServerUrl);
     },
 
     beforeDestroy() {
         clearInterval(this.qrcodeTimer);
-        if (this.subscribe) {
-            this.subscribe.unsubscribe();
-            this.subscribe = null;
-        }
+        emitter.off('useSSOLogin', this.inputServerUrl);
     },
 
     activated() {

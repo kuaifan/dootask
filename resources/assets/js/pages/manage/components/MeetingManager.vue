@@ -122,11 +122,11 @@
 </template>
 
 <script>
-import {Store} from "le5le-store";
 import {mapState} from 'vuex'
 import MeetingPlayer from "./MeetingPlayer.vue";
 import DragBallComponent from "../../../components/DragBallComponent";
 import UserSelect from "../../../components/UserSelect.vue";
+import emitter from "../../../store/events";
 
 export default {
     name: "MeetingManager",
@@ -142,7 +142,6 @@ export default {
     data() {
         return {
             loadIng: 0,
-            subscribe: null,
 
             addShow: false,
             addData: {
@@ -183,14 +182,11 @@ export default {
     },
 
     mounted() {
-        this.subscribe = Store.subscribe('addMeeting', this.onAdd);
+        emitter.on('addMeeting', this.onAdd);
     },
 
     beforeDestroy() {
-        if (this.subscribe) {
-            this.subscribe.unsubscribe();
-            this.subscribe = null;
-        }
+        emitter.off('addMeeting', this.onAdd);
     },
 
     watch: {

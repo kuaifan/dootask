@@ -366,7 +366,7 @@ import UserSelect from "../components/UserSelect.vue";
 import ImgUpload from "../components/ImgUpload.vue";
 import ApproveDetails from "./manage/approve/details.vue";
 import notificationKoro from "notification-koro1";
-import {Store} from "le5le-store";
+import emitter from "../store/events";
 
 export default {
     components: {
@@ -411,19 +411,14 @@ export default {
             },
 
             addTaskShow: false,
-            addTaskSubscribe: null,
 
             createGroupShow: false,
             createGroupData: {},
             createGroupLoad: 0,
-            createGroupSubscribe: null,
 
             exportTaskShow: false,
             exportCheckinShow: false,
             exportApproveShow: false,
-
-
-            dialogMsgSubscribe: null,
 
             projectKeyValue: '',
             projectKeyLoading: 0,
@@ -453,17 +448,16 @@ export default {
 
             approveDetails: {id: 0},
             approveDetailsShow: false,
-            approveDetailsSubscribe: null,
         }
     },
 
     mounted() {
         this.notificationInit();
         //
-        this.addTaskSubscribe = Store.subscribe('addTask', this.onAddTask);
-        this.createGroupSubscribe = Store.subscribe('createGroup', this.onCreateGroup);
-        this.dialogMsgSubscribe = Store.subscribe('dialogMsgPush', this.addDialogMsg);
-        this.approveDetailsSubscribe = Store.subscribe('approveDetails', this.openApproveDetails);
+        emitter.on('addTask', this.onAddTask);
+        emitter.on('createGroup', this.onCreateGroup);
+        emitter.on('dialogMsgPush', this.addDialogMsg);
+        emitter.on('approveDetails', this.openApproveDetails);
         //
         document.addEventListener('keydown', this.shortcutEvent);
     },
@@ -482,22 +476,10 @@ export default {
     },
 
     beforeDestroy() {
-        if (this.addTaskSubscribe) {
-            this.addTaskSubscribe.unsubscribe();
-            this.addTaskSubscribe = null;
-        }
-        if (this.createGroupSubscribe) {
-            this.createGroupSubscribe.unsubscribe();
-            this.createGroupSubscribe = null;
-        }
-        if (this.dialogMsgSubscribe) {
-            this.dialogMsgSubscribe.unsubscribe();
-            this.dialogMsgSubscribe = null;
-        }
-        if (this.approveDetailsSubscribe) {
-            this.approveDetailsSubscribe.unsubscribe();
-            this.approveDetailsSubscribe = null;
-        }
+        emitter.off('addTask', this.onAddTask);
+        emitter.off('createGroup', this.onCreateGroup);
+        emitter.off('dialogMsgPush', this.addDialogMsg);
+        emitter.off('approveDetails', this.openApproveDetails);
         //
         document.removeEventListener('keydown', this.shortcutEvent);
     },
@@ -818,7 +800,7 @@ export default {
                     this.workReportShow = true;
                     return;
                 case 'version':
-                    Store.set('updateNotification', null);
+                    emitter.emit('updateNotification', null);
                     return;
                 case 'clearCache':
                     $A.IDBSet("clearCache", "handle").then(_ => {
@@ -918,14 +900,14 @@ export default {
                     break;
 
                 case 'createMeeting':
-                    Store.set('addMeeting', {
+                    emitter.emit('addMeeting', {
                         type: 'create',
                         userids: [this.userId],
                     });
                     break;
 
                 case 'joinMeeting':
-                    Store.set('addMeeting', {
+                    emitter.emit('addMeeting', {
                         type: 'join',
                     });
                     break;

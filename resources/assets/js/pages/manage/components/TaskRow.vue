@@ -110,8 +110,8 @@
 import TaskPriority from "./TaskPriority";
 import TaskAddSimple from "./TaskAddSimple";
 import {mapState} from "vuex";
-import {Store} from "le5le-store";
 import TaskMenu from "./TaskMenu";
+import emitter from "../../../store/events";
 
 export default {
     name: "TaskRow",
@@ -250,7 +250,7 @@ export default {
             if (receive === true) {
                 // 向任务窗口发送领取任务请求
                 setTimeout(() => {
-                    Store.set('receiveTask', true);
+                    emitter.emit('receiveTask', true);
                 }, 300)
             }
         },

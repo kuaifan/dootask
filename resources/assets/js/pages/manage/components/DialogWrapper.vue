@@ -695,7 +695,6 @@ import DialogRespond from "./DialogRespond";
 import ChatInput from "./ChatInput";
 
 import VirtualList from "vue-virtual-scroll-list-hi"
-import {Store} from "le5le-store";
 import ImgUpload from "../../../components/ImgUpload.vue";
 import {choiceEmojiOne} from "./ChatInput/one";
 
@@ -707,6 +706,7 @@ import DialogComplaint from "./DialogComplaint";
 import touchclick from "../../../directives/touchclick";
 import {languageList} from "../../../language";
 import {isLocalResourcePath} from "../../../components/Replace/utils";
+import emitter from "../../../store/events";
 
 export default {
     name: "DialogWrapper",
@@ -1867,7 +1867,7 @@ export default {
 
                 // 创建会议
                 case "meeting-create":
-                    Store.set('addMeeting', {
+                    emitter.emit('addMeeting', {
                         type: 'create',
                         userids: [this.userId],
                     });
@@ -1875,7 +1875,7 @@ export default {
 
                 // 加入会议
                 case "meeting-join":
-                    Store.set('addMeeting', {
+                    emitter.emit('addMeeting', {
                         type: 'join',
                     });
                     break;
@@ -2533,7 +2533,7 @@ export default {
                     if (this.dialogData.dialog_user && this.userId != this.dialogData.dialog_user.userid) {
                         userids.push(this.dialogData.dialog_user.userid)
                     }
-                    Store.set('createGroup', userids);
+                    emitter.emit('createGroup', userids);
                     break;
 
                 case "modifyNormal":
@@ -3080,7 +3080,7 @@ export default {
                         content = content.replace(/<li\s+data-list="checked">/g, `<li class="tox-checklist--checked">`)
                         content = content.replace(/<li\s+data-list="unchecked">/g, `<li>`)
                         content = content.replace(/<ol[^>]*>([\s\S]*?)<\/ol>/g, `<ul class="tox-checklist">$1</ul>`)
-                        Store.set('addTask', {owner: [this.userId], content});
+                        emitter.emit('addTask', {owner: [this.userId], content});
                         break;
 
                     case "todo":
@@ -3469,7 +3469,7 @@ export default {
                     break;
                 }
                 if (approveElement.classList.contains('open-approve-details')) {
-                    Store.set('approveDetails', approveElement.getAttribute("data-id"));
+                    emitter.emit('approveDetails', approveElement.getAttribute("data-id"));
                     return;
                 }
                 approveElement = approveElement.parentElement;

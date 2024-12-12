@@ -22,9 +22,9 @@
 </template>
 
 <script>
-import {Store} from "le5le-store";
 import {mapGetters, mapState} from "vuex";
 import NetworkException from "../NetworkException";
+import emitter from "../../store/events";
 
 export default {
     name: "MobileTabbar",
@@ -177,7 +177,7 @@ export default {
                 case 'dialog':
                     location = {name: 'manage-messenger', params: {dialogAction: 'dialog'}};
                     if (this.routeName === 'manage-messenger') {
-                        Store.set('clickAgainDialog', true);
+                        emitter.emit('clickAgainDialog', true);
                     }
                     break;
 

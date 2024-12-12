@@ -234,7 +234,7 @@ import clickoutside from "../../../../directives/clickoutside";
 import longpress from "../../../../directives/longpress";
 import {inputLoadAdd, inputLoadIsLast, inputLoadRemove} from "./one";
 import {isMarkdownFormat} from "../../../../store/markdown";
-import {Store} from "le5le-store";
+import emitter from "../../../../store/events";
 
 export default {
     name: 'ChatInput',
@@ -1312,7 +1312,7 @@ export default {
                     break;
 
                 case 'meeting':
-                    Store.set('addMeeting', {
+                    emitter.emit('addMeeting', {
                         type: 'create',
                         dialog_id: this.dialogId,
                         userids: [this.userId],

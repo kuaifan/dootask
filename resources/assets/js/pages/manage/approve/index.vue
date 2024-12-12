@@ -251,7 +251,7 @@ import ImgUpload from "../../../components/ImgUpload";
 import ApproveSetting from "./setting";
 import ApproveExport from "../components/ApproveExport";
 import {mapState} from 'vuex'
-import {Store} from "le5le-store";
+import emitter from "../../../store/events";
 
 export default {
     components: {list, listDetails, DrawerOverlay, ImgUpload, ApproveSetting, ApproveExport},
@@ -492,7 +492,7 @@ export default {
             })
             //
             if (window.innerWidth < 426) {
-                Store.set('approveDetails', item.id);
+                emitter.emit('approveDetails', item.id);
                 return;
             }
             if (window.innerWidth < 1010) {

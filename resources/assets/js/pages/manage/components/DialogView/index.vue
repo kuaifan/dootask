@@ -174,7 +174,6 @@
 <script>
 import WCircle from "../../../../components/WCircle";
 import {mapGetters, mapState} from "vuex";
-import {Store} from "le5le-store";
 import longpress from "../../../../directives/longpress";
 
 import TextMsg from "./text.vue";
@@ -187,6 +186,7 @@ import VoteMsg from "./vote.vue";
 import TemplateMsg from "./template";
 import LoadMsg from "./load.vue";
 import UnknownMsg from "./unknown.vue";
+import emitter from "../../../../store/events";
 
 export default {
     name: "DialogView",
@@ -470,7 +470,7 @@ export default {
             if (this.operateVisible) {
                 return
             }
-            Store.set('addMeeting', {
+            emitter.emit('addMeeting', {
                 type: 'join',
                 name: this.msgData.msg.name,
                 meetingid: this.msgData.msg.meetingid,

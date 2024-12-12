@@ -259,7 +259,7 @@
 import {mapState} from "vuex";
 import DialogWrapper from "./components/DialogWrapper";
 import longpress from "../../directives/longpress";
-import {Store} from "le5le-store";
+import emitter from "../../store/events";
 
 const navDatas = {
     menus: [
@@ -304,8 +304,6 @@ export default {
             operateStyles: {},
             operateVisible: false,
             operateType: 'dialog',
-
-            clickAgainSubscribe: null,
         }
     },
 
@@ -323,15 +321,11 @@ export default {
             this.openDialog(id)
         }
         //
-        this.clickAgainSubscribe = Store.subscribe('clickAgainDialog', this.shakeUnread);
+        emitter.on('clickAgainDialog', this.shakeUnread);
     },
 
     beforeDestroy() {
-        if (this.clickAgainSubscribe) {
-            this.clickAgainSubscribe.unsubscribe();
-            this.clickAgainSubscribe = null;
-        }
-        //
+        emitter.off('clickAgainDialog', this.shakeUnread)
         document.removeEventListener('keydown', this.shortcutEvent);
     },
 
@@ -550,7 +544,6 @@ export default {
                     if (id > 0) {
                         this.openDialog(id)
                     }
-                    this.clickAgainSubscribe = Store.subscribe('clickAgainDialog', this.shakeUnread);
                 }
             },
             immediate: true
@@ -1168,12 +1161,12 @@ export default {
                         userids.push(this.operateItem.userid)
                     }
                     if (act === 'meet') {
-                        Store.set('addMeeting', {
+                        emitter.emit('addMeeting', {
                             type: 'create',
                             userids,
                         });
                     } else {
-                        Store.set('createGroup', userids);
+                        emitter.emit('createGroup', userids);
                     }
                     break;
 

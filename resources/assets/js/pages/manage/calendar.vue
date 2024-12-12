@@ -46,9 +46,9 @@
 <script>
 import {mapState, mapGetters} from "vuex";
 import Calendar from "./components/Calendar";
-import {Store} from "le5le-store";
 import TaskMenu from "./components/TaskMenu";
 import {addLanguage} from "../../language";
+import emitter from "../../store/events";
 
 export default {
     components: {TaskMenu, Calendar},
@@ -309,7 +309,7 @@ export default {
                 start.format('YYYY-MM-DD HH:mm:ss'),
                 end.format('YYYY-MM-DD HH:mm:ss')
             ]).then(times => {
-                Store.set('addTask', {
+                emitter.emit('addTask', {
                     times,
                     owner: [this.userId],
                     beforeClose: () => guide.clearGuideElement()

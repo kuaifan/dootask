@@ -559,7 +559,6 @@ import TaskPriority from "./TaskPriority";
 import TaskUpload from "./TaskUpload";
 import DialogWrapper from "./DialogWrapper";
 import ProjectLog from "./ProjectLog";
-import {Store} from "le5le-store";
 import TaskMenu from "./TaskMenu";
 import ChatInput from "./ChatInput";
 import UserSelect from "../../../components/UserSelect.vue";
@@ -569,6 +568,7 @@ import TaskExistTips from "./TaskExistTips.vue";
 import TEditorTask from "../../../components/TEditorTask.vue";
 import TaskContentHistory from "./TaskContentHistory.vue";
 import TaskTagAdd from "./ProjectTaskTag/add.vue";
+import emitter from "../../../store/events";
 
 export default {
     name: "TaskDetail",
@@ -662,7 +662,6 @@ export default {
 
             dialogDrag: false,
             imageAttachment: true,
-            receiveTaskSubscribe: null,
 
             loops: [
                 {key: 'never', label: '从不'},
@@ -713,18 +712,13 @@ export default {
             this.nowTime = $A.dayjs().unix();
         }, 1000);
         //
-        this.receiveTaskSubscribe = Store.subscribe('receiveTask', () => {
-            this.receiveShow = true;
-        });
+        emitter.on('receiveTask', this.onReceiveShow);
     },
 
     destroyed() {
         clearInterval(this.nowInterval);
         //
-        if (this.receiveTaskSubscribe) {
-            this.receiveTaskSubscribe.unsubscribe();
-            this.receiveTaskSubscribe = null;
-        }
+        emitter.off('receiveTask', this.onReceiveShow);
     },
 
     computed: {
@@ -1048,6 +1042,10 @@ export default {
     },
 
     methods: {
+        onReceiveShow() {
+            this.receiveShow = true;
+        },
+
         within24Hours(date) {
             return ($A.dayjs(date).unix() - this.nowTime) < 86400
         },

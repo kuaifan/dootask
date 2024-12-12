@@ -42,7 +42,7 @@
 <script>
 const VMPreview = () => import('./VMEditor/preview');
 import axios from "axios";
-import {Store} from "le5le-store";
+import emitter from "../store/events";
 
 export default {
     name: 'RightBottom',
@@ -50,7 +50,6 @@ export default {
     data() {
         return {
             loadIng: 0,
-            subscribe: null,
 
             apiVersion: '',
             systemVersion: window.systemInfo.version,
@@ -70,9 +69,7 @@ export default {
         this.checkVersion()
         //
         if (this.$Electron) {
-            this.subscribe = Store.subscribe('updateNotification', _ => {
-                this.updateShow = true
-            })
+            emitter.on('updateNotification', this.onUpdateShow);
             this.$Electron.registerMsgListener('updateDownloaded', info => {
                 this.$store.state.clientNewVersion = info.version
                 this.updateVersion = info.version;
@@ -83,10 +80,7 @@ export default {
     },
 
     beforeDestroy() {
-        if (this.subscribe) {
-            this.subscribe.unsubscribe();
-            this.subscribe = null;
-        }
+        emitter.off('updateNotification', this.onUpdateShow);
     },
 
     watch: {
@@ -112,6 +106,10 @@ export default {
     },
 
     methods: {
+        onUpdateShow() {
+            this.updateShow = true
+        },
+
         isNotServer() {
             let apiHome = $A.getDomain(window.systemInfo.apiUrl)
             return this.$isSoftware && (apiHome == "" || apiHome == "public")
@@ -224,7 +222,7 @@ export default {
         },
 
         useSSOLogin() {
-            Store.set('useSSOLogin', true);
+            emitter.emit('useSSOLogin', true);
         },
 
         tagVersion(tag) {

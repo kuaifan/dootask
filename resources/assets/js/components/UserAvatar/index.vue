@@ -21,8 +21,8 @@
 </template>
 
 <script>
-import {Store} from "le5le-store";
 import mixin from './mixin';
+import emitter from "../../store/events";
 
 export default {
     name: 'UserAvatar',
@@ -30,28 +30,16 @@ export default {
     data() {
         return {
             user: null,
-            subscribe: null
         }
     },
     mounted() {
         this.getData();
         //
-        this.subscribe = Store.subscribe('userActive', ({type, data}) => {
-            if (data.userid == this.userid) {
-                if (type === 'line') {
-                    this.user && this.$set(this.user, 'online', data.online);
-                } else {
-                    this.setUser(data)
-                }
-            }
-        });
+        emitter.on('userActive', this.userActive);
         this.$store.state.userAvatar[this._uid] = this.$props;
     },
     beforeDestroy() {
-        if (this.subscribe) {
-            this.subscribe.unsubscribe();
-            this.subscribe = null;
-        }
+        emitter.off('userActive', this.userActive);
         if (this.$store.state.userAvatar[this._uid] !== undefined) {
             delete this.$store.state.userAvatar[this._uid];
         }
@@ -146,6 +134,16 @@ export default {
         }
     },
     methods: {
+        userActive({type, data}) {
+            if (data.userid == this.userid) {
+                if (type === 'line') {
+                    this.user && this.$set(this.user, 'online', data.online);
+                } else {
+                    this.setUser(data)
+                }
+            }
+        },
+
         getData() {
             if (!this.$store.state.userId) {
                 return;

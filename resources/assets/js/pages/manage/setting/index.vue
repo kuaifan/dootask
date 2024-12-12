@@ -43,9 +43,9 @@
 
 <script>
 import {mapState} from "vuex";
-import {Store} from "le5le-store";
 import axios from "axios";
 import MobileNavTitle from "../../../components/Mobile/NavTitle.vue";
+import emitter from "../../../store/events";
 
 export default {
     components: {MobileNavTitle},
@@ -177,7 +177,7 @@ export default {
 
                 default:
                     if (path === 'version' && !!this.clientNewVersion) {
-                        Store.set('updateNotification', null);
+                        emitter.emit('updateNotification', null);
                         return
                     }
                     this.goForward({name: 'manage-setting-' + path});
