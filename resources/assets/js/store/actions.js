@@ -4030,7 +4030,7 @@ export default {
                 return
             }
             if (typeof callback === "function") {
-                msgId = $A.randomString(16)
+                msgId = type + '_' + $A.randomString(3)
                 state.wsCall[msgId] = callback
             }
             try {

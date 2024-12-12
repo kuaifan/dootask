@@ -179,10 +179,19 @@ export default {
             $A.updateTimezone()
 
             this.__windowTimer && clearTimeout(this.__windowTimer)
+            this.__timeoutTimer && clearTimeout(this.__timeoutTimer)
             this.__windowTimer = setTimeout(async () => {
                 try {
                     await this.$store.dispatch("call", {url: "users/socket/status"})
-                    await this.$store.dispatch("websocketSend", {type: 'handshake'})
+                    await new Promise((resolve, reject) => {
+                        this.$store.dispatch("websocketSend", {
+                            type: 'handshake',
+                            callback: (_, ok) => {
+                                ok ? resolve() : reject(new Error('Handshake failed'));
+                            }
+                        });
+                        this.__timeoutTimer = setTimeout(() => reject(new Error('Handshake timeout')), 6000);
+                    });
                 } catch {
                     await this.$store.dispatch("websocketConnection")
                 }
@@ -351,7 +360,7 @@ export default {
                 'meetings.vonage.com',  // Vonage Video
                 'voovmeeting.com',      // 腾讯会议国际版
                 'skype.com',            // Skype
-                
+
                 // 需要调用系统API的场景
                 'maps.google.com',      // Google地图
                 'maps.apple.com',       // 苹果地图
@@ -437,7 +446,7 @@ export default {
                 'twitter://',           // Twitter
                 'instagram://',         // Instagram
                 'linkedin://'           // LinkedIn
-            ];            
+            ];
             const lowerUrl = `${url}`.toLowerCase()
             return meetingDomains.some(domain => lowerUrl.indexOf(domain) !== -1);
         },

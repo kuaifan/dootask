@@ -103,6 +103,10 @@ class WebSocketService implements WebSocketHandlerInterface
             case 'receipt':
                 return;
 
+            // 握手信息
+            case 'handshake':
+                break;
+
             // 访问状态
             case 'path':
                 $row = WebSocket::whereFd($frame->fd)->first();
