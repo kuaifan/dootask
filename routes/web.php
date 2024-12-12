@@ -69,6 +69,6 @@ Route::middleware(['webapi'])->group(function () {
     Route::any('/{method}',                             IndexController::class);
     Route::any('/{method}/{action}',                    IndexController::class);
     Route::any('/{method}/{action}/{child}',            IndexController::class);
-    Route::any('/{method}/{action}/{child}/{n}',        IndexController::class)->where('method', '^(?!uploads).*');
-    Route::any('/{method}/{action}/{child}/{n}/{c}',    IndexController::class)->where('method', '^(?!uploads).*');
+    Route::any('/{method}/{action}/{child}/{n}',        IndexController::class)->where('method', '^(?!(uploads|images)).*');
+    Route::any('/{method}/{action}/{child}/{n}/{c}',    IndexController::class)->where('method', '^(?!(uploads|images)).*');
 });

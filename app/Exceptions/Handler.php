@@ -223,6 +223,19 @@ class Handler extends ExceptionHandler
             } catch (\ImagickException) { }
         }
 
+        // 容错处理
+        $patternFault = '/^(images\/.*\.(png|jpg|jpeg))\/crop\/([^\/]+)$/';
+        $matchesFault = null;
+        if (preg_match($patternFault, $path, $matchesFault)) {
+            $file = public_path($matchesFault[1]);
+            if (!file_exists($file)) {
+                $file = public_path('images/other/imgerr.jpg');
+            }
+            if (file_exists($file)) {
+                return response()->file($file);
+            }
+        }
+
         return null;
     }
 }
