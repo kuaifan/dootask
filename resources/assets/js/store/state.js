@@ -121,6 +121,7 @@ export default {
     dialogHistory: [],
     dialogDraftTimer: {},
     dialogMsgTransfer: {time: 0},
+    dialogMsgStream: {},
     dialogSseList: [],
     dialogDroupWordChain: {},
     dialogGroupVote: {},
