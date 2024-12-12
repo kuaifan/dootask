@@ -16,6 +16,7 @@ use App\Tasks\PushTask;
 use App\Module\BillExport;
 use App\Models\WebSocketDialog;
 use App\Models\ApproveProcMsg;
+use App\Models\ApproveProcInstHistory;
 use App\Exceptions\ApiException;
 use App\Models\UserDepartment;
 use App\Models\WebSocketDialogMsg;
@@ -1146,13 +1147,9 @@ class ApproveController extends AbstractController
      */
     public function user__status()
     {
-        $data['userid'] = intval(Request::input('userid'));
-        $ret = Ihttp::ihttp_get($this->flow_url . '/api/v1/workflow/process/getUserApprovalStatus?' . http_build_query($data));
-        $procdef = json_decode($ret['ret'] == 1 ? $ret['data'] : '{}', true);
-        if (isset($procdef['status']) && $procdef['status'] == 200) {
-            return Base::retSuccess('success', $procdef['data']["proc_def_name"] ?? '');
-        }
-        return Base::retSuccess('success', '');
+        $userid = intval(Request::input('userid'));
+        $status = ApproveProcInstHistory::getUserApprovalStatus($userid);
+        return Base::retSuccess('success', $status);
     }
 
     /**

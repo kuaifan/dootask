@@ -2,12 +2,12 @@
 
 namespace App\Tasks;
 
+use App\Models\ApproveProcInstHistory;
 use App\Models\User;
 use App\Models\UserCheckinRecord;
 use App\Models\WebSocketDialog;
 use App\Models\WebSocketDialogMsg;
 use App\Module\Base;
-use App\Module\Doo;
 use App\Module\Extranet;
 use App\Module\Timer;
 use Cache;
@@ -81,6 +81,9 @@ class CheckinRemindTask extends AbstractTask
                 }
                 if (!UserCheckinRecord::whereUserid($user->userid)->where('created_at', '>', Carbon::now()->subDays(3))->exists()) {
                     continue;   // 3天内没有打卡
+                }
+                if (ApproveProcInstHistory::userIsLeave($user->userid)) {
+                    continue;   // 请假、外出
                 }
                 $dialog = WebSocketDialog::checkUserDialog($botUser, $user->userid);
                 if ($dialog) {
