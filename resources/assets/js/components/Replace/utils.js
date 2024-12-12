@@ -59,6 +59,11 @@ const convertLocalResourcePath = (() => {
             return url
         }
 
+        // 正则判断必须是 gif、icns、ico、jpg、jpeg、png、svg 结尾
+        if (!/\.(jpe?g|webp|png|gif|icns|ico|svg)$/i.test(url)) {
+            return url
+        }
+
         if (urlRegex.test(url)) {
             return url.replace(serverPreUrl, appPreUrl)
         }
