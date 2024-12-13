@@ -1,11 +1,8 @@
 <template>
     <div class="component-only-office">
-        <template v-if="$A.isDesktop()">
-            <Alert v-if="loadError" class="load-error" type="error" show-icon>{{$L('组件加载失败！')}}</Alert>
-            <div :id="id" class="placeholder"></div>
-        </template>
-        <IFrame v-else class="preview-iframe" :src="previewUrl" @on-load="onFrameLoad"/>
-        <div v-if="loading" class="office-loading"><Loading/></div>
+        <Alert v-if="loadError" class="load-error" type="error" show-icon>{{$L('组件加载失败！')}}</Alert>
+        <div :id="id" class="placeholder"></div>
+        <div v-if="loadIng > 0" class="office-loading"><Loading/></div>
     </div>
 </template>
 
@@ -60,15 +57,11 @@
 }
 </style>
 <script>
-// 只有桌面端才使用 OnlyOffice
-
 import {mapState} from "vuex";
-import IFrame from "../pages/manage/components/IFrame";
 import {languageName} from "../language";
 
 export default {
     name: "OnlyOffice",
-    components: {IFrame},
     props: {
         id: {
             type: String,
@@ -99,7 +92,7 @@ export default {
 
     data() {
         return {
-            loading: false,
+            loadIng: 0,
             loadError: false,
 
             docEditor: null,
@@ -138,10 +131,6 @@ export default {
                 }
             }
             return fileUrl;
-        },
-
-        previewUrl() {
-            return $A.apiUrl(this.fileUrl) + "&down=preview"
         }
     },
 
@@ -151,10 +140,7 @@ export default {
                 if (!id) {
                     return;
                 }
-                if (!$A.isDesktop()) {
-                    return;
-                }
-                this.loading = true;
+                this.loadIng++;
                 this.loadError = false;
                 $A.loadScript($A.mainUrl("office/web-apps/apps/api/documents/api.js")).then(_ => {
                     if (!this.documentKey) {
@@ -172,27 +158,16 @@ export default {
                 }).catch(_ => {
                     this.loadError = true
                 }).finally(_ => {
-                    this.loading = false
+                    setTimeout(_ => {
+                        this.loadIng--;
+                    }, 300)
                 })
             },
             immediate: true,
-        },
-
-        previewUrl: {
-            handler() {
-                if (!$A.isDesktop()) {
-                    this.loading = true;
-                }
-            },
-            immediate: true
         }
     },
 
     methods: {
-        onFrameLoad() {
-            this.loading = false;
-        },
-
         getType(type) {
             switch (type) {
                 case 'word':
@@ -219,7 +194,7 @@ export default {
             }
             //
             let codeId = this.code || this.value.id;
-            let fileName = $A.strExists(this.fileName, '.') ? this.fileName : (this.fileName + '.' + this.fileType);
+            let fileName = $A.strExists(this.fileName, '.') ? this.fileName : (this.fileName + '.' + (this.value.ext || this.fileType));
             let fileKey = `${this.fileType}-${keyAppend||codeId}`;
             if (this.historyId > 0) {
                 fileKey += `-${this.historyId}`

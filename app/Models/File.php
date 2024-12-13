@@ -79,9 +79,28 @@ class File extends AbstractModel
      * office文件
      */
     const officeExt = [
-        'doc', 'docx',
-        'xls', 'xlsx',
-        'ppt', 'pptx',
+        // 文本文件
+        'doc', 'docx',    // Microsoft Word 文档
+        'dot', 'dotx',    // Word 模板
+        'odt',            // OpenDocument 文本格式
+        'ott',            // OpenDocument 文本模板
+        'rtf',            // 富文本格式
+
+        // 电子表格
+        'xls', 'xlsx',    // Microsoft Excel 电子表格
+        'xlsm',           // Excel 含宏的工作簿
+        'xlt', 'xltx',    // Excel 模板
+        'ods',            // OpenDocument 电子表格格式
+        'ots',            // OpenDocument 电子表格模板
+        'csv',            // 逗号分隔值
+        'tsv',            // 制表符分隔值
+
+        // 演示文稿
+        'ppt', 'pptx',    // Microsoft PowerPoint 演示文稿
+        'pps', 'ppsx',    // PowerPoint 幻灯片放映
+        'pot', 'potx',    // PowerPoint 模板
+        'odp',            // OpenDocument 演示文稿格式
+        'otp',            // OpenDocument 演示文稿模板
     ];
 
     /**
@@ -264,9 +283,9 @@ class File extends AbstractModel
             'text', 'md', 'markdown' => 'document',
             'drawio' => 'drawio',
             'mind' => 'mind',
-            'doc', 'docx' => "word",
-            'xls', 'xlsx' => "excel",
-            'ppt', 'pptx' => "ppt",
+            'doc', 'docx', 'dot', 'dotx', 'odt', 'ott', 'rtf' => "word",
+            'xls', 'xlsx', 'xlsm', 'xlt', 'xltx', 'ods', 'ots', 'csv', 'tsv' => "excel",
+            'ppt', 'pptx', 'pps', 'ppsx', 'pot', 'potx', 'odp', 'otp'  => "ppt",
             'wps' => "wps",
             'jpg', 'jpeg', 'webp', 'png', 'gif', 'bmp', 'ico', 'raw', 'svg' => "picture",
             'rar', 'zip', 'jar', '7-zip', 'tar', 'gzip', '7z', 'gz', 'apk', 'dmg' => "archive",

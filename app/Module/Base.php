@@ -2017,7 +2017,7 @@ class Base
                     $type = ['mp3', 'wma', 'wav', 'amr'];
                     break;
                 case 'excel':
-                    $type = ['xls', 'xlsx'];
+                    $type = ['xls', 'xlsx', 'xlsm', 'xlt', 'xltx', 'ods', 'ots', 'csv', 'tsv'];
                     break;
                 case 'app':
                     $type = ['apk'];
