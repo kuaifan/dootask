@@ -1185,12 +1185,13 @@ class UsersController extends AbstractController
             'alias' => $data['alias'],
             'platform' => Base::platform(),
         ];
+        $isNotified = trim($data['isNotified']) === 'true' || $data['isNotified'] === true ? 1 : intval($data['isNotified']);
         $row = UmengAlias::where($inArray);
         if ($row->exists()) {
             $row->update([
                 'ua' => $data['userAgent'],
                 'device' => $data['deviceModel'],
-                'is_notified' => intval($data['isNotified']),
+                'is_notified' => $isNotified,
                 'updated_at' => Carbon::now()
             ]);
             return Base::retSuccess('别名已存在');
@@ -1198,7 +1199,7 @@ class UsersController extends AbstractController
         $row = UmengAlias::createInstance(array_merge($inArray, [
             'ua' => $data['userAgent'],
             'device' => $data['deviceModel'],
-            'is_notified' => intval($data['isNotified']),
+            'is_notified' => $isNotified,
         ]));
         if ($row->save()) {
             return Base::retSuccess('添加成功');
