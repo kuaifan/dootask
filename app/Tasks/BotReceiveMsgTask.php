@@ -621,6 +621,24 @@ class BotReceiveMsgTask extends AbstractTask
                                         EOF;
                                 }
                             }
+                            $subTask = ProjectTask::select(['id', 'name', 'complete_at', 'end_at'])->whereParentId($taskInfo->id)->get();
+                            if ($subTask->isNotEmpty()) {
+                                $subTaskContent = $subTask->map(function($item) {
+                                    $status = "";
+                                    if ($item->complete_at) {
+                                        $status = " （已完成）";
+                                    } elseif ($item->end_at && Carbon::parse($item->end_at)->lt(Carbon::now())) {
+                                        $status = " （已过期）";
+                                    }
+                                    return "  - {$item->name} {$status}";
+                                })->join("\n");
+                                if ($subTaskContent) {
+                                    $before_text[] = <<<EOF
+                                        子任务列表：
+                                        {$subTaskContent}
+                                        EOF;
+                                }
+                            }
                             $before_text[] = <<<EOF
                                 如果你判断我想要添加子任务，请按照以下格式回复：
 
