@@ -167,7 +167,7 @@ services:
 
   ai:
     container_name: "dootask-ai-${APP_ID}"
-    image: "kuaifan/dootask-ai:0.2.4"
+    image: "kuaifan/dootask-ai:0.2.5"
     environment:
       REDIS_HOST: "${REDIS_HOST}"
       REDIS_PORT: "${REDIS_PORT}"
