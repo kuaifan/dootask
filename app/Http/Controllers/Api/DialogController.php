@@ -14,6 +14,7 @@ use App\Module\Base;
 use App\Module\Timer;
 use App\Module\Extranet;
 use App\Module\TimeRange;
+use App\Module\Table\OnlineData;
 use App\Models\FileContent;
 use App\Models\AbstractModel;
 use App\Models\WebSocketDialog;
@@ -288,6 +289,9 @@ class DialogController extends AbstractController
             $array = array_filter($data->toArray(), function ($item) {
                 return $item['userid'] > 0;
             });
+            foreach ($array as &$item) {
+                $item['online'] = $item['bot'] || OnlineData::live($item['userid']) > 0;
+            }
         } else {
             $data = WebSocketDialogUser::select(['web_socket_dialog_users.*', 'users.bot'])
                 ->join('users', 'web_socket_dialog_users.userid', '=', 'users.userid')
