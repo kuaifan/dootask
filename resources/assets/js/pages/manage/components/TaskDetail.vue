@@ -1,6 +1,6 @@
 <template>
     <!--子任务-->
-    <li v-if="ready && taskDetail.parent_id > 0">
+    <li v-if="ready && isSubTask">
         <div class="subtask-icon">
             <TaskMenu
                 :ref="`taskMenu_${taskDetail.id}`"
@@ -38,7 +38,7 @@
             @on-clear="timeClear"
             @on-ok="timeOk"
             transfer>
-            <div v-if="!taskDetail.complete_at && taskDetail.end_at && taskDetail.end_at != mainEndAt" @click="openTime" :class="['time', taskDetail.today ? 'today' : '', taskDetail.overdue ? 'overdue' : '']">
+            <div v-if="showSubTime" @click="openTime" :class="['time', taskDetail.today ? 'today' : '', taskDetail.overdue ? 'overdue' : '']">
                 {{expiresFormat(taskDetail.end_at)}}
             </div>
             <Icon v-else class="clock" type="ios-clock-outline" @click="openTime" />
@@ -945,6 +945,17 @@ export default {
         visibleKeep() {
             return this.systemConfig.task_visible === 'open'    // 可见性保持显示
         },
+
+        isSubTask({taskDetail}) {
+            return taskDetail.parent_id > 0
+        },
+
+        showSubTime({taskDetail, mainEndAt}) {
+            return taskDetail.parent_id > 0
+                && !taskDetail.complete_at
+                && taskDetail.end_at
+                && taskDetail.end_at != mainEndAt
+        }
     },
 
     watch: {
@@ -1157,12 +1168,19 @@ export default {
                         });
                         return;
                     }
+                    // 子任务修改时间，如果之前跟主任务的时间相同，直接保存
+                    if (this.isSubTask && !this.showSubTime) {
+                        this.isExistTask(params).then(() => {
+                            this.updateData("timesSave", params)
+                        });
+                        return;
+                    }
                     // 弹出修改备注
                     let isClear = !params.start_at || !params.end_at;
-                    let title = `修改${this.taskDetail.parent_id > 0 ? '子任务' : '任务'}时间`
+                    let title = `修改${this.isSubTask ? '子任务' : '任务'}时间`
                     let placeholder = `请输入修改备注`
                     if (isClear) {
-                        title = `清除${this.taskDetail.parent_id > 0 ? '子任务' : '任务'}时间`
+                        title = `清除${this.isSubTask ? '子任务' : '任务'}时间`
                         placeholder = `请输入清除备注`
                     }
                     $A.modalInput({
