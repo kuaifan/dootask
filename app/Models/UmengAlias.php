@@ -15,6 +15,7 @@ use Hedeqiang\UMeng\IOS;
  * @property string|null $alias 别名
  * @property string|null $platform 平台类型
  * @property string|null $device 设备类型
+ * @property string|null $version 应用版本号
  * @property string|null $ua userAgent
  * @property int|null $is_notified 通知权限
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -31,6 +32,7 @@ use Hedeqiang\UMeng\IOS;
  * @method static \Illuminate\Database\Eloquent\Builder|UmengAlias whereAlias($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UmengAlias whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UmengAlias whereDevice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|UmengAlias whereVersion($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UmengAlias whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UmengAlias whereIsNotified($value)
  * @method static \Illuminate\Database\Eloquent\Builder|UmengAlias wherePlatform($value)
