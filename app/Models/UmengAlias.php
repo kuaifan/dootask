@@ -193,7 +193,11 @@ class UmengAlias extends AbstractModel
                     $lists = $rows->take(5)->groupBy('platform');   // 每个会员最多推送5个别名
                     foreach ($lists as $platform => $list) {
                         $alias = $list->pluck('alias')->implode(',');
-                        self::pushMsgToAlias($alias, $platform, $array);
+                        try {
+                            self::pushMsgToAlias($alias, $platform, $array);
+                        } catch (\Exception $e) {
+                            info("[PushMsg] fail: " . $e->getMessage());
+                        }
                     }
                 }
             });

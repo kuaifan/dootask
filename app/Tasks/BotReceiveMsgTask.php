@@ -445,7 +445,7 @@ class BotReceiveMsgTask extends AbstractTask
                 if ($replyMsg) {
                     $replyCommand = $this->extractCommand($replyMsg);
                     if ($replyCommand) {
-                        $replyCommand = Base::cutStr($replyCommand, 200) . "\n\n ------------------ Reference above ------------------ \n\n";
+                        $replyCommand = "<quoted>" . Base::cutStr($replyCommand, 2000) . "</quoted>\n\nThe content within the above <quoted> tags is a citation.\n\n";
                     }
                 }
                 $command = $replyCommand . $command;

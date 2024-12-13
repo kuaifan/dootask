@@ -725,9 +725,9 @@ class File extends AbstractModel
      * @param int $permission
      * @return File
      */
-    public static function permissionFind(int $id, $user, int $limit = 0, int &$permission = -1)
+    public static function permissionFind($id, $user, int $limit = 0, int &$permission = -1)
     {
-        $file = File::find($id);
+        $file = File::find(intval($id));
         if (empty($file)) {
             throw new ApiException('文件不存在或已被删除');
         }
