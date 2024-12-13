@@ -1152,7 +1152,6 @@ class UsersController extends AbstractController
      * - remove: 删除
      * @apiParam {String} alias           别名
      * @apiParam {String} [userAgent]     浏览器信息
-     * @apiParam {String} [osVersion]     应用的版本号
      * @apiParam {String} [deviceModel]   设备型号
      * @apiParam {String} [isNotified]    是否有通知权限（0不通知、1通知）
      *
@@ -1186,13 +1185,14 @@ class UsersController extends AbstractController
             'alias' => $data['alias'],
             'platform' => Base::platform(),
         ];
+        $version = $data['appVersion'] ? ($data['appVersionName'] . " ({$data['appVersion']})") : '';
         $isNotified = trim($data['isNotified']) === 'true' || $data['isNotified'] === true ? 1 : intval($data['isNotified']);
         $row = UmengAlias::where($inArray);
         if ($row->exists()) {
             $row->update([
                 'ua' => $data['userAgent'],
-                'version' => $data['osVersion'],
                 'device' => $data['deviceModel'],
+                'version' => $version,
                 'is_notified' => $isNotified,
                 'updated_at' => Carbon::now()
             ]);
@@ -1200,8 +1200,8 @@ class UsersController extends AbstractController
         }
         $row = UmengAlias::createInstance(array_merge($inArray, [
             'ua' => $data['userAgent'],
-            'version' => $data['osVersion'],
             'device' => $data['deviceModel'],
+            'version' => $version,
             'is_notified' => $isNotified,
         ]));
         if ($row->save()) {
