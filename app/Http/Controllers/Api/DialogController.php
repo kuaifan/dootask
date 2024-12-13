@@ -14,6 +14,7 @@ use App\Module\Base;
 use App\Module\Timer;
 use App\Module\Extranet;
 use App\Module\TimeRange;
+use App\Module\MsgTool;
 use App\Module\Table\OnlineData;
 use App\Models\FileContent;
 use App\Models\AbstractModel;
@@ -1096,21 +1097,29 @@ class DialogController extends AbstractController
                     return Base::retError('消息发送保存失败');
                 }
                 $ext = $markdown ? 'md' : 'htm';
-                $fileData = [
-                    'name' => "LongText-{$strlen}.{$ext}",
-                    'size' => $size,
-                    'file' => $file,
-                    'path' => $path,
-                    'url' => Base::fillUrl($path),
-                    'thumb' => '',
-                    'width' => -1,
-                    'height' => -1,
-                    'ext' => $ext,
+                $text = MsgTool::truncateText($text, 500, $ext);
+                $desc = strip_tags($markdown ? Base::markdown2html($text) : $text);
+                $desc = mb_substr(WebSocketDialogMsg::filterEscape($desc), 0, 200);
+                $msgData = [
+                    'desc' => $desc,    // 描述内容
+                    'text' => $text,    // 简要内容
+                    'type' => $ext,     // 内容类型
+                    'file' => [
+                        'name' => "LongText-{$strlen}.{$ext}",
+                        'size' => $size,
+                        'file' => $file,
+                        'path' => $path,
+                        'url' => Base::fillUrl($path),
+                        'thumb' => '',
+                        'width' => -1,
+                        'height' => -1,
+                        'ext' => $ext,
+                    ],
                 ];
                 if (empty($key)) {
-                    $key = mb_substr(strip_tags($text), 0, 200);
+                    $key = $desc;
                 }
-                $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'file', $fileData, $user->userid, false, false, $silence, $key);
+                $result = WebSocketDialogMsg::sendMsg($action, $dialog_id, 'longtext', $msgData, $user->userid, false, false, $silence, $key);
             } else {
                 $msgData = ['text' => $text];
                 if ($markdown) {
@@ -1638,6 +1647,18 @@ class DialogController extends AbstractController
             $msg = File::formatFileData($msg);
             $data['content'] = $msg['content'];
             $data['file_mode'] = $msg['file_mode'];
+        } elseif ($data['type'] == 'longtext') {
+            $data['content'] = [
+                'type' => 'htm',
+                'content' => Doo::translate("内容不存在")
+            ];
+            if (isset($data['msg']['file']['path'])) {
+                $filePath = public_path($data['msg']['file']['path']);
+                if (file_exists($filePath)) {
+                    $data['content']['type'] = $data['msg']['type'];
+                    $data['content']['content'] = file_get_contents($filePath);
+                }
+            }
         }
         //
         return Base::retSuccess('success', $data);

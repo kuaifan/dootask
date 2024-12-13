@@ -7,6 +7,10 @@
             <TEditor v-else-if="isType('text')" :value="msgDetail.content.content" height="100%" readOnly/>
             <Drawio v-else-if="isType('drawio')" v-model="msgDetail.content" :title="msgDetail.msg.name" readOnly/>
             <Minder v-else-if="isType('mind')" :value="msgDetail.content" readOnly/>
+            <template v-else-if="msgDetail.type === 'longtext'">
+                <VMPreview v-if="msgDetail.content.type === 'md'" :value="msgDetail.content.content"/>
+                <div v-else class="view-code" v-html="$A.formatTextMsg(msgDetail.content.content, userId)"></div>
+            </template>
             <template v-else-if="isType('code')">
                 <div v-if="isLongText(msgDetail.msg.name)" class="view-code" v-html="$A.formatTextMsg(msgDetail.content.content, userId)"></div>
                 <AceEditor v-else v-model="msgDetail.content.content" :ext="msgDetail.msg.ext" class="view-editor" readOnly/>
@@ -105,7 +109,10 @@ export default {
         },
 
         title() {
-            const {msg} = this.msgDetail;
+            const {type, msg} = this.msgDetail;
+            if (type === 'longtext') {
+                return this.$L('消息详情');
+            }
             if (msg && msg.name) {
                 return msg.name;
             }

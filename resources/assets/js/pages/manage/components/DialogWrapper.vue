@@ -3644,6 +3644,10 @@ export default {
             if (!$A.isJson(data)) {
                 data = this.operateItem
             }
+            if (data.type === 'longtext') {
+                this.onViewFile(data)
+                return;
+            }
             $A.modalConfirm({
                 language: false,
                 title: this.$L('下载文件'),

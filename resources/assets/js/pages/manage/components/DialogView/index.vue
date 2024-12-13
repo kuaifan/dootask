@@ -27,6 +27,8 @@
             <div ref="content" class="dialog-content" :class="contentClass">
                 <!--文本-->
                 <TextMsg v-if="msgData.type === 'text'" :msgId="msgData.id" :msg="msgData.msg" @viewText="viewText"/>
+                <!--长文本-->
+                <LongTextMsg v-else-if="msgData.type === 'longtext'" :msgId="msgData.id" :msg="msgData.msg" @viewText="viewText" @downFile="downFile"/>
                 <!--文件-->
                 <FileMsg v-else-if="msgData.type === 'file'" :msg="msgData.msg" @viewFile="viewFile" @downFile="downFile"/>
                 <!--录音-->
@@ -177,6 +179,7 @@ import {mapGetters, mapState} from "vuex";
 import longpress from "../../../../directives/longpress";
 
 import TextMsg from "./text.vue";
+import LongTextMsg from "./longtext.vue";
 import FileMsg from "./file.vue";
 import RecordMsg from "./record.vue";
 import LocationMsg from "./location.vue";
@@ -199,6 +202,7 @@ export default {
         MeetingMsg,
         LocationMsg,
         RecordMsg,
+        LongTextMsg,
         TextMsg,
         FileMsg,
         WCircle

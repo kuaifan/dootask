@@ -401,6 +401,8 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
             switch (data.type) {
                 case 'text':
                     return $A.getMsgTextPreview(data.msg, imgClassName)
+                case 'longtext':
+                    return data.msg.desc ? $A.cutString(data.msg.desc, 50) : ("[" + $A.L('长文本') + "]")
                 case 'vote':
                     return `[${$A.L('投票')}]` + $A.getMsgTextPreview(data.msg, imgClassName)
                 case 'word-chain':

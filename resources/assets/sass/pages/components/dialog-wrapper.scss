@@ -659,6 +659,7 @@
                 position: relative;
 
                 &.text,
+                &.longtext,
                 &.record,
                 &.word-chain {
                     max-width: 70%;
@@ -1457,6 +1458,19 @@
                                 &:hover {
                                     opacity: 0.8;
                                 }
+                            }
+                        }
+
+                        .content-longtext-footer {
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            margin-top: 12px;
+                            border-top: 1px solid rgba(227, 227, 227, 0.42);
+                            padding-top: 12px;
+                            padding-bottom: 2px;
+                            > span {
+                                cursor: pointer;
                             }
                         }
 

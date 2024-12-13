@@ -592,6 +592,9 @@ class WebSocketDialogMsg extends AbstractModel
             case 'text':
                 return self::previewTextMsg($data['msg'], $preserveHtml);
 
+            case 'longtext':
+                return $data['msg']['desc'] ? Base::cutStr($data['msg']['desc'], 50) : ("[" . Doo::translate("长文本") . "]");
+
             case 'vote':
                 $action = Doo::translate("投票");
                 return "[{$action}] " . self::previewTextMsg($data['msg'], $preserveHtml);
@@ -774,12 +777,22 @@ class WebSocketDialogMsg extends AbstractModel
                     break;
             }
         }
-        $key = str_replace(["&quot;", "&amp;", "&lt;", "&gt;"], "", $key);
-        $key = str_replace(["\r", "\n", "\t", "&nbsp;"], " ", $key);
-        $key = preg_replace("/^\/[A-Za-z]+/", " ", $key);
-        $key = preg_replace("/\s+/", " ", $key);
-        $this->key = trim($key);
+        $this->key = self::filterEscape($key);
         $this->save();
+    }
+
+    /**
+     * 过滤转义
+     * @param $content
+     * @return string
+     */
+    public static function filterEscape($content)
+    {
+        $content = str_replace(["&quot;", "&amp;", "&lt;", "&gt;"], "", $content);
+        $content = str_replace(["\r", "\n", "\t", "&nbsp;"], " ", $content);
+        $content = preg_replace("/^\/[A-Za-z]+/", " ", $content);
+        $content = preg_replace("/\s+/", " ", $content);
+        return trim($content);
     }
 
     /**

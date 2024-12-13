@@ -10,6 +10,7 @@
     "require": {
         "php": "^8.0",
         "ext-curl": "*",
+        "ext-dom": "*",
         "ext-gd": "*",
         "ext-imagick": "*",
         "ext-json": "*",
