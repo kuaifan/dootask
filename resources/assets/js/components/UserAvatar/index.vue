@@ -84,7 +84,6 @@ export default {
             }
             if (delete_at || disable_at) {
                 styles.opacity = 0.8
-                styles.textDecoration = "line-through"
             }
             return styles
         },
