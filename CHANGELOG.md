@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.41.84]
+
+### Bug Fixes
+
+- @在线状态不正确
+
+### Performance
+
+- 优化子任务上下文
+- 优化子任务时间调整
+- 优化超长文本信息
+- 记录版本信息
+- 支持更多办公文件格式
+- 请假或外出时取消打卡提醒
+- 图片容错处理
+- 优化全局监听事件
+- 优化数据流消息
+
 ## [0.41.64]
 
 ### Bug Fixes

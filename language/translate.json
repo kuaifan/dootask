@@ -27910,5 +27910,41 @@
         "fr": "Le robot IA n'existe pas",
         "id": "Robot AI tidak ada",
         "ru": "ИИ-робот не существует"
+    },
+    {
+        "key": "消息详情",
+        "zh": "",
+        "zh-CHT": "消息詳情",
+        "en": "Message Details",
+        "ko": "메시지 세부 사항",
+        "ja": "メッセージの詳細",
+        "de": "Nachrichtendetails",
+        "fr": "Détails du message",
+        "id": "Detail Pesan",
+        "ru": "Детали сообщения"
+    },
+    {
+        "key": "长文本",
+        "zh": "",
+        "zh-CHT": "長文本",
+        "en": "Long Text",
+        "ko": "긴 텍스트",
+        "ja": "長いテキスト",
+        "de": "Langer Text",
+        "fr": "Texte Long",
+        "id": "Teks Panjang",
+        "ru": "Длинный текст"
+    },
+    {
+        "key": "内容不存在",
+        "zh": "",
+        "zh-CHT": "內容不存在",
+        "en": "Content does not exist",
+        "ko": "내용이 존재하지 않음",
+        "ja": "内容が存在しません",
+        "de": "Inhalt existiert nicht",
+        "fr": "Le contenu n'existe pas",
+        "id": "Konten tidak ada",
+        "ru": "Содержимое не существует"
     }
 ]
