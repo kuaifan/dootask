@@ -301,6 +301,7 @@ class FileController extends AbstractController
         //
         $userid = $user->userid;
         if ($row->pid > 0) {
+            File::permissionFind($row->pid, $user, 1);
             $userid = intval(File::whereId($row->pid)->value('userid'));
         }
         //
