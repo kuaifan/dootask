@@ -527,6 +527,7 @@
 </template>
 
 <script>
+import {debounce} from "lodash";
 import Draggable from 'vuedraggable'
 import TaskPriority from "./TaskPriority";
 import {mapGetters, mapState} from "vuex";
@@ -987,11 +988,20 @@ export default {
             handler(val) {
                 if (val > 0) {
                     this.getFlowData();
-                    this.$nextTick(this.handleColumnScroll);
+                    this.handleColumnDebounce();
                 }
             },
             immediate: true,
         },
+        'allTask.length'() {
+            this.handleColumnDebounce();
+        },
+        'projectData.cacheParameter.completedTask'() {
+            this.handleColumnDebounce();
+        },
+        windowWidth() {
+            this.handleColumnDebounce();
+        }
     },
 
     methods: {
@@ -1656,6 +1666,17 @@ export default {
                 style.height = (this.taskVisibility[id]?.height || 146) + 'px';
             }
             return style;
+        },
+
+        handleColumnDebounce() {
+            if (!this.columnDebounceInvoke) {
+                this.columnDebounceInvoke = debounce(_ => {
+                    if (this.tabTypeActive === 'column') {
+                        this.$nextTick(this.handleColumnScroll)
+                    }
+                }, 10);
+            }
+            this.columnDebounceInvoke();
         },
 
         handleColumnScroll() {
