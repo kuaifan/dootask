@@ -1720,11 +1720,12 @@ export default {
                 if (currentVisible === originalVisible) {
                     continue;
                 }
+                const firstVisible = this.taskVisibility[taskId] === undefined && currentVisible;
                 this.$set(this.taskVisibility, taskId, {
                     visible: currentVisible,
                     height: taskRect.height
                 });
-                if (currentVisible) {
+                if (firstVisible) {
                     await this.$nextTick();
                 }
             }
