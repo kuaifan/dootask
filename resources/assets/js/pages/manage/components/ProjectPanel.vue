@@ -96,7 +96,11 @@
                 </div>
             </div>
         </div>
-        <div v-if="tabTypeActive === 'column'" class="project-column">
+        <div
+            v-if="tabTypeActive === 'column'"
+            ref="projectColumn"
+            class="project-column"
+            @scroll="handleColumnScroll">
             <Draggable
                 :list="columnList"
                 :animation="150"
@@ -105,7 +109,12 @@
                 tag="ul"
                 draggable=".column-item"
                 @sort="sortUpdate(true)">
-                <li v-for="column in columnList" class="column-item">
+                <li
+                    v-for="column in columnList"
+                    :ref="`column_${column.id}`"
+                    :key="column.id"
+                    :data-id="column.id"
+                    class="column-item">
                     <div
                         :class="['column-head', column.color ? 'custom-color' : '']"
                         :style="column.color ? {backgroundColor: column.color} : {}">
@@ -142,7 +151,10 @@
                             <Icon class="last" type="md-add" @click="addTopShow(column.id, true)" />
                         </div>
                     </div>
-                    <Scrollbar class="column-task">
+                    <Scrollbar
+                        class="column-task"
+                        class-name="task-scrollbar"
+                        @on-scroll="handleTaskScroll">
                         <div v-if="!!columnTopShow[column.id]" class="task-item additem">
                             <TaskAddSimple
                                 :column-id="column.id"
@@ -164,48 +176,51 @@
                             @remove="sortUpdate">
                             <div
                                 v-for="item in column.tasks"
+                                :data-id="item.id"
                                 :class="['task-item task-draggable', item.complete_at ? 'complete' : '', taskIsHidden(item) ? 'hidden' : '']"
-                                :style="item.color ? {backgroundColor: item.color} : {}"
+                                :style="taskItemStyle(item)"
                                 @click="openTask(item)">
-                                <div :class="['task-head', item.desc ? 'has-desc' : '']">
-                                    <div class="task-title">
-                                        <!--工作流状态-->
-                                        <span v-if="item.flow_item_name" :class="item.flow_item_status" @click.stop="openMenu($event, item)">{{item.flow_item_name}}</span>
-                                        <!--任务描述-->
-                                        <pre>{{item.name}}</pre>
+                                <template v-if="taskItemVisible(item)">
+                                    <div :class="['task-head', item.desc ? 'has-desc' : '']">
+                                        <div class="task-title">
+                                            <!--工作流状态-->
+                                            <span v-if="item.flow_item_name" :class="item.flow_item_status" @click.stop="openMenu($event, item)">{{item.flow_item_name}}</span>
+                                            <!--任务描述-->
+                                            <pre>{{item.name}}</pre>
+                                        </div>
+                                        <div class="task-menu" @click.stop="">
+                                            <TaskMenu :ref="`taskMenu_${item.id}`" :task="item" icon="ios-more"/>
+                                        </div>
                                     </div>
-                                    <div class="task-menu" @click.stop="">
-                                        <TaskMenu :ref="`taskMenu_${item.id}`" :task="item" icon="ios-more"/>
-                                    </div>
-                                </div>
-                                <template v-if="!item.complete_at">
-                                    <div v-if="item.desc" class="task-desc"><pre v-html="item.desc"></pre></div>
-                                    <TaskTag v-if="item.task_tag.length > 0" class="task-tags" :tags="item.task_tag"/>
-                                    <div class="task-users">
-                                        <ul>
-                                            <li v-for="(user, keyu) in ownerUser(item.task_user)" :key="keyu">
-                                                <UserAvatar :userid="user.userid" size="32" :borderWitdh="2" :borderColor="item.color"/>
-                                            </li>
-                                            <li v-if="ownerUser(item.task_user).length === 0" class="no-owner">
-                                                <Button type="primary" size="small" ghost @click.stop="openTask(item, true)">{{$L('领取任务')}}</Button>
-                                            </li>
-                                        </ul>
-                                        <div v-if="item.file_num > 0" class="task-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>
-                                        <div v-if="item.msg_num > 0" class="task-icon">{{item.msg_num}}<Icon type="ios-chatbubbles-outline" /></div>
-                                    </div>
-                                    <div class="task-progress">
-                                        <div v-if="item.sub_num > 0" class="task-sub-num">{{item.sub_complete}}/{{item.sub_num}}</div>
-                                        <Progress :percent="item.percent" :stroke-width="6" />
-                                        <ETooltip
-                                            v-if="item.end_at"
-                                            :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
-                                            :disabled="$isEEUiApp || windowTouch"
-                                            :open-delay="600"
-                                            :content="item.end_at">
-                                            <div v-if="!item.complete_at"><i class="taskfont">&#xe71d;</i>{{ expiresFormat(item.end_at) }}</div>
-                                        </ETooltip>
-                                    </div>
-                                    <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
+                                    <template v-if="!item.complete_at">
+                                        <div v-if="item.desc" class="task-desc"><pre v-html="item.desc"></pre></div>
+                                        <TaskTag v-if="item.task_tag.length > 0" class="task-tags" :tags="item.task_tag"/>
+                                        <div class="task-users">
+                                            <ul>
+                                                <li v-for="(user, keyu) in ownerUser(item.task_user)" :key="keyu">
+                                                    <UserAvatar :userid="user.userid" size="32" :borderWitdh="2" :borderColor="item.color"/>
+                                                </li>
+                                                <li v-if="ownerUser(item.task_user).length === 0" class="no-owner">
+                                                    <Button type="primary" size="small" ghost @click.stop="openTask(item, true)">{{$L('领取任务')}}</Button>
+                                                </li>
+                                            </ul>
+                                            <div v-if="item.file_num > 0" class="task-icon">{{item.file_num}}<Icon type="ios-link-outline" /></div>
+                                            <div v-if="item.msg_num > 0" class="task-icon">{{item.msg_num}}<Icon type="ios-chatbubbles-outline" /></div>
+                                        </div>
+                                        <div class="task-progress">
+                                            <div v-if="item.sub_num > 0" class="task-sub-num">{{item.sub_complete}}/{{item.sub_num}}</div>
+                                            <Progress :percent="item.percent" :stroke-width="6" />
+                                            <ETooltip
+                                                v-if="item.end_at"
+                                                :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
+                                                :disabled="$isEEUiApp || windowTouch"
+                                                :open-delay="600"
+                                                :content="item.end_at">
+                                                <div v-if="!item.complete_at"><i class="taskfont">&#xe71d;</i>{{ expiresFormat(item.end_at) }}</div>
+                                            </ETooltip>
+                                        </div>
+                                        <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
+                                    </template>
                                 </template>
                             </div>
                             <div class="task-item additem">
@@ -607,6 +622,9 @@ export default {
 
             flowInfo: {},
             flowList: [],
+
+            columnVisibility: {},
+            taskVisibility: {},
         }
     },
 
@@ -969,6 +987,7 @@ export default {
             handler(val) {
                 if (val > 0) {
                     this.getFlowData();
+                    this.$nextTick(this.handleColumnScroll);
                 }
             },
             immediate: true,
@@ -1623,6 +1642,93 @@ export default {
         formArchived(value) {
             this.settingData = { ...this.settingData, archive_method: value };
         },
+
+        taskItemVisible({id, column_id}) {
+            return this.columnVisibility[column_id] && this.taskVisibility[id]?.visible
+        },
+
+        taskItemStyle({id, column_id, color}) {
+            const style = {}
+            if (color) {
+                style.backgroundColor = color;
+            }
+            if (!this.taskItemVisible({id, column_id})) {
+                style.height = (this.taskVisibility[id]?.height || 146) + 'px';
+            }
+            return style;
+        },
+
+        handleColumnScroll() {
+            this.columnList.forEach(({id}) => {
+                const ref = this.$refs[`column_${id}`];
+                ref && this.checkColumnVisibility(ref[0])
+            })
+        },
+
+        checkColumnVisibility(columnContainer = null) {
+            if (!columnContainer) {
+                return
+            }
+            const columnId = parseInt(columnContainer.getAttribute('data-id'))
+            if (!columnId) {
+                return
+            }
+            const mainContainer = this.$refs.projectColumn;
+            if (!mainContainer) {
+                return false;
+            }
+
+            // 获取容器的边界信息
+            const mainRect = mainContainer.getBoundingClientRect();
+            const columnRect = columnContainer.getBoundingClientRect();
+
+            // 检查元素是否在容器的可视区域内
+            const visible = (
+                columnRect.left < mainRect.right &&
+                columnRect.right > mainRect.left &&
+                columnRect.top < mainRect.bottom &&
+                columnRect.bottom > mainRect.top
+            )
+            if (visible) {
+                this.handleTaskScroll({
+                    target: columnContainer.querySelector('.task-scrollbar')
+                })
+            }
+            this.$set(this.columnVisibility, columnId, visible)
+        },
+
+        async handleTaskScroll({target}) {
+            if (!target) {
+                return
+            }
+            const targetItem = target.querySelectorAll('.task-item');
+            if (!targetItem.length) {
+                return
+            }
+            const targetRect = target.getBoundingClientRect();
+            for (const item of targetItem) {
+                const taskId = parseInt(item.getAttribute('data-id'));
+                if (!taskId) {
+                    continue;
+                }
+                const taskRect = item.getBoundingClientRect();
+                const originalVisible = this.taskVisibility[taskId]?.visible || false;
+                const currentVisible = (
+                    taskRect.top >= targetRect.top - taskRect.height &&
+                    taskRect.bottom <= targetRect.bottom + taskRect.height
+                );
+                if (currentVisible === originalVisible) {
+                    continue;
+                }
+                this.$set(this.taskVisibility, taskId, {
+                    visible: currentVisible,
+                    height: taskRect.height
+                });
+                if (currentVisible) {
+                    await this.$nextTick();
+                }
+            }
+        }
     }
 }
 </script>

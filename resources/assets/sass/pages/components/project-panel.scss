@@ -403,6 +403,7 @@
                                     border: 1px solid $primary-color;
                                     margin-right: 4px;
                                     text-align: center;
+                                    overflow: hidden;
                                     &.start {
                                         background-color: rgba($flow-status-start-color, 0.1);
                                         border-color: rgba($flow-status-start-color, 0.1);
