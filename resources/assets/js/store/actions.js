@@ -384,6 +384,7 @@ export default {
     /**
      * 切换面板变量
      * @param state
+     * @param data
      * @param data|{key, project_id}
      */
     toggleProjectParameter({state}, data) {
