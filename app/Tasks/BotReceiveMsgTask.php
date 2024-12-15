@@ -585,9 +585,13 @@ class BotReceiveMsgTask extends AbstractTask
                     case 'user':
                         break;
                     case 'project':
-                        $projectInfo = Project::select(['id', 'name', 'archived_at', 'deleted_at'])->whereDialogId($dialog->id)->first();
+                        $projectInfo = Project::whereDialogId($dialog->id)->first();
                         if ($projectInfo) {
-                            $before_text[] = "当前我在项目【{$projectInfo->name}】中";
+                            $projectText = "当前我在项目【{$projectInfo->name}】中";
+                            if ($projectInfo->archived_at) {
+                                $projectText .= "，此项目已经归档";
+                            }
+                            $before_text[] = $projectText;
                             if ($projectInfo->desc) {
                                 $before_text[] = "项目描述：{$projectInfo->desc}";
                             }
@@ -605,9 +609,17 @@ class BotReceiveMsgTask extends AbstractTask
                         }
                         break;
                     case 'task':
-                        $taskInfo = ProjectTask::with(['content'])->select(['id', 'name', 'complete_at', 'archived_at', 'deleted_at'])->whereDialogId($dialog->id)->first();
+                        $taskInfo = ProjectTask::with(['content'])->whereDialogId($dialog->id)->first();
                         if ($taskInfo) {
-                            $before_text[] = "当前我在任务【{$taskInfo->name}】中";
+                            $taskText = "当前我在任务【{$taskInfo->name}】中";
+                            if ($taskInfo->archived_at) {
+                                $taskText .= "，此任务已经归档";
+                            } elseif ($taskInfo->complete_at) {
+                                $taskText .= "，此任务已经完成";
+                            } elseif ($taskInfo->end_at && Carbon::parse($taskInfo->end_at)->lt(Carbon::now())) {
+                                $taskText .= "，此任务已经过期";
+                            }
+                            $before_text[] = $taskText;
                             if ($taskInfo->content) {
                                 $taskDesc = $taskInfo->content?->getContentInfo();
                                 if ($taskDesc) {
