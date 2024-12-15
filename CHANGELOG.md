@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.41.93]
+
+### Bug Fixes
+
+- 复制文件权限判断
+
+### Performance
+
+- AI创建任务确认
+- 优化项目面板
+
 ## [0.41.84]
 
 ### Bug Fixes

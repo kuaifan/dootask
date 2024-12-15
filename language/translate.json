@@ -27946,5 +27946,29 @@
         "fr": "Le contenu n'existe pas",
         "id": "Konten tidak ada",
         "ru": "Содержимое не существует"
+    },
+    {
+        "key": "你确定要创建任务吗？",
+        "zh": "",
+        "zh-CHT": "你確定要創建任務嗎？",
+        "en": "Are you sure you want to create a task?",
+        "ko": "작업을 생성하시겠습니까?",
+        "ja": "タスクを作成しますか？",
+        "de": "Sind Sie sicher, dass Sie eine Aufgabe erstellen möchten?",
+        "fr": "Êtes-vous sûr de vouloir créer une tâche ?",
+        "id": "Anda yakin ingin membuat tugas?",
+        "ru": "Вы уверены, что хотите создать задание?"
+    },
+    {
+        "key": "你确定要创建子任务吗？",
+        "zh": "",
+        "zh-CHT": "你確定要創建子任務嗎？",
+        "en": "Are you sure you want to create a subtask?",
+        "ko": "하위 작업을 생성하시겠습니까?",
+        "ja": "サブタスクを作成しますか？",
+        "de": "Sind Sie sicher, dass Sie eine Teilaufgabe erstellen möchten?",
+        "fr": "Êtes-vous sûr de vouloir créer une sous-tâche ?",
+        "id": "Anda yakin ingin membuat sub-tugas?",
+        "ru": "Вы уверены, что хотите создать подзадачу?"
     }
 ]

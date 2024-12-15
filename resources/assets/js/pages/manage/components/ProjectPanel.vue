@@ -1011,6 +1011,9 @@ export default {
         'allTask.length'() {
             this.handleColumnDebounce();
         },
+        searchText() {
+            this.handleColumnDebounce();
+        },
         windowWidth() {
             this.handleColumnDebounce();
         },
