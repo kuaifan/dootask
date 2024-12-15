@@ -81,7 +81,7 @@
             </div>
             <div class="project-switch">
                 <div v-if="completedCount > 0" class="project-checkbox">
-                    <Checkbox :value="projectData.cacheParameter.completedTask" @on-change="toggleCompleted">{{$L('显示已完成')}}</Checkbox>
+                    <Checkbox :value="projectData.cacheParameter.completedTask" @on-change="toggleParameter('completedTask')">{{$L('显示已完成')}}</Checkbox>
                 </div>
                 <div class="project-select">
                     <Cascader ref="flow" :data="flowData" @on-change="flowChange" transfer-class-name="project-panel-flow-cascader" transfer>
@@ -249,7 +249,12 @@
                 </li>
             </Draggable>
         </div>
-        <Scrollbar v-else-if="tabTypeActive === 'table'" class="project-table" enable-x>
+        <Scrollbar
+            v-else-if="tabTypeActive === 'table'"
+            ref="projectTableScroll"
+            class="project-table"
+            enable-x
+            @on-scroll="handleTaskScroll">
             <div class="project-table-head">
                 <Row class="task-row">
                     <Col span="12">
@@ -294,7 +299,13 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow v-if="projectData.cacheParameter.showMy" :list="transforTasks(myList)" open-key="my" @on-priority="addTaskOpen" fast-add-task/>
+                <TaskRow
+                    v-if="projectData.cacheParameter.showMy"
+                    :list="transforTasks(myList)"
+                    :task-visibilitys="taskRowVisibilitys"
+                    open-key="my"
+                    @on-priority="addTaskOpen"
+                    fast-add-task/>
             </div>
             <!--协助的任务-->
             <div v-if="helpList.length" :class="['project-table-body', !projectData.cacheParameter.showHelp ? 'project-table-hide' : '']">
@@ -309,7 +320,12 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow v-if="projectData.cacheParameter.showHelp" :list="helpList" open-key="help" @on-priority="addTaskOpen"/>
+                <TaskRow
+                    v-if="projectData.cacheParameter.showHelp"
+                    :list="helpList"
+                    :task-visibilitys="taskRowVisibilitys"
+                    open-key="help"
+                    @on-priority="addTaskOpen"/>
             </div>
             <!--未完成任务-->
             <div v-if="projectData.task_num > 0" :class="['project-table-body', !projectData.cacheParameter.showUndone ? 'project-table-hide' : '']">
@@ -324,7 +340,12 @@
                     <Col span="3"></Col>
                     <Col span="3"></Col>
                 </Row>
-                <TaskRow v-if="projectData.cacheParameter.showUndone" :list="unList" open-key="undone" @on-priority="addTaskOpen"/>
+                <TaskRow
+                    v-if="projectData.cacheParameter.showUndone"
+                    :list="unList"
+                    :task-visibilitys="taskRowVisibilitys"
+                    open-key="undone"
+                    @on-priority="addTaskOpen"/>
             </div>
             <!--已完成任务-->
             <div v-if="projectData.task_num > 0" :class="['project-table-body', !projectData.cacheParameter.showCompleted ? 'project-table-hide' : '']">
@@ -341,7 +362,13 @@
                         <div class="ellipsis">{{projectData.task_num > 0 && projectData.cacheParameter.showCompleted ? $L('完成时间') : ''}}</div>
                     </Col>
                 </Row>
-                <TaskRow v-if="projectData.cacheParameter.showCompleted" :list="completedList" open-key="completed" @on-priority="addTaskOpen" showCompleteAt/>
+                <TaskRow
+                    v-if="projectData.cacheParameter.showCompleted"
+                    :list="completedList"
+                    :task-visibilitys="taskRowVisibilitys"
+                    open-key="completed"
+                    @on-priority="addTaskOpen"
+                    showCompleteAt/>
             </div>
         </Scrollbar>
         <div v-else-if="tabTypeActive === 'gantt'" class="project-gantt">
@@ -624,8 +651,9 @@ export default {
             flowInfo: {},
             flowList: [],
 
-            columnVisibility: {},
-            taskVisibility: {},
+            columnVisibilitys: {},
+            taskVisibilitys: {},
+            taskRowVisibilitys: {},
         }
     },
 
@@ -971,6 +999,21 @@ export default {
     },
 
     watch: {
+        projectId: {
+            handler(id) {
+                if (id > 0) {
+                    this.getFlowData();
+                    this.handleColumnDebounce();
+                }
+            },
+            immediate: true,
+        },
+        'allTask.length'() {
+            this.handleColumnDebounce();
+        },
+        windowWidth() {
+            this.handleColumnDebounce();
+        },
         projectData() {
             this.sortData = this.getSort();
         },
@@ -984,24 +1027,6 @@ export default {
                 this.loading = false;
             }
         },
-        projectId: {
-            handler(val) {
-                if (val > 0) {
-                    this.getFlowData();
-                    this.handleColumnDebounce();
-                }
-            },
-            immediate: true,
-        },
-        'allTask.length'() {
-            this.handleColumnDebounce();
-        },
-        'projectData.cacheParameter.completedTask'() {
-            this.handleColumnDebounce();
-        },
-        windowWidth() {
-            this.handleColumnDebounce();
-        }
     },
 
     methods: {
@@ -1507,8 +1532,9 @@ export default {
             });
         },
 
-        flowChange(value, data) {
+        flowChange(_, data) {
             this.flowInfo = data.pop() || {};
+            this.handleColumnDebounce();
         },
 
         inviteCopy() {
@@ -1523,10 +1549,6 @@ export default {
             this.$nextTick(_ => {
                 this.$refs.inviteInput.focus({cursor:'all'});
             });
-        },
-
-        toggleCompleted() {
-            this.toggleParameter('completedTask');
         },
 
         workflowBeforeClose() {
@@ -1629,15 +1651,16 @@ export default {
         },
 
         toggleParameter(data) {
-            if (data === 'completedTask') {
-                this.$store.dispatch("forgetTaskCompleteTemp", true);
-            } else if (data === 'chat') {
+            if (data === 'chat') {
                 if (this.windowPortrait) {
                     this.$store.dispatch('openDialog', this.projectData.dialog_id)
                     return;
                 }
+            } else if (data === 'completedTask') {
+                this.$store.dispatch("forgetTaskCompleteTemp", true);
             }
             this.$store.dispatch('toggleProjectParameter', data);
+            this.handleColumnDebounce();
         },
 
         onBack() {
@@ -1654,7 +1677,7 @@ export default {
         },
 
         taskItemVisible({id, column_id}) {
-            return this.columnVisibility[column_id] && this.taskVisibility[id]?.visible
+            return this.columnVisibilitys[column_id] && this.taskVisibilitys[id]?.visible
         },
 
         taskItemStyle({id, column_id, color}) {
@@ -1663,7 +1686,7 @@ export default {
                 style.backgroundColor = color;
             }
             if (!this.taskItemVisible({id, column_id})) {
-                style.height = (this.taskVisibility[id]?.height || 146) + 'px';
+                style.height = (this.taskVisibilitys[id]?.height || 146) + 'px';
             }
             return style;
         },
@@ -1671,9 +1694,16 @@ export default {
         handleColumnDebounce() {
             if (!this.columnDebounceInvoke) {
                 this.columnDebounceInvoke = debounce(_ => {
-                    if (this.tabTypeActive === 'column') {
-                        this.$nextTick(this.handleColumnScroll)
-                    }
+                    this.$nextTick(_ => {
+                        switch (this.tabTypeActive) {
+                            case 'column':
+                                this.handleColumnScroll()
+                                break;
+                            case 'table':
+                                this.handleTaskScroll({target: this.$refs.projectTableScroll?.$el})
+                                break;
+                        }
+                    })
                 }, 10);
             }
             this.columnDebounceInvoke();
@@ -1690,8 +1720,8 @@ export default {
             if (!columnContainer) {
                 return
             }
-            const columnId = parseInt(columnContainer.getAttribute('data-id'))
-            if (!columnId) {
+            const dataId = columnContainer.getAttribute('data-id')
+            if (!dataId) {
                 return
             }
             const mainContainer = this.$refs.projectColumn;
@@ -1711,11 +1741,9 @@ export default {
                 columnRect.bottom > mainRect.top
             )
             if (visible) {
-                this.handleTaskScroll({
-                    target: columnContainer.querySelector('.task-scrollbar')
-                })
+                this.handleTaskScroll({target: columnContainer.querySelector('.task-scrollbar')})
             }
-            this.$set(this.columnVisibility, columnId, visible)
+            this.$set(this.columnVisibilitys, dataId, visible)
         },
 
         async handleTaskScroll({target}) {
@@ -1726,14 +1754,25 @@ export default {
             if (!targetItem.length) {
                 return
             }
+            let visibleType = null;
+            switch (this.tabTypeActive) {
+                case 'column':
+                    visibleType = 'taskVisibilitys'
+                    break;
+                case 'table':
+                    visibleType = 'taskRowVisibilitys'
+                    break;
+                default:
+                    return
+            }
             const targetRect = target.getBoundingClientRect();
             for (const item of targetItem) {
-                const taskId = parseInt(item.getAttribute('data-id'));
-                if (!taskId) {
+                const dataId = item.getAttribute('data-id');
+                if (!dataId) {
                     continue;
                 }
                 const taskRect = item.getBoundingClientRect();
-                const originalVisible = this.taskVisibility[taskId]?.visible || false;
+                const originalVisible = this[visibleType][dataId]?.visible || false;
                 const currentVisible = (
                     taskRect.top >= targetRect.top - taskRect.height &&
                     taskRect.bottom <= targetRect.bottom + taskRect.height
@@ -1741,8 +1780,8 @@ export default {
                 if (currentVisible === originalVisible) {
                     continue;
                 }
-                const firstVisible = this.taskVisibility[taskId] === undefined && currentVisible;
-                this.$set(this.taskVisibility, taskId, {
+                const firstVisible = this[visibleType][dataId] === undefined && currentVisible;
+                this.$set(this[visibleType], dataId, {
                     visible: currentVisible,
                     height: taskRect.height
                 });
@@ -1750,7 +1789,7 @@ export default {
                     await this.$nextTick();
                 }
             }
-        }
+        },
     }
 }
 </script>

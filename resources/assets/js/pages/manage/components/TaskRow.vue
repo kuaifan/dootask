@@ -1,98 +1,107 @@
 <template>
     <div class="task-rows">
-        <div v-for="(item, key) in list" :key="key" :ref="`task_${item.id}`">
-            <Row class="task-row" :style="item.color ? {backgroundColor: item.color, borderBottomColor: item.color} : {}">
-                <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
-                <Col span="12" :class="['row-name', item.complete_at ? 'complete' : '']">
-                    <Icon
-                        v-if="(item.sub_num > 0 && item.sub_top !== true) || (item.parent_id === 0 && fastAddTask)"
-                        :class="['sub-icon', taskOpen[item.id] ? 'active' : '']"
-                        type="ios-arrow-forward"
-                        @click="getSublist(item)"/>
-                    <TaskMenu :ref="`taskMenu_${item.id}`" :task="item"/>
-                    <div class="item-title" @click="openTask(item)">
-                        <!--工作流状态-->
-                        <span v-if="item.flow_item_name" :class="item.flow_item_status" @click.stop="openMenu($event, item)">{{item.flow_item_name}}</span>
-                        <!--是否子任务-->
-                        <span v-if="item.sub_top === true">{{$L('子任务')}}</span>
-                        <!--有多少个子任务-->
-                        <span v-if="item.sub_my && item.sub_my.length > 0">+{{item.sub_my.length}}</span>
-                        <!--任务描述-->
-                        {{item.name}}
-                    </div>
-                    <div class="item-icons" @click="openTask(item)">
-                        <div v-if="item.desc" class="item-icon">
-                            <i class="taskfont">&#xe71a;</i>
+        <div
+            v-for="(item, key) in list"
+            :key="key"
+            :ref="`task_${item.id}`"
+            :data-id="`${openKey}_${item.id}`"
+            class="task-item">
+            <Row
+                class="task-row"
+                :style="taskItemStyle(item)">
+                <template v-if="taskItemVisible(`${openKey}_${item.id}`)">
+                    <em v-if="item.p_name" class="priority-color" :style="{backgroundColor:item.p_color}"></em>
+                    <Col span="12" :class="['row-name', item.complete_at ? 'complete' : '']">
+                        <Icon
+                            v-if="(item.sub_num > 0 && item.sub_top !== true) || (item.parent_id === 0 && fastAddTask)"
+                            :class="['sub-icon', taskOpen[item.id] ? 'active' : '']"
+                            type="ios-arrow-forward"
+                            @click="getSublist(item)"/>
+                        <TaskMenu :ref="`taskMenu_${item.id}`" :task="item"/>
+                        <div class="item-title" @click="openTask(item)">
+                            <!--工作流状态-->
+                            <span v-if="item.flow_item_name" :class="item.flow_item_status" @click.stop="openMenu($event, item)">{{item.flow_item_name}}</span>
+                            <!--是否子任务-->
+                            <span v-if="item.sub_top === true">{{$L('子任务')}}</span>
+                            <!--有多少个子任务-->
+                            <span v-if="item.sub_my && item.sub_my.length > 0">+{{item.sub_my.length}}</span>
+                            <!--任务描述-->
+                            {{item.name}}
                         </div>
-                        <div v-if="item.file_num > 0" class="item-icon">
-                            <i class="taskfont">&#xe71c;</i>
-                            <em>{{item.file_num}}</em>
+                        <div class="item-icons" @click="openTask(item)">
+                            <div v-if="item.desc" class="item-icon">
+                                <i class="taskfont">&#xe71a;</i>
+                            </div>
+                            <div v-if="item.file_num > 0" class="item-icon">
+                                <i class="taskfont">&#xe71c;</i>
+                                <em>{{item.file_num}}</em>
+                            </div>
+                            <div v-if="item.msg_num > 0" class="item-icon">
+                                <i class="taskfont">&#xe71e;</i>
+                                <em>{{item.msg_num}}</em>
+                            </div>
+                            <div v-if="item.sub_num > 0" class="item-icon" @click.stop="getSublist(item)">
+                                <i class="taskfont">&#xe71f;</i>
+                                <em>{{item.sub_complete}}/{{item.sub_num}}</em>
+                            </div>
                         </div>
-                        <div v-if="item.msg_num > 0" class="item-icon">
-                            <i class="taskfont">&#xe71e;</i>
-                            <em>{{item.msg_num}}</em>
-                        </div>
-                        <div v-if="item.sub_num > 0" class="item-icon" @click.stop="getSublist(item)">
-                            <i class="taskfont">&#xe71f;</i>
-                            <em>{{item.sub_complete}}/{{item.sub_num}}</em>
-                        </div>
-                    </div>
-                </Col>
-                <Col span="3" class="row-column">
-                    <EDropdown
-                        trigger="click"
-                        size="small"
-                        placement="bottom"
-                        :disabled="item.sub_top === true"
-                        @command="dropTask(item, $event)">
-                        <div class="task-column">{{columnName(item.column_id)}}</div>
-                        <EDropdownMenu slot="dropdown">
-                            <EDropdownItem v-for="column in columnList(item.project_id)" :key="column.id" :command="'column::' + column.id">
-                                {{column.name}}
-                            </EDropdownItem>
-                        </EDropdownMenu>
-                    </EDropdown>
-                </Col>
-                <Col span="3" class="row-priority">
-                    <EDropdown
-                        trigger="click"
-                        size="small"
-                        placement="bottom"
-                        :disabled="item.sub_top === true"
-                        @command="dropTask(item, $event)">
-                        <TaskPriority :backgroundColor="item.p_color">{{item.p_name || $L('未设置')}}</TaskPriority>
-                        <EDropdownMenu slot="dropdown">
-                            <EDropdownItem v-for="(item, key) in taskPriority" :key="key" :command="'priority::' + key">
-                                <i
-                                    class="taskfont"
-                                    :style="{color:item.color}"
-                                    v-html="item.p_name == item.name ? '&#xe61d;' : '&#xe61c;'"></i>
-                                {{item.name}}
-                            </EDropdownItem>
-                        </EDropdownMenu>
-                    </EDropdown>
-                </Col>
-                <Col span="3" class="row-user">
-                    <ul @click="openTask(item)">
-                        <li v-for="(user, keyu) in ownerUser(item.task_user)" :key="keyu" v-if="keyu < 3">
-                            <UserAvatar :userid="user.userid" size="32" :borderWitdh="2" :borderColor="item.color" :showName="ownerUser(item.task_user).length === 1"/>
-                        </li>
-                        <li v-if="ownerUser(item.task_user).length === 0" class="no-owner">
-                            <Button type="primary" size="small" @click.stop="openTask(item, true)">{{$L('领取任务')}}</Button>
-                        </li>
-                    </ul>
-                </Col>
-                <Col span="3" class="row-time">
-                    <ETooltip
-                        v-if="!item.complete_at && item.end_at"
-                        :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
-                        :disabled="$isEEUiApp || windowTouch"
-                        :open-delay="600"
-                        :content="item.end_at">
-                        <div @click="openTask(item)">{{expiresFormat(item.end_at)}}</div>
-                    </ETooltip>
-                    <div v-else-if="showCompleteAt && item.complete_at" :title="item.complete_at">{{completeAtFormat(item.complete_at)}}</div>
-                </Col>
+                    </Col>
+                    <Col span="3" class="row-column">
+                        <EDropdown
+                            trigger="click"
+                            size="small"
+                            placement="bottom"
+                            :disabled="item.sub_top === true"
+                            @command="dropTask(item, $event)">
+                            <div class="task-column">{{columnName(item.column_id)}}</div>
+                            <EDropdownMenu slot="dropdown">
+                                <EDropdownItem v-for="column in columnList(item.project_id)" :key="column.id" :command="'column::' + column.id">
+                                    {{column.name}}
+                                </EDropdownItem>
+                            </EDropdownMenu>
+                        </EDropdown>
+                    </Col>
+                    <Col span="3" class="row-priority">
+                        <EDropdown
+                            trigger="click"
+                            size="small"
+                            placement="bottom"
+                            :disabled="item.sub_top === true"
+                            @command="dropTask(item, $event)">
+                            <TaskPriority :backgroundColor="item.p_color">{{item.p_name || $L('未设置')}}</TaskPriority>
+                            <EDropdownMenu slot="dropdown">
+                                <EDropdownItem v-for="(item, key) in taskPriority" :key="key" :command="'priority::' + key">
+                                    <i
+                                        class="taskfont"
+                                        :style="{color:item.color}"
+                                        v-html="item.p_name == item.name ? '&#xe61d;' : '&#xe61c;'"></i>
+                                    {{item.name}}
+                                </EDropdownItem>
+                            </EDropdownMenu>
+                        </EDropdown>
+                    </Col>
+                    <Col span="3" class="row-user">
+                        <ul @click="openTask(item)">
+                            <li v-for="(user, keyu) in ownerUser(item.task_user)" :key="keyu" v-if="keyu < 3">
+                                <UserAvatar :userid="user.userid" size="32" :borderWitdh="2" :borderColor="item.color" :showName="ownerUser(item.task_user).length === 1"/>
+                            </li>
+                            <li v-if="ownerUser(item.task_user).length === 0" class="no-owner">
+                                <Button type="primary" size="small" @click.stop="openTask(item, true)">{{$L('领取任务')}}</Button>
+                            </li>
+                        </ul>
+                    </Col>
+                    <Col span="3" class="row-time">
+                        <ETooltip
+                            v-if="!item.complete_at && item.end_at"
+                            :class="['task-time', item.today ? 'today' : '', item.overdue ? 'overdue' : '']"
+                            :disabled="$isEEUiApp || windowTouch"
+                            :open-delay="600"
+                            :content="item.end_at">
+                            <div @click="openTask(item)">{{expiresFormat(item.end_at)}}</div>
+                        </ETooltip>
+                        <div v-else-if="showCompleteAt && item.complete_at" :title="item.complete_at">{{completeAtFormat(item.complete_at)}}</div>
+                    </Col>
+                </template>
             </Row>
             <TaskRow
                 v-if="taskOpen[item.id]===true"
@@ -139,6 +148,10 @@ export default {
             type: Boolean,
             default: false
         },
+        taskVisibilitys: {
+            type: Object,
+            default: () => ({})
+        }
     },
     data() {
         return {
@@ -279,6 +292,23 @@ export default {
             } else {
                 return time.format('YYYY-MM-DD')
             }
+        },
+
+        taskItemVisible(key) {
+            return this.parentId > 0 || this.taskVisibilitys[key]?.visible
+        },
+
+        taskItemStyle({id, color}) {
+            const style = {}
+            if (color) {
+                style.backgroundColor = color;
+                style.borderBottomColor = color;
+            }
+            const key = `${this.openKey}_${id}`;
+            if (!this.taskItemVisible(key)) {
+                style.height = (this.taskVisibilitys[key]?.height || 49) + 'px';
+            }
+            return style;
         }
     }
 }
