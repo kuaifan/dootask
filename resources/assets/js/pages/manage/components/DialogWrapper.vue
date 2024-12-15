@@ -3216,6 +3216,15 @@ export default {
             });
         },
 
+        applyCreateBefore(type, event, el) {
+            $A.modalConfirm({
+                content: `你确定要创建${type === 'task' ? '任务' : '子任务'}吗？`,
+                onOk: () => {
+                    this.applyCreateTask(type, event, el);
+                }
+            });
+        },
+
         async applyCreateTask(type, event, el) {
             const currentTarget = event.target;
             if (currentTarget.classList.contains('applying') || currentTarget.classList.contains('applied')) {
@@ -3444,14 +3453,14 @@ export default {
             // 创建任务
             if (target.classList.contains('apply-create-task-button')) {
                 this.operateItem = this.findMsgByElement(el)
-                this.applyCreateTask('task', event, el)
+                this.applyCreateBefore('task', event, el)
                 return;
             }
 
             // 创建子任务
             if (target.classList.contains('apply-create-subtask-button')) {
                 this.operateItem = this.findMsgByElement(el)
-                this.applyCreateTask('subtask', event, el)
+                this.applyCreateBefore('subtask', event, el)
                 return;
             }
 
