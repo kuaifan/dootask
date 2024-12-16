@@ -873,9 +873,11 @@ export default {
 
     mounted() {
         this.subMsgListener()
+        emitter.on('dialogMsgChange', this.onMsgChange);
     },
 
     beforeDestroy() {
+        emitter.off('dialogMsgChange', this.onMsgChange);
         this.subMsgListener(true)
         this.generateUnreadData(this.dialogId)
         //
@@ -905,7 +907,6 @@ export default {
             'dialogMsgTransfer',
             'dialogMsgKeep',
             'dialogIns',
-            'dialogMsgStream',
             'cacheDialogs',
             'wsOpenNum',
             'touchBackInProgress',
@@ -1484,34 +1485,6 @@ export default {
                 return
             }
             document.getSelection().removeAllRanges();
-        },
-
-        dialogMsgStream(data) {
-            const item = this.allMsgs.find(({type, id}) => type == "text" && id == data.id)
-            if (!item) {
-                return
-            }
-            if (typeof this.msgChangeCache[data.id] === "undefined") {
-                this.msgChangeCache[data.id] = []
-                this.msgChangeCache[`${data.id}_load`] = false
-            }
-            switch (data.type) {
-                case 'append':
-                    data.text && this.msgChangeCache[data.id].push(...`${data.text}`.split("").map(text => {
-                        return {
-                            type: 'append',
-                            text
-                        }
-                    }))
-                    break;
-                case 'replace':
-                    this.msgChangeCache[data.id] = [{
-                        type: 'replace',
-                        text: data.text
-                    }]
-                    break;
-            }
-            this.onMsgOutput(data.id, item.msg)
         }
     },
 
@@ -1885,6 +1858,38 @@ export default {
                     this.sendMsg(`<p><span data-quick-key="${item.key}">${item.label}</span></p>`)
                     break;
             }
+        },
+
+        /**
+         * 消息变化处理
+         * @param data
+         */
+        onMsgChange(data) {
+            const item = this.allMsgs.find(({type, id}) => type == "text" && id == data.id)
+            if (!item) {
+                return
+            }
+            if (typeof this.msgChangeCache[data.id] === "undefined") {
+                this.msgChangeCache[data.id] = []
+                this.msgChangeCache[`${data.id}_load`] = false
+            }
+            switch (data.type) {
+                case 'append':
+                    data.text && this.msgChangeCache[data.id].push(...`${data.text}`.split("").map(text => {
+                        return {
+                            type: 'append',
+                            text
+                        }
+                    }))
+                    break;
+                case 'replace':
+                    this.msgChangeCache[data.id] = [{
+                        type: 'replace',
+                        text: data.text
+                    }]
+                    break;
+            }
+            this.onMsgOutput(data.id, item.msg)
         },
 
         /**

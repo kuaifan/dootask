@@ -3452,10 +3452,9 @@ export default {
      * 消息流
      * @param state
      * @param dispatch
-     * @param commit
      * @param streamUrl
      */
-    streamDialogMsg({state, dispatch, commit}, streamUrl) {
+    streamDialogMsg({state, dispatch}, streamUrl) {
         if (!/^https?:\/\//i.test(streamUrl)) {
             streamUrl = $A.mainUrl(streamUrl.substring(1))
         }
@@ -3468,7 +3467,7 @@ export default {
                 case 'append':
                 case 'replace':
                     const data = $A.jsonParse(e.data);
-                    commit('setDialogMsgStream', {
+                    emitter.emit('dialogMsgChange', {
                         type,
                         id: e.lastEventId,
                         text: data.content
