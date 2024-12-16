@@ -85,6 +85,7 @@ services:
       - ./docker/office/logs:/var/log/onlyoffice
       - ./docker/office/data:/var/www/onlyoffice/Data
       - ./docker/office/resources/require.js:/var/www/onlyoffice/documentserver/web-apps/vendor/requirejs/require.js
+      - ./docker/office/resources/common/main/resources/img/header:/var/www/onlyoffice/documentserver/web-apps/apps/common/main/resources/img/header
       - ./docker/office/resources/documenteditor/main/resources/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/main/resources/css/app.css
       - ./docker/office/resources/documenteditor/mobile/css/526.caf35c11a8d72ca5ac85.css:/var/www/onlyoffice/documentserver/web-apps/apps/documenteditor/mobile/css/526.caf35c11a8d72ca5ac85.css
       - ./docker/office/resources/presentationeditor/main/resources/css/app.css:/var/www/onlyoffice/documentserver/web-apps/apps/presentationeditor/main/resources/css/app.css
