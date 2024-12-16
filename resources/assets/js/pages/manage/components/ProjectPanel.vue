@@ -1008,6 +1008,9 @@ export default {
             },
             immediate: true,
         },
+        'columnList.length'() {
+            this.handleColumnDebounce();
+        },
         'allTask.length'() {
             this.handleColumnDebounce();
         },
