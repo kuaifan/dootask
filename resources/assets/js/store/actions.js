@@ -2576,6 +2576,12 @@ export default {
                         return !state.dialogMsgs.find(m => m.id == id)?.read_at
                     })
                 }
+                if (data.last_at
+                    && original.last_at
+                    && $A.dayjs(data.last_at) < $A.dayjs(original.last_at)) {
+                    delete data.last_at
+                    delete data.last_msg
+                }
                 state.cacheDialogs.splice(index, 1, Object.assign({}, original, data));
             } else {
                 state.cacheDialogs.push(data);
@@ -3735,6 +3741,10 @@ export default {
             }, 3000);
         };
         state.ws.onmessage = async (e) => {
+            if ($A.inArray(state.routeName, ['preload', '404'])) {
+                wgLog && console.log("[WS] Preload", e);
+                return;
+            }
             wgLog && console.log("[WS] Message", e);
             let result = $A.jsonParse(e.data);
             if (result.type === "encrypt" && result.encrypted) {

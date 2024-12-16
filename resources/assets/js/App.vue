@@ -104,6 +104,7 @@ export default {
         '$route': {
             handler(to) {
                 this.routePath = to.path
+                this.$store.state.routeName = to.name
             },
             immediate: true,
         },

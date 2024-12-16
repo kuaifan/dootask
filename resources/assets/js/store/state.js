@@ -46,6 +46,7 @@ export default {
     audioPlaying: null,
 
     // 路由记录
+    routeName: null,
     routeHistorys: [],
     routeHistoryLast: {},
 
