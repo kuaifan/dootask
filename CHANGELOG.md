@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.42.0]
+
+### Bug Fixes
+
+- 桌面端查看表情图片缩略图显示错误
+- 项目面板任务不显示的情况
+- 修复移动任务子任务不跟随的情况
+
+### Performance
+
+- 优化桌面端数据处理
+- 优化资源
+- 优化数据流
+
 ## [0.41.93]
 
 ### Bug Fixes

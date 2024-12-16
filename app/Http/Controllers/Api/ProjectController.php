@@ -2399,7 +2399,7 @@ class ProjectController extends AbstractController
      */
     public function task__move()
     {
-        Base::checkClientVersion('0.41.94');
+        Base::checkClientVersion('0.42.0');
         User::auth();
         //
         $task_id = intval(Request::input('task_id'));
