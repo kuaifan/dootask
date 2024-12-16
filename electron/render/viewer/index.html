@@ -37,13 +37,16 @@
     const {ipcRenderer} = require('electron');
 
     const thumbnailUrl = (url) => {
+        url = `${url}`
+            .replace(/_thumb\.(png|jpg|jpeg)$/, '')
+            .replace(/\/crop\/([^\/]+)$/, '')
+        if (!/^https?:\/\/[^\/]+\/uploads\//.test(url)) {
+            return url
+        }
         const crops = {
             ratio: 3,
             percentage: '320x0'
         }
-        url = `${url}`
-            .replace(/_thumb\.(png|jpg|jpeg)$/, '')
-            .replace(/\/crop\/([^\/]+)$/, '')
         return url + "/crop/" + Object.keys(crops).map(key => {
             return `${key}:${crops[key]}`
         }).join(",")
