@@ -2399,6 +2399,7 @@ class ProjectController extends AbstractController
      */
     public function task__move()
     {
+        Base::checkClientVersion('0.41.94');
         User::auth();
         //
         $task_id = intval(Request::input('task_id'));
@@ -2436,9 +2437,26 @@ class ProjectController extends AbstractController
         //
         $task->moveTask($project_id, $column_id, $flow_item_id, $owner, $assist, $completeAt);
         //
-        $task = ProjectTask::userTask($task_id);
+        $data = [];
+        $mainTask = ProjectTask::userTask($task_id)?->toArray();
+        if ($mainTask) {
+            $mainTask['column_name'] = ProjectColumn::whereId($mainTask['column_id'])->value('name');
+            $mainTask['project_name'] = Project::whereId($mainTask['project_id'])->value('name');
+            $data[] = $mainTask;
+            //
+            $subTasks = ProjectTask::whereParentId($task_id)->get();
+            foreach ($subTasks as $subTask) {
+                $data[] = [
+                    'id' => $subTask->id,
+                    'project_id' => $subTask->project_id,
+                    'column_id' => $subTask->column_id,
+                    'column_name' => $mainTask['column_name'],
+                    'project_name' => $mainTask['project_name'],
+                ];
+            }
+        }
         //
-        return Base::retSuccess('移动成功', $task);
+        return Base::retSuccess('移动成功', $data);
     }
 
     /**

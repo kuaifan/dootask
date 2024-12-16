@@ -1833,6 +1833,11 @@ class ProjectTask extends AbstractModel
                     $taskUser->save();
                 }
             }
+            // 子任务
+            ProjectTask::whereParentId($this->id)->change([
+                'project_id' => $projectId,
+                'column_id' => $columnId,
+            ]);
             //
             if ($flowItemId) {
                 $flowItem = projectFlowItem::whereProjectId($projectId)->whereId($flowItemId)->first();
