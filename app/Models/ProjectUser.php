@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Module\Base;
+
 /**
  * App\Models\ProjectUser
  *
@@ -50,7 +52,9 @@ class ProjectUser extends AbstractModel
      */
     public static function transfer($originalUserid, $newUserid)
     {
-        self::whereUserid($originalUserid)->chunkById(100, function ($list) use ($originalUserid, $newUserid) {
+        $projectIds = [];
+        // 移交项目身份
+        self::whereUserid($originalUserid)->chunkById(100, function ($list) use ($originalUserid, $newUserid, &$projectIds) {
             /** @var self $item */
             foreach ($list as $item) {
                 $row = self::whereProjectId($item->project_id)->whereUserid($newUserid)->first();
@@ -72,9 +76,23 @@ class ProjectUser extends AbstractModel
                     }
                     $item->project->addLog("移交项目身份", ['userid' => [$originalUserid, ' => ', $newUserid]]);
                     $item->project->syncDialogUser();
+                    $projectIds[] = $item->project_id;
                 }
             }
         });
+        // 移交工作流状态负责人
+        if ($projectIds) {
+            ProjectFlowItem::whereIn('project_id', $projectIds)->chunkById(100, function ($list) use ($originalUserid, $newUserid) {
+                /** @var ProjectFlowItem $item */
+                foreach ($list as $item) {
+                    if (in_array($originalUserid, $item->userids)) {
+                        $userids = array_values(array_diff($item->userids, [$originalUserid]));
+                        $item->userids = Base::array2json(array_merge($userids, [$newUserid]));
+                        $item->save();
+                    }
+                }
+            });
+        }
     }
 
     /**
