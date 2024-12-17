@@ -57,8 +57,10 @@
                     <div class="emoji-symbol no-dark-content" @click="onEmoji(item.symbol)">{{item.symbol}}</div>
                     <div class="emoji-users" @click="onShowEmojiUser(item)">
                         <ul>
-                            <template v-for="(uitem, uindex) in item.userids">
-                                <li v-if="uindex < emojiUsersNum" :class="{bold:uitem==userId}"><UserAvatar :userid="uitem" show-name :show-icon="false"/></li>
+                            <template v-for="(uitem, uindex) in sortEmojiUser(item.userids)">
+                                <li v-if="uindex < emojiUsersNum">
+                                    <UserAvatar :userid="uitem" show-name :show-icon="false"/>
+                                </li>
                                 <li v-else-if="uindex == emojiUsersNum">+{{item.userids.length - emojiUsersNum}}位</li>
                             </template>
                         </ul>
@@ -548,6 +550,12 @@ export default {
 
         onShowEmojiUser(item) {
             this.$emit("on-show-emoji-user", item)
+        },
+
+        sortEmojiUser(useris) {
+            const myList = useris.filter(item => item == this.userId);
+            const otherList = useris.filter(item => item != this.userId);
+            return myList.concat(otherList);
         },
 
         unfoldWordChain(msg) {

@@ -868,6 +868,7 @@ export default {
             androidKeyboardVisible: false,      // Android键盘是否可见
             replyMsgAutoMention: false,         // 允许回复消息后自动@
             waitUnreadData: new Map(),          // 等待未读数据
+            replyEmojiIngs: {},                 // 是否回复表情中（避免重复回复）
         }
     },
 
@@ -3725,6 +3726,12 @@ export default {
             cacheEmojis.unshift(data.symbol)
             $A.IDBSave("cacheEmojis", this.$store.state.cacheEmojis = cacheEmojis.slice(0, 3))
             //
+            if (this.replyEmojiIngs[data.msg_id]) {
+                $A.messageWarning("正在处理，请稍后再试...");
+                return
+            }
+            this.replyEmojiIngs[data.msg_id] = true
+            //
             this.$store.dispatch("setLoad", {
                 key: `msg-${data.msg_id}`,
                 delay: 600
@@ -3742,6 +3749,7 @@ export default {
             }).catch(({msg}) => {
                 $A.messageError(msg);
             }).finally(_ => {
+                this.replyEmojiIngs[data.msg_id] = false
                 this.$store.dispatch("cancelLoad", `msg-${data.msg_id}`)
             });
         },
