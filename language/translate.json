@@ -27970,5 +27970,17 @@
         "fr": "Êtes-vous sûr de vouloir créer une sous-tâche ?",
         "id": "Anda yakin ingin membuat sub-tugas?",
         "ru": "Вы уверены, что хотите создать подзадачу?"
+    },
+    {
+        "key": "正在处理，请稍后再试...",
+        "zh": "",
+        "zh-CHT": "正在處理，請稍後再試...",
+        "en": "Processing, please try again later...",
+        "ko": "처리 중이니 잠시 후 다시 시도하세요...",
+        "ja": "処理中です。しばらくしてからもう一度お試しください...",
+        "de": "Wird bearbeitet, bitte versuchen Sie es später noch einmal...",
+        "fr": "Traitement en cours, veuillez réessayer plus tard...",
+        "id": "Sedang diproses, silakan coba lagi nanti...",
+        "ru": "Обработка, пожалуйста, повторите попытку позже..."
     }
 ]

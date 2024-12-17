@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.42.3]
+
+### Performance
+
+- 优化对话阅读状况
+- 优化表情回复
+
 ## [0.42.0]
 
 ### Bug Fixes
