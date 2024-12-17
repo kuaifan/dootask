@@ -330,7 +330,7 @@ https_auto() {
 
 env_get() {
     local key=$1
-    local value=`cat ${cur_path}/.env | grep "^$key=" | awk -F '=' '{print $2}'`
+    local value=`cat ${cur_path}/.env | grep "^$key=" | awk -F '=' '{print $2}' | tr -d '\r\n'`
     echo "$value"
 }
 
