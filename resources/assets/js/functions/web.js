@@ -1047,7 +1047,11 @@ import {convertLocalResourcePath} from "../components/Replace/utils";
                     .no-dark-content [style*="background-image:url"],
                     .no-dark-content [style*="background: url"],
                     .no-dark-content [style*="background-image: url"],
-                    .no-dark-content [background] {
+                    .no-dark-content [background],
+                    .fullscreen-mode img,
+                    .fullscreen-mode video,
+                    .fullscreen-mode iframe,
+                    .fullscreen-mode canvas {
                         ${this.utils.noneFilter()}
                     }
 
