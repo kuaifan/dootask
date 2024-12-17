@@ -132,7 +132,7 @@
                 <div v-else class="time" :title="msgData.created_at" @click="timeShow=true">{{$A.timeFormat(msgData.created_at)}}</div>
                 <!--阅读-->
                 <template v-if="!hidePercentage">
-                    <div v-if="msgData.send > 1 || dialogType === 'group'" class="percent" @click="openReadPercentage">
+                    <div v-if="dialogType === 'group'" class="percent" @click="openReadPercentage">
                         <EPopover
                             v-model="percentageShow"
                             ref="percent"
@@ -315,12 +315,12 @@ export default {
             return array
         },
 
-        readList() {
-            return this.percentageList.filter(({read_at}) => read_at)
+        readList({userId}) {
+            return this.percentageList.filter(({userid, read_at}) => userid != userId && read_at)
         },
 
-        unreadList() {
-            return this.percentageList.filter(({read_at}) => !read_at)
+        unreadList({userId}) {
+            return this.percentageList.filter(({userid, read_at}) => userid != userId && !read_at)
         },
 
         todoDoneList() {
