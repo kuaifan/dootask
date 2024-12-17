@@ -106,6 +106,7 @@ footer.ad-footer .dootask {
 
 footer.ad-footer .footer-layout {
     border-top-color: transparent;
+    border-bottom: rgba(231, 233, 228, 0.12) solid 1px;
 }
 
 .ad-wrapper .arcs {
