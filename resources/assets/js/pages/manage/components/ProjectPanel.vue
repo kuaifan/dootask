@@ -1686,13 +1686,13 @@ export default {
             return this.columnVisibilitys[column_id] && this.taskVisibilitys[id]?.visible
         },
 
-        taskItemStyle({id, column_id, color}) {
+        taskItemStyle({id, column_id, complete_at, color}) {
             const style = {}
             if (color) {
                 style.backgroundColor = color;
             }
             if (!this.taskItemVisible({id, column_id})) {
-                style.height = (this.taskVisibilitys[id]?.height || 146) + 'px';
+                style.height = (this.taskVisibilitys[id]?.height || (complete_at ? 46 :146)) + 'px';
             }
             return style;
         },
