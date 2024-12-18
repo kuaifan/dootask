@@ -5,6 +5,61 @@ import emitter from "./events";
 
 export default {
     /**
+     * 预加载
+     * @param state
+     */
+    preload({state}) {
+        window.addEventListener('resize', () => {
+            const windowWidth = $A(window).width(),
+                windowHeight = $A(window).height(),
+                windowOrientation = $A.screenOrientation()
+
+            state.windowTouch = "ontouchend" in document
+
+            state.windowWidth = windowWidth
+            state.windowHeight = windowHeight
+
+            state.windowOrientation = windowOrientation
+            state.windowLandscape = windowOrientation === 'landscape'
+            state.windowPortrait = windowOrientation === 'portrait'
+
+            state.formOptions = {
+                class: windowWidth > 576 ? '' : 'form-label-weight-bold',
+                labelPosition: windowWidth > 576 ? 'right' : 'top',
+                labelWidth: windowWidth > 576 ? 'auto' : '',
+            }
+
+            $A.eeuiAppSendMessage({
+                action: 'windowSize',
+                width: windowWidth,
+                height: windowHeight,
+            });
+        })
+
+        window.addEventListener('scroll', () => {
+            state.windowScrollY = window.scrollY
+        })
+
+        window.addEventListener('message', ({data}) => {
+            data = $A.jsonParse(data);
+            if (data.action === 'eeuiAppSendMessage') {
+                const items = $A.isArray(data.data) ? data.data : [data.data];
+                items.forEach(item => {
+                    $A.eeuiAppSendMessage(item);
+                })
+            }
+        })
+
+        window.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) {
+                $A("body").addClass("fullscreen-mode")
+            } else {
+                $A("body").removeClass("fullscreen-mode")
+            }
+        });
+    },
+
+    /**
      * 初始化
      * @param state
      * @param dispatch

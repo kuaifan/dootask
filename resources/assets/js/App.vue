@@ -82,19 +82,11 @@ export default {
     },
 
     mounted() {
-        window.addEventListener('resize', this.windowSizeListener)
-        window.addEventListener('scroll', this.windowScrollListener)
-        window.addEventListener('message', this.windowHandleMessage)
-        window.addEventListener('fullscreenchange', this.handleFullscreenchange);
         this.appInter = setInterval(this.appTimerHandler, 1000)
         $A.loadVConsole()
     },
 
     beforeDestroy() {
-        window.removeEventListener('resize', this.windowSizeListener)
-        window.removeEventListener('scroll', this.windowScrollListener)
-        window.removeEventListener('message', this.windowHandleMessage)
-        window.removeEventListener('fullscreenchange', this.handleFullscreenchange);
         this.appInter && clearInterval(this.appInter)
     },
 
@@ -250,57 +242,8 @@ export default {
             }
         },
 
-        windowSizeListener() {
-            const windowWidth = $A(window).width(),
-                windowHeight = $A(window).height(),
-                windowOrientation = $A.screenOrientation()
-
-            this.$store.state.windowTouch = "ontouchend" in document
-
-            this.$store.state.windowWidth = windowWidth
-            this.$store.state.windowHeight = windowHeight
-
-            this.$store.state.windowOrientation = windowOrientation
-            this.$store.state.windowLandscape = windowOrientation === 'landscape'
-            this.$store.state.windowPortrait = windowOrientation === 'portrait'
-
-            this.$store.state.formOptions = {
-                class: windowWidth > 576 ? '' : 'form-label-weight-bold',
-                labelPosition: windowWidth > 576 ? 'right' : 'top',
-                labelWidth: windowWidth > 576 ? 'auto' : '',
-            }
-
-            $A.eeuiAppSendMessage({
-                action: 'windowSize',
-                width: windowWidth,
-                height: windowHeight,
-            });
-        },
-
-        windowScrollListener() {
-            this.$store.state.windowScrollY = window.scrollY
-        },
-
-        windowHandleMessage({data}) {
-            data = $A.jsonParse(data);
-            if (data.action === 'eeuiAppSendMessage') {
-                const items = $A.isArray(data.data) ? data.data : [data.data];
-                items.forEach(item => {
-                    $A.eeuiAppSendMessage(item);
-                })
-            }
-        },
-
         onRouterViewMounted() {
             document.documentElement.setAttribute("data-platform", $A.isElectron ? "desktop" : $A.isEEUiApp ? "app" : "web")
-        },
-
-        handleFullscreenchange() {
-            if (document.fullscreenElement) {
-                $A("body").addClass("fullscreen-mode")
-            } else {
-                $A("body").removeClass("fullscreen-mode")
-            }
         },
 
         /**

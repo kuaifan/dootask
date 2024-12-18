@@ -263,7 +263,8 @@ Vue.config.productionTip = false;
 Vue.mixin(mixin)
 
 let app;
-store.dispatch("init").then(action => {
+const $init = async () => {
+    const action = await store.dispatch("init");
 
     microappInit();
 
@@ -287,4 +288,26 @@ store.dispatch("init").then(action => {
     if (typeof window.LANGUAGE_DATA[`i_${languageName}`] !== "undefined") {
         ViewUI.locale(window.LANGUAGE_DATA[`i_${languageName}`]);
     }
-})
+}
+
+const $preload = async () => {
+    await store.dispatch("preload");
+    const currentPath = (window.location.pathname || window.location.hash).replace(/^[#\/]/, '');
+    if (currentPath !== 'preload') {
+        $init().catch(_ => {})
+        return
+    }
+    window.__initializeApp = (route) => {
+        if (/^https?:\/\//.test(route)) {
+            if ($A.getDomain(route) !== $A.getDomain($A.mainUrl())) {
+                window.location.href = url;
+                return;
+            }
+            route = route.replace(/^https?:\/\/[^\/]+/, '');
+        }
+        window.history.replaceState(null, '', route)
+        $init().catch(_ => {})
+    }
+}
+
+$preload().catch(_ => {})

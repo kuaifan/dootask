@@ -434,7 +434,7 @@ function createChildWindow(args) {
     if (/^https?:/i.test(hash)) {
         browser.loadURL(hash).then(_ => { }).catch(_ => { })
     } else if (isPreload) {
-        browser.webContents.executeJavaScript(`if(typeof $A.goForward === 'function'){$A.goForward('${hash}')}else{throw new Error('no function')}`, true).catch(() => {
+        browser.webContents.executeJavaScript(`if(typeof window.__initializeApp === 'function'){window.__initializeApp('${hash}')}else{throw new Error('no function')}`, true).catch(() => {
             utils.loadUrlOrFile(browser, devloadUrl, hash)
         });
     } else {
