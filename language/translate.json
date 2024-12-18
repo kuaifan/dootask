@@ -4815,13 +4815,13 @@
         "key": "超期未完成",
         "zh": "",
         "zh-CHT": "超期未完成",
-        "en": "Overdue unfinished",
-        "ko": "기한 초과 미완료",
-        "ja": "期限切れ未完了",
-        "de": "Überfällig unvollendet",
-        "fr": "En retard non terminé",
-        "id": "Terlambat belum selesai",
-        "ru": "Просрочено незавершенное"
+        "en": "Overdue",
+        "ko": "기한 초과",
+        "ja": "期限切れ",
+        "de": "Überfällig",
+        "fr": "En retard",
+        "id": "Terlambat",
+        "ru": "Просрочено"
     },
     {
         "key": "身份已失效",
