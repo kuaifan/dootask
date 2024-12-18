@@ -98,10 +98,9 @@ VueRouter.prototype.push = function push(location) {
     return originalPush.call(this, location).catch(err => err)
 }
 
-const router = new VueRouter({
-    mode: isSoftware && !/https?:/i.test(window.location.protocol) ? 'hash' : 'history',
-    routes
-});
+// 路由方式
+const routeMode = isSoftware && !/https?:/i.test(window.location.protocol) ? 'hash' : 'history';
+const router = new VueRouter({mode: routeMode, routes});
 
 // 进度条配置
 if (!isSoftware) {
@@ -292,8 +291,8 @@ const $init = async () => {
 
 const $preload = async () => {
     await store.dispatch("preload");
-    const currentPath = (window.location.pathname || window.location.hash).replace(/^[#\/]/, '');
-    if (currentPath !== 'preload') {
+    const hash = (window.location[routeMode === 'history' ? 'pathname' : 'hash']).replace(/^[#\/\s]/, '');
+    if (hash !== 'preload') {
         $init().catch(_ => {})
         return
     }

@@ -219,7 +219,7 @@ export default {
             if (buttons.length === 0) {
                 return;
             }
-            buttons.each((index, item) => {
+            buttons.each((_, item) => {
                 if ($A(item).text().indexOf("搜索")) {
                     button = $A(item);
                 }
@@ -467,8 +467,9 @@ export default {
                 this.autoTheme()
                 $A.updateTimezone()
                 $A.IDBTest()
-                if (this.lastCheckUpgradeYmd != $A.daytz().format('YYYY-MM-DD')) {
-                    this.lastCheckUpgradeYmd = $A.daytz().format('YYYY-MM-DD')
+                const nowYmd = $A.daytz().format('YYYY-MM-DD')
+                if (this.lastCheckUpgradeYmd != nowYmd) {
+                    this.lastCheckUpgradeYmd = nowYmd
                     $A.eeuiAppCheckUpdate();
                 }
             }
