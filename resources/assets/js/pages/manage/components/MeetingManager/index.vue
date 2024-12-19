@@ -60,10 +60,10 @@
             fullscreen>
             <ul>
                 <li v-if="localUser.uid">
-                    <MeetingPlayer :player="localUser" isLocal/>
+                    <Player :player="localUser" isLocal/>
                 </li>
                 <li v-for="user in remoteUsers">
-                    <MeetingPlayer :player="user"/>
+                    <Player :player="user"/>
                 </li>
             </ul>
             <div slot="footer" class="adaption meeting-button-group">
@@ -123,14 +123,16 @@
 
 <script>
 import {mapState} from 'vuex'
-import MeetingPlayer from "./MeetingPlayer.vue";
-import DragBallComponent from "../../../components/DragBallComponent";
-import UserSelect from "../../../components/UserSelect.vue";
-import emitter from "../../../store/events";
+import Player from "./player.vue";
+import DragBallComponent from "../../../../components/DragBallComponent";
+import UserSelect from "../../../../components/UserSelect.vue";
+import emitter from "../../../../store/events";
+import {getErrorMessage} from "./utils";
+import {getLanguage} from "../../../../language";
 
 export default {
     name: "MeetingManager",
-    components: {UserSelect, DragBallComponent, MeetingPlayer},
+    components: {UserSelect, DragBallComponent, Player},
     props: {
         id: {
             type: String,
@@ -576,7 +578,10 @@ export default {
                     this.meetingShow = true;
                 } catch (error) {
                     console.error(error)
-                    $A.modalError("会议组件加载失败！");
+                    $A.modalError({
+                        language: false,
+                        content: getErrorMessage(error.code, getLanguage()) || this.$L("会议组件加载失败！"),
+                    });
                 }
             } catch (e) { }
             this.addShow = false;

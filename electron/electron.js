@@ -145,6 +145,28 @@ function createMainWindow() {
         }
     })
 
+    mainWindow.webContents.session.setPermissionRequestHandler((webContents, permission, callback) => {
+        const allowedPermissions = [
+            'cookies',          // cookies
+            'media',            // 摄像头和麦克风
+            'notifications',    // 通知
+            'clipboard-read',   // 剪贴板读取
+            'clipboard-write'   // 剪贴板写入
+        ];
+        callback(allowedPermissions.includes(permission));
+    });
+
+    mainWindow.webContents.session.setPermissionCheckHandler((webContents, permission) => {
+        const allowedPermissions = [
+            'cookies',
+            'media',
+            'notifications',
+            'clipboard-read',
+            'clipboard-write'
+        ];
+        return allowedPermissions.includes(permission);
+    });
+
     mainWindow.on('page-title-updated', (event, title) => {
         if (title == "index.html") {
             event.preventDefault()
