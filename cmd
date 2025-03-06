@@ -440,6 +440,8 @@ if [ $# -gt 0 ]; then
                 exit 1
             fi
         done
+        # 设置ES索引后缀
+        env_set ES_INDEX_SUFFIX "$(rand_string 6)"
         # 启动容器
         [[ "$(arg_get port)" -gt 0 ]] && env_set APP_PORT "$(arg_get port)"
         $COMPOSE up php -d

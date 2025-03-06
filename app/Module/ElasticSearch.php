@@ -52,7 +52,7 @@ class ElasticSearch
         $this->client = ClientBuilder::fromConfig($config);
 
         if ($index) {
-            $this->index = $index;
+            $this->index = $index . env("ES_INDEX_SUFFIX", "");
         }
     }
 
