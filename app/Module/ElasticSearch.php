@@ -37,7 +37,10 @@ class ElasticSearch
         $scheme = env('ELASTICSEARCH_SCHEME', 'http');
         $user = env('ELASTICSEARCH_USER', '');
         $pass = env('ELASTICSEARCH_PASS', '');
-
+        $verifi = env('ELASTICSEARCH_VERIFI', false);
+        $ca = env('ELASTICSEARCH_CA', '');
+        $key = env('ELASTICSEARCH_KEY', '');
+        $cert = env('ELASTICSEARCH_CERT', '');
         // 为8.x版本客户端配置连接
         $config = [
             'hosts' => ["{$scheme}://{$host}:{$port}"]
@@ -47,7 +50,13 @@ class ElasticSearch
         if (!empty($user)) {
             $config['basicAuthentication'] = [$user, $pass];
         }
-
+        
+        $config['SSLVerification'] = $verifi;
+        if ($verifi) {
+            $config['SSLCert'] = $cert;
+            $config['CABundle'] = $ca;
+            $config['SSLKey'] = $key;
+        }
         // 8.x版本使用ClientBuilder::fromConfig创建客户端
         $this->client = ClientBuilder::fromConfig($config);
 
