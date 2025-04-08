@@ -28729,15 +28729,15 @@
     },
     {
         "key": "无法录音：NotFoundError: Requested device not found，无可用麦克风",
-        "zh": "",
-        "zh-CHT": "無法錄音：NotFoundError: Requested device not found，無可用麥克風",
-        "en": "Unable to record: NotFoundError: Requested device not found, no available microphone",
-        "ko": "녹음할 수 없음: NotFoundError: 요청한 장치를 찾을 수 없음, 사용 가능한 마이크 없음",
-        "ja": "録音できません: NotFoundError: 要求されたデバイスが見つかりません、使用可能なマイクがありません",
-        "de": "Aufnahme nicht möglich: NotFoundError: Angefordertes Gerät nicht gefunden, kein verfügbares Mikrofon",
-        "fr": "Impossible d'enregistrer : NotFoundError : Périphérique demandé introuvable, aucun microphone disponible",
-        "id": "Tidak dapat merekam: NotFoundError: Perangkat yang diminta tidak ditemukan, tidak ada mikrofon yang tersedia",
-        "ru": "Невозможно записать: NotFoundError: Запрашиваемое устройство не найдено, нет доступного микрофона"
+        "zh": "无法录音：无可用麦克风",
+        "zh-CHT": "無法錄音：無可用麥克風",
+        "en": "Unable to record: No available microphone",
+        "ko": "녹음할 수 없음: 사용 가능한 마이크 없음",
+        "ja": "録音できません：使用可能なマイクがありません",
+        "de": "Aufnahme nicht möglich: Kein verfügbares Mikrofon",
+        "fr": "Impossible d'enregistrer : Aucun microphone disponible",
+        "id": "Tidak dapat merekam: Tidak ada mikrofon yang tersedia",
+        "ru": "Невозможно записать: Нет доступного микрофона"
     },
     {
         "key": "状态[(%T1)]设置错误，状态负责人[(%T2)]不在项目成员内",

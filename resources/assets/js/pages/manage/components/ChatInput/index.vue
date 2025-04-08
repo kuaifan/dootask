@@ -305,7 +305,7 @@ import TransferDom from "../../../../directives/transfer-dom";
 import clickoutside from "../../../../directives/clickoutside";
 import longpress from "../../../../directives/longpress";
 import {inputLoadAdd, inputLoadIsLast, inputLoadRemove} from "./one";
-import {languageList} from "../../../../language";
+import {languageList, languageName} from "../../../../language";
 import {isMarkdownFormat} from "../../../../utils/markdown";
 import emitter from "../../../../store/events";
 
@@ -1095,14 +1095,17 @@ export default {
 
             // Load recorder
             if (!this.disabledRecord) {
+                const i18nLang = languageName === "zh" || languageName === "zh-CHT" ? "zh-CN" : "en-US";
                 $A.loadScriptS([
                     'js/recorder/recorder.mp3.min.js',
                     'js/recorder/lib.fft.js',
                     'js/recorder/frequency.histogram.view.js',
+                    `js/recorder/i18n/${i18nLang}.js`,
                 ]).then(_ => {
                     if (typeof window.Recorder !== 'function') {
                         return;
                     }
+                    window.Recorder.i18n.lang = i18nLang
                     this.recordRec = window.Recorder({
                         type: "mp3",
                         bitRate: 64,
