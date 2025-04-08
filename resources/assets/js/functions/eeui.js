@@ -6,27 +6,12 @@
 
     /**
      * =============================================================================
-     * *******************************   App extra   *******************************
+     * ****************************   EEUI App extra   *****************************
      * =============================================================================
      */
     $.extend({
-        eeuiModule(name, count = 0) {
-            return new Promise((resolve) => {
-                if (typeof requireModuleJs === "function") {
-                    resolve(requireModuleJs(name));
-                    return;
-                }
-                setTimeout(() => {
-                    if (count < 20) {
-                        resolve(this.eeuiModuleJs(name, ++count));
-                    } else {
-                        resolve(null);
-                    }
-                }, 500)
-            });
-        },
-
-        eeuiModuleSync(name) {
+        // 获取eeui模块
+        eeuiModule(name = 'eeui') {
             if (typeof requireModuleJs === "function") {
                 return requireModuleJs(name);
             }
@@ -35,48 +20,37 @@
 
         // 获取eeui版本号
         eeuiAppVersion() {
-            if (!$A.isEEUiApp) return;
-            return $A.eeuiModuleSync("eeui").getVersion();
+            return this.eeuiModule()?.getVersion();
         },
 
         // 获取本地软件版本号
         eeuiAppLocalVersion() {
-            if (!$A.isEEUiApp) return;
-            return $A.eeuiModuleSync("eeui").getLocalVersion();
+            return this.eeuiModule()?.getLocalVersion();
         },
 
-        // alert
+        // Alert
         eeuiAppAlert(object, callback) {
-            if (!$A.isEEUiApp) return;
             if (typeof callback !== "function") callback = _ => {};
-            $A.eeuiModule("eeui").then(obj => {
-                obj.alert(object, callback);
-            })
+            this.eeuiModule()?.alert(object, callback);
         },
 
-        // toast
+        // Toast
         eeuiAppToast(object) {
-            if (!$A.isEEUiApp) return;
-            $A.eeuiModule("eeui").then(obj => {
-                obj.toast(object);
-            })
+            this.eeuiModule()?.toast(object);
         },
 
         // 相对地址基于当前地址补全
         eeuiAppRewriteUrl(val) {
-            if (!$A.isEEUiApp) return;
-            return $A.eeuiModuleSync("eeui").rewriteUrl(val);
+            return this.eeuiModule()?.rewriteUrl(val);
         },
 
         // 获取页面信息
         eeuiAppGetPageInfo(pageName) {
-            if (!$A.isEEUiApp) return;
-            return $A.eeuiModuleSync("eeui").getPageInfo(pageName);
+            return this.eeuiModule()?.getPageInfo(pageName);
         },
 
         // 打开app新页面
         eeuiAppOpenPage(object, callback) {
-            if (!$A.isEEUiApp) return;
             if (typeof callback !== "function") {
                 callback = _ => {};
             }
@@ -84,199 +58,151 @@
                 callback = object.callback;
                 delete object.callback
             }
-            $A.eeuiModule("eeui").then(obj => {
-                obj.openPage(Object.assign({
-                    softInputMode: "resize",
-                }, object), callback);
-            })
+            this.eeuiModule()?.openPage(Object.assign({
+                softInputMode: "resize",
+            }, object), callback);
         },
 
         // 使用系统浏览器打开网页
         eeuiAppOpenWeb(url) {
-            if (!$A.isEEUiApp) return;
-            $A.eeuiModule("eeui").then(obj => {
-                obj.openWeb(url)
-            })
+            this.eeuiModule()?.openWeb(url)
         },
 
         // 拦截返回按键事件（仅支持android、iOS无效）
         eeuiAppSetPageBackPressed(object, callback) {
-            if (!$A.isEEUiApp) return;
             if (typeof callback !== "function") callback = _ => {};
-            $A.eeuiModule("eeui").then(obj => {
-                obj.setPageBackPressed(object, callback);
-            })
+            this.eeuiModule()?.setPageBackPressed(object, callback);
         },
 
         // 返回手机桌面
         eeuiAppGoDesktop() {
-            if (!$A.isEEUiApp) return;
-            $A.eeuiModule("eeui").then(obj => {
-                obj.goDesktop();
-            })
+            this.eeuiModule()?.goDesktop();
         },
 
         // 打开屏幕常亮
         eeuiAppKeepScreenOn() {
-            if (!$A.isEEUiApp) return;
-            $A.eeuiModule("eeui").then(obj => {
-                obj.keepScreenOn();
-            })
+            this.eeuiModule()?.keepScreenOn();
         },
 
         // 关闭屏幕常亮
         eeuiAppKeepScreenOff() {
-            if (!$A.isEEUiApp) return;
-            $A.eeuiModule("eeui").then(obj => {
-                obj.keepScreenOff();
-            })
+            this.eeuiModule()?.keepScreenOff();
         },
 
         // 隐藏软键盘
         eeuiAppKeyboardHide() {
-            if (!$A.isEEUiApp) return;
-            $A.eeuiModule("eeui").then(obj => {
-                obj.keyboardHide();
-            })
+            this.eeuiModule()?.keyboardHide();
         },
 
         // 给app发送消息
         eeuiAppSendMessage(object) {
-            if (!$A.isEEUiApp) return;
-            $A.eeuiModule("webview").then(obj => {
-                obj.sendMessage(object);
-            })
+            this.eeuiModule("webview")?.sendMessage(object);
         },
 
         // 设置浏览器地址
         eeuiAppSetUrl(url) {
-            if (!$A.isEEUiApp) return;
-            $A.eeuiModule("webview").then(obj => {
-                obj.setUrl(url);
-            })
+            this.eeuiModule("webview")?.setUrl(url);
         },
 
         // 扫码
         eeuiAppScan(callback) {
-            if (!$A.isEEUiApp) return;
-            $A.eeuiModule("eeui").then(obj => {
-                obj.openScaner({}, (res) => {
-                    switch (res.status) {
-                        case "success":
-                            callback(res.text);
-                            break;
-                    }
-                });
-            })
+            this.eeuiModule()?.openScaner({}, (res) => {
+                switch (res.status) {
+                    case "success":
+                        callback(res.text);
+                        break;
+                }
+            });
         },
 
         // 检查更新
         eeuiAppCheckUpdate() {
-            if (!$A.isEEUiApp) return;
-            $A.eeuiModule("eeui").then(obj => {
-                obj.checkUpdate();
-            })
+            this.eeuiModule()?.checkUpdate();
         },
 
         // 获取主题名称 light|dark
         eeuiAppGetThemeName() {
-            if (!$A.isEEUiApp) return;
-            return $A.eeuiModuleSync("eeui").getThemeName();
+            return this.eeuiModule()?.getThemeName();
         },
 
         // 判断软键盘是否可见
         eeuiAppKeyboardStatus() {
-            if (!$A.isEEUiApp) return;
-            return $A.eeuiModuleSync("eeui").keyboardStatus();
+            return this.eeuiModule()?.keyboardStatus();
         },
 
         // 设置全局变量
         eeuiAppSetVariate(key, value) {
-            if (!$A.isEEUiApp) return;
-            $A.eeuiModuleSync("eeui").setVariate(key, value);
+            this.eeuiModule()?.setVariate(key, value);
         },
 
         // 获取全局变量
         eeuiAppGetVariate(key, defaultVal = "") {
-            if (!$A.isEEUiApp) return;
-            return $A.eeuiModuleSync("eeui").getVariate(key, defaultVal);
+            return this.eeuiModule()?.getVariate(key, defaultVal);
         },
 
         // 设置缓存数据
         eeuiAppSetCachesString(key, value, expired = 0) {
-            if (!$A.isEEUiApp) return;
-            $A.eeuiModuleSync("eeui").setCachesString(key, value, expired);
+            this.eeuiModule()?.setCachesString(key, value, expired);
         },
 
         // 获取缓存数据
         eeuiAppGetCachesString(key, defaultVal = "") {
-            if (!$A.isEEUiApp) return;
-            return $A.eeuiModuleSync("eeui").getCachesString(key, defaultVal);
+            return this.eeuiModule()?.getCachesString(key, defaultVal);
         },
 
         // 长按内容震动（仅支持android、iOS无效）
         eeuiAppSetHapticBackEnabled(val) {
-            if (!$A.isEEUiApp) return;
-            $A.eeuiModuleSync("webview").setHapticBackEnabled(val);
+            this.eeuiModule("webview").setHapticBackEnabled(val);
         },
 
         // 禁止长按选择（仅支持android、iOS无效）
         eeuiAppSetDisabledUserLongClickSelect(val) {
-            if (!$A.isEEUiApp) return;
-            $A.__disabledUserLongClickSelectTimer && clearTimeout($A.__disabledUserLongClickSelectTimer);
-            if (/^\d+$/.test(val)) {
-                $A.eeuiModuleSync("webview").setDisabledUserLongClickSelect(true);
-                $A.__disabledUserLongClickSelectTimer = setTimeout(() => {
-                    $A.__disabledUserLongClickSelectTimer = null;
-                    $A.eeuiModuleSync("webview").setDisabledUserLongClickSelect(false);
-                }, val);
-            } else {
-                $A.eeuiModuleSync("webview").setDisabledUserLongClickSelect(val);
+            const webview = this.eeuiModule("webview");
+            this.__disabledUserLongClickSelectTimer && clearTimeout(this.__disabledUserLongClickSelectTimer);
+            if (!/^\d+$/.test(val)) {
+                webview.setDisabledUserLongClickSelect(val);
+                return;
             }
+            webview.setDisabledUserLongClickSelect(true);
+            this.__disabledUserLongClickSelectTimer = setTimeout(() => {
+                this.__disabledUserLongClickSelectTimer = null;
+                webview.setDisabledUserLongClickSelect(false);
+            }, val);
         },
         __disabledUserLongClickSelectTimer: null,
 
         // 复制文本
         eeuiAppCopyText(text) {
-            if (!$A.isEEUiApp) return;
-            $A.eeuiModuleSync("eeui").copyText(text)
+            this.eeuiModule()?.copyText(text)
         },
 
         // 设置是否允许滚动
         eeuiAppSetScrollEnabled(enabled) {
-            if (!$A.isEEUiApp) return;
-            $A.eeuiModule("webview").then(obj => {
-                obj.setScrollEnabled(enabled);
-            })
+            this.eeuiModule("webview")?.setScrollEnabled(enabled);
         },
 
         // 设置应用程序级别的摇动撤销（仅支持iOS、android无效）
         eeuiAppShakeToEditEnabled(enabled) {
-            if (!$A.isEEUiApp) return;
-            $A.eeuiModule("eeui").then(obj => {
-                if (enabled) {
-                    obj.shakeToEditOn();
-                } else {
-                    obj.shakeToEditOff();
-                }
-            })
+            if (enabled) {
+                this.eeuiModule()?.shakeToEditOn();
+            } else {
+                this.eeuiModule()?.shakeToEditOff();
+            }
         },
 
         // 获取最新一张照片
         eeuiAppGetLatestPhoto(expiration = 60, timeout = 10) {
             return new Promise(async (resolve, reject) => {
-                if (!$A.isEEUiApp) {
-                    return reject({msg: "not eeui app"});
-                }
                 try {
-                    const eeui = await $A.eeuiModule("eeui")
+                    const eeui = this.eeuiModule();
                     if (!eeui) {
-                        return reject({msg: "not eeui module"});
+                        return reject({msg: "module not found"});
                     }
+
                     const timer = timeout > 0 ? setTimeout(() => {
                         reject({msg: "timeout"});
                     }, timeout * 1000) : null;
-                    //
+
                     eeui.getLatestPhoto(result => {
                         timer && clearTimeout(timer);
                         if (
@@ -289,10 +215,10 @@
                         if (expiration > 0 && (result.created + expiration) < $A.dayjs().unix()) {
                             return reject({msg: "photo expired"});
                         }
-                        if ($A.__latestPhotoCreated && $A.__latestPhotoCreated === result.created) {
+                        if (this.__latestPhotoCreated && this.__latestPhotoCreated === result.created) {
                             return reject({msg: "photo expired"});
                         }
-                        $A.__latestPhotoCreated = result.created;
+                        this.__latestPhotoCreated = result.created;
                         resolve(result);
                     });
                 } catch (e) {
@@ -305,33 +231,32 @@
         // 上传照片（通过 eeuiAppGetLatestPhoto 获取到的path，params 参数：{url,data,headers,path,fieldName}）
         eeuiAppUploadPhoto(params, timeout = 30) {
             return new Promise(async (resolve, reject) => {
-                if (!$A.isEEUiApp) {
-                    return reject({msg: "not eeui app"});
-                }
                 try {
-                    const eeui = await $A.eeuiModule("eeui")
+                    const eeui = this.eeuiModule();
                     if (!eeui) {
-                        return reject({msg: "not eeui module"});
+                        return reject({msg: "module not found"});
                     }
+
                     const timer = timeout > 0 ? setTimeout(() => {
                         reject({msg: "timeout"});
                     }, timeout * 1000) : null;
-                    //
+
                     if (!$A.isJson(params)) {
                         return reject({msg: "params error"});
                     }
-                    let onReady = () => {};
+
+                    let onReady = null;
                     if (typeof params.onReady !== "undefined") {
-                        if (typeof params.onReady === "function") {
-                            onReady = params.onReady;
-                        }
+                        onReady = params.onReady;
                         delete params.onReady;
                     }
+
                     eeui.uploadPhoto(params, result => {
                         if (result.status === 'ready') {
-                            onReady(result.id)
+                            typeof onReady === "function" && onReady(result.id)
                             return
                         }
+
                         timer && clearTimeout(timer);
                         if (result.status !== 'success') {
                             return reject({msg: result.error || "upload failed"});
@@ -350,13 +275,10 @@
         // 取消上传照片
         eeuiAppCancelUploadPhoto(id) {
             return new Promise(async (resolve, reject) => {
-                if (!$A.isEEUiApp) {
-                    return reject({msg: "not eeui app"});
-                }
                 try {
-                    const eeui = await $A.eeuiModule("eeui")
+                    const eeui = this.eeuiModule();
                     if (!eeui) {
-                        return reject({msg: "not eeui module"});
+                        return reject({msg: "module not found"});
                     }
                     eeui.cancelUploadPhoto(id, result => {
                         if (result.status !== 'success') {
@@ -368,7 +290,21 @@
                     reject({msg: e.message});
                 }
             })
-        }
+        },
+
+        // 添加导航栏遮罩
+        eeuiAppAddNavMask(color) {
+            return this.eeuiModule()?.addNavMask(color)
+        },
+
+        // 移除导航栏遮罩
+        eeuiAppRemoveNavMask(name = null) {
+            if (name === true) {
+                this.eeuiModule()?.removeAllNavMasks()  // 移除所有遮罩
+            } else if (name) {
+                this.eeuiModule()?.removeNavMask(name)  // 移除指定遮罩
+            }
+        },
     });
 
     window.$A = $;

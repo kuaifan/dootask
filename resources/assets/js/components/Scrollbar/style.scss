@@ -132,6 +132,7 @@
     .scrollbar-content {
         height: 100%;
         overflow: auto;
+        will-change: transform;
         -webkit-overflow-scrolling: touch;
 
         &.scrollbar-disable-x {
