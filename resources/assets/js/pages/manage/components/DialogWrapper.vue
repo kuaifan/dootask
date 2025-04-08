@@ -872,12 +872,8 @@ export default {
             'cacheUserBasic',
             'fileLinks',
             'cacheEmojis',
-
             'readLoadNum',
             'readTimeout',
-            'keyboardType',
-            'keyboardHeight',
-            'safeAreaBottom',
             'formOptions',
             'cacheTranslationLanguage'
         ]),
@@ -1059,18 +1055,6 @@ export default {
                 return ['multiple'];
             }
             return [];
-        },
-
-        footerPaddingBottom({keyboardType, keyboardHeight, safeAreaBottom, windowScrollY, location, focusLazy}) {
-            if (windowScrollY < 2
-                && location
-                && focusLazy
-                && keyboardType === "show"
-                && keyboardHeight > 0
-                && keyboardHeight < 120) {
-                return keyboardHeight + safeAreaBottom + (location === 'modal' ? 15 : 0);
-            }
-            return 0;
         },
 
         msgUnreadOnly() {
@@ -1413,13 +1397,6 @@ export default {
                 this.msgActiveId = 0
                 this.shakeToMsgId(val)
             }
-        },
-
-        footerPaddingBottom(val) {
-            this.$refs.footer.style.paddingBottom = `${val}px`;
-            requestAnimationFrame(_ => {
-                this.$refs.input?.updateTools()
-            })
         },
 
         readLoadNum() {
