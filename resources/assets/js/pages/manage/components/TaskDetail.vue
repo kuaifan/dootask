@@ -1696,6 +1696,8 @@ export default {
                     this.$nextTick(_ => {
                         this.$store.dispatch('openDialog', dialogId).then(_ => {
                             this.$store.state.dialogMsgTransfer = transferData
+                        }).catch(({msg}) => {
+                            $A.modalError(msg);
                         })
                     })
                 } else {
