@@ -1060,9 +1060,10 @@ export default {
             this.operateVisible = false;
             this.operateItem = $A.isJson(item) ? item : {};
             this.$nextTick(() => {
+                const parentRect = this.$refs.list?.$el?.getBoundingClientRect() || {top: 0, left: 0}
                 this.operateStyles = {
-                    left: `${clientX}px`,
-                    top: `${rect.top + this.windowScrollY}px`,
+                    left: `${clientX - parentRect.left}px`,
+                    top: `${rect.top + this.windowScrollY - parentRect.top}px`,
                     height: rect.height + 'px',
                 }
                 this.operateVisible = true;

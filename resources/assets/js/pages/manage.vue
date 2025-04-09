@@ -1,6 +1,6 @@
 <template>
     <div class="page-manage" :class="pageClass">
-        <div class="manage-box-menu">
+        <div ref="boxMenu" class="manage-box-menu">
             <Dropdown
                 class="page-manage-menu-dropdown main-menu"
                 trigger="click"
@@ -1143,9 +1143,10 @@ export default {
             this.operateItem = $A.isJson(projectItem) ? projectItem : {};
             this.$nextTick(() => {
                 const rect = el.getBoundingClientRect();
+                const parentRect = this.$refs.boxMenu?.getBoundingClientRect() || {top: 0, left: 0}
                 this.operateStyles = {
-                    left: `${event.clientX}px`,
-                    top: `${rect.top + this.windowScrollY}px`,
+                    left: `${event.clientX - parentRect.left}px`,
+                    top: `${rect.top + this.windowScrollY - parentRect.top}px`,
                     height: rect.height + 'px',
                 }
                 this.operateVisible = true;

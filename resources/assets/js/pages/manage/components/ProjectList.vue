@@ -183,9 +183,10 @@ export default {
             this.operateItem = $A.isJson(projectItem) ? projectItem : {};
             this.$nextTick(() => {
                 const rect = el.getBoundingClientRect();
+                const parentRect = this.$el.getBoundingClientRect() || {top: 0, left: 0}
                 this.operateStyles = {
-                    left: `${event.clientX}px`,
-                    top: `${rect.top + this.windowScrollY}px`,
+                    left: `${event.clientX - parentRect.left}px`,
+                    top: `${rect.top + this.windowScrollY - parentRect.top}px`,
                     height: rect.height + 'px',
                 }
                 this.operateVisible = true;
