@@ -18,6 +18,21 @@
             return null;
         },
 
+        // 获取eeui模块（Promise）
+        eeuiModulePromise(name = 'eeui') {
+            return new Promise((resolve, reject) => {
+                try {
+                    const eeui = this.eeuiModule(name);
+                    if (!eeui) {
+                        return reject({msg: "module not found"});
+                    }
+                    resolve(eeui);
+                } catch (e) {
+                    reject({msg: e.message});
+                }
+            })
+        },
+
         // 获取eeui版本号
         eeuiAppVersion() {
             return this.eeuiModule()?.getVersion();
@@ -194,10 +209,7 @@
         eeuiAppGetLatestPhoto(expiration = 60, timeout = 10) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const eeui = this.eeuiModule();
-                    if (!eeui) {
-                        return reject({msg: "module not found"});
-                    }
+                    const eeui = await this.eeuiModule();
 
                     const timer = timeout > 0 ? setTimeout(() => {
                         reject({msg: "timeout"});
@@ -222,7 +234,7 @@
                         resolve(result);
                     });
                 } catch (e) {
-                    reject({msg: e.message});
+                    reject(e);
                 }
             })
         },
@@ -232,10 +244,7 @@
         eeuiAppUploadPhoto(params, timeout = 30) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const eeui = this.eeuiModule();
-                    if (!eeui) {
-                        return reject({msg: "module not found"});
-                    }
+                    const eeui = await this.eeuiModulePromise();
 
                     const timer = timeout > 0 ? setTimeout(() => {
                         reject({msg: "timeout"});
@@ -267,7 +276,7 @@
                         resolve(result.data.data);
                     });
                 } catch (e) {
-                    reject({msg: e.message});
+                    reject(e);
                 }
             })
         },
@@ -276,10 +285,7 @@
         eeuiAppCancelUploadPhoto(id) {
             return new Promise(async (resolve, reject) => {
                 try {
-                    const eeui = this.eeuiModule();
-                    if (!eeui) {
-                        return reject({msg: "module not found"});
-                    }
+                    const eeui = await this.eeuiModulePromise();
                     eeui.cancelUploadPhoto(id, result => {
                         if (result.status !== 'success') {
                             return reject({msg: result.error || "cancel failed"});
@@ -287,7 +293,7 @@
                         resolve(result);
                     });
                 } catch (e) {
-                    reject({msg: e.message});
+                    reject(e);
                 }
             })
         },
@@ -305,6 +311,23 @@
                 this.eeuiModule()?.removeNavMask(name)  // 移除指定遮罩
             }
         },
+
+        // 获取导航栏和状态栏高度
+        eeuiAppGetSafeAreaInsets() {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const eeui = await this.eeuiModulePromise();
+                    eeui.getSafeAreaInsets(result => {
+                        if (result.status !== 'success') {
+                            return reject({msg: result.error || "get failed"});
+                        }
+                        resolve(result);
+                    });
+                } catch (e) {
+                    reject(e);
+                }
+            })
+        }
     });
 
     window.$A = $;

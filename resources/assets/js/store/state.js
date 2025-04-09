@@ -21,6 +21,7 @@ export default {
     // 浏览器尺寸信息
     windowWidth: windowWidth,
     windowHeight: windowHeight,
+    safeAreaSize: {top: 0, bottom: 0, data: {}},   // 安全区域尺寸
 
     // 浏览器窗口方向
     windowOrientation: windowOrientation,
@@ -37,7 +38,6 @@ export default {
     // 键盘状态（仅iOS）
     keyboardType: null, // show|hide
     keyboardHeight: 0,  // 键盘高度
-    safeAreaBottom: 0,  // 安全区域底部高度
 
     // 是否按下Ctrl/Command键
     isModKey: false,
